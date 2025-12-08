@@ -297,6 +297,13 @@ export default function Sidebar() {
                     <span className="subitem-icon">📺</span>
                     <span className="subitem-label">Overlay View</span>
                   </button>
+                  <button
+                    className={`sidebar-subitem ${isActive('/overlay/widgets') ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/overlay/widgets')}
+                  >
+                    <span className="subitem-icon">🧩</span>
+                    <span className="subitem-label">Widgets</span>
+                  </button>
                   {isSlotModder && (
                     <button
                       className={`sidebar-subitem ${isActive('/overlay/slot-manager') ? 'active' : ''}`}
