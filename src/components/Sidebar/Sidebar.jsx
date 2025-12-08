@@ -172,12 +172,6 @@ export default function Sidebar() {
       show: isAdmin 
     },
     { 
-      icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>, 
-      label: 'Stream', 
-      path: '/stream', 
-      show: true 
-    },
-    { 
       icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>, 
       label: 'About Us', 
       path: '/about', 
@@ -353,51 +347,51 @@ export default function Sidebar() {
           )}
 
           {/* Stream dropdown */}
-          {menuItems[7].show && (
-            <div className="sidebar-item-wrapper">
-              <button
-                className={`sidebar-item ${showStreamDropdown ? 'active' : ''}`}
-                onClick={() => setShowStreamDropdown(!showStreamDropdown)}
-              >
-                <span className="sidebar-icon">{menuItems[7].icon}</span>
-                <span className="sidebar-label">{menuItems[7].label}</span>
-                <span className={`dropdown-arrow ${showStreamDropdown ? 'open' : ''}`}>▼</span>
-              </button>
+          <div className="sidebar-item-wrapper">
+            <button
+              className={`sidebar-item ${showStreamDropdown ? 'active' : ''}`}
+              onClick={() => setShowStreamDropdown(!showStreamDropdown)}
+            >
+              <span className="sidebar-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+              </span>
+              <span className="sidebar-label">Stream</span>
+              <span className={`dropdown-arrow ${showStreamDropdown ? 'open' : ''}`}>▼</span>
+            </button>
 
-              {showStreamDropdown && (
-                <div className="sidebar-dropdown">
-                  <button
-                    className={`sidebar-subitem ${isActive('/stream') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/stream')}
-                  >
-                    <span className="subitem-icon">📺</span>
-                    <span className="subitem-label">Live Stream</span>
-                  </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/tournaments') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/tournaments')}
-                  >
-                    <span className="subitem-icon">🏆</span>
-                    <span className="subitem-label">Tournaments</span>
-                  </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/guess-balance') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/guess-balance')}
-                  >
-                    <span className="subitem-icon">💰</span>
-                    <span className="subitem-label">Guess the Balance</span>
-                  </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/giveaways') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/giveaways')}
-                  >
-                    <span className="subitem-icon">🎁</span>
-                    <span className="subitem-label">Giveaways</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
+            {showStreamDropdown && (
+              <div className="sidebar-dropdown">
+                <button
+                  className={`sidebar-subitem ${isActive('/stream') ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/stream')}
+                >
+                  <span className="subitem-icon">📺</span>
+                  <span className="subitem-label">Live Stream</span>
+                </button>
+                <button
+                  className={`sidebar-subitem ${isActive('/tournaments') ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/tournaments')}
+                >
+                  <span className="subitem-icon">🏆</span>
+                  <span className="subitem-label">Tournaments</span>
+                </button>
+                <button
+                  className={`sidebar-subitem ${isActive('/guess-balance') ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/guess-balance')}
+                >
+                  <span className="subitem-icon">💰</span>
+                  <span className="subitem-label">Guess the Balance</span>
+                </button>
+                <button
+                  className={`sidebar-subitem ${isActive('/giveaways') ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/giveaways')}
+                >
+                  <span className="subitem-icon">🎁</span>
+                  <span className="subitem-label">Giveaways</span>
+                </button>
+              </div>
+            )}
+          </div>
 
           {/* About Us item */}
           {menuItems[8].show && (
