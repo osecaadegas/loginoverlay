@@ -35,6 +35,7 @@ const TournamentPanel = ({ onClose }) => {
   const [slotSuggestions, setSlotSuggestions] = useState({});
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(null);
   const [slotDatabase, setSlotDatabase] = useState([]);
+  const [slotDataCache, setSlotDataCache] = useState({});
 
   // Load slots from Supabase
   useEffect(() => {
@@ -105,6 +106,15 @@ const TournamentPanel = ({ onClose }) => {
     const shuffledNames = [...randomNames].sort(() => 0.5 - Math.random());
     const randomSlots = await getRandomSlots(tournamentSize);
 
+    // Cache slot data
+    const slotCache = {};
+    randomSlots.forEach(slot => {
+      if (slot?.name) {
+        slotCache[slot.name] = slot;
+      }
+    });
+    setSlotDataCache(prev => ({ ...prev, ...slotCache }));
+
     setParticipants(prev => prev.map((p, i) => ({
       ...p,
       player: shuffledNames[i] || `Player ${i + 1}`,
@@ -146,11 +156,36 @@ const TournamentPanel = ({ onClose }) => {
     }
   };
 
+  // Fetch slot data for a specific slot name
+  const fetchSlotData = async (slotName) => {
+    if (slotDataCache[slotName]) {
+      return slotDataCache[slotName];
+    }
+    
+    const slots = await searchSlotsByName(slotName);
+    const exactMatch = slots.find(s => s.name.toLowerCase() === slotName.toLowerCase());
+    
+    if (exactMatch) {
+      setSlotDataCache(prev => ({ ...prev, [slotName]: exactMatch }));
+      return exactMatch;
+    }
+    
+    return null;
+  };
+
   // Select suggestion
-  const selectSlotSuggestion = (index, slotName) => {
+  const selectSlotSuggestion = async (index, slotName, slotData = null) => {
     const newParticipants = [...participants];
     newParticipants[index].slot = slotName;
     setParticipants(newParticipants);
+    
+    // Cache slot data if provided
+    if (slotData) {
+      setSlotDataCache(prev => ({ ...prev, [slotName]: slotData }));
+    } else {
+      // Fetch slot data if not provided
+      await fetchSlotData(slotName);
+    }
     
     setSlotSuggestions(prev => {
       const updated = { ...prev };
@@ -181,8 +216,18 @@ const TournamentPanel = ({ onClose }) => {
     return true;
   };
 
-  const startTournament = () => {
+  const startTournament = async () => {
     const validParticipants = participants.filter(p => p.player.trim() && p.slot.trim());
+    
+    // Fetch slot data for all participants if not already cached
+    const slotsToFetch = validParticipants
+      .map(p => p.slot)
+      .filter(slotName => !slotDataCache[slotName]);
+    
+    if (slotsToFetch.length > 0) {
+      const slotPromises = slotsToFetch.map(slotName => fetchSlotData(slotName));
+      await Promise.all(slotPromises);
+    }
     
     // Create first round matches
     const firstRoundMatches = [];
@@ -372,7 +417,7 @@ const TournamentPanel = ({ onClose }) => {
                             <div
                               key={idx}
                               className="tournament-suggestion-item"
-                              onMouseDown={() => selectSlotSuggestion(index, slot.name)}
+                              onMouseDown={() => selectSlotSuggestion(index, slot.name, slot)}
                             >
                               <img src={slot.image} alt={slot.name} />
                               <div className="tournament-suggestion-info">
@@ -401,6 +446,7 @@ const TournamentPanel = ({ onClose }) => {
             matches={matches}
             currentRound={currentRound}
             currentMatchIndex={currentMatchIndex}
+            slotDataCache={slotDataCache}
           />
           <TournamentControlPanel
             matches={matches}
@@ -421,7 +467,7 @@ const TournamentPanel = ({ onClose }) => {
             <div className="winner-slot-card">
               <div className="winner-player-overlay">{winner.player}</div>
               <img 
-                src={getSlotImage(winner.slot)} 
+                src={getSlotImage(winner.slot, slotDataCache[winner.slot])} 
                 alt={winner.slot}
                 className="winner-slot-image"
                 onError={(e) => e.target.src = 'https://via.placeholder.com/250x320?text=Slot'}

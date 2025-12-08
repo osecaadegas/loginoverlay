@@ -2,7 +2,7 @@ import React from 'react';
 import './TournamentBracketWidget.css';
 import { useBonusHunt } from '../../context/BonusHuntContext';
 
-const TournamentBracketWidget = ({ matches, currentRound, currentMatchIndex }) => {
+const TournamentBracketWidget = ({ matches, currentRound, currentMatchIndex, slotDataCache = {} }) => {
   const { getSlotImage } = useBonusHunt();
 
   // Group matches by round for bottom display
@@ -42,7 +42,7 @@ const TournamentBracketWidget = ({ matches, currentRound, currentMatchIndex }) =
               <div className="mini-card-name">{match.player1?.player}</div>
               <div className="mini-card-image">
                 <img 
-                  src={getSlotImage(match.player1?.slot)} 
+                  src={getSlotImage(match.player1?.slot, slotDataCache[match.player1?.slot])} 
                   alt={match.player1?.slot}
                   onError={(e) => e.target.src = 'https://via.placeholder.com/80x100?text=Slot'}
                 />
@@ -63,7 +63,7 @@ const TournamentBracketWidget = ({ matches, currentRound, currentMatchIndex }) =
               <div className="mini-card-name">{match.player2?.player}</div>
               <div className="mini-card-image">
                 <img 
-                  src={getSlotImage(match.player2?.slot)} 
+                  src={getSlotImage(match.player2?.slot, slotDataCache[match.player2?.slot])} 
                   alt={match.player2?.slot}
                   onError={(e) => e.target.src = 'https://via.placeholder.com/80x100?text=Slot'}
                 />
