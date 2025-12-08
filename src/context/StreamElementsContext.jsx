@@ -376,7 +376,7 @@ export function StreamElementsProvider({ children }) {
           .from('point_redemptions')
           .select(`
             *,
-            redemption_items!inner(name, point_cost)
+            redemption_items!inner(name, point_cost, image_url)
           `)
           .order('redeemed_at', { ascending: false })
           .limit(1);
@@ -415,13 +415,15 @@ export function StreamElementsProvider({ children }) {
             
             const itemName = newest.redemption_items?.name || 'Unknown Item';
             const cost = newest.redemption_items?.point_cost || newest.points_spent || 0;
+            const imageUrl = newest.redemption_items?.image_url || null;
             
-            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username: twitchUsername, itemName, cost, seConnection, profileData });
+            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username: twitchUsername, itemName, cost, imageUrl, seConnection, profileData });
             
             setLatestRedemption({
               username: twitchUsername,
               item: itemName,
               cost: cost,
+              imageUrl: imageUrl,
               id: newest.id,
               timestamp: newest.redeemed_at
             });

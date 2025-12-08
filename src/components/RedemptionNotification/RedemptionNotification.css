@@ -1,102 +1,138 @@
 .redemption-notification {
   position: fixed;
   top: 100px;
-  right: -400px;
-  width: 380px;
-  background: linear-gradient(135deg, rgba(147, 51, 234, 0.95) 0%, rgba(168, 85, 247, 0.95) 100%);
-  backdrop-filter: blur(20px);
-  border: 2px solid rgba(168, 85, 247, 0.6);
-  border-radius: 16px;
-  padding: 1.25rem;
-  box-shadow: 0 12px 48px rgba(147, 51, 234, 0.4), 0 0 80px rgba(168, 85, 247, 0.3);
+  right: -450px;
+  width: 400px;
+  background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  transition: right 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   z-index: 999999;
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-  animation: glow 2s ease-in-out infinite;
+  border: 2px solid rgba(102, 126, 234, 0.5);
 }
 
 .redemption-notification.visible {
   right: 20px;
+  animation: glow-border 2s ease-in-out infinite alternate;
 }
 
-@keyframes glow {
-  0%, 100% {
-    box-shadow: 0 12px 48px rgba(147, 51, 234, 0.4), 0 0 80px rgba(168, 85, 247, 0.3);
+@keyframes glow-border {
+  from {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 30px rgba(102, 126, 234, 0.3);
+    border-color: rgba(102, 126, 234, 0.5);
   }
-  50% {
-    box-shadow: 0 12px 48px rgba(147, 51, 234, 0.6), 0 0 100px rgba(168, 85, 247, 0.5);
-  }
-}
-
-.redemption-icon {
-  font-size: 3rem;
-  animation: bounce 1s ease-in-out infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-    transform: translateY(0) scale(1);
-  }
-  50% {
-    transform: translateY(-10px) scale(1.1);
+  to {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 50px rgba(118, 75, 162, 0.6);
+    border-color: rgba(118, 75, 162, 0.8);
   }
 }
 
-.redemption-content {
-  flex: 1;
+.redemption-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 12px 20px;
   display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.redemption-title {
-  font-size: 0.9rem;
+.redemption-badge {
+  font-size: 13px;
   font-weight: 800;
-  color: rgba(255, 255, 255, 0.9);
   text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.redemption-user {
-  font-size: 1.1rem;
-  font-weight: 900;
-  color: #ffffff;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
-}
-
-.redemption-item {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #fbbf24;
-  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
-}
-
-.redemption-cost {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.85);
-  margin-top: 0.25rem;
+  letter-spacing: 2px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .redemption-close {
-  width: 32px;
-  height: 32px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  font-size: 20px;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 700;
-  cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .redemption-close:hover {
   background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.1);
+  transition: all 0.3s ease;
+  padding: 0;
+  line-height: 1;
+}
+
+.redemption-close:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: rotate(90deg) scale(1.1);
+}
+
+.redemption-body {
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.redemption-image {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(102, 126, 234, 0.1);
+  border: 2px solid rgba(102, 126, 234, 0.3);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.redemption-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.redemption-details {
+  flex: 1;
+  color: white;
+}
+
+.redemption-user {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 8px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+}
+
+.redemption-item {
+  font-size: 18px;
+  font-weight: 700;
+  color: #ffd700;
+  margin-bottom: 8px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.redemption-cost {
+  font-size: 16px;
+  font-weight: 600;
+  color: #a8b2d1;
+  display: inline-block;
+  padding: 4px 12px;
+  background: rgba(102, 126, 234, 0.2);
+  border-radius: 20px;
+  border: 1px solid rgba(102, 126, 234, 0.4);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
