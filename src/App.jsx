@@ -51,7 +51,6 @@ import WidgetsPage from './components/WidgetsPage/WidgetsPage';
 import SpotifyWidgetControl from './components/Widgets/SpotifyWidgetControl';
 import SpotifyWidgetDisplay from './components/Widgets/SpotifyWidgetDisplay';
 import { getUserOverlayState, subscribeToOverlayState, unsubscribe } from './utils/overlayUtils';
-import { useEffect } from 'react';
 
 // Widget wrapper for clean OBS display (no layout, transparent background)
 function WidgetWrapper({ children }) {
