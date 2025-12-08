@@ -394,21 +394,29 @@ export function StreamElementsProvider({ children }) {
           console.log('[Redemptions] Latest redemption ID:', newest.id, 'vs last check:', lastCheck);
           
           if (newest.id !== lastCheck) {
-            // Fetch user profile separately
+            // Fetch user profile and auth metadata to get Twitch username
             const { data: profileData } = await supabase
               .from('user_profiles')
               .select('username, display_name')
               .eq('user_id', newest.user_id)
               .single();
             
-            const username = profileData?.display_name || profileData?.username || 'Unknown';
+            // Get Twitch username from auth metadata
+            const { data: { user: authUser } } = await supabase.auth.admin.getUserById(newest.user_id);
+            const twitchUsername = authUser?.user_metadata?.preferred_username || 
+                                  authUser?.user_metadata?.user_name ||
+                                  authUser?.user_metadata?.name ||
+                                  profileData?.display_name || 
+                                  profileData?.username || 
+                                  'Unknown';
+            
             const itemName = newest.redemption_items?.name || 'Unknown Item';
             const cost = newest.redemption_items?.point_cost || newest.points_spent || 0;
             
-            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username, itemName, cost });
+            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username: twitchUsername, itemName, cost });
             
             setLatestRedemption({
-              username: username,
+              username: twitchUsername,
               item: itemName,
               cost: cost,
               id: newest.id,
