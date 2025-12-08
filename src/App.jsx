@@ -40,6 +40,7 @@ import SpotifyWidget from './components/SpotifyWidget/SpotifyWidget';
 import TwitchChat from './components/TwitchChat/TwitchChat';
 import Blackjack from './components/Blackjack/Blackjack';
 import Mines from './components/Mines/Mines';
+import SlotManagerPage from './components/SlotManager/SlotManagerPage';
 
 function AppContent() {
   const location = useLocation();
@@ -568,6 +569,7 @@ function App() {
                 <Route path="/streamelements" element={<StreamElementsPanel />} />
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/overlay" element={<ProtectedOverlay />} />
+                <Route path="/overlay/slot-manager" element={<SlotManagerPage />} />
                 <Route path="/admin" element={<AdminPanel />} />
               </Routes>
             </LayoutWrapper>

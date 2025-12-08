@@ -12,8 +12,9 @@ export default function Sidebar() {
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showGamesDropdown, setShowGamesDropdown] = useState(false);
   const [showStreamDropdown, setShowStreamDropdown] = useState(false);
+  const [showOverlayDropdown, setShowOverlayDropdown] = useState(false);
   const { user, signOut } = useAuth();
-  const { isAdmin, isModerator } = useAdmin();
+  const { isAdmin, isModerator, isSlotModder } = useAdmin();
   const { points, loading: pointsLoading } = useStreamElements();
   const navigate = useNavigate();
   const location = useLocation();
@@ -161,7 +162,8 @@ export default function Sidebar() {
       icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 1.99-.9 1.99-2L23 5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>, 
       label: 'Overlay', 
       path: '/overlay', 
-      show: hasOverlayAccess 
+      show: hasOverlayAccess,
+      isDropdown: true
     },
     { 
       icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-2.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>, 
@@ -267,10 +269,45 @@ export default function Sidebar() {
             </button>
           )}
 
-          {menuItems.slice(5, 7).map((item, index) =>
+          {/* Overlay dropdown */}
+          {menuItems[5].show && (
+            <div className="sidebar-item-wrapper">
+              <button
+                className={`sidebar-item ${showOverlayDropdown || isActive('/overlay') || isActive('/overlay/slot-manager') ? 'active' : ''}`}
+                onClick={() => setShowOverlayDropdown(!showOverlayDropdown)}
+              >
+                <span className="sidebar-icon">{menuItems[5].icon}</span>
+                <span className="sidebar-label">{menuItems[5].label}</span>
+                <span className={`dropdown-arrow ${showOverlayDropdown ? 'open' : ''}`}>▼</span>
+              </button>
+
+              {showOverlayDropdown && (
+                <div className="sidebar-dropdown">
+                  <button
+                    className={`sidebar-subitem ${isActive('/overlay') ? 'active' : ''}`}
+                    onClick={() => handleNavigation('/overlay')}
+                  >
+                    <span className="subitem-icon">📺</span>
+                    <span className="subitem-label">Overlay View</span>
+                  </button>
+                  {isSlotModder && (
+                    <button
+                      className={`sidebar-subitem ${isActive('/overlay/slot-manager') ? 'active' : ''}`}
+                      onClick={() => handleNavigation('/overlay/slot-manager')}
+                    >
+                      <span className="subitem-icon">🎰</span>
+                      <span className="subitem-label">Slot Manager</span>
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
+          {menuItems.slice(6, 8).map((item, index) =>
             item.show ? (
               <button
-                key={index + 5}
+                key={index + 6}
                 className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
                 onClick={() => handleNavigation(item.path)}
               >
