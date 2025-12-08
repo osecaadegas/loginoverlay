@@ -1,25 +1,24 @@
 .spotify-widget-display {
   position: fixed;
   z-index: 999999;
-  padding: 20px;
 }
 
-.spotify-widget-display[style*="bottom-left"] {
+.spotify-widget-display.position-bottom-left {
   bottom: 20px;
   left: 20px;
 }
 
-.spotify-widget-display[style*="bottom-right"] {
+.spotify-widget-display.position-bottom-right {
   bottom: 20px;
   right: 20px;
 }
 
-.spotify-widget-display[style*="top-left"] {
+.spotify-widget-display.position-top-left {
   top: 20px;
   left: 20px;
 }
 
-.spotify-widget-display[style*="top-right"] {
+.spotify-widget-display.position-top-right {
   top: 20px;
   right: 20px;
 }
@@ -85,114 +84,115 @@
 }
 
 /* Compact Layout (Default) */
-.layout-compact {
+.spotify-widget-display.layout-compact .spotify-widget-content {
   min-width: 300px;
   max-width: 400px;
+  background: linear-gradient(135deg, #1db954 0%, #1ed760 100%);
+  flex-direction: row;
 }
 
-/* Minimal Layout - Text only */
-.layout-minimal {
-  background: rgba(0, 0, 0, 0.8);
+/* Minimal Layout - Text only, no album art */
+.spotify-widget-display.layout-minimal .spotify-widget-content {
+  background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(20px);
   padding: 10px 16px;
   min-width: 250px;
   max-width: 350px;
-  border: 1px solid rgba(29, 185, 84, 0.5);
+  border: 2px solid rgba(29, 185, 84, 0.6);
+  flex-direction: row;
 }
 
-.layout-minimal .spotify-track-info {
-  flex: 1;
-}
-
-.layout-minimal .spotify-track-name {
+.spotify-widget-display.layout-minimal .spotify-track-name {
   font-size: 14px;
   margin-bottom: 2px;
 }
 
-.layout-minimal .spotify-artist-name {
+.spotify-widget-display.layout-minimal .spotify-artist-name {
   font-size: 12px;
 }
 
-.layout-minimal .spotify-icon {
+.spotify-widget-display.layout-minimal .spotify-icon {
   width: 20px;
   height: 20px;
 }
 
 /* Card Layout - Larger, vertical */
-.layout-card {
+.spotify-widget-display.layout-card .spotify-widget-content {
   flex-direction: column;
   text-align: center;
   padding: 20px;
   min-width: 220px;
   max-width: 220px;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(29, 185, 84, 0.2) 100%);
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(29, 185, 84, 0.3) 100%);
   backdrop-filter: blur(20px);
+  border: 2px solid rgba(29, 185, 84, 0.4);
 }
 
-.layout-card .spotify-album-art {
-  width: 160px;
-  height: 160px;
+.spotify-widget-display.layout-card .spotify-album-art {
+  width: 160px !important;
+  height: 160px !important;
   border-radius: 12px;
   margin-bottom: 12px;
 }
 
-.layout-card .spotify-album-art.large {
-  width: 160px;
-  height: 160px;
-}
-
-.layout-card .spotify-track-info {
+.spotify-widget-display.layout-card .spotify-track-info {
   margin-bottom: 8px;
+  width: 100%;
 }
 
-.layout-card .spotify-track-name {
+.spotify-widget-display.layout-card .spotify-track-name {
   font-size: 15px;
   margin-bottom: 6px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 180px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
-.layout-card .spotify-artist-name {
+.spotify-widget-display.layout-card .spotify-artist-name {
   font-size: 13px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   max-width: 180px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 /* Banner Layout - Wide horizontal */
-.layout-banner {
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 0%, rgba(29, 185, 84, 0.3) 100%);
+.spotify-widget-display.layout-banner .spotify-widget-content {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 0%, rgba(29, 185, 84, 0.4) 100%);
   backdrop-filter: blur(20px);
   padding: 14px 20px;
   min-width: 450px;
   max-width: 600px;
   border-left: 4px solid #1db954;
   border-radius: 8px;
+  flex-direction: row;
 }
 
-.layout-banner .spotify-album-art {
-  width: 70px;
-  height: 70px;
+.spotify-widget-display.layout-banner .spotify-album-art {
+  width: 70px !important;
+  height: 70px !important;
 }
 
-.layout-banner .spotify-track-info {
+.spotify-widget-display.layout-banner .spotify-track-info {
   flex: 1;
   padding: 0 16px;
 }
 
-.layout-banner .spotify-track-name {
+.spotify-widget-display.layout-banner .spotify-track-name {
   font-size: 18px;
   margin-bottom: 6px;
 }
 
-.layout-banner .spotify-artist-name {
+.spotify-widget-display.layout-banner .spotify-artist-name {
   font-size: 15px;
 }
 
-.layout-banner .spotify-icon {
-  width: 32px;
-  height: 32px;
+.spotify-widget-display.layout-banner .spotify-icon {
+  width: 32px !important;
+  height: 32px !important;
 }

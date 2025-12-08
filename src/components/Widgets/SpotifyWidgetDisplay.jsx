@@ -179,13 +179,17 @@ export default function SpotifyWidgetDisplay() {
     }
   };
 
+  const getPositionClass = () => {
+    const pos = settings?.position || 'bottom-left';
+    return `position-${pos}`;
+  };
+
   return (
     <div 
-      className={`spotify-widget-display ${layout}`}
+      className={`spotify-widget-display ${getPositionClass()} layout-${layout}`}
       style={{
-        position: settings.position || 'bottom-left',
-        opacity: settings.opacity || 1,
-        transform: `scale(${settings.scale || 1})`
+        opacity: settings?.opacity || 1,
+        transform: `scale(${settings?.scale || 1})`
       }}
     >
       {renderLayout()}
