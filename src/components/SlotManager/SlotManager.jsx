@@ -130,140 +130,141 @@ const SlotManager = () => {
 
   return (
     <div className="slot-manager">
+      {/* Compact Header with Inline Actions */}
       <div className="slot-manager-header">
-        <h2>🎰 Slot Manager</h2>
+        <div className="header-left">
+          <h2>🎰 Slot Database</h2>
+          <span className="total-count">{slots.length} total</span>
+        </div>
         <button 
-          className="add-slot-btn"
+          className={`add-slot-btn ${showForm ? 'active' : ''}`}
           onClick={() => setShowForm(!showForm)}
         >
-          {showForm ? '✕ Cancel' : '+ Add New Slot'}
+          {showForm ? '✕' : '+'} {showForm ? 'Close' : 'Add Slot'}
         </button>
       </div>
 
-      {formSuccess && (
-        <div className="form-success">{formSuccess}</div>
-      )}
+      {/* Notifications */}
+      {formSuccess && <div className="notification success">{formSuccess}</div>}
+      {formError && <div className="notification error">{formError}</div>}
 
+      {/* Compact Inline Form */}
       {showForm && (
-        <div className="slot-form-container">
-          <h3>{editingSlot ? 'Edit Slot' : 'Add New Slot'}</h3>
-          {formError && <div className="form-error">{formError}</div>}
-          
-          <form onSubmit={handleSubmit} className="slot-form">
-            <div className="form-group">
-              <label>Slot Name *</label>
-              <input
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="e.g., Wanted Dead or Wild"
-                required
-              />
-            </div>
-
-            <div className="form-group">
-              <label>Provider *</label>
-              <input
-                type="text"
-                list="providers-list"
-                value={formData.provider}
-                onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
-                placeholder="e.g., Hacksaw"
-                required
-              />
-              <datalist id="providers-list">
-                {providers.map(provider => (
-                  <option key={provider} value={provider} />
-                ))}
-              </datalist>
-            </div>
-
-            <div className="form-group">
-              <label>Image URL *</label>
-              <input
-                type="url"
-                value={formData.image}
-                onChange={(e) => setFormData({ ...formData, image: e.target.value })}
-                placeholder="https://..."
-                required
-              />
-              {formData.image && (
-                <div className="image-preview">
-                  <img src={formData.image} alt="Preview" onError={(e) => e.target.src = DEFAULT_SLOT_IMAGE} />
-                </div>
-              )}
-            </div>
-
-            <div className="form-actions">
-              <button type="submit" className="btn-submit">
-                {editingSlot ? 'Update Slot' : 'Add Slot'}
-              </button>
-              <button type="button" className="btn-cancel" onClick={handleCancel}>
-                Cancel
-              </button>
+        <div className="slot-form-inline">
+          <form onSubmit={handleSubmit}>
+            <div className="form-grid">
+              <div className="form-col">
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="Slot Name"
+                  required
+                />
+              </div>
+              <div className="form-col">
+                <input
+                  type="text"
+                  list="providers-list"
+                  value={formData.provider}
+                  onChange={(e) => setFormData({ ...formData, provider: e.target.value })}
+                  placeholder="Provider"
+                  required
+                />
+                <datalist id="providers-list">
+                  {providers.map(provider => (
+                    <option key={provider} value={provider} />
+                  ))}
+                </datalist>
+              </div>
+              <div className="form-col form-col-wide">
+                <input
+                  type="url"
+                  value={formData.image}
+                  onChange={(e) => setFormData({ ...formData, image: e.target.value })}
+                  placeholder="Image URL"
+                  required
+                />
+              </div>
+              <div className="form-col-actions">
+                {formData.image && (
+                  <div className="mini-preview">
+                    <img src={formData.image} alt="Preview" onError={(e) => e.target.src = DEFAULT_SLOT_IMAGE} />
+                  </div>
+                )}
+                <button type="submit" className="btn-submit">
+                  {editingSlot ? '💾 Update' : '✓ Add'}
+                </button>
+                <button type="button" className="btn-cancel-mini" onClick={handleCancel}>
+                  ✕
+                </button>
+              </div>
             </div>
           </form>
         </div>
       )}
 
-      <div className="slot-filters">
-        <div className="filter-group">
+      {/* Compact Filters Bar */}
+      <div className="filters-bar">
+        <div className="search-wrapper">
+          <span className="search-icon">🔍</span>
           <input
             type="text"
             placeholder="Search slots..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
+            className="search-input-compact"
           />
         </div>
-        <div className="filter-group">
-          <select
-            value={selectedProvider}
-            onChange={(e) => setSelectedProvider(e.target.value)}
-            className="provider-filter"
-          >
-            <option value="all">All Providers</option>
-            {providers.map(provider => (
-              <option key={provider} value={provider}>{provider}</option>
-            ))}
-          </select>
-        </div>
-        <div className="filter-stats">
-          Showing {filteredSlots.length} of {slots.length} slots
-        </div>
+        <select
+          value={selectedProvider}
+          onChange={(e) => setSelectedProvider(e.target.value)}
+          className="provider-filter-compact"
+        >
+          <option value="all">All Providers ({providers.length})</option>
+          {providers.map(provider => (
+            <option key={provider} value={provider}>{provider}</option>
+          ))}
+        </select>
+        <span className="results-badge">
+          {filteredSlots.length} results
+        </span>
       </div>
 
-      <div className="slots-list">
+      {/* Compact Grid List */}
+      <div className="slots-grid-compact">
         {filteredSlots.map(slot => (
-          <div key={slot.id} className="slot-item">
-            <div className="slot-image">
+          <div key={slot.id} className="slot-card">
+            <div className="slot-card-image">
               <img src={slot.image} alt={slot.name} />
+              <div className="slot-card-overlay">
+                <button
+                  className="action-btn edit-btn"
+                  onClick={() => handleEdit(slot)}
+                  title="Edit"
+                >
+                  ✏️
+                </button>
+                <button
+                  className="action-btn delete-btn"
+                  onClick={() => handleDelete(slot.id, slot.name)}
+                  title="Delete"
+                >
+                  🗑️
+                </button>
+              </div>
             </div>
-            <div className="slot-info">
-              <h4>{slot.name}</h4>
-              <p className="slot-provider">{slot.provider}</p>
-            </div>
-            <div className="slot-actions">
-              <button
-                className="btn-edit"
-                onClick={() => handleEdit(slot)}
-                title="Edit slot"
-              >
-                ✏️
-              </button>
-              <button
-                className="btn-delete"
-                onClick={() => handleDelete(slot.id, slot.name)}
-                title="Delete slot"
-              >
-                🗑️
-              </button>
+            <div className="slot-card-info">
+              <h4 title={slot.name}>{slot.name}</h4>
+              <span className="provider-tag">{slot.provider}</span>
             </div>
           </div>
         ))}
         {filteredSlots.length === 0 && (
-          <div className="no-slots">
-            No slots found matching your filters
+          <div className="empty-state">
+            <span className="empty-icon">🎰</span>
+            <p>No slots found</p>
+            <small>Try adjusting your filters</small>
           </div>
         )}
       </div>
