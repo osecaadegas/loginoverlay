@@ -51,6 +51,30 @@ import WidgetsPage from './components/WidgetsPage/WidgetsPage';
 import SpotifyWidgetControl from './components/Widgets/SpotifyWidgetControl';
 import SpotifyWidgetDisplay from './components/Widgets/SpotifyWidgetDisplay';
 import { getUserOverlayState, subscribeToOverlayState, unsubscribe } from './utils/overlayUtils';
+import { useEffect } from 'react';
+
+// Widget wrapper for clean OBS display (no layout, transparent background)
+function WidgetWrapper({ children }) {
+  useEffect(() => {
+    // Set body styles for clean widget display
+    document.body.style.background = 'transparent';
+    document.body.style.overflow = 'hidden';
+    document.body.style.margin = '0';
+    document.body.style.marginLeft = '0';
+    document.documentElement.style.background = 'transparent';
+    
+    return () => {
+      // Cleanup on unmount
+      document.body.style.background = '';
+      document.body.style.overflow = '';
+      document.body.style.margin = '';
+      document.body.style.marginLeft = '';
+      document.documentElement.style.background = '';
+    };
+  }, []);
+
+  return <div style={{ background: 'transparent', width: '100vw', height: '100vh', position: 'fixed', top: 0, left: 0 }}>{children}</div>;
+}
 import RedemptionNotification from './components/RedemptionNotification/RedemptionNotification';
 import { useStreamElements } from './context/StreamElementsContext';
 import ProtectedAdminRoute from './components/ProtectedRoute/ProtectedAdminRoute';
@@ -623,10 +647,13 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
   return <AppContent isAdminOverlay={isAdminOverlay} />;
 }
 
-// Layout wrapper to show sidebar on all pages except overlay and admin-overlay
+// Layout wrapper to show sidebar on all pages except overlay and widget display routes
 function LayoutWrapper({ children }) {
   const location = useLocation();
-  const showSidebar = location.pathname !== '/overlay' && location.pathname !== '/admin-overlay';
+  const isWidgetRoute = location.pathname.startsWith('/widgets/');
+  const showSidebar = location.pathname !== '/overlay' && 
+                      location.pathname !== '/admin-overlay' && 
+                      !isWidgetRoute;
 
   return (
     <>
@@ -668,7 +695,11 @@ function App() {
                 <Route path="/overlay/slot-manager" element={<SlotManagerPage />} />
                 <Route path="/overlay/widgets" element={<WidgetsPage />} />
                 <Route path="/overlay/widgets/spotify" element={<SpotifyWidgetControl />} />
-                <Route path="/widgets/spotify/:userId" element={<SpotifyWidgetDisplay />} />
+                <Route path="/widgets/spotify/:userId" element={
+                  <WidgetWrapper>
+                    <SpotifyWidgetDisplay />
+                  </WidgetWrapper>
+                } />
                 <Route path="/overlay/customization" element={<CustomizationPage />} />
                 <Route path="/overlay/random-slot" element={<RandomSlotPage />} />
                 <Route path="/overlay/giveaway" element={<GiveawayPage />} />
