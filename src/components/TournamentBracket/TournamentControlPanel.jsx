@@ -183,6 +183,10 @@ const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplet
         <div className="control-players">
           {/* Player 1 */}
           <div className="control-player">
+            <div className="control-player-info">
+              <div className="control-player-name">{currentMatch.player1?.player || 'Player 1'}</div>
+              <div className="control-slot-name">{currentMatch.player1?.slot || 'No slot'}</div>
+            </div>
             <div className="player-slot-image">
               <img 
                 src={getSlotImage(currentMatch.player1?.slot)} 
@@ -222,6 +226,10 @@ const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplet
 
           {/* Player 2 */}
           <div className="control-player">
+            <div className="control-player-info">
+              <div className="control-player-name">{currentMatch.player2?.player || 'Player 2'}</div>
+              <div className="control-slot-name">{currentMatch.player2?.slot || 'No slot'}</div>
+            </div>
             <div className="player-slot-image">
               <img 
                 src={getSlotImage(currentMatch.player2?.slot)} 
