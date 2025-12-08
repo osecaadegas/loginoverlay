@@ -393,14 +393,14 @@ export default function Sidebar() {
             )}
           </div>
 
-          {/* About Us item */}
-          {menuItems[8].show && (
+          {/* About Us */}
+          {menuItems[7].show && (
             <button
-              className={`sidebar-item ${isActive(menuItems[8].path) ? 'active' : ''}`}
-              onClick={() => handleNavigation(menuItems[8].path)}
+              className={`sidebar-item ${isActive(menuItems[7].path) ? 'active' : ''}`}
+              onClick={() => handleNavigation(menuItems[7].path)}
             >
-              <span className="sidebar-icon">{menuItems[8].icon}</span>
-              <span className="sidebar-label">{menuItems[8].label}</span>
+              <span className="sidebar-icon">{menuItems[7].icon}</span>
+              <span className="sidebar-label">{menuItems[7].label}</span>
             </button>
           )}
 
