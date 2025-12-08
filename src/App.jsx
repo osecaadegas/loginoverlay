@@ -476,6 +476,11 @@ function AppContent({ isAdminOverlay = false }) {
     }
   };
 
+  // Only render overlay UI on /overlay and /admin-overlay routes
+  if (location.pathname !== '/overlay' && location.pathname !== '/admin-overlay') {
+    return null;
+  }
+
   return (
     <div className="overlay-container">
       <Navbar />
