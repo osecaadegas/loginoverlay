@@ -1,40 +1,65 @@
 .widget-control-page {
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  padding: 40px 20px;
+  background: linear-gradient(135deg, #1a1f2e 0%, #252b3d 100%);
+  padding: 20px;
 }
 
 .widget-control-header {
-  max-width: 900px;
-  margin: 0 auto 40px;
+  max-width: 1000px;
+  margin: 0 auto 20px;
   color: white;
 }
 
 .widget-control-header h1 {
-  font-size: 2.5rem;
-  margin: 20px 0;
+  font-size: 1.8rem;
+  margin: 10px 0;
+  font-weight: 600;
+}
+
+.back-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+  border: 1px solid rgba(255, 255, 255, 0.2);\n  padding: 8px 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.back-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateX(-2px);
 }
 
 .widget-control-content {
-  max-width: 900px;
+  max-width: 1000px;
   margin: 0 auto;
   display: grid;
-  gap: 30px;
+  gap: 20px;
 }
 
 .widget-url-section,
 .widget-settings-section {
-  background: white;
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(26, 27, 46, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .widget-url-section h3,
 .widget-settings-section h3 {
-  font-size: 1.5rem;
+  font-size: 1.2rem;
   margin-bottom: 15px;
-  color: #333;
+  color: #f3f4f6;
+  font-weight: 600;
+}
+
+.widget-url-section p,
+.widget-settings-section p {
+  color: #9ca3af;
+  font-size: 14px;
 }
 
 .url-box {
@@ -45,15 +70,22 @@
 
 .url-box input {
   flex: 1;
-  padding: 12px;
-  border: 2px solid #e0e0e0;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   font-family: monospace;
-  font-size: 14px;
+  font-size: 13px;
+  color: #f3f4f6;
+}
+
+.url-box input:focus {
+  outline: none;
+  border-color: #667eea;
 }
 
 .url-box button {
-  padding: 12px 24px;
+  padding: 10px 20px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
@@ -61,6 +93,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  font-size: 14px;
 }
 
 .url-box button:hover {
@@ -68,32 +101,37 @@
 }
 
 .obs-instructions {
-  background: #f5f5f5;
-  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 15px;
   border-radius: 8px;
-  margin-top: 20px;
+  margin-top: 15px;
 }
 
 .obs-instructions h4 {
-  margin-bottom: 15px;
-  color: #333;
+  margin-bottom: 10px;
+  color: #f3f4f6;
+  font-size: 14px;
+  font-weight: 600;
 }
 
 .obs-instructions ol {
   margin-left: 20px;
-  color: #666;
-  line-height: 1.8;
+  color: #9ca3af;
+  line-height: 1.6;
+  font-size: 13px;
 }
 
 .setting-group {
-  margin-bottom: 25px;
+  margin-bottom: 18px;
 }
 
 .setting-group label {
   display: block;
   font-weight: 600;
-  margin-bottom: 10px;
-  color: #333;
+  margin-bottom: 8px;
+  color: #f3f4f6;
+  font-size: 14px;
 }
 
 .setting-group input[type="checkbox"] {
@@ -104,9 +142,21 @@
 .setting-group input[type="range"] {
   width: 100%;
   padding: 10px;
-  border: 2px solid #e0e0e0;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 8px;
   font-size: 14px;
+  color: #f3f4f6;
+}
+
+.setting-group select:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.setting-group select option {
+  background: #1a1f2e;
+  color: #f3f4f6;
 }
 
 .setting-group input[type="range"] {
@@ -115,12 +165,12 @@
 
 .save-button {
   width: 100%;
-  padding: 15px;
+  padding: 12px;
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 8px;
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -132,23 +182,25 @@
 }
 
 .spotify-connect-section {
-  background: white;
-  border-radius: 16px;
-  padding: 60px 30px;
+  background: rgba(26, 27, 46, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 40px 30px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .spotify-connect-section h2 {
-  font-size: 2rem;
+  font-size: 1.6rem;
   margin-bottom: 15px;
-  color: #333;
+  color: #f3f4f6;
+  font-weight: 600;
 }
 
 .spotify-connect-section p {
-  font-size: 1.1rem;
-  color: #666;
-  margin-bottom: 30px;
+  font-size: 1rem;
+  color: #9ca3af;
+  margin-bottom: 25px;
 }
 
 .spotify-connect-btn {
@@ -219,16 +271,16 @@
 }
 
 .layout-option {
-  background: #f8f9fa;
-  border: 3px solid #e0e0e0;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
   border-radius: 12px;
-  padding: 15px;
+  padding: 12px;
   cursor: pointer;
   transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .layout-option:hover {
@@ -244,8 +296,8 @@
 
 .layout-option span {
   font-weight: 600;
-  color: #333;
-  font-size: 14px;
+  color: #f3f4f6;
+  font-size: 13px;
 }
 
 /* Layout Previews */
@@ -340,16 +392,18 @@
 
 /* Preview Section */
 .widget-preview-section {
-  background: white;
-  border-radius: 16px;
-  padding: 30px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  background: rgba(26, 27, 46, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .widget-preview-section h3 {
-  font-size: 1.5rem;
-  margin-bottom: 20px;
-  color: #333;
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+  color: #f3f4f6;
+  font-weight: 600;
 }
 
 .preview-container {
@@ -359,13 +413,21 @@
   border-radius: 8px;
   margin: 0 auto;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .preview-note {
   text-align: center;
-  color: #666;
-  margin-top: 20px;
-  font-size: 14px;
+  color: #9ca3af;
+  margin-top: 15px;
+  font-size: 13px;
+}
+
+.preview-note {
+  text-align: center;
+  color: #9ca3af;
+  margin-top: 15px;
+  font-size: 13px;
 }
 
 .preview-button {
