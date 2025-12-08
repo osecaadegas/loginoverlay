@@ -317,6 +317,27 @@
   height: 70px;
 }
 
+.glass-preview {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.3), rgba(118, 75, 162, 0.3));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.floating-preview {
+  height: 50px;
+  padding: 8px;
+  background: linear-gradient(90deg, #1db954, #1ed760);
+}
+
+.floating-preview .preview-album.small {
+  width: 30px;
+  height: 30px;
+}
+
+.floating-preview .preview-line.thin {
+  height: 6px;
+}
+
 /* Preview Section */
 .widget-preview-section {
   background: white;

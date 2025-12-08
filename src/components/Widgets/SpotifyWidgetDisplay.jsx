@@ -162,6 +162,39 @@ export default function SpotifyWidgetDisplay() {
           </div>
         );
 
+      case 'glass':
+        return (
+          <div className="spotify-widget-content layout-glass">
+            <div className="glass-header">
+              <div className="glass-title">Now Playing</div>
+            </div>
+            {currentTrack.albumArt && (
+              <img src={currentTrack.albumArt} alt="Album art" className="spotify-album-art glass-album" />
+            )}
+            <div className="spotify-track-info glass-info">
+              <div className="spotify-track-name">{currentTrack.name}</div>
+              <div className="spotify-artist-name">{currentTrack.artist}</div>
+            </div>
+            <div className="glass-footer">
+              <div className="spotify-icon glass-icon">{spotifyIcon}</div>
+            </div>
+          </div>
+        );
+
+      case 'floating':
+        return (
+          <div className="spotify-widget-content layout-floating">
+            {currentTrack.albumArt && (
+              <img src={currentTrack.albumArt} alt="Album art" className="spotify-album-art floating-album" />
+            )}
+            <div className="spotify-track-info floating-info">
+              <div className="spotify-track-name">{currentTrack.name}</div>
+              <div className="spotify-artist-name">{currentTrack.artist}</div>
+            </div>
+            <div className="spotify-icon floating-icon">{spotifyIcon}</div>
+          </div>
+        );
+
       case 'compact':
       default:
         return (

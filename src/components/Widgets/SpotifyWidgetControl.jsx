@@ -269,6 +269,33 @@ export default function SpotifyWidgetControl() {
                 </div>
                 <span>Banner</span>
               </button>
+
+              <button
+                className={`layout-option ${settings.layout === 'glass' ? 'active' : ''}`}
+                onClick={() => setSettings({...settings, layout: 'glass'})}
+              >
+                <div className="layout-preview glass-preview">
+                  <div className="preview-album"></div>
+                  <div className="preview-text">
+                    <div className="preview-line"></div>
+                    <div className="preview-line short"></div>
+                  </div>
+                </div>
+                <span>Glass</span>
+              </button>
+
+              <button
+                className={`layout-option ${settings.layout === 'floating' ? 'active' : ''}`}
+                onClick={() => setSettings({...settings, layout: 'floating'})}
+              >
+                <div className="layout-preview floating-preview">
+                  <div className="preview-album small"></div>
+                  <div className="preview-text">
+                    <div className="preview-line thin"></div>
+                  </div>
+                </div>
+                <span>Floating</span>
+              </button>
             </div>
           </div>
 
