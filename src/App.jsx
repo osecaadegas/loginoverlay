@@ -93,6 +93,44 @@ function AppContent() {
     }
   }, [location.pathname]);
 
+  // Function to apply theme dynamically
+  const applyThemeDynamically = (themeKey) => {
+    // Import THEMES from the startup effect below
+    const THEMES = window.THEME_DEFINITIONS || {};
+    const theme = THEMES[themeKey];
+    if (!theme) return;
+
+    document.documentElement.style.setProperty('--theme-primary', theme.colors.primary);
+    document.documentElement.style.setProperty('--theme-secondary', theme.colors.secondary);
+    document.documentElement.style.setProperty('--theme-accent', theme.colors.accent);
+    document.documentElement.style.setProperty('--theme-background', theme.colors.background);
+    document.documentElement.style.setProperty('--theme-text', theme.colors.text);
+    document.documentElement.style.setProperty('--theme-panel-bg', theme.colors.panelBg);
+    document.documentElement.style.setProperty('--theme-border', theme.colors.border);
+    document.documentElement.style.setProperty('--theme-font', theme.font);
+    
+    // Apply FX theme border animations
+    if (themeKey.startsWith('fx-')) {
+      let animation = 'rgb-pulse';
+      if (themeKey.includes('pulse')) animation = 'rgb-pulse';
+      else if (themeKey.includes('neon')) animation = 'neon-pulse';
+      else if (themeKey.includes('fire') || themeKey.includes('inferno') || themeKey.includes('magma')) animation = 'fire-pulse';
+      else if (themeKey.includes('rainbow') || themeKey.includes('disco') || themeKey.includes('holographic') || themeKey.includes('prism')) animation = 'rainbow-flash';
+      else if (themeKey.includes('glitch') || themeKey.includes('corrupted')) animation = 'glitch-scroll';
+      else if (themeKey.includes('lightning') || themeKey.includes('thunder')) animation = 'lightning-flash';
+      else if (themeKey.includes('stripe') || themeKey.includes('retro') || themeKey.includes('danger') || themeKey.includes('electric')) animation = 'stripe-scroll';
+      
+      document.documentElement.style.setProperty('--theme-border-animation', animation);
+      document.body.classList.add('fx-theme-active');
+    } else {
+      document.documentElement.style.setProperty('--theme-border-animation', 'none');
+      document.body.classList.remove('fx-theme-active');
+    }
+
+    document.body.style.background = theme.colors.background;
+    localStorage.setItem('selectedTheme', themeKey);
+  };
+
   // Load and subscribe to theme changes from database
   useEffect(() => {
     if (!user || location.pathname !== '/overlay') return;
@@ -102,8 +140,7 @@ function AppContent() {
         // Load initial theme from database
         const state = await getUserOverlayState(user.id);
         if (state && state.theme) {
-          localStorage.setItem('selectedTheme', state.theme);
-          window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: state.theme } }));
+          applyThemeDynamically(state.theme);
         }
 
         // Subscribe to real-time theme changes
@@ -111,9 +148,8 @@ function AppContent() {
           if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
             const newState = payload.new;
             if (newState.theme) {
-              localStorage.setItem('selectedTheme', newState.theme);
-              // Trigger theme re-application
-              window.location.reload();
+              // Apply theme instantly without reload
+              applyThemeDynamically(newState.theme);
             }
           }
         });
@@ -135,7 +171,7 @@ function AppContent() {
       const savedTheme = localStorage.getItem('selectedTheme');
       if (savedTheme) {
         // Define theme colors (same as in CustomizationPanel)
-        const THEMES = {
+        const THEMES = window.THEME_DEFINITIONS = {
           'cyberpunk': { colors: { primary: '#00ff41', secondary: '#ff006e', accent: '#00d4ff', background: '#0a0e27', text: '#00ff41', panelBg: 'linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(26, 27, 46, 0.95))', border: '#00ff41' }, font: 'Orbitron, monospace' },
           'minimal': { colors: { primary: '#000000', secondary: '#6b7280', accent: '#3b82f6', background: '#ffffff', text: '#000000', panelBg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(249, 250, 251, 0.98))', border: '#e5e7eb' }, font: 'Inter, sans-serif' },
           'royal': { colors: { primary: '#7c3aed', secondary: '#fbbf24', accent: '#ec4899', background: '#1e1b4b', text: '#fbbf24', panelBg: 'linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(88, 28, 135, 0.95))', border: '#fbbf24' }, font: 'Playfair Display, serif' },
