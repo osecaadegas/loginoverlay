@@ -354,6 +354,7 @@ export default function SpotifyWidgetControl() {
             <h3>Live Preview</h3>
             <div className="preview-container">
               <iframe
+                key={widgetUrl}
                 src={widgetUrl}
                 style={{
                   width: '1920px',
