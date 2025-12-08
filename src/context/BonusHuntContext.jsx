@@ -1,6 +1,14 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { calculateStats } from '../utils/calculations';
 import { findSlotByName, DEFAULT_SLOT_IMAGE } from '../utils/slotUtils';
+import { useAuth } from './AuthContext';
+import { 
+  getUserOverlayState, 
+  updateOverlayBonuses, 
+  updateCustomization,
+  subscribeToOverlayState,
+  unsubscribe
+} from '../utils/overlayUtils';
 
 const BonusHuntContext = createContext();
 
@@ -13,6 +21,9 @@ export const useBonusHunt = () => {
 };
 
 export const BonusHuntProvider = ({ children }) => {
+  const { user } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
+
   // Helper to load from localStorage
   const loadFromStorage = (key, defaultValue) => {
     try {
@@ -24,42 +35,86 @@ export const BonusHuntProvider = ({ children }) => {
     }
   };
 
-  // Bonus hunt state with localStorage
-  const [bonuses, setBonuses] = useState(() => loadFromStorage('bonushunt_bonuses', []));
-  const [startMoney, setStartMoney] = useState(() => loadFromStorage('bonushunt_startMoney', 0));
-  const [stopMoney, setStopMoney] = useState(() => loadFromStorage('bonushunt_stopMoney', 0));
-  const [actualBalance, setActualBalance] = useState(() => loadFromStorage('bonushunt_actualBalance', 0));
-  const [customSlotImages, setCustomSlotImages] = useState(() => loadFromStorage('bonushunt_customImages', {}));
+  // Bonus hunt state - will be synced with database
+  const [bonuses, setBonuses] = useState([]);
+  const [startMoney, setStartMoney] = useState(0);
+  const [stopMoney, setStopMoney] = useState(0);
+  const [actualBalance, setActualBalance] = useState(0);
+  const [customSlotImages, setCustomSlotImages] = useState({});
   
   // UI state
-  const [layoutMode, setLayoutMode] = useState(() => loadFromStorage('bonushunt_layoutMode', 'modern-sidebar'));
+  const [layoutMode, setLayoutMode] = useState('modern-sidebar');
   const [currentOpeningIndex, setCurrentOpeningIndex] = useState(0);
   const [showBonusOpening, setShowBonusOpening] = useState(false);
 
-  // Save to localStorage whenever state changes
+  // Load user's overlay state from database on mount
   useEffect(() => {
-    localStorage.setItem('bonushunt_bonuses', JSON.stringify(bonuses));
-  }, [bonuses]);
+    if (!user) {
+      setIsInitialized(false);
+      return;
+    }
 
-  useEffect(() => {
-    localStorage.setItem('bonushunt_startMoney', JSON.stringify(startMoney));
-  }, [startMoney]);
+    const loadUserState = async () => {
+      try {
+        const state = await getUserOverlayState(user.id);
+        if (state) {
+          setBonuses(state.bonuses || []);
+          setStartMoney(state.total_cost || 0);
+          setActualBalance(state.total_payout || 0);
+          setCustomSlotImages(state.custom_slot_images || {});
+          setLayoutMode(state.layout_mode || 'modern-sidebar');
+        }
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error loading user overlay state:', error);
+        setIsInitialized(true);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem('bonushunt_stopMoney', JSON.stringify(stopMoney));
-  }, [stopMoney]);
+    loadUserState();
+  }, [user]);
 
+  // Subscribe to real-time updates
   useEffect(() => {
-    localStorage.setItem('bonushunt_actualBalance', JSON.stringify(actualBalance));
-  }, [actualBalance]);
+    if (!user || !isInitialized) return;
 
-  useEffect(() => {
-    localStorage.setItem('bonushunt_customImages', JSON.stringify(customSlotImages));
-  }, [customSlotImages]);
+    const subscription = subscribeToOverlayState(user.id, (payload) => {
+      if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+        const newState = payload.new;
+        setBonuses(newState.bonuses || []);
+        setStartMoney(newState.total_cost || 0);
+        setActualBalance(newState.total_payout || 0);
+        setCustomSlotImages(newState.custom_slot_images || {});
+        setLayoutMode(newState.layout_mode || 'modern-sidebar');
+      }
+    });
 
+    return () => {
+      unsubscribe(subscription);
+    };
+  }, [user, isInitialized]);
+
+  // Save to database whenever bonus hunt state changes
   useEffect(() => {
-    localStorage.setItem('bonushunt_layoutMode', JSON.stringify(layoutMode));
-  }, [layoutMode]);
+    if (!user || !isInitialized) return;
+
+    const saveToDatabase = async () => {
+      try {
+        const stats = calculateStats(bonuses, startMoney, actualBalance);
+        await updateOverlayBonuses(user.id, bonuses, {
+          totalCost: startMoney,
+          totalPayout: actualBalance,
+          huntMultiplier: stats.huntMultiplier,
+          huntStarted: bonuses.length > 0
+        });
+      } catch (error) {
+        console.error('Error saving bonus hunt to database:', error);
+      }
+    };
+
+    const debounceTimer = setTimeout(saveToDatabase, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [bonuses, startMoney, actualBalance, user, isInitialized]);
   
   // Calculate total spent
   const totalSpent = startMoney - stopMoney;
@@ -131,11 +186,20 @@ export const BonusHuntProvider = ({ children }) => {
   };
 
   // Set custom image for slot
-  const setCustomSlotImage = (slotName, imageUrl) => {
-    setCustomSlotImages(prev => ({
-      ...prev,
+  const setCustomSlotImage = async (slotName, imageUrl) => {
+    const newImages = {
+      ...customSlotImages,
       [slotName.toLowerCase()]: imageUrl
-    }));
+    };
+    setCustomSlotImages(newImages);
+    
+    if (user) {
+      try {
+        await updateCustomization(user.id, { custom_slot_images: newImages });
+      } catch (error) {
+        console.error('Error saving custom slot image:', error);
+      }
+    }
   };
 
   // Get slot image (synchronous - for use with slot data already fetched)
@@ -169,36 +233,7 @@ export const BonusHuntProvider = ({ children }) => {
     }
   };
 
-  // Save to localStorage
-  useEffect(() => {
-    const data = {
-      bonuses,
-      startMoney,
-      stopMoney,
-      actualBalance,
-      customSlotImages,
-      layoutMode
-    };
-    localStorage.setItem('bonusHuntData', JSON.stringify(data));
-  }, [bonuses, startMoney, stopMoney, actualBalance, customSlotImages, layoutMode]);
 
-  // Load from localStorage on mount
-  useEffect(() => {
-    const saved = localStorage.getItem('bonusHuntData');
-    if (saved) {
-      try {
-        const data = JSON.parse(saved);
-        if (data.bonuses) setBonuses(data.bonuses);
-        if (data.startMoney) setStartMoney(data.startMoney);
-        if (data.stopMoney) setStopMoney(data.stopMoney);
-        if (data.actualBalance) setActualBalance(data.actualBalance);
-        if (data.customSlotImages) setCustomSlotImages(data.customSlotImages);
-        if (data.layoutMode) setLayoutMode(data.layoutMode);
-      } catch (error) {
-        console.error('Error loading saved data:', error);
-      }
-    }
-  }, []);
 
   // Export bonuses to JSON file
   const exportBonuses = () => {

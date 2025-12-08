@@ -4,32 +4,30 @@ import { getAllSlots, searchSlotsByName, getRandomSlots } from '../../utils/slot
 import TournamentBracketWidget from '../TournamentBracket/TournamentBracketWidget';
 import TournamentControlPanel from '../TournamentBracket/TournamentControlPanel';
 import { useBonusHunt } from '../../context/BonusHuntContext';
+import { useAuth } from '../../context/AuthContext';
+import { 
+  getUserTournament, 
+  upsertUserTournament, 
+  subscribeToTournament,
+  unsubscribe 
+} from '../../utils/overlayUtils';
 import useDraggable from '../../hooks/useDraggable';
 
 const TournamentPanel = ({ onClose }) => {
   const { getSlotImage } = useBonusHunt();
+  const { user } = useAuth();
   const draggableRef = useDraggable(true, 'tournament');
+  const [isInitialized, setIsInitialized] = useState(false);
   
-  // Helper to load from localStorage
-  const loadFromStorage = (key, defaultValue) => {
-    try {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : defaultValue;
-    } catch (error) {
-      console.error('Error loading from localStorage:', error);
-      return defaultValue;
-    }
-  };
-
-  const [tournamentSize, setTournamentSize] = useState(() => loadFromStorage('tournament_size', 8));
-  const [tournamentFormat, setTournamentFormat] = useState(() => loadFromStorage('tournament_format', 'single-elimination'));
-  const [participants, setParticipants] = useState(() => loadFromStorage('tournament_participants', []));
-  const [matches, setMatches] = useState(() => loadFromStorage('tournament_matches', []));
-  const [currentRound, setCurrentRound] = useState(() => loadFromStorage('tournament_currentRound', null));
-  const [tournamentStarted, setTournamentStarted] = useState(() => loadFromStorage('tournament_started', false));
-  const [winner, setWinner] = useState(() => loadFromStorage('tournament_winner', null));
-  const [currentMatchIndex, setCurrentMatchIndex] = useState(() => loadFromStorage('tournament_currentMatchIndex', 0));
-  const [showSetup, setShowSetup] = useState(() => loadFromStorage('tournament_showSetup', true));
+  const [tournamentSize, setTournamentSize] = useState(8);
+  const [tournamentFormat, setTournamentFormat] = useState('single-elimination');
+  const [participants, setParticipants] = useState([]);
+  const [matches, setMatches] = useState([]);
+  const [currentRound, setCurrentRound] = useState(null);
+  const [tournamentStarted, setTournamentStarted] = useState(false);
+  const [winner, setWinner] = useState(null);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [showSetup, setShowSetup] = useState(true);
   
   // Slot suggestions state
   const [slotSuggestions, setSlotSuggestions] = useState({});
@@ -46,42 +44,98 @@ const TournamentPanel = ({ onClose }) => {
     loadSlots();
   }, []);
 
-  // Save to localStorage whenever state changes
+  // Load user's tournament from database on mount
   useEffect(() => {
-    localStorage.setItem('tournament_size', JSON.stringify(tournamentSize));
-  }, [tournamentSize]);
+    if (!user) {
+      setIsInitialized(false);
+      return;
+    }
 
-  useEffect(() => {
-    localStorage.setItem('tournament_format', JSON.stringify(tournamentFormat));
-  }, [tournamentFormat]);
+    const loadTournament = async () => {
+      try {
+        const tournament = await getUserTournament(user.id);
+        if (tournament) {
+          setTournamentSize(tournament.tournament_size || 8);
+          setTournamentFormat(tournament.tournament_format || 'single-elimination');
+          setParticipants(tournament.participants || []);
+          setMatches(tournament.matches || []);
+          setCurrentRound(tournament.current_round);
+          setCurrentMatchIndex(tournament.current_match_index || 0);
+          setTournamentStarted(tournament.tournament_started || false);
+          setWinner(tournament.winner);
+          setShowSetup(tournament.show_setup !== false);
+        }
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error loading tournament:', error);
+        setIsInitialized(true);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem('tournament_participants', JSON.stringify(participants));
-  }, [participants]);
+    loadTournament();
+  }, [user]);
 
+  // Subscribe to real-time tournament updates
   useEffect(() => {
-    localStorage.setItem('tournament_matches', JSON.stringify(matches));
-  }, [matches]);
+    if (!user || !isInitialized) return;
 
-  useEffect(() => {
-    localStorage.setItem('tournament_currentRound', JSON.stringify(currentRound));
-  }, [currentRound]);
+    const subscription = subscribeToTournament(user.id, (payload) => {
+      if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+        const tournament = payload.new;
+        setTournamentSize(tournament.tournament_size || 8);
+        setTournamentFormat(tournament.tournament_format || 'single-elimination');
+        setParticipants(tournament.participants || []);
+        setMatches(tournament.matches || []);
+        setCurrentRound(tournament.current_round);
+        setCurrentMatchIndex(tournament.current_match_index || 0);
+        setTournamentStarted(tournament.tournament_started || false);
+        setWinner(tournament.winner);
+        setShowSetup(tournament.show_setup !== false);
+      }
+    });
 
-  useEffect(() => {
-    localStorage.setItem('tournament_started', JSON.stringify(tournamentStarted));
-  }, [tournamentStarted]);
+    return () => {
+      unsubscribe(subscription);
+    };
+  }, [user, isInitialized]);
 
+  // Save tournament to database whenever state changes
   useEffect(() => {
-    localStorage.setItem('tournament_winner', JSON.stringify(winner));
-  }, [winner]);
+    if (!user || !isInitialized) return;
 
-  useEffect(() => {
-    localStorage.setItem('tournament_currentMatchIndex', JSON.stringify(currentMatchIndex));
-  }, [currentMatchIndex]);
+    const saveTournament = async () => {
+      try {
+        await upsertUserTournament(user.id, {
+          tournament_size: tournamentSize,
+          tournament_format: tournamentFormat,
+          participants,
+          matches,
+          current_round: currentRound,
+          current_match_index: currentMatchIndex,
+          tournament_started: tournamentStarted,
+          winner,
+          show_setup: showSetup
+        });
+      } catch (error) {
+        console.error('Error saving tournament:', error);
+      }
+    };
 
-  useEffect(() => {
-    localStorage.setItem('tournament_showSetup', JSON.stringify(showSetup));
-  }, [showSetup]);
+    const debounceTimer = setTimeout(saveTournament, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [
+    tournamentSize,
+    tournamentFormat,
+    participants,
+    matches,
+    currentRound,
+    currentMatchIndex,
+    tournamentStarted,
+    winner,
+    showSetup,
+    user,
+    isInitialized
+  ]);
 
   // Initialize empty participant slots when size changes (only if not loaded from storage)
   useEffect(() => {

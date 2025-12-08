@@ -1,41 +1,91 @@
 import { useState, useEffect } from 'react';
 import './GiveawayPanel.css';
 import useDraggable from '../../hooks/useDraggable';
+import { useAuth } from '../../context/AuthContext';
+import { 
+  getUserGiveaway, 
+  upsertUserGiveaway, 
+  subscribeToGiveaway,
+  unsubscribe 
+} from '../../utils/overlayUtils';
 
 // Giveaway Panel with Wheel of Names
 const GiveawayPanel = ({ onClose }) => {
-  // Load initial state from localStorage
-  const loadFromStorage = (key, defaultValue) => {
-    try {
-      const saved = localStorage.getItem(key);
-      return saved ? JSON.parse(saved) : defaultValue;
-    } catch (error) {
-      console.error('Error loading from localStorage:', error);
-      return defaultValue;
-    }
-  };
+  const { user } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const [entries, setEntries] = useState(() => loadFromStorage('giveaway_entries', []));
+  const [entries, setEntries] = useState([]);
   const [newEntry, setNewEntry] = useState('');
-  const [winner, setWinner] = useState(() => loadFromStorage('giveaway_winner', null));
+  const [winner, setWinner] = useState(null);
   const [isSpinning, setIsSpinning] = useState(false);
-  const [giveawayTitle, setGiveawayTitle] = useState(() => loadFromStorage('giveaway_title', ''));
+  const [giveawayTitle, setGiveawayTitle] = useState('');
   const [showWheel, setShowWheel] = useState(false);
   const [wheelRotation, setWheelRotation] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
 
-  // Save to localStorage whenever state changes
+  // Load user's giveaway from database on mount
   useEffect(() => {
-    localStorage.setItem('giveaway_entries', JSON.stringify(entries));
-  }, [entries]);
+    if (!user) {
+      setIsInitialized(false);
+      return;
+    }
 
-  useEffect(() => {
-    localStorage.setItem('giveaway_winner', JSON.stringify(winner));
-  }, [winner]);
+    const loadGiveaway = async () => {
+      try {
+        const giveaway = await getUserGiveaway(user.id);
+        if (giveaway) {
+          setEntries(giveaway.giveaway_entries || []);
+          setWinner(giveaway.giveaway_winner);
+          setGiveawayTitle(giveaway.giveaway_title || '');
+        }
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error loading giveaway:', error);
+        setIsInitialized(true);
+      }
+    };
 
+    loadGiveaway();
+  }, [user]);
+
+  // Subscribe to real-time giveaway updates
   useEffect(() => {
-    localStorage.setItem('giveaway_title', JSON.stringify(giveawayTitle));
-  }, [giveawayTitle]);
+    if (!user || !isInitialized) return;
+
+    const subscription = subscribeToGiveaway(user.id, (payload) => {
+      if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+        const giveaway = payload.new;
+        setEntries(giveaway.giveaway_entries || []);
+        setWinner(giveaway.giveaway_winner);
+        setGiveawayTitle(giveaway.giveaway_title || '');
+      }
+    });
+
+    return () => {
+      unsubscribe(subscription);
+    };
+  }, [user, isInitialized]);
+
+  // Save giveaway to database whenever state changes
+  useEffect(() => {
+    if (!user || !isInitialized) return;
+
+    const saveGiveaway = async () => {
+      try {
+        await upsertUserGiveaway(user.id, {
+          giveaway_entries: entries,
+          giveaway_winner: winner,
+          giveaway_title: giveawayTitle,
+          giveaway_active: entries.length > 0
+        });
+      } catch (error) {
+        console.error('Error saving giveaway:', error);
+      }
+    };
+
+    const debounceTimer = setTimeout(saveGiveaway, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [entries, winner, giveawayTitle, user, isInitialized]);
 
   const addEntry = () => {
     if (newEntry.trim()) {
