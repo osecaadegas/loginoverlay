@@ -318,17 +318,14 @@ export default function Sidebar() {
             </div>
           )}
 
-          {menuItems.slice(6, 8).map((item, index) =>
-            item.show ? (
-              <button
-                key={index + 6}
-                className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <span className="sidebar-icon">{item.icon}</span>
-                <span className="sidebar-label">{item.label}</span>
-              </button>
-            ) : null
+          {menuItems[6].show && (
+            <button
+              className={`sidebar-item ${isActive(menuItems[6].path) ? 'active' : ''}`}
+              onClick={() => handleNavigation(menuItems[6].path)}
+            >
+              <span className="sidebar-icon">{menuItems[6].icon}</span>
+              <span className="sidebar-label">{menuItems[6].label}</span>
+            </button>
           )}
 
           {/* Stream dropdown */}
