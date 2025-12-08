@@ -16,7 +16,7 @@ const TournamentBracket = ({ matches, currentPhase, onSelectWinner }) => {
         <span className="phase-count">{matches.length} {matches.length === 1 ? 'Match' : 'Matches'}</span>
       </div>
 
-      <div className="bracket-matches-grid">
+      <div className="bracket-matches-grid" data-match-count={matches.length}>
         {matches.map((match, idx) => (
           <div key={idx} className={`bracket-match-card ${match.winner ? 'completed' : ''}`}>
             <div className="bracket-match-number">Match {idx + 1}</div>

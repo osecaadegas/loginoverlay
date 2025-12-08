@@ -37,8 +37,16 @@
 
 .bracket-matches-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(2, 1fr);
   gap: 1.25rem;
+}
+
+/* Single column for finals and semi-finals */
+.bracket-matches-grid[data-match-count="1"],
+.bracket-matches-grid[data-match-count="2"] {
+  grid-template-columns: 1fr;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .bracket-match-card {
