@@ -8,10 +8,18 @@ export default function SpotifyWidgetDisplay() {
   const [settings, setSettings] = useState(null);
   const [currentTrack, setCurrentTrack] = useState(null);
   const [spotifyConnection, setSpotifyConnection] = useState(null);
+  const [layout, setLayout] = useState('compact');
   
-  // Get layout from URL parameter
-  const urlParams = new URLSearchParams(window.location.search);
-  const layout = urlParams.get('layout') || settings?.layout || 'compact';
+  // Get layout from URL parameter on mount and when URL changes
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlLayout = urlParams.get('layout');
+    if (urlLayout) {
+      setLayout(urlLayout);
+    } else if (settings?.layout) {
+      setLayout(settings.layout);
+    }
+  }, [settings]);
 
   useEffect(() => {
     if (!userId) return;
