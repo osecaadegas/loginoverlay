@@ -71,7 +71,7 @@ const ModernCardLayout = ({ showCards = true }) => {
           const payout = bonus.multiplier ? bonus.multiplier * bonus.betSize : 0;
           const profitLoss = payout - bonus.betSize;
           const slot = slotData[bonus.slotName];
-          const image = getSlotImage(bonus.slotName);
+          const image = getSlotImage(bonus.slotName, slot);
           const provider = slot?.provider || 'Unknown Provider';
           const providerLogo = getProviderLogo(provider);
           

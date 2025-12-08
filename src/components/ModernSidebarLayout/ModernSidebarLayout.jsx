@@ -11,6 +11,16 @@ const ModernSidebarLayout = ({ showBonusOpening, selectedBonusId, showCards = tr
   const [isFlipped, setIsFlipped] = useState(false);
   const [imageKey, setImageKey] = useState(0);
   const [nextSlotData, setNextSlotData] = useState(null);
+  const [currentSlotData, setCurrentSlotData] = useState(null);
+
+  // Fetch initial slot data for current bonus
+  useEffect(() => {
+    if (bonuses.length > 0 && bonuses[currentBonusIndex]?.slotName) {
+      findSlotByName(bonuses[currentBonusIndex].slotName).then(slot => {
+        setCurrentSlotData(slot);
+      });
+    }
+  }, [bonuses, currentBonusIndex]);
 
   // Find currently opening bonus - if selectedBonusId is provided, use it; otherwise use first unopened
   const openingBonus = showBonusOpening 
@@ -55,6 +65,8 @@ const ModernSidebarLayout = ({ showBonusOpening, selectedBonusId, showCards = tr
       findSlotByName(bonuses[upcomingIndex].slotName).then(slot => {
         setNextSlotData(slot);
         if (slot) {
+          // Update image src with actual slot data
+          img.src = getSlotImage(bonuses[upcomingIndex].slotName, slot);
           const logoUrl = getProviderLogo(slot.provider);
           if (logoUrl) {
             const logoImg = new Image();
@@ -74,6 +86,7 @@ const ModernSidebarLayout = ({ showBonusOpening, selectedBonusId, showCards = tr
           // After back is shown with new provider, flip to front with new slot image
           setTimeout(() => {
             setCurrentBonusIndex(upcomingIndex);
+            setCurrentSlotData(nextSlotData);
             setImageKey(prev => prev + 1);
             setIsFlipped(false);
           }, 100);
@@ -173,7 +186,7 @@ const ModernSidebarLayout = ({ showBonusOpening, selectedBonusId, showCards = tr
               <div className="card-face card-front">
                 <img 
                   key={`front-${imageKey}-${currentBonusIndex}`}
-                  src={getSlotImage(bonuses[currentBonusIndex].slotName)} 
+                  src={getSlotImage(bonuses[currentBonusIndex].slotName, currentSlotData)} 
                   alt={bonuses[currentBonusIndex].slotName}
                   className="card-slot-image"
                 />

@@ -138,16 +138,17 @@ export const BonusHuntProvider = ({ children }) => {
     }));
   };
 
-  // Get slot image
-  const getSlotImage = async (slotName) => {
+  // Get slot image (synchronous - for use with slot data already fetched)
+  const getSlotImage = (slotName, slotData = null) => {
     // Check custom images first
     if (customSlotImages[slotName.toLowerCase()]) {
       return customSlotImages[slotName.toLowerCase()];
     }
     
-    // Check slot database from Supabase
-    const slot = await findSlotByName(slotName);
-    if (slot) return slot.image;
+    // If slot data is provided, use it
+    if (slotData && slotData.image) {
+      return slotData.image;
+    }
     
     // Use selected default image from localStorage or fall back to DEFAULT_SLOT_IMAGE
     const defaultImage = localStorage.getItem('defaultSlotImage') || 'zilhas.png';
