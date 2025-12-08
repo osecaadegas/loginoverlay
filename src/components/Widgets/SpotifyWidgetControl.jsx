@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../config/supabaseClient';
@@ -19,7 +19,11 @@ export default function SpotifyWidgetControl() {
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const widgetUrl = `${window.location.origin}/widgets/spotify/${user?.id}?layout=${settings.layout}`;
+  // Generate widget URL dynamically when layout changes
+  const widgetUrl = useMemo(() => {
+    return `${window.location.origin}/widgets/spotify/${user?.id}?layout=${settings.layout}`;
+  }, [user?.id, settings.layout]);
+
   const spotifyClientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
   const redirectUri = `${window.location.origin}/overlay/widgets/spotify`;
 
