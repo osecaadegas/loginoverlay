@@ -284,41 +284,6 @@ export default function Sidebar() {
                     <span className="subitem-icon">📺</span>
                     <span className="subitem-label">Overlay View</span>
                   </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/overlay/customization') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/overlay/customization')}
-                  >
-                    <span className="subitem-icon">🎨</span>
-                    <span className="subitem-label">Customization</span>
-                  </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/overlay/random-slot') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/overlay/random-slot')}
-                  >
-                    <span className="subitem-icon">🎲</span>
-                    <span className="subitem-label">Random Slot</span>
-                  </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/overlay/giveaway') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/overlay/giveaway')}
-                  >
-                    <span className="subitem-icon">🎁</span>
-                    <span className="subitem-label">Giveaway</span>
-                  </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/overlay/art-ad') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/overlay/art-ad')}
-                  >
-                    <span className="subitem-icon">🖼️</span>
-                    <span className="subitem-label">Art & Ads</span>
-                  </button>
-                  <button
-                    className={`sidebar-subitem ${isActive('/overlay/tutorial') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/overlay/tutorial')}
-                  >
-                    <span className="subitem-icon">📚</span>
-                    <span className="subitem-label">Tutorial</span>
-                  </button>
                   {isSlotModder && (
                     <button
                       className={`sidebar-subitem ${isActive('/overlay/slot-manager') ? 'active' : ''}`}
