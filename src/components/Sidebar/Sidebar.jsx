@@ -19,8 +19,8 @@ export default function Sidebar() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Don't show sidebar on overlay page
-  if (location.pathname === '/overlay') {
+  // Don't show sidebar on overlay pages
+  if (location.pathname === '/overlay' || location.pathname === '/admin-overlay') {
     return null;
   }
 
@@ -291,8 +291,8 @@ export default function Sidebar() {
               {showOverlayDropdown && (
                 <div className="sidebar-dropdown">
                   <button
-                    className={`sidebar-subitem ${isActive('/overlay') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/overlay')}
+                    className={`sidebar-subitem ${isActive(isAdmin ? '/admin-overlay' : '/overlay') ? 'active' : ''}`}
+                    onClick={() => handleNavigation(isAdmin ? '/admin-overlay' : '/overlay')}
                   >
                     <span className="subitem-icon">📺</span>
                     <span className="subitem-label">Overlay View</span>

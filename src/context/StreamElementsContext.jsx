@@ -362,24 +362,12 @@ export function StreamElementsProvider({ children }) {
     }
   };
 
-  // Poll for redemptions from database (only for admin users)
+  // Poll for redemptions from database
   useEffect(() => {
     if (!user) return;
 
     const checkRedemptions = async () => {
       try {
-        // Check if user is admin
-        const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('role')
-          .eq('user_id', user.id)
-          .single();
-
-        // Only show notifications for admin users
-        if (profile?.role !== 'admin') {
-          return;
-        }
-
         const lastCheck = localStorage.getItem('last_redemption_id');
         
         // Query redemptions from database, ordered by most recent first

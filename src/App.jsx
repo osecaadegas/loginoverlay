@@ -50,8 +50,9 @@ import TutorialPage from './components/TutorialPanel/TutorialPage';
 import { getUserOverlayState, subscribeToOverlayState, unsubscribe } from './utils/overlayUtils';
 import RedemptionNotification from './components/RedemptionNotification/RedemptionNotification';
 import { useStreamElements } from './context/StreamElementsContext';
+import ProtectedAdminRoute from './components/ProtectedRoute/ProtectedAdminRoute';
 
-function AppContent() {
+function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
   const { user } = useAuth();
   const { layoutMode, setLayoutMode } = useBonusHunt();
@@ -89,7 +90,7 @@ function AppContent() {
 
   // Toggle body class based on current route
   useEffect(() => {
-    if (location.pathname === '/overlay') {
+    if (location.pathname === '/overlay' || location.pathname === '/admin-overlay') {
       document.body.classList.add('no-sidebar');
     } else {
       document.body.classList.remove('no-sidebar');
@@ -530,8 +531,8 @@ function AppContent() {
         />
       )}
       
-      {/* StreamElements Redemption Notification */}
-      {latestRedemption && (
+      {/* StreamElements Redemption Notification - Only for Admin Overlay */}
+      {isAdminOverlay && latestRedemption && (
         <RedemptionNotification 
           redemption={latestRedemption} 
           onClose={() => setLatestRedemption(null)} 
@@ -544,7 +545,7 @@ function AppContent() {
 }
 
 // Protected Route wrapper
-function ProtectedOverlay() {
+function ProtectedOverlay({ isAdminOverlay = false }) {
   const { user, loading } = useAuth();
   const [accessCheck, setAccessCheck] = useState({ checking: true, hasAccess: false, reason: null });
 
@@ -616,13 +617,13 @@ function ProtectedOverlay() {
     );
   }
 
-  return <AppContent />;
+  return <AppContent isAdminOverlay={isAdminOverlay} />;
 }
 
-// Layout wrapper to show sidebar on all pages except overlay
+// Layout wrapper to show sidebar on all pages except overlay and admin-overlay
 function LayoutWrapper({ children }) {
   const location = useLocation();
-  const showSidebar = location.pathname !== '/overlay';
+  const showSidebar = location.pathname !== '/overlay' && location.pathname !== '/admin-overlay';
 
   return (
     <>
@@ -656,6 +657,11 @@ function App() {
                 <Route path="/streamelements" element={<StreamElementsPanel />} />
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/overlay" element={<ProtectedOverlay />} />
+                <Route path="/admin-overlay" element={
+                  <ProtectedAdminRoute>
+                    <ProtectedOverlay isAdminOverlay={true} />
+                  </ProtectedAdminRoute>
+                } />
                 <Route path="/overlay/slot-manager" element={<SlotManagerPage />} />
                 <Route path="/overlay/customization" element={<CustomizationPage />} />
                 <Route path="/overlay/random-slot" element={<RandomSlotPage />} />
