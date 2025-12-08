@@ -6,6 +6,7 @@ export const useAdmin = () => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
+  const [isSlotModder, setIsSlotModder] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -13,6 +14,7 @@ export const useAdmin = () => {
       if (!user) {
         setIsAdmin(false);
         setIsModerator(false);
+        setIsSlotModder(false);
         setLoading(false);
         return;
       }
@@ -24,14 +26,18 @@ export const useAdmin = () => {
           console.error('Error checking admin status:', error);
           setIsAdmin(false);
           setIsModerator(false);
+          setIsSlotModder(false);
         } else {
-          setIsAdmin(data?.role === 'admin');
-          setIsModerator(data?.role === 'moderator' || data?.role === 'admin');
+          const role = data?.role;
+          setIsAdmin(role === 'admin');
+          setIsModerator(role === 'moderator' || role === 'admin');
+          setIsSlotModder(role === 'slot_modder' || role === 'admin');
         }
       } catch (error) {
         console.error('Error in useAdmin:', error);
         setIsAdmin(false);
         setIsModerator(false);
+        setIsSlotModder(false);
       } finally {
         setLoading(false);
       }
@@ -40,5 +46,5 @@ export const useAdmin = () => {
     checkAdminStatus();
   }, [user]);
 
-  return { isAdmin, isModerator, loading };
+  return { isAdmin, isModerator, isSlotModder, loading };
 };

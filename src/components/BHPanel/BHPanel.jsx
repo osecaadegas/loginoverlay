@@ -4,6 +4,8 @@ import { useBonusHunt } from '../../context/BonusHuntContext';
 import overlayConfig from '../../config/overlayConfig';
 import { slotDatabase } from '../../data/slotDatabase';
 import useDraggable from '../../hooks/useDraggable';
+import { useAdmin } from '../../hooks/useAdmin';
+import SlotManager from '../SlotManager/SlotManager';
 
 const BHPanel = ({ onClose, onOpenBonusOpening }) => {
   const {
@@ -33,12 +35,14 @@ const BHPanel = ({ onClose, onOpenBonusOpening }) => {
   const [editingBonusId, setEditingBonusId] = useState(null);
   const [showStats, setShowStats] = useState(() => localStorage.getItem('showBHStats') !== 'false');
   const [showCards, setShowCards] = useState(() => localStorage.getItem('showBHCards') !== 'false');
+  const [showSlotManager, setShowSlotManager] = useState(false);
 
   const slotNameRef = useRef(null);
   const betSizeRef = useRef(null);
   const fileInputRef = useRef(null);
   const { currency } = overlayConfig.display;
   const draggableRef = useDraggable(true, 'bonushunt');
+  const { isSlotModder, loading: adminLoading } = useAdmin();
 
   const toggleStats = () => {
     const newValue = !showStats;
@@ -190,10 +194,25 @@ const BHPanel = ({ onClose, onOpenBonusOpening }) => {
     <div className="bh-panel" ref={draggableRef}>
       <div className="bh-panel-header drag-handle">
         <h3>🎰 Bonus Hunt</h3>
-        <button className="close-btn" onClick={onClose}>✕</button>
+        <div className="header-actions">
+          {!adminLoading && isSlotModder && (
+            <button 
+              className="slot-manager-btn" 
+              onClick={() => setShowSlotManager(!showSlotManager)}
+              title="Manage Slots"
+            >
+              {showSlotManager ? '📋 Close Slot Manager' : '🎰 Manage Slots'}
+            </button>
+          )}
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
       </div>
 
       <div className="bh-panel-content">
+        {showSlotManager ? (
+          <SlotManager />
+        ) : (
+        <>
         {/* Balance Inputs */}
         <div className="bh-panel-row">
           <div className="bh-input-group">
@@ -417,6 +436,8 @@ const BHPanel = ({ onClose, onOpenBonusOpening }) => {
               ))}
             </div>
           </div>
+        )}
+        </>
         )}
       </div>
     </div>

@@ -130,3 +130,123 @@ export function getCacheStatus() {
     count: slotsCache ? slotsCache.length : 0
   };
 }
+
+// ============================================================================
+// SLOT MANAGEMENT FUNCTIONS (For SlotModder role)
+// ============================================================================
+
+/**
+ * Add a new slot to the database
+ * @param {Object} slotData - Slot data with name, provider, image
+ * @returns {Promise<Object>} Result with success status and data/error
+ */
+export async function addSlot(slotData) {
+  try {
+    const { name, provider, image } = slotData;
+    
+    if (!name || !provider || !image) {
+      return { success: false, error: 'Name, provider, and image are required' };
+    }
+
+    const { data, error } = await supabase
+      .from('slots')
+      .insert([{ name, provider, image }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error adding slot:', error);
+      return { success: false, error: error.message };
+    }
+
+    // Invalidate cache to force refresh
+    invalidateCache();
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error adding slot:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Update an existing slot
+ * @param {string} slotId - UUID of the slot to update
+ * @param {Object} updates - Object with fields to update
+ * @returns {Promise<Object>} Result with success status and data/error
+ */
+export async function updateSlot(slotId, updates) {
+  try {
+    const { data, error } = await supabase
+      .from('slots')
+      .update(updates)
+      .eq('id', slotId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Error updating slot:', error);
+      return { success: false, error: error.message };
+    }
+
+    // Invalidate cache to force refresh
+    invalidateCache();
+
+    return { success: true, data };
+  } catch (error) {
+    console.error('Error updating slot:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Delete a slot from the database
+ * @param {string} slotId - UUID of the slot to delete
+ * @returns {Promise<Object>} Result with success status and error if any
+ */
+export async function deleteSlot(slotId) {
+  try {
+    const { error } = await supabase
+      .from('slots')
+      .delete()
+      .eq('id', slotId);
+
+    if (error) {
+      console.error('Error deleting slot:', error);
+      return { success: false, error: error.message };
+    }
+
+    // Invalidate cache to force refresh
+    invalidateCache();
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting slot:', error);
+    return { success: false, error: error.message };
+  }
+}
+
+/**
+ * Get a single slot by ID
+ * @param {string} slotId - UUID of the slot
+ * @returns {Promise<Object|null>} Slot object or null
+ */
+export async function getSlotById(slotId) {
+  try {
+    const { data, error } = await supabase
+      .from('slots')
+      .select('*')
+      .eq('id', slotId)
+      .single();
+
+    if (error) {
+      console.error('Error fetching slot:', error);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error fetching slot:', error);
+    return null;
+  }
+}
