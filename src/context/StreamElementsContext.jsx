@@ -362,40 +362,49 @@ export function StreamElementsProvider({ children }) {
     }
   };
 
-  // Poll for redemptions
+  // Poll for redemptions from database
   useEffect(() => {
-    if (!seAccount) return;
+    if (!user) return;
 
     const checkRedemptions = async () => {
       try {
-        const response = await fetch(
-          `https://api.streamelements.com/kappa/v2/store/redemptions/${seAccount.se_channel_id}`,
-          {
-            headers: {
-              'Authorization': `Bearer ${seAccount.se_jwt_token}`,
-              'Accept': 'application/json'
-            }
-          }
-        );
+        const lastCheck = localStorage.getItem('last_redemption_id');
+        
+        // Query redemptions from database, ordered by most recent first
+        const query = supabase
+          .from('point_redemptions')
+          .select(`
+            *,
+            user_profiles!inner(username, display_name),
+            redemption_items!inner(name, point_cost)
+          `)
+          .order('redeemed_at', { ascending: false })
+          .limit(1);
 
-        if (response.ok) {
-          const data = await response.json();
+        const { data, error } = await query;
+
+        if (error) {
+          console.error('Error fetching redemptions:', error);
+          return;
+        }
+
+        // Check for new redemptions
+        if (data && data.length > 0) {
+          const newest = data[0];
           
-          // Check for new redemptions
-          if (data.length > 0) {
-            const newest = data[0];
-            const lastCheck = localStorage.getItem('last_redemption_id');
+          if (newest.id !== lastCheck) {
+            const username = newest.user_profiles?.display_name || newest.user_profiles?.username || 'Unknown';
+            const itemName = newest.redemption_items?.name || 'Unknown Item';
+            const cost = newest.redemption_items?.point_cost || newest.points_spent || 0;
             
-            if (newest._id !== lastCheck) {
-              setLatestRedemption({
-                username: newest.user?.username || 'Unknown',
-                item: newest.item?.name || 'Unknown Item',
-                cost: newest.item?.cost || 0,
-                id: newest._id,
-                timestamp: newest.createdAt
-              });
-              localStorage.setItem('last_redemption_id', newest._id);
-            }
+            setLatestRedemption({
+              username: username,
+              item: itemName,
+              cost: cost,
+              id: newest.id,
+              timestamp: newest.redeemed_at
+            });
+            localStorage.setItem('last_redemption_id', newest.id);
           }
         }
       } catch (err) {
@@ -403,12 +412,12 @@ export function StreamElementsProvider({ children }) {
       }
     };
 
-    // Check immediately and then every 5 seconds
+    // Check immediately and then every 3 seconds
     checkRedemptions();
-    const interval = setInterval(checkRedemptions, 5000);
+    const interval = setInterval(checkRedemptions, 3000);
 
     return () => clearInterval(interval);
-  }, [seAccount]);
+  }, [user]);
 
   const value = {
     seAccount,
