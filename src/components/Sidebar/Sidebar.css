@@ -28,6 +28,47 @@
   margin-bottom: 12px;
 }
 
+/* Login Section */
+.sidebar-login-section {
+  padding: 12px 8px;
+  border-bottom: 1px solid #21262C;
+  margin-bottom: 12px;
+}
+
+.twitch-login-button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, #9146FF 0%, #772CE8 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(145, 70, 255, 0.3);
+}
+
+.twitch-login-button:hover {
+  background: linear-gradient(135deg, #a160ff 0%, #8844ee 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(145, 70, 255, 0.4);
+}
+
+.twitch-login-button:active {
+  transform: translateY(0);
+}
+
+.twitch-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 .avatar-container {
   cursor: pointer;
   flex-shrink: 0;
