@@ -48,6 +48,8 @@ import GiveawayPage from './components/GiveawayPanel/GiveawayPage';
 import ArtAdPage from './components/ArtAdPanel/ArtAdPage';
 import TutorialPage from './components/TutorialPanel/TutorialPage';
 import WidgetsPage from './components/WidgetsPage/WidgetsPage';
+import SpotifyWidgetControl from './components/Widgets/SpotifyWidgetControl';
+import SpotifyWidgetDisplay from './components/Widgets/SpotifyWidgetDisplay';
 import { getUserOverlayState, subscribeToOverlayState, unsubscribe } from './utils/overlayUtils';
 import RedemptionNotification from './components/RedemptionNotification/RedemptionNotification';
 import { useStreamElements } from './context/StreamElementsContext';
@@ -665,6 +667,8 @@ function App() {
                 } />
                 <Route path="/overlay/slot-manager" element={<SlotManagerPage />} />
                 <Route path="/overlay/widgets" element={<WidgetsPage />} />
+                <Route path="/overlay/widgets/spotify" element={<SpotifyWidgetControl />} />
+                <Route path="/widgets/spotify/:userId" element={<SpotifyWidgetDisplay />} />
                 <Route path="/overlay/customization" element={<CustomizationPage />} />
                 <Route path="/overlay/random-slot" element={<RandomSlotPage />} />
                 <Route path="/overlay/giveaway" element={<GiveawayPage />} />

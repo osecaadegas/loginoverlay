@@ -106,3 +106,17 @@
   transform: scale(1.05);
   box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
 }
+
+.widget-card.disabled {
+  opacity: 0.6;
+}
+
+.widget-configure-btn.disabled {
+  background: linear-gradient(135deg, #999 0%, #666 100%);
+  cursor: not-allowed;
+}
+
+.widget-configure-btn.disabled:hover {
+  transform: none;
+  box-shadow: none;
+}

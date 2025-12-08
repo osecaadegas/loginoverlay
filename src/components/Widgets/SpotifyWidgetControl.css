@@ -1,0 +1,132 @@
+.widget-control-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 40px 20px;
+}
+
+.widget-control-header {
+  max-width: 900px;
+  margin: 0 auto 40px;
+  color: white;
+}
+
+.widget-control-header h1 {
+  font-size: 2.5rem;
+  margin: 20px 0;
+}
+
+.widget-control-content {
+  max-width: 900px;
+  margin: 0 auto;
+  display: grid;
+  gap: 30px;
+}
+
+.widget-url-section,
+.widget-settings-section {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.widget-url-section h3,
+.widget-settings-section h3 {
+  font-size: 1.5rem;
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.url-box {
+  display: flex;
+  gap: 10px;
+  margin: 20px 0;
+}
+
+.url-box input {
+  flex: 1;
+  padding: 12px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.url-box button {
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.url-box button:hover {
+  transform: scale(1.05);
+}
+
+.obs-instructions {
+  background: #f5f5f5;
+  padding: 20px;
+  border-radius: 8px;
+  margin-top: 20px;
+}
+
+.obs-instructions h4 {
+  margin-bottom: 15px;
+  color: #333;
+}
+
+.obs-instructions ol {
+  margin-left: 20px;
+  color: #666;
+  line-height: 1.8;
+}
+
+.setting-group {
+  margin-bottom: 25px;
+}
+
+.setting-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.setting-group input[type="checkbox"] {
+  margin-right: 10px;
+}
+
+.setting-group select,
+.setting-group input[type="range"] {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.setting-group input[type="range"] {
+  padding: 0;
+}
+
+.save-button {
+  width: 100%;
+  padding: 15px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-button:hover {
+  transform: scale(1.02);
+  box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
