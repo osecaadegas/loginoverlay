@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
-import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PERMISSIONS } from '../../utils/adminUtils';
+import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PERMISSIONS, getUserRoles, addUserRole, removeUserRole } from '../../utils/adminUtils';
 import { supabase } from '../../config/supabaseClient';
 import { DEPOSIT_METHODS } from '../../utils/depositMethods';
 import './AdminPanel.css';
@@ -112,26 +112,58 @@ export default function AdminPanel() {
   const openEditModal = (user) => {
     setEditingUser({
       ...user,
-      newRole: user.role,
-      expiryDays: user.access_expires_at ? 
-        Math.ceil((new Date(user.access_expires_at) - new Date()) / (1000 * 60 * 60 * 24)) : '',
-      moderatorPermissions: user.moderator_permissions || {}
+      newRole: '',
+      newRoleExpiryDays: '',
+      newRoleModeratorPermissions: {}
     });
   };
 
-  const saveUserChanges = () => {
-    if (!editingUser) return;
+  const handleAddRole = async () => {
+    if (!editingUser || !editingUser.newRole) return;
+    
+    setError('');
+    setSuccess('');
     
     let expiresAt = null;
-    if (editingUser.expiryDays && editingUser.expiryDays > 0) {
+    if (editingUser.newRoleExpiryDays && editingUser.newRoleExpiryDays > 0) {
       const date = new Date();
-      date.setDate(date.getDate() + parseInt(editingUser.expiryDays));
+      date.setDate(date.getDate() + parseInt(editingUser.newRoleExpiryDays));
       expiresAt = date.toISOString();
     }
     
-    // Pass moderator permissions if role is moderator
-    const moderatorPerms = editingUser.newRole === 'moderator' ? editingUser.moderatorPermissions : null;
-    handleRoleChange(editingUser.id, editingUser.newRole, expiresAt, moderatorPerms);
+    const moderatorPerms = editingUser.newRole === 'moderator' ? editingUser.newRoleModeratorPermissions : null;
+    
+    const { error } = await addUserRole(editingUser.id, editingUser.newRole, expiresAt, moderatorPerms);
+    
+    if (error) {
+      setError('Failed to add role: ' + error.message);
+    } else {
+      setSuccess('Role added successfully!');
+      loadUsers();
+      setEditingUser({
+        ...editingUser,
+        newRole: '',
+        newRoleExpiryDays: '',
+        newRoleModeratorPermissions: {}
+      });
+    }
+  };
+
+  const handleRemoveRole = async (roleToRemove) => {
+    if (!editingUser) return;
+    if (!confirm(`Are you sure you want to remove the ${roleToRemove} role from this user?`)) return;
+    
+    setError('');
+    setSuccess('');
+    
+    const { error } = await removeUserRole(editingUser.id, roleToRemove);
+    
+    if (error) {
+      setError('Failed to remove role: ' + error.message);
+    } else {
+      setSuccess('Role removed successfully!');
+      loadUsers();
+    }
   };
 
   const toggleModeratorPermission = (permission) => {
@@ -139,9 +171,9 @@ export default function AdminPanel() {
     
     setEditingUser({
       ...editingUser,
-      moderatorPermissions: {
-        ...editingUser.moderatorPermissions,
-        [permission]: !editingUser.moderatorPermissions[permission]
+      newRoleModeratorPermissions: {
+        ...editingUser.newRoleModeratorPermissions,
+        [permission]: !editingUser.newRoleModeratorPermissions[permission]
       }
     });
   };
@@ -331,24 +363,24 @@ export default function AdminPanel() {
           <div className="stat-label">Total Users</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.role === 'admin').length}</div>
+          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'admin')).length}</div>
           <div className="stat-label">Admins</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.role === 'moderator').length}</div>
+          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'slot_modder')).length}</div>
+          <div className="stat-label">Slot Modders</div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'moderator')).length}</div>
           <div className="stat-label">Moderators</div>
         </div>
         <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.role === 'premium').length}</div>
+          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'premium')).length}</div>
           <div className="stat-label">Premium</div>
         </div>
         <div className="stat-card">
           <div className="stat-value">{users.filter(u => u.is_active).length}</div>
           <div className="stat-label">Active Users</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.access_expires_at).length}</div>
-          <div className="stat-label">With Expiry</div>
         </div>
       </div>
 
@@ -380,9 +412,13 @@ export default function AdminPanel() {
                   </div>
                 </td>
                 <td>
-                  <span className={`role-badge role-${user.role}`}>
-                    {user.role}
-                  </span>
+                  <div className="user-roles-container">
+                    {(user.roles || []).map((roleObj, idx) => (
+                      <span key={idx} className={`role-badge role-${roleObj.role}`}>
+                        {roleObj.role}
+                      </span>
+                    ))}
+                  </div>
                 </td>
                 <td>
                   <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
@@ -390,11 +426,15 @@ export default function AdminPanel() {
                   </span>
                 </td>
                 <td>
-                  {user.access_expires_at ? (
-                    <span className="expiry-date">
-                      {new Date(user.access_expires_at).toLocaleDateString()}
-                      {new Date(user.access_expires_at) < new Date() && ' (Expired)'}
-                    </span>
+                  {user.roles?.some(r => r.access_expires_at) ? (
+                    <div className="expiry-dates-container">
+                      {user.roles.filter(r => r.access_expires_at).map((roleObj, idx) => (
+                        <span key={idx} className="expiry-date">
+                          {roleObj.role}: {new Date(roleObj.access_expires_at).toLocaleDateString()}
+                          {new Date(roleObj.access_expires_at) < new Date() && ' (Expired)'}
+                        </span>
+                      ))}
+                    </div>
                   ) : (
                     <span className="no-expiry">No Limit</span>
                   )}
@@ -436,27 +476,59 @@ export default function AdminPanel() {
       {editingUser && (
         <div className="modal-overlay" onClick={() => setEditingUser(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Edit User Access</h2>
+            <h2>Manage User Roles</h2>
             <div className="modal-body">
               <div className="form-group">
                 <label>Email</label>
                 <input type="text" value={editingUser.email} disabled />
               </div>
 
+              {/* Current Roles */}
               <div className="form-group">
-                <label>Role</label>
+                <label>Current Roles</label>
+                <div className="current-roles-list">
+                  {(editingUser.roles || []).map((roleObj, idx) => (
+                    <div key={idx} className="current-role-item">
+                      <span className={`role-badge role-${roleObj.role}`}>
+                        {roleObj.role}
+                      </span>
+                      {roleObj.access_expires_at && (
+                        <span className="role-expiry">
+                          Expires: {new Date(roleObj.access_expires_at).toLocaleDateString()}
+                        </span>
+                      )}
+                      <button 
+                        onClick={() => handleRemoveRole(roleObj.role)} 
+                        className="btn-remove-role"
+                        title="Remove role"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  ))}
+                  {(!editingUser.roles || editingUser.roles.length === 0) && (
+                    <span className="no-roles">No roles assigned</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Add New Role */}
+              <div className="form-group add-role-section">
+                <label>Add New Role</label>
                 <select 
                   value={editingUser.newRole}
-                  onChange={(e) => setEditingUser({...editingUser, newRole: e.target.value})}
+                  onChange={(e) => setEditingUser({...editingUser, newRole: e.target.value, newRoleModeratorPermissions: {}})}
                 >
+                  <option value="">-- Select Role --</option>
                   <option value="user">User (No Overlay Access)</option>
                   <option value="premium">Premium (Overlay Only)</option>
+                  <option value="slot_modder">Slot Modder (Slot Management)</option>
                   <option value="moderator">Moderator (Overlay + Custom Admin)</option>
                   <option value="admin">Admin (Full Access)</option>
                 </select>
               </div>
 
-              {/* Moderator Permissions */}
+              {/* Moderator Permissions for new moderator role */}
               {editingUser.newRole === 'moderator' && (
                 <div className="form-group moderator-permissions">
                   <label>Moderator Permissions</label>
@@ -465,7 +537,7 @@ export default function AdminPanel() {
                       <label key={key} className="permission-checkbox">
                         <input
                           type="checkbox"
-                          checked={!!editingUser.moderatorPermissions[key]}
+                          checked={!!editingUser.newRoleModeratorPermissions[key]}
                           onChange={() => toggleModeratorPermission(key)}
                         />
                         <div className="permission-info">
@@ -478,24 +550,29 @@ export default function AdminPanel() {
                 </div>
               )}
 
-              <div className="form-group">
-                <label>Access Duration (days)</label>
-                <input 
-                  type="number" 
-                  placeholder="Leave empty for unlimited"
-                  value={editingUser.expiryDays}
-                  onChange={(e) => setEditingUser({...editingUser, expiryDays: e.target.value})}
-                  min="0"
-                />
-                <small>Set how many days from today the access expires. Leave empty for unlimited.</small>
-              </div>
+              {editingUser.newRole && (
+                <div className="form-group">
+                  <label>Access Duration (days)</label>
+                  <input 
+                    type="number" 
+                    placeholder="Leave empty for unlimited"
+                    value={editingUser.newRoleExpiryDays}
+                    onChange={(e) => setEditingUser({...editingUser, newRoleExpiryDays: e.target.value})}
+                    min="0"
+                  />
+                  <small>Set how many days from today the access expires. Leave empty for unlimited.</small>
+                </div>
+              )}
+
+              {editingUser.newRole && (
+                <button onClick={handleAddRole} className="btn-add-role">
+                  Add Role
+                </button>
+              )}
 
               <div className="modal-actions">
-                <button onClick={saveUserChanges} className="btn-save">
-                  Save Changes
-                </button>
                 <button onClick={() => setEditingUser(null)} className="btn-cancel">
-                  Cancel
+                  Close
                 </button>
               </div>
             </div>

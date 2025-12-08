@@ -1,12 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { getUserRole } from '../utils/adminUtils';
+import { getUserRoles } from '../utils/adminUtils';
 
 export const useAdmin = () => {
   const { user } = useAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [isModerator, setIsModerator] = useState(false);
   const [isSlotModder, setIsSlotModder] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
+  const [userRoles, setUserRoles] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -15,29 +17,39 @@ export const useAdmin = () => {
         setIsAdmin(false);
         setIsModerator(false);
         setIsSlotModder(false);
+        setIsPremium(false);
+        setUserRoles([]);
         setLoading(false);
         return;
       }
 
       try {
-        const { data, error } = await getUserRole(user.id);
+        const { data, error } = await getUserRoles(user.id);
         
         if (error) {
           console.error('Error checking admin status:', error);
           setIsAdmin(false);
           setIsModerator(false);
           setIsSlotModder(false);
+          setIsPremium(false);
+          setUserRoles([]);
         } else {
-          const role = data?.role;
-          setIsAdmin(role === 'admin');
-          setIsModerator(role === 'moderator' || role === 'admin');
-          setIsSlotModder(role === 'slot_modder' || role === 'admin');
+          const roles = data || [];
+          const roleNames = roles.map(r => r.role);
+          
+          setUserRoles(roles);
+          setIsAdmin(roleNames.includes('admin'));
+          setIsModerator(roleNames.includes('moderator') || roleNames.includes('admin'));
+          setIsSlotModder(roleNames.includes('slot_modder') || roleNames.includes('admin'));
+          setIsPremium(roleNames.includes('premium') || roleNames.includes('admin'));
         }
       } catch (error) {
         console.error('Error in useAdmin:', error);
         setIsAdmin(false);
         setIsModerator(false);
         setIsSlotModder(false);
+        setIsPremium(false);
+        setUserRoles([]);
       } finally {
         setLoading(false);
       }
@@ -46,5 +58,5 @@ export const useAdmin = () => {
     checkAdminStatus();
   }, [user]);
 
-  return { isAdmin, isModerator, isSlotModder, loading };
+  return { isAdmin, isModerator, isSlotModder, isPremium, userRoles, loading };
 };

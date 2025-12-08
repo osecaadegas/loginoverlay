@@ -10,15 +10,25 @@ export const getAllUsers = async () => {
 
     if (rolesError) throw rolesError;
 
-    // Fetch emails and provider info for each user
+    // Group roles by user_id
+    const userRolesMap = {};
+    (rolesData || []).forEach(roleInfo => {
+      if (!userRolesMap[roleInfo.user_id]) {
+        userRolesMap[roleInfo.user_id] = [];
+      }
+      userRolesMap[roleInfo.user_id].push(roleInfo);
+    });
+
+    // Fetch emails and provider info for each unique user
     const usersWithEmails = await Promise.all(
-      (rolesData || []).map(async (roleInfo) => {
+      Object.keys(userRolesMap).map(async (userId) => {
+        const rolesForUser = userRolesMap[userId];
         const { data: emailData } = await supabase
-          .rpc('get_user_email', { user_id: roleInfo.user_id });
+          .rpc('get_user_email', { user_id: userId });
 
         // Fetch user metadata to get provider info
         const { data: userData } = await supabase
-          .rpc('get_user_metadata', { user_id: roleInfo.user_id });
+          .rpc('get_user_metadata', { user_id: userId });
 
         let provider = 'Email';
         let providerUsername = null;
@@ -39,14 +49,19 @@ export const getAllUsers = async () => {
           }
         }
 
+        // Get the earliest created_at and determine overall active status
+        const earliestCreatedAt = rolesForUser.reduce((earliest, role) => {
+          return new Date(role.created_at) < new Date(earliest) ? role.created_at : earliest;
+        }, rolesForUser[0].created_at);
+        
+        const isActive = rolesForUser.some(role => role.is_active);
+
         return {
-          id: roleInfo.user_id,
-          email: emailData || `User ${roleInfo.user_id.substring(0, 8)}...`,
-          created_at: roleInfo.created_at,
-          role: roleInfo.role || 'user',
-          access_expires_at: roleInfo.access_expires_at || null,
-          is_active: roleInfo.is_active !== false,
-          moderator_permissions: roleInfo.moderator_permissions || {},
+          id: userId,
+          email: emailData || `User ${userId.substring(0, 8)}...`,
+          created_at: earliestCreatedAt,
+          roles: rolesForUser, // Array of all role objects
+          is_active: isActive,
           provider: provider.charAt(0).toUpperCase() + provider.slice(1),
           provider_username: providerUsername
         };
@@ -60,26 +75,52 @@ export const getAllUsers = async () => {
   }
 };
 
-// Get user role by user ID
-export const getUserRole = async (userId) => {
+// Get user roles by user ID (returns all roles for a user)
+export const getUserRoles = async (userId) => {
   try {
-    const { data, error } = await supabase
+    const { data, error} = await supabase
       .from('user_roles')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .eq('is_active', true);
 
     if (error && error.code === 'PGRST116') {
       // Table doesn't exist yet or no record found
-      return { data: { role: 'user', is_active: true, moderator_permissions: {} }, error: null };
+      return { data: [{ role: 'user', is_active: true, moderator_permissions: {} }], error: null };
     }
 
     if (error) throw error;
 
-    return { data: data || { role: 'user', is_active: true, moderator_permissions: {} }, error: null };
+    // If no roles found, return default user role
+    if (!data || data.length === 0) {
+      return { data: [{ role: 'user', is_active: true, moderator_permissions: {} }], error: null };
+    }
+
+    return { data, error: null };
   } catch (error) {
     return { data: null, error };
   }
+};
+
+// Get user role by user ID (backwards compatibility - returns primary/highest role)
+export const getUserRole = async (userId) => {
+  const { data, error } = await getUserRoles(userId);
+  
+  if (error) return { data: null, error };
+  
+  if (!data || data.length === 0) {
+    return { data: { role: 'user', is_active: true, moderator_permissions: {} }, error: null };
+  }
+  
+  // Priority: admin > slot_modder > moderator > premium > user
+  const rolePriority = { admin: 5, slot_modder: 4, moderator: 3, premium: 2, user: 1 };
+  const highestRole = data.reduce((highest, current) => {
+    const currentPriority = rolePriority[current.role] || 0;
+    const highestPriority = rolePriority[highest.role] || 0;
+    return currentPriority > highestPriority ? current : highest;
+  }, data[0]);
+  
+  return { data: highestRole, error: null };
 };
 
 // Update user role and permissions
@@ -231,6 +272,78 @@ export const deleteUser = async (userId) => {
     return { success: true, error: null };
   } catch (error) {
     return { success: false, error };
+  }
+};
+
+// Add a role to a user
+export const addUserRole = async (userId, role, accessExpiresAt = null, moderatorPermissions = null) => {
+  try {
+    const insertData = {
+      user_id: userId,
+      role: role,
+      access_expires_at: accessExpiresAt,
+      is_active: true,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
+
+    // Only include moderator_permissions if role is moderator
+    if (role === 'moderator' && moderatorPermissions !== null) {
+      insertData.moderator_permissions = moderatorPermissions;
+    }
+
+    const { data, error } = await supabase
+      .from('user_roles')
+      .insert([insertData])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error };
+  }
+};
+
+// Remove a specific role from a user
+export const removeUserRole = async (userId, role) => {
+  try {
+    const { error } = await supabase
+      .from('user_roles')
+      .delete()
+      .eq('user_id', userId)
+      .eq('role', role);
+
+    if (error) throw error;
+
+    return { success: true, error: null };
+  } catch (error) {
+    return { success: false, error };
+  }
+};
+
+// Update a specific role for a user
+export const updateSpecificUserRole = async (userId, role, updates) => {
+  try {
+    const updateData = {
+      ...updates,
+      updated_at: new Date().toISOString(),
+    };
+
+    const { data, error } = await supabase
+      .from('user_roles')
+      .update(updateData)
+      .eq('user_id', userId)
+      .eq('role', role)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return { data, error: null };
+  } catch (error) {
+    return { data: null, error };
   }
 };
 
