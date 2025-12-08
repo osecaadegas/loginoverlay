@@ -539,6 +539,37 @@ function AppContent({ isAdminOverlay = false }) {
         />
       )}
       
+      {/* Debug: Test notification button - Only for Admin Overlay */}
+      {isAdminOverlay && (
+        <button
+          onClick={() => {
+            console.log('Test button clicked! Current latestRedemption:', latestRedemption);
+            setLatestRedemption({
+              username: 'TestUser',
+              item: 'Test Redemption Item',
+              cost: 100,
+              id: 'test-' + Date.now(),
+              timestamp: new Date().toISOString()
+            });
+          }}
+          style={{
+            position: 'fixed',
+            top: '150px',
+            right: '20px',
+            padding: '10px 20px',
+            background: '#667eea',
+            color: 'white',
+            border: 'none',
+            borderRadius: '8px',
+            cursor: 'pointer',
+            zIndex: 999999,
+            fontWeight: 'bold'
+          }}
+        >
+          Test Notification
+        </button>
+      )}
+      
       <CircularSidebar onMenuSelect={handleMenuSelect} isLocked={isLocked} onLockToggle={() => setIsLocked(!isLocked)} />
     </div>
   );
