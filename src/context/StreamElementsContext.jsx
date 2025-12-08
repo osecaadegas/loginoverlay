@@ -372,17 +372,14 @@ export function StreamElementsProvider({ children }) {
         console.log('[Redemptions] Checking for new redemptions. Last check:', lastCheck);
         
         // Query redemptions from database, ordered by most recent first
-        const query = supabase
+        const { data, error } = await supabase
           .from('point_redemptions')
           .select(`
             *,
-            user_profiles!inner(username, display_name),
             redemption_items!inner(name, point_cost)
           `)
           .order('redeemed_at', { ascending: false })
           .limit(1);
-
-        const { data, error } = await query;
 
         if (error) {
           console.error('[Redemptions] Error fetching redemptions:', error);
@@ -397,7 +394,14 @@ export function StreamElementsProvider({ children }) {
           console.log('[Redemptions] Latest redemption ID:', newest.id, 'vs last check:', lastCheck);
           
           if (newest.id !== lastCheck) {
-            const username = newest.user_profiles?.display_name || newest.user_profiles?.username || 'Unknown';
+            // Fetch user profile separately
+            const { data: profileData } = await supabase
+              .from('user_profiles')
+              .select('username, display_name')
+              .eq('user_id', newest.user_id)
+              .single();
+            
+            const username = profileData?.display_name || profileData?.username || 'Unknown';
             const itemName = newest.redemption_items?.name || 'Unknown Item';
             const cost = newest.redemption_items?.point_cost || newest.points_spent || 0;
             
