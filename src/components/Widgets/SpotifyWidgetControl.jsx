@@ -21,7 +21,10 @@ export default function SpotifyWidgetControl() {
 
   // Generate widget URL dynamically when layout changes
   const widgetUrl = useMemo(() => {
-    return `${window.location.origin}/widgets/spotify/${user?.id}?layout=${settings.layout}`;
+    const url = `${window.location.origin}/widgets/spotify/${user?.id}?layout=${settings.layout}`;
+    console.log('Widget URL updated:', url);
+    console.log('Current layout setting:', settings.layout);
+    return url;
   }, [user?.id, settings.layout]);
 
   const spotifyClientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
@@ -160,29 +163,39 @@ export default function SpotifyWidgetControl() {
     <div className="widget-control-page">
       <div className="widget-control-header">
         <button className="back-button" onClick={() => navigate('/overlay/widgets')}>
-          ← Back to Widgets
+          ← Back
         </button>
-        <h1>Spotify Widget</h1>
+        <div className="header-content">
+          <h1>Spotify Widget</h1>
+          {spotifyConnected && (
+            <div className="spotify-status-badge">
+              <span className="status-dot"></span>
+              Connected
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="widget-control-content">
         {!spotifyConnected ? (
           <div className="spotify-connect-section">
-            <h2>Connect Your Spotify Account</h2>
-            <p>To display your currently playing track, you need to connect your Spotify account.</p>
-            <button className="spotify-connect-btn" onClick={connectSpotify}>
-              <svg viewBox="0 0 24 24" className="spotify-icon" xmlns="http://www.w3.org/2000/svg">
+            <div className="connect-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path fill="currentColor" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
               </svg>
-              Connect Spotify
+            </div>
+            <h2>Connect Spotify</h2>
+            <p>Connect your account to display currently playing tracks</p>
+            <button className="spotify-connect-btn" onClick={connectSpotify}>
+              <svg viewBox="0 0 24 24" className="btn-icon" xmlns="http://www.w3.org/2000/svg">
+                <path fill="currentColor" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+              </svg>
+              Connect with Spotify
             </button>
+            <button className="disconnect-link" onClick={disconnectSpotify} style={{display: 'none'}}>Disconnect</button>
           </div>
         ) : (
           <>
-            <div className="spotify-connected-banner">
-              <span>✓ Spotify Connected</span>
-              <button className="disconnect-btn" onClick={disconnectSpotify}>Disconnect</button>
-            </div>
 
             <div className="widget-url-section">
           <h3>Widget URL for OBS</h3>
@@ -223,7 +236,10 @@ export default function SpotifyWidgetControl() {
             <div className="layout-options">
               <button
                 className={`layout-option ${settings.layout === 'compact' ? 'active' : ''}`}
-                onClick={() => setSettings({...settings, layout: 'compact'})}
+                onClick={() => {
+                  console.log('Compact layout clicked');
+                  setSettings({...settings, layout: 'compact'});
+                }}
               >
                 <div className="layout-preview compact-preview">
                   <div className="preview-album"></div>
@@ -237,7 +253,10 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'minimal' ? 'active' : ''}`}
-                onClick={() => setSettings({...settings, layout: 'minimal'})}
+                onClick={() => {
+                  console.log('Minimal layout clicked');
+                  setSettings({...settings, layout: 'minimal'});
+                }}
               >
                 <div className="layout-preview minimal-preview">
                   <div className="preview-line"></div>
@@ -248,7 +267,10 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'card' ? 'active' : ''}`}
-                onClick={() => setSettings({...settings, layout: 'card'})}
+                onClick={() => {
+                  console.log('Card layout clicked');
+                  setSettings({...settings, layout: 'card'});
+                }}
               >
                 <div className="layout-preview card-preview">
                   <div className="preview-album large"></div>
@@ -262,7 +284,10 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'banner' ? 'active' : ''}`}
-                onClick={() => setSettings({...settings, layout: 'banner'})}
+                onClick={() => {
+                  console.log('Banner layout clicked');
+                  setSettings({...settings, layout: 'banner'});
+                }}
               >
                 <div className="layout-preview banner-preview">
                   <div className="preview-album"></div>
@@ -276,7 +301,10 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'glass' ? 'active' : ''}`}
-                onClick={() => setSettings({...settings, layout: 'glass'})}
+                onClick={() => {
+                  console.log('Glass layout clicked');
+                  setSettings({...settings, layout: 'glass'});
+                }}
               >
                 <div className="layout-preview glass-preview">
                   <div className="preview-album"></div>
@@ -290,7 +318,10 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'floating' ? 'active' : ''}`}
-                onClick={() => setSettings({...settings, layout: 'floating'})}
+                onClick={() => {
+                  console.log('Floating layout clicked');
+                  setSettings({...settings, layout: 'floating'});
+                }}
               >
                 <div className="layout-preview floating-preview">
                   <div className="preview-album small"></div>
