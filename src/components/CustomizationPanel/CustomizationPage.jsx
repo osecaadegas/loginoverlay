@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { useAdmin } from '../../../hooks/useAdmin';
+import { useAdmin } from '../../hooks/useAdmin';
 import { useEffect } from 'react';
-import CustomizationPanel from '../CustomizationPanel';
+import CustomizationPanel from './CustomizationPanel';
 import './CustomizationPage.css';
 
 const CustomizationPage = () => {

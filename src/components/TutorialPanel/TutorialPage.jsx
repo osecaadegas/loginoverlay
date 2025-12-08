@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { useAdmin } from '../../../hooks/useAdmin';
+import { useAdmin } from '../../hooks/useAdmin';
 import { useEffect } from 'react';
-import TutorialPanel from '../TutorialPanel';
+import TutorialPanel from './TutorialPanel';
 import '../CustomizationPanel/CustomizationPage.css';
 
 const TutorialPage = () => {
