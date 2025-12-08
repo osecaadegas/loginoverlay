@@ -47,9 +47,11 @@ import TournamentPage from './components/TournamentPanel/TournamentPage';
 import GiveawayPage from './components/GiveawayPanel/GiveawayPage';
 import ArtAdPage from './components/ArtAdPanel/ArtAdPage';
 import TutorialPage from './components/TutorialPanel/TutorialPage';
+import { getUserOverlayState, subscribeToOverlayState, unsubscribe } from './utils/overlayUtils';
 
 function AppContent() {
   const location = useLocation();
+  const { user } = useAuth();
   const { layoutMode, setLayoutMode } = useBonusHunt();
   const [showBHPanel, setShowBHPanel] = useState(false);
   const [showStatsPanel, setShowStatsPanel] = useState(false);
@@ -90,6 +92,42 @@ function AppContent() {
       document.body.classList.remove('no-sidebar');
     }
   }, [location.pathname]);
+
+  // Load and subscribe to theme changes from database
+  useEffect(() => {
+    if (!user || location.pathname !== '/overlay') return;
+
+    const loadAndSubscribeTheme = async () => {
+      try {
+        // Load initial theme from database
+        const state = await getUserOverlayState(user.id);
+        if (state && state.theme) {
+          localStorage.setItem('selectedTheme', state.theme);
+          window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: state.theme } }));
+        }
+
+        // Subscribe to real-time theme changes
+        const subscription = subscribeToOverlayState(user.id, (payload) => {
+          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+            const newState = payload.new;
+            if (newState.theme) {
+              localStorage.setItem('selectedTheme', newState.theme);
+              // Trigger theme re-application
+              window.location.reload();
+            }
+          }
+        });
+
+        return () => {
+          unsubscribe(subscription);
+        };
+      } catch (error) {
+        console.error('Error loading/subscribing to theme:', error);
+      }
+    };
+
+    loadAndSubscribeTheme();
+  }, [user, location.pathname]);
 
   // Apply saved theme on startup
   useEffect(() => {

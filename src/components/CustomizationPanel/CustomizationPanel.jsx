@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react';
 import './CustomizationPanel.css';
 import useDraggable from '../../hooks/useDraggable';
+import { useAuth } from '../../context/AuthContext';
+import { 
+  getUserOverlayState, 
+  updateCustomization, 
+  subscribeToOverlayState,
+  unsubscribe 
+} from '../../utils/overlayUtils';
 
 // Theme presets
 const THEMES = {
@@ -2168,12 +2175,12 @@ const THEMES = {
 };
 
 const CustomizationPanel = ({ onClose }) => {
+  const { user } = useAuth();
+  const [isInitialized, setIsInitialized] = useState(false);
   const [activeTab, setActiveTab] = useState('branding');
   const [themeCategory, setThemeCategory] = useState('all');
-  const [settings, setSettings] = useState(() => {
-    // Load saved settings from localStorage
-    const saved = localStorage.getItem('overlaySettings');
-    return saved ? JSON.parse(saved) : {
+  const [currentTheme, setCurrentTheme] = useState('cyberpunk');
+  const [settings, setSettings] = useState({
       // General
       streamerName: localStorage.getItem('streamerName') || 'Your Name',
       websiteUrl: '',
@@ -2213,14 +2220,58 @@ const CustomizationPanel = ({ onClose }) => {
       
       // Spotify
       showSpotify: false
+    });
+
+  // Load user's customization from database on mount
+  useEffect(() => {
+    if (!user) {
+      setIsInitialized(false);
+      return;
+    }
+
+    const loadCustomization = async () => {
+      try {
+        const state = await getUserOverlayState(user.id);
+        if (state) {
+          setCurrentTheme(state.theme || 'cyberpunk');
+          if (state.theme && THEMES[state.theme]) {
+            applyTheme(state.theme);
+          }
+          // Load other settings if saved in the database
+        }
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Error loading customization:', error);
+        setIsInitialized(true);
+      }
     };
-  });
+
+    loadCustomization();
+  }, [user]);
+
+  // Subscribe to real-time customization updates
+  useEffect(() => {
+    if (!user || !isInitialized) return;
+
+    const subscription = subscribeToOverlayState(user.id, (payload) => {
+      if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
+        const state = payload.new;
+        if (state.theme && state.theme !== currentTheme) {
+          setCurrentTheme(state.theme);
+          applyTheme(state.theme);
+        }
+      }
+    });
+
+    return () => {
+      unsubscribe(subscription);
+    };
+  }, [user, isInitialized, currentTheme]);
 
   // Apply saved theme and background on mount
   useEffect(() => {
-    const savedTheme = localStorage.getItem('selectedTheme');
-    if (savedTheme && THEMES[savedTheme]) {
-      applyTheme(savedTheme);
+    if (currentTheme && THEMES[currentTheme]) {
+      applyTheme(currentTheme);
     }
     
     // Restore background
@@ -2324,7 +2375,7 @@ const CustomizationPanel = ({ onClose }) => {
 
 
 
-  const applyTheme = (themeKey) => {
+  const applyTheme = async (themeKey) => {
     const theme = THEMES[themeKey];
     if (!theme) return;
 
@@ -2347,8 +2398,17 @@ const CustomizationPanel = ({ onClose }) => {
       document.body.classList.remove('fx-theme-active');
     }
 
-    // Save theme selection
+    // Save theme selection locally and to database
     localStorage.setItem('selectedTheme', themeKey);
+    setCurrentTheme(themeKey);
+    
+    if (user && isInitialized) {
+      try {
+        await updateCustomization(user.id, { theme: themeKey });
+      } catch (error) {
+        console.error('Error saving theme to database:', error);
+      }
+    }
     
     // Apply background based on theme
     document.body.style.background = theme.colors.background;
