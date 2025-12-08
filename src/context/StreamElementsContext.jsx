@@ -369,6 +369,7 @@ export function StreamElementsProvider({ children }) {
     const checkRedemptions = async () => {
       try {
         const lastCheck = localStorage.getItem('last_redemption_id');
+        console.log('[Redemptions] Checking for new redemptions. Last check:', lastCheck);
         
         // Query redemptions from database, ordered by most recent first
         const query = supabase
@@ -384,18 +385,23 @@ export function StreamElementsProvider({ children }) {
         const { data, error } = await query;
 
         if (error) {
-          console.error('Error fetching redemptions:', error);
+          console.error('[Redemptions] Error fetching redemptions:', error);
           return;
         }
+
+        console.log('[Redemptions] Query result:', data);
 
         // Check for new redemptions
         if (data && data.length > 0) {
           const newest = data[0];
+          console.log('[Redemptions] Latest redemption ID:', newest.id, 'vs last check:', lastCheck);
           
           if (newest.id !== lastCheck) {
             const username = newest.user_profiles?.display_name || newest.user_profiles?.username || 'Unknown';
             const itemName = newest.redemption_items?.name || 'Unknown Item';
             const cost = newest.redemption_items?.point_cost || newest.points_spent || 0;
+            
+            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username, itemName, cost });
             
             setLatestRedemption({
               username: username,
@@ -406,9 +412,11 @@ export function StreamElementsProvider({ children }) {
             });
             localStorage.setItem('last_redemption_id', newest.id);
           }
+        } else {
+          console.log('[Redemptions] No redemptions found in database');
         }
       } catch (err) {
-        console.error('Error checking redemptions:', err);
+        console.error('[Redemptions] Error checking redemptions:', err);
       }
     };
 
