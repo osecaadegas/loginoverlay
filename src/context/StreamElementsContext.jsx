@@ -18,6 +18,8 @@ export function StreamElementsProvider({ children }) {
   const [points, setPoints] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [redemptions, setRedemptions] = useState([]);
+  const [latestRedemption, setLatestRedemption] = useState(null);
 
   // Load user's StreamElements connection from database
   useEffect(() => {
@@ -360,11 +362,61 @@ export function StreamElementsProvider({ children }) {
     }
   };
 
+  // Poll for redemptions
+  useEffect(() => {
+    if (!seAccount) return;
+
+    const checkRedemptions = async () => {
+      try {
+        const response = await fetch(
+          `https://api.streamelements.com/kappa/v2/store/redemptions/${seAccount.se_channel_id}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${seAccount.se_jwt_token}`,
+              'Accept': 'application/json'
+            }
+          }
+        );
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Check for new redemptions
+          if (data.length > 0) {
+            const newest = data[0];
+            const lastCheck = localStorage.getItem('last_redemption_id');
+            
+            if (newest._id !== lastCheck) {
+              setLatestRedemption({
+                username: newest.user?.username || 'Unknown',
+                item: newest.item?.name || 'Unknown Item',
+                cost: newest.item?.cost || 0,
+                id: newest._id,
+                timestamp: newest.createdAt
+              });
+              localStorage.setItem('last_redemption_id', newest._id);
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error checking redemptions:', err);
+      }
+    };
+
+    // Check immediately and then every 5 seconds
+    checkRedemptions();
+    const interval = setInterval(checkRedemptions, 5000);
+
+    return () => clearInterval(interval);
+  }, [seAccount]);
+
   const value = {
     seAccount,
     points,
     loading,
     error,
+    latestRedemption,
+    setLatestRedemption,
     linkAccount,
     unlinkAccount,
     redeemPoints,

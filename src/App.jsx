@@ -48,11 +48,14 @@ import GiveawayPage from './components/GiveawayPanel/GiveawayPage';
 import ArtAdPage from './components/ArtAdPanel/ArtAdPage';
 import TutorialPage from './components/TutorialPanel/TutorialPage';
 import { getUserOverlayState, subscribeToOverlayState, unsubscribe } from './utils/overlayUtils';
+import RedemptionNotification from './components/RedemptionNotification/RedemptionNotification';
+import { useStreamElements } from './context/StreamElementsContext';
 
 function AppContent() {
   const location = useLocation();
   const { user } = useAuth();
   const { layoutMode, setLayoutMode } = useBonusHunt();
+  const { latestRedemption, setLatestRedemption } = useStreamElements();
   const [showBHPanel, setShowBHPanel] = useState(false);
   const [showStatsPanel, setShowStatsPanel] = useState(false);
   const [showBonusOpening, setShowBonusOpening] = useState(false);
@@ -524,6 +527,14 @@ function AppContent() {
             setShowBHPanel(true);
           }}
           onBonusChange={(bonusId) => setSelectedBonusId(bonusId)}
+        />
+      )}
+      
+      {/* StreamElements Redemption Notification */}
+      {latestRedemption && (
+        <RedemptionNotification 
+          redemption={latestRedemption} 
+          onClose={() => setLatestRedemption(null)} 
         />
       )}
       

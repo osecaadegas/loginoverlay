@@ -1,0 +1,102 @@
+.redemption-notification {
+  position: fixed;
+  top: 100px;
+  right: -400px;
+  width: 380px;
+  background: linear-gradient(135deg, rgba(147, 51, 234, 0.95) 0%, rgba(168, 85, 247, 0.95) 100%);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(168, 85, 247, 0.6);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 12px 48px rgba(147, 51, 234, 0.4), 0 0 80px rgba(168, 85, 247, 0.3);
+  z-index: 999999;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  animation: glow 2s ease-in-out infinite;
+}
+
+.redemption-notification.visible {
+  right: 20px;
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 12px 48px rgba(147, 51, 234, 0.4), 0 0 80px rgba(168, 85, 247, 0.3);
+  }
+  50% {
+    box-shadow: 0 12px 48px rgba(147, 51, 234, 0.6), 0 0 100px rgba(168, 85, 247, 0.5);
+  }
+}
+
+.redemption-icon {
+  font-size: 3rem;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.1);
+  }
+}
+
+.redemption-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.redemption-title {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: rgba(255, 255, 255, 0.9);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.redemption-user {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #ffffff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.redemption-item {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #fbbf24;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+
+.redemption-cost {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  margin-top: 0.25rem;
+}
+
+.redemption-close {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.redemption-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
