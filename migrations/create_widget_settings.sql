@@ -9,8 +9,20 @@ CREATE TABLE IF NOT EXISTS widget_settings (
   UNIQUE(user_id, widget_type)
 );
 
+-- Create spotify_connections table for Spotify OAuth
+CREATE TABLE IF NOT EXISTS spotify_connections (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  access_token TEXT NOT NULL,
+  refresh_token TEXT NOT NULL,
+  expires_at TIMESTAMPTZ NOT NULL,
+  connected_at TIMESTAMPTZ DEFAULT NOW(),
+  UNIQUE(user_id)
+);
+
 -- Enable RLS
 ALTER TABLE widget_settings ENABLE ROW LEVEL SECURITY;
+ALTER TABLE spotify_connections ENABLE ROW LEVEL SECURITY;
 
 -- RLS Policies
 CREATE POLICY "Users can view their own widget settings"
@@ -34,9 +46,28 @@ CREATE POLICY "Anyone can view widget settings for display"
   ON widget_settings FOR SELECT
   USING (true);
 
+-- RLS Policies for spotify_connections
+CREATE POLICY "Users can view their own Spotify connection"
+  ON spotify_connections FOR SELECT
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own Spotify connection"
+  ON spotify_connections FOR INSERT
+  WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own Spotify connection"
+  ON spotify_connections FOR UPDATE
+  USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can delete their own Spotify connection"
+  ON spotify_connections FOR DELETE
+  USING (auth.uid() = user_id);
+
 -- Create index for faster lookups
 CREATE INDEX IF NOT EXISTS idx_widget_settings_user_id ON widget_settings(user_id);
 CREATE INDEX IF NOT EXISTS idx_widget_settings_widget_type ON widget_settings(widget_type);
+CREATE INDEX IF NOT EXISTS idx_spotify_connections_user_id ON spotify_connections(user_id);
 
--- Add comment
+-- Add comments
 COMMENT ON TABLE widget_settings IS 'Stores user-specific widget configurations for OBS overlays';
+COMMENT ON TABLE spotify_connections IS 'Stores Spotify OAuth tokens for currently playing track widgets';
