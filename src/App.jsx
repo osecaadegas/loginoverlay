@@ -41,6 +41,12 @@ import TwitchChat from './components/TwitchChat/TwitchChat';
 import Blackjack from './components/Blackjack/Blackjack';
 import Mines from './components/Mines/Mines';
 import SlotManagerPage from './components/SlotManager/SlotManagerPage';
+import CustomizationPage from './components/CustomizationPanel/CustomizationPage';
+import RandomSlotPage from './components/RandomSlotPicker/RandomSlotPage';
+import TournamentPage from './components/TournamentPanel/TournamentPage';
+import GiveawayPage from './components/GiveawayPanel/GiveawayPage';
+import ArtAdPage from './components/ArtAdPanel/ArtAdPage';
+import TutorialPage from './components/TutorialPanel/TutorialPage';
 
 function AppContent() {
   const location = useLocation();
@@ -570,6 +576,12 @@ function App() {
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/overlay" element={<ProtectedOverlay />} />
                 <Route path="/overlay/slot-manager" element={<SlotManagerPage />} />
+                <Route path="/overlay/customization" element={<CustomizationPage />} />
+                <Route path="/overlay/random-slot" element={<RandomSlotPage />} />
+                <Route path="/overlay/tournament" element={<TournamentPage />} />
+                <Route path="/overlay/giveaway" element={<GiveawayPage />} />
+                <Route path="/overlay/art-ad" element={<ArtAdPage />} />
+                <Route path="/overlay/tutorial" element={<TutorialPage />} />
                 <Route path="/admin" element={<AdminPanel />} />
               </Routes>
             </LayoutWrapper>
