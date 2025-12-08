@@ -38,6 +38,11 @@ export default function SpotifyWidgetDisplay() {
 
       if (data) {
         setSettings(data.settings);
+        // Set layout from database settings if available, otherwise use URL parameter
+        if (data.settings?.layout) {
+          setLayout(data.settings.layout);
+          console.log('Layout loaded from database:', data.settings.layout);
+        }
       }
 
       // Load Spotify connection
@@ -67,7 +72,13 @@ export default function SpotifyWidgetDisplay() {
         },
         (payload) => {
           if (payload.new.widget_type === 'spotify') {
+            console.log('Settings updated from database:', payload.new.settings);
             setSettings(payload.new.settings);
+            // Update layout from database changes
+            if (payload.new.settings?.layout) {
+              console.log('Layout updated from database to:', payload.new.settings.layout);
+              setLayout(payload.new.settings.layout);
+            }
           }
         }
       )

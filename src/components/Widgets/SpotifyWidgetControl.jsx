@@ -167,6 +167,27 @@ export default function SpotifyWidgetControl() {
     }
   };
 
+  // Auto-save when layout changes
+  const handleLayoutChange = async (newLayout) => {
+    console.log('Layout changed to:', newLayout);
+    const newSettings = {...settings, layout: newLayout};
+    setSettings(newSettings);
+    
+    // Auto-save to database
+    if (user) {
+      await supabase
+        .from('widget_settings')
+        .upsert({
+          user_id: user.id,
+          widget_type: 'spotify',
+          settings: newSettings,
+          updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,widget_type'
+        });
+    }
+  };
+
   const copyUrl = () => {
     navigator.clipboard.writeText(widgetUrl);
     alert('Widget URL copied to clipboard!');
@@ -256,10 +277,7 @@ export default function SpotifyWidgetControl() {
             <div className="layout-options">
               <button
                 className={`layout-option ${settings.layout === 'compact' ? 'active' : ''}`}
-                onClick={() => {
-                  console.log('Compact layout clicked');
-                  setSettings({...settings, layout: 'compact'});
-                }}
+                onClick={() => handleLayoutChange('compact')}
               >
                 <div className="layout-preview compact-preview">
                   <div className="preview-album"></div>
@@ -273,10 +291,7 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'minimal' ? 'active' : ''}`}
-                onClick={() => {
-                  console.log('Minimal layout clicked');
-                  setSettings({...settings, layout: 'minimal'});
-                }}
+                onClick={() => handleLayoutChange('minimal')}
               >
                 <div className="layout-preview minimal-preview">
                   <div className="preview-line"></div>
@@ -287,10 +302,7 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'card' ? 'active' : ''}`}
-                onClick={() => {
-                  console.log('Card layout clicked');
-                  setSettings({...settings, layout: 'card'});
-                }}
+                onClick={() => handleLayoutChange('card')}
               >
                 <div className="layout-preview card-preview">
                   <div className="preview-album large"></div>
@@ -304,10 +316,7 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'banner' ? 'active' : ''}`}
-                onClick={() => {
-                  console.log('Banner layout clicked');
-                  setSettings({...settings, layout: 'banner'});
-                }}
+                onClick={() => handleLayoutChange('banner')}
               >
                 <div className="layout-preview banner-preview">
                   <div className="preview-album"></div>
@@ -321,10 +330,7 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'glass' ? 'active' : ''}`}
-                onClick={() => {
-                  console.log('Glass layout clicked');
-                  setSettings({...settings, layout: 'glass'});
-                }}
+                onClick={() => handleLayoutChange('glass')}
               >
                 <div className="layout-preview glass-preview">
                   <div className="preview-album"></div>
@@ -338,10 +344,7 @@ export default function SpotifyWidgetControl() {
 
               <button
                 className={`layout-option ${settings.layout === 'floating' ? 'active' : ''}`}
-                onClick={() => {
-                  console.log('Floating layout clicked');
-                  setSettings({...settings, layout: 'floating'});
-                }}
+                onClick={() => handleLayoutChange('floating')}
               >
                 <div className="layout-preview floating-preview">
                   <div className="preview-album small"></div>
