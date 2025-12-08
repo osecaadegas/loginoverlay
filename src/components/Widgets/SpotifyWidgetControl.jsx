@@ -101,6 +101,23 @@ export default function SpotifyWidgetControl() {
           });
 
         setSpotifyConnected(true);
+        
+        // Auto-enable the widget when Spotify connects
+        const newSettings = { ...settings, enabled: true };
+        setSettings(newSettings);
+        
+        // Save enabled state to database
+        await supabase
+          .from('widget_settings')
+          .upsert({
+            user_id: user.id,
+            widget_type: 'spotify',
+            settings: newSettings,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'user_id,widget_type'
+          });
+        
         // Clean URL
         window.history.replaceState({}, document.title, window.location.pathname);
       }
@@ -221,13 +238,16 @@ export default function SpotifyWidgetControl() {
           <h3>Widget Settings</h3>
           
           <div className="setting-group">
-            <label>
+            <label className="toggle-label">
+              <span>Enable Widget</span>
               <input
                 type="checkbox"
                 checked={settings.enabled}
-                onChange={(e) => setSettings({...settings, enabled: e.target.checked})}
+                onChange={(e) => {
+                  console.log('Widget enabled:', e.target.checked);
+                  setSettings({...settings, enabled: e.target.checked});
+                }}
               />
-              Enable Widget
             </label>
           </div>
 
@@ -374,36 +394,25 @@ export default function SpotifyWidgetControl() {
           <button className="save-button" onClick={saveSettings}>
             {saved ? '✓ Saved!' : 'Save Settings'}
           </button>
-
-          <button className="preview-button" onClick={() => setShowPreview(!showPreview)}>
-            {showPreview ? 'Hide Preview' : 'Show Live Preview'}
-          </button>
         </div>
-
-        {showPreview && settings.enabled && (
-          <div className="widget-preview-section">
+          </>
+        )}
+        
+        {/* Permanent Live Preview on Right Side */}
+        {spotifyConnected && (
+          <div className="widget-preview-sidebar">
             <h3>Live Preview</h3>
             <div className="preview-container">
               <iframe
                 key={widgetUrl}
                 src={widgetUrl}
-                style={{
-                  width: '1920px',
-                  height: '1080px',
-                  transform: 'scale(0.5)',
-                  transformOrigin: 'top left',
-                  border: 'none',
-                  background: '#000'
-                }}
                 title="Widget Preview"
               />
             </div>
             <p className="preview-note">
-              💡 This is a live preview. Play something on Spotify to see it appear!
+              💡 Live preview - play something on Spotify to see it!
             </p>
           </div>
-        )}
-          </>
         )}
       </div>
     </div>

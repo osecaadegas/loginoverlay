@@ -37,6 +37,33 @@
   max-width: 400px;
 }
 
+/* Placeholder State */
+.layout-placeholder {
+  background: rgba(26, 27, 46, 0.95) !important;
+  border: 2px dashed rgba(139, 92, 246, 0.4) !important;
+  justify-content: center;
+  min-width: 250px;
+  padding: 20px !important;
+}
+
+.placeholder-icon {
+  width: 40px;
+  height: 40px;
+  opacity: 0.5;
+  color: #8b5cf6;
+}
+
+.placeholder-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.placeholder-text {
+  color: #9ca3af;
+  font-size: 14px;
+  text-align: center;
+}
+
 .spotify-album-art {
   width: 60px;
   height: 60px;
