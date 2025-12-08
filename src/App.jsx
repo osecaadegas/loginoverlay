@@ -578,7 +578,6 @@ function App() {
                 <Route path="/overlay/slot-manager" element={<SlotManagerPage />} />
                 <Route path="/overlay/customization" element={<CustomizationPage />} />
                 <Route path="/overlay/random-slot" element={<RandomSlotPage />} />
-                <Route path="/overlay/tournament" element={<TournamentPage />} />
                 <Route path="/overlay/giveaway" element={<GiveawayPage />} />
                 <Route path="/overlay/art-ad" element={<ArtAdPage />} />
                 <Route path="/overlay/tutorial" element={<TutorialPage />} />

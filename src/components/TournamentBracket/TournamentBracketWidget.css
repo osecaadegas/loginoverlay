@@ -163,9 +163,11 @@
 .bracket-matches-grid {
   padding: 0.75rem;
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 0.75rem;
   grid-auto-rows: min-content;
+  max-height: 400px;
+  overflow-y: auto;
 }
 
 .bracket-widget-wrapper.finals .bracket-matches-grid {

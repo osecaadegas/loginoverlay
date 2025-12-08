@@ -305,13 +305,6 @@ export default function Sidebar() {
                     <span className="subitem-label">Random Slot</span>
                   </button>
                   <button
-                    className={`sidebar-subitem ${isActive('/overlay/tournament') ? 'active' : ''}`}
-                    onClick={() => handleNavigation('/overlay/tournament')}
-                  >
-                    <span className="subitem-icon">🏆</span>
-                    <span className="subitem-label">Tournament</span>
-                  </button>
-                  <button
                     className={`sidebar-subitem ${isActive('/overlay/giveaway') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/overlay/giveaway')}
                   >
