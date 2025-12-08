@@ -93,63 +93,20 @@ function AppContent() {
     }
   }, [location.pathname]);
 
-  // Function to apply theme dynamically
-  const applyThemeDynamically = (themeKey) => {
-    // Import THEMES from the startup effect below
-    const THEMES = window.THEME_DEFINITIONS || {};
-    const theme = THEMES[themeKey];
-    if (!theme) return;
-
-    document.documentElement.style.setProperty('--theme-primary', theme.colors.primary);
-    document.documentElement.style.setProperty('--theme-secondary', theme.colors.secondary);
-    document.documentElement.style.setProperty('--theme-accent', theme.colors.accent);
-    document.documentElement.style.setProperty('--theme-background', theme.colors.background);
-    document.documentElement.style.setProperty('--theme-text', theme.colors.text);
-    document.documentElement.style.setProperty('--theme-panel-bg', theme.colors.panelBg);
-    document.documentElement.style.setProperty('--theme-border', theme.colors.border);
-    document.documentElement.style.setProperty('--theme-font', theme.font);
-    
-    // Apply FX theme border animations
-    if (themeKey.startsWith('fx-')) {
-      let animation = 'rgb-pulse';
-      if (themeKey.includes('pulse')) animation = 'rgb-pulse';
-      else if (themeKey.includes('neon')) animation = 'neon-pulse';
-      else if (themeKey.includes('fire') || themeKey.includes('inferno') || themeKey.includes('magma')) animation = 'fire-pulse';
-      else if (themeKey.includes('rainbow') || themeKey.includes('disco') || themeKey.includes('holographic') || themeKey.includes('prism')) animation = 'rainbow-flash';
-      else if (themeKey.includes('glitch') || themeKey.includes('corrupted')) animation = 'glitch-scroll';
-      else if (themeKey.includes('lightning') || themeKey.includes('thunder')) animation = 'lightning-flash';
-      else if (themeKey.includes('stripe') || themeKey.includes('retro') || themeKey.includes('danger') || themeKey.includes('electric')) animation = 'stripe-scroll';
-      
-      document.documentElement.style.setProperty('--theme-border-animation', animation);
-      document.body.classList.add('fx-theme-active');
-    } else {
-      document.documentElement.style.setProperty('--theme-border-animation', 'none');
-      document.body.classList.remove('fx-theme-active');
-    }
-
-    document.body.style.background = theme.colors.background;
-    localStorage.setItem('selectedTheme', themeKey);
-  };
-
   // Load and subscribe to theme changes from database
   useEffect(() => {
     if (!user || location.pathname !== '/overlay') return;
 
     const loadAndSubscribeTheme = async () => {
       try {
-        // Load initial theme from database
-        const state = await getUserOverlayState(user.id);
-        if (state && state.theme) {
-          applyThemeDynamically(state.theme);
-        }
-
         // Subscribe to real-time theme changes
         const subscription = subscribeToOverlayState(user.id, (payload) => {
           if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
             const newState = payload.new;
             if (newState.theme) {
-              // Apply theme instantly without reload
-              applyThemeDynamically(newState.theme);
+              // Save to localStorage and dispatch event to trigger theme application
+              localStorage.setItem('selectedTheme', newState.theme);
+              window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newState.theme } }));
             }
           }
         });
@@ -386,12 +343,50 @@ function AppContent() {
         });
       }
     };
+    const handleThemeChanged = (e) => {
+      // Re-apply theme from storage when theme changes
+      const savedTheme = e.detail.theme || localStorage.getItem('selectedTheme');
+      if (savedTheme && window.THEME_DEFINITIONS) {
+        const theme = window.THEME_DEFINITIONS[savedTheme];
+        if (theme) {
+          document.documentElement.style.setProperty('--theme-primary', theme.colors.primary);
+          document.documentElement.style.setProperty('--theme-secondary', theme.colors.secondary);
+          document.documentElement.style.setProperty('--theme-accent', theme.colors.accent);
+          document.documentElement.style.setProperty('--theme-background', theme.colors.background);
+          document.documentElement.style.setProperty('--theme-text', theme.colors.text);
+          document.documentElement.style.setProperty('--theme-panel-bg', theme.colors.panelBg);
+          document.documentElement.style.setProperty('--theme-border', theme.colors.border);
+          document.documentElement.style.setProperty('--theme-font', theme.font);
+          
+          // Apply FX theme border animations
+          if (savedTheme.startsWith('fx-')) {
+            let animation = 'rgb-pulse';
+            if (savedTheme.includes('pulse')) animation = 'rgb-pulse';
+            else if (savedTheme.includes('neon')) animation = 'neon-pulse';
+            else if (savedTheme.includes('fire') || savedTheme.includes('inferno') || savedTheme.includes('magma')) animation = 'fire-pulse';
+            else if (savedTheme.includes('rainbow') || savedTheme.includes('disco') || savedTheme.includes('holographic') || savedTheme.includes('prism')) animation = 'rainbow-flash';
+            else if (savedTheme.includes('glitch') || savedTheme.includes('corrupted')) animation = 'glitch-scroll';
+            else if (savedTheme.includes('lightning') || savedTheme.includes('thunder')) animation = 'lightning-flash';
+            else if (savedTheme.includes('stripe') || savedTheme.includes('retro') || savedTheme.includes('danger') || savedTheme.includes('electric')) animation = 'stripe-scroll';
+            
+            document.documentElement.style.setProperty('--theme-border-animation', animation);
+            document.body.classList.add('fx-theme-active');
+          } else {
+            document.documentElement.style.setProperty('--theme-border-animation', 'none');
+            document.body.classList.remove('fx-theme-active');
+          }
+          
+          document.body.style.background = theme.colors.background;
+        }
+      }
+    };
     
     window.addEventListener('toggleSpotify', handleToggleSpotify);
     window.addEventListener('toggleTwitchChat', handleToggleTwitch);
     window.addEventListener('toggleBHStats', handleToggleBHStats);
     window.addEventListener('toggleBHCards', handleToggleBHCards);
     window.addEventListener('chatSettingsUpdated', handleChatSettingsUpdate);
+    window.addEventListener('themeChanged', handleThemeChanged);
     
     return () => {
       window.removeEventListener('toggleSpotify', handleToggleSpotify);
@@ -399,6 +394,7 @@ function AppContent() {
       window.removeEventListener('toggleBHStats', handleToggleBHStats);
       window.removeEventListener('toggleBHCards', handleToggleBHCards);
       window.removeEventListener('chatSettingsUpdated', handleChatSettingsUpdate);
+      window.removeEventListener('themeChanged', handleThemeChanged);
     };
   }, []);
 
