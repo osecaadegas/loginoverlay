@@ -24,7 +24,17 @@ CREATE TABLE IF NOT EXISTS spotify_connections (
 ALTER TABLE widget_settings ENABLE ROW LEVEL SECURITY;
 ALTER TABLE spotify_connections ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
+-- RLS Policies (drop and recreate to avoid conflicts)
+DROP POLICY IF EXISTS "Users can view their own widget settings" ON widget_settings;
+DROP POLICY IF EXISTS "Users can insert their own widget settings" ON widget_settings;
+DROP POLICY IF EXISTS "Users can update their own widget settings" ON widget_settings;
+DROP POLICY IF EXISTS "Users can delete their own widget settings" ON widget_settings;
+DROP POLICY IF EXISTS "Anyone can view widget settings for display" ON widget_settings;
+DROP POLICY IF EXISTS "Users can view their own Spotify connection" ON spotify_connections;
+DROP POLICY IF EXISTS "Users can insert their own Spotify connection" ON spotify_connections;
+DROP POLICY IF EXISTS "Users can update their own Spotify connection" ON spotify_connections;
+DROP POLICY IF EXISTS "Users can delete their own Spotify connection" ON spotify_connections;
+
 CREATE POLICY "Users can view their own widget settings"
   ON widget_settings FOR SELECT
   USING (auth.uid() = user_id);

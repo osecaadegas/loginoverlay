@@ -11,13 +11,15 @@ export default function SpotifyWidgetControl() {
     enabled: false,
     position: 'bottom-left',
     opacity: 1,
-    scale: 1
+    scale: 1,
+    layout: 'compact'
   });
+  const [showPreview, setShowPreview] = useState(false);
   const [saved, setSaved] = useState(false);
   const [spotifyConnected, setSpotifyConnected] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const widgetUrl = `${window.location.origin}/widgets/spotify/${user?.id}`;
+  const widgetUrl = `${window.location.origin}/widgets/spotify/${user?.id}?layout=${settings.layout}`;
   const spotifyClientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
   const redirectUri = `${window.location.origin}/overlay/widgets/spotify`;
 
@@ -213,6 +215,64 @@ export default function SpotifyWidgetControl() {
           </div>
 
           <div className="setting-group">
+            <label>Layout Style</label>
+            <div className="layout-options">
+              <button
+                className={`layout-option ${settings.layout === 'compact' ? 'active' : ''}`}
+                onClick={() => setSettings({...settings, layout: 'compact'})}
+              >
+                <div className="layout-preview compact-preview">
+                  <div className="preview-album"></div>
+                  <div className="preview-text">
+                    <div className="preview-line"></div>
+                    <div className="preview-line short"></div>
+                  </div>
+                </div>
+                <span>Compact</span>
+              </button>
+
+              <button
+                className={`layout-option ${settings.layout === 'minimal' ? 'active' : ''}`}
+                onClick={() => setSettings({...settings, layout: 'minimal'})}
+              >
+                <div className="layout-preview minimal-preview">
+                  <div className="preview-line"></div>
+                  <div className="preview-line short"></div>
+                </div>
+                <span>Minimal</span>
+              </button>
+
+              <button
+                className={`layout-option ${settings.layout === 'card' ? 'active' : ''}`}
+                onClick={() => setSettings({...settings, layout: 'card'})}
+              >
+                <div className="layout-preview card-preview">
+                  <div className="preview-album large"></div>
+                  <div className="preview-text">
+                    <div className="preview-line"></div>
+                    <div className="preview-line short"></div>
+                  </div>
+                </div>
+                <span>Card</span>
+              </button>
+
+              <button
+                className={`layout-option ${settings.layout === 'banner' ? 'active' : ''}`}
+                onClick={() => setSettings({...settings, layout: 'banner'})}
+              >
+                <div className="layout-preview banner-preview">
+                  <div className="preview-album"></div>
+                  <div className="preview-text wide">
+                    <div className="preview-line"></div>
+                    <div className="preview-line short"></div>
+                  </div>
+                </div>
+                <span>Banner</span>
+              </button>
+            </div>
+          </div>
+
+          <div className="setting-group">
             <label>Position</label>
             <select 
               value={settings.position}
@@ -252,7 +312,34 @@ export default function SpotifyWidgetControl() {
           <button className="save-button" onClick={saveSettings}>
             {saved ? '✓ Saved!' : 'Save Settings'}
           </button>
+
+          <button className="preview-button" onClick={() => setShowPreview(!showPreview)}>
+            {showPreview ? 'Hide Preview' : 'Show Live Preview'}
+          </button>
         </div>
+
+        {showPreview && settings.enabled && (
+          <div className="widget-preview-section">
+            <h3>Live Preview</h3>
+            <div className="preview-container">
+              <iframe
+                src={widgetUrl}
+                style={{
+                  width: '1920px',
+                  height: '1080px',
+                  transform: 'scale(0.5)',
+                  transformOrigin: 'top left',
+                  border: 'none',
+                  background: '#000'
+                }}
+                title="Widget Preview"
+              />
+            </div>
+            <p className="preview-note">
+              💡 This is a live preview. Play something on Spotify to see it appear!
+            </p>
+          </div>
+        )}
           </>
         )}
       </div>

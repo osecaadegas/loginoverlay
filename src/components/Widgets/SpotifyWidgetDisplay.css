@@ -83,3 +83,116 @@
   font-size: 14px;
   opacity: 0.9;
 }
+
+/* Compact Layout (Default) */
+.layout-compact {
+  min-width: 300px;
+  max-width: 400px;
+}
+
+/* Minimal Layout - Text only */
+.layout-minimal {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(20px);
+  padding: 10px 16px;
+  min-width: 250px;
+  max-width: 350px;
+  border: 1px solid rgba(29, 185, 84, 0.5);
+}
+
+.layout-minimal .spotify-track-info {
+  flex: 1;
+}
+
+.layout-minimal .spotify-track-name {
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.layout-minimal .spotify-artist-name {
+  font-size: 12px;
+}
+
+.layout-minimal .spotify-icon {
+  width: 20px;
+  height: 20px;
+}
+
+/* Card Layout - Larger, vertical */
+.layout-card {
+  flex-direction: column;
+  text-align: center;
+  padding: 20px;
+  min-width: 220px;
+  max-width: 220px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(29, 185, 84, 0.2) 100%);
+  backdrop-filter: blur(20px);
+}
+
+.layout-card .spotify-album-art {
+  width: 160px;
+  height: 160px;
+  border-radius: 12px;
+  margin-bottom: 12px;
+}
+
+.layout-card .spotify-album-art.large {
+  width: 160px;
+  height: 160px;
+}
+
+.layout-card .spotify-track-info {
+  margin-bottom: 8px;
+}
+
+.layout-card .spotify-track-name {
+  font-size: 15px;
+  margin-bottom: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+.layout-card .spotify-artist-name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 180px;
+}
+
+/* Banner Layout - Wide horizontal */
+.layout-banner {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.95) 0%, rgba(29, 185, 84, 0.3) 100%);
+  backdrop-filter: blur(20px);
+  padding: 14px 20px;
+  min-width: 450px;
+  max-width: 600px;
+  border-left: 4px solid #1db954;
+  border-radius: 8px;
+}
+
+.layout-banner .spotify-album-art {
+  width: 70px;
+  height: 70px;
+}
+
+.layout-banner .spotify-track-info {
+  flex: 1;
+  padding: 0 16px;
+}
+
+.layout-banner .spotify-track-name {
+  font-size: 18px;
+  margin-bottom: 6px;
+}
+
+.layout-banner .spotify-artist-name {
+  font-size: 15px;
+}
+
+.layout-banner .spotify-icon {
+  width: 32px;
+  height: 32px;
+}
