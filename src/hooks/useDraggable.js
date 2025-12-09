@@ -106,7 +106,7 @@ const useDraggable = (enabled = true, storageKey = null) => {
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
     };
-  }, [enabled]);
+  }, [enabled, storageKey]);
 
   return elementRef;
 };
