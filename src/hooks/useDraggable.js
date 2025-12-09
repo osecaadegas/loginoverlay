@@ -72,34 +72,36 @@ const useDraggable = (enabled = true, storageKey = null) => {
     element.style.position = 'fixed';
     element.style.cursor = 'grab';
     
-    // Try to restore position from localStorage
-    let positionRestored = false;
-    if (storageKey) {
-      const savedPosition = localStorage.getItem(`panel-position-${storageKey}`);
-      if (savedPosition) {
-        try {
-          const { left, top } = JSON.parse(savedPosition);
-          element.style.left = left;
-          element.style.top = top;
-          element.style.transform = 'none';
-          positionRestored = true;
-        } catch (e) {
-          console.warn('Failed to restore panel position:', e);
+    // Try to restore position from localStorage or center the element
+    requestAnimationFrame(() => {
+      let positionRestored = false;
+      
+      if (storageKey) {
+        const savedPosition = localStorage.getItem(`panel-position-${storageKey}`);
+        if (savedPosition) {
+          try {
+            const { left, top } = JSON.parse(savedPosition);
+            if (left && top) {
+              element.style.left = left;
+              element.style.top = top;
+              element.style.transform = 'none';
+              positionRestored = true;
+            }
+          } catch (e) {
+            console.warn('Failed to restore panel position:', e);
+          }
         }
       }
-    }
-    
-    // Center on first render if not already positioned and no saved position
-    if (!positionRestored) {
-      // Use requestAnimationFrame to ensure element is fully rendered
-      requestAnimationFrame(() => {
+      
+      // Center on first render if not already positioned and no saved position
+      if (!positionRestored) {
         const x = (window.innerWidth - element.offsetWidth) / 2;
         const y = (window.innerHeight - element.offsetHeight) / 2;
         element.style.left = `${x}px`;
         element.style.top = `${y}px`;
         element.style.transform = 'none';
-      });
-    }
+      }
+    });
 
     return () => {
       element.removeEventListener('mousedown', handleMouseDown);
