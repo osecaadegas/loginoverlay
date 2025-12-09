@@ -1,6 +1,6 @@
 import './Navbar.css';
 import { useState, useEffect } from 'react';
-import SpotifyWidget from '../OverlayComponents/SpotifyWidget/SpotifyWidget';
+import SpotifyWidget from '../SpotifyWidget/SpotifyWidget';
 
 const Navbar = () => {
   const [currentTime, setCurrentTime] = useState('');
