@@ -921,9 +921,14 @@ export default function PointsManager() {
               <button
                 onClick={() => {
                   const amount = parseInt(pointsAmount);
-                  if (userRole === 'moderator' && pointsAction === 'remove') {
+                  if (userRole === 'admin') {
+                    // Admin can enter positive or negative values directly
+                    handleAddPoints(amount);
+                  } else if (pointsAction === 'remove') {
+                    // Moderator removing points - make it negative
                     handleAddPoints(-Math.abs(amount));
                   } else {
+                    // Moderator adding points - make it positive
                     handleAddPoints(Math.abs(amount));
                   }
                 }}
