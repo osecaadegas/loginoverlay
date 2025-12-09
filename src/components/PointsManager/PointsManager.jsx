@@ -107,29 +107,50 @@ export default function PointsManager() {
   };
 
   const loadUsers = async () => {
-    // Get all users with SE connections
+    // Get ALL registered users first
+    const { data: allUsers, error: usersError } = await supabase.rpc('get_all_user_emails');
+    
+    if (usersError) {
+      console.error('Error fetching users:', usersError);
+      throw usersError;
+    }
+
+    // Get SE connections
     const { data: connections, error: connError } = await supabase
       .from('streamelements_connections')
       .select('*');
 
-    if (connError) throw connError;
+    if (connError) {
+      console.error('Error fetching SE connections:', connError);
+    }
 
-    // Get user emails using the getAllUsers RPC function
-    const { data: allUsers } = await supabase.rpc('get_all_user_emails');
-    
-    // Create a map of user_id to email
-    const emailMap = {};
-    if (allUsers) {
-      allUsers.forEach(user => {
-        emailMap[user.user_id] = user.email;
+    // Create a map of user_id to SE connection
+    const connectionMap = {};
+    if (connections) {
+      connections.forEach(conn => {
+        connectionMap[conn.user_id] = conn;
       });
     }
 
-    // Fetch current points for each user from SE API
-    const usersWithPoints = await Promise.all(
-      connections.map(async (conn) => {
-        const userEmail = emailMap[conn.user_id] || conn.se_username || 'Unknown';
+    // Process all users and fetch SE points for connected ones
+    const usersWithData = await Promise.all(
+      (allUsers || []).map(async (user) => {
+        const conn = connectionMap[user.user_id];
+        
+        if (!conn) {
+          // User exists but hasn't connected SE
+          return {
+            user_id: user.user_id,
+            email: user.email,
+            se_username: 'Not Connected',
+            se_channel_id: null,
+            current_points: 'N/A',
+            connected_at: null,
+            is_connected: false
+          };
+        }
 
+        // User has SE connection - fetch their points
         try {
           const response = await fetch(
             `https://api.streamelements.com/kappa/v2/points/${conn.se_channel_id}/${conn.se_username}`,
@@ -146,7 +167,8 @@ export default function PointsManager() {
             return {
               ...conn,
               current_points: data.points || 0,
-              email: userEmail
+              email: user.email,
+              is_connected: true
             };
           }
         } catch (err) {
@@ -156,12 +178,13 @@ export default function PointsManager() {
         return {
           ...conn,
           current_points: 0,
-          email: userEmail
+          email: user.email,
+          is_connected: true
         };
       })
     );
 
-    setUsers(usersWithPoints);
+    setUsers(usersWithData);
   };
 
   const loadRedemptions = async () => {
@@ -559,46 +582,63 @@ export default function PointsManager() {
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr key={user.id}>
+                      <tr key={user.user_id} className={!user.is_connected ? 'pm-user-not-connected' : ''}>
                         <td>{user.email}</td>
-                        <td>{user.se_username}</td>
-                        <td className="pm-points">{user.current_points.toLocaleString()}</td>
-                        <td>{new Date(user.connected_at).toLocaleDateString()}</td>
                         <td>
-                          {userRole === 'admin' ? (
-                            <button
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setPointsAction('add');
-                                setShowPointsModal(true);
-                              }}
-                              className="pm-action-btn"
-                            >
-                              ✏️ Edit Points
-                            </button>
-                          ) : (
-                            <div className="pm-mod-actions">
+                          {user.se_username}
+                          {!user.is_connected && <span className="pm-not-connected-badge">Not Connected</span>}
+                        </td>
+                        <td className="pm-points">
+                          {typeof user.current_points === 'number' 
+                            ? user.current_points.toLocaleString() 
+                            : user.current_points}
+                        </td>
+                        <td>
+                          {user.connected_at 
+                            ? new Date(user.connected_at).toLocaleDateString()
+                            : '—'}
+                        </td>
+                        <td>
+                          {user.is_connected ? (
+                            userRole === 'admin' ? (
                               <button
                                 onClick={() => {
                                   setSelectedUser(user);
                                   setPointsAction('add');
                                   setShowPointsModal(true);
                                 }}
-                                className="pm-add-points-btn"
+                                className="pm-action-btn"
                               >
-                                ➕ Add Points
+                                ✏️ Edit Points
                               </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setPointsAction('remove');
-                                  setShowPointsModal(true);
-                                }}
-                                className="pm-remove-points-btn"
-                              >
-                                ➖ Remove Points
-                              </button>
-                            </div>
+                            ) : (
+                              <div className="pm-mod-actions">
+                                <button
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setPointsAction('add');
+                                    setShowPointsModal(true);
+                                  }}
+                                  className="pm-add-points-btn"
+                                >
+                                  ➕ Add Points
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setPointsAction('remove');
+                                    setShowPointsModal(true);
+                                  }}
+                                  className="pm-remove-points-btn"
+                                >
+                                  ➖ Remove Points
+                                </button>
+                              </div>
+                            )
+                          ) : (
+                            <span className="pm-connect-required" title="User needs to connect their StreamElements account">
+                              Connect Required
+                            </span>
                           )}
                         </td>
                       </tr>
@@ -899,7 +939,11 @@ export default function PointsManager() {
             <h2>
               {userRole === 'admin' ? 'Edit' : pointsAction === 'add' ? 'Add' : 'Remove'} Points for {selectedUser.se_username}
             </h2>
-            <p>Current Points: <strong>{selectedUser.current_points.toLocaleString()}</strong></p>
+            <p>Current Points: <strong>
+              {typeof selectedUser.current_points === 'number' 
+                ? selectedUser.current_points.toLocaleString() 
+                : selectedUser.current_points}
+            </strong></p>
 
             <div className="pm-form-group">
               <label>
