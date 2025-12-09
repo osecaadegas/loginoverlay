@@ -28,7 +28,9 @@ export default function SpotifyWidgetControl() {
   }, [user?.id, settings.layout]);
 
   const spotifyClientId = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-  const redirectUri = `${window.location.origin}/overlay/widgets/spotify`;
+  // Detect if we're on admin-overlay or regular overlay
+  const isAdminOverlay = window.location.pathname.startsWith('/admin-overlay');
+  const redirectUri = `${window.location.origin}${isAdminOverlay ? '/admin-overlay' : '/overlay'}/widgets/spotify`;
 
   useEffect(() => {
     if (!user) return;
