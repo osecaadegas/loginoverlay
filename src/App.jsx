@@ -84,7 +84,7 @@ function AppContent({ isAdminOverlay = false }) {
   const { layoutMode, setLayoutMode } = useBonusHunt();
   const { latestRedemption, setLatestRedemption } = useStreamElements();
   const [showBHPanel, setShowBHPanel] = useState(false);
-  const [showStatsPanel, setShowStatsPanel] = useState(false);
+  const [showStatsPanel, setShowStatsPanel] = useState(true); // Show by default
   const [showBonusOpening, setShowBonusOpening] = useState(false);
   const [showBHStats, setShowBHStats] = useState(() => localStorage.getItem('showBHStats') !== 'false');
   const [showBHCards, setShowBHCards] = useState(() => localStorage.getItem('showBHCards') !== 'false');
