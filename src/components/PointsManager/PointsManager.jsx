@@ -107,31 +107,30 @@ export default function PointsManager() {
   };
 
   const loadUsers = async () => {
-    // Get SE connections (all users should have this auto-created on Twitch login)
+    // Get all users with SE connections
     const { data: connections, error: connError } = await supabase
       .from('streamelements_connections')
       .select('*');
 
-    if (connError) {
-      console.error('Error fetching SE connections:', connError);
-      setUsers([]);
-      return;
+    if (connError) throw connError;
+
+    // Get user emails using the getAllUsers RPC function
+    const { data: allUsers } = await supabase.rpc('get_all_user_emails');
+    
+    // Create a map of user_id to email
+    const emailMap = {};
+    if (allUsers) {
+      allUsers.forEach(user => {
+        emailMap[user.user_id] = user.email;
+      });
     }
 
-    if (!connections || connections.length === 0) {
-      setUsers([]);
-      return;
-    }
-
-    // Fetch SE points for all connected users
-    const usersWithData = await Promise.all(
+    // Fetch current points for each user from SE API
+    const usersWithPoints = await Promise.all(
       connections.map(async (conn) => {
-        try {
-          // Fetch user email
-          const { data: userData } = await supabase.auth.admin.getUserById(conn.user_id);
-          const email = userData?.user?.email || 'Unknown';
+        const userEmail = emailMap[conn.user_id] || conn.se_username || 'Unknown';
 
-          // Fetch points from StreamElements
+        try {
           const response = await fetch(
             `https://api.streamelements.com/kappa/v2/points/${conn.se_channel_id}/${conn.se_username}`,
             {
@@ -147,32 +146,22 @@ export default function PointsManager() {
             return {
               ...conn,
               current_points: data.points || 0,
-              email: email,
-              is_connected: true
-            };
-          } else {
-            return {
-              ...conn,
-              current_points: 0,
-              email: email,
-              error: 'Failed to fetch points',
-              is_connected: true
+              email: userEmail
             };
           }
         } catch (err) {
-          console.error(`Failed to fetch data for ${conn.se_username}`, err);
-          return {
-            ...conn,
-            current_points: 0,
-            email: 'Unknown',
-            error: err.message,
-            is_connected: true
-          };
+          console.error(`Failed to fetch points for ${conn.se_username}`, err);
         }
+
+        return {
+          ...conn,
+          current_points: 0,
+          email: userEmail
+        };
       })
     );
 
-    setUsers(usersWithData.filter(u => u !== null));
+    setUsers(usersWithPoints);
   };
 
   const loadRedemptions = async () => {
@@ -570,15 +559,11 @@ export default function PointsManager() {
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr key={user.user_id}>
+                      <tr key={user.id}>
                         <td>{user.email}</td>
                         <td>{user.se_username}</td>
-                        <td className="pm-points">
-                          {user.current_points.toLocaleString()}
-                        </td>
-                        <td>
-                          {new Date(user.connected_at).toLocaleDateString()}
-                        </td>
+                        <td className="pm-points">{user.current_points.toLocaleString()}</td>
+                        <td>{new Date(user.connected_at).toLocaleDateString()}</td>
                         <td>
                           {userRole === 'admin' ? (
                             <button
