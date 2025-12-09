@@ -510,6 +510,7 @@ const TournamentPanel = ({ onClose }) => {
             onResetTournament={resetTournament}
             currentMatchIndex={currentMatchIndex}
             onMatchIndexChange={setCurrentMatchIndex}
+            slotDataCache={slotDataCache}
           />
         </>
       )}

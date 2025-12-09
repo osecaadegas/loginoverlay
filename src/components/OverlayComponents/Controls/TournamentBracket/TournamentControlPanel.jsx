@@ -3,7 +3,7 @@ import './TournamentControlPanel.css';
 import { useBonusHunt } from '../../../../context/BonusHuntContext';
 import useDraggable from '../../../../hooks/useDraggable';
 
-const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplete, onResetTournament, currentMatchIndex: parentMatchIndex = 0, onMatchIndexChange }) => {
+const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplete, onResetTournament, currentMatchIndex: parentMatchIndex = 0, onMatchIndexChange, slotDataCache = {} }) => {
   const { getSlotImage } = useBonusHunt();
   const draggableRef = useDraggable(true, 'tournamentcontrol');
   const [currentMatchIndex, setCurrentMatchIndex] = useState(parentMatchIndex);
@@ -189,7 +189,7 @@ const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplet
             </div>
             <div className="player-slot-image">
               <img 
-                src={getSlotImage(currentMatch.player1?.slot)} 
+                src={getSlotImage(currentMatch.player1?.slot, slotDataCache[currentMatch.player1?.slot])} 
                 alt={currentMatch.player1?.slot}
                 onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=Slot'}
               />
@@ -232,7 +232,7 @@ const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplet
             </div>
             <div className="player-slot-image">
               <img 
-                src={getSlotImage(currentMatch.player2?.slot)} 
+                src={getSlotImage(currentMatch.player2?.slot, slotDataCache[currentMatch.player2?.slot])} 
                 alt={currentMatch.player2?.slot}
                 onError={(e) => e.target.src = 'https://via.placeholder.com/150?text=Slot'}
               />
