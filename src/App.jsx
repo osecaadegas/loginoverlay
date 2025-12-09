@@ -699,6 +699,20 @@ function App() {
                 <Route path="/overlay/slot-manager" element={<SlotManagerPage />} />
                 <Route path="/overlay/widgets" element={<WidgetsPage />} />
                 <Route path="/overlay/widgets/spotify" element={<SpotifyWidgetControl />} />
+                
+                {/* Admin Overlay Widget Routes */}
+                <Route path="/admin-overlay/widgets" element={
+                  <ProtectedAdminRoute>
+                    <WidgetsPage />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/admin-overlay/widgets/spotify" element={
+                  <ProtectedAdminRoute>
+                    <SpotifyWidgetControl />
+                  </ProtectedAdminRoute>
+                } />
+                
+                {/* Widget Display (for OBS) */}
                 <Route path="/widgets/spotify/:userId" element={
                   <WidgetWrapper>
                     <SpotifyWidgetDisplay />
