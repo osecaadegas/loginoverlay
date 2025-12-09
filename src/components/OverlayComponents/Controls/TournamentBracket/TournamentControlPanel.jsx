@@ -169,6 +169,18 @@ const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplet
     }
   };
 
+  const handleResetTournament = () => {
+    // Save current position before resetting
+    if (draggableRef.current) {
+      const position = {
+        left: draggableRef.current.style.left,
+        top: draggableRef.current.style.top
+      };
+      localStorage.setItem('panel-position-tournament', JSON.stringify(position));
+    }
+    onResetTournament();
+  };
+
   if (!currentMatch) return null;
 
   return (
@@ -291,7 +303,7 @@ const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplet
         </div>
 
         {/* Reset Button */}
-        <button className="control-reset-btn" onClick={onResetTournament}>
+        <button className="control-reset-btn" onClick={handleResetTournament}>
           🔄 Reset Tournament
         </button>
       </div>
