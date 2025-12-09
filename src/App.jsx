@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import './App.css';
-import { BonusHuntProvider, useBonusHunt } from './context/BonusHuntContext';
+import { BonusHuntProvider } from './context/BonusHuntContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { StreamElementsProvider } from './context/StreamElementsContext';
+import { StreamElementsProvider, useStreamElements } from './context/StreamElementsContext';
 import StreamElementsPanel from './components/StreamElements/StreamElementsPanel';
 import PointsManager from './components/PointsManager/PointsManager';
 import LandingPage from './components/LandingPage/LandingPage';
@@ -18,28 +18,7 @@ import GuessBalancePage from './components/GuessBalancePage/GuessBalancePage';
 import GiveawaysPage from './components/GiveawaysPage/GiveawaysPage';
 import { checkUserAccess } from './utils/adminUtils';
 import Navbar from './components/Navbar/Navbar';
-import BonusList from './components/BonusList/BonusList';
-import BonusHuntStats from './components/BonusHuntStats/BonusHuntStats';
-import ModernCardLayout from './components/ModernCardLayout/ModernCardLayout';
-import ModernSidebarLayout from './components/ModernSidebarLayout/ModernSidebarLayout';
-import CurrentlyOpening from './components/CurrentlyOpening/CurrentlyOpening';
-import BHPanel from './components/BHPanel/BHPanel';
-import CircularSidebar from './components/CircularSidebar/CircularSidebar';
-import BonusOpening from './components/BonusOpening/BonusOpening';
-import EditSlots from './components/EditSlots/EditSlots';
-import CustomizationPanel from './components/CustomizationPanel/CustomizationPanel';
-import TutorialPanel from './components/TutorialPanel/TutorialPanel';
-import TournamentPanel from './components/TournamentPanel/TournamentPanel';
-import GiveawayPanel from './components/GiveawayPanel/GiveawayPanel';
-import RandomSlotPicker from './components/RandomSlotPicker/RandomSlotPicker';
-import ArtAdPanel from './components/ArtAdPanel/ArtAdPanel';
-import SlotMachine from './components/SlotMachine/SlotMachine';
-import SlotMachineOverlay from './components/SlotMachineOverlay/SlotMachineOverlay';
-import CoinFlip from './components/CoinFlip/CoinFlip';
-import SpotifyWidget from './components/SpotifyWidget/SpotifyWidget';
-import TwitchChat from './components/TwitchChat/TwitchChat';
-import Blackjack from './components/Blackjack/Blackjack';
-import Mines from './components/Mines/Mines';
+import RedemptionNotification from './components/StreamElements/RedemptionNotification';
 import SlotManagerPage from './components/SlotManager/SlotManagerPage';
 import CustomizationPage from './components/CustomizationPanel/CustomizationPage';
 import RandomSlotPage from './components/RandomSlotPicker/RandomSlotPage';
@@ -81,38 +60,7 @@ import ProtectedAdminRoute from './components/ProtectedRoute/ProtectedAdminRoute
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
   const { user } = useAuth();
-  const { layoutMode, setLayoutMode } = useBonusHunt();
   const { latestRedemption, setLatestRedemption } = useStreamElements();
-  const [showBHPanel, setShowBHPanel] = useState(false);
-  const [showStatsPanel, setShowStatsPanel] = useState(true); // Show by default
-  const [showBonusOpening, setShowBonusOpening] = useState(false);
-  const [showBHStats, setShowBHStats] = useState(() => localStorage.getItem('showBHStats') !== 'false');
-  const [showBHCards, setShowBHCards] = useState(() => localStorage.getItem('showBHCards') !== 'false');
-  const [showEditSlots, setShowEditSlots] = useState(false);
-  const [showCustomization, setShowCustomization] = useState(false);
-  const [selectedBonusId, setSelectedBonusId] = useState(null);
-  const [showTutorial, setShowTutorial] = useState(false);
-  const [showTournament, setShowTournament] = useState(false);
-  const [showGiveaway, setShowGiveaway] = useState(false);
-  const [showRandomSlot, setShowRandomSlot] = useState(false);
-  const [showArtAd, setShowArtAd] = useState(false);
-  const [showSlotMachine, setShowSlotMachine] = useState(false);
-  const [showCoinFlip, setShowCoinFlip] = useState(false);
-  const [isLocked, setIsLocked] = useState(false);
-  const [showSpotify, setShowSpotify] = useState(() => localStorage.getItem('showSpotify') === 'true');
-  const [showTwitchChatWidget, setShowTwitchChatWidget] = useState(() => localStorage.getItem('showTwitchChat') === 'true');
-  const [chatSettings, setChatSettings] = useState(() => {
-    const settings = localStorage.getItem('overlaySettings');
-    if (settings) {
-      const parsed = JSON.parse(settings);
-      return {
-        position: parsed.chatPosition || 'bottom-right',
-        width: parsed.chatWidth || 350,
-        height: parsed.chatHeight || 500
-      };
-    }
-    return { position: 'bottom-right', width: 350, height: 500 };
-  });
 
   // Toggle body class based on current route
   useEffect(() => {
@@ -122,49 +70,6 @@ function AppContent({ isAdminOverlay = false }) {
       document.body.classList.remove('no-sidebar');
     }
   }, [location.pathname]);
-
-  // Load and subscribe to theme changes from database
-  useEffect(() => {
-    if (!user || location.pathname !== '/overlay') return;
-
-    const loadAndSubscribeTheme = async () => {
-      try {
-        // Subscribe to real-time theme changes
-        const subscription = subscribeToOverlayState(user.id, (payload) => {
-          if (payload.eventType === 'UPDATE' || payload.eventType === 'INSERT') {
-            const newState = payload.new;
-            if (newState.theme) {
-              // Save to localStorage and dispatch event to trigger theme application
-              localStorage.setItem('selectedTheme', newState.theme);
-              window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: newState.theme } }));
-            }
-          }
-        });
-
-        return () => {
-          unsubscribe(subscription);
-        };
-      } catch (error) {
-        console.error('Error loading/subscribing to theme:', error);
-      }
-    };
-
-    loadAndSubscribeTheme();
-  }, [user, location.pathname]);
-
-  // Apply saved theme on startup
-  useEffect(() => {
-    const applyThemeFromStorage = () => {
-      const savedTheme = localStorage.getItem('selectedTheme');
-      if (savedTheme) {
-        // Define theme colors (same as in CustomizationPanel)
-        const THEMES = window.THEME_DEFINITIONS = {
-          'cyberpunk': { colors: { primary: '#00ff41', secondary: '#ff006e', accent: '#00d4ff', background: '#0a0e27', text: '#00ff41', panelBg: 'linear-gradient(135deg, rgba(10, 14, 39, 0.95), rgba(26, 27, 46, 0.95))', border: '#00ff41' }, font: 'Orbitron, monospace' },
-          'minimal': { colors: { primary: '#000000', secondary: '#6b7280', accent: '#3b82f6', background: '#ffffff', text: '#000000', panelBg: 'linear-gradient(135deg, rgba(255, 255, 255, 0.98), rgba(249, 250, 251, 0.98))', border: '#e5e7eb' }, font: 'Inter, sans-serif' },
-          'royal': { colors: { primary: '#7c3aed', secondary: '#fbbf24', accent: '#ec4899', background: '#1e1b4b', text: '#fbbf24', panelBg: 'linear-gradient(135deg, rgba(30, 27, 75, 0.95), rgba(88, 28, 135, 0.95))', border: '#fbbf24' }, font: 'Playfair Display, serif' },
-          'gaming': { colors: { primary: '#10b981', secondary: '#ef4444', accent: '#f59e0b', background: '#111827', text: '#10b981', panelBg: 'linear-gradient(135deg, rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.95))', border: '#10b981' }, font: 'Rajdhani, sans-serif' },
-          'ocean': { colors: { primary: '#06b6d4', secondary: '#0ea5e9', accent: '#38bdf8', background: '#0c4a6e', text: '#e0f2fe', panelBg: 'linear-gradient(135deg, rgba(12, 74, 110, 0.95), rgba(7, 89, 133, 0.95))', border: '#38bdf8' }, font: 'Nunito, sans-serif' },
-          'sunset': { colors: { primary: '#f97316', secondary: '#ec4899', accent: '#fbbf24', background: '#431407', text: '#fed7aa', panelBg: 'linear-gradient(135deg, rgba(67, 20, 7, 0.95), rgba(124, 45, 18, 0.95))', border: '#f97316' }, font: 'Poppins, sans-serif' },
           'matrix': { colors: { primary: '#00ff00', secondary: '#00cc00', accent: '#00ff88', background: '#000000', text: '#00ff00', panelBg: 'linear-gradient(135deg, rgba(0, 0, 0, 0.98), rgba(0, 20, 0, 0.98))', border: '#00ff00' }, font: 'Courier New, monospace' },
           'synthwave': { colors: { primary: '#ff00ff', secondary: '#00ffff', accent: '#ffff00', background: '#2d0b54', text: '#ff00ff', panelBg: 'linear-gradient(135deg, rgba(45, 11, 84, 0.95), rgba(88, 24, 69, 0.95))', border: '#ff00ff' }, font: 'Audiowide, cursive' },
           'forest': { colors: { primary: '#22c55e', secondary: '#84cc16', accent: '#a3e635', background: '#14532d', text: '#dcfce7', panelBg: 'linear-gradient(135deg, rgba(20, 83, 45, 0.95), rgba(21, 128, 61, 0.95))', border: '#22c55e' }, font: 'Lato, sans-serif' },
@@ -348,133 +253,7 @@ function AppContent({ isAdminOverlay = false }) {
           }
         }
       }
-    };
-    
-    applyThemeFromStorage();
-  }, []);
 
-  // Listen for customization panel toggles
-  useEffect(() => {
-    const handleToggleSpotify = (e) => setShowSpotify(e.detail.show);
-    const handleToggleTwitch = (e) => setShowTwitchChatWidget(e.detail.show);
-    const handleToggleBHStats = (e) => {
-      setShowBHStats(e.detail.show);
-      if (e.detail.show) setShowStatsPanel(true);
-    };
-    const handleToggleBHCards = (e) => setShowBHCards(e.detail.show);
-    const handleChatSettingsUpdate = () => {
-      const settings = localStorage.getItem('overlaySettings');
-      if (settings) {
-        const parsed = JSON.parse(settings);
-        setChatSettings({
-          position: parsed.chatPosition || 'bottom-left',
-          width: parsed.chatWidth || 350,
-          height: parsed.chatHeight || 500
-        });
-      }
-    };
-    const handleThemeChanged = (e) => {
-      // Re-apply theme from storage when theme changes
-      const savedTheme = e.detail.theme || localStorage.getItem('selectedTheme');
-      if (savedTheme && window.THEME_DEFINITIONS) {
-        const theme = window.THEME_DEFINITIONS[savedTheme];
-        if (theme) {
-          document.documentElement.style.setProperty('--theme-primary', theme.colors.primary);
-          document.documentElement.style.setProperty('--theme-secondary', theme.colors.secondary);
-          document.documentElement.style.setProperty('--theme-accent', theme.colors.accent);
-          document.documentElement.style.setProperty('--theme-background', theme.colors.background);
-          document.documentElement.style.setProperty('--theme-text', theme.colors.text);
-          document.documentElement.style.setProperty('--theme-panel-bg', theme.colors.panelBg);
-          document.documentElement.style.setProperty('--theme-border', theme.colors.border);
-          document.documentElement.style.setProperty('--theme-font', theme.font);
-          
-          // Apply FX theme border animations
-          if (savedTheme.startsWith('fx-')) {
-            let animation = 'rgb-pulse';
-            if (savedTheme.includes('pulse')) animation = 'rgb-pulse';
-            else if (savedTheme.includes('neon')) animation = 'neon-pulse';
-            else if (savedTheme.includes('fire') || savedTheme.includes('inferno') || savedTheme.includes('magma')) animation = 'fire-pulse';
-            else if (savedTheme.includes('rainbow') || savedTheme.includes('disco') || savedTheme.includes('holographic') || savedTheme.includes('prism')) animation = 'rainbow-flash';
-            else if (savedTheme.includes('glitch') || savedTheme.includes('corrupted')) animation = 'glitch-scroll';
-            else if (savedTheme.includes('lightning') || savedTheme.includes('thunder')) animation = 'lightning-flash';
-            else if (savedTheme.includes('stripe') || savedTheme.includes('retro') || savedTheme.includes('danger') || savedTheme.includes('electric')) animation = 'stripe-scroll';
-            
-            document.documentElement.style.setProperty('--theme-border-animation', animation);
-            document.body.classList.add('fx-theme-active');
-          } else {
-            document.documentElement.style.setProperty('--theme-border-animation', 'none');
-            document.body.classList.remove('fx-theme-active');
-          }
-          
-          document.body.style.background = theme.colors.background;
-        }
-      }
-    };
-    
-    window.addEventListener('toggleSpotify', handleToggleSpotify);
-    window.addEventListener('toggleTwitchChat', handleToggleTwitch);
-    window.addEventListener('toggleBHStats', handleToggleBHStats);
-    window.addEventListener('toggleBHCards', handleToggleBHCards);
-    window.addEventListener('chatSettingsUpdated', handleChatSettingsUpdate);
-    window.addEventListener('themeChanged', handleThemeChanged);
-    
-    return () => {
-      window.removeEventListener('toggleSpotify', handleToggleSpotify);
-      window.removeEventListener('toggleTwitchChat', handleToggleTwitch);
-      window.removeEventListener('toggleBHStats', handleToggleBHStats);
-      window.removeEventListener('toggleBHCards', handleToggleBHCards);
-      window.removeEventListener('chatSettingsUpdated', handleChatSettingsUpdate);
-      window.removeEventListener('themeChanged', handleThemeChanged);
-    };
-  }, []);
-
-  const handleBonusClick = (bonusId) => {
-    setSelectedBonusId(bonusId);
-    setShowBonusOpening(true);
-  };
-
-  const handleMenuSelect = (menuId) => {
-    console.log('Menu selected:', menuId);
-    if (menuId === 'slotMachine') {
-      console.log('SLOT MACHINE CLICKED - Current state:', showSlotMachine);
-      setShowSlotMachine(!showSlotMachine);
-      console.log('SLOT MACHINE NEW STATE:', !showSlotMachine);
-      return;
-    }
-    if (menuId === 'coinFlip') {
-      setShowCoinFlip(!showCoinFlip);
-      return;
-    }
-    switch(menuId) {
-      case 'customization':
-        setShowCustomization(!showCustomization); // Toggle instead of just opening
-        break;
-      case 'bonusHunt':
-        setShowBHPanel(!showBHPanel);
-        setShowStatsPanel(!showBHPanel); // Toggle stats panel with BH panel
-        break;
-      case 'editSlots':
-        setShowEditSlots(true);
-        break;
-      case 'tutorial':
-        setShowTutorial(true);
-        break;
-      case 'randomSlot':
-        setShowRandomSlot(!showRandomSlot); // Toggle instead of just opening
-        break;
-      case 'tournament':
-        setShowTournament(!showTournament); // Toggle instead of just opening
-        break;
-      case 'giveaway':
-        setShowGiveaway(!showGiveaway); // Toggle instead of just opening
-        break;
-      case 'artAd':
-        setShowArtAd(!showArtAd); // Toggle instead of just opening
-        break;
-      default:
-        break;
-    }
-  };
 
   // Only render overlay UI on /overlay and /admin-overlay routes
   if (location.pathname !== '/overlay' && location.pathname !== '/admin-overlay') {
@@ -485,83 +264,6 @@ function AppContent({ isAdminOverlay = false }) {
     <div className="overlay-container">
       <Navbar />
       
-      <div className="main-layout">
-        {/* Currently Opening Card - Outside scroll container */}
-        {showBonusOpening && layoutMode === 'modern-sidebar' && showStatsPanel && <CurrentlyOpening selectedBonusId={selectedBonusId} />}
-        
-        {/* Right Sidebar - Info Panel (Conditionally visible) */}
-        <aside className={`info-panel ${showStatsPanel && showBHStats ? 'info-panel--visible' : ''}`} style={{ display: showStatsPanel && showBHStats ? 'flex' : 'none' }}>
-          {/* Layout Switcher */}
-          <div className="layout-switcher">
-            <button 
-              className={`layout-btn ${layoutMode === 'classic' ? 'active' : ''}`}
-              onClick={() => setLayoutMode('classic')}
-              title="Classic Layout"
-            >
-              📋
-            </button>
-            <button 
-              className={`layout-btn ${layoutMode === 'modern-card' ? 'active' : ''}`}
-              onClick={() => setLayoutMode('modern-card')}
-              title="Card Layout"
-            >
-              🎴
-            </button>
-            <button 
-              className={`layout-btn ${layoutMode === 'modern-sidebar' ? 'active' : ''}`}
-              onClick={() => setLayoutMode('modern-sidebar')}
-              title="Sidebar Layout"
-            >
-              📊
-            </button>
-          </div>
-
-          {/* Statistics Section - Only show for classic layout */}
-          {showStatsPanel && showBHStats && layoutMode === 'classic' && <BonusHuntStats />}
-
-          {/* Bonus List Section */}
-          {layoutMode === 'classic' && <BonusList onBonusClick={handleBonusClick} />}
-          {layoutMode === 'modern-card' && <ModernCardLayout showCards={showBHCards} />}
-          {layoutMode === 'modern-sidebar' && <ModernSidebarLayout showCards={showBHCards} />}
-        </aside>
-      </div>
-      {showBHPanel && <BHPanel onClose={() => setShowBHPanel(false)} onOpenBonusOpening={(bonusId) => {
-        setSelectedBonusId(bonusId);
-        setShowBonusOpening(true);
-      }} />}
-      {showEditSlots && <EditSlots onClose={() => setShowEditSlots(false)} />}
-      {showCustomization && <CustomizationPanel onClose={() => setShowCustomization(false)} />}
-      {showTutorial && <TutorialPanel onClose={() => setShowTutorial(false)} />}
-      {showTournament && <TournamentPanel onClose={() => setShowTournament(false)} />}
-      {showGiveaway && <GiveawayPanel onClose={() => setShowGiveaway(false)} />}
-      {showRandomSlot && <RandomSlotPicker onClose={() => setShowRandomSlot(false)} />}
-      {showArtAd && <ArtAdPanel onClose={() => setShowArtAd(false)} />}
-      
-      {/* Slot Machine Overlay */}
-      {showSlotMachine && <SlotMachineOverlay onClose={() => setShowSlotMachine(false)} />}
-      
-      {/* Coin Flip */}
-      {showCoinFlip && <CoinFlip onClose={() => setShowCoinFlip(false)} />}
-      
-      {/* Spotify Widget (only show if enabled in customization) */}
-      {showSpotify && <SpotifyWidget />}
-      
-      {/* Twitch Chat (only show if enabled in customization) */}
-      {showTwitchChatWidget && <TwitchChat channel={localStorage.getItem('twitchChannel') || ''} position={chatSettings.position} width={chatSettings.width} height={chatSettings.height} />}
-      
-      {/* Bonus Opening Panel */}
-      {showBonusOpening && (
-        <BonusOpening 
-          bonusId={selectedBonusId} 
-          onClose={() => { 
-            setShowBonusOpening(false); 
-            setSelectedBonusId(null);
-            setShowBHPanel(true);
-          }}
-          onBonusChange={(bonusId) => setSelectedBonusId(bonusId)}
-        />
-      )}
-      
       {/* StreamElements Redemption Notification - Only for Admin Overlay */}
       {isAdminOverlay && latestRedemption && (
         <RedemptionNotification 
@@ -569,8 +271,6 @@ function AppContent({ isAdminOverlay = false }) {
           onClose={() => setLatestRedemption(null)} 
         />
       )}
-      
-      <CircularSidebar onMenuSelect={handleMenuSelect} isLocked={isLocked} onLockToggle={() => setIsLocked(!isLocked)} />
     </div>
   );
 }
