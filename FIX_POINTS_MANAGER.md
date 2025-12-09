@@ -31,11 +31,11 @@ AS $$
 BEGIN
   RETURN QUERY
   SELECT 
-    id as user_id,
-    email as email,
-    created_at as created_at
+    auth.users.id as user_id,
+    auth.users.email as email,
+    auth.users.created_at as created_at
   FROM auth.users
-  ORDER BY created_at DESC;
+  ORDER BY auth.users.created_at DESC;
 END;
 $$;
 
