@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
-import { useBonusHunt } from '../../context/BonusHuntContext';
-import { slotDatabase } from '../../data/slotDatabase';
+import { useBonusHunt } from '../../../context/BonusHuntContext';
+import { slotDatabase } from '../../../data/slotDatabase';
 import './BonusOpening.css';
-import useDraggable from '../../hooks/useDraggable';
+import useDraggable from '../../../hooks/useDraggable';
 
 const BonusOpening = ({ bonusId, onClose, onBonusChange }) => {
   const { bonuses, updateBonusResult, getSlotImage } = useBonusHunt();

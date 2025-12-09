@@ -1,4 +1,4 @@
-import { useBonusHunt } from '../../context/BonusHuntContext';
+import { useBonusHunt } from '../../../context/BonusHuntContext';
 import './CurrentlyOpening.css';
 
 const CurrentlyOpening = ({ selectedBonusId }) => {

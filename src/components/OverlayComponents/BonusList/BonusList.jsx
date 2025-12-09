@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import './BonusList.css';
 import BonusItem from '../BonusItem/BonusItem';
-import { useBonusHunt } from '../../context/BonusHuntContext';
+import { useBonusHunt } from '../../../context/BonusHuntContext';
 
 const BonusList = ({ onBonusClick }) => {
   const { bonuses, toggleSuperStatus } = useBonusHunt();

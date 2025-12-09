@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useAdmin } from '../../hooks/useAdmin';
+import { useAdmin } from '../../../hooks/useAdmin';
 import { useEffect } from 'react';
 import TournamentPanel from './TournamentPanel';
 import '../CustomizationPanel/CustomizationPage.css';

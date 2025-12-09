@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { useAdmin } from '../../hooks/useAdmin';
+import { useAdmin } from '../../../hooks/useAdmin';
 import { useEffect } from 'react';
 import RandomSlotPicker from './RandomSlotPicker';
 import '../CustomizationPanel/CustomizationPage.css';

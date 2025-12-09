@@ -1,6 +1,6 @@
 import React from 'react';
 import './TournamentBracketWidget.css';
-import { useBonusHunt } from '../../context/BonusHuntContext';
+import { useBonusHunt } from '../../../context/BonusHuntContext';
 
 const TournamentBracketWidget = ({ matches, currentRound, currentMatchIndex, slotDataCache = {} }) => {
   const { getSlotImage } = useBonusHunt();

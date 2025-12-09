@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import './RandomSlotPicker.css';
-import useDraggable from '../../hooks/useDraggable';
-import { getAllSlots, getAllProviders } from '../../utils/slotUtils';
+import useDraggable from '../../../hooks/useDraggable';
+import { getAllSlots, getAllProviders } from '../../../utils/slotUtils';
 
 const RandomSlotPicker = ({ onClose }) => {
   const [isSpinning, setIsSpinning] = useState(false);

@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
 import './TournamentPanel.css';
-import { getAllSlots, searchSlotsByName, getRandomSlots } from '../../utils/slotUtils';
+import { getAllSlots, searchSlotsByName, getRandomSlots } from '../../../utils/slotUtils';
 import TournamentBracketWidget from '../TournamentBracket/TournamentBracketWidget';
 import TournamentControlPanel from '../TournamentBracket/TournamentControlPanel';
-import { useBonusHunt } from '../../context/BonusHuntContext';
-import { useAuth } from '../../context/AuthContext';
+import { useBonusHunt } from '../../../context/BonusHuntContext';
+import { useAuth } from '../../../context/AuthContext';
 import { 
   getUserTournament, 
   upsertUserTournament, 
   subscribeToTournament,
   unsubscribe 
-} from '../../utils/overlayUtils';
-import useDraggable from '../../hooks/useDraggable';
+} from '../../../utils/overlayUtils';
+import useDraggable from '../../../hooks/useDraggable';
 
 const TournamentPanel = ({ onClose }) => {
   const { getSlotImage } = useBonusHunt();
