@@ -107,51 +107,31 @@ export default function PointsManager() {
   };
 
   const loadUsers = async () => {
-    // Get ALL registered users first
-    const { data: allUsers, error: usersError } = await supabase.rpc('get_all_user_emails');
-    
-    if (usersError) {
-      console.error('Error fetching users:', usersError);
-      throw usersError;
-    }
-
-    // Get SE connections
+    // Get SE connections (all users should have this auto-created on Twitch login)
     const { data: connections, error: connError } = await supabase
       .from('streamelements_connections')
       .select('*');
 
     if (connError) {
       console.error('Error fetching SE connections:', connError);
+      setUsers([]);
+      return;
     }
 
-    // Create a map of user_id to SE connection
-    const connectionMap = {};
-    if (connections) {
-      connections.forEach(conn => {
-        connectionMap[conn.user_id] = conn;
-      });
+    if (!connections || connections.length === 0) {
+      setUsers([]);
+      return;
     }
 
-    // Process all users and fetch SE points for connected ones
+    // Fetch SE points for all connected users
     const usersWithData = await Promise.all(
-      (allUsers || []).map(async (user) => {
-        const conn = connectionMap[user.user_id];
-        
-        if (!conn) {
-          // User exists but hasn't connected SE
-          return {
-            user_id: user.user_id,
-            email: user.email,
-            se_username: 'Not Connected',
-            se_channel_id: null,
-            current_points: 'N/A',
-            connected_at: null,
-            is_connected: false
-          };
-        }
-
-        // User has SE connection - fetch their points
+      connections.map(async (conn) => {
         try {
+          // Fetch user email
+          const { data: userData } = await supabase.auth.admin.getUserById(conn.user_id);
+          const email = userData?.user?.email || 'Unknown';
+
+          // Fetch points from StreamElements
           const response = await fetch(
             `https://api.streamelements.com/kappa/v2/points/${conn.se_channel_id}/${conn.se_username}`,
             {
@@ -167,24 +147,32 @@ export default function PointsManager() {
             return {
               ...conn,
               current_points: data.points || 0,
-              email: user.email,
+              email: email,
+              is_connected: true
+            };
+          } else {
+            return {
+              ...conn,
+              current_points: 0,
+              email: email,
+              error: 'Failed to fetch points',
               is_connected: true
             };
           }
         } catch (err) {
-          console.error(`Failed to fetch points for ${conn.se_username}`, err);
+          console.error(`Failed to fetch data for ${conn.se_username}`, err);
+          return {
+            ...conn,
+            current_points: 0,
+            email: 'Unknown',
+            error: err.message,
+            is_connected: true
+          };
         }
-
-        return {
-          ...conn,
-          current_points: 0,
-          email: user.email,
-          is_connected: true
-        };
       })
     );
 
-    setUsers(usersWithData);
+    setUsers(usersWithData.filter(u => u !== null));
   };
 
   const loadRedemptions = async () => {
@@ -582,63 +570,50 @@ export default function PointsManager() {
                   </thead>
                   <tbody>
                     {users.map((user) => (
-                      <tr key={user.user_id} className={!user.is_connected ? 'pm-user-not-connected' : ''}>
+                      <tr key={user.user_id}>
                         <td>{user.email}</td>
-                        <td>
-                          {user.se_username}
-                          {!user.is_connected && <span className="pm-not-connected-badge">Not Connected</span>}
-                        </td>
+                        <td>{user.se_username}</td>
                         <td className="pm-points">
-                          {typeof user.current_points === 'number' 
-                            ? user.current_points.toLocaleString() 
-                            : user.current_points}
+                          {user.current_points.toLocaleString()}
                         </td>
                         <td>
-                          {user.connected_at 
-                            ? new Date(user.connected_at).toLocaleDateString()
-                            : '—'}
+                          {new Date(user.connected_at).toLocaleDateString()}
                         </td>
                         <td>
-                          {user.is_connected ? (
-                            userRole === 'admin' ? (
+                          {userRole === 'admin' ? (
+                            <button
+                              onClick={() => {
+                                setSelectedUser(user);
+                                setPointsAction('add');
+                                setShowPointsModal(true);
+                              }}
+                              className="pm-action-btn"
+                            >
+                              ✏️ Edit Points
+                            </button>
+                          ) : (
+                            <div className="pm-mod-actions">
                               <button
                                 onClick={() => {
                                   setSelectedUser(user);
                                   setPointsAction('add');
                                   setShowPointsModal(true);
                                 }}
-                                className="pm-action-btn"
+                                className="pm-add-points-btn"
                               >
-                                ✏️ Edit Points
+                                ➕ Add Points
                               </button>
-                            ) : (
-                              <div className="pm-mod-actions">
-                                <button
-                                  onClick={() => {
-                                    setSelectedUser(user);
-                                    setPointsAction('add');
-                                    setShowPointsModal(true);
-                                  }}
-                                  className="pm-add-points-btn"
-                                >
-                                  ➕ Add Points
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setSelectedUser(user);
-                                    setPointsAction('remove');
-                                    setShowPointsModal(true);
-                                  }}
-                                  className="pm-remove-points-btn"
-                                >
-                                  ➖ Remove Points
-                                </button>
-                              </div>
-                            )
-                          ) : (
-                            <span className="pm-connect-required" title="User needs to connect their StreamElements account">
-                              Connect Required
-                            </span>
+                              <button
+                                onClick={() => {
+                                  setSelectedUser(user);
+                                  setPointsAction('remove');
+                                  setShowPointsModal(true);
+                                }}
+                                className="pm-remove-points-btn"
+                              >
+                                ➖ Remove Points
+                              </button>
+                            </div>
                           )}
                         </td>
                       </tr>
@@ -939,11 +914,7 @@ export default function PointsManager() {
             <h2>
               {userRole === 'admin' ? 'Edit' : pointsAction === 'add' ? 'Add' : 'Remove'} Points for {selectedUser.se_username}
             </h2>
-            <p>Current Points: <strong>
-              {typeof selectedUser.current_points === 'number' 
-                ? selectedUser.current_points.toLocaleString() 
-                : selectedUser.current_points}
-            </strong></p>
+            <p>Current Points: <strong>{selectedUser.current_points.toLocaleString()}</strong></p>
 
             <div className="pm-form-group">
               <label>
