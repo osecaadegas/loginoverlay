@@ -130,6 +130,7 @@ export default function SpotifyWidgetControl() {
   };
 
   const connectSpotify = () => {
+    console.log('Connecting to Spotify with redirect URI:', redirectUri);
     const scopes = 'user-read-currently-playing user-read-playback-state';
     const authUrl = `https://accounts.spotify.com/authorize?` +
       `client_id=${spotifyClientId}&` +
@@ -137,6 +138,7 @@ export default function SpotifyWidgetControl() {
       `redirect_uri=${encodeURIComponent(redirectUri)}&` +
       `scope=${encodeURIComponent(scopes)}`;
     
+    console.log('Full auth URL:', authUrl);
     window.location.href = authUrl;
   };
 
