@@ -378,15 +378,6 @@ const TournamentPanel = ({ onClose }) => {
     }
   };
   const resetTournament = () => {
-    // Save current position before resetting
-    if (draggableRef.current) {
-      const position = {
-        left: draggableRef.current.style.left,
-        top: draggableRef.current.style.top
-      };
-      localStorage.setItem('panel-position-tournament', JSON.stringify(position));
-    }
-    
     setMatches([]);
     setTournamentStarted(false);
     setWinner(null);

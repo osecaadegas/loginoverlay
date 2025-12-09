@@ -5,7 +5,7 @@ import useDraggable from '../../../../hooks/useDraggable';
 
 const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplete, onResetTournament, currentMatchIndex: parentMatchIndex = 0, onMatchIndexChange, slotDataCache = {} }) => {
   const { getSlotImage } = useBonusHunt();
-  const draggableRef = useDraggable(true, 'tournamentcontrol');
+  const draggableRef = useDraggable(true, 'tournament');
   const [currentMatchIndex, setCurrentMatchIndex] = useState(parentMatchIndex);
   const [player1BetSize, setPlayer1BetSize] = useState('');
   const [player1Payout, setPlayer1Payout] = useState('');
