@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './TournamentControlPanel.css';
-import { useBonusHunt } from '../../../context/BonusHuntContext';
-import useDraggable from '../../../hooks/useDraggable';
+import { useBonusHunt } from '../../../../context/BonusHuntContext';
+import useDraggable from '../../../../hooks/useDraggable';
 
 const TournamentControlPanel = ({ matches, currentRound, onClose, onMatchComplete, onResetTournament, currentMatchIndex: parentMatchIndex = 0, onMatchIndexChange }) => {
   const { getSlotImage } = useBonusHunt();

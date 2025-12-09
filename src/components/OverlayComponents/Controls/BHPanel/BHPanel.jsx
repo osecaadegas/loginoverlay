@@ -1,9 +1,9 @@
 import { useState, useRef, useEffect } from 'react';
 import './BHPanel.css';
-import { useBonusHunt } from '../../../context/BonusHuntContext';
-import overlayConfig from '../../../config/overlayConfig';
-import { slotDatabase } from '../../../data/slotDatabase';
-import useDraggable from '../../../hooks/useDraggable';
+import { useBonusHunt } from '../../../../context/BonusHuntContext';
+import overlayConfig from '../../../../config/overlayConfig';
+import { slotDatabase } from '../../../../data/slotDatabase';
+import useDraggable from '../../../../hooks/useDraggable';
 
 const BHPanel = ({ onClose, onOpenBonusOpening }) => {
   const {

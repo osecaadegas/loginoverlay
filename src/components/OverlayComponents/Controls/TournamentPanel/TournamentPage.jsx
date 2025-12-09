@@ -1,10 +1,10 @@
 import { useNavigate } from 'react-router-dom';
-import { useAdmin } from '../../../hooks/useAdmin';
+import { useAdmin } from '../../../../hooks/useAdmin';
 import { useEffect } from 'react';
-import RandomSlotPicker from './RandomSlotPicker';
-import '../../CustomizationPanel/CustomizationPage.css';
+import TournamentPanel from './TournamentPanel';
+import '../../../CustomizationPanel/CustomizationPage.css';
 
-const RandomSlotPage = () => {
+const TournamentPage = () => {
   const { isAdmin, isModerator, isPremium, loading } = useAdmin();
   const navigate = useNavigate();
   const hasAccess = isAdmin || isModerator || isPremium;
@@ -31,14 +31,14 @@ const RandomSlotPage = () => {
   return (
     <div className="overlay-page">
       <div className="overlay-page-header">
-        <h1>🎲 Random Slot Picker</h1>
-        <p>Pick a random slot from the database</p>
+        <h1>🏆 Tournament Manager</h1>
+        <p>Create and manage slot tournaments</p>
       </div>
       <div className="overlay-page-content">
-        <RandomSlotPicker onClose={() => navigate('/overlay')} />
+        <TournamentPanel onClose={() => navigate('/overlay')} />
       </div>
     </div>
   );
 };
 
-export default RandomSlotPage;
+export default TournamentPage;

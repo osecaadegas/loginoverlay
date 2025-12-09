@@ -1,6 +1,6 @@
 import './StatsPanel.css';
-import { useBonusHunt } from '../../../context/BonusHuntContext';
-import useDraggable from '../../../hooks/useDraggable';
+import { useBonusHunt } from '../../../../../context/BonusHuntContext';
+import useDraggable from '../../../../../hooks/useDraggable';
 import { useState, useEffect } from 'react';
 
 const StatsPanel = () => {

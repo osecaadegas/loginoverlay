@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import './SlotMachineOverlay.css';
-import useDraggable from '../../../hooks/useDraggable';
+import useDraggable from '../../../../hooks/useDraggable';
 import { slotImages, prizes, symbols } from './slotImages';
 
 const SlotMachineOverlay = ({ onClose }) => {

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import './CoinFlip.css';
-import useDraggable from '../../../hooks/useDraggable';
+import useDraggable from '../../../../hooks/useDraggable';
 
 const CoinFlip = ({ onClose }) => {
   const [isFlipping, setIsFlipping] = useState(false);

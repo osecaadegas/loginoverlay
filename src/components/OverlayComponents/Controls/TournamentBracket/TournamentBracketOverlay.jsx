@@ -1,7 +1,7 @@
 import React from 'react';
 import TournamentBracket from './TournamentBracket';
 import './TournamentBracketOverlay.css';
-import useDraggable from '../../../hooks/useDraggable';
+import useDraggable from '../../../../hooks/useDraggable';
 
 const TournamentBracketOverlay = ({ matches, currentRound, onSelectWinner, onAdvanceRound, onReset, winner }) => {
   const draggableRef = useDraggable(true, 'bracket');

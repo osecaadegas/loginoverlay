@@ -1,5 +1,5 @@
 import './BonusItem.css';
-import { useBonusHunt } from '../../../context/BonusHuntContext';
+import { useBonusHunt } from '../../../../../context/BonusHuntContext';
 
 const BonusItem = ({ bonus, onToggleSuper, onOpenBonus }) => {
   const { getSlotImage } = useBonusHunt();
