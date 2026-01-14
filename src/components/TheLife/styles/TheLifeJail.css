@@ -1,0 +1,99 @@
+/* =============================================
+   JAIL SECTION STYLES
+   ============================================= */
+
+.jail-section {
+  background: rgba(26, 31, 46, 0.8);
+  border-radius: 15px;
+  padding: 40px;
+  border: 2px solid rgba(245, 158, 11, 0.3);
+}
+
+.jail-section h2 {
+  color: #f59e0b;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.jail-section > p {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: 30px;
+}
+
+.jail-status {
+  background: rgba(245, 158, 11, 0.1);
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.jail-timer {
+  font-size: 2rem;
+  color: #f59e0b;
+  font-weight: 700;
+  margin: 15px 0;
+}
+
+.jail-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.bail-btn {
+  background: linear-gradient(135deg, #d4af37, #f0c674);
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.bail-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.5);
+}
+
+.bail-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .jail-section {
+    padding: 20px 15px;
+  }
+
+  .jail-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .jail-status {
+    padding: 15px;
+  }
+
+  .jail-timer {
+    font-size: 1.5rem;
+  }
+
+  .jail-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .bail-btn {
+    width: 100%;
+    padding: 12px;
+  }
+}

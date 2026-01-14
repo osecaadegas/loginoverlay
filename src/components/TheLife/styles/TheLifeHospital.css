@@ -1,0 +1,99 @@
+/* =============================================
+   HOSPITAL SECTION STYLES
+   ============================================= */
+
+.hospital-section {
+  background: rgba(26, 31, 46, 0.8);
+  border-radius: 15px;
+  padding: 40px;
+  border: 2px solid rgba(239, 68, 68, 0.3);
+}
+
+.hospital-section h2 {
+  color: #ef4444;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.hospital-section > p {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: 30px;
+}
+
+.hospital-status {
+  background: rgba(239, 68, 68, 0.1);
+  border: 2px solid rgba(239, 68, 68, 0.3);
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.hospital-timer {
+  font-size: 2rem;
+  color: #ef4444;
+  font-weight: 700;
+  margin: 15px 0;
+}
+
+.hospital-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.heal-btn {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.heal-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(16, 185, 129, 0.5);
+}
+
+.heal-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .hospital-section {
+    padding: 20px 15px;
+  }
+
+  .hospital-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .hospital-status {
+    padding: 15px;
+  }
+
+  .hospital-timer {
+    font-size: 1.5rem;
+  }
+
+  .hospital-buttons {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .heal-btn {
+    width: 100%;
+    padding: 12px;
+  }
+}

@@ -1,0 +1,381 @@
+/* =============================================
+   INVENTORY SECTION STYLES
+   ============================================= */
+
+.inventory-section {
+  background: rgba(26, 31, 46, 0.8);
+  border-radius: 15px;
+  padding: 40px;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+}
+
+.inventory-section h2 {
+  color: #8b5cf6;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.inventory-section > p {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: 30px;
+}
+
+/* Inventory Filters */
+.inventory-filters {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  flex-wrap: wrap;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.filter-group label {
+  color: #a78bfa;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.filter-group select {
+  background: rgba(139, 92, 246, 0.1);
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  color: white;
+  padding: 8px 15px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.filter-group select:hover {
+  border-color: rgba(139, 92, 246, 0.6);
+  background: rgba(139, 92, 246, 0.2);
+}
+
+.filter-group select:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.filter-count {
+  color: #cbd5e0;
+  font-size: 0.9rem;
+  padding: 8px 15px;
+  background: rgba(139, 92, 246, 0.1);
+  border-radius: 8px;
+  border: 2px solid rgba(139, 92, 246, 0.2);
+}
+
+.no-items {
+  text-align: center;
+  color: #a0aec0;
+  padding: 40px;
+  font-style: italic;
+}
+
+/* Equipment Grid */
+.equipment-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.equipment-grid.compact {
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 15px;
+}
+
+/* Equipment Cards */
+.equipment-card {
+  position: relative;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(109, 40, 217, 0.2));
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.equipment-card.compact {
+  padding: 12px;
+  border-radius: 10px;
+}
+
+.equipment-card.equipped {
+  border-color: #d4af37;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(184, 150, 15, 0.2));
+}
+
+.equipment-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(139, 92, 246, 0.6);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.2);
+}
+
+.equipment-card.equipped:hover {
+  border-color: #d4af37;
+  box-shadow: 0 10px 30px rgba(212, 175, 55, 0.2);
+}
+
+/* Item Image */
+.item-image-container {
+  width: 100%;
+  height: 140px;
+  margin-bottom: 15px;
+  border-radius: 10px;
+  overflow: hidden;
+  position: relative;
+}
+
+.equipment-card.compact .item-image-container {
+  height: 100px;
+  margin-bottom: 10px;
+}
+
+.item-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 10px;
+  transition: transform 0.3s ease;
+}
+
+.equipment-card:hover .item-image {
+  transform: scale(1.05);
+}
+
+.item-icon {
+  font-size: 3rem;
+  margin-bottom: 10px;
+}
+
+/* Item Details */
+.equipment-card h4 {
+  color: #a78bfa;
+  margin-bottom: 10px;
+  font-size: 1.2rem;
+}
+
+.equipment-card.compact h4 {
+  font-size: 1rem;
+  margin-bottom: 6px;
+}
+
+.equipment-card.equipped h4 {
+  color: #d4af37;
+}
+
+.item-description {
+  color: #cbd5e0;
+  font-size: 0.85rem;
+  margin-bottom: 15px;
+  min-height: 40px;
+  line-height: 1.4;
+}
+
+.equipment-card.compact .item-description {
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+  min-height: 30px;
+  line-height: 1.3;
+}
+
+.equipment-card .bonus {
+  color: #22c55e;
+  font-weight: 600;
+  margin: 5px 0;
+  font-size: 0.9rem;
+}
+
+/* Item Rarity Badge */
+.item-rarity-badge {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 0.7rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  color: white;
+  letter-spacing: 1px;
+  z-index: 10;
+}
+
+.equipment-card.compact .item-rarity-badge {
+  padding: 3px 8px;
+  font-size: 0.6rem;
+  top: 6px;
+  right: 6px;
+}
+
+.item-quantity {
+  color: #cbd5e0;
+  font-weight: bold;
+  margin: 10px 0;
+  font-size: 0.9rem;
+}
+
+.equipment-card.compact .item-quantity {
+  font-size: 0.8rem;
+  margin: 6px 0;
+}
+
+/* Item Stats */
+.item-stats {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 10px 0;
+}
+
+.item-stat-badge {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+/* Buttons */
+.equip-btn,
+.unequip-btn {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  margin-top: 10px;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.equip-btn:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transform: scale(1.05);
+}
+
+.unequip-btn {
+  background: linear-gradient(135deg, #d4af37, #b8960f);
+}
+
+.unequip-btn:hover {
+  background: linear-gradient(135deg, #b8960f, #997d08);
+  transform: scale(1.05);
+}
+
+.use-item-btn {
+  background: linear-gradient(135deg, #FFD700, #FFA500);
+  color: #000;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  width: 100%;
+}
+
+.use-item-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(255, 215, 0, 0.4);
+}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .inventory-section {
+    padding: 20px 15px;
+  }
+
+  .inventory-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .inventory-filters {
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .filter-group {
+    width: 100%;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .filter-group select {
+    width: 100%;
+  }
+
+  .equipment-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+
+  .equipment-grid.compact {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+  }
+
+  .equipment-card {
+    padding: 15px;
+  }
+
+  .equipment-card.compact {
+    padding: 10px;
+  }
+
+  .item-image-container {
+    height: 100px;
+    margin-bottom: 10px;
+  }
+
+  .equipment-card.compact .item-image-container {
+    height: 80px;
+  }
+
+  .equipment-card h4 {
+    font-size: 1rem;
+  }
+
+  .equipment-card.compact h4 {
+    font-size: 0.9rem;
+  }
+
+  .item-description {
+    font-size: 0.75rem;
+    min-height: 30px;
+  }
+
+  .equipment-card.compact .item-description {
+    font-size: 0.7rem;
+    min-height: 25px;
+  }
+
+  .equip-btn,
+  .unequip-btn,
+  .use-item-btn {
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+}

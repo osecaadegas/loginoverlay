@@ -1,0 +1,480 @@
+.mines-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.mines-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(26, 31, 46, 0.9);
+  padding: 20px 30px;
+  border-radius: 12px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+}
+
+.mines-header h1 {
+  color: #d4af37;
+  margin: 0;
+  font-size: 2rem;
+}
+
+.balance-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+}
+
+.balance-display span {
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.balance-display strong {
+  color: #d4af37;
+  font-size: 1.5rem;
+}
+
+.alert-box {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  padding: 15px;
+  border-radius: 10px;
+  text-align: center;
+  color: #fca5a5;
+  margin-bottom: 20px;
+}
+
+.mines-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 25px;
+}
+
+/* Controls Panel */
+.controls-panel {
+  background: rgba(26, 31, 46, 0.9);
+  padding: 25px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  height: fit-content;
+}
+
+.control-group {
+  margin-bottom: 20px;
+}
+
+.control-group label {
+  display: block;
+  color: #d4af37;
+  font-weight: 600;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+
+.bet-controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.bet-controls button {
+  padding: 10px 15px;
+  background: rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  border-radius: 8px;
+  color: #d4af37;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bet-controls button:hover {
+  background: rgba(212, 175, 55, 0.3);
+}
+
+.bet-controls input {
+  width: 100px;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.8);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.quick-bets {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+.quick-bets button {
+  padding: 8px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 6px;
+  color: #6ee7b7;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.quick-bets button:hover {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+.mine-select {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.mine-select button {
+  padding: 10px;
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 6px;
+  color: #fca5a5;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.mine-select button:hover {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.mine-select button.active {
+  background: rgba(239, 68, 68, 0.4);
+  border-color: #ef4444;
+  box-shadow: 0 0 12px rgba(239, 68, 68, 0.4);
+}
+
+.btn-start,
+.btn-cashout,
+.btn-play-again {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-start {
+  background: linear-gradient(135deg, #d4af37, #f0c674);
+  color: #1a1f2e;
+}
+
+.btn-start:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(212, 175, 55, 0.4);
+}
+
+.btn-start:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-cashout {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  color: #fff;
+  margin-top: 15px;
+}
+
+.btn-cashout:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-cashout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-play-again {
+  background: linear-gradient(135deg, #3b82f6, #60a5fa);
+  color: #fff;
+}
+
+.btn-play-again:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 20px rgba(59, 130, 246, 0.4);
+}
+
+.game-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.stat {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 8px;
+}
+
+.stat span {
+  color: #94a3b8;
+}
+
+.stat strong {
+  color: #d4af37;
+}
+
+.multiplier-display {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.15));
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  margin: 10px 0;
+}
+
+.mult-label {
+  color: #6ee7b7;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mult-value {
+  color: #10b981;
+  font-size: 2.5rem;
+  font-weight: 900;
+  margin: 8px 0;
+}
+
+.profit-value {
+  color: #94a3b8;
+  font-size: 1rem;
+}
+
+.result-display {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.result-box {
+  padding: 25px;
+  border-radius: 10px;
+  text-align: center;
+  border: 2px solid;
+}
+
+.result-box.won {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.5);
+}
+
+.result-box.lost {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.5);
+}
+
+.result-icon {
+  font-size: 4rem;
+  margin-bottom: 10px;
+}
+
+.result-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.result-box.won .result-text {
+  color: #10b981;
+}
+
+.result-box.lost .result-text {
+  color: #ef4444;
+}
+
+.result-amount {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #d4af37;
+}
+
+/* Grid Panel */
+.grid-panel {
+  background: rgba(26, 31, 46, 0.9);
+  padding: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 500px;
+}
+
+.mines-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  grid-template-rows: repeat(5, 1fr);
+  gap: 12px;
+  width: 100%;
+  max-width: 550px;
+  aspect-ratio: 1;
+}
+
+.cell {
+  background: rgba(45, 55, 72, 0.95);
+  border: 3px solid rgba(212, 175, 55, 0.4);
+  border-radius: 10px;
+  font-size: 2.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 80px;
+}
+
+.cell.idle {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.cell.hidden {
+  background: rgba(45, 55, 72, 0.95);
+  border-color: rgba(212, 175, 55, 0.5);
+}
+
+.cell.hidden:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.7);
+  transform: scale(1.05);
+}
+
+.cell.safe {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.2));
+  border-color: rgba(16, 185, 129, 0.6);
+  cursor: default;
+  animation: reveal 0.3s ease;
+}
+
+.cell.mine {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.3));
+  border-color: rgba(239, 68, 68, 0.7);
+  cursor: default;
+  animation: explode 0.4s ease;
+}
+
+@keyframes reveal {
+  0% {
+    transform: scale(0.8);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes explode {
+  0%, 100% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.15) rotate(5deg);
+  }
+  75% {
+    transform: scale(1.15) rotate(-5deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .mines-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .controls-panel {
+    max-width: 600px;
+    margin: 0 auto;
+  }
+}
+
+@media (max-width: 768px) {
+  .mines-header {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+  }
+
+  .balance-display {
+    align-items: center;
+  }
+
+  .grid-panel {
+    padding: 20px;
+  }
+
+  .mines-grid {
+    gap: 10px;
+  }
+
+  .cell {
+    font-size: 2rem;
+    min-height: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mines-page {
+    padding: 10px;
+  }
+
+  .mines-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .balance-display strong {
+    font-size: 1.2rem;
+  }
+
+  .controls-panel {
+    padding: 20px;
+  }
+
+  .grid-panel {
+    padding: 15px;
+  }
+
+  .mines-grid {
+    gap: 8px;
+  }
+
+  .cell {
+    font-size: 1.6rem;
+    min-height: 50px;
+    border-width: 2px;
+  }
+
+  .mine-select {
+    gap: 5px;
+  }
+
+  .mine-select button {
+    padding: 8px;
+    font-size: 0.9rem;
+  }
+
+  .mult-value {
+    font-size: 2rem;
+  }
+}

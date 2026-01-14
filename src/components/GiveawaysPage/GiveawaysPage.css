@@ -1,0 +1,567 @@
+.giveaways-page {
+  min-height: 100vh;
+  background: transparent;
+  padding: 80px 20px 40px;
+}
+
+.giveaways-container {
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 0 260px 0 20px;
+}
+
+.giveaways-header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.giveaways-header h1 {
+  font-size: 2.5rem;
+  color: #d4af37;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.giveaways-subtitle {
+  color: #9ca3af;
+  font-size: 1.1rem;
+}
+
+.giveaways-main-layout {
+  display: block;
+  position: relative;
+}
+
+.giveaways-content {
+  max-width: 500px;
+  margin: 0 auto;
+  min-height: 400px;
+}
+
+.giveaways-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.giveaway-card {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.giveaway-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.3);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.giveaway-image {
+  position: relative;
+  width: 100%;
+  height: 100px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.giveaway-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.giveaway-card:hover .giveaway-image img {
+  transform: scale(1.05);
+}
+
+.time-badge {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: rgba(212, 175, 55, 0.9);
+  backdrop-filter: blur(10px);
+  color: #1a1d23;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 700;
+  font-size: 0.7rem;
+}
+
+.giveaway-body {
+  padding: 0.75rem;
+}
+
+.giveaway-body h3 {
+  color: #d4af37;
+  font-size: 0.9rem;
+  margin: 0 0 0.5rem 0;
+  font-weight: 600;
+}
+
+.giveaway-description {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  margin-bottom: 0.75rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.giveaway-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+  padding: 0.6rem;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.info-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-item.highlight {
+  background: rgba(212, 175, 55, 0.1);
+  padding: 0.5rem;
+  border-radius: 4px;
+  margin: 0.25rem -0.15rem 0;
+}
+
+.info-item .label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+}
+
+.info-item .value {
+  color: #fff;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.info-item.highlight .label {
+  color: rgba(212, 175, 55, 0.8);
+}
+
+.info-item.highlight .value {
+  color: #d4af37;
+  font-size: 0.85rem;
+}
+
+.winner-badge {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 0.5rem;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  font-size: 0.75rem;
+  box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+}
+
+.giveaway-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.join-btn {
+  flex: 1;
+  background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+  color: #1a1d23;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.join-btn:hover:not(:disabled):not(.disabled):not(.entered) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.join-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.join-btn.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.join-btn.entered {
+  background: rgba(76, 175, 80, 0.2);
+  color: #4caf50;
+  border: 2px solid rgba(76, 175, 80, 0.3);
+}
+
+/* Participants Footer */
+.participants-footer {
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.participants-footer h2 {
+  color: #d4af37;
+  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  font-weight: 700;
+}
+
+.participants-footer {
+  margin-top: 3rem;
+}
+
+.participants-footer h2 {
+  color: #d4af37;
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+}
+
+.participants-table {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 120px 180px 1fr 180px;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 120px 180px 1fr 180px;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+
+.table-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.table-row:last-child {
+  border-bottom: none;
+}
+
+.table-cell {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+}
+
+.table-cell.username {
+  color: #fff;
+  font-weight: 600;
+}
+
+.table-cell.date {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 968px) {
+  .table-header,
+  .table-row {
+    grid-template-columns: 100px 140px 1fr 140px;
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .table-header {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .table-header {
+    display: none;
+  }
+  
+  .table-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .table-cell {
+    padding: 0.25rem 0;
+  }
+  
+  .table-cell::before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 0.5rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+}
+
+.card-message {
+  padding: 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 1rem;
+  animation: slideDown 0.3s ease;
+}
+
+.card-message.success {
+  background: rgba(76, 175, 80, 0.2);
+  border: 1px solid rgba(76, 175, 80, 0.4);
+  color: #4caf50;
+}
+
+.card-message.error {
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid rgba(244, 67, 54, 0.4);
+  color: #f44336;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.loading {
+  text-align: center;
+  color: #fff;
+  padding: 2rem;
+}
+
+/* Winners Sidebar */
+.winners-sidebar {
+  width: 240px;
+  position: fixed;
+  top: 100px;
+  right: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  padding: 1rem;
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  z-index: 10;
+}
+
+.winners-sidebar h2 {
+  color: #d4af37;
+  font-size: 0.95rem;
+  margin: 0 0 1rem 0;
+  font-weight: 700;
+  text-align: center;
+}
+
+.no-winners {
+  text-align: center;
+  padding: 2rem 0.5rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.no-winners-icon {
+  font-size: 2.5rem;
+  margin-bottom: 0.75rem;
+  opacity: 0.5;
+}
+
+.no-winners p {
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+.winners-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.winner-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: all 0.3s;
+}
+
+.winner-item:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+  transform: translateX(-4px);
+}
+
+.winner-trophy {
+  font-size: 1.5rem;
+  text-align: center;
+  animation: bounce 2s infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+.winner-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  text-align: center;
+}
+
+.winner-name {
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.winner-giveaway {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.75rem;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.winner-date {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.7rem;
+}
+
+/* Coming Soon Banner */
+.coming-soon-banner {
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.banner-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.coming-soon-banner h2 {
+  color: #d4af37;
+  font-size: 2rem;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.coming-soon-banner p {
+  color: #e5e7eb;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .giveaways-container {
+    padding: 0 20px;
+  }
+
+  .winners-sidebar {
+    position: relative;
+    width: 100%;
+    max-width: 500px;
+    margin: 0 auto 2rem;
+    right: auto;
+    top: auto;
+  }
+
+  .winners-list {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.6rem;
+  }
+
+  .giveaways-content {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .giveaways-header h1 {
+    font-size: 2rem;
+  }
+
+  .giveaways-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .participants-list {
+    grid-template-columns: 1fr;
+  }
+
+  .winners-list {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,326 @@
+.voucher-redeem-page {
+  min-height: 100vh;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.voucher-redeem-container {
+  max-width: 600px;
+  width: 100%;
+}
+
+.redeem-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.redeem-header h1 {
+  font-size: 2.5rem;
+  color: #fff;
+  margin: 0 0 0.5rem 0;
+}
+
+.redeem-header p {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.redeem-form {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+  backdrop-filter: blur(10px);
+}
+
+.voucher-input-container {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.voucher-input {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.voucher-input:focus {
+  outline: none;
+  border-color: #667eea;
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
+}
+
+.voucher-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 1px;
+}
+
+.redeem-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.redeem-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4);
+}
+
+.redeem-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.message {
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  font-weight: 600;
+  text-align: center;
+  animation: slideIn 0.3s ease;
+}
+
+.message.success {
+  background: rgba(76, 175, 80, 0.2);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  color: #4caf50;
+}
+
+.message.error {
+  background: rgba(244, 67, 54, 0.2);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  color: #f44336;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.redemption-history {
+  margin-top: 3rem;
+}
+
+.redemption-history h2 {
+  color: #fff;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.history-item {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: all 0.3s;
+}
+
+.history-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.history-code {
+  font-family: 'Courier New', monospace;
+  font-weight: 700;
+  color: #667eea;
+  font-size: 1.1rem;
+  letter-spacing: 1px;
+}
+
+.history-points {
+  color: #4caf50;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.history-date {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .voucher-redeem-page {
+    padding: 1rem;
+  }
+
+  .voucher-input-container {
+    flex-direction: column;
+  }
+
+  .redeem-header h1 {
+    font-size: 2rem;
+  }
+
+  .voucher-input {
+    font-size: 1rem;
+    padding: 0.875rem 1rem;
+  }
+
+  .history-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+/* All Redemptions Section */
+.all-redemptions {
+  margin-top: 3rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 2rem;
+}
+
+.all-redemptions h2 {
+  color: #fff;
+  margin: 0 0 1.5rem 0;
+  text-align: center;
+  font-size: 1.5rem;
+}
+
+.redemptions-table {
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.redemptions-table .table-header {
+  display: grid;
+  grid-template-columns: 160px 180px 120px 1fr;
+  background: rgba(0, 0, 0, 0.5);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  padding: 1rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.7);
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.5px;
+}
+
+.redemptions-table .table-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.redemptions-table .table-row {
+  display: grid;
+  grid-template-columns: 160px 180px 120px 1fr;
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s;
+}
+
+.redemptions-table .table-row:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.redemptions-table .table-row:last-child {
+  border-bottom: none;
+}
+
+.redemptions-table .table-cell {
+  display: flex;
+  align-items: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.875rem;
+}
+
+.redemptions-table .table-cell.code {
+  color: #667eea;
+  font-family: 'Courier New', monospace;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+.redemptions-table .table-cell.username {
+  color: #fff;
+  font-weight: 600;
+}
+
+.redemptions-table .table-cell.points {
+  color: #4caf50;
+  font-weight: 600;
+}
+
+.redemptions-table .table-cell.date {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.8125rem;
+}
+
+@media (max-width: 968px) {
+  .redemptions-table .table-header,
+  .redemptions-table .table-row {
+    grid-template-columns: 140px 140px 100px 1fr;
+    padding: 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .redemptions-table .table-header {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .redemptions-table .table-header {
+    display: none;
+  }
+  
+  .redemptions-table .table-row {
+    grid-template-columns: 1fr;
+    gap: 0.5rem;
+    padding: 1rem;
+  }
+  
+  .redemptions-table .table-cell {
+    padding: 0.25rem 0;
+  }
+  
+  .redemptions-table .table-cell::before {
+    content: attr(data-label);
+    font-weight: 600;
+    margin-right: 0.5rem;
+    color: rgba(255, 255, 255, 0.5);
+  }
+  
+  .all-redemptions {
+    padding: 1.5rem 1rem;
+  }
+}

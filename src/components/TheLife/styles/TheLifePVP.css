@@ -1,0 +1,963 @@
+/* =============================================
+   PVP REBUILT - Modern, Clean, Mobile-First
+   ============================================= */
+
+.pvp-rebuilt {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Header */
+.pvp-header-new {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+  padding-bottom: 20px;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.pvp-header-new h2 {
+  font-size: 32px;
+  font-weight: bold;
+  color: #fff;
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+}
+
+.online-badge {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+/* Warning Banner */
+.pvp-warning {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+}
+
+.pvp-warning span {
+  font-size: 24px;
+}
+
+.pvp-warning p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* =============================================
+   DEFEATED POPUP - Modern Modal
+   ============================================= */
+
+.pvp-defeat-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.pvp-defeat-card {
+  background: linear-gradient(135deg, rgba(30, 30, 40, 0.98) 0%, rgba(20, 20, 30, 0.98) 100%);
+  border: 2px solid rgba(245, 87, 108, 0.5);
+  border-radius: 24px;
+  padding: 40px;
+  max-width: 500px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8), 0 0 40px rgba(245, 87, 108, 0.3);
+  animation: slideUp 0.4s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.pvp-defeat-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(245, 87, 108, 0.1) 0%, transparent 70%);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.5; transform: scale(1); }
+  50% { opacity: 0.8; transform: scale(1.1); }
+}
+
+.defeat-header {
+  text-align: center;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 1;
+}
+
+.defeat-icon {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 15px;
+  animation: shake 0.5s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-10deg); }
+  75% { transform: rotate(10deg); }
+}
+
+.defeat-header h2 {
+  font-size: 28px;
+  font-weight: 900;
+  color: #f5576c;
+  text-shadow: 0 2px 20px rgba(245, 87, 108, 0.6);
+  margin: 0;
+  letter-spacing: 2px;
+}
+
+.defeat-attacker {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.defeat-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #f5576c;
+  box-shadow: 0 0 20px rgba(245, 87, 108, 0.6);
+}
+
+.defeat-attacker-info h3 {
+  margin: 0 0 8px 0;
+  font-size: 22px;
+  color: #fff;
+  font-weight: 700;
+}
+
+.defeat-subtitle {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.defeat-losses {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  margin-bottom: 25px;
+  position: relative;
+  z-index: 1;
+}
+
+.defeat-loss-item {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.loss-icon {
+  font-size: 32px;
+}
+
+.loss-label {
+  margin: 0 0 5px 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.loss-value {
+  margin: 0;
+  color: #f5576c;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.defeat-message {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  position: relative;
+  z-index: 1;
+}
+
+.defeat-advice {
+  margin: 0 0 12px 0;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.defeat-tip {
+  margin: 0;
+  color: #ffd700;
+  font-size: 14px;
+  text-align: center;
+  font-weight: 500;
+}
+
+.defeat-redirect {
+  text-align: center;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.defeat-redirect p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.defeat-close-btn {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 20px rgba(245, 87, 108, 0.4);
+  position: relative;
+  z-index: 1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.defeat-close-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(245, 87, 108, 0.6);
+}
+
+.defeat-close-btn:active {
+  transform: translateY(0);
+}
+
+.pvp-warning span {
+  font-size: 24px;
+}
+
+.pvp-warning p {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* Players Section */
+.pvp-players-section {
+  margin-bottom: 40px;
+}
+
+.pvp-players-section h3 {
+  font-size: 24px;
+  margin-bottom: 20px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.pvp-players-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Player Cards */
+.pvp-player-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.pvp-player-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.player-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.player-details {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.player-details h4 {
+  font-size: 20px;
+  color: #fff;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+.player-level {
+  text-align: center;
+  color: #a0aec0;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Mini Stats */
+.player-stats-mini {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.stat-mini {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 8px;
+  border-radius: 8px;
+  text-align: center;
+  font-size: 14px;
+  color: #fff;
+  font-weight: 600;
+}
+
+.player-cash {
+  text-align: center;
+  font-size: 18px;
+  color: #ffd700;
+  font-weight: bold;
+  text-shadow: 0 2px 8px rgba(255, 215, 0, 0.5);
+  padding: 8px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 8px;
+}
+
+/* Win Chance Bar */
+.win-chance-bar {
+  position: relative;
+  height: 30px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 15px;
+  overflow: hidden;
+}
+
+.chance-fill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  transition: width 0.5s ease;
+}
+
+.chance-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: white;
+  font-weight: 700;
+  font-size: 14px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+/* Attack Button */
+.attack-button-new {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(245, 87, 108, 0.4);
+}
+
+.attack-button-new:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(245, 87, 108, 0.6);
+}
+
+.attack-button-new:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.attack-button-new:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* No Players */
+.no-players {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.no-players span {
+  font-size: 64px;
+  display: block;
+  margin-bottom: 20px;
+}
+
+.no-players p {
+  font-size: 18px;
+  margin: 0;
+}
+
+/* Bottom Section (Chat + Battle Log) */
+.pvp-bottom-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+/* Chat Box */
+.pvp-chat-box {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.pvp-chat-box h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.chat-messages-new {
+  flex: 1;
+  overflow-y: auto;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-right: 10px;
+  margin-bottom: 15px;
+}
+
+.chat-messages-new::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chat-messages-new::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.chat-messages-new::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+.chat-messages-new::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.5);
+}
+
+/* Chat Message */
+.chat-msg {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.msg-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  flex-shrink: 0;
+}
+
+.msg-content {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 10px 15px;
+  border-radius: 12px;
+}
+
+.msg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.msg-username {
+  font-weight: 700;
+  color: #4facfe;
+  font-size: 14px;
+}
+
+.msg-time {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.msg-text {
+  margin: 0;
+  color: #fff;
+  font-size: 14px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+/* Chat Input */
+.chat-input-form-new {
+  display: flex;
+  gap: 10px;
+}
+
+.chat-input-form-new input {
+  flex: 1;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: white;
+  font-size: 14px;
+}
+
+.chat-input-form-new input:focus {
+  outline: none;
+  border-color: #4facfe;
+  box-shadow: 0 0 0 2px rgba(79, 172, 254, 0.2);
+}
+
+.chat-input-form-new input::placeholder {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.chat-input-form-new button {
+  padding: 12px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-size: 18px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.chat-input-form-new button:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.chat-input-form-new button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Battle Log */
+.pvp-battle-log {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+
+.pvp-battle-log h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.battle-log-list {
+  overflow-y: auto;
+  max-height: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  padding-right: 10px;
+}
+
+.battle-log-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.battle-log-list::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+
+.battle-log-list::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+}
+
+/* Battle Log Item */
+.battle-log-item {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 12px;
+  padding: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.battle-participants {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.participant {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.battle-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.participant-name {
+  font-weight: 600;
+  color: #fff;
+  font-size: 14px;
+}
+
+.participant-name.defeated {
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.winner-badge {
+  font-size: 18px;
+}
+
+.vs {
+  font-weight: bold;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 12px;
+}
+
+.battle-reward {
+  background: rgba(255, 215, 0, 0.1);
+  color: #ffd700;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 8px;
+}
+
+.battle-time {
+  text-align: center;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .pvp-rebuilt {
+    padding: 10px !important;
+    max-width: 100% !important;
+  }
+
+  .pvp-header-new {
+    flex-direction: column;
+    gap: 10px;
+    text-align: center;
+    margin-bottom: 15px !important;
+    padding-bottom: 12px;
+  }
+
+  .pvp-header-new h2 {
+    font-size: 1.3rem !important;
+    margin: 0 !important;
+  }
+
+  .online-badge {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .pvp-warning {
+    padding: 12px 15px;
+    font-size: 13px;
+    margin-bottom: 15px;
+  }
+
+  .pvp-warning span {
+    font-size: 20px;
+  }
+
+  .pvp-players-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .pvp-player-card {
+    padding: 12px !important;
+    border-radius: 12px !important;
+  }
+
+  .player-avatar {
+    width: 60px !important;
+    height: 60px !important;
+  }
+
+  .player-details h4 {
+    font-size: 1rem !important;
+    margin-bottom: 8px !important;
+  }
+
+  .player-level {
+    font-size: 0.8rem !important;
+    padding: 4px 10px !important;
+  }
+
+  .player-cash {
+    font-size: 0.95rem !important;
+    padding: 6px !important;
+  }
+
+  .player-stats-mini {
+    gap: 6px !important;
+  }
+
+  .stat-mini {
+    font-size: 0.75rem !important;
+    padding: 6px !important;
+  }
+
+  .win-chance-bar {
+    height: 25px !important;
+    margin: 8px 0 !important;
+  }
+
+  .chance-text {
+    font-size: 0.8rem !important;
+  }
+
+  .pvp-stats-row {
+    gap: 8px;
+  }
+
+  .player-stat {
+    font-size: 12px;
+  }
+
+  .pvp-bottom-section {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    margin-top: 15px !important;
+  }
+
+  .pvp-chat-box,
+  .pvp-battle-log {
+    height: 250px !important;
+    padding: 12px !important;
+  }
+
+  .pvp-chat-box h3,
+  .pvp-battle-log h3 {
+    font-size: 1rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .chat-header-new,
+  .battle-log-header {
+    padding: 10px 12px;
+  }
+
+  .chat-header-new h3,
+  .battle-log-header h3 {
+    font-size: 14px;
+  }
+
+  .chat-messages-new,
+  .battle-log-list {
+    max-height: 200px;
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .msg-avatar,
+  .battle-avatar {
+    width: 30px;
+    height: 30px;
+  }
+
+  .msg-username,
+  .participant-name {
+    font-size: 12px;
+  }
+
+  .msg-text {
+    font-size: 12px;
+  }
+
+  .msg-time,
+  .battle-time {
+    font-size: 10px;
+  }
+
+  .battle-result {
+    font-size: 11px;
+    padding: 3px 8px;
+  }
+
+  .battle-stolen {
+    font-size: 13px;
+  }
+
+  .chat-input-form-new {
+    padding: 10px;
+    gap: 8px;
+  }
+
+  .chat-input-form-new input {
+    font-size: 13px;
+    padding: 8px 12px;
+  }
+
+  .chat-input-form-new button {
+    padding: 8px 14px;
+    font-size: 14px;
+  }
+
+  .attack-button-new {
+    padding: 10px;
+    font-size: 13px;
+  }
+
+  /* Defeat Popup Mobile */
+  .pvp-defeat-card {
+    padding: 30px 20px;
+    max-width: 95%;
+  }
+
+  .defeat-header h2 {
+    font-size: 22px;
+  }
+
+  .defeat-icon {
+    font-size: 48px;
+  }
+
+  .defeat-attacker {
+    flex-direction: column;
+    text-align: center;
+    gap: 15px;
+  }
+
+  .defeat-avatar {
+    width: 60px;
+    height: 60px;
+  }
+
+  .defeat-attacker-info h3 {
+    font-size: 18px;
+  }
+
+  .defeat-losses {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .defeat-loss-item {
+    padding: 15px;
+  }
+
+  .loss-value {
+    font-size: 16px;
+  }
+
+  .defeat-close-btn {
+    padding: 14px;
+    font-size: 14px;
+  }
+}

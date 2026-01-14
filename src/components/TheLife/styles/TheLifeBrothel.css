@@ -1,0 +1,899 @@
+/* ===============================================
+   BROTHEL COMPONENT - COMPLETE REWRITE
+   Modern, Clean, Fully Responsive Design
+   =============================================== */
+
+/* Container */
+.brothel-container {
+  width: 100%;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 100;
+}
+
+/* ===============================================
+   INITIALIZATION CARD
+   =============================================== */
+.brothel-init-card {
+  background: linear-gradient(145deg, rgba(236, 72, 153, 0.1), rgba(219, 39, 119, 0.05));
+  border: 2px solid rgba(236, 72, 153, 0.3);
+  border-radius: 20px;
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 40px auto;
+  box-shadow: 0 8px 32px rgba(236, 72, 153, 0.2);
+}
+
+.init-icon {
+  font-size: 80px;
+  margin-bottom: 20px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.brothel-init-card h2 {
+  color: #ec4899;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+}
+
+.init-description {
+  color: #cbd5e0;
+  font-size: 1.1rem;
+  line-height: 1.6;
+  margin-bottom: 30px;
+}
+
+.init-details {
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  margin-bottom: 30px;
+}
+
+.init-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.detail-label {
+  color: #a0aec0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-value {
+  color: #d4af37;
+  font-size: 1.3rem;
+  font-weight: 700;
+}
+
+/* ===============================================
+   STATS HEADER
+   =============================================== */
+.brothel-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 30px;
+  position: relative;
+  z-index: 10;
+}
+
+.stat-card {
+  background: rgba(26, 31, 46, 0.8);
+  border: 2px solid rgba(236, 72, 153, 0.3);
+  border-radius: 16px;
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  transition: all 0.3s ease;
+}
+
+.stat-card:hover {
+  border-color: rgba(236, 72, 153, 0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(236, 72, 153, 0.3);
+}
+
+.stat-card.stat-highlight {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.1), rgba(16, 185, 129, 0.05));
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.stat-card.stat-highlight:hover {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.3);
+}
+
+.stat-card .stat-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.stat-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.stat-label {
+  color: #a0aec0;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 600;
+}
+
+.stat-value {
+  color: #f9a8d4;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.stat-highlight .stat-value {
+  color: #86efac;
+}
+
+/* ===============================================
+   ACTION BUTTONS
+   =============================================== */
+.brothel-actions {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 30px;
+  flex-wrap: wrap;
+}
+
+.btn-primary,
+.btn-secondary {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.3);
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(34, 197, 94, 0.4);
+}
+
+.btn-secondary {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  color: white;
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+  position: relative;
+  z-index: 10;
+  cursor: pointer;
+  padding: 14px 28px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  min-width: 150px;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 25px rgba(139, 92, 246, 0.4);
+}
+
+.btn-primary:disabled,
+.btn-secondary:disabled {
+  background: rgba(100, 100, 120, 0.3);
+  color: rgba(200, 200, 220, 0.5);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-icon {
+  font-size: 1.2rem;
+}
+
+.btn-large {
+  min-width: 250px;
+  padding: 18px 32px;
+  font-size: 1.1rem;
+}
+
+/* ===============================================
+   SECTIONS
+   =============================================== */
+.section {
+  background: rgba(26, 31, 46, 0.6);
+  border: 2px solid rgba(236, 72, 153, 0.2);
+  border-radius: 16px;
+  padding: 25px;
+  margin-bottom: 25px;
+  position: relative;
+  z-index: 5;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 15px;
+}
+
+.section-header h3 {
+  color: #ec4899;
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.btn-toggle {
+  background: rgba(139, 92, 246, 0.2);
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
+  padding: 10px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 10;
+}
+
+.btn-toggle:hover {
+  background: rgba(139, 92, 246, 0.3);
+  border-color: rgba(139, 92, 246, 0.6);
+}
+
+/* ===============================================
+   ALERTS
+   =============================================== */
+.alert {
+  padding: 15px 20px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.alert-warning {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(234, 88, 12, 0.1));
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+/* ===============================================
+   WORKERS GRID
+   =============================================== */
+.workers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* ===============================================
+   WORKER CARDS
+   =============================================== */
+.worker-card {
+  background: linear-gradient(145deg, rgba(30, 30, 45, 0.95), rgba(20, 20, 35, 0.95));
+  border: 2px solid rgba(236, 72, 153, 0.3);
+  border-radius: 16px;
+  overflow: hidden;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  position: relative;
+  z-index: 1;
+}
+
+.worker-card:hover {
+  border-color: rgba(236, 72, 153, 0.6);
+  transform: translateY(-6px);
+  box-shadow: 0 12px 40px rgba(236, 72, 153, 0.4);
+}
+
+.worker-card.hired-worker {
+  border-color: rgba(34, 197, 94, 0.4);
+}
+
+.worker-card.hired-worker:hover {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 12px 40px rgba(34, 197, 94, 0.3);
+}
+
+/* Worker Image */
+.worker-image {
+  position: relative;
+  width: 100%;
+  padding-top: 125%;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+}
+
+.worker-image img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.worker-card:hover .worker-image img {
+  transform: scale(1.1);
+}
+
+/* Badges */
+.hired-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.5);
+  z-index: 2;
+}
+
+.rarity-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 2;
+}
+
+.rarity-badge.rarity-common {
+  background: linear-gradient(135deg, rgba(113, 128, 150, 0.95), rgba(71, 85, 105, 0.95));
+  border: 1px solid rgba(148, 163, 184, 0.5);
+  color: white;
+}
+
+.rarity-badge.rarity-rare {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.95), rgba(37, 99, 235, 0.95));
+  border: 1px solid rgba(96, 165, 250, 0.5);
+  color: white;
+}
+
+.rarity-badge.rarity-epic {
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.95), rgba(147, 51, 234, 0.95));
+  border: 1px solid rgba(192, 132, 252, 0.5);
+  color: white;
+}
+
+.rarity-badge.rarity-legendary {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.95), rgba(245, 158, 11, 0.95));
+  border: 1px solid rgba(252, 211, 77, 0.5);
+  color: white;
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.6);
+}
+
+/* Worker Details */
+.worker-details {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+  position: relative;
+  z-index: 1;
+}
+
+.worker-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.worker-name {
+  color: #f9a8d4;
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.hired-badge-inline {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.4);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.worker-description {
+  color: #cbd5e0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0;
+  opacity: 0.9;
+  flex: 1;
+}
+
+/* Worker Stats */
+.worker-stats {
+  display: none !important;
+}
+
+/* Worker Income (Hired) */
+.worker-income {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 10px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.income-icon {
+  font-size: 1.2rem;
+}
+
+.income-value {
+  color: #86efac;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+/* Action Buttons */
+.btn-hire,
+.btn-sell {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto;
+}
+
+.btn-hire {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: white;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
+  position: relative;
+  z-index: 5;
+}
+
+.btn-hire:hover:not(:disabled) {
+  background: linear-gradient(135deg, #db2777, #be185d);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(236, 72, 153, 0.5);
+}
+
+.btn-hire:disabled {
+  background: rgba(100, 100, 120, 0.3);
+  color: rgba(200, 200, 220, 0.6);
+  cursor: not-allowed;
+  box-shadow: none;
+}
+
+.btn-sell {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.8), rgba(220, 38, 38, 0.8));
+  color: white;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+  position: relative;
+  z-index: 5;
+}
+
+.btn-sell:hover {
+  background: linear-gradient(135deg, rgba(220, 38, 38, 0.9), rgba(185, 28, 28, 0.9));
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.btn-disabled {
+  width: 100%;
+  padding: 14px 20px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  text-align: center;
+  background: rgba(245, 158, 11, 0.2);
+  border: 2px solid rgba(245, 158, 11, 0.4);
+  color: #fbbf24;
+}
+
+/* ===============================================
+   RESPONSIVE - TABLET
+   =============================================== */
+@media (max-width: 1024px) {
+  .brothel-container {
+    padding: 15px;
+  }
+
+  .brothel-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .workers-grid {
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 15px;
+  }
+}
+
+/* ===============================================
+   RESPONSIVE - MOBILE
+   =============================================== */
+@media (max-width: 768px) {
+  .brothel-container {
+    padding: 10px !important;
+  }
+
+  .brothel-init-card {
+    padding: 30px 20px !important;
+    margin: 15px auto !important;
+    border-radius: 16px !important;
+  }
+
+  .init-icon {
+    font-size: 50px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .brothel-init-card h2 {
+    font-size: 1.3rem !important;
+    margin-bottom: 12px !important;
+  }
+
+  .init-description {
+    font-size: 0.9rem !important;
+    margin-bottom: 20px !important;
+    line-height: 1.5 !important;
+  }
+
+  .init-details {
+    flex-direction: column;
+    gap: 15px !important;
+    margin-bottom: 25px !important;
+  }
+
+  .detail-label {
+    font-size: 0.8rem !important;
+  }
+
+  .detail-value {
+    font-size: 1.1rem !important;
+  }
+
+  .btn-large {
+    width: 100% !important;
+    min-width: auto !important;
+    padding: 16px 24px !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Stats */
+  .brothel-stats {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .stat-card {
+    padding: 12px !important;
+    border-radius: 12px !important;
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+
+  .stat-card .stat-icon {
+    font-size: 2rem !important;
+    margin-bottom: 4px !important;
+  }
+
+  .stat-content {
+    gap: 2px !important;
+  }
+
+  .stat-label {
+    font-size: 0.7rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.1rem !important;
+  }
+
+  /* Actions */
+  .brothel-actions {
+    flex-direction: column;
+    gap: 10px !important;
+    margin-bottom: 20px !important;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    min-width: auto !important;
+    width: 100% !important;
+    padding: 14px 20px !important;
+    font-size: 0.9rem !important;
+  }
+
+  .btn-icon {
+    font-size: 1rem !important;
+  }
+
+  /* Sections */
+  .section {
+    padding: 15px 12px !important;
+    margin-bottom: 15px !important;
+    border-radius: 12px !important;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px !important;
+    margin-bottom: 15px !important;
+  }
+
+  .section-header h3 {
+    font-size: 1.2rem !important;
+    text-align: center;
+  }
+
+  .btn-toggle {
+    width: 100% !important;
+    padding: 12px 16px !important;
+    font-size: 0.9rem !important;
+  }
+
+  /* Alert */
+  .alert {
+    padding: 12px 15px !important;
+    border-radius: 10px !important;
+    margin-bottom: 15px !important;
+    font-size: 0.85rem !important;
+  }
+
+  /* Workers Grid - Horizontal Scroll on Mobile */
+  .workers-grid {
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: visible !important;
+    gap: 12px !important;
+    padding: 10px 0 !important;
+    scroll-snap-type: x mandatory !important;
+    -webkit-overflow-scrolling: touch !important;
+    scrollbar-width: thin !important;
+  }
+
+  .workers-grid::-webkit-scrollbar {
+    height: 6px !important;
+  }
+
+  .workers-grid::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2) !important;
+    border-radius: 3px !important;
+  }
+
+  .workers-grid::-webkit-scrollbar-thumb {
+    background: rgba(236, 72, 153, 0.5) !important;
+    border-radius: 3px !important;
+  }
+
+  .workers-grid::-webkit-scrollbar-thumb:hover {
+    background: rgba(236, 72, 153, 0.7) !important;
+  }
+
+  /* Worker Cards - Compact Mobile Design */
+  .worker-card {
+    min-width: 280px !important;
+    max-width: 280px !important;
+    flex-shrink: 0 !important;
+    border-radius: 12px !important;
+    box-shadow: 0 3px 15px rgba(0, 0, 0, 0.3) !important;
+    scroll-snap-align: start !important;
+  }
+
+  .worker-card:hover {
+    transform: translateY(-3px) !important;
+  }
+
+  .worker-image {
+    padding-top: 100% !important;
+  }
+
+  .hired-badge {
+    top: 10px !important;
+    right: 10px !important;
+    padding: 5px 12px !important;
+    font-size: 0.75rem !important;
+    border-radius: 16px !important;
+  }
+
+  .rarity-badge {
+    top: 10px !important;
+    left: 10px !important;
+    padding: 5px 12px !important;
+    font-size: 0.7rem !important;
+    border-radius: 16px !important;
+  }
+
+  .worker-details {
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+
+  .worker-name-row {
+    gap: 8px !important;
+  }
+
+  .worker-name {
+    font-size: 1.1rem !important;
+    line-height: 1.2 !important;
+  }
+
+  .hired-badge-inline {
+    padding: 3px 8px !important;
+    font-size: 0.65rem !important;
+    border-radius: 10px !important;
+  }
+
+  .worker-description {
+    font-size: 0.8rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .worker-income {
+    padding: 8px 12px !important;
+    border-radius: 8px !important;
+  }
+
+  .income-icon {
+    font-size: 1rem !important;
+  }
+
+  .income-value {
+    font-size: 0.9rem !important;
+  }
+
+  .btn-hire,
+  .btn-sell,
+  .btn-disabled {
+    padding: 14px 18px !important;
+    font-size: 0.9rem !important;
+    border-radius: 10px !important;
+  }
+}
+
+/* ===============================================
+   RESPONSIVE - SMALL MOBILE
+   =============================================== */
+@media (max-width: 480px) {
+  .brothel-container {
+    padding: 8px !important;
+  }
+
+  .brothel-init-card {
+    padding: 25px 15px !important;
+    border-radius: 14px !important;
+  }
+
+  .init-icon {
+    font-size: 45px !important;
+  }
+
+  .brothel-init-card h2 {
+    font-size: 1.2rem !important;
+  }
+
+  .init-description {
+    font-size: 0.85rem !important;
+  }
+
+  .detail-value {
+    font-size: 1rem !important;
+  }
+
+  .stat-card {
+    flex-direction: row !important;
+    text-align: left !important;
+    padding: 12px !important;
+  }
+
+  .stat-card .stat-icon {
+    font-size: 2rem !important;
+  }
+
+  .stat-value {
+    font-size: 1.1rem !important;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    padding: 14px 16px !important;
+    font-size: 0.85rem !important;
+  }
+
+  .section {
+    padding: 12px 10px !important;
+  }
+
+  .section-header h3 {
+    font-size: 1.1rem !important;
+  }
+
+  .worker-details {
+    padding: 12px !important;
+  }
+
+  .worker-name {
+    font-size: 1rem !important;
+  }
+
+  .worker-description {
+    font-size: 0.75rem !important;
+  }
+
+  .btn-hire,
+  .btn-sell,
+  .btn-disabled {
+    padding: 13px 16px !important;
+    font-size: 0.85rem !important;
+  }
+}

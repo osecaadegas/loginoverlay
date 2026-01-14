@@ -1,0 +1,34 @@
+.guess-balance-page {
+  min-height: 100vh;
+  background: transparent;
+  padding: 80px 20px 40px;
+}
+
+.guess-balance-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.guess-balance-header {
+  text-align: center;
+  margin-bottom: 60px;
+}
+
+.guess-balance-header h1 {
+  font-size: 2.5rem;
+  color: #d4af37;
+  margin-bottom: 12px;
+  font-weight: 700;
+}
+
+.guess-balance-subtitle {
+  color: #9ca3af;
+  font-size: 1.1rem;
+}
+
+.guess-balance-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}

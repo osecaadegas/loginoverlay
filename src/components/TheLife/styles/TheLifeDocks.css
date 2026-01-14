@@ -1,0 +1,171 @@
+/* =============================================
+   DOCKS SECTION STYLES
+   ============================================= */
+
+.docks-section {
+  background: rgba(26, 31, 46, 0.8);
+  border-radius: 15px;
+  padding: 40px;
+  border: 2px solid rgba(59, 130, 246, 0.3);
+}
+
+.docks-section h2 {
+  color: #3b82f6;
+  font-size: 2rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.docks-section > p {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: 30px;
+}
+
+.boats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.boat-card {
+  background: rgba(59, 130, 246, 0.1);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.3s;
+}
+
+.boat-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.2);
+}
+
+.boat-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 8px;
+  margin-bottom: 15px;
+}
+
+.boat-name {
+  color: #60a5fa;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.boat-stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 15px 0;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.boat-stat {
+  text-align: center;
+}
+
+.boat-stat-label {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-bottom: 5px;
+}
+
+.boat-stat-value {
+  color: #fff;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.boat-price {
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 1.2rem;
+  margin: 15px 0;
+}
+
+.buy-boat-btn, .sail-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  width: 100%;
+}
+
+.buy-boat-btn:hover:not(:disabled), .sail-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(59, 130, 246, 0.5);
+}
+
+.buy-boat-btn:disabled, .sail-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sailing-status {
+  background: rgba(59, 130, 246, 0.2);
+  border: 2px solid rgba(59, 130, 246, 0.4);
+  border-radius: 10px;
+  padding: 15px;
+  margin-top: 15px;
+  text-align: center;
+}
+
+.sailing-timer {
+  color: #60a5fa;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .docks-section {
+    padding: 20px 15px;
+  }
+
+  .docks-section h2 {
+    font-size: 1.5rem;
+  }
+
+  .boats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .boat-card {
+    padding: 15px;
+  }
+
+  .boat-image {
+    height: 120px;
+  }
+
+  .boat-name {
+    font-size: 1.1rem;
+  }
+
+  .boat-stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .boat-stat {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+  }
+}

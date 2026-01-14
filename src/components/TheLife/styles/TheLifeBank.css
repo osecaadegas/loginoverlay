@@ -1,0 +1,358 @@
+/* =============================================
+   BANK SECTION STYLES - MODERN UI
+   ============================================= */
+
+.bank-section {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.95), rgba(15, 23, 42, 0.95));
+  border-radius: 20px;
+  padding: 40px;
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.bank-header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.bank-header h2 {
+  color: #d4af37;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+  text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
+}
+
+.bank-header p {
+  color: #cbd5e0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Balance Display Cards */
+.bank-balance-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 35px;
+}
+
+.balance-card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.2));
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 25px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  transition: all 0.3s ease;
+}
+
+.balance-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.balance-card.cash {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.balance-card.cash:hover {
+  border-color: rgba(34, 197, 94, 0.6);
+  box-shadow: 0 10px 30px rgba(34, 197, 94, 0.2);
+}
+
+.balance-card.bank {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.balance-card.bank:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+  box-shadow: 0 10px 30px rgba(59, 130, 246, 0.2);
+}
+
+.balance-icon {
+  font-size: 3rem;
+  filter: drop-shadow(0 2px 5px rgba(0, 0, 0, 0.3));
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.balance-label {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.balance-amount {
+  color: #fff;
+  font-size: 1.8rem;
+  font-weight: 700;
+  text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+/* Bank Actions Grid */
+.bank-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 25px;
+}
+
+.bank-action-card {
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.3));
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 30px;
+  transition: all 0.3s ease;
+}
+
+.bank-action-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.deposit-card {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.deposit-card:hover {
+  border-color: rgba(34, 197, 94, 0.6);
+}
+
+.withdraw-card {
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.withdraw-card:hover {
+  border-color: rgba(59, 130, 246, 0.6);
+}
+
+.bank-action-card h3 {
+  color: #d4af37;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Input Wrapper */
+.input-wrapper {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-prefix {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #d4af37;
+  font-size: 1.3rem;
+  font-weight: 700;
+  pointer-events: none;
+}
+
+.bank-input {
+  width: 100%;
+  padding: 15px 15px 15px 40px;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 12px;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+}
+
+.bank-input:focus {
+  outline: none;
+  border-color: #d4af37;
+  box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+  background: rgba(0, 0, 0, 0.7);
+}
+
+.bank-input::placeholder {
+  color: #64748b;
+  font-weight: 400;
+}
+
+/* Remove number input arrows */
+.bank-input::-webkit-outer-spin-button,
+.bank-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.bank-input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Quick Amount Buttons */
+.quick-amounts {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.quick-btn {
+  padding: 10px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 2px solid rgba(212, 175, 55, 0.3);
+  border-radius: 8px;
+  color: #d4af37;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.quick-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: #d4af37;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.quick-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.quick-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Action Buttons */
+.action-btn {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  color: white;
+  font-weight: 700;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.btn-icon {
+  font-size: 1.3rem;
+}
+
+.deposit-btn {
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+}
+
+.deposit-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a34a, #15803d);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(34, 197, 94, 0.4);
+}
+
+.withdraw-btn {
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.withdraw-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+}
+
+.action-btn:active:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.action-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* =============================================
+   MOBILE RESPONSIVE
+   ============================================= */
+
+@media (max-width: 768px) {
+  .bank-section {
+    padding: 25px 20px;
+  }
+
+  .bank-header h2 {
+    font-size: 1.8rem;
+  }
+
+  .bank-header p {
+    font-size: 0.95rem;
+  }
+
+  .bank-balance-display {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 25px;
+  }
+
+  .balance-card {
+    padding: 20px;
+  }
+
+  .balance-icon {
+    font-size: 2.5rem;
+  }
+
+  .balance-amount {
+    font-size: 1.5rem;
+  }
+
+  .bank-actions {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .bank-action-card {
+    padding: 25px 20px;
+  }
+
+  .bank-action-card h3 {
+    font-size: 1.2rem;
+  }
+
+  .bank-input {
+    padding: 12px 12px 12px 35px;
+    font-size: 1rem;
+  }
+
+  .input-prefix {
+    font-size: 1.1rem;
+    left: 12px;
+  }
+
+  .quick-amounts {
+    gap: 8px;
+  }
+
+  .quick-btn {
+    padding: 8px;
+    font-size: 0.85rem;
+  }
+
+  .action-btn {
+    padding: 14px 20px;
+    font-size: 1rem;
+  }
+
+  .btn-icon {
+    font-size: 1.1rem;
+  }
+}

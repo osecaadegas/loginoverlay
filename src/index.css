@@ -1,0 +1,258 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: transparent;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* Default Theme Variables */
+  --theme-primary: #00e1ff;
+  --theme-secondary: #9147ff;
+  --theme-accent: #a855f7;
+  --theme-background: rgba(26, 27, 46, 0.95);
+  --theme-text: #f3f4f6;
+  --theme-panel-bg: linear-gradient(135deg, rgba(26, 27, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
+  --theme-border: rgba(255, 255, 255, 0.1);
+  --theme-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --theme-border-animation: none;
+
+  /* Responsive Breakpoints */
+  --breakpoint-mobile: 320px;
+  --breakpoint-tablet: 768px;
+  --breakpoint-desktop: 1024px;
+  --breakpoint-large: 1440px;
+
+  /* Responsive Spacing */
+  --spacing-xs: clamp(4px, 1vw, 8px);
+  --spacing-sm: clamp(8px, 1.5vw, 12px);
+  --spacing-md: clamp(12px, 2vw, 16px);
+  --spacing-lg: clamp(16px, 2.5vw, 24px);
+  --spacing-xl: clamp(24px, 3vw, 32px);
+
+  /* Responsive Font Sizes */
+  --font-xs: clamp(0.75rem, 2vw, 0.875rem);
+  --font-sm: clamp(0.875rem, 2.2vw, 1rem);
+  --font-base: clamp(1rem, 2.5vw, 1.125rem);
+  --font-lg: clamp(1.125rem, 3vw, 1.25rem);
+  --font-xl: clamp(1.25rem, 3.5vw, 1.5rem);
+  --font-2xl: clamp(1.5rem, 4vw, 2rem);
+  --font-3xl: clamp(2rem, 5vw, 3rem);
+
+  /* Sidebar Width */
+  --sidebar-width: 260px;
+  --sidebar-mobile-width: 280px;
+}
+
+/* VS Code-style Scanline Animation */
+@keyframes scanline {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(100%);
+  }
+}
+
+/* Fade in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.6s ease-out forwards;
+}
+
+body {
+  margin: 0;
+  display: flex;
+  place-items: center;
+  min-width: 320px;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #28313B 0%, #485461 100%);
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+  /* Better text rendering on mobile */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  overflow-x: hidden;
+  background: transparent;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+}
+
+/* Custom scrollbar for the entire app */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6441a5;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #7d5bbe;
+}
+
+/* Drag handle cursor */
+.drag-handle {
+  cursor: move;
+  cursor: grab;
+  user-select: none;
+}
+
+.drag-handle:active {
+  cursor: grabbing;
+}
+
+/* Background Styles */
+body.dark {
+  background: #0f0f23 !important;
+}
+
+body.black {
+  background: #000000 !important;
+}
+
+body.purple {
+  background: #1a0f2e !important;
+}
+
+body.gradient-purple {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  background-attachment: fixed;
+}
+
+body.gradient-blue {
+  background: linear-gradient(135deg, #0f2027 0%, #203a43 50%, #2c5364 100%) !important;
+  background-attachment: fixed;
+}
+
+body.gradient-sunset {
+  background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #7e22ce 100%) !important;
+  background-attachment: fixed;
+}
+
+body.gradient-neon {
+  background: linear-gradient(135deg, #00d4ff 0%, #9147ff 50%, #ff006e 100%) !important;
+  background-attachment: fixed;
+}
+
+body.animated-stars {
+  background: #0f0f23 !important;
+}
+
+body.particles {
+  background: radial-gradient(circle at center, #1a1a2e 0%, #0f0f23 100%) !important;
+  background-attachment: fixed;
+}
+
+body.custom {
+  background-size: cover !important;
+  background-position: center !important;
+  background-attachment: fixed !important;
+}
+
+/* FX Theme Border Animations */
+@keyframes rgb-pulse {
+  0% { filter: hue-rotate(0deg) brightness(1); }
+  50% { filter: hue-rotate(180deg) brightness(1.3); }
+  100% { filter: hue-rotate(360deg) brightness(1); }
+}
+
+@keyframes stripe-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 40px 0; }
+}
+
+@keyframes neon-pulse {
+  0%, 100% { filter: brightness(1) drop-shadow(0 0 5px currentColor); }
+  50% { filter: brightness(1.5) drop-shadow(0 0 15px currentColor); }
+}
+
+@keyframes fire-pulse {
+  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
+  25% { filter: hue-rotate(-10deg) brightness(1.2); }
+  75% { filter: hue-rotate(10deg) brightness(1.3); }
+}
+
+@keyframes rainbow-flash {
+  0% { filter: hue-rotate(0deg) saturate(2); }
+  100% { filter: hue-rotate(360deg) saturate(2); }
+}
+
+@keyframes glitch-scroll {
+  0% { background-position: 0 0; }
+  100% { background-position: 18px 0; }
+}
+
+@keyframes disco-flash {
+  0% { filter: hue-rotate(0deg) brightness(1); }
+  25% { filter: hue-rotate(90deg) brightness(1.5); }
+  50% { filter: hue-rotate(180deg) brightness(1); }
+  75% { filter: hue-rotate(270deg) brightness(1.5); }
+  100% { filter: hue-rotate(360deg) brightness(1); }
+}
+
+@keyframes holographic-shift {
+  0% { filter: hue-rotate(0deg) saturate(1.5); }
+  100% { filter: hue-rotate(360deg) saturate(1.5); }
+}
+
+@keyframes lightning-flash {
+  0%, 90%, 100% { opacity: 1; }
+  45%, 55% { opacity: 0.5; }
+  50% { opacity: 1; filter: brightness(2); }
+}
+
+/* Apply animations to panels when FX theme is active */
+body.fx-theme-active .bonus-item,
+body.fx-theme-active .header,
+body.fx-theme-active .navbar,
+body.fx-theme-active .bracket-widget-display,
+body.fx-theme-active .phase-tab.active,
+body.fx-theme-active .stats-panel,
+body.fx-theme-active .modern-bonus-item,
+body.fx-theme-active .stats-card,
+body.fx-theme-active .panel,
+body.fx-theme-active .card:not(.spinning-card):not(.card-front):not(.card-back),
+body.fx-theme-active [class*="-panel"]:not(.customization-panel),
+body.fx-theme-active [class*="-card"]:not(.spinning-card) {
+  animation: var(--theme-border-animation, none) 3s ease-in-out infinite !important;
+  border-width: 2px !important;
+}
+
+/* Keep spinning card animation intact */
+body.fx-theme-active .spinning-card {
+  animation: spin3d 6s linear infinite !important;
+}
