@@ -20,6 +20,7 @@ export default function TheLifeBrothel({
   user
 }) {
   const [showHiredWorkers, setShowHiredWorkers] = useState(false);
+  const [isHiring, setIsHiring] = useState(false);
 
   // Sync worker count when data loads
   useEffect(() => {
@@ -88,6 +89,11 @@ export default function TheLifeBrothel({
 
   // Hire a worker
   const hireWorker = async (worker) => {
+    // Prevent spam clicking
+    if (isHiring) {
+      return;
+    }
+
     if (!brothel) {
       setMessage({ type: 'error', text: 'You need to open a brothel first!' });
       return;
@@ -111,14 +117,31 @@ export default function TheLifeBrothel({
       return;
     }
 
+    setIsHiring(true);
+
     try {
+      // Double-check slot availability in database before inserting
+      const { data: currentWorkers, error: checkError } = await supabase
+        .from('the_life_player_brothel_workers')
+        .select('id')
+        .eq('player_id', player.id);
+
+      if (checkError) throw checkError;
+
+      const currentUsedSlots = currentWorkers.length;
+      if (currentUsedSlots >= totalSlots) {
+        setMessage({ type: 'error', text: `No worker slots available! (${currentUsedSlots}/${totalSlots} used)` });
+        setIsHiring(false);
+        return;
+      }
+
       await supabase.from('the_life_player_brothel_workers').insert({
         player_id: player.id,
         worker_id: worker.id
       });
 
       const newTotalIncome = (brothel.income_per_hour || 0) + worker.income_per_hour;
-      const newWorkerCount = hiredWorkers.length + 1; // Calculate from actual count
+      const newWorkerCount = currentUsedSlots + 1; // Use verified count
 
       await supabase.from('the_life_brothels').update({
         workers: newWorkerCount,
@@ -140,6 +163,8 @@ export default function TheLifeBrothel({
     } catch (err) {
       console.error('Error hiring worker:', err);
       setMessage({ type: 'error', text: 'Failed to hire worker!' });
+    } finally {
+      setIsHiring(false);
     }
   };
 
@@ -479,10 +504,10 @@ export default function TheLifeBrothel({
                   ) : (
                     <button 
                       onClick={() => hireWorker(worker)}
-                      disabled={!canAfford}
+                      disabled={!canAfford || isHiring}
                       className="btn-hire"
                     >
-                      {canAfford ? `Hire - $${worker.hire_cost.toLocaleString()}` : 'Insufficient Funds'}
+                      {isHiring ? 'Hiring...' : canAfford ? `Hire - $${worker.hire_cost.toLocaleString()}` : 'Insufficient Funds'}
                     </button>
                   )}
                 </div>
