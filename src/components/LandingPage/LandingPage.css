@@ -338,115 +338,6 @@
   }
 }
 
-/* ========== OLD Hero Section (keeping for reference) ========== */
-.hero-section {
-  padding: 120px 40px 100px;
-  text-align: center;
-  color: white;
-  position: relative;
-  overflow: hidden;
-}
-
-.hero-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at 50% 0%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
-  pointer-events: none;
-}
-
-.hero-content {
-  max-width: 900px;
-  margin: 0 auto;
-  position: relative;
-  z-index: 1;
-}
-
-.hero-badge {
-  display: inline-block;
-  padding: 8px 20px;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 50px;
-  color: #d4af37;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 30px;
-  letter-spacing: 0.5px;
-}
-
-.hero-title {
-  font-size: 4rem;
-  font-weight: 900;
-  margin-bottom: 24px;
-  line-height: 1.1;
-  letter-spacing: -1px;
-}
-
-.hero-title-highlight {
-  background: linear-gradient(135deg, #d4af37 0%, #f0c674 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.hero-subtitle {
-  font-size: 1.2rem;
-  opacity: 0.85;
-  margin-bottom: 48px;
-  line-height: 1.7;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
-  color: #e2e8f0;
-}
-
-.hero-cta {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  align-items: center;
-}
-
-.cta-button-primary {
-  padding: 18px 40px;
-  background: linear-gradient(135deg, #d4af37 0%, #f0c674 100%);
-  color: #1a1f2e;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
-}
-
-.cta-button-primary:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 30px rgba(212, 175, 55, 0.5);
-}
-
-.cta-button-secondary {
-  padding: 18px 40px;
-  background: transparent;
-  color: white;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 12px;
-  font-size: 1.1rem;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-}
-
-.cta-button-secondary:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
-  transform: translateY(-3px);
-}
-
 /* About Me Section */
 .about-section {
   padding: 80px 40px;
@@ -725,18 +616,6 @@
 /* Responsive Design */
 /* Large Desktop Screens (1920px and above) */
 @media (min-width: 1920px) {
-  .hero-section {
-    padding: 140px 60px 120px;
-  }
-
-  .hero-title {
-    font-size: 4.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.3rem;
-  }
-
   .features-container,
   .about-container,
   .footer-content {
@@ -745,14 +624,6 @@
 }
 
 @media (max-width: 1024px) {
-  .hero-section {
-    padding: 100px 30px 80px;
-  }
-
-  .hero-title {
-    font-size: 3rem;
-  }
-
   .features-grid {
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 25px;
@@ -774,32 +645,6 @@
 }
 
 @media (max-width: 768px) {
-  .hero-section {
-    padding: 80px 25px 60px;
-  }
-
-  .hero-title {
-    font-size: 2.5rem;
-    line-height: 1.2;
-  }
-
-  .hero-subtitle {
-    font-size: 1.05rem;
-    margin-bottom: 35px;
-  }
-
-  .hero-cta {
-    flex-direction: column;
-    width: 100%;
-    gap: 15px;
-  }
-
-  .cta-button-primary,
-  .cta-button-secondary {
-    width: 100%;
-    justify-content: center;
-  }
-
   .features-section {
     padding: 70px 25px;
   }
@@ -883,35 +728,6 @@
 
 /* Additional Mobile Improvements */
 @media (max-width: 640px) {
-  .hero-section {
-    padding: 70px 20px 50px;
-  }
-
-  .hero-title {
-    font-size: 2rem;
-    line-height: 1.25;
-  }
-
-  .hero-subtitle {
-    font-size: 0.95rem;
-    margin-bottom: 30px;
-    line-height: 1.6;
-  }
-
-  .hero-cta {
-    flex-direction: column;
-    width: 100%;
-    gap: 12px;
-  }
-
-  .cta-button-primary,
-  .cta-button-secondary {
-    width: 100%;
-    min-height: 48px;
-    padding: 14px 24px;
-    font-size: 0.95rem;
-  }
-
   .features-section {
     padding: 60px 20px;
   }
@@ -975,11 +791,6 @@
 
   .final-cta-subtitle {
     font-size: 0.95rem;
-  }
-
-  .hero-badge {
-    font-size: 0.8125rem;
-    padding: 6px 16px;
   }
 
   .feature-icon-wrapper {
