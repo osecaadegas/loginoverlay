@@ -218,8 +218,8 @@ export default function LandingPage() {
         </div>
       )}
 
-      <div className="min-h-screen pt-16 px-4 md:px-6 lg:px-8 pb-12">
-        <div className="w-full max-w-[calc(100vw-2rem)] xl:max-w-[1880px] 2xl:max-w-[1900px] mx-auto space-y-6 md:space-y-8">
+      <div className="min-h-screen pt-16 px-4 pb-12">
+        <div className="w-full mx-auto space-y-6 md:space-y-8">
         
         {/* About Me Section */}
         <section className="mt-2 animate-fade-in">
@@ -278,9 +278,9 @@ export default function LandingPage() {
             </div>
             
             {/* Content */}
-            <div className="pt-6 md:pt-8 px-4 md:px-6 lg:px-8 pb-2 bg-[#1e1e1e] h-[500px] overflow-auto">
+            <div className="pt-6 px-4 pb-2 bg-[#1e1e1e] h-[500px] overflow-auto">
             {aboutMeTab === 'about' ? (
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start max-w-full">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start w-full">
               <div className="flex-shrink-0">
                 <div className="relative w-52 h-52 md:w-60 md:h-60 lg:w-72 lg:h-72">
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-full blur-2xl"></div>
@@ -291,11 +291,11 @@ export default function LandingPage() {
                   />
                 </div>
               </div>
-              <div className="flex-1 min-w-0 w-full overflow-hidden">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-purple-400 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-4 break-words">
+              <div className="flex-1 min-w-0 w-full">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-purple-400 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-4" style={{overflowWrap: 'break-word', wordWrap: 'break-word'}}>
                   Sobre Mim
                 </h2>
-                <div className="space-y-4 text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed break-words">
+                <div className="space-y-4 text-gray-300 text-sm md:text-base lg:text-lg leading-relaxed" style={{overflowWrap: 'break-word', wordWrap: 'break-word', whiteSpace: 'normal'}}>
                   <p>
                     Sou o Miguel, mais conhecido como osecaadegas. Sou um gajo simples e tranquilo. Trabalho aos fins de semana e, durante a semana, divido o tempo entre programação e streaming.
                   </p>
