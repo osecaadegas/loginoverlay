@@ -558,33 +558,33 @@ export default function TheLifeBusinesses({
                                 )}
                               </>
                             ) : (
+                              <div className="compact-actions-row">
+                                <button 
+                                  onClick={() => startBusiness(business)} 
+                                  disabled={player?.cash < productionCost || player?.stamina < 5}
+                                  className="compact-btn-small start-btn"
+                                >
+                                  ▶️ Start
+                                </button>
+                                <button 
+                                  onClick={() => sellBusiness(business)}
+                                  className="compact-btn-small sell-btn"
+                                  title={`Sell: $${Math.floor((business.purchase_price || 5000) / 3).toLocaleString()}`}
+                                >
+                                  💰 Sell
+                                </button>
+                              </div>
+                            )}
+                            {business.is_upgradeable !== false && upgradeLevel < 10 && (
                               <button 
-                                onClick={() => startBusiness(business)} 
-                                disabled={player?.cash < productionCost || player?.stamina < 5}
-                                className="compact-btn start-btn"
+                                onClick={() => upgradeBusiness(business)}
+                                disabled={player?.cash < upgradeCost}
+                                className="compact-btn upgrade-btn"
+                                title={`Upgrade to Lvl ${upgradeLevel + 1}: $${upgradeCost.toLocaleString()}`}
                               >
-                                ▶️ Start
+                                ⬆️ Upgrade to Lvl {upgradeLevel + 1}
                               </button>
                             )}
-                            <div className="compact-actions-row">
-                              {business.is_upgradeable !== false && upgradeLevel < 10 && (
-                                <button 
-                                  onClick={() => upgradeBusiness(business)}
-                                  disabled={player?.cash < upgradeCost}
-                                  className="compact-btn-small upgrade-btn"
-                                  title={`Upgrade to Lvl ${upgradeLevel + 1}: $${upgradeCost.toLocaleString()}`}
-                                >
-                                  ⬆️ {upgradeLevel}
-                                </button>
-                              )}
-                              <button 
-                                onClick={() => sellBusiness(business)}
-                                className="compact-btn-small sell-btn"
-                                title={`Sell: $${Math.floor((business.purchase_price || 5000) / 3).toLocaleString()}`}
-                              >
-                                💰
-                              </button>
-                            </div>
                           </>
                         ) : (
                           <div className="locked-compact">🔒 Lvl {business.min_level_required}</div>
