@@ -37,8 +37,8 @@ export default async function handler(req, res) {
 
   try {
     const supabase = createClient(
-      process.env.VITE_SUPABASE_URL,
-      process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
+      process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_SERVICE_ROLE_KEY
     );
 
     // Get user from auth header
@@ -68,7 +68,7 @@ export default async function handler(req, res) {
     }
   } catch (error) {
     console.error('Mines API error:', error);
-    return res.status(500).json({ error: 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
 
