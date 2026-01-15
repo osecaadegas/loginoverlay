@@ -370,65 +370,58 @@ export default function TheLifeBrothel({
   const usedSlots = hiredWorkers.length; // Use actual hired workers count
   const availableIncome = calculateAvailableIncome();
   const slotsFull = usedSlots >= totalSlots;
+  const upgradeCost = brothel.slots_upgrade_cost || 50000;
+  const canCollect = brothel.income_per_hour && availableIncome > 0;
+  const canUpgrade = player?.level >= 5 && totalSlots < 50;
 
   return (
     <div className="brothel-container">
-      {/* Stats Header */}
-      <div className="brothel-stats">
-        <div className="stat-card">
-          <div className="stat-icon">👥</div>
-          <div className="stat-content">
-            <div className="stat-label">Workers</div>
-            <div className="stat-value">{usedSlots}/{totalSlots}</div>
-          </div>
+      {/* Stats Grid 2x3 */}
+      <div className="brothel-stats-grid">
+        <div className="stat-tile">
+          <span className="stat-tile-value">{usedSlots}/{totalSlots}</span>
+          <span className="stat-tile-label">Workers employed out of available slots</span>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-icon">💵</div>
-          <div className="stat-content">
-            <div className="stat-label">Income/Hour</div>
-            <div className="stat-value">${(brothel.income_per_hour || 0).toLocaleString()}</div>
-          </div>
+        <div className="stat-tile">
+          <span className="stat-tile-value">${(brothel.income_per_hour || 0).toLocaleString()}</span>
+          <span className="stat-tile-label">Income generated per hour by your workers</span>
         </div>
         
-        <div className="stat-card stat-highlight">
-          <div className="stat-icon">💰</div>
-          <div className="stat-content">
-            <div className="stat-label">Available</div>
-            <div className="stat-value">${availableIncome.toLocaleString()}</div>
-          </div>
+        <div className="stat-tile stat-tile-highlight">
+          <span className="stat-tile-value">${availableIncome.toLocaleString()}</span>
+          <span className="stat-tile-label">Ready to collect from your business</span>
         </div>
         
-        <div className="stat-card">
-          <div className="stat-icon">📊</div>
-          <div className="stat-content">
-            <div className="stat-label">Total Earned</div>
-            <div className="stat-value">${(brothel.total_earned || 0).toLocaleString()}</div>
-          </div>
+        <div className="stat-tile">
+          <span className="stat-tile-value">${(brothel.total_earned || 0).toLocaleString()}</span>
+          <span className="stat-tile-label">Total earnings since opening</span>
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="brothel-actions">
+        {/* Collect Income Tile */}
         <button 
           onClick={collectIncome}
-          className="btn-primary"
-          disabled={!brothel.income_per_hour || availableIncome <= 0}
+          className={`stat-tile stat-tile-action ${canCollect ? 'stat-tile-collect' : 'stat-tile-disabled'}`}
+          disabled={!canCollect}
         >
-          <span className="btn-icon">💰</span>
-          Collect Income
+          <span className="stat-tile-value">💰 Collect</span>
+          <span className="stat-tile-label">{canCollect ? `$${availableIncome.toLocaleString()} ready` : 'No income available yet'}</span>
         </button>
         
-        {player?.level >= 5 && totalSlots < 50 && (
-          <button 
-            onClick={upgradeSlots}
-            className="btn-secondary"
-            disabled={player.cash < (brothel.slots_upgrade_cost || 50000)}
-          >
-            <span className="btn-icon">⬆️</span>
-            Upgrade (+2 Slots) - ${(brothel.slots_upgrade_cost || 50000).toLocaleString()}
-          </button>
-        )}
+        {/* Upgrade Tile */}
+        <button 
+          onClick={upgradeSlots}
+          className={`stat-tile stat-tile-action ${canUpgrade && player.cash >= upgradeCost ? 'stat-tile-upgrade' : 'stat-tile-disabled'}`}
+          disabled={!canUpgrade || player.cash < upgradeCost}
+        >
+          <span className="stat-tile-value">⬆️ Upgrade</span>
+          <span className="stat-tile-label">
+            {!canUpgrade 
+              ? (totalSlots >= 50 ? 'Max slots reached' : 'Requires level 5')
+              : `+2 slots for $${upgradeCost.toLocaleString()}`
+            }
+          </span>
+        </button>
       </div>
 
       {/* Hired Workers Section */}
