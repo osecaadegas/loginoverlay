@@ -351,14 +351,14 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(12px);
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 10000;
-  padding: 20px;
-  animation: fadeIn 0.25s ease-out;
+  padding: 12px;
+  animation: fadeIn 0.2s ease-out;
 }
 
 @keyframes fadeIn {
@@ -373,19 +373,19 @@
 .modal-content {
   background: linear-gradient(145deg, #1e2535 0%, #141825 100%);
   backdrop-filter: blur(20px);
-  border: 2px solid rgba(212, 175, 55, 0.3);
-  border-radius: 24px;
+  border: 1.5px solid rgba(212, 175, 55, 0.35);
+  border-radius: 16px;
   padding: 0;
   max-width: 500px;
   width: 100%;
-  max-height: 90vh;
+  max-height: 92vh;
   display: flex;
   flex-direction: column;
   box-shadow: 
-    0 25px 50px rgba(0, 0, 0, 0.7),
-    0 0 0 1px rgba(255, 255, 255, 0.05) inset,
-    0 0 80px rgba(212, 175, 55, 0.15);
-  animation: slideUp 0.3s ease-out;
+    0 20px 40px rgba(0, 0, 0, 0.6),
+    0 0 0 1px rgba(255, 255, 255, 0.08) inset,
+    0 0 60px rgba(212, 175, 55, 0.12);
+  animation: slideUp 0.25s ease-out;
   overflow: hidden;
 }
 
@@ -403,39 +403,39 @@
 .modal-content h2 {
   margin-top: 0;
   color: white;
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
 }
 
 .modal-body {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 18px;
   overflow-y: auto;
   overflow-x: hidden;
   flex: 1;
-  padding: 0 40px 32px 40px;
+  padding: 0 24px 24px 24px;
 }
 
 .modal-body::-webkit-scrollbar {
-  width: 10px;
+  width: 6px;
 }
 
 .modal-body::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.2);
-  border-radius: 10px;
-  margin: 8px 0;
+  background: rgba(0, 0, 0, 0.15);
+  border-radius: 6px;
+  margin: 6px 0;
 }
 
 .modal-body::-webkit-scrollbar-thumb {
   background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 100%);
-  border-radius: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+  border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
 .modal-body::-webkit-scrollbar-thumb:hover {
@@ -446,7 +446,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 32px 40px 24px 40px;
+  padding: 20px 24px 16px 24px;
   flex-shrink: 0;
   background: linear-gradient(135deg, rgba(251, 191, 36, 0.08) 0%, rgba(245, 158, 11, 0.05) 100%);
   border-bottom: 1px solid rgba(212, 175, 55, 0.2);
@@ -458,18 +458,18 @@
 
 .modal-close {
   background: rgba(255, 255, 255, 0.05);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.7);
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   cursor: pointer;
   padding: 0;
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  transition: all 0.25s ease;
+  border-radius: 8px;
+  transition: all 0.2s ease;
   font-weight: 300;
 }
 
@@ -482,9 +482,9 @@
 
 .modal-footer {
   display: flex;
-  gap: 15px;
+  gap: 12px;
   justify-content: flex-end;
-  padding: 24px 40px;
+  padding: 16px 24px;
   border-top: 1px solid rgba(212, 175, 55, 0.15);
   flex-shrink: 0;
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 100%);
@@ -493,11 +493,12 @@
 .form-group {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .form-group label {
   font-weight: 600;
+  font-size: 0.9rem;
   color: #fbbf24;
   font-size: 0.875rem;
   text-transform: uppercase;
@@ -510,20 +511,20 @@
 .form-group input,
 .form-group select,
 .form-group textarea {
-  padding: 14px 18px;
+  padding: 10px 14px;
   background: rgba(0, 0, 0, 0.3);
-  border: 2px solid rgba(212, 175, 55, 0.2);
-  border-radius: 12px;
-  font-size: 1rem;
-  transition: all 0.25s ease;
+  border: 1.5px solid rgba(212, 175, 55, 0.2);
+  border-radius: 8px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
   color: white;
   font-family: inherit;
 }
 
 .form-group textarea {
   resize: vertical;
-  min-height: 100px;
-  line-height: 1.6;
+  min-height: 80px;
+  line-height: 1.5;
 }
 
 .form-group input::placeholder,
@@ -538,8 +539,8 @@
   background: rgba(0, 0, 0, 0.4);
   border-color: #fbbf24;
   box-shadow: 
-    0 0 0 3px rgba(251, 191, 36, 0.1),
-    0 4px 12px rgba(251, 191, 36, 0.15);
+    0 0 0 2px rgba(251, 191, 36, 0.12),
+    0 3px 10px rgba(251, 191, 36, 0.15);
   transform: translateY(-1px);
 }
 
@@ -548,14 +549,14 @@
   appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23fbbf24' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 16px center;
-  padding-right: 44px;
+  background-position: right 12px center;
+  padding-right: 36px;
 }
 
 .form-group select option {
   background: #1a1f2e;
   color: white;
-  padding: 12px;
+  padding: 10px;
 }
 
 .form-group input:disabled {
@@ -567,6 +568,7 @@
 
 .form-group small {
   color: rgba(255, 255, 255, 0.5);
+  font-size: 0.85rem;
   font-size: 0.8rem;
   line-height: 1.4;
   margin-top: 4px;
@@ -640,8 +642,8 @@
 
 .modal-actions {
   display: flex;
-  gap: 16px;
-  padding: 24px 40px;
+  gap: 12px;
+  padding: 16px 24px;
   border-top: 1px solid rgba(212, 175, 55, 0.15);
   background: linear-gradient(135deg, rgba(0, 0, 0, 0.2) 0%, rgba(0, 0, 0, 0.1) 100%);
 }
@@ -649,15 +651,15 @@
 .btn-save,
 .btn-cancel {
   flex: 1;
-  padding: 16px 32px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 14px;
+  border-radius: 10px;
   font-weight: 700;
-  font-size: 1rem;
+  font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.25s ease;
+  transition: all 0.2s ease;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   position: relative;
   overflow: hidden;
 }
@@ -2518,37 +2520,40 @@
 /* Responsive */
 @media (max-width: 768px) {
   .modal-overlay {
-    padding: 10px;
+    padding: 8px;
   }
 
   .modal-content {
-    border-radius: 20px;
-    max-height: 95vh;
+    border-radius: 12px;
+    max-height: 96vh;
   }
 
   .modal-header {
-    padding: 24px 20px 18px 20px;
+    padding: 16px 16px 12px 16px;
   }
 
   .modal-header h2 {
-    font-size: 1.4rem;
+    font-size: 1.25rem;
   }
 
   .modal-body {
-    padding: 0 20px 20px 20px;
-    gap: 20px;
+    padding: 0 16px 16px 16px;
+    gap: 14px;
   }
 
   .modal-actions,
   .modal-footer {
-    padding: 20px;
-    flex-direction: column;
+    padding: 14px 16px;
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
   .btn-save,
   .btn-cancel {
-    width: 100%;
-    padding: 14px 24px;
+    flex: 1;
+    min-width: 120px;
+    padding: 12px 20px;
+    font-size: 0.95rem;
   }
 
   .form-section {
