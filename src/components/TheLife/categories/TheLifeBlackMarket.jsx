@@ -251,7 +251,7 @@ export default function TheLifeBlackMarket({
                 const jailRisk = 35;
                 
                 return (
-                  <div key={inv.id} className="market-item resell-item">
+                  <div key={inv.id} className={`market-item resell-item item-rarity-${inv.item.rarity}`}>
                     <img 
                       src={inv.item.icon} 
                       alt={inv.item.name} 
@@ -367,7 +367,7 @@ export default function TheLifeBlackMarket({
                   : Math.floor(player.cash / storeItem.price);
                 
                 return (
-                  <div key={storeItem.id} className="market-item store-card">
+                  <div key={storeItem.id} className={`market-item store-card item-rarity-${storeItem.item.rarity}`}>
                     {storeItem.limited_time_until && (
                       <div className="limited-time-badge">
                         ⏰ Limited Time

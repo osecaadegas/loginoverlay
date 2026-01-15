@@ -100,14 +100,7 @@ export default function TheLifeInventory({
       ) : (
         <div className="equipment-grid compact">
           {filteredInventory.map(inv => (
-            <div key={inv.id} className="equipment-card compact">
-              <div className="item-rarity-badge" style={{
-                backgroundColor: inv.item.rarity === 'legendary' ? '#FFD700' :
-                               inv.item.rarity === 'epic' ? '#9C27B0' :
-                               inv.item.rarity === 'rare' ? '#2196F3' : '#666'
-              }}>
-                {inv.item.rarity}
-              </div>
+            <div key={inv.id} className={`equipment-card compact item-rarity-${inv.item.rarity}`}>
               <div className="item-image-container">
                 <img 
                   src={inv.item.icon || 'https://images.unsplash.com/photo-1606400082777-ef05f3c5cde9?w=400'} 
