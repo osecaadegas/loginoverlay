@@ -367,26 +367,30 @@ export default function TheLifeBlackMarket({
                   : Math.floor(player.cash / storeItem.price);
                 
                 return (
-                  <div key={storeItem.id} className="market-item">
-                    <img 
-                      src={storeItem.item.icon} 
-                      alt={storeItem.item.name} 
-                      className="item-image"
-                      loading="lazy"
-                      decoding="async"
-                    />
-                    <h4>{storeItem.item.name}</h4>
-                    <p>{storeItem.item.description || 'No description'}</p>
-                    {storeItem.stock_quantity !== null && (
-                      <div className="stock-info">
-                        Stock: {storeItem.stock_quantity}
-                      </div>
-                    )}
+                  <div key={storeItem.id} className="market-item store-card">
                     {storeItem.limited_time_until && (
                       <div className="limited-time-badge">
                         ⏰ Limited Time
                       </div>
                     )}
+                    <div className="store-item-image-container">
+                      <img 
+                        src={storeItem.item.icon} 
+                        alt={storeItem.item.name} 
+                        className="store-item-image"
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <div className="store-item-info">
+                      <h4 className="store-item-name">{storeItem.item.name}</h4>
+                      <p className="store-item-desc">{storeItem.item.description || 'No description'}</p>
+                      {storeItem.stock_quantity !== null && (
+                        <div className="stock-info">
+                          Stock: {storeItem.stock_quantity}
+                        </div>
+                      )}
+                    </div>
                     
                     <div className="quantity-selector">
                       <label>Quantity:</label>
