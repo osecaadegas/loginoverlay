@@ -30,45 +30,33 @@ export default function TheLife() {
   
   // Background music state
   const audioRef = useRef(null);
-  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
-  const [musicVolume, setMusicVolume] = useState(0.3);
+  const [isMusicEnabled, setIsMusicEnabled] = useState(true);
+  const [showSettings, setShowSettings] = useState(false);
   
   // Initialize audio and load saved preferences
   useEffect(() => {
     const savedMusicState = localStorage.getItem('theLifeMusicEnabled');
-    const savedVolume = localStorage.getItem('theLifeMusicVolume');
-    
-    if (savedVolume) {
-      setMusicVolume(parseFloat(savedVolume));
-    }
-    
-    if (savedMusicState === 'true') {
-      setIsMusicPlaying(true);
+    if (savedMusicState !== null) {
+      setIsMusicEnabled(savedMusicState === 'true');
     }
   }, []);
 
-  // Handle music play/pause
+  // Handle music play/pause at 10% volume
   useEffect(() => {
     if (audioRef.current) {
-      audioRef.current.volume = musicVolume;
-      if (isMusicPlaying) {
+      audioRef.current.volume = 0.1; // Always 10% volume
+      if (isMusicEnabled) {
         audioRef.current.play().catch(err => console.log('Audio play failed:', err));
       } else {
         audioRef.current.pause();
       }
     }
-  }, [isMusicPlaying, musicVolume]);
+  }, [isMusicEnabled]);
 
   const toggleMusic = () => {
-    const newState = !isMusicPlaying;
-    setIsMusicPlaying(newState);
+    const newState = !isMusicEnabled;
+    setIsMusicEnabled(newState);
     localStorage.setItem('theLifeMusicEnabled', newState);
-  };
-
-  const handleVolumeChange = (e) => {
-    const newVolume = parseFloat(e.target.value);
-    setMusicVolume(newVolume);
-    localStorage.setItem('theLifeMusicVolume', newVolume);
   };
   
   // Get all game data and state from custom hook
@@ -209,29 +197,6 @@ export default function TheLife() {
         loop 
         preload="auto"
       />
-      
-      {/* Music Control Button */}
-      <div className="music-control">
-        <button 
-          className="music-toggle-btn" 
-          onClick={toggleMusic}
-          title={isMusicPlaying ? "Pause Music" : "Play Music"}
-        >
-          {isMusicPlaying ? '🔊' : '🔇'}
-        </button>
-        {isMusicPlaying && (
-          <input 
-            type="range" 
-            min="0" 
-            max="1" 
-            step="0.1" 
-            value={musicVolume}
-            onChange={handleVolumeChange}
-            className="volume-slider"
-            title="Volume"
-          />
-        )}
-      </div>
 
       <div className="the-life-header">
         <img src="/thelife/thelife.png" alt="The Life" className="game-logo" />
@@ -315,6 +280,12 @@ export default function TheLife() {
         <div className="stats-bottom-section">
           {/* Quick Access Buttons Inside Stats Card */}
           <div className="quick-access-tabs-inline">
+            <button 
+              className="quick-tab-inline compact settings-btn"
+              onClick={() => setShowSettings(true)}
+            >
+              ⚙️ Settings
+            </button>
             <button 
               className={`quick-tab-inline compact ${activeTab === 'leaderboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('leaderboard')}
@@ -666,6 +637,37 @@ export default function TheLife() {
             </div>
             <div className="event-popup-message">
               <p>{eventPopupData.message}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Settings Modal */}
+      {showSettings && (
+        <div className="settings-overlay" onClick={() => setShowSettings(false)}>
+          <div className="settings-modal" onClick={(e) => e.stopPropagation()}>
+            <div className="settings-header">
+              <h2>⚙️ Settings</h2>
+              <button className="close-btn" onClick={() => setShowSettings(false)}>×</button>
+            </div>
+            <div className="settings-content">
+              <div className="setting-item">
+                <div className="setting-label">
+                  <span className="setting-icon">🎵</span>
+                  <span>Background Music</span>
+                </div>
+                <label className="toggle-switch">
+                  <input 
+                    type="checkbox" 
+                    checked={isMusicEnabled}
+                    onChange={toggleMusic}
+                  />
+                  <span className="toggle-slider"></span>
+                </label>
+              </div>
+              <div className="setting-info">
+                <p>Music plays at 10% volume when enabled</p>
+              </div>
             </div>
           </div>
         </div>
