@@ -1,3 +1,6 @@
+/* Import Google Font for Neon Effect */
+@import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
+
 .landing-page {
   min-height: 100vh;
   background: #0d1117;
@@ -92,6 +95,69 @@
 .hero-social-icon svg {
   width: 20px;
   height: 20px;
+}
+
+/* Neon Logo Styles */
+.hero-neon-logo {
+  position: absolute;
+  top: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  line-height: 0.85;
+}
+
+.neon-text {
+  font-family: 'Pacifico', 'Brush Script MT', 'Segoe Script', cursive;
+  font-weight: 400;
+  text-transform: lowercase;
+  color: #fff;
+  text-shadow: 
+    0 0 5px #fff,
+    0 0 10px #fff,
+    0 0 20px #fff,
+    0 0 40px #9146FF,
+    0 0 80px #9146FF,
+    0 0 90px #9146FF,
+    0 0 100px #9146FF,
+    0 0 150px #9146FF;
+  animation: neon-flicker 3s infinite alternate;
+}
+
+.neon-line-1 {
+  font-size: 4.5rem;
+  letter-spacing: 8px;
+}
+
+.neon-line-2 {
+  font-size: 4.5rem;
+  letter-spacing: 8px;
+}
+
+@keyframes neon-flicker {
+  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+    text-shadow: 
+      0 0 5px #fff,
+      0 0 10px #fff,
+      0 0 20px #fff,
+      0 0 40px #9146FF,
+      0 0 80px #9146FF,
+      0 0 90px #9146FF,
+      0 0 100px #9146FF,
+      0 0 150px #9146FF;
+  }
+  20%, 24%, 55% {
+    text-shadow: 
+      0 0 2px #fff,
+      0 0 5px #fff,
+      0 0 10px #fff,
+      0 0 20px #9146FF,
+      0 0 40px #9146FF;
+  }
 }
 
 .hero-scroll-indicator {
@@ -313,6 +379,16 @@
   .hero-social-icon svg {
     width: 16px;
     height: 16px;
+  }
+
+  .hero-neon-logo {
+    top: 20px;
+  }
+
+  .neon-line-1,
+  .neon-line-2 {
+    font-size: 2.5rem;
+    letter-spacing: 4px;
   }
 
   .offer-card {
