@@ -426,15 +426,10 @@ export default function TheLifeBrothel({
 
       {/* Hired Workers Section */}
       {hiredWorkers.length > 0 && (
-        <div className="section">
-          <div className="section-header">
-            <h3>💼 Your Workers ({usedSlots}/{totalSlots})</h3>
-            <button 
-              onClick={() => setShowHiredWorkers(!showHiredWorkers)}
-              className="btn-toggle"
-            >
-              {showHiredWorkers ? 'Hide' : 'Show'} Workers
-            </button>
+        <div className={`section ${!showHiredWorkers ? 'section-collapsed' : ''}`}>
+          <div className="section-header-compact" onClick={() => setShowHiredWorkers(!showHiredWorkers)}>
+            <span className="section-title">💼 Your Workers ({usedSlots}/{totalSlots})</span>
+            <span className="section-toggle">{showHiredWorkers ? '▼' : '▶'}</span>
           </div>
           
           {showHiredWorkers && (
