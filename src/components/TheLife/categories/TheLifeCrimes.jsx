@@ -75,8 +75,7 @@ export default function TheLifeCrimes({
       let updates = {
         stamina: player.stamina - robbery.stamina_cost,
         total_robberies: player.total_robberies + 1,
-        xp: player.xp + (success ? robbery.xp_reward : Math.floor(robbery.xp_reward / 2)),
-        last_stamina_refill: new Date().toISOString()
+        xp: player.xp + (success ? robbery.xp_reward : Math.floor(robbery.xp_reward / 2))
       };
 
       if (success) {

@@ -172,15 +172,24 @@ export const useTheLifeData = (user) => {
 
   const startStaminaRefill = () => {
     const interval = setInterval(async () => {
-      if (!player) return;
+      if (!user?.id) return;
 
-      const lastRefill = new Date(player.last_stamina_refill);
+      // Fetch fresh player data from database to avoid stale closure
+      const { data: currentPlayer, error: fetchError } = await supabase
+        .from('the_life_players')
+        .select('id, stamina, max_stamina, last_stamina_refill')
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError || !currentPlayer) return;
+
+      const lastRefill = new Date(currentPlayer.last_stamina_refill);
       const now = new Date();
       const hoursPassed = (now - lastRefill) / 1000 / 60 / 60;
 
-      if (hoursPassed >= 1 && player.stamina < player.max_stamina) {
+      if (hoursPassed >= 1 && currentPlayer.stamina < currentPlayer.max_stamina) {
         const staminaToAdd = Math.floor(hoursPassed) * 20;
-        const newStamina = Math.min(player.stamina + staminaToAdd, player.max_stamina);
+        const newStamina = Math.min(currentPlayer.stamina + staminaToAdd, currentPlayer.max_stamina);
 
         const { data, error } = await supabase
           .from('the_life_players')
