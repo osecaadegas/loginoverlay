@@ -30,12 +30,14 @@ body {
 
 .main-content.with-sidebar {
   margin-left: 260px;
+  width: calc(100% - 260px);
 }
 
 /* Responsive Main Content */
 @media (max-width: 1024px) {
   .main-content.with-sidebar {
-    margin-left: 0;
+    margin-left: 240px;
+    width: calc(100% - 240px);
   }
 }
 
