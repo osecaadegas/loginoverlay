@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: clamp(10px, 2vw, 20px);
   min-height: 100vh;
-  background: #1a1f2e url('https://images.pexels.com/photos/2411688/pexels-photo-2411688.jpeg') center center / cover no-repeat fixed;
+  background: #1a1f2e url('https://wallpapers.com/images/hd/gotham-city-1920-x-1080-background-gh854hvhxla18i1z.jpg') center center / cover no-repeat fixed;
   position: relative;
 }
 
@@ -2799,21 +2799,21 @@
 }
 
 .market-item.resell-item {
-  border-color: rgba(255, 107, 107, 0.3);
+  border-color: rgba(212, 175, 55, 0.4);
 }
 
 .market-item.resell-item:hover {
-  border-color: rgba(255, 107, 107, 0.6);
-  box-shadow: 0 10px 30px rgba(255, 107, 107, 0.3);
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15), 0 0 0 1px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .market-item.dock-item {
-  border-color: rgba(77, 191, 255, 0.3);
+  border-color: rgba(212, 175, 55, 0.4);
 }
 
 .market-item.dock-item:hover {
-  border-color: rgba(77, 191, 255, 0.6);
-  box-shadow: 0 10px 30px rgba(77, 191, 255, 0.3);
+  border-color: rgba(212, 175, 55, 0.7);
+  box-shadow: 0 8px 25px rgba(212, 175, 55, 0.15), 0 0 0 1px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
 
 .item-icon {

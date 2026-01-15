@@ -3,64 +3,33 @@
    ============================================= */
 
 .blackmarket-section {
-  background: rgba(26, 31, 46, 0.8);
-  border-radius: 15px;
+  background: rgba(15, 17, 23, 0.85);
+  border-radius: 12px;
   padding: 40px;
-  border: 2px solid rgba(124, 58, 237, 0.3);
+  border: 1px solid #2a2d35;
 }
 
 .blackmarket-section h2 {
-  color: #7c3aed;
+  color: #d4af37;
   font-size: 2rem;
   margin-bottom: 15px;
   text-align: center;
+  text-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
 }
 
 .blackmarket-section > p {
   text-align: center;
-  color: #cbd5e0;
+  color: #8a8d96;
   margin-bottom: 30px;
 }
 
 .market-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 16px;
 }
 
-.market-item {
-  background: rgba(124, 58, 237, 0.1);
-  border: 2px solid rgba(124, 58, 237, 0.3);
-  border-radius: 12px;
-  padding: 20px;
-  text-align: center;
-  transition: all 0.3s;
-}
 
-.market-item:hover {
-  transform: translateY(-3px);
-  border-color: rgba(124, 58, 237, 0.6);
-  box-shadow: 0 8px 20px rgba(124, 58, 237, 0.2);
-}
-
-.market-item h4 {
-  color: #a78bfa;
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-}
-
-.market-item p {
-  color: #cbd5e0;
-  font-size: 0.9rem;
-  margin-bottom: 15px;
-}
-
-.market-price {
-  color: #d4af37;
-  font-weight: 700;
-  font-size: 1.1rem;
-  margin: 10px 0;
-}
 
 .market-buy-btn {
   background: linear-gradient(145deg, #d4af37 0%, #b8941f 100%);
@@ -93,27 +62,7 @@
   box-shadow: none;
 }
 
-.buy-market-btn {
-  background: linear-gradient(135deg, #7c3aed, #6d28d9);
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s;
-  width: 100%;
-}
 
-.buy-market-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 15px rgba(124, 58, 237, 0.5);
-}
-
-.buy-market-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
 
 /* =============================================
    QUANTITY SELECTOR
