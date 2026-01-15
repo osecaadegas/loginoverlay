@@ -527,12 +527,9 @@ export default function TheLifeBrothel({
             );
 
             return (
-              <div key={worker.id} className="worker-card">
+              <div key={worker.id} className={`worker-card worker-rarity-${worker.rarity}`}>
                 <div className="worker-image">
                   <img src={worker.image_url} alt={worker.name} />
-                  <div className={`rarity-badge rarity-${worker.rarity}`}>
-                    {worker.rarity}
-                  </div>
                 </div>
                 <div className="worker-details">
                   <div className="worker-name-row">
