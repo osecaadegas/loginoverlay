@@ -6,6 +6,9 @@ import './Mines.css';
 const GRID_SIZE = 25;
 const MINE_OPTIONS = [1, 3, 5, 10, 15];
 
+// API base URL - uses relative path for Vercel
+const API_URL = '/api/mines';
+
 export default function Mines() {
   const { points, isConnected, updateUserPoints } = useStreamElements();
   const [bet, setBet] = useState(50);
@@ -14,19 +17,34 @@ export default function Mines() {
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
   const [revealed, setRevealed] = useState([]);
-  const [mineLocations, setMineLocations] = useState([]);
+  const [mineLocations, setMineLocations] = useState([]); // Only set after game ends
   const [multiplier, setMultiplier] = useState(1.0);
   const [profit, setProfit] = useState(0);
+  const [gameId, setGameId] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  const calcMultiplier = (clicks, mineCount) => {
-    if (clicks === 0) return 1.0;
-    const safeSpots = GRID_SIZE - mineCount;
-    return Math.pow(1.15, clicks);
+  // Helper to make authenticated API calls
+  const apiCall = async (action, params = {}) => {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`
+      },
+      body: JSON.stringify({ action, ...params })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+      throw new Error(data.error || 'API error');
+    }
+    return data;
   };
 
   const startNewGame = async () => {
-    console.log('Starting new game...', { isConnected, bet, points });
-    
     if (!isConnected) {
       alert('Connect StreamElements first!');
       return;
@@ -36,96 +54,99 @@ export default function Mines() {
       return;
     }
 
+    setLoading(true);
     try {
+      // Deduct bet first
       await updateUserPoints(-bet);
       
-      // Generate mine positions
-      const positions = [];
-      while (positions.length < mines) {
-        const pos = Math.floor(Math.random() * GRID_SIZE);
-        if (!positions.includes(pos)) positions.push(pos);
+      // Start game on server (mine positions generated server-side)
+      const data = await apiCall('start', { bet, mineCount: mines });
+      
+      if (data.success) {
+        setGameId(data.game.id);
+        setRevealed([]);
+        setMineLocations([]); // We don't know mine positions!
+        setGameActive(true);
+        setGameOver(false);
+        setWon(false);
+        setMultiplier(1.0);
+        setProfit(0);
       }
-      
-      console.log('Game started!', { positions, mines });
-      
-      setMineLocations(positions);
-      setRevealed([]);
-      setGameActive(true);
-      setGameOver(false);
-      setWon(false);
-      setMultiplier(1.0);
-      setProfit(0);
-      
-      console.log('Game state updated, gameActive should be true');
     } catch (error) {
       console.error('Start game error:', error);
-      alert('Failed to start game');
+      // Refund bet if game failed to start
+      await updateUserPoints(bet);
+      alert('Failed to start game: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const clickCell = async (cellIndex) => {
-    if (!gameActive || revealed.includes(cellIndex)) return;
+    if (!gameActive || revealed.includes(cellIndex) || loading) return;
 
-    const newRevealed = [...revealed, cellIndex];
-    setRevealed(newRevealed);
-
-    // Hit mine
-    if (mineLocations.includes(cellIndex)) {
-      setGameActive(false);
-      setGameOver(true);
-      setWon(false);
-      await saveSession(0);
-      return;
-    }
-
-    // Safe cell
-    const newMultiplier = calcMultiplier(newRevealed.length, mines);
-    const newProfit = Math.floor(bet * newMultiplier);
-    setMultiplier(newMultiplier);
-    setProfit(newProfit);
-
-    // Won all safe cells
-    if (newRevealed.length === GRID_SIZE - mines) {
-      await cashout(newProfit);
+    setLoading(true);
+    try {
+      // Send click to server for validation
+      const data = await apiCall('reveal', { gameId, cellIndex });
+      
+      if (data.success) {
+        setRevealed(data.revealedCells);
+        
+        if (data.result === 'mine') {
+          // Hit a mine - game over
+          setMineLocations(data.minePositions); // Server reveals positions now
+          setGameActive(false);
+          setGameOver(true);
+          setWon(false);
+        } else if (data.gameOver && data.won) {
+          // Found all safe cells - auto win
+          setMineLocations(data.minePositions);
+          setMultiplier(data.multiplier);
+          setProfit(data.profit);
+          await updateUserPoints(data.profit);
+          setGameActive(false);
+          setGameOver(true);
+          setWon(true);
+        } else {
+          // Safe cell, game continues
+          setMultiplier(data.multiplier);
+          setProfit(data.profit);
+        }
+      }
+    } catch (error) {
+      console.error('Reveal error:', error);
+      alert('Error: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const cashout = async (amount = profit) => {
-    if (!gameActive) return;
+  const cashout = async () => {
+    if (!gameActive || revealed.length === 0 || loading) return;
     
+    setLoading(true);
     try {
-      await updateUserPoints(amount);
-      setGameActive(false);
-      setGameOver(true);
-      setWon(true);
-      await saveSession(amount);
+      const data = await apiCall('cashout', { gameId });
+      
+      if (data.success) {
+        setMineLocations(data.minePositions); // Reveal positions after cashout
+        setProfit(data.profit);
+        await updateUserPoints(data.profit);
+        setGameActive(false);
+        setGameOver(true);
+        setWon(true);
+      }
     } catch (error) {
       console.error('Cashout error:', error);
-    }
-  };
-
-  const saveSession = async (resultAmount) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      await supabase.from('game_sessions').insert({
-        user_id: user.id,
-        game_type: 'mines',
-        bet_amount: bet,
-        result_amount: resultAmount,
-        game_data: {
-          mine_count: mines,
-          cells_revealed: revealed.length,
-          multiplier: multiplier
-        }
-      });
-    } catch (error) {
-      console.error('Save session error:', error);
+      alert('Cashout failed: ' + error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   const playAgain = () => {
+    setGameId(null);
     setGameActive(false);
     setGameOver(false);
     setRevealed([]);
@@ -192,9 +213,9 @@ export default function Mines() {
               <button
                 className="btn-start"
                 onClick={startNewGame}
-                disabled={!isConnected || bet > points}
+                disabled={!isConnected || bet > points || loading}
               >
-                Start Game ({bet} pts)
+                {loading ? 'Starting...' : `Start Game (${bet} pts)`}
               </button>
             </div>
           )}
@@ -222,10 +243,10 @@ export default function Mines() {
 
               <button
                 className="btn-cashout"
-                onClick={() => cashout()}
-                disabled={revealed.length === 0}
+                onClick={cashout}
+                disabled={revealed.length === 0 || loading}
               >
-                Cash Out ({profit} pts)
+                {loading ? 'Processing...' : `Cash Out (${profit} pts)`}
               </button>
             </div>
           )}
@@ -271,7 +292,7 @@ export default function Mines() {
                   key={i}
                   className={cellClass}
                   onClick={() => clickCell(i)}
-                  disabled={!gameActive || isRevealed}
+                  disabled={!gameActive || isRevealed || loading}
                   style={{
                     minHeight: '80px',
                     minWidth: '80px',
