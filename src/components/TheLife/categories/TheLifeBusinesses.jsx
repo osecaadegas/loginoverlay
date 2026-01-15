@@ -456,14 +456,9 @@ export default function TheLifeBusinesses({
 
   return (
     <div className="businesses-section">
-      <h2>💼 Business Operations</h2>
-      <p>Start businesses and earn items. Higher levels unlock more profitable ventures.</p>
-      <div className="business-slots-info">
-        <span className="slots-label">Business Slots:</span>
-        <span className="slots-count">{ownedBusinesses.length} / {getMaxBusinessSlots(player?.level || 1)}</span>
-        {getMaxBusinessSlots(player?.level || 1) < 7 && (
-          <span className="slots-hint">💡 Gain 1 slot every 5 levels (max 7)</span>
-        )}
+      <div className="businesses-header-row">
+        <h2>💼 Business Operations</h2>
+        <span className="slots-count-header">{ownedBusinesses.length} / {getMaxBusinessSlots(player?.level || 1)}</span>
       </div>
       <div className="businesses-scroll-container">
         <button 
@@ -482,17 +477,24 @@ export default function TheLifeBusinesses({
           const meetsLevel = player.level >= business.min_level_required;
           const ownsIt = ownedBusinesses.some(ob => ob.business_id === business.id);
           const productionCost = business.production_cost || business.cost;
+          const ownedBusiness = ownedBusinesses.find(ob => ob.business_id === business.id);
+          const upgradeLevel = ownedBusiness?.upgrade_level || 1;
           
           return (
             <div key={business.id} className="business-card">
-              <div className="business-image-container">
-                <img src={imageUrl} alt={business.name} className="business-image" />
-                <div className="business-header-overlay">
-                  <h3>{business.item?.icon || '💼'} {business.name}</h3>
-                  {!ownsIt && <span className="level-tag">🔒 {business.min_level_required}</span>}
+              {/* Top Info Bar */}
+              <div className="business-top-bar">
+                <div className="business-top-left">
+                  <span className="business-name-badge">{business.item?.icon || '💼'} {business.name}</span>
+                  {ownsIt && (
+                    <>
+                      <span className="business-level-badge">Lvl {upgradeLevel}</span>
+                      <span className="business-owned-badge">✓ OWNED</span>
+                    </>
+                  )}
                 </div>
                 <button 
-                  className="info-tooltip-btn"
+                  className="business-info-btn-top"
                   onClick={(e) => {
                     e.stopPropagation();
                     setInfoPopupData({
@@ -512,6 +514,14 @@ export default function TheLifeBusinesses({
                 >
                   ℹ️
                 </button>
+              </div>
+              <div className="business-image-container">
+                <img src={imageUrl} alt={business.name} className="business-image" />
+                {!ownsIt && (
+                  <div className="business-header-overlay">
+                    <span className="level-tag">🔒 {business.min_level_required}</span>
+                  </div>
+                )}
               </div>
               {!ownsIt ? (
                 <div className="business-compact-actions">
