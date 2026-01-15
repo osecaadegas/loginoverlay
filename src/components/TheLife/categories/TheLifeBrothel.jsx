@@ -20,6 +20,7 @@ export default function TheLifeBrothel({
   user
 }) {
   const [showHiredWorkers, setShowHiredWorkers] = useState(false);
+  const [showAvailableWorkers, setShowAvailableWorkers] = useState(true);
   const [isHiring, setIsHiring] = useState(false);
   const [hireQuantities, setHireQuantities] = useState({});
   const [sellQuantities, setSellQuantities] = useState({});
@@ -492,18 +493,21 @@ export default function TheLifeBrothel({
       )}
 
       {/* Available Workers Section */}
-      <div className="section">
-        <div className="section-header">
-          <h3>🎯 Available Workers</h3>
+      <div className={`section ${!showAvailableWorkers ? 'section-collapsed' : ''}`}>
+        <div className="section-header-compact" onClick={() => setShowAvailableWorkers(!showAvailableWorkers)}>
+          <span className="section-title">🎯 Available Workers ({availableWorkers.length})</span>
+          <span className="section-toggle">{showAvailableWorkers ? '▼' : '▶'}</span>
         </div>
 
-        {slotsFull && (
-          <div className="alert alert-warning">
-            ⚠️ All worker slots full! {player?.level >= 5 ? 'Upgrade your brothel to hire more workers.' : 'Reach level 5 to unlock brothel upgrades.'}
-          </div>
-        )}
+        {showAvailableWorkers && (
+          <>
+            {slotsFull && (
+              <div className="alert alert-warning">
+                ⚠️ All worker slots full! {player?.level >= 5 ? 'Upgrade your brothel to hire more workers.' : 'Reach level 5 to unlock brothel upgrades.'}
+              </div>
+            )}
 
-        <div className="workers-grid">
+            <div className="workers-grid">
           {availableWorkers.map(worker => {
             const hiredCount = hiredWorkers.filter(hw => hw.worker_id === worker.id).length;
             const canAfford = player?.cash >= worker.hire_cost;
@@ -569,7 +573,9 @@ export default function TheLifeBrothel({
               </div>
             );
           })}
-        </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
