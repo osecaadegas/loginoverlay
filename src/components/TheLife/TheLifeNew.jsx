@@ -2,6 +2,7 @@ import { useAuth } from '../../context/AuthContext';
 import { useTheLifeData } from './hooks/useTheLifeData';
 import { supabase } from '../../config/supabaseClient';
 import { useState, useRef, useEffect } from 'react';
+import { useDragScroll } from './hooks/useDragScroll';
 import './TheLife.css';
 
 // Category Components
@@ -30,8 +31,10 @@ export default function TheLife() {
   
   // Background music state - default to true for autoplay
   const audioRef = useRef(null);
+  const tabsScrollRef = useRef(null);
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const tabsDragScroll = useDragScroll(tabsScrollRef);
   
   // Initialize audio and load saved preferences
   useEffect(() => {
@@ -375,7 +378,11 @@ export default function TheLife() {
         >
           ‹
         </button>
-        <div className="game-tabs-scroll">
+        <div 
+          className="game-tabs-scroll"
+          ref={tabsScrollRef}
+          {...tabsDragScroll}
+        >
           <div className="game-tabs">
             <button 
               className={`tab tab-image ${activeTab === 'crimes' ? 'active' : ''}`}

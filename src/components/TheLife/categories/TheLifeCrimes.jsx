@@ -1,5 +1,6 @@
 import { supabase } from '../../../config/supabaseClient';
 import { useRef, useState } from 'react';
+import { useDragScroll } from '../hooks/useDragScroll';
 import '../styles/TheLifeCrimes.css';
 
 /**
@@ -19,6 +20,7 @@ export default function TheLifeCrimes({
   const scrollContainerRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [cooldownCrimeId, setCooldownCrimeId] = useState(null);
+  const dragScroll = useDragScroll(scrollContainerRef);
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
@@ -229,7 +231,11 @@ export default function TheLifeCrimes({
         >
           ←
         </button>
-        <div className="robberies-grid" ref={scrollContainerRef}>
+        <div 
+          className="robberies-grid" 
+          ref={scrollContainerRef}
+          {...dragScroll}
+        >
           {robberies.map(robbery => {
           const defaultImage = 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=500';
           const imageUrl = robbery.image_url || defaultImage;

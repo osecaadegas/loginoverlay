@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import { useDragScroll } from '../hooks/useDragScroll';
 import '../styles/TheLifeBrothel.css';
 
 /**
@@ -24,6 +25,10 @@ export default function TheLifeBrothel({
   const [isHiring, setIsHiring] = useState(false);
   const [hireQuantities, setHireQuantities] = useState({});
   const [sellQuantities, setSellQuantities] = useState({});
+  const hiredScrollRef = useRef(null);
+  const availableScrollRef = useRef(null);
+  const hiredDragScroll = useDragScroll(hiredScrollRef);
+  const availableDragScroll = useDragScroll(availableScrollRef);
 
   // Sync worker count when data loads
   useEffect(() => {
@@ -434,7 +439,11 @@ export default function TheLifeBrothel({
           </div>
           
           {showHiredWorkers && (
-            <div className="workers-grid workers-grid-scroll">
+            <div 
+              className="workers-grid workers-grid-scroll"
+              ref={hiredScrollRef}
+              {...hiredDragScroll}
+            >
               {/* Group workers by worker_id and show count */}
               {Object.values(
                 hiredWorkers.reduce((acc, hw) => {
@@ -507,7 +516,11 @@ export default function TheLifeBrothel({
               </div>
             )}
 
-            <div className="workers-grid">
+            <div 
+              className="workers-grid"
+              ref={availableScrollRef}
+              {...availableDragScroll}
+            >
           {availableWorkers.map(worker => {
             const hiredCount = hiredWorkers.filter(hw => hw.worker_id === worker.id).length;
             const canAfford = player?.cash >= worker.hire_cost;

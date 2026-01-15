@@ -1,6 +1,7 @@
 import { supabase } from '../../../config/supabaseClient';
 import { getMaxBusinessSlots, getUpgradeCost } from '../utils/gameUtils';
 import { useRef, useState } from 'react';
+import { useDragScroll } from '../hooks/useDragScroll';
 import '../styles/TheLifeBusinesses.css';
 
 /**
@@ -29,6 +30,7 @@ export default function TheLifeBusinesses({
   const [selectedItemId, setSelectedItemId] = useState('');
   const [inputQuantity, setInputQuantity] = useState(1);
   const [maxQuantity, setMaxQuantity] = useState(1);
+  const dragScroll = useDragScroll(scrollContainerRef);
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
@@ -466,7 +468,11 @@ export default function TheLifeBusinesses({
         >
           ←
         </button>
-        <div className="businesses-grid" ref={scrollContainerRef}>
+        <div 
+          className="businesses-grid" 
+          ref={scrollContainerRef}
+          {...dragScroll}
+        >
         {businesses.filter(b => b.is_active).map(business => {
           const imageUrl = business.image_url || 'https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=400';
           const isRunning = drugOps?.[business.id];
