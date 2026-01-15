@@ -3,15 +3,16 @@
 -- Conversion: 1 DirtyCash = $1, but with 20% fee = $0.80 final value
 
 -- First, ensure DirtyCash item exists
-INSERT INTO the_life_items (name, icon, type, description, price, is_active, category)
+INSERT INTO the_life_items (name, icon, type, description, rarity, tradeable, usable)
 VALUES 
-  ('DirtyCash', '💵', 'currency', 'Dirty money from illegal operations that needs to be laundered', 0, true, 'items')
+  ('DirtyCash', '💵', 'currency', 'Dirty money from illegal operations that needs to be laundered', 'common', false, false)
 ON CONFLICT (name) DO UPDATE SET
   icon = '💵',
   type = 'currency',
   description = 'Dirty money from illegal operations that needs to be laundered',
-  is_active = true,
-  category = 'items';
+  rarity = 'common',
+  tradeable = false,
+  usable = false;
 
 -- Get the DirtyCash item ID for reference
 DO $$
