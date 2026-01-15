@@ -656,6 +656,7 @@
   width: 100%;
   height: 200px;
   overflow: hidden;
+  background: transparent;
 }
 
 .crime-image {
@@ -1820,6 +1821,7 @@
   border-radius: 10px;
   overflow: hidden;
   position: relative;
+  background: transparent;
 }
 
 .equipment-card.compact .item-image-container {
@@ -2885,9 +2887,10 @@
 .market-item .item-image {
   width: 80px;
   height: 80px;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 10px;
   margin-bottom: 15px;
+  background: transparent;
 }
 
 .market-item h4 {
