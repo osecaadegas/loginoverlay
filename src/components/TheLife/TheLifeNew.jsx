@@ -202,15 +202,6 @@ export default function TheLife() {
               />
               <span className="stat-text">STAMINA: {player?.stamina} / {player?.max_stamina}</span>
             </div>
-            {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
-              <button 
-                className="quick-refill-btn"
-                onClick={quickRefillStamina}
-                title={`Use stamina item (${staminaItemCount} available)`}
-              >
-                ⚡ Refill ({staminaItemCount})
-              </button>
-            )}
           </div>
         </div>
 
@@ -250,13 +241,13 @@ export default function TheLife() {
           {/* Quick Access Buttons Inside Stats Card */}
           <div className="quick-access-tabs-inline">
             <button 
-              className={`quick-tab-inline ${activeTab === 'leaderboard' ? 'active' : ''}`}
+              className={`quick-tab-inline compact ${activeTab === 'leaderboard' ? 'active' : ''}`}
               onClick={() => setActiveTab('leaderboard')}
             >
               🏆 Leaderboard
             </button>
             <button 
-              className={`quick-tab-inline ${activeTab === 'bank' ? 'active' : ''}`}
+              className={`quick-tab-inline compact ${activeTab === 'bank' ? 'active' : ''}`}
               onClick={() => !isInJail && setActiveTab('bank')}
               disabled={isInJail}
               style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
@@ -264,10 +255,20 @@ export default function TheLife() {
               🏦 Bank
             </button>
             <button 
-              className={`quick-tab-inline ${activeTab === 'profile' ? 'active' : ''}`}
+              className={`quick-tab-inline compact ${activeTab === 'profile' ? 'active' : ''}`}
               onClick={() => setActiveTab('profile')}
             >
               👤 Profile
+            </button>
+            {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
+              <button 
+                className="quick-tab-inline compact refill-btn"
+                onClick={quickRefillStamina}
+                title={`Use stamina item (${staminaItemCount} available)`}
+              >
+                ⚡ Refill ({staminaItemCount})
+              </button>
+            )}
             </button>
           </div>
 

@@ -181,36 +181,6 @@
   position: relative;
 }
 
-.quick-refill-btn {
-  position: absolute;
-  right: 4px;
-  top: 50%;
-  transform: translateY(-50%);
-  background: linear-gradient(135deg, #d4af37 0%, #f0c674 100%);
-  border: none;
-  padding: 4px 10px;
-  border-radius: 6px;
-  color: #000;
-  font-size: 11px;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  z-index: 10;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
-}
-
-.quick-refill-btn:hover {
-  background: linear-gradient(135deg, #f0c674 0%, #ffd700 100%);
-  transform: translateY(-50%) scale(1.05);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
-}
-
-.quick-refill-btn:active {
-  transform: translateY(-50%) scale(0.98);
-}
-
 .stat-label {
   display: none;
 }
@@ -352,6 +322,26 @@
   white-space: nowrap;
 }
 
+.quick-tab-inline.compact {
+  flex: 0 1 auto;
+  padding: 6px 10px;
+  font-size: 0.7rem;
+}
+
+.quick-tab-inline.refill-btn {
+  background: linear-gradient(135deg, #d4af37 0%, #f0c674 100%);
+  border-color: #d4af37;
+  color: #000;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
+}
+
+.quick-tab-inline.refill-btn:hover {
+  background: linear-gradient(135deg, #f0c674 0%, #ffd700 100%);
+  border-color: #ffd700;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.5);
+}
+
 .quick-tab-inline:hover {
   background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.15));
   border-color: rgba(212, 175, 55, 0.5);
@@ -377,6 +367,11 @@
     width: 100%;
     padding: 10px 8px;
     font-size: 0.7rem;
+  }
+
+  .quick-tab-inline.compact {
+    padding: 8px 6px;
+    font-size: 0.65rem;
   }
 }
 
