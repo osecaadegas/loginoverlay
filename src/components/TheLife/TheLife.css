@@ -1,9 +1,15 @@
+.the-life-page {
+  min-height: 100vh;
+  background: #0d1117;
+  padding: 0;
+}
+
 .the-life-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: clamp(10px, 2vw, 20px);
   min-height: 100vh;
-  background: #1a1f2e url('https://wallpapers.com/images/hd/gotham-city-1920-x-1080-background-gh854hvhxla18i1z.jpg') center center / cover no-repeat fixed;
+  background: #0d1117 url('https://wallpapers.com/images/hd/gotham-city-1920-x-1080-background-gh854hvhxla18i1z.jpg') center center / cover no-repeat fixed;
   position: relative;
 }
 

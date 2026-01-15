@@ -193,6 +193,7 @@ export default function TheLife() {
   }).reduce((sum, inv) => sum + inv.quantity, 0);
 
   return (
+    <div className="the-life-page">
     <div className="the-life-container">
       {/* Background Music */}
       <audio 
@@ -676,6 +677,7 @@ export default function TheLife() {
           </div>
         </div>
       )}
+    </div>
     </div>
   );
 }

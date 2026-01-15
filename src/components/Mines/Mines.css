@@ -1,4 +1,6 @@
 .mines-page {
+  min-height: 100vh;
+  background: #0d1117;
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
