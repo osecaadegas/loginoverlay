@@ -487,7 +487,6 @@ export default function TheLifeBusinesses({
             <div key={business.id} className="business-card">
               <div className="business-image-container">
                 <img src={imageUrl} alt={business.name} className="business-image" />
-                {ownsIt && <div className="hired-badge">OWNED</div>}
                 <div className="business-header-overlay">
                   <h3>{business.item?.icon || '💼'} {business.name}</h3>
                   {!ownsIt && <span className="level-tag">🔒 {business.min_level_required}</span>}
