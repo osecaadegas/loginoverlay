@@ -18,6 +18,9 @@ Videos should be named based on the crime name (lowercase, spaces replaced with 
 /public/crime-videos/
 ├── default-crime.webm          # Fallback video
 ├── petty-theft.webm           # For "Petty Theft"
+├── pickpocket.webm            # For "Pickpocket"
+├── shop-lifting.webm          # For "Shop Lifting"
+├── beat-the-granny.webm       # For "Beat The Granny"
 ├── car-jacking.webm           # For "Car Jacking"
 ├── bank-robbery.webm          # For "Bank Robbery"
 ├── drug-deal.webm             # For "Drug Deal"
