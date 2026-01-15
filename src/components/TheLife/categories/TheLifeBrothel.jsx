@@ -424,23 +424,42 @@ export default function TheLifeBrothel({
           </div>
           
           {showHiredWorkers && (
-            <div className="workers-grid">
-              {hiredWorkers.map(hw => (
-                <div key={hw.id} className="worker-card hired-worker">
+            <div className="workers-grid workers-grid-scroll">
+              {/* Group workers by worker_id and show count */}
+              {Object.values(
+                hiredWorkers.reduce((acc, hw) => {
+                  const key = hw.worker_id;
+                  if (!acc[key]) {
+                    acc[key] = {
+                      ...hw,
+                      count: 1,
+                      allInstances: [hw]
+                    };
+                  } else {
+                    acc[key].count++;
+                    acc[key].allInstances.push(hw);
+                  }
+                  return acc;
+                }, {})
+              ).map(groupedWorker => (
+                <div key={groupedWorker.worker_id} className="worker-card hired-worker">
                   <div className="worker-image">
-                    <img src={hw.worker.image_url} alt={hw.worker.name} />
+                    <img src={groupedWorker.worker.image_url} alt={groupedWorker.worker.name} />
+                    {groupedWorker.count > 1 && (
+                      <div className="worker-quantity-badge">×{groupedWorker.count}</div>
+                    )}
                   </div>
                   <div className="worker-details">
-                    <h4 className="worker-name">{hw.worker.name}</h4>
+                    <h4 className="worker-name">{groupedWorker.worker.name}</h4>
                     <div className="worker-income">
                       <span className="income-icon">💵</span>
-                      <span className="income-value">${hw.worker.income_per_hour}/hr</span>
+                      <span className="income-value">${groupedWorker.worker.income_per_hour}/hr {groupedWorker.count > 1 ? `(×${groupedWorker.count})` : ''}</span>
                     </div>
                     <button 
-                      onClick={() => sellWorker(hw)}
+                      onClick={() => sellWorker(groupedWorker.allInstances[0])}
                       className="btn-sell"
                     >
-                      Sell - ${Math.floor(hw.worker.hire_cost / 3).toLocaleString()}
+                      Sell One - ${Math.floor(groupedWorker.worker.hire_cost / 3).toLocaleString()}
                     </button>
                   </div>
                 </div>
