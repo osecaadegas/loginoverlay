@@ -212,11 +212,11 @@ export default function TheLifeCrimes({
       console.error('Error attempting robbery:', err);
       setMessage({ type: 'error', text: 'An error occurred' });
     } finally {
-      // Set cooldown for 1 second
+      // Set cooldown for 3 seconds to show full video animation
       setTimeout(() => {
         setLoading(false);
         setCooldownCrimeId(null);
-      }, 1000);
+      }, 3000);
     }
   };
 
@@ -264,6 +264,7 @@ export default function TheLifeCrimes({
                   <video 
                     className="crime-loading-video"
                     autoPlay 
+                    loop
                     muted 
                     playsInline
                     src={`/crime-videos/${robbery.name.toLowerCase().replace(/\s+/g, '-')}.webm`}
