@@ -84,11 +84,11 @@
 }
 
 /* ===============================================
-   STATS GRID - 2x3 LAYOUT WITH EXPLANATORY TEXT
+   STATS GRID - 3x2 LAYOUT WITH EXPLANATORY TEXT
    =============================================== */
 .brothel-stats-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   margin-bottom: 25px;
 }
@@ -176,7 +176,13 @@
   border-color: rgba(50, 50, 60, 0.3);
 }
 
-/* Responsive - Stack on mobile */
+/* Responsive - Stack on smaller screens */
+@media (max-width: 768px) {
+  .brothel-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 480px) {
   .brothel-stats-grid {
     grid-template-columns: 1fr;

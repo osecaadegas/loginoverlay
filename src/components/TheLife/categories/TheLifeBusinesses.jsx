@@ -189,11 +189,9 @@ export default function TheLifeBusinesses({
         let cashReward = selectedOption.reward_cash * quantityToUse;
         
         // Apply conversion rate if exists (for money laundering)
+        // Input is capped at $200,000 (handled by UI), then fee is applied
         if (business.conversion_rate) {
-          // Apply 200,000 max cap for money laundering
-          const maxCashReward = 200000;
-          const uncappedReward = Math.floor(cashReward * (1 - business.conversion_rate));
-          cashReward = Math.min(uncappedReward, maxCashReward);
+          cashReward = Math.floor(cashReward * (1 - business.conversion_rate));
         }
 
         // Store reward info in production
@@ -645,14 +643,22 @@ export default function TheLifeBusinesses({
             </h3>
 
             {availableItems.map(option => {
-              const maxQty = Math.floor(option.playerQuantity / option.quantity_required);
+              let maxQty = Math.floor(option.playerQuantity / option.quantity_required);
+              
+              // For money laundering businesses with conversion rate, cap INPUT at $200,000
+              if (selectedBusiness?.conversion_rate && option.reward_cash > 0) {
+                const maxInputCap = 200000;
+                // Calculate max quantity where input dirty cash = $200,000
+                const maxQtyFromCap = Math.floor(maxInputCap / option.reward_cash);
+                maxQty = Math.min(maxQty, maxQtyFromCap);
+              }
+              
               const selectedQty = selectedItemId === option.item_id ? (inputQuantity || 1) : 1;
               
+              // Calculate reward: input is capped at $200,000, then fee applied
               let cashReward = option.reward_cash * selectedQty;
               if (selectedBusiness?.conversion_rate) {
-                const maxCashReward = 200000;
-                const uncappedReward = Math.floor(cashReward * (1 - selectedBusiness.conversion_rate));
-                cashReward = Math.min(uncappedReward, maxCashReward);
+                cashReward = Math.floor(cashReward * (1 - selectedBusiness.conversion_rate));
               }
 
               return (
@@ -741,16 +747,9 @@ export default function TheLifeBusinesses({
                     <div style={{color: '#22c55e', fontWeight: '600', fontSize: '1rem'}}>
                       💰 Reward: ${cashReward.toLocaleString()}
                       {selectedBusiness?.conversion_rate && (
-                        <>
-                          <span style={{fontSize: '0.85rem', color: '#cbd5e0', marginLeft: '8px'}}>
-                            ({(selectedBusiness.conversion_rate * 100).toFixed(0)}% fee applied)
-                          </span>
-                          {cashReward >= 200000 && (
-                            <span style={{fontSize: '0.85rem', color: '#fbbf24', marginLeft: '8px', fontWeight: 'bold'}}>
-                              (MAX CAP: $200,000)
-                            </span>
-                          )}
-                        </>
+                        <span style={{fontSize: '0.85rem', color: '#cbd5e0', marginLeft: '8px'}}>
+                          ({(selectedBusiness.conversion_rate * 100).toFixed(0)}% fee applied)
+                        </span>
                       )}
                     </div>
                   </div>
