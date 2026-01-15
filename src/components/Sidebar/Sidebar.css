@@ -24,12 +24,13 @@
 .sidebar-neon-logo {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
   gap: 0;
-  line-height: 0.85;
-  padding: 10px 0 20px;
+  line-height: 1;
+  padding: 15px 10px 20px;
   border-bottom: 1px solid #21262C;
   margin-bottom: 12px;
+  position: relative;
 }
 
 .sidebar-neon-logo .neon-text {
@@ -38,44 +39,42 @@
   text-transform: lowercase;
   color: #fff;
   text-shadow: 
-    0 0 5px #fff,
-    0 0 10px #fff,
-    0 0 20px #fff,
-    0 0 40px #9146FF,
-    0 0 80px #9146FF,
-    0 0 90px #9146FF,
-    0 0 100px #9146FF;
-  animation: neon-flicker 3s infinite alternate;
+    0 0 4px #fff,
+    0 0 8px #fff,
+    0 0 15px #9146FF,
+    0 0 30px #9146FF,
+    0 0 50px #9146FF;
 }
 
 .sidebar-neon-logo .neon-line-1 {
-  font-size: 2rem;
-  letter-spacing: 4px;
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  margin-left: 0;
 }
 
 .sidebar-neon-logo .neon-line-2 {
-  font-size: 2rem;
-  letter-spacing: 4px;
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  align-self: flex-end;
+  margin-top: -5px;
 }
 
-@keyframes neon-flicker {
-  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+@keyframes neon-glow {
+  0%, 100% {
     text-shadow: 
-      0 0 5px #fff,
-      0 0 10px #fff,
-      0 0 20px #fff,
-      0 0 40px #9146FF,
-      0 0 80px #9146FF,
-      0 0 90px #9146FF,
-      0 0 100px #9146FF;
+      0 0 4px #fff,
+      0 0 8px #fff,
+      0 0 15px #9146FF,
+      0 0 30px #9146FF,
+      0 0 50px #9146FF;
   }
-  20%, 24%, 55% {
+  50% {
     text-shadow: 
-      0 0 2px #fff,
-      0 0 5px #fff,
-      0 0 10px #fff,
+      0 0 6px #fff,
+      0 0 12px #fff,
       0 0 20px #9146FF,
-      0 0 40px #9146FF;
+      0 0 40px #9146FF,
+      0 0 60px #9146FF;
   }
 }
 
