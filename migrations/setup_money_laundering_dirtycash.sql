@@ -3,18 +3,33 @@
 -- Conversion: 1 DirtyCash = $1, but with 20% fee = $0.80 final value
 
 -- First, ensure DirtyCash item exists
-INSERT INTO the_life_items (name, icon, type, description, rarity, tradeable, usable)
-VALUES 
-  ('DirtyCash', '💵', 'currency', 'Dirty money from illegal operations that needs to be laundered', 'common', false, false)
-ON CONFLICT (name) DO UPDATE SET
-  icon = '💵',
-  type = 'currency',
-  description = 'Dirty money from illegal operations that needs to be laundered',
-  rarity = 'common',
-  tradeable = false,
-  usable = false;
+DO $$
+DECLARE
+  v_dirtycash_id UUID;
+BEGIN
+  -- Check if DirtyCash already exists
+  SELECT id INTO v_dirtycash_id FROM the_life_items WHERE name = 'DirtyCash';
+  
+  IF v_dirtycash_id IS NULL THEN
+    -- Create new DirtyCash item
+    INSERT INTO the_life_items (name, icon, type, description, rarity, tradeable, usable)
+    VALUES ('DirtyCash', '💵', 'currency', 'Dirty money from illegal operations that needs to be laundered', 'common', false, false);
+    RAISE NOTICE 'DirtyCash item created';
+  ELSE
+    -- Update existing DirtyCash item
+    UPDATE the_life_items SET
+      icon = '💵',
+      type = 'currency',
+      description = 'Dirty money from illegal operations that needs to be laundered',
+      rarity = 'common',
+      tradeable = false,
+      usable = false
+    WHERE id = v_dirtycash_id;
+    RAISE NOTICE 'DirtyCash item updated';
+  END IF;
+END $$;
 
--- Get the DirtyCash item ID for reference
+-- Setup Money Laundering business and required items
 DO $$
 DECLARE
   v_dirtycash_id UUID;
@@ -23,54 +38,64 @@ BEGIN
   -- Get DirtyCash item ID
   SELECT id INTO v_dirtycash_id FROM the_life_items WHERE name = 'DirtyCash';
   
-  -- Ensure Money Laundering business exists
-  INSERT INTO the_life_businesses (
-    name, 
-    description, 
-    image_url,
-    cost,
-    profit,
-    duration_minutes,
-    min_level_required,
-    is_active,
-    reward_type,
-    purchase_price,
-    production_cost,
-    stamina_cost,
-    conversion_rate,
-    is_upgradeable
-  )
-  VALUES (
-    'Money Laundering',
-    'Convert your dirty cash into clean money. Takes 20% fee for the service.',
-    'https://i.imgur.com/moneylaunder.png',
-    0,
-    0,
-    30,
-    10,
-    true,
-    'cash',
-    50000,
-    100,
-    5,
-    0.20,
-    true
-  )
-  ON CONFLICT (name) DO UPDATE SET
-    description = 'Convert your dirty cash into clean money. Takes 20% fee for the service.',
-    conversion_rate = 0.20,
-    reward_type = 'cash',
-    production_cost = 100,
-    stamina_cost = 5
-  RETURNING id INTO v_moneylaundering_id;
+  -- Check if Money Laundering business exists
+  SELECT id INTO v_moneylaundering_id FROM the_life_businesses WHERE name = 'Money Laundering';
   
-  -- If Money Laundering already exists, get its ID
   IF v_moneylaundering_id IS NULL THEN
-    SELECT id INTO v_moneylaundering_id FROM the_life_businesses WHERE name = 'Money Laundering';
+    -- Create Money Laundering business
+    INSERT INTO the_life_businesses (
+      name, 
+      description, 
+      image_url,
+      cost,
+      profit,
+      duration_minutes,
+      min_level_required,
+      is_active,
+      reward_type,
+      purchase_price,
+      production_cost,
+      stamina_cost,
+      conversion_rate,
+      is_upgradeable
+    )
+    VALUES (
+      'Money Laundering',
+      'Convert your dirty cash into clean money. Takes 20% fee for the service.',
+      'https://i.imgur.com/moneylaunder.png',
+      0,
+      0,
+      30,
+      10,
+      true,
+      'cash',
+      50000,
+      100,
+      5,
+      0.20,
+      true
+    )
+    RETURNING id INTO v_moneylaundering_id;
+    RAISE NOTICE 'Money Laundering business created';
+  ELSE
+    -- Update existing Money Laundering business
+    UPDATE the_life_businesses SET
+      description = 'Convert your dirty cash into clean money. Takes 20% fee for the service.',
+      conversion_rate = 0.20,
+      reward_type = 'cash',
+      production_cost = 100,
+      stamina_cost = 5
+    WHERE id = v_moneylaundering_id;
+    RAISE NOTICE 'Money Laundering business updated';
   END IF;
   
   -- Setup the required item mapping: DirtyCash → Clean Money
   -- Each DirtyCash = $1 base value, but conversion_rate of 0.20 means player gets $0.80
+  -- Delete existing mapping if present
+  DELETE FROM the_life_business_required_items 
+  WHERE business_id = v_moneylaundering_id AND item_id = v_dirtycash_id;
+  
+  -- Insert new mapping
   INSERT INTO the_life_business_required_items (
     business_id,
     item_id,
@@ -86,10 +111,7 @@ BEGIN
     1, -- $1 per DirtyCash (before fee)
     NULL,
     1
-  )
-  ON CONFLICT (business_id, item_id) DO UPDATE SET
-    quantity_required = 1,
-    reward_cash = 1; -- This will be reduced by conversion_rate (20%) = $0.80
+  );
     
   RAISE NOTICE 'Money Laundering business configured to accept DirtyCash at $0.80 per unit (20%% fee)';
 END $$;
@@ -103,47 +125,57 @@ BEGIN
   -- Get DirtyCash item ID
   SELECT id INTO v_dirtycash_id FROM the_life_items WHERE name = 'DirtyCash';
   
-  -- Create or update Punjabi CallCenter business
-  INSERT INTO the_life_businesses (
-    name,
-    description,
-    image_url,
-    cost,
-    profit,
-    duration_minutes,
-    min_level_required,
-    is_active,
-    reward_type,
-    reward_item_id,
-    reward_item_quantity,
-    purchase_price,
-    production_cost,
-    stamina_cost,
-    is_upgradeable
-  )
-  VALUES (
-    'Punjabi CallCenter',
-    'Run a sketchy call center operation. Generates dirty cash that needs laundering.',
-    'https://i.imgur.com/callcenter.png',
-    500,
-    0,
-    45,
-    5,
-    true,
-    'items',
-    v_dirtycash_id,
-    10,
-    20000,
-    500,
-    5,
-    true
-  )
-  ON CONFLICT (name) DO UPDATE SET
-    reward_type = 'items',
-    reward_item_id = v_dirtycash_id,
-    reward_item_quantity = 10,
-    description = 'Run a sketchy call center operation. Generates dirty cash that needs laundering.'
-  RETURNING id INTO v_callcenter_id;
+  -- Check if Punjabi CallCenter exists
+  SELECT id INTO v_callcenter_id FROM the_life_businesses WHERE name = 'Punjabi CallCenter';
+  
+  IF v_callcenter_id IS NULL THEN
+    -- Create Punjabi CallCenter business
+    INSERT INTO the_life_businesses (
+      name,
+      description,
+      image_url,
+      cost,
+      profit,
+      duration_minutes,
+      min_level_required,
+      is_active,
+      reward_type,
+      reward_item_id,
+      reward_item_quantity,
+      purchase_price,
+      production_cost,
+      stamina_cost,
+      is_upgradeable
+    )
+    VALUES (
+      'Punjabi CallCenter',
+      'Run a sketchy call center operation. Generates dirty cash that needs laundering.',
+      'https://i.imgur.com/callcenter.png',
+      500,
+      0,
+      45,
+      5,
+      true,
+      'items',
+      v_dirtycash_id,
+      10,
+      20000,
+      500,
+      5,
+      true
+    )
+    RETURNING id INTO v_callcenter_id;
+    RAISE NOTICE 'Punjabi CallCenter business created';
+  ELSE
+    -- Update existing Punjabi CallCenter
+    UPDATE the_life_businesses SET
+      reward_type = 'items',
+      reward_item_id = v_dirtycash_id,
+      reward_item_quantity = 10,
+      description = 'Run a sketchy call center operation. Generates dirty cash that needs laundering.'
+    WHERE id = v_callcenter_id;
+    RAISE NOTICE 'Punjabi CallCenter business updated';
+  END IF;
   
   RAISE NOTICE 'Punjabi CallCenter configured to produce 10 DirtyCash per production';
 END $$;
