@@ -17,7 +17,6 @@ export default function Blackjack() {
   const [playerHand, setPlayerHand] = useState([]);
   const [dealerHand, setDealerHand] = useState([]);
   const [betAmount, setBetAmount] = useState(10);
-  const [sideBetAmount, setSideBetAmount] = useState(0);
   const [perfectPairsBet, setPerfectPairsBet] = useState(0);
   const [twentyOnePlusThreeBet, setTwentyOnePlusThreeBet] = useState(0);
   const [gameState, setGameState] = useState('betting'); // betting, playing, dealer, finished
