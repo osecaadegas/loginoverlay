@@ -334,8 +334,8 @@
 }
 
 .workers-grid-scroll .worker-card {
-  min-width: 280px;
-  max-width: 280px;
+  min-width: 200px;
+  max-width: 200px;
   flex-shrink: 0;
   scroll-snap-align: start;
 }
@@ -345,22 +345,21 @@
    =============================================== */
 .worker-card {
   background: linear-gradient(145deg, rgba(25, 25, 30, 0.8), rgba(15, 15, 20, 0.9));
-  border: 2px solid rgba(70, 70, 80, 0.5);
-  border-radius: 16px;
+  border: 1px solid rgba(70, 70, 80, 0.5);
+  border-radius: 10px;
   overflow: hidden;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s ease;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
   position: relative;
   z-index: 1;
-  backdrop-filter: none;
 }
 
 .worker-card:hover {
   border-color: rgba(100, 100, 110, 0.7);
-  transform: translateY(-6px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  transform: translateY(-3px);
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
 }
 
 .worker-card.hired-worker {
@@ -418,7 +417,7 @@
 .worker-image {
   position: relative;
   width: 100%;
-  padding-top: 125%;
+  padding-top: 100%;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.4);
   flex-shrink: 0;
@@ -441,42 +440,37 @@
 /* Badges - Metallic */
 .hired-badge {
   position: absolute;
-  top: 12px;
-  right: 12px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  top: 8px;
+  right: 8px;
+  background: #22c55e;
   color: white;
-  padding: 6px 14px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 0.85rem;
-  box-shadow: 0 4px 15px rgba(34, 197, 94, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.7rem;
   z-index: 2;
-  border: 1.5px solid rgba(255, 255, 255, 0.2);
 }
 
 /* Worker quantity badge */
 .worker-quantity-badge {
   position: absolute;
-  bottom: 12px;
-  right: 12px;
-  background: linear-gradient(135deg, rgba(100, 100, 110, 0.95), rgba(70, 70, 80, 1));
+  bottom: 8px;
+  right: 8px;
+  background: rgba(80, 80, 90, 0.9);
   color: #d1d5db;
-  padding: 6px 12px;
-  border-radius: 20px;
-  font-weight: 700;
-  font-size: 0.9rem;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 0.75rem;
   z-index: 2;
-  border: 2px solid rgba(100, 100, 110, 0.5);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 /* Worker Details */
 .worker-details {
-  padding: 20px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
   flex: 1;
   position: relative;
   z-index: 1;
@@ -491,11 +485,10 @@
 
 .worker-name {
   color: #9ca3af;
-  font-size: 1.25rem;
-  font-weight: 700;
+  font-size: 1rem;
+  font-weight: 600;
   margin: 0;
-  line-height: 1.3;
-  text-shadow: 0 0 8px rgba(156, 163, 175, 0.3);
+  line-height: 1.2;
 }
 
 .hired-badge-inline {
@@ -530,22 +523,21 @@
 .worker-income {
   display: flex;
   align-items: center;
-  gap: 8px;
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(16, 185, 129, 0.1));
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1.5px solid rgba(34, 197, 94, 0.4);
-  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.1);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
 .income-icon {
-  font-size: 1.2rem;
+  font-size: 0.9rem;
 }
 
 .income-value {
   color: #86efac;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 600;
 }
 
 /* Action Buttons */
@@ -558,17 +550,15 @@
 }
 
 .quantity-input {
-  width: 70px;
-  padding: 10px;
+  width: 50px;
+  padding: 6px;
   background: rgba(20, 20, 25, 0.9);
-  border: 2px solid rgba(70, 70, 80, 0.5);
-  border-radius: 8px;
+  border: 1px solid rgba(70, 70, 80, 0.5);
+  border-radius: 6px;
   color: #d1d5db;
-  font-size: 1rem;
-  font-weight: 700;
+  font-size: 0.85rem;
+  font-weight: 600;
   text-align: center;
-  transition: all 0.3s ease;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .quantity-input:focus {
@@ -587,13 +577,13 @@
 .btn-hire,
 .btn-sell {
   flex: 1;
-  padding: 14px 20px;
+  padding: 8px 12px;
   border: none;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 1rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
 }
 
 .btn-hire {
