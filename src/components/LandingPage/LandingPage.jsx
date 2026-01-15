@@ -280,8 +280,8 @@ export default function LandingPage() {
             {/* Content */}
             <div className="pt-6 md:pt-8 px-6 md:px-8 pb-2 bg-[#1e1e1e] h-[500px] overflow-auto">
             {aboutMeTab === 'about' ? (
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
-              <div className="md:col-span-3 flex justify-center">
+            <div className="flex flex-col md:flex-row gap-6 md:gap-8 items-center md:items-start">
+              <div className="flex-shrink-0">
                 <div className="relative w-52 h-52 md:w-60 md:h-60 lg:w-72 lg:h-72">
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-full blur-2xl"></div>
                   <img 
@@ -291,7 +291,7 @@ export default function LandingPage() {
                   />
                 </div>
               </div>
-              <div className="md:col-span-9">
+              <div className="flex-1 min-w-0">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-extrabold bg-gradient-to-r from-purple-400 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-4">
                   Sobre Mim
                 </h2>
