@@ -51,7 +51,8 @@ export default function TheLifeJail({
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      // Merge with current player state to preserve local values like stamina
+      setPlayer(prev => ({ ...prev, ...data }));
       await loadTheLifeInventory();
       setMessage({ type: 'success', text: '🔓 You escaped jail using a Jail Free Card!' });
     } catch (err) {
@@ -99,7 +100,8 @@ export default function TheLifeJail({
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      // Merge with current player state to preserve local values like stamina
+      setPlayer(prev => ({ ...prev, ...data }));
       setMessage({ 
         type: 'success', 
         text: `💰 You bribed the cops with $${bribeAmount.toLocaleString()} (${percentage}% of your wealth) and escaped jail!` 
