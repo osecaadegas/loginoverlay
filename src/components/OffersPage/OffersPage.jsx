@@ -206,44 +206,30 @@ export default function OffersPage() {
             
             <div className="offers-list">
               {casinoOffers.slice(1).map((offer) => (
-                <div key={offer.id} className="offer-list-item">
-                  <div className="offer-list-image">
+                <div key={offer.id} className="offer-list-item" onClick={() => window.open(offer.bonusLink, '_blank')}>
+                  <div className="offer-list-logo">
                     <img src={offer.image} alt={offer.casino} />
                   </div>
-                  <div className="offer-list-content">
-                    <div className="offer-list-header">
-                      <h4>{offer.casino}</h4>
-                      {offer.isPremium && <span className="premium-tag">⭐ Premium</span>}
-                      {offer.vpnFriendly && <span className="vpn-tag">🌐 VPN</span>}
-                    </div>
-                    <p className="offer-list-title">{offer.title}</p>
-                    {offer.freeSpins && (
-                      <p className="offer-list-spins">+ {offer.freeSpins}</p>
-                    )}
-                    
-                    <div className="offer-list-details-grid">
-                      <div className="offer-list-stats">
-                        {offer.gameProviders && <span>🎮 {offer.gameProviders}</span>}
-                        {offer.totalGames && <span>🎰 {offer.totalGames}</span>}
-                        {offer.license && <span>🛡️ {offer.license}</span>}
-                        {offer.minDeposit && <span>💰 Min: {offer.minDeposit}</span>}
-                        {offer.cashback && <span>🔄 {offer.cashback}</span>}
+                  <div className="offer-list-name">{offer.casino}</div>
+                  <div className="offer-list-details">
+                    {offer.bonusValue && (
+                      <div className="offer-list-detail">
+                        <span className="detail-label">BONUS</span>
+                        <span className="detail-value">{offer.bonusValue}</span>
                       </div>
-                      
-                      {offer.depositMethods && (
-                        <div className="offer-list-payments">
-                          <span className="payments-label">Payments:</span>
-                          {getMethodIcons(offer.depositMethods).slice(0, 6).map((method, idx) => (
-                            <span key={idx} className="payment-icon-small" title={method.name}>
-                              {method.icon}
-                            </span>
-                          ))}
-                          {offer.depositMethods.length > 6 && (
-                            <span className="more-methods">+{offer.depositMethods.length - 6}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
+                    )}
+                    {offer.freeSpins && (
+                      <div className="offer-list-detail">
+                        <span className="detail-label">FREE SPINS</span>
+                        <span className="detail-value">{offer.freeSpins}</span>
+                      </div>
+                    )}
+                    {offer.cashback && (
+                      <div className="offer-list-detail">
+                        <span className="detail-label">CASHBACK</span>
+                        <span className="detail-value">{offer.cashback}</span>
+                      </div>
+                    )}
                   </div>
                   <div className="offer-list-action">
                     <a 
@@ -251,9 +237,16 @@ export default function OffersPage() {
                       target="_blank" 
                       rel="noopener noreferrer"
                       className="list-claim-button"
+                      onClick={(e) => e.stopPropagation()}
                     >
-                      Claim Bonus
+                      CLAIM BONUS
                     </a>
+                    <button 
+                      className="list-more-button"
+                      onClick={(e) => { e.stopPropagation(); window.open(offer.bonusLink, '_blank'); }}
+                    >
+                      👁 SHOW MORE
+                    </button>
                   </div>
                 </div>
               ))}
