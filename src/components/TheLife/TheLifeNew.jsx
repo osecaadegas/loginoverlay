@@ -28,7 +28,7 @@ import TheLifeProfile from './categories/TheLifeProfile';
 export default function TheLife() {
   const { user } = useAuth();
   
-  // Background music state
+  // Background music state - default to true for autoplay
   const audioRef = useRef(null);
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
@@ -36,8 +36,12 @@ export default function TheLife() {
   // Initialize audio and load saved preferences
   useEffect(() => {
     const savedMusicState = localStorage.getItem('theLifeMusicEnabled');
+    // If no saved state, default to true (enabled)
     if (savedMusicState !== null) {
       setIsMusicEnabled(savedMusicState === 'true');
+    } else {
+      // First time - set to enabled and save it
+      localStorage.setItem('theLifeMusicEnabled', 'true');
     }
   }, []);
 
