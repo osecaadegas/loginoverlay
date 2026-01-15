@@ -13,12 +13,12 @@ BEGIN
   IF v_dirtycash_id IS NULL THEN
     -- Create new Dirty Cash item
     INSERT INTO the_life_items (name, icon, type, description, rarity, tradeable, usable)
-    VALUES ('Dirty Cash', '💵', 'currency', 'Dirty money from illegal operations that needs to be laundered', 'common', false, false);
+    VALUES ('Dirty Cash', 'https://i.imgur.com/dirty-cash-stack.png', 'currency', 'Dirty money from illegal operations that needs to be laundered', 'common', false, false);
     RAISE NOTICE 'Dirty Cash item created';
   ELSE
     -- Update existing Dirty Cash item
     UPDATE the_life_items SET
-      icon = '💵',
+      icon = 'https://i.imgur.com/dirty-cash-stack.png',
       type = 'currency',
       description = 'Dirty money from illegal operations that needs to be laundered',
       rarity = 'common',

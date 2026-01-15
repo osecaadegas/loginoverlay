@@ -190,8 +190,8 @@ export default function TheLifeBusinesses({
         
         // Apply conversion rate if exists (for money laundering)
         if (business.conversion_rate) {
-          // Apply 50,000 max cap for money laundering
-          const maxCashReward = 50000;
+          // Apply 200,000 max cap for money laundering
+          const maxCashReward = 200000;
           const uncappedReward = Math.floor(cashReward * (1 - business.conversion_rate));
           cashReward = Math.min(uncappedReward, maxCashReward);
         }
