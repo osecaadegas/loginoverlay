@@ -206,6 +206,12 @@ export default function Sidebar() {
     )}
 
     <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+        {/* Neon Logo */}
+        <div className="sidebar-neon-logo">
+          <span className="neon-text neon-line-1">OSECA</span>
+          <span className="neon-text neon-line-2">ADEGAS</span>
+        </div>
+
         {user ? (
           <div className="sidebar-avatar-section">
             <div className="avatar-container" onClick={() => handleNavigation('/profile')}>

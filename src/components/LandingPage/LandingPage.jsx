@@ -227,12 +227,6 @@ export default function LandingPage() {
             <div className="hero-image-fade"></div>
           </div>
           
-          {/* Neon Logo at Top */}
-          <div className="hero-neon-logo">
-            <span className="neon-text neon-line-1">OSECA</span>
-            <span className="neon-text neon-line-2">ADEGAS</span>
-          </div>
-          
           <div className="hero-content-overlay">
             <h1 className="hero-name">Osecaadegas</h1>
             <div className="hero-social-icons">
