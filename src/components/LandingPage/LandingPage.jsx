@@ -219,7 +219,7 @@ export default function LandingPage() {
       )}
 
       <div className="min-h-screen pt-16 px-4 md:px-6 lg:px-8 pb-12">
-        <div className="w-full max-w-[1850px] mx-auto space-y-6 md:space-y-8">
+        <div className="w-full max-w-[1600px] mx-auto space-y-6 md:space-y-8">
         
         {/* About Me Section */}
         <section className="mt-2 animate-fade-in">
@@ -280,7 +280,7 @@ export default function LandingPage() {
             {/* Content */}
             <div className="pt-6 px-6 md:px-8 pb-2 bg-[#1e1e1e] h-[500px] overflow-auto">
             {aboutMeTab === 'about' ? (
-            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start max-w-[1700px] mx-auto">
+            <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-center lg:items-start max-w-full mx-auto">
               <div className="flex-shrink-0">
                 <div className="relative w-52 h-52 md:w-60 md:h-60 lg:w-72 lg:h-72">
                   <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-blue-500/30 rounded-full blur-2xl"></div>
