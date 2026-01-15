@@ -815,52 +815,167 @@ export default function TheLifeBusinesses({
             <div className="info-popup-header">
               <span className="info-popup-icon">{infoPopupData.icon}</span>
               <h3>{infoPopupData.name}</h3>
+              {infoPopupData.owned && <span className="owned-badge-popup">✓ OWNED</span>}
             </div>
 
             {!infoPopupData.owned ? (
               <div className="info-popup-content">
-                <div className="info-section">
-                  <div className="info-label">Purchase Price</div>
-                  <div className="info-value purchase-price">💵 ${infoPopupData.purchasePrice.toLocaleString()}</div>
-                </div>
-                
-                <div className="info-section">
-                  <div className="info-label">Minimum Level</div>
-                  <div className="info-value">🔒 Level {infoPopupData.minLevel}</div>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-item-label">💵 Purchase Price</span>
+                    <span className="info-item-value">${infoPopupData.purchasePrice.toLocaleString()}</span>
+                  </div>
+                  
+                  <div className="info-item">
+                    <span className="info-item-label">🔒 Min Level</span>
+                    <span className="info-item-value">Level {infoPopupData.minLevel}</span>
+                  </div>
+
+                  <div className="info-item">
+                    <span className="info-item-label">💰 Production Cost</span>
+                    <span className="info-item-value">${infoPopupData.productionCost.toLocaleString()}</span>
+                  </div>
+
+                  <div className="info-item">
+                    <span className="info-item-label">⏱️ Duration</span>
+                    <span className="info-item-value">{infoPopupData.duration}m</span>
+                  </div>
+
+                  <div className="info-item">
+                    <span className="info-item-label">⚡ Stamina Cost</span>
+                    <span className="info-item-value">5 Stamina</span>
+                  </div>
+
+                  <div className="info-item">
+                    <span className="info-item-label">{infoPopupData.hasReward ? '📦 Reward' : '💵 Profit'}</span>
+                    <span className="info-item-value">
+                      {infoPopupData.hasReward ? 'Items' : `$${infoPopupData.profit.toLocaleString()}`}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="info-section full-width">
-                  <div className="info-label">Description</div>
-                  <div className="info-description">{infoPopupData.description}</div>
+                <div className="info-description-section">
+                  <div className="info-section-title">📋 Description</div>
+                  <p>{infoPopupData.description}</p>
+                </div>
+
+                <div className="upgrade-explanation-section">
+                  <div className="info-section-title">📈 Upgrade System</div>
+                  <p className="upgrade-intro">Once purchased, you can upgrade this business to increase efficiency and reduce costs.</p>
+                  <table className="upgrade-table">
+                    <thead>
+                      <tr>
+                        <th>Level</th>
+                        <th>Upgrade Cost</th>
+                        <th>Time Reduction</th>
+                        <th>Benefit</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td>-</td>
+                        <td>Base</td>
+                        <td>Starting efficiency</td>
+                      </tr>
+                      <tr>
+                        <td>2-5</td>
+                        <td>Purchase × 0.5</td>
+                        <td>-1 min/level</td>
+                        <td>Faster production</td>
+                      </tr>
+                      <tr>
+                        <td>6-10</td>
+                        <td>Purchase × 0.7</td>
+                        <td>-1 min/level</td>
+                        <td>Maximum efficiency</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p className="upgrade-note">💡 Higher levels = Faster completion times!</p>
                 </div>
               </div>
             ) : (
               <div className="info-popup-content">
-                <div className="info-section">
-                  <div className="info-label">Production Cost</div>
-                  <div className="info-value cost">💰 ${infoPopupData.productionCost.toLocaleString()}</div>
-                </div>
+                <div className="info-grid">
+                  <div className="info-item">
+                    <span className="info-item-label">💰 Production Cost</span>
+                    <span className="info-item-value">${infoPopupData.productionCost.toLocaleString()}</span>
+                  </div>
 
-                <div className="info-section">
-                  <div className="info-label">Stamina Required</div>
-                  <div className="info-value stamina">⚡ 5 Stamina</div>
-                </div>
+                  <div className="info-item">
+                    <span className="info-item-label">⚡ Stamina Required</span>
+                    <span className="info-item-value">5 Stamina</span>
+                  </div>
 
-                <div className="info-section">
-                  <div className="info-label">Duration</div>
-                  <div className="info-value duration">⏱️ {infoPopupData.duration} minutes</div>
-                </div>
+                  <div className="info-item">
+                    <span className="info-item-label">⏱️ Duration</span>
+                    <span className="info-item-value">{infoPopupData.duration}m</span>
+                  </div>
 
-                <div className="info-section">
-                  <div className="info-label">{infoPopupData.hasReward ? 'Reward' : 'Profit'}</div>
-                  <div className="info-value profit">
-                    {infoPopupData.hasReward ? '📦 Items' : `💵 $${infoPopupData.profit.toLocaleString()}`}
+                  <div className="info-item">
+                    <span className="info-item-label">{infoPopupData.hasReward ? '📦 Reward' : '💵 Profit'}</span>
+                    <span className="info-item-value">
+                      {infoPopupData.hasReward ? 'Items' : `$${infoPopupData.profit.toLocaleString()}`}
+                    </span>
+                  </div>
+
+                  <div className="info-item">
+                    <span className="info-item-label">💵 Sell Value</span>
+                    <span className="info-item-value">${Math.floor(infoPopupData.purchasePrice / 3).toLocaleString()}</span>
+                  </div>
+
+                  <div className="info-item">
+                    <span className="info-item-label">🏪 Purchase Price</span>
+                    <span className="info-item-value info-muted">${infoPopupData.purchasePrice.toLocaleString()}</span>
                   </div>
                 </div>
 
-                <div className="info-section full-width">
-                  <div className="info-label">Description</div>
-                  <div className="info-description">{infoPopupData.description}</div>
+                <div className="info-description-section">
+                  <div className="info-section-title">📋 Description</div>
+                  <p>{infoPopupData.description}</p>
+                </div>
+
+                <div className="upgrade-explanation-section">
+                  <div className="info-section-title">📈 Upgrade Your Business</div>
+                  <p className="upgrade-intro">Upgrade to reduce production time and increase efficiency!</p>
+                  <table className="upgrade-table">
+                    <thead>
+                      <tr>
+                        <th>Level</th>
+                        <th>Upgrade Cost</th>
+                        <th>Time Reduction</th>
+                        <th>Total Saved</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <tr>
+                        <td>1</td>
+                        <td>-</td>
+                        <td>Base time</td>
+                        <td>0 min</td>
+                      </tr>
+                      <tr>
+                        <td>2</td>
+                        <td>${Math.floor(infoPopupData.purchasePrice * 0.5).toLocaleString()}</td>
+                        <td>-1 min</td>
+                        <td>1 min faster</td>
+                      </tr>
+                      <tr>
+                        <td>3-5</td>
+                        <td>${Math.floor(infoPopupData.purchasePrice * 0.5).toLocaleString()} each</td>
+                        <td>-1 min/level</td>
+                        <td>Up to 4 min faster</td>
+                      </tr>
+                      <tr>
+                        <td>6-10</td>
+                        <td>${Math.floor(infoPopupData.purchasePrice * 0.7).toLocaleString()} each</td>
+                        <td>-1 min/level</td>
+                        <td>Up to 9 min faster</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p className="upgrade-note">💡 Max level 10: Complete productions up to 9 minutes faster!</p>
                 </div>
               </div>
             )}
