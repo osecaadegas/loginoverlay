@@ -242,7 +242,8 @@ export default function TheLifeBusinesses({
         .from('the_life_players')
         .update({ 
           cash: player.cash - productionCost,
-          stamina: player.stamina - requiredStamina
+          stamina: player.stamina - requiredStamina,
+          last_stamina_refill: new Date().toISOString()
         })
         .eq('user_id', user.id)
         .select()
