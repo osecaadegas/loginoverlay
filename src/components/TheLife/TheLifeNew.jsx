@@ -269,7 +269,6 @@ export default function TheLife() {
                 ⚡ Refill ({staminaItemCount})
               </button>
             )}
-            </button>
           </div>
 
           <div className="cash-display">
