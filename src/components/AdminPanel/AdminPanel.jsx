@@ -392,6 +392,7 @@ export default function AdminPanel() {
         casino_name: '',
         title: '',
         image_url: '',
+        list_image_url: '',
         bonus_link: '',
         badge: '',
         badge_class: '',
@@ -422,6 +423,7 @@ export default function AdminPanel() {
       casino_name: '',
       title: '',
       image_url: '',
+      list_image_url: '',
       bonus_link: '',
       badge: '',
       badge_class: '',
@@ -2514,11 +2516,21 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="form-group">
-                    <label>Image URL *</label>
+                    <label>Card Image URL * (for offers page cards)</label>
                     <input
                       type="text"
                       value={offerFormData.image_url}
                       onChange={(e) => handleOfferFormChange('image_url', e.target.value)}
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  <div className="form-group">
+                    <label>List Image URL (for landing page list)</label>
+                    <input
+                      type="text"
+                      value={offerFormData.list_image_url}
+                      onChange={(e) => handleOfferFormChange('list_image_url', e.target.value)}
                       placeholder="https://..."
                     />
                   </div>

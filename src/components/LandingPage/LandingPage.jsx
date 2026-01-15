@@ -271,7 +271,7 @@ export default function LandingPage() {
             {casinoOffers.map((offer) => (
               <div key={offer.id} className="offer-card" onClick={() => handleOfferClick(offer.bonus_link)}>
                 <div className="offer-logo">
-                  <img src={offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&h=100&fit=crop'} alt={offer.casino_name} />
+                  <img src={offer.list_image_url || offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&h=100&fit=crop'} alt={offer.casino_name} />
                 </div>
                 <div className="offer-name">{offer.casino_name}</div>
                 <div className="offer-details">
