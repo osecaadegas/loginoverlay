@@ -86,7 +86,7 @@ body {
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
-  background: linear-gradient(135deg, #28313B 0%, #485461 100%);
+  background: #0d1117;
   /* Better text rendering on mobile */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
