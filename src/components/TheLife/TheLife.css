@@ -662,9 +662,10 @@
 .crime-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   filter: brightness(0.85) saturate(1.1);
   transition: all 0.4s ease;
+  background: transparent;
 }
 
 .crime-card:hover .crime-image {
@@ -2830,19 +2831,8 @@
   align-items: center;
   justify-content: center;
   background: transparent;
-  border-bottom: 1px solid #2a2d35;
   padding: 12px;
   position: relative;
-}
-
-.store-item-image-container::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.3), transparent);
 }
 
 .store-item-image {
@@ -2851,6 +2841,7 @@
   object-fit: contain;
   filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
   transition: transform 0.3s ease;
+  background: transparent;
 }
 
 .market-item:hover .store-item-image {
