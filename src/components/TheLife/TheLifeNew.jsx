@@ -1,5 +1,6 @@
 import { useAuth } from '../../context/AuthContext';
 import { useTheLifeData } from './hooks/useTheLifeData';
+import { supabase } from '../../config/supabaseClient';
 import './TheLife.css';
 
 // Category Components
@@ -90,6 +91,71 @@ export default function TheLife() {
   // Get current category info (only if categoryInfo is loaded)
   const currentCategoryInfo = categoryInfo && categoryInfo[activeTab] ? categoryInfo[activeTab] : null;
 
+  // Quick Refill Stamina function
+  const quickRefillStamina = async () => {
+    try {
+      // Find stamina consumables in inventory
+      const staminaItems = theLifeInventory.filter(inv => {
+        if (!inv.item.effect) return false;
+        try {
+          const effect = JSON.parse(inv.item.effect);
+          return effect.type === 'stamina';
+        } catch {
+          return false;
+        }
+      });
+
+      if (staminaItems.length === 0) {
+        setMessage({ type: 'error', text: 'No stamina items in inventory!' });
+        return;
+      }
+
+      // Use the first stamina item found
+      const itemToUse = staminaItems[0];
+      const effect = JSON.parse(itemToUse.item.effect);
+
+      // Update player stamina
+      const newStamina = Math.min(player.max_stamina, player.stamina + effect.value);
+      const { error: playerError } = await supabase
+        .from('the_life_players')
+        .update({ stamina: newStamina })
+        .eq('user_id', user.id);
+
+      if (playerError) throw playerError;
+
+      // Remove one from inventory
+      if (itemToUse.quantity > 1) {
+        await supabase
+          .from('the_life_player_inventory')
+          .update({ quantity: itemToUse.quantity - 1 })
+          .eq('id', itemToUse.id);
+      } else {
+        await supabase
+          .from('the_life_player_inventory')
+          .delete()
+          .eq('id', itemToUse.id);
+      }
+
+      setMessage({ type: 'success', text: `Used ${itemToUse.item.name}! +${effect.value} stamina` });
+      initializePlayer();
+      loadTheLifeInventory();
+    } catch (err) {
+      console.error('Error using stamina item:', err);
+      setMessage({ type: 'error', text: 'Failed to use item' });
+    }
+  };
+
+  // Get stamina item count
+  const staminaItemCount = theLifeInventory.filter(inv => {
+    if (!inv.item.effect) return false;
+    try {
+      const effect = JSON.parse(inv.item.effect);
+      return effect.type === 'stamina';
+    } catch {
+      return false;
+    }
+  }).reduce((sum, inv) => sum + inv.quantity, 0);
+
   return (
     <div className="the-life-container">
       <div className="the-life-header">
@@ -136,6 +202,15 @@ export default function TheLife() {
               />
               <span className="stat-text">STAMINA: {player?.stamina} / {player?.max_stamina}</span>
             </div>
+            {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
+              <button 
+                className="quick-refill-btn"
+                onClick={quickRefillStamina}
+                title={`Use stamina item (${staminaItemCount} available)`}
+              >
+                ⚡ Refill ({staminaItemCount})
+              </button>
+            )}
           </div>
         </div>
 
