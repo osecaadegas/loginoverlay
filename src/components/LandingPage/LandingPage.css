@@ -388,6 +388,27 @@
 }
 
 /* Responsive Design */
+/* Large Desktop Screens (1920px and above) */
+@media (min-width: 1920px) {
+  .hero-section {
+    padding: 140px 60px 120px;
+  }
+
+  .hero-title {
+    font-size: 4.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1.3rem;
+  }
+
+  .features-container,
+  .about-container,
+  .footer-content {
+    max-width: 1600px;
+  }
+}
+
 @media (max-width: 1024px) {
   .hero-section {
     padding: 100px 30px 80px;

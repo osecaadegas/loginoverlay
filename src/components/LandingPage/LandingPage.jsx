@@ -218,8 +218,8 @@ export default function LandingPage() {
         </div>
       )}
 
-      <div className="min-h-screen pt-16 px-4 md:px-6 lg:px-8 pb-12">
-        <div className="max-w-[1800px] mx-auto space-y-6 md:space-y-8">
+      <div className="min-h-screen pt-16 px-4 md:px-6 lg:px-8 xl:px-12 pb-12">
+        <div className="max-w-[1920px] mx-auto space-y-6 md:space-y-8">
         
         {/* About Me Section */}
         <section className="mt-2 animate-fade-in">
@@ -453,8 +453,7 @@ export default function LandingPage() {
                 {activeTab === 'highlights' ? (
                 <div 
                   ref={scrollContainerRef}
-                  className="flex gap-2 overflow-hidden"
-                  style={{ width: 'calc(7 * 240px + 6 * 8px)' }}
+                  className="flex gap-2 overflow-hidden w-full max-w-full"
                 >
                   {highlights.map((highlight) => (
                     <div

@@ -282,9 +282,17 @@ body {
 /* Responsive containers */
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 clamp(15px, 3vw, 20px);
+  padding: 0 clamp(15px, 3vw, 30px);
+}
+
+/* Large screen support (1920px+) */
+@media (min-width: 1920px) {
+  .container {
+    max-width: 1600px;
+    padding: 0 clamp(20px, 4vw, 40px);
+  }
 }
 
 /* Responsive text utilities */
