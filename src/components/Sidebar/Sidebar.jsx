@@ -208,8 +208,8 @@ export default function Sidebar() {
     <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         {/* Neon Logo */}
         <div className="sidebar-neon-logo">
-          <span className="neon-text neon-line-1">OSECA</span>
-          <span className="neon-text neon-line-2">ADEGAS</span>
+          <span className="neon-text neon-line-1">oseca</span>
+          <span className="neon-text neon-line-2">adegas</span>
         </div>
 
         {user ? (
