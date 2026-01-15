@@ -2827,7 +2827,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #0f1117 0%, #1a1d25 100%);
+  background: transparent;
   border-bottom: 1px solid #2a2d35;
   padding: 12px;
   position: relative;
