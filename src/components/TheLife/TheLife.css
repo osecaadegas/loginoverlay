@@ -1529,15 +1529,12 @@
 }
 
 .business-compact-actions {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
   padding: 8px;
   display: flex;
   flex-direction: column;
   gap: 5px;
-  z-index: 2;
+  background: rgba(20, 25, 35, 0.8);
+  width: 100%;
 }
 
 .compact-btn {
@@ -5265,13 +5262,27 @@
 
   .hired-badge {
     position: absolute !important;
-business-header-overlay {
+    top: 6px !important;
+    left: 6px !important;
+    background: rgba(34, 197, 94, 0.95) !important;
+    color: #000 !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 0.55rem !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    z-index: 3 !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.7) !important;
+    backdrop-filter: blur(4px) !important;
+  }
+
+  .business-header-overlay {
     position: absolute !important;
     top: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent) !important;
-    padding: 12px !important;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.4) 60%, transparent 100%) !important;
+    padding: 30px 12px 12px 12px !important;
     display: flex;
     flex-direction: column;
     z-index: 2;
@@ -5318,8 +5329,8 @@ business-header-overlay {
     flex-direction: column !important;
     gap: 0 !important;
     padding: 0 !important;
-    position: relative !important;
     width: 100% !important;
+    background: rgba(20, 25, 35, 0.8) !important;
   }
 
   .business-compact-actions .compact-btn {
