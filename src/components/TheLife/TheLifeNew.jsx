@@ -1,6 +1,7 @@
 import { useAuth } from '../../context/AuthContext';
 import { useTheLifeData } from './hooks/useTheLifeData';
 import { supabase } from '../../config/supabaseClient';
+import { useState, useRef, useEffect } from 'react';
 import './TheLife.css';
 
 // Category Components
@@ -26,6 +27,49 @@ import TheLifeProfile from './categories/TheLifeProfile';
  */
 export default function TheLife() {
   const { user } = useAuth();
+  
+  // Background music state
+  const audioRef = useRef(null);
+  const [isMusicPlaying, setIsMusicPlaying] = useState(false);
+  const [musicVolume, setMusicVolume] = useState(0.3);
+  
+  // Initialize audio and load saved preferences
+  useEffect(() => {
+    const savedMusicState = localStorage.getItem('theLifeMusicEnabled');
+    const savedVolume = localStorage.getItem('theLifeMusicVolume');
+    
+    if (savedVolume) {
+      setMusicVolume(parseFloat(savedVolume));
+    }
+    
+    if (savedMusicState === 'true') {
+      setIsMusicPlaying(true);
+    }
+  }, []);
+
+  // Handle music play/pause
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = musicVolume;
+      if (isMusicPlaying) {
+        audioRef.current.play().catch(err => console.log('Audio play failed:', err));
+      } else {
+        audioRef.current.pause();
+      }
+    }
+  }, [isMusicPlaying, musicVolume]);
+
+  const toggleMusic = () => {
+    const newState = !isMusicPlaying;
+    setIsMusicPlaying(newState);
+    localStorage.setItem('theLifeMusicEnabled', newState);
+  };
+
+  const handleVolumeChange = (e) => {
+    const newVolume = parseFloat(e.target.value);
+    setMusicVolume(newVolume);
+    localStorage.setItem('theLifeMusicVolume', newVolume);
+  };
   
   // Get all game data and state from custom hook
   const {
@@ -158,6 +202,37 @@ export default function TheLife() {
 
   return (
     <div className="the-life-container">
+      {/* Background Music */}
+      <audio 
+        ref={audioRef} 
+        src="/music/thelifemusic.mp3" 
+        loop 
+        preload="auto"
+      />
+      
+      {/* Music Control Button */}
+      <div className="music-control">
+        <button 
+          className="music-toggle-btn" 
+          onClick={toggleMusic}
+          title={isMusicPlaying ? "Pause Music" : "Play Music"}
+        >
+          {isMusicPlaying ? '🔊' : '🔇'}
+        </button>
+        {isMusicPlaying && (
+          <input 
+            type="range" 
+            min="0" 
+            max="1" 
+            step="0.1" 
+            value={musicVolume}
+            onChange={handleVolumeChange}
+            className="volume-slider"
+            title="Volume"
+          />
+        )}
+      </div>
+
       <div className="the-life-header">
         <img src="/thelife/thelife.png" alt="The Life" className="game-logo" />
       </div>
