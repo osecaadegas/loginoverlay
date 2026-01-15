@@ -314,10 +314,10 @@ export default function LandingPage() {
         </section>
 
         <div className="px-4 md:px-6 lg:px-8 pb-12">
-        <div className="w-full max-w-[1600px] mx-auto space-y-6 md:space-y-8">
+        <div className="w-full max-w-[1600px] mx-auto flex flex-col gap-6 md:gap-8">
         
-        {/* About Me Section */}
-        <section className="mt-2 animate-fade-in">
+        {/* About Me Section - order-2 to show after SecaHub */}
+        <section className="mt-2 animate-fade-in order-2">
           <div className="relative overflow-hidden rounded-lg border border-[#333] bg-[#1e1e1e] shadow-[0_8px_25px_rgba(0,0,0,0.6),inset_0_0_5px_rgba(0,255,0,0.05)]">
             {/* Window Bar */}
             <div className="h-8 bg-[#3c3c3c] flex items-center justify-between px-3 border-b border-[#2a2a2a]">
@@ -460,9 +460,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Stream Highlights */}
+        {/* Stream Highlights / SecaHub - order-1 to show first */}
         {highlights.length > 0 && (
-          <section className="animate-fade-in">
+          <section className="animate-fade-in order-1">
             <div className="relative flex items-center justify-center">
               {/* VS Code Container */}
               <div className="relative overflow-hidden rounded-lg border border-[#333] bg-[#1e1e1e] shadow-[0_8px_25px_rgba(0,0,0,0.6),inset_0_0_5px_rgba(0,255,0,0.05)]">
