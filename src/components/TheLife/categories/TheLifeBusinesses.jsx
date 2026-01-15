@@ -641,7 +641,7 @@ export default function TheLifeBusinesses({
               
               let cashReward = option.reward_cash * selectedQty;
               if (selectedBusiness?.conversion_rate) {
-                const maxCashReward = 50000;
+                const maxCashReward = 200000;
                 const uncappedReward = Math.floor(cashReward * (1 - selectedBusiness.conversion_rate));
                 cashReward = Math.min(uncappedReward, maxCashReward);
               }
@@ -661,7 +661,7 @@ export default function TheLifeBusinesses({
                   setInputQuantity(1);
                 }}>
                   <div style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px'}}>
-                    <img src={option.item.icon} alt={option.item.name} style={{
+                    <img src={option.item.image_url || option.item.icon} alt={option.item.name} style={{
                       width: '60px',
                       height: '60px',
                       objectFit: 'cover',
@@ -736,9 +736,9 @@ export default function TheLifeBusinesses({
                           <span style={{fontSize: '0.85rem', color: '#cbd5e0', marginLeft: '8px'}}>
                             ({(selectedBusiness.conversion_rate * 100).toFixed(0)}% fee applied)
                           </span>
-                          {cashReward >= 50000 && (
+                          {cashReward >= 200000 && (
                             <span style={{fontSize: '0.85rem', color: '#fbbf24', marginLeft: '8px', fontWeight: 'bold'}}>
-                              (MAX CAP: $50,000)
+                              (MAX CAP: $200,000)
                             </span>
                           )}
                         </>
