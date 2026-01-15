@@ -20,61 +20,21 @@
   padding: 20px 16px;
 }
 
-/* Neon Logo in Sidebar */
-.sidebar-neon-logo {
+/* Logo in Sidebar */
+.sidebar-logo {
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0;
-  line-height: 1;
   padding: 20px 10px 25px;
   border-bottom: 1px solid #21262C;
   margin-bottom: 12px;
-  position: relative;
 }
 
-.sidebar-neon-logo .neon-text {
-  font-family: 'Pacifico', 'Brush Script MT', 'Segoe Script', cursive;
-  font-weight: 400;
-  text-transform: lowercase;
-  color: #fff;
-  text-shadow: 
-    0 0 4px #fff,
-    0 0 8px #fff,
-    0 0 15px #9146FF,
-    0 0 30px #9146FF,
-    0 0 50px #9146FF;
-}
-
-.sidebar-neon-logo .neon-line-1 {
-  font-size: 2.5rem;
-  letter-spacing: 3px;
-}
-
-.sidebar-neon-logo .neon-line-2 {
-  font-size: 2.5rem;
-  letter-spacing: 3px;
-  margin-top: 0;
-}
-
-@keyframes neon-glow {
-  0%, 100% {
-    text-shadow: 
-      0 0 4px #fff,
-      0 0 8px #fff,
-      0 0 15px #9146FF,
-      0 0 30px #9146FF,
-      0 0 50px #9146FF;
-  }
-  50% {
-    text-shadow: 
-      0 0 6px #fff,
-      0 0 12px #fff,
-      0 0 20px #9146FF,
-      0 0 40px #9146FF,
-      0 0 60px #9146FF;
-  }
+.sidebar-logo-image {
+  max-width: 100%;
+  height: auto;
+  max-height: 80px;
+  object-fit: contain;
 }
 
 /* Avatar Section at Top */
