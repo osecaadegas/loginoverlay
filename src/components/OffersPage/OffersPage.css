@@ -436,7 +436,7 @@
   margin: 0;
 }
 
-/* Offers List - Matching Landing Page Style */
+/* ========== NEW OFFERS LIST STYLES ========== */
 .offers-list {
   display: flex;
   flex-direction: column;
@@ -445,97 +445,80 @@
   margin: 0 auto;
 }
 
-/* Flip Wrapper */
-.offer-list-wrapper {
-  position: relative;
-}
-
-.offer-list-wrapper .offer-list-back {
-  display: none;
-}
-
-.offer-list-wrapper.flipped .offer-list-front {
-  display: none;
-}
-
-.offer-list-wrapper.flipped .offer-list-back {
-  display: grid;
-}
-
-.offer-list-item {
-  display: grid;
-  grid-template-columns: 120px 150px 1fr auto;
-  align-items: center;
-  gap: 20px;
+.offer-list-card {
   background: linear-gradient(135deg, #1a1d23 0%, #21262d 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
-  padding: 16px 24px;
-  cursor: pointer;
   transition: all 0.3s ease;
-  box-sizing: border-box;
 }
 
-.offer-list-item:hover {
+.offer-list-card:hover {
   border-color: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
 }
 
-.offer-list-logo {
-  width: 120px;
-  height: 60px;
+/* Front Side */
+.offer-card-front {
   display: flex;
   align-items: center;
-  justify-content: center;
-  background: transparent;
+  gap: 20px;
+  padding: 16px 24px;
+}
+
+.offer-card-logo {
+  width: 120px;
+  height: 60px;
+  flex-shrink: 0;
   border-radius: 8px;
   overflow: hidden;
 }
 
-.offer-list-logo img {
+.offer-card-logo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   border-radius: 8px;
 }
 
-.offer-list-name {
+.offer-card-name {
   font-size: 1rem;
   font-weight: 700;
   color: white;
+  min-width: 120px;
 }
 
-.offer-list-details {
+.offer-card-stats {
   display: flex;
   gap: 30px;
+  flex: 1;
 }
 
-.offer-list-detail {
+.offer-stat {
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
 
-.offer-list-detail .detail-label {
+.stat-label {
   font-size: 0.65rem;
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
-.offer-list-detail .detail-value {
+.stat-value {
   font-size: 1rem;
   font-weight: 700;
   color: white;
 }
 
-.offer-list-action {
+.offer-card-buttons {
   display: flex;
   gap: 10px;
+  flex-shrink: 0;
 }
 
-.list-claim-button {
+.btn-claim {
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -546,14 +529,15 @@
   background: transparent;
   color: white;
   text-decoration: none;
+  white-space: nowrap;
 }
 
-.list-claim-button:hover {
+.btn-claim:hover {
   background: rgba(255, 255, 255, 0.1);
   border-color: white;
 }
 
-.list-more-button {
+.btn-more {
   padding: 10px 20px;
   border-radius: 8px;
   font-size: 0.8rem;
@@ -563,45 +547,44 @@
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.1);
+  white-space: nowrap;
 }
 
-.list-more-button:hover {
+.btn-more:hover {
   background: rgba(255, 255, 255, 0.15);
   color: white;
 }
 
-/* Back Side Styles */
-.offer-list-back {
-  display: flex !important;
+/* Back Side */
+.offer-card-back {
+  display: flex;
   align-items: center;
   gap: 20px;
-  background: linear-gradient(135deg, #1a1d23 0%, #21262d 100%);
-  border: 1px solid rgba(145, 70, 255, 0.3);
   padding: 16px 24px;
+  border: 1px solid rgba(145, 70, 255, 0.3);
   border-radius: 12px;
+  background: linear-gradient(135deg, #1a1d23 0%, #21262d 100%);
 }
 
-.offer-back-header {
+.back-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-width: 150px;
   flex-shrink: 0;
 }
 
-.offer-back-name {
+.back-name {
   color: white;
   font-weight: 700;
   font-size: 1rem;
 }
 
-.offer-back-close {
+.back-close {
   background: rgba(255, 255, 255, 0.15);
   border: none;
   color: white;
   width: 28px;
   height: 28px;
-  min-width: 28px;
   border-radius: 50%;
   cursor: pointer;
   display: flex;
@@ -611,91 +594,58 @@
   transition: all 0.2s;
 }
 
-.offer-back-close:hover {
+.back-close:hover {
   background: rgba(255, 255, 255, 0.3);
-  transform: scale(1.1);
 }
 
-.offer-back-content {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  overflow: hidden;
-}
-
-.offer-back-stats {
+.back-info {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  align-items: center;
+  flex: 1;
 }
 
-.offer-back-stat {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.info-badge {
   background: rgba(255, 255, 255, 0.05);
   padding: 6px 12px;
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  white-space: nowrap;
-}
-
-.offer-back-stat .stat-icon {
-  font-size: 1rem;
-}
-
-.offer-back-stat .stat-text {
   color: white;
   font-size: 0.75rem;
   font-weight: 500;
-}
-
-.offer-back-stat.vpn {
-  border-color: rgba(16, 185, 129, 0.3);
-  background: rgba(16, 185, 129, 0.1);
-}
-
-.offer-back-stat.vpn .stat-text {
-  color: #10b981;
-}
-
-.offer-back-stat.premium {
-  border-color: rgba(251, 191, 36, 0.3);
-  background: rgba(251, 191, 36, 0.1);
-}
-
-.offer-back-stat.premium .stat-text {
-  color: #fbbf24;
-}
-
-.offer-back-payments {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-shrink: 0;
-}
-
-.payments-title {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 0.7rem;
-  font-weight: 600;
   white-space: nowrap;
 }
 
-.payments-icons {
+.info-badge.vpn {
+  border-color: rgba(16, 185, 129, 0.3);
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+}
+
+.info-badge.premium {
+  border-color: rgba(251, 191, 36, 0.3);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fbbf24;
+}
+
+.back-payments {
   display: flex;
-  gap: 4px;
   align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
 }
 
-.payment-method-icon {
+.payments-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.payment-icon {
   font-size: 1.1rem;
-  opacity: 0.9;
 }
 
-.more-payments {
+.payments-more {
   color: rgba(255, 255, 255, 0.5);
   font-size: 0.65rem;
   background: rgba(255, 255, 255, 0.1);
@@ -703,86 +653,77 @@
   border-radius: 4px;
 }
 
-.back-claim {
-  flex-shrink: 0;
-}
-
-/* Responsive Offers List */
+/* Responsive */
 @media (max-width: 1024px) {
-  .offer-list-item.offer-list-front {
-    grid-template-columns: 100px 1fr;
-    grid-template-rows: auto auto auto;
-    gap: 12px;
-    padding: 16px;
-  }
-
-  .offer-list-back {
+  .offer-card-front,
+  .offer-card-back {
     flex-wrap: wrap;
     padding: 16px;
   }
 
-  .offer-back-header {
-    width: 100%;
-    justify-content: space-between;
-  }
-
-  .offer-back-content {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 12px;
-    width: 100%;
-  }
-
-  .offer-list-logo {
-    grid-row: span 2;
+  .offer-card-logo {
     width: 100px;
     height: 50px;
   }
 
-  .offer-list-name {
-    grid-column: 2;
-  }
-
-  .offer-list-details {
-    grid-column: 2;
-    flex-wrap: wrap;
+  .offer-card-stats {
+    width: 100%;
     gap: 15px;
   }
 
-  .offer-list-action {
-    grid-column: 1 / -1;
+  .offer-card-buttons {
+    width: 100%;
     justify-content: center;
+  }
+
+  .back-header {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .back-info {
+    width: 100%;
+  }
+
+  .back-payments {
+    width: 100%;
   }
 }
 
 @media (max-width: 640px) {
-  .offer-list-item {
-    grid-template-columns: 80px 1fr;
+  .offer-card-front,
+  .offer-card-back {
     padding: 12px;
-    gap: 10px;
+    gap: 12px;
   }
 
-  .offer-list-logo {
+  .offer-card-logo {
     width: 80px;
     height: 45px;
   }
 
-  .offer-list-name {
+  .offer-card-name {
     font-size: 0.9rem;
+    min-width: auto;
   }
 
-  .offer-list-details {
+  .offer-card-stats {
     gap: 10px;
   }
 
-  .offer-list-detail .detail-value {
+  .stat-value {
     font-size: 0.85rem;
   }
 
-  .list-claim-button,
-  .list-more-button {
+  .btn-claim,
+  .btn-more {
     padding: 8px 14px;
     font-size: 0.75rem;
+  }
+
+  .info-badge {
+    padding: 4px 8px;
+    font-size: 0.7rem;
   }
 }
 

@@ -206,127 +206,87 @@ export default function OffersPage() {
             
             <div className="offers-list">
               {casinoOffers.slice(1).map((offer) => (
-                <div key={offer.id} className={`offer-list-wrapper ${flippedCards[offer.id] ? 'flipped' : ''}`}>
-                  {/* Front Side */}
-                  <div className="offer-list-item offer-list-front">
-                    <div className="offer-list-logo">
-                      <img src={offer.image} alt={offer.casino} />
+                <div key={offer.id} className="offer-list-card">
+                  {!flippedCards[offer.id] ? (
+                    /* Front Side */
+                    <div className="offer-card-front">
+                      <div className="offer-card-logo">
+                        <img src={offer.image} alt={offer.casino} />
+                      </div>
+                      <div className="offer-card-name">{offer.casino}</div>
+                      <div className="offer-card-stats">
+                        {offer.bonusValue && (
+                          <div className="offer-stat">
+                            <span className="stat-label">BONUS</span>
+                            <span className="stat-value">{offer.bonusValue}</span>
+                          </div>
+                        )}
+                        {offer.freeSpins && (
+                          <div className="offer-stat">
+                            <span className="stat-label">FREE SPINS</span>
+                            <span className="stat-value">{offer.freeSpins}</span>
+                          </div>
+                        )}
+                        {offer.cashback && (
+                          <div className="offer-stat">
+                            <span className="stat-label">CASHBACK</span>
+                            <span className="stat-value">{offer.cashback}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="offer-card-buttons">
+                        <a 
+                          href={offer.bonusLink || '#'} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="btn-claim"
+                        >
+                          CLAIM BONUS
+                        </a>
+                        <button 
+                          className="btn-more"
+                          onClick={() => toggleFlip(offer.id)}
+                        >
+                          👁 SHOW MORE
+                        </button>
+                      </div>
                     </div>
-                    <div className="offer-list-name">{offer.casino}</div>
-                    <div className="offer-list-details">
-                      {offer.bonusValue && (
-                        <div className="offer-list-detail">
-                          <span className="detail-label">BONUS</span>
-                          <span className="detail-value">{offer.bonusValue}</span>
+                  ) : (
+                    /* Back Side - Details */
+                    <div className="offer-card-back">
+                      <div className="back-header">
+                        <span className="back-name">{offer.casino}</span>
+                        <button className="back-close" onClick={() => toggleFlip(offer.id)}>✕</button>
+                      </div>
+                      <div className="back-info">
+                        {offer.gameProviders && <span className="info-badge">🎮 {offer.gameProviders} Providers</span>}
+                        {offer.totalGames && <span className="info-badge">🎰 {offer.totalGames} Games</span>}
+                        {offer.license && <span className="info-badge">🛡️ {offer.license}</span>}
+                        {offer.minDeposit && <span className="info-badge">💰 Min: {offer.minDeposit}</span>}
+                        {offer.vpnFriendly && <span className="info-badge vpn">🌐 VPN OK</span>}
+                        {offer.isPremium && <span className="info-badge premium">⭐ Premium</span>}
+                      </div>
+                      {offer.depositMethods && (
+                        <div className="back-payments">
+                          <span className="payments-label">Payments:</span>
+                          {getMethodIcons(offer.depositMethods).slice(0, 6).map((method, idx) => (
+                            <span key={idx} className="payment-icon" title={method.name}>{method.icon}</span>
+                          ))}
+                          {getMethodIcons(offer.depositMethods).length > 6 && (
+                            <span className="payments-more">+{getMethodIcons(offer.depositMethods).length - 6}</span>
+                          )}
                         </div>
                       )}
-                      {offer.freeSpins && (
-                        <div className="offer-list-detail">
-                          <span className="detail-label">FREE SPINS</span>
-                          <span className="detail-value">{offer.freeSpins}</span>
-                        </div>
-                      )}
-                      {offer.cashback && (
-                        <div className="offer-list-detail">
-                          <span className="detail-label">CASHBACK</span>
-                          <span className="detail-value">{offer.cashback}</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="offer-list-action">
                       <a 
                         href={offer.bonusLink || '#'} 
                         target="_blank" 
                         rel="noopener noreferrer"
-                        className="list-claim-button"
-                        onClick={(e) => e.stopPropagation()}
+                        className="btn-claim"
                       >
                         CLAIM BONUS
                       </a>
-                      <button 
-                        className="list-more-button"
-                        onClick={(e) => { e.stopPropagation(); toggleFlip(offer.id); }}
-                      >
-                        👁 SHOW MORE
-                      </button>
                     </div>
-                  </div>
-                  
-                  {/* Back Side - Details */}
-                  <div className="offer-list-item offer-list-back">
-                    <div className="offer-back-header">
-                      <span className="offer-back-name">{offer.casino}</span>
-                      <button 
-                        className="offer-back-close"
-                        onClick={(e) => { e.stopPropagation(); toggleFlip(offer.id); }}
-                      >
-                        ✕
-                      </button>
-                    </div>
-                    <div className="offer-back-content">
-                      <div className="offer-back-stats">
-                        {offer.gameProviders && (
-                          <div className="offer-back-stat">
-                            <span className="stat-icon">🎮</span>
-                            <span className="stat-text">{offer.gameProviders} Providers</span>
-                          </div>
-                        )}
-                        {offer.totalGames && (
-                          <div className="offer-back-stat">
-                            <span className="stat-icon">🎰</span>
-                            <span className="stat-text">{offer.totalGames} Games</span>
-                          </div>
-                        )}
-                        {offer.license && (
-                          <div className="offer-back-stat">
-                            <span className="stat-icon">🛡️</span>
-                            <span className="stat-text">{offer.license} License</span>
-                          </div>
-                        )}
-                        {offer.minDeposit && (
-                          <div className="offer-back-stat">
-                            <span className="stat-icon">💰</span>
-                            <span className="stat-text">Min: {offer.minDeposit}</span>
-                          </div>
-                        )}
-                        {offer.vpnFriendly && (
-                          <div className="offer-back-stat vpn">
-                            <span className="stat-icon">🌐</span>
-                            <span className="stat-text">VPN Friendly</span>
-                          </div>
-                        )}
-                        {offer.isPremium && (
-                          <div className="offer-back-stat premium">
-                            <span className="stat-icon">⭐</span>
-                            <span className="stat-text">Premium Partner</span>
-                          </div>
-                        )}
-                      </div>
-                      {offer.depositMethods && (
-                        <div className="offer-back-payments">
-                          <span className="payments-title">Payment Methods:</span>
-                          <div className="payments-icons">
-                            {getMethodIcons(offer.depositMethods).slice(0, 8).map((method, idx) => (
-                              <span key={idx} className="payment-method-icon" title={method.name}>
-                                {method.icon}
-                              </span>
-                            ))}
-                            {getMethodIcons(offer.depositMethods).length > 8 && (
-                              <span className="more-payments">+{getMethodIcons(offer.depositMethods).length - 8}</span>
-                            )}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                    <a 
-                      href={offer.bonusLink || '#'} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="list-claim-button back-claim"
-                    >
-                      CLAIM BONUS
-                    </a>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
