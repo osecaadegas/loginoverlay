@@ -3104,7 +3104,8 @@ input:checked + .toggle-slider:before {
   height: 80px;
   object-fit: contain;
   border-radius: 10px;
-  margin-bottom: 15px;
+  margin: 15px auto;
+  display: block;
   background: transparent;
 }
 

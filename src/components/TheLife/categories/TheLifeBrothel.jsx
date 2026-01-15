@@ -21,6 +21,8 @@ export default function TheLifeBrothel({
 }) {
   const [showHiredWorkers, setShowHiredWorkers] = useState(false);
   const [isHiring, setIsHiring] = useState(false);
+  const [hireQuantities, setHireQuantities] = useState({});
+  const [sellQuantities, setSellQuantities] = useState({});
 
   // Sync worker count when data loads
   useEffect(() => {
@@ -88,7 +90,7 @@ export default function TheLifeBrothel({
   };
 
   // Hire a worker
-  const hireWorker = async (worker) => {
+  const hireWorker = async (worker, quantity = 1) => {
     // Prevent spam clicking
     if (isHiring) {
       return;
@@ -102,13 +104,14 @@ export default function TheLifeBrothel({
     const totalSlots = (brothel.worker_slots || 3) + (brothel.additional_slots || 0);
     const usedSlots = hiredWorkers.length; // Use actual hired workers count
 
-    if (usedSlots >= totalSlots) {
-      setMessage({ type: 'error', text: `No worker slots available! (${usedSlots}/${totalSlots} used)` });
+    if (usedSlots + quantity > totalSlots) {
+      setMessage({ type: 'error', text: `Not enough slots! Need ${quantity} but only ${totalSlots - usedSlots} available` });
       return;
     }
 
-    if (player.cash < worker.hire_cost) {
-      setMessage({ type: 'error', text: `Need $${worker.hire_cost.toLocaleString()} to hire ${worker.name}!` });
+    const totalCost = worker.hire_cost * quantity;
+    if (player.cash < totalCost) {
+      setMessage({ type: 'error', text: `Need $${totalCost.toLocaleString()} to hire ${quantity}x ${worker.name}!` });
       return;
     }
 
@@ -129,19 +132,22 @@ export default function TheLifeBrothel({
       if (checkError) throw checkError;
 
       const currentUsedSlots = currentWorkers.length;
-      if (currentUsedSlots >= totalSlots) {
-        setMessage({ type: 'error', text: `No worker slots available! (${currentUsedSlots}/${totalSlots} used)` });
+      if (currentUsedSlots + quantity > totalSlots) {
+        setMessage({ type: 'error', text: `Not enough slots! Need ${quantity} but only ${totalSlots - currentUsedSlots} available` });
         setIsHiring(false);
         return;
       }
 
-      await supabase.from('the_life_player_brothel_workers').insert({
+      // Hire multiple workers
+      const workersToInsert = Array(quantity).fill(null).map(() => ({
         player_id: player.id,
         worker_id: worker.id
-      });
+      }));
 
-      const newTotalIncome = (brothel.income_per_hour || 0) + worker.income_per_hour;
-      const newWorkerCount = currentUsedSlots + 1; // Use verified count
+      await supabase.from('the_life_player_brothel_workers').insert(workersToInsert);
+
+      const newTotalIncome = (brothel.income_per_hour || 0) + (worker.income_per_hour * quantity);
+      const newWorkerCount = currentUsedSlots + quantity;
 
       await supabase.from('the_life_brothels').update({
         workers: newWorkerCount,
@@ -150,7 +156,7 @@ export default function TheLifeBrothel({
 
       const { data, error } = await supabase
         .from('the_life_players')
-        .update({ cash: player.cash - worker.hire_cost })
+        .update({ cash: player.cash - totalCost })
         .eq('user_id', user.id)
         .select()
         .single();
@@ -159,7 +165,7 @@ export default function TheLifeBrothel({
       setPlayer(data);
       await loadBrothel();
       await loadHiredWorkers();
-      setMessage({ type: 'success', text: `${worker.name} hired successfully!` });
+      setMessage({ type: 'success', text: `Hired ${quantity}x ${worker.name} successfully!` });
     } catch (err) {
       console.error('Error hiring worker:', err);
       setMessage({ type: 'error', text: 'Failed to hire worker!' });
@@ -169,17 +175,32 @@ export default function TheLifeBrothel({
   };
 
   // Sell a worker
-  const sellWorker = async (hiredWorker) => {
-    const sellPrice = Math.floor(hiredWorker.worker.hire_cost / 3);
-    if (!window.confirm(`Sell ${hiredWorker.worker.name} for $${sellPrice.toLocaleString()}?`)) {
+  const sellWorker = async (hiredWorker, quantity = 1) => {
+    // If this is a grouped worker, we need to validate we have enough
+    const availableCount = hiredWorker.count || 1;
+    
+    if (quantity > availableCount) {
+      setMessage({ type: 'error', text: `You only have ${availableCount}x ${hiredWorker.worker.name}!` });
+      return;
+    }
+
+    const sellPrice = Math.floor(hiredWorker.worker.hire_cost / 3) * quantity;
+    if (!window.confirm(`Sell ${quantity}x ${hiredWorker.worker.name} for $${sellPrice.toLocaleString()}?`)) {
       return;
     }
 
     try {
-      await supabase.from('the_life_player_brothel_workers').delete().eq('id', hiredWorker.id);
+      // Get the worker instances to delete
+      const instancesToDelete = hiredWorker.allInstances 
+        ? hiredWorker.allInstances.slice(0, quantity).map(w => w.id)
+        : [hiredWorker.id];
 
-      const newTotalIncome = (brothel.income_per_hour || 0) - hiredWorker.worker.income_per_hour;
-      const newWorkerCount = hiredWorkers.length - 1; // Calculate from actual count
+      await supabase.from('the_life_player_brothel_workers')
+        .delete()
+        .in('id', instancesToDelete);
+
+      const newTotalIncome = (brothel.income_per_hour || 0) - (hiredWorker.worker.income_per_hour * quantity);
+      const newWorkerCount = hiredWorkers.length - quantity;
 
       await supabase.from('the_life_brothels').update({
         workers: Math.max(0, newWorkerCount),
@@ -197,7 +218,7 @@ export default function TheLifeBrothel({
       setPlayer(data);
       await loadBrothel();
       await loadHiredWorkers();
-      setMessage({ type: 'success', text: `Sold ${hiredWorker.worker.name} for $${sellPrice.toLocaleString()}!` });
+      setMessage({ type: 'success', text: `Sold ${quantity}x ${hiredWorker.worker.name} for $${sellPrice.toLocaleString()}!` });
     } catch (err) {
       console.error('Error selling worker:', err);
       setMessage({ type: 'error', text: 'Failed to sell worker!' });
@@ -455,12 +476,25 @@ export default function TheLifeBrothel({
                       <span className="income-icon">💵</span>
                       <span className="income-value">${groupedWorker.worker.income_per_hour}/hr {groupedWorker.count > 1 ? `(×${groupedWorker.count})` : ''}</span>
                     </div>
-                    <button 
-                      onClick={() => sellWorker(groupedWorker.allInstances[0])}
-                      className="btn-sell"
-                    >
-                      Sell One - ${Math.floor(groupedWorker.worker.hire_cost / 3).toLocaleString()}
-                    </button>
+                    <div className="worker-actions">
+                      <input
+                        type="number"
+                        min="1"
+                        max={groupedWorker.count}
+                        value={sellQuantities[groupedWorker.worker_id] || 1}
+                        onChange={(e) => setSellQuantities({
+                          ...sellQuantities,
+                          [groupedWorker.worker_id]: Math.max(1, Math.min(groupedWorker.count, parseInt(e.target.value) || 1))
+                        })}
+                        className="quantity-input"
+                      />
+                      <button 
+                        onClick={() => sellWorker(groupedWorker, sellQuantities[groupedWorker.worker_id] || 1)}
+                        className="btn-sell"
+                      >
+                        Sell - ${(Math.floor(groupedWorker.worker.hire_cost / 3) * (sellQuantities[groupedWorker.worker_id] || 1)).toLocaleString()}
+                      </button>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -487,6 +521,10 @@ export default function TheLifeBrothel({
             const canAfford = player?.cash >= worker.hire_cost;
             const meetsLevel = player?.level >= worker.min_level_required;
             const canHire = !slotsFull && canAfford && meetsLevel;
+            const maxQuantity = Math.min(
+              totalSlots - usedSlots,
+              Math.floor(player?.cash / worker.hire_cost)
+            );
 
             return (
               <div key={worker.id} className="worker-card">
@@ -521,13 +559,26 @@ export default function TheLifeBrothel({
                   ) : !meetsLevel ? (
                     <div className="btn-disabled">Level {worker.min_level_required} Required</div>
                   ) : (
-                    <button 
-                      onClick={() => hireWorker(worker)}
-                      disabled={!canAfford || isHiring}
-                      className="btn-hire"
-                    >
-                      {isHiring ? 'Hiring...' : canAfford ? `Hire - $${worker.hire_cost.toLocaleString()}` : 'Insufficient Funds'}
-                    </button>
+                    <div className="worker-actions">
+                      <input
+                        type="number"
+                        min="1"
+                        max={maxQuantity}
+                        value={hireQuantities[worker.id] || 1}
+                        onChange={(e) => setHireQuantities({
+                          ...hireQuantities,
+                          [worker.id]: Math.max(1, Math.min(maxQuantity, parseInt(e.target.value) || 1))
+                        })}
+                        className="quantity-input"
+                      />
+                      <button 
+                        onClick={() => hireWorker(worker, hireQuantities[worker.id] || 1)}
+                        disabled={!canAfford || isHiring}
+                        className="btn-hire"
+                      >
+                        {isHiring ? 'Hiring...' : canAfford ? `Hire - $${(worker.hire_cost * (hireQuantities[worker.id] || 1)).toLocaleString()}` : 'Insufficient Funds'}
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>
