@@ -484,36 +484,8 @@ export default function TheLifeBusinesses({
             <div key={business.id} className="business-card">
               {/* Top Info Bar */}
               <div className="business-top-bar">
-                <div className="business-top-left">
-                  <span className="business-name-badge">{business.item?.icon || '💼'} {business.name}</span>
-                  {ownsIt && (
-                    <>
-                      <span className="business-level-badge">Lvl {upgradeLevel}</span>
-                      <span className="business-owned-badge">✓ OWNED</span>
-                    </>
-                  )}
-                </div>
-                <button 
-                  className="business-info-btn-top"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    setInfoPopupData({
-                      name: business.name,
-                      icon: business.item?.icon || '💼',
-                      owned: ownsIt,
-                      purchasePrice: business.purchase_price || 5000,
-                      description: business.description,
-                      productionCost: productionCost,
-                      duration: business.duration_minutes,
-                      profit: business.profit || 0,
-                      hasReward: !!business.reward_item_id,
-                      minLevel: business.min_level_required
-                    });
-                    setShowInfoPopup(true);
-                  }}
-                >
-                  ℹ️
-                </button>
+                <span className="business-name-badge">{business.item?.icon || '💼'} {business.name}</span>
+                {ownsIt && <span className="business-level-badge">Lvl {upgradeLevel}</span>}
               </div>
               <div className="business-image-container">
                 <img src={imageUrl} alt={business.name} className="business-image" />
@@ -567,22 +539,50 @@ export default function TheLifeBusinesses({
                                 )}
                               </>
                             ) : (
-                              <div className="compact-actions-row">
-                                <button 
-                                  onClick={() => startBusiness(business)} 
-                                  disabled={player?.cash < productionCost || player?.stamina < 5}
-                                  className="compact-btn-small start-btn"
-                                >
-                                  ▶️ Start
-                                </button>
-                                <button 
-                                  onClick={() => sellBusiness(business)}
-                                  className="compact-btn-small sell-btn"
-                                  title={`Sell: $${Math.floor((business.purchase_price || 5000) / 3).toLocaleString()}`}
-                                >
-                                  💰 Sell
-                                </button>
-                              </div>
+                              <>
+                                <div className="compact-actions-row">
+                                  <div className="button-with-badge">
+                                    <button 
+                                      onClick={() => startBusiness(business)} 
+                                      disabled={player?.cash < productionCost || player?.stamina < 5}
+                                      className="compact-btn-small start-btn"
+                                    >
+                                      ▶️ Start
+                                    </button>
+                                    <span className="business-owned-badge-bottom">✓ OWNED</span>
+                                  </div>
+                                  <div className="button-with-badge">
+                                    <button 
+                                      onClick={() => sellBusiness(business)}
+                                      className="compact-btn-small sell-btn"
+                                      title={`Sell: $${Math.floor((business.purchase_price || 5000) / 3).toLocaleString()}`}
+                                    >
+                                      💰 Sell
+                                    </button>
+                                    <button 
+                                      className="business-info-btn-bottom"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setInfoPopupData({
+                                          name: business.name,
+                                          icon: business.item?.icon || '💼',
+                                          owned: ownsIt,
+                                          purchasePrice: business.purchase_price || 5000,
+                                          description: business.description,
+                                          productionCost: productionCost,
+                                          duration: business.duration_minutes,
+                                          profit: business.profit || 0,
+                                          hasReward: !!business.reward_item_id,
+                                          minLevel: business.min_level_required
+                                        });
+                                        setShowInfoPopup(true);
+                                      }}
+                                    >
+                                      ℹ️ Info
+                                    </button>
+                                  </div>
+                                </div>
+                              </>
                             )}
                             {business.is_upgradeable !== false && upgradeLevel < 10 && (
                               <button 
