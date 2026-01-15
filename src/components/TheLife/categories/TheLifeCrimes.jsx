@@ -261,8 +261,18 @@ export default function TheLifeCrimes({
             >
               {isLoading && (
                 <div className="loading-overlay">
-                  <div className="loading-spinner"></div>
-                  <span>Loading...</span>
+                  <video 
+                    className="crime-loading-video"
+                    autoPlay 
+                    muted 
+                    playsInline
+                    src={`/crime-videos/${robbery.name.toLowerCase().replace(/\s+/g, '-')}.webm`}
+                    onError={(e) => {
+                      // Fallback to default video if crime-specific video doesn't exist
+                      e.target.src = '/crime-videos/default-crime.webm';
+                    }}
+                  />
+                  <span>Committing Crime...</span>
                 </div>
               )}
               <div 
