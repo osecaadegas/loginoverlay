@@ -61,7 +61,6 @@ export default function TheLifeHighStakes({
             onClick={() => setActiveSubTab(sub.key)}
           >
             <img src={sub.image} alt={sub.name} />
-            <span>{sub.name}</span>
           </button>
         ))}
       </div>
