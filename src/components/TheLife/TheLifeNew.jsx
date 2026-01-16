@@ -21,6 +21,7 @@ import TheLifeLeaderboard from './categories/TheLifeLeaderboard';
 import TheLifeStats from './categories/TheLifeStats';
 import TheLifeSkills from './categories/TheLifeSkills';
 import TheLifeProfile from './categories/TheLifeProfile';
+import TheLifeHighStakes from './categories/TheLifeHighStakes';
 
 /**
  * Main The Life Container Component
@@ -460,6 +461,14 @@ export default function TheLife() {
             >
               <img src="/thelife/categories/skills.png" alt="Skills" />
             </button>
+            <button 
+              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
+              onClick={() => !isInJail && setActiveTab('highstakes')}
+              disabled={isInJail}
+              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
+            </button>
           </div>
         </div>
         <button 
@@ -636,6 +645,18 @@ export default function TheLife() {
           setMessage={setMessage}
           isInHospital={isInHospital}
           user={user}
+        />
+      )}
+
+      {activeTab === 'highstakes' && (
+        <TheLifeHighStakes
+          player={player}
+          setPlayer={setPlayer}
+          setMessage={setMessage}
+          showEventMessage={showEventMessage}
+          user={user}
+          isInJail={isInJail}
+          isInHospital={isInHospital}
         />
       )}
 
