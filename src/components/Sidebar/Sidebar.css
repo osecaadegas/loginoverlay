@@ -25,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 10px 25px;
+  padding: 4px 10px 16px;
   border-bottom: 1px solid #21262C;
   margin-bottom: 12px;
 }
@@ -33,7 +33,7 @@
 .sidebar-logo-image {
   max-width: 100%;
   height: auto;
-  max-height: 80px;
+  max-height: 55px;
   object-fit: contain;
 }
 
