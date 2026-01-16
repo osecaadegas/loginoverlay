@@ -12,7 +12,7 @@ import './SeasonPass.css';
 export default function SeasonPass() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { userPoints, spendPoints } = useStreamElements();
+  const { points: userPoints, redeemPoints } = useStreamElements();
   
   // State
   const [loading, setLoading] = useState(true);
