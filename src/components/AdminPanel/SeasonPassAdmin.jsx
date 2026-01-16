@@ -91,10 +91,10 @@ export default function SeasonPassAdmin() {
         .order('name');
       setRewards(rewardsData || []);
 
-      // Get items for dropdown
+      // Get items for dropdown (with image_url)
       const { data: itemsData } = await supabase
         .from('the_life_items')
-        .select('id, name, type, icon')
+        .select('id, name, type, icon, image_url, rarity')
         .order('name');
       setItems(itemsData || []);
 
@@ -183,6 +183,13 @@ export default function SeasonPassAdmin() {
     try {
       setSaving(true);
 
+      // Get item image if item type
+      let imageUrl = null;
+      if (rewardForm.type === 'item' && rewardForm.item_id) {
+        const selectedItem = items.find(i => i.id === rewardForm.item_id);
+        imageUrl = selectedItem?.image_url || null;
+      }
+
       // Create or update the reward
       const rewardData = {
         name: rewardForm.name,
@@ -194,7 +201,8 @@ export default function SeasonPassAdmin() {
         item_id: rewardForm.item_id || null,
         cash_amount: parseInt(rewardForm.cash_amount) || 0,
         xp_amount: parseInt(rewardForm.xp_amount) || 0,
-        se_points_amount: parseInt(rewardForm.se_points_amount) || 0
+        se_points_amount: parseInt(rewardForm.se_points_amount) || 0,
+        image_url: imageUrl
       };
 
       let rewardId;
@@ -418,10 +426,18 @@ export default function SeasonPassAdmin() {
               >
                 {tier.premium_reward ? (
                   <>
-                    <i 
-                      className={`fas ${tier.premium_reward.icon}`} 
-                      style={{ color: getRarityColor(tier.premium_reward.rarity) }}
-                    ></i>
+                    {tier.premium_reward.image_url ? (
+                      <img 
+                        src={tier.premium_reward.image_url} 
+                        alt={tier.premium_reward.name} 
+                        className="card-image"
+                      />
+                    ) : (
+                      <i 
+                        className={`fas ${tier.premium_reward.icon}`} 
+                        style={{ color: getRarityColor(tier.premium_reward.rarity) }}
+                      ></i>
+                    )}
                     <div className="card-name">{tier.premium_reward.name}</div>
                     <div className="card-type">{tier.premium_reward.type}</div>
                   </>
@@ -446,10 +462,18 @@ export default function SeasonPassAdmin() {
               >
                 {tier.budget_reward ? (
                   <>
-                    <i 
-                      className={`fas ${tier.budget_reward.icon}`} 
-                      style={{ color: getRarityColor(tier.budget_reward.rarity) }}
-                    ></i>
+                    {tier.budget_reward.image_url ? (
+                      <img 
+                        src={tier.budget_reward.image_url} 
+                        alt={tier.budget_reward.name} 
+                        className="card-image"
+                      />
+                    ) : (
+                      <i 
+                        className={`fas ${tier.budget_reward.icon}`} 
+                        style={{ color: getRarityColor(tier.budget_reward.rarity) }}
+                      ></i>
+                    )}
                     <div className="card-name">{tier.budget_reward.name}</div>
                     <div className="card-type">{tier.budget_reward.type}</div>
                   </>
@@ -572,10 +596,19 @@ export default function SeasonPassAdmin() {
               {rewardForm.type === 'item' && (
                 <div className="form-row">
                   <div className="form-group full">
-                    <label>Select Item</label>
+                    <label>Select Item from The Life</label>
                     <select
                       value={rewardForm.item_id}
-                      onChange={(e) => setRewardForm({ ...rewardForm, item_id: e.target.value })}
+                      onChange={(e) => {
+                        const selectedItem = items.find(i => i.id === e.target.value);
+                        setRewardForm({ 
+                          ...rewardForm, 
+                          item_id: e.target.value,
+                          // Auto-fill name and rarity from item
+                          name: selectedItem ? selectedItem.name : rewardForm.name,
+                          rarity: selectedItem?.rarity || rewardForm.rarity
+                        });
+                      }}
                     >
                       <option value="">-- Select an item --</option>
                       {items.map(item => (
@@ -584,6 +617,26 @@ export default function SeasonPassAdmin() {
                         </option>
                       ))}
                     </select>
+                    {/* Item Preview */}
+                    {rewardForm.item_id && (() => {
+                      const selectedItem = items.find(i => i.id === rewardForm.item_id);
+                      return selectedItem ? (
+                        <div className="item-preview" style={{ borderColor: getRarityColor(selectedItem.rarity || 'common') }}>
+                          {selectedItem.image_url ? (
+                            <img src={selectedItem.image_url} alt={selectedItem.name} />
+                          ) : (
+                            <i className={`fas ${selectedItem.icon || 'fa-box'}`} style={{ color: getRarityColor(selectedItem.rarity || 'common') }}></i>
+                          )}
+                          <div className="item-preview-info">
+                            <strong>{selectedItem.name}</strong>
+                            <span className="item-type">{selectedItem.type}</span>
+                            <span className="item-rarity" style={{ color: getRarityColor(selectedItem.rarity || 'common') }}>
+                              {selectedItem.rarity || 'common'}
+                            </span>
+                          </div>
+                        </div>
+                      ) : null;
+                    })()}
                   </div>
                 </div>
               )}

@@ -170,12 +170,18 @@ export default function ProfilePage() {
         .from('public-assets')
         .getPublicUrl(filePath);
 
-      // Update user profile
+      // Update user metadata (this is what the Sidebar reads!)
+      await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      });
+
+      // Update user profile table
       const { error: updateError } = await supabase
         .from('user_profiles')
         .upsert({
           user_id: user.id,
           avatar_url: publicUrl,
+          twitch_username: user?.user_metadata?.twitch_username,
           updated_at: new Date().toISOString()
         }, {
           onConflict: 'user_id'
@@ -184,6 +190,7 @@ export default function ProfilePage() {
       if (updateError) throw updateError;
 
       setAvatarUrl(publicUrl);
+      setSelectedAvatar(publicUrl);
       setMessage({ type: 'success', text: 'Avatar updated successfully!' });
     } catch (error) {
       setMessage({ type: 'error', text: error.message });
