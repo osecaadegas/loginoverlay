@@ -316,7 +316,8 @@ export default function SeasonPassAdmin() {
         .update({
           name: season.name,
           premium_price_cents: season.premium_price_cents,
-          stripe_price_id: season.stripe_price_id
+          stripe_price_id: season.stripe_price_id,
+          budget_price_points: season.budget_price_points
         })
         .eq('id', season.id);
 
@@ -373,6 +374,16 @@ export default function SeasonPassAdmin() {
               onChange={(e) => setSeason({ ...season, name: e.target.value })}
               placeholder="Underground Empire"
             />
+          </div>
+          <div className="setting-group">
+            <label>Budget Price (SE Points)</label>
+            <input
+              type="number"
+              value={season?.budget_price_points || 5000}
+              onChange={(e) => setSeason({ ...season, budget_price_points: parseInt(e.target.value) || 5000 })}
+              placeholder="5000"
+            />
+            <small>{(season?.budget_price_points || 5000).toLocaleString()} SE Points</small>
           </div>
           <div className="setting-group">
             <label>Premium Price (cents)</label>
