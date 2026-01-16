@@ -114,6 +114,7 @@ export default function AdminPanel() {
   });
   const [itemEffectType, setItemEffectType] = useState('');
   const [itemEffectValue, setItemEffectValue] = useState(0);
+  const [itemAddictionAmount, setItemAddictionAmount] = useState(0);
   const [itemResellPrice, setItemResellPrice] = useState(0);
   const [itemBoostType, setItemBoostType] = useState(''); // 'power', 'defense', 'intelligence', ''
   const [itemBoostAmount, setItemBoostAmount] = useState(0);
@@ -1139,13 +1140,16 @@ export default function AdminPanel() {
           const effectObj = JSON.parse(item.effect);
           setItemEffectType(effectObj.type || '');
           setItemEffectValue(effectObj.value || 0);
+          setItemAddictionAmount(effectObj.addiction || 0);
         } else {
           setItemEffectType('');
           setItemEffectValue(0);
+          setItemAddictionAmount(0);
         }
       } catch {
         setItemEffectType('');
         setItemEffectValue(0);
+        setItemAddictionAmount(0);
       }
       // Parse resell price if exists
       setItemResellPrice(item.resell_price || 0);
@@ -1170,6 +1174,7 @@ export default function AdminPanel() {
       });
       setItemEffectType('');
       setItemEffectValue(0);
+      setItemAddictionAmount(0);
       setItemResellPrice(0);
       setItemBoostType('');
       setItemBoostAmount(0);
@@ -1198,7 +1203,11 @@ export default function AdminPanel() {
     // Build effect JSON from form fields
     let effectJson = '';
     if (itemEffectType && itemEffectValue) {
-      effectJson = JSON.stringify({ type: itemEffectType, value: itemEffectValue });
+      const effectObj = { type: itemEffectType, value: itemEffectValue };
+      if (itemEffectType === 'stamina' && itemAddictionAmount > 0) {
+        effectObj.addiction = itemAddictionAmount;
+      }
+      effectJson = JSON.stringify(effectObj);
     }
 
     const itemData = {
@@ -4291,6 +4300,19 @@ export default function AdminPanel() {
                           value={itemEffectValue}
                           onChange={(e) => setItemEffectValue(parseInt(e.target.value) || 0)}
                           placeholder="50"
+                          min="0"
+                        />
+                      </div>
+                    )}
+
+                    {itemEffectType === 'stamina' && (
+                      <div className="form-group">
+                        <label>⚠️ Addiction Amount</label>
+                        <input
+                          type="number"
+                          value={itemAddictionAmount}
+                          onChange={(e) => setItemAddictionAmount(parseInt(e.target.value) || 0)}
+                          placeholder="0 = no addiction"
                           min="0"
                         />
                       </div>

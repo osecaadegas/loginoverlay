@@ -808,8 +808,8 @@ input:checked + .toggle-slider:before {
 }
 
 .tab-image img {
-  width: 120%;
-  height: 120%;
+  width: 125%;
+  height: 125%;
   object-fit: contain;
   display: block;
 }
@@ -6624,8 +6624,8 @@ input:checked + .toggle-slider:before {
 }
 
 .subcategory-tab img {
-  width: 100%;
-  height: 100%;
+  width: 105%;
+  height: 105%;
   object-fit: cover;
   transition: all 0.3s ease;
 }
@@ -6747,8 +6747,8 @@ input:checked + .toggle-slider:before {
 }
 
 .casino-game-image img {
-  width: 100%;
-  height: 100%;
+  width: 110%;
+  height: 110%;
   object-fit: cover;
   transition: transform 0.3s ease;
 }

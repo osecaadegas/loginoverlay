@@ -35,14 +35,6 @@ export default function TheLifeHighStakes({
   // Casino game options
   const casinoGames = [
     { 
-      key: 'mines', 
-      name: 'Mines', 
-      description: 'Avoid the mines and cash out big!',
-      image: '/thelife/games/mines.png',
-      minBet: 10,
-      maxBet: 1000
-    },
-    { 
       key: 'blackjack', 
       name: 'Blackjack', 
       description: 'Beat the dealer to 21!',
@@ -103,18 +95,6 @@ export default function TheLifeHighStakes({
   // Render the active game component
   const renderActiveGame = () => {
     switch (activeGame) {
-      case 'mines':
-        return (
-          <div className="game-container">
-            <button className="back-to-games-btn" onClick={handleBackToGames}>
-              ← Back to Casino
-            </button>
-            <div className="game-placeholder">
-              <h3>Mines Game</h3>
-              <p>Game component will be loaded here</p>
-            </div>
-          </div>
-        );
       case 'blackjack':
         return (
           <TheLifeBlackjack
