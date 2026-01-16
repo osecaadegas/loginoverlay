@@ -283,14 +283,6 @@ export default function TheLifeCrimes({
               )}
               <div 
                 className="crime-image-container"
-                onClick={() => {
-                  if (!isDisabled) {
-                    attemptRobbery(robbery);
-                  }
-                }}
-                style={{
-                  cursor: isDisabled ? 'not-allowed' : 'pointer'
-                }}
               >
                 <img src={imageUrl} alt={robbery.name} className="crime-image" />
                 {player.level < robbery.min_level_required && (
@@ -304,9 +296,6 @@ export default function TheLifeCrimes({
                     <span className="inline-stat">⚡ {robbery.stamina_cost}</span>
                     <span className="inline-stat">✅ {Math.round(displaySuccessChance)}%</span>
                   </div>
-                </div>
-                <div className="crime-tap-hint">
-                  👆 Tap to Commit Crime
                 </div>
                 <button 
                   className="crime-button"

@@ -449,8 +449,8 @@ input:checked + .toggle-slider:before {
 .stat-bar {
   position: relative;
   background: rgba(0, 0, 0, 0.5);
-  border-radius: 6px;
-  height: 22px;
+  border-radius: 4px;
+  height: 18px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
@@ -487,6 +487,14 @@ input:checked + .toggle-slider:before {
   background: linear-gradient(90deg, #059669, #10b981);
 }
 
+.addiction-fill {
+  background: linear-gradient(90deg, #7c2d12, #dc2626);
+}
+
+.addiction-bar {
+  border-color: rgba(220, 38, 38, 0.3);
+}
+
 .stat-text {
   position: absolute;
   left: 0;
@@ -496,7 +504,7 @@ input:checked + .toggle-slider:before {
   z-index: 1;
   color: white;
   font-weight: 700;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -510,32 +518,44 @@ input:checked + .toggle-slider:before {
   width: 100%;
 }
 
+.cash-display.compact {
+  gap: 8px;
+}
+
 .cash-item {
   flex: 1;
   background: rgba(0, 0, 0, 0.4);
-  padding: 3px 5px;
+  padding: 4px 8px;
   border-radius: 4px;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 1px;
+  gap: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.cash-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
 .cash-icon {
-  font-size: 0.9rem;
+  font-size: 1rem;
 }
 
 .cash-value {
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #22c55e;
+  line-height: 1.1;
 }
 
 .cash-label {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   color: #888;
   text-transform: uppercase;
+  line-height: 1;
 }
 
 /* Status Warnings */
@@ -792,6 +812,26 @@ input:checked + .toggle-slider:before {
   height: 120%;
   object-fit: contain;
   display: block;
+}
+
+/* Locked Tab Badge */
+.tab-locked {
+  position: relative;
+  filter: grayscale(70%);
+}
+
+.tab-lock-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffd700;
+  font-size: 0.65rem;
+  padding: 2px 5px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 215, 0, 0.5);
+  font-weight: bold;
+  white-space: nowrap;
 }
 
 .tab:hover {
@@ -5074,6 +5114,11 @@ input:checked + .toggle-slider:before {
   font-size: 0.95rem;
 }
 
+.consumable-info .effect.addiction-warning {
+  color: #dc2626;
+  font-size: 0.85rem;
+}
+
 .consumable-info .description {
   color: #a0aec0;
   font-size: 0.85rem;
@@ -6799,6 +6844,58 @@ input:checked + .toggle-slider:before {
 /* Stock Market Content */
 .stockmarket-content .empty-state h3 {
   color: #22c55e;
+}
+
+/* Locked Content (Level Requirements) */
+.locked-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(30, 30, 30, 0.4) 100%);
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 16px;
+  margin: 20px;
+}
+
+.locked-content .locked-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.5));
+}
+
+.locked-content h3 {
+  color: #ffd700;
+  font-size: 1.8rem;
+  margin-bottom: 15px;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.locked-content p {
+  color: #a0aec0;
+  font-size: 1.1rem;
+  margin-bottom: 10px;
+}
+
+.locked-content .level-requirement {
+  color: #22c55e;
+  font-weight: bold;
+  font-size: 1.2rem;
+}
+
+.locked-content .current-level {
+  margin-top: 15px;
+  padding: 10px 20px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.locked-content .current-level span {
+  color: #f59e0b;
+  font-weight: bold;
 }
 
 @media (max-width: 768px) {

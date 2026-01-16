@@ -123,6 +123,10 @@ export default function TheLifeProfile({
           break;
         case 'stamina':
           updateData.stamina = Math.min(player.max_stamina, player.stamina + effect.value);
+          // Add addiction if the item has it
+          if (effect.addiction) {
+            updateData.addiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + effect.addiction);
+          }
           break;
         case 'xp_boost':
           updateData.xp = player.xp + effect.value;
@@ -370,6 +374,7 @@ export default function TheLifeProfile({
             <div className="consumables-list">
               {consumableItems.map(inv => {
                 let effectText = '';
+                let addictionText = '';
                 try {
                   const effect = JSON.parse(inv.item.effect);
                   switch (effect.type) {
@@ -378,6 +383,9 @@ export default function TheLifeProfile({
                       break;
                     case 'stamina':
                       effectText = `+${effect.value} Stamina`;
+                      if (effect.addiction) {
+                        addictionText = `+${effect.addiction} Addiction`;
+                      }
                       break;
                     case 'xp_boost':
                       effectText = `+${effect.value} XP`;
@@ -401,6 +409,7 @@ export default function TheLifeProfile({
                     <div className="consumable-info">
                       <h5>{inv.item.name}</h5>
                       <p className="effect">{effectText}</p>
+                      {addictionText && <p className="effect addiction-warning">⚠️ {addictionText}</p>}
                       {inv.item.description && <p className="description">{inv.item.description}</p>}
                     </div>
                     <div className="consumable-actions">

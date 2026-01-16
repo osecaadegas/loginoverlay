@@ -154,11 +154,19 @@ export default function TheLife() {
       const itemToUse = staminaItems[0];
       const effect = JSON.parse(itemToUse.item.effect);
 
-      // Update player stamina
+      // Update player stamina and addiction
       const newStamina = Math.min(player.max_stamina, player.stamina + effect.value);
+      const addictionGain = effect.addiction || 0;
+      const newAddiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + addictionGain);
+      
+      const updateData = { stamina: newStamina };
+      if (addictionGain > 0) {
+        updateData.addiction = newAddiction;
+      }
+      
       const { error: playerError } = await supabase
         .from('the_life_players')
-        .update({ stamina: newStamina })
+        .update(updateData)
         .eq('user_id', user.id);
 
       if (playerError) throw playerError;
@@ -176,7 +184,7 @@ export default function TheLife() {
           .eq('id', itemToUse.id);
       }
 
-      setMessage({ type: 'success', text: `Used ${itemToUse.item.name}! +${effect.value} stamina` });
+      setMessage({ type: 'success', text: `Used ${itemToUse.item.name}! +${effect.value} stamina${addictionGain > 0 ? ` (+${addictionGain} addiction)` : ''}` });
       initializePlayer();
       loadTheLifeInventory();
     } catch (err) {
@@ -250,6 +258,16 @@ export default function TheLife() {
                 style={{ width: `${(player?.stamina / player?.max_stamina) * 100}%` }}
               />
               <span className="stat-text">STAMINA: {player?.stamina} / {player?.max_stamina}</span>
+            </div>
+          </div>
+
+          <div className="stat-group">
+            <div className="stat-bar addiction-bar">
+              <div 
+                className="stat-fill addiction-fill" 
+                style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }}
+              />
+              <span className="stat-text">ADDICTION: {player?.addiction || 0} / {player?.max_addiction || 100}</span>
             </div>
           </div>
         </div>
@@ -326,16 +344,20 @@ export default function TheLife() {
             )}
           </div>
 
-          <div className="cash-display">
+          <div className="cash-display compact">
             <div className="cash-item">
               <span className="cash-icon">💵</span>
-              <span className="cash-value">${player?.cash?.toLocaleString()}</span>
-              <span className="cash-label">Cash</span>
+              <div className="cash-info">
+                <span className="cash-value">${player?.cash?.toLocaleString()}</span>
+                <span className="cash-label">Cash</span>
+              </div>
             </div>
             <div className="cash-item">
               <span className="cash-icon">🏦</span>
-              <span className="cash-value">${player?.bank_balance?.toLocaleString()}</span>
-              <span className="cash-label">Bank</span>
+              <div className="cash-info">
+                <span className="cash-value">${player?.bank_balance?.toLocaleString()}</span>
+                <span className="cash-label">Bank</span>
+              </div>
             </div>
           </div>
         </div>
@@ -418,12 +440,14 @@ export default function TheLife() {
               <img src="/thelife/categories/brothel.png" alt="Brothel" />
             </button>
             <button 
-              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('highstakes')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''} ${player?.level < 15 ? 'tab-locked' : ''}`}
+              onClick={() => !isInJail && player?.level >= 15 && setActiveTab('highstakes')}
+              disabled={isInJail || player?.level < 15}
+              style={{opacity: (isInJail || player?.level < 15) ? 0.5 : 1, cursor: (isInJail || player?.level < 15) ? 'not-allowed' : 'pointer'}}
+              title={player?.level < 15 ? 'Unlocks at Level 15' : 'High Stakes'}
             >
               <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
+              {player?.level < 15 && <span className="tab-lock-badge">🔒 15</span>}
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}
@@ -649,15 +673,24 @@ export default function TheLife() {
       )}
 
       {activeTab === 'highstakes' && (
-        <TheLifeHighStakes
-          player={player}
-          setPlayer={setPlayer}
-          setMessage={setMessage}
-          showEventMessage={showEventMessage}
-          user={user}
-          isInJail={isInJail}
-          isInHospital={isInHospital}
-        />
+        player?.level >= 15 ? (
+          <TheLifeHighStakes
+            player={player}
+            setPlayer={setPlayer}
+            setMessage={setMessage}
+            showEventMessage={showEventMessage}
+            user={user}
+            isInJail={isInJail}
+            isInHospital={isInHospital}
+          />
+        ) : (
+          <div className="locked-content">
+            <div className="locked-icon">🔒</div>
+            <h3>High Stakes Locked</h3>
+            <p>You need to reach <span className="level-requirement">Level 15</span> to access the High Stakes area.</p>
+            <p className="current-level">Your current level: <span>{player?.level || 1}</span></p>
+          </div>
+        )
       )}
 
       {/* Event Popup Modal */}

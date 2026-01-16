@@ -60,10 +60,12 @@ export const useTheLifeData = (user) => {
             level: 1,
             hp: 100,
             max_hp: 100,
-            stamina: 300,
-            max_stamina: 300,
+            stamina: 100,
+            max_stamina: 100,
             cash: 500,
             bank_balance: 0,
+            addiction: 0,
+            max_addiction: 100,
             twitch_username: profileData?.twitch_username || user?.user_metadata?.preferred_username || null
           })
           .select()
