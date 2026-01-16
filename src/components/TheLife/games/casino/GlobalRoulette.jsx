@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { supabase } from '../../../../lib/supabase';
+import { supabase } from '../../../../config/supabaseClient';
 import RouletteWheel, { WHEEL_NUMBERS, getNumberColor } from './RouletteWheel';
 import './GlobalRoulette.css';
 

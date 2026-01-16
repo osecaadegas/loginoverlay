@@ -86,7 +86,7 @@ ALTER PUBLICATION supabase_realtime ADD TABLE roulette_chat;
 
 -- Function to get current round bets by position
 CREATE OR REPLACE FUNCTION get_round_bet_totals(p_round_id BIGINT)
-RETURNS TABLE(position VARCHAR, total_amount NUMERIC) AS $$
+RETURNS TABLE(bet_position VARCHAR, total_amount NUMERIC) AS $$
 BEGIN
     RETURN QUERY
     SELECT rb.position, SUM(rb.bet_amount) as total_amount
