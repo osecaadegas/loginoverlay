@@ -766,7 +766,7 @@ input:checked + .toggle-slider:before {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s;
-  overflow: hidden;
+  overflow: visible;
   min-height: 50px;
   width: 130px;
   display: flex;
@@ -808,10 +808,11 @@ input:checked + .toggle-slider:before {
 }
 
 .tab-image img {
-  width: 125%;
-  height: 125%;
+  width: 100%;
+  height: 100%;
   object-fit: contain;
   display: block;
+  transform: scale(1.25);
 }
 
 /* Locked Tab Badge */
