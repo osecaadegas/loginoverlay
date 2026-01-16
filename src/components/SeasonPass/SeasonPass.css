@@ -883,7 +883,7 @@
   color: white;
 }
 
-.modal-content {
+.inspect-modal .modal-content {
   background: rgba(0, 0, 0, 0.8);
   padding: 32px;
   display: flex;
@@ -901,13 +901,13 @@
   background: radial-gradient(circle at center, var(--rarity-color) 0%, transparent 70%);
 }
 
-.modal-content > * {
+.inspect-modal .modal-content > * {
   transform: skewX(10deg);
   position: relative;
   z-index: 10;
 }
 
-.modal-type {
+.inspect-modal .modal-type {
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -916,7 +916,7 @@
   margin-bottom: 8px;
 }
 
-.modal-name {
+.inspect-modal .modal-name {
   font-size: 2rem;
   font-weight: 900;
   font-family: 'Orbitron', sans-serif;
@@ -926,7 +926,7 @@
   text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
 }
 
-.modal-icon-container {
+.inspect-modal .modal-icon-container {
   width: 192px;
   height: 192px;
   background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05), transparent);
@@ -939,12 +939,12 @@
   box-shadow: 0 0 30px color-mix(in srgb, var(--rarity-color) 40%, transparent);
 }
 
-.modal-icon-container i {
+.inspect-modal .modal-icon-container i {
   font-size: 5rem;
   filter: drop-shadow(0 10px 10px rgba(0, 0, 0, 0.8));
 }
 
-.modal-details {
+.inspect-modal .modal-details {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
@@ -975,7 +975,7 @@
 }
 
 /* Modal Action Buttons */
-.modal-action {
+.inspect-modal .modal-action {
   width: 100%;
   max-width: 400px;
   padding: 16px;
@@ -989,22 +989,22 @@
   transition: all 0.3s ease;
 }
 
-.modal-action.claim {
+.inspect-modal .modal-action.claim {
   background: #22c55e;
   color: white;
 }
 
-.modal-action.claim:hover {
+.inspect-modal .modal-action.claim:hover {
   background: #16a34a;
 }
 
-.modal-action.disabled {
+.inspect-modal .modal-action.disabled {
   background: #333;
   color: #666;
   cursor: not-allowed;
 }
 
-.modal-action.premium-required {
+.inspect-modal .modal-action.premium-required {
   background: linear-gradient(135deg, #78350f, #fbbf24);
   color: white;
   display: flex;
@@ -1013,7 +1013,7 @@
   gap: 8px;
 }
 
-.modal-action.premium-required:hover {
+.inspect-modal .modal-action.premium-required:hover {
   filter: brightness(1.1);
 }
 
