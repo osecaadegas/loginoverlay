@@ -4952,10 +4952,38 @@ export default function AdminPanel() {
                       value={eventMessageFormData.event_type}
                       onChange={(e) => setEventMessageFormData({...eventMessageFormData, event_type: e.target.value})}
                     >
-                      <option value="jail_crime">Jail - Crime Failed</option>
-                      <option value="jail_street">Jail - Street Resell Caught</option>
-                      <option value="hospital_beaten">Hospital - Beaten Up</option>
-                      <option value="hospital_hp_loss">Hospital - HP Loss</option>
+                      <option value="">-- Select Event Type --</option>
+                      <optgroup label="⛓️ Jail Events">
+                        <option value="jail_crime">Jail - Crime Failed</option>
+                        <option value="jail_street">Jail - Street Resell Caught</option>
+                        <option value="jail_pvp">Jail - PVP Arrest</option>
+                        <option value="jail_dock">Jail - Dock Smuggling Caught</option>
+                      </optgroup>
+                      <optgroup label="🏥 Hospital Events">
+                        <option value="hospital_beaten">Hospital - Beaten Up</option>
+                        <option value="hospital_hp_loss">Hospital - HP Loss</option>
+                        <option value="hospital_overdose">Hospital - Overdose</option>
+                        <option value="hospital_pvp">Hospital - Lost PVP Fight</option>
+                      </optgroup>
+                      <optgroup label="💰 Crime Events">
+                        <option value="crime_success">Crime - Success</option>
+                        <option value="crime_fail">Crime - Failed</option>
+                        <option value="crime_jackpot">Crime - Jackpot Reward</option>
+                      </optgroup>
+                      <optgroup label="🏢 Business Events">
+                        <option value="business_success">Business - Production Success</option>
+                        <option value="business_fail">Business - Production Failed</option>
+                        <option value="business_raid">Business - Police Raid</option>
+                      </optgroup>
+                      <optgroup label="⚔️ PVP Events">
+                        <option value="pvp_win">PVP - Victory</option>
+                        <option value="pvp_lose">PVP - Defeat</option>
+                        <option value="pvp_draw">PVP - Draw</option>
+                      </optgroup>
+                      <optgroup label="🚢 Dock Events">
+                        <option value="dock_success">Dock - Shipment Success</option>
+                        <option value="dock_fail">Dock - Shipment Seized</option>
+                      </optgroup>
                     </select>
                   </div>
 
@@ -5019,15 +5047,30 @@ export default function AdminPanel() {
 
                 <div className="modal-body">
                   <div className="form-group">
-                    <label>Category Key * <small>(e.g., 'crimes', 'pvp', 'businesses')</small></label>
-                    <input
-                      type="text"
+                    <label>Category Key *</label>
+                    <select
                       value={categoryFormData.category_key}
                       onChange={(e) => setCategoryFormData({...categoryFormData, category_key: e.target.value})}
-                      placeholder="e.g., crimes"
                       disabled={!!editingCategory}
                       style={{opacity: editingCategory ? 0.6 : 1}}
-                    />
+                    >
+                      <option value="">-- Select Category --</option>
+                      <option value="crimes">🔫 Crimes</option>
+                      <option value="pvp">👊 PVP</option>
+                      <option value="businesses">🏢 Businesses</option>
+                      <option value="brothel">💋 Brothel</option>
+                      <option value="highstakes">🎰 High Stakes</option>
+                      <option value="stash">🎒 Stash (Inventory)</option>
+                      <option value="jail">⛓️ Jail</option>
+                      <option value="hospital">🏥 Hospital</option>
+                      <option value="blackmarket">🕶️ Black Market</option>
+                      <option value="docks">🚢 Docks</option>
+                      <option value="bank">🏦 Bank</option>
+                      <option value="leaderboard">🏆 Leaderboard</option>
+                      <option value="stats">📊 Stats</option>
+                      <option value="skills">💪 Skills</option>
+                      <option value="profile">👤 Profile</option>
+                    </select>
                     {editingCategory && (
                       <small style={{color: '#a0aec0', display: 'block', marginTop: '5px'}}>
                         Category key cannot be changed after creation

@@ -35,8 +35,21 @@ CREATE TABLE IF NOT EXISTS the_life_wipe_settings (
   last_executed_at TIMESTAMP WITH TIME ZONE
 );
 
+-- Add new columns if table already existed (safe to run multiple times)
+ALTER TABLE the_life_wipe_settings ADD COLUMN IF NOT EXISTS wipe_health_stamina BOOLEAN DEFAULT false;
+ALTER TABLE the_life_wipe_settings ADD COLUMN IF NOT EXISTS wipe_jail_hospital BOOLEAN DEFAULT false;
+ALTER TABLE the_life_wipe_settings ADD COLUMN IF NOT EXISTS wipe_pvp_stats BOOLEAN DEFAULT false;
+ALTER TABLE the_life_wipe_settings ADD COLUMN IF NOT EXISTS wipe_casino_history BOOLEAN DEFAULT false;
+ALTER TABLE the_life_wipe_settings ADD COLUMN IF NOT EXISTS wipe_dock_shipments BOOLEAN DEFAULT false;
+ALTER TABLE the_life_wipe_settings ADD COLUMN IF NOT EXISTS is_recurring BOOLEAN DEFAULT false;
+ALTER TABLE the_life_wipe_settings ADD COLUMN IF NOT EXISTS recurrence_months INTEGER DEFAULT 3;
+
 -- Enable RLS
 ALTER TABLE the_life_wipe_settings ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist
+DROP POLICY IF EXISTS "Admin can manage wipe settings" ON the_life_wipe_settings;
+DROP POLICY IF EXISTS "Everyone can read wipe settings" ON the_life_wipe_settings;
 
 -- Admin can read/write wipe settings
 CREATE POLICY "Admin can manage wipe settings" ON the_life_wipe_settings
