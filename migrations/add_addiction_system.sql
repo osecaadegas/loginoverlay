@@ -13,7 +13,7 @@ SET effect = '{"type": "stamina", "value": 15, "addiction": 2}'
 WHERE name = 'Energy Drink';
 
 -- Add Powder Energy with higher stamina restore and addiction
-INSERT INTO the_life_items (name, description, item_type, image_url, rarity, can_sell, usable, effect)
+INSERT INTO the_life_items (name, description, type, icon, rarity, tradeable, usable, effect)
 VALUES 
   ('Powder Energy', 'Powerful stimulant - restores 75 stamina but addictive', 'consumable', 'https://images.unsplash.com/photo-1587854692152-cbe660dbde88?w=400', 'rare', true, true, '{"type": "stamina", "value": 75, "addiction": 10}')
 ON CONFLICT DO NOTHING;

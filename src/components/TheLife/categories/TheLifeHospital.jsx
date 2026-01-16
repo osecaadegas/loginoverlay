@@ -92,6 +92,48 @@ export default function TheLifeHospital({
     }
   };
 
+  // Calculate addiction cure cost
+  // Y = player level × addiction value
+  // W = power + intelligence + defense
+  // Cost = Y / W (minimum $100 if W > 0, or Y * 10 if W = 0)
+  const calculateAddictionCureCost = () => {
+    const addiction = player?.addiction || 0;
+    if (addiction === 0) return 0;
+    
+    const Y = (player?.level || 1) * addiction;
+    const W = (player?.power || 0) + (player?.intelligence || 0) + (player?.defense || 0);
+    
+    if (W === 0) {
+      return Math.max(100, Y * 10); // If no stats, base cost
+    }
+    
+    return Math.max(100, Math.floor(Y / W));
+  };
+
+  const cureAddiction = async () => {
+    const cost = calculateAddictionCureCost();
+    
+    if (player.cash < cost) {
+      setMessage({ type: 'error', text: 'Not enough cash!' });
+      return;
+    }
+    
+    const { data, error } = await supabase
+      .from('the_life_players')
+      .update({
+        cash: player.cash - cost,
+        addiction: 0
+      })
+      .eq('user_id', user.id)
+      .select()
+      .single();
+      
+    if (!error) {
+      setPlayer(data);
+      setMessage({ type: 'success', text: 'Addiction cured! You feel clean and refreshed!' });
+    }
+  };
+
   if (player?.hp === 0) {
     const recoveryCost = Math.floor((player.cash + player.bank_balance) * 0.15);
     
@@ -171,9 +213,59 @@ export default function TheLifeHospital({
     );
   }
 
+  const addictionCureCost = calculateAddictionCureCost();
+
   return (
     <div className="hospital-section">
       <h2>🏥 Hospital</h2>
+      
+      {/* Addiction Treatment Section */}
+      {(player?.addiction || 0) > 0 && (
+        <div className="hospital-addiction-section">
+          <div className="addiction-header">
+            <h3>💉 Addiction Treatment Center</h3>
+            <p>Professional help to overcome your substance dependency</p>
+          </div>
+          <div className="addiction-status">
+            <div className="addiction-bar-container">
+              <div className="addiction-bar">
+                <div 
+                  className="addiction-bar-fill"
+                  style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }}
+                />
+              </div>
+              <span className="addiction-level">Addiction: {player?.addiction || 0} / {player?.max_addiction || 100}</span>
+            </div>
+            <div className="addiction-info">
+              <p>Your Level: {player?.level || 1}</p>
+              <p>Stats Bonus: {(player?.power || 0) + (player?.intelligence || 0) + (player?.defense || 0)} (PWR + INT + DEF)</p>
+            </div>
+          </div>
+          <div className="addiction-treatment">
+            <div className="treatment-cost">
+              <span className="cost-label">Treatment Cost:</span>
+              <span className="cost-value">${addictionCureCost.toLocaleString()}</span>
+            </div>
+            <p className="treatment-note">Higher stats reduce treatment costs!</p>
+            <button 
+              className="cure-addiction-btn"
+              onClick={cureAddiction}
+              disabled={player.cash < addictionCureCost}
+            >
+              🩺 Cure Addiction
+            </button>
+          </div>
+        </div>
+      )}
+
+      {(player?.addiction || 0) === 0 && (
+        <div className="hospital-clean">
+          <div className="clean-status">
+            <h3>✨ You're Clean!</h3>
+            <p>No addiction detected. Stay healthy!</p>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
