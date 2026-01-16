@@ -4,6 +4,7 @@ import '../TheLife.css';
 
 // Import game components
 import TheLifeBlackjack from '../games/TheLifeBlackjack';
+import TheLifeStockMarket from '../games/TheLifeStockMarket';
 
 /**
  * High Stakes Category Component
@@ -162,10 +163,13 @@ export default function TheLifeHighStakes({
       case 'stockmarket':
         return (
           <div className="highstakes-content stockmarket-content">
-            <div className="empty-state">
-              <h3>📈 Stock Market</h3>
-              <p>Coming soon...</p>
-            </div>
+            <TheLifeStockMarket
+              player={player}
+              setPlayer={setPlayer}
+              setMessage={setMessage}
+              user={user}
+              onBack={() => setActiveSubTab('casino')}
+            />
           </div>
         );
       default:
