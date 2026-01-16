@@ -813,7 +813,7 @@ input:checked + .toggle-slider:before {
   object-fit: cover;
   object-position: center;
   display: block;
-  transform: scale(1.05);
+  transform: scale(1.10);
 }
 
 /* Locked Tab Badge */
