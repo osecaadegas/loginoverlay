@@ -251,3 +251,96 @@
     padding: 12px;
   }
 }
+
+/* =============================================
+   OVERDOSE / INTENSE TREATMENT STYLES
+   ============================================= */
+
+.hospital-status.overdose {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.4), rgba(185, 28, 28, 0.3));
+  border: 3px solid rgba(239, 68, 68, 0.8);
+  animation: overdose-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes overdose-pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.8);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(239, 68, 68, 0.6);
+    border-color: rgba(239, 68, 68, 1);
+  }
+}
+
+.hospital-status.overdose h3 {
+  color: #fca5a5;
+  font-size: 1.8rem;
+  text-shadow: 0 0 20px rgba(239, 68, 68, 0.8);
+  animation: text-flicker 2s ease-in-out infinite;
+}
+
+@keyframes text-flicker {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
+}
+
+.overdose-warning {
+  color: #fbbf24 !important;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-top: 15px;
+  padding: 10px;
+  background: rgba(251, 191, 36, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.recovery-option.intense {
+  background: linear-gradient(135deg, rgba(127, 29, 29, 0.3), rgba(153, 27, 27, 0.2));
+  border: 2px solid rgba(239, 68, 68, 0.5);
+  border-radius: 12px;
+  padding: 25px;
+}
+
+.recovery-option.intense h4 {
+  color: #fca5a5;
+  font-size: 1.4rem;
+  margin-bottom: 10px;
+}
+
+.recovery-cost.intense-cost {
+  font-size: 1.8rem !important;
+  color: #ef4444 !important;
+  font-weight: 800;
+  text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+  margin: 15px 0;
+}
+
+.intense-note {
+  color: #fca5a5;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin-bottom: 15px;
+}
+
+.recovery-btn.intense-btn {
+  background: linear-gradient(135deg, #b91c1c, #dc2626);
+  color: white;
+  font-size: 1.2rem;
+  padding: 16px 35px;
+  border: 2px solid rgba(252, 165, 165, 0.4);
+  box-shadow: 0 4px 20px rgba(220, 38, 38, 0.4);
+}
+
+.recovery-btn.intense-btn:hover:not(:disabled) {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 30px rgba(220, 38, 38, 0.6);
+  background: linear-gradient(135deg, #dc2626, #ef4444);
+}
+
+.recovery-btn.intense-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}

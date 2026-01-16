@@ -167,6 +167,13 @@ export default function TheLife() {
         updateData.addiction = newAddiction;
       }
       
+      // Check for addiction overdose at 100
+      if (newAddiction >= 100) {
+        updateData.hp = 0;
+        updateData.hospital_until = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min hospital
+        setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
+      }
+      
       const { error: playerError } = await supabase
         .from('the_life_players')
         .update(updateData)

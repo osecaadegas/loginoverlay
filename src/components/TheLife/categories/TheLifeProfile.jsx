@@ -125,7 +125,14 @@ export default function TheLifeProfile({
           updateData.stamina = Math.min(player.max_stamina, player.stamina + effect.value);
           // Add addiction if the item has it
           if (effect.addiction) {
-            updateData.addiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + effect.addiction);
+            const newAddiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + effect.addiction);
+            updateData.addiction = newAddiction;
+            // Check for overdose at 100 addiction
+            if (newAddiction >= 100) {
+              updateData.hp = 0;
+              updateData.hospital_until = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+              setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
+            }
           }
           break;
         case 'xp_boost':

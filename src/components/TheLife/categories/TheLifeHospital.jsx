@@ -115,6 +115,60 @@ export default function TheLifeHospital({
     return Math.max(100, finalCost);
   };
 
+  // Calculate INTENSE treatment cost for addiction at 100 (overdose)
+  // EXTREMELY expensive - 50% of total wealth + level * 5000
+  const calculateIntenseTreatmentCost = () => {
+    const level = player?.level || 1;
+    const totalWealth = (player?.cash || 0) + (player?.bank_balance || 0);
+    
+    // 50% of wealth + level * 5000 (minimum $50,000)
+    const wealthCost = Math.floor(totalWealth * 0.5);
+    const levelCost = level * 5000;
+    
+    return Math.max(50000, wealthCost + levelCost);
+  };
+
+  // Intense treatment for overdose patients
+  const intenseTreatment = async () => {
+    const cost = calculateIntenseTreatmentCost();
+    const totalWealth = player.cash + player.bank_balance;
+    
+    if (totalWealth < cost) {
+      setMessage({ type: 'error', text: 'Not enough money for Intense Treatment!' });
+      return;
+    }
+    
+    // Deduct from cash first, then bank
+    let newCash = player.cash;
+    let newBank = player.bank_balance;
+    
+    if (player.cash >= cost) {
+      newCash -= cost;
+    } else {
+      const remaining = cost - player.cash;
+      newCash = 0;
+      newBank -= remaining;
+    }
+    
+    const { data, error } = await supabase
+      .from('the_life_players')
+      .update({
+        hp: player.max_hp,
+        addiction: 0,
+        cash: newCash,
+        bank_balance: newBank,
+        hospital_until: null
+      })
+      .eq('user_id', user.id)
+      .select()
+      .single();
+    
+    if (!error) {
+      setPlayer(data);
+      setMessage({ type: 'success', text: '💊 Intense Treatment complete! You\'ve been fully rehabilitated. Stay clean!' });
+    }
+  };
+
   const cureAddiction = async () => {
     const cost = calculateAddictionCureCost();
     
@@ -139,31 +193,62 @@ export default function TheLifeHospital({
     }
   };
 
+  // Check if this is an OVERDOSE (addiction at 100 with HP at 0)
+  const isOverdose = player?.hp === 0 && (player?.addiction || 0) >= 100;
+
   if (player?.hp === 0) {
     const recoveryCost = Math.floor((player.cash + player.bank_balance) * 0.15);
+    const intenseCost = calculateIntenseTreatmentCost();
     
     return (
       <div className="hospital-section">
         <h2>🏥 Hospital</h2>
         <div className="hospital-emergency">
-          <div className="hospital-status">
-            <h3>💀 Critical Condition!</h3>
-            <p>Your HP is at 0. You need immediate medical attention!</p>
-          </div>
-          <div className="recovery-option">
-            <h4>🚑 Emergency Recovery</h4>
-            <p>Restore to full HP instantly</p>
-            <div className="recovery-cost">
-              Cost: ${recoveryCost.toLocaleString()} (15% of total wealth)
-            </div>
-            <button 
-              className="recovery-btn"
-              onClick={emergencyRecovery}
-              disabled={player.cash + player.bank_balance < recoveryCost}
-            >
-              Pay for Recovery
-            </button>
-          </div>
+          {isOverdose ? (
+            <>
+              <div className="hospital-status overdose">
+                <h3>☠️ OVERDOSE - CRITICAL!</h3>
+                <p>Your addiction hit 100 and you collapsed! You need INTENSE TREATMENT to survive.</p>
+                <p className="overdose-warning">⚠️ Regular recovery is not available for overdose patients!</p>
+              </div>
+              <div className="recovery-option intense">
+                <h4>💉 INTENSE TREATMENT</h4>
+                <p>Full medical rehabilitation including addiction cure and HP restoration</p>
+                <div className="recovery-cost intense-cost">
+                  Cost: ${intenseCost.toLocaleString()}
+                </div>
+                <p className="intense-note">50% of your total wealth + $5,000 × your level</p>
+                <button 
+                  className="recovery-btn intense-btn"
+                  onClick={intenseTreatment}
+                  disabled={player.cash + player.bank_balance < intenseCost}
+                >
+                  💊 Pay for Intense Treatment
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="hospital-status">
+                <h3>💀 Critical Condition!</h3>
+                <p>Your HP is at 0. You need immediate medical attention!</p>
+              </div>
+              <div className="recovery-option">
+                <h4>🚑 Emergency Recovery</h4>
+                <p>Restore to full HP instantly</p>
+                <div className="recovery-cost">
+                  Cost: ${recoveryCost.toLocaleString()} (15% of total wealth)
+                </div>
+                <button 
+                  className="recovery-btn"
+                  onClick={emergencyRecovery}
+                  disabled={player.cash + player.bank_balance < recoveryCost}
+                >
+                  Pay for Recovery
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     );
