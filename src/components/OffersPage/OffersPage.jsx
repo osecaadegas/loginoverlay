@@ -129,7 +129,7 @@ export default function OffersPage() {
                   {casinoOffers[0].freeSpins && (
                     <div className="bonus-sub-text">+ {casinoOffers[0].freeSpins}</div>
                   )}
-                  <div className="bonus-exclusive-tag">Exclusive Bonus for Streamers!</div>
+                  <div className="bonus-exclusive-tag">Exclusive Bonus!</div>
                 </div>
 
                 {/* Stats Grid */}

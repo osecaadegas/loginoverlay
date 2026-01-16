@@ -306,7 +306,7 @@ export default function LandingPage() {
                 </div>
                 <div className="offer-actions">
                   <button className="offer-btn claim" onClick={(e) => { e.stopPropagation(); handleOfferClick(offer.bonus_link); }}>CLAIM BONUS</button>
-                  <button className="offer-btn more" onClick={(e) => { e.stopPropagation(); handleOfferClick(offer.bonus_link); }}>👁 SHOW MORE</button>
+                  <button className="offer-btn more" onClick={(e) => { e.stopPropagation(); navigate('/offers'); }}>👁 SHOW MORE</button>
                 </div>
               </div>
             ))}
