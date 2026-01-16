@@ -355,6 +355,23 @@ export default function TheLifeStockMarket({
     }
   };
 
+  // Generate initial price history - must be defined before initializeStocks
+  const generateInitialHistory = (basePrice, volatility) => {
+    const history = [];
+    let price = basePrice * (0.8 + Math.random() * 0.4);
+    
+    for (let i = 0; i < CONFIG.chartHistoryLength; i++) {
+      const change = (Math.random() - 0.5) * volatility * price * 2;
+      price = Math.max(CONFIG.minStockPrice, price + change);
+      history.push({
+        price,
+        time: Date.now() - (CONFIG.chartHistoryLength - i) * CONFIG.priceUpdateInterval
+      });
+    }
+    
+    return history;
+  };
+
   // Initialize stocks
   const initializeStocks = useCallback(() => {
     const initialStocks = STOCKS_DATA.map(stock => ({
@@ -373,23 +390,6 @@ export default function TheLifeStockMarket({
     }));
     setStocks(initialStocks);
   }, []);
-
-  // Generate initial price history
-  const generateInitialHistory = (basePrice, volatility) => {
-    const history = [];
-    let price = basePrice * (0.8 + Math.random() * 0.4);
-    
-    for (let i = 0; i < CONFIG.chartHistoryLength; i++) {
-      const change = (Math.random() - 0.5) * volatility * price * 2;
-      price = Math.max(CONFIG.minStockPrice, price + change);
-      history.push({
-        price,
-        time: Date.now() - (CONFIG.chartHistoryLength - i) * CONFIG.priceUpdateInterval
-      });
-    }
-    
-    return history;
-  };
 
   // Update prices
   const updatePrices = useCallback(() => {
@@ -508,9 +508,16 @@ export default function TheLifeStockMarket({
     }
   }, [currentEvent, stocks]);
 
-  // Initialize and start loops
+  // Initialize stocks only once on mount
   useEffect(() => {
     initializeStocks();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Start price update loop (separate from initialization)
+  useEffect(() => {
+    // Only start intervals once stocks are initialized
+    if (stocks.length === 0) return;
     
     priceIntervalRef.current = setInterval(updatePrices, CONFIG.priceUpdateInterval);
     newsIntervalRef.current = setInterval(generateNews, CONFIG.newsInterval);
@@ -521,7 +528,8 @@ export default function TheLifeStockMarket({
       clearInterval(newsIntervalRef.current);
       clearInterval(eventIntervalRef.current);
     };
-  }, [initializeStocks, updatePrices, generateNews, triggerEvent]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stocks.length > 0]);
 
   // Update player cash in database
   const updatePlayerCash = async (newCash) => {
