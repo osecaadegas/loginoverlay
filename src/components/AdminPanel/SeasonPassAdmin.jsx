@@ -92,15 +92,21 @@ export default function SeasonPassAdmin() {
       setRewards(rewardsData || []);
 
       // Get items for dropdown (with image_url)
+      console.log('Fetching items from the_life_items...');
       const { data: itemsData, error: itemsError } = await supabase
         .from('the_life_items')
-        .select('id, name, type, icon, image_url, rarity')
-        .order('name');
+        .select('*');
+      
+      console.log('Items query result:', { itemsData, itemsError });
       
       if (itemsError) {
         console.error('Error fetching items:', itemsError);
+        console.error('Error details:', JSON.stringify(itemsError, null, 2));
       } else {
-        console.log('Items loaded:', itemsData?.length || 0, 'items');
+        console.log('Items loaded successfully:', itemsData?.length || 0, 'items');
+        if (itemsData?.length > 0) {
+          console.log('First item sample:', itemsData[0]);
+        }
       }
       setItems(itemsData || []);
 
@@ -140,6 +146,7 @@ export default function SeasonPassAdmin() {
 
   // Open modal to add/edit reward for a tier
   const openRewardModal = (tier, track) => {
+    console.log('Opening reward modal, items in state:', items?.length || 0);
     setEditingTier(tier);
     setEditingTrack(track);
     
