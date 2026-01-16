@@ -7,13 +7,30 @@ import './TheLifeStockMarket.css';
 // ============================================
 const CONFIG = {
   transactionFeePercent: 0.5,
-  priceUpdateInterval: 3000,
-  newsInterval: 20000,
-  eventInterval: 90000,
-  baseVolatility: 0.02,
+  priceUpdateInterval: 30000, // 30 seconds - real crypto API refresh
+  newsInterval: 60000, // 1 minute
+  eventInterval: 300000, // 5 minutes
   chartHistoryLength: 50,
   minStockPrice: 0.01,
   maxStockPrice: 100000
+};
+
+// ============================================
+// CRYPTO MAPPING - Maps game stocks to real cryptocurrencies
+// Using CoinGecko API IDs
+// ============================================
+const CRYPTO_MAPPING = {
+  'SHAD': { cryptoId: 'bitcoin', priceMultiplier: 0.0015 }, // BTC ~$100k -> ~$150
+  'GHOST': { cryptoId: 'ethereum', priceMultiplier: 0.025 }, // ETH ~$3.5k -> ~$87
+  'VNDR': { cryptoId: 'solana', priceMultiplier: 1.0 }, // SOL ~$230 -> ~$230
+  'CRYPT': { cryptoId: 'ripple', priceMultiplier: 180 }, // XRP ~$2.5 -> ~$450
+  'NITE': { cryptoId: 'dogecoin', priceMultiplier: 200 }, // DOGE ~$0.35 -> ~$70
+  'SYNTH': { cryptoId: 'cardano', priceMultiplier: 300 }, // ADA ~$1 -> ~$300
+  'SMUGL': { cryptoId: 'polkadot', priceMultiplier: 15 }, // DOT ~$8 -> ~$120
+  'HIEST': { cryptoId: 'avalanche-2', priceMultiplier: 2 }, // AVAX ~$40 -> ~$80
+  'FORGE': { cryptoId: 'chainlink', priceMultiplier: 4 }, // LINK ~$25 -> ~$100
+  'BYTE': { cryptoId: 'litecoin', priceMultiplier: 2.5 }, // LTC ~$110 -> ~$275
+  'CARTEL': { cryptoId: 'binancecoin', priceMultiplier: 0.75 } // BNB ~$700 -> ~$525
 };
 
 // ============================================
@@ -25,7 +42,6 @@ const STOCKS_DATA = [
     name: 'Shadow Corp',
     sector: 'Underground Banking',
     basePrice: 156.80,
-    volatility: 0.015,
     riskLevel: 'low',
     type: 'safe',
     description: 'The backbone of underground finance.',
@@ -36,7 +52,6 @@ const STOCKS_DATA = [
     name: 'Ghost Networks',
     sector: 'Dark Web Services',
     basePrice: 89.45,
-    volatility: 0.025,
     riskLevel: 'medium',
     type: 'moderate',
     description: 'Anonymous communication infrastructure.',
@@ -47,7 +62,6 @@ const STOCKS_DATA = [
     name: 'Vendetta Arms',
     sector: 'Weapons & Defense',
     basePrice: 234.20,
-    volatility: 0.035,
     riskLevel: 'high',
     type: 'volatile',
     description: 'Black market weapons manufacturer.',
@@ -58,7 +72,6 @@ const STOCKS_DATA = [
     name: 'CryptVault Inc',
     sector: 'Money Laundering',
     basePrice: 445.00,
-    volatility: 0.018,
     riskLevel: 'low',
     type: 'safe',
     description: 'Premium money cleaning services.',
@@ -69,7 +82,6 @@ const STOCKS_DATA = [
     name: 'Nightclub Empire',
     sector: 'Entertainment',
     basePrice: 67.30,
-    volatility: 0.022,
     riskLevel: 'medium',
     type: 'moderate',
     description: 'Chain of fronts disguised as nightclubs.',
@@ -80,7 +92,6 @@ const STOCKS_DATA = [
     name: 'Synthesis Labs',
     sector: 'Pharmaceuticals',
     basePrice: 312.50,
-    volatility: 0.045,
     riskLevel: 'high',
     type: 'volatile',
     description: 'Underground drug manufacturing.',
@@ -91,7 +102,6 @@ const STOCKS_DATA = [
     name: "Smuggler's Route",
     sector: 'Logistics',
     basePrice: 128.75,
-    volatility: 0.028,
     riskLevel: 'medium',
     type: 'moderate',
     description: 'International smuggling network.',
@@ -102,7 +112,6 @@ const STOCKS_DATA = [
     name: 'Heist Collective',
     sector: 'Theft Services',
     basePrice: 78.90,
-    volatility: 0.055,
     riskLevel: 'extreme',
     type: 'manipulated',
     description: 'Professional heist planning.',
@@ -113,7 +122,6 @@ const STOCKS_DATA = [
     name: 'Forge Documents',
     sector: 'Identity Services',
     basePrice: 95.40,
-    volatility: 0.02,
     riskLevel: 'low',
     type: 'safe',
     description: 'Premium forged documents.',
@@ -124,7 +132,6 @@ const STOCKS_DATA = [
     name: 'ByteThief Tech',
     sector: 'Cyber Crime',
     basePrice: 267.80,
-    volatility: 0.04,
     riskLevel: 'high',
     type: 'volatile',
     description: 'Ransomware and data theft.',
@@ -135,7 +142,6 @@ const STOCKS_DATA = [
     name: 'Cartel United',
     sector: 'Criminal Syndicate',
     basePrice: 523.40,
-    volatility: 0.06,
     riskLevel: 'extreme',
     type: 'manipulated',
     description: 'Multi-national criminal org.',
@@ -355,106 +361,119 @@ export default function TheLifeStockMarket({
     }
   };
 
-  // Generate initial price history - must be defined before initializeStocks
-  const generateInitialHistory = (basePrice, volatility) => {
+  // Generate initial price history based on current price
+  const generateInitialHistory = (currentPrice) => {
     const history = [];
-    let price = basePrice * (0.8 + Math.random() * 0.4);
+    let price = currentPrice;
     
+    // Generate backward from current price with small variations
     for (let i = 0; i < CONFIG.chartHistoryLength; i++) {
-      const change = (Math.random() - 0.5) * volatility * price * 2;
-      price = Math.max(CONFIG.minStockPrice, price + change);
-      history.push({
+      history.unshift({
         price,
-        time: Date.now() - (CONFIG.chartHistoryLength - i) * CONFIG.priceUpdateInterval
+        time: Date.now() - i * CONFIG.priceUpdateInterval
       });
+      // Small random walk backward
+      price = price * (1 + (Math.random() - 0.5) * 0.01);
     }
     
     return history;
   };
 
-  // Initialize stocks
-  const initializeStocks = useCallback(() => {
-    const initialStocks = STOCKS_DATA.map(stock => ({
-      ...stock,
-      price: stock.basePrice,
-      previousPrice: stock.basePrice,
-      dayOpen: stock.basePrice,
-      dayHigh: stock.basePrice,
-      dayLow: stock.basePrice,
-      change: 0,
-      changePercent: 0,
-      volume: Math.floor(Math.random() * 1000000) + 100000,
-      priceHistory: generateInitialHistory(stock.basePrice, stock.volatility),
-      trend: (Math.random() - 0.5) * 0.02,
-      trendDuration: Math.floor(Math.random() * 20) + 10
-    }));
+  // Fetch real crypto prices from CoinGecko API
+  const fetchCryptoPrices = async () => {
+    try {
+      const cryptoIds = Object.values(CRYPTO_MAPPING).map(m => m.cryptoId).join(',');
+      const response = await fetch(
+        `https://api.coingecko.com/api/v3/simple/price?ids=${cryptoIds}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true`
+      );
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch crypto prices');
+      }
+      
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error fetching crypto prices:', error);
+      return null;
+    }
+  };
+
+  // Initialize stocks with real crypto data
+  const initializeStocks = useCallback(async () => {
+    const cryptoData = await fetchCryptoPrices();
+    
+    const initialStocks = STOCKS_DATA.map(stock => {
+      const mapping = CRYPTO_MAPPING[stock.symbol];
+      let price = stock.basePrice;
+      let changePercent = 0;
+      let volume = Math.floor(Math.random() * 1000000) + 100000;
+      
+      // Use real crypto data if available
+      if (cryptoData && mapping && cryptoData[mapping.cryptoId]) {
+        const cryptoInfo = cryptoData[mapping.cryptoId];
+        price = cryptoInfo.usd * mapping.priceMultiplier;
+        changePercent = cryptoInfo.usd_24h_change || 0;
+        volume = Math.floor((cryptoInfo.usd_24h_vol || 1000000) / 10000);
+      }
+      
+      return {
+        ...stock,
+        price: Math.round(price * 100) / 100,
+        previousPrice: price,
+        dayOpen: price,
+        dayHigh: price,
+        dayLow: price,
+        change: 0,
+        changePercent: Math.round(changePercent * 100) / 100,
+        volume,
+        priceHistory: generateInitialHistory(price)
+      };
+    });
+    
     setStocks(initialStocks);
   }, []);
 
-  // Update prices
-  const updatePrices = useCallback(() => {
+  // Update prices from real crypto API
+  const updatePrices = useCallback(async () => {
+    const cryptoData = await fetchCryptoPrices();
+    if (!cryptoData) return;
+    
     setStocks(prevStocks => prevStocks.map(stock => {
-      const newStock = { ...stock };
-      newStock.previousPrice = stock.price;
-      
-      let change = 0;
-      
-      // Base random movement
-      change += (Math.random() - 0.5) * stock.volatility * stock.price * 2;
-      
-      // Trend influence
-      change += stock.trend * stock.price * 0.3;
-      
-      // Event influence
-      if (currentEvent) {
-        if (currentEvent.affectedSectors.includes('all') || 
-            currentEvent.affectedSectors.includes(stock.sector)) {
-          change += currentEvent.impact * stock.price * 0.1;
-          if (currentEvent.volatilityMultiplier) {
-            change *= currentEvent.volatilityMultiplier;
-          }
-        }
+      const mapping = CRYPTO_MAPPING[stock.symbol];
+      if (!mapping || !cryptoData[mapping.cryptoId]) {
+        return stock;
       }
       
-      // Mean reversion
-      const priceRatio = stock.price / stock.basePrice;
-      if (priceRatio > 2) change -= stock.price * 0.01;
-      else if (priceRatio < 0.5) change += stock.price * 0.01;
+      const cryptoInfo = cryptoData[mapping.cryptoId];
+      const newPrice = Math.round(cryptoInfo.usd * mapping.priceMultiplier * 100) / 100;
+      const changePercent = Math.round((cryptoInfo.usd_24h_change || 0) * 100) / 100;
+      const volume = Math.floor((cryptoInfo.usd_24h_vol || 1000000) / 10000);
       
-      // Manipulated stocks
-      if (stock.type === 'manipulated' && Math.random() < 0.1) {
-        change += (Math.random() - 0.5) * stock.price * 0.1;
-      }
-      
-      newStock.price = Math.max(CONFIG.minStockPrice, 
-        Math.min(CONFIG.maxStockPrice, stock.price + change));
-      
-      newStock.change = newStock.price - newStock.previousPrice;
-      newStock.changePercent = (newStock.change / newStock.previousPrice) * 100;
-      newStock.dayHigh = Math.max(stock.dayHigh, newStock.price);
-      newStock.dayLow = Math.min(stock.dayLow, newStock.price);
-      newStock.volume += Math.floor(Math.random() * 10000);
-      
-      // Update trend
-      newStock.trendDuration = stock.trendDuration - 1;
-      if (newStock.trendDuration <= 0) {
-        newStock.trend = (Math.random() - 0.5) * 0.02;
-        newStock.trendDuration = Math.floor(Math.random() * 20) + 10;
-      }
-      
-      // Update history
-      newStock.priceHistory = [...stock.priceHistory.slice(-CONFIG.chartHistoryLength + 1), {
-        price: newStock.price,
-        time: Date.now()
-      }];
+      const newStock = {
+        ...stock,
+        previousPrice: stock.price,
+        price: newPrice,
+        change: newPrice - stock.price,
+        changePercent,
+        dayHigh: Math.max(stock.dayHigh, newPrice),
+        dayLow: Math.min(stock.dayLow, newPrice),
+        volume,
+        priceHistory: [...stock.priceHistory.slice(-CONFIG.chartHistoryLength + 1), {
+          price: newPrice,
+          time: Date.now()
+        }]
+      };
       
       return newStock;
     }));
-  }, [currentEvent]);
+  }, []);
 
   // Generate news
   const generateNews = useCallback(() => {
     setStocks(prevStocks => {
+      if (prevStocks.length === 0) return prevStocks;
+      
       const stock = prevStocks[Math.floor(Math.random() * prevStocks.length)];
       const types = ['positive', 'negative', 'neutral'];
       const type = types[Math.floor(Math.random() * types.length)];
