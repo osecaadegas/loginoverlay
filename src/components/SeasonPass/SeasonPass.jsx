@@ -12,7 +12,7 @@ import './SeasonPass.css';
 export default function SeasonPass() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { points: userPoints, redeemPoints } = useStreamElements();
+  const { points: userPoints, updateUserPoints } = useStreamElements();
   
   // State
   const [loading, setLoading] = useState(true);
@@ -410,11 +410,11 @@ export default function SeasonPass() {
 
       setMessage({ type: 'info', text: 'Processing purchase...' });
 
-      // Redeem SE Points
-      const redeemResult = await redeemPoints(budgetCost, `Season ${seasonData?.season_number || 1} Budget Pass`);
+      // Deduct SE Points (negative amount to subtract)
+      const deductResult = await updateUserPoints(-budgetCost);
       
-      if (!redeemResult || redeemResult.error) {
-        throw new Error(redeemResult?.error || 'Failed to redeem points');
+      if (!deductResult || !deductResult.success) {
+        throw new Error(deductResult?.error || 'Failed to deduct points');
       }
 
       // Update database to mark budget as purchased
