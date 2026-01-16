@@ -278,13 +278,18 @@ export default function RouletteWheel({
         state.wheelAngle += state.wheelSpeed;
         state.wheelSpeed *= 0.99;
 
-        // Calculate where the target number currently is
+        // Calculate where the target number currently is on the wheel
         const slotIndex = WHEEL_NUMBERS.indexOf(targetNumber);
-        const slotAngle = (slotIndex / 37) * Math.PI * 2;
-        const targetBallAngle = -state.wheelAngle + slotAngle - Math.PI / 2;
+        // The slot angle on the wheel (accounting for wheel rotation)
+        const slotAngleOnWheel = (slotIndex / 37) * Math.PI * 2 - Math.PI / 2;
+        // Ball needs to be at this position relative to the rotated wheel
+        const targetBallAngle = slotAngleOnWheel + state.wheelAngle;
 
-        // Smoothly move ball to target slot
-        const angleDiff = targetBallAngle - state.ballAngle;
+        // Normalize angles to prevent spinning around
+        let angleDiff = targetBallAngle - state.ballAngle;
+        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+        
         state.ballAngle += angleDiff * 0.1;
         state.ballRadius = innerRadius + 8;
 
@@ -299,10 +304,10 @@ export default function RouletteWheel({
         break;
 
       case 'settled':
-        // Keep ball in winning slot, slight wheel drift
+        // Keep ball in winning slot, following wheel rotation
         const settledSlotIndex = WHEEL_NUMBERS.indexOf(targetNumber);
-        const settledSlotAngle = (settledSlotIndex / 37) * Math.PI * 2;
-        state.ballAngle = -state.wheelAngle + settledSlotAngle - Math.PI / 2;
+        const settledSlotAngle = (settledSlotIndex / 37) * Math.PI * 2 - Math.PI / 2;
+        state.ballAngle = settledSlotAngle + state.wheelAngle;
         state.ballRadius = innerRadius + 8;
         break;
 

@@ -488,50 +488,53 @@ export default function GlobalRoulette({
 
     return (
       <div className="betting-table">
-        {/* Zero */}
-        <div 
-          className="bet-zero"
-          onClick={() => placeBet('STRAIGHT', 0, 'zero')}
-        >
-          <span>0</span>
-          {renderChipsOnSpot('STRAIGHT-zero')}
-        </div>
+        {/* Main table area with zero and numbers */}
+        <div className="table-main">
+          {/* Zero */}
+          <div 
+            className="bet-zero"
+            onClick={() => placeBet('STRAIGHT', 0, 'zero')}
+          >
+            <span>0</span>
+            {renderChipsOnSpot('STRAIGHT-zero')}
+          </div>
 
-        {/* Number grid */}
-        <div className="number-grid">
-          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(row => (
-            <div key={row} className="number-row">
-              {[3, 2, 1].map(col => {
-                const num = (row - 1) * 3 + col;
-                const isRed = RED_NUMBERS.includes(num);
-                return (
-                  <div
-                    key={num}
-                    className={`number-cell ${isRed ? 'red' : 'black'}`}
-                    onClick={() => placeBet('STRAIGHT', num, `num-${num}`)}
-                  >
-                    <span>{num}</span>
-                    {renderChipsOnSpot(`STRAIGHT-num-${num}`)}
-                  </div>
-                );
-              })}
-            </div>
-          ))}
-        </div>
+          {/* Number grid */}
+          <div className="number-grid">
+            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(row => (
+              <div key={row} className="number-row">
+                {[3, 2, 1].map(col => {
+                  const num = (row - 1) * 3 + col;
+                  const isRed = RED_NUMBERS.includes(num);
+                  return (
+                    <div
+                      key={num}
+                      className={`number-cell ${isRed ? 'red' : 'black'}`}
+                      onClick={() => placeBet('STRAIGHT', num, `num-${num}`)}
+                    >
+                      <span>{num}</span>
+                      {renderChipsOnSpot(`STRAIGHT-num-${num}`)}
+                    </div>
+                  );
+                })}
+              </div>
+            ))}
+          </div>
 
-        {/* Column bets */}
-        <div className="column-bets">
-          {[1, 2, 3].map(col => (
-            <div
-              key={col}
-              className="column-bet"
-              onClick={() => placeBet('COLUMN', col, `col-${col}`)}
-            >
-              <span>2:1</span>
+          {/* Column bets on the right */}
+          <div className="column-bets-right">
+            {[1, 2, 3].map(col => (
+              <div
+                key={col}
+                className="column-bet"
+                onClick={() => placeBet('COLUMN', col, `col-${col}`)}
+              >
+                <span>2:1</span>
               {renderChipsOnSpot(`COLUMN-col-${col}`)}
             </div>
           ))}
-        </div>
+          </div>
+        </div> {/* Close table-main */}
 
         {/* Dozen bets */}
         <div className="dozen-bets">
