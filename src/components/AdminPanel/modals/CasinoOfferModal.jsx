@@ -46,8 +46,6 @@ export default function CasinoOfferModal({
     license: '',
     welcome_bonus: '',
     details: '',
-    pros: '',
-    cons: '',
     deposit_methods: '',
     vpn_friendly: false,
     is_premium: false,
@@ -85,8 +83,6 @@ export default function CasinoOfferModal({
           license: '',
           welcome_bonus: '',
           details: '',
-          pros: '',
-          cons: '',
           deposit_methods: '',
           vpn_friendly: false,
           is_premium: false,
@@ -292,25 +288,6 @@ export default function CasinoOfferModal({
                 onChange={(e) => handleChange('details', e.target.value)}
                 placeholder="Wagering requirements, terms, etc."
               />
-            </div>
-
-            <div className="co-form-row">
-              <div className="co-form-group">
-                <label>Pros (comma separated)</label>
-                <textarea
-                  value={formData.pros}
-                  onChange={(e) => handleChange('pros', e.target.value)}
-                  placeholder="Fast withdrawals, Great bonuses, ..."
-                />
-              </div>
-              <div className="co-form-group">
-                <label>Cons (comma separated)</label>
-                <textarea
-                  value={formData.cons}
-                  onChange={(e) => handleChange('cons', e.target.value)}
-                  placeholder="High wagering, Limited countries, ..."
-                />
-              </div>
             </div>
 
             {/* Deposit Methods */}
