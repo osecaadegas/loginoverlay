@@ -124,10 +124,10 @@ export default function PokerTable({
       setSeats(seatsData || []);
 
       // Check if user has a seat
-      const userSeat = seatsData?.find(s => s.user_id === user.id);
+      const userSeat = seatsData?.find(s => s.player_id === player?.id);
       if (userSeat) {
         setMySeat(userSeat.seat_number);
-        setMyBalance(userSeat.balance);
+        setMyBalance(userSeat.chips);
         // Load player's cards from game state if exists
         if (userSeat.hand_data) {
           setMyCards(JSON.parse(userSeat.hand_data));
@@ -296,12 +296,11 @@ export default function PokerTable({
         .insert({
           table_id: table.id,
           seat_number: selectedSeat,
-          user_id: user.id,
+          player_id: player.id,
           player_name: player.se_username || 'Player',
-          avatar_url: player.avatar_url,
-          balance: buyInAmount,
-          is_active: true,
-          is_ready: false
+          player_avatar: player.avatar_url,
+          chips: buyInAmount,
+          is_active: true
         });
 
       if (seatError) throw seatError;
@@ -330,13 +329,13 @@ export default function PokerTable({
     }
 
     try {
-      // Return balance to player
+      // Return chips to player cash
       if (myBalance > 0) {
         const newCash = player.cash + myBalance;
         await supabase
           .from('the_life_players')
           .update({ cash: Math.round(newCash * 100) / 100 })
-          .eq('user_id', user.id);
+          .eq('id', player.id);
 
         setPlayer(prev => ({ ...prev, cash: newCash }));
       }
@@ -346,7 +345,7 @@ export default function PokerTable({
         .from('casino_seats')
         .delete()
         .eq('table_id', table.id)
-        .eq('user_id', user.id);
+        .eq('player_id', player.id);
 
       setMySeat(null);
       setMyBalance(0);
@@ -426,7 +425,7 @@ export default function PokerTable({
       await supabase
         .from('casino_seats')
         .update({ 
-          balance: sbSeat.balance - table.small_blind,
+          chips: sbSeat.chips - table.small_blind,
           current_bet: table.small_blind
         })
         .eq('id', sbSeat.id);
@@ -434,7 +433,7 @@ export default function PokerTable({
       await supabase
         .from('casino_seats')
         .update({ 
-          balance: bbSeat.balance - table.big_blind,
+          chips: bbSeat.chips - table.big_blind,
           current_bet: table.big_blind
         })
         .eq('id', bbSeat.id);
@@ -672,7 +671,7 @@ export default function PokerTable({
     
     await supabase
       .from('casino_seats')
-      .update({ balance: winner.balance + pot })
+      .update({ chips: winner.chips + pot })
       .eq('id', winner.id);
 
     await supabase
@@ -856,14 +855,14 @@ export default function PokerTable({
                 {seat ? (
                   <>
                     <div className="seat-avatar">
-                      <img src={seat.avatar_url || '/default-avatar.png'} alt="" />
+                      <img src={seat.player_avatar || '/default-avatar.png'} alt="" />
                       {seat.seat_number === gameState.dealerSeat && (
                         <span className="dealer-button">D</span>
                       )}
                     </div>
                     <div className="seat-info">
                       <span className="seat-name">{seat.player_name}</span>
-                      <span className="seat-balance">${seat.balance?.toLocaleString()}</span>
+                      <span className="seat-balance">${seat.chips?.toLocaleString()}</span>
                     </div>
                     {/* Player's cards */}
                     <div className="seat-cards">
