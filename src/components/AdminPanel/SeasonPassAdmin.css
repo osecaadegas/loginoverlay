@@ -366,34 +366,34 @@
   padding: 20px;
 }
 
-.form-row {
+.sp-modal .form-row {
   display: flex;
   gap: 16px;
   margin-bottom: 16px;
 }
 
-.form-group {
+.sp-modal .form-group {
   flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.form-group.full {
+.sp-modal .form-group.full {
   flex: none;
   width: 100%;
 }
 
-.form-group label {
+.sp-modal .form-group label {
   font-size: 12px;
   color: #888;
   font-weight: 600;
   text-transform: uppercase;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.sp-modal .form-group input,
+.sp-modal .form-group select,
+.sp-modal .form-group textarea {
   padding: 10px 12px;
   background: #1a1a1a;
   border: 1px solid #333;
@@ -403,18 +403,18 @@
   font-family: inherit;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.sp-modal .form-group input:focus,
+.sp-modal .form-group select:focus,
+.sp-modal .form-group textarea:focus {
   border-color: #fbbf24;
   outline: none;
 }
 
-.form-group textarea {
+.sp-modal .form-group textarea {
   resize: vertical;
 }
 
-.icon-preview {
+.sp-modal .icon-preview {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -424,7 +424,7 @@
   border-radius: 6px;
 }
 
-.icon-preview i {
+.sp-modal .icon-preview i {
   font-size: 2rem;
 }
 
@@ -601,7 +601,7 @@ button:disabled {
     height: 85px;
   }
 
-  .form-row {
+  .sp-modal .form-row {
     flex-direction: column;
   }
 }
