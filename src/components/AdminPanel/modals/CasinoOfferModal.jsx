@@ -1,6 +1,22 @@
 import { useState, useEffect } from 'react';
 import './CasinoOfferModal.css';
 
+// Deposit methods list
+const DEPOSIT_METHODS = [
+  { id: 'visa', name: 'Visa', icon: '💳' },
+  { id: 'mastercard', name: 'Mastercard', icon: '💳' },
+  { id: 'bitcoin', name: 'Bitcoin', icon: '₿' },
+  { id: 'ethereum', name: 'Ethereum', icon: 'Ξ' },
+  { id: 'litecoin', name: 'Litecoin', icon: 'Ł' },
+  { id: 'usdt', name: 'USDT', icon: '₮' },
+  { id: 'bank', name: 'Bank Transfer', icon: '🏦' },
+  { id: 'skrill', name: 'Skrill', icon: '💰' },
+  { id: 'neteller', name: 'Neteller', icon: '💰' },
+  { id: 'paysafe', name: 'Paysafecard', icon: '💳' },
+  { id: 'apple', name: 'Apple Pay', icon: '🍎' },
+  { id: 'google', name: 'Google Pay', icon: '📱' },
+];
+
 /**
  * Casino Offer Modal Component
  * Isolated modal for creating/editing casino offers
@@ -31,14 +47,26 @@ export default function CasinoOfferModal({
     welcome_bonus: '',
     details: '',
     pros: '',
-    cons: ''
+    cons: '',
+    deposit_methods: '',
+    vpn_friendly: false,
+    is_premium: false,
+    is_active: true,
+    display_order: 0
   });
 
   // Reset form when modal opens/closes or editing offer changes
   useEffect(() => {
     if (isOpen) {
       if (editingOffer) {
-        setFormData(editingOffer);
+        setFormData({
+          ...editingOffer,
+          deposit_methods: editingOffer.deposit_methods || '',
+          vpn_friendly: editingOffer.vpn_friendly || false,
+          is_premium: editingOffer.is_premium || false,
+          is_active: editingOffer.is_active !== false,
+          display_order: editingOffer.display_order || 0
+        });
       } else {
         setFormData({
           casino_name: '',
@@ -58,7 +86,12 @@ export default function CasinoOfferModal({
           welcome_bonus: '',
           details: '',
           pros: '',
-          cons: ''
+          cons: '',
+          deposit_methods: '',
+          vpn_friendly: false,
+          is_premium: false,
+          is_active: true,
+          display_order: 0
         });
       }
     }
@@ -277,6 +310,79 @@ export default function CasinoOfferModal({
                   onChange={(e) => handleChange('cons', e.target.value)}
                   placeholder="High wagering, Limited countries, ..."
                 />
+              </div>
+            </div>
+
+            {/* Deposit Methods */}
+            <div className="co-form-group full">
+              <label>Deposit Methods</label>
+              <div className="co-deposit-methods">
+                {DEPOSIT_METHODS.map(method => {
+                  const selectedMethods = formData.deposit_methods ? formData.deposit_methods.split(',').map(m => m.trim()) : [];
+                  const isSelected = selectedMethods.includes(method.id);
+                  
+                  return (
+                    <label key={method.id} className={`co-deposit-method ${isSelected ? 'selected' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          let methods = selectedMethods.filter(m => m);
+                          if (e.target.checked) {
+                            methods.push(method.id);
+                          } else {
+                            methods = methods.filter(m => m !== method.id);
+                          }
+                          handleChange('deposit_methods', methods.join(','));
+                        }}
+                      />
+                      <span className="method-icon">{method.icon}</span>
+                      <span className="method-name">{method.name}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Options Row */}
+            <div className="co-form-row">
+              <div className="co-form-group">
+                <label>Display Order</label>
+                <input
+                  type="number"
+                  value={formData.display_order}
+                  onChange={(e) => handleChange('display_order', parseInt(e.target.value) || 0)}
+                  min="0"
+                />
+              </div>
+              <div className="co-form-group">
+                <label>Options</label>
+                <div className="co-checkbox-group">
+                  <label className="co-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_premium}
+                      onChange={(e) => handleChange('is_premium', e.target.checked)}
+                    />
+                    <span>⭐ Premium</span>
+                  </label>
+                  <label className="co-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={formData.vpn_friendly}
+                      onChange={(e) => handleChange('vpn_friendly', e.target.checked)}
+                    />
+                    <span>✅ VPN Friendly</span>
+                  </label>
+                  <label className="co-checkbox">
+                    <input
+                      type="checkbox"
+                      checked={formData.is_active}
+                      onChange={(e) => handleChange('is_active', e.target.checked)}
+                    />
+                    <span>🟢 Active</span>
+                  </label>
+                </div>
               </div>
             </div>
           </div>

@@ -365,6 +365,88 @@
   border-color: #f87171;
 }
 
+/* Deposit Methods Grid */
+.co-deposit-methods {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.co-deposit-method {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 10px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-size: 12px;
+}
+
+.co-deposit-method:hover {
+  border-color: #484f58;
+  background: #161b22;
+}
+
+.co-deposit-method.selected {
+  border-color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.co-deposit-method input[type="checkbox"] {
+  display: none;
+}
+
+.co-deposit-method .method-icon {
+  font-size: 14px;
+}
+
+.co-deposit-method .method-name {
+  color: #8b949e;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.co-deposit-method.selected .method-name {
+  color: #22c55e;
+}
+
+/* Checkbox Group */
+.co-checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 12px;
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 8px;
+}
+
+.co-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #8b949e;
+  transition: color 0.2s ease;
+}
+
+.co-checkbox:hover {
+  color: #e6edf3;
+}
+
+.co-checkbox input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  accent-color: #22c55e;
+  cursor: pointer;
+}
+
 /* Responsive */
 @media (max-width: 900px) {
   .casino-offer-modal-body {
@@ -379,6 +461,10 @@
   .co-form-row-4 {
     grid-template-columns: repeat(2, 1fr);
   }
+
+  .co-deposit-methods {
+    grid-template-columns: repeat(3, 1fr);
+  }
 }
 
 @media (max-width: 600px) {
@@ -388,5 +474,9 @@
 
   .co-form-row-4 {
     grid-template-columns: 1fr;
+  }
+
+  .co-deposit-methods {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
