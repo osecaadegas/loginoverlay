@@ -5059,6 +5059,7 @@ export default function AdminPanel() {
                       <option value="pvp">👊 PVP</option>
                       <option value="businesses">🏢 Businesses</option>
                       <option value="brothel">💋 Brothel</option>
+                      <option value="casino">🎲 Casino</option>
                       <option value="highstakes">🎰 High Stakes</option>
                       <option value="stash">🎒 Stash (Inventory)</option>
                       <option value="jail">⛓️ Jail</option>
@@ -5070,6 +5071,7 @@ export default function AdminPanel() {
                       <option value="stats">📊 Stats</option>
                       <option value="skills">💪 Skills</option>
                       <option value="profile">👤 Profile</option>
+                      <option value="stockmarket">📈 Stock Market</option>
                     </select>
                     {editingCategory && (
                       <small style={{color: '#a0aec0', display: 'block', marginTop: '5px'}}>

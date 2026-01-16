@@ -76,7 +76,11 @@ export default function WipeCountdown() {
     }
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {
+    // Debug: show why not visible
+    console.log('WipeCountdown hidden - isVisible:', isVisible, 'settings:', wipeSettings);
+    return null;
+  }
 
   const formatNumber = (num) => String(num).padStart(2, '0');
 
