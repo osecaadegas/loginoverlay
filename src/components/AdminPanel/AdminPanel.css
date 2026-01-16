@@ -3220,3 +3220,303 @@
   font-size: 0.9rem;
   transition: all 0.2s;
 }
+
+/* === WIPE SECTION STYLES === */
+.wipe-section {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.wipe-warning {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(239, 68, 68, 0.05));
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.wipe-warning .warning-icon {
+  font-size: 2.5rem;
+}
+
+.wipe-warning .warning-text {
+  color: #fca5a5;
+  line-height: 1.6;
+}
+
+.wipe-warning .warning-text strong {
+  color: #ef4444;
+}
+
+.wipe-last-executed {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin-bottom: 24px;
+  color: #86efac;
+}
+
+.wipe-last-executed strong {
+  color: #22c55e;
+}
+
+.wipe-options {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.wipe-options h3 {
+  color: #e5e7eb;
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+}
+
+.wipe-checkboxes {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.wipe-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 14px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.wipe-checkbox:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.wipe-checkbox input[type="checkbox"] {
+  width: 20px;
+  height: 20px;
+  accent-color: #ef4444;
+  cursor: pointer;
+}
+
+.wipe-checkbox input[type="checkbox"]:checked + .checkbox-label {
+  color: #fca5a5;
+}
+
+.wipe-checkbox .checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #9ca3af;
+  font-size: 0.95rem;
+  transition: color 0.2s;
+}
+
+.wipe-checkbox .checkbox-icon {
+  font-size: 1.2rem;
+}
+
+.wipe-schedule {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+}
+
+.wipe-schedule h3 {
+  color: #e5e7eb;
+  margin: 0 0 20px 0;
+  font-size: 1.2rem;
+}
+
+.schedule-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  align-items: flex-end;
+}
+
+.schedule-controls .form-group {
+  flex: 1;
+  min-width: 250px;
+}
+
+.schedule-controls .form-group label {
+  display: block;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.datetime-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.datetime-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.active-toggle {
+  background: rgba(139, 92, 246, 0.1) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.active-toggle input[type="checkbox"]:checked + .checkbox-label {
+  color: #a78bfa;
+}
+
+.wipe-actions {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+}
+
+.wipe-save {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px 24px !important;
+  font-size: 1.1rem !important;
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed) !important;
+}
+
+.wipe-save:hover {
+  background: linear-gradient(135deg, #7c3aed, #6d28d9) !important;
+}
+
+.wipe-execute {
+  flex: 1;
+  min-width: 200px;
+  padding: 16px 24px !important;
+  font-size: 1.1rem !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+}
+
+.wipe-execute:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626, #b91c1c) !important;
+}
+
+.wipe-execute:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.wipe-info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.wipe-info h4 {
+  color: #93c5fd;
+  margin: 0 0 12px 0;
+  font-size: 1rem;
+}
+
+.wipe-info ul {
+  margin: 0;
+  padding-left: 20px;
+  color: #9ca3af;
+  line-height: 1.8;
+}
+
+.wipe-info ul strong {
+  color: #e5e7eb;
+}
+
+/* Recurring Wipe Section */
+.recurring-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recurring-section h4 {
+  color: #a78bfa;
+  margin: 0 0 16px 0;
+  font-size: 1rem;
+}
+
+.recurring-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.recurring-toggle {
+  background: rgba(34, 197, 94, 0.1) !important;
+  border-color: rgba(34, 197, 94, 0.3) !important;
+}
+
+.recurring-toggle input[type="checkbox"]:checked + .checkbox-label {
+  color: #86efac;
+}
+
+.recurrence-interval {
+  flex: 1;
+  min-width: 200px;
+}
+
+.recurrence-interval label {
+  display: block;
+  color: #9ca3af;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+}
+
+.interval-input {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.months-input {
+  width: 80px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.months-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.interval-label {
+  color: #e5e7eb;
+  font-size: 1rem;
+}
+
+.interval-note {
+  display: block;
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.85rem;
+}

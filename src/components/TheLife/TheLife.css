@@ -290,6 +290,7 @@ input:checked + .toggle-slider:before {
   margin-bottom: 5px;
   background: transparent;
   padding: 10px 0;
+  position: relative;
 }
 
 .the-life-header .game-logo {

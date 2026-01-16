@@ -93,21 +93,26 @@ export default function TheLifeHospital({
   };
 
   // Calculate addiction cure cost
-  // Y = player level × addiction value
-  // W = power + intelligence + defense
-  // Cost = Y / W (minimum $100 if W > 0, or Y * 10 if W = 0)
+  // Base cost = level × addiction × 30 (expensive for high levels)
+  // Stats give a discount up to 25% (higher stats = cheaper)
+  // Minimum $100
   const calculateAddictionCureCost = () => {
     const addiction = player?.addiction || 0;
     if (addiction === 0) return 0;
     
-    const Y = (player?.level || 1) * addiction;
-    const W = (player?.power || 0) + (player?.intelligence || 0) + (player?.defense || 0);
+    const level = player?.level || 1;
+    const stats = (player?.power || 0) + (player?.intelligence || 0) + (player?.defense || 0);
     
-    if (W === 0) {
-      return Math.max(100, Y * 10); // If no stats, base cost
-    }
+    // Base cost scales with level and addiction
+    const baseCost = level * addiction * 30;
     
-    return Math.max(100, Math.floor(Y / W));
+    // Stats give up to 25% discount (every 4 stat points = 1% discount, capped at 25%)
+    const statsDiscount = Math.min(stats / 400, 0.25);
+    
+    // Final cost with discount
+    const finalCost = Math.floor(baseCost * (1 - statsDiscount));
+    
+    return Math.max(100, finalCost);
   };
 
   const cureAddiction = async () => {

@@ -20,7 +20,7 @@ export default function AdminPanel() {
   const usersPerPage = 10;
   
   // Offer Card Builder State
-  const [activeTab, setActiveTab] = useState('users'); // 'users', 'offers', 'thelife', 'highlights', or 'wheel'
+  const [activeTab, setActiveTab] = useState('users'); // 'users', 'offers', 'thelife', 'highlights', 'wheel', or 'wipe'
   const [offers, setOffers] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -220,6 +220,25 @@ export default function AdminPanel() {
     display_order: 0
   });
 
+  // Wipe Settings State
+  const [wipeSettings, setWipeSettings] = useState({
+    wipe_inventory: false,
+    wipe_cash: false,
+    wipe_bank: false,
+    wipe_level: false,
+    wipe_skills: false,
+    wipe_businesses: false,
+    wipe_upgrades: false,
+    wipe_brothel_workers: false,
+    wipe_stocks: false,
+    wipe_addiction: false,
+    scheduled_at: '',
+    is_active: false,
+    is_recurring: false,
+    recurrence_months: 3
+  });
+  const [wipeSaving, setWipeSaving] = useState(false);
+
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
       navigate('/');
@@ -239,6 +258,7 @@ export default function AdminPanel() {
     loadWheelPrizes();
     loadEventMessages();
     loadCategoryInfo();
+    loadWipeSettings();
   }, []);
 
   const loadUsers = async () => {
@@ -2109,6 +2129,169 @@ export default function AdminPanel() {
     }
   };
 
+  // === WIPE SETTINGS MANAGEMENT ===
+
+  const loadWipeSettings = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('the_life_wipe_settings')
+        .select('*')
+        .limit(1)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      
+      if (data) {
+        setWipeSettings({
+          id: data.id,
+          wipe_inventory: data.wipe_inventory || false,
+          wipe_cash: data.wipe_cash || false,
+          wipe_bank: data.wipe_bank || false,
+          wipe_level: data.wipe_level || false,
+          wipe_skills: data.wipe_skills || false,
+          wipe_businesses: data.wipe_businesses || false,
+          wipe_upgrades: data.wipe_upgrades || false,
+          wipe_brothel_workers: data.wipe_brothel_workers || false,
+          wipe_stocks: data.wipe_stocks || false,
+          wipe_addiction: data.wipe_addiction || false,
+          scheduled_at: data.scheduled_at ? new Date(data.scheduled_at).toISOString().slice(0, 16) : '',
+          is_active: data.is_active || false,
+          is_recurring: data.is_recurring || false,
+          recurrence_months: data.recurrence_months || 3,
+          last_executed_at: data.last_executed_at
+        });
+      }
+    } catch (err) {
+      console.error('Error loading wipe settings:', err);
+    }
+  };
+
+  const saveWipeSettings = async () => {
+    setWipeSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const updateData = {
+        wipe_inventory: wipeSettings.wipe_inventory,
+        wipe_cash: wipeSettings.wipe_cash,
+        wipe_bank: wipeSettings.wipe_bank,
+        wipe_level: wipeSettings.wipe_level,
+        wipe_skills: wipeSettings.wipe_skills,
+        wipe_businesses: wipeSettings.wipe_businesses,
+        wipe_upgrades: wipeSettings.wipe_upgrades,
+        wipe_brothel_workers: wipeSettings.wipe_brothel_workers,
+        wipe_stocks: wipeSettings.wipe_stocks,
+        wipe_addiction: wipeSettings.wipe_addiction,
+        scheduled_at: wipeSettings.scheduled_at ? new Date(wipeSettings.scheduled_at).toISOString() : null,
+        is_active: wipeSettings.is_active,
+        is_recurring: wipeSettings.is_recurring,
+        recurrence_months: wipeSettings.recurrence_months,
+        updated_at: new Date().toISOString()
+      };
+
+      if (wipeSettings.id) {
+        // Update existing
+        const { error } = await supabase
+          .from('the_life_wipe_settings')
+          .update(updateData)
+          .eq('id', wipeSettings.id);
+
+        if (error) throw error;
+      } else {
+        // Insert new
+        const { error } = await supabase
+          .from('the_life_wipe_settings')
+          .insert(updateData);
+
+        if (error) throw error;
+      }
+
+      setSuccess('Wipe settings saved successfully!');
+      loadWipeSettings();
+    } catch (err) {
+      setError('Failed to save wipe settings: ' + err.message);
+    } finally {
+      setWipeSaving(false);
+    }
+  };
+
+  const executeWipeNow = async () => {
+    if (!confirm('⚠️ WARNING: This will immediately execute the wipe with the selected options. This action CANNOT be undone! Are you absolutely sure?')) {
+      return;
+    }
+
+    if (!confirm('🚨 FINAL CONFIRMATION: All selected player data will be permanently deleted. Type "WIPE" mentally and click OK to proceed.')) {
+      return;
+    }
+
+    setWipeSaving(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // Execute wipes based on current settings
+      if (wipeSettings.wipe_inventory) {
+        await supabase.from('the_life_player_inventory').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_cash) {
+        await supabase.from('the_life_players').update({ cash: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_bank) {
+        await supabase.from('the_life_players').update({ bank: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_level) {
+        await supabase.from('the_life_players').update({ level: 1, xp: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_skills) {
+        await supabase.from('the_life_players').update({ power: 1, defense: 1, intelligence: 1 }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_businesses) {
+        await supabase.from('the_life_player_businesses').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('the_life_player_business_upgrades').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_upgrades) {
+        await supabase.from('the_life_player_business_upgrades').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_brothel_workers) {
+        await supabase.from('the_life_player_workers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_stocks) {
+        await supabase.from('the_life_player_stocks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_addiction) {
+        await supabase.from('the_life_players').update({ addiction: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      // Update last executed time
+      if (wipeSettings.id) {
+        await supabase
+          .from('the_life_wipe_settings')
+          .update({ 
+            last_executed_at: new Date().toISOString(),
+            is_active: false 
+          })
+          .eq('id', wipeSettings.id);
+      }
+
+      setSuccess('🔥 Wipe executed successfully! Selected player data has been reset.');
+      loadWipeSettings();
+    } catch (err) {
+      setError('Failed to execute wipe: ' + err.message);
+    } finally {
+      setWipeSaving(false);
+    }
+  };
+
   if (adminLoading || loading) {
     return (
       <div className="admin-panel-loading">
@@ -2162,6 +2345,12 @@ export default function AdminPanel() {
           onClick={() => setActiveTab('wheel')}
         >
           🎡 Daily Wheel
+        </button>
+        <button 
+          className={`admin-tab ${activeTab === 'wipe' ? 'active' : ''}`}
+          onClick={() => setActiveTab('wipe')}
+        >
+          💀 Server Wipe
         </button>
       </div>
 
@@ -5270,6 +5459,253 @@ export default function AdminPanel() {
               </div>
             </div>
           )}
+        </>
+      )}
+
+      {/* Server Wipe Tab */}
+      {activeTab === 'wipe' && (
+        <>
+          <div className="admin-section wipe-section">
+            <div className="section-header">
+              <h2>💀 Server Wipe Configuration</h2>
+            </div>
+
+            <div className="wipe-warning">
+              <div className="warning-icon">⚠️</div>
+              <div className="warning-text">
+                <strong>Warning:</strong> Server wipes permanently delete player data. 
+                This action cannot be undone. Use with extreme caution.
+              </div>
+            </div>
+
+            {wipeSettings.last_executed_at && (
+              <div className="wipe-last-executed">
+                <span>📅 Last wipe executed:</span>
+                <strong>{new Date(wipeSettings.last_executed_at).toLocaleString()}</strong>
+              </div>
+            )}
+
+            <div className="wipe-options">
+              <h3>📋 Select What to Wipe</h3>
+              <div className="wipe-checkboxes">
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_inventory}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_inventory: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">🎒</span>
+                    Player Inventory
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_cash}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_cash: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">💵</span>
+                    Cash (Wallet)
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_bank}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_bank: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">🏦</span>
+                    Bank Balance
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_level}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_level: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">⭐</span>
+                    Level &amp; XP
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_skills}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_skills: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">💪</span>
+                    Skills (Power, Defense, Intelligence)
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_businesses}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_businesses: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">🏢</span>
+                    Businesses Owned &amp; Upgrades
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_upgrades}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_upgrades: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">📈</span>
+                    Business Upgrades Only
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_brothel_workers}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_brothel_workers: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">👯</span>
+                    Brothel Workers
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_stocks}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_stocks: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">📊</span>
+                    Stock Holdings
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_addiction}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_addiction: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">💊</span>
+                    Addiction Level
+                  </span>
+                </label>
+              </div>
+            </div>
+
+            <div className="wipe-schedule">
+              <h3>⏰ Schedule Wipe</h3>
+              <div className="schedule-controls">
+                <div className="form-group">
+                  <label>Scheduled Date &amp; Time</label>
+                  <input
+                    type="datetime-local"
+                    value={wipeSettings.scheduled_at}
+                    onChange={(e) => setWipeSettings({...wipeSettings, scheduled_at: e.target.value})}
+                    className="datetime-input"
+                  />
+                </div>
+
+                <label className="wipe-checkbox active-toggle">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.is_active}
+                    onChange={(e) => setWipeSettings({...wipeSettings, is_active: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">{wipeSettings.is_active ? '✅' : '⏸️'}</span>
+                    {wipeSettings.is_active ? 'Wipe Countdown Active' : 'Wipe Countdown Paused'}
+                  </span>
+                </label>
+              </div>
+
+              <div className="recurring-section">
+                <h4>🔄 Recurring Wipe</h4>
+                <div className="recurring-controls">
+                  <label className="wipe-checkbox recurring-toggle">
+                    <input
+                      type="checkbox"
+                      checked={wipeSettings.is_recurring}
+                      onChange={(e) => setWipeSettings({...wipeSettings, is_recurring: e.target.checked})}
+                    />
+                    <span className="checkbox-label">
+                      <span className="checkbox-icon">{wipeSettings.is_recurring ? '🔁' : '1️⃣'}</span>
+                      {wipeSettings.is_recurring ? 'Recurring Enabled' : 'One-Time Wipe'}
+                    </span>
+                  </label>
+
+                  {wipeSettings.is_recurring && (
+                    <div className="form-group recurrence-interval">
+                      <label>Repeat Every</label>
+                      <div className="interval-input">
+                        <input
+                          type="number"
+                          min="1"
+                          max="12"
+                          value={wipeSettings.recurrence_months}
+                          onChange={(e) => setWipeSettings({...wipeSettings, recurrence_months: parseInt(e.target.value) || 3})}
+                          className="months-input"
+                        />
+                        <span className="interval-label">month(s)</span>
+                      </div>
+                      <small className="interval-note">
+                        Next wipe after this one: {wipeSettings.scheduled_at ? 
+                          new Date(new Date(wipeSettings.scheduled_at).setMonth(
+                            new Date(wipeSettings.scheduled_at).getMonth() + (wipeSettings.recurrence_months || 3)
+                          )).toLocaleDateString() : 'Set a date first'}
+                      </small>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="wipe-actions">
+              <button 
+                onClick={saveWipeSettings} 
+                className="btn-save wipe-save"
+                disabled={wipeSaving}
+              >
+                {wipeSaving ? '💾 Saving...' : '💾 Save Wipe Settings'}
+              </button>
+
+              <button 
+                onClick={executeWipeNow} 
+                className="btn-delete wipe-execute"
+                disabled={wipeSaving || !Object.entries(wipeSettings).some(([key, val]) => key.startsWith('wipe_') && val === true)}
+              >
+                🔥 Execute Wipe Now
+              </button>
+            </div>
+
+            <div className="wipe-info">
+              <h4>ℹ️ How the Wipe System Works</h4>
+              <ul>
+                <li><strong>Scheduled Wipe:</strong> Set a date/time and enable the countdown. Players will see a countdown timer showing when the wipe occurs.</li>
+                <li><strong>Recurring Wipe:</strong> Enable recurring to automatically schedule the next wipe after each one (e.g., every 3 months).</li>
+                <li><strong>Manual Wipe:</strong> Use "Execute Wipe Now" to immediately wipe selected data.</li>
+                <li><strong>What Gets Wiped:</strong> Only the checked options above will be reset.</li>
+                <li><strong>Player Accounts:</strong> User accounts and auth data are never wiped - only game progress.</li>
+              </ul>
+            </div>
+          </div>
         </>
       )}
     </div>

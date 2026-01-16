@@ -5,6 +5,9 @@ import { useState, useRef, useEffect } from 'react';
 import { useDragScroll } from './hooks/useDragScroll';
 import './TheLife.css';
 
+// Components
+import WipeCountdown from './components/WipeCountdown';
+
 // Category Components
 import TheLifeCrimes from './categories/TheLifeCrimes';
 import TheLifePVP from './categories/TheLifePVP_NEW';
@@ -217,6 +220,7 @@ export default function TheLife() {
 
       <div className="the-life-header">
         <img src="/thelife/thelife.png" alt="The Life" className="game-logo" />
+        <WipeCountdown />
       </div>
 
       {message.text && (
