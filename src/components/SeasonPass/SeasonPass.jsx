@@ -261,6 +261,11 @@ export default function SeasonPass() {
       return;
     }
 
+    if (track === 'budget' && !playerProgress.has_budget) {
+      setMessage({ type: 'error', text: 'Budget track required! Purchase to unlock.' });
+      return;
+    }
+
     try {
       setClaimingTier({ tier: tierNumber, track });
 
