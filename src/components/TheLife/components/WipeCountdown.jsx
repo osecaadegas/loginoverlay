@@ -14,6 +14,7 @@ export default function WipeCountdown() {
 
   // Load wipe settings on mount
   useEffect(() => {
+    console.log('WipeCountdown component mounted');
     loadWipeSettings();
     
     // Refresh settings every 5 minutes
@@ -68,6 +69,7 @@ export default function WipeCountdown() {
         return;
       }
 
+      console.log('Wipe settings loaded:', data);
       setWipeSettings(data);
     } catch (err) {
       console.error('Error loading wipe settings:', err);
