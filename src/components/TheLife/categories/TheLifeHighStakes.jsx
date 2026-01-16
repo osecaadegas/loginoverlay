@@ -5,6 +5,7 @@ import '../TheLife.css';
 // Import game components
 import TheLifeBlackjack from '../games/TheLifeBlackjack';
 import TheLifeStockMarket from '../games/TheLifeStockMarket';
+import CasinoLobby from '../games/casino/CasinoLobby';
 
 /**
  * High Stakes Category Component
@@ -49,12 +50,12 @@ export default function TheLifeHighStakes({
       maxBet: 500
     },
     { 
-      key: 'slots', 
-      name: 'Slots', 
-      description: 'Spin to win big jackpots!',
-      image: '/thelife/games/slots.png',
-      minBet: 5,
-      maxBet: 100
+      key: 'poker', 
+      name: 'Poker Tables', 
+      description: 'Join multiplayer tables!',
+      image: '/thelife/games/poker.png',
+      minBet: 50,
+      maxBet: 10000
     },
     { 
       key: 'roulette', 
@@ -123,17 +124,15 @@ export default function TheLifeHighStakes({
             onBack={handleBackToGames}
           />
         );
-      case 'slots':
+      case 'poker':
         return (
-          <div className="game-container">
-            <button className="back-to-games-btn" onClick={handleBackToGames}>
-              ← Back to Casino
-            </button>
-            <div className="game-placeholder">
-              <h3>Slots Game</h3>
-              <p>Game component will be loaded here</p>
-            </div>
-          </div>
+          <CasinoLobby
+            player={player}
+            setPlayer={setPlayer}
+            setMessage={setMessage}
+            user={user}
+            onBack={handleBackToGames}
+          />
         );
       case 'roulette':
         return (

@@ -1,0 +1,583 @@
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { supabase } from '../../../../config/supabaseClient';
+import PokerTable from './PokerTable';
+import './CasinoLobby.css';
+
+// ============================================
+// CONFIGURATION
+// ============================================
+const CONFIG = {
+  maxTablesPerPage: 10,
+  refreshInterval: 5000, // 5 seconds
+  defaultSeats: 6,
+  actionTimeout: 30, // seconds
+};
+
+// Table templates for different game types
+const TABLE_TEMPLATES = {
+  poker: {
+    name: 'Texas Hold\'em',
+    icon: '🃏',
+    minBuyIn: 100,
+    maxBuyIn: 10000,
+    seats: 6,
+    smallBlind: 5,
+    bigBlind: 10
+  },
+  blackjack: {
+    name: 'Blackjack',
+    icon: '🎰',
+    minBuyIn: 50,
+    maxBuyIn: 5000,
+    seats: 7,
+    minBet: 10,
+    maxBet: 500
+  },
+  roulette: {
+    name: 'Roulette',
+    icon: '🎡',
+    minBuyIn: 50,
+    maxBuyIn: 10000,
+    seats: 8,
+    minBet: 5,
+    maxBet: 1000
+  }
+};
+
+// ============================================
+// CASINO LOBBY COMPONENT
+// ============================================
+export default function CasinoLobby({
+  player,
+  setPlayer,
+  setMessage,
+  user,
+  onBack
+}) {
+  // State
+  const [tables, setTables] = useState([]);
+  const [selectedTable, setSelectedTable] = useState(null);
+  const [activeView, setActiveView] = useState('lobby'); // 'lobby', 'table', 'spectate'
+  const [isLoading, setIsLoading] = useState(true);
+  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [filter, setFilter] = useState('all'); // 'all', 'poker', 'blackjack', 'roulette'
+  const [sortBy, setSortBy] = useState('players'); // 'players', 'stakes', 'seats'
+  
+  // Create table form state
+  const [newTable, setNewTable] = useState({
+    gameType: 'poker',
+    name: '',
+    isPrivate: false,
+    password: '',
+    minBuyIn: 100,
+    maxBuyIn: 10000,
+    seats: 6
+  });
+
+  // Current player's seat info
+  const [mySeat, setMySeat] = useState(null);
+  const [myTableBalance, setMyTableBalance] = useState(0);
+
+  // Refs
+  const refreshIntervalRef = useRef(null);
+  const subscriptionRef = useRef(null);
+
+  // ============================================
+  // LOAD TABLES FROM DATABASE
+  // ============================================
+  const loadTables = useCallback(async () => {
+    try {
+      let query = supabase
+        .from('casino_tables')
+        .select(`
+          *,
+          casino_seats (
+            seat_number,
+            user_id,
+            player_name,
+            avatar_url,
+            balance,
+            is_active,
+            is_ready
+          )
+        `)
+        .eq('is_active', true);
+
+      if (filter !== 'all') {
+        query = query.eq('game_type', filter);
+      }
+
+      const { data, error } = await query;
+
+      if (error) throw error;
+
+      // Process tables with player counts
+      const processedTables = (data || []).map(table => ({
+        ...table,
+        currentPlayers: table.casino_seats?.filter(s => s.is_active).length || 0,
+        availableSeats: table.max_seats - (table.casino_seats?.filter(s => s.is_active).length || 0)
+      }));
+
+      // Sort tables
+      processedTables.sort((a, b) => {
+        if (sortBy === 'players') return b.currentPlayers - a.currentPlayers;
+        if (sortBy === 'stakes') return b.min_buy_in - a.min_buy_in;
+        if (sortBy === 'seats') return b.availableSeats - a.availableSeats;
+        return 0;
+      });
+
+      setTables(processedTables);
+    } catch (error) {
+      console.error('Error loading tables:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [filter, sortBy]);
+
+  // ============================================
+  // REAL-TIME SUBSCRIPTION
+  // ============================================
+  useEffect(() => {
+    loadTables();
+
+    // Set up real-time subscription for table updates
+    subscriptionRef.current = supabase
+      .channel('casino_tables_changes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'casino_tables' },
+        () => loadTables()
+      )
+      .on('postgres_changes',
+        { event: '*', schema: 'public', table: 'casino_seats' },
+        () => loadTables()
+      )
+      .subscribe();
+
+    // Refresh interval as backup
+    refreshIntervalRef.current = setInterval(loadTables, CONFIG.refreshInterval);
+
+    return () => {
+      if (subscriptionRef.current) {
+        supabase.removeChannel(subscriptionRef.current);
+      }
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+      }
+    };
+  }, [loadTables]);
+
+  // ============================================
+  // CREATE TABLE
+  // ============================================
+  const handleCreateTable = async () => {
+    if (!newTable.name.trim()) {
+      setMessage({ type: 'error', text: 'Please enter a table name' });
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('casino_tables')
+        .insert({
+          name: newTable.name,
+          game_type: newTable.gameType,
+          min_buy_in: newTable.minBuyIn,
+          max_buy_in: newTable.maxBuyIn,
+          max_seats: newTable.seats,
+          is_private: newTable.isPrivate,
+          password_hash: newTable.isPrivate ? newTable.password : null,
+          host_user_id: user.id,
+          small_blind: TABLE_TEMPLATES[newTable.gameType].smallBlind || 0,
+          big_blind: TABLE_TEMPLATES[newTable.gameType].bigBlind || 0,
+          is_active: true,
+          game_state: JSON.stringify({ phase: 'waiting', round: 0 })
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      setMessage({ type: 'success', text: `Table "${newTable.name}" created!` });
+      setShowCreateModal(false);
+      setNewTable({
+        gameType: 'poker',
+        name: '',
+        isPrivate: false,
+        password: '',
+        minBuyIn: 100,
+        maxBuyIn: 10000,
+        seats: 6
+      });
+      
+      // Auto-join the created table
+      handleJoinTable(data);
+    } catch (error) {
+      console.error('Error creating table:', error);
+      setMessage({ type: 'error', text: 'Failed to create table' });
+    }
+  };
+
+  // ============================================
+  // JOIN TABLE
+  // ============================================
+  const handleJoinTable = async (table, password = null) => {
+    // Check if private table needs password
+    if (table.is_private && table.password_hash && !password) {
+      const inputPassword = prompt('Enter table password:');
+      if (inputPassword !== table.password_hash) {
+        setMessage({ type: 'error', text: 'Incorrect password' });
+        return;
+      }
+    }
+
+    setSelectedTable(table);
+    setActiveView('table');
+  };
+
+  // ============================================
+  // SPECTATE TABLE
+  // ============================================
+  const handleSpectateTable = (table) => {
+    setSelectedTable(table);
+    setActiveView('spectate');
+  };
+
+  // ============================================
+  // LEAVE TABLE
+  // ============================================
+  const handleLeaveTable = async () => {
+    if (mySeat) {
+      try {
+        // Return balance to player
+        if (myTableBalance > 0) {
+          const newCash = player.cash + myTableBalance;
+          await supabase
+            .from('the_life_players')
+            .update({ cash: Math.round(newCash * 100) / 100 })
+            .eq('user_id', user.id);
+          
+          setPlayer(prev => ({ ...prev, cash: newCash }));
+        }
+
+        // Remove seat
+        await supabase
+          .from('casino_seats')
+          .delete()
+          .eq('table_id', selectedTable.id)
+          .eq('user_id', user.id);
+
+        setMySeat(null);
+        setMyTableBalance(0);
+      } catch (error) {
+        console.error('Error leaving table:', error);
+      }
+    }
+
+    setSelectedTable(null);
+    setActiveView('lobby');
+    loadTables();
+  };
+
+  // ============================================
+  // RENDER LOBBY
+  // ============================================
+  const renderLobby = () => (
+    <div className="casino-lobby">
+      {/* Header */}
+      <div className="lobby-header">
+        <button className="back-btn" onClick={onBack}>← Back</button>
+        <div className="lobby-title">
+          <h1>UNDERGROUND <span>CASINO</span></h1>
+          <p className="lobby-subtitle">Choose your table wisely, criminal.</p>
+        </div>
+        <div className="player-balance">
+          <span className="balance-label">CASH</span>
+          <span className="balance-amount">${player.cash?.toLocaleString() || 0}</span>
+        </div>
+      </div>
+
+      {/* Filters & Actions */}
+      <div className="lobby-controls">
+        <div className="filter-tabs">
+          <button 
+            className={`filter-tab ${filter === 'all' ? 'active' : ''}`}
+            onClick={() => setFilter('all')}
+          >
+            All Tables
+          </button>
+          <button 
+            className={`filter-tab ${filter === 'poker' ? 'active' : ''}`}
+            onClick={() => setFilter('poker')}
+          >
+            🃏 Poker
+          </button>
+          <button 
+            className={`filter-tab ${filter === 'blackjack' ? 'active' : ''}`}
+            onClick={() => setFilter('blackjack')}
+          >
+            🎰 Blackjack
+          </button>
+          <button 
+            className={`filter-tab ${filter === 'roulette' ? 'active' : ''}`}
+            onClick={() => setFilter('roulette')}
+          >
+            🎡 Roulette
+          </button>
+        </div>
+
+        <div className="lobby-actions">
+          <select 
+            value={sortBy} 
+            onChange={(e) => setSortBy(e.target.value)}
+            className="sort-select"
+          >
+            <option value="players">Sort: Most Players</option>
+            <option value="stakes">Sort: Highest Stakes</option>
+            <option value="seats">Sort: Most Seats</option>
+          </select>
+          <button 
+            className="create-table-btn"
+            onClick={() => setShowCreateModal(true)}
+          >
+            + Create Table
+          </button>
+        </div>
+      </div>
+
+      {/* Tables Grid */}
+      <div className="tables-grid">
+        {isLoading ? (
+          <div className="loading-state">
+            <div className="spinner"></div>
+            <p>Loading tables...</p>
+          </div>
+        ) : tables.length === 0 ? (
+          <div className="empty-state">
+            <div className="empty-icon">🎰</div>
+            <h3>No Tables Available</h3>
+            <p>Be the first to create a table!</p>
+            <button 
+              className="create-table-btn"
+              onClick={() => setShowCreateModal(true)}
+            >
+              + Create Table
+            </button>
+          </div>
+        ) : (
+          tables.map(table => (
+            <div key={table.id} className={`table-card ${table.game_type}`}>
+              <div className="table-card-header">
+                <span className="game-icon">{TABLE_TEMPLATES[table.game_type]?.icon}</span>
+                <div className="table-info">
+                  <h3>{table.name}</h3>
+                  <span className="game-type">{TABLE_TEMPLATES[table.game_type]?.name}</span>
+                </div>
+                {table.is_private && <span className="private-badge">🔒</span>}
+              </div>
+
+              <div className="table-card-body">
+                <div className="seats-visual">
+                  {Array.from({ length: table.max_seats }).map((_, i) => {
+                    const seat = table.casino_seats?.find(s => s.seat_number === i && s.is_active);
+                    return (
+                      <div 
+                        key={i} 
+                        className={`seat-indicator ${seat ? 'occupied' : 'empty'}`}
+                        title={seat ? seat.player_name : 'Empty seat'}
+                      >
+                        {seat ? (
+                          <img src={seat.avatar_url || '/default-avatar.png'} alt="" />
+                        ) : (
+                          <span className="empty-seat">+</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <div className="table-stats">
+                  <div className="stat">
+                    <span className="stat-label">Players</span>
+                    <span className="stat-value">{table.currentPlayers}/{table.max_seats}</span>
+                  </div>
+                  <div className="stat">
+                    <span className="stat-label">Buy-in</span>
+                    <span className="stat-value">${table.min_buy_in} - ${table.max_buy_in}</span>
+                  </div>
+                  {table.game_type === 'poker' && (
+                    <div className="stat">
+                      <span className="stat-label">Blinds</span>
+                      <span className="stat-value">${table.small_blind}/${table.big_blind}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className="table-card-actions">
+                <button 
+                  className="join-btn"
+                  onClick={() => handleJoinTable(table)}
+                  disabled={table.availableSeats === 0 || player.cash < table.min_buy_in}
+                >
+                  {table.availableSeats === 0 ? 'Full' : 
+                   player.cash < table.min_buy_in ? 'Not Enough Cash' : 'Join Table'}
+                </button>
+                <button 
+                  className="spectate-btn"
+                  onClick={() => handleSpectateTable(table)}
+                >
+                  👁 Watch
+                </button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Create Table Modal */}
+      {showCreateModal && (
+        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+          <div className="modal-content create-table-modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>Create New Table</h2>
+              <button className="close-btn" onClick={() => setShowCreateModal(false)}>×</button>
+            </div>
+
+            <div className="modal-body">
+              <div className="form-group">
+                <label>Game Type</label>
+                <div className="game-type-selector">
+                  {Object.entries(TABLE_TEMPLATES).map(([key, template]) => (
+                    <button
+                      key={key}
+                      className={`game-type-btn ${newTable.gameType === key ? 'active' : ''}`}
+                      onClick={() => setNewTable(prev => ({ 
+                        ...prev, 
+                        gameType: key,
+                        seats: template.seats,
+                        minBuyIn: template.minBuyIn,
+                        maxBuyIn: template.maxBuyIn
+                      }))}
+                    >
+                      <span className="icon">{template.icon}</span>
+                      <span className="name">{template.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Table Name</label>
+                <input
+                  type="text"
+                  value={newTable.name}
+                  onChange={(e) => setNewTable(prev => ({ ...prev, name: e.target.value }))}
+                  placeholder="e.g., High Rollers Only"
+                  maxLength={30}
+                />
+              </div>
+
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Min Buy-in</label>
+                  <input
+                    type="number"
+                    value={newTable.minBuyIn}
+                    onChange={(e) => setNewTable(prev => ({ ...prev, minBuyIn: parseInt(e.target.value) || 0 }))}
+                    min={10}
+                  />
+                </div>
+                <div className="form-group">
+                  <label>Max Buy-in</label>
+                  <input
+                    type="number"
+                    value={newTable.maxBuyIn}
+                    onChange={(e) => setNewTable(prev => ({ ...prev, maxBuyIn: parseInt(e.target.value) || 0 }))}
+                    min={newTable.minBuyIn}
+                  />
+                </div>
+              </div>
+
+              <div className="form-group">
+                <label>Number of Seats</label>
+                <input
+                  type="range"
+                  min={2}
+                  max={10}
+                  value={newTable.seats}
+                  onChange={(e) => setNewTable(prev => ({ ...prev, seats: parseInt(e.target.value) }))}
+                />
+                <span className="range-value">{newTable.seats} seats</span>
+              </div>
+
+              <div className="form-group checkbox-group">
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={newTable.isPrivate}
+                    onChange={(e) => setNewTable(prev => ({ ...prev, isPrivate: e.target.checked }))}
+                  />
+                  Private Table (Password Required)
+                </label>
+              </div>
+
+              {newTable.isPrivate && (
+                <div className="form-group">
+                  <label>Password</label>
+                  <input
+                    type="password"
+                    value={newTable.password}
+                    onChange={(e) => setNewTable(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder="Enter table password"
+                  />
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="cancel-btn" onClick={() => setShowCreateModal(false)}>
+                Cancel
+              </button>
+              <button className="confirm-btn" onClick={handleCreateTable}>
+                Create Table
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
+  // ============================================
+  // MAIN RENDER
+  // ============================================
+  if (activeView === 'table' && selectedTable) {
+    return (
+      <PokerTable
+        table={selectedTable}
+        player={player}
+        setPlayer={setPlayer}
+        setMessage={setMessage}
+        user={user}
+        onLeave={handleLeaveTable}
+        isSpectator={false}
+      />
+    );
+  }
+
+  if (activeView === 'spectate' && selectedTable) {
+    return (
+      <PokerTable
+        table={selectedTable}
+        player={player}
+        setPlayer={setPlayer}
+        setMessage={setMessage}
+        user={user}
+        onLeave={handleLeaveTable}
+        isSpectator={true}
+      />
+    );
+  }
+
+  return renderLobby();
+}
