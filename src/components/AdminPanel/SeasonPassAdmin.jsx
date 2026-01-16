@@ -92,10 +92,16 @@ export default function SeasonPassAdmin() {
       setRewards(rewardsData || []);
 
       // Get items for dropdown (with image_url)
-      const { data: itemsData } = await supabase
+      const { data: itemsData, error: itemsError } = await supabase
         .from('the_life_items')
         .select('id, name, type, icon, image_url, rarity')
         .order('name');
+      
+      if (itemsError) {
+        console.error('Error fetching items:', itemsError);
+      } else {
+        console.log('Items loaded:', itemsData?.length || 0, 'items');
+      }
       setItems(itemsData || []);
 
     } catch (error) {
@@ -622,12 +628,22 @@ export default function SeasonPassAdmin() {
                       }}
                     >
                       <option value="">-- Select an item --</option>
+                      {items.length === 0 && (
+                        <option value="" disabled>No items found - check RLS policies</option>
+                      )}
                       {items.map(item => (
                         <option key={item.id} value={item.id}>
                           {item.name} ({item.type})
                         </option>
                       ))}
                     </select>
+                    {items.length === 0 && (
+                      <div style={{ color: '#f59e0b', fontSize: '12px', marginTop: '8px' }}>
+                        ⚠️ No items loaded. Run: <code style={{ background: '#222', padding: '2px 6px', borderRadius: '3px' }}>
+                          CREATE POLICY "Anyone can view items" ON the_life_items FOR SELECT USING (true);
+                        </code>
+                      </div>
+                    )}
                     {/* Item Preview */}
                     {rewardForm.item_id && (() => {
                       const selectedItem = items.find(i => i.id === rewardForm.item_id);
