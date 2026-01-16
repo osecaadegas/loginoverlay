@@ -355,16 +355,41 @@ export default function SeasonPass() {
   // Purchase Premium track via Stripe
   const purchasePremium = async () => {
     try {
-      // TODO: Integrate Stripe checkout
-      setMessage({ type: 'info', text: 'Premium purchase coming soon! Stripe integration in progress.' });
-      
-      // For now, show what would happen:
-      // 1. Create Stripe checkout session
-      // 2. Redirect to Stripe
-      // 3. On success webhook, update has_premium = true
+      if (!session?.user) {
+        setMessage({ type: 'error', text: 'You must be logged in to purchase Premium' });
+        return;
+      }
+
+      setMessage({ type: 'info', text: 'Redirecting to checkout...' });
+
+      // Call the Stripe checkout API
+      const response = await fetch('/api/stripe/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: session.user.id,
+          seasonId: currentSeason?.id || 1,
+          priceId: import.meta.env.VITE_STRIPE_PREMIUM_PRICE_ID, // Optional: for Stripe Price ID
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      // Redirect to Stripe Checkout
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        throw new Error('No checkout URL returned');
+      }
     } catch (error) {
       console.error('Error purchasing premium:', error);
-      setMessage({ type: 'error', text: 'Failed to start purchase' });
+      setMessage({ type: 'error', text: error.message || 'Failed to start purchase' });
     }
   };
 
