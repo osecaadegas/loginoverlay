@@ -5,6 +5,7 @@ import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PE
 import { supabase } from '../../config/supabaseClient';
 import { DEPOSIT_METHODS } from '../../utils/depositMethods';
 import './AdminPanel.css';
+import SeasonPassAdmin from './SeasonPassAdmin';
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -2395,6 +2396,12 @@ export default function AdminPanel() {
           onClick={() => setActiveTab('wipe')}
         >
           💀 Server Wipe
+        </button>
+        <button 
+          className={`admin-tab ${activeTab === 'seasonpass' ? 'active' : ''}`}
+          onClick={() => setActiveTab('seasonpass')}
+        >
+          👑 Season Pass
         </button>
       </div>
 
@@ -5895,6 +5902,11 @@ export default function AdminPanel() {
             </div>
           </div>
         </>
+      )}
+
+      {/* Season Pass Management Tab */}
+      {activeTab === 'seasonpass' && (
+        <SeasonPassAdmin />
       )}
     </div>
   );

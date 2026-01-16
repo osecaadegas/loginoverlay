@@ -1,0 +1,549 @@
+/* Season Pass Admin Styles */
+.sp-admin-container {
+  padding: 20px;
+  color: #e0e0e0;
+}
+
+/* Loading */
+.sp-admin-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 16px;
+}
+
+.sp-admin-loading .loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid #333;
+  border-top-color: #fbbf24;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Settings Section */
+.sp-admin-settings {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(0, 0, 0, 0.3));
+  border: 1px solid rgba(251, 191, 36, 0.3);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 32px;
+}
+
+.sp-admin-settings h3 {
+  margin: 0 0 16px 0;
+  font-size: 1.25rem;
+  color: #fbbf24;
+}
+
+.settings-row {
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.setting-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.setting-group label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.setting-group input {
+  padding: 10px 14px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  width: 200px;
+}
+
+.setting-group input:focus {
+  border-color: #fbbf24;
+  outline: none;
+}
+
+.setting-group small {
+  font-size: 11px;
+  color: #666;
+}
+
+.settings-note {
+  margin-top: 16px;
+  font-size: 13px;
+  color: #666;
+}
+
+/* Track Section */
+.sp-admin-track-section {
+  background: #0a0a0a;
+  border: 1px solid #222;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.sp-admin-track-section h3 {
+  margin: 0 0 8px 0;
+  font-size: 1.25rem;
+  color: #fff;
+}
+
+.track-instructions {
+  margin: 0 0 20px 0;
+  font-size: 14px;
+  color: #666;
+}
+
+.track-instructions strong {
+  color: #fbbf24;
+}
+
+/* Track Labels */
+.sp-admin-track-labels {
+  display: flex;
+  flex-direction: column;
+  gap: 140px;
+  position: absolute;
+  left: 40px;
+  z-index: 10;
+  margin-top: 20px;
+}
+
+.track-label {
+  font-weight: 700;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 8px 16px;
+  border-radius: 4px;
+}
+
+.track-label.premium {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.track-label.budget {
+  background: rgba(148, 163, 184, 0.2);
+  color: #94a3b8;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+/* Track Wrapper */
+.sp-admin-track-wrapper {
+  display: flex;
+  overflow-x: auto;
+  padding: 40px 20px 40px 140px;
+  gap: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: #333 #111;
+}
+
+.sp-admin-track-wrapper::-webkit-scrollbar {
+  height: 8px;
+}
+
+.sp-admin-track-wrapper::-webkit-scrollbar-track {
+  background: #111;
+  border-radius: 4px;
+}
+
+.sp-admin-track-wrapper::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 4px;
+}
+
+/* Segment */
+.sp-admin-segment {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  position: relative;
+}
+
+/* Card */
+.sp-admin-card {
+  width: 120px;
+  height: 100px;
+  background: linear-gradient(135deg, #1a1a1a, #0a0a0a);
+  border: 2px solid #333;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  position: relative;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.sp-admin-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+}
+
+.sp-admin-card.premium {
+  border-bottom: 3px solid #fbbf24;
+}
+
+.sp-admin-card.budget {
+  border-top: 3px solid #94a3b8;
+}
+
+.sp-admin-card.empty {
+  opacity: 0.5;
+  border-style: dashed;
+}
+
+.sp-admin-card.has-reward {
+  opacity: 1;
+}
+
+.sp-admin-card i {
+  font-size: 1.75rem;
+  margin-bottom: 6px;
+}
+
+.sp-admin-card .card-name {
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  color: #fff;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sp-admin-card .card-type {
+  font-size: 9px;
+  color: #666;
+  text-transform: uppercase;
+  margin-top: 2px;
+}
+
+.sp-admin-card .empty-slot {
+  font-size: 11px;
+  color: #555;
+}
+
+/* Add/Edit Button */
+.sp-admin-card .add-btn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 28px;
+  height: 28px;
+  background: #fbbf24;
+  border: none;
+  border-radius: 50%;
+  color: black;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+.sp-admin-card:hover .add-btn {
+  opacity: 1;
+}
+
+.sp-admin-card .add-btn:hover {
+  transform: scale(1.1);
+  background: #fff;
+}
+
+/* Badge */
+.sp-admin-badge {
+  width: 36px;
+  height: 36px;
+  background: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  color: #888;
+  z-index: 5;
+}
+
+/* Modal */
+.sp-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.sp-modal {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideIn 0.2s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.sp-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #222;
+}
+
+.sp-modal-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+.sp-modal-header .close-btn {
+  background: transparent;
+  border: none;
+  color: #666;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.sp-modal-header .close-btn:hover {
+  color: #fff;
+}
+
+.sp-modal-body {
+  padding: 20px;
+}
+
+.form-row {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.form-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-group.full {
+  flex: none;
+  width: 100%;
+}
+
+.form-group label {
+  font-size: 12px;
+  color: #888;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 10px 12px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 6px;
+  color: white;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #fbbf24;
+  outline: none;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.icon-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 8px;
+  padding: 12px;
+  background: #0a0a0a;
+  border-radius: 6px;
+}
+
+.icon-preview i {
+  font-size: 2rem;
+}
+
+.sp-modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px;
+  border-top: 1px solid #222;
+}
+
+.sp-modal-footer button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-save {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-save:hover:not(:disabled) {
+  background: #16a34a;
+}
+
+.btn-cancel {
+  background: #333;
+  color: #888;
+}
+
+.btn-cancel:hover {
+  background: #444;
+  color: #fff;
+}
+
+.btn-delete {
+  background: #dc2626;
+  color: white;
+  margin-right: auto;
+}
+
+.btn-delete:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Toast */
+.sp-toast {
+  position: fixed;
+  bottom: 40px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a1a;
+  border: 1px solid #333;
+  padding: 12px 24px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  z-index: 2000;
+  animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+  from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+  to { transform: translateX(-50%) translateY(0); opacity: 1; }
+}
+
+.sp-toast.success {
+  border-color: #22c55e;
+  color: #22c55e;
+}
+
+.sp-toast.error {
+  border-color: #dc2626;
+  color: #dc2626;
+}
+
+.sp-toast button {
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: 1.25rem;
+  cursor: pointer;
+  opacity: 0.7;
+}
+
+.sp-toast button:hover {
+  opacity: 1;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .settings-row {
+    flex-direction: column;
+  }
+
+  .setting-group input {
+    width: 100%;
+  }
+
+  .sp-admin-track-labels {
+    display: none;
+  }
+
+  .sp-admin-track-wrapper {
+    padding-left: 20px;
+  }
+
+  .sp-admin-segment {
+    min-width: 120px;
+  }
+
+  .sp-admin-card {
+    width: 100px;
+    height: 85px;
+  }
+
+  .form-row {
+    flex-direction: column;
+  }
+}

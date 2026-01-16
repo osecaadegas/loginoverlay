@@ -30,6 +30,7 @@ import VoucherRedeemPage from './components/VoucherRedeemPage/VoucherRedeemPage'
 import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
 import ProfilePage from './components/ProfilePage/ProfilePage';
 import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
+import SeasonPass from './components/SeasonPass/SeasonPass';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -554,6 +555,7 @@ function App() {
                 <Route path="/games/blackjack" element={<BlackjackPremium />} />
                 <Route path="/games/mines" element={<Mines />} />
                 <Route path="/games/thelife" element={<TheLife />} />
+                <Route path="/games/thelife/season-pass" element={<SeasonPass />} />
                 <Route path="/points" element={<StreamElementsPanel />} />
                 <Route path="/streamelements" element={<StreamElementsPanel />} />
                 <Route path="/points-manager" element={<PointsManager />} />

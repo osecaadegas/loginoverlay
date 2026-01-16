@@ -1,4 +1,5 @@
 import { useAuth } from '../../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 import { useTheLifeData } from './hooks/useTheLifeData';
 import { supabase } from '../../config/supabaseClient';
 import { useState, useRef, useEffect } from 'react';
@@ -32,6 +33,7 @@ import TheLifeHighStakes from './categories/TheLifeHighStakes';
  */
 export default function TheLife() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Background music state - default to true for autoplay
   const audioRef = useRef(null);
@@ -343,6 +345,14 @@ export default function TheLife() {
               onClick={() => setActiveTab('profile')}
             >
               👤 Profile
+            </button>
+            <button 
+              className="quick-tab-inline compact premium-btn"
+              onClick={() => navigate('/games/thelife/season-pass')}
+            >
+              <span className="premium-icon">👑</span>
+              <span className="premium-text">The Syndicate</span>
+              <span className="premium-badge">VIP</span>
             </button>
             {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
               <button 
