@@ -269,6 +269,62 @@
   transform: skewX(10deg);
 }
 
+/* Budget Button - SE Points */
+.get-budget-btn {
+  background: linear-gradient(135deg, #059669, #10b981);
+  border: none;
+  color: white;
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  padding: 8px 16px;
+  cursor: pointer;
+  transform: skewX(-10deg);
+  transition: all 0.3s ease;
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+}
+
+.get-budget-btn:hover {
+  background: linear-gradient(135deg, #10b981, #34d399);
+  box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+}
+
+.get-budget-btn i,
+.get-budget-btn span {
+  display: inline-block;
+  transform: skewX(10deg);
+}
+
+.get-budget-btn .budget-cost {
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.budget-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: linear-gradient(135deg, #047857, #10b981);
+  padding: 8px 16px;
+  transform: skewX(-10deg);
+  font-family: 'Orbitron', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: white;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.budget-badge i,
+.budget-badge span {
+  transform: skewX(10deg);
+}
+
 /* Main Content */
 .season-pass-main {
   flex: 1;

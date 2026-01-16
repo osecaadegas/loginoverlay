@@ -393,6 +393,59 @@ export default function SeasonPass() {
     }
   };
 
+  // Purchase Budget track via SE Points
+  const purchaseBudget = async () => {
+    try {
+      if (!user) {
+        setMessage({ type: 'error', text: 'You must be logged in to purchase Budget' });
+        return;
+      }
+
+      const budgetCost = seasonData?.budget_price_points || 5000;
+
+      if (userPoints < budgetCost) {
+        setMessage({ type: 'error', text: `Not enough SE Points! You need ${budgetCost.toLocaleString()} points.` });
+        return;
+      }
+
+      setMessage({ type: 'info', text: 'Processing purchase...' });
+
+      // Redeem SE Points
+      const redeemResult = await redeemPoints(budgetCost, `Season ${seasonData?.season_number || 1} Budget Pass`);
+      
+      if (!redeemResult || redeemResult.error) {
+        throw new Error(redeemResult?.error || 'Failed to redeem points');
+      }
+
+      // Update database to mark budget as purchased
+      const { error: updateError } = await supabase
+        .from('season_pass_progress')
+        .update({ 
+          has_budget: true,
+          budget_purchased_at: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .eq('season_id', seasonData?.id || 1);
+
+      if (updateError) {
+        console.error('Error updating budget status:', updateError);
+        throw new Error('Failed to update budget status');
+      }
+
+      // Update local state
+      setPlayerProgress(prev => ({
+        ...prev,
+        has_budget: true,
+        budget_purchased_at: new Date().toISOString()
+      }));
+
+      setMessage({ type: 'success', text: '🎉 Budget Pass purchased successfully!' });
+    } catch (error) {
+      console.error('Error purchasing budget:', error);
+      setMessage({ type: 'error', text: error.message || 'Failed to purchase Budget Pass' });
+    }
+  };
+
   // Drag scroll handlers
   const handleMouseDown = (e) => {
     if (!trackRef.current) return;
@@ -505,6 +558,22 @@ export default function SeasonPass() {
               <span className="timer-value">--:--:--</span>
             )}
           </div>
+          
+          {/* Budget Button - SE Points */}
+          {!playerProgress?.has_budget && (
+            <button className="get-budget-btn" onClick={purchaseBudget}>
+              <i className="fas fa-coins"></i>
+              <span>GET BUDGET</span>
+              <span className="budget-cost">{(seasonData?.budget_price_points || 5000).toLocaleString()} pts</span>
+            </button>
+          )}
+          
+          {playerProgress?.has_budget && !playerProgress?.has_premium && (
+            <div className="budget-badge">
+              <i className="fas fa-check-circle"></i>
+              <span>BUDGET</span>
+            </div>
+          )}
           
           {!playerProgress?.has_premium && (
             <button className="get-premium-btn" onClick={purchasePremium}>
