@@ -4,6 +4,37 @@
   padding: 0;
 }
 
+/* =============================================
+   PREVENT IMAGE DRAG FOR SCROLL CONTAINERS
+   ============================================= */
+.the-life-container img,
+.crimes-scroll-container img,
+.businesses-scroll-container img,
+.brothel-scroll-container img,
+.pvp-scroll-container img,
+.game-tabs-scroll img,
+.category-content img {
+  -webkit-user-drag: none;
+  -khtml-user-drag: none;
+  -moz-user-drag: none;
+  -o-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Re-enable pointer events for clickable card images */
+.crime-card,
+.business-card,
+.worker-card,
+.subcategory-card,
+.tab-image {
+  pointer-events: auto;
+}
+
 .the-life-container {
   max-width: 1400px;
   margin: 0 auto;
