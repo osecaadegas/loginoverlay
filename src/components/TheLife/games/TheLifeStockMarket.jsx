@@ -533,18 +533,35 @@ export default function TheLifeStockMarket({
 
   // Update player cash in database
   const updatePlayerCash = async (newCash) => {
+    if (!user?.id) {
+      console.error('No user ID available');
+      setMessage({ type: 'error', text: 'Not authenticated!' });
+      return false;
+    }
+    
     try {
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from('the_life_players')
         .update({ cash: newCash, updated_at: new Date().toISOString() })
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .select()
+        .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Supabase error:', error.message, error.code, error.details);
+        throw error;
+      }
+      
+      if (!data) {
+        console.error('No data returned from update');
+        throw new Error('Update returned no data');
+      }
+      
       setPlayer(prev => ({ ...prev, cash: newCash }));
       return true;
     } catch (error) {
       console.error('Error updating cash:', error);
-      setMessage({ type: 'error', text: 'Failed to update cash!' });
+      setMessage({ type: 'error', text: `Failed to update cash: ${error.message}` });
       return false;
     }
   };
