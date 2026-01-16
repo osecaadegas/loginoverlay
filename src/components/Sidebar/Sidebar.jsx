@@ -81,13 +81,42 @@ export default function Sidebar() {
   const [selectedAvatar, setSelectedAvatar] = useState(avatarOptions[0]);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-  // Load avatar from user metadata
+  // Load avatar from user metadata or the_life_players
   useEffect(() => {
-    if (user?.user_metadata?.avatar_url) {
-      setSelectedAvatar(user.user_metadata.avatar_url);
-    } else if (user) {
+    const loadAvatar = async () => {
+      if (!user) return;
+      
+      // First check user metadata (most up-to-date)
+      if (user.user_metadata?.avatar_url) {
+        setSelectedAvatar(user.user_metadata.avatar_url);
+        return;
+      }
+      
+      // Fallback: check the_life_players table
+      try {
+        const { data } = await supabase
+          .from('the_life_players')
+          .select('avatar_url')
+          .eq('user_id', user.id)
+          .single();
+        
+        if (data?.avatar_url) {
+          setSelectedAvatar(data.avatar_url);
+          // Sync to user metadata for future
+          await supabase.auth.updateUser({
+            data: { avatar_url: data.avatar_url }
+          });
+          return;
+        }
+      } catch (err) {
+        // Player may not exist yet, that's ok
+      }
+      
+      // Use default avatar
       setSelectedAvatar(avatarOptions[0]);
-    }
+    };
+    
+    loadAvatar();
   }, [user]);
 
   const handleAvatarSelect = async (avatar) => {

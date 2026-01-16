@@ -48,12 +48,19 @@ export default function TheLifeProfile({
 
   const selectAvatar = async (avatarUrl) => {
     try {
+      // Update the_life_players avatar
       const { error } = await supabase
         .from('the_life_players')
         .update({ avatar_url: avatarUrl })
         .eq('user_id', user.id);
 
       if (error) throw error;
+
+      // Also update user metadata so sidebar avatar syncs
+      await supabase.auth.updateUser({
+        data: { avatar_url: avatarUrl }
+      });
+
       setMessage({ type: 'success', text: 'Avatar updated!' });
       initializePlayer();
     } catch (err) {
