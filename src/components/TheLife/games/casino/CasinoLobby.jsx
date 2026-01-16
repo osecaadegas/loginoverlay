@@ -121,7 +121,7 @@ export default function CasinoLobby({
       // Sort tables
       processedTables.sort((a, b) => {
         if (sortBy === 'players') return b.currentPlayers - a.currentPlayers;
-        if (sortBy === 'stakes') return b.min_buy_in - a.min_buy_in;
+        if (sortBy === 'stakes') return b.min_buyin - a.min_buyin;
         if (sortBy === 'seats') return b.availableSeats - a.availableSeats;
         return 0;
       });
@@ -181,16 +181,16 @@ export default function CasinoLobby({
         .insert({
           name: newTable.name,
           game_type: newTable.gameType,
-          min_buy_in: newTable.minBuyIn,
-          max_buy_in: newTable.maxBuyIn,
+          min_buyin: newTable.minBuyIn,
+          max_buyin: newTable.maxBuyIn,
           max_seats: newTable.seats,
           is_private: newTable.isPrivate,
           password_hash: newTable.isPrivate ? newTable.password : null,
-          host_user_id: user.id,
-          small_blind: TABLE_TEMPLATES[newTable.gameType].smallBlind || 0,
-          big_blind: TABLE_TEMPLATES[newTable.gameType].bigBlind || 0,
-          is_active: true,
-          game_state: JSON.stringify({ phase: 'waiting', round: 0 })
+          created_by: player.id,
+          small_blind: TABLE_TEMPLATES[newTable.gameType].smallBlind || 5,
+          big_blind: TABLE_TEMPLATES[newTable.gameType].bigBlind || 10,
+          status: 'waiting',
+          game_state: { phase: 'waiting', round: 0 }
         })
         .select()
         .single();
@@ -402,7 +402,7 @@ export default function CasinoLobby({
                   </div>
                   <div className="stat">
                     <span className="stat-label">Buy-in</span>
-                    <span className="stat-value">${table.min_buy_in} - ${table.max_buy_in}</span>
+                    <span className="stat-value">${table.min_buyin} - ${table.max_buyin}</span>
                   </div>
                   {table.game_type === 'poker' && (
                     <div className="stat">
@@ -417,10 +417,10 @@ export default function CasinoLobby({
                 <button 
                   className="join-btn"
                   onClick={() => handleJoinTable(table)}
-                  disabled={table.availableSeats === 0 || player.cash < table.min_buy_in}
+                  disabled={table.availableSeats === 0 || player.cash < table.min_buyin}
                 >
                   {table.availableSeats === 0 ? 'Full' : 
-                   player.cash < table.min_buy_in ? 'Not Enough Cash' : 'Join Table'}
+                   player.cash < table.min_buyin ? 'Not Enough Cash' : 'Join Table'}
                 </button>
                 <button 
                   className="spectate-btn"

@@ -46,7 +46,7 @@ export default function PokerTable({
   
   // UI State
   const [showBuyInModal, setShowBuyInModal] = useState(false);
-  const [buyInAmount, setBuyInAmount] = useState(table.min_buy_in);
+  const [buyInAmount, setBuyInAmount] = useState(table.min_buyin);
   const [selectedSeat, setSelectedSeat] = useState(null);
   const [betAmount, setBetAmount] = useState(0);
   const [actionTimer, setActionTimer] = useState(null);
@@ -256,8 +256,8 @@ export default function PokerTable({
   // BUY SEAT
   // ============================================
   const handleBuySeat = async () => {
-    if (buyInAmount < table.min_buy_in || buyInAmount > table.max_buy_in) {
-      setMessage({ type: 'error', text: `Buy-in must be between $${table.min_buy_in} and $${table.max_buy_in}` });
+    if (buyInAmount < table.min_buyin || buyInAmount > table.max_buyin) {
+      setMessage({ type: 'error', text: `Buy-in must be between $${table.min_buyin} and $${table.max_buyin}` });
       return;
     }
 
@@ -848,7 +848,7 @@ export default function PokerTable({
                 onClick={() => {
                   if (!seat && !isSpectator && mySeat === null) {
                     setSelectedSeat(seatNum);
-                    setBuyInAmount(table.min_buy_in);
+                    setBuyInAmount(table.min_buyin);
                     setShowBuyInModal(true);
                   }
                 }}
@@ -1007,23 +1007,23 @@ export default function PokerTable({
           <div className="modal-content buy-in-modal" onClick={e => e.stopPropagation()}>
             <h3>Buy Seat #{selectedSeat + 1}</h3>
             <p className="buy-in-range">
-              Buy-in: ${table.min_buy_in} - ${table.max_buy_in}
+              Buy-in: ${table.min_buyin} - ${table.max_buyin}
             </p>
             <div className="buy-in-input">
               <label>Amount:</label>
               <input
                 type="number"
                 value={buyInAmount}
-                onChange={(e) => setBuyInAmount(Math.max(table.min_buy_in, Math.min(table.max_buy_in, parseInt(e.target.value) || 0)))}
-                min={table.min_buy_in}
-                max={Math.min(table.max_buy_in, player.cash)}
+                onChange={(e) => setBuyInAmount(Math.max(table.min_buyin, Math.min(table.max_buyin, parseInt(e.target.value) || 0)))}
+                min={table.min_buyin}
+                max={Math.min(table.max_buyin, player.cash)}
               />
             </div>
             <div className="buy-in-slider">
               <input
                 type="range"
-                min={table.min_buy_in}
-                max={Math.min(table.max_buy_in, player.cash)}
+                min={table.min_buyin}
+                max={Math.min(table.max_buyin, player.cash)}
                 value={buyInAmount}
                 onChange={(e) => setBuyInAmount(parseInt(e.target.value))}
               />
