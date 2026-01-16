@@ -2,6 +2,9 @@ import { useState, useRef } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
 import '../TheLife.css';
 
+// Import game components
+import TheLifeBlackjack from '../games/TheLifeBlackjack';
+
 /**
  * High Stakes Category Component
  * Contains 2 subcategories: Casino and Stock Market
@@ -111,15 +114,13 @@ export default function TheLifeHighStakes({
         );
       case 'blackjack':
         return (
-          <div className="game-container">
-            <button className="back-to-games-btn" onClick={handleBackToGames}>
-              ← Back to Casino
-            </button>
-            <div className="game-placeholder">
-              <h3>Blackjack Game</h3>
-              <p>Game component will be loaded here</p>
-            </div>
-          </div>
+          <TheLifeBlackjack
+            player={player}
+            setPlayer={setPlayer}
+            setMessage={setMessage}
+            user={user}
+            onBack={handleBackToGames}
+          />
         );
       case 'slots':
         return (
