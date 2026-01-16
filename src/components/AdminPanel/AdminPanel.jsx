@@ -6,6 +6,7 @@ import { supabase } from '../../config/supabaseClient';
 import { DEPOSIT_METHODS } from '../../utils/depositMethods';
 import './AdminPanel.css';
 import SeasonPassAdmin from './SeasonPassAdmin';
+import { CasinoOfferModal } from './modals';
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -2724,304 +2725,40 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Offer Modal */}
-      {showOfferModal && (
-        <div className="modal-overlay" onClick={closeOfferModal}>
-          <div className="modal-content offer-modal large" onClick={(e) => e.stopPropagation()}>
-            <h2>{editingOffer ? 'Edit Casino Offer' : 'Create New Casino Offer'}</h2>
-            <div className="modal-body offer-form">
-              <div className="offer-form-split">
-                <div className="offer-form-fields">
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Casino Name *</label>
-                      <input
-                        type="text"
-                        value={offerFormData.casino_name}
-                        onChange={(e) => handleOfferFormChange('casino_name', e.target.value)}
-                        placeholder="e.g., Ignibet"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Bonus Link *</label>
-                      <input
-                        type="text"
-                        value={offerFormData.bonus_link}
-                        onChange={(e) => handleOfferFormChange('bonus_link', e.target.value)}
-                        placeholder="https://..."
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-group">
-                    <label>Title *</label>
-                    <input
-                      type="text"
-                      value={offerFormData.title}
-                      onChange={(e) => handleOfferFormChange('title', e.target.value)}
-                      placeholder="e.g., 665% Bonus & 750 FS up to €6250"
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>Card Image URL * (for offers page cards)</label>
-                    <input
-                      type="text"
-                      value={offerFormData.image_url}
-                      onChange={(e) => handleOfferFormChange('image_url', e.target.value)}
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label>List Image URL (for landing page list)</label>
-                    <input
-                      type="text"
-                      value={offerFormData.list_image_url}
-                      onChange={(e) => handleOfferFormChange('list_image_url', e.target.value)}
-                      placeholder="https://..."
-                    />
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Badge Text</label>
-                      <input
-                        type="text"
-                        value={offerFormData.badge}
-                        onChange={(e) => handleOfferFormChange('badge', e.target.value)}
-                        placeholder="HOT, NEW, etc."
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Badge Class</label>
-                      <select
-                        value={offerFormData.badge_class}
-                        onChange={(e) => handleOfferFormChange('badge_class', e.target.value)}
-                      >
-                        <option value="">None</option>
-                        <option value="hot">Hot</option>
-                        <option value="new">New</option>
-                        <option value="exclusive">Exclusive</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  <div className="form-row form-row-4">
-                    <div className="form-group">
-                      <label>Min Deposit</label>
-                      <input
-                        type="text"
-                        value={offerFormData.min_deposit}
-                        onChange={(e) => handleOfferFormChange('min_deposit', e.target.value)}
-                        placeholder="20€"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Cashback</label>
-                      <input
-                        type="text"
-                        value={offerFormData.cashback}
-                        onChange={(e) => handleOfferFormChange('cashback', e.target.value)}
-                        placeholder="30%"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Bonus Value</label>
-                      <input
-                        type="text"
-                        value={offerFormData.bonus_value}
-                        onChange={(e) => handleOfferFormChange('bonus_value', e.target.value)}
-                        placeholder="665%"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Free Spins</label>
-                      <input
-                        type="text"
-                        value={offerFormData.free_spins}
-                        onChange={(e) => handleOfferFormChange('free_spins', e.target.value)}
-                        placeholder="Up to 750"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row form-row-4">
-                    <div className="form-group">
-                      <label>Game Providers</label>
-                      <input
-                        type="text"
-                        value={offerFormData.game_providers}
-                        onChange={(e) => handleOfferFormChange('game_providers', e.target.value)}
-                        placeholder="90+"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Total Games</label>
-                      <input
-                        type="text"
-                        value={offerFormData.total_games}
-                        onChange={(e) => handleOfferFormChange('total_games', e.target.value)}
-                        placeholder="5000+"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>License</label>
-                      <input
-                        type="text"
-                        value={offerFormData.license}
-                        onChange={(e) => handleOfferFormChange('license', e.target.value)}
-                        placeholder="Curaçao"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Welcome Bonus</label>
-                      <input
-                        type="text"
-                        value={offerFormData.welcome_bonus}
-                        onChange={(e) => handleOfferFormChange('welcome_bonus', e.target.value)}
-                        placeholder="100% up to €500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Details / Terms</label>
-                      <textarea
-                        value={offerFormData.details}
-                        onChange={(e) => handleOfferFormChange('details', e.target.value)}
-                        placeholder="+18 | T&C APPLY&#10;&#10;Enter full terms and conditions..."
-                        rows="2"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Deposit Methods</label>
-                      <div className="deposit-methods-grid">
-                        {DEPOSIT_METHODS.map(method => {
-                          const selectedMethods = offerFormData.deposit_methods ? offerFormData.deposit_methods.split(',').map(m => m.trim()) : [];
-                          const isSelected = selectedMethods.includes(method.id);
-                          
-                          return (
-                            <label key={method.id} className="deposit-method-checkbox">
-                              <input
-                                type="checkbox"
-                                checked={isSelected}
-                                onChange={(e) => {
-                                  let methods = selectedMethods.filter(m => m);
-                                  if (e.target.checked) {
-                                    methods.push(method.id);
-                                  } else {
-                                    methods = methods.filter(m => m !== method.id);
-                                  }
-                                  handleOfferFormChange('deposit_methods', methods.join(','));
-                                }}
-                              />
-                              <span className="method-icon">{method.icon}</span>
-                              <span className="method-name">{method.name}</span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Display Order</label>
-                      <input
-                        type="number"
-                        value={offerFormData.display_order}
-                        onChange={(e) => handleOfferFormChange('display_order', parseInt(e.target.value))}
-                        min="0"
-                        style={{marginBottom: '8px'}}
-                      />
-                      <div className="checkbox-group">
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={offerFormData.is_premium}
-                            onChange={(e) => handleOfferFormChange('is_premium', e.target.checked)}
-                          />
-                          Premium
-                        </label>
-
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={offerFormData.vpn_friendly}
-                            onChange={(e) => handleOfferFormChange('vpn_friendly', e.target.checked)}
-                          />
-                          ✅ VPN Friendly
-                        </label>
-
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={offerFormData.is_active}
-                            onChange={(e) => handleOfferFormChange('is_active', e.target.checked)}
-                          />
-                          Active
-                        </label>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="offer-preview">
-                  <h3>Live Preview</h3>
-                  <div className="casino-card preview">
-                    <div className="casino-image-container">
-                      {offerFormData.badge && (
-                        <span className={`casino-badge ${offerFormData.badge_class}`}>
-                          {offerFormData.badge}
-                        </span>
-                      )}
-                      <img 
-                        src={offerFormData.image_url || 'https://via.placeholder.com/400x300'} 
-                        alt={offerFormData.casino_name || 'Preview'} 
-                        className="casino-image"
-                      />
-                    </div>
-                    <div className="casino-content">
-                      <h3 className="casino-name">{offerFormData.casino_name || 'Casino Name'}</h3>
-                      <p className="casino-offer">{offerFormData.title || 'Offer Title'}</p>
-                      <div className="casino-details">
-                        <div className="detail-item">
-                          <span className="detail-label">Min Deposit</span>
-                          <span className="detail-value">{offerFormData.min_deposit || '-'}</span>
-                        </div>
-                        <div className="detail-item">
-                          <span className="detail-label">Cashback</span>
-                          <span className="detail-value">{offerFormData.cashback || '-'}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="modal-actions">
-                <button onClick={saveOffer} className="btn-save">
-                  {editingOffer ? 'Update Offer' : 'Create Offer'}
-                </button>
-                <button onClick={closeOfferModal} className="btn-cancel">
-                  Cancel
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Casino Offer Modal - New Isolated Component */}
+      <CasinoOfferModal
+        isOpen={showOfferModal}
+        onClose={closeOfferModal}
+        onSave={async (formData) => {
+          try {
+            if (editingOffer) {
+              await supabase
+                .from('casino_offers')
+                .update(formData)
+                .eq('id', editingOffer.id);
+            } else {
+              await supabase
+                .from('casino_offers')
+                .insert([{ ...formData, created_by: (await supabase.auth.getUser()).data.user?.id }]);
+            }
+            closeOfferModal();
+            loadOffers();
+            setSuccess(editingOffer ? 'Offer updated successfully!' : 'Offer created successfully!');
+          } catch (err) {
+            setError('Failed to save offer: ' + err.message);
+          }
+        }}
+        onDelete={async (offerId) => {
+          if (window.confirm('Are you sure you want to delete this offer?')) {
+            await supabase.from('casino_offers').delete().eq('id', offerId);
+            closeOfferModal();
+            loadOffers();
+            setSuccess('Offer deleted successfully!');
+          }
+        }}
+        editingOffer={editingOffer}
+        saving={loading}
+      />
 
       {/* The Life Management Tab */}
       {activeTab === 'thelife' && (
