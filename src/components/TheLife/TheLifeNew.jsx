@@ -418,6 +418,14 @@ export default function TheLife() {
               <img src="/thelife/categories/brothel.png" alt="Brothel" />
             </button>
             <button 
+              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
+              onClick={() => !isInJail && setActiveTab('highstakes')}
+              disabled={isInJail}
+              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
+            </button>
+            <button 
               className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}
               onClick={() => !isInJail && setActiveTab('inventory')}
               disabled={isInJail}
@@ -460,14 +468,6 @@ export default function TheLife() {
               style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
             >
               <img src="/thelife/categories/skills.png" alt="Skills" />
-            </button>
-            <button 
-              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('highstakes')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
             </button>
           </div>
         </div>
