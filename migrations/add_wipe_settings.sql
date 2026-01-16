@@ -15,6 +15,11 @@ CREATE TABLE IF NOT EXISTS the_life_wipe_settings (
   wipe_brothel_workers BOOLEAN DEFAULT false,
   wipe_stocks BOOLEAN DEFAULT false,
   wipe_addiction BOOLEAN DEFAULT false,
+  wipe_health_stamina BOOLEAN DEFAULT false,
+  wipe_jail_hospital BOOLEAN DEFAULT false,
+  wipe_pvp_stats BOOLEAN DEFAULT false,
+  wipe_casino_history BOOLEAN DEFAULT false,
+  wipe_dock_shipments BOOLEAN DEFAULT false,
   -- When to wipe
   scheduled_at TIMESTAMP WITH TIME ZONE,
   -- Recurring wipe settings
@@ -118,6 +123,29 @@ BEGIN
   
   IF settings.wipe_addiction THEN
     UPDATE the_life_players SET addiction = 0;
+  END IF;
+  
+  IF settings.wipe_health_stamina THEN
+    UPDATE the_life_players SET hp = max_hp, stamina = max_stamina;
+  END IF;
+  
+  IF settings.wipe_jail_hospital THEN
+    UPDATE the_life_players SET jail_until = NULL, hospital_until = NULL;
+  END IF;
+  
+  IF settings.wipe_pvp_stats THEN
+    UPDATE the_life_players SET pvp_wins = 0, pvp_losses = 0;
+  END IF;
+  
+  IF settings.wipe_casino_history THEN
+    DELETE FROM global_roulette_bets WHERE true;
+    DELETE FROM global_roulette_player_stats WHERE true;
+    DELETE FROM blackjack_games WHERE true;
+  END IF;
+  
+  IF settings.wipe_dock_shipments THEN
+    DELETE FROM the_life_player_shipments WHERE true;
+    DELETE FROM the_life_business_production WHERE true;
   END IF;
   
   -- Mark wipe as executed and reschedule if recurring

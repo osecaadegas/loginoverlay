@@ -232,6 +232,11 @@ export default function AdminPanel() {
     wipe_brothel_workers: false,
     wipe_stocks: false,
     wipe_addiction: false,
+    wipe_health_stamina: false,
+    wipe_jail_hospital: false,
+    wipe_pvp_stats: false,
+    wipe_casino_history: false,
+    wipe_dock_shipments: false,
     scheduled_at: '',
     is_active: false,
     is_recurring: false,
@@ -2154,6 +2159,11 @@ export default function AdminPanel() {
           wipe_brothel_workers: data.wipe_brothel_workers || false,
           wipe_stocks: data.wipe_stocks || false,
           wipe_addiction: data.wipe_addiction || false,
+          wipe_health_stamina: data.wipe_health_stamina || false,
+          wipe_jail_hospital: data.wipe_jail_hospital || false,
+          wipe_pvp_stats: data.wipe_pvp_stats || false,
+          wipe_casino_history: data.wipe_casino_history || false,
+          wipe_dock_shipments: data.wipe_dock_shipments || false,
           scheduled_at: data.scheduled_at ? new Date(data.scheduled_at).toISOString().slice(0, 16) : '',
           is_active: data.is_active || false,
           is_recurring: data.is_recurring || false,
@@ -2183,6 +2193,11 @@ export default function AdminPanel() {
         wipe_brothel_workers: wipeSettings.wipe_brothel_workers,
         wipe_stocks: wipeSettings.wipe_stocks,
         wipe_addiction: wipeSettings.wipe_addiction,
+        wipe_health_stamina: wipeSettings.wipe_health_stamina,
+        wipe_jail_hospital: wipeSettings.wipe_jail_hospital,
+        wipe_pvp_stats: wipeSettings.wipe_pvp_stats,
+        wipe_casino_history: wipeSettings.wipe_casino_history,
+        wipe_dock_shipments: wipeSettings.wipe_dock_shipments,
         scheduled_at: wipeSettings.scheduled_at ? new Date(wipeSettings.scheduled_at).toISOString() : null,
         is_active: wipeSettings.is_active,
         is_recurring: wipeSettings.is_recurring,
@@ -2270,6 +2285,35 @@ export default function AdminPanel() {
 
       if (wipeSettings.wipe_addiction) {
         await supabase.from('the_life_players').update({ addiction: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_health_stamina) {
+        // Reset HP and Stamina to max values
+        const { data: players } = await supabase.from('the_life_players').select('id, max_hp, max_stamina');
+        if (players) {
+          for (const p of players) {
+            await supabase.from('the_life_players').update({ hp: p.max_hp, stamina: p.max_stamina }).eq('id', p.id);
+          }
+        }
+      }
+
+      if (wipeSettings.wipe_jail_hospital) {
+        await supabase.from('the_life_players').update({ jail_until: null, hospital_until: null }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_pvp_stats) {
+        await supabase.from('the_life_players').update({ pvp_wins: 0, pvp_losses: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_casino_history) {
+        await supabase.from('global_roulette_bets').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('global_roulette_player_stats').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('blackjack_games').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_dock_shipments) {
+        await supabase.from('the_life_player_shipments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('the_life_business_production').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       // Update last executed time
@@ -5486,7 +5530,46 @@ export default function AdminPanel() {
             )}
 
             <div className="wipe-options">
-              <h3>📋 Select What to Wipe</h3>
+              <div className="wipe-options-header">
+                <h3>📋 Select What to Wipe</h3>
+                <label className="wipe-checkbox select-all-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={
+                      wipeSettings.wipe_inventory && wipeSettings.wipe_cash && wipeSettings.wipe_bank &&
+                      wipeSettings.wipe_level && wipeSettings.wipe_skills && wipeSettings.wipe_businesses &&
+                      wipeSettings.wipe_upgrades && wipeSettings.wipe_brothel_workers && wipeSettings.wipe_stocks &&
+                      wipeSettings.wipe_addiction && wipeSettings.wipe_health_stamina && wipeSettings.wipe_jail_hospital &&
+                      wipeSettings.wipe_pvp_stats && wipeSettings.wipe_casino_history && wipeSettings.wipe_dock_shipments
+                    }
+                    onChange={(e) => {
+                      const checked = e.target.checked;
+                      setWipeSettings({
+                        ...wipeSettings,
+                        wipe_inventory: checked,
+                        wipe_cash: checked,
+                        wipe_bank: checked,
+                        wipe_level: checked,
+                        wipe_skills: checked,
+                        wipe_businesses: checked,
+                        wipe_upgrades: checked,
+                        wipe_brothel_workers: checked,
+                        wipe_stocks: checked,
+                        wipe_addiction: checked,
+                        wipe_health_stamina: checked,
+                        wipe_jail_hospital: checked,
+                        wipe_pvp_stats: checked,
+                        wipe_casino_history: checked,
+                        wipe_dock_shipments: checked
+                      });
+                    }}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">✅</span>
+                    Select All
+                  </span>
+                </label>
+              </div>
               <div className="wipe-checkboxes">
                 <label className="wipe-checkbox">
                   <input
@@ -5605,6 +5688,66 @@ export default function AdminPanel() {
                   <span className="checkbox-label">
                     <span className="checkbox-icon">💊</span>
                     Addiction Level
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_health_stamina}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_health_stamina: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">❤️</span>
+                    Reset HP &amp; Stamina
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_jail_hospital}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_jail_hospital: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">🔓</span>
+                    Release Jail &amp; Hospital
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_pvp_stats}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_pvp_stats: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">⚔️</span>
+                    PVP Stats (Wins/Losses)
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_casino_history}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_casino_history: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">🎰</span>
+                    Casino History (Roulette, Blackjack)
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_dock_shipments}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_dock_shipments: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">🚢</span>
+                    Dock Shipments &amp; Production
                   </span>
                 </label>
               </div>
