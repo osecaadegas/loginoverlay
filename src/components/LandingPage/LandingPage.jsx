@@ -228,7 +228,6 @@ export default function LandingPage() {
           </div>
           
           <div className="hero-content-overlay">
-            <h1 className="hero-name">Osecaadegas</h1>
             <div className="hero-social-icons">
               <a href="https://www.twitch.tv/osecaadegas95" target="_blank" rel="noopener noreferrer" className="hero-social-icon" title="Twitch">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
