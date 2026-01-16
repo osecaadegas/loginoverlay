@@ -539,10 +539,13 @@ export default function TheLifeStockMarket({
       return false;
     }
     
+    // Round to 2 decimal places for numeric column
+    const roundedCash = Math.round(newCash * 100) / 100;
+    
     try {
       const { data, error } = await supabase
         .from('the_life_players')
-        .update({ cash: newCash, updated_at: new Date().toISOString() })
+        .update({ cash: roundedCash, updated_at: new Date().toISOString() })
         .eq('user_id', user.id)
         .select()
         .single();
@@ -557,7 +560,7 @@ export default function TheLifeStockMarket({
         throw new Error('Update returned no data');
       }
       
-      setPlayer(prev => ({ ...prev, cash: newCash }));
+      setPlayer(prev => ({ ...prev, cash: roundedCash }));
       return true;
     } catch (error) {
       console.error('Error updating cash:', error);
