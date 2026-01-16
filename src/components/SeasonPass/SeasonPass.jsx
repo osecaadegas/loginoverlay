@@ -526,8 +526,8 @@ export default function SeasonPass() {
         {/* Left Side Info Panel */}
         <div className="info-panel">
           <h2 className="season-title">
-            {seasonData?.name || 'Underground'}<br/>
-            <span className="season-title-accent">Empire</span>
+            {(seasonData?.name || 'Underground Empire').split(' ')[0]}<br/>
+            <span className="season-title-accent">{(seasonData?.name || 'Underground Empire').split(' ').slice(1).join(' ') || 'Empire'}</span>
           </h2>
           <div className="title-line"></div>
           <p className="season-description">
