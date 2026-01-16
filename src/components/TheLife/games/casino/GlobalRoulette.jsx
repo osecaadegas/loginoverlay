@@ -156,7 +156,8 @@ export default function GlobalRoulette({
       amount: selectedChip,
       position,
       playerId: player.id,
-      playerName: player.name
+      playerName: player.se_username || 'Player',
+      playerAvatar: player.avatar_url
     };
 
     setMyBets(prev => [...prev, newBet]);
@@ -175,7 +176,8 @@ export default function GlobalRoulette({
       await supabase.from('roulette_bets').insert({
         round_id: roundId,
         player_id: player.id,
-        player_name: player.name,
+        player_name: player.se_username || 'Player',
+        player_avatar: player.avatar_url,
         bet_type: bet.type,
         bet_value: JSON.stringify(bet.value),
         bet_amount: bet.amount,
@@ -444,8 +446,8 @@ export default function GlobalRoulette({
 
     await supabase.from('roulette_chat').insert({
       player_id: player.id,
-      player_name: player.name,
-      player_avatar: player.avatar,
+      player_name: player.se_username || 'Player',
+      player_avatar: player.avatar_url,
       message: chatInput.trim()
     });
 
@@ -811,13 +813,13 @@ export default function GlobalRoulette({
             <h3>🟢 Players Online <span>{onlinePlayers.length + 1}</span></h3>
             <div className="player-list">
               <div className="player-item me">
-                <img src={player.avatar || '/default-avatar.png'} alt="" />
-                <span>{player.name} (You)</span>
+                <img src={player.avatar_url || '/default-avatar.png'} alt="" />
+                <span>{player.se_username || 'You'} (You)</span>
               </div>
               {onlinePlayers.map((p, i) => (
                 <div key={i} className="player-item">
-                  <img src={p.avatar || '/default-avatar.png'} alt="" />
-                  <span>{p.name}</span>
+                  <img src={p.player_avatar || '/default-avatar.png'} alt="" />
+                  <span>{p.player_name}</span>
                 </div>
               ))}
             </div>

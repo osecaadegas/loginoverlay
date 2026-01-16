@@ -562,10 +562,11 @@ export default function PokerTable({
         .from('casino_chat')
         .insert({
           table_id: table.id,
-          user_id: user.id,
+          player_id: player.id,
           player_name: player.se_username || 'Player',
+          player_avatar: player.avatar_url,
           message: `${action}${amount > 0 ? ` $${amount}` : ''}`,
-          is_system: true
+          message_type: 'action'
         });
 
     } catch (error) {
@@ -678,8 +679,9 @@ export default function PokerTable({
       .from('casino_chat')
       .insert({
         table_id: table.id,
+        player_name: 'System',
         message: `🏆 ${winner.player_name} wins $${pot}!`,
-        is_system: true
+        message_type: 'system'
       });
 
     // Reset for new hand after delay
@@ -746,10 +748,11 @@ export default function PokerTable({
         .from('casino_chat')
         .insert({
           table_id: table.id,
-          user_id: user.id,
+          player_id: player.id,
           player_name: player.se_username || 'Player',
+          player_avatar: player.avatar_url,
           message: chatInput.trim(),
-          is_system: false
+          message_type: 'chat'
         });
 
       setChatInput('');
