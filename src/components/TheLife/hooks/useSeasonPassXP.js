@@ -15,9 +15,9 @@ import { supabase } from '../../../config/supabaseClient';
  */
 export const addSeasonPassXP = async (userId, xpAmount, source, sourceId = null) => {
   try {
-    // Call the database function to add XP
+    // Call the database function to add XP (function is named grant_season_pass_xp)
     const { data, error } = await supabase
-      .rpc('add_season_pass_xp', {
+      .rpc('grant_season_pass_xp', {
         p_user_id: userId,
         p_xp_amount: xpAmount,
         p_source: source,
