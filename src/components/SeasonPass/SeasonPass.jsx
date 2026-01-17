@@ -121,13 +121,19 @@ export default function SeasonPass() {
 
       setSeasonData(season);
 
-      // Get all tier rewards
+      // Get all tier rewards with linked item data
       const { data: tierData } = await supabase
         .from('season_pass_tiers')
         .select(`
           *,
-          budget_reward:season_pass_rewards!season_pass_tiers_budget_reward_id_fkey(*),
-          premium_reward:season_pass_rewards!season_pass_tiers_premium_reward_id_fkey(*)
+          budget_reward:season_pass_rewards!season_pass_tiers_budget_reward_id_fkey(
+            *,
+            item:the_life_items(*)
+          ),
+          premium_reward:season_pass_rewards!season_pass_tiers_premium_reward_id_fkey(
+            *,
+            item:the_life_items(*)
+          )
         `)
         .eq('season_id', season.id)
         .order('tier_number', { ascending: true });
@@ -678,18 +684,26 @@ export default function SeasonPass() {
                     <div className="card-texture"></div>
                     <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.premium_reward?.rarity) }}></div>
                     
-                    {tier.premium_reward?.image_url ? (
-                      <div className="card-image">
-                        <img src={tier.premium_reward.image_url} alt={tier.premium_reward.name} />
-                      </div>
-                    ) : (
-                      <div className="card-content">
-                        <i 
-                          className={`fas ${tier.premium_reward?.icon || 'fa-gift'}`}
-                          style={{ color: tier.premium_reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
-                        ></i>
-                      </div>
-                    )}
+                    {(() => {
+                      const imageUrl = tier.premium_reward?.image_url || tier.premium_reward?.item?.icon;
+                      const isImageUrl = imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/'));
+                      
+                      if (isImageUrl) {
+                        return (
+                          <div className="card-image">
+                            <img src={imageUrl} alt={tier.premium_reward?.name} />
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="card-content">
+                          <i 
+                            className={`fas ${tier.premium_reward?.icon || 'fa-gift'}`}
+                            style={{ color: tier.premium_reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
+                          ></i>
+                        </div>
+                      );
+                    })()}
                     <div className="card-info">
                       <div className="item-type">{tier.premium_reward?.type || 'Reward'}</div>
                       <div className="item-name">{tier.premium_reward?.name || `Tier ${tier.tier_number}`}</div>
@@ -726,18 +740,26 @@ export default function SeasonPass() {
                     <div className="card-texture"></div>
                     <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.budget_reward?.rarity) }}></div>
                     
-                    {tier.budget_reward?.image_url ? (
-                      <div className="card-image">
-                        <img src={tier.budget_reward.image_url} alt={tier.budget_reward.name} />
-                      </div>
-                    ) : (
-                      <div className="card-content">
-                        <i 
-                          className={`fas ${tier.budget_reward?.icon || 'fa-gift'}`}
-                          style={{ color: '#94a3b8' }}
-                        ></i>
-                      </div>
-                    )}
+                    {(() => {
+                      const imageUrl = tier.budget_reward?.image_url || tier.budget_reward?.item?.icon;
+                      const isImageUrl = imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/'));
+                      
+                      if (isImageUrl) {
+                        return (
+                          <div className="card-image">
+                            <img src={imageUrl} alt={tier.budget_reward?.name} />
+                          </div>
+                        );
+                      }
+                      return (
+                        <div className="card-content">
+                          <i 
+                            className={`fas ${tier.budget_reward?.icon || 'fa-gift'}`}
+                            style={{ color: '#94a3b8' }}
+                          ></i>
+                        </div>
+                      );
+                    })()}
                     <div className="card-info">
                       <div className="item-type">{tier.budget_reward?.type || 'Reward'}</div>
                       <div className="item-name">{tier.budget_reward?.name || `Tier ${tier.tier_number}`}</div>
