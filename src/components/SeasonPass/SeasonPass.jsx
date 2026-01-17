@@ -678,11 +678,11 @@ export default function SeasonPass() {
 
                   {/* Premium Card (Top) */}
                   <div className="card-wrapper premium">
-                    <div className="item-type-pill premium">{tier.premium_reward?.type || 'Reward'}</div>
                     <div 
                       className={`item-card premium rarity-${tier.premium_reward?.rarity || 'common'}`}
                       onClick={() => inspectItem(tier, 'premium')}
                     >
+                      <div className="item-type-label premium">{tier.premium_reward?.type || 'Reward'}</div>
                       <div className="card-texture"></div>
                       <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.premium_reward?.rarity) }}></div>
                       
@@ -780,8 +780,8 @@ export default function SeasonPass() {
                           <div className="claimed-stamp">TAKEN</div>
                         </div>
                       )}
+                      <div className="item-type-label budget">{tier.budget_reward?.type || 'Reward'}</div>
                     </div>
-                    <div className="item-type-pill budget">{tier.budget_reward?.type || 'Reward'}</div>
                   </div>
                 </div>
               );

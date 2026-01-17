@@ -721,36 +721,32 @@
   margin-top: 32px;
 }
 
-/* Item Type Label - positioned outside card */
-.item-type-pill {
+/* Item Type Label - positioned at card edges */
+.item-type-label {
   position: absolute;
   font-size: 8px;
   text-transform: uppercase;
   font-weight: 700;
   letter-spacing: 0.1em;
-  padding: 3px 0;
+  padding: 4px 0;
   white-space: nowrap;
-  z-index: 5;
-  transform: skewX(-10deg);
-  width: 100%;
+  z-index: 20;
+  transform: skewX(10deg);
+  left: 0;
+  right: 0;
   text-align: center;
-  box-sizing: border-box;
 }
 
-.item-type-pill.premium {
-  top: -14px;
+.item-type-label.premium {
+  top: -18px;
   background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
   color: #000;
-  border: 1px solid #fbbf24;
-  border-bottom: none;
 }
 
-.item-type-pill.budget {
-  bottom: -14px;
+.item-type-label.budget {
+  bottom: -18px;
   background: linear-gradient(135deg, #4b5563 0%, #374151 100%);
   color: #e5e7eb;
-  border: 1px solid #525252;
-  border-top: none;
 }
 
 .item-name {
