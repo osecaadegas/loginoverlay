@@ -695,12 +695,16 @@ export default function SeasonPassAdmin() {
                       value={rewardForm.item_id}
                       onChange={(e) => {
                         const selectedItem = items.find(i => i.id === e.target.value);
+                        // Get image from item - could be in image_url, icon (if URL), or other fields
+                        const itemImage = selectedItem?.image_url || 
+                                         (selectedItem?.icon?.startsWith('http') ? selectedItem.icon : null);
                         setRewardForm({ 
                           ...rewardForm, 
                           item_id: e.target.value,
-                          // Auto-fill name and rarity from item
+                          // Auto-fill name, rarity and image from item
                           name: selectedItem ? selectedItem.name : rewardForm.name,
-                          rarity: selectedItem?.rarity || rewardForm.rarity
+                          rarity: selectedItem?.rarity || rewardForm.rarity,
+                          image_url: itemImage || rewardForm.image_url
                         });
                       }}
                     >
@@ -724,10 +728,12 @@ export default function SeasonPassAdmin() {
                     {/* Item Preview */}
                     {rewardForm.item_id && (() => {
                       const selectedItem = items.find(i => i.id === rewardForm.item_id);
+                      const itemImage = selectedItem?.image_url || selectedItem?.icon;
+                      const isImageUrl = itemImage && (itemImage.startsWith('http') || itemImage.startsWith('/'));
                       return selectedItem ? (
                         <div className="item-preview" style={{ borderColor: getRarityColor(selectedItem.rarity || 'common') }}>
-                          {selectedItem.image_url ? (
-                            <img src={selectedItem.image_url} alt={selectedItem.name} />
+                          {isImageUrl ? (
+                            <img src={itemImage} alt={selectedItem.name} />
                           ) : (
                             <i className={`fas ${selectedItem.icon || 'fa-box'}`} style={{ color: getRarityColor(selectedItem.rarity || 'common') }}></i>
                           )}
