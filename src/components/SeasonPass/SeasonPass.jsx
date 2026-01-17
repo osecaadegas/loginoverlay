@@ -677,40 +677,41 @@ export default function SeasonPass() {
                   <div className={`connector-line ${isReached ? 'active' : ''}`}></div>
 
                   {/* Premium Card (Top) */}
-                  <div 
-                    className={`item-card premium rarity-${tier.premium_reward?.rarity || 'common'}`}
-                    onClick={() => inspectItem(tier, 'premium')}
-                  >
-                    <div className="card-texture"></div>
-                    <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.premium_reward?.rarity) }}></div>
-                    
-                    {(() => {
-                      // Check all possible image sources: direct image_url, linked item icon, or icon field itself
-                      const reward = tier.premium_reward;
-                      const imageUrl = reward?.image_url || 
-                                       reward?.item?.icon || 
-                                       (reward?.icon?.startsWith('http') ? reward.icon : null);
+                  <div className="card-wrapper premium">
+                    <div className="item-type-pill premium">{tier.premium_reward?.type || 'Reward'}</div>
+                    <div 
+                      className={`item-card premium rarity-${tier.premium_reward?.rarity || 'common'}`}
+                      onClick={() => inspectItem(tier, 'premium')}
+                    >
+                      <div className="card-texture"></div>
+                      <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.premium_reward?.rarity) }}></div>
                       
-                      if (imageUrl) {
+                      {(() => {
+                        // Check all possible image sources: direct image_url, linked item icon, or icon field itself
+                        const reward = tier.premium_reward;
+                        const imageUrl = reward?.image_url || 
+                                         reward?.item?.icon || 
+                                         (reward?.icon?.startsWith('http') ? reward.icon : null);
+                        
+                        if (imageUrl) {
+                          return (
+                            <div className="card-image">
+                              <img src={imageUrl} alt={reward?.name} />
+                            </div>
+                          );
+                        }
                         return (
-                          <div className="card-image">
-                            <img src={imageUrl} alt={reward?.name} />
+                          <div className="card-content">
+                            <i 
+                              className={`fas ${reward?.icon || 'fa-gift'}`}
+                              style={{ color: reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
+                            ></i>
                           </div>
                         );
-                      }
-                      return (
-                        <div className="card-content">
-                          <i 
-                            className={`fas ${reward?.icon || 'fa-gift'}`}
-                            style={{ color: reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
-                          ></i>
-                        </div>
-                      );
-                    })()}
-                    <div className="card-info">
-                      <div className="item-type">{tier.premium_reward?.type || 'Reward'}</div>
-                      <div className="item-name">{tier.premium_reward?.name || `Tier ${tier.tier_number}`}</div>
-                    </div>
+                      })()}
+                      <div className="card-info">
+                        <div className="item-name">{tier.premium_reward?.name || `Tier ${tier.tier_number}`}</div>
+                      </div>
 
                     {!isReached && (
                       <div className="status-overlay">
@@ -727,6 +728,7 @@ export default function SeasonPass() {
                         <i className="fas fa-crown"></i>
                       </div>
                     )}
+                    </div>
                   </div>
 
                   {/* Level Badge (Middle) */}
@@ -736,48 +738,50 @@ export default function SeasonPass() {
                   </div>
 
                   {/* Budget Card (Bottom) */}
-                  <div 
-                    className={`item-card budget rarity-${tier.budget_reward?.rarity || 'common'}`}
-                    onClick={() => inspectItem(tier, 'budget')}
-                  >
-                    <div className="card-texture"></div>
-                    <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.budget_reward?.rarity) }}></div>
-                    
-                    {(() => {
-                      const reward = tier.budget_reward;
-                      const imageUrl = reward?.image_url || reward?.item?.icon || (reward?.icon?.startsWith('http') ? reward.icon : null);
+                  <div className="card-wrapper budget">
+                    <div 
+                      className={`item-card budget rarity-${tier.budget_reward?.rarity || 'common'}`}
+                      onClick={() => inspectItem(tier, 'budget')}
+                    >
+                      <div className="card-texture"></div>
+                      <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.budget_reward?.rarity) }}></div>
                       
-                      if (imageUrl) {
+                      {(() => {
+                        const reward = tier.budget_reward;
+                        const imageUrl = reward?.image_url || reward?.item?.icon || (reward?.icon?.startsWith('http') ? reward.icon : null);
+                        
+                        if (imageUrl) {
+                          return (
+                            <div className="card-image">
+                              <img src={imageUrl} alt={reward?.name} />
+                            </div>
+                          );
+                        }
                         return (
-                          <div className="card-image">
-                            <img src={imageUrl} alt={reward?.name} />
+                          <div className="card-content">
+                            <i 
+                              className={`fas ${reward?.icon || 'fa-gift'}`}
+                              style={{ color: '#94a3b8' }}
+                            ></i>
                           </div>
                         );
-                      }
-                      return (
-                        <div className="card-content">
-                          <i 
-                            className={`fas ${reward?.icon || 'fa-gift'}`}
-                            style={{ color: '#94a3b8' }}
-                          ></i>
-                        </div>
-                      );
-                    })()}
-                    <div className="card-info">
-                      <div className="item-type">{tier.budget_reward?.type || 'Reward'}</div>
-                      <div className="item-name">{tier.budget_reward?.name || `Tier ${tier.tier_number}`}</div>
-                    </div>
+                      })()}
+                      <div className="card-info">
+                        <div className="item-name">{tier.budget_reward?.name || `Tier ${tier.tier_number}`}</div>
+                      </div>
 
-                    {!isReached && (
-                      <div className="status-overlay">
-                        <i className="fas fa-lock"></i>
-                      </div>
-                    )}
-                    {isReached && budgetClaimed && (
-                      <div className="status-overlay claimed">
-                        <div className="claimed-stamp">TAKEN</div>
-                      </div>
-                    )}
+                      {!isReached && (
+                        <div className="status-overlay">
+                          <i className="fas fa-lock"></i>
+                        </div>
+                      )}
+                      {isReached && budgetClaimed && (
+                        <div className="status-overlay claimed">
+                          <div className="claimed-stamp">TAKEN</div>
+                        </div>
+                      )}
+                    </div>
+                    <div className="item-type-pill budget">{tier.budget_reward?.type || 'Reward'}</div>
                   </div>
                 </div>
               );
