@@ -607,8 +607,10 @@ export default function SeasonPass() {
           <p className="season-description">
             Rise through the criminal ranks. Earn exclusive contraband, weapons, and safehouse upgrades.
           </p>
-          
-          {/* Current Rank Widget */}
+        </div>
+
+        {/* Bottom Center XP Bar */}
+        <div className="xp-bar-container">
           <div className="rank-widget">
             <div className="rank-header">
               <span className="rank-label">Current Tier</span>
@@ -676,11 +678,19 @@ export default function SeasonPass() {
                     <div className="card-texture"></div>
                     <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.premium_reward?.rarity) }}></div>
                     
-                    <div className="card-content">
-                      <i 
-                        className={`fas ${tier.premium_reward?.icon || 'fa-gift'}`}
-                        style={{ color: tier.premium_reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
-                      ></i>
+                    {tier.premium_reward?.image_url ? (
+                      <div className="card-image">
+                        <img src={tier.premium_reward.image_url} alt={tier.premium_reward.name} />
+                      </div>
+                    ) : (
+                      <div className="card-content">
+                        <i 
+                          className={`fas ${tier.premium_reward?.icon || 'fa-gift'}`}
+                          style={{ color: tier.premium_reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
+                        ></i>
+                      </div>
+                    )}
+                    <div className="card-info">
                       <div className="item-type">{tier.premium_reward?.type || 'Reward'}</div>
                       <div className="item-name">{tier.premium_reward?.name || `Tier ${tier.tier_number}`}</div>
                     </div>
@@ -716,11 +726,19 @@ export default function SeasonPass() {
                     <div className="card-texture"></div>
                     <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.budget_reward?.rarity) }}></div>
                     
-                    <div className="card-content">
-                      <i 
-                        className={`fas ${tier.budget_reward?.icon || 'fa-gift'}`}
-                        style={{ color: '#94a3b8' }}
-                      ></i>
+                    {tier.budget_reward?.image_url ? (
+                      <div className="card-image">
+                        <img src={tier.budget_reward.image_url} alt={tier.budget_reward.name} />
+                      </div>
+                    ) : (
+                      <div className="card-content">
+                        <i 
+                          className={`fas ${tier.budget_reward?.icon || 'fa-gift'}`}
+                          style={{ color: '#94a3b8' }}
+                        ></i>
+                      </div>
+                    )}
+                    <div className="card-info">
                       <div className="item-type">{tier.budget_reward?.type || 'Reward'}</div>
                       <div className="item-name">{tier.budget_reward?.name || `Tier ${tier.tier_number}`}</div>
                     </div>
