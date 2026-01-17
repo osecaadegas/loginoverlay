@@ -4488,7 +4488,27 @@ input:checked + .toggle-slider:before {
 
 @media (max-width: 768px) {
   .market-items-grid {
-    grid-template-columns: 1fr;
+    display: flex !important;
+    flex-direction: row !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    gap: 12px !important;
+    padding: 10px 4px 16px 4px !important;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .market-items-grid::-webkit-scrollbar {
+    display: none;
+  }
+
+  .market-items-grid .market-item,
+  .market-items-grid .store-card {
+    flex: 0 0 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+    scroll-snap-align: start;
   }
 }
 
