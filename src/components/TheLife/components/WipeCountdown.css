@@ -188,27 +188,39 @@
 
 @media (max-width: 480px) {
   .wipe-countdown {
-    padding: 6px 10px;
-    border-radius: 8px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    top: 2px;
+    right: 2px;
   }
 
   .wipe-countdown-header {
-    margin-bottom: 4px;
+    margin-bottom: 2px;
   }
 
   .wipe-icon {
-    font-size: 0.9rem;
+    font-size: 0.65rem;
   }
 
   .wipe-label {
-    font-size: 0.55rem;
+    font-size: 0.45rem;
+    letter-spacing: 0.5px;
   }
 
   .time-value {
-    font-size: 0.95rem;
+    font-size: 0.75rem;
   }
 
   .time-segment {
-    min-width: 22px;
+    min-width: 16px;
+  }
+
+  .time-unit {
+    font-size: 0.4rem;
+  }
+
+  .time-separator {
+    font-size: 0.6rem;
+    margin: 0 1px;
   }
 }

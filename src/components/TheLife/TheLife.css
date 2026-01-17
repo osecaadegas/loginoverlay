@@ -6660,7 +6660,7 @@ input:checked + .toggle-slider:before {
   .category-info-text {
     padding: 15px !important;
     gap: 8px !important;
-    order: 1 !important;
+    order: 2 !important;
   }
 
   .category-info-text h3 {
@@ -6681,7 +6681,7 @@ input:checked + .toggle-slider:before {
     width: 100% !important;
     height: 250px !important;
     flex-shrink: 0 !important;
-    order: 2 !important;
+    order: 1 !important;
   }
 
   .category-info-image img {
