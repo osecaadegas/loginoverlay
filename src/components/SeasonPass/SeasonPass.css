@@ -1140,7 +1140,7 @@
   opacity: 1;
 }
 
-/* Responsive */
+/* Responsive - Tablet */
 @media (max-width: 1024px) {
   .info-panel {
     display: none;
@@ -1161,39 +1161,66 @@
 
 /* =============================================
    MOBILE - AAA BATTLE PASS EXPERIENCE
+   Designed for touch-first, single-row layout
    ============================================= */
 @media (max-width: 768px) {
-  /* Container - Full screen mobile app feel */
+  /* Container - Full screen mobile app */
   .season-pass-container {
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    background: #030303;
   }
 
-  /* Header - Compact & Clean */
+  /* Fog - Subtle on mobile */
+  .fog-container {
+    opacity: 0.3;
+  }
+
+  /* Header - Single row, sleek */
   .season-pass-header {
-    padding: 8px 12px;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
     height: auto;
-    min-height: 50px;
-    flex-direction: column;
+    min-height: 56px;
     gap: 8px;
-    border-bottom: 1px solid rgba(185, 28, 28, 0.3);
-    background: rgba(0, 0, 0, 0.9);
+    border-bottom: 2px solid #b91c1c;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.95), rgba(10,10,10,0.95));
     flex-shrink: 0;
+    position: relative;
+    z-index: 50;
   }
 
   .header-left {
-    width: 100%;
-    justify-content: space-between;
-    gap: 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
   }
 
   .back-button {
-    padding: 6px 10px;
-    font-size: 11px;
-    background: rgba(255, 255, 255, 0.05);
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: rgba(185, 28, 28, 0.2);
+    border: 1px solid rgba(185, 28, 28, 0.5);
+    transform: none;
+  }
+
+  .back-button i {
+    transform: none;
+    font-size: 14px;
+    color: #fff;
   }
 
   .back-button span {
@@ -1205,8 +1232,9 @@
   }
 
   .glitch-effect {
-    font-size: 1.1rem;
-    letter-spacing: 0.05em;
+    font-size: 1rem;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
   }
 
   .glitch-effect::before,
@@ -1215,26 +1243,58 @@
   }
 
   .header-right {
-    width: 100%;
-    justify-content: center;
-    gap: 8px;
-    flex-wrap: wrap;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
   }
 
   .season-timer {
     display: none;
   }
 
-  .get-budget-btn,
-  .get-premium-btn,
-  .budget-badge,
-  .premium-badge {
-    padding: 6px 12px;
-    font-size: 10px;
+  .get-budget-btn {
+    padding: 6px 10px;
+    font-size: 9px;
+    transform: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #059669, #047857);
+  }
+
+  .get-budget-btn i,
+  .get-budget-btn span {
+    transform: none;
   }
 
   .budget-cost {
+    display: none;
+  }
+
+  .get-premium-btn {
+    padding: 6px 10px;
     font-size: 9px;
+    transform: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  }
+
+  .get-premium-btn span {
+    transform: none;
+  }
+
+  .budget-badge,
+  .premium-badge {
+    padding: 6px 10px;
+    font-size: 9px;
+    transform: none;
+    border-radius: 6px;
+  }
+
+  .budget-badge i,
+  .budget-badge span,
+  .premium-badge i,
+  .premium-badge span {
+    transform: none;
   }
 
   /* Info Panel - Hidden on mobile */
@@ -1242,7 +1302,7 @@
     display: none;
   }
 
-  /* Main content - Takes remaining space */
+  /* Main content area */
   .season-pass-main {
     flex: 1;
     display: flex;
@@ -1251,172 +1311,300 @@
     position: relative;
   }
 
-  /* Track Labels - Vertical on left side */
+  /* Track Labels - Compact side labels */
   .track-labels {
     position: fixed;
-    left: 0;
+    left: 4px;
     top: 50%;
     transform: translateY(-50%);
-    z-index: 100;
+    z-index: 40;
     display: flex;
     flex-direction: column;
-    gap: 80px;
-    padding: 8px;
-    background: linear-gradient(to right, rgba(0,0,0,0.95), transparent);
-    padding-right: 16px;
+    gap: 100px;
+    pointer-events: none;
   }
 
   .track-label {
     writing-mode: vertical-rl;
     text-orientation: mixed;
     transform: rotate(180deg);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 8px 4px;
+    border-radius: 4px;
+  }
+
+  .track-label.premium-label {
+    border-left: 2px solid #fbbf24;
+  }
+
+  .track-label.budget-label {
+    border-left: 2px solid #10b981;
   }
 
   .track-label .label-text {
-    font-size: 0.7rem;
-    letter-spacing: 0.15em;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+  }
+
+  .track-label.premium-label .label-text {
+    color: #fbbf24;
+  }
+
+  .track-label.budget-label .label-text {
+    color: #10b981;
   }
 
   .track-label .label-sub {
     display: none;
   }
 
-  /* Track Area - Full width */
+  /* Track Area */
   .track-area {
     flex: 1;
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    position: relative;
     overflow: hidden;
-    padding-bottom: 100px;
+    /* Leave room for XP bar at bottom */
+    padding-bottom: 90px;
   }
 
-  /* Track Wrapper - Horizontal scroll */
+  /* Track Wrapper - Native horizontal scroll */
   .track-wrapper {
-    flex: 1;
     display: flex;
     align-items: center;
-    padding: 20px 16px 20px 40px;
+    height: 100%;
+    padding: 0 50px 0 35px;
     overflow-x: auto;
     overflow-y: hidden;
     scroll-snap-type: x mandatory;
     -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    cursor: grab;
   }
 
-  /* Level Segment - Compact */
+  .track-wrapper:active {
+    cursor: grabbing;
+  }
+
+  /* Level Segment - Vertical stack centered */
   .level-segment {
-    flex: 0 0 140px;
-    min-width: 140px;
+    flex: 0 0 130px;
+    min-width: 130px;
+    height: auto;
     margin-right: 0;
     scroll-snap-align: center;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 8px;
-    padding: 0 4px;
+    justify-content: center;
+    gap: 6px;
+    position: relative;
+    padding: 10px 5px;
+  }
+
+  /* Hide connector lines on mobile - cleaner look */
+  .connector-line {
+    display: none;
   }
 
   /* Card Wrapper */
   .card-wrapper {
-    width: 110px;
+    width: 100px;
+    position: relative;
   }
 
   .card-wrapper.premium {
-    margin-bottom: 16px;
+    margin-bottom: 0;
+    order: 1;
   }
 
   .card-wrapper.budget {
-    margin-top: 16px;
+    margin-top: 0;
+    order: 3;
   }
 
-  /* Item Cards - Polished mobile size */
+  /* Item Cards - Clean modern style */
   .item-card {
-    width: 110px;
-    height: 100px;
-    border-radius: 8px;
-    transform: skewX(-8deg);
+    width: 100px;
+    height: 90px;
+    transform: none;
+    border-radius: 10px;
+    background: linear-gradient(145deg, #1a1a1a, #0a0a0a);
+    border: 1px solid #333;
+    overflow: hidden;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   }
 
-  .item-card:hover {
-    transform: skewX(-8deg) scale(1.05);
+  .item-card:active {
+    transform: scale(0.95);
   }
 
-  /* Type Labels */
+  .item-card.premium {
+    border-color: rgba(251, 191, 36, 0.4);
+  }
+
+  .item-card.budget {
+    border-color: rgba(16, 185, 129, 0.3);
+  }
+
+  /* Rarity border glow */
+  .item-card.rarity-legendary {
+    border-color: #fbbf24;
+    box-shadow: 0 0 15px rgba(251, 191, 36, 0.3);
+  }
+
+  .item-card.rarity-epic {
+    border-color: #a855f7;
+    box-shadow: 0 0 12px rgba(168, 85, 247, 0.2);
+  }
+
+  .item-card.rarity-rare {
+    border-color: #3b82f6;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.2);
+  }
+
+  /* Type Labels - Small colored tags */
   .item-type-label {
-    font-size: 5px;
-    padding: 2px 0;
+    position: absolute;
+    font-size: 6px;
+    padding: 2px 6px;
     letter-spacing: 0.05em;
+    border-radius: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    width: auto;
+    white-space: nowrap;
   }
 
   .item-type-label.premium {
-    top: -10px;
+    top: -8px;
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    color: #000;
+    font-weight: 700;
   }
 
   .item-type-label.budget {
-    bottom: -10px;
+    bottom: -8px;
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff;
   }
 
-  /* Card Content */
+  /* Card Image - Full bleed */
   .card-image {
-    padding: 6px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    overflow: hidden;
   }
 
   .card-image img {
-    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 6px rgba(0, 0, 0, 0.6));
   }
 
+  /* Card Content (icon fallback) */
   .card-content {
-    padding: 6px;
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
   }
 
   .card-content i {
-    font-size: 1.5rem;
-    margin-bottom: 4px;
+    font-size: 1.8rem;
   }
 
+  /* Card Info - Item name */
   .card-info {
     padding: 4px 6px;
+    background: rgba(0, 0, 0, 0.6);
   }
 
   .item-name {
     font-size: 0.55rem;
-    line-height: 1.1;
+    line-height: 1.2;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
-  /* Level Badge */
+  /* Level Badge - In the middle */
   .level-badge {
-    width: 28px;
-    height: 28px;
-    font-size: 0.7rem;
-    transform: skewX(-8deg);
+    order: 2;
+    position: relative;
+    transform: none;
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+    margin: 4px 0;
+    border-radius: 50%;
+    background: #111;
+    border: 2px solid #444;
+  }
+
+  .level-badge span {
+    transform: none;
+  }
+
+  .level-badge.reached {
+    background: #b91c1c;
+    border-color: #ef4444;
+    box-shadow: 0 0 15px rgba(185, 28, 28, 0.5);
   }
 
   .level-pylon {
-    height: 12px;
-  }
-
-  /* Connector Line */
-  .connector-line {
-    height: 4px;
-    transform: translateY(-50%) skewX(-15deg);
+    display: none;
   }
 
   /* Status Overlays */
+  .status-overlay {
+    border-radius: 10px;
+  }
+
   .status-overlay i {
     font-size: 1.2rem;
   }
 
   .claimed-stamp {
     font-size: 0.5rem;
-    padding: 3px 6px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    transform: rotate(-10deg);
   }
 
   /* Track Fades */
   .track-fade-right {
-    width: 40px;
-    background: linear-gradient(to left, rgba(2, 2, 2, 1), transparent);
+    width: 50px;
+    background: linear-gradient(to left, #030303, transparent);
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 90px;
+    z-index: 30;
+    pointer-events: none;
   }
 
-  /* XP Bar Container - Fixed at bottom */
+  /* Rarity Glow Effect */
+  .rarity-glow {
+    opacity: 0.15;
+    border-radius: 10px;
+  }
+
+  /* Card Texture */
+  .card-texture {
+    opacity: 0.03;
+    border-radius: 10px;
+  }
+
+  /* XP Bar Container - Fixed bottom bar */
   .xp-bar-container {
     position: fixed;
     bottom: 0;
@@ -1427,8 +1615,9 @@
     max-width: 100%;
     z-index: 100;
     padding: 0;
-    background: linear-gradient(to top, rgba(0,0,0,0.98), rgba(0,0,0,0.9));
-    border-top: 1px solid rgba(185, 28, 28, 0.3);
+    background: linear-gradient(to top, rgba(0,0,0,0.98) 0%, rgba(0,0,0,0.95) 70%, rgba(0,0,0,0.9) 100%);
+    border-top: 2px solid #b91c1c;
+    box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.5);
   }
 
   .rank-widget {
@@ -1440,85 +1629,176 @@
   }
 
   .rank-header {
-    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
   }
 
   .rank-label {
-    font-size: 10px;
-    color: #666;
+    font-size: 11px;
+    color: #888;
     text-transform: uppercase;
     letter-spacing: 0.1em;
+    font-weight: 600;
   }
 
   .rank-number {
-    font-size: 1.25rem;
-    color: #b91c1c;
+    font-size: 1.5rem;
+    color: #fff;
+    text-shadow: 0 0 10px rgba(185, 28, 28, 0.5);
   }
 
   .xp-bar {
-    height: 8px;
-    border-radius: 4px;
-    background: rgba(255, 255, 255, 0.1);
+    height: 10px;
+    border-radius: 5px;
+    background: rgba(255, 255, 255, 0.08);
     overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.1);
   }
 
   .xp-fill {
+    height: 100%;
     border-radius: 4px;
-    background: linear-gradient(90deg, #b91c1c, #ef4444);
-    box-shadow: 0 0 12px rgba(185, 28, 28, 0.6);
+    background: linear-gradient(90deg, #7f1d1d, #b91c1c, #ef4444);
+    box-shadow: 0 0 15px rgba(185, 28, 28, 0.6), inset 0 1px 0 rgba(255,255,255,0.2);
+    transition: width 0.3s ease;
   }
 
   .xp-text {
+    display: flex;
+    justify-content: space-between;
     margin-top: 6px;
-    font-size: 9px;
-    color: #888;
+    font-size: 10px;
+    color: #666;
+    font-family: 'Rajdhani', sans-serif;
+    font-weight: 600;
   }
 
-  /* Footer */
+  /* Footer - Hidden on mobile */
   .season-pass-footer {
     display: none;
   }
 
-  /* Rarity colors on cards */
-  .rarity-glow {
-    opacity: 0.2;
+  /* Track End Padding */
+  .track-end-padding {
+    min-width: 60px;
+    flex-shrink: 0;
   }
 
-  /* Track end padding */
-  .track-end-padding {
-    min-width: 80px;
+  /* Modal Adjustments */
+  .inspect-modal {
+    width: 95%;
+    max-width: 400px;
+    transform: none;
+    border-radius: 12px;
+    margin: 0 auto;
+  }
+
+  .inspect-modal .modal-content {
+    border-radius: 12px;
+    padding: 24px 16px;
+  }
+
+  .inspect-modal .modal-content > * {
+    transform: none;
+  }
+
+  .inspect-modal .modal-name {
+    font-size: 1.5rem;
+  }
+
+  .close-modal {
+    transform: none;
+    top: 12px;
+    right: 12px;
+  }
+
+  /* Toast on mobile */
+  .toast-message {
+    bottom: 110px;
+    left: 16px;
+    right: 16px;
+    transform: none;
+    border-radius: 8px;
+    font-size: 13px;
   }
 }
 
-/* Extra small phones */
+/* Extra small phones (iPhone SE, etc) */
 @media (max-width: 380px) {
-  .level-segment {
-    flex: 0 0 120px;
-    min-width: 120px;
+  .season-pass-header {
+    padding: 8px 10px;
+    min-height: 50px;
   }
 
-  .card-wrapper {
-    width: 95px;
-  }
-
-  .item-card {
-    width: 95px;
-    height: 85px;
-  }
-
-  .level-badge {
-    width: 24px;
-    height: 24px;
-    font-size: 0.6rem;
+  .back-button {
+    width: 32px;
+    height: 32px;
   }
 
   .glitch-effect {
-    font-size: 0.95rem;
+    font-size: 0.85rem;
   }
 
   .get-budget-btn,
-  .get-premium-btn {
+  .get-premium-btn,
+  .budget-badge,
+  .premium-badge {
     padding: 5px 8px;
+    font-size: 8px;
+  }
+
+  .track-labels {
+    gap: 80px;
+  }
+
+  .track-label .label-text {
+    font-size: 0.5rem;
+  }
+
+  .level-segment {
+    flex: 0 0 115px;
+    min-width: 115px;
+  }
+
+  .card-wrapper {
+    width: 88px;
+  }
+
+  .item-card {
+    width: 88px;
+    height: 80px;
+  }
+
+  .level-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.65rem;
+  }
+
+  .item-type-label {
+    font-size: 5px;
+    padding: 1px 4px;
+  }
+
+  .item-name {
+    font-size: 0.5rem;
+  }
+
+  .rank-label {
+    font-size: 10px;
+  }
+
+  .rank-number {
+    font-size: 1.25rem;
+  }
+
+  .xp-bar {
+    height: 8px;
+  }
+
+  .xp-text {
     font-size: 9px;
   }
 }

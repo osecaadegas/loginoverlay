@@ -485,8 +485,33 @@ export default function SeasonPass() {
 
   const handleWheel = (e) => {
     if (!trackRef.current) return;
-    e.preventDefault();
-    trackRef.current.scrollLeft += e.deltaY;
+    // Don't prevent default - let native scroll work
+    // Just add horizontal scrolling from vertical wheel
+    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+      trackRef.current.scrollLeft += e.deltaY;
+    }
+  };
+
+  // Touch handlers for mobile - using passive event handling
+  const handleTouchStart = (e) => {
+    if (!trackRef.current) return;
+    setIsDragging(true);
+    const touch = e.touches[0];
+    setDragStart({
+      x: touch.pageX,
+      scrollLeft: trackRef.current.scrollLeft
+    });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!isDragging || !trackRef.current) return;
+    const touch = e.touches[0];
+    const walk = (dragStart.x - touch.pageX) * 1.5;
+    trackRef.current.scrollLeft = dragStart.scrollLeft + walk;
+  };
+
+  const handleTouchEnd = () => {
+    setIsDragging(false);
   };
 
   // Open item inspection modal
@@ -662,6 +687,9 @@ export default function SeasonPass() {
             onMouseUp={handleMouseUp}
             onMouseLeave={handleMouseUp}
             onWheel={handleWheel}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
           >
             {tiers.map((tier) => {
               const isReached = playerProgress?.currentTier >= tier.tier_number;
