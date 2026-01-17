@@ -302,17 +302,17 @@ export default function TheLifeCrimes({
                     <span className="inline-stat">✅ {Math.round(displaySuccessChance)}%</span>
                   </div>
                 </div>
-                <button 
-                  className="crime-button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    attemptRobbery(robbery);
-                  }}
-                  disabled={isDisabled}
-                >
-                  {isLoading ? '⏳ Processing...' : player.level < robbery.min_level_required ? '🔒 Locked' : 'Commit Crime'}
-                </button>
               </div>
+              <button 
+                className="crime-button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  attemptRobbery(robbery);
+                }}
+                disabled={isDisabled}
+              >
+                {isLoading ? '⏳ Processing...' : player.level < robbery.min_level_required ? '🔒 Locked' : 'Commit Crime'}
+              </button>
             </div>
           );
         })}
