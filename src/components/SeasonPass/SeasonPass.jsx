@@ -685,21 +685,24 @@ export default function SeasonPass() {
                     <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.premium_reward?.rarity) }}></div>
                     
                     {(() => {
-                      const imageUrl = tier.premium_reward?.image_url || tier.premium_reward?.item?.icon;
-                      const isImageUrl = imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/'));
+                      // Check all possible image sources: direct image_url, linked item icon, or icon field itself
+                      const reward = tier.premium_reward;
+                      const imageUrl = reward?.image_url || 
+                                       reward?.item?.icon || 
+                                       (reward?.icon?.startsWith('http') ? reward.icon : null);
                       
-                      if (isImageUrl) {
+                      if (imageUrl) {
                         return (
                           <div className="card-image">
-                            <img src={imageUrl} alt={tier.premium_reward?.name} />
+                            <img src={imageUrl} alt={reward?.name} />
                           </div>
                         );
                       }
                       return (
                         <div className="card-content">
                           <i 
-                            className={`fas ${tier.premium_reward?.icon || 'fa-gift'}`}
-                            style={{ color: tier.premium_reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
+                            className={`fas ${reward?.icon || 'fa-gift'}`}
+                            style={{ color: reward?.rarity === 'legendary' ? '#fbbf24' : '#e5e7eb' }}
                           ></i>
                         </div>
                       );
@@ -741,20 +744,20 @@ export default function SeasonPass() {
                     <div className="rarity-glow" style={{ '--r-color': getRarityColor(tier.budget_reward?.rarity) }}></div>
                     
                     {(() => {
-                      const imageUrl = tier.budget_reward?.image_url || tier.budget_reward?.item?.icon;
-                      const isImageUrl = imageUrl && (imageUrl.startsWith('http') || imageUrl.startsWith('/'));
+                      const reward = tier.budget_reward;
+                      const imageUrl = reward?.image_url || reward?.item?.icon || (reward?.icon?.startsWith('http') ? reward.icon : null);
                       
-                      if (isImageUrl) {
+                      if (imageUrl) {
                         return (
                           <div className="card-image">
-                            <img src={imageUrl} alt={tier.budget_reward?.name} />
+                            <img src={imageUrl} alt={reward?.name} />
                           </div>
                         );
                       }
                       return (
                         <div className="card-content">
                           <i 
-                            className={`fas ${tier.budget_reward?.icon || 'fa-gift'}`}
+                            className={`fas ${reward?.icon || 'fa-gift'}`}
                             style={{ color: '#94a3b8' }}
                           ></i>
                         </div>
