@@ -1160,18 +1160,41 @@
 }
 
 @media (max-width: 768px) {
+  .season-pass-container {
+    height: 100%;
+    min-height: 100vh;
+  }
+
   .season-pass-header {
-    padding: 0 16px;
-    height: 64px;
+    padding: 0 12px;
+    height: 56px;
+    flex-wrap: wrap;
+  }
+
+  .header-left {
+    gap: 12px;
+  }
+
+  .back-button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  .header-divider {
+    display: none;
   }
 
   .glitch-effect {
-    font-size: 1.25rem;
+    font-size: 1rem;
+  }
+
+  .header-right {
+    gap: 12px;
   }
 
   .get-premium-btn {
-    padding: 8px 16px;
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
   }
 
   .track-labels {
@@ -1179,19 +1202,191 @@
   }
 
   .track-wrapper {
-    padding-left: 16px;
+    padding: 30px 0 30px 16px;
   }
 
   .level-segment {
-    flex: 0 0 200px;
+    flex: 0 0 160px;
+    margin-right: -10px;
   }
 
+  /* Smaller cards on mobile */
   .item-card {
-    width: 150px;
-    height: 140px;
+    width: 120px;
+    height: 110px;
+  }
+
+  .card-wrapper {
+    width: 120px;
+  }
+
+  .card-wrapper.premium {
+    margin-bottom: 24px;
+  }
+
+  .card-wrapper.budget {
+    margin-top: 24px;
+  }
+
+  /* Smaller type labels */
+  .item-type-label {
+    font-size: 6px;
+    padding: 2px 0;
+  }
+
+  .item-type-label.premium {
+    top: -12px;
+  }
+
+  .item-type-label.budget {
+    bottom: -12px;
+  }
+
+  /* Level badge */
+  .level-badge {
+    width: 32px;
+    height: 32px;
+    font-size: 0.75rem;
+  }
+
+  /* Card content */
+  .card-content i {
+    font-size: 1.5rem;
+  }
+
+  .card-image img {
+    padding: 4px;
+  }
+
+  .card-info {
+    padding: 4px;
+  }
+
+  .item-name {
+    font-size: 0.65rem;
+  }
+
+  /* XP Bar at bottom */
+  .xp-bar-container {
+    bottom: 60px;
+    width: 90%;
+    max-width: 350px;
+  }
+
+  .rank-widget {
+    padding: 10px 14px;
+  }
+
+  .rank-label {
+    font-size: 10px;
+  }
+
+  .rank-number {
+    font-size: 1.1rem;
+  }
+
+  .xp-bar {
+    height: 6px;
+  }
+
+  .xp-text {
+    font-size: 8px;
+  }
+
+  /* Footer */
+  .season-pass-footer {
+    padding: 12px;
   }
 
   .rarity-legend {
     display: none;
+  }
+
+  /* Connector line */
+  .connector-line {
+    height: 6px;
+  }
+
+  /* Track fade */
+  .track-fade-right {
+    width: 60px;
+  }
+}
+
+@media (max-width: 480px) {
+  .season-pass-header {
+    padding: 0 8px;
+    height: 50px;
+  }
+
+  .back-button {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  .back-button span {
+    display: none;
+  }
+
+  .glitch-effect {
+    font-size: 0.85rem;
+  }
+
+  .get-premium-btn {
+    padding: 5px 10px;
+    font-size: 10px;
+  }
+
+  .level-segment {
+    flex: 0 0 130px;
+  }
+
+  .item-card {
+    width: 100px;
+    height: 95px;
+  }
+
+  .card-wrapper {
+    width: 100px;
+  }
+
+  .card-wrapper.premium {
+    margin-bottom: 20px;
+  }
+
+  .card-wrapper.budget {
+    margin-top: 20px;
+  }
+
+  .item-type-label {
+    font-size: 5px;
+    padding: 2px 0;
+  }
+
+  .level-badge {
+    width: 28px;
+    height: 28px;
+    font-size: 0.65rem;
+  }
+
+  .card-content i {
+    font-size: 1.2rem;
+  }
+
+  .item-name {
+    font-size: 0.55rem;
+  }
+
+  .xp-bar-container {
+    bottom: 50px;
+    width: 95%;
+  }
+
+  .rank-widget {
+    padding: 8px 12px;
+  }
+
+  .rank-number {
+    font-size: 1rem;
   }
 }
