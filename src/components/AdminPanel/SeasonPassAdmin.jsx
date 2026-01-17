@@ -232,7 +232,7 @@ export default function SeasonPassAdmin() {
       let imageUrl = rewardForm.image_url || null;
       if (!imageUrl && rewardForm.type === 'item' && rewardForm.item_id) {
         const selectedItem = items.find(i => i.id === rewardForm.item_id);
-        imageUrl = selectedItem?.image_url || null;
+        imageUrl = selectedItem?.image_url || selectedItem?.icon || null;
       }
 
       // Create or update the reward
@@ -284,20 +284,39 @@ export default function SeasonPassAdmin() {
           .update(tierUpdateField)
           .eq('id', editingTier.id);
       } else {
-        // Create new tier
-        await supabase
+        // Create new tier and get its ID
+        const { data: newTier } = await supabase
           .from('season_pass_tiers')
           .insert({
             season_id: season.id,
             tier_number: editingTier.tier_number,
             xp_required: editingTier.xp_required,
             ...tierUpdateField
-          });
+          })
+          .select()
+          .single();
+        
+        // Update editingTier with the new ID for local state update
+        editingTier.id = newTier?.id;
       }
+
+      // Update local state instead of reloading everything
+      const updatedReward = { ...rewardData, id: rewardId };
+      
+      setTiers(prevTiers => prevTiers.map(tier => {
+        if (tier.tier_number === editingTier.tier_number) {
+          return {
+            ...tier,
+            id: editingTier.id || tier.id,
+            [editingTrack === 'budget' ? 'budget_reward' : 'premium_reward']: updatedReward,
+            [editingTrack === 'budget' ? 'budget_reward_id' : 'premium_reward_id']: rewardId
+          };
+        }
+        return tier;
+      }));
 
       setMessage({ type: 'success', text: 'Reward saved successfully!' });
       setShowRewardModal(false);
-      loadData(); // Refresh data
 
     } catch (error) {
       console.error('Error saving reward:', error);
@@ -338,9 +357,20 @@ export default function SeasonPassAdmin() {
         .delete()
         .eq('id', rewardId);
 
+      // Update local state instead of reloading
+      setTiers(prevTiers => prevTiers.map(tier => {
+        if (tier.tier_number === editingTier.tier_number) {
+          return {
+            ...tier,
+            [editingTrack === 'budget' ? 'budget_reward' : 'premium_reward']: null,
+            [editingTrack === 'budget' ? 'budget_reward_id' : 'premium_reward_id']: null
+          };
+        }
+        return tier;
+      }));
+
       setMessage({ type: 'success', text: 'Reward removed!' });
       setShowRewardModal(false);
-      loadData();
 
     } catch (error) {
       console.error('Error removing reward:', error);
