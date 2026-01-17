@@ -318,6 +318,23 @@ export default function TheLifeBlackMarket({
 
       {marketSubTab === 'store' && (
         <div className="market-content">
+          {/* Mobile Dropdown Filter */}
+          <div className="store-category-dropdown-mobile">
+            <select 
+              value={storeCategory} 
+              onChange={(e) => setStoreCategory(e.target.value)}
+              className="category-dropdown"
+            >
+              <option value="all">🛒 All Items</option>
+              <option value="weapons">⚔️ Weapons</option>
+              <option value="gear">🛡️ Gear</option>
+              <option value="healing">💊 Healing</option>
+              <option value="valuable">💎 Valuable</option>
+              <option value="limited_time">⏰ Limited Time</option>
+            </select>
+          </div>
+
+          {/* Desktop Button Filters */}
           <div className="store-category-filters">
             <button 
               className={`category-filter-btn ${storeCategory === 'all' ? 'active' : ''}`}
