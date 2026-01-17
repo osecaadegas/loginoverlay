@@ -629,12 +629,6 @@ export default function SeasonPass() {
               <span>{playerProgress?.xpRequiredForNext || getXPForTier(1)} XP</span>
             </div>
           </div>
-
-          {/* SE Points Balance */}
-          <div className="points-display">
-            <i className="fas fa-coins"></i>
-            <span>{userPoints?.toLocaleString() || 0} SE Points</span>
-          </div>
         </div>
 
         {/* The Battle Pass Track Area */}

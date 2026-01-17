@@ -1,6 +1,7 @@
 import '../styles/TheLifeProfile.css';
 import { supabase } from '../../../config/supabaseClient';
 import { useState, useEffect, useRef } from 'react';
+import { addSeasonPassXP } from '../hooks/useSeasonPassXP';
 
 export default function TheLifeProfile({ 
   player,
@@ -144,6 +145,8 @@ export default function TheLifeProfile({
           break;
         case 'xp_boost':
           updateData.xp = player.xp + effect.value;
+          // Add XP to Season Pass for XP boost items
+          await addSeasonPassXP(user.id, effect.value, 'item_use', item.id?.toString());
           break;
         case 'cash':
           updateData.cash = player.cash + effect.value;

@@ -1,6 +1,7 @@
 import { supabase } from '../../../config/supabaseClient';
 import { useRef, useState } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
+import { addSeasonPassXP } from '../hooks/useSeasonPassXP';
 import '../styles/TheLifeCrimes.css';
 
 /**
@@ -198,15 +199,19 @@ export default function TheLifeCrimes({
 
       let jailMultiplierForLog = levelDifference < 0 ? 1 + (Math.abs(levelDifference) * 0.5) : 1;
       const actualJailTime = success ? 0 : Math.floor(robbery.jail_time_minutes * jailMultiplierForLog);
+      const xpEarned = success ? robbery.xp_reward : Math.floor(robbery.xp_reward / 2);
       
       await supabase.from('the_life_robbery_history').insert({
         player_id: player.id,
         robbery_id: robbery.id,
         success,
         reward,
-        xp_gained: success ? robbery.xp_reward : Math.floor(robbery.xp_reward / 2),
+        xp_gained: xpEarned,
         jail_time_minutes: actualJailTime
       });
+
+      // Add XP to Season Pass
+      await addSeasonPassXP(user.id, xpEarned, 'crime', robbery.id.toString());
 
       setPlayer(data);
     } catch (err) {

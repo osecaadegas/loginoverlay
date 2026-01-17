@@ -1,6 +1,7 @@
 import '../styles/TheLifeBlackMarket.css';
 import { supabase } from '../../../config/supabaseClient';
 import { useState, useEffect } from 'react';
+import { addSeasonPassXP } from '../hooks/useSeasonPassXP';
 
 export default function TheLifeBlackMarket({ 
   player,
@@ -209,6 +210,9 @@ export default function TheLifeBlackMarket({
             .update({ quantity: newQuantity })
             .eq('id', inv.id);
         }
+        
+        // Add XP to Season Pass
+        await addSeasonPassXP(user.id, xpReward, 'street_sale', inv.item_id?.toString());
         
         setMessage({ type: 'success', text: `Sold ${quantity}x for $${streetPrice.toLocaleString()} and ${xpReward} XP!` });
         setStreetQuantities({ ...streetQuantities, [inv.id]: 1 }); // Reset quantity
