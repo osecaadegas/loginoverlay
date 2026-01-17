@@ -386,22 +386,22 @@ export default function TheLifeBrothel({
       <div className="brothel-stats-grid">
         <div className="stat-tile">
           <span className="stat-tile-value">{usedSlots}/{totalSlots}</span>
-          <span className="stat-tile-label">Workers employed out of available slots</span>
+          <span className="stat-tile-label">Workers</span>
         </div>
         
         <div className="stat-tile">
           <span className="stat-tile-value">${(brothel.income_per_hour || 0).toLocaleString()}</span>
-          <span className="stat-tile-label">Income generated per hour by your workers</span>
+          <span className="stat-tile-label">Per Hour</span>
         </div>
         
         <div className="stat-tile stat-tile-highlight">
           <span className="stat-tile-value">${availableIncome.toLocaleString()}</span>
-          <span className="stat-tile-label">Ready to collect from your business</span>
+          <span className="stat-tile-label">Ready</span>
         </div>
         
         <div className="stat-tile">
           <span className="stat-tile-value">${(brothel.total_earned || 0).toLocaleString()}</span>
-          <span className="stat-tile-label">Total earnings since opening</span>
+          <span className="stat-tile-label">Total Earned</span>
         </div>
 
         {/* Collect Income Tile */}
@@ -411,7 +411,7 @@ export default function TheLifeBrothel({
           disabled={!canCollect}
         >
           <span className="stat-tile-value">💰 Collect</span>
-          <span className="stat-tile-label">{canCollect ? `$${availableIncome.toLocaleString()} ready` : 'No income available yet'}</span>
+          <span className="stat-tile-label">{canCollect ? `$${availableIncome.toLocaleString()}` : 'Nothing yet'}</span>
         </button>
         
         {/* Upgrade Tile */}
@@ -423,8 +423,8 @@ export default function TheLifeBrothel({
           <span className="stat-tile-value">⬆️ Upgrade</span>
           <span className="stat-tile-label">
             {!canUpgrade 
-              ? (totalSlots >= 50 ? 'Max slots reached' : 'Requires level 5')
-              : `+2 slots for $${upgradeCost.toLocaleString()}`
+              ? (totalSlots >= 50 ? 'Max slots' : 'Need Lvl 5')
+              : `+2 for $${(upgradeCost / 1000000).toFixed(1)}B`
             }
           </span>
         </button>
