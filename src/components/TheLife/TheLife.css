@@ -6679,15 +6679,21 @@ input:checked + .toggle-slider:before {
 
   .category-info-image {
     width: 100% !important;
-    height: 250px !important;
+    height: auto !important;
+    max-height: 300px !important;
     flex-shrink: 0 !important;
     order: 1 !important;
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
+    background: rgba(0, 0, 0, 0.3) !important;
   }
 
   .category-info-image img {
     width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
+    height: auto !important;
+    max-height: 300px !important;
+    object-fit: contain !important;
   }
 
   /* Navigation Tabs - Keep horizontal scroll on mobile */
