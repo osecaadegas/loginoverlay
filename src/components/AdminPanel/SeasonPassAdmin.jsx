@@ -21,6 +21,7 @@ export default function SeasonPassAdmin() {
   const [showRewardModal, setShowRewardModal] = useState(false);
   const [editingTier, setEditingTier] = useState(null);
   const [editingTrack, setEditingTrack] = useState(null); // 'budget' or 'premium'
+  const [uploadingImage, setUploadingImage] = useState(false);
   
   // Reward form
   const [rewardForm, setRewardForm] = useState({
@@ -33,7 +34,8 @@ export default function SeasonPassAdmin() {
     item_id: '',
     cash_amount: 0,
     xp_amount: 0,
-    se_points_amount: 0
+    se_points_amount: 0,
+    image_url: ''
   });
 
   const trackRef = useRef(null);
@@ -163,7 +165,8 @@ export default function SeasonPassAdmin() {
         item_id: existingReward.item_id || '',
         cash_amount: existingReward.cash_amount || 0,
         xp_amount: existingReward.xp_amount || 0,
-        se_points_amount: existingReward.se_points_amount || 0
+        se_points_amount: existingReward.se_points_amount || 0,
+        image_url: existingReward.image_url || ''
       });
     } else {
       // Default values based on tier and track
@@ -182,11 +185,40 @@ export default function SeasonPassAdmin() {
         item_id: '',
         cash_amount: track === 'budget' ? 1000 * tier.tier_number : 0,
         xp_amount: 0,
-        se_points_amount: 0
+        se_points_amount: 0,
+        image_url: ''
       });
     }
     
     setShowRewardModal(true);
+  };
+
+  // Upload image to Supabase storage
+  const uploadImage = async (file) => {
+    try {
+      setUploadingImage(true);
+      
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+      const filePath = `season-pass-rewards/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('images')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('images')
+        .getPublicUrl(filePath);
+
+      setRewardForm({ ...rewardForm, image_url: publicUrl });
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Failed to upload image');
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   // Save reward
@@ -196,9 +228,9 @@ export default function SeasonPassAdmin() {
     try {
       setSaving(true);
 
-      // Get item image if item type
-      let imageUrl = null;
-      if (rewardForm.type === 'item' && rewardForm.item_id) {
+      // Use uploaded image, or get item image if item type
+      let imageUrl = rewardForm.image_url || null;
+      if (!imageUrl && rewardForm.type === 'item' && rewardForm.item_id) {
         const selectedItem = items.find(i => i.id === rewardForm.item_id);
         imageUrl = selectedItem?.image_url || null;
       }
@@ -528,6 +560,44 @@ export default function SeasonPassAdmin() {
             </div>
 
             <div className="sp-modal-body">
+              {/* Image Upload */}
+              <div className="form-row">
+                <div className="form-group full">
+                  <label>Reward Image</label>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+                    <div style={{ flex: 1 }}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) uploadImage(file);
+                        }}
+                        disabled={uploadingImage}
+                        style={{ marginBottom: '8px' }}
+                      />
+                      <input
+                        type="text"
+                        value={rewardForm.image_url}
+                        onChange={(e) => setRewardForm({ ...rewardForm, image_url: e.target.value })}
+                        placeholder="Or paste image URL..."
+                        style={{ width: '100%' }}
+                      />
+                      {uploadingImage && <span style={{ color: '#fbbf24', fontSize: '12px' }}>Uploading...</span>}
+                    </div>
+                    {rewardForm.image_url && (
+                      <div style={{ width: '80px', height: '80px', border: '1px solid #333', borderRadius: '4px', overflow: 'hidden' }}>
+                        <img 
+                          src={rewardForm.image_url} 
+                          alt="Preview" 
+                          style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               <div className="form-row">
                 <div className="form-group">
                   <label>Reward Name</label>
