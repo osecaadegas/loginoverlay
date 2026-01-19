@@ -96,16 +96,20 @@ CREATE POLICY "Authenticated users can insert translations" ON translations
 CREATE POLICY "Admins can update translations" ON translations
   FOR UPDATE USING (
     EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE user_id = auth.uid() AND role IN ('admin', 'owner')
+      SELECT 1 FROM user_roles 
+      WHERE user_roles.user_id = auth.uid() 
+      AND user_roles.role IN ('admin', 'owner')
+      AND user_roles.is_active = true
     )
   );
 
 CREATE POLICY "Admins can delete translations" ON translations
   FOR DELETE USING (
     EXISTS (
-      SELECT 1 FROM user_profiles 
-      WHERE user_id = auth.uid() AND role IN ('admin', 'owner')
+      SELECT 1 FROM user_roles 
+      WHERE user_roles.user_id = auth.uid() 
+      AND user_roles.role IN ('admin', 'owner')
+      AND user_roles.is_active = true
     )
   );
 
