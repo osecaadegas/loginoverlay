@@ -7,7 +7,7 @@
  * Documentation: https://learn.microsoft.com/en-us/azure/cognitive-services/translator/
  */
 
-import { supabase } from '../lib/supabase';
+import { supabase } from '../config/supabaseClient';
 
 // Azure Translator Configuration
 const AZURE_TRANSLATOR_KEY = import.meta.env.VITE_AZURE_TRANSLATOR_KEY;

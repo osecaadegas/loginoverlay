@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from "../config/supabaseClient";
 import { 
   loadUITranslations, 
   getSupportedLanguages, 

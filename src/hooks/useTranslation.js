@@ -162,6 +162,28 @@ export const T = {
   NAV_SETTINGS: 'nav_settings',
   NAV_LOGOUT: 'nav_logout',
   NAV_LOGIN: 'nav_login',
+  
+  // Sidebar Navigation
+  NAV_PARTNERS: 'nav_partners',
+  NAV_POINTS_STORE: 'nav_points_store',
+  NAV_COMMUNITY: 'nav_community',
+  NAV_TOURNAMENTS: 'nav_tournaments',
+  NAV_GUESS_BALANCE: 'nav_guess_balance',
+  NAV_GIVEAWAYS: 'nav_giveaways',
+  NAV_VOUCHERS: 'nav_vouchers',
+  NAV_DAILY_WHEEL: 'nav_daily_wheel',
+  NAV_BLACKJACK: 'nav_blackjack',
+  NAV_MINES: 'nav_mines',
+  NAV_THELIFE: 'nav_thelife',
+  NAV_WEBMOD: 'nav_webmod',
+  NAV_SLOT_MANAGER: 'nav_slot_manager',
+  NAV_POINTS_MANAGER: 'nav_points_manager',
+  NAV_VOUCHER_MANAGER: 'nav_voucher_manager',
+  NAV_GIVEAWAY_CREATOR: 'nav_giveaway_creator',
+  NAV_EDIT_SLOTS: 'nav_edit_slots',
+  NAV_ADMIN_PANEL: 'nav_admin_panel',
+  LOGIN_WITH_TWITCH: 'login_with_twitch',
+  LOGOUT: 'nav_logout',
 
   // The Life Game
   THELIFE_CRIMES: 'thelife_crimes',

@@ -291,7 +291,33 @@ INSERT INTO translations (source_table, source_id, source_field, language_code, 
 ('ui', NULL, 'news_harbor', 'pt', 'Harbor News', 'Notícias do Porto', false, true),
 ('ui', NULL, 'news_vice', 'pt', 'Vice', 'Vícios', false, true),
 ('ui', NULL, 'news_markets', 'pt', 'Markets', 'Mercados', false, true),
-('ui', NULL, 'news_risingstars', 'pt', 'Rising Stars', 'Estrelas em Ascensão', false, true)
+('ui', NULL, 'news_risingstars', 'pt', 'Rising Stars', 'Estrelas em Ascensão', false, true),
+
+-- Sidebar Navigation
+('ui', NULL, 'nav_partners', 'pt', 'Partners', 'Parceiros', false, true),
+('ui', NULL, 'nav_points_store', 'pt', 'Points Store', 'Loja de Pontos', false, true),
+('ui', NULL, 'nav_community', 'pt', 'Community', 'Comunidade', false, true),
+('ui', NULL, 'nav_tournaments', 'pt', 'Tournaments', 'Torneios', false, true),
+('ui', NULL, 'nav_guess_balance', 'pt', 'Guess the Balance', 'Adivinhe o Saldo', false, true),
+('ui', NULL, 'nav_giveaways', 'pt', 'Giveaways', 'Sorteios', false, true),
+('ui', NULL, 'nav_vouchers', 'pt', 'Vouchers', 'Cupons', false, true),
+('ui', NULL, 'nav_daily_wheel', 'pt', 'Daily Wheel', 'Roda Diária', false, true),
+('ui', NULL, 'nav_blackjack', 'pt', 'Blackjack', 'Blackjack', false, true),
+('ui', NULL, 'nav_mines', 'pt', 'Mines', 'Minas', false, true),
+('ui', NULL, 'nav_thelife', 'pt', 'The Life', 'A Vida', false, true),
+('ui', NULL, 'nav_webmod', 'pt', 'WebMod', 'WebMod', false, true),
+('ui', NULL, 'nav_slot_manager', 'pt', 'Slot Manager', 'Gerenciador de Slots', false, true),
+('ui', NULL, 'nav_points_manager', 'pt', 'Points Manager', 'Gerenciador de Pontos', false, true),
+('ui', NULL, 'nav_voucher_manager', 'pt', 'Voucher Manager', 'Gerenciador de Cupons', false, true),
+('ui', NULL, 'nav_giveaway_creator', 'pt', 'Giveaway Creator', 'Criador de Sorteios', false, true),
+('ui', NULL, 'nav_edit_slots', 'pt', 'Edit Slots', 'Editar Slots', false, true),
+('ui', NULL, 'nav_admin_panel', 'pt', 'Admin Panel', 'Painel Admin', false, true),
+('ui', NULL, 'login_with_twitch', 'pt', 'Login with Twitch', 'Entrar com Twitch', false, true),
+
+-- Language Switcher
+('ui', NULL, 'language_english', 'pt', 'English', 'Inglês', false, true),
+('ui', NULL, 'language_portuguese', 'pt', 'Portuguese', 'Português', false, true),
+('ui', NULL, 'select_language', 'pt', 'Select Language', 'Selecionar Idioma', false, true)
 
 ON CONFLICT (source_table, source_id, source_field, language_code) DO UPDATE SET
   translated_text = EXCLUDED.translated_text,
