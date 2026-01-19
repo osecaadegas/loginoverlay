@@ -30,9 +30,15 @@ const LanguageSwitcher = ({
   // Get current language data
   const currentLanguage = supportedLanguages.find(l => l.code === language) || {
     code: 'en',
-    name: 'English',
+    name: 'English (UK)',
     native_name: 'English',
     flag_emoji: '🇬🇧'
+  };
+
+  // Fallback flags if not loaded from DB
+  const getFlag = (lang) => {
+    if (lang.flag_emoji) return lang.flag_emoji;
+    return lang.code === 'pt' ? '🇵🇹' : '🇬🇧';
   };
 
   const handleLanguageChange = async (langCode) => {
@@ -54,7 +60,7 @@ const LanguageSwitcher = ({
             disabled={isChanging}
             title={lang.native_name || lang.name}
           >
-            <span className="language-switcher__flag">{lang.flag_emoji}</span>
+            <span className="language-switcher__flag">{getFlag(lang)}</span>
           </button>
         ))}
       </div>
@@ -72,7 +78,7 @@ const LanguageSwitcher = ({
             onClick={() => handleLanguageChange(lang.code)}
             disabled={isChanging}
           >
-            <span className="language-switcher__flag">{lang.flag_emoji}</span>
+            <span className="language-switcher__flag">{getFlag(lang)}</span>
             {showLabel && (
               <span className="language-switcher__label">{lang.code.toUpperCase()}</span>
             )}
@@ -95,7 +101,7 @@ const LanguageSwitcher = ({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="language-switcher__flag">{currentLanguage.flag_emoji}</span>
+        <span className="language-switcher__flag">{getFlag(currentLanguage)}</span>
         {showLabel && (
           <span className="language-switcher__label">
             {currentLanguage.code.toUpperCase()}
@@ -116,7 +122,7 @@ const LanguageSwitcher = ({
                 role="option"
                 aria-selected={language === lang.code}
               >
-                <span className="language-switcher__flag">{lang.flag_emoji}</span>
+                <span className="language-switcher__flag">{getFlag(lang)}</span>
                 <span className="language-switcher__name">
                   {lang.native_name || lang.name}
                 </span>

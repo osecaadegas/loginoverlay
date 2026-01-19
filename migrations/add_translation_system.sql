@@ -46,8 +46,8 @@ CREATE TABLE IF NOT EXISTS supported_languages (
 
 -- Insert supported languages
 INSERT INTO supported_languages (code, name, native_name, flag_emoji, is_active, is_default, display_order) VALUES
-('en', 'English', 'English', '🇬🇧', true, true, 1),
-('pt', 'Portuguese', 'Português', '🇧🇷', true, false, 2)
+('en', 'English (UK)', 'English', '🇬🇧', true, true, 1),
+('pt', 'Portuguese (PT)', 'Português', '🇵🇹', true, false, 2)
 ON CONFLICT (code) DO UPDATE SET
   name = EXCLUDED.name,
   native_name = EXCLUDED.native_name,
@@ -79,6 +79,13 @@ CREATE INDEX IF NOT EXISTS idx_translations_lookup ON translations(source_table,
 -- =============================================
 ALTER TABLE translations ENABLE ROW LEVEL SECURITY;
 ALTER TABLE supported_languages ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (for re-running migration)
+DROP POLICY IF EXISTS "Anyone can read translations" ON translations;
+DROP POLICY IF EXISTS "Anyone can read supported languages" ON supported_languages;
+DROP POLICY IF EXISTS "Authenticated users can insert translations" ON translations;
+DROP POLICY IF EXISTS "Admins can update translations" ON translations;
+DROP POLICY IF EXISTS "Admins can delete translations" ON translations;
 
 -- Everyone can read translations
 CREATE POLICY "Anyone can read translations" ON translations
@@ -324,10 +331,11 @@ ON CONFLICT (source_table, source_id, source_field, language_code) DO UPDATE SET
   is_verified = EXCLUDED.is_verified;
 
 -- =============================================
--- ENABLE REALTIME
+-- COMMENTS
 -- =============================================
-ALTER PUBLICATION supabase_realtime ADD TABLE translations;
-ALTER PUBLICATION supabase_realtime ADD TABLE supported_languages;
+-- NOTE: Realtime is NOT enabled for translations table
+-- Translations are static/cached and don't need live updates
+-- This saves Supabase resources
 
 COMMENT ON TABLE translations IS 'Stores all translations for multi-language support';
 COMMENT ON TABLE supported_languages IS 'List of supported languages for the application';

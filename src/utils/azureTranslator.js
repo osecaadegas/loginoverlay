@@ -16,8 +16,8 @@ const AZURE_TRANSLATOR_ENDPOINT = 'https://api.cognitive.microsofttranslator.com
 
 // Supported languages
 export const LANGUAGES = {
-  en: { code: 'en', name: 'English', nativeName: 'English', flag: '🇬🇧' },
-  pt: { code: 'pt', name: 'Portuguese', nativeName: 'Português', flag: '🇧🇷' }
+  en: { code: 'en', name: 'English (UK)', nativeName: 'English', flag: '🇬🇧' },
+  pt: { code: 'pt', name: 'Portuguese (PT)', nativeName: 'Português', flag: '🇵🇹' }
 };
 
 // Default/Primary language

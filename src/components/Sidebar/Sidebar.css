@@ -569,18 +569,28 @@
   border-top: 1px solid #21262C;
 }
 
-.sidebar-language .language-switcher-inline {
+.sidebar-language .language-switcher--inline {
   justify-content: center;
-  gap: 12px;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 6px;
+  border-radius: 10px;
 }
 
-.sidebar-language .language-btn {
-  padding: 6px 12px;
+.sidebar-language .language-switcher__btn {
+  padding: 8px 14px;
+  font-size: 13px;
+  border-radius: 8px;
+  gap: 6px;
+}
+
+.sidebar-language .language-switcher__flag {
+  font-size: 20px;
+}
+
+.sidebar-language .language-switcher__label {
   font-size: 12px;
-}
-
-.sidebar-language .flag-icon {
-  font-size: 16px;
+  font-weight: 600;
 }
 
 /* Social Media Cards */
@@ -830,13 +840,17 @@
     padding: 16px 12px 8px;
   }
 
-  .sidebar-language .language-btn {
-    padding: 8px 16px;
-    font-size: 13px;
+  .sidebar-language .language-switcher__btn {
+    padding: 10px 18px;
+    font-size: 14px;
   }
 
-  .sidebar-language .flag-icon {
-    font-size: 18px;
+  .sidebar-language .language-switcher__flag {
+    font-size: 22px;
+  }
+
+  .sidebar-language .language-switcher__label {
+    font-size: 13px;
   }
 
   .social-link {
