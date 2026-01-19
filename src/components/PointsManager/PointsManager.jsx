@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import './PointsManager.css';
 
@@ -50,10 +50,22 @@ export default function PointsManager() {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Check if user has admin role in a custom table or metadata
-        // For now, hardcode admin email or add logic to check roles table
-        const adminEmails = ['miguelmonsanto95aa@gmail.com']; // Add your admin email(s)
-        setUserRole(adminEmails.includes(user.email) ? 'admin' : 'moderator');
+        // Check if user has admin role from the user_roles table
+        const { data: roles, error } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+        
+        if (error) throw error;
+        
+        const userRoles = roles?.map(r => r.role) || [];
+        if (userRoles.includes('admin')) {
+          setUserRole('admin');
+        } else if (userRoles.includes('moderator')) {
+          setUserRole('moderator');
+        } else {
+          setUserRole('user');
+        }
       }
     } catch (err) {
       console.error('Error checking user role:', err);
@@ -234,7 +246,7 @@ export default function PointsManager() {
 
             if (response.ok) {
               const data = await response.json();
-              console.log(`✓ Fetched points for ${seUsername}: ${data.points}`);
+              console.log(`âœ“ Fetched points for ${seUsername}: ${data.points}`);
               return {
                 user_id: user.user_id,
                 se_username: seUsername,
@@ -248,7 +260,7 @@ export default function PointsManager() {
               };
             } else if (response.status === 404) {
               // User doesn't exist in SE yet - they'll be created when points are added
-              console.log(`⚠ User ${seUsername} not found in StreamElements (will be created on first points add)`);
+              console.log(`âš  User ${seUsername} not found in StreamElements (will be created on first points add)`);
               return {
                 user_id: user.user_id,
                 se_username: seUsername,
@@ -261,7 +273,7 @@ export default function PointsManager() {
                 se_status: 'not_in_se'
               };
             } else {
-              console.error(`✗ Failed to fetch points for ${seUsername}: ${response.status} ${response.statusText}`);
+              console.error(`âœ— Failed to fetch points for ${seUsername}: ${response.status} ${response.statusText}`);
             }
           }
         } catch (err) {
@@ -696,7 +708,7 @@ export default function PointsManager() {
   return (
     <div className="points-manager">
       <div className="pm-header">
-        <h1>🎁 Points Manager</h1>
+        <h1>ðŸŽ Points Manager</h1>
         <p>Manage StreamElements points and redemptions</p>
       </div>
 
@@ -708,25 +720,25 @@ export default function PointsManager() {
           className={`pm-tab ${activeTab === 'users' ? 'active' : ''}`}
           onClick={() => setActiveTab('users')}
         >
-          👥 Users ({users.length})
+          ðŸ‘¥ Users ({users.length})
         </button>
         <button
           className={`pm-tab ${activeTab === 'games' ? 'active' : ''}`}
           onClick={() => setActiveTab('games')}
         >
-          🎮 Game History ({gameSessions.length})
+          ðŸŽ® Game History ({gameSessions.length})
         </button>
         <button
           className={`pm-tab ${activeTab === 'redemptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('redemptions')}
         >
-          📜 Redemptions ({redemptions.length})
+          ðŸ“œ Redemptions ({redemptions.length})
         </button>
         <button
           className={`pm-tab ${activeTab === 'items' ? 'active' : ''}`}
           onClick={() => setActiveTab('items')}
         >
-          🎁 Items ({redemptionItems.length})
+          ðŸŽ Items ({redemptionItems.length})
         </button>
       </div>
 
@@ -739,7 +751,7 @@ export default function PointsManager() {
               <div className="pm-users-header">
                 <h2>Connected Users</h2>
                 <button onClick={loadUsers} className="pm-refresh-btn">
-                  🔄 Refresh Points
+                  ðŸ”„ Refresh Points
                 </button>
               </div>
               <div className="pm-table-container">
@@ -762,17 +774,17 @@ export default function PointsManager() {
                         <td>
                           {user.se_status === 'active' && (
                             <span className="pm-status-badge approved" title="User exists in StreamElements">
-                              ✅ Active
+                              âœ… Active
                             </span>
                           )}
                           {user.se_status === 'not_in_se' && (
                             <span className="pm-status-badge pending" title="User will be created when you add points">
-                              ⏳ Not in SE
+                              â³ Not in SE
                             </span>
                           )}
                           {user.se_status === 'error' && (
                             <span className="pm-status-badge denied" title="Error fetching from StreamElements">
-                              ⚠️ Error
+                              âš ï¸ Error
                             </span>
                           )}
                           {!user.se_status && (
@@ -791,7 +803,7 @@ export default function PointsManager() {
                               }}
                               className="pm-action-btn"
                             >
-                              ✏️ Edit Points
+                              âœï¸ Edit Points
                             </button>
                           ) : (
                             <div className="pm-mod-actions">
@@ -803,7 +815,7 @@ export default function PointsManager() {
                                 }}
                                 className="pm-add-points-btn"
                               >
-                                ➕ Add Points
+                                âž• Add Points
                               </button>
                               <button
                                 onClick={() => {
@@ -813,7 +825,7 @@ export default function PointsManager() {
                                 }}
                                 className="pm-remove-points-btn"
                               >
-                                ➖ Remove Points
+                                âž– Remove Points
                               </button>
                             </div>
                           )}
@@ -834,7 +846,7 @@ export default function PointsManager() {
               <div className="pm-games-header">
                 <h2>Game History</h2>
                 <button onClick={loadGameSessions} className="pm-refresh-btn">
-                  🔄 Refresh
+                  ðŸ”„ Refresh
                 </button>
               </div>
               <div className="pm-table-container">
@@ -865,9 +877,9 @@ export default function PointsManager() {
                           </td>
                           <td>
                             <span className="pm-game-badge">
-                              {session.game_type === 'blackjack' && '🃏 Blackjack'}
-                              {session.game_type === 'mines' && '💣 Mines'}
-                              {session.game_type === 'coinflip' && '🪙 Coin Flip'}
+                              {session.game_type === 'blackjack' && 'ðŸƒ Blackjack'}
+                              {session.game_type === 'mines' && 'ðŸ’£ Mines'}
+                              {session.game_type === 'coinflip' && 'ðŸª™ Coin Flip'}
                             </span>
                           </td>
                           <td className="pm-points">{session.bet_amount.toLocaleString()} pts</td>
@@ -966,9 +978,9 @@ export default function PointsManager() {
                             const currentStatus = redemption.status || (redemption.processed ? 'approved' : 'pending');
                             return (
                               <span className={`pm-status-badge ${currentStatus}`}>
-                                {currentStatus === 'aproved' && '✅ Aproved'}
-                                {currentStatus === 'denied' && '❌ Denied'}
-                                {currentStatus === 'pending' && '⏳ Pending'}
+                                {currentStatus === 'aproved' && 'âœ… Aproved'}
+                                {currentStatus === 'denied' && 'âŒ Denied'}
+                                {currentStatus === 'pending' && 'â³ Pending'}
                               </span>
                             );
                           })()}
@@ -981,18 +993,18 @@ export default function PointsManager() {
                                 className="pm-approve-btn"
                                 title="Approve redemption"
                               >
-                                ✅ Approve
+                                âœ… Approve
                               </button>
                               <button
                                 onClick={() => handleDenyRedemption(redemption)}
                                 className="pm-deny-btn"
                                 title="Deny and refund"
                               >
-                                ❌ Deny
+                                âŒ Deny
                               </button>
                             </div>
                           ) : (
-                            <span className="pm-no-action">—</span>
+                            <span className="pm-no-action">â€”</span>
                           )}
                         </td>
                       </tr>
@@ -1010,7 +1022,7 @@ export default function PointsManager() {
                     disabled={redemptionPage === 1}
                     className="pm-pagination-btn"
                   >
-                    ← Previous
+                    â† Previous
                   </button>
                   <span className="pm-pagination-info">
                     Page {redemptionPage} of {Math.ceil(redemptions.length / redemptionsPerPage)}
@@ -1020,7 +1032,7 @@ export default function PointsManager() {
                     disabled={redemptionPage >= Math.ceil(redemptions.length / redemptionsPerPage)}
                     className="pm-pagination-btn"
                   >
-                    Next →
+                    Next â†’
                   </button>
                 </div>
               )}
@@ -1065,7 +1077,7 @@ export default function PointsManager() {
                         <span>Stock: {item.available_units} units</span>
                       )}
                       <span className={`pm-item-status ${item.is_active ? 'active' : 'inactive'}`}>
-                        {item.is_active ? '🟢 Active' : '🔴 Inactive'}
+                        {item.is_active ? 'ðŸŸ¢ Active' : 'ðŸ”´ Inactive'}
                       </span>
                     </div>
                     <div className="pm-item-actions">
@@ -1086,19 +1098,19 @@ export default function PointsManager() {
                         }}
                         className="pm-edit-btn"
                       >
-                        ✏️ Edit
+                        âœï¸ Edit
                       </button>
                       <button
                         onClick={() => handleToggleItem(item)}
                         className="pm-toggle-btn"
                       >
-                        {item.is_active ? '❌ Disable' : '✅ Enable'}
+                        {item.is_active ? 'âŒ Disable' : 'âœ… Enable'}
                       </button>
                       <button
                         onClick={() => handleDeleteItem(item.id)}
                         className="pm-delete-btn"
                       >
-                        🗑️ Delete
+                        ðŸ—‘ï¸ Delete
                       </button>
                     </div>
                   </div>
@@ -1175,7 +1187,7 @@ export default function PointsManager() {
                 onClick={() => setShowItemModal(false)} 
                 className="pm-modal-close"
               >
-                ✕
+                âœ•
               </button>
             </div>
 
@@ -1222,7 +1234,7 @@ export default function PointsManager() {
                       type="number"
                       value={itemForm.available_units}
                       onChange={(e) => setItemForm({ ...itemForm, available_units: e.target.value })}
-                      placeholder="∞ Unlimited"
+                      placeholder="âˆž Unlimited"
                       min="0"
                       className="pm-input"
                     />
@@ -1266,7 +1278,7 @@ export default function PointsManager() {
                       style={{ display: 'none' }}
                     />
                     <label htmlFor="image-upload" className="pm-file-upload-btn">
-                      <span>📁</span> Choose Image
+                      <span>ðŸ“</span> Choose Image
                     </label>
                     {imageFile && (
                       <span className="pm-file-name">{imageFile.name}</span>
@@ -1289,7 +1301,7 @@ export default function PointsManager() {
                     disabled={!itemForm.name || !itemForm.point_cost || loading || uploadingImage}
                     className="pm-btn-create"
                   >
-                    {uploadingImage ? '⏳ Uploading...' : loading ? '💾 Saving...' : editingItem ? '✓ Update Item' : '✓ Create Item'}
+                    {uploadingImage ? 'â³ Uploading...' : loading ? 'ðŸ’¾ Saving...' : editingItem ? 'âœ“ Update Item' : 'âœ“ Create Item'}
                   </button>
                 </div>
               </div>
@@ -1325,7 +1337,7 @@ export default function PointsManager() {
                     
                     {itemForm.reward_details && (
                       <div className="pm-preview-details">
-                        <span className="pm-preview-icon">🎁</span>
+                        <span className="pm-preview-icon">ðŸŽ</span>
                         {itemForm.reward_details}
                       </div>
                     )}
@@ -1338,7 +1350,7 @@ export default function PointsManager() {
                     
                     {itemForm.available_units && (
                       <div className="pm-preview-stock">
-                        📦 {itemForm.available_units} units available
+                        ðŸ“¦ {itemForm.available_units} units available
                       </div>
                     )}
                     
