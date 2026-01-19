@@ -2,6 +2,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { supabase } from '../../../config/supabaseClient';
+import { useTranslation, T } from '../../../hooks/useTranslation';
+import { useLanguage } from '../../../contexts/LanguageContext';
+import LanguageSwitcher from '../../LanguageSwitcher';
 import './TheLifeJournal.css';
 
 /**
@@ -11,6 +14,8 @@ import './TheLifeJournal.css';
 export default function TheLifeJournal() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const [news, setNews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeFilter, setActiveFilter] = useState('all');
@@ -308,14 +313,14 @@ export default function TheLifeJournal() {
     : news.filter(n => n.news_type === activeFilter);
 
   const filters = [
-    { key: 'all', label: 'All Stories' },
-    { key: 'leaderboard', label: 'Power Rankings' },
-    { key: 'pvp', label: 'Fight Club' },
-    { key: 'crime', label: 'Crime Beat' },
-    { key: 'dock', label: 'Harbor News' },
-    { key: 'brothel', label: 'Vice' },
-    { key: 'stock', label: 'Markets' },
-    { key: 'kingpin', label: 'Rising Stars' },
+    { key: 'all', label: t(T.NEWS_ALL, 'All Stories') },
+    { key: 'leaderboard', label: t(T.NEWS_RANKINGS, 'Power Rankings') },
+    { key: 'pvp', label: t(T.NEWS_FIGHTCLUB, 'Fight Club') },
+    { key: 'crime', label: t(T.NEWS_CRIMEBEAT, 'Crime Beat') },
+    { key: 'dock', label: t(T.NEWS_HARBOR, 'Harbor News') },
+    { key: 'brothel', label: t(T.NEWS_VICE, 'Vice') },
+    { key: 'stock', label: t(T.NEWS_MARKETS, 'Markets') },
+    { key: 'kingpin', label: t(T.NEWS_RISINGSTARS, 'Rising Stars') },
   ];
 
   const getArticleClass = (item) => {
@@ -326,7 +331,8 @@ export default function TheLifeJournal() {
   };
 
   const formatDate = (date) => {
-    return new Date(date).toLocaleDateString('en-US', { 
+    const locale = language === 'pt' ? 'pt-BR' : 'en-US';
+    return new Date(date).toLocaleDateString(locale, { 
       weekday: 'long', 
       year: 'numeric', 
       month: 'long', 
@@ -342,10 +348,10 @@ export default function TheLifeJournal() {
           <div className="header-ornament left">❧</div>
           <div className="header-content">
             <div className="masthead-date">{formatDate(currentDate)}</div>
-            <h1 className="masthead-title">The Underground Chronicle</h1>
+            <h1 className="masthead-title">{t(T.NEWS_TITLE, 'The Underground Chronicle')}</h1>
             <div className="masthead-subtitle">
               <span className="subtitle-ornament">✦</span>
-              <span>Your Trusted Source for Street Intelligence</span>
+              <span>{t(T.NEWS_SUBTITLE, 'Your Trusted Source for Street Intelligence')}</span>
               <span className="subtitle-ornament">✦</span>
             </div>
             <div className="masthead-edition">
@@ -353,7 +359,7 @@ export default function TheLifeJournal() {
               <span className="separator">•</span>
               <span>No. {Math.floor(Math.random() * 999) + 1}</span>
               <span className="separator">•</span>
-              <span>Price: Your Soul</span>
+              <span>{language === 'pt' ? 'Preço: Sua Alma' : 'Price: Your Soul'}</span>
             </div>
           </div>
           <div className="header-ornament right">❧</div>
@@ -362,7 +368,7 @@ export default function TheLifeJournal() {
         {/* Navigation */}
         <nav className="journal-nav">
           <button className="back-btn" onClick={() => navigate('/games/thelife')}>
-            ← Return to The Life
+            ← {t(T.ACTION_BACK, 'Return to The Life')}
           </button>
           <div className="nav-sections">
             {filters.map(filter => (
@@ -375,9 +381,12 @@ export default function TheLifeJournal() {
               </button>
             ))}
           </div>
-          <button className="refresh-btn" onClick={fetchNewsData} disabled={loading}>
-            {loading ? 'Loading...' : '↻ Refresh'}
-          </button>
+          <div className="nav-actions">
+            <LanguageSwitcher variant="compact" />
+            <button className="refresh-btn" onClick={fetchNewsData} disabled={loading}>
+              {loading ? t(T.LABEL_LOADING, 'Loading...') : `↻ ${t(T.ACTION_REFRESH, 'Refresh')}`}
+            </button>
+          </div>
         </nav>
 
         <div className="journal-divider double"></div>
@@ -386,12 +395,12 @@ export default function TheLifeJournal() {
         <main className="journal-content">
           {loading ? (
             <div className="journal-loading">
-              <div className="loading-text">Gathering intelligence...</div>
+              <div className="loading-text">{language === 'pt' ? 'Reunindo inteligência...' : 'Gathering intelligence...'}</div>
             </div>
           ) : filteredNews.length === 0 ? (
             <div className="no-stories">
-              <p>No stories available in this section.</p>
-              <p className="subtext">Check back later for updates from the streets.</p>
+              <p>{language === 'pt' ? 'Nenhuma história disponível nesta seção.' : 'No stories available in this section.'}</p>
+              <p className="subtext">{language === 'pt' ? 'Volte mais tarde para atualizações das ruas.' : 'Check back later for updates from the streets.'}</p>
             </div>
           ) : (
             <div className="articles-grid">
@@ -409,10 +418,10 @@ export default function TheLifeJournal() {
                   <p className="article-content">{item.content}</p>
                   <div className="article-footer">
                     {item.player_name && (
-                      <span className="article-subject">Concerning: {item.player_name}</span>
+                      <span className="article-subject">{language === 'pt' ? 'Referente a' : 'Concerning'}: {item.player_name}</span>
                     )}
                     <span className="article-time">
-                      {new Date(item.created_at).toLocaleTimeString('en-US', { 
+                      {new Date(item.created_at).toLocaleTimeString(language === 'pt' ? 'pt-BR' : 'en-US', { 
                         hour: 'numeric', 
                         minute: '2-digit',
                         hour12: true 
@@ -429,10 +438,14 @@ export default function TheLifeJournal() {
         <footer className="journal-footer">
           <div className="journal-divider"></div>
           <div className="footer-content">
-            <p className="footer-quote">"In the shadows, information is currency."</p>
+            <p className="footer-quote">{language === 'pt' ? '"Nas sombras, informação é moeda."' : '"In the shadows, information is currency."'}</p>
             <p className="footer-disclaimer">
-              The Underground Chronicle is not responsible for any actions taken based on this intelligence.
-              <br/>All reports are gathered from confidential sources within the criminal underworld.
+              {language === 'pt' 
+                ? 'A Crônica Subterrânea não se responsabiliza por quaisquer ações tomadas com base nesta inteligência.'
+                : 'The Underground Chronicle is not responsible for any actions taken based on this intelligence.'}
+              <br/>{language === 'pt'
+                ? 'Todos os relatórios são coletados de fontes confidenciais no submundo criminoso.'
+                : 'All reports are gathered from confidential sources within the criminal underworld.'}
             </p>
             <div className="footer-ornament">⚜</div>
           </div>

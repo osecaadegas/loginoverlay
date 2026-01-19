@@ -1,0 +1,319 @@
+/* ===================================
+   Language Switcher Component Styles
+   =================================== */
+
+.language-switcher {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  font-family: 'Inter', -apple-system, sans-serif;
+}
+
+/* Flag emoji */
+.language-switcher__flag {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+/* Labels */
+.language-switcher__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* ===================================
+   Dropdown Variant
+   =================================== */
+
+.language-switcher--dropdown .language-switcher__trigger {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: inherit;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.language-switcher--dropdown .language-switcher__trigger:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+.language-switcher--dropdown .language-switcher__trigger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.language-switcher__arrow {
+  font-size: 0.6em;
+  transition: transform 0.2s ease;
+  opacity: 0.7;
+}
+
+.language-switcher__arrow.open {
+  transform: rotate(180deg);
+}
+
+/* Dropdown Menu */
+.language-switcher__menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 160px;
+  padding: 4px;
+  margin: 0;
+  list-style: none;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  animation: dropdownFadeIn 0.15s ease;
+}
+
+@keyframes dropdownFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.language-switcher__option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.9);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.language-switcher__option:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.language-switcher__option.active {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.15), rgba(255, 165, 0, 0.1));
+  color: #ffd700;
+}
+
+.language-switcher__name {
+  flex: 1;
+  font-size: 0.9rem;
+}
+
+.language-switcher__check {
+  color: #4ade80;
+  font-size: 0.85rem;
+}
+
+/* ===================================
+   Inline Variant
+   =================================== */
+
+.language-switcher--inline {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+}
+
+.language-switcher__btn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.language-switcher__btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.language-switcher__btn.active {
+  background: rgba(255, 215, 0, 0.2);
+  color: #ffd700;
+}
+
+.language-switcher__btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ===================================
+   Compact Variant
+   =================================== */
+
+.language-switcher--compact {
+  display: flex;
+  gap: 2px;
+}
+
+.language-switcher__flag-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.6;
+}
+
+.language-switcher__flag-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.language-switcher__flag-btn.active {
+  opacity: 1;
+  border-color: #ffd700;
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.language-switcher__flag-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ===================================
+   Loading State
+   =================================== */
+
+.language-switcher__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: inherit;
+}
+
+.language-switcher__spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #ffd700;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===================================
+   Dark Theme Adjustments (for light pages)
+   =================================== */
+
+.language-switcher--light .language-switcher__trigger {
+  background: rgba(0, 0, 0, 0.05);
+  border-color: rgba(0, 0, 0, 0.1);
+  color: #333;
+}
+
+.language-switcher--light .language-switcher__trigger:hover {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.language-switcher--light .language-switcher__menu {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.language-switcher--light .language-switcher__option {
+  color: #333;
+}
+
+.language-switcher--light .language-switcher__option:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.language-switcher--light .language-switcher__option.active {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.2), rgba(255, 165, 0, 0.15));
+  color: #b8860b;
+}
+
+/* ===================================
+   Responsive
+   =================================== */
+
+@media (max-width: 640px) {
+  .language-switcher__label {
+    display: none;
+  }
+  
+  .language-switcher--dropdown .language-switcher__trigger {
+    padding: 8px;
+  }
+  
+  .language-switcher__menu {
+    min-width: 140px;
+  }
+}
+
+/* ===================================
+   Newspaper Theme (for TheLifeJournal)
+   =================================== */
+
+.journal-page .language-switcher--dropdown .language-switcher__trigger {
+  background: rgba(139, 90, 43, 0.1);
+  border-color: rgba(139, 90, 43, 0.3);
+  color: #3d2914;
+  font-family: 'Libre Baskerville', serif;
+}
+
+.journal-page .language-switcher--dropdown .language-switcher__trigger:hover {
+  background: rgba(139, 90, 43, 0.2);
+}
+
+.journal-page .language-switcher__menu {
+  background: #f5e6d3;
+  border-color: rgba(139, 90, 43, 0.3);
+  box-shadow: 0 10px 30px rgba(61, 41, 20, 0.2);
+}
+
+.journal-page .language-switcher__option {
+  color: #3d2914;
+  font-family: 'Libre Baskerville', serif;
+}
+
+.journal-page .language-switcher__option:hover {
+  background: rgba(139, 90, 43, 0.1);
+}
+
+.journal-page .language-switcher__option.active {
+  background: rgba(139, 90, 43, 0.15);
+  color: #8b5a2b;
+}

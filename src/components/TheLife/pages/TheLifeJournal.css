@@ -198,6 +198,12 @@
   justify-content: center;
 }
 
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .nav-section {
   font-family: 'Libre Baskerville', serif;
   font-size: 0.75rem;

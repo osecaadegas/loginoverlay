@@ -4,6 +4,7 @@ import { SpeedInsights } from '@vercel/speed-insights/react';
 import './App.css';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { StreamElementsProvider } from './context/StreamElementsContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import StreamElementsPanel from './components/StreamElements/StreamElementsPanel';
 import PointsManager from './components/PointsManager/PointsManager';
 import LandingPage from './components/LandingPage/LandingPage';
@@ -541,6 +542,7 @@ function App() {
   return (
     <AuthProvider>
       <StreamElementsProvider>
+        <LanguageProvider>
           <BrowserRouter>
             <LayoutWrapper>
               <Routes>
@@ -582,6 +584,7 @@ function App() {
               </Routes>
             </LayoutWrapper>
           </BrowserRouter>
+        </LanguageProvider>
       </StreamElementsProvider>
       <SpeedInsights />
     </AuthProvider>
