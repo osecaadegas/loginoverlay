@@ -8,6 +8,7 @@ import './TheLife.css';
 
 // Components
 import WipeCountdown from './components/WipeCountdown';
+import TheLifeNewsFeed from './components/TheLifeNewsFeed';
 
 // Category Components
 import TheLifeCrimes from './categories/TheLifeCrimes';
@@ -40,6 +41,7 @@ export default function TheLife() {
   const tabsScrollRef = useRef(null);
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
+  const [showNewsFeed, setShowNewsFeed] = useState(false);
   const tabsDragScroll = useDragScroll(tabsScrollRef);
   
   // Initialize audio and load saved preferences
@@ -353,6 +355,14 @@ export default function TheLife() {
               <span className="premium-icon">👑</span>
               <span className="premium-text">The Syndicate</span>
               <span className="premium-badge">VIP</span>
+            </button>
+            <button 
+              className="quick-tab-inline compact news-btn"
+              onClick={() => setShowNewsFeed(true)}
+            >
+              <span className="news-icon-btn">📰</span>
+              <span className="news-text">News</span>
+              <span className="news-live-dot"></span>
             </button>
             {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
               <button 
@@ -759,6 +769,15 @@ export default function TheLife() {
           </div>
         </div>
       )}
+
+      {/* News Feed Modal */}
+      <TheLifeNewsFeed
+        player={player}
+        leaderboard={leaderboard}
+        isOpen={showNewsFeed}
+        onClose={() => setShowNewsFeed(false)}
+        user={user}
+      />
     </div>
     </div>
   );
