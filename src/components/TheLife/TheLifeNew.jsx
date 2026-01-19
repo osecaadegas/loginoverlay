@@ -8,7 +8,6 @@ import './TheLife.css';
 
 // Components
 import WipeCountdown from './components/WipeCountdown';
-import TheLifeNewsFeed from './components/TheLifeNewsFeed';
 
 // Category Components
 import TheLifeCrimes from './categories/TheLifeCrimes';
@@ -41,7 +40,6 @@ export default function TheLife() {
   const tabsScrollRef = useRef(null);
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [showNewsFeed, setShowNewsFeed] = useState(false);
   const tabsDragScroll = useDragScroll(tabsScrollRef);
   
   // Initialize audio and load saved preferences
@@ -358,7 +356,7 @@ export default function TheLife() {
             </button>
             <button 
               className="quick-tab-inline compact news-btn"
-              onClick={() => setShowNewsFeed(true)}
+              onClick={() => navigate('/games/thelife/news')}
             >
               <span className="news-icon-btn">📰</span>
               <span className="news-text">News</span>
@@ -769,15 +767,6 @@ export default function TheLife() {
           </div>
         </div>
       )}
-
-      {/* News Feed Modal */}
-      <TheLifeNewsFeed
-        player={player}
-        leaderboard={leaderboard}
-        isOpen={showNewsFeed}
-        onClose={() => setShowNewsFeed(false)}
-        user={user}
-      />
     </div>
     </div>
   );

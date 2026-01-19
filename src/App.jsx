@@ -21,6 +21,7 @@ import TwitchChat from './components/TwitchChat/TwitchChat';
 import BlackjackPremium from './components/Blackjack/BlackjackPremium';
 import Mines from './components/Mines/Mines';
 import TheLife from './components/TheLife/TheLifeNew';
+import TheLifeJournal from './components/TheLife/pages/TheLifeJournal';
 import SlotManagerPage from './components/SlotManager/SlotManagerPage';
 import GiveawayPage from './components/GiveawayPanel/GiveawayPage';
 import { useStreamElements } from './context/StreamElementsContext';
@@ -556,6 +557,7 @@ function App() {
                 <Route path="/games/mines" element={<Mines />} />
                 <Route path="/games/thelife" element={<TheLife />} />
                 <Route path="/games/thelife/season-pass" element={<SeasonPass />} />
+                <Route path="/games/thelife/news" element={<TheLifeJournal />} />
                 <Route path="/points" element={<StreamElementsPanel />} />
                 <Route path="/streamelements" element={<StreamElementsPanel />} />
                 <Route path="/points-manager" element={<PointsManager />} />
