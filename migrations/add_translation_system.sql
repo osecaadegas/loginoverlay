@@ -553,7 +553,6 @@ INSERT INTO translations (source_table, source_id, source_field, language_code, 
 ('ui', NULL, 'error_unauthorized', 'pt-PT', 'Unauthorized', 'Não autorizado', false, true),
 ('ui', NULL, 'error_forbidden', 'pt-PT', 'Forbidden', 'Proibido', false, true),
 ('ui', NULL, 'error_generic', 'pt-PT', 'Something went wrong', 'Algo correu mal', false, true)
-
 ON CONFLICT (source_table, source_id, source_field, language_code) DO UPDATE SET
   translated_text = EXCLUDED.translated_text,
   is_verified = EXCLUDED.is_verified;
