@@ -480,3 +480,214 @@
     font-size: 2rem;
   }
 }
+
+/* ===================== */
+/* NEW STYLES - REWORK   */
+/* ===================== */
+
+/* Risk Badge */
+.risk-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #000;
+  margin-left: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.risk-info {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-top: 8px;
+}
+
+.house-edge-info {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Mine select grid for 7 options */
+.mine-select {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+}
+
+/* Stat rows */
+.stat-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.stat-row .stat {
+  margin: 0;
+}
+
+.mines-count {
+  color: #ef4444 !important;
+}
+
+.found-count {
+  color: #10b981 !important;
+}
+
+/* Next multiplier preview */
+.next-mult {
+  color: #94a3b8;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.next-mult span {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+/* Danger warning */
+.danger-warning {
+  text-align: center;
+  color: #fca5a5;
+  font-size: 0.85rem;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 15px;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* Jackpot result */
+.result-box.jackpot {
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.2), rgba(245, 158, 11, 0.15));
+  border-color: rgba(251, 191, 36, 0.6);
+  animation: jackpotGlow 0.5s ease infinite alternate;
+}
+
+.result-box.jackpot .result-text {
+  color: #fbbf24;
+  font-size: 2rem;
+}
+
+@keyframes jackpotGlow {
+  from {
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.3);
+  }
+  to {
+    box-shadow: 0 0 40px rgba(251, 191, 36, 0.6);
+  }
+}
+
+.result-multiplier {
+  font-size: 1.8rem;
+  font-weight: 900;
+  color: #10b981;
+  margin-bottom: 5px;
+}
+
+.result-box.lost .result-multiplier {
+  color: #ef4444;
+}
+
+/* Cell improvements */
+.cell-icon {
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.cell.clickable {
+  cursor: pointer;
+}
+
+.cell.clickable:hover {
+  transform: scale(1.05);
+  border-color: #d4af37;
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+}
+
+.safe-icon {
+  animation: gemReveal 0.4s ease;
+}
+
+.mine-icon {
+  animation: mineReveal 0.4s ease;
+}
+
+.cell.exploded {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.6), rgba(220, 38, 38, 0.5)) !important;
+  animation: mineExplode 0.5s ease;
+}
+
+@keyframes gemReveal {
+  0% {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.3) rotate(0deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+@keyframes mineReveal {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+@keyframes mineExplode {
+  0% {
+    transform: scale(1);
+  }
+  20% {
+    transform: scale(1.3);
+    background: rgba(255, 100, 100, 0.8);
+  }
+  40% {
+    transform: scale(0.9);
+  }
+  60% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive adjustments for 7 mine options */
+@media (max-width: 480px) {
+  .mine-select {
+    grid-template-columns: repeat(4, 1fr);
+  }
+  
+  .risk-badge {
+    display: block;
+    margin-left: 0;
+    margin-top: 5px;
+    width: fit-content;
+  }
+  
+  .control-group label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}

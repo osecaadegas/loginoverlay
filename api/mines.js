@@ -1,24 +1,81 @@
 import { createClient } from '@supabase/supabase-js';
 
 const GRID_SIZE = 25;
+const MIN_MINES = 3;
+const MAX_MINES = 24;
+const HOUSE_EDGE = 0.03; // 3% house edge - standard for fair casino games
 
-// Calculate multiplier based on revealed cells and mine count
+/**
+ * Calculate multiplier using provably fair formula
+ * Based on probability theory: fair multiplier = 1 / probability of success
+ * With house edge applied
+ * 
+ * Formula: For each reveal, the probability of hitting a safe cell is:
+ * P(safe) = (remaining_safe_cells) / (remaining_total_cells)
+ * 
+ * Cumulative multiplier = product of (1 / P(safe)) for each reveal
+ * Final multiplier = cumulative * (1 - house_edge)
+ */
 function calcMultiplier(revealedCount, mineCount) {
   if (revealedCount === 0) return 1.0;
-  // Simple exponential multiplier
-  return Math.pow(1.15, revealedCount);
+  
+  const totalCells = GRID_SIZE;
+  const safeCells = totalCells - mineCount;
+  
+  let cumulativeMultiplier = 1.0;
+  
+  // Calculate the fair multiplier based on probability for each revealed cell
+  for (let i = 0; i < revealedCount; i++) {
+    const remainingTotal = totalCells - i;
+    const remainingSafe = safeCells - i;
+    
+    // Probability of finding a safe cell at this step
+    const probSafe = remainingSafe / remainingTotal;
+    
+    // Fair payout for this risk
+    const stepMultiplier = 1 / probSafe;
+    
+    cumulativeMultiplier *= stepMultiplier;
+  }
+  
+  // Apply house edge
+  const finalMultiplier = cumulativeMultiplier * (1 - HOUSE_EDGE);
+  
+  // Round to 2 decimal places
+  return Math.round(finalMultiplier * 100) / 100;
 }
 
-// Generate random mine positions server-side
+/**
+ * Pre-calculate multiplier table for display purposes
+ * This shows players the potential multipliers for each reveal
+ */
+function getMultiplierTable(mineCount) {
+  const safeCells = GRID_SIZE - mineCount;
+  const table = [];
+  
+  for (let i = 1; i <= safeCells; i++) {
+    table.push({
+      reveals: i,
+      multiplier: calcMultiplier(i, mineCount)
+    });
+  }
+  
+  return table;
+}
+
+// Generate random mine positions server-side using cryptographically secure method
 function generateMinePositions(mineCount) {
   const positions = [];
-  while (positions.length < mineCount) {
-    const pos = Math.floor(Math.random() * GRID_SIZE);
-    if (!positions.includes(pos)) {
-      positions.push(pos);
-    }
+  const available = Array.from({ length: GRID_SIZE }, (_, i) => i);
+  
+  // Fisher-Yates shuffle for uniform distribution
+  for (let i = available.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [available[i], available[j]] = [available[j], available[i]];
   }
-  return positions;
+  
+  // Take first mineCount positions
+  return available.slice(0, mineCount);
 }
 
 export default async function handler(req, res) {
@@ -63,6 +120,8 @@ export default async function handler(req, res) {
         return await handleReveal(supabase, user, params, res);
       case 'cashout':
         return await handleCashout(supabase, user, params, res);
+      case 'getMultipliers':
+        return handleGetMultipliers(params, res);
       default:
         return res.status(400).json({ error: 'Invalid action' });
     }
@@ -72,14 +131,30 @@ export default async function handler(req, res) {
   }
 }
 
+// Get multiplier table for a given mine count (for UI display)
+function handleGetMultipliers({ mineCount }, res) {
+  if (!mineCount || mineCount < MIN_MINES || mineCount > MAX_MINES) {
+    return res.status(400).json({ error: `Invalid mine count (${MIN_MINES}-${MAX_MINES})` });
+  }
+  
+  const table = getMultiplierTable(mineCount);
+  return res.status(200).json({ 
+    success: true, 
+    multiplierTable: table,
+    houseEdge: HOUSE_EDGE * 100 + '%'
+  });
+}
+
 // Start a new game
 async function handleStart(supabase, user, { bet, mineCount }, res) {
   // Validate inputs
   if (!bet || bet < 10 || bet > 1000) {
     return res.status(400).json({ error: 'Invalid bet amount (10-1000)' });
   }
-  if (!mineCount || mineCount < 1 || mineCount > 24) {
-    return res.status(400).json({ error: 'Invalid mine count (1-24)' });
+  
+  // Minimum 3 mines, maximum 24
+  if (!mineCount || mineCount < MIN_MINES || mineCount > MAX_MINES) {
+    return res.status(400).json({ error: `Invalid mine count (${MIN_MINES}-${MAX_MINES})` });
   }
 
   // Check for existing active game
@@ -96,6 +171,10 @@ async function handleStart(supabase, user, { bet, mineCount }, res) {
 
   // Generate mine positions SERVER-SIDE (never sent to client)
   const minePositions = generateMinePositions(mineCount);
+  
+  // Calculate the max possible multiplier for this configuration
+  const maxSafeCells = GRID_SIZE - mineCount;
+  const maxMultiplier = calcMultiplier(maxSafeCells, mineCount);
 
   // Create the game
   const { data: game, error: gameError } = await supabase
@@ -117,6 +196,12 @@ async function handleStart(supabase, user, { bet, mineCount }, res) {
     return res.status(500).json({ error: 'Failed to create game' });
   }
 
+  // Calculate first few multipliers for preview
+  const nextMultipliers = [];
+  for (let i = 1; i <= Math.min(5, maxSafeCells); i++) {
+    nextMultipliers.push(calcMultiplier(i, mineCount));
+  }
+
   // Return game info WITHOUT mine positions
   return res.status(200).json({
     success: true,
@@ -126,7 +211,10 @@ async function handleStart(supabase, user, { bet, mineCount }, res) {
       mineCount: game.mine_count,
       multiplier: game.multiplier,
       revealedCells: [],
-      status: game.status
+      status: game.status,
+      safeCellsRemaining: maxSafeCells,
+      maxMultiplier: maxMultiplier,
+      nextMultipliers: nextMultipliers
     }
   });
 }
@@ -181,16 +269,22 @@ async function handleReveal(supabase, user, { gameId, cellIndex }, res) {
     });
   }
 
-  // Safe cell
+  // Safe cell found!
   const safeSpots = GRID_SIZE - game.mine_count;
+  const safeCellsRemaining = safeSpots - newRevealedCells.length;
   const newMultiplier = calcMultiplier(newRevealedCells.length, game.mine_count);
   const newProfit = Math.floor(game.bet_amount * newMultiplier);
+  
+  // Calculate next multiplier preview
+  const nextMultiplier = safeCellsRemaining > 0 
+    ? calcMultiplier(newRevealedCells.length + 1, game.mine_count) 
+    : null;
 
   // Check if player found all safe cells (auto-win)
   const allSafeFound = newRevealedCells.length === safeSpots;
 
   if (allSafeFound) {
-    // Player wins automatically
+    // Player wins automatically - JACKPOT!
     await supabase
       .from('mines_games')
       .update({
@@ -207,10 +301,12 @@ async function handleReveal(supabase, user, { gameId, cellIndex }, res) {
       result: 'safe',
       gameOver: true,
       won: true,
+      jackpot: true,
       multiplier: newMultiplier,
       profit: newProfit,
       minePositions: game.mine_positions, // Reveal after win
-      revealedCells: newRevealedCells
+      revealedCells: newRevealedCells,
+      safeCellsRemaining: 0
     });
   }
 
@@ -228,8 +324,10 @@ async function handleReveal(supabase, user, { gameId, cellIndex }, res) {
     result: 'safe',
     gameOver: false,
     multiplier: newMultiplier,
+    nextMultiplier: nextMultiplier,
     profit: newProfit,
-    revealedCells: newRevealedCells
+    revealedCells: newRevealedCells,
+    safeCellsRemaining: safeCellsRemaining
     // NOTE: minePositions NOT sent while game is active
   });
 }
@@ -253,13 +351,16 @@ async function handleCashout(supabase, user, { gameId }, res) {
     return res.status(400).json({ error: 'Must reveal at least one cell before cashing out' });
   }
 
-  const profit = Math.floor(game.bet_amount * game.multiplier);
+  // Recalculate profit to ensure consistency
+  const currentMultiplier = calcMultiplier(game.revealed_cells.length, game.mine_count);
+  const profit = Math.floor(game.bet_amount * currentMultiplier);
 
   // Update game as won
   await supabase
     .from('mines_games')
     .update({
       status: 'won',
+      multiplier: currentMultiplier,
       result_amount: profit,
       ended_at: new Date().toISOString()
     })

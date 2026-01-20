@@ -1,10 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useStreamElements } from '../../context/StreamElementsContext';
 import { supabase } from '../../config/supabaseClient';
 import './Mines.css';
 
 const GRID_SIZE = 25;
-const MINE_OPTIONS = [1, 3, 5, 10, 15];
+const MINE_OPTIONS = [3, 5, 7, 10, 15, 20, 24]; // Minimum 3 mines for fair risk/reward
 
 // API base URL - uses relative path for Vercel
 const API_URL = '/api/mines';
@@ -12,16 +12,20 @@ const API_URL = '/api/mines';
 export default function Mines() {
   const { points, isConnected, updateUserPoints } = useStreamElements();
   const [bet, setBet] = useState(50);
-  const [mines, setMines] = useState(3);
+  const [mines, setMines] = useState(5);
   const [gameActive, setGameActive] = useState(false);
   const [gameOver, setGameOver] = useState(false);
   const [won, setWon] = useState(false);
+  const [jackpot, setJackpot] = useState(false);
   const [revealed, setRevealed] = useState([]);
-  const [mineLocations, setMineLocations] = useState([]); // Only set after game ends
+  const [mineLocations, setMineLocations] = useState([]);
   const [multiplier, setMultiplier] = useState(1.0);
+  const [nextMultiplier, setNextMultiplier] = useState(null);
   const [profit, setProfit] = useState(0);
   const [gameId, setGameId] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [safeCellsRemaining, setSafeCellsRemaining] = useState(0);
+  const [maxMultiplier, setMaxMultiplier] = useState(0);
 
   // Helper to make authenticated API calls
   const apiCall = async (action, params = {}) => {
@@ -44,6 +48,16 @@ export default function Mines() {
     return data;
   };
 
+  // Calculate risk level for display
+  const getRiskLevel = (mineCount) => {
+    if (mineCount <= 5) return { label: 'Low', color: '#22c55e' };
+    if (mineCount <= 10) return { label: 'Medium', color: '#eab308' };
+    if (mineCount <= 15) return { label: 'High', color: '#f97316' };
+    return { label: 'Extreme', color: '#ef4444' };
+  };
+
+  const risk = getRiskLevel(mines);
+
   const startNewGame = async () => {
     if (!isConnected) {
       alert('Connect StreamElements first!');
@@ -65,16 +79,19 @@ export default function Mines() {
       if (data.success) {
         setGameId(data.game.id);
         setRevealed([]);
-        setMineLocations([]); // We don't know mine positions!
+        setMineLocations([]);
         setGameActive(true);
         setGameOver(false);
         setWon(false);
+        setJackpot(false);
         setMultiplier(1.0);
+        setNextMultiplier(data.game.nextMultipliers?.[0] || null);
         setProfit(0);
+        setSafeCellsRemaining(data.game.safeCellsRemaining);
+        setMaxMultiplier(data.game.maxMultiplier);
       }
     } catch (error) {
       console.error('Start game error:', error);
-      // Refund bet if game failed to start
       await updateUserPoints(bet);
       alert('Failed to start game: ' + error.message);
     } finally {
@@ -87,31 +104,32 @@ export default function Mines() {
 
     setLoading(true);
     try {
-      // Send click to server for validation
       const data = await apiCall('reveal', { gameId, cellIndex });
       
       if (data.success) {
         setRevealed(data.revealedCells);
         
         if (data.result === 'mine') {
-          // Hit a mine - game over
-          setMineLocations(data.minePositions); // Server reveals positions now
+          setMineLocations(data.minePositions);
           setGameActive(false);
           setGameOver(true);
           setWon(false);
+          setJackpot(false);
         } else if (data.gameOver && data.won) {
-          // Found all safe cells - auto win
           setMineLocations(data.minePositions);
           setMultiplier(data.multiplier);
           setProfit(data.profit);
+          setJackpot(data.jackpot || false);
           await updateUserPoints(data.profit);
           setGameActive(false);
           setGameOver(true);
           setWon(true);
+          setSafeCellsRemaining(0);
         } else {
-          // Safe cell, game continues
           setMultiplier(data.multiplier);
+          setNextMultiplier(data.nextMultiplier);
           setProfit(data.profit);
+          setSafeCellsRemaining(data.safeCellsRemaining);
         }
       }
     } catch (error) {
@@ -130,7 +148,7 @@ export default function Mines() {
       const data = await apiCall('cashout', { gameId });
       
       if (data.success) {
-        setMineLocations(data.minePositions); // Reveal positions after cashout
+        setMineLocations(data.minePositions);
         setProfit(data.profit);
         await updateUserPoints(data.profit);
         setGameActive(false);
@@ -152,7 +170,10 @@ export default function Mines() {
     setRevealed([]);
     setMineLocations([]);
     setMultiplier(1.0);
+    setNextMultiplier(null);
     setProfit(0);
+    setJackpot(false);
+    setSafeCellsRemaining(0);
   };
 
   return (
@@ -183,20 +204,25 @@ export default function Mines() {
                   <input
                     type="number"
                     value={bet}
-                    onChange={(e) => setBet(Math.min(200, Math.max(10, parseInt(e.target.value) || 10)))}
+                    onChange={(e) => setBet(Math.min(500, Math.max(10, parseInt(e.target.value) || 10)))}
                   />
-                  <button onClick={() => setBet(Math.min(200, Math.min(points, bet * 2)))}>2×</button>
+                  <button onClick={() => setBet(Math.min(500, Math.min(points, bet * 2)))}>2×</button>
                 </div>
                 <div className="quick-bets">
                   <button onClick={() => setBet(25)}>25</button>
                   <button onClick={() => setBet(50)}>50</button>
                   <button onClick={() => setBet(100)}>100</button>
-                  <button onClick={() => setBet(200)}>200</button>
+                  <button onClick={() => setBet(250)}>250</button>
                 </div>
               </div>
 
               <div className="control-group">
-                <label>Mines: {mines}</label>
+                <label>
+                  Mines: {mines} 
+                  <span className="risk-badge" style={{ backgroundColor: risk.color }}>
+                    {risk.label} Risk
+                  </span>
+                </label>
                 <div className="mine-select">
                   {MINE_OPTIONS.map(num => (
                     <button
@@ -208,6 +234,11 @@ export default function Mines() {
                     </button>
                   ))}
                 </div>
+                <div className="risk-info">
+                  <span>Safe cells: {GRID_SIZE - mines}</span>
+                  <span>•</span>
+                  <span>Max win: High multipliers!</span>
+                </div>
               </div>
 
               <button
@@ -217,28 +248,48 @@ export default function Mines() {
               >
                 {loading ? 'Starting...' : `Start Game (${bet} pts)`}
               </button>
+              
+              <div className="house-edge-info">
+                🎲 Provably fair • 3% house edge
+              </div>
             </div>
           )}
 
           {gameActive && (
             <div className="game-stats">
-              <div className="stat">
-                <span>Bet:</span>
-                <strong>{bet} pts</strong>
+              <div className="stat-row">
+                <div className="stat">
+                  <span>Bet:</span>
+                  <strong>{bet} pts</strong>
+                </div>
+                <div className="stat">
+                  <span>Mines:</span>
+                  <strong className="mines-count">{mines} 💣</strong>
+                </div>
               </div>
-              <div className="stat">
-                <span>Mines:</span>
-                <strong>{mines}</strong>
-              </div>
-              <div className="stat">
-                <span>Found:</span>
-                <strong>{revealed.length}/{GRID_SIZE - mines}</strong>
+              
+              <div className="stat-row">
+                <div className="stat">
+                  <span>Found:</span>
+                  <strong className="found-count">{revealed.length} 💎</strong>
+                </div>
+                <div className="stat">
+                  <span>Remaining:</span>
+                  <strong>{safeCellsRemaining}</strong>
+                </div>
               </div>
 
               <div className="multiplier-display">
-                <div className="mult-label">Multiplier</div>
+                <div className="mult-label">Current Multiplier</div>
                 <div className="mult-value">{multiplier.toFixed(2)}×</div>
-                <div className="profit-value">Win: {profit} pts</div>
+                {nextMultiplier && (
+                  <div className="next-mult">
+                    Next: <span>{nextMultiplier.toFixed(2)}×</span>
+                  </div>
+                )}
+                <div className="profit-value">
+                  💰 {profit} pts
+                </div>
               </div>
 
               <button
@@ -246,22 +297,33 @@ export default function Mines() {
                 onClick={cashout}
                 disabled={revealed.length === 0 || loading}
               >
-                {loading ? 'Processing...' : `Cash Out (${profit} pts)`}
+                {loading ? 'Processing...' : `💵 Cash Out (${profit} pts)`}
               </button>
+              
+              <div className="danger-warning">
+                ⚠️ {mines} mines hidden • Choose carefully!
+              </div>
             </div>
           )}
 
           {gameOver && (
             <div className="result-display">
-              <div className={`result-box ${won ? 'won' : 'lost'}`}>
-                <div className="result-icon">{won ? '🎉' : '💥'}</div>
-                <div className="result-text">{won ? 'You Won!' : 'Mine Hit!'}</div>
+              <div className={`result-box ${won ? (jackpot ? 'jackpot' : 'won') : 'lost'}`}>
+                <div className="result-icon">
+                  {jackpot ? '🏆' : won ? '🎉' : '💥'}
+                </div>
+                <div className="result-text">
+                  {jackpot ? 'JACKPOT!' : won ? 'You Won!' : 'Mine Hit!'}
+                </div>
+                <div className="result-multiplier">
+                  {won ? `${multiplier.toFixed(2)}×` : '0×'}
+                </div>
                 <div className="result-amount">
-                  {won ? `+${profit - bet} pts` : `-${bet} pts`}
+                  {won ? `+${profit - bet} pts profit` : `-${bet} pts`}
                 </div>
               </div>
               <button className="btn-play-again" onClick={playAgain}>
-                Play Again
+                🎮 Play Again
               </button>
             </div>
           )}
@@ -275,16 +337,17 @@ export default function Mines() {
               const isMine = mineLocations.includes(i);
               const showMine = isMine && gameOver;
               const isSafe = isRevealed && !isMine;
+              const isUnrevealedMine = isMine && gameOver && !isRevealed;
 
               let cellClass = 'cell';
               if (!gameActive && !gameOver) {
                 cellClass += ' idle';
               } else if (gameActive && !isRevealed) {
-                cellClass += ' hidden';
+                cellClass += ' hidden clickable';
               } else if (isSafe) {
                 cellClass += ' safe';
               } else if (showMine) {
-                cellClass += ' mine';
+                cellClass += isRevealed ? ' mine exploded' : ' mine';
               }
 
               return (
@@ -293,18 +356,11 @@ export default function Mines() {
                   className={cellClass}
                   onClick={() => clickCell(i)}
                   disabled={!gameActive || isRevealed || loading}
-                  style={{
-                    minHeight: '80px',
-                    minWidth: '80px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
                 >
-                  {(!gameActive && !gameOver) && <span>💎</span>}
-                  {(gameActive && !isRevealed) && <span style={{fontSize: '2rem'}}>💎</span>}
-                  {isSafe && <span style={{fontSize: '2rem'}}>💎</span>}
-                  {showMine && <span style={{fontSize: '2rem'}}>💣</span>}
+                  {(!gameActive && !gameOver) && <span className="cell-icon">❓</span>}
+                  {(gameActive && !isRevealed) && <span className="cell-icon">💎</span>}
+                  {isSafe && <span className="cell-icon safe-icon">💎</span>}
+                  {showMine && <span className="cell-icon mine-icon">💣</span>}
                 </button>
               );
             })}
