@@ -398,7 +398,7 @@ async function handleForfeit(supabase, user, { gameId }, res) {
   await supabase
     .from('mines_games')
     .update({
-      status: 'forfeited',
+      status: 'lost',
       result_amount: 0,
       ended_at: new Date().toISOString()
     })
