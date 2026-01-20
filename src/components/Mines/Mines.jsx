@@ -523,12 +523,14 @@ export default function Mines() {
                 cellClass += isRevealed ? ' mine exploded' : ' mine';
               }
 
+              const canClick = gameActive && !isRevealed && !loading;
+
               return (
                 <button
                   key={i}
                   className={cellClass}
-                  onClick={() => clickCell(i)}
-                  disabled={!gameActive || isRevealed || loading}
+                  onClick={() => canClick && clickCell(i)}
+                  style={{ cursor: canClick ? 'pointer' : 'default' }}
                 >
                   {(!gameActive && !gameOver) && <span className="cell-icon">❓</span>}
                   {(gameActive && !isRevealed) && <span className="cell-icon">💎</span>}

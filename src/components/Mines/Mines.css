@@ -351,12 +351,26 @@
 .cell.hidden {
   background: rgba(45, 55, 72, 0.95);
   border-color: rgba(212, 175, 55, 0.5);
+  pointer-events: auto !important;
+  cursor: pointer !important;
 }
 
 .cell.hidden:hover {
   background: rgba(212, 175, 55, 0.2);
   border-color: rgba(212, 175, 55, 0.7);
   transform: scale(1.05);
+}
+
+.cell.hidden.clickable {
+  pointer-events: auto !important;
+  cursor: pointer !important;
+  opacity: 1 !important;
+}
+
+.cell.hidden.clickable:hover {
+  background: rgba(212, 175, 55, 0.3);
+  border-color: rgba(212, 175, 55, 0.8);
+  box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
 }
 
 .cell.safe {
