@@ -2304,10 +2304,12 @@ export default function AdminPanel() {
   };
 
   // Filter slot catalog based on search
-  const filteredSlotCatalog = slotCatalog.filter(slot => 
-    slot.name.toLowerCase().includes(slotSearchQuery.toLowerCase()) ||
-    slot.provider.toLowerCase().includes(slotSearchQuery.toLowerCase())
-  );
+  const filteredSlotCatalog = slotCatalog.filter(slot => {
+    const searchLower = slotSearchQuery.toLowerCase();
+    const nameMatch = (slot.name || '').toLowerCase().includes(searchLower);
+    const providerMatch = (slot.provider || '').toLowerCase().includes(searchLower);
+    return nameMatch || providerMatch;
+  });
 
   const saveGuessSession = async (e) => {
     e.preventDefault();
@@ -6394,6 +6396,9 @@ export default function AdminPanel() {
                     {/* Slot Catalog Results */}
                     {slotSearchQuery && (
                       <div className="slot-catalog-results">
+                        <div className="catalog-debug" style={{fontSize: '0.75rem', color: '#6b7280', marginBottom: '8px'}}>
+                          Searching in {slotCatalog.length} slots • Found {filteredSlotCatalog.length} matches
+                        </div>
                         {filteredSlotCatalog.length === 0 ? (
                           <div className="no-results">No slots found matching "{slotSearchQuery}"</div>
                         ) : (
