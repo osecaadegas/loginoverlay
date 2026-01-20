@@ -227,6 +227,8 @@ export default function AdminPanel() {
   const [guessBalanceSlots, setGuessBalanceSlots] = useState([]);
   const [showGuessBalanceModal, setShowGuessBalanceModal] = useState(false);
   const [showSlotModal, setShowSlotModal] = useState(false);
+  const [showSlotResultsModal, setShowSlotResultsModal] = useState(false);
+  const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [editingGuessSession, setEditingGuessSession] = useState(null);
   const [editingSlot, setEditingSlot] = useState(null);
   const [selectedSessionForSlots, setSelectedSessionForSlots] = useState(null);
@@ -2305,19 +2307,12 @@ export default function AdminPanel() {
     setSlotSearchQuery('');
     setNewSlotBetValue(1.00);
     setNewSlotIsSuper(false);
-    
-    // Update amount expended
-    const totalBets = [...sessionSlotsInModal, newSlot].reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
-    setGuessSessionFormData(prev => ({ ...prev, amount_expended: totalBets }));
   };
 
   // Remove slot from session (in modal)
   const removeSlotFromSession = (index) => {
     const updatedSlots = sessionSlotsInModal.filter((_, i) => i !== index);
     setSessionSlotsInModal(updatedSlots);
-    // Update amount expended
-    const totalBets = updatedSlots.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
-    setGuessSessionFormData(prev => ({ ...prev, amount_expended: totalBets }));
   };
 
   // Filter slot catalog based on search
@@ -2573,6 +2568,51 @@ export default function AdminPanel() {
       loadGuessBalanceSessions();
     } catch (err) {
       setError('Failed to end session: ' + err.message);
+    }
+  };
+
+  // Open slot results entry modal
+  const openSlotResultsModal = (session) => {
+    setSelectedSessionForSlots(session);
+    loadGuessBalanceSlots(session.id);
+    setCurrentSlotIndex(0);
+    setShowSlotResultsModal(true);
+  };
+
+  // Save current slot result and move to next
+  const saveSlotResult = async (slot, autoAdvance = true) => {
+    if (!slot || !slot.id) return;
+    
+    try {
+      const { error } = await supabase
+        .from('guess_balance_slots')
+        .update({
+          bonus_win: slot.bonus_win ? parseFloat(slot.bonus_win) : null,
+          multiplier: slot.multiplier ? parseFloat(slot.multiplier) : null
+        })
+        .eq('id', slot.id);
+
+      if (error) throw error;
+      
+      showNotification('Slot result saved!', 'success');
+      
+      // Move to next slot if autoAdvance and there are more slots
+      if (autoAdvance && guessBalanceSlots && guessBalanceSlots.length > 0) {
+        if (currentSlotIndex < guessBalanceSlots.length - 1) {
+          setCurrentSlotIndex(currentSlotIndex + 1);
+        }
+      }
+    } catch (err) {
+      showNotification('Failed to save: ' + err.message, 'error');
+    }
+  };
+
+  // Navigate between slots in results modal
+  const goToSlot = (index) => {
+    if (guessBalanceSlots && guessBalanceSlots.length > 0) {
+      if (index >= 0 && index < guessBalanceSlots.length) {
+        setCurrentSlotIndex(index);
+      }
     }
   };
 
@@ -6168,6 +6208,12 @@ export default function AdminPanel() {
                         <button className="btn-edit" onClick={(e) => { e.stopPropagation(); openGuessSessionModal(session); }}>
                           ✏️ Edit
                         </button>
+                        <button 
+                          className="btn-results" 
+                          onClick={(e) => { e.stopPropagation(); openSlotResultsModal(session); }}
+                        >
+                          🎯 Enter Results
+                        </button>
                         {session.status === 'active' && session.final_balance && (
                           <button 
                             className="btn-end" 
@@ -6604,6 +6650,156 @@ export default function AdminPanel() {
                     </button>
                   </div>
                 </form>
+              </div>
+            </div>
+          )}
+
+          {/* Slot Results Entry Modal */}
+          {showSlotResultsModal && guessBalanceSlots && guessBalanceSlots.length > 0 && (
+            <div className="modal-overlay" onClick={() => setShowSlotResultsModal(false)}>
+              <div className="modal-content slot-results-modal" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2>🎯 Enter Slot Results</h2>
+                  <button className="modal-close" onClick={() => setShowSlotResultsModal(false)}>×</button>
+                </div>
+
+                <div className="slot-results-content">
+                  {/* Progress indicator */}
+                  <div className="slot-results-progress">
+                    <span>Slot {currentSlotIndex + 1} of {guessBalanceSlots.length}</span>
+                    <div className="progress-bar">
+                      <div 
+                        className="progress-fill" 
+                        style={{ width: `${((currentSlotIndex + 1) / guessBalanceSlots.length) * 100}%` }}
+                      />
+                    </div>
+                    <span className="completed-count">
+                      {guessBalanceSlots.filter(s => s.bonus_win !== null && s.bonus_win !== '').length} completed
+                    </span>
+                  </div>
+
+                  {/* Current slot display */}
+                  {(() => {
+                    const currentSlot = guessBalanceSlots[currentSlotIndex];
+                    if (!currentSlot) return null;
+                    
+                    return (
+                      <div className="current-slot-display">
+                        <div className="slot-image-large">
+                          {currentSlot.slot_image_url ? (
+                            <img src={currentSlot.slot_image_url} alt={currentSlot.slot_name} />
+                          ) : (
+                            <div className="no-image-large">🎰</div>
+                          )}
+                          {currentSlot.is_super && <span className="super-badge-large">⭐ SUPER</span>}
+                        </div>
+                        
+                        <div className="slot-info-large">
+                          <h3>{currentSlot.slot_name}</h3>
+                          {currentSlot.provider && <p className="slot-provider">{currentSlot.provider}</p>}
+                          <p className="slot-bet">Bet: €{currentSlot.bet_value || '0.00'}</p>
+                        </div>
+
+                        <div className="result-inputs">
+                          <div className="input-group">
+                            <label>💰 Bonus Win (€)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={currentSlot.bonus_win || ''}
+                              onChange={(e) => {
+                                const updatedSlots = [...guessBalanceSlots];
+                                updatedSlots[currentSlotIndex] = {
+                                  ...currentSlot,
+                                  bonus_win: e.target.value
+                                };
+                                setGuessBalanceSlots(updatedSlots);
+                              }}
+                              placeholder="Enter win amount..."
+                              autoFocus
+                            />
+                          </div>
+                          <div className="input-group">
+                            <label>📊 Multiplier (x)</label>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={currentSlot.multiplier || ''}
+                              onChange={(e) => {
+                                const updatedSlots = [...guessBalanceSlots];
+                                updatedSlots[currentSlotIndex] = {
+                                  ...currentSlot,
+                                  multiplier: e.target.value
+                                };
+                                setGuessBalanceSlots(updatedSlots);
+                              }}
+                              placeholder="e.g., 150"
+                            />
+                          </div>
+                          {currentSlot.bet_value && currentSlot.bonus_win && (
+                            <div className="auto-multiplier">
+                              Auto calc: {(parseFloat(currentSlot.bonus_win) / parseFloat(currentSlot.bet_value)).toFixed(2)}x
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Navigation */}
+                  <div className="slot-results-navigation">
+                    <button 
+                      className="btn-nav" 
+                      onClick={() => goToSlot(currentSlotIndex - 1)}
+                      disabled={currentSlotIndex === 0}
+                    >
+                      ← Previous
+                    </button>
+                    
+                    <div className="slot-dots">
+                      {guessBalanceSlots.map((slot, idx) => (
+                        <button
+                          key={idx}
+                          className={`dot ${idx === currentSlotIndex ? 'active' : ''} ${slot.bonus_win ? 'completed' : ''}`}
+                          onClick={() => goToSlot(idx)}
+                          title={slot.slot_name}
+                        />
+                      ))}
+                    </div>
+
+                    <button 
+                      className="btn-nav" 
+                      onClick={() => goToSlot(currentSlotIndex + 1)}
+                      disabled={currentSlotIndex === guessBalanceSlots.length - 1}
+                    >
+                      Next →
+                    </button>
+                  </div>
+
+                  {/* Save button */}
+                  <div className="slot-results-actions">
+                    <button 
+                      className="btn-save-result"
+                      onClick={() => saveSlotResult(guessBalanceSlots[currentSlotIndex])}
+                    >
+                      💾 Save & Continue
+                    </button>
+                    <button 
+                      className="btn-save-all"
+                      onClick={async () => {
+                        for (const slot of guessBalanceSlots) {
+                          if (slot.bonus_win !== null && slot.bonus_win !== '') {
+                            await saveSlotResult(slot, false);
+                          }
+                        }
+                        showNotification('All results saved!', 'success');
+                        setShowSlotResultsModal(false);
+                      }}
+                    >
+                      ✅ Save All & Close
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           )}
