@@ -2179,12 +2179,14 @@ export default function AdminPanel() {
 
   const loadSlotCatalog = async () => {
     try {
-      const { data, error } = await supabase
+      const { data, error, count } = await supabase
         .from('slots')
-        .select('*')
-        .order('name', { ascending: true });
+        .select('*', { count: 'exact' })
+        .order('name', { ascending: true })
+        .limit(10000); // Load all slots
 
       if (error) throw error;
+      console.log(`Loaded ${data?.length || 0} slots from catalog`);
       setSlotCatalog(data || []);
     } catch (err) {
       console.error('Error loading slot catalog:', err);
@@ -6396,7 +6398,7 @@ export default function AdminPanel() {
                           <div className="no-results">No slots found matching "{slotSearchQuery}"</div>
                         ) : (
                           <div className="slot-catalog-grid">
-                            {filteredSlotCatalog.slice(0, 12).map((slot) => (
+                            {filteredSlotCatalog.slice(0, 20).map((slot) => (
                               <div 
                                 key={slot.id} 
                                 className="slot-catalog-item"
