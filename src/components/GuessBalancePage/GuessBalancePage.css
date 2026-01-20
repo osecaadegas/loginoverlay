@@ -1,34 +1,853 @@
-.guess-balance-page {
+/* Guess the Balance Page - Bonus Hunt Style */
+
+.gtb-page {
   min-height: 100vh;
-  background: #0d1117;
+  background: #0a0e14;
   padding: 80px 20px 40px;
 }
 
-.guess-balance-container {
-  max-width: 1200px;
+.gtb-container {
+  max-width: 1400px;
   margin: 0 auto;
 }
 
-.guess-balance-header {
+/* Header */
+.gtb-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
 }
 
-.guess-balance-header h1 {
-  font-size: 2.5rem;
-  color: #d4af37;
-  margin-bottom: 12px;
+.gtb-header h1 {
+  font-size: 2rem;
+  color: #3b82f6;
+  margin: 0 0 8px 0;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.gtb-header p {
+  color: #6b7280;
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+/* Alerts */
+.alert {
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid #ef4444;
+  color: #ef4444;
+}
+
+.alert-success {
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid #22c55e;
+  color: #22c55e;
+}
+
+/* Loading */
+.loading-spinner {
+  text-align: center;
+  padding: 60px;
+  color: #9ca3af;
+  font-size: 1.2rem;
+}
+
+/* No Sessions */
+.no-sessions {
+  text-align: center;
+  padding: 80px 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.no-sessions-icon {
+  font-size: 4rem;
+  margin-bottom: 20px;
+}
+
+.no-sessions h2 {
+  color: #f3f4f6;
+  margin-bottom: 10px;
+}
+
+.no-sessions p {
+  color: #9ca3af;
+}
+
+/* Main Layout */
+.gtb-main-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* Left Panel - Session & Table */
+.gtb-left-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* Session Header Card */
+.session-header-card {
+  background: linear-gradient(145deg, #1a1f2e 0%, #141821 100%);
+  border-radius: 16px 16px 0 0;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: none;
+}
+
+.session-icon {
+  font-size: 1.8rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(59, 130, 246, 0.2);
+  border-radius: 10px;
+}
+
+.session-title-info {
+  flex: 1;
+}
+
+.session-name {
+  color: #f3f4f6;
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.session-nav {
+  display: flex;
+  gap: 8px;
+}
+
+.nav-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #9ca3af;
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-arrow:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  color: #f3f4f6;
+}
+
+.nav-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.session-status-badge {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.session-status-badge.active {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.session-status-badge.completed {
+  background: rgba(99, 102, 241, 0.2);
+  color: #818cf8;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.session-status-badge.cancelled {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.session-count {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Slots Table */
+.slots-table-container {
+  background: #141821;
+  border-radius: 0 0 16px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: none;
+  overflow: hidden;
+}
+
+.slots-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.slots-table thead {
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.slots-table th {
+  padding: 12px 16px;
+  text-align: left;
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.slots-table td {
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.slots-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.slots-table tr.super-row {
+  background: rgba(234, 179, 8, 0.05);
+}
+
+.slot-number {
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.slot-info-cell {
+  min-width: 200px;
+}
+
+.slot-info-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slot-thumb {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slot-thumb-placeholder {
+  width: 48px;
+  height: 48px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.slot-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.slot-name {
+  color: #f3f4f6;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.slot-provider {
+  color: #6b7280;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.bet-cell {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 6px;
+  padding: 6px 12px !important;
+  text-align: center;
+  width: 100px;
+}
+
+.special-cell {
+  width: 140px;
+}
+
+.super-bonus-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.2) 0%, rgba(217, 119, 6, 0.2) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.4);
+  color: #eab308;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.badge-icon {
+  font-size: 0.8rem;
+}
+
+.winnings-cell {
+  width: 120px;
+  text-align: right;
+}
+
+.winnings-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+}
+
+.win-amount {
+  color: #22c55e;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.win-multiplier {
+  color: #22c55e;
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+.hidden-win {
+  color: #4b5563;
+  font-style: italic;
+}
+
+.empty-slots {
+  padding: 40px;
+  text-align: center;
+  color: #6b7280;
+}
+
+/* Right Panel - Stats */
+.gtb-right-panel {
+  background: #141821;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+}
+
+/* Stats Tabs */
+.stats-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stats-tab {
+  flex: 1;
+  padding: 14px 12px;
+  background: transparent;
+  border: none;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+.stats-tab:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #9ca3af;
+}
+
+.stats-tab.active {
+  color: #3b82f6;
+  background: rgba(59, 130, 246, 0.1);
+  border-bottom: 2px solid #3b82f6;
+}
+
+.tab-icon {
+  font-size: 0.9rem;
+}
+
+/* Stats Content */
+.stats-content {
+  padding: 20px;
+}
+
+/* Top Stats Row */
+.stats-top-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.stat-item {
+  text-align: center;
+  padding: 12px 8px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.stat-icon {
+  display: block;
+  color: #6b7280;
+  font-size: 0.8rem;
+  margin-bottom: 4px;
+}
+
+.stat-label {
+  display: block;
+  color: #6b7280;
+  font-size: 0.7rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  display: block;
+  color: #f3f4f6;
+  font-size: 1.1rem;
   font-weight: 700;
 }
 
-.guess-balance-subtitle {
-  color: #9ca3af;
-  font-size: 1.1rem;
+.stat-value.gold {
+  color: #d4af37;
 }
 
-.guess-balance-content {
+.stat-value.gold {
+  color: #d4af37;
+}
+
+/* Progress Section */
+.progress-section {
+  margin-bottom: 16px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 8px;
+}
+
+.progress-header {
   display: flex;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  min-height: 400px;
+  margin-bottom: 8px;
+}
+
+.progress-label {
+  color: #6b7280;
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.progress-count {
+  color: #3b82f6;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.progress-bar-container {
+  height: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #3b82f6 0%, #22c55e 100%);
+  border-radius: 3px;
+  transition: width 0.3s ease;
+}
+
+/* Stat Boxes */
+.stat-boxes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.stat-box {
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.box-icon {
+  color: #6b7280;
+  font-size: 1rem;
+}
+
+.box-label {
+  flex: 1;
+  color: #9ca3af;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+}
+
+.box-value {
+  color: #f3f4f6;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.box-value.positive {
+  color: #22c55e;
+}
+
+.box-value.negative {
+  color: #ef4444;
+}
+
+/* Casino Brand Box */
+.casino-brand-box {
+  margin-top: 16px;
+  padding: 14px;
+  background: rgba(212, 175, 55, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.casino-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.casino-name {
+  color: #d4af37;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* GTB (Guess) Tab Content */
+.gtb-content {
+  padding: 20px;
+}
+
+.guess-section h3 {
+  color: #f3f4f6;
+  font-size: 1rem;
+  margin: 0 0 6px 0;
+}
+
+.guess-subtitle {
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0 0 20px 0;
+}
+
+.login-prompt,
+.guessing-closed {
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  color: #9ca3af;
+}
+
+.your-guess {
+  margin-top: 10px;
+  color: #d4af37;
+  font-weight: 600;
+}
+
+.guess-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.guess-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.guess-input {
+  width: 100%;
+  padding: 14px 50px 14px 16px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  color: #f3f4f6;
+  font-size: 1.2rem;
+  font-weight: 700;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.guess-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+}
+
+.guess-input::placeholder {
+  color: #6b7280;
+  font-weight: 400;
+  font-size: 0.95rem;
+}
+
+.guess-input-wrapper .currency-symbol {
+  position: absolute;
+  right: 16px;
+  color: #3b82f6;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.submit-guess-btn {
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+  color: #fff;
+  border: none;
+  padding: 14px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.submit-guess-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(59, 130, 246, 0.3);
+}
+
+.submit-guess-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.existing-guess-note {
+  text-align: center;
+  color: #6b7280;
+  font-size: 0.85rem;
+  margin: 0;
+}
+
+/* Final Balance Reveal */
+.final-balance-reveal {
+  margin-top: 20px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(22, 163, 74, 0.1) 100%);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 12px;
+  text-align: center;
+}
+
+.reveal-label {
+  display: block;
+  color: #22c55e;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.reveal-value {
+  display: block;
+  color: #22c55e;
+  font-size: 1.8rem;
+  font-weight: 800;
+}
+
+/* Leaderboard Tab Content */
+.leaderboard-content {
+  padding: 20px;
+}
+
+.leaderboard-content h3 {
+  color: #f3f4f6;
+  font-size: 1rem;
+  margin: 0 0 16px 0;
+}
+
+.results-hidden,
+.no-guesses {
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+}
+
+.leaderboard-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.leaderboard-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s;
+}
+
+.leaderboard-item.winner {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.leaderboard-item.you {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+}
+
+.leaderboard-item .rank {
+  font-size: 1.1rem;
+  min-width: 30px;
+}
+
+.leaderboard-item .player-name {
+  flex: 1;
+  color: #f3f4f6;
+  font-size: 0.9rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.you-tag {
+  background: #3b82f6;
+  color: #fff;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.guess-info {
+  text-align: right;
+}
+
+.guess-info .guessed {
+  display: block;
+  color: #f3f4f6;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.guess-info .diff {
+  display: block;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .gtb-main-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .gtb-right-panel {
+    order: -1;
+  }
+  
+  .stats-top-row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .gtb-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .session-header-card {
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .session-nav {
+    order: 3;
+  }
+  
+  .slots-table th,
+  .slots-table td {
+    padding: 10px 12px;
+  }
+  
+  .slot-info-wrapper {
+    gap: 8px;
+  }
+  
+  .slot-thumb {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .special-cell {
+    display: none;
+  }
+}
+
+@media (max-width: 480px) {
+  .bet-cell {
+    width: 70px;
+    padding: 4px 8px !important;
+  }
+  
+  .winnings-cell {
+    width: 80px;
+  }
+  
+  .slot-name {
+    font-size: 0.8rem;
+  }
+  
+  .slot-provider {
+    display: none;
+  }
 }

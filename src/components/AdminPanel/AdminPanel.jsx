@@ -22,7 +22,7 @@ export default function AdminPanel() {
   const usersPerPage = 10;
   
   // Offer Card Builder State
-  const [activeTab, setActiveTab] = useState('users'); // 'users', 'offers', 'thelife', 'highlights', 'wheel', or 'wipe'
+  const [activeTab, setActiveTab] = useState('users'); // 'users', 'offers', 'thelife', 'highlights', 'wheel', 'wipe', 'seasonpass', 'guessbalance'
   const [offers, setOffers] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -222,6 +222,38 @@ export default function AdminPanel() {
     display_order: 0
   });
 
+  // Guess Balance State
+  const [guessBalanceSessions, setGuessBalanceSessions] = useState([]);
+  const [guessBalanceSlots, setGuessBalanceSlots] = useState([]);
+  const [showGuessBalanceModal, setShowGuessBalanceModal] = useState(false);
+  const [showSlotModal, setShowSlotModal] = useState(false);
+  const [editingGuessSession, setEditingGuessSession] = useState(null);
+  const [editingSlot, setEditingSlot] = useState(null);
+  const [selectedSessionForSlots, setSelectedSessionForSlots] = useState(null);
+  const [guessSessionFormData, setGuessSessionFormData] = useState({
+    title: '',
+    description: '',
+    start_value: 0,
+    amount_expended: 0,
+    be_multiplier: 1.0,
+    final_balance: '',
+    casino_brand: '',
+    casino_image_url: '',
+    is_guessing_open: true,
+    reveal_answer: false,
+    status: 'active'
+  });
+  const [slotFormData, setSlotFormData] = useState({
+    slot_name: '',
+    slot_image_url: '',
+    provider: '',
+    bet_value: 0,
+    is_super: false,
+    bonus_win: '',
+    multiplier: '',
+    display_order: 0
+  });
+
   // Wipe Settings State
   const [wipeSettings, setWipeSettings] = useState({
     wipe_inventory: false,
@@ -266,6 +298,7 @@ export default function AdminPanel() {
     loadEventMessages();
     loadCategoryInfo();
     loadWipeSettings();
+    loadGuessBalanceSessions();
   }, []);
 
   const loadUsers = async () => {
@@ -2136,6 +2169,283 @@ export default function AdminPanel() {
     }
   };
 
+  // === GUESS BALANCE MANAGEMENT ===
+
+  const loadGuessBalanceSessions = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('guess_balance_sessions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setGuessBalanceSessions(data || []);
+    } catch (err) {
+      console.error('Error loading guess balance sessions:', err);
+    }
+  };
+
+  const loadGuessBalanceSlots = async (sessionId) => {
+    try {
+      const { data, error } = await supabase
+        .from('guess_balance_slots')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('display_order', { ascending: true });
+
+      if (error) throw error;
+      setGuessBalanceSlots(data || []);
+    } catch (err) {
+      console.error('Error loading slots:', err);
+    }
+  };
+
+  const openGuessSessionModal = (session = null) => {
+    if (session) {
+      setEditingGuessSession(session);
+      setGuessSessionFormData({
+        title: session.title,
+        description: session.description || '',
+        start_value: session.start_value || 0,
+        amount_expended: session.amount_expended || 0,
+        be_multiplier: session.be_multiplier || 1.0,
+        final_balance: session.final_balance || '',
+        casino_brand: session.casino_brand || '',
+        casino_image_url: session.casino_image_url || '',
+        is_guessing_open: session.is_guessing_open,
+        reveal_answer: session.reveal_answer,
+        status: session.status || 'active'
+      });
+    } else {
+      setEditingGuessSession(null);
+      setGuessSessionFormData({
+        title: '',
+        description: '',
+        start_value: 0,
+        amount_expended: 0,
+        be_multiplier: 1.0,
+        final_balance: '',
+        casino_brand: '',
+        casino_image_url: '',
+        is_guessing_open: true,
+        reveal_answer: false,
+        status: 'active'
+      });
+    }
+    setShowGuessBalanceModal(true);
+  };
+
+  const saveGuessSession = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!guessSessionFormData.title) {
+      setError('Title is required');
+      return;
+    }
+
+    try {
+      const sessionData = {
+        title: guessSessionFormData.title,
+        description: guessSessionFormData.description,
+        start_value: parseFloat(guessSessionFormData.start_value) || 0,
+        amount_expended: parseFloat(guessSessionFormData.amount_expended) || 0,
+        be_multiplier: parseFloat(guessSessionFormData.be_multiplier) || 1.0,
+        final_balance: guessSessionFormData.final_balance ? parseFloat(guessSessionFormData.final_balance) : null,
+        casino_brand: guessSessionFormData.casino_brand,
+        casino_image_url: guessSessionFormData.casino_image_url,
+        is_guessing_open: guessSessionFormData.is_guessing_open,
+        reveal_answer: guessSessionFormData.reveal_answer,
+        status: guessSessionFormData.status
+      };
+
+      let result;
+      if (editingGuessSession) {
+        result = await supabase
+          .from('guess_balance_sessions')
+          .update(sessionData)
+          .eq('id', editingGuessSession.id);
+      } else {
+        const user = (await supabase.auth.getUser()).data.user;
+        result = await supabase
+          .from('guess_balance_sessions')
+          .insert([{ ...sessionData, user_id: user.id }]);
+      }
+
+      if (result.error) throw result.error;
+
+      setSuccess(`Session ${editingGuessSession ? 'updated' : 'created'} successfully!`);
+      setShowGuessBalanceModal(false);
+      loadGuessBalanceSessions();
+    } catch (err) {
+      setError('Failed to save session: ' + err.message);
+    }
+  };
+
+  const deleteGuessSession = async (sessionId) => {
+    if (!confirm('Are you sure you want to delete this session? All slots and guesses will also be deleted.')) return;
+
+    setError('');
+    setSuccess('');
+
+    try {
+      const { error } = await supabase
+        .from('guess_balance_sessions')
+        .delete()
+        .eq('id', sessionId);
+
+      if (error) throw error;
+      setSuccess('Session deleted successfully!');
+      loadGuessBalanceSessions();
+      if (selectedSessionForSlots?.id === sessionId) {
+        setSelectedSessionForSlots(null);
+        setGuessBalanceSlots([]);
+      }
+    } catch (err) {
+      setError('Failed to delete session: ' + err.message);
+    }
+  };
+
+  const selectSessionForSlots = (session) => {
+    setSelectedSessionForSlots(session);
+    loadGuessBalanceSlots(session.id);
+  };
+
+  const openSlotModal = (slot = null) => {
+    if (slot) {
+      setEditingSlot(slot);
+      setSlotFormData({
+        slot_name: slot.slot_name,
+        slot_image_url: slot.slot_image_url || '',
+        provider: slot.provider || '',
+        bet_value: slot.bet_value || 0,
+        is_super: slot.is_super || false,
+        bonus_win: slot.bonus_win || '',
+        multiplier: slot.multiplier || '',
+        display_order: slot.display_order || 0
+      });
+    } else {
+      setEditingSlot(null);
+      setSlotFormData({
+        slot_name: '',
+        slot_image_url: '',
+        provider: '',
+        bet_value: 0,
+        is_super: false,
+        bonus_win: '',
+        multiplier: '',
+        display_order: guessBalanceSlots.length
+      });
+    }
+    setShowSlotModal(true);
+  };
+
+  const saveSlot = async (e) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!slotFormData.slot_name) {
+      setError('Slot name is required');
+      return;
+    }
+
+    if (!selectedSessionForSlots) {
+      setError('Please select a session first');
+      return;
+    }
+
+    try {
+      const slotData = {
+        session_id: selectedSessionForSlots.id,
+        slot_name: slotFormData.slot_name,
+        slot_image_url: slotFormData.slot_image_url,
+        provider: slotFormData.provider,
+        bet_value: parseFloat(slotFormData.bet_value) || 0,
+        is_super: slotFormData.is_super,
+        bonus_win: slotFormData.bonus_win ? parseFloat(slotFormData.bonus_win) : null,
+        multiplier: slotFormData.multiplier ? parseFloat(slotFormData.multiplier) : null,
+        display_order: parseInt(slotFormData.display_order) || 0
+      };
+
+      let result;
+      if (editingSlot) {
+        result = await supabase
+          .from('guess_balance_slots')
+          .update(slotData)
+          .eq('id', editingSlot.id);
+      } else {
+        result = await supabase
+          .from('guess_balance_slots')
+          .insert([slotData]);
+      }
+
+      if (result.error) throw result.error;
+
+      setSuccess(`Slot ${editingSlot ? 'updated' : 'added'} successfully!`);
+      setShowSlotModal(false);
+      loadGuessBalanceSlots(selectedSessionForSlots.id);
+      
+      // Update amount expended on session
+      const totalBets = [...guessBalanceSlots, ...(editingSlot ? [] : [slotData])]
+        .reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+      await supabase
+        .from('guess_balance_sessions')
+        .update({ amount_expended: totalBets })
+        .eq('id', selectedSessionForSlots.id);
+      loadGuessBalanceSessions();
+    } catch (err) {
+      setError('Failed to save slot: ' + err.message);
+    }
+  };
+
+  const deleteSlot = async (slotId) => {
+    if (!confirm('Are you sure you want to delete this slot?')) return;
+
+    setError('');
+    setSuccess('');
+
+    try {
+      const { error } = await supabase
+        .from('guess_balance_slots')
+        .delete()
+        .eq('id', slotId);
+
+      if (error) throw error;
+      setSuccess('Slot deleted successfully!');
+      loadGuessBalanceSlots(selectedSessionForSlots.id);
+    } catch (err) {
+      setError('Failed to delete slot: ' + err.message);
+    }
+  };
+
+  const endGuessSessionAndCalculateWinner = async (sessionId) => {
+    if (!confirm('Are you sure you want to end this session and calculate the winner?')) return;
+
+    setError('');
+    setSuccess('');
+
+    const session = guessBalanceSessions.find(s => s.id === sessionId);
+    if (!session?.final_balance) {
+      setError('Please set the final balance before ending the session');
+      return;
+    }
+
+    try {
+      const { error } = await supabase.rpc('calculate_guess_balance_winner', {
+        session_uuid: sessionId
+      });
+
+      if (error) throw error;
+
+      setSuccess('Session ended and winner calculated!');
+      loadGuessBalanceSessions();
+    } catch (err) {
+      setError('Failed to end session: ' + err.message);
+    }
+  };
+
   // === WIPE SETTINGS MANAGEMENT ===
 
   const loadWipeSettings = async () => {
@@ -2403,6 +2713,12 @@ export default function AdminPanel() {
           onClick={() => setActiveTab('seasonpass')}
         >
           👑 Season Pass
+        </button>
+        <button 
+          className={`admin-tab ${activeTab === 'guessbalance' ? 'active' : ''}`}
+          onClick={() => setActiveTab('guessbalance')}
+        >
+          💰 Guess Balance
         </button>
       </div>
 
@@ -5644,6 +5960,415 @@ export default function AdminPanel() {
       {/* Season Pass Management Tab */}
       {activeTab === 'seasonpass' && (
         <SeasonPassAdmin />
+      )}
+
+      {/* Guess Balance Management Tab */}
+      {activeTab === 'guessbalance' && (
+        <>
+          <div className="guess-balance-admin-section">
+            <div className="section-header">
+              <h2>💰 Guess the Balance Sessions</h2>
+              <button className="btn-primary" onClick={() => openGuessSessionModal()}>
+                + New Session
+              </button>
+            </div>
+
+            {/* Sessions List */}
+            <div className="sessions-list">
+              {guessBalanceSessions.length === 0 ? (
+                <div className="empty-state">
+                  <p>No sessions yet. Create your first Guess the Balance session!</p>
+                </div>
+              ) : (
+                <div className="sessions-grid">
+                  {guessBalanceSessions.map(session => (
+                    <div 
+                      key={session.id} 
+                      className={`session-card ${selectedSessionForSlots?.id === session.id ? 'selected' : ''} ${session.status}`}
+                      onClick={() => selectSessionForSlots(session)}
+                    >
+                      <div className="session-card-header">
+                        <h3>{session.title}</h3>
+                        <span className={`status-badge ${session.status}`}>
+                          {session.status === 'active' ? '🟢 Active' : 
+                           session.status === 'completed' ? '✅ Completed' : '❌ Cancelled'}
+                        </span>
+                      </div>
+                      
+                      {session.casino_brand && (
+                        <div className="casino-info">
+                          {session.casino_image_url && (
+                            <img src={session.casino_image_url} alt={session.casino_brand} className="casino-logo-small" />
+                          )}
+                          <span>🏛️ {session.casino_brand}</span>
+                        </div>
+                      )}
+
+                      <div className="session-stats">
+                        <div className="stat">
+                          <span className="label">Start:</span>
+                          <span className="value">€{parseFloat(session.start_value || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="stat">
+                          <span className="label">Expended:</span>
+                          <span className="value">€{parseFloat(session.amount_expended || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="stat">
+                          <span className="label">BE x:</span>
+                          <span className="value">{session.be_multiplier || 1.0}x</span>
+                        </div>
+                        {session.final_balance !== null && (
+                          <div className="stat highlight">
+                            <span className="label">Final:</span>
+                            <span className="value">€{parseFloat(session.final_balance || 0).toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="session-flags">
+                        <span className={`flag ${session.is_guessing_open ? 'active' : ''}`}>
+                          {session.is_guessing_open ? '✅ Guessing Open' : '⏸️ Guessing Closed'}
+                        </span>
+                        <span className={`flag ${session.reveal_answer ? 'revealed' : ''}`}>
+                          {session.reveal_answer ? '👁️ Answer Revealed' : '🔒 Hidden'}
+                        </span>
+                      </div>
+
+                      <div className="session-actions">
+                        <button className="btn-edit" onClick={(e) => { e.stopPropagation(); openGuessSessionModal(session); }}>
+                          ✏️ Edit
+                        </button>
+                        {session.status === 'active' && session.final_balance && (
+                          <button 
+                            className="btn-end" 
+                            onClick={(e) => { e.stopPropagation(); endGuessSessionAndCalculateWinner(session.id); }}
+                          >
+                            🏆 End & Calculate Winner
+                          </button>
+                        )}
+                        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); deleteGuessSession(session.id); }}>
+                          🗑️ Delete
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Slots Management for Selected Session */}
+            {selectedSessionForSlots && (
+              <div className="slots-management-section">
+                <div className="section-header">
+                  <h3>🎰 Slots for: {selectedSessionForSlots.title}</h3>
+                  <button className="btn-primary" onClick={() => openSlotModal()}>
+                    + Add Slot
+                  </button>
+                </div>
+
+                <div className="slots-admin-grid">
+                  {guessBalanceSlots.length === 0 ? (
+                    <div className="empty-state">
+                      <p>No slots added yet. Add your first slot!</p>
+                    </div>
+                  ) : (
+                    guessBalanceSlots.map((slot, index) => (
+                      <div key={slot.id} className={`slot-admin-card ${slot.is_super ? 'super' : ''}`}>
+                        <div className="slot-number">#{index + 1}</div>
+                        
+                        {slot.slot_image_url ? (
+                          <img src={slot.slot_image_url} alt={slot.slot_name} className="slot-admin-image" />
+                        ) : (
+                          <div className="slot-image-placeholder">🎰</div>
+                        )}
+
+                        <div className="slot-admin-info">
+                          <h4>{slot.slot_name}</h4>
+                          {slot.provider && <span className="provider">{slot.provider}</span>}
+                          <div className="slot-stats">
+                            <span>Bet: €{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
+                            {slot.is_super && <span className="super-tag">⭐ SUPER</span>}
+                          </div>
+                          {slot.bonus_win !== null && (
+                            <div className="slot-results">
+                              <span>Win: €{parseFloat(slot.bonus_win || 0).toFixed(2)}</span>
+                              {slot.multiplier && <span>{slot.multiplier}x</span>}
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="slot-admin-actions">
+                          <button className="btn-edit-small" onClick={() => openSlotModal(slot)}>✏️</button>
+                          <button className="btn-delete-small" onClick={() => deleteSlot(slot.id)}>🗑️</button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Session Modal */}
+          {showGuessBalanceModal && (
+            <div className="modal-overlay" onClick={() => setShowGuessBalanceModal(false)}>
+              <div className="modal-content large" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2>{editingGuessSession ? 'Edit Session' : 'Create New Session'}</h2>
+                  <button className="modal-close" onClick={() => setShowGuessBalanceModal(false)}>×</button>
+                </div>
+
+                <form onSubmit={saveGuessSession} className="guess-session-form">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Title *</label>
+                      <input
+                        type="text"
+                        value={guessSessionFormData.title}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, title: e.target.value})}
+                        placeholder="e.g., Guess the Balance #1"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Status</label>
+                      <select
+                        value={guessSessionFormData.status}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, status: e.target.value})}
+                      >
+                        <option value="active">Active</option>
+                        <option value="completed">Completed</option>
+                        <option value="cancelled">Cancelled</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Description</label>
+                    <textarea
+                      value={guessSessionFormData.description}
+                      onChange={(e) => setGuessSessionFormData({...guessSessionFormData, description: e.target.value})}
+                      placeholder="Optional description..."
+                      rows={2}
+                    />
+                  </div>
+
+                  <div className="form-section-title">💵 Money Settings</div>
+                  <div className="form-row four-cols">
+                    <div className="form-group">
+                      <label>Start Value (€)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={guessSessionFormData.start_value}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, start_value: e.target.value})}
+                        placeholder="1000.00"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Amount Expended (€)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={guessSessionFormData.amount_expended}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, amount_expended: e.target.value})}
+                        placeholder="500.00"
+                      />
+                      <small>Auto-calculated from slots</small>
+                    </div>
+                    <div className="form-group">
+                      <label>BE Multiplier (x)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={guessSessionFormData.be_multiplier}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, be_multiplier: e.target.value})}
+                        placeholder="1.0"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Final Balance (€)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={guessSessionFormData.final_balance}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, final_balance: e.target.value})}
+                        placeholder="Leave empty until end"
+                      />
+                      <small>Set when session ends</small>
+                    </div>
+                  </div>
+
+                  <div className="form-section-title">🏛️ Casino Info</div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Casino Brand</label>
+                      <input
+                        type="text"
+                        value={guessSessionFormData.casino_brand}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, casino_brand: e.target.value})}
+                        placeholder="e.g., Stake, Rollbit..."
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Casino Logo URL</label>
+                      <input
+                        type="url"
+                        value={guessSessionFormData.casino_image_url}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, casino_image_url: e.target.value})}
+                        placeholder="https://..."
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-section-title">⚙️ Settings</div>
+                  <div className="form-row checkboxes">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={guessSessionFormData.is_guessing_open}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, is_guessing_open: e.target.checked})}
+                      />
+                      <span>Guessing Open (users can submit guesses)</span>
+                    </label>
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={guessSessionFormData.reveal_answer}
+                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, reveal_answer: e.target.checked})}
+                      />
+                      <span>Reveal Answer (show final balance to users)</span>
+                    </label>
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="button" className="btn-secondary" onClick={() => setShowGuessBalanceModal(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn-primary">
+                      {editingGuessSession ? 'Update Session' : 'Create Session'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* Slot Modal */}
+          {showSlotModal && (
+            <div className="modal-overlay" onClick={() => setShowSlotModal(false)}>
+              <div className="modal-content" onClick={e => e.stopPropagation()}>
+                <div className="modal-header">
+                  <h2>{editingSlot ? 'Edit Slot' : 'Add New Slot'}</h2>
+                  <button className="modal-close" onClick={() => setShowSlotModal(false)}>×</button>
+                </div>
+
+                <form onSubmit={saveSlot} className="slot-form">
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Slot Name *</label>
+                      <input
+                        type="text"
+                        value={slotFormData.slot_name}
+                        onChange={(e) => setSlotFormData({...slotFormData, slot_name: e.target.value})}
+                        placeholder="e.g., Gates of Olympus"
+                        required
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Provider</label>
+                      <input
+                        type="text"
+                        value={slotFormData.provider}
+                        onChange={(e) => setSlotFormData({...slotFormData, provider: e.target.value})}
+                        placeholder="e.g., Pragmatic Play"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>Slot Image URL</label>
+                    <input
+                      type="url"
+                      value={slotFormData.slot_image_url}
+                      onChange={(e) => setSlotFormData({...slotFormData, slot_image_url: e.target.value})}
+                      placeholder="https://..."
+                    />
+                    {slotFormData.slot_image_url && (
+                      <img src={slotFormData.slot_image_url} alt="Preview" className="image-preview" />
+                    )}
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Bet Value (€)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={slotFormData.bet_value}
+                        onChange={(e) => setSlotFormData({...slotFormData, bet_value: e.target.value})}
+                        placeholder="1.00"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Display Order</label>
+                      <input
+                        type="number"
+                        value={slotFormData.display_order}
+                        onChange={(e) => setSlotFormData({...slotFormData, display_order: e.target.value})}
+                        placeholder="0"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-group checkbox-inline">
+                    <label className="checkbox-label">
+                      <input
+                        type="checkbox"
+                        checked={slotFormData.is_super}
+                        onChange={(e) => setSlotFormData({...slotFormData, is_super: e.target.checked})}
+                      />
+                      <span>⭐ Is Super/Bonus Slot</span>
+                    </label>
+                  </div>
+
+                  <div className="form-section-title">🏆 Results (optional - fill when bonus opens)</div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Bonus Win (€)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={slotFormData.bonus_win}
+                        onChange={(e) => setSlotFormData({...slotFormData, bonus_win: e.target.value})}
+                        placeholder="Leave empty until opened"
+                      />
+                    </div>
+                    <div className="form-group">
+                      <label>Multiplier (x)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={slotFormData.multiplier}
+                        onChange={(e) => setSlotFormData({...slotFormData, multiplier: e.target.value})}
+                        placeholder="e.g., 150"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="button" className="btn-secondary" onClick={() => setShowSlotModal(false)}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn-primary">
+                      {editingSlot ? 'Update Slot' : 'Add Slot'}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

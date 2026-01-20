@@ -1,21 +1,551 @@
+import { useState, useEffect } from 'react';
+import { supabase } from '../../config/supabaseClient';
+import { useAuth } from '../../context/AuthContext';
 import './GuessBalancePage.css';
 
 export default function GuessBalancePage() {
+  const { user } = useAuth();
+  const [sessions, setSessions] = useState([]);
+  const [activeSession, setActiveSession] = useState(null);
+  const [currentSessionIndex, setCurrentSessionIndex] = useState(0);
+  const [slots, setSlots] = useState([]);
+  const [userGuess, setUserGuess] = useState('');
+  const [existingGuess, setExistingGuess] = useState(null);
+  const [allGuesses, setAllGuesses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [activeTab, setActiveTab] = useState('stats'); // 'stats', 'gtb', 'leaderboard'
+
+  useEffect(() => {
+    loadSessions();
+  }, []);
+
+  useEffect(() => {
+    if (activeSession) {
+      loadSessionDetails(activeSession.id);
+    }
+  }, [activeSession?.id, user?.id]);
+
+  const loadSessions = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('guess_balance_sessions')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setSessions(data || []);
+      
+      // Auto-select first active session
+      const activeIndex = data?.findIndex(s => s.status === 'active');
+      if (activeIndex >= 0) {
+        setCurrentSessionIndex(activeIndex);
+        setActiveSession(data[activeIndex]);
+      } else if (data?.length > 0) {
+        setCurrentSessionIndex(0);
+        setActiveSession(data[0]);
+      }
+    } catch (err) {
+      console.error('Error loading sessions:', err);
+      setError('Failed to load sessions');
+    }
+    setLoading(false);
+  };
+
+  const loadSessionDetails = async (sessionId) => {
+    try {
+      // Load slots
+      const { data: slotsData, error: slotsError } = await supabase
+        .from('guess_balance_slots')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('display_order', { ascending: true });
+
+      if (slotsError) throw slotsError;
+      setSlots(slotsData || []);
+
+      // Load user's existing guess
+      if (user?.id) {
+        const { data: guessData } = await supabase
+          .from('guess_balance_guesses')
+          .select('*')
+          .eq('session_id', sessionId)
+          .eq('user_id', user.id)
+          .single();
+
+        if (guessData) {
+          setExistingGuess(guessData);
+          setUserGuess(guessData.guessed_balance.toString());
+        } else {
+          setExistingGuess(null);
+          setUserGuess('');
+        }
+      }
+
+      // Load all guesses if revealed or completed
+      const session = sessions.find(s => s.id === sessionId);
+      if (session?.reveal_answer || session?.status === 'completed') {
+        const { data: allGuessesData } = await supabase
+          .from('guess_balance_guesses')
+          .select(`
+            *,
+            user:user_profiles(username, display_name)
+          `)
+          .eq('session_id', sessionId)
+          .order('difference', { ascending: true });
+
+        setAllGuesses(allGuessesData || []);
+      } else {
+        setAllGuesses([]);
+      }
+    } catch (err) {
+      console.error('Error loading session details:', err);
+    }
+  };
+
+  const navigateSession = (direction) => {
+    const newIndex = currentSessionIndex + direction;
+    if (newIndex >= 0 && newIndex < sessions.length) {
+      setCurrentSessionIndex(newIndex);
+      setActiveSession(sessions[newIndex]);
+    }
+  };
+
+  const submitGuess = async () => {
+    if (!user) {
+      setError('Please log in to submit a guess');
+      return;
+    }
+
+    if (!userGuess || isNaN(parseFloat(userGuess))) {
+      setError('Please enter a valid balance');
+      return;
+    }
+
+    if (!activeSession?.is_guessing_open) {
+      setError('Guessing is closed for this session');
+      return;
+    }
+
+    setSubmitting(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      const guessValue = parseFloat(userGuess);
+
+      if (existingGuess) {
+        const { error } = await supabase
+          .from('guess_balance_guesses')
+          .update({ guessed_balance: guessValue, guessed_at: new Date().toISOString() })
+          .eq('id', existingGuess.id);
+
+        if (error) throw error;
+        setSuccess('Your guess has been updated!');
+      } else {
+        const { error } = await supabase
+          .from('guess_balance_guesses')
+          .insert({
+            session_id: activeSession.id,
+            user_id: user.id,
+            guessed_balance: guessValue
+          });
+
+        if (error) throw error;
+        setSuccess('Your guess has been submitted!');
+      }
+
+      loadSessionDetails(activeSession.id);
+    } catch (err) {
+      console.error('Error submitting guess:', err);
+      setError('Failed to submit guess: ' + err.message);
+    }
+
+    setSubmitting(false);
+  };
+
+  const formatCurrency = (value) => {
+    if (value === null || value === undefined) return '-';
+    return parseFloat(value).toFixed(2) + '€';
+  };
+
+  const formatMultiplier = (value) => {
+    if (value === null || value === undefined) return '-';
+    return parseFloat(value).toFixed(2) + 'x';
+  };
+
+  // Calculate stats
+  const calculateStats = () => {
+    if (!activeSession || slots.length === 0) {
+      return {
+        totalSlots: 0,
+        openedSlots: 0,
+        totalWinnings: 0,
+        avgMulti: 0,
+        profit: 0,
+        currentBE: 0
+      };
+    }
+
+    const openedSlots = slots.filter(s => s.bonus_win !== null).length;
+    const totalWinnings = slots.reduce((sum, s) => sum + (parseFloat(s.bonus_win) || 0), 0);
+    const totalBets = slots.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+    
+    const multipliers = slots.filter(s => s.multiplier !== null).map(s => parseFloat(s.multiplier));
+    const avgMulti = multipliers.length > 0 ? multipliers.reduce((a, b) => a + b, 0) / multipliers.length : 0;
+    
+    const startValue = parseFloat(activeSession.start_value) || 0;
+    const amountExpended = parseFloat(activeSession.amount_expended) || totalBets;
+    const currentBalance = startValue - amountExpended + totalWinnings;
+    const profit = currentBalance - startValue;
+    
+    const currentBE = amountExpended > 0 ? (amountExpended / totalWinnings) : 0;
+
+    return {
+      totalSlots: slots.length,
+      openedSlots,
+      totalWinnings,
+      avgMulti,
+      profit,
+      currentBE,
+      totalBets: amountExpended
+    };
+  };
+
+  const stats = calculateStats();
+
+  if (loading) {
+    return (
+      <div className="gtb-page">
+        <div className="gtb-container">
+          <div className="loading-spinner">Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="guess-balance-page">
-      <div className="guess-balance-container">
-        <div className="guess-balance-header">
-          <h1>💰 Guess the Balance</h1>
-          <p className="guess-balance-subtitle">Test your skills and guess the balance to win big prizes</p>
+    <div className="gtb-page">
+      <div className="gtb-container">
+        {/* Header */}
+        <div className="gtb-header">
+          <h1>GUESS THE BALANCE</h1>
+          <p>Follow the bonus opening and participate in challenges!</p>
         </div>
 
-        <div className="guess-balance-content">
-          <div className="coming-soon-banner">
-            <div className="banner-icon">💰</div>
-            <h2>Guess the Balance Coming Soon!</h2>
-            <p>We're preparing an exciting guessing game for you. Check back soon for more details!</p>
+        {error && <div className="alert alert-error">{error}</div>}
+        {success && <div className="alert alert-success">{success}</div>}
+
+        {sessions.length === 0 ? (
+          <div className="no-sessions">
+            <div className="no-sessions-icon">🎰</div>
+            <h2>No Active Games</h2>
+            <p>Check back soon for the next Guess the Balance game!</p>
           </div>
-        </div>
+        ) : (
+          <div className="gtb-main-layout">
+            {/* Left Side - Session & Slots Table */}
+            <div className="gtb-left-panel">
+              {/* Session Header */}
+              <div className="session-header-card">
+                <div className="session-icon">💰</div>
+                <div className="session-title-info">
+                  <span className="session-name">{activeSession?.title || 'Guess the Balance'}</span>
+                </div>
+                
+                <div className="session-nav">
+                  <button 
+                    className="nav-arrow" 
+                    onClick={() => navigateSession(-1)}
+                    disabled={currentSessionIndex === 0}
+                  >
+                    ‹
+                  </button>
+                  <button 
+                    className="nav-arrow"
+                    onClick={() => navigateSession(1)}
+                    disabled={currentSessionIndex === sessions.length - 1}
+                  >
+                    ›
+                  </button>
+                </div>
+
+                <div className={`session-status-badge ${activeSession?.status}`}>
+                  {activeSession?.status === 'active' ? 'ACTIVE' : 
+                   activeSession?.status === 'completed' ? 'COMPLETED' : 'CANCELLED'}
+                </div>
+
+                <div className="session-count">
+                  {stats.openedSlots} / {stats.totalSlots} Bónus
+                </div>
+              </div>
+
+              {/* Slots Table */}
+              <div className="slots-table-container">
+                <table className="slots-table">
+                  <thead>
+                    <tr>
+                      <th>#</th>
+                      <th>SLOT</th>
+                      <th>BETSIZE</th>
+                      <th>SPECIAL</th>
+                      <th>WINNINGS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {slots.map((slot, index) => (
+                      <tr key={slot.id} className={slot.is_super ? 'super-row' : ''}>
+                        <td className="slot-number">#{index + 1}</td>
+                        <td className="slot-info-cell">
+                          <div className="slot-info-wrapper">
+                            {slot.slot_image_url ? (
+                              <img src={slot.slot_image_url} alt={slot.slot_name} className="slot-thumb" />
+                            ) : (
+                              <div className="slot-thumb-placeholder">🎰</div>
+                            )}
+                            <div className="slot-text">
+                              <span className="slot-name">{slot.slot_name}</span>
+                              <span className="slot-provider">{slot.provider || 'Unknown'}</span>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="bet-cell">{formatCurrency(slot.bet_value)}</td>
+                        <td className="special-cell">
+                          {slot.is_super && (
+                            <span className="super-bonus-badge">
+                              <span className="badge-icon">👑</span> SUPER BONUS
+                            </span>
+                          )}
+                        </td>
+                        <td className="winnings-cell">
+                          {activeSession?.reveal_answer && slot.bonus_win !== null ? (
+                            <div className="winnings-display">
+                              <span className="win-amount">{formatCurrency(slot.bonus_win)}</span>
+                              {slot.multiplier && (
+                                <span className="win-multiplier">({formatMultiplier(slot.multiplier)})</span>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="hidden-win">???</span>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {slots.length === 0 && (
+                  <div className="empty-slots">
+                    <p>No slots added yet</p>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Right Side - Stats Panel */}
+            <div className="gtb-right-panel">
+              {/* Tabs */}
+              <div className="stats-tabs">
+                <button 
+                  className={`stats-tab ${activeTab === 'stats' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('stats')}
+                >
+                  <span className="tab-icon">📊</span> Stats
+                </button>
+                <button 
+                  className={`stats-tab ${activeTab === 'gtb' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('gtb')}
+                >
+                  <span className="tab-icon">💰</span> GTB
+                </button>
+                <button 
+                  className={`stats-tab ${activeTab === 'leaderboard' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('leaderboard')}
+                >
+                  <span className="tab-icon">🏆</span> Results
+                </button>
+              </div>
+
+              {/* Stats Tab */}
+              {activeTab === 'stats' && (
+                <div className="stats-content">
+                  {/* Top Stats Row */}
+                  <div className="stats-top-row">
+                    <div className="stat-item">
+                      <span className="stat-icon">▷</span>
+                      <span className="stat-label">START</span>
+                      <span className="stat-value gold">{formatCurrency(activeSession?.start_value)}</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-icon">□</span>
+                      <span className="stat-label">STOP</span>
+                      <span className="stat-value">0€</span>
+                    </div>
+                    <div className="stat-item">
+                      <span className="stat-icon">⚐</span>
+                      <span className="stat-label">TARGET</span>
+                      <span className="stat-value">{formatCurrency(activeSession?.start_value)}</span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="progress-section">
+                    <div className="progress-header">
+                      <span className="progress-label">PROGRESS</span>
+                      <span className="progress-count">{stats.openedSlots}/{stats.totalSlots}</span>
+                    </div>
+                    <div className="progress-bar-container">
+                      <div 
+                        className="progress-bar-fill"
+                        style={{ width: `${stats.totalSlots > 0 ? (stats.openedSlots / stats.totalSlots) * 100 : 0}%` }}
+                      ></div>
+                    </div>
+                  </div>
+
+                  {/* Stat Boxes */}
+                  <div className="stat-boxes">
+                    <div className="stat-box">
+                      <span className="box-icon">⚡</span>
+                      <span className="box-label">CURRENT BE</span>
+                      <span className="box-value">{stats.currentBE.toFixed(2)}x</span>
+                    </div>
+
+                    <div className="stat-box">
+                      <span className="box-icon">◎</span>
+                      <span className="box-label">INITIAL BE</span>
+                      <span className="box-value">{formatMultiplier(activeSession?.be_multiplier)}</span>
+                    </div>
+
+                    <div className="stat-box">
+                      <span className="box-icon">↗</span>
+                      <span className="box-label">AVG MULTI</span>
+                      <span className="box-value">{stats.avgMulti.toFixed(2)}x</span>
+                    </div>
+
+                    <div className="stat-box">
+                      <span className="box-icon">↓</span>
+                      <span className="box-label">PROFIT</span>
+                      <span className={`box-value ${stats.profit >= 0 ? 'positive' : 'negative'}`}>
+                        {stats.profit >= 0 ? '+' : ''}{formatCurrency(stats.profit)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Casino Brand */}
+                  {activeSession?.casino_brand && (
+                    <div className="casino-brand-box">
+                      {activeSession.casino_image_url && (
+                        <img src={activeSession.casino_image_url} alt={activeSession.casino_brand} className="casino-logo" />
+                      )}
+                      <span className="casino-name">🏛️ {activeSession.casino_brand}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* GTB (Guess) Tab */}
+              {activeTab === 'gtb' && (
+                <div className="gtb-content">
+                  <div className="guess-section">
+                    <h3>🎯 Make Your Guess</h3>
+                    <p className="guess-subtitle">Guess the final balance to win!</p>
+                    
+                    {!user ? (
+                      <div className="login-prompt">
+                        <p>Please log in to submit your guess!</p>
+                      </div>
+                    ) : !activeSession?.is_guessing_open ? (
+                      <div className="guessing-closed">
+                        <p>⏰ Guessing is closed</p>
+                        {existingGuess && (
+                          <p className="your-guess">Your guess: {formatCurrency(existingGuess.guessed_balance)}</p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="guess-form">
+                        <div className="guess-input-wrapper">
+                          <input
+                            type="number"
+                            value={userGuess}
+                            onChange={(e) => setUserGuess(e.target.value)}
+                            placeholder="Enter balance..."
+                            step="0.01"
+                            min="0"
+                            className="guess-input"
+                          />
+                          <span className="currency-symbol">€</span>
+                        </div>
+                        
+                        <button 
+                          onClick={submitGuess}
+                          disabled={submitting || !userGuess}
+                          className="submit-guess-btn"
+                        >
+                          {submitting ? 'Submitting...' : existingGuess ? 'Update Guess' : 'Submit Guess'}
+                        </button>
+
+                        {existingGuess && (
+                          <p className="existing-guess-note">
+                            Current guess: {formatCurrency(existingGuess.guessed_balance)}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Final Balance Reveal */}
+                  {activeSession?.reveal_answer && activeSession?.final_balance !== null && (
+                    <div className="final-balance-reveal">
+                      <span className="reveal-label">FINAL BALANCE</span>
+                      <span className="reveal-value">{formatCurrency(activeSession.final_balance)}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Leaderboard Tab */}
+              {activeTab === 'leaderboard' && (
+                <div className="leaderboard-content">
+                  <h3>🏆 Results</h3>
+                  
+                  {!activeSession?.reveal_answer && activeSession?.status !== 'completed' ? (
+                    <div className="results-hidden">
+                      <p>Results will be revealed when the session ends!</p>
+                    </div>
+                  ) : allGuesses.length === 0 ? (
+                    <div className="no-guesses">
+                      <p>No guesses submitted yet</p>
+                    </div>
+                  ) : (
+                    <div className="leaderboard-list">
+                      {allGuesses.map((guess, index) => (
+                        <div 
+                          key={guess.id} 
+                          className={`leaderboard-item ${guess.is_winner ? 'winner' : ''} ${guess.user_id === user?.id ? 'you' : ''}`}
+                        >
+                          <span className="rank">
+                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                          </span>
+                          <span className="player-name">
+                            {guess.user?.display_name || guess.user?.username || 'Anonymous'}
+                            {guess.user_id === user?.id && <span className="you-tag">YOU</span>}
+                          </span>
+                          <div className="guess-info">
+                            <span className="guessed">{formatCurrency(guess.guessed_balance)}</span>
+                            <span className="diff">Δ {formatCurrency(guess.difference)}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
