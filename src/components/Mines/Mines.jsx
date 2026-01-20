@@ -510,7 +510,6 @@ export default function Mines() {
               const isMine = mineLocations.includes(i);
               const showMine = isMine && gameOver;
               const isSafe = isRevealed && !isMine;
-              const isUnrevealedMine = isMine && gameOver && !isRevealed;
 
               let cellClass = 'cell';
               if (!gameActive && !gameOver) {
@@ -530,7 +529,18 @@ export default function Mines() {
                   key={i}
                   className={cellClass}
                   onClick={() => canClick && clickCell(i)}
-                  style={{ cursor: canClick ? 'pointer' : 'default' }}
+                  style={{ 
+                    cursor: canClick ? 'pointer' : 'default',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'rgba(45, 55, 72, 0.95)',
+                    border: '3px solid rgba(212, 175, 55, 0.4)',
+                    borderRadius: '10px',
+                    fontSize: '2rem',
+                    minHeight: '80px',
+                    minWidth: '80px'
+                  }}
                 >
                   {(!gameActive && !gameOver) && <span className="cell-icon">❓</span>}
                   {(gameActive && !isRevealed) && <span className="cell-icon">💎</span>}
