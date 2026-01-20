@@ -26,6 +26,75 @@ export default function Mines() {
   const [loading, setLoading] = useState(false);
   const [safeCellsRemaining, setSafeCellsRemaining] = useState(0);
   const [maxMultiplier, setMaxMultiplier] = useState(0);
+  const [checkingGame, setCheckingGame] = useState(true);
+  const [stuckGame, setStuckGame] = useState(null);
+
+  // Check for active game on mount
+  useEffect(() => {
+    const checkActiveGame = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          setCheckingGame(false);
+          return;
+        }
+
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`
+          },
+          body: JSON.stringify({ action: 'getActiveGame' })
+        });
+
+        const data = await response.json();
+        
+        if (data.success && data.hasActiveGame) {
+          // Found an active game - let user resume or forfeit
+          setStuckGame(data.game);
+        }
+      } catch (err) {
+        console.error('Error checking active game:', err);
+      } finally {
+        setCheckingGame(false);
+      }
+    };
+
+    checkActiveGame();
+  }, []);
+
+  // Resume a stuck game
+  const resumeGame = () => {
+    if (!stuckGame) return;
+    
+    setGameId(stuckGame.id);
+    setBet(stuckGame.bet);
+    setMines(stuckGame.mineCount);
+    setRevealed(stuckGame.revealedCells || []);
+    setMultiplier(stuckGame.multiplier || 1.0);
+    setProfit(stuckGame.profit || 0);
+    setSafeCellsRemaining(stuckGame.safeCellsRemaining);
+    setGameActive(true);
+    setGameOver(false);
+    setStuckGame(null);
+  };
+
+  // Forfeit a stuck game
+  const forfeitGame = async () => {
+    if (!stuckGame) return;
+    
+    setLoading(true);
+    try {
+      await apiCall('forfeit', { gameId: stuckGame.id });
+      setStuckGame(null);
+    } catch (err) {
+      console.error('Forfeit error:', err);
+      alert('Failed to forfeit: ' + err.message);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   // Helper to make authenticated API calls
   const apiCall = async (action, params = {}) => {
@@ -175,6 +244,110 @@ export default function Mines() {
     setJackpot(false);
     setSafeCellsRemaining(0);
   };
+
+  // Show loading while checking for active game
+  if (checkingGame) {
+    return (
+      <div className="mines-page">
+        <div className="mines-header">
+          <h1>💣 Mines</h1>
+        </div>
+        <div className="loading-check">
+          <div className="spinner"></div>
+          <p>Checking for active games...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show stuck game recovery modal
+  if (stuckGame) {
+    return (
+      <div className="mines-page">
+        <div className="mines-header">
+          <h1>💣 Mines</h1>
+          <div className="balance-display">
+            <span>Balance:</span>
+            <strong>{points} pts</strong>
+          </div>
+        </div>
+        
+        <div className="stuck-game-modal">
+          <div className="stuck-game-content">
+            <div className="stuck-icon">⚠️</div>
+            <h2>Active Game Found!</h2>
+            <p>You have an unfinished game in progress.</p>
+            
+            <div className="stuck-game-info">
+              <div className="info-row">
+                <span>Bet:</span>
+                <strong>{stuckGame.bet} pts</strong>
+              </div>
+              <div className="info-row">
+                <span>Mines:</span>
+                <strong>{stuckGame.mineCount} 💣</strong>
+              </div>
+              <div className="info-row">
+                <span>Cells Found:</span>
+                <strong>{stuckGame.revealedCells?.length || 0} 💎</strong>
+              </div>
+              {stuckGame.profit > 0 && (
+                <div className="info-row highlight">
+                  <span>Current Value:</span>
+                  <strong>{stuckGame.profit} pts ({stuckGame.multiplier?.toFixed(2)}×)</strong>
+                </div>
+              )}
+            </div>
+
+            <div className="stuck-game-actions">
+              <button 
+                className="btn-resume"
+                onClick={resumeGame}
+              >
+                ▶️ Resume Game
+              </button>
+              
+              {stuckGame.revealedCells?.length > 0 && stuckGame.profit > 0 && (
+                <button 
+                  className="btn-cashout-stuck"
+                  onClick={async () => {
+                    setLoading(true);
+                    try {
+                      const data = await apiCall('cashout', { gameId: stuckGame.id });
+                      if (data.success) {
+                        await updateUserPoints(data.profit);
+                        setStuckGame(null);
+                        alert(`Cashed out ${data.profit} pts!`);
+                      }
+                    } catch (err) {
+                      alert('Cashout failed: ' + err.message);
+                    } finally {
+                      setLoading(false);
+                    }
+                  }}
+                  disabled={loading}
+                >
+                  💵 Cash Out ({stuckGame.profit} pts)
+                </button>
+              )}
+              
+              <button 
+                className="btn-forfeit"
+                onClick={forfeitGame}
+                disabled={loading}
+              >
+                ❌ Forfeit (Lose {stuckGame.bet} pts)
+              </button>
+            </div>
+            
+            <p className="stuck-note">
+              If you resume, you can continue playing or cash out at any time.
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="mines-page">

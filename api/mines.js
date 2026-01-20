@@ -120,6 +120,10 @@ export default async function handler(req, res) {
         return await handleReveal(supabase, user, params, res);
       case 'cashout':
         return await handleCashout(supabase, user, params, res);
+      case 'forfeit':
+        return await handleForfeit(supabase, user, params, res);
+      case 'getActiveGame':
+        return await handleGetActiveGame(supabase, user, res);
       case 'getMultipliers':
         return handleGetMultipliers(params, res);
       default:
@@ -373,5 +377,71 @@ async function handleCashout(supabase, user, { gameId }, res) {
     multiplier: game.multiplier,
     minePositions: game.mine_positions, // Reveal after cashout
     revealedCells: game.revealed_cells
+  });
+}
+
+// Forfeit/cancel an active game (player loses bet)
+async function handleForfeit(supabase, user, { gameId }, res) {
+  // Get the active game
+  const { data: game, error: gameError } = await supabase
+    .from('mines_games')
+    .select('*')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .single();
+
+  if (gameError || !game) {
+    return res.status(404).json({ error: 'No active game found' });
+  }
+
+  // Update game as forfeited (lost)
+  await supabase
+    .from('mines_games')
+    .update({
+      status: 'forfeited',
+      result_amount: 0,
+      ended_at: new Date().toISOString()
+    })
+    .eq('id', game.id);
+
+  return res.status(200).json({
+    success: true,
+    message: 'Game forfeited',
+    betLost: game.bet_amount
+  });
+}
+
+// Check for and return any active game
+async function handleGetActiveGame(supabase, user, res) {
+  const { data: game, error } = await supabase
+    .from('mines_games')
+    .select('id, bet_amount, mine_count, revealed_cells, multiplier, created_at')
+    .eq('user_id', user.id)
+    .eq('status', 'active')
+    .single();
+
+  if (error || !game) {
+    return res.status(200).json({ success: true, hasActiveGame: false });
+  }
+
+  // Calculate current state
+  const safeCells = GRID_SIZE - game.mine_count;
+  const safeCellsRemaining = safeCells - game.revealed_cells.length;
+  const currentMultiplier = calcMultiplier(game.revealed_cells.length, game.mine_count);
+  const profit = Math.floor(game.bet_amount * currentMultiplier);
+
+  return res.status(200).json({
+    success: true,
+    hasActiveGame: true,
+    game: {
+      id: game.id,
+      bet: game.bet_amount,
+      mineCount: game.mine_count,
+      revealedCells: game.revealed_cells,
+      multiplier: currentMultiplier,
+      profit: profit,
+      safeCellsRemaining: safeCellsRemaining,
+      createdAt: game.created_at
+    }
   });
 }
