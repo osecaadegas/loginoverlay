@@ -2179,15 +2179,32 @@ export default function AdminPanel() {
 
   const loadSlotCatalog = async () => {
     try {
-      const { data, error, count } = await supabase
-        .from('slots')
-        .select('*', { count: 'exact' })
-        .order('name', { ascending: true })
-        .limit(10000); // Load all slots
+      // Supabase has a 1000 row default limit, so we need to paginate
+      let allSlots = [];
+      let page = 0;
+      const pageSize = 1000;
+      let hasMore = true;
 
-      if (error) throw error;
-      console.log(`Loaded ${data?.length || 0} slots from catalog`);
-      setSlotCatalog(data || []);
+      while (hasMore) {
+        const { data, error } = await supabase
+          .from('slots')
+          .select('*')
+          .order('name', { ascending: true })
+          .range(page * pageSize, (page + 1) * pageSize - 1);
+
+        if (error) throw error;
+        
+        if (data && data.length > 0) {
+          allSlots = [...allSlots, ...data];
+          page++;
+          hasMore = data.length === pageSize; // If we got full page, there might be more
+        } else {
+          hasMore = false;
+        }
+      }
+
+      console.log(`Loaded ${allSlots.length} slots from catalog`);
+      setSlotCatalog(allSlots);
     } catch (err) {
       console.error('Error loading slot catalog:', err);
     }
