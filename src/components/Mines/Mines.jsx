@@ -542,9 +542,11 @@ export default function Mines() {
                     minWidth: '80px'
                   }}
                 >
-                  {(!gameActive && !gameOver) && <span className="cell-icon">❓</span>}
-                  {(gameActive && !isRevealed) && <span className="cell-icon">💎</span>}
+                  {/* Show ❓ when idle OR when game is active but cell not revealed */}
+                  {((!gameActive && !gameOver) || (gameActive && !isRevealed)) && <span className="cell-icon">❓</span>}
+                  {/* Show 💎 only when revealed and safe */}
                   {isSafe && <span className="cell-icon safe-icon">💎</span>}
+                  {/* Show 💣 when game over and it's a mine */}
                   {showMine && <span className="cell-icon mine-icon">💣</span>}
                 </button>
               );
