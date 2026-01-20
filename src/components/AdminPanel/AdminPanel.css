@@ -3943,7 +3943,282 @@
 }
 
 .modal-content.large {
-  max-width: 700px;
+  max-width: 800px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+/* Slot Picker Section */
+.slot-picker-section {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.slot-picker-controls {
+  display: grid;
+  grid-template-columns: 1fr 120px auto;
+  gap: 12px;
+  align-items: end;
+}
+
+.slot-search-group {
+  margin-bottom: 0;
+}
+
+.slot-search-input {
+  width: 100%;
+}
+
+.bet-input {
+  width: 100%;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  padding-bottom: 10px;
+}
+
+.super-checkbox {
+  white-space: nowrap;
+  background: rgba(234, 179, 8, 0.1);
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(234, 179, 8, 0.3);
+}
+
+.super-checkbox span {
+  color: #eab308;
+}
+
+/* Slot Catalog Results */
+.slot-catalog-results {
+  margin-top: 16px;
+  max-height: 250px;
+  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  padding: 12px;
+}
+
+.slot-catalog-results .no-results {
+  text-align: center;
+  color: #6b7280;
+  padding: 20px;
+}
+
+.slot-catalog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.slot-catalog-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.slot-catalog-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.slot-catalog-image {
+  width: 48px;
+  height: 48px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.slot-catalog-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.slot-catalog-name {
+  color: #f3f4f6;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-catalog-provider {
+  color: #6b7280;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.add-slot-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  color: #3b82f6;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.add-slot-btn:hover {
+  background: #3b82f6;
+  color: #fff;
+}
+
+/* Session Slots List */
+.session-slots-list {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.slots-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slots-list-header span:first-child {
+  color: #f3f4f6;
+  font-weight: 600;
+}
+
+.total-bets {
+  color: #d4af37;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.no-slots-added {
+  text-align: center;
+  color: #6b7280;
+  padding: 30px;
+}
+
+.added-slots-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.added-slot-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.added-slot-item.super {
+  background: rgba(234, 179, 8, 0.05);
+  border-color: rgba(234, 179, 8, 0.3);
+}
+
+.slot-order {
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-weight: 600;
+  min-width: 30px;
+}
+
+.added-slot-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  object-fit: cover;
+}
+
+.added-slot-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+}
+
+.added-slot-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.added-slot-name {
+  color: #f3f4f6;
+  font-size: 0.9rem;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.added-slot-provider {
+  color: #6b7280;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.added-slot-bet {
+  color: #9ca3af;
+  font-size: 0.9rem;
+  font-weight: 500;
+  min-width: 60px;
+  text-align: right;
+}
+
+.super-badge {
+  color: #eab308;
+  font-size: 1rem;
+}
+
+.remove-slot-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  font-size: 1.2rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  line-height: 1;
+}
+
+.remove-slot-btn:hover {
+  background: #ef4444;
+  color: #fff;
 }
 
 @media (max-width: 768px) {
@@ -3957,5 +4232,13 @@
   
   .slots-admin-grid {
     grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .slot-picker-controls {
+    grid-template-columns: 1fr;
+  }
+  
+  .slot-catalog-grid {
+    grid-template-columns: 1fr 1fr;
   }
 }

@@ -230,6 +230,12 @@ export default function AdminPanel() {
   const [editingGuessSession, setEditingGuessSession] = useState(null);
   const [editingSlot, setEditingSlot] = useState(null);
   const [selectedSessionForSlots, setSelectedSessionForSlots] = useState(null);
+  // Slot catalog for adding to sessions
+  const [slotCatalog, setSlotCatalog] = useState([]);
+  const [slotSearchQuery, setSlotSearchQuery] = useState('');
+  const [sessionSlotsInModal, setSessionSlotsInModal] = useState([]);
+  const [newSlotBetValue, setNewSlotBetValue] = useState(1.00);
+  const [newSlotIsSuper, setNewSlotIsSuper] = useState(false);
   const [guessSessionFormData, setGuessSessionFormData] = useState({
     title: '',
     description: '',
@@ -2171,6 +2177,20 @@ export default function AdminPanel() {
 
   // === GUESS BALANCE MANAGEMENT ===
 
+  const loadSlotCatalog = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('slots')
+        .select('*')
+        .order('name', { ascending: true });
+
+      if (error) throw error;
+      setSlotCatalog(data || []);
+    } catch (err) {
+      console.error('Error loading slot catalog:', err);
+    }
+  };
+
   const loadGuessBalanceSessions = async () => {
     try {
       const { data, error } = await supabase
@@ -2200,7 +2220,13 @@ export default function AdminPanel() {
     }
   };
 
-  const openGuessSessionModal = (session = null) => {
+  const openGuessSessionModal = async (session = null) => {
+    // Load slot catalog when opening modal
+    await loadSlotCatalog();
+    setSlotSearchQuery('');
+    setNewSlotBetValue(1.00);
+    setNewSlotIsSuper(false);
+    
     if (session) {
       setEditingGuessSession(session);
       setGuessSessionFormData({
@@ -2216,6 +2242,13 @@ export default function AdminPanel() {
         reveal_answer: session.reveal_answer,
         status: session.status || 'active'
       });
+      // Load existing slots for this session
+      const { data: existingSlots } = await supabase
+        .from('guess_balance_slots')
+        .select('*')
+        .eq('session_id', session.id)
+        .order('display_order', { ascending: true });
+      setSessionSlotsInModal(existingSlots || []);
     } else {
       setEditingGuessSession(null);
       setGuessSessionFormData({
@@ -2231,9 +2264,48 @@ export default function AdminPanel() {
         reveal_answer: false,
         status: 'active'
       });
+      setSessionSlotsInModal([]);
     }
     setShowGuessBalanceModal(true);
   };
+
+  // Add slot from catalog to session
+  const addSlotToSession = (catalogSlot) => {
+    const newSlot = {
+      tempId: Date.now(), // Temporary ID for tracking before save
+      slot_name: catalogSlot.name,
+      slot_image_url: catalogSlot.image,
+      provider: catalogSlot.provider,
+      bet_value: newSlotBetValue,
+      is_super: newSlotIsSuper,
+      bonus_win: null,
+      multiplier: null,
+      display_order: sessionSlotsInModal.length
+    };
+    setSessionSlotsInModal([...sessionSlotsInModal, newSlot]);
+    setSlotSearchQuery('');
+    setNewSlotBetValue(1.00);
+    setNewSlotIsSuper(false);
+    
+    // Update amount expended
+    const totalBets = [...sessionSlotsInModal, newSlot].reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+    setGuessSessionFormData(prev => ({ ...prev, amount_expended: totalBets }));
+  };
+
+  // Remove slot from session (in modal)
+  const removeSlotFromSession = (index) => {
+    const updatedSlots = sessionSlotsInModal.filter((_, i) => i !== index);
+    setSessionSlotsInModal(updatedSlots);
+    // Update amount expended
+    const totalBets = updatedSlots.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+    setGuessSessionFormData(prev => ({ ...prev, amount_expended: totalBets }));
+  };
+
+  // Filter slot catalog based on search
+  const filteredSlotCatalog = slotCatalog.filter(slot => 
+    slot.name.toLowerCase().includes(slotSearchQuery.toLowerCase()) ||
+    slot.provider.toLowerCase().includes(slotSearchQuery.toLowerCase())
+  );
 
   const saveGuessSession = async (e) => {
     e.preventDefault();
@@ -2260,24 +2332,61 @@ export default function AdminPanel() {
         status: guessSessionFormData.status
       };
 
-      let result;
+      let sessionId;
+      
       if (editingGuessSession) {
-        result = await supabase
+        const result = await supabase
           .from('guess_balance_sessions')
           .update(sessionData)
           .eq('id', editingGuessSession.id);
+        if (result.error) throw result.error;
+        sessionId = editingGuessSession.id;
+        
+        // Delete existing slots and re-insert (simpler than tracking changes)
+        await supabase
+          .from('guess_balance_slots')
+          .delete()
+          .eq('session_id', sessionId);
       } else {
         const user = (await supabase.auth.getUser()).data.user;
-        result = await supabase
+        const result = await supabase
           .from('guess_balance_sessions')
-          .insert([{ ...sessionData, user_id: user.id }]);
+          .insert([{ ...sessionData, user_id: user.id }])
+          .select()
+          .single();
+        if (result.error) throw result.error;
+        sessionId = result.data.id;
       }
 
-      if (result.error) throw result.error;
+      // Save all slots for this session
+      if (sessionSlotsInModal.length > 0) {
+        const slotsToInsert = sessionSlotsInModal.map((slot, index) => ({
+          session_id: sessionId,
+          slot_name: slot.slot_name,
+          slot_image_url: slot.slot_image_url,
+          provider: slot.provider,
+          bet_value: parseFloat(slot.bet_value) || 0,
+          is_super: slot.is_super || false,
+          bonus_win: slot.bonus_win ? parseFloat(slot.bonus_win) : null,
+          multiplier: slot.multiplier ? parseFloat(slot.multiplier) : null,
+          display_order: index
+        }));
+        
+        const { error: slotsError } = await supabase
+          .from('guess_balance_slots')
+          .insert(slotsToInsert);
+        
+        if (slotsError) throw slotsError;
+      }
 
-      setSuccess(`Session ${editingGuessSession ? 'updated' : 'created'} successfully!`);
+      setSuccess(`Session ${editingGuessSession ? 'updated' : 'created'} successfully with ${sessionSlotsInModal.length} slots!`);
       setShowGuessBalanceModal(false);
       loadGuessBalanceSessions();
+      
+      // Refresh slots view if this session is selected
+      if (selectedSessionForSlots?.id === sessionId) {
+        loadGuessBalanceSlots(sessionId);
+      }
     } catch (err) {
       setError('Failed to save session: ' + err.message);
     }
@@ -6239,6 +6348,112 @@ export default function AdminPanel() {
                       />
                       <span>Reveal Answer (show final balance to users)</span>
                     </label>
+                  </div>
+
+                  {/* Slot Selection Section */}
+                  <div className="form-section-title">🎰 Add Slots</div>
+                  
+                  {/* Slot Search & Add Controls */}
+                  <div className="slot-picker-section">
+                    <div className="slot-picker-controls">
+                      <div className="form-group slot-search-group">
+                        <label>Search Slots</label>
+                        <input
+                          type="text"
+                          value={slotSearchQuery}
+                          onChange={(e) => setSlotSearchQuery(e.target.value)}
+                          placeholder="Type to search slots..."
+                          className="slot-search-input"
+                        />
+                      </div>
+                      <div className="form-group">
+                        <label>Bet Value (€)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={newSlotBetValue}
+                          onChange={(e) => setNewSlotBetValue(parseFloat(e.target.value) || 0)}
+                          placeholder="1.00"
+                          className="bet-input"
+                        />
+                      </div>
+                      <div className="form-group checkbox-group">
+                        <label className="checkbox-label super-checkbox">
+                          <input
+                            type="checkbox"
+                            checked={newSlotIsSuper}
+                            onChange={(e) => setNewSlotIsSuper(e.target.checked)}
+                          />
+                          <span>⭐ Super</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    {/* Slot Catalog Results */}
+                    {slotSearchQuery && (
+                      <div className="slot-catalog-results">
+                        {filteredSlotCatalog.length === 0 ? (
+                          <div className="no-results">No slots found matching "{slotSearchQuery}"</div>
+                        ) : (
+                          <div className="slot-catalog-grid">
+                            {filteredSlotCatalog.slice(0, 12).map((slot) => (
+                              <div 
+                                key={slot.id} 
+                                className="slot-catalog-item"
+                                onClick={() => addSlotToSession(slot)}
+                              >
+                                <img src={slot.image} alt={slot.name} className="slot-catalog-image" />
+                                <div className="slot-catalog-info">
+                                  <span className="slot-catalog-name">{slot.name}</span>
+                                  <span className="slot-catalog-provider">{slot.provider}</span>
+                                </div>
+                                <button type="button" className="add-slot-btn">+</button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Added Slots List */}
+                  <div className="session-slots-list">
+                    <div className="slots-list-header">
+                      <span>Added Slots ({sessionSlotsInModal.length})</span>
+                      <span className="total-bets">Total Bets: €{sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0).toFixed(2)}</span>
+                    </div>
+                    
+                    {sessionSlotsInModal.length === 0 ? (
+                      <div className="no-slots-added">
+                        <p>No slots added yet. Search and add slots above.</p>
+                      </div>
+                    ) : (
+                      <div className="added-slots-grid">
+                        {sessionSlotsInModal.map((slot, index) => (
+                          <div key={slot.id || slot.tempId} className={`added-slot-item ${slot.is_super ? 'super' : ''}`}>
+                            <span className="slot-order">#{index + 1}</span>
+                            {slot.slot_image_url ? (
+                              <img src={slot.slot_image_url} alt={slot.slot_name} className="added-slot-image" />
+                            ) : (
+                              <div className="added-slot-placeholder">🎰</div>
+                            )}
+                            <div className="added-slot-info">
+                              <span className="added-slot-name">{slot.slot_name}</span>
+                              <span className="added-slot-provider">{slot.provider}</span>
+                            </div>
+                            <span className="added-slot-bet">€{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
+                            {slot.is_super && <span className="super-badge">⭐</span>}
+                            <button 
+                              type="button" 
+                              className="remove-slot-btn"
+                              onClick={() => removeSlotFromSession(index)}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <div className="form-actions">
