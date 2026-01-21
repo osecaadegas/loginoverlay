@@ -469,14 +469,13 @@ export default function TheLife() {
               <img src="/thelife/categories/brothel.png" alt="Brothel" />
             </button>
             <button 
-              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''} ${player?.level < 15 ? 'tab-locked' : ''}`}
-              onClick={() => !isInJail && player?.level >= 15 && setActiveTab('highstakes')}
-              disabled={isInJail || player?.level < 15}
-              style={{opacity: (isInJail || player?.level < 15) ? 0.5 : 1, cursor: (isInJail || player?.level < 15) ? 'not-allowed' : 'pointer'}}
-              title={player?.level < 15 ? 'Unlocks at Level 15' : 'High Stakes'}
+              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
+              onClick={() => !isInJail && setActiveTab('highstakes')}
+              disabled={isInJail}
+              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              title="High Stakes"
             >
               <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
-              {player?.level < 15 && <span className="tab-lock-badge">🔒 15</span>}
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}

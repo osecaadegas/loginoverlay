@@ -1086,7 +1086,7 @@ export default function PointsManager() {
                     disabled={redemptionPage >= Math.ceil(redemptions.length / redemptionsPerPage)}
                     className="pm-pagination-btn"
                   >
-                    Next >
+                    Next &gt;
                   </button>
                 </div>
               )}

@@ -139,14 +139,14 @@ export default function TheLifeHighStakes({
           </div>
         );
       case 'stockmarket':
-        // Stock Market requires level 40
-        if (player?.level < 40) {
+        // Stock Market requires level 60
+        if (player?.level < 60) {
           return (
             <div className="highstakes-content stockmarket-content">
               <div className="locked-content">
                 <div className="locked-icon">🔒</div>
                 <h3>Stock Market Locked</h3>
-                <p>You need to reach <span className="level-requirement">Level 40</span> to access the Shadow Exchange.</p>
+                <p>You need to reach <span className="level-requirement">Level 60</span> to access the Shadow Exchange.</p>
                 <p className="current-level">Your current level: <span>{player?.level || 1}</span></p>
               </div>
             </div>
