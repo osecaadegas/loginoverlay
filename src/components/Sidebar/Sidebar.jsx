@@ -498,7 +498,7 @@ export default function Sidebar() {
           <a href="https://www.instagram.com/osecaadegas/" target="_blank" rel="noopener noreferrer" className="social-card social-instagram" title="Instagram">
             <span className="social-card-text">Instagram</span>
           </a>
-          <a href="https://discord.gg/UbUjYzVuvj" target="_blank" rel="noopener noreferrer" className="social-card social-discord" title="Discord">
+          <a href="https://discord.gg/ASvCcpp5b8" target="_blank" rel="noopener noreferrer" className="social-card social-discord" title="Discord">
             <span className="social-card-text">Discord</span>
           </a>
         </div>
