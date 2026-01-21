@@ -1689,6 +1689,22 @@ export default function AdminPanel() {
     }
   };
 
+  // Reschedule a past boat with new times
+  const rescheduleBoat = (boat) => {
+    // Pre-fill form with boat data but reset times and shipments
+    setBoatFormData({
+      name: boat.name,
+      image_url: boat.image_url || '',
+      item_id: boat.item_id || '',
+      arrival_time: '',
+      departure_time: '',
+      max_shipments: boat.max_shipments || 100,
+      is_active: true
+    });
+    setEditingBoat(null); // This creates a NEW boat, not editing the old one
+    setShowBoatModal(true);
+  };
+
   const toggleOfferActive = async (offerId, currentStatus) => {
     try {
       const { error } = await supabase
@@ -3828,6 +3844,11 @@ export default function AdminPanel() {
                           <button onClick={() => openBoatModal(boat)} className="btn-edit">
                             ✏️ Edit
                           </button>
+                          {isPast && (
+                            <button onClick={() => rescheduleBoat(boat)} className="btn-reschedule">
+                              🔄 Reschedule
+                            </button>
+                          )}
                           <button 
                             onClick={() => toggleBoatActive(boat.id, boat.is_active)} 
                             className={`btn-toggle ${boat.is_active ? 'active' : 'inactive'}`}
