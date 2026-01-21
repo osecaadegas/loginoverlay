@@ -27,7 +27,6 @@ import TheLifeStats from './categories/TheLifeStats';
 import TheLifeSkills from './categories/TheLifeSkills';
 import TheLifeProfile from './categories/TheLifeProfile';
 import TheLifeHighStakes from './categories/TheLifeHighStakes';
-import TheLifePlayerMarket from './categories/TheLifePlayerMarket';
 
 // Portuguese translations for category info
 const categoryTranslations = {
@@ -521,6 +520,7 @@ export default function TheLife() {
           {...tabsDragScroll}
         >
           <div className="game-tabs">
+            {/* CRIMES */}
             <button 
               className={`tab tab-image ${activeTab === 'crimes' ? 'active' : ''}`}
               onClick={() => !isRestricted && setActiveTab('crimes')}
@@ -529,14 +529,7 @@ export default function TheLife() {
             >
               <img src="/thelife/categories/crimes.png" alt="Crimes" />
             </button>
-            <button 
-              className={`tab tab-image ${activeTab === 'pvp' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('pvp')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/pvp.png" alt="PvP" />
-            </button>
+            {/* BUSINESSES */}
             <button
               className={`tab tab-image ${activeTab === 'businesses' ? 'active' : ''}`}
               onClick={() => !isRestricted && setActiveTab('businesses')}
@@ -545,6 +538,7 @@ export default function TheLife() {
             >
               <img src="/thelife/categories/businesses.png" alt="Businesses" />
             </button>
+            {/* BROTHEL */}
             <button 
               className={`tab tab-image ${activeTab === 'brothel' ? 'active' : ''}`}
               onClick={() => !isRestricted && setActiveTab('brothel')}
@@ -553,6 +547,16 @@ export default function TheLife() {
             >
               <img src="/thelife/categories/brothel.png" alt="Brothel" />
             </button>
+            {/* PVP */}
+            <button 
+              className={`tab tab-image ${activeTab === 'pvp' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('pvp')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/pvp.png" alt="PvP" />
+            </button>
+            {/* HIGH STAKES */}
             <button 
               className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
               onClick={() => !isRestricted && setActiveTab('highstakes')}
@@ -562,32 +566,7 @@ export default function TheLife() {
             >
               <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
             </button>
-            <button 
-              className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}
-              onClick={() => setActiveTab('inventory')}
-            >
-              <img src="/thelife/categories/Inventory.png" alt="Inventory" />
-            </button>
-            <button 
-              className={`tab tab-image ${activeTab === 'jail' ? 'active' : ''}`}
-              onClick={() => setActiveTab('jail')}
-            >
-              <img src="/thelife/categories/Jail.png" alt="Jail" />
-            </button>
-            <button 
-              className={`tab tab-image ${activeTab === 'hospital' ? 'active' : ''}`}
-              onClick={() => setActiveTab('hospital')}
-            >
-              <img src="/thelife/categories/Hospital.png" alt="Hospital" />
-            </button>
-            <button 
-              className={`tab tab-image ${activeTab === 'market' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('market')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/BlackMarket.png" alt="Market" />
-            </button>
+            {/* DOCKS */}
             <button 
               className={`tab tab-image ${activeTab === 'docks' ? 'active' : ''}`}
               onClick={() => !isRestricted && setActiveTab('docks')}
@@ -596,20 +575,42 @@ export default function TheLife() {
             >
               <img src="/thelife/categories/Docks.png" alt="Docks" />
             </button>
+            {/* BLACK MARKET */}
             <button 
-              className={`tab tab-image ${activeTab === 'playermarket' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('playermarket')}
+              className={`tab tab-image ${activeTab === 'market' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('market')}
               disabled={isRestricted}
               style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-              title="Player Market"
             >
-              <img src="/thelife/categories/playermarket.png" alt="Player Market" />
+              <img src="/thelife/categories/BlackMarket.png" alt="Market" />
             </button>
+            {/* SKILLS */}
             <button 
               className={`tab tab-image ${activeTab === 'skills' ? 'active' : ''}`}
               onClick={() => setActiveTab('skills')}
             >
               <img src="/thelife/categories/skills.png" alt="Skills" />
+            </button>
+            {/* INVENTORY/STASH */}
+            <button 
+              className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}
+              onClick={() => setActiveTab('inventory')}
+            >
+              <img src="/thelife/categories/Inventory.png" alt="Inventory" />
+            </button>
+            {/* JAIL */}
+            <button 
+              className={`tab tab-image ${activeTab === 'jail' ? 'active' : ''}`}
+              onClick={() => setActiveTab('jail')}
+            >
+              <img src="/thelife/categories/Jail.png" alt="Jail" />
+            </button>
+            {/* HOSPITAL */}
+            <button 
+              className={`tab tab-image ${activeTab === 'hospital' ? 'active' : ''}`}
+              onClick={() => setActiveTab('hospital')}
+            >
+              <img src="/thelife/categories/Hospital.png" alt="Hospital" />
             </button>
           </div>
         </div>
@@ -764,18 +765,6 @@ export default function TheLife() {
           theLifeInventory={theLifeInventory}
           setMessage={setMessage}
           loadTheLifeInventory={loadTheLifeInventory}
-          user={user}
-        />
-      )}
-
-      {activeTab === 'playermarket' && (
-        <TheLifePlayerMarket
-          player={player}
-          setPlayer={setPlayer}
-          theLifeInventory={theLifeInventory}
-          setMessage={setMessage}
-          loadTheLifeInventory={loadTheLifeInventory}
-          showEventMessage={showEventMessage}
           user={user}
         />
       )}

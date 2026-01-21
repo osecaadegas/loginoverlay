@@ -3,6 +3,7 @@ import { supabase } from '../../../config/supabaseClient';
 import { useState, useEffect } from 'react';
 import { addSeasonPassXP } from '../hooks/useSeasonPassXP';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import TheLifePlayerMarket from './TheLifePlayerMarket';
 
 export default function TheLifeBlackMarket({ 
   player,
@@ -76,6 +77,7 @@ export default function TheLifeBlackMarket({
     // Sub-tabs
     theStreets: isPt ? 'As Ruas' : 'The Streets',
     monheStore: isPt ? 'Loja Monhe' : 'Monhe Store',
+    deepWeb: isPt ? 'Deep Web' : 'Deep Web',
   };
 
   // Load store items
@@ -297,7 +299,26 @@ export default function TheLifeBlackMarket({
         >
           <img src="/thelife/subcategories/Monhe.png" alt={t.monheStore} className="tab-image" />
         </button>
+        <button 
+          className={`market-sub-tab ${marketSubTab === 'deepweb' ? 'active' : ''}`}
+          onClick={() => setMarketSubTab('deepweb')}
+          title={t.deepWeb}
+        >
+          <img src="/thelife/subcategories/deepweb.png" alt={t.deepWeb} className="tab-image" />
+        </button>
       </div>
+
+      {marketSubTab === 'deepweb' && (
+        <TheLifePlayerMarket
+          player={player}
+          setPlayer={setPlayer}
+          theLifeInventory={theLifeInventory}
+          setMessage={setMessage}
+          loadTheLifeInventory={loadTheLifeInventory}
+          showEventMessage={showEventMessage}
+          user={user}
+        />
+      )}
 
       {marketSubTab === 'resell' && (
         <div className="market-content">
