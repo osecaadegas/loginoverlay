@@ -2,6 +2,7 @@ import '../styles/TheLifeBlackMarket.css';
 import { supabase } from '../../../config/supabaseClient';
 import { useState, useEffect } from 'react';
 import { addSeasonPassXP } from '../hooks/useSeasonPassXP';
+import { useLanguage } from '../../../contexts/LanguageContext';
 
 export default function TheLifeBlackMarket({ 
   player,
@@ -16,11 +17,66 @@ export default function TheLifeBlackMarket({
   isInHospital,
   user
 }) {
+  const { language } = useLanguage();
+  const isPt = language === 'pt';
+  
   const [storeItems, setStoreItems] = useState([]);
   const [storeCategory, setStoreCategory] = useState('all');
   const [loadingStore, setLoadingStore] = useState(false);
   const [quantities, setQuantities] = useState({}); // Track quantity for each item
   const [streetQuantities, setStreetQuantities] = useState({}); // Track quantity for street selling
+
+  // Translations
+  const t = {
+    // Messages
+    notEnoughCash: isPt ? 'Dinheiro insuficiente!' : 'Not enough cash!',
+    stockLeft: (qty) => isPt ? `Apenas ${qty} em estoque!` : `Only ${qty} left in stock!`,
+    purchased: (qty, name) => isPt ? `Comprou ${qty}x ${name}!` : `Purchased ${qty}x ${name}!`,
+    purchaseFailed: isPt ? 'Falha ao comprar item' : 'Failed to purchase item',
+    cantSellInHospital: isPt ? 'Você não pode vender drogas no hospital!' : 'You cannot sell drugs while in hospital!',
+    notEnoughItems: isPt ? 'Você não tem tantos itens!' : "You don't have that many items!",
+    busted: (qty, jailTime) => isPt 
+      ? `Preso! Policiais confiscaram ${qty} item(s). ${jailTime} min na cadeia, perdeu 15 HP!` 
+      : `Busted! Cops confiscated ${qty} item(s). ${jailTime} min in jail, lost 15 HP!`,
+    soldFor: (qty, price, xp) => isPt 
+      ? `Vendeu ${qty}x por $${price.toLocaleString()} e ${xp} XP!` 
+      : `Sold ${qty}x for $${price.toLocaleString()} and ${xp} XP!`,
+    
+    // UI Labels
+    highRiskWarning: isPt 
+      ? '⚠️ Alto risco! Venda drogas uma por uma para lucro máximo, mas arrisque ir para a cadeia' 
+      : '⚠️ High risk! Sell drugs one by one for maximum profit, but risk jail time',
+    noStreetItems: isPt ? 'Você não tem itens para vender nas ruas' : 'You have no items to sell on the streets',
+    available: isPt ? 'Disponível' : 'Available',
+    quantityToSell: isPt ? 'Quantidade para Vender:' : 'Quantity to Sell:',
+    jailRisk: isPt ? 'Risco de Cadeia' : 'Jail Risk',
+    sellOnStreets: (qty) => isPt 
+      ? `Vender ${qty > 1 ? `(${qty})` : ''} nas Ruas` 
+      : `Sell ${qty > 1 ? `(${qty})` : ''} on Streets`,
+    
+    // Categories
+    allItems: isPt ? '🛒 Todos os Itens' : '🛒 All Items',
+    weapons: isPt ? '⚔️ Armas' : '⚔️ Weapons',
+    gear: isPt ? '🛡️ Equipamento' : '🛡️ Gear',
+    healing: isPt ? '💊 Cura' : '💊 Healing',
+    valuable: isPt ? '💎 Valiosos' : '💎 Valuable',
+    limitedTime: isPt ? '⏰ Tempo Limitado' : '⏰ Limited Time',
+    all: isPt ? 'Todos' : 'All',
+    
+    // Store
+    loadingStore: isPt ? 'Carregando loja...' : 'Loading store...',
+    noItemsInCategory: isPt ? 'Nenhum item disponível nesta categoria' : 'No items available in this category',
+    quantity: isPt ? 'Quantidade:' : 'Quantity:',
+    each: isPt ? 'cada' : 'each',
+    outOfStock: isPt ? 'Esgotado' : 'Out of Stock',
+    buy: (qty) => isPt ? `Comprar ${qty > 1 ? `(${qty})` : ''}` : `Buy ${qty > 1 ? `(${qty})` : ''}`,
+    stock: isPt ? 'Estoque' : 'Stock',
+    noDescription: isPt ? 'Sem descrição' : 'No description',
+    
+    // Sub-tabs
+    theStreets: isPt ? 'As Ruas' : 'The Streets',
+    monheStore: isPt ? 'Loja Monhe' : 'Monhe Store',
+  };
 
   // Load store items
   useEffect(() => {
@@ -66,13 +122,13 @@ export default function TheLifeBlackMarket({
     const totalCost = storeItem.price * quantity;
     
     if (player.cash < totalCost) {
-      setMessage({ type: 'error', text: 'Not enough cash!' });
+      setMessage({ type: 'error', text: t.notEnoughCash });
       return;
     }
 
     // Check stock
     if (storeItem.stock_quantity !== null && storeItem.stock_quantity < quantity) {
-      setMessage({ type: 'error', text: `Only ${storeItem.stock_quantity} left in stock!` });
+      setMessage({ type: 'error', text: t.stockLeft(storeItem.stock_quantity) });
       return;
     }
 
@@ -125,25 +181,25 @@ export default function TheLifeBlackMarket({
           .eq('id', storeItem.id);
       }
 
-      setMessage({ type: 'success', text: `Purchased ${quantity}x ${storeItem.item.name}!` });
+      setMessage({ type: 'success', text: t.purchased(quantity, storeItem.item.name) });
       setQuantities({ ...quantities, [storeItem.id]: 1 }); // Reset quantity to 1
       initializePlayer();
       loadTheLifeInventory();
       loadStoreItems();
     } catch (err) {
       console.error('Error buying item:', err);
-      setMessage({ type: 'error', text: 'Failed to purchase item' });
+      setMessage({ type: 'error', text: t.purchaseFailed });
     }
   };
 
   const sellOnStreet = async (inv, quantity = 1) => {
     if (isInHospital) {
-      setMessage({ type: 'error', text: 'You cannot sell drugs while in hospital!' });
+      setMessage({ type: 'error', text: t.cantSellInHospital });
       return;
     }
 
     if (quantity > inv.quantity) {
-      setMessage({ type: 'error', text: 'You don\'t have that many items!' });
+      setMessage({ type: 'error', text: t.notEnoughItems });
       return;
     }
     
@@ -182,7 +238,7 @@ export default function TheLifeBlackMarket({
         }
         
         showEventMessage('jail_street');
-        setMessage({ type: 'error', text: `Busted! Cops confiscated ${quantity} item(s). ${jailTime} min in jail, lost 15 HP!` });
+        setMessage({ type: 'error', text: t.busted(quantity, jailTime) });
         setStreetQuantities({ ...streetQuantities, [inv.id]: 1 }); // Reset quantity
         initializePlayer();
         loadTheLifeInventory();
@@ -214,7 +270,7 @@ export default function TheLifeBlackMarket({
         // Add XP to Season Pass
         await addSeasonPassXP(user.id, xpReward, 'street_sale', inv.item_id?.toString());
         
-        setMessage({ type: 'success', text: `Sold ${quantity}x for $${streetPrice.toLocaleString()} and ${xpReward} XP!` });
+        setMessage({ type: 'success', text: t.soldFor(quantity, streetPrice, xpReward) });
         setStreetQuantities({ ...streetQuantities, [inv.id]: 1 }); // Reset quantity
         initializePlayer();
         loadTheLifeInventory();
@@ -230,22 +286,24 @@ export default function TheLifeBlackMarket({
         <button 
           className={`market-sub-tab ${marketSubTab === 'resell' ? 'active' : ''}`}
           onClick={() => setMarketSubTab('resell')}
+          title={t.theStreets}
         >
-          <img src="/thelife/subcategories/Streets.png" alt="Street Resell" className="tab-image" />
+          <img src="/thelife/subcategories/Streets.png" alt={t.theStreets} className="tab-image" />
         </button>
         <button 
           className={`market-sub-tab ${marketSubTab === 'store' ? 'active' : ''}`}
           onClick={() => setMarketSubTab('store')}
+          title={t.monheStore}
         >
-          <img src="/thelife/subcategories/Monhe.png" alt="Monhe Store" className="tab-image" />
+          <img src="/thelife/subcategories/Monhe.png" alt={t.monheStore} className="tab-image" />
         </button>
       </div>
 
       {marketSubTab === 'resell' && (
         <div className="market-content">
-          <p className="market-warning">⚠️ High risk! Sell drugs one by one for maximum profit, but risk jail time</p>
+          <p className="market-warning">{t.highRiskWarning}</p>
           {streetItems.length === 0 ? (
-            <p className="no-items">You have no items to sell on the streets</p>
+            <p className="no-items">{t.noStreetItems}</p>
           ) : (
             <div className="market-items-grid">
               {streetItems.map(inv => {
@@ -264,10 +322,10 @@ export default function TheLifeBlackMarket({
                       decoding="async"
                     />
                     <h4>{inv.item.name}</h4>
-                    <p>Available: {inv.quantity}</p>
+                    <p>{t.available}: {inv.quantity}</p>
 
                     <div className="quantity-selector">
-                      <label>Quantity to Sell:</label>
+                      <label>{t.quantityToSell}</label>
                       <div className="quantity-controls">
                         <button 
                           className="qty-btn"
@@ -300,13 +358,13 @@ export default function TheLifeBlackMarket({
                     <div className="resell-stats">
                       <div className="stat">💵 ${streetPrice.toLocaleString()}</div>
                       <div className="stat">⭐ +{xpReward} XP</div>
-                      <div className="stat risk">⚠️ {jailRisk}% Jail Risk</div>
+                      <div className="stat risk">⚠️ {jailRisk}% {t.jailRisk}</div>
                     </div>
                     <button 
                       className="market-sell-btn resell-btn"
                       onClick={() => sellOnStreet(inv, quantity)}
                     >
-                      Sell {quantity > 1 ? `(${quantity})` : ''} on Streets
+                      {t.sellOnStreets(quantity)}
                     </button>
                   </div>
                 );
@@ -325,12 +383,12 @@ export default function TheLifeBlackMarket({
               onChange={(e) => setStoreCategory(e.target.value)}
               className="category-dropdown"
             >
-              <option value="all">🛒 All Items</option>
-              <option value="weapons">⚔️ Weapons</option>
-              <option value="gear">🛡️ Gear</option>
-              <option value="healing">💊 Healing</option>
-              <option value="valuable">💎 Valuable</option>
-              <option value="limited_time">⏰ Limited Time</option>
+              <option value="all">{t.allItems}</option>
+              <option value="weapons">{t.weapons}</option>
+              <option value="gear">{t.gear}</option>
+              <option value="healing">{t.healing}</option>
+              <option value="valuable">{t.valuable}</option>
+              <option value="limited_time">{t.limitedTime}</option>
             </select>
           </div>
 
@@ -340,44 +398,44 @@ export default function TheLifeBlackMarket({
               className={`category-filter-btn ${storeCategory === 'all' ? 'active' : ''}`}
               onClick={() => setStoreCategory('all')}
             >
-              All
+              {t.all}
             </button>
             <button 
               className={`category-filter-btn ${storeCategory === 'weapons' ? 'active' : ''}`}
               onClick={() => setStoreCategory('weapons')}
             >
-              ⚔️ Weapons
+              {t.weapons}
             </button>
             <button 
               className={`category-filter-btn ${storeCategory === 'gear' ? 'active' : ''}`}
               onClick={() => setStoreCategory('gear')}
             >
-              🛡️ Gear
+              {t.gear}
             </button>
             <button 
               className={`category-filter-btn ${storeCategory === 'healing' ? 'active' : ''}`}
               onClick={() => setStoreCategory('healing')}
             >
-              💊 Healing
+              {t.healing}
             </button>
             <button 
               className={`category-filter-btn ${storeCategory === 'valuable' ? 'active' : ''}`}
               onClick={() => setStoreCategory('valuable')}
             >
-              💎 Valuable
+              {t.valuable}
             </button>
             <button 
               className={`category-filter-btn ${storeCategory === 'limited_time' ? 'active' : ''}`}
               onClick={() => setStoreCategory('limited_time')}
             >
-              ⏰ Limited Time
+              {t.limitedTime}
             </button>
           </div>
 
           {loadingStore ? (
-            <div className="loading">Loading store...</div>
+            <div className="loading">{t.loadingStore}</div>
           ) : storeItems.length === 0 ? (
-            <p className="no-items">No items available in this category</p>
+            <p className="no-items">{t.noItemsInCategory}</p>
           ) : (
             <div className="market-items-grid">
               {storeItems.map(storeItem => {
@@ -391,7 +449,7 @@ export default function TheLifeBlackMarket({
                   <div key={storeItem.id} className={`market-item store-card item-rarity-${storeItem.item.rarity}`}>
                     {storeItem.limited_time_until && (
                       <div className="limited-time-badge">
-                        ⏰ Limited Time
+                        {t.limitedTime}
                       </div>
                     )}
                     <div className="store-item-image-container">
@@ -405,16 +463,16 @@ export default function TheLifeBlackMarket({
                     </div>
                     <div className="store-item-info">
                       <h4 className="store-item-name">{storeItem.item.name}</h4>
-                      <p className="store-item-desc">{storeItem.item.description || 'No description'}</p>
+                      <p className="store-item-desc">{storeItem.item.description || t.noDescription}</p>
                       {storeItem.stock_quantity !== null && (
                         <div className="stock-info">
-                          Stock: {storeItem.stock_quantity}
+                          {t.stock}: {storeItem.stock_quantity}
                         </div>
                       )}
                     </div>
                     
                     <div className="quantity-selector">
-                      <label>Quantity:</label>
+                      <label>{t.quantity}</label>
                       <div className="quantity-controls">
                         <button 
                           className="qty-btn"
@@ -446,14 +504,14 @@ export default function TheLifeBlackMarket({
                     
                     <div className="item-price">
                       ${totalCost.toLocaleString()} 
-                      {quantity > 1 && <span className="unit-price">(${storeItem.price.toLocaleString()} each)</span>}
+                      {quantity > 1 && <span className="unit-price">(${storeItem.price.toLocaleString()} {t.each})</span>}
                     </div>
                     <button 
                       className="market-buy-btn"
                       onClick={() => buyStoreItem(storeItem, quantity)}
                       disabled={player.cash < totalCost || (storeItem.stock_quantity !== null && storeItem.stock_quantity <= 0)}
                     >
-                      {storeItem.stock_quantity !== null && storeItem.stock_quantity <= 0 ? 'Out of Stock' : `Buy ${quantity > 1 ? `(${quantity})` : ''}`}
+                      {storeItem.stock_quantity !== null && storeItem.stock_quantity <= 0 ? t.outOfStock : t.buy(quantity)}
                     </button>
                   </div>
                 );

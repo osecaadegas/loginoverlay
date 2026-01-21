@@ -2,8 +2,9 @@ import { useAuth } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useTheLifeData } from './hooks/useTheLifeData';
 import { supabase } from '../../config/supabaseClient';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useDragScroll } from './hooks/useDragScroll';
+import { useLanguage } from '../../contexts/LanguageContext';
 import './TheLife.css';
 
 // Components
@@ -28,6 +29,62 @@ import TheLifeProfile from './categories/TheLifeProfile';
 import TheLifeHighStakes from './categories/TheLifeHighStakes';
 import TheLifePlayerMarket from './categories/TheLifePlayerMarket';
 
+// Portuguese translations for category info
+const categoryTranslations = {
+  crimes: {
+    name: 'Crimes',
+    desc: 'Realize assaltos e roubos para ganhar dinheiro rápido. Crimes de nível mais alto oferecem recompensas maiores, mas com maior risco de prisão.'
+  },
+  pvp: {
+    name: 'Combate PvP',
+    desc: 'Ataque outros jogadores para roubar seu dinheiro e enviá-los ao hospital. Seu nível e HP determinam suas chances de vitória.'
+  },
+  businesses: {
+    name: 'Negócios',
+    desc: 'Possua e opere vários negócios para gerar renda passiva. Melhore seus negócios para aumentar a produção e os lucros.'
+  },
+  brothel: {
+    name: 'Bordel',
+    desc: 'Contrate trabalhadores para gerar renda passiva. Melhore seu bordel para desbloquear mais vagas e aumentar seus ganhos por hora.'
+  },
+  inventory: {
+    name: 'Estoque',
+    desc: 'Armazene itens ganhos de negócios e atividades. Itens especiais como Cartões de Saída da Prisão podem ajudá-lo a escapar de situações difíceis.'
+  },
+  jail: {
+    name: 'Prisão',
+    desc: 'Quando crimes falham, você acaba aqui. Use um Cartão de Saída da Prisão ou pague suborno para escapar cedo, ou aguarde sua sentença.'
+  },
+  hospital: {
+    name: 'Hospital',
+    desc: 'Recupere seu HP após batalhas ou crimes fracassados. Pague por serviços médicos para voltar à ação mais rápido.'
+  },
+  market: {
+    name: 'Mercado Negro',
+    desc: 'Venda drogas nas ruas para altos lucros mas com risco de prisão, ou use as docas seguras para vendas garantidas com pagamentos menores.'
+  },
+  bank: {
+    name: 'Banco',
+    desc: 'Mantenha seu dinheiro seguro de outros jogadores. Deposite seu dinheiro para protegê-lo de perdas em PvP e roubos.'
+  },
+  stats: {
+    name: 'Estatísticas',
+    desc: 'Acompanhe o progresso da sua carreira criminal incluindo total de crimes, taxa de sucesso, registro PvP e sequências de login.'
+  },
+  leaderboard: {
+    name: 'Classificação',
+    desc: 'Compita com outros jogadores pelos primeiros lugares. Rankings são baseados em dinheiro total, nível e sucesso criminal.'
+  },
+  highstakes: {
+    name: 'Apostas Altas',
+    desc: 'Jogue jogos de cassino de alto risco. Aposte seu dinheiro suado em Blackjack, Roleta e mais!'
+  },
+  playermarket: {
+    name: 'Mercado de Jogadores',
+    desc: 'Compre, venda e troque itens com outros jogadores. Liste seus itens ou faça ofertas no mercado peer-to-peer.'
+  }
+};
+
 /**
  * Main The Life Container Component
  * Manages tab navigation and renders appropriate category components
@@ -35,6 +92,8 @@ import TheLifePlayerMarket from './categories/TheLifePlayerMarket';
 export default function TheLife() {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { language } = useLanguage();
+  const isPt = language === 'pt';
   
   // Background music state - default to true for autoplay
   const audioRef = useRef(null);
@@ -145,8 +204,21 @@ export default function TheLife() {
   const isInHospital = player?.hospital_until && new Date(player.hospital_until) > new Date();
   const isRestricted = isInJail || isInHospital; // Restricted when in jail OR hospital
 
-  // Get current category info (only if categoryInfo is loaded)
-  const currentCategoryInfo = categoryInfo && categoryInfo[activeTab] ? categoryInfo[activeTab] : null;
+  // Get current category info with translation support
+  const currentCategoryInfo = useMemo(() => {
+    if (!categoryInfo || !categoryInfo[activeTab]) return null;
+    const info = categoryInfo[activeTab];
+    
+    // If Portuguese and we have a translation, use it
+    if (isPt && categoryTranslations[activeTab]) {
+      return {
+        ...info,
+        category_name: categoryTranslations[activeTab].name,
+        description: categoryTranslations[activeTab].desc
+      };
+    }
+    return info;
+  }, [categoryInfo, activeTab, isPt]);
 
   // Quick Refill Stamina function
   const quickRefillStamina = async () => {
@@ -391,14 +463,14 @@ export default function TheLife() {
               <span className="cash-icon">💵</span>
               <div className="cash-info">
                 <span className="cash-value">${player?.cash?.toLocaleString()}</span>
-                <span className="cash-label">Cash</span>
+                <span className="cash-label">{isPt ? 'Dinheiro' : 'Cash'}</span>
               </div>
             </div>
             <div className="cash-item">
               <span className="cash-icon">🏦</span>
               <div className="cash-info">
                 <span className="cash-value">${player?.bank_balance?.toLocaleString()}</span>
-                <span className="cash-label">Bank</span>
+                <span className="cash-label">{isPt ? 'Banco' : 'Bank'}</span>
               </div>
             </div>
           </div>
@@ -422,13 +494,13 @@ export default function TheLife() {
       {/* Status Warnings */}
       {isInJail && (
         <div className="status-warning jail">
-          ⚠️ You are in jail until {new Date(player.jail_until).toLocaleTimeString()}
+          ⚠️ {isPt ? 'Você está na prisão até' : 'You are in jail until'} {new Date(player.jail_until).toLocaleTimeString()}
         </div>
       )}
 
       {isInHospital && (
         <div className="status-warning hospital">
-          🏥 You are in hospital until {new Date(player.hospital_until).toLocaleTimeString()}
+          🏥 {isPt ? 'Você está no hospital até' : 'You are in hospital until'} {new Date(player.hospital_until).toLocaleTimeString()}
         </div>
       )}
 
