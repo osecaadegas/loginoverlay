@@ -92,18 +92,27 @@ export default function SeasonPass() {
     try {
       setLoading(true);
 
-      // Get wipe settings for season end date
-      const { data: wipeData } = await supabase
-        .from('the_life_wipe_settings')
-        .select('scheduled_at, is_active')
-        .single();
+      // Run initial queries in parallel for faster loading
+      const [wipeResult, seasonResult, playerResult] = await Promise.all([
+        supabase
+          .from('the_life_wipe_settings')
+          .select('scheduled_at, is_active')
+          .single(),
+        supabase
+          .from('season_pass_seasons')
+          .select('*')
+          .eq('is_active', true)
+          .single(),
+        supabase
+          .from('the_life_players')
+          .select('*')
+          .eq('user_id', user.id)
+          .single()
+      ]);
 
-      // Get current season data
-      let { data: season } = await supabase
-        .from('season_pass_seasons')
-        .select('*')
-        .eq('is_active', true)
-        .single();
+      const wipeData = wipeResult.data;
+      let season = seasonResult.data;
+      setPlayerData(playerResult.data);
 
       if (!season) {
         // Create default season if none exists
@@ -121,35 +130,36 @@ export default function SeasonPass() {
 
       setSeasonData(season);
 
-      // Get all tier rewards with linked item data
-      const { data: tierData } = await supabase
-        .from('season_pass_tiers')
-        .select(`
-          *,
-          budget_reward:season_pass_rewards!season_pass_tiers_budget_reward_id_fkey(
+      // Run tier and progress queries in parallel (they both need season.id)
+      const [tierResult, progressResult] = await Promise.all([
+        supabase
+          .from('season_pass_tiers')
+          .select(`
             *,
-            item:the_life_items(*)
-          ),
-          premium_reward:season_pass_rewards!season_pass_tiers_premium_reward_id_fkey(
-            *,
-            item:the_life_items(*)
-          )
-        `)
-        .eq('season_id', season.id)
-        .order('tier_number', { ascending: true });
+            budget_reward:season_pass_rewards!season_pass_tiers_budget_reward_id_fkey(
+              *,
+              item:the_life_items(*)
+            ),
+            premium_reward:season_pass_rewards!season_pass_tiers_premium_reward_id_fkey(
+              *,
+              item:the_life_items(*)
+            )
+          `)
+          .eq('season_id', season.id)
+          .order('tier_number', { ascending: true }),
+        supabase
+          .from('season_pass_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .eq('season_id', season.id)
+          .single()
+      ]);
 
       // Generate 70 tiers if not enough in database
-      const allTiers = generateTiersWithData(tierData || [], 70);
+      const allTiers = generateTiersWithData(tierResult.data || [], 70);
       setTiers(allTiers);
 
-      // Get player progress
-      const { data: progress } = await supabase
-        .from('season_pass_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('season_id', season.id)
-        .single();
-
+      const progress = progressResult.data;
       if (progress) {
         setPlayerProgress({
           ...progress,
@@ -177,15 +187,6 @@ export default function SeasonPass() {
           xpRequiredForNext: getXPForTier(1)
         });
       }
-
-      // Get player data for display
-      const { data: player } = await supabase
-        .from('the_life_players')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      setPlayerData(player);
 
     } catch (error) {
       console.error('Error loading season data:', error);
