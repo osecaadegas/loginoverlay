@@ -12,6 +12,8 @@ export default function GuessBalancePage() {
   const [userGuess, setUserGuess] = useState('');
   const [existingGuess, setExistingGuess] = useState(null);
   const [allGuesses, setAllGuesses] = useState([]);
+  const [publicGuesses, setPublicGuesses] = useState([]); // All guesses for public display
+  const [hasPayoutStarted, setHasPayoutStarted] = useState(false); // Lock guessing after first payout
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
@@ -66,6 +68,10 @@ export default function GuessBalancePage() {
 
       if (slotsError) throw slotsError;
       setSlots(slotsData || []);
+      
+      // Check if any slot has a payout (locks guessing)
+      const hasPayout = (slotsData || []).some(slot => slot.bonus_win !== null);
+      setHasPayoutStarted(hasPayout);
 
       // Load user's existing guess
       if (user?.id) {
@@ -85,19 +91,25 @@ export default function GuessBalancePage() {
         }
       }
 
-      // Load all guesses if revealed or completed
+      // Always load all guesses for public display
+      const { data: allGuessesData } = await supabase
+        .from('guess_balance_guesses')
+        .select(`
+          *,
+          user:user_profiles(username, display_name)
+        `)
+        .eq('session_id', sessionId)
+        .order('guessed_at', { ascending: false });
+
+      setPublicGuesses(allGuessesData || []);
+      
+      // For results tab, sort by difference (only when revealed)
       const session = sessions.find(s => s.id === sessionId);
       if (session?.reveal_answer || session?.status === 'completed') {
-        const { data: allGuessesData } = await supabase
-          .from('guess_balance_guesses')
-          .select(`
-            *,
-            user:user_profiles(username, display_name)
-          `)
-          .eq('session_id', sessionId)
-          .order('difference', { ascending: true });
-
-        setAllGuesses(allGuessesData || []);
+        const sortedByDiff = [...(allGuessesData || [])].sort((a, b) => 
+          (a.difference || Infinity) - (b.difference || Infinity)
+        );
+        setAllGuesses(sortedByDiff);
       } else {
         setAllGuesses([]);
       }
@@ -125,7 +137,7 @@ export default function GuessBalancePage() {
       return;
     }
 
-    if (!activeSession?.is_guessing_open) {
+    if (!activeSession?.is_guessing_open || hasPayoutStarted) {
       setError('Guessing is closed for this session');
       return;
     }
@@ -457,9 +469,9 @@ export default function GuessBalancePage() {
                       <div className="login-prompt">
                         <p>Please log in to submit your guess!</p>
                       </div>
-                    ) : !activeSession?.is_guessing_open ? (
+                    ) : (!activeSession?.is_guessing_open || hasPayoutStarted) ? (
                       <div className="guessing-closed">
-                        <p>⏰ Guessing is closed</p>
+                        <p>⏰ Guessing is closed {hasPayoutStarted && '(payouts started)'}</p>
                         {existingGuess && (
                           <p className="your-guess">Your guess: {formatCurrency(existingGuess.guessed_balance)}</p>
                         )}
@@ -496,6 +508,32 @@ export default function GuessBalancePage() {
                     )}
                   </div>
 
+                  {/* Public Guess History */}
+                  <div className="public-guess-history">
+                    <h4>📜 All Guesses ({publicGuesses.length})</h4>
+                    {publicGuesses.length === 0 ? (
+                      <p className="no-guesses-yet">No guesses submitted yet. Be the first!</p>
+                    ) : (
+                      <div className="guess-history-list">
+                        {publicGuesses.map((guess, index) => (
+                          <div 
+                            key={guess.id} 
+                            className={`guess-history-item ${guess.user_id === user?.id ? 'your-guess-item' : ''}`}
+                          >
+                            <span className="guess-number">#{publicGuesses.length - index}</span>
+                            <span className="guess-player">
+                              {guess.user?.display_name || guess.user?.username || 'Anonymous'}
+                              {guess.user_id === user?.id && <span className="you-badge">YOU</span>}
+                            </span>
+                            <span className="guess-amount">
+                              {activeSession?.reveal_answer ? formatCurrency(guess.guessed_balance) : '???'}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Final Balance Reveal */}
                   {activeSession?.reveal_answer && activeSession?.final_balance !== null && (
                     <div className="final-balance-reveal">
@@ -511,35 +549,62 @@ export default function GuessBalancePage() {
                 <div className="leaderboard-content">
                   <h3>🏆 Results</h3>
                   
+                  {/* Always show winner if exists */}
+                  {activeSession?.winner_user_id && allGuesses.length > 0 && (
+                    <div className="winner-announcement">
+                      <span className="winner-crown">👑</span>
+                      <span className="winner-label">WINNER</span>
+                      <span className="winner-name">
+                        {allGuesses.find(g => g.is_winner)?.user?.display_name || 
+                         allGuesses.find(g => g.is_winner)?.user?.username || 
+                         allGuesses[0]?.user?.display_name || 
+                         allGuesses[0]?.user?.username || 'Anonymous'}
+                      </span>
+                      {activeSession?.final_balance && (
+                        <span className="winner-final">Final: {formatCurrency(activeSession.final_balance)}</span>
+                      )}
+                    </div>
+                  )}
+                  
                   {!activeSession?.reveal_answer && activeSession?.status !== 'completed' ? (
-                    <div className="results-hidden">
+                    <div className="results-pending">
+                      <div className="pending-icon">⏳</div>
                       <p>Results will be revealed when the session ends!</p>
+                      <p className="participants-count">{publicGuesses.length} participants so far</p>
                     </div>
                   ) : allGuesses.length === 0 ? (
                     <div className="no-guesses">
                       <p>No guesses submitted yet</p>
                     </div>
                   ) : (
-                    <div className="leaderboard-list">
-                      {allGuesses.map((guess, index) => (
-                        <div 
-                          key={guess.id} 
-                          className={`leaderboard-item ${guess.is_winner ? 'winner' : ''} ${guess.user_id === user?.id ? 'you' : ''}`}
-                        >
-                          <span className="rank">
-                            {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
-                          </span>
-                          <span className="player-name">
-                            {guess.user?.display_name || guess.user?.username || 'Anonymous'}
-                            {guess.user_id === user?.id && <span className="you-tag">YOU</span>}
-                          </span>
-                          <div className="guess-info">
-                            <span className="guessed">{formatCurrency(guess.guessed_balance)}</span>
-                            <span className="diff">Δ {formatCurrency(guess.difference)}</span>
-                          </div>
+                    <>
+                      {activeSession?.final_balance && (
+                        <div className="final-balance-banner">
+                          <span>Final Balance:</span>
+                          <strong>{formatCurrency(activeSession.final_balance)}</strong>
                         </div>
-                      ))}
-                    </div>
+                      )}
+                      <div className="leaderboard-list">
+                        {allGuesses.map((guess, index) => (
+                          <div 
+                            key={guess.id} 
+                            className={`leaderboard-item ${guess.is_winner ? 'winner' : ''} ${guess.user_id === user?.id ? 'you' : ''}`}
+                          >
+                            <span className="rank">
+                              {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
+                            </span>
+                            <span className="player-name">
+                              {guess.user?.display_name || guess.user?.username || 'Anonymous'}
+                              {guess.user_id === user?.id && <span className="you-tag">YOU</span>}
+                            </span>
+                            <div className="guess-info">
+                              <span className="guessed">{formatCurrency(guess.guessed_balance)}</span>
+                              <span className="diff">Δ {formatCurrency(guess.difference)}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
                   )}
                 </div>
               )}
