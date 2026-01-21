@@ -4,7 +4,7 @@ import { supabase } from '../../config/supabaseClient';
 import './Mines.css';
 
 const GRID_SIZE = 25;
-const MINE_OPTIONS = [3, 5, 7, 10, 15, 20, 24]; // Minimum 3 mines for fair risk/reward
+const MINE_OPTIONS = [5, 7, 10, 15, 20, 24]; // Minimum 5 mines for balanced difficulty
 
 // API base URL - uses relative path for Vercel
 const API_URL = '/api/mines';
