@@ -316,10 +316,26 @@ export default function SeasonPass() {
       case 'currency':
       case 'cash':
         // Add cash to player
+        const cashAmount = reward.cash_amount || reward.quantity || 0;
         await supabase
           .from('the_life_players')
-          .update({ cash: (playerData?.cash || 0) + (reward.quantity || 0) })
+          .update({ cash: (playerData?.cash || 0) + cashAmount })
           .eq('user_id', user.id);
+        setPlayerData(prev => ({ ...prev, cash: (prev?.cash || 0) + cashAmount }));
+        break;
+
+      case 'se_points':
+        // Award SE Points via StreamElements API
+        const sePointsAmount = reward.se_points_amount || reward.quantity || 0;
+        if (sePointsAmount > 0 && updateUserPoints) {
+          try {
+            await updateUserPoints(sePointsAmount);
+            console.log(`Awarded ${sePointsAmount} SE points`);
+          } catch (err) {
+            console.error('Failed to award SE points:', err);
+            // Still continue - reward is "claimed" even if SE API fails
+          }
+        }
         break;
 
       case 'item':
@@ -353,10 +369,12 @@ export default function SeasonPass() {
 
       case 'xp':
         // Add XP to player
+        const xpAmount = reward.xp_amount || reward.quantity || 0;
         await supabase
           .from('the_life_players')
-          .update({ xp: (playerData?.xp || 0) + (reward.quantity || 0) })
+          .update({ xp: (playerData?.xp || 0) + xpAmount })
           .eq('user_id', user.id);
+        setPlayerData(prev => ({ ...prev, xp: (prev?.xp || 0) + xpAmount }));
         break;
 
       default:
