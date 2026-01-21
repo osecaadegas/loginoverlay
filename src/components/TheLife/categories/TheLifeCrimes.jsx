@@ -52,54 +52,57 @@ export default function TheLifeCrimes({
       setLoading(true);
       setCooldownCrimeId(robbery.id);
       
-      // === DYNAMIC JAIL CHANCE SYSTEM ===
+      // === BALANCED DYNAMIC JAIL CHANCE SYSTEM ===
       // Base success chance from the robbery
       let successChance = robbery.success_rate;
       
       // Level difference bonus/penalty
       const levelDifference = player.level - robbery.min_level_required;
       if (levelDifference >= 0) {
-        // Higher level = better chance, but capped
-        successChance += Math.min(levelDifference * 3, 15); // Max +15% for being over-leveled
+        // Higher level = better chance, but capped at +10%
+        successChance += Math.min(levelDifference * 2, 10);
       } else {
-        // Under-leveled = harder
-        successChance += (levelDifference * 8); // -8% per level under
+        // Under-leveled = harder (-5% per level under)
+        successChance += (levelDifference * 5);
       }
       
       // HP penalty for being low health
       const hpPercentage = player.hp / player.max_hp;
       if (hpPercentage < 0.5) {
-        const hpPenalty = (0.5 - hpPercentage) * 30;
+        const hpPenalty = (0.5 - hpPercentage) * 20; // Max -10% at 0 HP
         successChance -= hpPenalty;
       }
       
-      // === NEW: Daily catches penalty ===
-      // Each time you get caught today, your success chance drops
-      // This makes it progressively harder if you keep failing
+      // === BALANCED: Daily catches penalty ===
+      // Each catch today = -3% (resets at midnight)
+      // This discourages spam but doesn't destroy your chances
       const dailyCatches = player.daily_catches || 0;
-      const catchPenalty = dailyCatches * 5; // -5% per catch today
+      const catchPenalty = Math.min(dailyCatches * 3, 15); // Max -15% from daily catches
       successChance -= catchPenalty;
       
-      // === NEW: Wealth-based risk factor ===
-      // Rich players attract more police attention
+      // === BALANCED: Wealth-based risk factor ===
+      // Rich players attract slightly more attention
+      // But it's mild - max -5% even for billionaires
       const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
       let wealthPenalty = 0;
       if (totalWealth > 1000000) {
-        // Over $1M = slightly harder (-1% to -10% based on wealth)
-        wealthPenalty = Math.min(Math.floor(totalWealth / 1000000), 10);
+        // Logarithmic scale: $1M = -1%, $10M = -2%, $100M = -3%, $1B = -4%, max -5%
+        wealthPenalty = Math.min(Math.floor(Math.log10(totalWealth / 1000000) + 1), 5);
         successChance -= wealthPenalty;
       }
       
-      // === NEW: Level-based risk (high levels = more notorious) ===
-      // Famous criminals are watched more closely
+      // === BALANCED: Level-based notoriety ===
+      // High level = cops know your name, but mild penalty
+      // Max -5% even at level 200
       let notorietyPenalty = 0;
-      if (player.level > 10) {
-        notorietyPenalty = Math.min(Math.floor((player.level - 10) * 0.5), 10); // Max -10%
+      if (player.level > 20) {
+        notorietyPenalty = Math.min(Math.floor((player.level - 20) * 0.1), 5);
         successChance -= notorietyPenalty;
       }
       
-      // Clamp between 5% and 90% (never too easy, never impossible)
-      successChance = Math.max(5, Math.min(90, successChance));
+      // Clamp between 10% and 85%
+      // Never impossible (min 10%), never too easy (max 85%)
+      successChance = Math.max(10, Math.min(85, successChance));
       
       const roll = Math.random() * 100;
       const success = roll < successChance;
@@ -187,21 +190,23 @@ export default function TheLifeCrimes({
         }
         
         // === NEW: Daily catches increase jail time ===
-        // Each catch today adds +20% to jail time
+        // Each catch today adds +10% to jail time (max +30%)
         const currentDailyCatches = player.daily_catches || 0;
-        jailMultiplier += (currentDailyCatches * 0.2);
+        jailMultiplier += Math.min(currentDailyCatches * 0.1, 0.3);
         
         // === NEW: Wealth-based jail time ===
-        // Rich players get longer sentences (courts are harsher)
+        // Rich players get slightly longer sentences (courts are harsher)
         const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
-        if (totalWealth > 500000) {
-          const wealthMultiplier = Math.min(totalWealth / 5000000, 0.5); // Max +50%
+        if (totalWealth > 1000000) {
+          // Logarithmic scale: $1M = 0%, $10M = ~17%, $100M = ~25%, $1B = ~30%
+          const wealthMultiplier = Math.min(Math.log10(totalWealth / 1000000) * 0.1, 0.3); // Max +30%
           jailMultiplier += wealthMultiplier;
         }
         
         // === NEW: High level = more notorious = longer sentence ===
-        if (player.level > 15) {
-          jailMultiplier += Math.min((player.level - 15) * 0.05, 0.5); // Max +50%
+        if (player.level > 30) {
+          // Starts at level 30, max +25% at level 150+
+          jailMultiplier += Math.min((player.level - 30) * 0.002, 0.25); // Max +25%
         }
         
         // Calculate final jail time (minimum 5 mins, max 3x base)
