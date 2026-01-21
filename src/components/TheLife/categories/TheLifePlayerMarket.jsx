@@ -89,12 +89,7 @@ export default function TheLifePlayerMarket({
         .gt('expires_at', new Date().toISOString())
         .order('created_at', { ascending: sortBy !== 'newest' });
 
-      if (categoryFilter !== 'all') {
-        query = query.eq('item.category', categoryFilter);
-      }
-      if (rarityFilter !== 'all') {
-        query = query.eq('item.rarity', rarityFilter);
-      }
+      // Price filters on main table
       if (priceMin) {
         query = query.gte('price', parseInt(priceMin));
       }
@@ -106,7 +101,22 @@ export default function TheLifePlayerMarket({
       
       if (error) throw error;
       
-      let filteredData = data || [];
+      console.log('Raw listings data:', data);
+      
+      // Filter out listings where item is null (foreign key issue)
+      let filteredData = (data || []).filter(l => l.item !== null);
+      
+      console.log('After item null filter:', filteredData.length);
+      
+      // Client-side category filter
+      if (categoryFilter !== 'all') {
+        filteredData = filteredData.filter(l => l.item?.category === categoryFilter);
+      }
+      
+      // Client-side rarity filter
+      if (rarityFilter !== 'all') {
+        filteredData = filteredData.filter(l => l.item?.rarity === rarityFilter);
+      }
       
       // Client-side search filter
       if (searchQuery) {
