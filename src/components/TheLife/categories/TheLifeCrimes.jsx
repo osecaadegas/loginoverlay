@@ -51,22 +51,55 @@ export default function TheLifeCrimes({
     try {
       setLoading(true);
       setCooldownCrimeId(robbery.id);
-      const levelDifference = player.level - robbery.min_level_required;
+      
+      // === DYNAMIC JAIL CHANCE SYSTEM ===
+      // Base success chance from the robbery
       let successChance = robbery.success_rate;
       
+      // Level difference bonus/penalty
+      const levelDifference = player.level - robbery.min_level_required;
       if (levelDifference >= 0) {
-        successChance += (levelDifference * 5);
+        // Higher level = better chance, but capped
+        successChance += Math.min(levelDifference * 3, 15); // Max +15% for being over-leveled
       } else {
-        successChance += (levelDifference * 10);
+        // Under-leveled = harder
+        successChance += (levelDifference * 8); // -8% per level under
       }
       
+      // HP penalty for being low health
       const hpPercentage = player.hp / player.max_hp;
       if (hpPercentage < 0.5) {
         const hpPenalty = (0.5 - hpPercentage) * 30;
         successChance -= hpPenalty;
       }
       
-      successChance = Math.max(5, Math.min(95, successChance));
+      // === NEW: Daily catches penalty ===
+      // Each time you get caught today, your success chance drops
+      // This makes it progressively harder if you keep failing
+      const dailyCatches = player.daily_catches || 0;
+      const catchPenalty = dailyCatches * 5; // -5% per catch today
+      successChance -= catchPenalty;
+      
+      // === NEW: Wealth-based risk factor ===
+      // Rich players attract more police attention
+      const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
+      let wealthPenalty = 0;
+      if (totalWealth > 1000000) {
+        // Over $1M = slightly harder (-1% to -10% based on wealth)
+        wealthPenalty = Math.min(Math.floor(totalWealth / 1000000), 10);
+        successChance -= wealthPenalty;
+      }
+      
+      // === NEW: Level-based risk (high levels = more notorious) ===
+      // Famous criminals are watched more closely
+      let notorietyPenalty = 0;
+      if (player.level > 10) {
+        notorietyPenalty = Math.min(Math.floor((player.level - 10) * 0.5), 10); // Max -10%
+        successChance -= notorietyPenalty;
+      }
+      
+      // Clamp between 5% and 90% (never too easy, never impossible)
+      successChance = Math.max(5, Math.min(90, successChance));
       
       const roll = Math.random() * 100;
       const success = roll < successChance;
@@ -139,24 +172,58 @@ export default function TheLifeCrimes({
           text: successMessage
         });
       } else {
-        const levelDifference = player.level - robbery.min_level_required;
+        // === DYNAMIC JAIL TIME SYSTEM ===
         let jailMultiplier = 1;
         
+        // Under-leveled = longer jail time
         if (levelDifference < 0) {
-          jailMultiplier = 1 + (Math.abs(levelDifference) * 0.5);
+          jailMultiplier = 1 + (Math.abs(levelDifference) * 0.3);
         }
         
+        // Low HP = longer jail (you're weaker, easier to catch)
         const hpPercentage = player.hp / player.max_hp;
         if (hpPercentage < 0.5) {
-          const hpPenalty = (0.5 - hpPercentage) * 1.0;
-          jailMultiplier += hpPenalty;
+          jailMultiplier += (0.5 - hpPercentage) * 0.5;
         }
         
-        const jailTime = Math.floor(robbery.jail_time_minutes * jailMultiplier);
+        // === NEW: Daily catches increase jail time ===
+        // Each catch today adds +20% to jail time
+        const currentDailyCatches = player.daily_catches || 0;
+        jailMultiplier += (currentDailyCatches * 0.2);
+        
+        // === NEW: Wealth-based jail time ===
+        // Rich players get longer sentences (courts are harsher)
+        const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
+        if (totalWealth > 500000) {
+          const wealthMultiplier = Math.min(totalWealth / 5000000, 0.5); // Max +50%
+          jailMultiplier += wealthMultiplier;
+        }
+        
+        // === NEW: High level = more notorious = longer sentence ===
+        if (player.level > 15) {
+          jailMultiplier += Math.min((player.level - 15) * 0.05, 0.5); // Max +50%
+        }
+        
+        // Calculate final jail time (minimum 5 mins, max 3x base)
+        const jailTime = Math.max(5, Math.min(Math.floor(robbery.jail_time_minutes * jailMultiplier), robbery.jail_time_minutes * 3));
         const jailUntil = new Date();
         jailUntil.setMinutes(jailUntil.getMinutes() + jailTime);
         const newHP = Math.max(0, player.hp - robbery.hp_loss_on_fail);
         updates.hp = newHP;
+        
+        // === NEW: Track daily catches ===
+        // Reset if it's a new day
+        const lastCatchReset = player.last_catch_reset ? new Date(player.last_catch_reset) : null;
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (!lastCatchReset || lastCatchReset < today) {
+          updates.daily_catches = 1;
+          updates.last_catch_reset = today.toISOString().split('T')[0];
+        } else {
+          updates.daily_catches = (player.daily_catches || 0) + 1;
+        }
+        updates.total_times_caught = (player.total_times_caught || 0) + 1;
         
         // If HP reaches 0, send to hospital instead of jail
         if (newHP === 0) {
@@ -169,9 +236,11 @@ export default function TheLifeCrimes({
           });
         } else {
           updates.jail_until = jailUntil.toISOString();
+          const catchCount = updates.daily_catches;
+          const catchWarning = catchCount > 1 ? ` 🔴 Caught ${catchCount}x today!` : '';
           setMessage({ 
             type: 'error', 
-            text: `Failed! You're in jail for ${jailTime} minutes and lost ${robbery.hp_loss_on_fail} HP (${Math.round(successChance)}% chance)` 
+            text: `Failed! You're in jail for ${jailTime} min (-${robbery.hp_loss_on_fail} HP).${catchWarning} [${Math.round(successChance)}% success]` 
           });
         }
         
