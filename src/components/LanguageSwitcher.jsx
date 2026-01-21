@@ -17,6 +17,12 @@ const LanguageSwitcher = ({
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef(null);
 
+  // Only show EN and PT languages
+  const allowedLanguages = ['en', 'pt'];
+  const filteredLanguages = supportedLanguages.filter(lang => 
+    allowedLanguages.includes(lang.code)
+  );
+
   // Close dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -30,7 +36,7 @@ const LanguageSwitcher = ({
   }, []);
 
   // Get current language data
-  const currentLanguage = supportedLanguages.find(l => l.code === language) || {
+  const currentLanguage = filteredLanguages.find(l => l.code === language) || {
     code: 'en',
     name: 'English (UK)',
     native_name: 'English'
@@ -54,7 +60,7 @@ const LanguageSwitcher = ({
   if (variant === 'compact') {
     return (
       <div className={`language-switcher language-switcher--compact ${className}`}>
-        {supportedLanguages.map(lang => (
+        {filteredLanguages.map(lang => (
           <button
             key={lang.code}
             className={`language-switcher__flag-btn ${language === lang.code ? 'active' : ''}`}
@@ -73,7 +79,7 @@ const LanguageSwitcher = ({
   if (variant === 'inline') {
     return (
       <div className={`language-switcher language-switcher--inline ${className}`}>
-        {supportedLanguages.map(lang => (
+        {filteredLanguages.map(lang => (
           <button
             key={lang.code}
             className={`language-switcher__btn ${language === lang.code ? 'active' : ''}`}
@@ -116,7 +122,7 @@ const LanguageSwitcher = ({
 
       {isOpen && (
         <ul className="language-switcher__menu" role="listbox">
-          {supportedLanguages.map(lang => (
+          {filteredLanguages.map(lang => (
             <li key={lang.code}>
               <button
                 className={`language-switcher__option ${language === lang.code ? 'active' : ''}`}
