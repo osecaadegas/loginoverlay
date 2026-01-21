@@ -61,6 +61,7 @@ export default function StreamElementsPanel() {
       const { data, error } = await supabase
         .from('redemption_items')
         .select('*')
+        .neq('reward_type', 'se_points_reward') // Exclude SE Points Reward items (for Season Pass only)
         .order('point_cost', { ascending: true });
 
       if (error) throw error;
