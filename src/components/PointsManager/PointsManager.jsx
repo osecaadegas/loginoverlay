@@ -1278,7 +1278,7 @@ export default function PointsManager() {
                       style={{ display: 'none' }}
                     />
                     <label htmlFor="image-upload" className="pm-file-upload-btn">
-                      <span>Choose Image
+                      <span>Choose Image</span>
                     </label>
                     {imageFile && (
                       <span className="pm-file-name">{imageFile.name}</span>
