@@ -445,12 +445,25 @@ export default function TheLifeJournal() {
             </div>
           ) : (
             <div className="articles-grid">
-              {filteredNews.map((item, index) => (
+              {filteredNews.map((item, index) => {
+                const categoryLabels = {
+                  leaderboard: language === 'pt' ? 'CLASSIFICAÇÃO' : 'LEADERBOARD',
+                  pvp: language === 'pt' ? 'COMBATE' : 'PVP',
+                  kingpin: language === 'pt' ? 'CHEFÃO' : 'KINGPIN',
+                  dock: language === 'pt' ? 'PORTO' : 'DOCK',
+                  brothel: language === 'pt' ? 'BORDEL' : 'BROTHEL',
+                  crime: language === 'pt' ? 'CRIME' : 'CRIME',
+                  stock: language === 'pt' ? 'MERCADO' : 'STOCK',
+                  general: language === 'pt' ? 'GERAL' : 'GENERAL',
+                };
+                const categoryLabel = categoryLabels[item.news_type] || item.news_type.toUpperCase();
+                
+                return (
                 <article 
                   key={item.id || index} 
                   className={`journal-article ${getArticleClass(item)}`}
                 >
-                  <div className="article-category">{item.news_type.toUpperCase()}</div>
+                  <div className="article-category">{categoryLabel}</div>
                   <h2 className="article-headline-text">
                     <span className="headline-icon">{item.icon}</span>
                     {item.title}
@@ -470,7 +483,8 @@ export default function TheLifeJournal() {
                     </span>
                   </div>
                 </article>
-              ))}
+              );
+              })}
             </div>
           )}
         </main>
