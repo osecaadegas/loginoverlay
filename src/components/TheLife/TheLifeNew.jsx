@@ -66,16 +66,6 @@ export default function TheLife() {
     }
   }, [isMusicEnabled]);
 
-  // Auto-dismiss messages after 3 seconds
-  useEffect(() => {
-    if (message.text) {
-      const timer = setTimeout(() => {
-        setMessage({ type: '', text: '' });
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [message.text, setMessage]);
-
   const toggleMusic = () => {
     const newState = !isMusicEnabled;
     setIsMusicEnabled(newState);
@@ -131,6 +121,16 @@ export default function TheLife() {
     loadLeaderboard,
     showEventMessage
   } = useTheLifeData(user);
+
+  // Auto-dismiss messages after 3 seconds
+  useEffect(() => {
+    if (message.text) {
+      const timer = setTimeout(() => {
+        setMessage({ type: '', text: '' });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message.text, setMessage]);
 
   if (loading) {
     return (
