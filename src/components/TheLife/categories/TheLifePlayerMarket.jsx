@@ -483,6 +483,21 @@ export default function TheLifePlayerMarket({
     return found?.color || '#9ca3af';
   };
 
+  // Helper function to render item icon (handles both emoji and base64 images)
+  const renderItemIcon = (icon, name = 'Item', size = 'medium') => {
+    if (!icon) return <span className="fallback-icon">📦</span>;
+    
+    // Check if it's a base64 image
+    if (icon.startsWith('data:image') || icon.length > 50) {
+      const src = icon.startsWith('data:image') ? icon : `data:image/png;base64,${icon}`;
+      const sizeClass = size === 'large' ? 'icon-large' : size === 'small' ? 'icon-small' : 'icon-medium';
+      return <img src={src} alt={name} className={`item-icon-img ${sizeClass}`} />;
+    }
+    
+    // It's an emoji or short text
+    return <span className="emoji-icon">{icon}</span>;
+  };
+
   // Get seller name
   const getSellerName = (seller) => {
     return seller?.se_username || seller?.twitch_username || (isPt ? 'Anônimo' : 'Anonymous');
@@ -650,7 +665,7 @@ export default function TheLifePlayerMarket({
                   </div>
                   
                   <div className="listing-icon">
-                    <span>{listing.item?.icon || '📦'}</span>
+                    {renderItemIcon(listing.item?.icon, listing.item?.name, 'large')}
                     {listing.quantity > 1 && (
                       <span className="listing-quantity">x{listing.quantity}</span>
                     )}
@@ -727,7 +742,7 @@ export default function TheLifePlayerMarket({
                   }}
                 >
                   <div className="inv-item-icon">
-                    <span>{invItem.item?.icon || '📦'}</span>
+                    {renderItemIcon(invItem.item?.icon, invItem.item?.name, 'medium')}
                     {invItem.quantity > 1 && (
                       <span className="inv-item-qty">x{invItem.quantity}</span>
                     )}
@@ -764,7 +779,7 @@ export default function TheLifePlayerMarket({
               {myListings.map(listing => (
                 <div key={listing.id} className="mylisting-card">
                   <div className="mylisting-item">
-                    <span className="mylisting-icon">{listing.item?.icon || '📦'}</span>
+                    <span className="mylisting-icon">{renderItemIcon(listing.item?.icon, listing.item?.name, 'medium')}</span>
                     <div className="mylisting-details">
                       <h4>{listing.item?.name}</h4>
                       <p>x{listing.quantity}</p>
@@ -813,7 +828,7 @@ export default function TheLifePlayerMarket({
                     </div>
                     <div className="offer-content">
                       <div className="offer-item">
-                        <span>{offer.listing?.item?.icon}</span>
+                        {renderItemIcon(offer.listing?.item?.icon, offer.listing?.item?.name, 'small')}
                         <span>{offer.listing?.item?.name}</span>
                       </div>
                       <div className="offer-value">
@@ -856,7 +871,7 @@ export default function TheLifePlayerMarket({
                     </div>
                     <div className="offer-content">
                       <div className="offer-item">
-                        <span>{offer.listing?.item?.icon}</span>
+                        {renderItemIcon(offer.listing?.item?.icon, offer.listing?.item?.name, 'small')}
                         <span>{offer.listing?.item?.name}</span>
                       </div>
                       <div className="offer-value">
@@ -917,7 +932,7 @@ export default function TheLifePlayerMarket({
             <div className="modal-body">
               <div className="list-item-preview">
                 <div className="preview-icon" style={{ '--rarity-color': getRarityColor(selectedItem.item?.rarity) }}>
-                  <span>{selectedItem.item?.icon || '📦'}</span>
+                  {renderItemIcon(selectedItem.item?.icon, selectedItem.item?.name, 'large')}
                 </div>
                 <div className="preview-info">
                   <h4>{selectedItem.item?.name}</h4>
@@ -999,7 +1014,7 @@ export default function TheLifePlayerMarket({
               <div className="trade-target">
                 <h4>{isPt ? 'Item Desejado' : 'Wanted Item'}</h4>
                 <div className="target-item">
-                  <span className="target-icon">{selectedListing.item?.icon}</span>
+                  <div className="target-icon">{renderItemIcon(selectedListing.item?.icon, selectedListing.item?.name, 'large')}</div>
                   <div>
                     <p className="target-name">{selectedListing.item?.name}</p>
                     <p className="target-price">{isPt ? 'Preço pedido' : 'Asking price'}: ${selectedListing.price.toLocaleString()}</p>

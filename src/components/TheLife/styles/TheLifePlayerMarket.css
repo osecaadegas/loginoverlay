@@ -3,6 +3,59 @@
    Modern AAA-quality dark theme with neon accents
    ============================================= */
 
+/* =============================================
+   ITEM ICON IMAGES - Base64 Support
+   ============================================= */
+
+.item-icon-img {
+  object-fit: contain;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.4));
+}
+
+.item-icon-img.icon-small {
+  width: 24px;
+  height: 24px;
+}
+
+.item-icon-img.icon-medium {
+  width: 40px;
+  height: 40px;
+}
+
+.item-icon-img.icon-large {
+  width: 64px;
+  height: 64px;
+}
+
+.fallback-icon {
+  font-size: 2rem;
+}
+
+.emoji-icon {
+  font-size: 2rem;
+}
+
+.listing-icon .item-icon-img,
+.inv-item-icon .item-icon-img,
+.preview-icon .item-icon-img,
+.target-icon .item-icon-img {
+  width: 100%;
+  height: 100%;
+  max-width: 64px;
+  max-height: 64px;
+}
+
+.mylisting-icon .item-icon-img {
+  width: 32px;
+  height: 32px;
+}
+
+.offer-item .item-icon-img {
+  width: 24px;
+  height: 24px;
+}
+
 .player-market {
   width: 100%;
   max-width: 1400px;
