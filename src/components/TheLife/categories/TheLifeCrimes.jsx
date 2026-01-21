@@ -56,6 +56,23 @@ export default function TheLifeCrimes({
       // Base success chance from the robbery
       let successChance = robbery.success_rate;
       
+      // === CRIME DIFFICULTY FACTOR ===
+      // Easy crimes (low level req) = safer, less police attention
+      // Hard crimes (high level req) = riskier, more police attention
+      // Level 1-5 crimes: +5% bonus (petty crimes, cops don't care)
+      // Level 6-15 crimes: no modifier (standard)
+      // Level 16-30 crimes: -5% (serious crimes, more heat)
+      // Level 31+ crimes: -10% (major crimes, cops are hunting you)
+      let crimeDifficultyMod = 0;
+      if (robbery.min_level_required <= 5) {
+        crimeDifficultyMod = 5; // Easy petty crimes
+      } else if (robbery.min_level_required >= 31) {
+        crimeDifficultyMod = -10; // Major heists
+      } else if (robbery.min_level_required >= 16) {
+        crimeDifficultyMod = -5; // Serious crimes
+      }
+      successChance += crimeDifficultyMod;
+      
       // Level difference bonus/penalty
       const levelDifference = player.level - robbery.min_level_required;
       if (levelDifference >= 0) {
@@ -178,9 +195,20 @@ export default function TheLifeCrimes({
         // === DYNAMIC JAIL TIME SYSTEM ===
         let jailMultiplier = 1;
         
+        // === CRIME DIFFICULTY AFFECTS JAIL TIME ===
+        // Easy crimes (low level req) = shorter sentences (petty theft)
+        // Hard crimes (high level req) = longer sentences (major felonies)
+        if (robbery.min_level_required <= 5) {
+          jailMultiplier *= 0.7; // -30% jail time for petty crimes
+        } else if (robbery.min_level_required >= 31) {
+          jailMultiplier *= 1.5; // +50% jail time for major crimes
+        } else if (robbery.min_level_required >= 16) {
+          jailMultiplier *= 1.2; // +20% jail time for serious crimes
+        }
+        
         // Under-leveled = longer jail time
         if (levelDifference < 0) {
-          jailMultiplier = 1 + (Math.abs(levelDifference) * 0.3);
+          jailMultiplier += (Math.abs(levelDifference) * 0.3);
         }
         
         // Low HP = longer jail (you're weaker, easier to catch)
