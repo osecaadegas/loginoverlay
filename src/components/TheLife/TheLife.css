@@ -328,59 +328,95 @@ input:checked + .toggle-slider:before {
 }
 
 .game-message {
-  padding: clamp(10px, 2vw, 15px) clamp(12px, 3vw, 20px);
-  border-radius: 10px;
-  margin-bottom: 20px;
+  padding: 12px 18px;
+  border-radius: 8px;
+  margin-bottom: 15px;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-  justify-content: space-between;
-  align-items: flex-start;
-}
-
-@media (min-width: 640px) {
-  .game-message {
-    flex-direction: row;
-    align-items: center;
-    gap: 0;
-  }
-}
-
-.game-message {
+  align-items: center;
+  gap: 12px;
   font-weight: 600;
-  animation: slideIn 0.3s ease-out;
+  font-size: 0.9rem;
+  animation: messageSlideIn 0.4s ease-out, messageFadeOut 0.5s ease-in 2.5s forwards;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
-@keyframes slideIn {
+.game-message .message-icon {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+.game-message .message-text {
+  flex: 1;
+}
+
+@keyframes messageSlideIn {
   from {
-    transform: translateY(-20px);
+    transform: translateY(-30px) scale(0.95);
     opacity: 0;
   }
   to {
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
     opacity: 1;
   }
 }
 
+@keyframes messageFadeOut {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
 .game-message.success {
-  background: rgba(34, 197, 94, 0.2);
-  border: 1px solid #22c55e;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(22, 163, 74, 0.1));
+  border: 1px solid rgba(34, 197, 94, 0.4);
   color: #86efac;
 }
 
+.game-message.success .message-icon {
+  background: rgba(34, 197, 94, 0.3);
+  color: #22c55e;
+  border: 1px solid rgba(34, 197, 94, 0.5);
+}
+
 .game-message.error {
-  background: rgba(239, 68, 68, 0.2);
-  border: 1px solid #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), rgba(220, 38, 38, 0.1));
+  border: 1px solid rgba(239, 68, 68, 0.4);
   color: #fca5a5;
+}
+
+.game-message.error .message-icon {
+  background: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.5);
 }
 
 .game-message button {
   background: none;
   border: none;
   color: inherit;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   cursor: pointer;
-  padding: 0 10px;
+  padding: 0;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+  line-height: 1;
+}
+
+.game-message button:hover {
+  opacity: 1;
 }
 
 /* Mobile: Fix notification to top of screen */
@@ -392,7 +428,7 @@ input:checked + .toggle-slider:before {
     right: 10px;
     margin-bottom: 0;
     z-index: 9999;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.6);
   }
 }
 
@@ -639,78 +675,67 @@ input:checked + .toggle-slider:before {
   box-shadow: 0 3px 15px rgba(212, 175, 55, 0.3);
 }
 
-/* Premium Season Pass Button - The Syndicate */
-.quick-tab-inline.premium-btn {
-  background: linear-gradient(135deg, rgba(15, 15, 15, 0.95), rgba(40, 20, 60, 0.9));
-  border: 2px solid transparent;
-  border-image: linear-gradient(135deg, #d4af37, #9333ea, #d4af37) 1;
-  color: #ffd700;
+/* Season Pass Button - Game Theme */
+.quick-tab-inline.season-pass-btn {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(180, 140, 40, 0.15));
+  border: 2px solid rgba(212, 175, 55, 0.6);
+  color: #d4af37;
   position: relative;
   overflow: hidden;
   padding: 10px 16px !important;
   display: flex;
   align-items: center;
   gap: 6px;
-  text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
 }
 
-.quick-tab-inline.premium-btn .premium-icon {
+.quick-tab-inline.season-pass-btn .sp-icon {
   font-size: 1rem;
-  animation: crown-glow 2s ease-in-out infinite;
+  animation: sp-star-pulse 2s ease-in-out infinite;
 }
 
-@keyframes crown-glow {
+@keyframes sp-star-pulse {
   0%, 100% { 
-    filter: drop-shadow(0 0 3px rgba(255, 215, 0, 0.8));
-    transform: scale(1);
+    filter: drop-shadow(0 0 3px rgba(212, 175, 55, 0.6));
+    transform: scale(1) rotate(0deg);
   }
   50% { 
-    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 1));
-    transform: scale(1.1);
+    filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.9));
+    transform: scale(1.15) rotate(15deg);
   }
 }
 
-.quick-tab-inline.premium-btn .premium-text {
+.quick-tab-inline.season-pass-btn .sp-text {
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 0.5px;
   font-size: 0.75rem;
-  background: linear-gradient(90deg, #ffd700, #fff, #ffd700);
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: gold-shimmer 3s linear infinite;
+  color: #d4af37;
 }
 
-@keyframes gold-shimmer {
-  0% { background-position: 0% center; }
-  100% { background-position: 200% center; }
-}
-
-.quick-tab-inline.premium-btn .premium-badge {
-  background: linear-gradient(135deg, #9333ea, #7c3aed);
-  color: #fff;
+.quick-tab-inline.season-pass-btn .sp-badge {
+  background: linear-gradient(135deg, #d4af37, #b8860b);
+  color: #000;
   font-size: 0.55rem;
   font-weight: 800;
   padding: 2px 6px;
   border-radius: 4px;
-  letter-spacing: 1px;
-  animation: badge-pulse 2s ease-in-out infinite;
-  box-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+  letter-spacing: 0.5px;
+  animation: sp-badge-glow 2.5s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
 }
 
-@keyframes badge-pulse {
+@keyframes sp-badge-glow {
   0%, 100% { 
-    box-shadow: 0 0 10px rgba(147, 51, 234, 0.5);
+    box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
     transform: scale(1);
   }
   50% { 
-    box-shadow: 0 0 20px rgba(147, 51, 234, 0.8);
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.7);
     transform: scale(1.05);
   }
 }
 
-.quick-tab-inline.premium-btn::before {
+.quick-tab-inline.season-pass-btn::before {
   content: '';
   position: absolute;
   top: 0;
@@ -720,56 +745,37 @@ input:checked + .toggle-slider:before {
   background: linear-gradient(
     90deg,
     transparent,
+    rgba(212, 175, 55, 0.15),
     rgba(255, 215, 0, 0.2),
-    rgba(147, 51, 234, 0.2),
     transparent
   );
-  animation: premium-sweep 4s ease-in-out infinite;
+  animation: sp-sweep 3.5s ease-in-out infinite;
 }
 
-@keyframes premium-sweep {
+@keyframes sp-sweep {
   0% { left: -100%; }
   50%, 100% { left: 100%; }
 }
 
-.quick-tab-inline.premium-btn::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  padding: 2px;
-  background: linear-gradient(135deg, #ffd700, #9333ea, #ffd700);
-  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  -webkit-mask-composite: xor;
-  mask-composite: exclude;
-  opacity: 0.7;
-  animation: border-rotate 4s linear infinite;
-}
-
-@keyframes border-rotate {
-  0% { filter: hue-rotate(0deg); }
-  100% { filter: hue-rotate(360deg); }
-}
-
-.quick-tab-inline.premium-btn:hover {
-  background: linear-gradient(135deg, rgba(30, 20, 40, 0.98), rgba(60, 30, 80, 0.95));
-  transform: translateY(-3px) scale(1.02);
+.quick-tab-inline.season-pass-btn:hover {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.35), rgba(180, 140, 40, 0.25));
+  border-color: #d4af37;
+  transform: translateY(-2px);
   box-shadow: 
-    0 6px 30px rgba(147, 51, 234, 0.5),
-    0 0 40px rgba(255, 215, 0, 0.3);
+    0 4px 20px rgba(212, 175, 55, 0.4),
+    0 0 25px rgba(212, 175, 55, 0.2);
 }
 
-.quick-tab-inline.premium-btn:hover .premium-badge {
-  background: linear-gradient(135deg, #a855f7, #8b5cf6);
+.quick-tab-inline.season-pass-btn:hover .sp-badge {
+  background: linear-gradient(135deg, #ffd700, #d4af37);
 }
 
-.quick-tab-inline.premium-btn.active {
-  background: linear-gradient(135deg, rgba(40, 25, 55, 0.98), rgba(80, 40, 100, 0.95));
+.quick-tab-inline.season-pass-btn.active {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.4), rgba(180, 140, 40, 0.3));
+  border-color: #ffd700;
   box-shadow: 
-    0 6px 35px rgba(147, 51, 234, 0.6),
-    0 0 50px rgba(255, 215, 0, 0.4),
-    inset 0 0 20px rgba(147, 51, 234, 0.2);
+    0 4px 25px rgba(212, 175, 55, 0.5),
+    inset 0 0 15px rgba(212, 175, 55, 0.1);
 }
 
 /* News Feed Button - Underground News */

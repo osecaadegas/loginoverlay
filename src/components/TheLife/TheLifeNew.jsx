@@ -66,6 +66,16 @@ export default function TheLife() {
     }
   }, [isMusicEnabled]);
 
+  // Auto-dismiss messages after 3 seconds
+  useEffect(() => {
+    if (message.text) {
+      const timer = setTimeout(() => {
+        setMessage({ type: '', text: '' });
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [message.text, setMessage]);
+
   const toggleMusic = () => {
     const newState = !isMusicEnabled;
     setIsMusicEnabled(newState);
@@ -234,7 +244,8 @@ export default function TheLife() {
 
       {message.text && (
         <div className={`game-message ${message.type}`}>
-          {message.text}
+          <span className="message-icon">{message.type === 'success' ? '✓' : message.type === 'error' ? '!' : 'ℹ'}</span>
+          <span className="message-text">{message.text}</span>
           <button onClick={() => setMessage({ type: '', text: '' })}>×</button>
         </div>
       )}
@@ -347,12 +358,12 @@ export default function TheLife() {
               👤 Profile
             </button>
             <button 
-              className="quick-tab-inline compact premium-btn"
+              className="quick-tab-inline compact season-pass-btn"
               onClick={() => navigate('/games/thelife/season-pass')}
             >
-              <span className="premium-icon">👑</span>
-              <span className="premium-text">The Syndicate</span>
-              <span className="premium-badge">VIP</span>
+              <span className="sp-icon">⭐</span>
+              <span className="sp-text">Season Pass</span>
+              <span className="sp-badge">NEW</span>
             </button>
             <button 
               className="quick-tab-inline compact news-btn"
