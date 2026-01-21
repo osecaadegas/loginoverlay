@@ -3444,7 +3444,7 @@ input:checked + .toggle-slider:before {
   cursor: pointer;
   transition: all 0.3s ease;
   width: 200px;
-  height: 120px;
+  height: 60px;
   overflow: hidden;
 }
 
