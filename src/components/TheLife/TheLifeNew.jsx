@@ -142,6 +142,7 @@ export default function TheLife() {
 
   const isInJail = player?.jail_until && new Date(player.jail_until) > new Date();
   const isInHospital = player?.hospital_until && new Date(player.hospital_until) > new Date();
+  const isRestricted = isInJail || isInHospital; // Restricted when in jail OR hospital
 
   // Get current category info (only if categoryInfo is loaded)
   const currentCategoryInfo = categoryInfo && categoryInfo[activeTab] ? categoryInfo[activeTab] : null;
@@ -345,9 +346,9 @@ export default function TheLife() {
             </button>
             <button 
               className={`quick-tab-inline compact ${activeTab === 'bank' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('bank')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('bank')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
             >
               🏦 Bank
             </button>
@@ -449,50 +450,48 @@ export default function TheLife() {
           <div className="game-tabs">
             <button 
               className={`tab tab-image ${activeTab === 'crimes' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('crimes')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('crimes')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
             >
               <img src="/thelife/categories/crimes.png" alt="Crimes" />
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'pvp' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('pvp')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('pvp')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
             >
               <img src="/thelife/categories/pvp.png" alt="PvP" />
             </button>
             <button
               className={`tab tab-image ${activeTab === 'businesses' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('businesses')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('businesses')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
             >
               <img src="/thelife/categories/businesses.png" alt="Businesses" />
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'brothel' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('brothel')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('brothel')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
             >
               <img src="/thelife/categories/brothel.png" alt="Brothel" />
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('highstakes')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('highstakes')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
               title="High Stakes"
             >
               <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('inventory')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => setActiveTab('inventory')}
             >
               <img src="/thelife/categories/Inventory.png" alt="Inventory" />
             </button>
@@ -510,25 +509,23 @@ export default function TheLife() {
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'market' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('market')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('market')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
             >
               <img src="/thelife/categories/BlackMarket.png" alt="Market" />
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'docks' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('docks')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => !isRestricted && setActiveTab('docks')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
             >
               <img src="/thelife/categories/Docks.png" alt="Docks" />
             </button>
             <button 
               className={`tab tab-image ${activeTab === 'skills' ? 'active' : ''}`}
-              onClick={() => !isInJail && setActiveTab('skills')}
-              disabled={isInJail}
-              style={{opacity: isInJail ? 0.5 : 1, cursor: isInJail ? 'not-allowed' : 'pointer'}}
+              onClick={() => setActiveTab('skills')}
             >
               <img src="/thelife/categories/skills.png" alt="Skills" />
             </button>
