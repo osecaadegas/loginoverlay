@@ -59,17 +59,23 @@ export default function TheLifeCrimes({
       // === CRIME DIFFICULTY FACTOR ===
       // Easy crimes (low level req) = safer, less police attention
       // Hard crimes (high level req) = riskier, more police attention
-      // Level 1-5 crimes: +5% bonus (petty crimes, cops don't care)
-      // Level 6-15 crimes: no modifier (standard)
-      // Level 16-30 crimes: -5% (serious crimes, more heat)
-      // Level 31+ crimes: -10% (major crimes, cops are hunting you)
+      // Level 1-10:   Petty crimes      +5%  (cops don't care much)
+      // Level 11-30:  Standard crimes    0%  (normal police attention)
+      // Level 31-60:  Serious crimes    -3%  (increased heat)
+      // Level 61-100: Major crimes      -6%  (heavy police presence)
+      // Level 101+:   Legendary heists -10%  (FBI/SWAT level)
       let crimeDifficultyMod = 0;
-      if (robbery.min_level_required <= 5) {
-        crimeDifficultyMod = 5; // Easy petty crimes
-      } else if (robbery.min_level_required >= 31) {
-        crimeDifficultyMod = -10; // Major heists
-      } else if (robbery.min_level_required >= 16) {
-        crimeDifficultyMod = -5; // Serious crimes
+      const crimeLevel = robbery.min_level_required;
+      if (crimeLevel <= 10) {
+        crimeDifficultyMod = 5; // Petty crimes
+      } else if (crimeLevel <= 30) {
+        crimeDifficultyMod = 0; // Standard
+      } else if (crimeLevel <= 60) {
+        crimeDifficultyMod = -3; // Serious
+      } else if (crimeLevel <= 100) {
+        crimeDifficultyMod = -6; // Major
+      } else {
+        crimeDifficultyMod = -10; // Legendary (101+)
       }
       successChance += crimeDifficultyMod;
       
@@ -198,12 +204,17 @@ export default function TheLifeCrimes({
         // === CRIME DIFFICULTY AFFECTS JAIL TIME ===
         // Easy crimes (low level req) = shorter sentences (petty theft)
         // Hard crimes (high level req) = longer sentences (major felonies)
-        if (robbery.min_level_required <= 5) {
-          jailMultiplier *= 0.7; // -30% jail time for petty crimes
-        } else if (robbery.min_level_required >= 31) {
-          jailMultiplier *= 1.5; // +50% jail time for major crimes
-        } else if (robbery.min_level_required >= 16) {
-          jailMultiplier *= 1.2; // +20% jail time for serious crimes
+        const crimeLevel = robbery.min_level_required;
+        if (crimeLevel <= 10) {
+          jailMultiplier *= 0.7; // -30% jail for petty crimes
+        } else if (crimeLevel <= 30) {
+          jailMultiplier *= 1.0; // Standard jail time
+        } else if (crimeLevel <= 60) {
+          jailMultiplier *= 1.2; // +20% jail for serious crimes
+        } else if (crimeLevel <= 100) {
+          jailMultiplier *= 1.4; // +40% jail for major crimes
+        } else {
+          jailMultiplier *= 1.7; // +70% jail for legendary heists (101+)
         }
         
         // Under-leveled = longer jail time
