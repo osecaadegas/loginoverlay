@@ -3731,7 +3731,7 @@ export default function AdminPanel() {
                             <span className="value">${worker.income_per_hour}</span>
                           </div>
                           <div className="stat">
-                            <span className="label">Min Level</span>
+                            <span className="label">🔓 Unlock Lvl</span>
                             <span className="value">{worker.min_level_required}</span>
                           </div>
                           <div className="stat full-width">
@@ -5015,12 +5015,13 @@ export default function AdminPanel() {
                     </div>
 
                     <div className="form-group">
-                      <label>Min Level Required</label>
+                      <label>🔓 Unlock Level</label>
                       <input
                         type="number"
                         value={workerFormData.min_level_required}
                         onChange={(e) => setWorkerFormData({...workerFormData, min_level_required: parseInt(e.target.value)})}
                         min="1"
+                        placeholder="Level required to hire"
                       />
                     </div>
 
