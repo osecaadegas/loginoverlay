@@ -192,19 +192,7 @@ export default function TheLife() {
     }
   }, [message.text, setMessage]);
 
-  if (loading) {
-    return (
-      <div className="the-life-container">
-        <div className="loading">Loading The Life...</div>
-      </div>
-    );
-  }
-
-  const isInJail = player?.jail_until && new Date(player.jail_until) > new Date();
-  const isInHospital = player?.hospital_until && new Date(player.hospital_until) > new Date();
-  const isRestricted = isInJail || isInHospital; // Restricted when in jail OR hospital
-
-  // Get current category info with translation support
+  // Get current category info with translation support (must be before any early returns)
   const currentCategoryInfo = useMemo(() => {
     if (!categoryInfo || !categoryInfo[activeTab]) return null;
     const info = categoryInfo[activeTab];
@@ -219,6 +207,18 @@ export default function TheLife() {
     }
     return info;
   }, [categoryInfo, activeTab, isPt]);
+
+  if (loading) {
+    return (
+      <div className="the-life-container">
+        <div className="loading">{isPt ? 'Carregando The Life...' : 'Loading The Life...'}</div>
+      </div>
+    );
+  }
+
+  const isInJail = player?.jail_until && new Date(player.jail_until) > new Date();
+  const isInHospital = player?.hospital_until && new Date(player.hospital_until) > new Date();
+  const isRestricted = isInJail || isInHospital; // Restricted when in jail OR hospital
 
   // Quick Refill Stamina function
   const quickRefillStamina = async () => {
