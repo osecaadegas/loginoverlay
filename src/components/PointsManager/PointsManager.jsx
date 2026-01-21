@@ -29,7 +29,8 @@ export default function PointsManager() {
     reward_type: 'custom',
     reward_details: '',
     image_url: '',
-    available_units: ''
+    available_units: '',
+    se_points_amount: ''
   });
   const [imageFile, setImageFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -503,7 +504,8 @@ export default function PointsManager() {
         reward_type: itemForm.reward_type,
         reward_value: {
           details: itemForm.reward_details,
-          reward_type: itemForm.reward_type
+          reward_type: itemForm.reward_type,
+          se_points_amount: itemForm.reward_type === 'se_points_reward' ? parseInt(itemForm.se_points_amount) || 0 : null
         },
         image_url: imageUrl || null,
         available_units: itemForm.available_units ? parseInt(itemForm.available_units) : null,
@@ -539,7 +541,8 @@ export default function PointsManager() {
         reward_type: 'custom',
         reward_details: '',
         image_url: '',
-        available_units: ''
+        available_units: '',
+        se_points_amount: ''
       });
       await loadRedemptionItems();
     } catch (err) {
@@ -585,6 +588,57 @@ export default function PointsManager() {
       setLoading(true);
       setError('');
       
+      // Get redemption details with item info
+      const redemption = redemptions.find(r => r.id === redemptionId);
+      
+      // Check if this is an SE Points Reward type
+      if (redemption?.item?.reward_type === 'se_points_reward' && redemption?.item?.reward_value?.se_points_amount) {
+        const sePointsToAward = redemption.item.reward_value.se_points_amount;
+        
+        // Get user's SE connection
+        const { data: connection } = await supabase
+          .from('streamelements_connections')
+          .select('*')
+          .eq('user_id', redemption.user_id)
+          .single();
+
+        let channelId, jwtToken, seUsername;
+        
+        if (connection) {
+          channelId = connection.se_channel_id;
+          jwtToken = connection.se_jwt_token;
+          seUsername = connection.se_username;
+        } else {
+          channelId = SE_CHANNEL_ID;
+          jwtToken = SE_JWT_TOKEN;
+          seUsername = redemption.user?.seUsername || redemption.user?.twitchUsername;
+        }
+
+        if (seUsername && channelId && jwtToken) {
+          console.log(`Awarding ${sePointsToAward} SE points to ${seUsername}`);
+          
+          const awardResponse = await fetch(
+            `https://api.streamelements.com/kappa/v2/points/${channelId}/${seUsername}/${sePointsToAward}`,
+            {
+              method: 'PUT',
+              headers: {
+                'Authorization': `Bearer ${jwtToken}`,
+                'Accept': 'application/json'
+              }
+            }
+          );
+
+          if (!awardResponse.ok) {
+            const errorText = await awardResponse.text();
+            throw new Error(`Failed to award SE points: ${errorText}`);
+          }
+          
+          console.log(`Successfully awarded ${sePointsToAward} SE points to ${seUsername}`);
+        } else {
+          console.warn('Could not award SE points - missing user SE info');
+        }
+      }
+      
       const { data, error } = await supabase
         .from('point_redemptions')
         .update({ processed: true, status: 'approved' })
@@ -595,7 +649,7 @@ export default function PointsManager() {
 
       if (error) throw error;
       
-      setSuccess('Redemption approved');
+      setSuccess('Redemption approved' + (redemption?.item?.reward_type === 'se_points_reward' ? ' and SE points awarded!' : ''));
       
       // Wait a moment for DB to commit
       await new Promise(resolve => setTimeout(resolve, 300));
@@ -1092,7 +1146,8 @@ export default function PointsManager() {
                             reward_type: item.reward_type || 'custom',
                             reward_details: item.reward_value?.details || item.reward_value?.duration_days || '',
                             image_url: item.image_url || '',
-                            available_units: item.available_units ? item.available_units.toString() : ''
+                            available_units: item.available_units ? item.available_units.toString() : '',
+                            se_points_amount: item.reward_value?.se_points_amount ? item.reward_value.se_points_amount.toString() : ''
                           });
                           setShowItemModal(true);
                         }}
@@ -1249,12 +1304,28 @@ export default function PointsManager() {
                     className="pm-select"
                   >
                     <option value="custom">Custom Reward</option>
+                    <option value="se_points_reward">SE Points Reward</option>
                     <option value="premium_access">Premium Access</option>
                     <option value="exclusive_role">Exclusive Role</option>
                     <option value="bonus_entry">Bonus Entry</option>
                     <option value="special_feature">Special Feature</option>
                   </select>
                 </div>
+
+                {itemForm.reward_type === 'se_points_reward' && (
+                  <div className="pm-form-group-new pm-se-points-info">
+                    <label>SE Points to Award</label>
+                    <input
+                      type="number"
+                      value={itemForm.se_points_amount || ''}
+                      onChange={(e) => setItemForm({ ...itemForm, se_points_amount: e.target.value })}
+                      placeholder="e.g., 5000"
+                      min="1"
+                      className="pm-input"
+                    />
+                    <small className="pm-hint">Players redeeming this will receive these SE points automatically when approved</small>
+                  </div>
+                )}
 
                 <div className="pm-form-group-new">
                   <label>Reward Details</label>

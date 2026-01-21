@@ -716,6 +716,24 @@
   letter-spacing: 0.8px;
 }
 
+/* SE Points Reward Info Box */
+.pm-se-points-info {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.pm-se-points-info label {
+  color: #60a5fa;
+}
+
+.pm-hint {
+  color: #9ca3af;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
 .pm-input,
 .pm-textarea,
 .pm-select {
