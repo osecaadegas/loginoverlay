@@ -1,4 +1,4 @@
-﻿import { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import './PointsManager.css';
 
@@ -260,7 +260,7 @@ export default function PointsManager() {
               };
             } else if (response.status === 404) {
               // User doesn't exist in SE yet - they'll be created when points are added
-              console.log(`âš  User ${seUsername} not found in StreamElements (will be created on first points add)`);
+              console.log(`[!]  User ${seUsername} not found in StreamElements (will be created on first points add)`);
               return {
                 user_id: user.user_id,
                 se_username: seUsername,
@@ -784,7 +784,7 @@ export default function PointsManager() {
                           )}
                           {user.se_status === 'error' && (
                             <span className="pm-status-badge denied" title="Error fetching from StreamElements">
-                              âš ï¸ Error
+                              [!]  Error
                             </span>
                           )}
                           {!user.se_status && (
@@ -1004,7 +1004,7 @@ export default function PointsManager() {
                               </button>
                             </div>
                           ) : (
-                            <span className="pm-no-action">â€”</span>
+                            <span className="pm-no-action">-</span>
                           )}
                         </td>
                       </tr>
@@ -1032,7 +1032,7 @@ export default function PointsManager() {
                     disabled={redemptionPage >= Math.ceil(redemptions.length / redemptionsPerPage)}
                     className="pm-pagination-btn"
                   >
-                    Next â†’
+                    Next >
                   </button>
                 </div>
               )}
@@ -1187,7 +1187,7 @@ export default function PointsManager() {
                 onClick={() => setShowItemModal(false)} 
                 className="pm-modal-close"
               >
-                âœ•
+                X
               </button>
             </div>
 
@@ -1337,7 +1337,7 @@ export default function PointsManager() {
                     
                     {itemForm.reward_details && (
                       <div className="pm-preview-details">
-                        <span className="pm-preview-icon">ðŸŽ</span>
+                        <span className="pm-preview-icon">*</span>
                         {itemForm.reward_details}
                       </div>
                     )}
