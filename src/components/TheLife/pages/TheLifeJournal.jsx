@@ -95,19 +95,26 @@ export default function TheLifeJournal() {
   const generateDynamicNews = async () => {
     const dynamicNews = [];
     const now = new Date();
+    const isPt = language === 'pt';
 
     // Leaderboard Top 3
     if (leaderboard && leaderboard.length > 0) {
       const medals = ['🥇', '🥈', '🥉'];
-      const titles = ['THE BOSS', 'SECOND IN COMMAND', 'THIRD CHAIR'];
+      const titles = isPt 
+        ? ['O CHEFE', 'SEGUNDO EM COMANDO', 'TERCEIRO LUGAR']
+        : ['THE BOSS', 'SECOND IN COMMAND', 'THIRD CHAIR'];
       
       leaderboard.slice(0, 3).forEach((p, index) => {
+        const content = isPt
+          ? `${p.username} conquistou a posição #${index + 1} nas ruas com um império impressionante de $${(p.net_worth || 0).toLocaleString()}. ${index === 0 ? 'Todos os olhos estão neste chefão.' : 'A competição é feroz.'}`
+          : `${p.username} has claimed the #${index + 1} position on the streets with a staggering $${(p.net_worth || 0).toLocaleString()} empire. ${index === 0 ? 'All eyes are on this kingpin.' : 'The competition is fierce.'}`;
+        
         dynamicNews.push({
           id: `leaderboard-${index}`,
           news_type: 'leaderboard',
           category: ['headline', 'featured', 'featured'][index],
           title: `${titles[index]}`,
-          content: `${p.username} has claimed the #${index + 1} position on the streets with a staggering $${(p.net_worth || 0).toLocaleString()} empire. ${index === 0 ? 'All eyes are on this kingpin.' : 'The competition is fierce.'}`,
+          content,
           icon: medals[index],
           player_name: p.username,
           priority: index === 0 ? 3 : 2,
@@ -128,13 +135,15 @@ export default function TheLifeJournal() {
         .single();
 
       if (pvpData) {
-        const name = pvpData.se_username || pvpData.twitch_username || 'A mysterious fighter';
+        const name = pvpData.se_username || pvpData.twitch_username || (isPt ? 'Um lutador misterioso' : 'A mysterious fighter');
         dynamicNews.push({
           id: 'pvp-champion',
           news_type: 'pvp',
           category: 'featured',
-          title: 'UNDEFEATED WARRIOR',
-          content: `${name} continues their reign of terror in the underground fight clubs. With ${pvpData.pvp_wins} victories and only ${pvpData.pvp_losses} defeats, challengers beware.`,
+          title: isPt ? 'GUERREIRO INVICTO' : 'UNDEFEATED WARRIOR',
+          content: isPt
+            ? `${name} continua seu reinado de terror nos clubes de luta clandestinos. Com ${pvpData.pvp_wins} vitórias e apenas ${pvpData.pvp_losses} derrotas, desafiantes tenham cuidado.`
+            : `${name} continues their reign of terror in the underground fight clubs. With ${pvpData.pvp_wins} victories and only ${pvpData.pvp_losses} defeats, challengers beware.`,
           icon: '⚔️',
           player_name: name,
           priority: 2,
@@ -160,13 +169,15 @@ export default function TheLifeJournal() {
           return currRate > bestRate ? curr : best;
         });
         
-        const name = kingpin.se_username || kingpin.twitch_username || 'An ambitious criminal';
+        const name = kingpin.se_username || kingpin.twitch_username || (isPt ? 'Um criminoso ambicioso' : 'An ambitious criminal');
         dynamicNews.push({
           id: 'rising-kingpin',
           news_type: 'kingpin',
           category: 'breaking',
-          title: 'RISING THROUGH THE RANKS',
-          content: `Word on the street is that ${name} has been making serious moves. At level ${kingpin.level} with ${kingpin.successful_robberies} successful operations, the established powers should watch their backs.`,
+          title: isPt ? 'SUBINDO NAS FILEIRAS' : 'RISING THROUGH THE RANKS',
+          content: isPt
+            ? `Palavra nas ruas é que ${name} tem feito movimentos sérios. No nível ${kingpin.level} com ${kingpin.successful_robberies} operações bem-sucedidas, os poderes estabelecidos devem ficar atentos.`
+            : `Word on the street is that ${name} has been making serious moves. At level ${kingpin.level} with ${kingpin.successful_robberies} successful operations, the established powers should watch their backs.`,
           icon: '👑',
           player_name: name,
           priority: 3,
@@ -195,14 +206,24 @@ export default function TheLifeJournal() {
           const isArrived = arrivalTime <= now;
           const minutesLeft = Math.floor((departureTime - now) / (1000 * 60));
           
+          const title = isPt
+            ? (isArrived ? 'NAVIO NO PORTO' : 'CARGA A CAMINHO')
+            : (isArrived ? 'VESSEL IN PORT' : 'INCOMING CARGO');
+          
+          const content = isPt
+            ? (isArrived 
+              ? `O ${boat.name} atracou no porto. ${boat.max_shipments - (boat.current_shipments || 0)} vagas de carga restam para ${boat.the_life_items?.name || 'contrabando'}. Parte em ${minutesLeft} minutos - aja rápido.`
+              : `Observadores relatam o ${boat.name} se aproximando das nossas águas. Prepare seus carregamentos de ${boat.the_life_items?.name || 'mercadorias'}.`)
+            : (isArrived 
+              ? `The ${boat.name} has docked at the harbor. ${boat.max_shipments - (boat.current_shipments || 0)} cargo slots remain for ${boat.the_life_items?.name || 'contraband'}. She departs in ${minutesLeft} minutes - act fast.`
+              : `Spotters report the ${boat.name} approaching our waters. Prepare your shipments for ${boat.the_life_items?.name || 'goods'}.`);
+          
           dynamicNews.push({
             id: `dock-${boat.id}`,
             news_type: 'dock',
             category: isArrived ? 'urgent' : 'shipping',
-            title: isArrived ? 'VESSEL IN PORT' : 'INCOMING CARGO',
-            content: isArrived 
-              ? `The ${boat.name} has docked at the harbor. ${boat.max_shipments - (boat.current_shipments || 0)} cargo slots remain for ${boat.the_life_items?.name || 'contraband'}. She departs in ${minutesLeft} minutes - act fast.`
-              : `Spotters report the ${boat.name} approaching our waters. Prepare your shipments for ${boat.the_life_items?.name || 'goods'}.`,
+            title,
+            content,
             icon: '🚢',
             priority: isArrived ? 3 : 2,
             created_at: boat.arrival_time,
@@ -225,13 +246,15 @@ export default function TheLifeJournal() {
         .single();
 
       if (brothelData) {
-        const name = brothelData.the_life_players?.se_username || brothelData.the_life_players?.twitch_username || 'An entrepreneur';
+        const name = brothelData.the_life_players?.se_username || brothelData.the_life_players?.twitch_username || (isPt ? 'Um empreendedor' : 'An entrepreneur');
         dynamicNews.push({
           id: 'brothel-leader',
           news_type: 'brothel',
           category: 'business',
-          title: 'EMPIRE OF PLEASURE',
-          content: `${name} runs the most profitable establishment in the underworld. With ${brothelData.workers} workers generating $${(brothelData.income_per_hour || 0).toLocaleString()} per hour, this is a business empire built on indulgence.`,
+          title: isPt ? 'IMPÉRIO DO PRAZER' : 'EMPIRE OF PLEASURE',
+          content: isPt
+            ? `${name} administra o estabelecimento mais lucrativo do submundo. Com ${brothelData.workers} trabalhadores gerando $${(brothelData.income_per_hour || 0).toLocaleString()} por hora, este é um império construído sobre indulgência.`
+            : `${name} runs the most profitable establishment in the underworld. With ${brothelData.workers} workers generating $${(brothelData.income_per_hour || 0).toLocaleString()} per hour, this is a business empire built on indulgence.`,
           icon: '🌹',
           player_name: name,
           priority: 2,
@@ -254,8 +277,10 @@ export default function TheLifeJournal() {
           id: 'crime-trending',
           news_type: 'crime',
           category: 'crime',
-          title: 'CRIMINAL OPPORTUNITY',
-          content: `Intelligence reports indicate that "${randomCrime.name}" has become a lucrative venture. Rewards range from $${randomCrime.base_reward?.toLocaleString()} to $${randomCrime.max_reward?.toLocaleString()}. Proceed with caution.`,
+          title: isPt ? 'OPORTUNIDADE CRIMINOSA' : 'CRIMINAL OPPORTUNITY',
+          content: isPt
+            ? `Relatórios de inteligência indicam que "${randomCrime.name}" se tornou um empreendimento lucrativo. Recompensas variam de $${randomCrime.base_reward?.toLocaleString()} a $${randomCrime.max_reward?.toLocaleString()}. Proceda com cautela.`
+            : `Intelligence reports indicate that "${randomCrime.name}" has become a lucrative venture. Rewards range from $${randomCrime.base_reward?.toLocaleString()} to $${randomCrime.max_reward?.toLocaleString()}. Proceed with caution.`,
           icon: '🔫',
           priority: 1,
           created_at: now.toISOString(),
@@ -264,29 +289,45 @@ export default function TheLifeJournal() {
     } catch (err) {}
 
     // Stock Market
-    const stockMovers = [
-      { name: 'ShadowCorp Industries', change: '+12.5%', direction: 'up' },
-      { name: 'Underground Logistics', change: '-8.3%', direction: 'down' },
-      { name: 'Dark Market Holdings', change: '+5.2%', direction: 'up' }
-    ];
+    const stockMovers = isPt
+      ? [
+        { name: 'ShadowCorp Indústrias', change: '+12.5%', direction: 'up' },
+        { name: 'Logística Subterrânea', change: '-8.3%', direction: 'down' },
+        { name: 'Dark Market Holdings', change: '+5.2%', direction: 'up' }
+      ]
+      : [
+        { name: 'ShadowCorp Industries', change: '+12.5%', direction: 'up' },
+        { name: 'Underground Logistics', change: '-8.3%', direction: 'down' },
+        { name: 'Dark Market Holdings', change: '+5.2%', direction: 'up' }
+      ];
     const randomStock = stockMovers[Math.floor(Math.random() * stockMovers.length)];
     dynamicNews.push({
       id: 'stock-mover',
       news_type: 'stock',
       category: 'markets',
-      title: randomStock.direction === 'up' ? 'MARKET SURGE' : 'MARKET DECLINE',
-      content: `${randomStock.name} ${randomStock.direction === 'up' ? 'surged' : 'dropped'} ${randomStock.change} in today's trading. ${randomStock.direction === 'up' ? 'Insiders are buying heavily.' : 'Smart money is moving elsewhere.'}`,
+      title: isPt 
+        ? (randomStock.direction === 'up' ? 'ALTA NO MERCADO' : 'QUEDA NO MERCADO')
+        : (randomStock.direction === 'up' ? 'MARKET SURGE' : 'MARKET DECLINE'),
+      content: isPt
+        ? `${randomStock.name} ${randomStock.direction === 'up' ? 'subiu' : 'caiu'} ${randomStock.change} nas negociações de hoje. ${randomStock.direction === 'up' ? 'Insiders estão comprando pesado.' : 'Dinheiro esperto está indo para outro lugar.'}`
+        : `${randomStock.name} ${randomStock.direction === 'up' ? 'surged' : 'dropped'} ${randomStock.change} in today's trading. ${randomStock.direction === 'up' ? 'Insiders are buying heavily.' : 'Smart money is moving elsewhere.'}`,
       icon: randomStock.direction === 'up' ? '📈' : '📉',
       priority: 1,
       created_at: now.toISOString(),
     });
 
     // Weather/Atmosphere
-    const weatherReports = [
-      { title: 'FOG ADVISORY', content: 'Heavy fog expected tonight. Perfect conditions for those who prefer to work unseen.' },
-      { title: 'CLEAR SKIES', content: 'Visibility is high today. Plan your operations accordingly.' },
-      { title: 'RAIN INCOMING', content: 'Storm clouds gathering. The wet streets will muffle footsteps tonight.' }
-    ];
+    const weatherReports = isPt
+      ? [
+        { title: 'AVISO DE NEBLINA', content: 'Neblina pesada esperada esta noite. Condições perfeitas para quem prefere trabalhar sem ser visto.' },
+        { title: 'CÉU LIMPO', content: 'Visibilidade alta hoje. Planeje suas operações de acordo.' },
+        { title: 'CHUVA A CAMINHO', content: 'Nuvens de tempestade se formando. As ruas molhadas abafar o barulho dos passos esta noite.' }
+      ]
+      : [
+        { title: 'FOG ADVISORY', content: 'Heavy fog expected tonight. Perfect conditions for those who prefer to work unseen.' },
+        { title: 'CLEAR SKIES', content: 'Visibility is high today. Plan your operations accordingly.' },
+        { title: 'RAIN INCOMING', content: 'Storm clouds gathering. The wet streets will muffle footsteps tonight.' }
+      ];
     const weather = weatherReports[Math.floor(Math.random() * weatherReports.length)];
     dynamicNews.push({
       id: 'weather',
