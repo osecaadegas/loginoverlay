@@ -26,6 +26,7 @@ import TheLifeStats from './categories/TheLifeStats';
 import TheLifeSkills from './categories/TheLifeSkills';
 import TheLifeProfile from './categories/TheLifeProfile';
 import TheLifeHighStakes from './categories/TheLifeHighStakes';
+import TheLifePlayerMarket from './categories/TheLifePlayerMarket';
 
 /**
  * Main The Life Container Component
@@ -524,6 +525,15 @@ export default function TheLife() {
               <img src="/thelife/categories/Docks.png" alt="Docks" />
             </button>
             <button 
+              className={`tab tab-image ${activeTab === 'playermarket' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('playermarket')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+              title="Player Market"
+            >
+              <img src="/thelife/categories/playermarket.png" alt="Player Market" />
+            </button>
+            <button 
               className={`tab tab-image ${activeTab === 'skills' ? 'active' : ''}`}
               onClick={() => setActiveTab('skills')}
             >
@@ -682,6 +692,18 @@ export default function TheLife() {
           theLifeInventory={theLifeInventory}
           setMessage={setMessage}
           loadTheLifeInventory={loadTheLifeInventory}
+          user={user}
+        />
+      )}
+
+      {activeTab === 'playermarket' && (
+        <TheLifePlayerMarket
+          player={player}
+          setPlayer={setPlayer}
+          theLifeInventory={theLifeInventory}
+          setMessage={setMessage}
+          loadTheLifeInventory={loadTheLifeInventory}
+          showEventMessage={showEventMessage}
           user={user}
         />
       )}
