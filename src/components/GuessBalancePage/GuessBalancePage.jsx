@@ -321,7 +321,7 @@ export default function GuessBalancePage() {
                           )}
                         </td>
                         <td className="winnings-cell">
-                          {activeSession?.reveal_answer && slot.bonus_win !== null ? (
+                          {slot.bonus_win !== null ? (
                             <div className="winnings-display">
                               <span className="win-amount">{formatCurrency(slot.bonus_win)}</span>
                               {slot.multiplier && (
