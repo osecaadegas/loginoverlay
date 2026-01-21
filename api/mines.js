@@ -1,7 +1,7 @@
 import { createClient } from '@supabase/supabase-js';
 
 const GRID_SIZE = 25;
-const MIN_MINES = 3;
+const MIN_MINES = 5;
 const MAX_MINES = 24;
 const HOUSE_EDGE = 0.03; // 3% house edge - standard for fair casino games
 
@@ -10,11 +10,13 @@ const HOUSE_EDGE = 0.03; // 3% house edge - standard for fair casino games
  * Based on probability theory: fair multiplier = 1 / probability of success
  * With house edge applied
  * 
+ * For low mine counts (5-7), we apply additional reduction since they're easier
+ * 
  * Formula: For each reveal, the probability of hitting a safe cell is:
  * P(safe) = (remaining_safe_cells) / (remaining_total_cells)
  * 
  * Cumulative multiplier = product of (1 / P(safe)) for each reveal
- * Final multiplier = cumulative * (1 - house_edge)
+ * Final multiplier = cumulative * (1 - house_edge) * difficulty_modifier
  */
 function calcMultiplier(revealedCount, mineCount) {
   if (revealedCount === 0) return 1.0;
@@ -39,7 +41,15 @@ function calcMultiplier(revealedCount, mineCount) {
   }
   
   // Apply house edge
-  const finalMultiplier = cumulativeMultiplier * (1 - HOUSE_EDGE);
+  let finalMultiplier = cumulativeMultiplier * (1 - HOUSE_EDGE);
+  
+  // Apply difficulty modifier for easy modes (5-7 mines)
+  // This makes easier games give lower multipliers
+  if (mineCount <= 5) {
+    finalMultiplier *= 0.90; // -10% for 5 mines (easiest)
+  } else if (mineCount <= 7) {
+    finalMultiplier *= 0.95; // -5% for 6-7 mines
+  }
   
   // Round to 2 decimal places
   return Math.round(finalMultiplier * 100) / 100;
