@@ -9,10 +9,12 @@
   font-family: 'Inter', -apple-system, sans-serif;
 }
 
-/* Flag emoji */
-.language-switcher__flag {
+/* Flag icons (using flag-icons library) */
+.language-switcher .fi {
   font-size: 1.2em;
   line-height: 1;
+  width: 1.33em;
+  border-radius: 2px;
 }
 
 /* Labels */

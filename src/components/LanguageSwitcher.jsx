@@ -1,10 +1,12 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useLanguage } from '../contexts/LanguageContext';
+import 'flag-icons/css/flag-icons.min.css';
 import './LanguageSwitcher.css';
 
 /**
  * Language Switcher Component
  * Displays current language flag and allows switching between languages
+ * Uses flag-icons library for high-quality flag sprites
  */
 const LanguageSwitcher = ({ 
   variant = 'dropdown',  // 'dropdown' | 'inline' | 'compact'
@@ -31,14 +33,14 @@ const LanguageSwitcher = ({
   const currentLanguage = supportedLanguages.find(l => l.code === language) || {
     code: 'en',
     name: 'English (UK)',
-    native_name: 'English',
-    flag_emoji: '🇬🇧'
+    native_name: 'English'
   };
 
-  // Fallback flags if not loaded from DB
-  const getFlag = (lang) => {
-    if (lang.flag_emoji) return lang.flag_emoji;
-    return lang.code === 'pt' ? '🇵🇹' : '🇬🇧';
+  // Get flag-icons class for language code
+  const getFlagClass = (langCode) => {
+    if (langCode === 'pt') return 'fi fi-pt';
+    if (langCode === 'en') return 'fi fi-gb-eng';
+    return 'fi fi-gb';
   };
 
   const handleLanguageChange = async (langCode) => {
@@ -60,7 +62,7 @@ const LanguageSwitcher = ({
             disabled={isChanging}
             title={lang.native_name || lang.name}
           >
-            <span className="language-switcher__flag">{getFlag(lang)}</span>
+            <span className={getFlagClass(lang.code)}></span>
           </button>
         ))}
       </div>
@@ -78,7 +80,7 @@ const LanguageSwitcher = ({
             onClick={() => handleLanguageChange(lang.code)}
             disabled={isChanging}
           >
-            <span className="language-switcher__flag">{getFlag(lang)}</span>
+            <span className={getFlagClass(lang.code)}></span>
             {showLabel && (
               <span className="language-switcher__label">{lang.code.toUpperCase()}</span>
             )}
@@ -101,7 +103,7 @@ const LanguageSwitcher = ({
         aria-expanded={isOpen}
         aria-haspopup="listbox"
       >
-        <span className="language-switcher__flag">{getFlag(currentLanguage)}</span>
+        <span className={getFlagClass(currentLanguage.code)}></span>
         {showLabel && (
           <span className="language-switcher__label">
             {currentLanguage.code.toUpperCase()}
@@ -122,7 +124,7 @@ const LanguageSwitcher = ({
                 role="option"
                 aria-selected={language === lang.code}
               >
-                <span className="language-switcher__flag">{getFlag(lang)}</span>
+                <span className={getFlagClass(lang.code)}></span>
                 <span className="language-switcher__name">
                   {lang.native_name || lang.name}
                 </span>
