@@ -9,3 +9,18 @@ export { default as MasterDetail, DetailSection, DetailField } from './MasterDet
 export { default as InlineConfirm, ConfirmButton, useInlineConfirm } from './InlineConfirm';
 export { default as ExpandableRow, ListItem, CardGrid, Card } from './ExpandableRow';
 export { default as ActionBar, StickyToolbar, ToolbarGroup, ToolbarButton, ToolbarDivider, ToolbarSearch } from './ActionBar';
+
+// Form Panel System - SaaS-grade form components with density modes
+export { 
+  FormPanel, 
+  FormSection, 
+  StatGrid, 
+  StatField, 
+  FormRow, 
+  FormField, 
+  ImagePreview, 
+  InfoCard, 
+  ToggleField, 
+  QuickStats, 
+  Divider 
+} from './FormPanel';

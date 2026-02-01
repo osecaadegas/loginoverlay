@@ -21,6 +21,17 @@ import {
   MasterDetail,
   DetailSection,
   DetailField,
+  FormPanel,
+  FormSection,
+  StatGrid,
+  StatField,
+  FormRow,
+  FormField,
+  ImagePreview,
+  InfoCard,
+  ToggleField,
+  QuickStats,
+  Divider,
 } from './components';
 
 // Valid tab IDs for URL deep linking
@@ -3871,7 +3882,7 @@ export default function AdminPanel() {
             )}
           </div>
 
-          {/* Crime Side Panel */}
+          {/* Crime Side Panel - Refactored with FormPanel System */}
           <SidePanel
             isOpen={showCrimeModal}
             onClose={closeCrimeModal}
@@ -3888,238 +3899,241 @@ export default function AdminPanel() {
               </>
             }
           >
-            <div className="form-grid">
-                    <div className="form-group full-width">
-                      <label>Crime Name *</label>
-                      <input
-                        type="text"
-                        value={crimeFormData.name}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, name: e.target.value})}
-                        placeholder="e.g., Bank Heist"
-                      />
-                    </div>
+            <FormPanel density="default" showDensityToggle={true}>
+              {/* Quick Stats Overview - Only show when editing */}
+              {editingCrime && (
+                <QuickStats stats={[
+                  { icon: '⭐', label: 'Min Level', value: crimeFormData.min_level_required || 1 },
+                  { icon: '💰', label: 'Reward Range', value: `$${crimeFormData.base_reward || 0}-${crimeFormData.max_reward || 0}` },
+                  { icon: '🎯', label: 'Success Rate', value: `${crimeFormData.success_rate || 0}%`, highlight: true },
+                  { icon: '⏱️', label: 'Jail Time', value: `${crimeFormData.jail_time_minutes || 0}m` },
+                ]} />
+              )}
 
-                    <div className="form-group full-width">
-                      <label>Description</label>
-                      <textarea
-                        value={crimeFormData.description}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, description: e.target.value})}
-                        placeholder="Describe the crime..."
-                        rows="3"
-                      />
-                    </div>
+              {/* Basic Info Section */}
+              <FormSection title="Basic Information" icon="📝" defaultExpanded={true}>
+                <FormField label="Crime Name" icon="🔫" required fullWidth>
+                  <input
+                    type="text"
+                    value={crimeFormData.name}
+                    onChange={(e) => setCrimeFormData({...crimeFormData, name: e.target.value})}
+                    placeholder="e.g., Bank Heist"
+                  />
+                </FormField>
 
-                    <div className="form-group full-width">
-                      <label>Image URL</label>
-                      <input
-                        type="text"
-                        value={crimeFormData.image_url}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, image_url: e.target.value})}
-                        placeholder="https://images.unsplash.com/..."
-                      />
-                      {crimeFormData.image_url && (
-                        <div className="image-preview">
-                          <img src={crimeFormData.image_url} alt="Preview" />
-                        </div>
-                      )}
-                    </div>
+                <FormField label="Description" fullWidth>
+                  <textarea
+                    value={crimeFormData.description}
+                    onChange={(e) => setCrimeFormData({...crimeFormData, description: e.target.value})}
+                    placeholder="Describe what this crime involves..."
+                    rows="2"
+                  />
+                </FormField>
 
-                    <div className="form-group">
-                      <label>Min Level Required</label>
+                <FormField label="Crime Image" icon="🖼️" hint="Enter a URL or upload an image" fullWidth>
+                  <input
+                    type="text"
+                    value={crimeFormData.image_url}
+                    onChange={(e) => setCrimeFormData({...crimeFormData, image_url: e.target.value})}
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                </FormField>
+                <ImagePreview src={crimeFormData.image_url} size="large" />
+              </FormSection>
+
+              {/* Requirements Section */}
+              <FormSection title="Requirements" icon="🔒" badge={{ text: 'Unlock', type: '' }}>
+                <StatGrid>
+                  <StatField icon="⭐" label="Min Level Required">
+                    <input
+                      type="number"
+                      value={crimeFormData.min_level_required}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, min_level_required: parseInt(e.target.value) || 1})}
+                      min="1"
+                    />
+                  </StatField>
+                  <StatField icon="⚡" label="Stamina Cost">
+                    <input
+                      type="number"
+                      value={crimeFormData.stamina_cost}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, stamina_cost: parseInt(e.target.value) || 1})}
+                      min="1"
+                    />
+                  </StatField>
+                </StatGrid>
+              </FormSection>
+
+              {/* Rewards Section */}
+              <FormSection title="Rewards" icon="💰" variant="highlight">
+                <StatGrid>
+                  <StatField 
+                    icon="💵" 
+                    label="Base Reward" 
+                    hint="Minimum cash earned on success"
+                  >
+                    <input
+                      type="number"
+                      value={crimeFormData.base_reward}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, base_reward: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                  <StatField 
+                    icon="💎" 
+                    label="Max Reward" 
+                    hint="Maximum cash earned on success"
+                  >
+                    <input
+                      type="number"
+                      value={crimeFormData.max_reward}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, max_reward: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                  <StatField 
+                    icon="⭐" 
+                    label="XP Reward" 
+                    hint="Experience points earned"
+                  >
+                    <input
+                      type="number"
+                      value={crimeFormData.xp_reward}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, xp_reward: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                </StatGrid>
+              </FormSection>
+
+              {/* Risk & Consequences Section */}
+              <FormSection title="Risk & Consequences" icon="⚠️" variant="warning">
+                <StatGrid>
+                  <StatField 
+                    icon="🎯" 
+                    label="Success Rate (%)" 
+                    hint="Dynamic: +5% per level above min, -10% per level below"
+                  >
+                    <input
+                      type="number"
+                      value={crimeFormData.success_rate}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, success_rate: parseInt(e.target.value) || 0})}
+                      min="0"
+                      max="100"
+                    />
+                  </StatField>
+                  <StatField 
+                    icon="⏱️" 
+                    label="Jail Time (min)" 
+                    hint="Increases +50% per level below requirement"
+                  >
+                    <input
+                      type="number"
+                      value={crimeFormData.jail_time_minutes}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, jail_time_minutes: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                  <StatField 
+                    icon="❤️" 
+                    label="HP Loss on Fail" 
+                    hint="Health lost when crime fails"
+                  >
+                    <input
+                      type="number"
+                      value={crimeFormData.hp_loss_on_fail}
+                      onChange={(e) => setCrimeFormData({...crimeFormData, hp_loss_on_fail: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                </StatGrid>
+              </FormSection>
+
+              {/* Item Drops Section - Only when editing */}
+              {editingCrime && (
+                <FormSection 
+                  title="Item Drops" 
+                  icon="💎" 
+                  badge={crimeDrops.length > 0 ? { text: `${crimeDrops.length} items`, type: 'success' } : null}
+                  defaultExpanded={crimeDrops.length > 0}
+                >
+                  {/* Existing Drops */}
+                  {crimeDrops.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                      {crimeDrops.map(drop => (
+                        <InfoCard
+                          key={drop.id}
+                          icon={drop.item?.icon}
+                          title={drop.item?.name || 'Unknown Item'}
+                          stats={[
+                            { icon: '🎲', value: `${drop.drop_chance}% chance` },
+                            { icon: '📦', value: `Qty: ${drop.min_quantity}-${drop.max_quantity}` }
+                          ]}
+                          actions={
+                            <button onClick={() => removeCrimeDrop(drop.id)}>Remove</button>
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  <Divider label="Add New Drop" />
+
+                  {/* Add New Drop Form */}
+                  <FormRow columns={2}>
+                    <FormField label="Item" icon="🎁">
+                      <select
+                        value={newDrop.item_id}
+                        onChange={(e) => setNewDrop({...newDrop, item_id: e.target.value})}
+                      >
+                        <option value="">Select Item</option>
+                        {items.map(item => (
+                          <option key={item.id} value={item.id}>
+                            {item.name}
+                          </option>
+                        ))}
+                      </select>
+                    </FormField>
+                    <FormField label="Drop Chance (%)" icon="🎲">
                       <input
                         type="number"
-                        value={crimeFormData.min_level_required}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, min_level_required: parseInt(e.target.value)})}
+                        value={newDrop.drop_chance}
+                        onChange={(e) => setNewDrop({...newDrop, drop_chance: parseInt(e.target.value) || 1})}
                         min="1"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>⚡ Stamina Cost</label>
-                      <input
-                        type="number"
-                        value={crimeFormData.stamina_cost}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, stamina_cost: parseInt(e.target.value)})}
-                        min="1"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Base Reward ($)</label>
-                      <input
-                        type="number"
-                        value={crimeFormData.base_reward}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, base_reward: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Max Reward ($)</label>
-                      <input
-                        type="number"
-                        value={crimeFormData.max_reward}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, max_reward: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Success Rate (%) - Base Rate</label>
-                      <input
-                        type="number"
-                        value={crimeFormData.success_rate}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, success_rate: parseInt(e.target.value)})}
-                        min="0"
                         max="100"
                       />
-                      <small style={{color: '#a0aec0', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
-                        📊 Dynamic: +5% per level above min, -10% per level below min
-                      </small>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Jail Time (minutes) - Base Time</label>
+                    </FormField>
+                  </FormRow>
+                  <FormRow columns={2}>
+                    <FormField label="Min Quantity" icon="📦">
                       <input
                         type="number"
-                        value={crimeFormData.jail_time_minutes}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, jail_time_minutes: parseInt(e.target.value)})}
-                        min="0"
+                        value={newDrop.min_quantity}
+                        onChange={(e) => setNewDrop({...newDrop, min_quantity: parseInt(e.target.value) || 1})}
+                        min="1"
                       />
-                      <small style={{color: '#a0aec0', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
-                        ⏱️ Increases +50% per level below requirement if caught
-                      </small>
-                    </div>
-
-                    <div className="form-group">
-                      <label>HP Loss on Fail</label>
+                    </FormField>
+                    <FormField label="Max Quantity" icon="📦">
                       <input
                         type="number"
-                        value={crimeFormData.hp_loss_on_fail}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, hp_loss_on_fail: parseInt(e.target.value)})}
-                        min="0"
+                        value={newDrop.max_quantity}
+                        onChange={(e) => setNewDrop({...newDrop, max_quantity: parseInt(e.target.value) || 1})}
+                        min="1"
                       />
-                    </div>
-
-                    <div className="form-group">
-                      <label>XP Reward</label>
-                      <input
-                        type="number"
-                        value={crimeFormData.xp_reward}
-                        onChange={(e) => setCrimeFormData({...crimeFormData, xp_reward: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Item Drops Section */}
-                  {editingCrime && (
-                    <>
-                    <div className="form-section" style={{marginTop: '20px'}}>
-                      <h3 style={{color: '#d4af37', marginBottom: '15px'}}>💎 Item Drops</h3>
-                      
-                      {/* Existing Drops */}
-                      {crimeDrops.length > 0 && (
-                        <div style={{marginBottom: '15px'}}>
-                          {crimeDrops.map(drop => (
-                            <div key={drop.id} style={{
-                              background: 'rgba(0,0,0,0.3)',
-                              padding: '10px',
-                              borderRadius: '8px',
-                              marginBottom: '8px',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center'
-                            }}>
-                              <div>
-                              <div style={{color: '#d4af37', fontWeight: '600', marginBottom: '5px'}}>{drop.item.name}</div>
-                              <div style={{fontSize: '0.85rem', color: '#cbd5e0'}}>
-                                {drop.drop_chance}% drop chance • Qty: {drop.min_quantity}-{drop.max_quantity}
-                              </div>
-                            </div>
-                              <button 
-                                onClick={() => removeCrimeDrop(drop.id)}
-                                style={{
-                                  background: '#dc2626',
-                                  border: 'none',
-                                  padding: '5px 10px',
-                                  borderRadius: '5px',
-                                  color: 'white',
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Add New Drop */}
-                      <div className="form-grid">
-                        <div className="form-group">
-                          <label>Item</label>
-                          <select
-                            value={newDrop.item_id}
-                            onChange={(e) => setNewDrop({...newDrop, item_id: e.target.value})}
-                          >
-                            <option value="">Select Item</option>
-                            {items.map(item => (
-                              <option key={item.id} value={item.id}>
-                                {item.name}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-                        <div className="form-group">
-                          <label>Drop Chance (%)</label>
-                          <input
-                            type="number"
-                            value={newDrop.drop_chance}
-                            onChange={(e) => setNewDrop({...newDrop, drop_chance: parseInt(e.target.value)})}
-                            min="1"
-                            max="100"
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Min Quantity</label>
-                          <input
-                            type="number"
-                            value={newDrop.min_quantity}
-                            onChange={(e) => setNewDrop({...newDrop, min_quantity: parseInt(e.target.value)})}
-                            min="1"
-                          />
-                        </div>
-                        <div className="form-group">
-                          <label>Max Quantity</label>
-                          <input
-                            type="number"
-                            value={newDrop.max_quantity}
-                            onChange={(e) => setNewDrop({...newDrop, max_quantity: parseInt(e.target.value)})}
-                            min="1"
-                          />
-                        </div>
-                      </div>
-                      <button 
-                        onClick={addCrimeDrop}
-                        style={{
-                          background: '#22c55e',
-                          border: 'none',
-                          padding: '8px 16px',
-                          borderRadius: '5px',
-                          color: 'white',
-                          cursor: 'pointer',
-                          marginTop: '10px'
-                        }}
-                      >
-                        Add Drop
-                      </button>
-                    </div>
-                    </>
-                  )}
+                    </FormField>
+                  </FormRow>
+                  <button 
+                    onClick={addCrimeDrop}
+                    className="btn-primary"
+                    style={{ marginTop: '12px' }}
+                  >
+                    + Add Drop
+                  </button>
+                </FormSection>
+              )}
+            </FormPanel>
           </SidePanel>
 
-          {/* Business Side Panel */}
+          {/* Business Side Panel - Refactored with FormPanel System */}
           <SidePanel
             isOpen={showBusinessModal}
             onClose={closeBusinessModal}
@@ -4136,379 +4150,305 @@ export default function AdminPanel() {
               </>
             }
           >
-            <div className="form-grid">
-                    <div className="form-group full-width">
-                      <label>Business Name *</label>
+            <FormPanel density="default" showDensityToggle={true}>
+              {/* Quick Stats Overview - Only show when editing */}
+              {editingBusiness && (
+                <QuickStats stats={[
+                  { icon: '💰', label: 'Purchase', value: `$${(businessFormData.purchase_price || 0).toLocaleString()}` },
+                  { icon: '⚙️', label: 'Production', value: `$${(businessFormData.production_cost || 0).toLocaleString()}` },
+                  { icon: '📈', label: 'Profit', value: businessFormData.reward_type === 'cash' ? `$${(businessFormData.profit || 0).toLocaleString()}` : 'Items', highlight: true },
+                  { icon: '⏱️', label: 'Duration', value: `${businessFormData.duration_minutes || 0}m` },
+                ]} />
+              )}
+
+              {/* Basic Info Section */}
+              <FormSection title="Basic Information" icon="💼" defaultExpanded={true}>
+                <FormField label="Business Name" icon="🏢" required fullWidth>
+                  <input
+                    type="text"
+                    value={businessFormData.name}
+                    onChange={(e) => setBusinessFormData({...businessFormData, name: e.target.value})}
+                    placeholder="e.g., Weed Farm"
+                  />
+                </FormField>
+
+                <FormField label="Description" fullWidth>
+                  <textarea
+                    value={businessFormData.description}
+                    onChange={(e) => setBusinessFormData({...businessFormData, description: e.target.value})}
+                    placeholder="Describe what this business produces..."
+                    rows="2"
+                  />
+                </FormField>
+
+                <FormField label="Business Image" icon="🖼️" fullWidth>
+                  <input
+                    type="text"
+                    value={businessFormData.image_url}
+                    onChange={(e) => setBusinessFormData({...businessFormData, image_url: e.target.value})}
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                </FormField>
+                <ImagePreview src={businessFormData.image_url} size="large" />
+              </FormSection>
+
+              {/* Costs Section */}
+              <FormSection title="Costs & Requirements" icon="💵">
+                <StatGrid>
+                  <StatField icon="🏷️" label="Purchase Price" hint="One-time cost to buy the business">
+                    <input
+                      type="number"
+                      value={businessFormData.purchase_price}
+                      onChange={(e) => setBusinessFormData({...businessFormData, purchase_price: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                  <StatField icon="⚙️" label="Production Cost" hint="Cost to run production each time">
+                    <input
+                      type="number"
+                      value={businessFormData.production_cost}
+                      onChange={(e) => setBusinessFormData({...businessFormData, production_cost: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                  <StatField icon="⚡" label="Stamina Cost" hint="Stamina required to start production">
+                    <input
+                      type="number"
+                      value={businessFormData.stamina_cost}
+                      onChange={(e) => setBusinessFormData({...businessFormData, stamina_cost: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                  <StatField icon="⭐" label="Min Level">
+                    <input
+                      type="number"
+                      value={businessFormData.min_level_required}
+                      onChange={(e) => setBusinessFormData({...businessFormData, min_level_required: parseInt(e.target.value) || 1})}
+                      min="1"
+                    />
+                  </StatField>
+                </StatGrid>
+              </FormSection>
+
+              {/* Production Section */}
+              <FormSection title="Production" icon="🏭" variant="highlight">
+                <StatGrid>
+                  <StatField icon="⏱️" label="Duration (minutes)">
+                    <input
+                      type="number"
+                      value={businessFormData.duration_minutes}
+                      onChange={(e) => setBusinessFormData({...businessFormData, duration_minutes: parseInt(e.target.value) || 1})}
+                      min="1"
+                    />
+                  </StatField>
+                  <StatField icon="📦" label="Unit Name" hint="e.g., grams, pills, bags">
+                    <input
+                      type="text"
+                      value={businessFormData.unit_name}
+                      onChange={(e) => setBusinessFormData({...businessFormData, unit_name: e.target.value})}
+                      placeholder="grams"
+                    />
+                  </StatField>
+                </StatGrid>
+              </FormSection>
+
+              {/* Rewards Section */}
+              <FormSection title="Rewards" icon="💰" variant="highlight">
+                <FormField label="Reward Type" fullWidth>
+                  <div className="radio-group-v2">
+                    <label className={`radio-option-v2 ${businessFormData.reward_type === 'cash' ? 'selected' : ''}`}>
                       <input
-                        type="text"
-                        value={businessFormData.name}
-                        onChange={(e) => setBusinessFormData({...businessFormData, name: e.target.value})}
-                        placeholder="e.g., Weed Farm"
+                        type="radio"
+                        name="reward_type"
+                        value="cash"
+                        checked={businessFormData.reward_type === 'cash'}
+                        onChange={(e) => setBusinessFormData({...businessFormData, reward_type: e.target.value})}
                       />
-                    </div>
-
-                    <div className="form-group full-width">
-                      <label>Description</label>
-                      <textarea
-                        value={businessFormData.description}
-                        onChange={(e) => setBusinessFormData({...businessFormData, description: e.target.value})}
-                        placeholder="Describe the business..."
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="form-group full-width">
-                      <label>Image URL</label>
+                      <span>💵 Cash Reward</span>
+                    </label>
+                    <label className={`radio-option-v2 ${businessFormData.reward_type === 'items' ? 'selected' : ''}`}>
                       <input
-                        type="text"
-                        value={businessFormData.image_url}
-                        onChange={(e) => setBusinessFormData({...businessFormData, image_url: e.target.value})}
-                        placeholder="https://images.unsplash.com/..."
+                        type="radio"
+                        name="reward_type"
+                        value="items"
+                        checked={businessFormData.reward_type === 'items'}
+                        onChange={(e) => setBusinessFormData({...businessFormData, reward_type: e.target.value})}
                       />
-                      {businessFormData.image_url && (
-                        <div className="image-preview">
-                          <img src={businessFormData.image_url} alt="Preview" />
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="form-group">
-                      <label>Purchase Price ($)</label>
-                      <input
-                        type="number"
-                        value={businessFormData.purchase_price}
-                        onChange={(e) => setBusinessFormData({...businessFormData, purchase_price: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                      <small style={{color: '#a0aec0', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
-                        One-time cost to buy the business
-                      </small>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Production Cost ($)</label>
-                      <input
-                        type="number"
-                        value={businessFormData.production_cost}
-                        onChange={(e) => setBusinessFormData({...businessFormData, production_cost: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                      <small style={{color: '#a0aec0', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
-                        Cost to run production each time
-                      </small>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Stamina Cost</label>
-                      <input
-                        type="number"
-                        value={businessFormData.stamina_cost}
-                        onChange={(e) => setBusinessFormData({...businessFormData, stamina_cost: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                      <small style={{color: '#a0aec0', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
-                        Amount of stamina required to start production
-                      </small>
-                    </div>
-
-                    <div className="form-group full-width">
-                      <label>Reward Type</label>
-                      <div style={{display: 'flex', gap: '15px', marginTop: '10px'}}>
-                        <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-                          <input
-                            type="radio"
-                            name="reward_type"
-                            value="cash"
-                            checked={businessFormData.reward_type === 'cash'}
-                            onChange={(e) => setBusinessFormData({...businessFormData, reward_type: e.target.value})}
-                          />
-                          <span>💵 Cash Reward</span>
-                        </label>
-                        <label style={{display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer'}}>
-                          <input
-                            type="radio"
-                            name="reward_type"
-                            value="items"
-                            checked={businessFormData.reward_type === 'items'}
-                            onChange={(e) => setBusinessFormData({...businessFormData, reward_type: e.target.value})}
-                          />
-                          <span>🎒 Item Reward</span>
-                        </label>
-                      </div>
-                    </div>
-
-                    {businessFormData.reward_type === 'cash' ? (
-                      <div className="form-group">
-                        <label>Cash Profit ($)</label>
-                        <input
-                          type="number"
-                          value={businessFormData.profit}
-                          onChange={(e) => setBusinessFormData({...businessFormData, profit: parseInt(e.target.value)})}
-                          min="0"
-                        />
-                      </div>
-                    ) : (
-                      <>
-                        <div className="form-group">
-                          <label>Item Reward</label>
-                          <select
-                            value={businessFormData.reward_item_id || ''}
-                            onChange={(e) => setBusinessFormData({...businessFormData, reward_item_id: e.target.value || null})}
-                          >
-                            <option value="">Select Item...</option>
-                            {availableItems.map(item => (
-                              <option key={item.id} value={item.id}>
-                                {item.name} ({item.rarity})
-                              </option>
-                            ))}
-                          </select>
-                          {businessFormData.reward_item_id && (
-                            <div style={{marginTop: '10px', display: 'flex', alignItems: 'center', gap: '10px'}}>
-                              <img 
-                                src={availableItems.find(i => i.id === businessFormData.reward_item_id)?.icon} 
-                                alt="Item preview" 
-                                style={{width: '40px', height: '40px', objectFit: 'cover', borderRadius: '5px'}}
-                              />
-                              <span style={{color: '#888', fontSize: '0.9rem'}}>
-                                {availableItems.find(i => i.id === businessFormData.reward_item_id)?.name}
-                              </span>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className="form-group">
-                          <label>Item Quantity</label>
-                          <input
-                            type="number"
-                            value={businessFormData.reward_item_quantity}
-                            onChange={(e) => setBusinessFormData({...businessFormData, reward_item_quantity: parseInt(e.target.value)})}
-                            min="1"
-                          />
-                        </div>
-                      </>
-                    )}
-
-                    <div className="form-group">
-                      <label>Unit Name</label>
-                      <input
-                        type="text"
-                        value={businessFormData.unit_name}
-                        onChange={(e) => setBusinessFormData({...businessFormData, unit_name: e.target.value})}
-                        placeholder="e.g., grams, pills, bags"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Duration (minutes)</label>
-                      <input
-                        type="number"
-                        value={businessFormData.duration_minutes}
-                        onChange={(e) => setBusinessFormData({...businessFormData, duration_minutes: parseInt(e.target.value)})}
-                        min="1"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Min Level Required</label>
-                      <input
-                        type="number"
-                        value={businessFormData.min_level_required}
-                        onChange={(e) => setBusinessFormData({...businessFormData, min_level_required: parseInt(e.target.value)})}
-                        min="1"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={businessFormData.is_active}
-                          onChange={(e) => setBusinessFormData({...businessFormData, is_active: e.target.checked})}
-                        />
-                        Is Active
-                      </label>
-                    </div>
-
-                    <div className="form-group">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={businessFormData.is_upgradeable}
-                          onChange={(e) => setBusinessFormData({...businessFormData, is_upgradeable: e.target.checked})}
-                        />
-                        Is Upgradeable
-                      </label>
-                      <small style={{color: '#a0aec0', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
-                        Allow players to upgrade this business for better production
-                      </small>
-                    </div>
-
-                    {/* Required Items Section - Multiple Items Support */}
-                    <div className="form-group full-width" style={{marginTop: '20px', borderTop: '1px solid rgba(212,175,55,0.2)', paddingTop: '20px'}}>
-                      <label style={{fontSize: '1.1rem', color: '#d4af37', marginBottom: '15px', display: 'block'}}>📦 Required Items (Optional)</label>
-                      <small style={{color: '#a0aec0', fontSize: '0.9rem', display: 'block', marginBottom: '15px'}}>
-                        Add multiple items with different rewards. E.g., Car Stripping accepts: Old Car ($500), Sports Car ($2000), Luxury Car ($5000)
-                      </small>
-
-                      {/* Conversion Rate for Money Laundering type businesses */}
-                      {businessFormData.name.toLowerCase().includes('launder') || businessFormData.name.toLowerCase().includes('wash') ? (
-                        <div className="form-group">
-                          <label>Conversion Fee (%)</label>
-                          <input
-                            type="number"
-                            step="0.01"
-                            value={businessFormData.conversion_rate ? businessFormData.conversion_rate * 100 : ''}
-                            onChange={(e) => setBusinessFormData({...businessFormData, conversion_rate: e.target.value ? parseFloat(e.target.value) / 100 : null})}
-                            min="0"
-                            max="100"
-                            placeholder="e.g., 18 for 18% fee"
-                          />
-                          <small style={{color: '#a0aec0', fontSize: '0.85rem', marginTop: '5px', display: 'block'}}>
-                            Fee taken from item value (e.g., 18% fee means player gets 82% of Dirty Money value)
-                          </small>
-                        </div>
-                      ) : null}
-
-                      {/* Existing Required Items */}
-                      {businessRequiredItems.length > 0 && (
-                        <div style={{marginBottom: '20px'}}>
-                          <h4 style={{color: '#d4af37', fontSize: '0.95rem', marginBottom: '10px'}}>Accepted Items:</h4>
-                          {businessRequiredItems.map(reqItem => (
-                            <div key={reqItem.id} style={{
-                              background: 'rgba(0,0,0,0.3)',
-                              padding: '12px',
-                              borderRadius: '8px',
-                              marginBottom: '10px',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center'
-                            }}>
-                              <div style={{display: 'flex', alignItems: 'center', gap: '12px', flex: 1}}>
-                                <img 
-                                  src={reqItem.item.icon} 
-                                  alt={reqItem.item.name}
-                                  style={{width: '50px', height: '50px', objectFit: 'cover', borderRadius: '5px'}}
-                                />
-                                <div>
-                                  <div style={{color: '#d4af37', fontWeight: '600', marginBottom: '5px'}}>
-                                    {reqItem.item.name} x{reqItem.quantity_required}
-                                  </div>
-                                  <div style={{fontSize: '0.85rem', color: '#cbd5e0'}}>
-                                    Reward: ${reqItem.reward_cash.toLocaleString()}
-                                    {reqItem.reward_item_id && ` + ${reqItem.reward_item_quantity}x ${reqItem.reward_item?.name || 'Item'}`}
-                                  </div>
-                                </div>
-                              </div>
-                              <button 
-                                onClick={() => removeRequiredItem(reqItem.id)}
-                                style={{
-                                  background: '#dc2626',
-                                  border: 'none',
-                                  padding: '8px 12px',
-                                  borderRadius: '5px',
-                                  color: 'white',
-                                  cursor: 'pointer',
-                                  fontSize: '0.85rem'
-                                }}
-                              >
-                                Remove
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Add New Required Item */}
-                      {editingBusiness && (
-                        <div style={{background: 'rgba(212,175,55,0.1)', padding: '15px', borderRadius: '8px'}}>
-                          <h4 style={{color: '#d4af37', fontSize: '0.95rem', marginBottom: '15px'}}>Add New Item:</h4>
-                          <div className="form-grid">
-                            <div className="form-group">
-                              <label>Item</label>
-                              <select
-                                value={newRequiredItem.item_id}
-                                onChange={(e) => setNewRequiredItem({...newRequiredItem, item_id: e.target.value})}
-                              >
-                                <option value="">Select Item...</option>
-                                {availableItems.map(item => (
-                                  <option key={item.id} value={item.id}>
-                                    {item.name} ({item.type})
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="form-group">
-                              <label>Quantity Required</label>
-                              <input
-                                type="number"
-                                value={newRequiredItem.quantity_required}
-                                onChange={(e) => setNewRequiredItem({...newRequiredItem, quantity_required: parseInt(e.target.value)})}
-                                min="1"
-                              />
-                            </div>
-
-                            <div className="form-group">
-                              <label>Cash Reward ($)</label>
-                              <input
-                                type="number"
-                                value={newRequiredItem.reward_cash}
-                                onChange={(e) => setNewRequiredItem({...newRequiredItem, reward_cash: parseInt(e.target.value)})}
-                                min="0"
-                              />
-                            </div>
-
-                            <div className="form-group">
-                              <label>Reward Item (Optional)</label>
-                              <select
-                                value={newRequiredItem.reward_item_id || ''}
-                                onChange={(e) => setNewRequiredItem({...newRequiredItem, reward_item_id: e.target.value || null})}
-                              >
-                                <option value="">None</option>
-                                {availableItems.map(item => (
-                                  <option key={item.id} value={item.id}>
-                                    {item.name}
-                                  </option>
-                                ))}
-                              </select>
-                            </div>
-
-                            <div className="form-group">
-                              <label>Item Quantity</label>
-                              <input
-                                type="number"
-                                value={newRequiredItem.reward_item_quantity}
-                                onChange={(e) => setNewRequiredItem({...newRequiredItem, reward_item_quantity: parseInt(e.target.value)})}
-                                min="1"
-                              />
-                            </div>
-
-                            <div className="form-group" style={{display: 'flex', alignItems: 'flex-end'}}>
-                              <button 
-                                onClick={addRequiredItem}
-                                disabled={!newRequiredItem.item_id}
-                                style={{
-                                  background: '#16a34a',
-                                  border: 'none',
-                                  padding: '10px 20px',
-                                  borderRadius: '5px',
-                                  color: 'white',
-                                  cursor: newRequiredItem.item_id ? 'pointer' : 'not-allowed',
-                                  opacity: newRequiredItem.item_id ? 1 : 0.5,
-                                  width: '100%'
-                                }}
-                              >
-                                ➕ Add Item
-                              </button>
-                            </div>
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                      <span>🎒 Item Reward</span>
+                    </label>
                   </div>
+                </FormField>
+
+                {businessFormData.reward_type === 'cash' ? (
+                  <StatField icon="💎" label="Cash Profit">
+                    <input
+                      type="number"
+                      value={businessFormData.profit}
+                      onChange={(e) => setBusinessFormData({...businessFormData, profit: parseInt(e.target.value) || 0})}
+                      min="0"
+                    />
+                  </StatField>
+                ) : (
+                  <FormRow columns={2}>
+                    <FormField label="Item Reward" icon="🎁">
+                      <select
+                        value={businessFormData.reward_item_id || ''}
+                        onChange={(e) => setBusinessFormData({...businessFormData, reward_item_id: e.target.value || null})}
+                      >
+                        <option value="">Select Item...</option>
+                        {availableItems.map(item => (
+                          <option key={item.id} value={item.id}>
+                            {item.name} ({item.rarity})
+                          </option>
+                        ))}
+                      </select>
+                    </FormField>
+                    <FormField label="Quantity" icon="📦">
+                      <input
+                        type="number"
+                        value={businessFormData.reward_item_quantity}
+                        onChange={(e) => setBusinessFormData({...businessFormData, reward_item_quantity: parseInt(e.target.value) || 1})}
+                        min="1"
+                      />
+                    </FormField>
+                  </FormRow>
+                )}
+              </FormSection>
+
+              {/* Settings Section */}
+              <FormSection title="Settings" icon="⚙️" defaultExpanded={false}>
+                <ToggleField
+                  label="Business Active"
+                  icon="✅"
+                  checked={businessFormData.is_active}
+                  onChange={(checked) => setBusinessFormData({...businessFormData, is_active: checked})}
+                  hint="Visible and available to players"
+                />
+                <ToggleField
+                  label="Upgradeable"
+                  icon="📈"
+                  checked={businessFormData.is_upgradeable}
+                  onChange={(checked) => setBusinessFormData({...businessFormData, is_upgradeable: checked})}
+                  hint="Allow players to upgrade for better production"
+                />
+
+                {/* Conversion Rate for Money Laundering */}
+                {(businessFormData.name?.toLowerCase().includes('launder') || businessFormData.name?.toLowerCase().includes('wash')) && (
+                  <StatField icon="💱" label="Conversion Fee (%)" hint="Fee taken from item value (e.g., 18% = player gets 82%)">
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={businessFormData.conversion_rate ? businessFormData.conversion_rate * 100 : ''}
+                      onChange={(e) => setBusinessFormData({...businessFormData, conversion_rate: e.target.value ? parseFloat(e.target.value) / 100 : null})}
+                      min="0"
+                      max="100"
+                      placeholder="18"
+                    />
+                  </StatField>
+                )}
+              </FormSection>
+
+              {/* Required Items Section - Only when editing */}
+              {editingBusiness && (
+                <FormSection 
+                  title="Required Items" 
+                  icon="📦" 
+                  badge={businessRequiredItems.length > 0 ? { text: `${businessRequiredItems.length} items`, type: 'success' } : { text: 'Optional', type: '' }}
+                  defaultExpanded={businessRequiredItems.length > 0}
+                >
+                  <p style={{ fontSize: '13px', color: 'var(--admin-text-muted)', marginBottom: '16px' }}>
+                    Add multiple items with different rewards. E.g., Car Stripping accepts: Old Car ($500), Sports Car ($2000)
+                  </p>
+
+                  {/* Existing Required Items */}
+                  {businessRequiredItems.length > 0 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px' }}>
+                      {businessRequiredItems.map(reqItem => (
+                        <InfoCard
+                          key={reqItem.id}
+                          icon={reqItem.item?.icon}
+                          title={`${reqItem.item?.name || 'Unknown'} x${reqItem.quantity_required}`}
+                          stats={[
+                            { icon: '💵', value: `$${reqItem.reward_cash?.toLocaleString() || 0}` },
+                            ...(reqItem.reward_item_id ? [{ icon: '🎁', value: `+${reqItem.reward_item_quantity}x Item` }] : [])
+                          ]}
+                          actions={
+                            <button onClick={() => removeRequiredItem(reqItem.id)}>Remove</button>
+                          }
+                        />
+                      ))}
+                    </div>
+                  )}
+
+                  <Divider label="Add New Required Item" />
+
+                  {/* Add New Required Item Form */}
+                  <FormRow columns={2}>
+                    <FormField label="Item" icon="🎁">
+                      <select
+                        value={newRequiredItem.item_id}
+                        onChange={(e) => setNewRequiredItem({...newRequiredItem, item_id: e.target.value})}
+                      >
+                        <option value="">Select Item...</option>
+                        {availableItems.map(item => (
+                          <option key={item.id} value={item.id}>
+                            {item.name} ({item.type})
+                          </option>
+                        ))}
+                      </select>
+                    </FormField>
+                    <FormField label="Qty Required" icon="📦">
+                      <input
+                        type="number"
+                        value={newRequiredItem.quantity_required}
+                        onChange={(e) => setNewRequiredItem({...newRequiredItem, quantity_required: parseInt(e.target.value) || 1})}
+                        min="1"
+                      />
+                    </FormField>
+                  </FormRow>
+                  <FormRow columns={3}>
+                    <FormField label="Cash Reward" icon="💵">
+                      <input
+                        type="number"
+                        value={newRequiredItem.reward_cash}
+                        onChange={(e) => setNewRequiredItem({...newRequiredItem, reward_cash: parseInt(e.target.value) || 0})}
+                        min="0"
+                      />
+                    </FormField>
+                    <FormField label="Bonus Item" icon="🎁">
+                      <select
+                        value={newRequiredItem.reward_item_id || ''}
+                        onChange={(e) => setNewRequiredItem({...newRequiredItem, reward_item_id: e.target.value || null})}
+                      >
+                        <option value="">None</option>
+                        {availableItems.map(item => (
+                          <option key={item.id} value={item.id}>{item.name}</option>
+                        ))}
+                      </select>
+                    </FormField>
+                    <FormField label="Bonus Qty" icon="📦">
+                      <input
+                        type="number"
+                        value={newRequiredItem.reward_item_quantity}
+                        onChange={(e) => setNewRequiredItem({...newRequiredItem, reward_item_quantity: parseInt(e.target.value) || 1})}
+                        min="1"
+                      />
+                    </FormField>
+                  </FormRow>
+                  <button 
+                    onClick={addRequiredItem}
+                    disabled={!newRequiredItem.item_id}
+                    className="btn-primary"
+                    style={{ marginTop: '12px', opacity: newRequiredItem.item_id ? 1 : 0.5 }}
+                  >
+                    + Add Required Item
+                  </button>
+                </FormSection>
+              )}
+            </FormPanel>
           </SidePanel>
 
-          {/* Item Side Panel */}
+          {/* Item Side Panel - Refactored with FormPanel System */}
           <SidePanel
             isOpen={showItemModal}
             onClose={closeItemModal}
@@ -4525,215 +4465,196 @@ export default function AdminPanel() {
               </>
             }
           >
-            <div className="form-grid">
-                    <div className="form-group full-width">
-                      <label>Item Name *</label>
-                      <input
-                        type="text"
-                        value={itemFormData.name}
-                        onChange={(e) => setItemFormData({...itemFormData, name: e.target.value})}
-                        placeholder="e.g., Desert Eagle, Riot Shield, Lucky Charm"
-                      />
-                    </div>
+            <FormPanel density="default" showDensityToggle={true}>
+              {/* Basic Info Section */}
+              <FormSection title="Basic Information" icon="🎒" defaultExpanded={true}>
+                <FormField label="Item Name" icon="📝" required fullWidth>
+                  <input
+                    type="text"
+                    value={itemFormData.name}
+                    onChange={(e) => setItemFormData({...itemFormData, name: e.target.value})}
+                    placeholder="e.g., Desert Eagle, Riot Shield"
+                  />
+                </FormField>
 
-                    <div className="form-group full-width">
-                      <label>Description</label>
-                      <textarea
-                        value={itemFormData.description}
-                        onChange={(e) => setItemFormData({...itemFormData, description: e.target.value})}
-                        placeholder="Describe what this item does..."
-                        rows="2"
-                      />
-                    </div>
+                <FormField label="Description" fullWidth>
+                  <textarea
+                    value={itemFormData.description}
+                    onChange={(e) => setItemFormData({...itemFormData, description: e.target.value})}
+                    placeholder="Describe what this item does..."
+                    rows="2"
+                  />
+                </FormField>
 
-                    <div className="form-group full-width">
-                      <label>Item Image *</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={(e) => {
-                          const file = e.target.files[0];
-                          if (file) {
-                            const reader = new FileReader();
-                            reader.onloadend = () => {
-                              setItemFormData({...itemFormData, icon: reader.result});
-                            };
-                            reader.readAsDataURL(file);
-                          }
-                        }}
-                        style={{
-                          padding: '10px',
-                          background: 'rgba(0,0,0,0.3)',
-                          border: '2px solid rgba(212, 175, 55, 0.3)',
-                          borderRadius: '8px',
-                          color: '#fff',
-                          cursor: 'pointer'
-                        }}
-                      />
-                      {itemFormData.icon && (
-                        <div style={{marginTop: '12px', textAlign: 'center'}}>
-                          <img src={itemFormData.icon} alt="Preview" style={{width: '100px', height: '100px', objectFit: 'cover', borderRadius: '12px', border: '2px solid rgba(255,255,255,0.1)'}} />
-                        </div>
-                      )}
-                    </div>
+                <FormField label="Item Image" icon="🖼️" required fullWidth hint="Upload an image for this item">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files[0];
+                      if (file) {
+                        const reader = new FileReader();
+                        reader.onloadend = () => {
+                          setItemFormData({...itemFormData, icon: reader.result});
+                        };
+                        reader.readAsDataURL(file);
+                      }
+                    }}
+                  />
+                </FormField>
+                <ImagePreview src={itemFormData.icon} size="medium" />
+              </FormSection>
 
-                    <div className="form-group">
-                      <label>Type</label>
-                      <select
-                        value={itemFormData.type}
-                        onChange={(e) => setItemFormData({...itemFormData, type: e.target.value})}
-                      >
-                        <option value="consumable">Consumable</option>
-                        <option value="equipment">Equipment</option>
-                        <option value="special">Special</option>
-                        <option value="collectible">Collectible</option>
-                        <option value="business_reward">Business Reward</option>
-                      </select>
-                    </div>
+              {/* Classification Section */}
+              <FormSection title="Classification" icon="🏷️">
+                <FormRow columns={2}>
+                  <FormField label="Type" icon="📦">
+                    <select
+                      value={itemFormData.type}
+                      onChange={(e) => setItemFormData({...itemFormData, type: e.target.value})}
+                    >
+                      <option value="consumable">Consumable</option>
+                      <option value="equipment">Equipment</option>
+                      <option value="special">Special</option>
+                      <option value="collectible">Collectible</option>
+                      <option value="business_reward">Business Reward</option>
+                    </select>
+                  </FormField>
+                  <FormField label="Rarity" icon="✨">
+                    <select
+                      value={itemFormData.rarity}
+                      onChange={(e) => setItemFormData({...itemFormData, rarity: e.target.value})}
+                    >
+                      <option value="common">Common</option>
+                      <option value="rare">Rare</option>
+                      <option value="epic">Epic</option>
+                      <option value="legendary">Legendary</option>
+                    </select>
+                  </FormField>
+                </FormRow>
+              </FormSection>
 
-                    <div className="form-group">
-                      <label>Rarity</label>
-                      <select
-                        value={itemFormData.rarity}
-                        onChange={(e) => setItemFormData({...itemFormData, rarity: e.target.value})}
-                      >
-                        <option value="common">Common</option>
-                        <option value="rare">Rare</option>
-                        <option value="epic">Epic</option>
-                        <option value="legendary">Legendary</option>
-                      </select>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Boost Type</label>
-                      <select
-                        value={itemBoostType}
-                        onChange={(e) => setItemBoostType(e.target.value)}
-                      >
-                        <option value="">None</option>
-                        <option value="power">🔫 Power</option>
-                        <option value="defense">🛡️ Defense</option>
-                        <option value="intelligence">🍀 Intelligence</option>
-                      </select>
-                    </div>
-
-                    {itemBoostType && (
-                      <>
-                        <div className="form-group">
-                          <label>Boost Amount</label>
-                          <input
-                            type="number"
-                            value={itemBoostAmount}
-                            onChange={(e) => setItemBoostAmount(parseInt(e.target.value) || 0)}
-                            placeholder="10"
-                            min="1"
-                          />
-                        </div>
-
-                        <div className="form-group">
-                          <label>Durability</label>
-                          <input
-                            type="number"
-                            value={itemMaxDurability}
-                            onChange={(e) => setItemMaxDurability(parseInt(e.target.value) || 0)}
-                            placeholder="0 = ∞"
-                            min="0"
-                          />
-                        </div>
-                      </>
-                    )}
-
-                    <div className="form-group">
-                      <label>Effect Type</label>
-                      <select
-                        value={itemEffectType}
-                        onChange={(e) => setItemEffectType(e.target.value)}
-                      >
-                        <option value="">None</option>
-                        <option value="heal">❤️ Heal HP</option>
-                        <option value="stamina">⚡ Add Stamina</option>
-                        <option value="xp_boost">⭐ XP Boost</option>
-                        <option value="cash">💰 Add Cash</option>
-                        <option value="jail_free">🔓 Jail Free</option>
-                      </select>
-                    </div>
-
-                    {itemEffectType && itemEffectType !== 'jail_free' && (
-                      <div className="form-group">
-                        <label>Effect Amount</label>
+              {/* Stat Boosts Section */}
+              <FormSection title="Stat Boosts" icon="📈" variant="highlight" defaultExpanded={!!itemBoostType}>
+                <FormRow columns={3}>
+                  <FormField label="Boost Type" icon="💪">
+                    <select
+                      value={itemBoostType}
+                      onChange={(e) => setItemBoostType(e.target.value)}
+                    >
+                      <option value="">None</option>
+                      <option value="power">🔫 Power</option>
+                      <option value="defense">🛡️ Defense</option>
+                      <option value="intelligence">🍀 Intelligence</option>
+                    </select>
+                  </FormField>
+                  {itemBoostType && (
+                    <>
+                      <FormField label="Boost Amount" icon="⬆️">
                         <input
                           type="number"
-                          value={itemEffectValue}
-                          onChange={(e) => setItemEffectValue(parseInt(e.target.value) || 0)}
-                          placeholder="50"
-                          min="0"
+                          value={itemBoostAmount}
+                          onChange={(e) => setItemBoostAmount(parseInt(e.target.value) || 0)}
+                          placeholder="10"
+                          min="1"
                         />
-                      </div>
-                    )}
-
-                    {itemEffectType === 'stamina' && (
-                      <div className="form-group">
-                        <label>⚠️ Addiction Amount</label>
+                      </FormField>
+                      <FormField label="Durability" icon="🔧" hint="0 = infinite">
                         <input
                           type="number"
-                          value={itemAddictionAmount}
-                          onChange={(e) => setItemAddictionAmount(parseInt(e.target.value) || 0)}
-                          placeholder="0 = no addiction"
+                          value={itemMaxDurability}
+                          onChange={(e) => setItemMaxDurability(parseInt(e.target.value) || 0)}
+                          placeholder="0"
                           min="0"
                         />
-                      </div>
-                    )}
+                      </FormField>
+                    </>
+                  )}
+                </FormRow>
+              </FormSection>
 
-                    <div className="form-group">
-                      <label>Resell Price</label>
+              {/* Effects Section */}
+              <FormSection title="Effects" icon="⚡" variant="highlight" defaultExpanded={!!itemEffectType}>
+                <FormRow columns={2}>
+                  <FormField label="Effect Type" icon="🎯">
+                    <select
+                      value={itemEffectType}
+                      onChange={(e) => setItemEffectType(e.target.value)}
+                    >
+                      <option value="">None</option>
+                      <option value="heal">❤️ Heal HP</option>
+                      <option value="stamina">⚡ Add Stamina</option>
+                      <option value="xp_boost">⭐ XP Boost</option>
+                      <option value="cash">💰 Add Cash</option>
+                      <option value="jail_free">🔓 Jail Free</option>
+                    </select>
+                  </FormField>
+                  {itemEffectType && itemEffectType !== 'jail_free' && (
+                    <FormField label="Effect Amount" icon="📊">
                       <input
                         type="number"
-                        value={itemResellPrice}
-                        onChange={(e) => setItemResellPrice(parseInt(e.target.value) || 0)}
-                        placeholder="0 = can't sell"
+                        value={itemEffectValue}
+                        onChange={(e) => setItemEffectValue(parseInt(e.target.value) || 0)}
+                        placeholder="50"
                         min="0"
                       />
-                    </div>
+                    </FormField>
+                  )}
+                </FormRow>
+                {itemEffectType === 'stamina' && (
+                  <StatField icon="⚠️" label="Addiction Amount" hint="How much addiction this item causes">
+                    <input
+                      type="number"
+                      value={itemAddictionAmount}
+                      onChange={(e) => setItemAddictionAmount(parseInt(e.target.value) || 0)}
+                      placeholder="0"
+                      min="0"
+                    />
+                  </StatField>
+                )}
+              </FormSection>
 
-                    <div className="form-group">
-                      <label style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'}}>
-                        <input
-                          type="checkbox"
-                          checked={itemFormData.tradeable}
-                          onChange={(e) => setItemFormData({...itemFormData, tradeable: e.target.checked})}
-                          style={{width: 'auto', cursor: 'pointer'}}
-                        />
-                        <span>Tradeable</span>
-                      </label>
-                    </div>
+              {/* Economy Section */}
+              <FormSection title="Economy" icon="💰">
+                <StatField icon="💵" label="Resell Price" hint="0 = cannot be sold">
+                  <input
+                    type="number"
+                    value={itemResellPrice}
+                    onChange={(e) => setItemResellPrice(parseInt(e.target.value) || 0)}
+                    placeholder="0"
+                    min="0"
+                  />
+                </StatField>
+              </FormSection>
 
-                    <div className="form-group">
-                      <label style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'}}>
-                        <input
-                          type="checkbox"
-                          checked={itemSellableOnStreets}
-                          onChange={(e) => setItemSellableOnStreets(e.target.checked)}
-                          style={{width: 'auto', cursor: 'pointer'}}
-                        />
-                        <span>🏙️ Sellable on Streets</span>
-                      </label>
-                    </div>
-
-                    <div className="form-group">
-                      <label style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'}}>
-                        <input
-                          type="checkbox"
-                          checked={itemSellableAtDocks}
-                          onChange={(e) => setItemSellableAtDocks(e.target.checked)}
-                          style={{width: 'auto', cursor: 'pointer'}}
-                        />
-                        <span>⚓ Sellable at Docks</span>
-                      </label>
-                    </div>
-                  </div>
+              {/* Trading Options Section */}
+              <FormSection title="Trading Options" icon="🔄" defaultExpanded={false}>
+                <ToggleField
+                  label="Tradeable"
+                  icon="🤝"
+                  checked={itemFormData.tradeable}
+                  onChange={(checked) => setItemFormData({...itemFormData, tradeable: checked})}
+                  hint="Can be traded between players"
+                />
+                <ToggleField
+                  label="Sellable on Streets"
+                  icon="🏙️"
+                  checked={itemSellableOnStreets}
+                  onChange={setItemSellableOnStreets}
+                  hint="Can be sold to NPCs on the streets"
+                />
+                <ToggleField
+                  label="Sellable at Docks"
+                  icon="⚓"
+                  checked={itemSellableAtDocks}
+                  onChange={setItemSellableAtDocks}
+                  hint="Can be sold to boats at the docks"
+                />
+              </FormSection>
+            </FormPanel>
           </SidePanel>
 
-          {/* Store Item Side Panel */}
+          {/* Store Item Side Panel - Refactored with FormPanel System */}
           <SidePanel
             isOpen={showStoreModal}
             onClose={closeStoreModal}
@@ -4748,93 +4669,105 @@ export default function AdminPanel() {
               </>
             }
           >
-            <div className="form-grid">
-                    <div className="form-group full-width">
-                      <label>Select Item *</label>
-                      <select
-                        value={storeFormData.item_id}
-                        onChange={(e) => setStoreFormData({...storeFormData, item_id: e.target.value})}
-                      >
-                        <option value="">Choose an item...</option>
-                        {items.map(item => (
-                          <option key={item.id} value={item.id}>
-                            {item.name} ({item.type})
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+            <FormPanel>
+              {/* Quick Stats Overview */}
+              <QuickStats stats={[
+                { label: 'Price', value: `$${storeFormData.price?.toLocaleString() || 0}`, icon: '💰' },
+                { label: 'Stock', value: storeFormData.stock_quantity || '∞', icon: '📦' },
+                { label: 'Category', value: storeFormData.category || 'None', icon: '🏷️' },
+                { label: 'Status', value: storeFormData.is_active ? 'Active' : 'Inactive', icon: storeFormData.is_active ? '✅' : '❌' }
+              ]} />
 
-                    <div className="form-group">
-                      <label>Category *</label>
-                      <select
-                        value={storeFormData.category}
-                        onChange={(e) => setStoreFormData({...storeFormData, category: e.target.value})}
-                      >
-                        <option value="weapons">⚔️ Weapons</option>
-                        <option value="gear">🛡️ Gear</option>
-                        <option value="healing">💊 Healing</option>
-                        <option value="valuable">💎 Valuable</option>
-                        <option value="limited_time">⏰ Limited Time</option>
-                      </select>
-                    </div>
+              {/* Item Selection Section */}
+              <FormSection title="Item Selection" icon="🎯" badge="Required" defaultExpanded={true}>
+                <FormField label="Select Item" required hint="Choose which item to list in the store">
+                  <select
+                    value={storeFormData.item_id}
+                    onChange={(e) => setStoreFormData({...storeFormData, item_id: e.target.value})}
+                  >
+                    <option value="">Choose an item...</option>
+                    {items.map(item => (
+                      <option key={item.id} value={item.id}>
+                        {item.name} ({item.type})
+                      </option>
+                    ))}
+                  </select>
+                </FormField>
 
-                    <div className="form-group">
-                      <label>Price *</label>
-                      <input
-                        type="number"
-                        value={storeFormData.price}
-                        onChange={(e) => setStoreFormData({...storeFormData, price: parseInt(e.target.value) || 0})}
-                        placeholder="1000"
-                        min="1"
-                      />
-                    </div>
+                <FormField label="Store Category" required hint="Determines where item appears in store">
+                  <select
+                    value={storeFormData.category}
+                    onChange={(e) => setStoreFormData({...storeFormData, category: e.target.value})}
+                  >
+                    <option value="weapons">⚔️ Weapons</option>
+                    <option value="gear">🛡️ Gear</option>
+                    <option value="healing">💊 Healing</option>
+                    <option value="valuable">💎 Valuable</option>
+                    <option value="limited_time">⏰ Limited Time</option>
+                  </select>
+                </FormField>
+              </FormSection>
 
-                    <div className="form-group">
-                      <label>Stock Quantity (optional)</label>
-                      <input
-                        type="number"
-                        value={storeFormData.stock_quantity || ''}
-                        onChange={(e) => setStoreFormData({...storeFormData, stock_quantity: e.target.value ? parseInt(e.target.value) : null})}
-                        placeholder="Leave empty for unlimited"
-                        min="0"
-                      />
-                    </div>
+              {/* Pricing Section */}
+              <FormSection title="Pricing & Inventory" icon="💵" defaultExpanded={true}>
+                <StatGrid columns={2}>
+                  <StatField label="Store Price" icon="💰" hint="Cost in Monhe">
+                    <input
+                      type="number"
+                      value={storeFormData.price}
+                      onChange={(e) => setStoreFormData({...storeFormData, price: parseInt(e.target.value) || 0})}
+                      placeholder="1000"
+                      min="1"
+                    />
+                  </StatField>
 
-                    <div className="form-group">
-                      <label>Display Order</label>
-                      <input
-                        type="number"
-                        value={storeFormData.display_order}
-                        onChange={(e) => setStoreFormData({...storeFormData, display_order: parseInt(e.target.value) || 0})}
-                        placeholder="0"
-                        min="0"
-                      />
-                    </div>
+                  <StatField label="Stock Quantity" icon="📦" hint="Empty = unlimited">
+                    <input
+                      type="number"
+                      value={storeFormData.stock_quantity || ''}
+                      onChange={(e) => setStoreFormData({...storeFormData, stock_quantity: e.target.value ? parseInt(e.target.value) : null})}
+                      placeholder="∞ Unlimited"
+                      min="0"
+                    />
+                  </StatField>
+                </StatGrid>
 
-                    <div className="form-group full-width">
-                      <label>Limited Time Until (optional)</label>
-                      <input
-                        type="datetime-local"
-                        value={storeFormData.limited_time_until}
-                        onChange={(e) => setStoreFormData({...storeFormData, limited_time_until: e.target.value})}
-                      />
-                    </div>
+                <StatField label="Display Order" icon="📋" hint="Lower numbers appear first">
+                  <input
+                    type="number"
+                    value={storeFormData.display_order}
+                    onChange={(e) => setStoreFormData({...storeFormData, display_order: parseInt(e.target.value) || 0})}
+                    placeholder="0"
+                    min="0"
+                  />
+                </StatField>
+              </FormSection>
 
-                    <div className="form-group full-width">
-                      <label style={{display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer'}}>
-                        <input
-                          type="checkbox"
-                          checked={storeFormData.is_active}
-                          onChange={(e) => setStoreFormData({...storeFormData, is_active: e.target.checked})}
-                          style={{width: 'auto', cursor: 'pointer'}}
-                        />
-                        <span>Item Active in Store</span>
-                      </label>
-                    </div>
-                  </div>
+              {/* Limited Time Section */}
+              <FormSection title="Limited Time Offer" icon="⏰" defaultExpanded={false}>
+                <FormField label="Available Until" hint="Leave empty for permanent listing">
+                  <input
+                    type="datetime-local"
+                    value={storeFormData.limited_time_until}
+                    onChange={(e) => setStoreFormData({...storeFormData, limited_time_until: e.target.value})}
+                  />
+                </FormField>
+              </FormSection>
+
+              {/* Settings Section */}
+              <FormSection title="Store Settings" icon="⚙️" defaultExpanded={true}>
+                <ToggleField
+                  label="Active in Store"
+                  icon="🏪"
+                  checked={storeFormData.is_active}
+                  onChange={(checked) => setStoreFormData({...storeFormData, is_active: checked})}
+                  hint="When enabled, item is visible and purchasable"
+                />
+              </FormSection>
+            </FormPanel>
           </SidePanel>
 
-          {/* Worker Side Panel */}
+          {/* Worker Side Panel - Refactored with FormPanel System */}
           <SidePanel
             isOpen={showWorkerModal}
             onClose={closeWorkerModal}
@@ -4842,106 +4775,128 @@ export default function AdminPanel() {
             size="large"
             footer={
               <>
-                <button onClick={closeWorkerModal} className="btn-cancel">
-                  Cancel
-                </button>
+                <button onClick={closeWorkerModal} className="btn-cancel">Cancel</button>
                 <button onClick={saveWorker} className="btn-save">
                   {editingWorker ? 'Update Worker' : 'Create Worker'}
                 </button>
               </>
             }
           >
-            <div className="form-grid">
-                    <div className="form-group full-width">
-                      <label>Worker Name *</label>
-                      <input
-                        type="text"
-                        value={workerFormData.name}
-                        onChange={(e) => setWorkerFormData({...workerFormData, name: e.target.value})}
-                        placeholder="e.g., Diamond, Sapphire"
-                      />
-                    </div>
+            <FormPanel>
+              {/* Quick Stats Overview */}
+              <QuickStats stats={[
+                { label: 'Hire Cost', value: `$${workerFormData.hire_cost?.toLocaleString() || 0}`, icon: '💰' },
+                { label: 'Income/hr', value: `$${workerFormData.income_per_hour?.toLocaleString() || 0}`, icon: '💵' },
+                { label: 'Level Req', value: workerFormData.min_level_required || 1, icon: '🔓' },
+                { label: 'Rarity', value: workerFormData.rarity?.charAt(0).toUpperCase() + workerFormData.rarity?.slice(1) || 'Common', icon: '✨' }
+              ]} />
 
-                    <div className="form-group full-width">
-                      <label>Description</label>
-                      <textarea
-                        value={workerFormData.description}
-                        onChange={(e) => setWorkerFormData({...workerFormData, description: e.target.value})}
-                        placeholder="Describe this worker..."
-                        rows="3"
-                      />
-                    </div>
+              {/* Basic Information Section */}
+              <FormSection title="Worker Identity" icon="👤" badge="Required" defaultExpanded={true}>
+                <FormField label="Worker Name" required hint="Display name in the game">
+                  <input
+                    type="text"
+                    value={workerFormData.name}
+                    onChange={(e) => setWorkerFormData({...workerFormData, name: e.target.value})}
+                    placeholder="e.g., Diamond, Sapphire"
+                  />
+                </FormField>
 
-                    <div className="form-group full-width">
-                      <label>Image URL</label>
-                      <input
-                        type="text"
-                        value={workerFormData.image_url}
-                        onChange={(e) => setWorkerFormData({...workerFormData, image_url: e.target.value})}
-                        placeholder="https://images.unsplash.com/..."
-                      />
-                      {workerFormData.image_url && (
-                        <div className="image-preview">
-                          <img src={workerFormData.image_url} alt="Preview" />
-                        </div>
-                      )}
-                    </div>
+                <FormField label="Description" hint="Background or personality">
+                  <textarea
+                    value={workerFormData.description}
+                    onChange={(e) => setWorkerFormData({...workerFormData, description: e.target.value})}
+                    placeholder="Describe this worker..."
+                    rows="3"
+                  />
+                </FormField>
 
-                    <div className="form-group">
-                      <label>Hire Cost ($)</label>
-                      <input
-                        type="number"
-                        value={workerFormData.hire_cost}
-                        onChange={(e) => setWorkerFormData({...workerFormData, hire_cost: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                    </div>
+                <FormField label="Image URL" hint="Worker portrait/avatar">
+                  <input
+                    type="text"
+                    value={workerFormData.image_url}
+                    onChange={(e) => setWorkerFormData({...workerFormData, image_url: e.target.value})}
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                </FormField>
+                {workerFormData.image_url && (
+                  <ImagePreview src={workerFormData.image_url} alt={workerFormData.name || 'Worker'} />
+                )}
+              </FormSection>
 
-                    <div className="form-group">
-                      <label>Income Per Hour ($)</label>
-                      <input
-                        type="number"
-                        value={workerFormData.income_per_hour}
-                        onChange={(e) => setWorkerFormData({...workerFormData, income_per_hour: parseInt(e.target.value)})}
-                        min="0"
-                      />
-                    </div>
+              {/* Economics Section */}
+              <FormSection title="Economics" icon="💰" defaultExpanded={true}>
+                <StatGrid columns={2}>
+                  <StatField label="Hire Cost" icon="💵" hint="One-time purchase price">
+                    <input
+                      type="number"
+                      value={workerFormData.hire_cost}
+                      onChange={(e) => setWorkerFormData({...workerFormData, hire_cost: parseInt(e.target.value)})}
+                      min="0"
+                      placeholder="50000"
+                    />
+                  </StatField>
 
-                    <div className="form-group">
-                      <label>🔓 Unlock Level</label>
-                      <input
-                        type="number"
-                        value={workerFormData.min_level_required}
-                        onChange={(e) => setWorkerFormData({...workerFormData, min_level_required: parseInt(e.target.value)})}
-                        min="1"
-                        placeholder="Level required to hire"
-                      />
-                    </div>
+                  <StatField label="Income Per Hour" icon="⏰" hint="Passive earnings rate">
+                    <input
+                      type="number"
+                      value={workerFormData.income_per_hour}
+                      onChange={(e) => setWorkerFormData({...workerFormData, income_per_hour: parseInt(e.target.value)})}
+                      min="0"
+                      placeholder="500"
+                    />
+                  </StatField>
+                </StatGrid>
 
-                    <div className="form-group">
-                      <label>Rarity</label>
-                      <select
-                        value={workerFormData.rarity}
-                        onChange={(e) => setWorkerFormData({...workerFormData, rarity: e.target.value})}
-                      >
-                        <option value="common">Common</option>
-                        <option value="rare">Rare</option>
-                        <option value="epic">Epic</option>
-                        <option value="legendary">Legendary</option>
-                      </select>
-                    </div>
+                {workerFormData.hire_cost > 0 && workerFormData.income_per_hour > 0 && (
+                  <InfoCard
+                    icon="📊"
+                    title="ROI Calculator"
+                    value={`${Math.ceil(workerFormData.hire_cost / workerFormData.income_per_hour)} hours`}
+                    subtitle="Time to break even"
+                    variant="highlight"
+                  />
+                )}
+              </FormSection>
 
-                    <div className="form-group checkbox-group">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={workerFormData.is_active}
-                          onChange={(e) => setWorkerFormData({...workerFormData, is_active: e.target.checked})}
-                        />
-                        <span>Active (visible to players)</span>
-                      </label>
-                    </div>
-                  </div>
+              {/* Requirements Section */}
+              <FormSection title="Requirements & Rarity" icon="🔒" defaultExpanded={true}>
+                <StatGrid columns={2}>
+                  <StatField label="Unlock Level" icon="🔓" hint="Minimum player level">
+                    <input
+                      type="number"
+                      value={workerFormData.min_level_required}
+                      onChange={(e) => setWorkerFormData({...workerFormData, min_level_required: parseInt(e.target.value)})}
+                      min="1"
+                      placeholder="1"
+                    />
+                  </StatField>
+
+                  <StatField label="Rarity Tier" icon="✨" hint="Affects visibility & appeal">
+                    <select
+                      value={workerFormData.rarity}
+                      onChange={(e) => setWorkerFormData({...workerFormData, rarity: e.target.value})}
+                    >
+                      <option value="common">⚪ Common</option>
+                      <option value="rare">🔵 Rare</option>
+                      <option value="epic">🟣 Epic</option>
+                      <option value="legendary">🟡 Legendary</option>
+                    </select>
+                  </StatField>
+                </StatGrid>
+              </FormSection>
+
+              {/* Status Section */}
+              <FormSection title="Status" icon="⚙️" defaultExpanded={true}>
+                <ToggleField
+                  label="Active"
+                  icon="👁️"
+                  checked={workerFormData.is_active}
+                  onChange={(checked) => setWorkerFormData({...workerFormData, is_active: checked})}
+                  hint="When enabled, worker is visible and hireable by players"
+                />
+              </FormSection>
+            </FormPanel>
           </SidePanel>
 
           {/* Boat Side Panel */}
