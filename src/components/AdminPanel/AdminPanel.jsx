@@ -18,6 +18,9 @@ import {
   ToolbarGroup,
   ToolbarButton,
   ToolbarSearch,
+  MasterDetail,
+  DetailSection,
+  DetailField,
 } from './components';
 
 // Valid tab IDs for URL deep linking
@@ -36,6 +39,8 @@ export default function AdminPanel() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [editingUser, setEditingUser] = useState(null);
+  const [userSearch, setUserSearch] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState(null);
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -2736,233 +2741,250 @@ export default function AdminPanel() {
             />
           </StatsGrid>
 
-      <div className="users-table-container">
-        <table className="users-table">
-          <thead>
-            <tr>
-              <th>Email</th>
-              <th>Provider</th>
-              <th>Role</th>
-              <th>Status</th>
-              <th>Access Expires</th>
-              <th>Created</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {users
-              .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
-              .map(user => (
-              <tr key={user.id} className={!user.is_active ? 'inactive-user' : ''}>
-                <td>{user.email}</td>
-                <td>
-                  <div className="provider-info">
-                    <span className={`provider-badge provider-${user.provider?.toLowerCase()}`}>
-                      {user.provider || 'Email'}
-                    </span>
-                    {user.provider_username && (
-                      <span className="provider-username">@{user.provider_username}</span>
-                    )}
-                  </div>
-                </td>
-                <td>
-                  <div className="user-roles-container">
-                    {(user.roles || []).map((roleObj, idx) => (
-                      <span key={idx} className={`role-badge role-${roleObj.role}`}>
-                        {roleObj.role}
-                      </span>
-                    ))}
-                  </div>
-                </td>
-                <td>
-                  <div className={`status-dot ${user.is_active ? 'active' : 'inactive'}`} 
-                       title={user.is_active ? 'Active' : 'Inactive'}>
-                  </div>
-                </td>
-                <td>
-                  {user.roles?.some(r => r.access_expires_at) ? (
-                    <div className="expiry-dates-container">
-                      {user.roles.filter(r => r.access_expires_at).map((roleObj, idx) => (
-                        <span key={idx} className="expiry-date">
-                          {roleObj.role}: {new Date(roleObj.access_expires_at).toLocaleDateString()}
-                          {new Date(roleObj.access_expires_at) < new Date() && ' (Expired)'}
-                        </span>
-                      ))}
-                    </div>
-                  ) : (
-                    <span className="no-expiry">No Limit</span>
-                  )}
-                </td>
-                <td>{new Date(user.created_at).toLocaleDateString()}</td>
-                <td>
-                  <div className="action-buttons">
-                    <button 
-                      onClick={() => openEditModal(user)} 
-                      className="btn-edit"
-                      title="Edit user"
-                    >
-                      ✏️
-                    </button>
-                    <ConfirmButton
-                      onConfirm={() => handleRevokeAccess(user.id)}
-                      confirmText="Revoke?"
-                      className="btn-revoke"
-                      title="Revoke access"
-                      disabled={!user.is_active}
-                      variant="warning"
-                    >
-                      🚫
-                    </ConfirmButton>
-                    <ConfirmButton
-                      onConfirm={() => handleDeleteUser(user.id)}
-                      confirmText="Delete?"
-                      className="btn-delete"
-                      title="Delete user"
-                      variant="danger"
-                    >
-                      🗑️
-                    </ConfirmButton>
-                  </div>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Pagination Controls */}
-      {users.length > usersPerPage && (
-        <div className="pagination-controls">
-          <button
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-            disabled={currentPage === 1}
-            className="pagination-btn"
+          {/* Master-Detail User Management */}
+          <MasterDetail
+            isDetailOpen={!!selectedUserId}
+            onDetailClose={() => {
+              setSelectedUserId(null);
+              setEditingUser(null);
+            }}
+            masterWidth="55%"
+            detailTitle={editingUser ? `${editingUser.email}` : 'Select a user'}
           >
-            ← Previous
-          </button>
-          <span className="pagination-info">
-            Page {currentPage} of {Math.ceil(users.length / usersPerPage)}
-          </span>
-          <button
-            onClick={() => setCurrentPage(prev => Math.min(Math.ceil(users.length / usersPerPage), prev + 1))}
-            disabled={currentPage === Math.ceil(users.length / usersPerPage)}
-            className="pagination-btn"
-          >
-            Next →
-          </button>
-        </div>
-      )}
+            {/* Master Panel - User List */}
+            <div className="user-list-master">
+              {/* Search Bar */}
+              <div className="user-search-bar">
+                <input
+                  type="text"
+                  placeholder="🔍 Search users by email, provider, or role..."
+                  value={userSearch}
+                  onChange={(e) => {
+                    setUserSearch(e.target.value);
+                    setCurrentPage(1);
+                  }}
+                  className="user-search-input"
+                />
+                {userSearch && (
+                  <button 
+                    className="clear-search-btn"
+                    onClick={() => setUserSearch('')}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
 
-      {/* Edit User Side Panel */}
-      <SidePanel
-        isOpen={!!editingUser}
-        onClose={() => setEditingUser(null)}
-        title="Manage User Roles"
-        size="large"
-        footer={
-          <button onClick={() => setEditingUser(null)} className="btn-cancel">
-            Close
-          </button>
-        }
-      >
-        {editingUser && (
-          <>
-            <div className="form-group">
-              <label>Email</label>
-              <input type="text" value={editingUser.email} disabled />
-            </div>
-
-              {/* Current Roles */}
-              <div className="form-group">
-                <label>Current Roles</label>
-                <div className="current-roles-list">
-                  {(editingUser.roles || []).map((roleObj, idx) => (
-                    <div key={idx} className="current-role-item">
-                      <span className={`role-badge role-${roleObj.role}`}>
-                        {roleObj.role}
-                      </span>
-                      {roleObj.access_expires_at && (
-                        <span className="role-expiry">
-                          Expires: {new Date(roleObj.access_expires_at).toLocaleDateString()}
-                        </span>
-                      )}
-                      <ConfirmButton
-                        onConfirm={() => handleRemoveRole(roleObj.role)}
-                        confirmText="Remove?"
-                        className="btn-remove-role"
-                        title="Remove role"
-                        variant="danger"
-                      >
-                        ✕
-                      </ConfirmButton>
+              {/* User List */}
+              <div className="user-list-items">
+                {users
+                  .filter(user => {
+                    if (!userSearch) return true;
+                    const search = userSearch.toLowerCase();
+                    return (
+                      user.email?.toLowerCase().includes(search) ||
+                      user.provider?.toLowerCase().includes(search) ||
+                      user.provider_username?.toLowerCase().includes(search) ||
+                      user.roles?.some(r => r.role.toLowerCase().includes(search))
+                    );
+                  })
+                  .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
+                  .map(user => (
+                    <div 
+                      key={user.id} 
+                      className={`user-list-item ${selectedUserId === user.id ? 'selected' : ''} ${!user.is_active ? 'inactive' : ''}`}
+                      onClick={() => {
+                        setSelectedUserId(user.id);
+                        openEditModal(user);
+                      }}
+                    >
+                      <div className="user-list-avatar">
+                        {user.email?.[0]?.toUpperCase() || '?'}
+                      </div>
+                      <div className="user-list-info">
+                        <div className="user-list-email">{user.email}</div>
+                        <div className="user-list-meta">
+                          <span className={`provider-badge provider-${user.provider?.toLowerCase()}`}>
+                            {user.provider || 'Email'}
+                          </span>
+                          {user.roles?.map((roleObj, idx) => (
+                            <span key={idx} className={`role-badge-small role-${roleObj.role}`}>
+                              {roleObj.role}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="user-list-status">
+                        <div className={`status-indicator ${user.is_active ? 'active' : 'inactive'}`} />
+                      </div>
                     </div>
                   ))}
-                  {(!editingUser.roles || editingUser.roles.length === 0) && (
-                    <span className="no-roles">No roles assigned</span>
-                  )}
-                </div>
               </div>
 
-              {/* Add New Role */}
-              <div className="form-group add-role-section">
-                <label>Add New Role</label>
-                <select 
-                  value={editingUser.newRole}
-                  onChange={(e) => setEditingUser({...editingUser, newRole: e.target.value, newRoleModeratorPermissions: {}})}
-                >
-                  <option value="">-- Select Role --</option>
-                  <option value="user">User (No Overlay Access)</option>
-                  <option value="premium">Premium (Overlay Only)</option>
-                  <option value="slot_modder">Slot Modder (Slot Management)</option>
-                  <option value="moderator">Moderator (Overlay + Custom Admin)</option>
-                  <option value="admin">Admin (Full Access)</option>
-                </select>
-              </div>
-
-              {/* Moderator Permissions for new moderator role */}
-              {editingUser.newRole === 'moderator' && (
-                <div className="form-group moderator-permissions">
-                  <label>Moderator Permissions</label>
-                  <div className="permissions-grid">
-                    {Object.entries(MODERATOR_PERMISSIONS).map(([key, description]) => (
-                      <label key={key} className="permission-checkbox">
-                        <input
-                          type="checkbox"
-                          checked={!!editingUser.newRoleModeratorPermissions[key]}
-                          onChange={() => toggleModeratorPermission(key)}
-                        />
-                        <div className="permission-info">
-                          <span className="permission-name">{key.replace(/_/g, ' ').toUpperCase()}</span>
-                          <span className="permission-desc">{description}</span>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
+              {/* Pagination */}
+              {users.filter(user => {
+                if (!userSearch) return true;
+                const search = userSearch.toLowerCase();
+                return (
+                  user.email?.toLowerCase().includes(search) ||
+                  user.provider?.toLowerCase().includes(search) ||
+                  user.roles?.some(r => r.role.toLowerCase().includes(search))
+                );
+              }).length > usersPerPage && (
+                <div className="user-list-pagination">
+                  <button
+                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                    disabled={currentPage === 1}
+                    className="pagination-btn-small"
+                  >
+                    ←
+                  </button>
+                  <span className="pagination-info-small">
+                    {currentPage} / {Math.ceil(users.filter(u => !userSearch || u.email?.toLowerCase().includes(userSearch.toLowerCase())).length / usersPerPage)}
+                  </span>
+                  <button
+                    onClick={() => setCurrentPage(prev => prev + 1)}
+                    disabled={currentPage >= Math.ceil(users.length / usersPerPage)}
+                    className="pagination-btn-small"
+                  >
+                    →
+                  </button>
                 </div>
               )}
+            </div>
 
-              {editingUser.newRole && (
-                <div className="form-group">
-                  <label>Access Duration (days)</label>
-                  <input 
-                    type="number" 
-                    placeholder="Leave empty for unlimited"
-                    value={editingUser.newRoleExpiryDays}
-                    onChange={(e) => setEditingUser({...editingUser, newRoleExpiryDays: e.target.value})}
-                    min="0"
+            {/* Detail Panel - User Details */}
+            {editingUser ? (
+              <div className="user-detail-content">
+                <DetailSection title="User Information">
+                  <DetailField label="Email" value={editingUser.email} />
+                  <DetailField 
+                    label="Provider" 
+                    value={
+                      <span className={`provider-badge provider-${editingUser.provider?.toLowerCase()}`}>
+                        {editingUser.provider || 'Email'}
+                        {editingUser.provider_username && ` (@${editingUser.provider_username})`}
+                      </span>
+                    } 
                   />
-                  <small>Set how many days from today the access expires. Leave empty for unlimited.</small>
-                </div>
-              )}
+                  <DetailField label="Status" value={editingUser.is_active ? '✅ Active' : '❌ Inactive'} />
+                  <DetailField label="Created" value={new Date(editingUser.created_at).toLocaleString()} />
+                </DetailSection>
 
-              {editingUser.newRole && (
-                <button onClick={handleAddRole} className="btn-add-role">
-                  Add Role
-                </button>
-              )}
-          </>
-        )}
-      </SidePanel>
+                <DetailSection title="Current Roles">
+                  <div className="current-roles-grid">
+                    {(editingUser.roles || []).map((roleObj, idx) => (
+                      <div key={idx} className="role-card">
+                        <div className="role-card-header">
+                          <span className={`role-badge role-${roleObj.role}`}>
+                            {roleObj.role}
+                          </span>
+                          <ConfirmButton
+                            onConfirm={() => handleRemoveRole(roleObj.role)}
+                            confirmText="Remove?"
+                            className="btn-remove-role-small"
+                            variant="danger"
+                          >
+                            ✕
+                          </ConfirmButton>
+                        </div>
+                        {roleObj.access_expires_at && (
+                          <div className="role-card-expiry">
+                            Expires: {new Date(roleObj.access_expires_at).toLocaleDateString()}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                    {(!editingUser.roles || editingUser.roles.length === 0) && (
+                      <div className="no-roles-message">No roles assigned</div>
+                    )}
+                  </div>
+                </DetailSection>
+
+                <DetailSection title="Add New Role">
+                  <div className="add-role-form">
+                    <select 
+                      value={editingUser.newRole || ''}
+                      onChange={(e) => setEditingUser({...editingUser, newRole: e.target.value, newRoleModeratorPermissions: {}})}
+                      className="role-select"
+                    >
+                      <option value="">-- Select Role --</option>
+                      <option value="user">User (No Overlay Access)</option>
+                      <option value="premium">Premium (Overlay Only)</option>
+                      <option value="slot_modder">Slot Modder (Slot Management)</option>
+                      <option value="moderator">Moderator (Overlay + Custom Admin)</option>
+                      <option value="admin">Admin (Full Access)</option>
+                    </select>
+
+                    {editingUser.newRole === 'moderator' && (
+                      <div className="moderator-permissions-inline">
+                        <label className="permissions-label">Permissions:</label>
+                        <div className="permissions-checkboxes">
+                          {Object.entries(MODERATOR_PERMISSIONS).map(([key, description]) => (
+                            <label key={key} className="permission-checkbox-inline">
+                              <input
+                                type="checkbox"
+                                checked={!!editingUser.newRoleModeratorPermissions?.[key]}
+                                onChange={() => toggleModeratorPermission(key)}
+                              />
+                              <span title={description}>{key.replace(/_/g, ' ')}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    {editingUser.newRole && (
+                      <>
+                        <input 
+                          type="number" 
+                          placeholder="Days (empty = unlimited)"
+                          value={editingUser.newRoleExpiryDays || ''}
+                          onChange={(e) => setEditingUser({...editingUser, newRoleExpiryDays: e.target.value})}
+                          min="0"
+                          className="expiry-input"
+                        />
+                        <button onClick={handleAddRole} className="btn-add-role-inline">
+                          + Add Role
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </DetailSection>
+
+                <DetailSection title="Quick Actions">
+                  <div className="quick-actions-grid">
+                    <ConfirmButton
+                      onConfirm={() => handleRevokeAccess(editingUser.id)}
+                      confirmText="Revoke?"
+                      className="btn-action-revoke"
+                      disabled={!editingUser.is_active}
+                      variant="warning"
+                    >
+                      🚫 Revoke Access
+                    </ConfirmButton>
+                    <ConfirmButton
+                      onConfirm={() => {
+                        handleDeleteUser(editingUser.id);
+                        setSelectedUserId(null);
+                        setEditingUser(null);
+                      }}
+                      confirmText="DELETE?"
+                      className="btn-action-delete"
+                      variant="danger"
+                    >
+                      🗑️ Delete User
+                    </ConfirmButton>
+                  </div>
+                </DetailSection>
+              </div>
+            ) : (
+              <div className="user-detail-empty">
+                <div className="empty-state-icon">👤</div>
+                <p>Select a user from the list to view their details</p>
+              </div>
+            )}
+          </MasterDetail>
         </>
       )}
 
