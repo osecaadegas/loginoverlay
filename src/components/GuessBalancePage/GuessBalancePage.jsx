@@ -204,39 +204,15 @@ export default function GuessBalancePage() {
       return;
     }
 
-    // Check if user already voted for this type
-    if (userVotes[voteType] === slotId) {
-      // User is clicking the same slot again - remove vote
-      setVotingInProgress(true);
-      try {
-        await supabase
-          .from('guess_balance_slot_votes')
-          .delete()
-          .eq('session_id', activeSession.id)
-          .eq('user_id', user.id)
-          .eq('vote_type', voteType);
-
-        setUserVotes(prev => ({ ...prev, [voteType]: null }));
-        await loadSlotVotes(activeSession.id);
-      } catch (err) {
-        console.error('Error removing vote:', err);
-        setError('Failed to remove vote');
-      }
-      setVotingInProgress(false);
+    // Check if user already voted for this type - votes are permanent!
+    if (userVotes[voteType]) {
+      setError(`You have already cast your ${voteType} vote for this session`);
       return;
     }
 
     setVotingInProgress(true);
     try {
-      // Delete existing vote of this type first
-      await supabase
-        .from('guess_balance_slot_votes')
-        .delete()
-        .eq('session_id', activeSession.id)
-        .eq('user_id', user.id)
-        .eq('vote_type', voteType);
-
-      // Insert new vote
+      // Insert vote
       const { error } = await supabase
         .from('guess_balance_slot_votes')
         .insert({
@@ -478,18 +454,18 @@ export default function GuessBalancePage() {
                           <td className="votes-cell">
                             <div className="vote-buttons">
                               <button
-                                className={`vote-btn vote-best ${isUserBestVote ? 'voted' : ''}`}
+                                className={`vote-btn vote-best ${isUserBestVote ? 'voted' : ''} ${userVotes.best && !isUserBestVote ? 'locked' : ''}`}
                                 onClick={() => voteForSlot(slot.id, 'best')}
-                                disabled={!canVote || votingInProgress}
-                                title={canVote ? (isUserBestVote ? 'Remove Best vote' : 'Vote as Best') : 'Voting closed'}
+                                disabled={!canVote || votingInProgress || userVotes.best}
+                                title={isUserBestVote ? 'Your Best vote' : userVotes.best ? 'Already voted' : canVote ? 'Vote as Best' : 'Voting closed'}
                               >
                                 👑 {voteCounts.best > 0 && <span className="vote-count">{voteCounts.best}</span>}
                               </button>
                               <button
-                                className={`vote-btn vote-worst ${isUserWorstVote ? 'voted' : ''}`}
+                                className={`vote-btn vote-worst ${isUserWorstVote ? 'voted' : ''} ${userVotes.worst && !isUserWorstVote ? 'locked' : ''}`}
                                 onClick={() => voteForSlot(slot.id, 'worst')}
-                                disabled={!canVote || votingInProgress}
-                                title={canVote ? (isUserWorstVote ? 'Remove Worst vote' : 'Vote as Worst') : 'Voting closed'}
+                                disabled={!canVote || votingInProgress || userVotes.worst}
+                                title={isUserWorstVote ? 'Your Worst vote' : userVotes.worst ? 'Already voted' : canVote ? 'Vote as Worst' : 'Voting closed'}
                               >
                                 💩 {voteCounts.worst > 0 && <span className="vote-count">{voteCounts.worst}</span>}
                               </button>

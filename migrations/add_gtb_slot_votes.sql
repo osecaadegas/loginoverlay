@@ -40,8 +40,4 @@ CREATE POLICY "users can create votes"
     )
   );
 
--- Users can delete their own votes (to change vote)
-DROP POLICY IF EXISTS "users can delete own votes" ON guess_balance_slot_votes;
-CREATE POLICY "users can delete own votes"
-  ON guess_balance_slot_votes FOR DELETE
-  USING (auth.uid() = user_id);
+-- NO DELETE POLICY - Votes are permanent! One best and one worst per session, that's it.
