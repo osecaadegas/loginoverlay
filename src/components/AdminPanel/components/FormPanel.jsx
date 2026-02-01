@@ -316,6 +316,125 @@ export function Divider({ label }) {
   );
 }
 
+/**
+ * ControlBlock - Sticky operational inputs at top of panel
+ * CRITICAL: This is always visible and first thing users see
+ */
+export function ControlBlock({ children, title }) {
+  return (
+    <div className="control-block-v2">
+      {title && <div className="control-block-title">{title}</div>}
+      <div className="control-block-grid">
+        {children}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * ControlInput - Single input within ControlBlock
+ * Compact, inline, always editable
+ */
+export function ControlInput({ 
+  label, 
+  value, 
+  onChange, 
+  type = 'number',
+  unit = '',
+  min,
+  max,
+  step = 1,
+  icon,
+  placeholder,
+  options // For select type
+}) {
+  return (
+    <div className="control-input-v2">
+      <label className="control-input-label">
+        {icon && <span className="control-icon">{icon}</span>}
+        {label}
+        {unit && <span className="control-unit">({unit})</span>}
+      </label>
+      {type === 'select' ? (
+        <select 
+          value={value} 
+          onChange={(e) => onChange(e.target.value)}
+          className="control-select"
+        >
+          {options?.map((opt, i) => (
+            <option key={i} value={opt.value}>{opt.label}</option>
+          ))}
+        </select>
+      ) : (
+        <div className="control-input-wrapper">
+          {type === 'number' && (
+            <button 
+              type="button"
+              className="stepper-btn stepper-minus"
+              onClick={() => onChange(Math.max(min ?? -Infinity, (parseFloat(value) || 0) - step))}
+            >−</button>
+          )}
+          <input 
+            type={type}
+            value={value}
+            onChange={(e) => onChange(type === 'number' ? (parseFloat(e.target.value) || 0) : e.target.value)}
+            min={min}
+            max={max}
+            step={step}
+            placeholder={placeholder}
+            className="control-input-field"
+          />
+          {type === 'number' && (
+            <button 
+              type="button"
+              className="stepper-btn stepper-plus"
+              onClick={() => onChange(Math.min(max ?? Infinity, (parseFloat(value) || 0) + step))}
+            >+</button>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * LiveOutput - Real-time calculated values display
+ * Shows profit/ROI/rates based on inputs
+ */
+export function LiveOutput({ outputs }) {
+  return (
+    <div className="live-output-v2">
+      <div className="live-output-header">
+        <span className="live-indicator"></span>
+        <span className="live-label">Live Calculations</span>
+      </div>
+      <div className="live-output-grid">
+        {outputs.map((output, i) => (
+          <div key={i} className={`live-output-item ${output.variant || ''} ${output.highlight ? 'highlight' : ''}`}>
+            <span className="live-output-icon">{output.icon}</span>
+            <div className="live-output-content">
+              <span className="live-output-value">{output.value}</span>
+              <span className="live-output-label">{output.label}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * InputGrid - Grid layout specifically for control inputs
+ * Ensures uniform width and alignment
+ */
+export function InputGrid({ children, columns = 4 }) {
+  return (
+    <div className={`input-grid-v2 cols-${columns}`}>
+      {children}
+    </div>
+  );
+}
+
 // Export all components
 export default {
   FormPanel,
@@ -328,5 +447,9 @@ export default {
   InfoCard,
   ToggleField,
   QuickStats,
-  Divider
+  Divider,
+  ControlBlock,
+  ControlInput,
+  LiveOutput,
+  InputGrid
 };

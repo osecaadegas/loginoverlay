@@ -896,3 +896,368 @@
   font-size: var(--form-font-size);
   color: var(--admin-text-primary, #f9fafb);
 }
+
+/* =========================================
+   CONTROL BLOCK - STICKY OPERATIONAL INPUTS
+   The FIRST thing users see. Always visible.
+   ========================================= */
+.control-block-v2 {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: linear-gradient(135deg, rgba(30, 35, 45, 0.98) 0%, rgba(20, 25, 35, 0.98) 100%);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: var(--form-section-spacing);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+
+.control-block-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--admin-accent-primary, #3b82f6);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.control-block-title::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--admin-accent-primary, #3b82f6);
+  border-radius: 50%;
+  animation: pulse-dot 2s ease-in-out infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.control-block-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 12px;
+}
+
+/* ===================
+   CONTROL INPUT
+   =================== */
+.control-input-v2 {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.control-input-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--admin-text-secondary, #9ca3af);
+}
+
+.control-icon {
+  font-size: 14px;
+}
+
+.control-unit {
+  font-weight: 400;
+  color: var(--admin-text-muted, #6b7280);
+  text-transform: lowercase;
+}
+
+.control-input-wrapper {
+  display: flex;
+  align-items: stretch;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.control-input-wrapper:focus-within {
+  border-color: var(--admin-accent-primary, #3b82f6);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.control-input-field {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 12px;
+  background: transparent;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--admin-text-primary, #f9fafb);
+  text-align: center;
+}
+
+.control-input-field:focus {
+  outline: none;
+}
+
+.control-input-field::placeholder {
+  color: var(--admin-text-muted, #6b7280);
+  font-weight: 400;
+}
+
+/* Remove number input spinners */
+.control-input-field[type="number"]::-webkit-outer-spin-button,
+.control-input-field[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.control-input-field[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Stepper buttons */
+.stepper-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  padding: 0;
+  background: rgba(255, 255, 255, 0.03);
+  border: none;
+  color: var(--admin-text-secondary, #9ca3af);
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.stepper-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: var(--admin-text-primary, #f9fafb);
+}
+
+.stepper-btn:active {
+  background: var(--admin-accent-primary, #3b82f6);
+  color: white;
+}
+
+.stepper-minus {
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.stepper-plus {
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Control Select */
+.control-select {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--admin-text-primary, #f9fafb);
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.control-select:focus {
+  outline: none;
+  border-color: var(--admin-accent-primary, #3b82f6);
+}
+
+/* =========================================
+   LIVE OUTPUT - REAL-TIME CALCULATIONS
+   ========================================= */
+.live-output-v2 {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(5, 150, 105, 0.05) 100%);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: var(--form-section-spacing);
+}
+
+.live-output-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.live-indicator {
+  width: 8px;
+  height: 8px;
+  background: #10b981;
+  border-radius: 50%;
+  animation: pulse-live 1.5s ease-in-out infinite;
+  box-shadow: 0 0 8px rgba(16, 185, 129, 0.5);
+}
+
+@keyframes pulse-live {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.live-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #10b981;
+}
+
+.live-output-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 12px;
+}
+
+.live-output-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 8px;
+  transition: transform 0.15s ease;
+}
+
+.live-output-item:hover {
+  transform: translateY(-2px);
+}
+
+.live-output-item.highlight {
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.live-output-item.warning {
+  background: rgba(245, 158, 11, 0.15);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.live-output-item.danger {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.live-output-icon {
+  font-size: 20px;
+  line-height: 1;
+}
+
+.live-output-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.live-output-value {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--admin-text-primary, #f9fafb);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.live-output-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--admin-text-muted, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+/* =========================================
+   INPUT GRID - UNIFORM INPUT LAYOUT
+   ========================================= */
+.input-grid-v2 {
+  display: grid;
+  gap: 12px;
+}
+
+.input-grid-v2.cols-2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.input-grid-v2.cols-3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.input-grid-v2.cols-4 {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+@media (max-width: 600px) {
+  .input-grid-v2.cols-3,
+  .input-grid-v2.cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .control-block-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .live-output-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Compact density adjustments for control block */
+.form-panel-v2.density-compact .control-block-v2 {
+  padding: 12px;
+}
+
+.form-panel-v2.density-compact .control-input-field {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+.form-panel-v2.density-compact .stepper-btn {
+  width: 30px;
+  font-size: 16px;
+}
+
+.form-panel-v2.density-compact .live-output-v2 {
+  padding: 10px 12px;
+}
+
+.form-panel-v2.density-compact .live-output-value {
+  font-size: 14px;
+}
+
+/* Comfortable density adjustments */
+.form-panel-v2.density-comfortable .control-block-v2 {
+  padding: 20px;
+}
+
+.form-panel-v2.density-comfortable .control-input-field {
+  padding: 12px 14px;
+  font-size: 18px;
+}
+
+.form-panel-v2.density-comfortable .stepper-btn {
+  width: 42px;
+  font-size: 20px;
+}
+
+.form-panel-v2.density-comfortable .live-output-v2 {
+  padding: 18px 20px;
+}
+
+.form-panel-v2.density-comfortable .live-output-value {
+  font-size: 18px;
+}

@@ -32,6 +32,10 @@ import {
   ToggleField,
   QuickStats,
   Divider,
+  ControlBlock,
+  ControlInput,
+  LiveOutput,
+  InputGrid,
 } from './components';
 
 // Valid tab IDs for URL deep linking
@@ -3882,7 +3886,7 @@ export default function AdminPanel() {
             )}
           </div>
 
-          {/* Crime Side Panel - Refactored with FormPanel System */}
+          {/* Crime Side Panel - INPUTS-FIRST Design */}
           <SidePanel
             isOpen={showCrimeModal}
             onClose={closeCrimeModal}
@@ -3900,18 +3904,112 @@ export default function AdminPanel() {
             }
           >
             <FormPanel density="default" showDensityToggle={true}>
-              {/* Quick Stats Overview - Only show when editing */}
-              {editingCrime && (
-                <QuickStats stats={[
-                  { icon: '⭐', label: 'Min Level', value: crimeFormData.min_level_required || 1 },
-                  { icon: '💰', label: 'Reward Range', value: `$${crimeFormData.base_reward || 0}-${crimeFormData.max_reward || 0}` },
-                  { icon: '🎯', label: 'Success Rate', value: `${crimeFormData.success_rate || 0}%`, highlight: true },
-                  { icon: '⏱️', label: 'Jail Time', value: `${crimeFormData.jail_time_minutes || 0}m` },
-                ]} />
-              )}
+              {/* CONTROL BLOCK - All operational inputs FIRST (sticky) */}
+              <ControlBlock title="Core Crime Parameters">
+                <ControlInput
+                  label="Stamina Cost"
+                  icon="⚡"
+                  unit="pts"
+                  value={crimeFormData.stamina_cost || 1}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, stamina_cost: v})}
+                  min={1}
+                  max={100}
+                  step={1}
+                />
+                <ControlInput
+                  label="Base Reward"
+                  icon="💵"
+                  unit="$"
+                  value={crimeFormData.base_reward || 0}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, base_reward: v})}
+                  min={0}
+                  step={100}
+                />
+                <ControlInput
+                  label="Max Reward"
+                  icon="💎"
+                  unit="$"
+                  value={crimeFormData.max_reward || 0}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, max_reward: v})}
+                  min={0}
+                  step={100}
+                />
+                <ControlInput
+                  label="XP Reward"
+                  icon="⭐"
+                  unit="xp"
+                  value={crimeFormData.xp_reward || 0}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, xp_reward: v})}
+                  min={0}
+                  step={10}
+                />
+                <ControlInput
+                  label="Success Rate"
+                  icon="🎯"
+                  unit="%"
+                  value={crimeFormData.success_rate || 0}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, success_rate: Math.min(100, Math.max(0, v))})}
+                  min={0}
+                  max={100}
+                  step={5}
+                />
+                <ControlInput
+                  label="Jail Time"
+                  icon="⏱️"
+                  unit="min"
+                  value={crimeFormData.jail_time_minutes || 0}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, jail_time_minutes: v})}
+                  min={0}
+                  step={1}
+                />
+                <ControlInput
+                  label="HP Loss"
+                  icon="❤️"
+                  unit="hp"
+                  value={crimeFormData.hp_loss_on_fail || 0}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, hp_loss_on_fail: v})}
+                  min={0}
+                  step={5}
+                />
+                <ControlInput
+                  label="Min Level"
+                  icon="🔓"
+                  unit="lvl"
+                  value={crimeFormData.min_level_required || 1}
+                  onChange={(v) => setCrimeFormData({...crimeFormData, min_level_required: v})}
+                  min={1}
+                  step={1}
+                />
+              </ControlBlock>
 
-              {/* Basic Info Section */}
-              <FormSection title="Basic Information" icon="📝" defaultExpanded={true}>
+              {/* LIVE OUTPUT - Calculated metrics */}
+              <LiveOutput outputs={[
+                { 
+                  icon: '💰', 
+                  label: 'Avg Reward', 
+                  value: `$${Math.round(((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2).toLocaleString()}`,
+                  highlight: true
+                },
+                { 
+                  icon: '📊', 
+                  label: 'Expected Value', 
+                  value: `$${Math.round((((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2) * ((crimeFormData.success_rate || 0) / 100)).toLocaleString()}`,
+                },
+                { 
+                  icon: '⚡', 
+                  label: '$/Stamina', 
+                  value: `$${crimeFormData.stamina_cost > 0 ? Math.round((((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2) / crimeFormData.stamina_cost).toLocaleString() : 0}`,
+                },
+                { 
+                  icon: '⚠️', 
+                  label: 'Risk Level', 
+                  value: (crimeFormData.success_rate || 0) >= 70 ? 'Low' : (crimeFormData.success_rate || 0) >= 40 ? 'Medium' : 'High',
+                  variant: (crimeFormData.success_rate || 0) >= 70 ? '' : (crimeFormData.success_rate || 0) >= 40 ? 'warning' : 'danger'
+                },
+              ]} />
+
+              {/* DETAILS SECTION - Name, description, image */}
+              <FormSection title="Crime Details" icon="📝" defaultExpanded={true}>
                 <FormField label="Crime Name" icon="🔫" required fullWidth>
                   <input
                     type="text"
@@ -3939,113 +4037,6 @@ export default function AdminPanel() {
                   />
                 </FormField>
                 <ImagePreview src={crimeFormData.image_url} size="large" />
-              </FormSection>
-
-              {/* Requirements Section */}
-              <FormSection title="Requirements" icon="🔒" badge={{ text: 'Unlock', type: '' }}>
-                <StatGrid>
-                  <StatField icon="⭐" label="Min Level Required">
-                    <input
-                      type="number"
-                      value={crimeFormData.min_level_required}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, min_level_required: parseInt(e.target.value) || 1})}
-                      min="1"
-                    />
-                  </StatField>
-                  <StatField icon="⚡" label="Stamina Cost">
-                    <input
-                      type="number"
-                      value={crimeFormData.stamina_cost}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, stamina_cost: parseInt(e.target.value) || 1})}
-                      min="1"
-                    />
-                  </StatField>
-                </StatGrid>
-              </FormSection>
-
-              {/* Rewards Section */}
-              <FormSection title="Rewards" icon="💰" variant="highlight">
-                <StatGrid>
-                  <StatField 
-                    icon="💵" 
-                    label="Base Reward" 
-                    hint="Minimum cash earned on success"
-                  >
-                    <input
-                      type="number"
-                      value={crimeFormData.base_reward}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, base_reward: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                  <StatField 
-                    icon="💎" 
-                    label="Max Reward" 
-                    hint="Maximum cash earned on success"
-                  >
-                    <input
-                      type="number"
-                      value={crimeFormData.max_reward}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, max_reward: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                  <StatField 
-                    icon="⭐" 
-                    label="XP Reward" 
-                    hint="Experience points earned"
-                  >
-                    <input
-                      type="number"
-                      value={crimeFormData.xp_reward}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, xp_reward: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                </StatGrid>
-              </FormSection>
-
-              {/* Risk & Consequences Section */}
-              <FormSection title="Risk & Consequences" icon="⚠️" variant="warning">
-                <StatGrid>
-                  <StatField 
-                    icon="🎯" 
-                    label="Success Rate (%)" 
-                    hint="Dynamic: +5% per level above min, -10% per level below"
-                  >
-                    <input
-                      type="number"
-                      value={crimeFormData.success_rate}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, success_rate: parseInt(e.target.value) || 0})}
-                      min="0"
-                      max="100"
-                    />
-                  </StatField>
-                  <StatField 
-                    icon="⏱️" 
-                    label="Jail Time (min)" 
-                    hint="Increases +50% per level below requirement"
-                  >
-                    <input
-                      type="number"
-                      value={crimeFormData.jail_time_minutes}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, jail_time_minutes: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                  <StatField 
-                    icon="❤️" 
-                    label="HP Loss on Fail" 
-                    hint="Health lost when crime fails"
-                  >
-                    <input
-                      type="number"
-                      value={crimeFormData.hp_loss_on_fail}
-                      onChange={(e) => setCrimeFormData({...crimeFormData, hp_loss_on_fail: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                </StatGrid>
               </FormSection>
 
               {/* Item Drops Section - Only when editing */}
@@ -4151,18 +4142,109 @@ export default function AdminPanel() {
             }
           >
             <FormPanel density="default" showDensityToggle={true}>
-              {/* Quick Stats Overview - Only show when editing */}
-              {editingBusiness && (
-                <QuickStats stats={[
-                  { icon: '💰', label: 'Purchase', value: `$${(businessFormData.purchase_price || 0).toLocaleString()}` },
-                  { icon: '⚙️', label: 'Production', value: `$${(businessFormData.production_cost || 0).toLocaleString()}` },
-                  { icon: '📈', label: 'Profit', value: businessFormData.reward_type === 'cash' ? `$${(businessFormData.profit || 0).toLocaleString()}` : 'Items', highlight: true },
-                  { icon: '⏱️', label: 'Duration', value: `${businessFormData.duration_minutes || 0}m` },
-                ]} />
-              )}
+              {/* CONTROL BLOCK - All operational inputs FIRST (sticky) */}
+              <ControlBlock title="Core Business Parameters">
+                <ControlInput
+                  label="Purchase Price"
+                  icon="🏷️"
+                  unit="$"
+                  value={businessFormData.purchase_price || 0}
+                  onChange={(v) => setBusinessFormData({...businessFormData, purchase_price: v})}
+                  min={0}
+                  step={1000}
+                />
+                <ControlInput
+                  label="Production Cost"
+                  icon="⚙️"
+                  unit="$/run"
+                  value={businessFormData.production_cost || 0}
+                  onChange={(v) => setBusinessFormData({...businessFormData, production_cost: v})}
+                  min={0}
+                  step={100}
+                />
+                <ControlInput
+                  label="Stamina Cost"
+                  icon="⚡"
+                  unit="pts"
+                  value={businessFormData.stamina_cost || 0}
+                  onChange={(v) => setBusinessFormData({...businessFormData, stamina_cost: v})}
+                  min={0}
+                  step={1}
+                />
+                <ControlInput
+                  label="Duration"
+                  icon="⏱️"
+                  unit="min"
+                  value={businessFormData.duration_minutes || 1}
+                  onChange={(v) => setBusinessFormData({...businessFormData, duration_minutes: v})}
+                  min={1}
+                  step={5}
+                />
+                <ControlInput
+                  label="Cash Profit"
+                  icon="💰"
+                  unit="$"
+                  value={businessFormData.profit || 0}
+                  onChange={(v) => setBusinessFormData({...businessFormData, profit: v})}
+                  min={0}
+                  step={500}
+                />
+                <ControlInput
+                  label="Min Level"
+                  icon="🔓"
+                  unit="lvl"
+                  value={businessFormData.min_level_required || 1}
+                  onChange={(v) => setBusinessFormData({...businessFormData, min_level_required: v})}
+                  min={1}
+                  step={1}
+                />
+                <ControlInput
+                  label="Reward Type"
+                  icon="🎁"
+                  type="select"
+                  value={businessFormData.reward_type || 'cash'}
+                  onChange={(v) => setBusinessFormData({...businessFormData, reward_type: v})}
+                  options={[
+                    { value: 'cash', label: '💵 Cash' },
+                    { value: 'items', label: '🎒 Items' }
+                  ]}
+                />
+              </ControlBlock>
 
-              {/* Basic Info Section */}
-              <FormSection title="Basic Information" icon="💼" defaultExpanded={true}>
+              {/* LIVE OUTPUT - Calculated metrics */}
+              <LiveOutput outputs={[
+                { 
+                  icon: '💵', 
+                  label: 'Net Profit/Run', 
+                  value: `$${((businessFormData.profit || 0) - (businessFormData.production_cost || 0)).toLocaleString()}`,
+                  highlight: true,
+                  variant: ((businessFormData.profit || 0) - (businessFormData.production_cost || 0)) > 0 ? '' : 'danger'
+                },
+                { 
+                  icon: '⏰', 
+                  label: 'Profit/Hour', 
+                  value: businessFormData.duration_minutes > 0 
+                    ? `$${Math.round((((businessFormData.profit || 0) - (businessFormData.production_cost || 0)) / businessFormData.duration_minutes) * 60).toLocaleString()}/h`
+                    : '$0/h',
+                },
+                { 
+                  icon: '📊', 
+                  label: 'ROI', 
+                  value: businessFormData.purchase_price > 0 && ((businessFormData.profit || 0) - (businessFormData.production_cost || 0)) > 0
+                    ? `${Math.ceil(businessFormData.purchase_price / ((businessFormData.profit || 0) - (businessFormData.production_cost || 0)))} runs`
+                    : '∞ runs',
+                },
+                { 
+                  icon: '🕐', 
+                  label: 'Break-Even', 
+                  value: businessFormData.purchase_price > 0 && businessFormData.duration_minutes > 0 && ((businessFormData.profit || 0) - (businessFormData.production_cost || 0)) > 0
+                    ? `${Math.round((businessFormData.purchase_price / (((businessFormData.profit || 0) - (businessFormData.production_cost || 0)) / businessFormData.duration_minutes)) / 60)} hrs`
+                    : '∞',
+                },
+              ]} />
+
+              {/* DETAILS SECTION - Name, description, image */}
+              <FormSection title="Business Details" icon="💼" defaultExpanded={true}>
                 <FormField label="Business Name" icon="🏢" required fullWidth>
                   <input
                     type="text"
@@ -4181,6 +4263,15 @@ export default function AdminPanel() {
                   />
                 </FormField>
 
+                <FormField label="Unit Name" hint="e.g., grams, pills, bags">
+                  <input
+                    type="text"
+                    value={businessFormData.unit_name}
+                    onChange={(e) => setBusinessFormData({...businessFormData, unit_name: e.target.value})}
+                    placeholder="grams"
+                  />
+                </FormField>
+
                 <FormField label="Business Image" icon="🖼️" fullWidth>
                   <input
                     type="text"
@@ -4192,105 +4283,11 @@ export default function AdminPanel() {
                 <ImagePreview src={businessFormData.image_url} size="large" />
               </FormSection>
 
-              {/* Costs Section */}
-              <FormSection title="Costs & Requirements" icon="💵">
-                <StatGrid>
-                  <StatField icon="🏷️" label="Purchase Price" hint="One-time cost to buy the business">
-                    <input
-                      type="number"
-                      value={businessFormData.purchase_price}
-                      onChange={(e) => setBusinessFormData({...businessFormData, purchase_price: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                  <StatField icon="⚙️" label="Production Cost" hint="Cost to run production each time">
-                    <input
-                      type="number"
-                      value={businessFormData.production_cost}
-                      onChange={(e) => setBusinessFormData({...businessFormData, production_cost: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                  <StatField icon="⚡" label="Stamina Cost" hint="Stamina required to start production">
-                    <input
-                      type="number"
-                      value={businessFormData.stamina_cost}
-                      onChange={(e) => setBusinessFormData({...businessFormData, stamina_cost: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                  <StatField icon="⭐" label="Min Level">
-                    <input
-                      type="number"
-                      value={businessFormData.min_level_required}
-                      onChange={(e) => setBusinessFormData({...businessFormData, min_level_required: parseInt(e.target.value) || 1})}
-                      min="1"
-                    />
-                  </StatField>
-                </StatGrid>
-              </FormSection>
-
-              {/* Production Section */}
-              <FormSection title="Production" icon="🏭" variant="highlight">
-                <StatGrid>
-                  <StatField icon="⏱️" label="Duration (minutes)">
-                    <input
-                      type="number"
-                      value={businessFormData.duration_minutes}
-                      onChange={(e) => setBusinessFormData({...businessFormData, duration_minutes: parseInt(e.target.value) || 1})}
-                      min="1"
-                    />
-                  </StatField>
-                  <StatField icon="📦" label="Unit Name" hint="e.g., grams, pills, bags">
-                    <input
-                      type="text"
-                      value={businessFormData.unit_name}
-                      onChange={(e) => setBusinessFormData({...businessFormData, unit_name: e.target.value})}
-                      placeholder="grams"
-                    />
-                  </StatField>
-                </StatGrid>
-              </FormSection>
-
-              {/* Rewards Section */}
-              <FormSection title="Rewards" icon="💰" variant="highlight">
-                <FormField label="Reward Type" fullWidth>
-                  <div className="radio-group-v2">
-                    <label className={`radio-option-v2 ${businessFormData.reward_type === 'cash' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="reward_type"
-                        value="cash"
-                        checked={businessFormData.reward_type === 'cash'}
-                        onChange={(e) => setBusinessFormData({...businessFormData, reward_type: e.target.value})}
-                      />
-                      <span>💵 Cash Reward</span>
-                    </label>
-                    <label className={`radio-option-v2 ${businessFormData.reward_type === 'items' ? 'selected' : ''}`}>
-                      <input
-                        type="radio"
-                        name="reward_type"
-                        value="items"
-                        checked={businessFormData.reward_type === 'items'}
-                        onChange={(e) => setBusinessFormData({...businessFormData, reward_type: e.target.value})}
-                      />
-                      <span>🎒 Item Reward</span>
-                    </label>
-                  </div>
-                </FormField>
-
-                {businessFormData.reward_type === 'cash' ? (
-                  <StatField icon="💎" label="Cash Profit">
-                    <input
-                      type="number"
-                      value={businessFormData.profit}
-                      onChange={(e) => setBusinessFormData({...businessFormData, profit: parseInt(e.target.value) || 0})}
-                      min="0"
-                    />
-                  </StatField>
-                ) : (
+              {/* Item Rewards Section - Only show when reward_type is items */}
+              {businessFormData.reward_type === 'items' && (
+                <FormSection title="Item Reward" icon="🎁">
                   <FormRow columns={2}>
-                    <FormField label="Item Reward" icon="🎁">
+                    <FormField label="Reward Item" icon="🎁">
                       <select
                         value={businessFormData.reward_item_id || ''}
                         onChange={(e) => setBusinessFormData({...businessFormData, reward_item_id: e.target.value || null})}
@@ -4312,8 +4309,8 @@ export default function AdminPanel() {
                       />
                     </FormField>
                   </FormRow>
-                )}
-              </FormSection>
+                </FormSection>
+              )}
 
               {/* Settings Section */}
               <FormSection title="Settings" icon="⚙️" defaultExpanded={false}>
@@ -4334,7 +4331,7 @@ export default function AdminPanel() {
 
                 {/* Conversion Rate for Money Laundering */}
                 {(businessFormData.name?.toLowerCase().includes('launder') || businessFormData.name?.toLowerCase().includes('wash')) && (
-                  <StatField icon="💱" label="Conversion Fee (%)" hint="Fee taken from item value (e.g., 18% = player gets 82%)">
+                  <FormField label="Conversion Fee (%)" hint="Fee taken from item value (e.g., 18% = player gets 82%)">
                     <input
                       type="number"
                       step="0.01"
@@ -4344,7 +4341,7 @@ export default function AdminPanel() {
                       max="100"
                       placeholder="18"
                     />
-                  </StatField>
+                  </FormField>
                 )}
               </FormSection>
 
@@ -4448,7 +4445,7 @@ export default function AdminPanel() {
             </FormPanel>
           </SidePanel>
 
-          {/* Item Side Panel - Refactored with FormPanel System */}
+          {/* Item Side Panel - INPUTS-FIRST Design */}
           <SidePanel
             isOpen={showItemModal}
             onClose={closeItemModal}
@@ -4466,8 +4463,129 @@ export default function AdminPanel() {
             }
           >
             <FormPanel density="default" showDensityToggle={true}>
-              {/* Basic Info Section */}
-              <FormSection title="Basic Information" icon="🎒" defaultExpanded={true}>
+              {/* CONTROL BLOCK - All operational inputs FIRST (sticky) */}
+              <ControlBlock title="Core Item Parameters">
+                <ControlInput
+                  label="Type"
+                  icon="📦"
+                  type="select"
+                  value={itemFormData.type || 'consumable'}
+                  onChange={(v) => setItemFormData({...itemFormData, type: v})}
+                  options={[
+                    { value: 'consumable', label: '🍔 Consumable' },
+                    { value: 'equipment', label: '⚔️ Equipment' },
+                    { value: 'special', label: '✨ Special' },
+                    { value: 'collectible', label: '🏆 Collectible' },
+                    { value: 'business_reward', label: '🏭 Business Reward' }
+                  ]}
+                />
+                <ControlInput
+                  label="Rarity"
+                  icon="✨"
+                  type="select"
+                  value={itemFormData.rarity || 'common'}
+                  onChange={(v) => setItemFormData({...itemFormData, rarity: v})}
+                  options={[
+                    { value: 'common', label: '⚪ Common' },
+                    { value: 'rare', label: '🔵 Rare' },
+                    { value: 'epic', label: '🟣 Epic' },
+                    { value: 'legendary', label: '🟡 Legendary' }
+                  ]}
+                />
+                <ControlInput
+                  label="Boost Type"
+                  icon="💪"
+                  type="select"
+                  value={itemBoostType || ''}
+                  onChange={(v) => setItemBoostType(v)}
+                  options={[
+                    { value: '', label: 'None' },
+                    { value: 'power', label: '🔫 Power' },
+                    { value: 'defense', label: '🛡️ Defense' },
+                    { value: 'intelligence', label: '🍀 Intelligence' }
+                  ]}
+                />
+                <ControlInput
+                  label="Boost Amount"
+                  icon="⬆️"
+                  unit="pts"
+                  value={itemBoostAmount || 0}
+                  onChange={(v) => setItemBoostAmount(v)}
+                  min={0}
+                  step={5}
+                />
+                <ControlInput
+                  label="Effect Type"
+                  icon="⚡"
+                  type="select"
+                  value={itemEffectType || ''}
+                  onChange={(v) => setItemEffectType(v)}
+                  options={[
+                    { value: '', label: 'None' },
+                    { value: 'heal', label: '❤️ Heal HP' },
+                    { value: 'stamina', label: '⚡ Add Stamina' },
+                    { value: 'xp_boost', label: '⭐ XP Boost' },
+                    { value: 'cash', label: '💰 Add Cash' },
+                    { value: 'jail_free', label: '🔓 Jail Free' }
+                  ]}
+                />
+                <ControlInput
+                  label="Effect Amount"
+                  icon="📊"
+                  unit="pts"
+                  value={itemEffectValue || 0}
+                  onChange={(v) => setItemEffectValue(v)}
+                  min={0}
+                  step={10}
+                />
+                <ControlInput
+                  label="Resell Price"
+                  icon="💵"
+                  unit="$"
+                  value={itemResellPrice || 0}
+                  onChange={(v) => setItemResellPrice(v)}
+                  min={0}
+                  step={100}
+                />
+                <ControlInput
+                  label="Durability"
+                  icon="🔧"
+                  unit="uses"
+                  value={itemMaxDurability || 0}
+                  onChange={(v) => setItemMaxDurability(v)}
+                  min={0}
+                  step={10}
+                  placeholder="0 = ∞"
+                />
+              </ControlBlock>
+
+              {/* LIVE OUTPUT - Calculated metrics */}
+              <LiveOutput outputs={[
+                { 
+                  icon: itemFormData.type === 'equipment' ? '⚔️' : '🍔', 
+                  label: 'Type', 
+                  value: itemFormData.type?.charAt(0).toUpperCase() + itemFormData.type?.slice(1) || 'None'
+                },
+                { 
+                  icon: itemFormData.rarity === 'legendary' ? '🟡' : itemFormData.rarity === 'epic' ? '🟣' : itemFormData.rarity === 'rare' ? '🔵' : '⚪', 
+                  label: 'Rarity', 
+                  value: itemFormData.rarity?.charAt(0).toUpperCase() + itemFormData.rarity?.slice(1) || 'Common',
+                  highlight: itemFormData.rarity === 'legendary' || itemFormData.rarity === 'epic'
+                },
+                { 
+                  icon: '💪', 
+                  label: 'Stats', 
+                  value: itemBoostType ? `+${itemBoostAmount} ${itemBoostType}` : 'No boost'
+                },
+                { 
+                  icon: '💵', 
+                  label: 'Value', 
+                  value: itemResellPrice > 0 ? `$${itemResellPrice.toLocaleString()}` : 'Not sellable'
+                },
+              ]} />
+
+              {/* DETAILS SECTION - Name, description, image */}
+              <FormSection title="Item Details" icon="🎒" defaultExpanded={true}>
                 <FormField label="Item Name" icon="📝" required fullWidth>
                   <input
                     type="text"
@@ -4505,104 +4623,10 @@ export default function AdminPanel() {
                 <ImagePreview src={itemFormData.icon} size="medium" />
               </FormSection>
 
-              {/* Classification Section */}
-              <FormSection title="Classification" icon="🏷️">
-                <FormRow columns={2}>
-                  <FormField label="Type" icon="📦">
-                    <select
-                      value={itemFormData.type}
-                      onChange={(e) => setItemFormData({...itemFormData, type: e.target.value})}
-                    >
-                      <option value="consumable">Consumable</option>
-                      <option value="equipment">Equipment</option>
-                      <option value="special">Special</option>
-                      <option value="collectible">Collectible</option>
-                      <option value="business_reward">Business Reward</option>
-                    </select>
-                  </FormField>
-                  <FormField label="Rarity" icon="✨">
-                    <select
-                      value={itemFormData.rarity}
-                      onChange={(e) => setItemFormData({...itemFormData, rarity: e.target.value})}
-                    >
-                      <option value="common">Common</option>
-                      <option value="rare">Rare</option>
-                      <option value="epic">Epic</option>
-                      <option value="legendary">Legendary</option>
-                    </select>
-                  </FormField>
-                </FormRow>
-              </FormSection>
-
-              {/* Stat Boosts Section */}
-              <FormSection title="Stat Boosts" icon="📈" variant="highlight" defaultExpanded={!!itemBoostType}>
-                <FormRow columns={3}>
-                  <FormField label="Boost Type" icon="💪">
-                    <select
-                      value={itemBoostType}
-                      onChange={(e) => setItemBoostType(e.target.value)}
-                    >
-                      <option value="">None</option>
-                      <option value="power">🔫 Power</option>
-                      <option value="defense">🛡️ Defense</option>
-                      <option value="intelligence">🍀 Intelligence</option>
-                    </select>
-                  </FormField>
-                  {itemBoostType && (
-                    <>
-                      <FormField label="Boost Amount" icon="⬆️">
-                        <input
-                          type="number"
-                          value={itemBoostAmount}
-                          onChange={(e) => setItemBoostAmount(parseInt(e.target.value) || 0)}
-                          placeholder="10"
-                          min="1"
-                        />
-                      </FormField>
-                      <FormField label="Durability" icon="🔧" hint="0 = infinite">
-                        <input
-                          type="number"
-                          value={itemMaxDurability}
-                          onChange={(e) => setItemMaxDurability(parseInt(e.target.value) || 0)}
-                          placeholder="0"
-                          min="0"
-                        />
-                      </FormField>
-                    </>
-                  )}
-                </FormRow>
-              </FormSection>
-
-              {/* Effects Section */}
-              <FormSection title="Effects" icon="⚡" variant="highlight" defaultExpanded={!!itemEffectType}>
-                <FormRow columns={2}>
-                  <FormField label="Effect Type" icon="🎯">
-                    <select
-                      value={itemEffectType}
-                      onChange={(e) => setItemEffectType(e.target.value)}
-                    >
-                      <option value="">None</option>
-                      <option value="heal">❤️ Heal HP</option>
-                      <option value="stamina">⚡ Add Stamina</option>
-                      <option value="xp_boost">⭐ XP Boost</option>
-                      <option value="cash">💰 Add Cash</option>
-                      <option value="jail_free">🔓 Jail Free</option>
-                    </select>
-                  </FormField>
-                  {itemEffectType && itemEffectType !== 'jail_free' && (
-                    <FormField label="Effect Amount" icon="📊">
-                      <input
-                        type="number"
-                        value={itemEffectValue}
-                        onChange={(e) => setItemEffectValue(parseInt(e.target.value) || 0)}
-                        placeholder="50"
-                        min="0"
-                      />
-                    </FormField>
-                  )}
-                </FormRow>
-                {itemEffectType === 'stamina' && (
-                  <StatField icon="⚠️" label="Addiction Amount" hint="How much addiction this item causes">
+              {/* Addiction Section - Only for stamina items */}
+              {itemEffectType === 'stamina' && (
+                <FormSection title="Addiction" icon="⚠️" variant="warning">
+                  <FormField label="Addiction Amount" hint="How much addiction this item causes (0 = none)">
                     <input
                       type="number"
                       value={itemAddictionAmount}
@@ -4610,25 +4634,12 @@ export default function AdminPanel() {
                       placeholder="0"
                       min="0"
                     />
-                  </StatField>
-                )}
-              </FormSection>
-
-              {/* Economy Section */}
-              <FormSection title="Economy" icon="💰">
-                <StatField icon="💵" label="Resell Price" hint="0 = cannot be sold">
-                  <input
-                    type="number"
-                    value={itemResellPrice}
-                    onChange={(e) => setItemResellPrice(parseInt(e.target.value) || 0)}
-                    placeholder="0"
-                    min="0"
-                  />
-                </StatField>
-              </FormSection>
+                  </FormField>
+                </FormSection>
+              )}
 
               {/* Trading Options Section */}
-              <FormSection title="Trading Options" icon="🔄" defaultExpanded={false}>
+              <FormSection title="Trading Options" icon="🔄" defaultExpanded={true}>
                 <ToggleField
                   label="Tradeable"
                   icon="🤝"
@@ -4654,7 +4665,7 @@ export default function AdminPanel() {
             </FormPanel>
           </SidePanel>
 
-          {/* Store Item Side Panel - Refactored with FormPanel System */}
+          {/* Store Item Side Panel - INPUTS-FIRST Design */}
           <SidePanel
             isOpen={showStoreModal}
             onClose={closeStoreModal}
@@ -4669,82 +4680,92 @@ export default function AdminPanel() {
               </>
             }
           >
-            <FormPanel>
-              {/* Quick Stats Overview */}
-              <QuickStats stats={[
-                { label: 'Price', value: `$${storeFormData.price?.toLocaleString() || 0}`, icon: '💰' },
-                { label: 'Stock', value: storeFormData.stock_quantity || '∞', icon: '📦' },
-                { label: 'Category', value: storeFormData.category || 'None', icon: '🏷️' },
-                { label: 'Status', value: storeFormData.is_active ? 'Active' : 'Inactive', icon: storeFormData.is_active ? '✅' : '❌' }
+            <FormPanel density="default" showDensityToggle={true}>
+              {/* CONTROL BLOCK - All operational inputs FIRST (sticky) */}
+              <ControlBlock title="Core Store Parameters">
+                <ControlInput
+                  label="Select Item"
+                  icon="🎁"
+                  type="select"
+                  value={storeFormData.item_id || ''}
+                  onChange={(v) => setStoreFormData({...storeFormData, item_id: v})}
+                  options={[
+                    { value: '', label: 'Choose item...' },
+                    ...items.map(item => ({ value: item.id, label: `${item.name} (${item.type})` }))
+                  ]}
+                />
+                <ControlInput
+                  label="Category"
+                  icon="🏷️"
+                  type="select"
+                  value={storeFormData.category || 'weapons'}
+                  onChange={(v) => setStoreFormData({...storeFormData, category: v})}
+                  options={[
+                    { value: 'weapons', label: '⚔️ Weapons' },
+                    { value: 'gear', label: '🛡️ Gear' },
+                    { value: 'healing', label: '💊 Healing' },
+                    { value: 'valuable', label: '💎 Valuable' },
+                    { value: 'limited_time', label: '⏰ Limited Time' }
+                  ]}
+                />
+                <ControlInput
+                  label="Price"
+                  icon="💰"
+                  unit="$"
+                  value={storeFormData.price || 0}
+                  onChange={(v) => setStoreFormData({...storeFormData, price: v})}
+                  min={0}
+                  step={100}
+                />
+                <ControlInput
+                  label="Stock"
+                  icon="📦"
+                  unit="qty"
+                  value={storeFormData.stock_quantity || 0}
+                  onChange={(v) => setStoreFormData({...storeFormData, stock_quantity: v || null})}
+                  min={0}
+                  step={1}
+                  placeholder="0 = ∞"
+                />
+                <ControlInput
+                  label="Display Order"
+                  icon="📋"
+                  unit="#"
+                  value={storeFormData.display_order || 0}
+                  onChange={(v) => setStoreFormData({...storeFormData, display_order: v})}
+                  min={0}
+                  step={1}
+                />
+              </ControlBlock>
+
+              {/* LIVE OUTPUT - Status summary */}
+              <LiveOutput outputs={[
+                { 
+                  icon: '💰', 
+                  label: 'Price', 
+                  value: `$${(storeFormData.price || 0).toLocaleString()}`,
+                  highlight: true
+                },
+                { 
+                  icon: '📦', 
+                  label: 'Stock', 
+                  value: storeFormData.stock_quantity ? storeFormData.stock_quantity.toString() : '∞ Unlimited'
+                },
+                { 
+                  icon: '🏷️', 
+                  label: 'Category', 
+                  value: storeFormData.category?.charAt(0).toUpperCase() + storeFormData.category?.slice(1) || 'None'
+                },
+                { 
+                  icon: storeFormData.is_active ? '✅' : '❌', 
+                  label: 'Status', 
+                  value: storeFormData.is_active ? 'Active' : 'Inactive',
+                  variant: storeFormData.is_active ? '' : 'warning'
+                },
               ]} />
 
-              {/* Item Selection Section */}
-              <FormSection title="Item Selection" icon="🎯" badge="Required" defaultExpanded={true}>
-                <FormField label="Select Item" required hint="Choose which item to list in the store">
-                  <select
-                    value={storeFormData.item_id}
-                    onChange={(e) => setStoreFormData({...storeFormData, item_id: e.target.value})}
-                  >
-                    <option value="">Choose an item...</option>
-                    {items.map(item => (
-                      <option key={item.id} value={item.id}>
-                        {item.name} ({item.type})
-                      </option>
-                    ))}
-                  </select>
-                </FormField>
-
-                <FormField label="Store Category" required hint="Determines where item appears in store">
-                  <select
-                    value={storeFormData.category}
-                    onChange={(e) => setStoreFormData({...storeFormData, category: e.target.value})}
-                  >
-                    <option value="weapons">⚔️ Weapons</option>
-                    <option value="gear">🛡️ Gear</option>
-                    <option value="healing">💊 Healing</option>
-                    <option value="valuable">💎 Valuable</option>
-                    <option value="limited_time">⏰ Limited Time</option>
-                  </select>
-                </FormField>
-              </FormSection>
-
-              {/* Pricing Section */}
-              <FormSection title="Pricing & Inventory" icon="💵" defaultExpanded={true}>
-                <StatGrid columns={2}>
-                  <StatField label="Store Price" icon="💰" hint="Cost in Monhe">
-                    <input
-                      type="number"
-                      value={storeFormData.price}
-                      onChange={(e) => setStoreFormData({...storeFormData, price: parseInt(e.target.value) || 0})}
-                      placeholder="1000"
-                      min="1"
-                    />
-                  </StatField>
-
-                  <StatField label="Stock Quantity" icon="📦" hint="Empty = unlimited">
-                    <input
-                      type="number"
-                      value={storeFormData.stock_quantity || ''}
-                      onChange={(e) => setStoreFormData({...storeFormData, stock_quantity: e.target.value ? parseInt(e.target.value) : null})}
-                      placeholder="∞ Unlimited"
-                      min="0"
-                    />
-                  </StatField>
-                </StatGrid>
-
-                <StatField label="Display Order" icon="📋" hint="Lower numbers appear first">
-                  <input
-                    type="number"
-                    value={storeFormData.display_order}
-                    onChange={(e) => setStoreFormData({...storeFormData, display_order: parseInt(e.target.value) || 0})}
-                    placeholder="0"
-                    min="0"
-                  />
-                </StatField>
-              </FormSection>
-
               {/* Limited Time Section */}
-              <FormSection title="Limited Time Offer" icon="⏰" defaultExpanded={false}>
+              <FormSection title="Limited Time Offer" icon="⏰" defaultExpanded={storeFormData.category === 'limited_time'}>
                 <FormField label="Available Until" hint="Leave empty for permanent listing">
                   <input
                     type="datetime-local"
@@ -4767,7 +4788,7 @@ export default function AdminPanel() {
             </FormPanel>
           </SidePanel>
 
-          {/* Worker Side Panel - Refactored with FormPanel System */}
+          {/* Worker Side Panel - INPUTS-FIRST Design */}
           <SidePanel
             isOpen={showWorkerModal}
             onClose={closeWorkerModal}
@@ -4782,17 +4803,80 @@ export default function AdminPanel() {
               </>
             }
           >
-            <FormPanel>
-              {/* Quick Stats Overview */}
-              <QuickStats stats={[
-                { label: 'Hire Cost', value: `$${workerFormData.hire_cost?.toLocaleString() || 0}`, icon: '💰' },
-                { label: 'Income/hr', value: `$${workerFormData.income_per_hour?.toLocaleString() || 0}`, icon: '💵' },
-                { label: 'Level Req', value: workerFormData.min_level_required || 1, icon: '🔓' },
-                { label: 'Rarity', value: workerFormData.rarity?.charAt(0).toUpperCase() + workerFormData.rarity?.slice(1) || 'Common', icon: '✨' }
+            <FormPanel density="default" showDensityToggle={true}>
+              {/* CONTROL BLOCK - All operational inputs FIRST (sticky) */}
+              <ControlBlock title="Core Worker Parameters">
+                <ControlInput
+                  label="Hire Cost"
+                  icon="💵"
+                  unit="$"
+                  value={workerFormData.hire_cost || 0}
+                  onChange={(v) => setWorkerFormData({...workerFormData, hire_cost: v})}
+                  min={0}
+                  step={1000}
+                />
+                <ControlInput
+                  label="Income/Hour"
+                  icon="⏰"
+                  unit="$/h"
+                  value={workerFormData.income_per_hour || 0}
+                  onChange={(v) => setWorkerFormData({...workerFormData, income_per_hour: v})}
+                  min={0}
+                  step={50}
+                />
+                <ControlInput
+                  label="Min Level"
+                  icon="🔓"
+                  unit="lvl"
+                  value={workerFormData.min_level_required || 1}
+                  onChange={(v) => setWorkerFormData({...workerFormData, min_level_required: v})}
+                  min={1}
+                  step={1}
+                />
+                <ControlInput
+                  label="Rarity"
+                  icon="✨"
+                  type="select"
+                  value={workerFormData.rarity || 'common'}
+                  onChange={(v) => setWorkerFormData({...workerFormData, rarity: v})}
+                  options={[
+                    { value: 'common', label: '⚪ Common' },
+                    { value: 'rare', label: '🔵 Rare' },
+                    { value: 'epic', label: '🟣 Epic' },
+                    { value: 'legendary', label: '🟡 Legendary' }
+                  ]}
+                />
+              </ControlBlock>
+
+              {/* LIVE OUTPUT - Calculated metrics */}
+              <LiveOutput outputs={[
+                { 
+                  icon: '💵', 
+                  label: 'Hire Cost', 
+                  value: `$${(workerFormData.hire_cost || 0).toLocaleString()}`
+                },
+                { 
+                  icon: '⏰', 
+                  label: 'Income/Hour', 
+                  value: `$${(workerFormData.income_per_hour || 0).toLocaleString()}/h`,
+                  highlight: true
+                },
+                { 
+                  icon: '📊', 
+                  label: 'ROI (Break-Even)', 
+                  value: workerFormData.hire_cost > 0 && workerFormData.income_per_hour > 0 
+                    ? `${Math.ceil(workerFormData.hire_cost / workerFormData.income_per_hour)} hrs`
+                    : '∞'
+                },
+                { 
+                  icon: '💰', 
+                  label: 'Daily Earnings', 
+                  value: `$${((workerFormData.income_per_hour || 0) * 24).toLocaleString()}/day`
+                },
               ]} />
 
-              {/* Basic Information Section */}
-              <FormSection title="Worker Identity" icon="👤" badge="Required" defaultExpanded={true}>
+              {/* DETAILS SECTION - Name, description, image */}
+              <FormSection title="Worker Details" icon="👤" defaultExpanded={true}>
                 <FormField label="Worker Name" required hint="Display name in the game">
                   <input
                     type="text"
@@ -4822,68 +4906,6 @@ export default function AdminPanel() {
                 {workerFormData.image_url && (
                   <ImagePreview src={workerFormData.image_url} alt={workerFormData.name || 'Worker'} />
                 )}
-              </FormSection>
-
-              {/* Economics Section */}
-              <FormSection title="Economics" icon="💰" defaultExpanded={true}>
-                <StatGrid columns={2}>
-                  <StatField label="Hire Cost" icon="💵" hint="One-time purchase price">
-                    <input
-                      type="number"
-                      value={workerFormData.hire_cost}
-                      onChange={(e) => setWorkerFormData({...workerFormData, hire_cost: parseInt(e.target.value)})}
-                      min="0"
-                      placeholder="50000"
-                    />
-                  </StatField>
-
-                  <StatField label="Income Per Hour" icon="⏰" hint="Passive earnings rate">
-                    <input
-                      type="number"
-                      value={workerFormData.income_per_hour}
-                      onChange={(e) => setWorkerFormData({...workerFormData, income_per_hour: parseInt(e.target.value)})}
-                      min="0"
-                      placeholder="500"
-                    />
-                  </StatField>
-                </StatGrid>
-
-                {workerFormData.hire_cost > 0 && workerFormData.income_per_hour > 0 && (
-                  <InfoCard
-                    icon="📊"
-                    title="ROI Calculator"
-                    value={`${Math.ceil(workerFormData.hire_cost / workerFormData.income_per_hour)} hours`}
-                    subtitle="Time to break even"
-                    variant="highlight"
-                  />
-                )}
-              </FormSection>
-
-              {/* Requirements Section */}
-              <FormSection title="Requirements & Rarity" icon="🔒" defaultExpanded={true}>
-                <StatGrid columns={2}>
-                  <StatField label="Unlock Level" icon="🔓" hint="Minimum player level">
-                    <input
-                      type="number"
-                      value={workerFormData.min_level_required}
-                      onChange={(e) => setWorkerFormData({...workerFormData, min_level_required: parseInt(e.target.value)})}
-                      min="1"
-                      placeholder="1"
-                    />
-                  </StatField>
-
-                  <StatField label="Rarity Tier" icon="✨" hint="Affects visibility & appeal">
-                    <select
-                      value={workerFormData.rarity}
-                      onChange={(e) => setWorkerFormData({...workerFormData, rarity: e.target.value})}
-                    >
-                      <option value="common">⚪ Common</option>
-                      <option value="rare">🔵 Rare</option>
-                      <option value="epic">🟣 Epic</option>
-                      <option value="legendary">🟡 Legendary</option>
-                    </select>
-                  </StatField>
-                </StatGrid>
               </FormSection>
 
               {/* Status Section */}
