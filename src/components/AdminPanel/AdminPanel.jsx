@@ -314,6 +314,7 @@ export default function AdminPanel() {
     wipe_casino_history: false,
     wipe_dock_shipments: false,
     wipe_game_leaderboard: false,
+    wipe_player_progress: false,
     scheduled_at: '',
     is_active: false,
     is_recurring: false,
@@ -2566,6 +2567,7 @@ export default function AdminPanel() {
           wipe_casino_history: data.wipe_casino_history || false,
           wipe_dock_shipments: data.wipe_dock_shipments || false,
           wipe_game_leaderboard: data.wipe_game_leaderboard || false,
+          wipe_player_progress: data.wipe_player_progress || false,
           scheduled_at: data.scheduled_at ? new Date(data.scheduled_at).toISOString().slice(0, 16) : '',
           is_active: data.is_active || false,
           is_recurring: data.is_recurring || false,
@@ -2601,6 +2603,7 @@ export default function AdminPanel() {
         wipe_casino_history: wipeSettings.wipe_casino_history,
         wipe_dock_shipments: wipeSettings.wipe_dock_shipments,
         wipe_game_leaderboard: wipeSettings.wipe_game_leaderboard,
+        wipe_player_progress: wipeSettings.wipe_player_progress,
         scheduled_at: wipeSettings.scheduled_at ? new Date(wipeSettings.scheduled_at).toISOString() : null,
         is_active: wipeSettings.is_active,
         is_recurring: wipeSettings.is_recurring,
@@ -5724,6 +5727,18 @@ export default function AdminPanel() {
                   <span className="checkbox-label">
                     <span className="checkbox-icon">🏆</span>
                     Game Leaderboard &amp; History
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox" style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)' }}>
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_player_progress}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_player_progress: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">📊</span>
+                    Full Leaderboard Reset (Level, XP, Cash, Bank, PVP)
                   </span>
                 </label>
               </div>

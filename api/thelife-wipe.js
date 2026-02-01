@@ -160,6 +160,21 @@ export default async function handler(req, res) {
       results.push({ action: 'wipe_game_leaderboard', success: true });
     }
 
+    // Full player progress reset - resets all leaderboard-affecting data
+    if (wipeSettings.wipe_player_progress) {
+      const { error } = await supabaseAdmin.from('the_life_players').update({ 
+        level: 1, 
+        xp: 0,
+        cash: 0,
+        bank_balance: 0,
+        pvp_wins: 0,
+        pvp_losses: 0,
+        total_robberies: 0,
+        total_crimes: 0
+      }).neq('id', '00000000-0000-0000-0000-000000000000');
+      results.push({ action: 'wipe_player_progress', success: !error, error: error?.message });
+    }
+
     return res.status(200).json({ 
       success: true, 
       message: 'Wipe executed successfully',
