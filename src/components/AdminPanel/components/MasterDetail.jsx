@@ -19,48 +19,64 @@ export default function MasterDetail({
   master,
   detail,
   detailOpen = false,
+  isDetailOpen = false, // Alternative prop name
   onDetailClose,
   detailTitle = '',
   detailWidth = '480px',
+  masterWidth,
   stickyDetail = true,
   detailActions,
   className = '',
+  children, // Support children pattern
 }) {
   const detailRef = useRef(null);
+  
+  // Support both detailOpen and isDetailOpen
+  const isOpen = detailOpen || isDetailOpen;
+  
+  // Support children pattern: first child is master, second is detail
+  let masterContent = master;
+  let detailContent = detail;
+  
+  if (children) {
+    const childArray = React.Children.toArray(children);
+    if (childArray.length >= 1) masterContent = childArray[0];
+    if (childArray.length >= 2) detailContent = childArray[1];
+  }
 
   // Handle escape key
   useEffect(() => {
     const handleKeyDown = (e) => {
-      if (e.key === 'Escape' && detailOpen && onDetailClose) {
+      if (e.key === 'Escape' && isOpen && onDetailClose) {
         onDetailClose();
       }
     };
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [detailOpen, onDetailClose]);
+  }, [isOpen, onDetailClose]);
 
   // Focus detail panel when opened
   useEffect(() => {
-    if (detailOpen && detailRef.current) {
+    if (isOpen && detailRef.current) {
       detailRef.current.focus();
     }
-  }, [detailOpen]);
+  }, [isOpen]);
 
   return (
-    <div className={`master-detail ${detailOpen ? 'detail-open' : ''} ${className}`}>
-      <div className="master-panel">
-        {master}
+    <div className={`master-detail ${isOpen ? 'detail-open' : ''} ${className}`}>
+      <div className="master-panel" style={masterWidth ? { width: masterWidth } : undefined}>
+        {masterContent}
       </div>
       
       <div 
-        className={`detail-panel ${detailOpen ? 'open' : ''} ${stickyDetail ? 'sticky' : ''}`}
+        className={`detail-panel ${isOpen ? 'open' : ''} ${stickyDetail ? 'sticky' : ''}`}
         style={{ '--detail-width': detailWidth }}
         ref={detailRef}
         tabIndex={-1}
         role="region"
         aria-label={detailTitle || 'Detail panel'}
       >
-        {detailOpen && (
+        {isOpen && (
           <>
             <div className="detail-header">
               <h3 className="detail-title">{detailTitle}</h3>
@@ -75,7 +91,7 @@ export default function MasterDetail({
               </button>
             </div>
             <div className="detail-body">
-              {detail}
+              {detailContent}
             </div>
             {detailActions && (
               <div className="detail-actions">
