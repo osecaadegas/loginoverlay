@@ -511,18 +511,28 @@ export default function TheLifeBusinesses({
               {!ownsIt ? (
                 <div className="business-compact-actions">
                   {meetsLevel ? (
-                    <button 
-                      onClick={() => buyBusiness(business)} 
-                      disabled={player?.cash < (business.purchase_price || 5000)}
-                      className="compact-btn buy-btn"
-                    >
-                      {player?.cash >= (business.purchase_price || 5000) ? 
-                        `💵 Buy $${(business.purchase_price || 5000).toLocaleString()}` : 
-                        '🚫 No Cash'
-                      }
-                    </button>
+                    <>
+                      <div className="business-price-display">
+                        💰 ${(business.purchase_price || 5000).toLocaleString()}
+                      </div>
+                      <button 
+                        onClick={() => buyBusiness(business)} 
+                        disabled={player?.cash < (business.purchase_price || 5000)}
+                        className="compact-btn buy-btn"
+                      >
+                        {player?.cash >= (business.purchase_price || 5000) ? 
+                          '💵 Purchase' : 
+                          '🚫 Not Enough Cash'
+                        }
+                      </button>
+                    </>
                   ) : (
-                    <div className="locked-compact">🔒 Lvl {business.min_level_required}</div>
+                    <>
+                      <div className="business-price-display locked">
+                        💰 ${(business.purchase_price || 5000).toLocaleString()}
+                      </div>
+                      <div className="locked-compact">🔒 Lvl {business.min_level_required}</div>
+                    </>
                   )}
                 </div>
               ) : (
