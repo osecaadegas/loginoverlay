@@ -2760,19 +2760,10 @@ export default function AdminPanel() {
             />
           </StatsGrid>
 
-          {/* Master-Detail User Management */}
-          <MasterDetail
-            isDetailOpen={!!selectedUserId}
-            onDetailClose={() => {
-              setSelectedUserId(null);
-              setEditingUser(null);
-            }}
-            masterWidth="55%"
-            detailTitle={editingUser ? `${editingUser.email}` : 'Select a user'}
-          >
-            {/* Master Panel - User List */}
-            <div className="user-list-master">
-              {/* Search Bar */}
+          {/* User Management Table */}
+          <div className="user-management-section">
+            {/* Search and Actions Bar */}
+            <div className="user-table-header">
               <div className="user-search-bar">
                 <input
                   type="text"
@@ -2793,160 +2784,220 @@ export default function AdminPanel() {
                   </button>
                 )}
               </div>
+            </div>
 
-              {/* User List */}
-              <div className="user-list-items">
-                {users
-                  .filter(user => {
-                    if (!userSearch) return true;
-                    const search = userSearch.toLowerCase();
-                    return (
-                      user.email?.toLowerCase().includes(search) ||
-                      user.provider?.toLowerCase().includes(search) ||
-                      user.provider_username?.toLowerCase().includes(search) ||
-                      user.roles?.some(r => r.role.toLowerCase().includes(search))
-                    );
-                  })
-                  .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
-                  .map(user => (
-                    <div 
-                      key={user.id} 
-                      className={`user-list-item ${selectedUserId === user.id ? 'selected' : ''} ${!user.is_active ? 'inactive' : ''}`}
-                      onClick={() => {
-                        setSelectedUserId(user.id);
-                        openEditModal(user);
-                      }}
-                    >
-                      <div className="user-list-avatar">
-                        {user.email?.[0]?.toUpperCase() || '?'}
-                      </div>
-                      <div className="user-list-info">
-                        <div className="user-list-email">{user.email}</div>
-                        <div className="user-list-meta">
+            {/* Users Table */}
+            <div className="users-table-container">
+              <table className="users-table">
+                <thead>
+                  <tr>
+                    <th style={{ width: '30%' }}>User</th>
+                    <th style={{ width: '15%' }}>Provider</th>
+                    <th style={{ width: '30%' }}>Roles</th>
+                    <th style={{ width: '10%' }}>Status</th>
+                    <th style={{ width: '15%' }}>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users
+                    .filter(user => {
+                      if (!userSearch) return true;
+                      const search = userSearch.toLowerCase();
+                      return (
+                        user.email?.toLowerCase().includes(search) ||
+                        user.provider?.toLowerCase().includes(search) ||
+                        user.provider_username?.toLowerCase().includes(search) ||
+                        user.roles?.some(r => r.role.toLowerCase().includes(search))
+                      );
+                    })
+                    .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
+                    .map(user => (
+                      <tr 
+                        key={user.id} 
+                        className={`user-table-row ${selectedUserId === user.id ? 'selected' : ''} ${!user.is_active ? 'inactive' : ''}`}
+                      >
+                        <td>
+                          <div className="user-cell">
+                            <div className="user-avatar">{user.email?.[0]?.toUpperCase() || '?'}</div>
+                            <div className="user-info">
+                              <div className="user-email">{user.email}</div>
+                              {user.provider_username && (
+                                <div className="user-username">@{user.provider_username}</div>
+                              )}
+                            </div>
+                          </div>
+                        </td>
+                        <td>
                           <span className={`provider-badge provider-${user.provider?.toLowerCase()}`}>
                             {user.provider || 'Email'}
                           </span>
-                          {user.roles?.map((roleObj, idx) => (
-                            <span key={idx} className={`role-badge-small role-${roleObj.role}`}>
-                              {roleObj.role}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="user-list-status">
-                        <div className={`status-indicator ${user.is_active ? 'active' : 'inactive'}`} />
-                      </div>
-                    </div>
-                  ))}
-              </div>
-
-              {/* Pagination */}
-              {users.filter(user => {
-                if (!userSearch) return true;
-                const search = userSearch.toLowerCase();
-                return (
-                  user.email?.toLowerCase().includes(search) ||
-                  user.provider?.toLowerCase().includes(search) ||
-                  user.roles?.some(r => r.role.toLowerCase().includes(search))
-                );
-              }).length > usersPerPage && (
-                <div className="user-list-pagination">
-                  <button
-                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                    disabled={currentPage === 1}
-                    className="pagination-btn-small"
-                  >
-                    ←
-                  </button>
-                  <span className="pagination-info-small">
-                    {currentPage} / {Math.ceil(users.filter(u => !userSearch || u.email?.toLowerCase().includes(userSearch.toLowerCase())).length / usersPerPage)}
-                  </span>
-                  <button
-                    onClick={() => setCurrentPage(prev => prev + 1)}
-                    disabled={currentPage >= Math.ceil(users.length / usersPerPage)}
-                    className="pagination-btn-small"
-                  >
-                    →
-                  </button>
-                </div>
-              )}
+                        </td>
+                        <td>
+                          <div className="roles-cell">
+                            {user.roles?.map((roleObj, idx) => (
+                              <span key={idx} className={`role-badge-table role-${roleObj.role}`}>
+                                {roleObj.role}
+                              </span>
+                            ))}
+                            {(!user.roles || user.roles.length === 0) && (
+                              <span className="no-roles">No roles</span>
+                            )}
+                          </div>
+                        </td>
+                        <td>
+                          <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
+                            {user.is_active ? '✓ Active' : '✗ Inactive'}
+                          </span>
+                        </td>
+                        <td>
+                          <div className="actions-cell">
+                            <button 
+                              className="btn-table-action btn-edit"
+                              onClick={() => {
+                                setSelectedUserId(user.id);
+                                openEditModal(user);
+                              }}
+                              title="Edit User"
+                            >
+                              ✏️ Edit
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
             </div>
 
-            {/* Detail Panel - User Details */}
-            {editingUser ? (
-              <div className="user-detail-content">
-                <DetailSection title="User Information">
-                  <DetailField label="Email" value={editingUser.email} />
-                  <DetailField 
-                    label="Provider" 
-                    value={
-                      <span className={`provider-badge provider-${editingUser.provider?.toLowerCase()}`}>
-                        {editingUser.provider || 'Email'}
-                        {editingUser.provider_username && ` (@${editingUser.provider_username})`}
-                      </span>
-                    } 
-                  />
-                  <DetailField label="Status" value={editingUser.is_active ? '✅ Active' : '❌ Inactive'} />
-                  <DetailField label="Created" value={new Date(editingUser.created_at).toLocaleString()} />
-                </DetailSection>
+            {/* Pagination */}
+            {users.filter(user => {
+              if (!userSearch) return true;
+              const search = userSearch.toLowerCase();
+              return (
+                user.email?.toLowerCase().includes(search) ||
+                user.provider?.toLowerCase().includes(search) ||
+                user.roles?.some(r => r.role.toLowerCase().includes(search))
+              );
+            }).length > usersPerPage && (
+              <div className="table-pagination">
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                  className="pagination-btn"
+                >
+                  ← Previous
+                </button>
+                <span className="pagination-info">
+                  Page {currentPage} of {Math.ceil(users.filter(u => !userSearch || u.email?.toLowerCase().includes(userSearch.toLowerCase())).length / usersPerPage)}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage >= Math.ceil(users.length / usersPerPage)}
+                  className="pagination-btn"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
+          </div>
 
-                <DetailSection title="Current Roles">
-                  <div className="current-roles-grid">
+          {/* Edit User Side Panel */}
+          <SidePanel
+            isOpen={!!selectedUserId && !!editingUser}
+            onClose={() => {
+              setSelectedUserId(null);
+              setEditingUser(null);
+            }}
+            title={editingUser?.email || 'Edit User'}
+            width="500px"
+          >
+            {editingUser && (
+              <div className="user-edit-panel">
+                <div className="user-edit-header">
+                  <div className="user-edit-avatar">{editingUser.email?.[0]?.toUpperCase() || '?'}</div>
+                  <div className="user-edit-info">
+                    <h3>{editingUser.email}</h3>
+                    <span className={`provider-badge provider-${editingUser.provider?.toLowerCase()}`}>
+                      {editingUser.provider || 'Email'}
+                      {editingUser.provider_username && ` (@${editingUser.provider_username})`}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="user-edit-section">
+                  <h4>📋 User Details</h4>
+                  <div className="user-details-grid">
+                    <div className="detail-item">
+                      <label>Status</label>
+                      <span className={`status-badge ${editingUser.is_active ? 'active' : 'inactive'}`}>
+                        {editingUser.is_active ? '✓ Active' : '✗ Inactive'}
+                      </span>
+                    </div>
+                    <div className="detail-item">
+                      <label>Created</label>
+                      <span>{new Date(editingUser.created_at).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="user-edit-section">
+                  <h4>🎭 Current Roles</h4>
+                  <div className="current-roles-list">
                     {(editingUser.roles || []).map((roleObj, idx) => (
-                      <div key={idx} className="role-card">
-                        <div className="role-card-header">
+                      <div key={idx} className="role-item">
+                        <div className="role-item-info">
                           <span className={`role-badge role-${roleObj.role}`}>
                             {roleObj.role}
                           </span>
-                          <ConfirmButton
-                            onConfirm={() => handleRemoveRole(roleObj.role)}
-                            confirmText="Remove?"
-                            className="btn-remove-role-small"
-                            variant="danger"
-                          >
-                            ✕
-                          </ConfirmButton>
+                          {roleObj.access_expires_at && (
+                            <span className="role-expiry">
+                              Expires: {new Date(roleObj.access_expires_at).toLocaleDateString()}
+                            </span>
+                          )}
                         </div>
-                        {roleObj.access_expires_at && (
-                          <div className="role-card-expiry">
-                            Expires: {new Date(roleObj.access_expires_at).toLocaleDateString()}
-                          </div>
-                        )}
+                        <button 
+                          className="btn-remove-role"
+                          onClick={() => handleRemoveRole(roleObj.role)}
+                          title="Remove Role"
+                        >
+                          ✕
+                        </button>
                       </div>
                     ))}
                     {(!editingUser.roles || editingUser.roles.length === 0) && (
                       <div className="no-roles-message">No roles assigned</div>
                     )}
                   </div>
-                </DetailSection>
+                </div>
 
-                <DetailSection title="Add New Role">
-                  <div className="add-role-form">
+                <div className="user-edit-section">
+                  <h4>➕ Add New Role</h4>
+                  <div className="add-role-form-panel">
                     <select 
                       value={editingUser.newRole || ''}
                       onChange={(e) => setEditingUser({...editingUser, newRole: e.target.value, newRoleModeratorPermissions: {}})}
-                      className="role-select"
+                      className="role-select-panel"
                     >
                       <option value="">-- Select Role --</option>
-                      <option value="user">User (No Overlay Access)</option>
-                      <option value="premium">Premium (Overlay Only)</option>
-                      <option value="slot_modder">Slot Modder (Slot Management)</option>
-                      <option value="moderator">Moderator (Overlay + Custom Admin)</option>
-                      <option value="admin">Admin (Full Access)</option>
+                      <option value="user">👤 User (No Overlay Access)</option>
+                      <option value="premium">👑 Premium (Overlay Only)</option>
+                      <option value="slot_modder">🎰 Slot Modder (Slot Management)</option>
+                      <option value="moderator">⚔️ Moderator (Overlay + Custom Admin)</option>
+                      <option value="admin">🛡️ Admin (Full Access)</option>
                     </select>
 
                     {editingUser.newRole === 'moderator' && (
-                      <div className="moderator-permissions-inline">
-                        <label className="permissions-label">Permissions:</label>
-                        <div className="permissions-checkboxes">
+                      <div className="moderator-permissions-panel">
+                        <label className="permissions-label">Moderator Permissions:</label>
+                        <div className="permissions-grid">
                           {Object.entries(MODERATOR_PERMISSIONS).map(([key, description]) => (
-                            <label key={key} className="permission-checkbox-inline">
+                            <label key={key} className="permission-checkbox">
                               <input
                                 type="checkbox"
                                 checked={!!editingUser.newRoleModeratorPermissions?.[key]}
                                 onChange={() => toggleModeratorPermission(key)}
                               />
-                              <span title={description}>{key.replace(/_/g, ' ')}</span>
+                              <span>{key.replace(/_/g, ' ')}</span>
                             </label>
                           ))}
                         </div>
@@ -2954,56 +3005,50 @@ export default function AdminPanel() {
                     )}
 
                     {editingUser.newRole && (
-                      <>
+                      <div className="role-expiry-row">
                         <input 
                           type="number" 
-                          placeholder="Days (empty = unlimited)"
+                          placeholder="Days until expiry (empty = never)"
                           value={editingUser.newRoleExpiryDays || ''}
                           onChange={(e) => setEditingUser({...editingUser, newRoleExpiryDays: e.target.value})}
                           min="0"
-                          className="expiry-input"
+                          className="expiry-input-panel"
                         />
-                        <button onClick={handleAddRole} className="btn-add-role-inline">
-                          + Add Role
+                        <button onClick={handleAddRole} className="btn-add-role">
+                          ➕ Add Role
                         </button>
-                      </>
+                      </div>
                     )}
                   </div>
-                </DetailSection>
+                </div>
 
-                <DetailSection title="Quick Actions">
-                  <div className="quick-actions-grid">
-                    <ConfirmButton
-                      onConfirm={() => handleRevokeAccess(editingUser.id)}
-                      confirmText="Revoke?"
-                      className="btn-action-revoke"
+                <div className="user-edit-section danger-zone">
+                  <h4>⚠️ Danger Zone</h4>
+                  <div className="danger-actions">
+                    <button 
+                      className="btn-danger-action btn-revoke"
+                      onClick={() => handleRevokeAccess(editingUser.id)}
                       disabled={!editingUser.is_active}
-                      variant="warning"
                     >
                       🚫 Revoke Access
-                    </ConfirmButton>
-                    <ConfirmButton
-                      onConfirm={() => {
-                        handleDeleteUser(editingUser.id);
-                        setSelectedUserId(null);
-                        setEditingUser(null);
+                    </button>
+                    <button 
+                      className="btn-danger-action btn-delete"
+                      onClick={() => {
+                        if (window.confirm('Are you sure you want to DELETE this user? This cannot be undone!')) {
+                          handleDeleteUser(editingUser.id);
+                          setSelectedUserId(null);
+                          setEditingUser(null);
+                        }
                       }}
-                      confirmText="DELETE?"
-                      className="btn-action-delete"
-                      variant="danger"
                     >
                       🗑️ Delete User
-                    </ConfirmButton>
+                    </button>
                   </div>
-                </DetailSection>
-              </div>
-            ) : (
-              <div className="user-detail-empty">
-                <div className="empty-state-icon">👤</div>
-                <p>Select a user from the list to view their details</p>
+                </div>
               </div>
             )}
-          </MasterDetail>
+          </SidePanel>
         </>
       )}
 
