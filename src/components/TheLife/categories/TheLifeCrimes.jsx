@@ -16,7 +16,8 @@ export default function TheLifeCrimes({
   showEventMessage,
   user,
   isInJail,
-  isInHospital 
+  isInHospital,
+  loadTheLifeInventory 
 }) {
   const scrollContainerRef = useRef(null);
   const [loading, setLoading] = useState(false);
@@ -191,6 +192,10 @@ export default function TheLifeCrimes({
         let successMessage = `Success! You earned $${reward.toLocaleString()} and ${robbery.xp_reward} XP! (${Math.round(successChance)}% chance)`;
         if (droppedItems.length > 0) {
           successMessage += `\n💎 You also found: ${droppedItems.join(', ')}`;
+          // Refresh inventory immediately when items are dropped
+          if (loadTheLifeInventory) {
+            loadTheLifeInventory();
+          }
         }
         
         setMessage({ 

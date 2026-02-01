@@ -622,16 +622,27 @@ export const useTheLifeData = (user) => {
       }
     }, 15000);
     
-    // Poll other data every 30 seconds (less critical)
+    // Poll inventory every 10 seconds for faster updates when items are received
+    const inventoryInterval = setInterval(() => {
+      loadTheLifeInventory();
+    }, 10000);
+    
+    // Poll other data every 60 seconds (less critical)
     const dataInterval = setInterval(() => {
       loadRobberies();
       loadCategoryInfo();
-      loadTheLifeInventory();
-    }, 30000);
+    }, 60000);
+    
+    // Poll leaderboard every hour (3600000ms)
+    const leaderboardInterval = setInterval(() => {
+      loadLeaderboard();
+    }, 3600000);
 
     return () => {
       clearInterval(playerInterval);
+      clearInterval(inventoryInterval);
       clearInterval(dataInterval);
+      clearInterval(leaderboardInterval);
     };
   }, [user?.id]); // Only depend on user.id, not player
 

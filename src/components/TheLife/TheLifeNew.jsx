@@ -636,6 +636,7 @@ export default function TheLife() {
           user={user}
           isInJail={isInJail}
           isInHospital={isInHospital}
+          loadTheLifeInventory={loadTheLifeInventory}
         />
       )}
 
