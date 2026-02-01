@@ -14,6 +14,7 @@ export default function DailyWheel() {
   const [wonPrize, setWonPrize] = useState(null);
   const [loading, setLoading] = useState(true);
   const [recentSpins, setRecentSpins] = useState([]);
+  const [pointsAwarded, setPointsAwarded] = useState(null); // Track if points were awarded
   
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -471,6 +472,7 @@ export default function DailyWheel() {
   const handleWin = async (prize) => {
     playWinSound();
     setWonPrize(prize);
+    setPointsAwarded(null); // Reset points status
     setShowModal(true);
     
     confetti({
@@ -502,9 +504,10 @@ export default function DailyWheel() {
         
         if (result?.success) {
           console.log('✅ Points awarded successfully!');
+          setPointsAwarded({ success: true, points: prize.se_points });
         } else {
           console.error('❌ Failed to award points:', result?.error);
-          // Still allow the spin to complete, just log the error
+          setPointsAwarded({ success: false, error: result?.error || 'Unknown error' });
         }
       } else {
         console.log('ℹ️ Prize has no points to award');
@@ -716,9 +719,18 @@ export default function DailyWheel() {
               {wonPrize.label}
             </h3>
             {wonPrize.se_points > 0 && (
-              <p className="text-green-400 text-sm mb-4">
-                +{wonPrize.se_points} StreamElements Points
-              </p>
+              <div className="mb-4">
+                <p className="text-green-400 text-sm">
+                  +{wonPrize.se_points} StreamElements Points
+                </p>
+                {pointsAwarded !== null && (
+                  <p className={`text-xs mt-1 ${pointsAwarded.success ? 'text-green-500' : 'text-red-400'}`}>
+                    {pointsAwarded.success 
+                      ? '✅ Points added to your balance!' 
+                      : `⚠️ ${pointsAwarded.error || 'Could not add points. Please contact support.'}`}
+                  </p>
+                )}
+              </div>
             )}
             <button 
               onClick={() => setShowModal(false)}
