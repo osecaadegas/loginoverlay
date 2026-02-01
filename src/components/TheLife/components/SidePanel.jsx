@@ -6,7 +6,7 @@ import './SidePanel.css';
  * Slides in from the right side of the screen
  * Used instead of modals for better UX with forms
  */
-export default function SidePanel({ 
+export function SidePanel({ 
   isOpen, 
   onClose, 
   title, 
