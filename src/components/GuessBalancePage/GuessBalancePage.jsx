@@ -91,22 +91,54 @@ export default function GuessBalancePage() {
         }
       }
 
-      // Always load all guesses for public display - include twitch_username
-      const { data: allGuessesData } = await supabase
+      // Load all guesses for public display (without join to avoid RLS issues)
+      const { data: allGuessesData, error: guessesError } = await supabase
         .from('guess_balance_guesses')
-        .select(`
-          *,
-          user:user_profiles(username, display_name, twitch_username)
-        `)
+        .select('*')
         .eq('session_id', sessionId)
         .order('guessed_at', { ascending: false });
 
-      setPublicGuesses(allGuessesData || []);
+      console.log('Loaded guesses:', allGuessesData?.length, 'error:', guessesError);
+
+      if (guessesError) {
+        console.error('Error loading guesses:', guessesError);
+      }
+
+      // Get usernames from streamelements_connections (has public read access)
+      const userIds = [...new Set((allGuessesData || []).map(g => g.user_id))];
+      
+      let usernameMap = {};
+      
+      if (userIds.length > 0) {
+        // Try SE connections first
+        const { data: seData } = await supabase
+          .from('streamelements_connections')
+          .select('user_id, se_username')
+          .in('user_id', userIds);
+        
+        if (seData) {
+          seData.forEach(se => {
+            usernameMap[se.user_id] = se.se_username;
+          });
+        }
+      }
+
+      // Enrich guesses with usernames
+      const enrichedGuesses = (allGuessesData || []).map(guess => ({
+        ...guess,
+        user: {
+          twitch_username: usernameMap[guess.user_id] || null,
+          display_name: usernameMap[guess.user_id] || null,
+          username: usernameMap[guess.user_id] || 'Anonymous'
+        }
+      }));
+
+      setPublicGuesses(enrichedGuesses);
       
       // For results tab, sort by difference (only when revealed)
       const session = sessions.find(s => s.id === sessionId);
       if (session?.reveal_answer || session?.status === 'completed') {
-        const sortedByDiff = [...(allGuessesData || [])].sort((a, b) => 
+        const sortedByDiff = [...enrichedGuesses].sort((a, b) => 
           (a.difference || Infinity) - (b.difference || Infinity)
         );
         setAllGuesses(sortedByDiff);
