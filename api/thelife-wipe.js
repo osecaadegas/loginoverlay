@@ -26,14 +26,17 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Invalid token' });
   }
 
-  // Check if user is admin
-  const { data: profile } = await supabaseAdmin
-    .from('profiles')
+  // Check if user has admin role in user_roles table
+  const { data: userRoles } = await supabaseAdmin
+    .from('user_roles')
     .select('role')
-    .eq('id', user.id)
-    .single();
+    .eq('user_id', user.id)
+    .eq('is_active', true);
 
-  if (!profile || profile.role !== 'admin') {
+  const roleNames = (userRoles || []).map(r => r.role);
+  const hasAdminAccess = roleNames.includes('admin') || roleNames.includes('superadmin');
+
+  if (!hasAdminAccess) {
     return res.status(403).json({ error: 'Admin access required' });
   }
 
