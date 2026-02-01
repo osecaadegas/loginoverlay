@@ -279,6 +279,7 @@ export default function AdminPanel() {
     wipe_pvp_stats: false,
     wipe_casino_history: false,
     wipe_dock_shipments: false,
+    wipe_game_leaderboard: false,
     scheduled_at: '',
     is_active: false,
     is_recurring: false,
@@ -2662,6 +2663,7 @@ export default function AdminPanel() {
           wipe_pvp_stats: data.wipe_pvp_stats || false,
           wipe_casino_history: data.wipe_casino_history || false,
           wipe_dock_shipments: data.wipe_dock_shipments || false,
+          wipe_game_leaderboard: data.wipe_game_leaderboard || false,
           scheduled_at: data.scheduled_at ? new Date(data.scheduled_at).toISOString().slice(0, 16) : '',
           is_active: data.is_active || false,
           is_recurring: data.is_recurring || false,
@@ -2696,6 +2698,7 @@ export default function AdminPanel() {
         wipe_pvp_stats: wipeSettings.wipe_pvp_stats,
         wipe_casino_history: wipeSettings.wipe_casino_history,
         wipe_dock_shipments: wipeSettings.wipe_dock_shipments,
+        wipe_game_leaderboard: wipeSettings.wipe_game_leaderboard,
         scheduled_at: wipeSettings.scheduled_at ? new Date(wipeSettings.scheduled_at).toISOString() : null,
         is_active: wipeSettings.is_active,
         is_recurring: wipeSettings.is_recurring,
@@ -2753,7 +2756,7 @@ export default function AdminPanel() {
       }
 
       if (wipeSettings.wipe_bank) {
-        await supabase.from('the_life_players').update({ bank: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('the_life_players').update({ bank_balance: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       if (wipeSettings.wipe_level) {
@@ -2812,6 +2815,12 @@ export default function AdminPanel() {
       if (wipeSettings.wipe_dock_shipments) {
         await supabase.from('the_life_player_shipments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
         await supabase.from('the_life_business_production').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      }
+
+      if (wipeSettings.wipe_game_leaderboard) {
+        // Wipe game leaderboard (SE games like coinflip, etc.)
+        await supabase.from('game_leaderboard').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('game_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       // Update last executed time
@@ -5837,7 +5846,8 @@ export default function AdminPanel() {
                       wipeSettings.wipe_level && wipeSettings.wipe_skills && wipeSettings.wipe_businesses &&
                       wipeSettings.wipe_upgrades && wipeSettings.wipe_brothel_workers && wipeSettings.wipe_stocks &&
                       wipeSettings.wipe_addiction && wipeSettings.wipe_health_stamina && wipeSettings.wipe_jail_hospital &&
-                      wipeSettings.wipe_pvp_stats && wipeSettings.wipe_casino_history && wipeSettings.wipe_dock_shipments
+                      wipeSettings.wipe_pvp_stats && wipeSettings.wipe_casino_history && wipeSettings.wipe_dock_shipments &&
+                      wipeSettings.wipe_game_leaderboard
                     }
                     onChange={(e) => {
                       const checked = e.target.checked;
@@ -5857,7 +5867,8 @@ export default function AdminPanel() {
                         wipe_jail_hospital: checked,
                         wipe_pvp_stats: checked,
                         wipe_casino_history: checked,
-                        wipe_dock_shipments: checked
+                        wipe_dock_shipments: checked,
+                        wipe_game_leaderboard: checked
                       });
                     }}
                   />
@@ -6045,6 +6056,18 @@ export default function AdminPanel() {
                   <span className="checkbox-label">
                     <span className="checkbox-icon">🚢</span>
                     Dock Shipments &amp; Production
+                  </span>
+                </label>
+
+                <label className="wipe-checkbox">
+                  <input
+                    type="checkbox"
+                    checked={wipeSettings.wipe_game_leaderboard}
+                    onChange={(e) => setWipeSettings({...wipeSettings, wipe_game_leaderboard: e.target.checked})}
+                  />
+                  <span className="checkbox-label">
+                    <span className="checkbox-icon">🏆</span>
+                    Game Leaderboard &amp; History
                   </span>
                 </label>
               </div>
