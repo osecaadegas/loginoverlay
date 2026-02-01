@@ -3985,26 +3985,33 @@ export default function AdminPanel() {
               {/* LIVE OUTPUT - Calculated metrics */}
               <LiveOutput outputs={[
                 { 
-                  icon: '💰', 
-                  label: 'Avg Reward', 
-                  value: `$${Math.round(((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2).toLocaleString()}`,
+                  icon: '⏰', 
+                  label: 'Earnings/Hour', 
+                  value: (() => {
+                    const avgReward = ((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2;
+                    const successRate = (crimeFormData.success_rate || 0) / 100;
+                    const staminaCost = crimeFormData.stamina_cost || 1;
+                    const staminaPerHour = 60; // 1 stamina per minute
+                    const crimesPerHour = Math.floor(staminaPerHour / staminaCost);
+                    const hourlyEarnings = Math.round(crimesPerHour * avgReward * successRate);
+                    return `$${hourlyEarnings.toLocaleString()}/h`;
+                  })(),
                   highlight: true
                 },
                 { 
+                  icon: '💰', 
+                  label: 'Avg Reward', 
+                  value: `$${Math.round(((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2).toLocaleString()}`,
+                },
+                { 
                   icon: '📊', 
-                  label: 'Expected Value', 
+                  label: 'Expected/Crime', 
                   value: `$${Math.round((((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2) * ((crimeFormData.success_rate || 0) / 100)).toLocaleString()}`,
                 },
                 { 
-                  icon: '⚡', 
-                  label: '$/Stamina', 
-                  value: `$${crimeFormData.stamina_cost > 0 ? Math.round((((crimeFormData.base_reward || 0) + (crimeFormData.max_reward || 0)) / 2) / crimeFormData.stamina_cost).toLocaleString() : 0}`,
-                },
-                { 
-                  icon: '⚠️', 
-                  label: 'Risk Level', 
-                  value: (crimeFormData.success_rate || 0) >= 70 ? 'Low' : (crimeFormData.success_rate || 0) >= 40 ? 'Medium' : 'High',
-                  variant: (crimeFormData.success_rate || 0) >= 70 ? '' : (crimeFormData.success_rate || 0) >= 40 ? 'warning' : 'danger'
+                  icon: '🔄', 
+                  label: 'Crimes/Hour', 
+                  value: `${Math.floor(60 / (crimeFormData.stamina_cost || 1))}x`,
                 },
               ]} />
 
