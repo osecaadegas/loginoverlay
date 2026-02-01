@@ -728,6 +728,7 @@ export default function TheLife() {
         <TheLifeLeaderboard
           leaderboard={leaderboard}
           player={player}
+          loadLeaderboard={loadLeaderboard}
         />
       )}
 

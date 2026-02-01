@@ -1,9 +1,29 @@
+import { useState } from 'react';
 import '../styles/TheLifeLeaderboard.css';
 
-export default function TheLifeLeaderboard({ leaderboard, player }) {
+export default function TheLifeLeaderboard({ leaderboard, player, loadLeaderboard }) {
+  const [refreshing, setRefreshing] = useState(false);
+
+  const handleRefresh = async () => {
+    if (refreshing || !loadLeaderboard) return;
+    setRefreshing(true);
+    await loadLeaderboard();
+    setTimeout(() => setRefreshing(false), 500);
+  };
+
   return (
     <div className="leaderboard-section">
-      <h2>🏆 Top Players</h2>
+      <div className="leaderboard-header">
+        <h2>🏆 Top Players</h2>
+        <button 
+          className={`refresh-btn ${refreshing ? 'refreshing' : ''}`}
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Refresh leaderboard"
+        >
+          🔄
+        </button>
+      </div>
       <div className="leaderboard-table">
         <div className="leaderboard-row header">
           <span>Rank</span>
