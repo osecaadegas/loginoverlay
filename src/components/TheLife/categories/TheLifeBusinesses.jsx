@@ -3,6 +3,14 @@ import { getMaxBusinessSlots, getUpgradeCost } from '../utils/gameUtils';
 import { useRef, useState } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
 import '../styles/TheLifeBusinesses.css';
+import SidePanel, { 
+  PanelSection, 
+  PanelSelectableCard, 
+  PanelQuantityInput,
+  PanelRewardPreview,
+  PanelButton,
+  PanelButtonGroup
+} from '../components/SidePanel';
 
 /**
  * Businesses Category Component
@@ -620,196 +628,85 @@ export default function TheLifeBusinesses({
         </button>
       </div>
 
-      {/* Item Selection Modal */}
-      {showItemModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(0,0,0,0.8)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000
-        }} onClick={() => setShowItemModal(false)}>
-          <div style={{
-            background: 'linear-gradient(135deg, #1a1f36 0%, #0f1419 100%)',
-            border: '2px solid #d4af37',
-            borderRadius: '12px',
-            padding: '25px',
-            maxWidth: '500px',
-            width: '90%',
-            maxHeight: '80vh',
-            overflow: 'auto'
-          }} onClick={(e) => e.stopPropagation()}>
-            <h3 style={{color: '#d4af37', marginBottom: '20px', fontSize: '1.3rem'}}>
-              Select Item for {selectedBusiness?.name}
-            </h3>
+      {/* Item Selection Side Panel */}
+      <SidePanel
+        isOpen={showItemModal}
+        onClose={() => setShowItemModal(false)}
+        title={`Select Item`}
+        subtitle={selectedBusiness?.name}
+        footer={
+          <PanelButtonGroup>
+            <PanelButton variant="danger" onClick={() => setShowItemModal(false)}>
+              ✗ Cancel
+            </PanelButton>
+            <PanelButton 
+              variant="success" 
+              onClick={() => {
+                if (!selectedItemId) {
+                  setMessage({ type: 'error', text: 'Please select an item!' });
+                  return;
+                }
+                const selectedOption = availableItems.find(opt => opt.item_id === selectedItemId);
+                startProduction(selectedBusiness, selectedOption);
+                setShowItemModal(false);
+              }}
+              disabled={!selectedItemId}
+            >
+              ✓ Confirm
+            </PanelButton>
+          </PanelButtonGroup>
+        }
+      >
+        <PanelSection title="Available Items">
+          {availableItems.map(option => {
+            let maxQty = Math.floor(option.playerQuantity / option.quantity_required);
+            
+            // For money laundering businesses with conversion rate, cap INPUT at $200,000
+            if (selectedBusiness?.conversion_rate && option.reward_cash > 0) {
+              const maxInputCap = 200000;
+              const maxQtyFromCap = Math.floor(maxInputCap / option.reward_cash);
+              maxQty = Math.min(maxQty, maxQtyFromCap);
+            }
+            
+            const selectedQty = selectedItemId === option.item_id ? (inputQuantity || 1) : 1;
+            
+            // Calculate reward
+            let cashReward = option.reward_cash * selectedQty;
+            if (selectedBusiness?.conversion_rate) {
+              cashReward = Math.floor(cashReward * (1 - selectedBusiness.conversion_rate));
+            }
 
-            {availableItems.map(option => {
-              let maxQty = Math.floor(option.playerQuantity / option.quantity_required);
-              
-              // For money laundering businesses with conversion rate, cap INPUT at $200,000
-              if (selectedBusiness?.conversion_rate && option.reward_cash > 0) {
-                const maxInputCap = 200000;
-                // Calculate max quantity where input dirty cash = $200,000
-                const maxQtyFromCap = Math.floor(maxInputCap / option.reward_cash);
-                maxQty = Math.min(maxQty, maxQtyFromCap);
-              }
-              
-              const selectedQty = selectedItemId === option.item_id ? (inputQuantity || 1) : 1;
-              
-              // Calculate reward: input is capped at $200,000, then fee applied
-              let cashReward = option.reward_cash * selectedQty;
-              if (selectedBusiness?.conversion_rate) {
-                cashReward = Math.floor(cashReward * (1 - selectedBusiness.conversion_rate));
-              }
-
-              return (
-                <div key={option.item_id} style={{
-                  background: selectedItemId === option.item_id ? 'rgba(212,175,55,0.2)' : 'rgba(0,0,0,0.3)',
-                  border: selectedItemId === option.item_id ? '2px solid #d4af37' : '1px solid rgba(212,175,55,0.3)',
-                  borderRadius: '8px',
-                  padding: '15px',
-                  marginBottom: '15px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }} onClick={() => {
+            return (
+              <PanelSelectableCard
+                key={option.item_id}
+                selected={selectedItemId === option.item_id}
+                onClick={() => {
                   setSelectedItemId(option.item_id);
                   setMaxQuantity(maxQty);
                   setInputQuantity(1);
-                }}>
-                  <div style={{display: 'flex', alignItems: 'center', gap: '15px', marginBottom: '10px'}}>
-                    <img src={option.item.image_url || option.item.icon} alt={option.item.name} style={{
-                      width: '60px',
-                      height: '60px',
-                      objectFit: 'cover',
-                      borderRadius: '8px',
-                      border: '2px solid rgba(212,175,55,0.5)'
-                    }} />
-                    <div style={{flex: 1}}>
-                      <div style={{color: '#d4af37', fontWeight: '600', fontSize: '1.1rem', marginBottom: '5px'}}>
-                        {option.item.name}
-                      </div>
-                      <div style={{fontSize: '0.85rem', color: '#cbd5e0'}}>
-                        You have: {option.playerQuantity}
-                      </div>
-                    </div>
-                  </div>
-
-                  {selectedItemId === option.item_id && (
-                    <div style={{marginTop: '15px', paddingTop: '15px', borderTop: '1px solid rgba(212,175,55,0.3)'}}>
-                      <label style={{display: 'block', color: '#cbd5e0', marginBottom: '8px', fontSize: '0.9rem'}}>
-                        Quantity: (Max: {maxQty})
-                      </label>
-                      <div style={{display: 'flex', gap: '10px', alignItems: 'center'}}>
-                        <input
-                          type="number"
-                          min="1"
-                          max={maxQty}
-                          value={inputQuantity}
-                          onChange={(e) => setInputQuantity(Math.min(maxQty, Math.max(1, parseInt(e.target.value) || 1)))}
-                          style={{
-                            flex: 1,
-                            padding: '10px',
-                            background: 'rgba(0,0,0,0.5)',
-                            border: '1px solid rgba(212,175,55,0.5)',
-                            borderRadius: '5px',
-                            color: 'white',
-                            fontSize: '1rem'
-                          }}
-                        />
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setInputQuantity(maxQty);
-                          }}
-                          style={{
-                            padding: '10px 15px',
-                            background: 'rgba(212,175,55,0.3)',
-                            border: '1px solid #d4af37',
-                            borderRadius: '5px',
-                            color: '#d4af37',
-                            cursor: 'pointer',
-                            fontSize: '0.9rem',
-                            fontWeight: '600'
-                          }}
-                        >
-                          MAX
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  <div style={{
-                    marginTop: '12px',
-                    padding: '10px',
-                    background: 'rgba(34, 197, 94, 0.1)',
-                    borderRadius: '5px',
-                    border: '1px solid rgba(34, 197, 94, 0.3)'
-                  }}>
-                    <div style={{color: '#22c55e', fontWeight: '600', fontSize: '1rem'}}>
-                      💰 Reward: ${cashReward.toLocaleString()}
-                      {selectedBusiness?.conversion_rate && (
-                        <span style={{fontSize: '0.85rem', color: '#cbd5e0', marginLeft: '8px'}}>
-                          ({(selectedBusiness.conversion_rate * 100).toFixed(0)}% fee applied)
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-
-            <div style={{display: 'flex', gap: '10px', marginTop: '20px'}}>
-              <button
-                onClick={() => {
-                  if (!selectedItemId) {
-                    setMessage({ type: 'error', text: 'Please select an item!' });
-                    return;
-                  }
-                  const selectedOption = availableItems.find(opt => opt.item_id === selectedItemId);
-                  startProduction(selectedBusiness, selectedOption);
-                  setShowItemModal(false);
                 }}
-                disabled={!selectedItemId}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: selectedItemId ? '#22c55e' : '#666',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: selectedItemId ? 'pointer' : 'not-allowed',
-                  transition: 'all 0.2s'
-                }}
+                icon={option.item.image_url || option.item.icon}
+                title={option.item.name}
+                subtitle={`You have: ${option.playerQuantity}`}
+                badge={`$${option.reward_cash.toLocaleString()}/ea`}
               >
-                ✓ Confirm
-              </button>
-              <button
-                onClick={() => setShowItemModal(false)}
-                style={{
-                  flex: 1,
-                  padding: '12px',
-                  background: '#dc2626',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}
-              >
-                ✗ Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+                <PanelQuantityInput
+                  label={`Quantity (Max: ${maxQty})`}
+                  value={inputQuantity}
+                  onChange={(val) => setInputQuantity(val)}
+                  min={1}
+                  max={maxQty}
+                />
+                <PanelRewardPreview 
+                  amount={cashReward} 
+                  label="Reward"
+                  fee={selectedBusiness?.conversion_rate ? (selectedBusiness.conversion_rate * 100).toFixed(0) : null}
+                />
+              </PanelSelectableCard>
+            );
+          })}
+        </PanelSection>
+      </SidePanel>
 
       {/* Info Popup Modal */}
       {showInfoPopup && infoPopupData && (

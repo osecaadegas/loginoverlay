@@ -2,6 +2,15 @@ import '../styles/TheLifePlayerMarket.css';
 import { supabase } from '../../../config/supabaseClient';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLanguage } from '../../../contexts/LanguageContext';
+import SidePanel, { 
+  PanelSection, 
+  PanelItemPreview, 
+  PanelQuantityInput, 
+  PanelPriceInput, 
+  PanelDurationSelect,
+  PanelButton,
+  PanelButtonGroup
+} from '../components/SidePanel';
 
 /**
  * Player Market / Trading Hub
@@ -930,148 +939,115 @@ export default function TheLifePlayerMarket({
         </div>
       )}
 
-      {/* List Item Modal */}
-      {showListModal && selectedItem && (
-        <div className="market-modal-overlay" onClick={() => setShowListModal(false)}>
-          <div className="market-modal list-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{isPt ? 'Listar Item' : 'List Item'}</h3>
-              <button className="modal-close" onClick={() => setShowListModal(false)}>✕</button>
-            </div>
-            
-            <div className="modal-body">
-              <div className="list-item-preview">
-                <div className="preview-icon" style={{ '--rarity-color': getRarityColor(selectedItem.item?.rarity) }}>
-                  {renderItemIcon(selectedItem.item?.icon, selectedItem.item?.name, 'large')}
-                </div>
-                <div className="preview-info">
-                  <h4>{selectedItem.item?.name}</h4>
-                  <p style={{ color: getRarityColor(selectedItem.item?.rarity) }}>
-                    {selectedItem.item?.rarity}
-                  </p>
-                  <p className="preview-owned">{isPt ? 'Você tem' : 'You have'}: {selectedItem.quantity}</p>
-                </div>
-              </div>
-              
-              <div className="list-form">
-                <div className="form-group">
-                  <label>{isPt ? 'Quantidade' : 'Quantity'}</label>
-                  <div className="quantity-input-improved">
-                    <button 
-                      className="qty-btn minus"
-                      onClick={() => setListQuantity(Math.max(1, listQuantity - 1))}
-                      disabled={listQuantity <= 1}
-                    >
-                      <span>−</span>
-                    </button>
-                    <div className="qty-display">
-                      <input
-                        type="number"
-                        value={listQuantity}
-                        onChange={(e) => setListQuantity(Math.min(selectedItem.quantity, Math.max(1, parseInt(e.target.value) || 1)))}
-                        min="1"
-                        max={selectedItem.quantity}
-                      />
-                      <span className="qty-max-label">/ {selectedItem.quantity}</span>
-                    </div>
-                    <button 
-                      className="qty-btn plus"
-                      onClick={() => setListQuantity(Math.min(selectedItem.quantity, listQuantity + 1))}
-                      disabled={listQuantity >= selectedItem.quantity}
-                    >
-                      <span>+</span>
-                    </button>
-                    <button 
-                      className="qty-max-btn" 
-                      onClick={() => setListQuantity(selectedItem.quantity)}
-                      disabled={listQuantity === selectedItem.quantity}
-                    >
-                      MAX
-                    </button>
-                  </div>
-                </div>
-                
-                <div className="form-group">
-                  <label>{isPt ? 'Preço Total' : 'Total Price'} ($)</label>
-                  <div className="price-input-wrapper">
-                    <span className="price-prefix">$</span>
-                    <input
-                      type="number"
-                      value={listPrice}
-                      onChange={(e) => setListPrice(e.target.value)}
-                      placeholder="0"
-                      className="price-input-improved"
-                    />
-                  </div>
-                  {listPrice && listQuantity > 1 && (
-                    <p className="price-per-item">
-                      ${Math.round(parseInt(listPrice) / listQuantity).toLocaleString()} {isPt ? 'por unidade' : 'per item'}
-                    </p>
-                  )}
-                  {listPrice && (
-                    <div className="price-quick-btns">
-                      <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 0.9).toString())}>-10%</button>
-                      <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 1.1).toString())}>+10%</button>
-                      <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 2).toString())}>×2</button>
-                    </div>
-                  )}
-                </div>
-                
-                <div className="form-group">
-                  <label>{isPt ? 'Duração' : 'Duration'}</label>
-                  <div className="duration-buttons">
-                    {[6, 12, 24, 48, 72].map(hours => (
-                      <button
-                        key={hours}
-                        className={`duration-btn ${listDuration === hours.toString() ? 'active' : ''}`}
-                        onClick={() => setListDuration(hours.toString())}
-                      >
-                        {hours}h
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </div>
-            
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={() => setShowListModal(false)}>
-                {isPt ? 'Cancelar' : 'Cancel'}
-              </button>
-              <button className="btn-confirm" onClick={listItem} disabled={!listPrice || listQuantity < 1}>
-                {isPt ? 'Listar por' : 'List for'} ${parseInt(listPrice || 0).toLocaleString()}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* List Item Side Panel */}
+      <SidePanel
+        isOpen={showListModal && !!selectedItem}
+        onClose={() => setShowListModal(false)}
+        title={isPt ? 'Listar Item' : 'List Item'}
+        subtitle={isPt ? 'Defina preço e duração' : 'Set price and duration'}
+        footer={
+          <PanelButtonGroup>
+            <PanelButton variant="secondary" onClick={() => setShowListModal(false)}>
+              {isPt ? 'Cancelar' : 'Cancel'}
+            </PanelButton>
+            <PanelButton 
+              variant="success" 
+              onClick={listItem} 
+              disabled={!listPrice || listQuantity < 1}
+            >
+              {isPt ? 'Listar por' : 'List for'} ${parseInt(listPrice || 0).toLocaleString()}
+            </PanelButton>
+          </PanelButtonGroup>
+        }
+      >
+        {selectedItem && (
+          <>
+            <PanelSection>
+              <PanelItemPreview
+                icon={selectedItem.item?.icon?.startsWith('http') ? selectedItem.item.icon : '📦'}
+                name={selectedItem.item?.name}
+                subtitle={selectedItem.item?.rarity}
+                rarity={getRarityColor(selectedItem.item?.rarity)}
+                badge={`${isPt ? 'Você tem' : 'You have'}: ${selectedItem.quantity}`}
+              />
+            </PanelSection>
 
-      {/* Trade Offer Modal */}
-      {showTradeModal && selectedListing && (
-        <div className="market-modal-overlay" onClick={() => setShowTradeModal(false)}>
-          <div className="market-modal trade-modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>{isPt ? 'Fazer Oferta' : 'Make Trade Offer'}</h3>
-              <button className="modal-close" onClick={() => setShowTradeModal(false)}>✕</button>
-            </div>
-            
-            <div className="modal-body">
-              <div className="trade-target">
-                <h4>{isPt ? 'Item Desejado' : 'Wanted Item'}</h4>
-                <div className="target-item">
-                  <div className="target-icon">{renderItemIcon(selectedListing.item?.icon, selectedListing.item?.name, 'large')}</div>
-                  <div>
-                    <p className="target-name">{selectedListing.item?.name}</p>
-                    <p className="target-price">{isPt ? 'Preço pedido' : 'Asking price'}: ${selectedListing.price.toLocaleString()}</p>
-                  </div>
+            <PanelSection title={isPt ? 'Quantidade' : 'Quantity'}>
+              <PanelQuantityInput
+                value={listQuantity}
+                onChange={setListQuantity}
+                min={1}
+                max={selectedItem.quantity}
+              />
+            </PanelSection>
+
+            <PanelSection title={isPt ? 'Preço Total' : 'Total Price'}>
+              <PanelPriceInput
+                value={listPrice}
+                onChange={setListPrice}
+                placeholder="0"
+              />
+              {listPrice && listQuantity > 1 && (
+                <p className="thelife-panel-helper" style={{ textAlign: 'center', marginTop: '8px' }}>
+                  ${Math.round(parseInt(listPrice) / listQuantity).toLocaleString()} {isPt ? 'por unidade' : 'per item'}
+                </p>
+              )}
+              {listPrice && (
+                <div className="price-quick-btns" style={{ marginTop: '12px' }}>
+                  <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 0.9).toString())}>-10%</button>
+                  <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 1.1).toString())}>+10%</button>
+                  <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 2).toString())}>×2</button>
                 </div>
-              </div>
-              
-              <div className="trade-offer-form">
-                <h4>{isPt ? 'Sua Oferta' : 'Your Offer'}</h4>
-                
-                <div className="form-group">
-                  <label>{isPt ? 'Oferecer Dinheiro' : 'Offer Cash'} ($)</label>
+              )}
+            </PanelSection>
+
+            <PanelSection title={isPt ? 'Duração' : 'Duration'}>
+              <PanelDurationSelect
+                value={listDuration}
+                onChange={setListDuration}
+              />
+            </PanelSection>
+          </>
+        )}
+      </SidePanel>
+
+      {/* Trade Offer Side Panel */}
+      <SidePanel
+        isOpen={showTradeModal && !!selectedListing}
+        onClose={() => setShowTradeModal(false)}
+        title={isPt ? 'Fazer Oferta' : 'Make Trade Offer'}
+        subtitle={selectedListing?.item?.name}
+        footer={
+          <PanelButtonGroup>
+            <PanelButton variant="secondary" onClick={() => setShowTradeModal(false)}>
+              {isPt ? 'Cancelar' : 'Cancel'}
+            </PanelButton>
+            <PanelButton 
+              variant="primary" 
+              onClick={sendTradeOffer} 
+              disabled={!tradeCash && tradeItems.length === 0}
+            >
+              {isPt ? 'Enviar Oferta' : 'Send Offer'}
+            </PanelButton>
+          </PanelButtonGroup>
+        }
+      >
+        {selectedListing && (
+          <>
+            <PanelSection title={isPt ? 'Item Desejado' : 'Wanted Item'}>
+              <PanelItemPreview
+                icon={selectedListing.item?.icon?.startsWith('http') ? selectedListing.item.icon : '📦'}
+                name={selectedListing.item?.name}
+                subtitle={`${isPt ? 'Preço pedido' : 'Asking price'}: $${selectedListing.price.toLocaleString()}`}
+                rarity={getRarityColor(selectedListing.item?.rarity)}
+              />
+            </PanelSection>
+
+            <PanelSection title={isPt ? 'Sua Oferta' : 'Your Offer'}>
+              <div className="thelife-panel-field">
+                <label>{isPt ? 'Oferecer Dinheiro' : 'Offer Cash'} ($)</label>
+                <div className="thelife-panel-price">
+                  <span className="price-symbol">$</span>
                   <input
                     type="number"
                     value={tradeCash}
@@ -1079,32 +1055,36 @@ export default function TheLifePlayerMarket({
                     placeholder="0"
                     max={player?.cash || 0}
                   />
-                  <p className="cash-available">{isPt ? 'Disponível' : 'Available'}: ${player?.cash?.toLocaleString()}</p>
                 </div>
-                
-                <div className="form-group">
-                  <label>{isPt ? 'Mensagem (opcional)' : 'Message (optional)'}</label>
-                  <textarea
-                    value={tradeMessage}
-                    onChange={(e) => setTradeMessage(e.target.value)}
-                    placeholder={isPt ? 'Adicione uma mensagem...' : 'Add a message...'}
-                    maxLength={200}
-                  />
-                </div>
+                <p className="thelife-panel-helper">
+                  {isPt ? 'Disponível' : 'Available'}: ${player?.cash?.toLocaleString()}
+                </p>
               </div>
-            </div>
-            
-            <div className="modal-footer">
-              <button className="btn-cancel" onClick={() => setShowTradeModal(false)}>
-                {isPt ? 'Cancelar' : 'Cancel'}
-              </button>
-              <button className="btn-confirm" onClick={sendTradeOffer} disabled={!tradeCash && tradeItems.length === 0}>
-                {isPt ? 'Enviar Oferta' : 'Send Offer'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+
+              <div className="thelife-panel-field">
+                <label>{isPt ? 'Mensagem (opcional)' : 'Message (optional)'}</label>
+                <textarea
+                  value={tradeMessage}
+                  onChange={(e) => setTradeMessage(e.target.value)}
+                  placeholder={isPt ? 'Adicione uma mensagem...' : 'Add a message...'}
+                  maxLength={200}
+                  style={{
+                    width: '100%',
+                    minHeight: '100px',
+                    padding: '14px 16px',
+                    background: 'rgba(0, 0, 0, 0.5)',
+                    border: '1px solid rgba(212, 175, 55, 0.3)',
+                    borderRadius: '10px',
+                    color: '#ffffff',
+                    fontSize: '1rem',
+                    resize: 'vertical'
+                  }}
+                />
+              </div>
+            </PanelSection>
+          </>
+        )}
+      </SidePanel>
     </div>
   );
 }
