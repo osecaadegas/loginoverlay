@@ -8,7 +8,17 @@ import './AdminPanel.css';
 import './AdminPanel.new.css';
 import SeasonPassAdmin from './SeasonPassAdmin';
 import { CasinoOfferModal } from './modals';
-import { TabNavigation, SidePanel, StatsCard, StatsGrid } from './components';
+import { 
+  TabNavigation, 
+  SidePanel, 
+  StatsCard, 
+  StatsGrid,
+  ConfirmButton,
+  StickyToolbar,
+  ToolbarGroup,
+  ToolbarButton,
+  ToolbarSearch,
+} from './components';
 
 // Valid tab IDs for URL deep linking
 const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance'];
@@ -18,6 +28,9 @@ export default function AdminPanel() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
+  
+  // Pending confirmation state (replaces confirm() dialogs)
+  const [pendingAction, setPendingAction] = useState(null);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -351,8 +364,6 @@ export default function AdminPanel() {
   };
 
   const handleRevokeAccess = async (userId) => {
-    if (!confirm('Are you sure you want to revoke access for this user?')) return;
-    
     setError('');
     setSuccess('');
     
@@ -367,8 +378,6 @@ export default function AdminPanel() {
   };
 
   const handleDeleteUser = async (userId) => {
-    if (!confirm('Are you sure you want to DELETE this user? This cannot be undone!')) return;
-    
     setError('');
     setSuccess('');
     
@@ -424,7 +433,6 @@ export default function AdminPanel() {
 
   const handleRemoveRole = async (roleToRemove) => {
     if (!editingUser) return;
-    if (!confirm(`Are you sure you want to remove the ${roleToRemove} role from this user?`)) return;
     
     setError('');
     setSuccess('');
@@ -568,8 +576,6 @@ export default function AdminPanel() {
   };
 
   const deleteOffer = async (offerId) => {
-    if (!confirm('Are you sure you want to delete this offer?')) return;
-
     setError('');
     setSuccess('');
 
@@ -784,8 +790,6 @@ export default function AdminPanel() {
   };
 
   const deleteCrime = async (crimeId) => {
-    if (!confirm('Are you sure you want to delete this crime? This cannot be undone.')) return;
-
     setError('');
     setSuccess('');
 
@@ -1170,8 +1174,6 @@ export default function AdminPanel() {
   };
 
   const deleteBusiness = async (businessId) => {
-    if (!confirm('Are you sure you want to delete this business?')) return;
-
     setError('');
     setSuccess('');
 
@@ -1329,8 +1331,6 @@ export default function AdminPanel() {
   };
 
   const deleteItem = async (itemId) => {
-    if (!confirm('Are you sure you want to delete this item?')) return;
-
     setError('');
     setSuccess('');
 
@@ -1422,8 +1422,6 @@ export default function AdminPanel() {
   };
 
   const deleteStoreItem = async (storeItemId) => {
-    if (!confirm('Are you sure you want to remove this item from the store?')) return;
-
     setError('');
     setSuccess('');
 
@@ -1541,8 +1539,6 @@ export default function AdminPanel() {
   };
 
   const deleteWorker = async (workerId) => {
-    if (!confirm('Are you sure you want to delete this worker?')) return;
-
     setError('');
     setSuccess('');
 
@@ -1670,8 +1666,6 @@ export default function AdminPanel() {
   };
 
   const deleteBoat = async (boatId) => {
-    if (!confirm('Are you sure you want to delete this boat schedule?')) return;
-
     setError('');
     setSuccess('');
 
@@ -1802,8 +1796,6 @@ export default function AdminPanel() {
   };
 
   const deleteEventMessage = async (messageId) => {
-    if (!confirm('Are you sure you want to delete this event message?')) return;
-
     setError('');
     setSuccess('');
 
@@ -1916,8 +1908,6 @@ export default function AdminPanel() {
   };
 
   const deleteCategory = async (categoryId) => {
-    if (!confirm('Are you sure you want to delete this category info?')) return;
-
     setError('');
     setSuccess('');
 
@@ -2059,8 +2049,6 @@ export default function AdminPanel() {
   };
 
   const deletePrize = async (prizeId) => {
-    if (!confirm('Are you sure you want to delete this prize?')) return;
-
     setError('');
     setSuccess('');
 
@@ -2325,8 +2313,6 @@ export default function AdminPanel() {
   };
 
   const deleteGuessSession = async (sessionId) => {
-    if (!confirm('Are you sure you want to delete this session? All slots and guesses will also be deleted.')) return;
-
     setError('');
     setSuccess('');
 
@@ -2442,8 +2428,6 @@ export default function AdminPanel() {
   };
 
   const deleteSlot = async (slotId) => {
-    if (!confirm('Are you sure you want to delete this slot?')) return;
-
     setError('');
     setSuccess('');
 
@@ -2462,8 +2446,6 @@ export default function AdminPanel() {
   };
 
   const endGuessSessionAndCalculateWinner = async (sessionId) => {
-    if (!confirm('Are you sure you want to end this session and calculate the winner?')) return;
-
     setError('');
     setSuccess('');
 
@@ -2632,14 +2614,6 @@ export default function AdminPanel() {
   };
 
   const executeWipeNow = async () => {
-    if (!confirm('⚠️ WARNING: This will immediately execute the wipe with the selected options. This action CANNOT be undone! Are you absolutely sure?')) {
-      return;
-    }
-
-    if (!confirm('🚨 FINAL CONFIRMATION: All selected player data will be permanently deleted. Type "WIPE" mentally and click OK to proceed.')) {
-      return;
-    }
-
     setWipeSaving(true);
     setError('');
     setSuccess('');
@@ -2829,21 +2803,25 @@ export default function AdminPanel() {
                     >
                       ✏️
                     </button>
-                    <button 
-                      onClick={() => handleRevokeAccess(user.id)} 
+                    <ConfirmButton
+                      onConfirm={() => handleRevokeAccess(user.id)}
+                      confirmText="Revoke?"
                       className="btn-revoke"
                       title="Revoke access"
                       disabled={!user.is_active}
+                      variant="warning"
                     >
                       🚫
-                    </button>
-                    <button 
-                      onClick={() => handleDeleteUser(user.id)} 
+                    </ConfirmButton>
+                    <ConfirmButton
+                      onConfirm={() => handleDeleteUser(user.id)}
+                      confirmText="Delete?"
                       className="btn-delete"
                       title="Delete user"
+                      variant="danger"
                     >
                       🗑️
-                    </button>
+                    </ConfirmButton>
                   </div>
                 </td>
               </tr>
@@ -2875,16 +2853,24 @@ export default function AdminPanel() {
         </div>
       )}
 
-      {/* Edit User Modal */}
-      {editingUser && (
-        <div className="modal-overlay" onClick={() => setEditingUser(null)}>
-          <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-            <h2>Manage User Roles</h2>
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Email</label>
-                <input type="text" value={editingUser.email} disabled />
-              </div>
+      {/* Edit User Side Panel */}
+      <SidePanel
+        isOpen={!!editingUser}
+        onClose={() => setEditingUser(null)}
+        title="Manage User Roles"
+        size="large"
+        footer={
+          <button onClick={() => setEditingUser(null)} className="btn-cancel">
+            Close
+          </button>
+        }
+      >
+        {editingUser && (
+          <>
+            <div className="form-group">
+              <label>Email</label>
+              <input type="text" value={editingUser.email} disabled />
+            </div>
 
               {/* Current Roles */}
               <div className="form-group">
@@ -2900,13 +2886,15 @@ export default function AdminPanel() {
                           Expires: {new Date(roleObj.access_expires_at).toLocaleDateString()}
                         </span>
                       )}
-                      <button 
-                        onClick={() => handleRemoveRole(roleObj.role)} 
+                      <ConfirmButton
+                        onConfirm={() => handleRemoveRole(roleObj.role)}
+                        confirmText="Remove?"
                         className="btn-remove-role"
                         title="Remove role"
+                        variant="danger"
                       >
                         ✕
-                      </button>
+                      </ConfirmButton>
                     </div>
                   ))}
                   {(!editingUser.roles || editingUser.roles.length === 0) && (
@@ -2972,16 +2960,9 @@ export default function AdminPanel() {
                   Add Role
                 </button>
               )}
-
-              <div className="modal-actions">
-                <button onClick={() => setEditingUser(null)} className="btn-cancel">
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </SidePanel>
         </>
       )}
 
@@ -3030,13 +3011,15 @@ export default function AdminPanel() {
                     >
                       {offer.is_active ? '👁️ Active' : '🚫 Inactive'}
                     </button>
-                    <button 
-                      onClick={() => deleteOffer(offer.id)}
+                    <ConfirmButton
+                      onConfirm={() => deleteOffer(offer.id)}
+                      confirmText="Delete?"
                       className="btn-delete-offer"
                       title="Delete offer"
+                      variant="danger"
                     >
                       🗑️
-                    </button>
+                    </ConfirmButton>
                   </div>
                 </div>
               </div>
@@ -3075,12 +3058,10 @@ export default function AdminPanel() {
           }
         }}
         onDelete={async (offerId) => {
-          if (window.confirm('Are you sure you want to delete this offer?')) {
-            await supabase.from('casino_offers').delete().eq('id', offerId);
-            closeOfferModal();
-            loadOffers();
-            setSuccess('Offer deleted successfully!');
-          }
+          await supabase.from('casino_offers').delete().eq('id', offerId);
+          closeOfferModal();
+          loadOffers();
+          setSuccess('Offer deleted successfully!');
         }}
         editingOffer={editingOffer}
         saving={loading}
@@ -3233,9 +3214,14 @@ export default function AdminPanel() {
                         <button onClick={() => openCrimeModal(crime)} className="btn-edit">
                           ✏️ Edit
                         </button>
-                        <button onClick={() => deleteCrime(crime.id)} className="btn-delete">
+                        <ConfirmButton
+                          onConfirm={() => deleteCrime(crime.id)}
+                          confirmText="Delete?"
+                          className="btn-delete"
+                          variant="danger"
+                        >
                           🗑️ Delete
-                        </button>
+                        </ConfirmButton>
                       </div>
                     </div>
                   ))}
@@ -3322,9 +3308,14 @@ export default function AdminPanel() {
                         <button onClick={() => openBusinessModal(business)} className="btn-edit">
                           ✏️ Edit
                         </button>
-                        <button onClick={() => deleteBusiness(business.id)} className="btn-delete">
+                        <ConfirmButton
+                          onConfirm={() => deleteBusiness(business.id)}
+                          confirmText="Delete?"
+                          className="btn-delete"
+                          variant="danger"
+                        >
                           🗑️ Delete
-                        </button>
+                        </ConfirmButton>
                       </div>
                     </div>
                   ))}
@@ -3415,9 +3406,14 @@ export default function AdminPanel() {
                         <button onClick={() => openItemModal(item)} className="btn-edit">
                           ✏️ Edit
                         </button>
-                        <button onClick={() => deleteItem(item.id)} className="btn-delete">
+                        <ConfirmButton
+                          onConfirm={() => deleteItem(item.id)}
+                          confirmText="Delete?"
+                          className="btn-delete"
+                          variant="danger"
+                        >
                           🗑️ Delete
-                        </button>
+                        </ConfirmButton>
                       </div>
                     </div>
                   ))}
@@ -3506,9 +3502,14 @@ export default function AdminPanel() {
                                 <button onClick={() => openStoreModal(storeItem)} className="btn-edit">
                                   ✏️
                                 </button>
-                                <button onClick={() => deleteStoreItem(storeItem.id)} className="btn-delete">
+                                <ConfirmButton
+                                  onConfirm={() => deleteStoreItem(storeItem.id)}
+                                  confirmText="Delete?"
+                                  className="btn-delete"
+                                  variant="danger"
+                                >
                                   🗑️
-                                </button>
+                                </ConfirmButton>
                               </div>
                             </div>
                           </div>
@@ -3589,9 +3590,14 @@ export default function AdminPanel() {
                         <button onClick={() => openWorkerModal(worker)} className="btn-edit">
                           ✏️ Edit
                         </button>
-                        <button onClick={() => deleteWorker(worker.id)} className="btn-delete">
+                        <ConfirmButton
+                          onConfirm={() => deleteWorker(worker.id)}
+                          confirmText="Delete?"
+                          className="btn-delete"
+                          variant="danger"
+                        >
                           🗑️ Delete
-                        </button>
+                        </ConfirmButton>
                       </div>
                     </div>
                   ))}
@@ -3679,9 +3685,14 @@ export default function AdminPanel() {
                           >
                             {boat.is_active ? '✅ Active' : '❌ Inactive'}
                           </button>
-                          <button onClick={() => deleteBoat(boat.id)} className="btn-delete">
+                          <ConfirmButton
+                            onConfirm={() => deleteBoat(boat.id)}
+                            confirmText="Delete?"
+                            className="btn-delete"
+                            variant="danger"
+                          >
                             🗑️ Delete
-                          </button>
+                          </ConfirmButton>
                         </div>
                       </div>
                     );
@@ -3735,9 +3746,14 @@ export default function AdminPanel() {
                         <button onClick={() => openEventMessageModal(msg)} className="btn-edit">
                           ✏️ Edit
                         </button>
-                        <button onClick={() => deleteEventMessage(msg.id)} className="btn-delete">
+                        <ConfirmButton
+                          onConfirm={() => deleteEventMessage(msg.id)}
+                          confirmText="Delete?"
+                          className="btn-delete"
+                          variant="danger"
+                        >
                           🗑️ Delete
-                        </button>
+                        </ConfirmButton>
                       </div>
                     </div>
                   ))}
@@ -3787,9 +3803,14 @@ export default function AdminPanel() {
                         <button onClick={() => openCategoryModal(cat)} className="btn-edit">
                           ✏️ Edit
                         </button>
-                        <button onClick={() => deleteCategory(cat.id)} className="btn-delete">
+                        <ConfirmButton
+                          onConfirm={() => deleteCategory(cat.id)}
+                          confirmText="Delete?"
+                          className="btn-delete"
+                          variant="danger"
+                        >
                           🗑️ Delete
-                        </button>
+                        </ConfirmButton>
                       </div>
                     </div>
                   ))}
@@ -3806,17 +3827,24 @@ export default function AdminPanel() {
             )}
           </div>
 
-          {/* Crime Modal */}
-          {showCrimeModal && (
-            <div className="modal-overlay" onClick={closeCrimeModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingCrime ? 'Edit Crime' : 'Add New Crime'}</h2>
-                  <button onClick={closeCrimeModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-grid">
+          {/* Crime Side Panel */}
+          <SidePanel
+            isOpen={showCrimeModal}
+            onClose={closeCrimeModal}
+            title={editingCrime ? 'Edit Crime' : 'Add New Crime'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeCrimeModal} className="btn-cancel">
+                  Cancel
+                </button>
+                <button onClick={saveCrime} className="btn-save">
+                  {editingCrime ? 'Update Crime' : 'Create Crime'}
+                </button>
+              </>
+            }
+          >
+            <div className="form-grid">
                     <div className="form-group full-width">
                       <label>Crime Name *</label>
                       <input
@@ -3942,6 +3970,7 @@ export default function AdminPanel() {
 
                   {/* Item Drops Section */}
                   {editingCrime && (
+                    <>
                     <div className="form-section" style={{marginTop: '20px'}}>
                       <h3 style={{color: '#d4af37', marginBottom: '15px'}}>💎 Item Drops</h3>
                       
@@ -4042,32 +4071,28 @@ export default function AdminPanel() {
                         Add Drop
                       </button>
                     </div>
+                    </>
                   )}
-                </div>
+          </SidePanel>
 
-                <div className="modal-actions">
-                  <button onClick={saveCrime} className="btn-save">
-                    {editingCrime ? 'Update Crime' : 'Create Crime'}
-                  </button>
-                  <button onClick={closeCrimeModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Business Modal */}
-          {showBusinessModal && (
-            <div className="modal-overlay" onClick={closeBusinessModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingBusiness ? 'Edit Business' : 'Add New Business'}</h2>
-                  <button onClick={closeBusinessModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-grid">
+          {/* Business Side Panel */}
+          <SidePanel
+            isOpen={showBusinessModal}
+            onClose={closeBusinessModal}
+            title={editingBusiness ? 'Edit Business' : 'Add New Business'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeBusinessModal} className="btn-cancel">
+                  Cancel
+                </button>
+                <button onClick={saveBusiness} className="btn-save">
+                  {editingBusiness ? 'Update Business' : 'Create Business'}
+                </button>
+              </>
+            }
+          >
+            <div className="form-grid">
                     <div className="form-group full-width">
                       <label>Business Name *</label>
                       <input
@@ -4435,39 +4460,28 @@ export default function AdminPanel() {
                           </div>
                         </div>
                       )}
-
-                      {!editingBusiness && (
-                        <div style={{padding: '15px', background: 'rgba(255,165,0,0.1)', borderRadius: '8px', color: '#ffa500'}}>
-                          💡 Save the business first, then you can add required items
-                        </div>
-                      )}
                     </div>
                   </div>
-                </div>
+          </SidePanel>
 
-                <div className="modal-actions">
-                  <button onClick={saveBusiness} className="btn-save">
-                    {editingBusiness ? 'Update Business' : 'Create Business'}
-                  </button>
-                  <button onClick={closeBusinessModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Item Modal */}
-          {showItemModal && (
-            <div className="modal-overlay" onClick={closeItemModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingItem ? 'Edit Item' : 'Add New Item'}</h2>
-                  <button onClick={closeItemModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-grid">
+          {/* Item Side Panel */}
+          <SidePanel
+            isOpen={showItemModal}
+            onClose={closeItemModal}
+            title={editingItem ? 'Edit Item' : 'Add New Item'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeItemModal} className="btn-cancel">
+                  Cancel
+                </button>
+                <button onClick={saveItem} className="btn-save">
+                  {editingItem ? 'Update Item' : 'Create Item'}
+                </button>
+              </>
+            }
+          >
+            <div className="form-grid">
                     <div className="form-group full-width">
                       <label>Item Name *</label>
                       <input
@@ -4673,31 +4687,24 @@ export default function AdminPanel() {
                       </label>
                     </div>
                   </div>
-                </div>
+          </SidePanel>
 
-                <div className="modal-actions">
-                  <button onClick={saveItem} className="btn-save">
-                    {editingItem ? 'Update Item' : 'Create Item'}
-                  </button>
-                  <button onClick={closeItemModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Store Item Modal */}
-          {showStoreModal && (
-            <div className="modal-overlay" onClick={closeStoreModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingStoreItem ? 'Edit Store Item' : 'Add Store Item'}</h2>
-                  <button onClick={closeStoreModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-grid">
+          {/* Store Item Side Panel */}
+          <SidePanel
+            isOpen={showStoreModal}
+            onClose={closeStoreModal}
+            title={editingStoreItem ? 'Edit Store Item' : 'Add Store Item'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeStoreModal} className="btn-secondary">Cancel</button>
+                <button onClick={saveStoreItem} className="btn-primary">
+                  {editingStoreItem ? 'Update' : 'Add'} Store Item
+                </button>
+              </>
+            }
+          >
+            <div className="form-grid">
                     <div className="form-group full-width">
                       <label>Select Item *</label>
                       <select
@@ -4781,29 +4788,26 @@ export default function AdminPanel() {
                       </label>
                     </div>
                   </div>
-                </div>
+          </SidePanel>
 
-                <div className="modal-footer">
-                  <button onClick={closeStoreModal} className="btn-secondary">Cancel</button>
-                  <button onClick={saveStoreItem} className="btn-primary">
-                    {editingStoreItem ? 'Update' : 'Add'} Store Item
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Worker Modal */}
-          {showWorkerModal && (
-            <div className="modal-overlay" onClick={closeWorkerModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingWorker ? 'Edit Worker' : 'Add New Worker'}</h2>
-                  <button onClick={closeWorkerModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-grid">
+          {/* Worker Side Panel */}
+          <SidePanel
+            isOpen={showWorkerModal}
+            onClose={closeWorkerModal}
+            title={editingWorker ? 'Edit Worker' : 'Add New Worker'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeWorkerModal} className="btn-cancel">
+                  Cancel
+                </button>
+                <button onClick={saveWorker} className="btn-save">
+                  {editingWorker ? 'Update Worker' : 'Create Worker'}
+                </button>
+              </>
+            }
+          >
+            <div className="form-grid">
                     <div className="form-group full-width">
                       <label>Worker Name *</label>
                       <input
@@ -4894,31 +4898,26 @@ export default function AdminPanel() {
                       </label>
                     </div>
                   </div>
-                </div>
+          </SidePanel>
 
-                <div className="modal-actions">
-                  <button onClick={saveWorker} className="btn-save">
-                    {editingWorker ? 'Update Worker' : 'Create Worker'}
-                  </button>
-                  <button onClick={closeWorkerModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Boat Modal */}
-          {showBoatModal && (
-            <div className="modal-overlay" onClick={closeBoatModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingBoat ? 'Edit Boat Schedule' : 'Schedule New Boat'}</h2>
-                  <button onClick={closeBoatModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-group">
+          {/* Boat Side Panel */}
+          <SidePanel
+            isOpen={showBoatModal}
+            onClose={closeBoatModal}
+            title={editingBoat ? 'Edit Boat Schedule' : 'Schedule New Boat'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeBoatModal} className="btn-cancel">
+                  Cancel
+                </button>
+                <button onClick={saveBoat} className="btn-save">
+                  {editingBoat ? 'Update Boat' : 'Schedule Boat'}
+                </button>
+              </>
+            }
+          >
+            <div className="form-group">
                     <label>Boat Name *</label>
                     <input
                       type="text"
@@ -4998,31 +4997,26 @@ export default function AdminPanel() {
                       <span>Active</span>
                     </label>
                   </div>
-                </div>
+          </SidePanel>
 
-                <div className="modal-actions">
-                  <button onClick={saveBoat} className="btn-save">
-                    {editingBoat ? 'Update Boat' : 'Schedule Boat'}
-                  </button>
-                  <button onClick={closeBoatModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Event Message Modal */}
-          {showEventMessageModal && (
-            <div className="modal-overlay" onClick={closeEventMessageModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingEventMessage ? 'Edit Event Message' : 'Add New Event Message'}</h2>
-                  <button onClick={closeEventMessageModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-group">
+          {/* Event Message Side Panel */}
+          <SidePanel
+            isOpen={showEventMessageModal}
+            onClose={closeEventMessageModal}
+            title={editingEventMessage ? 'Edit Event Message' : 'Add New Event Message'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeEventMessageModal} className="btn-cancel">
+                  Cancel
+                </button>
+                <button onClick={saveEventMessage} className="btn-save">
+                  {editingEventMessage ? 'Update Message' : 'Create Message'}
+                </button>
+              </>
+            }
+          >
+            <div className="form-group">
                     <label>Event Type *</label>
                     <select
                       value={eventMessageFormData.event_type}
@@ -5098,31 +5092,26 @@ export default function AdminPanel() {
                       <span>Active (visible to players)</span>
                     </label>
                   </div>
-                </div>
+          </SidePanel>
 
-                <div className="modal-actions">
-                  <button onClick={saveEventMessage} className="btn-save">
-                    {editingEventMessage ? 'Update Message' : 'Create Message'}
-                  </button>
-                  <button onClick={closeEventMessageModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Category Info Modal */}
-          {showCategoryModal && (
-            <div className="modal-overlay" onClick={closeCategoryModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingCategory ? 'Edit Category Info' : 'Add New Category Info'}</h2>
-                  <button onClick={closeCategoryModal} className="modal-close">×</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-group">
+          {/* Category Info Side Panel */}
+          <SidePanel
+            isOpen={showCategoryModal}
+            onClose={closeCategoryModal}
+            title={editingCategory ? 'Edit Category Info' : 'Add New Category Info'}
+            size="large"
+            footer={
+              <>
+                <button onClick={closeCategoryModal} className="btn-cancel">
+                  Cancel
+                </button>
+                <button onClick={saveCategory} className="btn-save">
+                  {editingCategory ? 'Update Category' : 'Create Category'}
+                </button>
+              </>
+            }
+          >
+            <div className="form-group">
                     <label>Category Key *</label>
                     <select
                       value={categoryFormData.category_key}
@@ -5229,19 +5218,7 @@ export default function AdminPanel() {
                       </div>
                     )}
                   </div>
-                </div>
-
-                <div className="modal-actions">
-                  <button onClick={saveCategory} className="btn-save">
-                    {editingCategory ? 'Update Category' : 'Create Category'}
-                  </button>
-                  <button onClick={closeCategoryModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
+          </SidePanel>
         </>
       )}
 
@@ -5289,9 +5266,14 @@ export default function AdminPanel() {
                     <button onClick={() => openPrizeModal(prize)} className="btn-edit">
                       ✏️ Edit
                     </button>
-                    <button onClick={() => deletePrize(prize.id)} className="btn-delete">
+                    <ConfirmButton
+                      onConfirm={() => deletePrize(prize.id)}
+                      confirmText="Delete?"
+                      className="btn-delete"
+                      variant="danger"
+                    >
                       🗑️ Delete
-                    </button>
+                    </ConfirmButton>
                   </div>
                 </div>
               ))}
@@ -5795,13 +5777,15 @@ export default function AdminPanel() {
                 {wipeSaving ? '💾 Saving...' : '💾 Save Wipe Settings'}
               </button>
 
-              <button 
-                onClick={executeWipeNow} 
+              <ConfirmButton
+                onConfirm={executeWipeNow}
+                confirmText="⚠️ WIPE ALL?"
                 className="btn-delete wipe-execute"
                 disabled={wipeSaving || !Object.entries(wipeSettings).some(([key, val]) => key.startsWith('wipe_') && val === true)}
+                variant="danger"
               >
                 🔥 Execute Wipe Now
-              </button>
+              </ConfirmButton>
             </div>
 
             <div className="wipe-info">
@@ -5906,16 +5890,25 @@ export default function AdminPanel() {
                           🎯 Enter Results
                         </button>
                         {session.status === 'active' && session.final_balance && (
-                          <button 
-                            className="btn-end" 
-                            onClick={(e) => { e.stopPropagation(); endGuessSessionAndCalculateWinner(session.id); }}
+                          <ConfirmButton
+                            onConfirm={() => endGuessSessionAndCalculateWinner(session.id)}
+                            confirmText="End?"
+                            className="btn-end"
+                            onClick={(e) => e.stopPropagation()}
+                            variant="warning"
                           >
                             🏆 End & Calculate Winner
-                          </button>
+                          </ConfirmButton>
                         )}
-                        <button className="btn-delete" onClick={(e) => { e.stopPropagation(); deleteGuessSession(session.id); }}>
+                        <ConfirmButton
+                          onConfirm={() => deleteGuessSession(session.id)}
+                          confirmText="Delete?"
+                          className="btn-delete"
+                          onClick={(e) => e.stopPropagation()}
+                          variant="danger"
+                        >
                           🗑️ Delete
-                        </button>
+                        </ConfirmButton>
                       </div>
                     </div>
                   ))}
@@ -5966,7 +5959,14 @@ export default function AdminPanel() {
 
                         <div className="slot-admin-actions">
                           <button className="btn-edit-small" onClick={() => openSlotModal(slot)}>✏️</button>
-                          <button className="btn-delete-small" onClick={() => deleteSlot(slot.id)}>🗑️</button>
+                          <ConfirmButton
+                            onConfirm={() => deleteSlot(slot.id)}
+                            confirmText="?"
+                            className="btn-delete-small"
+                            variant="danger"
+                          >
+                            🗑️
+                          </ConfirmButton>
                         </div>
                       </div>
                     ))
@@ -5976,16 +5976,27 @@ export default function AdminPanel() {
             )}
           </div>
 
-          {/* Session Modal */}
-          {showGuessBalanceModal && (
-            <div className="modal-overlay" onClick={() => setShowGuessBalanceModal(false)}>
-              <div className="modal-content large" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingGuessSession ? 'Edit Session' : 'Create New Session'}</h2>
-                  <button className="modal-close" onClick={() => setShowGuessBalanceModal(false)}>×</button>
-                </div>
-
-                <form onSubmit={saveGuessSession} className="guess-session-form">
+          {/* Session Side Panel */}
+          <SidePanel
+            isOpen={showGuessBalanceModal}
+            onClose={() => setShowGuessBalanceModal(false)}
+            title={editingGuessSession ? 'Edit Session' : 'Create New Session'}
+            size="xlarge"
+            footer={
+              <>
+                <button type="button" className="btn-secondary" onClick={() => setShowGuessBalanceModal(false)}>
+                  Cancel
+                </button>
+                <button type="button" className="btn-primary" onClick={(e) => {
+                  e.preventDefault();
+                  saveGuessSession(e);
+                }}>
+                  {editingGuessSession ? 'Update Session' : 'Create Session'}
+                </button>
+              </>
+            }
+          >
+            <form className="guess-session-form">
                   <div className="form-row">
                     <div className="form-group">
                       <label>Title *</label>
@@ -6216,30 +6227,30 @@ export default function AdminPanel() {
                       </div>
                     )}
                   </div>
-
-                  <div className="form-actions">
-                    <button type="button" className="btn-secondary" onClick={() => setShowGuessBalanceModal(false)}>
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn-primary">
-                      {editingGuessSession ? 'Update Session' : 'Create Session'}
-                    </button>
-                  </div>
                 </form>
-              </div>
-            </div>
-          )}
+          </SidePanel>
 
-          {/* Slot Modal */}
-          {showSlotModal && (
-            <div className="modal-overlay" onClick={() => setShowSlotModal(false)}>
-              <div className="modal-content" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingSlot ? 'Edit Slot' : 'Add New Slot'}</h2>
-                  <button className="modal-close" onClick={() => setShowSlotModal(false)}>×</button>
-                </div>
-
-                <form onSubmit={saveSlot} className="slot-form">
+          {/* Slot Side Panel */}
+          <SidePanel
+            isOpen={showSlotModal}
+            onClose={() => setShowSlotModal(false)}
+            title={editingSlot ? 'Edit Slot' : 'Add New Slot'}
+            size="medium"
+            footer={
+              <>
+                <button type="button" className="btn-secondary" onClick={() => setShowSlotModal(false)}>
+                  Cancel
+                </button>
+                <button type="button" className="btn-primary" onClick={(e) => {
+                  e.preventDefault();
+                  saveSlot(e);
+                }}>
+                  {editingSlot ? 'Update Slot' : 'Add Slot'}
+                </button>
+              </>
+            }
+          >
+            <form className="slot-form">
                   <div className="form-row">
                     <div className="form-group">
                       <label>Slot Name *</label>
@@ -6331,30 +6342,41 @@ export default function AdminPanel() {
                       />
                     </div>
                   </div>
-
-                  <div className="form-actions">
-                    <button type="button" className="btn-secondary" onClick={() => setShowSlotModal(false)}>
-                      Cancel
-                    </button>
-                    <button type="submit" className="btn-primary">
-                      {editingSlot ? 'Update Slot' : 'Add Slot'}
-                    </button>
-                  </div>
                 </form>
-              </div>
-            </div>
-          )}
+          </SidePanel>
 
-          {/* Slot Results Entry Modal */}
-          {showSlotResultsModal && guessBalanceSlots && guessBalanceSlots.length > 0 && (
-            <div className="modal-overlay" onClick={() => setShowSlotResultsModal(false)}>
-              <div className="modal-content slot-results-modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>🎯 Enter Slot Results</h2>
-                  <button className="modal-close" onClick={() => setShowSlotResultsModal(false)}>×</button>
-                </div>
-
-                <div className="slot-results-content">
+          {/* Slot Results Entry Side Panel */}
+          <SidePanel
+            isOpen={showSlotResultsModal && guessBalanceSlots && guessBalanceSlots.length > 0}
+            onClose={() => setShowSlotResultsModal(false)}
+            title="🎯 Enter Slot Results"
+            size="large"
+            footer={
+              <>
+                <button 
+                  className="btn-save-result"
+                  onClick={() => saveSlotResult(guessBalanceSlots[currentSlotIndex])}
+                >
+                  💾 Save & Continue
+                </button>
+                <button 
+                  className="btn-save-all"
+                  onClick={async () => {
+                    for (const slot of guessBalanceSlots) {
+                      if (slot.bonus_win !== null && slot.bonus_win !== '') {
+                        await saveSlotResult(slot, false);
+                      }
+                    }
+                    showNotification('All results saved!', 'success');
+                    setShowSlotResultsModal(false);
+                  }}
+                >
+                  ✅ Save All & Close
+                </button>
+              </>
+            }
+          >
+            <div className="slot-results-content">
                   {/* Progress indicator */}
                   <div className="slot-results-progress">
                     <span>Slot {currentSlotIndex + 1} of {guessBalanceSlots.length}</span>
@@ -6466,34 +6488,8 @@ export default function AdminPanel() {
                       Next →
                     </button>
                   </div>
-
-                  {/* Save button */}
-                  <div className="slot-results-actions">
-                    <button 
-                      className="btn-save-result"
-                      onClick={() => saveSlotResult(guessBalanceSlots[currentSlotIndex])}
-                    >
-                      💾 Save & Continue
-                    </button>
-                    <button 
-                      className="btn-save-all"
-                      onClick={async () => {
-                        for (const slot of guessBalanceSlots) {
-                          if (slot.bonus_win !== null && slot.bonus_win !== '') {
-                            await saveSlotResult(slot, false);
-                          }
-                        }
-                        showNotification('All results saved!', 'success');
-                        setShowSlotResultsModal(false);
-                      }}
-                    >
-                      ✅ Save All & Close
-                    </button>
-                  </div>
                 </div>
-              </div>
-            </div>
-          )}
+          </SidePanel>
         </>
       )}
     </div>

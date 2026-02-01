@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { ConfirmButton } from '../components';
 import './CasinoOfferModal.css';
 
 // Deposit methods list
@@ -408,10 +409,15 @@ export default function CasinoOfferModal({
         {/* Footer */}
         <div className="casino-offer-modal-footer">
           {editingOffer && onDelete && (
-            <button className="co-btn co-btn-delete" onClick={() => onDelete(editingOffer.id)}>
+            <ConfirmButton
+              onConfirm={() => onDelete(editingOffer.id)}
+              confirmText="Delete?"
+              className="co-btn co-btn-delete"
+              variant="danger"
+            >
               <i className="fas fa-trash"></i>
               Delete
-            </button>
+            </ConfirmButton>
           )}
           <button className="co-btn co-btn-cancel" onClick={onClose}>
             Cancel
