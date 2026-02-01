@@ -19,6 +19,11 @@ export default function GuessBalancePage() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [activeTab, setActiveTab] = useState('stats'); // 'stats', 'gtb', 'leaderboard'
+  
+  // Slot voting state
+  const [slotVotes, setSlotVotes] = useState([]); // All votes for this session
+  const [userVotes, setUserVotes] = useState({ best: null, worst: null }); // Current user's votes
+  const [votingInProgress, setVotingInProgress] = useState(false);
 
   useEffect(() => {
     loadSessions();
@@ -145,9 +150,118 @@ export default function GuessBalancePage() {
       } else {
         setAllGuesses([]);
       }
+      
+      // Load slot votes
+      await loadSlotVotes(sessionId);
     } catch (err) {
       console.error('Error loading session details:', err);
     }
+  };
+
+  // Load all votes for a session
+  const loadSlotVotes = async (sessionId) => {
+    try {
+      const { data: votesData, error } = await supabase
+        .from('guess_balance_slot_votes')
+        .select('*')
+        .eq('session_id', sessionId);
+
+      if (error) {
+        console.error('Error loading votes:', error);
+        return;
+      }
+
+      setSlotVotes(votesData || []);
+
+      // Get current user's votes
+      if (user?.id) {
+        const userBestVote = votesData?.find(v => v.user_id === user.id && v.vote_type === 'best');
+        const userWorstVote = votesData?.find(v => v.user_id === user.id && v.vote_type === 'worst');
+        setUserVotes({
+          best: userBestVote?.slot_id || null,
+          worst: userWorstVote?.slot_id || null
+        });
+      }
+    } catch (err) {
+      console.error('Error loading slot votes:', err);
+    }
+  };
+
+  // Vote for a slot
+  const voteForSlot = async (slotId, voteType) => {
+    if (!user) {
+      setError('Please log in to vote');
+      return;
+    }
+
+    if (!activeSession || activeSession.status !== 'active') {
+      setError('Voting is only available for active sessions');
+      return;
+    }
+
+    if (hasPayoutStarted) {
+      setError('Voting is closed after payouts have started');
+      return;
+    }
+
+    // Check if user already voted for this type
+    if (userVotes[voteType] === slotId) {
+      // User is clicking the same slot again - remove vote
+      setVotingInProgress(true);
+      try {
+        await supabase
+          .from('guess_balance_slot_votes')
+          .delete()
+          .eq('session_id', activeSession.id)
+          .eq('user_id', user.id)
+          .eq('vote_type', voteType);
+
+        setUserVotes(prev => ({ ...prev, [voteType]: null }));
+        await loadSlotVotes(activeSession.id);
+      } catch (err) {
+        console.error('Error removing vote:', err);
+        setError('Failed to remove vote');
+      }
+      setVotingInProgress(false);
+      return;
+    }
+
+    setVotingInProgress(true);
+    try {
+      // Delete existing vote of this type first
+      await supabase
+        .from('guess_balance_slot_votes')
+        .delete()
+        .eq('session_id', activeSession.id)
+        .eq('user_id', user.id)
+        .eq('vote_type', voteType);
+
+      // Insert new vote
+      const { error } = await supabase
+        .from('guess_balance_slot_votes')
+        .insert({
+          session_id: activeSession.id,
+          slot_id: slotId,
+          user_id: user.id,
+          vote_type: voteType
+        });
+
+      if (error) throw error;
+
+      setUserVotes(prev => ({ ...prev, [voteType]: slotId }));
+      await loadSlotVotes(activeSession.id);
+    } catch (err) {
+      console.error('Error voting:', err);
+      setError('Failed to submit vote');
+    }
+    setVotingInProgress(false);
+  };
+
+  // Get vote counts for a slot
+  const getVoteCounts = (slotId) => {
+    const bestVotes = slotVotes.filter(v => v.slot_id === slotId && v.vote_type === 'best').length;
+    const worstVotes = slotVotes.filter(v => v.slot_id === slotId && v.vote_type === 'worst').length;
+    return { best: bestVotes, worst: worstVotes };
   };
 
   const navigateSession = (direction) => {
@@ -332,49 +446,77 @@ export default function GuessBalancePage() {
                       <th>#</th>
                       <th>SLOT</th>
                       <th>BETSIZE</th>
+                      <th>VOTES</th>
                       <th>SPECIAL</th>
                       <th>WINNINGS</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {slots.map((slot, index) => (
-                      <tr key={slot.id} className={slot.is_super ? 'super-row' : ''}>
-                        <td className="slot-number">#{index + 1}</td>
-                        <td className="slot-info-cell">
-                          <div className="slot-info-wrapper">
-                            {slot.slot_image_url ? (
-                              <img src={slot.slot_image_url} alt={slot.slot_name} className="slot-thumb" />
-                            ) : (
-                              <div className="slot-thumb-placeholder">🎰</div>
-                            )}
-                            <div className="slot-text">
-                              <span className="slot-name">{slot.slot_name}</span>
-                              <span className="slot-provider">{slot.provider || 'Unknown'}</span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="bet-cell">{formatCurrency(slot.bet_value)}</td>
-                        <td className="special-cell">
-                          {slot.is_super && (
-                            <span className="super-bonus-badge">
-                              <span className="badge-icon">👑</span> SUPER BONUS
-                            </span>
-                          )}
-                        </td>
-                        <td className="winnings-cell">
-                          {slot.bonus_win !== null ? (
-                            <div className="winnings-display">
-                              <span className="win-amount">{formatCurrency(slot.bonus_win)}</span>
-                              {slot.multiplier && (
-                                <span className="win-multiplier">({formatMultiplier(slot.multiplier)})</span>
+                    {slots.map((slot, index) => {
+                      const voteCounts = getVoteCounts(slot.id);
+                      const isUserBestVote = userVotes.best === slot.id;
+                      const isUserWorstVote = userVotes.worst === slot.id;
+                      const canVote = activeSession?.status === 'active' && !hasPayoutStarted && user;
+                      
+                      return (
+                        <tr key={slot.id} className={slot.is_super ? 'super-row' : ''}>
+                          <td className="slot-number">#{index + 1}</td>
+                          <td className="slot-info-cell">
+                            <div className="slot-info-wrapper">
+                              {slot.slot_image_url ? (
+                                <img src={slot.slot_image_url} alt={slot.slot_name} className="slot-thumb" />
+                              ) : (
+                                <div className="slot-thumb-placeholder">🎰</div>
                               )}
+                              <div className="slot-text">
+                                <span className="slot-name">{slot.slot_name}</span>
+                                <span className="slot-provider">{slot.provider || 'Unknown'}</span>
+                              </div>
                             </div>
-                          ) : (
-                            <span className="hidden-win">???</span>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                          <td className="bet-cell">{formatCurrency(slot.bet_value)}</td>
+                          <td className="votes-cell">
+                            <div className="vote-buttons">
+                              <button
+                                className={`vote-btn vote-best ${isUserBestVote ? 'voted' : ''}`}
+                                onClick={() => voteForSlot(slot.id, 'best')}
+                                disabled={!canVote || votingInProgress}
+                                title={canVote ? (isUserBestVote ? 'Remove Best vote' : 'Vote as Best') : 'Voting closed'}
+                              >
+                                👑 {voteCounts.best > 0 && <span className="vote-count">{voteCounts.best}</span>}
+                              </button>
+                              <button
+                                className={`vote-btn vote-worst ${isUserWorstVote ? 'voted' : ''}`}
+                                onClick={() => voteForSlot(slot.id, 'worst')}
+                                disabled={!canVote || votingInProgress}
+                                title={canVote ? (isUserWorstVote ? 'Remove Worst vote' : 'Vote as Worst') : 'Voting closed'}
+                              >
+                                💩 {voteCounts.worst > 0 && <span className="vote-count">{voteCounts.worst}</span>}
+                              </button>
+                            </div>
+                          </td>
+                          <td className="special-cell">
+                            {slot.is_super && (
+                              <span className="super-bonus-badge">
+                                <span className="badge-icon">👑</span> SUPER BONUS
+                              </span>
+                            )}
+                          </td>
+                          <td className="winnings-cell">
+                            {slot.bonus_win !== null ? (
+                              <div className="winnings-display">
+                                <span className="win-amount">{formatCurrency(slot.bonus_win)}</span>
+                                {slot.multiplier && (
+                                  <span className="win-multiplier">({formatMultiplier(slot.multiplier)})</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span className="hidden-win">???</span>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
 
