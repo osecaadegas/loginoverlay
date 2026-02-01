@@ -2,7 +2,8 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../../config/supabaseClient';
 import PokerTable from './PokerTable';
 import './CasinoLobby.css';
-import SidePanel, { 
+import { 
+  SidePanel,
   PanelSection, 
   PanelButton,
   PanelButtonGroup

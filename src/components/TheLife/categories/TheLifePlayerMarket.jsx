@@ -2,7 +2,8 @@ import '../styles/TheLifePlayerMarket.css';
 import { supabase } from '../../../config/supabaseClient';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLanguage } from '../../../contexts/LanguageContext';
-import SidePanel, { 
+import { 
+  SidePanel,
   PanelSection, 
   PanelItemPreview, 
   PanelQuantityInput, 

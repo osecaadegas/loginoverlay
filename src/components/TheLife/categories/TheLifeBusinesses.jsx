@@ -3,7 +3,8 @@ import { getMaxBusinessSlots, getUpgradeCost } from '../utils/gameUtils';
 import { useRef, useState } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
 import '../styles/TheLifeBusinesses.css';
-import SidePanel, { 
+import { 
+  SidePanel,
   PanelSection, 
   PanelSelectableCard, 
   PanelQuantityInput,
