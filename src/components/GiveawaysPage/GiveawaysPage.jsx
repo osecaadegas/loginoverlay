@@ -449,83 +449,69 @@ export default function GiveawaysPage() {
           </div>
         )}
 
-        {/* Latest Redeems Table */}
+        {/* Latest Redeems Table - Compact */}
         {allParticipants.length > 0 && (
-          <div className="relative bg-black/40 backdrop-blur-xl border border-yellow-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-yellow-500/10">
-            <div className="px-6 md:px-8 py-5 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/10 to-transparent">
-              <h2 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-                <span className="text-3xl">🎟️</span> Latest Redeems
+          <div className="relative bg-black/40 backdrop-blur-xl border border-yellow-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-yellow-500/10">
+            <div className="px-4 py-3 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/10 to-transparent">
+              <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                <span className="text-xl">🎟️</span> Latest Redeems
+                <span className="ml-auto bg-yellow-500/20 border border-yellow-500/50 rounded-full px-3 py-0.5 text-xs font-bold text-yellow-400">
+                  {allParticipants.length}
+                </span>
               </h2>
             </div>
             
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-yellow-500/5 border-b border-yellow-500/20">
-                    <th className="text-left px-8 py-4 text-xs font-black text-yellow-400 uppercase tracking-widest">Redeems</th>
-                    <th className="text-left px-8 py-4 text-xs font-black text-yellow-400 uppercase tracking-widest">Nickname</th>
-                    <th className="text-left px-8 py-4 text-xs font-black text-yellow-400 uppercase tracking-widest">Date</th>
-                    <th className="text-left px-8 py-4 text-xs font-black text-yellow-400 uppercase tracking-widest">Points</th>
-                    <th className="text-left px-8 py-4 text-xs font-black text-yellow-400 uppercase tracking-widest">Status</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-white/5">
-                  {allParticipants.map((entry, index) => (
-                    <tr key={index} className="hover:bg-yellow-500/5 transition-colors">
-                      <td className="px-8 py-4 text-sm font-bold text-white">GIVEAWAY ENTRY</td>
-                      <td className="px-8 py-4 text-sm text-gray-300 font-medium">{entry.username}</td>
-                      <td className="px-8 py-4 text-sm text-gray-400">
-                        {new Date(entry.entered_at).toLocaleDateString('en-US', { 
-                          month: '2-digit', 
-                          day: '2-digit', 
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        })}
-                      </td>
-                      <td className="px-8 py-4 text-sm font-bold text-yellow-400">-1 pts</td>
-                      <td className="px-8 py-4">
-                        <span className={`inline-block px-4 py-1.5 rounded-full text-xs font-black uppercase tracking-wide ${
-                          entry.status === 'WON' 
-                            ? 'bg-gradient-to-r from-yellow-500/30 to-yellow-600/20 text-yellow-400 border-2 border-yellow-500/50 shadow-lg shadow-yellow-500/20' 
-                            : 'bg-gradient-to-r from-green-500/30 to-green-600/20 text-green-400 border-2 border-green-500/50 shadow-lg shadow-green-500/20'
-                        }`}>
-                          {entry.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            {/* Table Header */}
+            <div className="hidden md:grid grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 px-4 py-2 bg-yellow-500/5 border-b border-yellow-500/20 text-xs font-semibold text-yellow-400 uppercase tracking-wider">
+              <span>Type</span>
+              <span>User</span>
+              <span>Date</span>
+              <span className="text-right">Points</span>
+              <span className="text-center w-16">Status</span>
             </div>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-white/5">
+            
+            {/* Rows */}
+            <div className="divide-y divide-white/5 max-h-[400px] overflow-y-auto">
               {allParticipants.map((entry, index) => (
-                <div key={index} className="px-5 py-5 hover:bg-yellow-500/5 transition-colors">
-                  <div className="flex justify-between items-start mb-3">
-                    <div className="font-bold text-white text-sm">GIVEAWAY ENTRY</div>
-                    <span className={`inline-block px-3 py-1 rounded-full text-xs font-black uppercase ${
+                <div 
+                  key={index} 
+                  className="grid grid-cols-2 md:grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 px-4 py-2 hover:bg-yellow-500/5 transition-colors items-center"
+                >
+                  {/* Type */}
+                  <div className="font-semibold text-white text-sm">
+                    🎫 Entry
+                  </div>
+                  
+                  {/* Username */}
+                  <div className="text-gray-300 text-sm truncate">
+                    {entry.username}
+                  </div>
+                  
+                  {/* Date - Hidden on mobile */}
+                  <div className="hidden md:block text-gray-500 text-xs">
+                    {new Date(entry.entered_at).toLocaleDateString('en-US', { 
+                      month: '2-digit', 
+                      day: '2-digit', 
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </div>
+                  
+                  {/* Points */}
+                  <div className="text-pink-400 font-bold text-sm text-right">
+                    -1 pts
+                  </div>
+                  
+                  {/* Status */}
+                  <div className="flex justify-end">
+                    <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${
                       entry.status === 'WON' 
                         ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/50' 
                         : 'bg-green-500/20 text-green-400 border border-green-500/50'
                     }`}>
-                      {entry.status}
+                      {entry.status === 'WON' ? '🏆 WON' : 'JOINED'}
                     </span>
-                  </div>
-                  <div className="text-sm text-gray-300 font-medium mb-2">{entry.username}</div>
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-400">
-                      {new Date(entry.entered_at).toLocaleDateString('en-US', { 
-                        month: '2-digit', 
-                        day: '2-digit', 
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                    <span className="text-yellow-400 font-bold">-1 pts</span>
                   </div>
                 </div>
               ))}
