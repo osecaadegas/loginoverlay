@@ -139,7 +139,7 @@ export default function DailyWheel() {
       const { data, error } = await supabase
         .from('daily_wheel_spins')
         .select('*')
-        .order('spun_at', { ascending: false })
+        .order('spin_date', { ascending: false })
         .limit(20);
 
       if (error) throw error;
@@ -750,7 +750,7 @@ export default function DailyWheel() {
                     {spin.se_points_won > 0 ? `+${spin.se_points_won.toLocaleString()} pts` : '-'}
                   </div>
                   <div className="table-cell date">
-                    {new Date(spin.spun_at).toLocaleDateString('en-US', { 
+                    {new Date(spin.spin_date).toLocaleDateString('en-US', { 
                       month: '2-digit', 
                       day: '2-digit', 
                       year: 'numeric',
