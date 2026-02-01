@@ -491,54 +491,101 @@ export default function DailyWheel() {
           se_points_won: prize.se_points
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error recording spin:', error);
+      }
 
       // Award StreamElements points if applicable
       if (prize.se_points > 0) {
-        await awardPoints(prize.se_points);
+        console.log('🎯 Prize has points, attempting to award:', prize.se_points);
+        const result = await awardPoints(prize.se_points);
+        
+        if (result?.success) {
+          console.log('✅ Points awarded successfully!');
+        } else {
+          console.error('❌ Failed to award points:', result?.error);
+          // Still allow the spin to complete, just log the error
+        }
+      } else {
+        console.log('ℹ️ Prize has no points to award');
       }
 
       setCanSpin(false);
       startCountdown();
       fetchRecentSpins();
     } catch (error) {
-      console.error('Error recording spin:', error);
+      console.error('Error in handleWin:', error);
     }
   };
 
   const awardPoints = async (points) => {
     try {
-      // Get user's SE username from profile
-      const { data: profile } = await supabase
-        .from('user_profiles')
-        .select('streamelements_username')
+      console.log('🎁 Attempting to award', points, 'points to user:', user.id);
+      
+      // First try to get SE username from streamelements_connections table
+      let seUsername = null;
+      
+      const { data: seConnection, error: seError } = await supabase
+        .from('streamelements_connections')
+        .select('se_username')
         .eq('user_id', user.id)
         .single();
 
-      if (!profile?.streamelements_username) {
-        console.warn('User has no StreamElements username set');
-        return;
+      if (seConnection?.se_username) {
+        seUsername = seConnection.se_username;
+        console.log('✅ Found SE username in streamelements_connections:', seUsername);
+      } else {
+        console.log('⚠️ No SE connection found, checking user_profiles...');
+        
+        // Fallback: check user_profiles table
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('streamelements_username, twitch_username')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile?.streamelements_username) {
+          seUsername = profile.streamelements_username;
+          console.log('✅ Found SE username in user_profiles:', seUsername);
+        } else if (profile?.twitch_username) {
+          // Use Twitch username as fallback (often the same)
+          seUsername = profile.twitch_username;
+          console.log('✅ Using Twitch username as fallback:', seUsername);
+        }
       }
 
-      // Call StreamElements API via your backend
+      if (!seUsername) {
+        console.error('❌ User has no StreamElements username set. Cannot award points.');
+        console.error('Please link your StreamElements account in your profile settings.');
+        return { success: false, error: 'No StreamElements username found' };
+      }
+
+      // Call StreamElements API via backend
+      console.log('📡 Calling award-points API for:', seUsername, 'points:', points);
+      
       const response = await fetch('/api/streamelements/award-points', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          username: profile.streamelements_username,
+          username: seUsername,
           points: points
         })
       });
 
+      const responseData = await response.json();
+      
       if (!response.ok) {
-        throw new Error('Failed to award points');
+        console.error('❌ Failed to award points:', responseData);
+        throw new Error(responseData.error || 'Failed to award points');
       }
 
-      console.log(`Awarded ${points} points to ${profile.streamelements_username}`);
+      console.log(`✅ Successfully awarded ${points} points to ${seUsername}`, responseData);
+      return { success: true, data: responseData };
     } catch (error) {
-      console.error('Error awarding points:', error);
+      console.error('❌ Error awarding points:', error);
+      return { success: false, error: error.message };
     }
   };
 
