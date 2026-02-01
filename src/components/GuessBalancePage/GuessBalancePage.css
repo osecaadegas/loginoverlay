@@ -1108,3 +1108,119 @@
   min-width: 18px;
   text-align: center;
 }
+
+/* Votes Tab Content */
+.votes-content {
+  padding: 16px;
+}
+
+.votes-content h3 {
+  font-size: 1.1rem;
+  color: #f3f4f6;
+  margin: 0 0 4px 0;
+}
+
+.votes-subtitle {
+  color: #9ca3af;
+  font-size: 0.85rem;
+  margin: 0 0 16px 0;
+}
+
+.no-votes-yet {
+  text-align: center;
+  padding: 30px;
+  color: #6b7280;
+}
+
+.votes-section {
+  margin-bottom: 20px;
+}
+
+.votes-section h4 {
+  font-size: 0.95rem;
+  color: #f3f4f6;
+  margin: 0 0 10px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.best-votes-section h4 {
+  color: #fbbf24;
+}
+
+.worst-votes-section h4 {
+  color: #a78bfa;
+}
+
+.votes-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.vote-slot-group {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.vote-slot-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.vote-slot-name {
+  font-weight: 600;
+  color: #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.vote-slot-count {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+.vote-users {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.vote-user {
+  font-size: 0.8rem;
+  color: #9ca3af;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.vote-user.you {
+  background: rgba(59, 130, 246, 0.2);
+  color: #60a5fa;
+  border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.vote-user .you-badge {
+  font-size: 0.65rem;
+  background: #3b82f6;
+  color: white;
+  padding: 1px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.no-votes-type {
+  color: #6b7280;
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}

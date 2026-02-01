@@ -158,7 +158,7 @@ export default function GuessBalancePage() {
     }
   };
 
-  // Load all votes for a session
+  // Load all votes for a session with user info
   const loadSlotVotes = async (sessionId) => {
     try {
       const { data: votesData, error } = await supabase
@@ -171,7 +171,29 @@ export default function GuessBalancePage() {
         return;
       }
 
-      setSlotVotes(votesData || []);
+      // Get unique user IDs from votes
+      const voterUserIds = [...new Set((votesData || []).map(v => v.user_id))];
+      
+      // Fetch user profiles for voters
+      let voterUsernameMap = {};
+      if (voterUserIds.length > 0) {
+        const { data: voterProfiles } = await supabase
+          .from('user_profiles')
+          .select('id, twitch_username, display_name, username')
+          .in('id', voterUserIds);
+        
+        voterProfiles?.forEach(profile => {
+          voterUsernameMap[profile.id] = profile.twitch_username || profile.display_name || profile.username || 'Anonymous';
+        });
+      }
+
+      // Enrich votes with usernames
+      const enrichedVotes = (votesData || []).map(vote => ({
+        ...vote,
+        username: voterUsernameMap[vote.user_id] || 'Anonymous'
+      }));
+
+      setSlotVotes(enrichedVotes);
 
       // Get current user's votes
       if (user?.id) {
@@ -521,6 +543,12 @@ export default function GuessBalancePage() {
                   <span className="tab-icon">💰</span> GTB
                 </button>
                 <button 
+                  className={`stats-tab ${activeTab === 'votes' ? 'active' : ''}`}
+                  onClick={() => setActiveTab('votes')}
+                >
+                  <span className="tab-icon">🗳️</span> Votes
+                </button>
+                <button 
                   className={`stats-tab ${activeTab === 'leaderboard' ? 'active' : ''}`}
                   onClick={() => setActiveTab('leaderboard')}
                 >
@@ -683,6 +711,88 @@ export default function GuessBalancePage() {
                       <span className="reveal-label">FINAL BALANCE</span>
                       <span className="reveal-value">{formatCurrency(activeSession.final_balance)}</span>
                     </div>
+                  )}
+                </div>
+              )}
+
+              {/* Votes Tab */}
+              {activeTab === 'votes' && (
+                <div className="votes-content">
+                  <h3>🗳️ Slot Votes</h3>
+                  <p className="votes-subtitle">Who voted for Best & Worst slots</p>
+                  
+                  {slotVotes.length === 0 ? (
+                    <div className="no-votes-yet">
+                      <p>No votes yet. Be the first to vote!</p>
+                    </div>
+                  ) : (
+                    <>
+                      {/* Best Votes Section */}
+                      <div className="votes-section best-votes-section">
+                        <h4>👑 Best Votes</h4>
+                        <div className="votes-list">
+                          {slots.filter(slot => slotVotes.some(v => v.slot_id === slot.id && v.vote_type === 'best'))
+                            .map(slot => {
+                              const votesForSlot = slotVotes.filter(v => v.slot_id === slot.id && v.vote_type === 'best');
+                              return (
+                                <div key={`best-${slot.id}`} className="vote-slot-group">
+                                  <div className="vote-slot-header">
+                                    <span className="vote-slot-name">{slot.slot_name}</span>
+                                    <span className="vote-slot-count">{votesForSlot.length} vote{votesForSlot.length !== 1 ? 's' : ''}</span>
+                                  </div>
+                                  <div className="vote-users">
+                                    {votesForSlot.map(vote => (
+                                      <span 
+                                        key={vote.id} 
+                                        className={`vote-user ${vote.user_id === user?.id ? 'you' : ''}`}
+                                      >
+                                        {vote.username}
+                                        {vote.user_id === user?.id && <span className="you-badge">YOU</span>}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          {!slotVotes.some(v => v.vote_type === 'best') && (
+                            <p className="no-votes-type">No best votes yet</p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Worst Votes Section */}
+                      <div className="votes-section worst-votes-section">
+                        <h4>💩 Worst Votes</h4>
+                        <div className="votes-list">
+                          {slots.filter(slot => slotVotes.some(v => v.slot_id === slot.id && v.vote_type === 'worst'))
+                            .map(slot => {
+                              const votesForSlot = slotVotes.filter(v => v.slot_id === slot.id && v.vote_type === 'worst');
+                              return (
+                                <div key={`worst-${slot.id}`} className="vote-slot-group">
+                                  <div className="vote-slot-header">
+                                    <span className="vote-slot-name">{slot.slot_name}</span>
+                                    <span className="vote-slot-count">{votesForSlot.length} vote{votesForSlot.length !== 1 ? 's' : ''}</span>
+                                  </div>
+                                  <div className="vote-users">
+                                    {votesForSlot.map(vote => (
+                                      <span 
+                                        key={vote.id} 
+                                        className={`vote-user ${vote.user_id === user?.id ? 'you' : ''}`}
+                                      >
+                                        {vote.username}
+                                        {vote.user_id === user?.id && <span className="you-badge">YOU</span>}
+                                      </span>
+                                    ))}
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          {!slotVotes.some(v => v.vote_type === 'worst') && (
+                            <p className="no-votes-type">No worst votes yet</p>
+                          )}
+                        </div>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
