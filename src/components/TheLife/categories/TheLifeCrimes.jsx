@@ -33,6 +33,62 @@ export default function TheLifeCrimes({
       });
     }
   };
+
+  // Calculate actual success chance with all modifiers
+  const calculateSuccessChance = (robbery) => {
+    let successChance = robbery.success_rate;
+    
+    // Crime difficulty factor
+    const crimeLevel = robbery.min_level_required;
+    if (crimeLevel <= 10) {
+      successChance += 5; // Petty crimes
+    } else if (crimeLevel <= 30) {
+      successChance += 0; // Standard
+    } else if (crimeLevel <= 60) {
+      successChance -= 3; // Serious
+    } else if (crimeLevel <= 100) {
+      successChance -= 6; // Major
+    } else {
+      successChance -= 10; // Legendary
+    }
+    
+    // Level difference bonus/penalty
+    const levelDifference = player.level - robbery.min_level_required;
+    if (levelDifference >= 0) {
+      successChance += Math.min(levelDifference * 2, 10);
+    } else {
+      successChance += (levelDifference * 5);
+    }
+    
+    // HP penalty for being low health
+    const hpPercentage = player.hp / player.max_hp;
+    if (hpPercentage < 0.5) {
+      const hpPenalty = (0.5 - hpPercentage) * 20;
+      successChance -= hpPenalty;
+    }
+    
+    // Daily catches penalty
+    const dailyCatches = player.daily_catches || 0;
+    const catchPenalty = Math.min(dailyCatches * 3, 15);
+    successChance -= catchPenalty;
+    
+    // Wealth-based risk factor
+    const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
+    if (totalWealth > 1000000) {
+      const wealthPenalty = Math.min(Math.floor(Math.log10(totalWealth / 1000000) + 1), 5);
+      successChance -= wealthPenalty;
+    }
+    
+    // Level-based notoriety penalty
+    if (player.level > 20) {
+      const notorietyPenalty = Math.min(Math.floor((player.level - 20) * 0.1), 5);
+      successChance -= notorietyPenalty;
+    }
+    
+    // Clamp between 10% and 85% (same as attemptRobbery)
+    return Math.max(10, Math.min(85, successChance));
+  };
+
   const attemptRobbery = async (robbery) => {
     // Prevent spam clicking
     if (loading || cooldownCrimeId === robbery.id) {
@@ -53,80 +109,9 @@ export default function TheLifeCrimes({
       setLoading(true);
       setCooldownCrimeId(robbery.id);
       
-      // === BALANCED DYNAMIC JAIL CHANCE SYSTEM ===
-      // Base success chance from the robbery
-      let successChance = robbery.success_rate;
-      
-      // === CRIME DIFFICULTY FACTOR ===
-      // Easy crimes (low level req) = safer, less police attention
-      // Hard crimes (high level req) = riskier, more police attention
-      // Level 1-10:   Petty crimes      +5%  (cops don't care much)
-      // Level 11-30:  Standard crimes    0%  (normal police attention)
-      // Level 31-60:  Serious crimes    -3%  (increased heat)
-      // Level 61-100: Major crimes      -6%  (heavy police presence)
-      // Level 101+:   Legendary heists -10%  (FBI/SWAT level)
-      let crimeDifficultyMod = 0;
-      const crimeLevel = robbery.min_level_required;
-      if (crimeLevel <= 10) {
-        crimeDifficultyMod = 5; // Petty crimes
-      } else if (crimeLevel <= 30) {
-        crimeDifficultyMod = 0; // Standard
-      } else if (crimeLevel <= 60) {
-        crimeDifficultyMod = -3; // Serious
-      } else if (crimeLevel <= 100) {
-        crimeDifficultyMod = -6; // Major
-      } else {
-        crimeDifficultyMod = -10; // Legendary (101+)
-      }
-      successChance += crimeDifficultyMod;
-      
-      // Level difference bonus/penalty
+      // Use the shared calculation function for consistency
+      const successChance = calculateSuccessChance(robbery);
       const levelDifference = player.level - robbery.min_level_required;
-      if (levelDifference >= 0) {
-        // Higher level = better chance, but capped at +10%
-        successChance += Math.min(levelDifference * 2, 10);
-      } else {
-        // Under-leveled = harder (-5% per level under)
-        successChance += (levelDifference * 5);
-      }
-      
-      // HP penalty for being low health
-      const hpPercentage = player.hp / player.max_hp;
-      if (hpPercentage < 0.5) {
-        const hpPenalty = (0.5 - hpPercentage) * 20; // Max -10% at 0 HP
-        successChance -= hpPenalty;
-      }
-      
-      // === BALANCED: Daily catches penalty ===
-      // Each catch today = -3% (resets at midnight)
-      // This discourages spam but doesn't destroy your chances
-      const dailyCatches = player.daily_catches || 0;
-      const catchPenalty = Math.min(dailyCatches * 3, 15); // Max -15% from daily catches
-      successChance -= catchPenalty;
-      
-      // === BALANCED: Wealth-based risk factor ===
-      // Rich players attract slightly more attention
-      // But it's mild - max -5% even for billionaires
-      const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
-      let wealthPenalty = 0;
-      if (totalWealth > 1000000) {
-        // Logarithmic scale: $1M = -1%, $10M = -2%, $100M = -3%, $1B = -4%, max -5%
-        wealthPenalty = Math.min(Math.floor(Math.log10(totalWealth / 1000000) + 1), 5);
-        successChance -= wealthPenalty;
-      }
-      
-      // === BALANCED: Level-based notoriety ===
-      // High level = cops know your name, but mild penalty
-      // Max -5% even at level 200
-      let notorietyPenalty = 0;
-      if (player.level > 20) {
-        notorietyPenalty = Math.min(Math.floor((player.level - 20) * 0.1), 5);
-        successChance -= notorietyPenalty;
-      }
-      
-      // Clamp between 10% and 85%
-      // Never impossible (min 10%), never too easy (max 85%)
-      successChance = Math.max(10, Math.min(85, successChance));
       
       const roll = Math.random() * 100;
       const success = roll < successChance;
@@ -363,21 +348,8 @@ export default function TheLifeCrimes({
           const defaultImage = 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=500';
           const imageUrl = robbery.image_url || defaultImage;
           
-          const levelDifference = player.level - robbery.min_level_required;
-          let displaySuccessChance = robbery.success_rate;
-          if (levelDifference >= 0) {
-            displaySuccessChance += (levelDifference * 5);
-          } else {
-            displaySuccessChance += (levelDifference * 10);
-          }
-          
-          const hpPercentage = player.hp / player.max_hp;
-          if (hpPercentage < 0.5) {
-            const hpPenalty = (0.5 - hpPercentage) * 30;
-            displaySuccessChance -= hpPenalty;
-          }
-          
-          displaySuccessChance = Math.max(5, Math.min(95, displaySuccessChance));
+          // Use the same calculation function for accurate display
+          const displaySuccessChance = calculateSuccessChance(robbery);
           
           const isLoading = loading && cooldownCrimeId === robbery.id;
           const isDisabled = player.level < robbery.min_level_required || isInJail || isInHospital || player.stamina < robbery.stamina_cost || loading;
