@@ -2,6 +2,11 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../../config/supabaseClient';
 import PokerTable from './PokerTable';
 import './CasinoLobby.css';
+import SidePanel, { 
+  PanelSection, 
+  PanelButton,
+  PanelButtonGroup
+} from '../../components/SidePanel';
 
 // ============================================
 // CONFIGURATION
@@ -434,117 +439,167 @@ export default function CasinoLobby({
         )}
       </div>
 
-      {/* Create Table Modal */}
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
-          <div className="modal-content create-table-modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2>Create New Table</h2>
-              <button className="close-btn" onClick={() => setShowCreateModal(false)}>×</button>
-            </div>
+      {/* Create Table Side Panel */}
+      <SidePanel
+        isOpen={showCreateModal}
+        onClose={() => setShowCreateModal(false)}
+        title="Create New Table"
+        subtitle="Set up your poker room"
+        width="460px"
+        footer={
+          <PanelButtonGroup>
+            <PanelButton variant="secondary" onClick={() => setShowCreateModal(false)}>
+              Cancel
+            </PanelButton>
+            <PanelButton variant="primary" onClick={handleCreateTable}>
+              Create Table
+            </PanelButton>
+          </PanelButtonGroup>
+        }
+      >
+        <PanelSection title="Game Type">
+          <div className="game-type-selector" style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            {Object.entries(TABLE_TEMPLATES).map(([key, template]) => (
+              <button
+                key={key}
+                className={`game-type-btn ${newTable.gameType === key ? 'active' : ''}`}
+                onClick={() => setNewTable(prev => ({ 
+                  ...prev, 
+                  gameType: key,
+                  seats: template.seats,
+                  minBuyIn: template.minBuyIn,
+                  maxBuyIn: template.maxBuyIn
+                }))}
+                style={{
+                  flex: '1 0 calc(50% - 5px)',
+                  padding: '14px 16px',
+                  background: newTable.gameType === key ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0, 0, 0, 0.4)',
+                  border: newTable.gameType === key ? '2px solid #d4af37' : '1px solid rgba(212, 175, 55, 0.3)',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span style={{ fontSize: '1.5rem' }}>{template.icon}</span>
+                <span style={{ color: newTable.gameType === key ? '#d4af37' : '#8a8d96', fontWeight: '600', fontSize: '0.9rem' }}>{template.name}</span>
+              </button>
+            ))}
+          </div>
+        </PanelSection>
 
-            <div className="modal-body">
-              <div className="form-group">
-                <label>Game Type</label>
-                <div className="game-type-selector">
-                  {Object.entries(TABLE_TEMPLATES).map(([key, template]) => (
-                    <button
-                      key={key}
-                      className={`game-type-btn ${newTable.gameType === key ? 'active' : ''}`}
-                      onClick={() => setNewTable(prev => ({ 
-                        ...prev, 
-                        gameType: key,
-                        seats: template.seats,
-                        minBuyIn: template.minBuyIn,
-                        maxBuyIn: template.maxBuyIn
-                      }))}
-                    >
-                      <span className="icon">{template.icon}</span>
-                      <span className="name">{template.name}</span>
-                    </button>
-                  ))}
-                </div>
-              </div>
+        <PanelSection title="Table Name">
+          <div className="thelife-panel-field">
+            <input
+              type="text"
+              value={newTable.name}
+              onChange={(e) => setNewTable(prev => ({ ...prev, name: e.target.value }))}
+              placeholder="e.g., High Rollers Only"
+              maxLength={30}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                background: 'rgba(0, 0, 0, 0.5)',
+                border: '1px solid rgba(212, 175, 55, 0.3)',
+                borderRadius: '10px',
+                color: '#ffffff',
+                fontSize: '1rem'
+              }}
+            />
+          </div>
+        </PanelSection>
 
-              <div className="form-group">
-                <label>Table Name</label>
+        <PanelSection title="Buy-in Limits">
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <div className="thelife-panel-field" style={{ flex: 1 }}>
+              <label style={{ display: 'block', color: '#8a8d96', fontSize: '0.8rem', marginBottom: '8px' }}>Min Buy-in</label>
+              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '0 14px', height: '48px' }}>
+                <span style={{ color: '#22c55e', fontWeight: '700', marginRight: '4px' }}>$</span>
                 <input
-                  type="text"
-                  value={newTable.name}
-                  onChange={(e) => setNewTable(prev => ({ ...prev, name: e.target.value }))}
-                  placeholder="e.g., High Rollers Only"
-                  maxLength={30}
+                  type="number"
+                  value={newTable.minBuyIn}
+                  onChange={(e) => setNewTable(prev => ({ ...prev, minBuyIn: parseInt(e.target.value) || 0 }))}
+                  min={10}
+                  style={{ flex: 1, background: 'transparent', border: 'none', color: '#22c55e', fontSize: '1.1rem', fontWeight: '700', padding: 0 }}
                 />
               </div>
-
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Min Buy-in</label>
-                  <input
-                    type="number"
-                    value={newTable.minBuyIn}
-                    onChange={(e) => setNewTable(prev => ({ ...prev, minBuyIn: parseInt(e.target.value) || 0 }))}
-                    min={10}
-                  />
-                </div>
-                <div className="form-group">
-                  <label>Max Buy-in</label>
-                  <input
-                    type="number"
-                    value={newTable.maxBuyIn}
-                    onChange={(e) => setNewTable(prev => ({ ...prev, maxBuyIn: parseInt(e.target.value) || 0 }))}
-                    min={newTable.minBuyIn}
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label>Number of Seats</label>
-                <input
-                  type="range"
-                  min={2}
-                  max={10}
-                  value={newTable.seats}
-                  onChange={(e) => setNewTable(prev => ({ ...prev, seats: parseInt(e.target.value) }))}
-                />
-                <span className="range-value">{newTable.seats} seats</span>
-              </div>
-
-              <div className="form-group checkbox-group">
-                <label>
-                  <input
-                    type="checkbox"
-                    checked={newTable.isPrivate}
-                    onChange={(e) => setNewTable(prev => ({ ...prev, isPrivate: e.target.checked }))}
-                  />
-                  Private Table (Password Required)
-                </label>
-              </div>
-
-              {newTable.isPrivate && (
-                <div className="form-group">
-                  <label>Password</label>
-                  <input
-                    type="password"
-                    value={newTable.password}
-                    onChange={(e) => setNewTable(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder="Enter table password"
-                  />
-                </div>
-              )}
             </div>
-
-            <div className="modal-footer">
-              <button className="cancel-btn" onClick={() => setShowCreateModal(false)}>
-                Cancel
-              </button>
-              <button className="confirm-btn" onClick={handleCreateTable}>
-                Create Table
-              </button>
+            <div className="thelife-panel-field" style={{ flex: 1 }}>
+              <label style={{ display: 'block', color: '#8a8d96', fontSize: '0.8rem', marginBottom: '8px' }}>Max Buy-in</label>
+              <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '0 14px', height: '48px' }}>
+                <span style={{ color: '#22c55e', fontWeight: '700', marginRight: '4px' }}>$</span>
+                <input
+                  type="number"
+                  value={newTable.maxBuyIn}
+                  onChange={(e) => setNewTable(prev => ({ ...prev, maxBuyIn: parseInt(e.target.value) || 0 }))}
+                  min={newTable.minBuyIn}
+                  style={{ flex: 1, background: 'transparent', border: 'none', color: '#22c55e', fontSize: '1.1rem', fontWeight: '700', padding: 0 }}
+                />
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        </PanelSection>
+
+        <PanelSection title={`Seats: ${newTable.seats}`}>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            {[2, 4, 6, 8, 10].map(seats => (
+              <button
+                key={seats}
+                onClick={() => setNewTable(prev => ({ ...prev, seats }))}
+                style={{
+                  flex: 1,
+                  padding: '12px 8px',
+                  background: newTable.seats === seats ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0, 0, 0, 0.4)',
+                  border: newTable.seats === seats ? '1px solid rgba(212, 175, 55, 0.5)' : '1px solid rgba(212, 175, 55, 0.3)',
+                  borderRadius: '10px',
+                  color: newTable.seats === seats ? '#d4af37' : '#8a8d96',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                {seats}
+              </button>
+            ))}
+          </div>
+        </PanelSection>
+
+        <PanelSection title="Privacy">
+          <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer', padding: '14px 16px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+            <input
+              type="checkbox"
+              checked={newTable.isPrivate}
+              onChange={(e) => setNewTable(prev => ({ ...prev, isPrivate: e.target.checked }))}
+              style={{ width: '20px', height: '20px', accentColor: '#d4af37' }}
+            />
+            <span style={{ color: '#ffffff', fontWeight: '500' }}>Private Table (Password Required)</span>
+          </label>
+
+          {newTable.isPrivate && (
+            <div className="thelife-panel-field" style={{ marginTop: '12px' }}>
+              <input
+                type="password"
+                value={newTable.password}
+                onChange={(e) => setNewTable(prev => ({ ...prev, password: e.target.value }))}
+                placeholder="Enter table password"
+                style={{
+                  width: '100%',
+                  padding: '14px 16px',
+                  background: 'rgba(0, 0, 0, 0.5)',
+                  border: '1px solid rgba(212, 175, 55, 0.3)',
+                  borderRadius: '10px',
+                  color: '#ffffff',
+                  fontSize: '1rem'
+                }}
+              />
+            </div>
+          )}
+        </PanelSection>
+      </SidePanel>
     </div>
   );
 

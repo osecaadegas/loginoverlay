@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import { SidePanel, PanelSection, PanelButton, PanelButtonGroup } from '../components/SidePanel';
 import './TheLifeStockMarket.css';
 
 // ============================================
@@ -1104,127 +1105,205 @@ export default function TheLifeStockMarket({
         </div>
       )}
 
-      {/* Trade Modal */}
-      {selectedStock && (
-        <div className="sm-modal-overlay" onClick={() => setSelectedStock(null)}>
-          <div className="sm-modal" onClick={e => e.stopPropagation()}>
-            {(() => {
-              const stock = stocks.find(s => s.symbol === selectedStock);
-              if (!stock) return null;
-              
-              const holding = portfolio[selectedStock];
-              const subtotal = stock.price * tradeShares;
-              const fee = calculateFee(subtotal);
-              const total = tradeMode === 'buy' ? subtotal + fee : subtotal - fee;
-              
-              return (
-                <>
-                  <div className="sm-modal-header">
-                    <div>
-                      <h2>
-                        <span className="symbol">{stock.symbol}</span>
-                        <span className="name">{stock.name}</span>
-                      </h2>
-                      <div className="sector">{stock.sector}</div>
-                    </div>
-                    <button className="sm-close-btn" onClick={() => setSelectedStock(null)}>×</button>
-                  </div>
-
-                  <div className="sm-modal-price">
-                    <div className="price">${stock.price.toFixed(2)}</div>
-                    <div className={`change ${stock.changePercent >= 0 ? 'up' : 'down'}`}>
+      {/* Trade Side Panel */}
+      <SidePanel
+        isOpen={!!selectedStock}
+        onClose={() => setSelectedStock(null)}
+        title={(() => {
+          const stock = stocks.find(s => s.symbol === selectedStock);
+          return stock ? stock.symbol : '';
+        })()}
+        subtitle={(() => {
+          const stock = stocks.find(s => s.symbol === selectedStock);
+          return stock ? stock.name : '';
+        })()}
+        width="420px"
+        footer={
+          <PanelButtonGroup>
+            <PanelButton variant="secondary" onClick={() => setSelectedStock(null)}>
+              Cancel
+            </PanelButton>
+            <PanelButton 
+              variant={tradeMode === 'buy' ? 'primary' : 'sell'}
+              onClick={() => {
+                if (tradeMode === 'buy') {
+                  executeBuy(selectedStock, tradeShares);
+                } else {
+                  executeSell(selectedStock, tradeShares);
+                }
+              }}
+              disabled={
+                isProcessing ||
+                (tradeMode === 'buy' && (() => {
+                  const stock = stocks.find(s => s.symbol === selectedStock);
+                  if (!stock) return true;
+                  const subtotal = stock.price * tradeShares;
+                  const fee = calculateFee(subtotal);
+                  return subtotal + fee > player.cash;
+                })()) ||
+                (tradeMode === 'sell' && (() => {
+                  const holding = portfolio[selectedStock];
+                  return !holding || tradeShares > holding.shares;
+                })())
+              }
+            >
+              {tradeMode === 'buy' ? 'Buy' : 'Sell'} {tradeShares} Shares
+            </PanelButton>
+          </PanelButtonGroup>
+        }
+      >
+        {(() => {
+          const stock = stocks.find(s => s.symbol === selectedStock);
+          if (!stock) return null;
+          
+          const holding = portfolio[selectedStock];
+          const subtotal = stock.price * tradeShares;
+          const fee = calculateFee(subtotal);
+          const total = tradeMode === 'buy' ? subtotal + fee : subtotal - fee;
+          
+          return (
+            <>
+              <PanelSection title="Current Price">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px', background: 'rgba(0, 0, 0, 0.4)', borderRadius: '12px', border: '1px solid rgba(212, 175, 55, 0.3)' }}>
+                  <div>
+                    <div style={{ fontSize: '2rem', fontWeight: '700', color: '#ffffff' }}>${stock.price.toFixed(2)}</div>
+                    <div style={{ fontSize: '0.85rem', color: stock.changePercent >= 0 ? '#22c55e' : '#ef4444', fontWeight: '600' }}>
                       {stock.changePercent >= 0 ? '▲' : '▼'} ${Math.abs(stock.change).toFixed(2)} ({stock.changePercent.toFixed(2)}%)
                     </div>
                   </div>
+                  <div style={{ padding: '8px 12px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '8px', fontSize: '0.8rem', color: '#8a8d96' }}>
+                    {stock.sector}
+                  </div>
+                </div>
+              </PanelSection>
 
-                  <div className="sm-modal-stats">
-                    <div>
-                      <span className="label">Day Range</span>
-                      <span className="value">${stock.dayLow.toFixed(2)} - ${stock.dayHigh.toFixed(2)}</span>
+              <PanelSection title="Stock Info">
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                  <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#8a8d96', marginBottom: '4px' }}>Day Range</div>
+                    <div style={{ color: '#ffffff', fontWeight: '600', fontSize: '0.9rem' }}>${stock.dayLow.toFixed(2)} - ${stock.dayHigh.toFixed(2)}</div>
+                  </div>
+                  <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#8a8d96', marginBottom: '4px' }}>Volume</div>
+                    <div style={{ color: '#ffffff', fontWeight: '600', fontSize: '0.9rem' }}>{stock.volume.toLocaleString()}</div>
+                  </div>
+                  <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '8px' }}>
+                    <div style={{ fontSize: '0.75rem', color: '#8a8d96', marginBottom: '4px' }}>Risk Level</div>
+                    <div style={{ color: stock.riskLevel === 'high' ? '#ef4444' : stock.riskLevel === 'medium' ? '#f59e0b' : '#22c55e', fontWeight: '600', fontSize: '0.9rem', textTransform: 'capitalize' }}>{stock.riskLevel}</div>
+                  </div>
+                  {holding && (
+                    <div style={{ padding: '12px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '8px' }}>
+                      <div style={{ fontSize: '0.75rem', color: '#8a8d96', marginBottom: '4px' }}>You Own</div>
+                      <div style={{ color: '#d4af37', fontWeight: '600', fontSize: '0.9rem' }}>{holding.shares} shares</div>
                     </div>
-                    <div>
-                      <span className="label">Volume</span>
-                      <span className="value">{stock.volume.toLocaleString()}</span>
-                    </div>
-                    <div>
-                      <span className="label">Risk</span>
-                      <span className={`value risk-${stock.riskLevel}`}>{stock.riskLevel}</span>
-                    </div>
-                    {holding && (
-                      <div>
-                        <span className="label">You Own</span>
-                        <span className="value">{holding.shares} shares</span>
-                      </div>
-                    )}
+                  )}
+                </div>
+              </PanelSection>
+
+              <PanelSection title="Trade">
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                  <button 
+                    onClick={() => setTradeMode('buy')}
+                    style={{
+                      flex: 1,
+                      padding: '14px',
+                      background: tradeMode === 'buy' ? 'rgba(34, 197, 94, 0.2)' : 'rgba(0, 0, 0, 0.4)',
+                      border: tradeMode === 'buy' ? '2px solid #22c55e' : '1px solid rgba(212, 175, 55, 0.3)',
+                      borderRadius: '10px',
+                      color: tradeMode === 'buy' ? '#22c55e' : '#8a8d96',
+                      fontWeight: '700',
+                      fontSize: '1rem',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >Buy</button>
+                  <button 
+                    onClick={() => setTradeMode('sell')}
+                    disabled={!holding}
+                    style={{
+                      flex: 1,
+                      padding: '14px',
+                      background: tradeMode === 'sell' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(0, 0, 0, 0.4)',
+                      border: tradeMode === 'sell' ? '2px solid #ef4444' : '1px solid rgba(212, 175, 55, 0.3)',
+                      borderRadius: '10px',
+                      color: tradeMode === 'sell' ? '#ef4444' : '#8a8d96',
+                      fontWeight: '700',
+                      fontSize: '1rem',
+                      cursor: holding ? 'pointer' : 'not-allowed',
+                      opacity: holding ? 1 : 0.5,
+                      transition: 'all 0.15s ease'
+                    }}
+                  >Sell</button>
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label style={{ display: 'block', color: '#8a8d96', fontSize: '0.8rem', marginBottom: '8px' }}>Shares</label>
+                  <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', height: '52px' }}>
+                    <button
+                      onClick={() => setTradeShares(Math.max(1, tradeShares - 1))}
+                      style={{ width: '52px', height: '100%', background: 'transparent', border: 'none', color: '#d4af37', fontSize: '1.5rem', cursor: 'pointer' }}
+                    >-</button>
+                    <input 
+                      type="number" 
+                      min="1"
+                      max={tradeMode === 'sell' && holding ? holding.shares : undefined}
+                      value={tradeShares}
+                      onChange={e => setTradeShares(Math.max(1, parseInt(e.target.value) || 1))}
+                      style={{ flex: 1, background: 'transparent', border: 'none', color: '#ffffff', fontSize: '1.3rem', fontWeight: '700', textAlign: 'center', padding: 0 }}
+                    />
+                    <button
+                      onClick={() => setTradeShares(tradeShares + 1)}
+                      style={{ width: '52px', height: '100%', background: 'transparent', border: 'none', color: '#d4af37', fontSize: '1.5rem', cursor: 'pointer' }}
+                    >+</button>
                   </div>
 
-                  <div className="sm-trade-panel">
-                    <div className="sm-trade-tabs">
-                      <button 
-                        className={`sm-trade-tab ${tradeMode === 'buy' ? 'active-buy' : ''}`}
-                        onClick={() => setTradeMode('buy')}
-                      >
-                        Buy
-                      </button>
-                      <button 
-                        className={`sm-trade-tab ${tradeMode === 'sell' ? 'active-sell' : ''}`}
-                        onClick={() => setTradeMode('sell')}
-                        disabled={!holding}
-                      >
-                        Sell
-                      </button>
-                    </div>
-
-                    <div className="sm-trade-input">
-                      <label>Shares</label>
-                      <input 
-                        type="number" 
-                        min="1"
-                        max={tradeMode === 'sell' && holding ? holding.shares : undefined}
-                        value={tradeShares}
-                        onChange={e => setTradeShares(Math.max(1, parseInt(e.target.value) || 1))}
-                      />
-                    </div>
-
-                    <div className="sm-trade-summary">
-                      <div className="row">
-                        <span>Subtotal</span>
-                        <span>${subtotal.toFixed(2)}</span>
-                      </div>
-                      <div className="row">
-                        <span>Fee (0.5%)</span>
-                        <span>${fee.toFixed(2)}</span>
-                      </div>
-                      <div className="row total">
-                        <span>Total</span>
-                        <span>${total.toFixed(2)}</span>
-                      </div>
-                    </div>
-
-                    <button 
-                      className={`sm-execute-btn ${tradeMode}`}
-                      onClick={() => {
-                        if (tradeMode === 'buy') {
-                          executeBuy(selectedStock, tradeShares);
-                        } else {
-                          executeSell(selectedStock, tradeShares);
-                        }
-                      }}
-                      disabled={
-                        isProcessing ||
-                        (tradeMode === 'buy' && total > player.cash) ||
-                        (tradeMode === 'sell' && (!holding || tradeShares > holding.shares))
-                      }
-                    >
-                      {tradeMode === 'buy' ? 'Buy' : 'Sell'} {tradeShares} Shares
-                    </button>
+                  {/* Quick amount buttons */}
+                  <div style={{ display: 'flex', gap: '8px', marginTop: '10px' }}>
+                    {[1, 5, 10, 25, 100].map(amount => (
+                      <button
+                        key={amount}
+                        onClick={() => setTradeShares(amount)}
+                        style={{
+                          flex: 1,
+                          padding: '8px 4px',
+                          background: tradeShares === amount ? 'rgba(212, 175, 55, 0.2)' : 'rgba(0, 0, 0, 0.4)',
+                          border: tradeShares === amount ? '1px solid rgba(212, 175, 55, 0.5)' : '1px solid rgba(212, 175, 55, 0.2)',
+                          borderRadius: '6px',
+                          color: tradeShares === amount ? '#d4af37' : '#8a8d96',
+                          fontSize: '0.8rem',
+                          fontWeight: '600',
+                          cursor: 'pointer'
+                        }}
+                      >{amount}</button>
+                    ))}
                   </div>
-                </>
-              );
-            })()}
-          </div>
-        </div>
-      )}
+                </div>
+              </PanelSection>
+
+              <PanelSection title="Order Summary">
+                <div style={{ background: 'rgba(0, 0, 0, 0.4)', borderRadius: '10px', overflow: 'hidden' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid rgba(212, 175, 55, 0.15)' }}>
+                    <span style={{ color: '#8a8d96' }}>Subtotal</span>
+                    <span style={{ color: '#ffffff' }}>${subtotal.toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', borderBottom: '1px solid rgba(212, 175, 55, 0.15)' }}>
+                    <span style={{ color: '#8a8d96' }}>Fee (0.5%)</span>
+                    <span style={{ color: '#f59e0b' }}>-${fee.toFixed(2)}</span>
+                  </div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', padding: '14px 16px', background: 'rgba(0, 0, 0, 0.3)' }}>
+                    <span style={{ color: '#ffffff', fontWeight: '700' }}>Total</span>
+                    <span style={{ color: tradeMode === 'buy' ? '#ef4444' : '#22c55e', fontWeight: '700', fontSize: '1.1rem' }}>${total.toFixed(2)}</span>
+                  </div>
+                </div>
+
+                {tradeMode === 'buy' && total > player.cash && (
+                  <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '10px', textAlign: 'center' }}>⚠️ Insufficient funds (Balance: ${player.cash?.toLocaleString()})</p>
+                )}
+              </PanelSection>
+            </>
+          );
+        })()}
+      </SidePanel>
 
       {/* Toast */}
       {toast && (

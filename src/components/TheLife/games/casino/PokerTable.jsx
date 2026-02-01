@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../../config/supabaseClient';
+import { SidePanel, PanelSection, PanelButton, PanelButtonGroup } from '../../components/SidePanel';
 import './PokerTable.css';
 
 // ============================================
@@ -1003,47 +1004,87 @@ export default function PokerTable({
         )}
       </div>
 
-      {/* Buy-In Modal */}
-      {showBuyInModal && (
-        <div className="modal-overlay" onClick={() => setShowBuyInModal(false)}>
-          <div className="modal-content buy-in-modal" onClick={e => e.stopPropagation()}>
-            <h3>Buy Seat #{selectedSeat + 1}</h3>
-            <p className="buy-in-range">
-              Buy-in: ${table.min_buyin} - ${table.max_buyin}
-            </p>
-            <div className="buy-in-input">
-              <label>Amount:</label>
-              <input
-                type="number"
-                value={buyInAmount}
-                onChange={(e) => setBuyInAmount(Math.max(table.min_buyin, Math.min(table.max_buyin, parseInt(e.target.value) || 0)))}
-                min={table.min_buyin}
-                max={Math.min(table.max_buyin, player.cash)}
-              />
-            </div>
-            <div className="buy-in-slider">
-              <input
-                type="range"
-                min={table.min_buyin}
-                max={Math.min(table.max_buyin, player.cash)}
-                value={buyInAmount}
-                onChange={(e) => setBuyInAmount(parseInt(e.target.value))}
-              />
-            </div>
-            <p className="wallet-balance">Your wallet: ${player.cash?.toLocaleString()}</p>
-            <div className="modal-actions">
-              <button className="cancel-btn" onClick={() => setShowBuyInModal(false)}>Cancel</button>
-              <button 
-                className="confirm-btn"
-                onClick={handleBuySeat}
-                disabled={buyInAmount > player.cash}
-              >
-                Buy Seat (${buyInAmount})
-              </button>
-            </div>
+      {/* Buy-In Side Panel */}
+      <SidePanel
+        isOpen={showBuyInModal}
+        onClose={() => setShowBuyInModal(false)}
+        title={`Buy Seat #${(selectedSeat || 0) + 1}`}
+        subtitle="Join the table"
+        width="400px"
+        footer={
+          <PanelButtonGroup>
+            <PanelButton variant="secondary" onClick={() => setShowBuyInModal(false)}>
+              Cancel
+            </PanelButton>
+            <PanelButton 
+              variant="primary" 
+              onClick={handleBuySeat}
+              disabled={buyInAmount > player.cash}
+            >
+              Buy Seat (${buyInAmount})
+            </PanelButton>
+          </PanelButtonGroup>
+        }
+      >
+        <PanelSection title="Buy-in Range">
+          <div style={{ display: 'flex', justifyContent: 'space-between', padding: '12px 16px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+            <span style={{ color: '#8a8d96' }}>Min: <span style={{ color: '#22c55e', fontWeight: '600' }}>${table.min_buyin?.toLocaleString()}</span></span>
+            <span style={{ color: '#8a8d96' }}>Max: <span style={{ color: '#22c55e', fontWeight: '600' }}>${table.max_buyin?.toLocaleString()}</span></span>
           </div>
-        </div>
-      )}
+        </PanelSection>
+
+        <PanelSection title="Amount">
+          <div style={{ display: 'flex', alignItems: 'center', background: 'rgba(0, 0, 0, 0.5)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '10px', padding: '0 16px', height: '56px' }}>
+            <span style={{ color: '#22c55e', fontWeight: '700', fontSize: '1.5rem', marginRight: '4px' }}>$</span>
+            <input
+              type="number"
+              value={buyInAmount}
+              onChange={(e) => setBuyInAmount(Math.max(table.min_buyin, Math.min(table.max_buyin, parseInt(e.target.value) || 0)))}
+              min={table.min_buyin}
+              max={Math.min(table.max_buyin, player.cash)}
+              style={{ flex: 1, background: 'transparent', border: 'none', color: '#22c55e', fontSize: '1.5rem', fontWeight: '700', padding: 0 }}
+            />
+          </div>
+
+          {/* Quick amount buttons */}
+          <div style={{ display: 'flex', gap: '8px', marginTop: '12px' }}>
+            <button
+              onClick={() => setBuyInAmount(table.min_buyin)}
+              style={{ flex: 1, padding: '10px', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '8px', color: '#d4af37', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
+            >Min</button>
+            <button
+              onClick={() => setBuyInAmount(Math.floor((table.min_buyin + Math.min(table.max_buyin, player.cash)) / 2))}
+              style={{ flex: 1, padding: '10px', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '8px', color: '#d4af37', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
+            >Half</button>
+            <button
+              onClick={() => setBuyInAmount(Math.min(table.max_buyin, player.cash))}
+              style={{ flex: 1, padding: '10px', background: 'rgba(0, 0, 0, 0.4)', border: '1px solid rgba(212, 175, 55, 0.3)', borderRadius: '8px', color: '#d4af37', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
+            >Max</button>
+          </div>
+
+          {/* Slider */}
+          <div style={{ marginTop: '16px' }}>
+            <input
+              type="range"
+              min={table.min_buyin}
+              max={Math.min(table.max_buyin, player.cash)}
+              value={buyInAmount}
+              onChange={(e) => setBuyInAmount(parseInt(e.target.value))}
+              style={{ width: '100%', accentColor: '#d4af37' }}
+            />
+          </div>
+        </PanelSection>
+
+        <PanelSection title="Your Balance">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'rgba(0, 0, 0, 0.3)', borderRadius: '10px', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
+            <span style={{ color: '#8a8d96' }}>Available Cash</span>
+            <span style={{ color: '#22c55e', fontWeight: '700', fontSize: '1.1rem' }}>${player.cash?.toLocaleString()}</span>
+          </div>
+          {buyInAmount > player.cash && (
+            <p style={{ color: '#ef4444', fontSize: '0.85rem', marginTop: '8px', textAlign: 'center' }}>⚠️ Insufficient funds</p>
+          )}
+        </PanelSection>
+      </SidePanel>
     </div>
   );
 }
