@@ -544,7 +544,7 @@ export default function DailyWheel() {
         const { data: profile } = await supabase
           .from('user_profiles')
           .select('streamelements_username, twitch_username')
-          .eq('user_id', user.id)
+          .eq('id', user.id)
           .single();
 
         if (profile?.streamelements_username) {
@@ -554,6 +554,15 @@ export default function DailyWheel() {
           // Use Twitch username as fallback (often the same)
           seUsername = profile.twitch_username;
           console.log('✅ Using Twitch username as fallback:', seUsername);
+        }
+      }
+      
+      // Final fallback: get from user's OAuth metadata
+      if (!seUsername && user.user_metadata) {
+        const meta = user.user_metadata;
+        seUsername = meta.preferred_username || meta.name || meta.user_name;
+        if (seUsername) {
+          console.log('✅ Using OAuth username as fallback:', seUsername);
         }
       }
 
