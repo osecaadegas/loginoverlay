@@ -55,7 +55,7 @@ export default function TheLifeJournal() {
       const enriched = (data || []).map(p => ({
         ...p,
         username: p.se_username || p.twitch_username || 'Anonymous',
-        net_worth: (p.cash || 0) + (p.bank_balance || 0)
+        net_worth: Math.floor((p.cash || 0) + (p.bank_balance || 0))
       }));
       setLeaderboard(enriched);
     } catch (err) {

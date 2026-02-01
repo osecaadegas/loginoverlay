@@ -23,8 +23,8 @@ export default function TheLifeLeaderboard({ leaderboard, player }) {
             </span>
             <span>{p.username}</span>
             <span>{p.level}</span>
-            <span>{p.xp?.toLocaleString()}</span>
-            <span>${p.net_worth?.toLocaleString()}</span>
+            <span>{Math.floor(p.xp || 0).toLocaleString()}</span>
+            <span>${Math.floor(p.net_worth || 0).toLocaleString()}</span>
             <span>{p.pvp_wins || 0}</span>
           </div>
         ))}

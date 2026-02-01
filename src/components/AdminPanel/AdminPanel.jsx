@@ -2746,93 +2746,26 @@ export default function AdminPanel() {
     setSuccess('');
 
     try {
-      // Execute wipes based on current settings
-      if (wipeSettings.wipe_inventory) {
-        await supabase.from('the_life_player_inventory').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      // Get the current session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
       }
 
-      if (wipeSettings.wipe_cash) {
-        await supabase.from('the_life_players').update({ cash: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
+      // Call the server-side API to execute wipe (bypasses RLS)
+      const response = await fetch('/api/thelife-wipe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${session.access_token}`
+        },
+        body: JSON.stringify({ wipeSettings })
+      });
 
-      if (wipeSettings.wipe_bank) {
-        await supabase.from('the_life_players').update({ bank_balance: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
+      const result = await response.json();
 
-      if (wipeSettings.wipe_level) {
-        await supabase.from('the_life_players').update({ level: 1, xp: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_skills) {
-        await supabase.from('the_life_players').update({ power: 1, defense: 1, intelligence: 1 }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_businesses) {
-        await supabase.from('the_life_player_businesses').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('the_life_player_business_upgrades').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_upgrades) {
-        await supabase.from('the_life_player_business_upgrades').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_brothel_workers) {
-        // Wipe hired brothel workers
-        await supabase.from('the_life_player_brothel_workers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        // Also try the old table name in case it exists
-        await supabase.from('the_life_player_workers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        // Reset brothel slots to default (level + 2)
-        await supabase.from('the_life_brothels').update({ 
-          additional_slots: 0, 
-          slots_upgrade_cost: 50000 
-        }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_stocks) {
-        // Wipe stock portfolios and transaction history
-        await supabase.from('the_life_stock_portfolios').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('the_life_stock_transactions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        // Also try old table name in case it exists
-        await supabase.from('the_life_player_stocks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_addiction) {
-        await supabase.from('the_life_players').update({ addiction: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_health_stamina) {
-        // Reset HP and Stamina to max values
-        const { data: players } = await supabase.from('the_life_players').select('id, max_hp, max_stamina');
-        if (players) {
-          for (const p of players) {
-            await supabase.from('the_life_players').update({ hp: p.max_hp, stamina: p.max_stamina }).eq('id', p.id);
-          }
-        }
-      }
-
-      if (wipeSettings.wipe_jail_hospital) {
-        await supabase.from('the_life_players').update({ jail_until: null, hospital_until: null }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_pvp_stats) {
-        await supabase.from('the_life_players').update({ pvp_wins: 0, pvp_losses: 0 }).neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_casino_history) {
-        await supabase.from('global_roulette_bets').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('global_roulette_player_stats').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('blackjack_games').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_dock_shipments) {
-        await supabase.from('the_life_player_shipments').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('the_life_business_production').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-      }
-
-      if (wipeSettings.wipe_game_leaderboard) {
-        // Wipe game leaderboard (SE games like coinflip, etc.)
-        await supabase.from('game_leaderboard').delete().neq('id', '00000000-0000-0000-0000-000000000000');
-        await supabase.from('game_history').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+      if (!response.ok) {
+        throw new Error(result.error || 'Wipe failed');
       }
 
       // Update last executed time
