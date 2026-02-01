@@ -56,6 +56,7 @@ export default function AdminPanel() {
   const [editingUser, setEditingUser] = useState(null);
   const [userSearch, setUserSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [roleFilter, setRoleFilter] = useState(null);
   const [offerSearch, setOfferSearch] = useState('');
   
   // Pagination state
@@ -2760,146 +2761,279 @@ export default function AdminPanel() {
             />
           </StatsGrid>
 
-          {/* User Management Table */}
-          <div className="user-management-section">
-            {/* Search and Actions Bar */}
-            <div className="user-table-header">
-              <h3>All Users</h3>
-              <div className="user-search-bar">
-                <input
-                  type="text"
-                  placeholder="Search by email, username, role..."
-                  value={userSearch}
-                  onChange={(e) => {
-                    setUserSearch(e.target.value);
-                    setCurrentPage(1);
-                  }}
-                  className="user-search-input"
-                />
-                {userSearch && (
+          {/* User Management - Enterprise Grade */}
+          <div className="users-section">
+            {/* Toolbar */}
+            <div className="users-toolbar">
+              <div className="toolbar-left">
+                <div className="search-wrapper">
+                  <svg className="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                  </svg>
+                  <input
+                    type="text"
+                    placeholder="Search users..."
+                    value={userSearch}
+                    onChange={(e) => {
+                      setUserSearch(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="search-input"
+                  />
+                  {userSearch && (
+                    <button className="search-clear" onClick={() => setUserSearch('')}>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 6 6 18M6 6l12 12"/>
+                      </svg>
+                    </button>
+                  )}
+                </div>
+                
+                {/* Filter Pills */}
+                <div className="filter-pills">
                   <button 
-                    className="clear-search-btn"
-                    onClick={() => setUserSearch('')}
+                    className={`filter-pill ${!roleFilter ? 'active' : ''}`}
+                    onClick={() => setRoleFilter(null)}
                   >
-                    ✕
+                    All
                   </button>
-                )}
+                  <button 
+                    className={`filter-pill ${roleFilter === 'admin' ? 'active' : ''}`}
+                    onClick={() => setRoleFilter(roleFilter === 'admin' ? null : 'admin')}
+                  >
+                    <span className="pill-dot admin"></span>
+                    Admins
+                  </button>
+                  <button 
+                    className={`filter-pill ${roleFilter === 'premium' ? 'active' : ''}`}
+                    onClick={() => setRoleFilter(roleFilter === 'premium' ? null : 'premium')}
+                  >
+                    <span className="pill-dot premium"></span>
+                    Premium
+                  </button>
+                  <button 
+                    className={`filter-pill ${roleFilter === 'slot_modder' ? 'active' : ''}`}
+                    onClick={() => setRoleFilter(roleFilter === 'slot_modder' ? null : 'slot_modder')}
+                  >
+                    <span className="pill-dot modder"></span>
+                    Modders
+                  </button>
+                </div>
+              </div>
+              
+              <div className="toolbar-right">
+                <span className="results-count">
+                  {(() => {
+                    const filtered = users.filter(user => {
+                      if (!userSearch && !roleFilter) return true;
+                      const search = userSearch.toLowerCase();
+                      const matchesSearch = !userSearch || 
+                        user.email?.toLowerCase().includes(search) ||
+                        user.provider_username?.toLowerCase().includes(search);
+                      const matchesRole = !roleFilter || 
+                        user.roles?.some(r => r.role === roleFilter);
+                      return matchesSearch && matchesRole;
+                    });
+                    return `${filtered.length} user${filtered.length !== 1 ? 's' : ''}`;
+                  })()}
+                </span>
               </div>
             </div>
 
-            {/* Users Table */}
-            <div className="users-table-container">
-              <table className="users-table">
+            {/* Data Table */}
+            <div className="data-table-wrapper">
+              <table className="data-table">
                 <thead>
                   <tr>
-                    <th>User</th>
-                    <th>Provider</th>
-                    <th>Roles</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th className="col-user">User</th>
+                    <th className="col-roles">Roles</th>
+                    <th className="col-status">Status</th>
+                    <th className="col-date">Joined</th>
+                    <th className="col-actions"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {users
                     .filter(user => {
-                      if (!userSearch) return true;
+                      if (!userSearch && !roleFilter) return true;
                       const search = userSearch.toLowerCase();
-                      return (
+                      const matchesSearch = !userSearch || 
                         user.email?.toLowerCase().includes(search) ||
                         user.provider?.toLowerCase().includes(search) ||
-                        user.provider_username?.toLowerCase().includes(search) ||
-                        user.roles?.some(r => r.role.toLowerCase().includes(search))
-                      );
+                        user.provider_username?.toLowerCase().includes(search);
+                      const matchesRole = !roleFilter || 
+                        user.roles?.some(r => r.role === roleFilter);
+                      return matchesSearch && matchesRole;
                     })
                     .slice((currentPage - 1) * usersPerPage, currentPage * usersPerPage)
-                    .map(user => (
-                      <tr 
-                        key={user.id} 
-                        className={`user-table-row ${selectedUserId === user.id ? 'selected' : ''} ${!user.is_active ? 'inactive' : ''}`}
-                      >
-                        <td>
-                          <div className="user-cell">
-                            <div className="user-avatar">{user.email?.[0]?.toUpperCase() || '?'}</div>
-                            <div className="user-info">
-                              <div className="user-email">{user.email}</div>
-                              {user.provider_username && (
-                                <div className="user-username">@{user.provider_username}</div>
+                    .map(user => {
+                      const significantRoles = user.roles?.filter(r => r.role !== 'user') || [];
+                      return (
+                        <tr 
+                          key={user.id} 
+                          className={`table-row ${selectedUserId === user.id ? 'selected' : ''} ${!user.is_active ? 'inactive' : ''}`}
+                        >
+                          <td className="col-user">
+                            <div className="user-cell">
+                              <div className={`avatar avatar-${user.provider?.toLowerCase() || 'email'}`}>
+                                {user.provider === 'twitch' && (
+                                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                                )}
+                                {user.provider === 'discord' && (
+                                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
+                                )}
+                                {user.provider === 'google' && (
+                                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
+                                )}
+                                {(!user.provider || user.provider === 'email') && (
+                                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><path d="m22 6-10 7L2 6"/></svg>
+                                )}
+                              </div>
+                              <div className="user-info">
+                                <span className="user-name">{user.provider_username || user.email?.split('@')[0]}</span>
+                                <span className="user-email">{user.email}</span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="col-roles">
+                            <div className="roles-list">
+                              {significantRoles.length > 0 ? (
+                                significantRoles.map((roleObj, idx) => (
+                                  <span key={idx} className={`role-tag role-${roleObj.role}`}>
+                                    {roleObj.role === 'admin' && '🛡️'}
+                                    {roleObj.role === 'premium' && '⭐'}
+                                    {roleObj.role === 'slot_modder' && '🎰'}
+                                    {roleObj.role === 'moderator' && '🔧'}
+                                    {roleObj.role.replace('_', ' ')}
+                                  </span>
+                                ))
+                              ) : (
+                                <span className="role-tag role-none">—</span>
                               )}
                             </div>
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`provider-badge provider-${user.provider?.toLowerCase()}`}>
-                            {user.provider || 'Email'}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="roles-cell">
-                            {user.roles?.map((roleObj, idx) => (
-                              <span key={idx} className={`role-badge-table role-${roleObj.role}`}>
-                                {roleObj.role}
-                              </span>
-                            ))}
-                            {(!user.roles || user.roles.length === 0) && (
-                              <span className="no-roles">No roles</span>
-                            )}
-                          </div>
-                        </td>
-                        <td>
-                          <span className={`status-badge ${user.is_active ? 'active' : 'inactive'}`}>
-                            {user.is_active ? '✓ Active' : '✗ Inactive'}
-                          </span>
-                        </td>
-                        <td>
-                          <div className="actions-cell">
+                          </td>
+                          <td className="col-status">
+                            <span className={`status-dot ${user.is_active ? 'active' : 'inactive'}`}>
+                              <span className="dot"></span>
+                              {user.is_active ? 'Active' : 'Inactive'}
+                            </span>
+                          </td>
+                          <td className="col-date">
+                            <span className="date-text">
+                              {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
+                            </span>
+                          </td>
+                          <td className="col-actions">
                             <button 
-                              className="btn-table-action btn-edit"
+                              className="btn-row-action"
                               onClick={() => {
                                 setSelectedUserId(user.id);
                                 openEditModal(user);
                               }}
-                              title="Edit User"
                             >
-                              ✏️ Edit
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                              </svg>
+                              Manage
                             </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
+                          </td>
+                        </tr>
+                      );
+                    })}
                 </tbody>
               </table>
+              
+              {/* Empty State */}
+              {users.filter(user => {
+                if (!userSearch && !roleFilter) return true;
+                const search = userSearch.toLowerCase();
+                const matchesSearch = !userSearch || 
+                  user.email?.toLowerCase().includes(search) ||
+                  user.provider_username?.toLowerCase().includes(search);
+                const matchesRole = !roleFilter || 
+                  user.roles?.some(r => r.role === roleFilter);
+                return matchesSearch && matchesRole;
+              }).length === 0 && (
+                <div className="empty-state">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                    <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+                  </svg>
+                  <p>No users found</p>
+                  <span>Try adjusting your search or filters</span>
+                </div>
+              )}
             </div>
 
             {/* Pagination */}
-            {users.filter(user => {
-              if (!userSearch) return true;
-              const search = userSearch.toLowerCase();
+            {(() => {
+              const filteredUsers = users.filter(user => {
+                if (!userSearch && !roleFilter) return true;
+                const search = userSearch.toLowerCase();
+                const matchesSearch = !userSearch || 
+                  user.email?.toLowerCase().includes(search) ||
+                  user.provider_username?.toLowerCase().includes(search);
+                const matchesRole = !roleFilter || 
+                  user.roles?.some(r => r.role === roleFilter);
+                return matchesSearch && matchesRole;
+              });
+              const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
+              const startItem = (currentPage - 1) * usersPerPage + 1;
+              const endItem = Math.min(currentPage * usersPerPage, filteredUsers.length);
+              
+              if (filteredUsers.length <= usersPerPage) return null;
+              
               return (
-                user.email?.toLowerCase().includes(search) ||
-                user.provider?.toLowerCase().includes(search) ||
-                user.roles?.some(r => r.role.toLowerCase().includes(search))
+                <div className="pagination-bar">
+                  <span className="pagination-text">
+                    Showing {startItem}–{endItem} of {filteredUsers.length}
+                  </span>
+                  <div className="pagination-controls">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="pagination-btn"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m15 18-6-6 6-6"/>
+                      </svg>
+                    </button>
+                    
+                    {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                      let pageNum;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`pagination-num ${currentPage === pageNum ? 'active' : ''}`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+                    
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="pagination-btn"
+                    >
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="m9 18 6-6-6-6"/>
+                      </svg>
+                    </button>
+                  </div>
+                </div>
               );
-            }).length > usersPerPage && (
-              <div className="table-pagination">
-                <button
-                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                  disabled={currentPage === 1}
-                  className="pagination-btn"
-                >
-                  ← Previous
-                </button>
-                <span className="pagination-info">
-                  Page {currentPage} of {Math.ceil(users.filter(u => !userSearch || u.email?.toLowerCase().includes(userSearch.toLowerCase())).length / usersPerPage)}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(prev => prev + 1)}
-                  disabled={currentPage >= Math.ceil(users.length / usersPerPage)}
-                  className="pagination-btn"
-                >
-                  Next →
-                </button>
-              </div>
-            )}
+            })()}
           </div>
 
           {/* Edit User Side Panel */}
@@ -2909,90 +3043,98 @@ export default function AdminPanel() {
               setSelectedUserId(null);
               setEditingUser(null);
             }}
-            title={editingUser?.email || 'Edit User'}
-            width="500px"
+            title="Manage User"
+            width="420px"
           >
             {editingUser && (
-              <div className="user-edit-panel">
-                <div className="user-edit-header">
-                  <div className="user-edit-avatar">{editingUser.email?.[0]?.toUpperCase() || '?'}</div>
-                  <div className="user-edit-info">
-                    <h3>{editingUser.email}</h3>
-                    <span className={`provider-badge provider-${editingUser.provider?.toLowerCase()}`}>
-                      {editingUser.provider || 'Email'}
-                      {editingUser.provider_username && ` (@${editingUser.provider_username})`}
-                    </span>
+              <div className="panel-content">
+                {/* User Header */}
+                <div className="panel-user-header">
+                  <div className={`panel-avatar avatar-${editingUser.provider?.toLowerCase() || 'email'}`}>
+                    {editingUser.provider === 'twitch' && (
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
+                    )}
+                    {editingUser.provider === 'discord' && (
+                      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418Z"/></svg>
+                    )}
+                    {(!editingUser.provider || editingUser.provider === 'email') && (
+                      <span>{editingUser.email?.[0]?.toUpperCase()}</span>
+                    )}
                   </div>
-                </div>
-
-                <div className="user-edit-section">
-                  <h4>📋 User Details</h4>
-                  <div className="user-details-grid">
-                    <div className="detail-item">
-                      <label>Status</label>
-                      <span className={`status-badge ${editingUser.is_active ? 'active' : 'inactive'}`}>
-                        {editingUser.is_active ? '✓ Active' : '✗ Inactive'}
+                  <div className="panel-user-info">
+                    <h3>{editingUser.provider_username || editingUser.email?.split('@')[0]}</h3>
+                    <span className="panel-user-email">{editingUser.email}</span>
+                    <div className="panel-user-meta">
+                      <span className={`status-dot ${editingUser.is_active ? 'active' : 'inactive'}`}>
+                        <span className="dot"></span>
+                        {editingUser.is_active ? 'Active' : 'Inactive'}
                       </span>
-                    </div>
-                    <div className="detail-item">
-                      <label>Created</label>
-                      <span>{new Date(editingUser.created_at).toLocaleDateString()}</span>
+                      <span className="meta-separator">•</span>
+                      <span>Joined {editingUser.created_at ? new Date(editingUser.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown'}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="user-edit-section">
-                  <h4>🎭 Current Roles</h4>
-                  <div className="current-roles-list">
-                    {(editingUser.roles || []).map((roleObj, idx) => (
-                      <div key={idx} className="role-item">
-                        <div className="role-item-info">
-                          <span className={`role-badge role-${roleObj.role}`}>
-                            {roleObj.role}
+                {/* Roles Section */}
+                <div className="panel-section">
+                  <div className="section-header">
+                    <h4>Roles</h4>
+                  </div>
+                  <div className="roles-manager">
+                    {(editingUser.roles || []).filter(r => r.role !== 'user').map((roleObj, idx) => (
+                      <div key={idx} className={`role-chip role-${roleObj.role}`}>
+                        <span className="role-chip-icon">
+                          {roleObj.role === 'admin' && '🛡️'}
+                          {roleObj.role === 'premium' && '⭐'}
+                          {roleObj.role === 'slot_modder' && '🎰'}
+                          {roleObj.role === 'moderator' && '🔧'}
+                        </span>
+                        <span className="role-chip-name">{roleObj.role.replace('_', ' ')}</span>
+                        {roleObj.access_expires_at && (
+                          <span className="role-chip-expiry">
+                            {new Date(roleObj.access_expires_at).toLocaleDateString()}
                           </span>
-                          {roleObj.access_expires_at && (
-                            <span className="role-expiry">
-                              Expires: {new Date(roleObj.access_expires_at).toLocaleDateString()}
-                            </span>
-                          )}
-                        </div>
+                        )}
                         <button 
-                          className="btn-remove-role"
+                          className="role-chip-remove"
                           onClick={() => handleRemoveRole(roleObj.role)}
-                          title="Remove Role"
                         >
-                          ✕
+                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M18 6 6 18M6 6l12 12"/>
+                          </svg>
                         </button>
                       </div>
                     ))}
-                    {(!editingUser.roles || editingUser.roles.length === 0) && (
-                      <div className="no-roles-message">No roles assigned</div>
+                    {(!editingUser.roles || editingUser.roles.filter(r => r.role !== 'user').length === 0) && (
+                      <p className="no-roles-text">No special roles assigned</p>
                     )}
                   </div>
                 </div>
 
-                <div className="user-edit-section">
-                  <h4>➕ Add New Role</h4>
-                  <div className="add-role-form-panel">
+                {/* Add Role Section */}
+                <div className="panel-section">
+                  <div className="section-header">
+                    <h4>Add Role</h4>
+                  </div>
+                  <div className="add-role-form">
                     <select 
                       value={editingUser.newRole || ''}
                       onChange={(e) => setEditingUser({...editingUser, newRole: e.target.value, newRoleModeratorPermissions: {}})}
-                      className="role-select-panel"
+                      className="role-select"
                     >
-                      <option value="">-- Select Role --</option>
-                      <option value="user">👤 User (No Overlay Access)</option>
-                      <option value="premium">👑 Premium (Overlay Only)</option>
-                      <option value="slot_modder">🎰 Slot Modder (Slot Management)</option>
-                      <option value="moderator">⚔️ Moderator (Overlay + Custom Admin)</option>
-                      <option value="admin">🛡️ Admin (Full Access)</option>
+                      <option value="">Select a role...</option>
+                      <option value="premium">⭐ Premium</option>
+                      <option value="slot_modder">🎰 Slot Modder</option>
+                      <option value="moderator">🔧 Moderator</option>
+                      <option value="admin">🛡️ Admin</option>
                     </select>
 
                     {editingUser.newRole === 'moderator' && (
-                      <div className="moderator-permissions-panel">
-                        <label className="permissions-label">Moderator Permissions:</label>
-                        <div className="permissions-grid">
+                      <div className="permissions-box">
+                        <span className="permissions-title">Moderator Permissions</span>
+                        <div className="permissions-list">
                           {Object.entries(MODERATOR_PERMISSIONS).map(([key, description]) => (
-                            <label key={key} className="permission-checkbox">
+                            <label key={key} className="permission-item">
                               <input
                                 type="checkbox"
                                 checked={!!editingUser.newRoleModeratorPermissions?.[key]}
@@ -3006,44 +3148,47 @@ export default function AdminPanel() {
                     )}
 
                     {editingUser.newRole && (
-                      <div className="role-expiry-row">
+                      <div className="add-role-actions">
                         <input 
                           type="number" 
-                          placeholder="Days until expiry (empty = never)"
+                          placeholder="Expires in (days)"
                           value={editingUser.newRoleExpiryDays || ''}
                           onChange={(e) => setEditingUser({...editingUser, newRoleExpiryDays: e.target.value})}
-                          min="0"
-                          className="expiry-input-panel"
+                          min="1"
+                          className="expiry-input"
                         />
                         <button onClick={handleAddRole} className="btn-add-role">
-                          ➕ Add Role
+                          Add Role
                         </button>
                       </div>
                     )}
                   </div>
                 </div>
 
-                <div className="user-edit-section danger-zone">
-                  <h4>⚠️ Danger Zone</h4>
-                  <div className="danger-actions">
+                {/* Danger Zone */}
+                <div className="panel-section danger">
+                  <div className="section-header">
+                    <h4>Danger Zone</h4>
+                  </div>
+                  <div className="danger-buttons">
                     <button 
-                      className="btn-danger-action btn-revoke"
+                      className="btn-danger secondary"
                       onClick={() => handleRevokeAccess(editingUser.id)}
                       disabled={!editingUser.is_active}
                     >
-                      🚫 Revoke Access
+                      Revoke Access
                     </button>
                     <button 
-                      className="btn-danger-action btn-delete"
+                      className="btn-danger primary"
                       onClick={() => {
-                        if (window.confirm('Are you sure you want to DELETE this user? This cannot be undone!')) {
+                        if (window.confirm('Permanently delete this user? This cannot be undone.')) {
                           handleDeleteUser(editingUser.id);
                           setSelectedUserId(null);
                           setEditingUser(null);
                         }
                       }}
                     >
-                      🗑️ Delete User
+                      Delete User
                     </button>
                   </div>
                 </div>
