@@ -2777,10 +2777,22 @@ export default function AdminPanel() {
       }
 
       if (wipeSettings.wipe_brothel_workers) {
+        // Wipe hired brothel workers
+        await supabase.from('the_life_player_brothel_workers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        // Also try the old table name in case it exists
         await supabase.from('the_life_player_workers').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        // Reset brothel slots to default (level + 2)
+        await supabase.from('the_life_brothels').update({ 
+          additional_slots: 0, 
+          slots_upgrade_cost: 50000 
+        }).neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
       if (wipeSettings.wipe_stocks) {
+        // Wipe stock portfolios and transaction history
+        await supabase.from('the_life_stock_portfolios').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        await supabase.from('the_life_stock_transactions').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        // Also try old table name in case it exists
         await supabase.from('the_life_player_stocks').delete().neq('id', '00000000-0000-0000-0000-000000000000');
       }
 
