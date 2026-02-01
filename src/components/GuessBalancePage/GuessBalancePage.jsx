@@ -171,12 +171,13 @@ export default function GuessBalancePage() {
         return;
       }
 
-      // Get unique user IDs from votes
-      const voterUserIds = [...new Set((votesData || []).map(v => v.user_id))];
+      // If votes have username stored, use it directly
+      // Otherwise fall back to user_profiles lookup
+      const votesWithoutUsername = (votesData || []).filter(v => !v.username || v.username === 'Anonymous');
       
-      // Fetch user profiles for voters
       let voterUsernameMap = {};
-      if (voterUserIds.length > 0) {
+      if (votesWithoutUsername.length > 0) {
+        const voterUserIds = [...new Set(votesWithoutUsername.map(v => v.user_id))];
         const { data: voterProfiles } = await supabase
           .from('user_profiles')
           .select('id, twitch_username, display_name, username')
@@ -190,7 +191,9 @@ export default function GuessBalancePage() {
       // Enrich votes with usernames
       const enrichedVotes = (votesData || []).map(vote => ({
         ...vote,
-        username: voterUsernameMap[vote.user_id] || 'Anonymous'
+        username: (vote.username && vote.username !== 'Anonymous') 
+          ? vote.username 
+          : voterUsernameMap[vote.user_id] || 'Anonymous'
       }));
 
       setSlotVotes(enrichedVotes);
@@ -207,6 +210,14 @@ export default function GuessBalancePage() {
     } catch (err) {
       console.error('Error loading slot votes:', err);
     }
+  };
+
+  // Get the current user's display name
+  const getUserDisplayName = () => {
+    if (!user) return 'Anonymous';
+    // Try user_metadata first (from OAuth like Twitch)
+    const meta = user.user_metadata;
+    return meta?.preferred_username || meta?.name || meta?.full_name || meta?.user_name || user.email?.split('@')[0] || 'Anonymous';
   };
 
   // Vote for a slot
@@ -234,14 +245,18 @@ export default function GuessBalancePage() {
 
     setVotingInProgress(true);
     try {
-      // Insert vote
+      // Get username to store with vote
+      const username = getUserDisplayName();
+      
+      // Insert vote with username
       const { error } = await supabase
         .from('guess_balance_slot_votes')
         .insert({
           session_id: activeSession.id,
           slot_id: slotId,
           user_id: user.id,
-          vote_type: voteType
+          vote_type: voteType,
+          username: username
         });
 
       if (error) throw error;
