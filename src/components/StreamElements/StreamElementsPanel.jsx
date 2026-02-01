@@ -408,40 +408,59 @@ export default function StreamElementsPanel() {
           )}
         </div>
 
-        {/* Recent Redemptions */}
+        {/* Recent Redemptions - Compact Grid */}
         {allRedemptions.length > 0 && (
-          <div className="relative bg-black/40 backdrop-blur-xl border border-purple-500/30 rounded-3xl overflow-hidden shadow-2xl shadow-purple-500/10">
-            <div className="px-6 md:px-8 py-5 border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-transparent">
+          <div className="relative bg-black/40 backdrop-blur-xl border border-purple-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-purple-500/10">
+            <div className="px-4 py-3 border-b border-purple-500/20 bg-gradient-to-r from-purple-500/10 to-transparent">
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
-                  <span className="text-3xl">📜</span> Recent Redemptions
+                <h3 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
+                  <span className="text-xl">📜</span> Recent Redemptions
                 </h3>
-                <span className="bg-purple-500/20 border border-purple-500/50 rounded-full px-4 py-1.5 text-sm font-bold text-purple-400">
+                <span className="bg-purple-500/20 border border-purple-500/50 rounded-full px-3 py-1 text-xs font-bold text-purple-400">
                   {allRedemptions.length}
                 </span>
               </div>
             </div>
             
-            <div className="p-6 space-y-3">
+            {/* Table Header */}
+            <div className="hidden md:grid grid-cols-[1fr_1fr_auto_auto] gap-4 px-4 py-2 bg-white/5 border-b border-white/10 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+              <span>Item</span>
+              <span>User</span>
+              <span className="text-right">Points</span>
+              <span className="text-center w-12">Status</span>
+            </div>
+            
+            {/* Redemption Rows */}
+            <div className="divide-y divide-white/5">
               {allRedemptions
                 .slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
                 .map((redemption) => (
-                  <div key={redemption.id} className="bg-white/5 hover:bg-purple-500/10 border border-white/10 hover:border-purple-500/30 rounded-2xl p-5 transition-all">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="font-bold text-white mb-1">
-                          {redemption.redemption_items?.name || 'Unknown Item'}
-                        </div>
-                        <div className="flex items-center gap-3 text-sm">
-                          <span className="text-purple-400 font-medium">@{redemption.username}</span>
-                          <span className="text-gray-500">•</span>
-                          <span className="text-yellow-400 font-bold">{redemption.points_spent.toLocaleString()} pts</span>
-                        </div>
-                      </div>
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold ${
+                  <div 
+                    key={redemption.id} 
+                    className="grid grid-cols-2 md:grid-cols-[1fr_1fr_auto_auto] gap-2 md:gap-4 px-4 py-2 hover:bg-purple-500/5 transition-colors items-center"
+                  >
+                    {/* Item Name */}
+                    <div className="font-semibold text-white text-sm truncate">
+                      {redemption.redemption_items?.is_special && <span className="text-yellow-400">⚡ </span>}
+                      {redemption.redemption_items?.name || 'Unknown'}
+                    </div>
+                    
+                    {/* Username */}
+                    <div className="text-purple-400 text-sm truncate">
+                      @{redemption.username}
+                    </div>
+                    
+                    {/* Points */}
+                    <div className="text-yellow-400 font-bold text-sm text-right whitespace-nowrap">
+                      {redemption.points_spent.toLocaleString()} pts
+                    </div>
+                    
+                    {/* Status */}
+                    <div className="flex justify-center md:justify-end">
+                      <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs ${
                         redemption.processed 
-                          ? 'bg-green-500/20 text-green-400 border-2 border-green-500/50' 
-                          : 'bg-gray-500/20 text-gray-400 border-2 border-gray-500/50'
+                          ? 'bg-green-500/20 text-green-400 border border-green-500/50' 
+                          : 'bg-gray-500/20 text-gray-400 border border-gray-500/50'
                       }`}>
                         {redemption.processed ? '✓' : '○'}
                       </div>
@@ -451,22 +470,22 @@ export default function StreamElementsPanel() {
             </div>
             
             {allRedemptions.length > itemsPerPage && (
-              <div className="px-6 py-4 border-t border-purple-500/20 bg-gradient-to-r from-purple-500/5 to-transparent">
-                <div className="flex items-center justify-center gap-4">
+              <div className="px-4 py-2 border-t border-purple-500/20 bg-gradient-to-r from-purple-500/5 to-transparent">
+                <div className="flex items-center justify-center gap-3">
                   <button
                     onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                     disabled={currentPage === 1}
-                    className="bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-400 font-bold w-10 h-10 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-400 font-bold w-8 h-8 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed text-sm"
                   >
                     ‹
                   </button>
-                  <span className="text-gray-400 font-medium">
+                  <span className="text-gray-400 text-sm">
                     Page {currentPage} of {Math.ceil(allRedemptions.length / itemsPerPage)}
                   </span>
                   <button
                     onClick={() => setCurrentPage(prev => Math.min(Math.ceil(allRedemptions.length / itemsPerPage), prev + 1))}
                     disabled={currentPage === Math.ceil(allRedemptions.length / itemsPerPage)}
-                    className="bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-400 font-bold w-10 h-10 rounded-xl transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                    className="bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/50 text-purple-400 font-bold w-8 h-8 rounded-lg transition-all disabled:opacity-30 disabled:cursor-not-allowed text-sm"
                   >
                     ›
                   </button>
