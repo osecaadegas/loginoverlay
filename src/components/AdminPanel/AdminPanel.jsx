@@ -2687,13 +2687,9 @@ export default function AdminPanel() {
     }
   };
 
-  if (adminLoading || loading) {
-    return (
-      <div className="admin-panel-loading">
-        <div className="loading-spinner"></div>
-        <p>Loading admin panel...</p>
-      </div>
-    );
+  // Only show brief loading for admin permission check, not data loading
+  if (adminLoading) {
+    return null; // Show nothing while checking admin status
   }
 
   if (!isAdmin) {
@@ -5308,161 +5304,157 @@ export default function AdminPanel() {
             </div>
           </div>
 
-          {/* Prize Modal */}
-          {showWheelModal && (
-            <div className="modal-overlay" onClick={() => setShowWheelModal(false)}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingPrize ? 'Edit Prize' : 'Add New Prize'}</h2>
-                  <button className="close-btn" onClick={() => setShowWheelModal(false)}>✕</button>
-                </div>
+          {/* Prize Side Panel */}
+          <SidePanel
+            isOpen={showWheelModal}
+            onClose={() => setShowWheelModal(false)}
+            title={editingPrize ? 'Edit Prize' : 'Add New Prize'}
+            width="480px"
+          >
+            <form onSubmit={savePrize} style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+              <div style={{ flex: 1, overflow: 'auto', padding: '0' }}>
+                <div className="form-section">
+                  <div className="form-group">
+                    <label>Label *</label>
+                    <input
+                      type="text"
+                      value={prizeFormData.label}
+                      onChange={(e) => setPrizeFormData({...prizeFormData, label: e.target.value})}
+                      placeholder="500 Points"
+                      required
+                    />
+                  </div>
 
-                <form onSubmit={savePrize}>
-                  <div className="modal-body">
-                    <div className="form-section">
-                      <div className="form-group">
-                        <label>Label *</label>
-                        <input
-                          type="text"
-                          value={prizeFormData.label}
-                          onChange={(e) => setPrizeFormData({...prizeFormData, label: e.target.value})}
-                          placeholder="500 Points"
-                          required
-                        />
-                      </div>
+                  <div className="form-group">
+                    <label>Icon (Emoji) *</label>
+                    <input
+                      type="text"
+                      value={prizeFormData.icon}
+                      onChange={(e) => setPrizeFormData({...prizeFormData, icon: e.target.value})}
+                      placeholder="💰"
+                      required
+                    />
+                    <small>Use a single emoji character</small>
+                  </div>
 
-                      <div className="form-group">
-                        <label>Icon (Emoji) *</label>
-                        <input
-                          type="text"
-                          value={prizeFormData.icon}
-                          onChange={(e) => setPrizeFormData({...prizeFormData, icon: e.target.value})}
-                          placeholder="💰"
-                          required
-                        />
-                        <small>Use a single emoji character</small>
-                      </div>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>Background Color *</label>
+                      <input
+                        type="color"
+                        value={prizeFormData.color}
+                        onChange={(e) => setPrizeFormData({...prizeFormData, color: e.target.value})}
+                      />
+                      <input
+                        type="text"
+                        value={prizeFormData.color}
+                        onChange={(e) => setPrizeFormData({...prizeFormData, color: e.target.value})}
+                        placeholder="#1a1a1a"
+                        style={{ marginTop: '5px' }}
+                      />
+                    </div>
 
-                      <div className="form-row">
-                        <div className="form-group">
-                          <label>Background Color *</label>
-                          <input
-                            type="color"
-                            value={prizeFormData.color}
-                            onChange={(e) => setPrizeFormData({...prizeFormData, color: e.target.value})}
-                          />
-                          <input
-                            type="text"
-                            value={prizeFormData.color}
-                            onChange={(e) => setPrizeFormData({...prizeFormData, color: e.target.value})}
-                            placeholder="#1a1a1a"
-                            style={{ marginTop: '5px' }}
-                          />
-                        </div>
-
-                        <div className="form-group">
-                          <label>Text Color *</label>
-                          <input
-                            type="color"
-                            value={prizeFormData.text_color}
-                            onChange={(e) => setPrizeFormData({...prizeFormData, text_color: e.target.value})}
-                          />
-                          <input
-                            type="text"
-                            value={prizeFormData.text_color}
-                            onChange={(e) => setPrizeFormData({...prizeFormData, text_color: e.target.value})}
-                            placeholder="#ffffff"
-                            style={{ marginTop: '5px' }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="form-row">
-                        <div className="form-group">
-                          <label>StreamElements Points</label>
-                          <input
-                            type="number"
-                            value={prizeFormData.se_points}
-                            onChange={(e) => setPrizeFormData({...prizeFormData, se_points: e.target.value})}
-                            placeholder="0"
-                            min="0"
-                          />
-                          <small>0 = no points awarded</small>
-                        </div>
-
-                        <div className="form-group">
-                          <label>Probability Weight *</label>
-                          <input
-                            type="number"
-                            value={prizeFormData.probability}
-                            onChange={(e) => setPrizeFormData({...prizeFormData, probability: e.target.value})}
-                            placeholder="1"
-                            min="1"
-                            required
-                          />
-                          <small>Higher = more likely</small>
-                        </div>
-                      </div>
-
-                      <div className="form-group">
-                        <label>Display Order</label>
-                        <input
-                          type="number"
-                          value={prizeFormData.display_order}
-                          onChange={(e) => setPrizeFormData({...prizeFormData, display_order: e.target.value})}
-                          placeholder="0"
-                          min="0"
-                        />
-                        <small>Position on the wheel (0-7 for 8 segments)</small>
-                      </div>
-
-                      <div className="form-group checkbox-group">
-                        <label>
-                          <input
-                            type="checkbox"
-                            checked={prizeFormData.is_active}
-                            onChange={(e) => setPrizeFormData({...prizeFormData, is_active: e.target.checked})}
-                          />
-                          <span>Active (visible on wheel)</span>
-                        </label>
-                      </div>
-
-                      {/* Preview */}
-                      <div className="form-group">
-                        <label>Preview</label>
-                        <div className="prize-preview-box" style={{ 
-                          backgroundColor: prizeFormData.color,
-                          color: prizeFormData.text_color,
-                          padding: '20px',
-                          borderRadius: '8px',
-                          textAlign: 'center'
-                        }}>
-                          <div style={{ fontSize: '3rem' }}>{prizeFormData.icon}</div>
-                          <div style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '10px' }}>
-                            {prizeFormData.label || 'Prize Label'}
-                          </div>
-                          {prizeFormData.se_points > 0 && (
-                            <div style={{ fontSize: '0.9rem', marginTop: '5px' }}>
-                              +{prizeFormData.se_points} Points
-                            </div>
-                          )}
-                        </div>
-                      </div>
+                    <div className="form-group">
+                      <label>Text Color *</label>
+                      <input
+                        type="color"
+                        value={prizeFormData.text_color}
+                        onChange={(e) => setPrizeFormData({...prizeFormData, text_color: e.target.value})}
+                      />
+                      <input
+                        type="text"
+                        value={prizeFormData.text_color}
+                        onChange={(e) => setPrizeFormData({...prizeFormData, text_color: e.target.value})}
+                        placeholder="#ffffff"
+                        style={{ marginTop: '5px' }}
+                      />
                     </div>
                   </div>
 
-                  <div className="modal-actions">
-                    <button type="submit" className="btn-save">
-                      {editingPrize ? 'Update Prize' : 'Add Prize'}
-                    </button>
-                    <button type="button" onClick={() => setShowWheelModal(false)} className="btn-cancel">
-                      Cancel
-                    </button>
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label>StreamElements Points</label>
+                      <input
+                        type="number"
+                        value={prizeFormData.se_points}
+                        onChange={(e) => setPrizeFormData({...prizeFormData, se_points: e.target.value})}
+                        placeholder="0"
+                        min="0"
+                      />
+                      <small>0 = no points awarded</small>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Probability Weight *</label>
+                      <input
+                        type="number"
+                        value={prizeFormData.probability}
+                        onChange={(e) => setPrizeFormData({...prizeFormData, probability: e.target.value})}
+                        placeholder="1"
+                        min="1"
+                        required
+                      />
+                      <small>Higher = more likely</small>
+                    </div>
                   </div>
-                </form>
+
+                  <div className="form-group">
+                    <label>Display Order</label>
+                    <input
+                      type="number"
+                      value={prizeFormData.display_order}
+                      onChange={(e) => setPrizeFormData({...prizeFormData, display_order: e.target.value})}
+                      placeholder="0"
+                      min="0"
+                    />
+                    <small>Position on the wheel (0-7 for 8 segments)</small>
+                  </div>
+
+                  <div className="form-group checkbox-group">
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={prizeFormData.is_active}
+                        onChange={(e) => setPrizeFormData({...prizeFormData, is_active: e.target.checked})}
+                      />
+                      <span>Active (visible on wheel)</span>
+                    </label>
+                  </div>
+
+                  {/* Preview */}
+                  <div className="form-group">
+                    <label>Preview</label>
+                    <div className="prize-preview-box" style={{ 
+                      backgroundColor: prizeFormData.color,
+                      color: prizeFormData.text_color,
+                      padding: '20px',
+                      borderRadius: '8px',
+                      textAlign: 'center'
+                    }}>
+                      <div style={{ fontSize: '3rem' }}>{prizeFormData.icon}</div>
+                      <div style={{ fontSize: '1.2rem', fontWeight: 'bold', marginTop: '10px' }}>
+                        {prizeFormData.label || 'Prize Label'}
+                      </div>
+                      {prizeFormData.se_points > 0 && (
+                        <div style={{ fontSize: '0.9rem', marginTop: '5px' }}>
+                          +{prizeFormData.se_points} Points
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          )}
+
+              <div className="side-panel-footer" style={{ borderTop: '1px solid rgba(255,255,255,0.08)', padding: '16px 0 0', marginTop: '16px', display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setShowWheelModal(false)} className="btn-cancel">
+                  Cancel
+                </button>
+                <button type="submit" className="btn-save">
+                  {editingPrize ? 'Update Prize' : 'Add Prize'}
+                </button>
+              </div>
+            </form>
+          </SidePanel>
         </>
       )}
 
