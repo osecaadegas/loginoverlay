@@ -41,6 +41,7 @@ export default function AdminPanel() {
   const [editingUser, setEditingUser] = useState(null);
   const [userSearch, setUserSearch] = useState('');
   const [selectedUserId, setSelectedUserId] = useState(null);
+  const [offerSearch, setOfferSearch] = useState('');
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -2993,13 +2994,34 @@ export default function AdminPanel() {
         <div className="offers-management">
           <div className="offers-header">
             <h2>Casino Offer Cards</h2>
-            <button onClick={() => openOfferModal()} className="btn-create-offer">
-              ➕ Create New Offer
-            </button>
+            <div className="offers-header-actions">
+              <div className="offer-search-bar">
+                <input
+                  type="text"
+                  placeholder="Search by casino name, title, or badge..."
+                  value={offerSearch}
+                  onChange={(e) => setOfferSearch(e.target.value)}
+                />
+              </div>
+              <button onClick={() => openOfferModal()} className="btn-create-offer">
+                ➕ Create New Offer
+              </button>
+            </div>
           </div>
 
           <div className="offers-grid">
-            {offers.map((offer) => (
+            {offers
+              .filter(offer => {
+                if (!offerSearch.trim()) return true;
+                const search = offerSearch.toLowerCase();
+                return (
+                  offer.casino_name?.toLowerCase().includes(search) ||
+                  offer.title?.toLowerCase().includes(search) ||
+                  offer.badge?.toLowerCase().includes(search) ||
+                  offer.bonus_value?.toLowerCase().includes(search)
+                );
+              })
+              .map((offer) => (
               <div key={offer.id} className={`offer-admin-card ${!offer.is_active ? 'inactive' : ''}`}>
                 <div className="offer-admin-image">
                   <img src={offer.image_url} alt={offer.casino_name} />

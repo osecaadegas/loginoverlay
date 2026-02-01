@@ -1327,3 +1327,38 @@
   font-size: var(--text-sm);
   margin: 0;
 }
+
+/* ===================
+   OFFER SEARCH
+   =================== */
+.offers-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.offer-search-bar {
+  flex: 1;
+  max-width: 400px;
+}
+
+.offer-search-bar input {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background: var(--admin-bg-tertiary);
+  border: 1px solid var(--admin-border-default);
+  border-radius: var(--radius-md);
+  color: var(--admin-text-primary);
+  font-size: var(--text-sm);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.offer-search-bar input::placeholder {
+  color: var(--admin-text-muted);
+}
+
+.offer-search-bar input:focus {
+  outline: none;
+  border-color: var(--admin-accent-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
