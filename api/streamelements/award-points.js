@@ -34,9 +34,9 @@ export default async function handler(req, res) {
       });
     }
 
-    // Get StreamElements credentials from environment variables
-    const SE_JWT_TOKEN = process.env.STREAMELEMENTS_JWT_TOKEN;
-    const SE_CHANNEL_ID = process.env.STREAMELEMENTS_CHANNEL_ID;
+    // Get StreamElements credentials from environment variables (support both naming conventions)
+    const SE_JWT_TOKEN = process.env.STREAMELEMENTS_JWT_TOKEN || process.env.VITE_SE_JWT_TOKEN;
+    const SE_CHANNEL_ID = process.env.STREAMELEMENTS_CHANNEL_ID || process.env.VITE_SE_CHANNEL_ID;
 
     if (!SE_JWT_TOKEN || !SE_CHANNEL_ID) {
       console.error('❌ StreamElements credentials not configured');
