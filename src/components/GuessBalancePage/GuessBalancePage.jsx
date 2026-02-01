@@ -718,81 +718,64 @@ export default function GuessBalancePage() {
               {/* Votes Tab */}
               {activeTab === 'votes' && (
                 <div className="votes-content">
-                  <h3>🗳️ Slot Votes</h3>
-                  <p className="votes-subtitle">Who voted for Best & Worst slots</p>
-                  
                   {slotVotes.length === 0 ? (
                     <div className="no-votes-yet">
                       <p>No votes yet. Be the first to vote!</p>
                     </div>
                   ) : (
-                    <>
-                      {/* Best Votes Section */}
-                      <div className="votes-section best-votes-section">
-                        <h4>👑 Best Votes</h4>
-                        <div className="votes-list">
+                    <div className="votes-compact">
+                      {/* Best Votes Row */}
+                      <div className="vote-row best-row">
+                        <span className="vote-row-label">👑 BEST</span>
+                        <div className="vote-row-items">
                           {slots.filter(slot => slotVotes.some(v => v.slot_id === slot.id && v.vote_type === 'best'))
                             .map(slot => {
                               const votesForSlot = slotVotes.filter(v => v.slot_id === slot.id && v.vote_type === 'best');
                               return (
-                                <div key={`best-${slot.id}`} className="vote-slot-group">
-                                  <div className="vote-slot-header">
-                                    <span className="vote-slot-name">{slot.slot_name}</span>
-                                    <span className="vote-slot-count">{votesForSlot.length} vote{votesForSlot.length !== 1 ? 's' : ''}</span>
-                                  </div>
-                                  <div className="vote-users">
-                                    {votesForSlot.map(vote => (
-                                      <span 
-                                        key={vote.id} 
-                                        className={`vote-user ${vote.user_id === user?.id ? 'you' : ''}`}
-                                      >
-                                        {vote.username}
-                                        {vote.user_id === user?.id && <span className="you-badge">YOU</span>}
+                                <div key={`best-${slot.id}`} className="vote-chip">
+                                  <span className="chip-slot">{slot.slot_name}</span>
+                                  <span className="chip-voters">
+                                    {votesForSlot.map((vote, i) => (
+                                      <span key={vote.id} className={vote.user_id === user?.id ? 'you' : ''}>
+                                        {vote.username}{vote.user_id === user?.id && ' ★'}{i < votesForSlot.length - 1 && ', '}
                                       </span>
                                     ))}
-                                  </div>
+                                  </span>
                                 </div>
                               );
                             })}
                           {!slotVotes.some(v => v.vote_type === 'best') && (
-                            <p className="no-votes-type">No best votes yet</p>
+                            <span className="no-votes-inline">No votes</span>
                           )}
                         </div>
                       </div>
 
-                      {/* Worst Votes Section */}
-                      <div className="votes-section worst-votes-section">
-                        <h4>💩 Worst Votes</h4>
-                        <div className="votes-list">
+                      {/* Worst Votes Row */}
+                      <div className="vote-row worst-row">
+                        <span className="vote-row-label">💩 WORST</span>
+                        <div className="vote-row-items">
                           {slots.filter(slot => slotVotes.some(v => v.slot_id === slot.id && v.vote_type === 'worst'))
                             .map(slot => {
                               const votesForSlot = slotVotes.filter(v => v.slot_id === slot.id && v.vote_type === 'worst');
                               return (
-                                <div key={`worst-${slot.id}`} className="vote-slot-group">
-                                  <div className="vote-slot-header">
-                                    <span className="vote-slot-name">{slot.slot_name}</span>
-                                    <span className="vote-slot-count">{votesForSlot.length} vote{votesForSlot.length !== 1 ? 's' : ''}</span>
-                                  </div>
-                                  <div className="vote-users">
-                                    {votesForSlot.map(vote => (
-                                      <span 
-                                        key={vote.id} 
-                                        className={`vote-user ${vote.user_id === user?.id ? 'you' : ''}`}
-                                      >
-                                        {vote.username}
-                                        {vote.user_id === user?.id && <span className="you-badge">YOU</span>}
+                                <div key={`worst-${slot.id}`} className="vote-chip">
+                                  <span className="chip-slot">{slot.slot_name}</span>
+                                  <span className="chip-voters">
+                                    {votesForSlot.map((vote, i) => (
+                                      <span key={vote.id} className={vote.user_id === user?.id ? 'you' : ''}>
+                                        {vote.username}{vote.user_id === user?.id && ' ★'}{i < votesForSlot.length - 1 && ', '}
                                       </span>
                                     ))}
-                                  </div>
+                                  </span>
                                 </div>
                               );
                             })}
                           {!slotVotes.some(v => v.vote_type === 'worst') && (
-                            <p className="no-votes-type">No worst votes yet</p>
+                            <span className="no-votes-inline">No votes</span>
                           )}
                         </div>
                       </div>
-                    </>
+                    </div>
                   )}
                 </div>
               )}
