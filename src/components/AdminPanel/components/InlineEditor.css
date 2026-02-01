@@ -1,0 +1,181 @@
+/* Inline Editor Component Styles */
+
+.inline-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.inline-editor-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--admin-text-secondary, #9ca3af);
+}
+
+.inline-editor-label .required-star {
+  color: var(--admin-error, #ef4444);
+  margin-left: 2px;
+}
+
+.inline-editor-field {
+  display: flex;
+  flex-direction: column;
+}
+
+.inline-editor-input {
+  width: 100%;
+  padding: 10px 12px;
+  font-size: 0.875rem;
+  color: var(--admin-text-primary, #f9fafb);
+  background: var(--admin-bg-primary, #030712);
+  border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: 8px;
+  outline: none;
+  transition: all 150ms ease;
+}
+
+.inline-editor-input:focus {
+  border-color: var(--admin-primary, #8b5cf6);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+.inline-editor-input.has-error {
+  border-color: var(--admin-error, #ef4444);
+}
+
+.inline-editor-input.has-error:focus {
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.15);
+}
+
+.inline-editor-input::placeholder {
+  color: var(--admin-text-muted, #6b7280);
+}
+
+.inline-editor-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Textarea specific */
+textarea.inline-editor-input {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+  line-height: 1.5;
+}
+
+/* Select specific */
+select.inline-editor-input {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%239ca3af' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 36px;
+  cursor: pointer;
+}
+
+/* Helper and error text */
+.inline-editor-helper {
+  font-size: 0.75rem;
+  color: var(--admin-text-muted, #6b7280);
+  margin: 0;
+}
+
+.inline-editor-error {
+  font-size: 0.75rem;
+  color: var(--admin-error, #ef4444);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Actions */
+.inline-editor-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 4px;
+}
+
+.inline-editor-btn {
+  padding: 6px 14px;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.inline-editor-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inline-editor-btn.cancel {
+  color: var(--admin-text-secondary, #9ca3af);
+  background: transparent;
+}
+
+.inline-editor-btn.cancel:hover:not(:disabled) {
+  color: var(--admin-text-primary, #f9fafb);
+  background: var(--admin-bg-hover, rgba(255, 255, 255, 0.05));
+}
+
+.inline-editor-btn.save {
+  color: white;
+  background: var(--admin-primary, #8b5cf6);
+}
+
+.inline-editor-btn.save:hover:not(:disabled) {
+  background: var(--admin-primary-hover, #7c3aed);
+}
+
+/* Inline Edit Field (Display Mode) */
+.inline-edit-display {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  font-size: inherit;
+  color: inherit;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 150ms ease;
+  text-align: left;
+}
+
+.inline-edit-display:hover {
+  background: var(--admin-bg-hover, rgba(255, 255, 255, 0.05));
+  border-color: var(--admin-border-default, rgba(255, 255, 255, 0.08));
+}
+
+.inline-edit-display .edit-icon {
+  opacity: 0;
+  transition: opacity 150ms ease;
+  color: var(--admin-text-muted, #6b7280);
+}
+
+.inline-edit-display:hover .edit-icon {
+  opacity: 1;
+}
+
+.inline-edit-display span.empty {
+  color: var(--admin-text-muted, #6b7280);
+  font-style: italic;
+}
+
+/* Number input - remove spinners */
+.inline-editor-input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+.inline-editor-input[type="number"]::-webkit-outer-spin-button,
+.inline-editor-input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

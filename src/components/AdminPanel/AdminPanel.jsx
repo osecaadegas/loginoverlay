@@ -5,8 +5,10 @@ import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PE
 import { supabase } from '../../config/supabaseClient';
 import { DEPOSIT_METHODS } from '../../utils/depositMethods';
 import './AdminPanel.css';
+import './AdminPanel.new.css';
 import SeasonPassAdmin from './SeasonPassAdmin';
 import { CasinoOfferModal } from './modals';
+import { TabNavigation, SidePanel } from './components';
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -22,7 +24,7 @@ export default function AdminPanel() {
   const usersPerPage = 10;
   
   // Offer Card Builder State
-  const [activeTab, setActiveTab] = useState('users'); // 'users', 'offers', 'thelife', 'highlights', 'wheel', 'wipe', 'seasonpass', 'guessbalance'
+  const [activeTab, setActiveTab] = useState('users'); // 'users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance'
   const [offers, setOffers] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -194,19 +196,6 @@ export default function AdminPanel() {
   const categoriesScrollRef = useRef(null);
   const storeScrollRef = useRef(null);
 
-  // Stream Highlights State
-  const [highlights, setHighlights] = useState([]);
-  const [showHighlightModal, setShowHighlightModal] = useState(false);
-  const [editingHighlight, setEditingHighlight] = useState(null);
-  const [highlightFormData, setHighlightFormData] = useState({
-    title: '',
-    description: '',
-    video_url: '',
-    thumbnail_url: '',
-    duration: '',
-    is_active: true
-  });
-
   // Daily Wheel State
   const [wheelPrizes, setWheelPrizes] = useState([]);
   const [showWheelModal, setShowWheelModal] = useState(false);
@@ -302,7 +291,6 @@ export default function AdminPanel() {
     loadStoreItems();
     loadWorkers();
     loadBoats();
-    loadHighlights();
     loadWheelPrizes();
     loadEventMessages();
     loadCategoryInfo();
@@ -1965,120 +1953,6 @@ export default function AdminPanel() {
     }
   };
 
-  // === STREAM HIGHLIGHTS MANAGEMENT ===
-
-  const loadHighlights = async () => {
-    const { data, error } = await supabase
-      .from('stream_highlights')
-      .select('*')
-      .order('created_at', { ascending: false });
-    
-    if (error) {
-      console.error('Error loading highlights:', error);
-    } else {
-      setHighlights(data || []);
-    }
-  };
-
-  const openHighlightModal = (highlight = null) => {
-    if (highlight) {
-      setHighlightFormData({
-        title: highlight.title,
-        description: highlight.description || '',
-        video_url: highlight.video_url,
-        thumbnail_url: highlight.thumbnail_url || '',
-        duration: highlight.duration || '',
-        is_active: highlight.is_active
-      });
-      setEditingHighlight(highlight);
-    } else {
-      setHighlightFormData({
-        title: '',
-        description: '',
-        video_url: '',
-        thumbnail_url: '',
-        duration: '',
-        is_active: true
-      });
-      setEditingHighlight(null);
-    }
-    setShowHighlightModal(true);
-  };
-
-  const closeHighlightModal = () => {
-    setShowHighlightModal(false);
-    setEditingHighlight(null);
-  };
-
-  const saveHighlight = async () => {
-    setError('');
-    setSuccess('');
-
-    if (!highlightFormData.title || !highlightFormData.video_url) {
-      setError('Title and video URL are required');
-      return;
-    }
-
-    try {
-      if (editingHighlight) {
-        const { error } = await supabase
-          .from('stream_highlights')
-          .update(highlightFormData)
-          .eq('id', editingHighlight.id);
-
-        if (error) throw error;
-        setSuccess('Highlight updated successfully!');
-      } else {
-        const { error } = await supabase
-          .from('stream_highlights')
-          .insert([highlightFormData]);
-
-        if (error) throw error;
-        setSuccess('Highlight created successfully!');
-      }
-
-      closeHighlightModal();
-      loadHighlights();
-    } catch (err) {
-      setError('Failed to save highlight: ' + err.message);
-    }
-  };
-
-  const deleteHighlight = async (highlightId) => {
-    if (!confirm('Are you sure you want to delete this highlight?')) return;
-
-    setError('');
-    setSuccess('');
-
-    try {
-      const { error } = await supabase
-        .from('stream_highlights')
-        .delete()
-        .eq('id', highlightId);
-
-      if (error) throw error;
-      setSuccess('Highlight deleted successfully!');
-      loadHighlights();
-    } catch (err) {
-      setError('Failed to delete highlight: ' + err.message);
-    }
-  };
-
-  const toggleHighlightActive = async (highlightId, currentStatus) => {
-    try {
-      const { error } = await supabase
-        .from('stream_highlights')
-        .update({ is_active: !currentStatus })
-        .eq('id', highlightId);
-
-      if (error) throw error;
-      setSuccess('Highlight status updated!');
-      loadHighlights();
-    } catch (err) {
-      setError('Failed to update highlight: ' + err.message);
-    }
-  };
-
   // === DAILY WHEEL MANAGEMENT ===
 
   const loadWheelPrizes = async () => {
@@ -2802,7 +2676,7 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="admin-panel">
+    <div className="admin-panel admin-panel-modern">
       <div className="admin-header">
         <h1>🛡️ Admin Panel</h1>
       </div>
@@ -2810,57 +2684,20 @@ export default function AdminPanel() {
       {error && <div className="alert alert-error">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
 
-      {/* Tab Navigation */}
-      <div className="admin-tabs">
-        <button 
-          className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
-          onClick={() => setActiveTab('users')}
-        >
-          👥 User Management
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'offers' ? 'active' : ''}`}
-          onClick={() => setActiveTab('offers')}
-        >
-          🎰 Casino Offers
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'thelife' ? 'active' : ''}`}
-          onClick={() => setActiveTab('thelife')}
-        >
-          🔫 The Life Management
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'highlights' ? 'active' : ''}`}
-          onClick={() => setActiveTab('highlights')}
-        >
-          🎬 Stream Highlights
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'wheel' ? 'active' : ''}`}
-          onClick={() => setActiveTab('wheel')}
-        >
-          🎡 Daily Wheel
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'wipe' ? 'active' : ''}`}
-          onClick={() => setActiveTab('wipe')}
-        >
-          💀 Server Wipe
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'seasonpass' ? 'active' : ''}`}
-          onClick={() => setActiveTab('seasonpass')}
-        >
-          👑 Season Pass
-        </button>
-        <button 
-          className={`admin-tab ${activeTab === 'guessbalance' ? 'active' : ''}`}
-          onClick={() => setActiveTab('guessbalance')}
-        >
-          💰 Guess Balance
-        </button>
-      </div>
+      {/* Modern Tab Navigation */}
+      <TabNavigation
+        tabs={[
+          { id: 'users', label: 'User Management', icon: '👥' },
+          { id: 'offers', label: 'Casino Offers', icon: '🎰' },
+          { id: 'thelife', label: 'The Life', icon: '🔫' },
+          { id: 'wheel', label: 'Daily Wheel', icon: '🎡' },
+          { id: 'wipe', label: 'Server Wipe', icon: '💀' },
+          { id: 'seasonpass', label: 'Season Pass', icon: '👑' },
+          { id: 'guessbalance', label: 'Guess Balance', icon: '💰' },
+        ]}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+      />
 
       {/* User Management Tab */}
       {activeTab === 'users' && (
@@ -5366,171 +5203,6 @@ export default function AdminPanel() {
                     {editingCategory ? 'Update Category' : 'Create Category'}
                   </button>
                   <button onClick={closeCategoryModal} className="btn-cancel">
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Stream Highlights Tab */}
-      {activeTab === 'highlights' && (
-        <>
-          <div className="thelife-content">
-            <div className="section-header">
-              <h2>🎬 Stream Highlights Management</h2>
-              <button onClick={() => openHighlightModal()} className="btn-add">
-                ➕ Upload New Highlight
-              </button>
-            </div>
-
-            <div className="highlights-admin-grid">
-              {highlights.map(highlight => (
-                <div key={highlight.id} className="highlight-admin-card">
-                  <div className="highlight-preview">
-                    {highlight.thumbnail_url ? (
-                      <img src={highlight.thumbnail_url} alt={highlight.title} />
-                    ) : (
-                      <div className="no-thumbnail">🎬</div>
-                    )}
-                    {!highlight.is_active && (
-                      <div className="inactive-badge">INACTIVE</div>
-                    )}
-                    {highlight.duration && (
-                      <div className="duration-badge">{highlight.duration}</div>
-                    )}
-                  </div>
-                  <div className="highlight-details">
-                    <h3>{highlight.title}</h3>
-                    {highlight.description && (
-                      <p className="highlight-desc">{highlight.description}</p>
-                    )}
-                    <div className="highlight-stats">
-                      <span>👁️ {highlight.view_count || 0} views</span>
-                      <span>📅 {new Date(highlight.created_at).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                  <div className="highlight-actions">
-                    <button 
-                      onClick={() => toggleHighlightActive(highlight.id, highlight.is_active)} 
-                      className={`btn-toggle ${highlight.is_active ? 'active' : 'inactive'}`}
-                    >
-                      {highlight.is_active ? '✓ Active' : '✗ Inactive'}
-                    </button>
-                    <button onClick={() => openHighlightModal(highlight)} className="btn-edit">
-                      ✏️ Edit
-                    </button>
-                    <button onClick={() => deleteHighlight(highlight.id)} className="btn-delete">
-                      🗑️ Delete
-                    </button>
-                  </div>
-                </div>
-              ))}
-
-              {highlights.length === 0 && (
-                <div className="no-data-message">
-                  <p>No highlights yet. Upload your first stream highlight!</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Highlight Modal */}
-          {showHighlightModal && (
-            <div className="modal-overlay" onClick={closeHighlightModal}>
-              <div className="modal-content large" onClick={(e) => e.stopPropagation()}>
-                <div className="modal-header">
-                  <h2>{editingHighlight ? 'Edit Highlight' : 'Upload New Highlight'}</h2>
-                  <button className="close-btn" onClick={closeHighlightModal}>✕</button>
-                </div>
-
-                <div className="modal-body">
-                  <div className="form-section">
-                    <div className="form-group">
-                      <label>Title *</label>
-                      <input
-                        type="text"
-                        value={highlightFormData.title}
-                        onChange={(e) => setHighlightFormData({...highlightFormData, title: e.target.value})}
-                        placeholder="Epic Win Moment!"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Description</label>
-                      <textarea
-                        value={highlightFormData.description}
-                        onChange={(e) => setHighlightFormData({...highlightFormData, description: e.target.value})}
-                        placeholder="What happened in this clip?"
-                        rows="3"
-                      />
-                    </div>
-
-                    <div className="form-group">
-                      <label>Video Filename * (from public/highlights folder)</label>
-                      <input
-                        type="text"
-                        value={highlightFormData.video_url}
-                        onChange={(e) => setHighlightFormData({...highlightFormData, video_url: e.target.value})}
-                        placeholder="video1 (or video1.mp4)"
-                      />
-                      <small>Enter filename without extension (e.g., "video1", "video2") - videos must be in public/highlights folder</small>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Thumbnail URL (optional)</label>
-                      <input
-                        type="url"
-                        value={highlightFormData.thumbnail_url}
-                        onChange={(e) => setHighlightFormData({...highlightFormData, thumbnail_url: e.target.value})}
-                        placeholder="https://example.com/thumbnail.jpg"
-                      />
-                      <small>Leave empty for no thumbnail</small>
-                    </div>
-
-                    <div className="form-group">
-                      <label>Duration (e.g., "0:30", "1:00")</label>
-                      <input
-                        type="text"
-                        value={highlightFormData.duration}
-                        onChange={(e) => setHighlightFormData({...highlightFormData, duration: e.target.value})}
-                        placeholder="0:30"
-                      />
-                    </div>
-
-                    <div className="form-group checkbox-group">
-                      <label>
-                        <input
-                          type="checkbox"
-                          checked={highlightFormData.is_active}
-                          onChange={(e) => setHighlightFormData({...highlightFormData, is_active: e.target.checked})}
-                        />
-                        <span>Active (visible to users)</span>
-                      </label>
-                    </div>
-
-                    {highlightFormData.video_url && (
-                      <div className="form-group">
-                        <label>Preview</label>
-                        <div className="video-preview">
-                          <video 
-                            controls 
-                            src={highlightFormData.video_url}
-                            style={{ width: '100%', maxHeight: '300px', borderRadius: '8px', background: '#000' }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="modal-actions">
-                  <button onClick={saveHighlight} className="btn-save">
-                    {editingHighlight ? 'Update Highlight' : 'Upload Highlight'}
-                  </button>
-                  <button onClick={closeHighlightModal} className="btn-cancel">
                     Cancel
                   </button>
                 </div>
