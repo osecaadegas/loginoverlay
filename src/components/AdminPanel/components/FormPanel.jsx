@@ -118,17 +118,17 @@ export function FormSection({
  * StatGrid - Two-column grid for displaying stat fields
  * Perfect for numeric values that need to be compared
  */
-export function StatGrid({ children }) {
+export function StatGrid({ children, columns = 2 }) {
   return (
-    <div className="stat-grid-v2">
+    <div className={`stat-grid-v2 cols-${columns}`}>
       {children}
     </div>
   );
 }
 
 /**
- * StatField - Individual stat with icon, label, and large value
- * Use inside StatGrid
+ * StatField - Individual stat with icon, label, and input OR value
+ * Use inside StatGrid - supports both display mode and input mode
  */
 export function StatField({ 
   icon, 
@@ -137,7 +137,8 @@ export function StatField({
   suffix = '',
   prefix = '',
   delta,
-  hint 
+  hint,
+  children // For input mode
 }) {
   return (
     <div className="stat-field-v2">
@@ -145,16 +146,22 @@ export function StatField({
         {icon && <span className="stat-icon">{icon}</span>}
         <span className="stat-label">{label}</span>
       </div>
-      <div className="stat-field-value">
-        {prefix && <span className="stat-prefix">{prefix}</span>}
-        <span className="stat-number">{value}</span>
-        {suffix && <span className="stat-suffix">{suffix}</span>}
-        {delta !== undefined && (
-          <span className={`stat-delta ${delta >= 0 ? 'positive' : 'negative'}`}>
-            {delta >= 0 ? '+' : ''}{delta}
-          </span>
-        )}
-      </div>
+      {children ? (
+        <div className="stat-field-input">
+          {children}
+        </div>
+      ) : (
+        <div className="stat-field-value">
+          {prefix && <span className="stat-prefix">{prefix}</span>}
+          <span className="stat-number">{value}</span>
+          {suffix && <span className="stat-suffix">{suffix}</span>}
+          {delta !== undefined && (
+            <span className={`stat-delta ${delta >= 0 ? 'positive' : 'negative'}`}>
+              {delta >= 0 ? '+' : ''}{delta}
+            </span>
+          )}
+        </div>
+      )}
       {hint && <p className="stat-hint">{hint}</p>}
     </div>
   );
