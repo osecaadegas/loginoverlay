@@ -2764,10 +2764,11 @@ export default function AdminPanel() {
           <div className="user-management-section">
             {/* Search and Actions Bar */}
             <div className="user-table-header">
+              <h3>All Users</h3>
               <div className="user-search-bar">
                 <input
                   type="text"
-                  placeholder="🔍 Search users by email, provider, or role..."
+                  placeholder="Search by email, username, role..."
                   value={userSearch}
                   onChange={(e) => {
                     setUserSearch(e.target.value);
@@ -2791,11 +2792,11 @@ export default function AdminPanel() {
               <table className="users-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '30%' }}>User</th>
-                    <th style={{ width: '15%' }}>Provider</th>
-                    <th style={{ width: '30%' }}>Roles</th>
-                    <th style={{ width: '10%' }}>Status</th>
-                    <th style={{ width: '15%' }}>Actions</th>
+                    <th>User</th>
+                    <th>Provider</th>
+                    <th>Roles</th>
+                    <th>Status</th>
+                    <th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>

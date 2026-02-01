@@ -1367,60 +1367,78 @@
    USERS TABLE STYLES
    =================== */
 .user-management-section {
-  background: var(--admin-bg-secondary);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--admin-border-default);
-  overflow: hidden;
+  background: transparent;
+  margin-top: var(--space-5);
 }
 
 .user-table-header {
-  padding: var(--space-4) var(--space-5);
-  border-bottom: 1px solid var(--admin-border-default);
-  background: var(--admin-bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-4);
+}
+
+.user-table-header h3 {
+  margin: 0;
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--admin-text-primary);
 }
 
 .user-table-header .user-search-bar {
   position: relative;
-  max-width: 400px;
+  width: 320px;
 }
 
 .user-table-header .user-search-input {
   width: 100%;
-  padding: var(--space-3) var(--space-4);
-  padding-left: var(--space-4);
-  background: var(--admin-bg-secondary);
-  border: 1px solid var(--admin-border-default);
-  border-radius: var(--radius-md);
+  padding: 10px 16px;
+  padding-right: 40px;
+  background: rgba(30, 41, 59, 0.6);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: var(--radius-lg);
   color: var(--admin-text-primary);
   font-size: var(--text-sm);
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: all var(--transition-fast);
+}
+
+.user-table-header .user-search-input::placeholder {
+  color: var(--admin-text-muted);
 }
 
 .user-table-header .user-search-input:focus {
   outline: none;
   border-color: var(--admin-accent-primary);
-  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background: rgba(30, 41, 59, 0.8);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
 }
 
 .user-table-header .clear-search-btn {
   position: absolute;
-  right: 10px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--admin-text-muted);
   cursor: pointer;
-  padding: 4px 8px;
-  font-size: var(--text-sm);
+  padding: 4px;
+  font-size: 12px;
+  opacity: 0.7;
+  transition: opacity var(--transition-fast);
 }
 
 .user-table-header .clear-search-btn:hover {
+  opacity: 1;
   color: var(--admin-text-primary);
 }
 
 .users-table-container {
-  overflow-x: auto;
+  background: rgba(15, 23, 42, 0.4);
+  border-radius: var(--radius-xl);
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  overflow: hidden;
+  backdrop-filter: blur(10px);
 }
 
 .users-table {
@@ -1429,21 +1447,25 @@
 }
 
 .users-table th {
-  padding: var(--space-3) var(--space-4);
+  padding: 14px 20px;
   text-align: left;
-  font-size: var(--text-xs);
+  font-size: 11px;
   font-weight: var(--font-semibold);
   color: var(--admin-text-muted);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background: var(--admin-bg-tertiary);
-  border-bottom: 1px solid var(--admin-border-default);
+  letter-spacing: 0.08em;
+  background: rgba(30, 41, 59, 0.5);
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
 }
 
 .users-table td {
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--admin-border-default);
+  padding: 14px 20px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.05);
   vertical-align: middle;
+}
+
+.users-table tbody tr:last-child td {
+  border-bottom: none;
 }
 
 .user-table-row {
@@ -1451,35 +1473,36 @@
 }
 
 .user-table-row:hover {
-  background: var(--admin-bg-hover);
+  background: rgba(59, 130, 246, 0.05);
 }
 
 .user-table-row.selected {
-  background: var(--admin-bg-active);
+  background: rgba(59, 130, 246, 0.1);
 }
 
 .user-table-row.inactive {
-  opacity: 0.6;
+  opacity: 0.5;
 }
 
 .user-cell {
   display: flex;
   align-items: center;
-  gap: var(--space-3);
+  gap: 12px;
 }
 
 .user-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-full);
-  background: linear-gradient(135deg, var(--admin-accent-primary), var(--admin-accent-purple));
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--text-sm);
+  font-size: 14px;
   font-weight: var(--font-bold);
   color: white;
   flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.3);
 }
 
 .user-info {
@@ -1487,159 +1510,194 @@
 }
 
 .user-email {
-  font-size: var(--text-sm);
+  font-size: 13px;
   font-weight: var(--font-medium);
   color: var(--admin-text-primary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  margin-bottom: 2px;
 }
 
 .user-username {
-  font-size: var(--text-xs);
+  font-size: 12px;
   color: var(--admin-text-muted);
+}
+
+/* Provider badges */
+.provider-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 5px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: var(--font-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.provider-badge.provider-twitch {
+  background: rgba(145, 70, 255, 0.15);
+  color: #a78bfa;
+}
+
+.provider-badge.provider-discord {
+  background: rgba(88, 101, 242, 0.15);
+  color: #818cf8;
+}
+
+.provider-badge.provider-google {
+  background: rgba(234, 67, 53, 0.15);
+  color: #f87171;
+}
+
+.provider-badge.provider-email {
+  background: rgba(148, 163, 184, 0.15);
+  color: #94a3b8;
 }
 
 .roles-cell {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-1);
+  gap: 6px;
 }
 
 .role-badge-table {
   display: inline-flex;
   align-items: center;
-  padding: 2px 8px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: var(--font-semibold);
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 10px;
+  font-weight: var(--font-bold);
   text-transform: uppercase;
-  letter-spacing: 0.02em;
+  letter-spacing: 0.04em;
 }
 
 .role-badge-table.role-admin {
-  background: rgba(239, 68, 68, 0.15);
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
   color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border: 1px solid rgba(239, 68, 68, 0.25);
 }
 
 .role-badge-table.role-superadmin {
-  background: rgba(139, 92, 246, 0.15);
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(139, 92, 246, 0.1));
   color: #a78bfa;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  border: 1px solid rgba(139, 92, 246, 0.25);
 }
 
 .role-badge-table.role-moderator {
-  background: rgba(59, 130, 246, 0.15);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.1));
   color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  border: 1px solid rgba(59, 130, 246, 0.25);
 }
 
 .role-badge-table.role-slot_modder {
-  background: rgba(245, 158, 11, 0.15);
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(245, 158, 11, 0.1));
   color: #fbbf24;
-  border: 1px solid rgba(245, 158, 11, 0.3);
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .role-badge-table.role-premium {
-  background: rgba(251, 191, 36, 0.15);
-  color: #fcd34d;
-  border: 1px solid rgba(251, 191, 36, 0.3);
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.1));
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .role-badge-table.role-user {
-  background: rgba(75, 85, 99, 0.3);
-  color: #9ca3af;
-  border: 1px solid rgba(75, 85, 99, 0.5);
+  background: rgba(71, 85, 105, 0.3);
+  color: #94a3b8;
+  border: 1px solid rgba(71, 85, 105, 0.4);
 }
 
 .no-roles {
   color: var(--admin-text-muted);
-  font-size: var(--text-xs);
+  font-size: 11px;
   font-style: italic;
+  opacity: 0.6;
 }
 
 .status-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: var(--radius-full);
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 20px;
   font-size: 11px;
   font-weight: var(--font-semibold);
 }
 
 .status-badge.active {
-  background: rgba(16, 185, 129, 0.15);
+  background: rgba(16, 185, 129, 0.12);
   color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
 .status-badge.inactive {
-  background: rgba(239, 68, 68, 0.15);
+  background: rgba(239, 68, 68, 0.12);
   color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .actions-cell {
   display: flex;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
 .btn-table-action {
-  padding: 6px 12px;
-  border-radius: var(--radius-md);
-  font-size: var(--text-xs);
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 12px;
   font-weight: var(--font-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
-  border: 1px solid transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
 }
 
 .btn-table-action.btn-edit {
-  background: rgba(59, 130, 246, 0.1);
+  background: rgba(59, 130, 246, 0.12);
   color: #60a5fa;
-  border-color: rgba(59, 130, 246, 0.3);
 }
 
 .btn-table-action.btn-edit:hover {
-  background: rgba(59, 130, 246, 0.2);
-  border-color: rgba(59, 130, 246, 0.5);
+  background: rgba(59, 130, 246, 0.25);
+  transform: translateY(-1px);
 }
 
 .table-pagination {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: var(--space-4);
-  padding: var(--space-4);
-  border-top: 1px solid var(--admin-border-default);
-  background: var(--admin-bg-tertiary);
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: rgba(30, 41, 59, 0.3);
+  border-top: 1px solid rgba(148, 163, 184, 0.05);
 }
 
 .pagination-btn {
   padding: 8px 16px;
-  background: var(--admin-bg-secondary);
-  border: 1px solid var(--admin-border-default);
-  border-radius: var(--radius-md);
-  color: var(--admin-text-secondary);
-  font-size: var(--text-sm);
+  background: rgba(59, 130, 246, 0.1);
+  border: none;
+  border-radius: 8px;
+  color: #60a5fa;
+  font-size: 13px;
+  font-weight: var(--font-medium);
   cursor: pointer;
   transition: all var(--transition-fast);
 }
 
 .pagination-btn:hover:not(:disabled) {
-  background: var(--admin-bg-hover);
-  border-color: var(--admin-border-hover);
-  color: var(--admin-text-primary);
+  background: rgba(59, 130, 246, 0.2);
 }
 
 .pagination-btn:disabled {
-  opacity: 0.4;
+  opacity: 0.3;
   cursor: not-allowed;
+  color: var(--admin-text-muted);
+  background: transparent;
 }
 
 .pagination-info {
-  font-size: var(--text-sm);
+  font-size: 13px;
   color: var(--admin-text-muted);
 }
 
