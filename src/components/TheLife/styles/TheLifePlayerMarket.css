@@ -1348,6 +1348,207 @@
   color: #3b82f6;
 }
 
+/* Improved Quantity Input */
+.quantity-input-improved {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quantity-input-improved .qty-btn {
+  width: 42px;
+  height: 42px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #3a3d45;
+  border-radius: 10px;
+  color: #ffffff;
+  font-size: 1.4rem;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quantity-input-improved .qty-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #3b82f6;
+}
+
+.quantity-input-improved .qty-btn:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.quantity-input-improved .qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.quantity-input-improved .qty-btn.minus span {
+  margin-top: -2px;
+}
+
+.quantity-input-improved .qty-btn.plus span {
+  margin-top: -1px;
+}
+
+.quantity-input-improved .qty-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #3a3d45;
+  border-radius: 10px;
+  padding: 0 12px;
+  height: 42px;
+}
+
+.quantity-input-improved .qty-display input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #ffffff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  text-align: center;
+  width: 50px;
+  padding: 0;
+}
+
+.quantity-input-improved .qty-display input:focus {
+  outline: none;
+}
+
+.quantity-input-improved .qty-max-label {
+  color: #5a5d65;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.quantity-input-improved .qty-max-btn {
+  padding: 0 14px;
+  height: 42px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 10px;
+  color: #3b82f6;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.quantity-input-improved .qty-max-btn:hover:not(:disabled) {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.5);
+}
+
+.quantity-input-improved .qty-max-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Improved Price Input */
+.price-input-wrapper {
+  display: flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  border: 1px solid #3a3d45;
+  border-radius: 10px;
+  padding: 0 16px;
+  height: 50px;
+  transition: all 0.15s ease;
+}
+
+.price-input-wrapper:focus-within {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.price-input-wrapper .price-prefix {
+  color: #22c55e;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-right: 4px;
+}
+
+.price-input-improved {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #22c55e;
+  font-size: 1.3rem;
+  font-weight: 700;
+  padding: 0;
+}
+
+.price-input-improved:focus {
+  outline: none;
+}
+
+.price-input-improved::placeholder {
+  color: #3a3d45;
+}
+
+.price-quick-btns {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.price-quick-btns button {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #3a3d45;
+  border-radius: 8px;
+  color: #8a8d96;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.price-quick-btns button:hover {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #3b82f6;
+}
+
+/* Duration Buttons */
+.duration-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.duration-btn {
+  flex: 1;
+  padding: 12px 8px;
+  background: rgba(0, 0, 0, 0.4);
+  border: 1px solid #3a3d45;
+  border-radius: 10px;
+  color: #8a8d96;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.duration-btn:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: #a0a3ab;
+}
+
+.duration-btn.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #3b82f6;
+}
+
 .quantity-input input {
   flex: 1;
   background: rgba(0, 0, 0, 0.4);

@@ -956,45 +956,80 @@ export default function TheLifePlayerMarket({
               <div className="list-form">
                 <div className="form-group">
                   <label>{isPt ? 'Quantidade' : 'Quantity'}</label>
-                  <div className="quantity-input">
-                    <button onClick={() => setListQuantity(Math.max(1, listQuantity - 1))}>-</button>
-                    <input
-                      type="number"
-                      value={listQuantity}
-                      onChange={(e) => setListQuantity(Math.min(selectedItem.quantity, Math.max(1, parseInt(e.target.value) || 1)))}
-                      min="1"
-                      max={selectedItem.quantity}
-                    />
-                    <button onClick={() => setListQuantity(Math.min(selectedItem.quantity, listQuantity + 1))}>+</button>
-                    <button className="qty-max" onClick={() => setListQuantity(selectedItem.quantity)}>MAX</button>
+                  <div className="quantity-input-improved">
+                    <button 
+                      className="qty-btn minus"
+                      onClick={() => setListQuantity(Math.max(1, listQuantity - 1))}
+                      disabled={listQuantity <= 1}
+                    >
+                      <span>−</span>
+                    </button>
+                    <div className="qty-display">
+                      <input
+                        type="number"
+                        value={listQuantity}
+                        onChange={(e) => setListQuantity(Math.min(selectedItem.quantity, Math.max(1, parseInt(e.target.value) || 1)))}
+                        min="1"
+                        max={selectedItem.quantity}
+                      />
+                      <span className="qty-max-label">/ {selectedItem.quantity}</span>
+                    </div>
+                    <button 
+                      className="qty-btn plus"
+                      onClick={() => setListQuantity(Math.min(selectedItem.quantity, listQuantity + 1))}
+                      disabled={listQuantity >= selectedItem.quantity}
+                    >
+                      <span>+</span>
+                    </button>
+                    <button 
+                      className="qty-max-btn" 
+                      onClick={() => setListQuantity(selectedItem.quantity)}
+                      disabled={listQuantity === selectedItem.quantity}
+                    >
+                      MAX
+                    </button>
                   </div>
                 </div>
                 
                 <div className="form-group">
                   <label>{isPt ? 'Preço Total' : 'Total Price'} ($)</label>
-                  <input
-                    type="number"
-                    value={listPrice}
-                    onChange={(e) => setListPrice(e.target.value)}
-                    placeholder={isPt ? 'Digite o preço...' : 'Enter price...'}
-                    className="price-input"
-                  />
+                  <div className="price-input-wrapper">
+                    <span className="price-prefix">$</span>
+                    <input
+                      type="number"
+                      value={listPrice}
+                      onChange={(e) => setListPrice(e.target.value)}
+                      placeholder="0"
+                      className="price-input-improved"
+                    />
+                  </div>
                   {listPrice && listQuantity > 1 && (
                     <p className="price-per-item">
                       ${Math.round(parseInt(listPrice) / listQuantity).toLocaleString()} {isPt ? 'por unidade' : 'per item'}
                     </p>
                   )}
+                  {listPrice && (
+                    <div className="price-quick-btns">
+                      <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 0.9).toString())}>-10%</button>
+                      <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 1.1).toString())}>+10%</button>
+                      <button onClick={() => setListPrice(Math.round(parseInt(listPrice || 0) * 2).toString())}>×2</button>
+                    </div>
+                  )}
                 </div>
                 
                 <div className="form-group">
                   <label>{isPt ? 'Duração' : 'Duration'}</label>
-                  <select value={listDuration} onChange={(e) => setListDuration(e.target.value)}>
-                    <option value="6">6 {isPt ? 'horas' : 'hours'}</option>
-                    <option value="12">12 {isPt ? 'horas' : 'hours'}</option>
-                    <option value="24">24 {isPt ? 'horas' : 'hours'}</option>
-                    <option value="48">48 {isPt ? 'horas' : 'hours'}</option>
-                    <option value="72">72 {isPt ? 'horas' : 'hours'}</option>
-                  </select>
+                  <div className="duration-buttons">
+                    {[6, 12, 24, 48, 72].map(hours => (
+                      <button
+                        key={hours}
+                        className={`duration-btn ${listDuration === hours.toString() ? 'active' : ''}`}
+                        onClick={() => setListDuration(hours.toString())}
+                      >
+                        {hours}h
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
