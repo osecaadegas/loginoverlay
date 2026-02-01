@@ -602,6 +602,13 @@
   font-weight: 600;
 }
 
+.one-guess-notice {
+  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
 .guess-form {
   display: flex;
   flex-direction: column;
@@ -858,9 +865,9 @@
 }
 
 .guess-amount {
-  color: #9ca3af;
-  font-size: 0.85rem;
-  font-weight: 500;
+  color: #d4af37;
+  font-size: 0.9rem;
+  font-weight: 600;
 }
 
 /* Winner Announcement */

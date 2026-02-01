@@ -91,12 +91,12 @@ export default function GuessBalancePage() {
         }
       }
 
-      // Always load all guesses for public display
+      // Always load all guesses for public display - include twitch_username
       const { data: allGuessesData } = await supabase
         .from('guess_balance_guesses')
         .select(`
           *,
-          user:user_profiles(username, display_name)
+          user:user_profiles(username, display_name, twitch_username)
         `)
         .eq('session_id', sessionId)
         .order('guessed_at', { ascending: false });
@@ -132,6 +132,12 @@ export default function GuessBalancePage() {
       return;
     }
 
+    // Only allow ONE guess per session - no updates allowed
+    if (existingGuess) {
+      setError('You have already submitted a guess for this session. Only one guess per session is allowed!');
+      return;
+    }
+
     if (!userGuess || isNaN(parseFloat(userGuess))) {
       setError('Please enter a valid balance');
       return;
@@ -149,26 +155,17 @@ export default function GuessBalancePage() {
     try {
       const guessValue = parseFloat(userGuess);
 
-      if (existingGuess) {
-        const { error } = await supabase
-          .from('guess_balance_guesses')
-          .update({ guessed_balance: guessValue, guessed_at: new Date().toISOString() })
-          .eq('id', existingGuess.id);
+      // Only insert - no updates allowed
+      const { error } = await supabase
+        .from('guess_balance_guesses')
+        .insert({
+          session_id: activeSession.id,
+          user_id: user.id,
+          guessed_balance: guessValue
+        });
 
-        if (error) throw error;
-        setSuccess('Your guess has been updated!');
-      } else {
-        const { error } = await supabase
-          .from('guess_balance_guesses')
-          .insert({
-            session_id: activeSession.id,
-            user_id: user.id,
-            guessed_balance: guessValue
-          });
-
-        if (error) throw error;
-        setSuccess('Your guess has been submitted!');
-      }
+      if (error) throw error;
+      setSuccess('Your guess has been submitted!');
 
       loadSessionDetails(activeSession.id);
     } catch (err) {
@@ -469,12 +466,15 @@ export default function GuessBalancePage() {
                       <div className="login-prompt">
                         <p>Please log in to submit your guess!</p>
                       </div>
+                    ) : existingGuess ? (
+                      <div className="guessing-closed">
+                        <p>✅ Your guess has been submitted!</p>
+                        <p className="your-guess">Your guess: {formatCurrency(existingGuess.guessed_balance)}</p>
+                        <p className="one-guess-notice">Only one guess per session is allowed.</p>
+                      </div>
                     ) : (!activeSession?.is_guessing_open || hasPayoutStarted) ? (
                       <div className="guessing-closed">
                         <p>⏰ Guessing is closed {hasPayoutStarted && '(payouts started)'}</p>
-                        {existingGuess && (
-                          <p className="your-guess">Your guess: {formatCurrency(existingGuess.guessed_balance)}</p>
-                        )}
                       </div>
                     ) : (
                       <div className="guess-form">
@@ -496,19 +496,13 @@ export default function GuessBalancePage() {
                           disabled={submitting || !userGuess}
                           className="submit-guess-btn"
                         >
-                          {submitting ? 'Submitting...' : existingGuess ? 'Update Guess' : 'Submit Guess'}
+                          {submitting ? 'Submitting...' : 'Submit Guess'}
                         </button>
-
-                        {existingGuess && (
-                          <p className="existing-guess-note">
-                            Current guess: {formatCurrency(existingGuess.guessed_balance)}
-                          </p>
-                        )}
                       </div>
                     )}
                   </div>
 
-                  {/* Public Guess History */}
+                  {/* Public Guess History - Show twitch names and amounts */}
                   <div className="public-guess-history">
                     <h4>📜 All Guesses ({publicGuesses.length})</h4>
                     {publicGuesses.length === 0 ? (
@@ -520,13 +514,12 @@ export default function GuessBalancePage() {
                             key={guess.id} 
                             className={`guess-history-item ${guess.user_id === user?.id ? 'your-guess-item' : ''}`}
                           >
-                            <span className="guess-number">#{publicGuesses.length - index}</span>
                             <span className="guess-player">
-                              {guess.user?.display_name || guess.user?.username || 'Anonymous'}
+                              {guess.user?.twitch_username || guess.user?.display_name || guess.user?.username || 'Anonymous'}
                               {guess.user_id === user?.id && <span className="you-badge">YOU</span>}
                             </span>
                             <span className="guess-amount">
-                              {activeSession?.reveal_answer ? formatCurrency(guess.guessed_balance) : '???'}
+                              {formatCurrency(guess.guessed_balance)}
                             </span>
                           </div>
                         ))}
@@ -555,8 +548,10 @@ export default function GuessBalancePage() {
                       <span className="winner-crown">👑</span>
                       <span className="winner-label">WINNER</span>
                       <span className="winner-name">
-                        {allGuesses.find(g => g.is_winner)?.user?.display_name || 
+                        {allGuesses.find(g => g.is_winner)?.user?.twitch_username ||
+                         allGuesses.find(g => g.is_winner)?.user?.display_name || 
                          allGuesses.find(g => g.is_winner)?.user?.username || 
+                         allGuesses[0]?.user?.twitch_username ||
                          allGuesses[0]?.user?.display_name || 
                          allGuesses[0]?.user?.username || 'Anonymous'}
                       </span>
@@ -594,7 +589,7 @@ export default function GuessBalancePage() {
                               {index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`}
                             </span>
                             <span className="player-name">
-                              {guess.user?.display_name || guess.user?.username || 'Anonymous'}
+                              {guess.user?.twitch_username || guess.user?.display_name || guess.user?.username || 'Anonymous'}
                               {guess.user_id === user?.id && <span className="you-tag">YOU</span>}
                             </span>
                             <div className="guess-info">
