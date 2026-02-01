@@ -1114,6 +1114,10 @@
   padding: 16px;
 }
 
+.votes-content {
+  padding: 16px;
+}
+
 .votes-content h3 {
   font-size: 1.1rem;
   color: #f3f4f6;
@@ -1133,57 +1137,97 @@
 }
 
 .votes-section {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
 }
 
 .votes-section h4 {
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   color: #f3f4f6;
-  margin: 0 0 10px 0;
-  padding-bottom: 8px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.best-votes-section {
+  background: linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(234, 179, 8, 0.05) 100%);
+  border: 1px solid rgba(234, 179, 8, 0.25);
 }
 
 .best-votes-section h4 {
+  background: rgba(234, 179, 8, 0.1);
   color: #fbbf24;
+  border-bottom: 1px solid rgba(234, 179, 8, 0.2);
+}
+
+.worst-votes-section {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.25);
 }
 
 .worst-votes-section h4 {
+  background: rgba(139, 92, 246, 0.1);
   color: #a78bfa;
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
 }
 
 .votes-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
+  padding: 8px;
 }
 
 .vote-slot-group {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
-  padding: 10px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+
+.vote-slot-group:last-child {
+  margin-bottom: 0;
 }
 
 .vote-slot-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .vote-slot-name {
-  font-weight: 600;
-  color: #e5e7eb;
-  font-size: 0.9rem;
+  font-weight: 700;
+  color: #fff;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.vote-slot-name::before {
+  content: '🎰';
+  font-size: 0.85rem;
 }
 
 .vote-slot-count {
-  font-size: 0.75rem;
-  color: #9ca3af;
-  background: rgba(255, 255, 255, 0.08);
-  padding: 2px 8px;
-  border-radius: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.best-votes-section .vote-slot-count {
+  background: rgba(234, 179, 8, 0.3);
+  color: #fde047;
+}
+
+.worst-votes-section .vote-slot-count {
+  background: rgba(139, 92, 246, 0.3);
+  color: #c4b5fd;
 }
 
 .vote-users {
@@ -1194,28 +1238,36 @@
 
 .vote-user {
   font-size: 0.8rem;
-  color: #9ca3af;
-  background: rgba(255, 255, 255, 0.05);
-  padding: 4px 10px;
-  border-radius: 12px;
+  color: #d1d5db;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 5px 12px;
+  border-radius: 16px;
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.vote-user:hover {
+  background: rgba(255, 255, 255, 0.15);
 }
 
 .vote-user.you {
-  background: rgba(59, 130, 246, 0.2);
-  color: #60a5fa;
-  border: 1px solid rgba(59, 130, 246, 0.3);
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.3) 0%, rgba(59, 130, 246, 0.15) 100%);
+  color: #93c5fd;
+  border: 1px solid rgba(59, 130, 246, 0.4);
 }
 
 .vote-user .you-badge {
-  font-size: 0.65rem;
-  background: #3b82f6;
+  font-size: 0.6rem;
+  background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
   color: white;
-  padding: 1px 4px;
-  border-radius: 4px;
-  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 6px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .no-votes-type {
@@ -1223,4 +1275,7 @@
   font-size: 0.85rem;
   font-style: italic;
   margin: 0;
+  padding: 12px;
+  text-align: center;
 }
+
