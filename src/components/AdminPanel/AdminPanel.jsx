@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PERMISSIONS, getUserRoles, addUserRole, removeUserRole } from '../../utils/adminUtils';
 import { supabase } from '../../config/supabaseClient';
@@ -8,11 +8,16 @@ import './AdminPanel.css';
 import './AdminPanel.new.css';
 import SeasonPassAdmin from './SeasonPassAdmin';
 import { CasinoOfferModal } from './modals';
-import { TabNavigation, SidePanel } from './components';
+import { TabNavigation, SidePanel, StatsCard, StatsGrid } from './components';
+
+// Valid tab IDs for URL deep linking
+const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance'];
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -23,8 +28,14 @@ export default function AdminPanel() {
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
   
+  // Get initial tab from URL or default to 'users'
+  const getInitialTab = () => {
+    const tabFromUrl = searchParams.get('tab');
+    return VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'users';
+  };
+  
   // Offer Card Builder State
-  const [activeTab, setActiveTab] = useState('users'); // 'users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance'
+  const [activeTab, setActiveTab] = useState(getInitialTab); // 'users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance'
   const [offers, setOffers] = useState([]);
   const [editingOffer, setEditingOffer] = useState(null);
   const [showOfferModal, setShowOfferModal] = useState(false);
@@ -275,6 +286,20 @@ export default function AdminPanel() {
     recurrence_months: 3
   });
   const [wipeSaving, setWipeSaving] = useState(false);
+
+  // Handle tab change with URL deep linking
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId);
+    setSearchParams({ tab: tabId });
+  };
+
+  // Sync tab with URL on browser back/forward
+  useEffect(() => {
+    const tabFromUrl = searchParams.get('tab');
+    if (tabFromUrl && VALID_TABS.includes(tabFromUrl) && tabFromUrl !== activeTab) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (!adminLoading && !isAdmin) {
@@ -2696,38 +2721,50 @@ export default function AdminPanel() {
           { id: 'guessbalance', label: 'Guess Balance', icon: '💰' },
         ]}
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={handleTabChange}
       />
 
       {/* User Management Tab */}
       {activeTab === 'users' && (
         <>
-          <div className="admin-stats">
-        <div className="stat-card">
-          <div className="stat-value">{users.length}</div>
-          <div className="stat-label">Total Users</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'admin')).length}</div>
-          <div className="stat-label">Admins</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'slot_modder')).length}</div>
-          <div className="stat-label">Slot Modders</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'moderator')).length}</div>
-          <div className="stat-label">Moderators</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.roles?.some(r => r.role === 'premium')).length}</div>
-          <div className="stat-label">Premium</div>
-        </div>
-        <div className="stat-card">
-          <div className="stat-value">{users.filter(u => u.is_active).length}</div>
-          <div className="stat-label">Active Users</div>
-        </div>
-      </div>
+          <StatsGrid columns={6}>
+            <StatsCard 
+              icon="👥" 
+              value={users.length} 
+              label="Total Users" 
+              color="primary"
+            />
+            <StatsCard 
+              icon="🛡️" 
+              value={users.filter(u => u.roles?.some(r => r.role === 'admin')).length} 
+              label="Admins" 
+              color="error"
+            />
+            <StatsCard 
+              icon="🎰" 
+              value={users.filter(u => u.roles?.some(r => r.role === 'slot_modder')).length} 
+              label="Slot Modders" 
+              color="warning"
+            />
+            <StatsCard 
+              icon="⚔️" 
+              value={users.filter(u => u.roles?.some(r => r.role === 'moderator')).length} 
+              label="Moderators" 
+              color="info"
+            />
+            <StatsCard 
+              icon="👑" 
+              value={users.filter(u => u.roles?.some(r => r.role === 'premium')).length} 
+              label="Premium" 
+              color="warning"
+            />
+            <StatsCard 
+              icon="✓" 
+              value={users.filter(u => u.is_active).length} 
+              label="Active Users" 
+              color="success"
+            />
+          </StatsGrid>
 
       <div className="users-table-container">
         <table className="users-table">

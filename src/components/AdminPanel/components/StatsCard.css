@@ -1,0 +1,119 @@
+/* Stats Card Styles */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--stats-columns, 4), 1fr);
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+@media (max-width: 1200px) {
+  .stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.stats-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--admin-bg-secondary, #111827);
+  border: 1px solid var(--admin-border-default, rgba(255, 255, 255, 0.08));
+  border-radius: 12px;
+  transition: all 200ms ease;
+}
+
+.stats-card.clickable {
+  cursor: pointer;
+}
+
+.stats-card.clickable:hover {
+  border-color: var(--admin-border-hover, rgba(255, 255, 255, 0.15));
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.stats-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  background: var(--admin-bg-tertiary, #1f2937);
+  flex-shrink: 0;
+}
+
+.stats-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.stats-value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--admin-text-primary, #f9fafb);
+  line-height: 1.2;
+}
+
+.stats-label {
+  font-size: 0.8125rem;
+  color: var(--admin-text-muted, #6b7280);
+  margin-top: 2px;
+}
+
+.stats-trend {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.stats-trend-up {
+  color: #22c55e;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.stats-trend-down {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+/* Color variants */
+.stats-card-primary .stats-icon {
+  background: rgba(139, 92, 246, 0.15);
+  color: #8b5cf6;
+}
+
+.stats-card-success .stats-icon {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+}
+
+.stats-card-warning .stats-icon {
+  background: rgba(245, 158, 11, 0.15);
+  color: #f59e0b;
+}
+
+.stats-card-error .stats-icon {
+  background: rgba(239, 68, 68, 0.15);
+  color: #ef4444;
+}
+
+.stats-card-info .stats-icon {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3b82f6;
+}
