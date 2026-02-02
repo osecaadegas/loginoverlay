@@ -80,31 +80,55 @@ const Checkbox = memo(({ checked, onChange, indeterminate }) => {
 });
 
 // Slot Row
-const SlotRow = memo(({ slot, isSelected, onSelect, onEdit }) => {
+const SlotRow = memo(({ slot, isSelected, onSelect, onEdit, onDelete, index }) => {
   return (
     <tr 
-      className={`slot-row ${isSelected ? 'selected' : ''}`}
+      className={`slot-row ${isSelected ? 'selected' : ''} ${index % 2 === 0 ? 'even' : 'odd'}`}
       onClick={() => onEdit(slot)}
     >
       <td className="col-checkbox" onClick={e => e.stopPropagation()}>
         <Checkbox checked={isSelected} onChange={() => onSelect(slot.id)} />
       </td>
       <td className="col-image">
-        <img 
-          src={slot.image || DEFAULT_SLOT_IMAGE} 
-          alt={slot.name}
-          loading="lazy"
-          onError={(e) => e.target.src = DEFAULT_SLOT_IMAGE}
-        />
+        <div className="slot-image-wrapper">
+          <img 
+            src={slot.image || DEFAULT_SLOT_IMAGE} 
+            alt={slot.name}
+            loading="lazy"
+            onError={(e) => e.target.src = DEFAULT_SLOT_IMAGE}
+          />
+        </div>
       </td>
       <td className="col-name">
-        <span className="slot-name-text">{slot.name}</span>
-        {slot.is_featured && <span className="featured-star">⭐</span>}
+        <div className="name-cell">
+          <span className="slot-name-text">{slot.name}</span>
+          {slot.is_featured && <span className="featured-star">⭐</span>}
+        </div>
       </td>
-      <td className="col-provider">{slot.provider}</td>
-      <td className="col-rtp">{slot.rtp ? `${slot.rtp}%` : '-'}</td>
+      <td className="col-provider">
+        <span className="provider-tag">{slot.provider}</span>
+      </td>
+      <td className="col-rtp">
+        {slot.rtp ? <span className="rtp-value">{slot.rtp}%</span> : <span className="no-data">—</span>}
+      </td>
       <td className="col-volatility"><VolatilityBadge volatility={slot.volatility} /></td>
       <td className="col-status"><StatusBadge status={slot.status || 'live'} /></td>
+      <td className="col-actions" onClick={e => e.stopPropagation()}>
+        <div className="row-actions">
+          <button className="action-btn edit" onClick={() => onEdit(slot)} title="Edit">
+            ✏️
+          </button>
+          <button 
+            className="action-btn delete" 
+            onClick={() => {
+              if (confirm(`Delete "${slot.name}"?`)) onDelete(slot.id);
+            }} 
+            title="Delete"
+          >
+            🗑️
+          </button>
+        </div>
+      </td>
     </tr>
   );
 });
@@ -147,13 +171,16 @@ const FilterPanel = memo(({
     onFilterChange('volatility', updated.length ? updated : null);
   };
 
+  // Count active filters
+  const activeFilterCount = 
+    (filters.providers?.length || 0) + 
+    (filters.volatility?.length || 0) + 
+    (filters.rtpMin ? 1 : 0) + 
+    (filters.rtpMax ? 1 : 0) +
+    ((filters.status?.length || 0) !== 1 || filters.status?.[0] !== 'live' ? 1 : 0);
+
   if (isCollapsed) {
-    return (
-      <div className="filter-panel collapsed">
-        <button className="filter-toggle" onClick={onToggleCollapse}>
-          <span>☰</span>
-        </button>
-      </div>
+    return null;
     );
   }
 
@@ -876,11 +903,19 @@ const SlotManagerV2 = () => {
       <div className="toolbar">
         <div className="toolbar-left">
           <button 
-            className="filter-toggle-btn"
+            className={`filter-toggle-btn ${!filtersCollapsed ? 'active' : ''}`}
             onClick={() => setFiltersCollapsed(!filtersCollapsed)}
             title="Toggle filters"
           >
-            ☰ Filters
+            {filtersCollapsed ? '☰' : '✕'} Filters
+            {(() => {
+              const count = 
+                (filters.providers?.length || 0) + 
+                (filters.volatility?.length || 0) + 
+                (filters.rtpMin ? 1 : 0) + 
+                (filters.rtpMax ? 1 : 0);
+              return count > 0 ? <span className="filter-count">{count}</span> : null;
+            })()}
           </button>
           <div className="search-wrapper">
             <span className="search-icon">🔍</span>
@@ -957,19 +992,22 @@ const SlotManagerV2 = () => {
                   </th>
                   <th className="col-volatility">Volatility</th>
                   <th className="col-status">Status</th>
+                  <th className="col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
-                {slots.map(slot => (
+                {slots.map((slot, index) => (
                   <SlotRow
                     key={slot.id}
                     slot={slot}
+                    index={index}
                     isSelected={selectedIds.has(slot.id)}
                     onSelect={handleSelect}
                     onEdit={slot => {
                       setInspectorSlot(slot);
                       setIsNewSlot(false);
                     }}
+                    onDelete={handleDelete}
                   />
                 ))}
               </tbody>
