@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useEffect } from 'react';
-import SlotManager from './SlotManager';
+import SlotManagerV2 from './SlotManagerV2';
 import './SlotManagerPage.css';
 
 const SlotManagerPage = () => {
@@ -34,7 +34,7 @@ const SlotManagerPage = () => {
         <p>Add, edit, and manage slots in the database</p>
       </div>
       <div className="slot-manager-page-content">
-        <SlotManager />
+        <SlotManagerV2 />
       </div>
     </div>
   );
