@@ -314,11 +314,11 @@ export default function Sidebar() {
             {showStreamDropdown && (
               <div className="sidebar-dropdown">
                 <button
-                  className={`sidebar-subitem ${isActive('/tournaments') ? 'active' : ''}`}
-                  onClick={() => handleNavigation('/tournaments')}
+                  className={`sidebar-subitem ${isActive('/daily-wheel') ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/daily-wheel')}
                 >
-                  <span className="subitem-icon">🏆</span>
-                  <span className="subitem-label">{t('nav_tournaments', 'Tournaments')}</span>
+                  <span className="subitem-icon">🎡</span>
+                  <span className="subitem-label">{t('nav_daily_wheel', 'Daily Wheel')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/guess-balance') ? 'active' : ''}`}
@@ -326,6 +326,13 @@ export default function Sidebar() {
                 >
                   <span className="subitem-icon">💰</span>
                   <span className="subitem-label">{t('nav_guess_balance', 'Guess the Balance')}</span>
+                </button>
+                <button
+                  className={`sidebar-subitem ${isActive('/tournaments') ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/tournaments')}
+                >
+                  <span className="subitem-icon">🏆</span>
+                  <span className="subitem-label">{t('nav_tournaments', 'Tournaments')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/giveaways') ? 'active' : ''}`}
@@ -340,13 +347,6 @@ export default function Sidebar() {
                 >
                   <span className="subitem-icon">🎟️</span>
                   <span className="subitem-label">{t('nav_vouchers', 'Vouchers')}</span>
-                </button>
-                <button
-                  className={`sidebar-subitem ${isActive('/daily-wheel') ? 'active' : ''}`}
-                  onClick={() => handleNavigation('/daily-wheel')}
-                >
-                  <span className="subitem-icon">🎡</span>
-                  <span className="subitem-label">{t('nav_daily_wheel', 'Daily Wheel')}</span>
                 </button>
               </div>
             )}
