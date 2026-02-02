@@ -248,7 +248,6 @@ export default function TheLifeBlackMarket({
       setSellingId(null);
     }
   };
-  };
 
   const streetItems = theLifeInventory.filter(inv => inv.item.sellable_on_streets);
 
