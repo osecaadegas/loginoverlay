@@ -2182,7 +2182,25 @@ export default function AdminPanel() {
         .order('guessed_at', { ascending: true });
 
       if (error) throw error;
-      setSessionGuesses(data || []);
+
+      // Get user profiles to get SE usernames
+      const userIds = [...new Set((data || []).map(g => g.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, se_username, twitch_username')
+        .in('id', userIds);
+
+      const profilesMap = {};
+      (profiles || []).forEach(p => {
+        profilesMap[p.id] = p.se_username || p.twitch_username || p.id?.slice(0, 8);
+      });
+
+      const guessesWithNames = (data || []).map(guess => ({
+        ...guess,
+        display_name: profilesMap[guess.user_id] || guess.user_id?.slice(0, 8)
+      }));
+
+      setSessionGuesses(guessesWithNames);
     } catch (err) {
       console.error('Error loading guesses:', err);
     }
@@ -2206,6 +2224,18 @@ export default function AdminPanel() {
         .select('id, slot_name')
         .eq('session_id', sessionId);
 
+      // Get user profiles to get SE usernames
+      const userIds = [...new Set((votesData || []).map(v => v.user_id))];
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, se_username, twitch_username')
+        .in('id', userIds);
+
+      const profilesMap = {};
+      (profiles || []).forEach(p => {
+        profilesMap[p.id] = p.se_username || p.twitch_username || p.id?.slice(0, 8);
+      });
+
       // Map slot names to votes
       const slotsMap = {};
       (slotsData || []).forEach(slot => {
@@ -2214,7 +2244,8 @@ export default function AdminPanel() {
 
       const votesWithSlotNames = (votesData || []).map(vote => ({
         ...vote,
-        slot_name: slotsMap[vote.slot_id] || 'Unknown Slot'
+        slot_name: slotsMap[vote.slot_id] || 'Unknown Slot',
+        display_name: profilesMap[vote.user_id] || vote.user_id?.slice(0, 8)
       }));
 
       setSessionVotes(votesWithSlotNames);
@@ -6863,7 +6894,7 @@ export default function AdminPanel() {
                         {sessionGuesses.map((guess, index) => (
                           <tr key={guess.id} className={guess.is_winner ? 'winner-row' : ''}>
                             <td>{index + 1}</td>
-                            <td>{guess.twitch_username || guess.user_id?.slice(0, 8) || 'Anonymous'}</td>
+                            <td>{guess.display_name || 'Anonymous'}</td>
                             <td className="guess-amount">€{parseFloat(guess.guessed_balance).toFixed(2)}</td>
                             <td className="guess-time">{new Date(guess.guessed_at).toLocaleString()}</td>
                             <td>{guess.is_winner ? '🏆 Winner!' : '-'}</td>
@@ -6911,7 +6942,7 @@ export default function AdminPanel() {
                         {sessionVotes.map((vote, index) => (
                           <tr key={vote.id} className={`vote-row ${vote.vote_type}`}>
                             <td>{index + 1}</td>
-                            <td>{vote.twitch_username || vote.user_id?.slice(0, 8) || 'Anonymous'}</td>
+                            <td>{vote.display_name || 'Anonymous'}</td>
                             <td className="slot-name">{vote.slot_name}</td>
                             <td className={`vote-type ${vote.vote_type}`}>
                               {vote.vote_type === 'best' ? '👍 Best' : '👎 Worst'}
