@@ -263,6 +263,10 @@ export default function AdminPanel() {
   const [showGuessBalanceModal, setShowGuessBalanceModal] = useState(false);
   const [showSlotModal, setShowSlotModal] = useState(false);
   const [showSlotResultsModal, setShowSlotResultsModal] = useState(false);
+  const [showGuessesModal, setShowGuessesModal] = useState(false);
+  const [showVotesModal, setShowVotesModal] = useState(false);
+  const [sessionGuesses, setSessionGuesses] = useState([]);
+  const [sessionVotes, setSessionVotes] = useState([]);
   const [currentSlotIndex, setCurrentSlotIndex] = useState(0);
   const [editingGuessSession, setEditingGuessSession] = useState(null);
   const [editingSlot, setEditingSlot] = useState(null);
@@ -2166,6 +2170,71 @@ export default function AdminPanel() {
     } catch (err) {
       console.error('Error loading slots:', err);
     }
+  };
+
+  // Load guesses for a session
+  const loadSessionGuesses = async (sessionId) => {
+    try {
+      const { data, error } = await supabase
+        .from('guess_balance_guesses')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('guessed_at', { ascending: true });
+
+      if (error) throw error;
+      setSessionGuesses(data || []);
+    } catch (err) {
+      console.error('Error loading guesses:', err);
+    }
+  };
+
+  // Load votes for a session
+  const loadSessionVotes = async (sessionId) => {
+    try {
+      // Get votes with slot info
+      const { data: votesData, error: votesError } = await supabase
+        .from('guess_balance_slot_votes')
+        .select('*')
+        .eq('session_id', sessionId)
+        .order('voted_at', { ascending: true });
+
+      if (votesError) throw votesError;
+
+      // Get slots for this session to match names
+      const { data: slotsData } = await supabase
+        .from('guess_balance_slots')
+        .select('id, slot_name')
+        .eq('session_id', sessionId);
+
+      // Map slot names to votes
+      const slotsMap = {};
+      (slotsData || []).forEach(slot => {
+        slotsMap[slot.id] = slot.slot_name;
+      });
+
+      const votesWithSlotNames = (votesData || []).map(vote => ({
+        ...vote,
+        slot_name: slotsMap[vote.slot_id] || 'Unknown Slot'
+      }));
+
+      setSessionVotes(votesWithSlotNames);
+    } catch (err) {
+      console.error('Error loading votes:', err);
+    }
+  };
+
+  // Open guesses modal
+  const openGuessesModal = async (session) => {
+    setSelectedSessionForSlots(session);
+    await loadSessionGuesses(session.id);
+    setShowGuessesModal(true);
+  };
+
+  // Open votes modal
+  const openVotesModal = async (session) => {
+    setSelectedSessionForSlots(session);
+    await loadSessionVotes(session.id);
+    setShowVotesModal(true);
   };
 
   const openGuessSessionModal = async (session = null) => {
@@ -6134,6 +6203,18 @@ export default function AdminPanel() {
                         >
                           🎯 Enter Results
                         </button>
+                        <button 
+                          className="btn-view-guesses" 
+                          onClick={(e) => { e.stopPropagation(); openGuessesModal(session); }}
+                        >
+                          💭 Guesses
+                        </button>
+                        <button 
+                          className="btn-view-votes" 
+                          onClick={(e) => { e.stopPropagation(); openVotesModal(session); }}
+                        >
+                          🗳️ Votes
+                        </button>
                         {session.status === 'active' && session.final_balance && (
                           <ConfirmButton
                             onConfirm={() => endGuessSessionAndCalculateWinner(session.id)}
@@ -6748,6 +6829,102 @@ export default function AdminPanel() {
                     </button>
                   </div>
                 </div>
+          </SidePanel>
+
+          {/* Guesses List Side Panel */}
+          <SidePanel
+            isOpen={showGuessesModal}
+            onClose={() => setShowGuessesModal(false)}
+            title={`💭 Player Guesses - ${selectedSessionForSlots?.title || ''}`}
+            size="large"
+          >
+            <div className="guesses-list-container">
+              {sessionGuesses.length === 0 ? (
+                <div className="empty-state">
+                  <p>No guesses submitted yet for this session.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="guesses-summary">
+                    <span className="total-guesses">Total: {sessionGuesses.length} guesses</span>
+                  </div>
+                  <div className="guesses-table-wrapper">
+                    <table className="guesses-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Player</th>
+                          <th>Guess</th>
+                          <th>Time</th>
+                          <th>Winner?</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sessionGuesses.map((guess, index) => (
+                          <tr key={guess.id} className={guess.is_winner ? 'winner-row' : ''}>
+                            <td>{index + 1}</td>
+                            <td>{guess.twitch_username || guess.user_id?.slice(0, 8) || 'Anonymous'}</td>
+                            <td className="guess-amount">€{parseFloat(guess.guessed_balance).toFixed(2)}</td>
+                            <td className="guess-time">{new Date(guess.guessed_at).toLocaleString()}</td>
+                            <td>{guess.is_winner ? '🏆 Winner!' : '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
+          </SidePanel>
+
+          {/* Votes List Side Panel */}
+          <SidePanel
+            isOpen={showVotesModal}
+            onClose={() => setShowVotesModal(false)}
+            title={`🗳️ Slot Votes - ${selectedSessionForSlots?.title || ''}`}
+            size="large"
+          >
+            <div className="votes-list-container">
+              {sessionVotes.length === 0 ? (
+                <div className="empty-state">
+                  <p>No votes cast yet for this session.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="votes-summary">
+                    <span className="total-votes">Total: {sessionVotes.length} votes</span>
+                    <span className="best-votes">👍 Best: {sessionVotes.filter(v => v.vote_type === 'best').length}</span>
+                    <span className="worst-votes">👎 Worst: {sessionVotes.filter(v => v.vote_type === 'worst').length}</span>
+                  </div>
+                  <div className="votes-table-wrapper">
+                    <table className="votes-table">
+                      <thead>
+                        <tr>
+                          <th>#</th>
+                          <th>Player</th>
+                          <th>Slot</th>
+                          <th>Vote</th>
+                          <th>Time</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sessionVotes.map((vote, index) => (
+                          <tr key={vote.id} className={`vote-row ${vote.vote_type}`}>
+                            <td>{index + 1}</td>
+                            <td>{vote.twitch_username || vote.user_id?.slice(0, 8) || 'Anonymous'}</td>
+                            <td className="slot-name">{vote.slot_name}</td>
+                            <td className={`vote-type ${vote.vote_type}`}>
+                              {vote.vote_type === 'best' ? '👍 Best' : '👎 Worst'}
+                            </td>
+                            <td className="vote-time">{new Date(vote.voted_at).toLocaleString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </>
+              )}
+            </div>
           </SidePanel>
         </>
       )}
