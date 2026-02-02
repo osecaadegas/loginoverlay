@@ -25,6 +25,7 @@ export default function TheLifeBrothel({
   const [isHiring, setIsHiring] = useState(false);
   const [hireQuantities, setHireQuantities] = useState({});
   const [sellQuantities, setSellQuantities] = useState({});
+  const [isCollecting, setIsCollecting] = useState(false);
   const hiredScrollRef = useRef(null);
   const availableScrollRef = useRef(null);
   const hiredDragScroll = useDragScroll(hiredScrollRef);
@@ -231,51 +232,46 @@ export default function TheLifeBrothel({
     }
   };
 
-  // Collect income
+  // SECURE: Use server-side RPC for income collection
   const collectIncome = async () => {
+    if (isCollecting) return;
+    
     if (!brothel || !brothel.income_per_hour) {
       setMessage({ type: 'error', text: 'Hire some workers first!' });
       return;
     }
 
-    const lastCollection = new Date(brothel.last_collection);
-    const now = new Date();
-    const hoursPassed = (now - lastCollection) / 1000 / 60 / 60;
-
-    if (hoursPassed < 1) {
-      const minutesLeft = Math.ceil((1 - hoursPassed) * 60);
-      setMessage({ type: 'error', text: `Collection available in ${minutesLeft} minute${minutesLeft !== 1 ? 's' : ''}!` });
-      return;
-    }
-
-    const fullHours = Math.floor(hoursPassed);
-    const income = fullHours * brothel.income_per_hour;
-
-    if (income <= 0) {
-      setMessage({ type: 'error', text: 'No income to collect yet!' });
-      return;
-    }
-
     try {
-      await supabase.from('the_life_brothels').update({
-        last_collection: now.toISOString(),
-        total_earned: (brothel.total_earned || 0) + income
-      }).eq('id', brothel.id);
-
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash + income })
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      setIsCollecting(true);
+      
+      // Call secure server-side function (uses server time, not client clock!)
+      const { data: result, error } = await supabase.rpc('collect_brothel_income');
 
       if (error) throw error;
-      setPlayer(data);
+
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error });
+        return;
+      }
+
+      // Refresh player data
+      const { data: updatedPlayer } = await supabase
+        .from('the_life_players')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (updatedPlayer) {
+        setPlayer(updatedPlayer);
+      }
+
       await loadBrothel();
-      setMessage({ type: 'success', text: `Collected $${income.toLocaleString()} (${fullHours} hour${fullHours !== 1 ? 's' : ''})!` });
+      setMessage({ type: 'success', text: `Collected $${result.income.toLocaleString()} (${result.hours_collected} hour${result.hours_collected !== 1 ? 's' : ''})!` });
     } catch (err) {
       console.error('Error collecting income:', err);
       setMessage({ type: 'error', text: 'Failed to collect income!' });
+    } finally {
+      setIsCollecting(false);
     }
   };
 

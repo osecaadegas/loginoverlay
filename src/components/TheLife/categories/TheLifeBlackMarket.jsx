@@ -26,6 +26,7 @@ export default function TheLifeBlackMarket({
   const [loadingStore, setLoadingStore] = useState(false);
   const [quantities, setQuantities] = useState({}); // Track quantity for each item
   const [streetQuantities, setStreetQuantities] = useState({}); // Track quantity for street selling
+  const [sellingId, setSellingId] = useState(null); // Track which item is being sold
 
   // Translations
   const t = {
@@ -194,7 +195,10 @@ export default function TheLifeBlackMarket({
     }
   };
 
+  // SECURE: Use server-side RPC for street selling
   const sellOnStreet = async (inv, quantity = 1) => {
+    if (sellingId === inv.id) return; // Prevent double-click
+    
     if (isInHospital) {
       setMessage({ type: 'error', text: t.cantSellInHospital });
       return;
@@ -204,80 +208,46 @@ export default function TheLifeBlackMarket({
       setMessage({ type: 'error', text: t.notEnoughItems });
       return;
     }
-    
-    const streetPrice = Math.floor(quantity * (inv.item.resell_price || 150));
-    const xpReward = Math.floor(quantity * 10);
-    const jailRisk = 35;
-    const roll = Math.random() * 100;
-    const caught = roll < jailRisk;
-    
-    if (caught) {
-      const jailTime = 45;
-      const jailUntil = new Date();
-      jailUntil.setMinutes(jailUntil.getMinutes() + jailTime);
+
+    try {
+      setSellingId(inv.id);
       
-      const { error } = await supabase
-        .from('the_life_players')
-        .update({
-          jail_until: jailUntil.toISOString(),
-          hp: Math.max(0, player.hp - 15)
-        })
-        .eq('user_id', user.id);
-      
-      if (!error) {
-        // Update or delete inventory
-        const newQuantity = inv.quantity - quantity;
-        if (newQuantity <= 0) {
-          await supabase
-            .from('the_life_player_inventory')
-            .delete()
-            .eq('id', inv.id);
-        } else {
-          await supabase
-            .from('the_life_player_inventory')
-            .update({ quantity: newQuantity })
-            .eq('id', inv.id);
-        }
-        
+      // Call secure server-side function
+      const { data: result, error } = await supabase.rpc('execute_street_sell', {
+        p_inventory_id: inv.id,
+        p_quantity: quantity
+      });
+
+      if (error) throw error;
+
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error });
+        return;
+      }
+
+      if (result.caught) {
+        // Got busted
         showEventMessage('jail_street');
-        setMessage({ type: 'error', text: t.busted(quantity, jailTime) });
-        setStreetQuantities({ ...streetQuantities, [inv.id]: 1 }); // Reset quantity
-        initializePlayer();
-        loadTheLifeInventory();
-      }
-    } else {
-      const { error } = await supabase
-        .from('the_life_players')
-        .update({ 
-          cash: player.cash + streetPrice,
-          xp: player.xp + xpReward
-        })
-        .eq('user_id', user.id);
-      
-      if (!error) {
-        // Update or delete inventory
-        const newQuantity = inv.quantity - quantity;
-        if (newQuantity <= 0) {
-          await supabase
-            .from('the_life_player_inventory')
-            .delete()
-            .eq('id', inv.id);
-        } else {
-          await supabase
-            .from('the_life_player_inventory')
-            .update({ quantity: newQuantity })
-            .eq('id', inv.id);
-        }
-        
+        setMessage({ type: 'error', text: t.busted(result.items_lost, result.jail_time) });
+      } else {
+        // Successful sale
         // Add XP to Season Pass
-        await addSeasonPassXP(user.id, xpReward, 'street_sale', inv.item_id?.toString());
-        
-        setMessage({ type: 'success', text: t.soldFor(quantity, streetPrice, xpReward) });
-        setStreetQuantities({ ...streetQuantities, [inv.id]: 1 }); // Reset quantity
-        initializePlayer();
-        loadTheLifeInventory();
+        if (result.xp_earned > 0) {
+          await addSeasonPassXP(user.id, result.xp_earned, 'street_sale', inv.item_id?.toString());
+        }
+        setMessage({ type: 'success', text: t.soldFor(quantity, result.cash_earned, result.xp_earned) });
       }
+
+      setStreetQuantities({ ...streetQuantities, [inv.id]: 1 }); // Reset quantity
+      initializePlayer();
+      loadTheLifeInventory();
+    } catch (err) {
+      console.error('Error selling on street:', err);
+      setMessage({ type: 'error', text: 'Failed to sell!' });
+    } finally {
+      setSellingId(null);
     }
+  };
   };
 
   const streetItems = theLifeInventory.filter(inv => inv.item.sellable_on_streets);

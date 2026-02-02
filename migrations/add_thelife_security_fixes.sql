@@ -725,3 +725,201 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION execute_crime_rate_limited(UUID, INTEGER) TO authenticated;
+
+
+-- =====================================================
+-- 10. SERVER-SIDE STREET SELLING (Black Market)
+-- =====================================================
+CREATE OR REPLACE FUNCTION execute_street_sell(
+  p_inventory_id UUID,
+  p_quantity INTEGER DEFAULT 1
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_player RECORD;
+  v_inventory RECORD;
+  v_item RECORD;
+  v_street_price INTEGER;
+  v_xp_reward INTEGER;
+  v_jail_risk INTEGER := 35;
+  v_roll NUMERIC;
+  v_caught BOOLEAN;
+  v_jail_time INTEGER := 45;
+  v_new_quantity INTEGER;
+BEGIN
+  -- Get player with lock
+  SELECT * INTO v_player 
+  FROM the_life_players 
+  WHERE user_id = auth.uid()
+  FOR UPDATE;
+  
+  IF v_player IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Player not found');
+  END IF;
+  
+  -- Check hospital
+  IF v_player.hospital_until IS NOT NULL AND v_player.hospital_until > NOW() THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Cannot sell while in hospital');
+  END IF;
+  
+  -- Validate quantity
+  IF p_quantity <= 0 THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Invalid quantity');
+  END IF;
+  
+  -- Get inventory item with lock
+  SELECT * INTO v_inventory
+  FROM the_life_player_inventory
+  WHERE id = p_inventory_id AND player_id = v_player.id
+  FOR UPDATE;
+  
+  IF v_inventory IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Item not found in inventory');
+  END IF;
+  
+  IF v_inventory.quantity < p_quantity THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Not enough items');
+  END IF;
+  
+  -- Get item data for price (SERVER-SIDE lookup!)
+  SELECT * INTO v_item
+  FROM the_life_items
+  WHERE id = v_inventory.item_id;
+  
+  IF v_item IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Item data not found');
+  END IF;
+  
+  -- SERVER calculates price and XP
+  v_street_price := p_quantity * COALESCE(v_item.resell_price, 150);
+  v_xp_reward := p_quantity * 10;
+  
+  -- SERVER-SIDE random roll for jail
+  v_roll := random() * 100;
+  v_caught := v_roll < v_jail_risk;
+  
+  -- Update inventory
+  v_new_quantity := v_inventory.quantity - p_quantity;
+  IF v_new_quantity <= 0 THEN
+    DELETE FROM the_life_player_inventory WHERE id = p_inventory_id;
+  ELSE
+    UPDATE the_life_player_inventory SET quantity = v_new_quantity WHERE id = p_inventory_id;
+  END IF;
+  
+  IF v_caught THEN
+    -- Caught! Go to jail, lose items, no money
+    UPDATE the_life_players
+    SET jail_until = NOW() + (v_jail_time || ' minutes')::INTERVAL,
+        hp = GREATEST(0, hp - 15)
+    WHERE user_id = auth.uid();
+    
+    RETURN jsonb_build_object(
+      'success', true,
+      'caught', true,
+      'jail_time', v_jail_time,
+      'items_lost', p_quantity,
+      'message', 'Busted! The cops caught you selling on the street!'
+    );
+  ELSE
+    -- Success! Get money and XP
+    UPDATE the_life_players
+    SET cash = cash + v_street_price,
+        xp = xp + v_xp_reward
+    WHERE user_id = auth.uid();
+    
+    RETURN jsonb_build_object(
+      'success', true,
+      'caught', false,
+      'cash_earned', v_street_price,
+      'xp_earned', v_xp_reward,
+      'message', 'Sold successfully on the street!'
+    );
+  END IF;
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION execute_street_sell(UUID, INTEGER) TO authenticated;
+
+
+-- =====================================================
+-- 11. SERVER-SIDE BROTHEL INCOME COLLECTION
+-- =====================================================
+CREATE OR REPLACE FUNCTION collect_brothel_income()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_player RECORD;
+  v_brothel RECORD;
+  v_hours_passed NUMERIC;
+  v_full_hours INTEGER;
+  v_income INTEGER;
+BEGIN
+  -- Get player with lock
+  SELECT * INTO v_player 
+  FROM the_life_players 
+  WHERE user_id = auth.uid()
+  FOR UPDATE;
+  
+  IF v_player IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Player not found');
+  END IF;
+  
+  -- Get brothel with lock (SERVER TIME!)
+  SELECT * INTO v_brothel
+  FROM the_life_brothels
+  WHERE player_id = v_player.id
+  FOR UPDATE;
+  
+  IF v_brothel IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'No brothel found');
+  END IF;
+  
+  IF COALESCE(v_brothel.income_per_hour, 0) <= 0 THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Hire workers first');
+  END IF;
+  
+  -- SERVER calculates time passed (not client clock!)
+  v_hours_passed := EXTRACT(EPOCH FROM (NOW() - v_brothel.last_collection)) / 3600;
+  
+  IF v_hours_passed < 1 THEN
+    RETURN jsonb_build_object(
+      'success', false,
+      'error', 'Collection available in ' || CEIL((1 - v_hours_passed) * 60) || ' minutes'
+    );
+  END IF;
+  
+  v_full_hours := FLOOR(v_hours_passed)::INTEGER;
+  v_income := v_full_hours * v_brothel.income_per_hour;
+  
+  IF v_income <= 0 THEN
+    RETURN jsonb_build_object('success', false, 'error', 'No income to collect');
+  END IF;
+  
+  -- Update brothel
+  UPDATE the_life_brothels
+  SET last_collection = NOW(),
+      total_earned = COALESCE(total_earned, 0) + v_income
+  WHERE id = v_brothel.id;
+  
+  -- Add income to player
+  UPDATE the_life_players
+  SET cash = cash + v_income
+  WHERE user_id = auth.uid();
+  
+  RETURN jsonb_build_object(
+    'success', true,
+    'income', v_income,
+    'hours_collected', v_full_hours,
+    'message', 'Collected $' || v_income || ' (' || v_full_hours || ' hours)'
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION collect_brothel_income() TO authenticated;

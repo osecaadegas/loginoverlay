@@ -1,6 +1,7 @@
 import '../styles/TheLifeJail.css';
 import { supabase } from '../../../config/supabaseClient';
 import { calculateBribeAmount } from '../utils/gameUtils';
+import { useState } from 'react';
 
 export default function TheLifeJail({ 
   player,
@@ -12,8 +13,13 @@ export default function TheLifeJail({
   loadTheLifeInventory,
   user
 }) {
+  const [loading, setLoading] = useState(false);
+
   const useJailFreeCard = async () => {
+    if (loading) return;
+    
     try {
+      setLoading(true);
       const { data: playerData } = await supabase
         .from('the_life_players')
         .select('id')
@@ -58,57 +64,56 @@ export default function TheLifeJail({
     } catch (err) {
       console.error('Error using jail free card:', err);
       setMessage({ type: 'error', text: 'Failed to use card!' });
+    } finally {
+      setLoading(false);
     }
   };
 
+  // SECURE: Use server-side RPC for bribe calculation
   const payBribe = async () => {
+    if (loading) return;
+    
     try {
-      const { bribeAmount, percentage } = calculateBribeAmount(player);
-      const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
+      setLoading(true);
       
-      if (totalWealth < bribeAmount) {
-        setMessage({ type: 'error', text: 'You don\'t have enough money to pay the bribe!' });
-        return;
-      }
-
-      if (bribeAmount === 0) {
-        setMessage({ type: 'error', text: 'Invalid bribe amount!' });
-        return;
-      }
-
-      let newCash = player.cash;
-      let newBank = player.bank_balance;
-      let remaining = bribeAmount;
-
-      if (newCash >= remaining) {
-        newCash -= remaining;
-      } else {
-        remaining -= newCash;
-        newCash = 0;
-        newBank -= remaining;
-      }
-
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ 
-          jail_until: null,
-          cash: newCash,
-          bank_balance: newBank
-        })
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      // Call secure server-side function
+      const { data: result, error } = await supabase.rpc('execute_jail_bribe');
 
       if (error) throw error;
-      // Merge with current player state to preserve local values like stamina
-      setPlayer(prev => ({ ...prev, ...data }));
+
+      if (!result.success) {
+        // Show bribe amount if provided
+        if (result.bribe_required) {
+          setMessage({ 
+            type: 'error', 
+            text: `${result.error}. Bribe costs $${result.bribe_required.toLocaleString()}` 
+          });
+        } else {
+          setMessage({ type: 'error', text: result.error });
+        }
+        return;
+      }
+
+      // Refresh player data
+      const { data: updatedPlayer } = await supabase
+        .from('the_life_players')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (updatedPlayer) {
+        setPlayer(prev => ({ ...prev, ...updatedPlayer }));
+      }
+
       setMessage({ 
         type: 'success', 
-        text: `💰 You bribed the cops with $${bribeAmount.toLocaleString()} (${percentage}% of your wealth) and escaped jail!` 
+        text: `💰 ${result.message} Cost: $${result.bribe_paid?.toLocaleString()}` 
       });
     } catch (err) {
       console.error('Error paying bribe:', err);
       setMessage({ type: 'error', text: 'Failed to pay bribe!' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -130,8 +135,8 @@ export default function TheLifeJail({
                 <h4>🔓 Jail Free Card</h4>
                 <p>Use your legendary card to escape instantly!</p>
                 <p className="escape-cost">Cost: 1 Jail Free Card</p>
-                <button onClick={useJailFreeCard} className="escape-jail-btn card-btn">
-                  Use Jail Free Card
+                <button onClick={useJailFreeCard} className="escape-jail-btn card-btn" disabled={loading}>
+                  {loading ? '⏳ Processing...' : 'Use Jail Free Card'}
                 </button>
               </div>
             )}
@@ -153,10 +158,10 @@ export default function TheLifeJail({
                   </p>
                   <button 
                     onClick={payBribe} 
-                    className={`escape-jail-btn bribe-btn ${!canAfford ? 'disabled' : ''}`}
-                    disabled={!canAfford}
+                    className={`escape-jail-btn bribe-btn ${!canAfford || loading ? 'disabled' : ''}`}
+                    disabled={!canAfford || loading}
                   >
-                    {canAfford ? 'Pay Bribe' : 'Not Enough Money'}
+                    {loading ? '⏳ Processing...' : canAfford ? 'Pay Bribe' : 'Not Enough Money'}
                   </button>
                 </div>
               );
