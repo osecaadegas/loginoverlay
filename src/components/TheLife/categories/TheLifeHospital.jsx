@@ -10,85 +10,75 @@ export default function TheLifeHospital({
   initializePlayer,
   user
 }) {
+  // Secure emergency recovery using server-side RPC
   const emergencyRecovery = async () => {
-    const recoveryCost = Math.floor((player.cash + player.bank_balance) * 0.15);
-    const totalWealth = player.cash + player.bank_balance;
-    
-    if (totalWealth < recoveryCost) {
-      setMessage({ type: 'error', text: 'Not enough money for recovery!' });
-      return;
-    }
-    
-    let newCash = player.cash;
-    let newBank = player.bank_balance;
-    
-    if (player.cash >= recoveryCost) {
-      newCash -= recoveryCost;
-    } else {
-      const remaining = recoveryCost - player.cash;
-      newCash = 0;
-      newBank -= remaining;
-    }
-    
-    const { data, error } = await supabase
-      .from('the_life_players')
-      .update({
-        hp: player.max_hp,
-        cash: newCash,
-        bank_balance: newBank,
-        hospital_until: null
-      })
-      .eq('user_id', user.id)
-      .select()
-      .single();
-    
-    if (!error) {
-      setPlayer(data);
-      setMessage({ type: 'success', text: 'Fully recovered! You\'re back in action!' });
+    try {
+      const { data, error } = await supabase.rpc('execute_hospital_recovery');
+      
+      if (error) {
+        console.error('Recovery error:', error);
+        setMessage({ type: 'error', text: error.message || 'Recovery failed!' });
+        return;
+      }
+      
+      if (data?.success) {
+        // Refresh player data
+        await initializePlayer();
+        setMessage({ type: 'success', text: data.message || 'Fully recovered! You\'re back in action!' });
+      } else {
+        setMessage({ type: 'error', text: data?.error || 'Recovery failed!' });
+      }
+    } catch (err) {
+      console.error('Recovery error:', err);
+      setMessage({ type: 'error', text: 'Recovery failed - please try again' });
     }
   };
 
-  const buyService = async (cost, hpRestore) => {
-    if (player.cash < cost) {
-      setMessage({ type: 'error', text: 'Not enough cash!' });
-      return;
-    }
-    
-    const { data, error } = await supabase
-      .from('the_life_players')
-      .update({
-        cash: player.cash - cost,
-        hp: Math.min(player.max_hp, player.hp + hpRestore)
-      })
-      .eq('user_id', user.id)
-      .select()
-      .single();
+  const buyService = async (cost, hpRestore, serviceType) => {
+    try {
+      const { data, error } = await supabase.rpc('execute_hospital_service', {
+        p_service_type: serviceType
+      });
       
-    if (!error) {
-      setPlayer(data);
-      setMessage({ type: 'success', text: `Restored ${hpRestore} HP!` });
+      if (error) {
+        console.error('Service error:', error);
+        setMessage({ type: 'error', text: error.message || 'Service failed!' });
+        return;
+      }
+      
+      if (data?.success) {
+        await initializePlayer();
+        setMessage({ type: 'success', text: data.message || `Restored ${data.hp_restored} HP!` });
+      } else {
+        setMessage({ type: 'error', text: data?.error || 'Service failed!' });
+      }
+    } catch (err) {
+      console.error('Service error:', err);
+      setMessage({ type: 'error', text: 'Service failed - please try again' });
     }
   };
 
   const buyFullRecovery = async () => {
-    if (player.cash < 1500) {
-      setMessage({ type: 'error', text: 'Not enough cash!' });
-      return;
-    }
-    
-    const { data, error } = await supabase
-      .from('the_life_players')
-      .update({
-        cash: player.cash - 1500,
-        hp: player.max_hp
-      })
-      .eq('user_id', user.id)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase.rpc('execute_hospital_service', {
+        p_service_type: 'full'
+      });
       
-    if (!error) {
-      setPlayer(data);
-      setMessage({ type: 'success', text: 'Fully restored!' });
+      if (error) {
+        console.error('Full recovery error:', error);
+        setMessage({ type: 'error', text: error.message || 'Recovery failed!' });
+        return;
+      }
+      
+      if (data?.success) {
+        await initializePlayer();
+        setMessage({ type: 'success', text: data.message || 'Fully restored!' });
+      } else {
+        setMessage({ type: 'error', text: data?.error || 'Recovery failed!' });
+      }
+    } catch (err) {
+      console.error('Full recovery error:', err);
+      setMessage({ type: 'error', text: 'Recovery failed - please try again' });
     }
   };
 
@@ -128,68 +118,49 @@ export default function TheLifeHospital({
     return Math.max(50000, wealthCost + levelCost);
   };
 
-  // Intense treatment for overdose patients
+  // Intense treatment for overdose patients (secure RPC)
   const intenseTreatment = async () => {
-    const cost = calculateIntenseTreatmentCost();
-    const totalWealth = player.cash + player.bank_balance;
-    
-    if (totalWealth < cost) {
-      setMessage({ type: 'error', text: 'Not enough money for Intense Treatment!' });
-      return;
-    }
-    
-    // Deduct from cash first, then bank
-    let newCash = player.cash;
-    let newBank = player.bank_balance;
-    
-    if (player.cash >= cost) {
-      newCash -= cost;
-    } else {
-      const remaining = cost - player.cash;
-      newCash = 0;
-      newBank -= remaining;
-    }
-    
-    const { data, error } = await supabase
-      .from('the_life_players')
-      .update({
-        hp: player.max_hp,
-        addiction: 0,
-        cash: newCash,
-        bank_balance: newBank,
-        hospital_until: null
-      })
-      .eq('user_id', user.id)
-      .select()
-      .single();
-    
-    if (!error) {
-      setPlayer(data);
-      setMessage({ type: 'success', text: '💊 Intense Treatment complete! You\'ve been fully rehabilitated. Stay clean!' });
+    try {
+      const { data, error } = await supabase.rpc('execute_intense_treatment');
+      
+      if (error) {
+        console.error('Intense treatment error:', error);
+        setMessage({ type: 'error', text: error.message || 'Treatment failed!' });
+        return;
+      }
+      
+      if (data?.success) {
+        await initializePlayer();
+        setMessage({ type: 'success', text: data.message || '💊 Intense Treatment complete! You\'ve been fully rehabilitated. Stay clean!' });
+      } else {
+        setMessage({ type: 'error', text: data?.error || 'Treatment failed!' });
+      }
+    } catch (err) {
+      console.error('Intense treatment error:', err);
+      setMessage({ type: 'error', text: 'Treatment failed - please try again' });
     }
   };
 
+  // Secure addiction cure using RPC
   const cureAddiction = async () => {
-    const cost = calculateAddictionCureCost();
-    
-    if (player.cash < cost) {
-      setMessage({ type: 'error', text: 'Not enough cash!' });
-      return;
-    }
-    
-    const { data, error } = await supabase
-      .from('the_life_players')
-      .update({
-        cash: player.cash - cost,
-        addiction: 0
-      })
-      .eq('user_id', user.id)
-      .select()
-      .single();
+    try {
+      const { data, error } = await supabase.rpc('execute_cure_addiction');
       
-    if (!error) {
-      setPlayer(data);
-      setMessage({ type: 'success', text: 'Addiction cured! You feel clean and refreshed!' });
+      if (error) {
+        console.error('Cure addiction error:', error);
+        setMessage({ type: 'error', text: error.message || 'Cure failed!' });
+        return;
+      }
+      
+      if (data?.success) {
+        await initializePlayer();
+        setMessage({ type: 'success', text: data.message || 'Addiction cured! You feel clean and refreshed!' });
+      } else {
+        setMessage({ type: 'error', text: data?.error || 'Cure failed!' });
+      }
+    } catch (err) {
+      console.error('Cure addiction error:', err);
+      setMessage({ type: 'error', text: 'Cure failed - please try again' });
     }
   };
 
