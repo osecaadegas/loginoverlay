@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../../../../supabaseClient';
+import { supabase } from '../../../config/supabaseClient';
 import '../styles/TheLifeLeaderboard.css';
 
 const PLAYERS_PER_PAGE = 15;
