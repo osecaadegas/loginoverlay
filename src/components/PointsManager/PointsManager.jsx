@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import './PointsManager.css';
 
@@ -12,6 +12,11 @@ export default function PointsManager() {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [userRole, setUserRole] = useState('moderator'); // 'admin' or 'moderator'
+
+  // Search and filter state
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [gameFilter, setGameFilter] = useState('all');
 
   // For adding/removing points
   const [selectedUser, setSelectedUser] = useState(null);
@@ -763,7 +768,27 @@ export default function PointsManager() {
     <div className="points-manager">
       <div className="pm-header">
         <h1>Points Manager</h1>
-        <p>Manage StreamElements points and redemptions</p>
+        <p>Manage StreamElements points, redemptions, and rewards</p>
+      </div>
+
+      {/* Stats Row */}
+      <div className="pm-stats-row">
+        <div className="pm-stat-card-top">
+          <div className="stat-label">Total Points</div>
+          <div className="stat-value">{users.reduce((sum, u) => sum + (u.current_points || 0), 0).toLocaleString()}</div>
+        </div>
+        <div className="pm-stat-card-top">
+          <div className="stat-label">Active Users</div>
+          <div className="stat-value">{users.filter(u => u.se_status === 'active').length}</div>
+        </div>
+        <div className="pm-stat-card-top">
+          <div className="stat-label">Pending Redemptions</div>
+          <div className="stat-value warning">{redemptions.filter(r => !r.status || r.status === 'pending').length}</div>
+        </div>
+        <div className="pm-stat-card-top">
+          <div className="stat-label">Avg Points/User</div>
+          <div className="stat-value">{users.length > 0 ? Math.round(users.reduce((sum, u) => sum + (u.current_points || 0), 0) / users.length).toLocaleString() : 0}</div>
+        </div>
       </div>
 
       {error && <div className="pm-error">{error}</div>}
@@ -774,25 +799,25 @@ export default function PointsManager() {
           className={`pm-tab ${activeTab === 'users' ? 'active' : ''}`}
           onClick={() => setActiveTab('users')}
         >
-          Users ({users.length})
+          Users <span className="tab-count">{users.length}</span>
         </button>
         <button
           className={`pm-tab ${activeTab === 'games' ? 'active' : ''}`}
           onClick={() => setActiveTab('games')}
         >
-          Game History ({gameSessions.length})
+          Game History <span className="tab-count">{gameSessions.length}</span>
         </button>
         <button
           className={`pm-tab ${activeTab === 'redemptions' ? 'active' : ''}`}
           onClick={() => setActiveTab('redemptions')}
         >
-          Redemptions ({redemptions.length})
+          Redemptions <span className="tab-count">{redemptions.filter(r => !r.status || r.status === 'pending').length}</span>
         </button>
         <button
           className={`pm-tab ${activeTab === 'items' ? 'active' : ''}`}
           onClick={() => setActiveTab('items')}
         >
-          Items ({redemptionItems.length})
+          Items <span className="tab-count">{redemptionItems.length}</span>
         </button>
       </div>
 
@@ -802,94 +827,123 @@ export default function PointsManager() {
         <>
           {activeTab === 'users' && (
             <div className="pm-users">
-              <div className="pm-users-header">
-                <h2>Connected Users</h2>
+              <div className="pm-toolbar">
+                <input
+                  type="text"
+                  className="pm-search-input"
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <select
+                  className="pm-filter-select"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="not_in_se">Not in SE</option>
+                  <option value="error">Error</option>
+                </select>
                 <button onClick={loadUsers} className="pm-refresh-btn">
-                  Refresh Points
+                  ↻ Refresh
                 </button>
               </div>
               <div className="pm-table-container">
                 <table className="pm-table">
                   <thead>
                     <tr>
-                      <th>Email</th>
+                      <th>User</th>
                       <th>SE Username</th>
-                      <th>Current Points</th>
-                      <th>Connected</th>
+                      <th>Points</th>
+                      <th>Status</th>
                       <th>Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {users.map((user) => (
-                      <tr key={user.id}>
-                        <td>{user.email}</td>
-                        <td>{user.se_username}</td>
-                        <td className="pm-points">{user.current_points.toLocaleString()}</td>
-                        <td>
-                          {user.se_status === 'active' && (
-                            <span className="pm-status-badge approved" title="User exists in StreamElements">
-                              Active
-                            </span>
-                          )}
-                          {user.se_status === 'not_in_se' && (
-                            <span className="pm-status-badge pending" title="User will be created when you add points">
-                              Not in SE
-                            </span>
-                          )}
-                          {user.se_status === 'error' && (
-                            <span className="pm-status-badge denied" title="Error fetching from StreamElements">
-                              [!]  Error
-                            </span>
-                          )}
-                          {!user.se_status && (
-                            <span title={new Date(user.connected_at).toLocaleDateString()}>
-                              {new Date(user.connected_at).toLocaleDateString()}
-                            </span>
-                          )}
-                        </td>
-                        <td>
-                          {userRole === 'admin' ? (
-                            <button
-                              onClick={() => {
-                                setSelectedUser(user);
-                                setPointsAction('add');
-                                setShowPointsModal(true);
-                              }}
-                              className="pm-action-btn"
-                            >
-                              Edit Points
-                            </button>
-                          ) : (
-                            <div className="pm-mod-actions">
-                              <button
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setPointsAction('add');
-                                  setShowPointsModal(true);
-                                }}
-                                className="pm-add-points-btn"
-                              >
-                                Add Points
-                              </button>
-                              <button
-                                onClick={() => {
-                                  setSelectedUser(user);
-                                  setPointsAction('remove');
-                                  setShowPointsModal(true);
-                                }}
-                                className="pm-remove-points-btn"
-                              >
-                                Remove Points
-                              </button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
+                    {users
+                      .filter(user => {
+                        const matchesSearch = !searchQuery || 
+                          user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          user.se_username?.toLowerCase().includes(searchQuery.toLowerCase());
+                        const matchesStatus = statusFilter === 'all' || user.se_status === statusFilter;
+                        return matchesSearch && matchesStatus;
+                      })
+                      .map((user) => {
+                        const maxPoints = Math.max(...users.map(u => u.current_points || 0), 1);
+                        const pointsPercent = ((user.current_points || 0) / maxPoints) * 100;
+                        return (
+                          <tr key={user.id || user.user_id}>
+                            <td>
+                              <div className="pm-user-cell">
+                                <div className="pm-user-avatar">
+                                  {(user.se_username || user.email || 'U')[0].toUpperCase()}
+                                </div>
+                                <div className="pm-user-info">
+                                  <div className="pm-user-name">{user.se_username || 'Unknown'}</div>
+                                  <div className="pm-user-email">{user.email}</div>
+                                </div>
+                              </div>
+                            </td>
+                            <td>{user.se_username}</td>
+                            <td>
+                              <div className="pm-points-cell">
+                                <span className="pm-points-value">{(user.current_points || 0).toLocaleString()}</span>
+                                <div className="pm-points-bar">
+                                  <div className="pm-points-bar-fill" style={{ width: `${pointsPercent}%` }}></div>
+                                </div>
+                              </div>
+                            </td>
+                            <td>
+                              {user.se_status === 'active' && (
+                                <span className="pm-badge pm-badge-success">
+                                  <span className="pm-badge-dot"></span>
+                                  Active
+                                </span>
+                              )}
+                              {user.se_status === 'not_in_se' && (
+                                <span className="pm-badge pm-badge-warning">
+                                  <span className="pm-badge-dot"></span>
+                                  Not in SE
+                                </span>
+                              )}
+                              {user.se_status === 'error' && (
+                                <span className="pm-badge pm-badge-danger">
+                                  <span className="pm-badge-dot"></span>
+                                  Error
+                                </span>
+                              )}
+                              {!user.se_status && (
+                                <span className="pm-badge pm-badge-neutral">
+                                  Unknown
+                                </span>
+                              )}
+                            </td>
+                            <td>
+                              <div className="pm-actions-menu">
+                                <button
+                                  onClick={() => {
+                                    setSelectedUser(user);
+                                    setPointsAction('add');
+                                    setShowPointsModal(true);
+                                  }}
+                                  className="pm-action-btn edit"
+                                >
+                                  Edit Points
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                   </tbody>
                 </table>
                 {users.length === 0 && (
-                  <div className="pm-empty">No users connected yet</div>
+                  <div className="pm-empty">
+                    <div className="pm-empty-icon">👥</div>
+                    <div className="pm-empty-title">No users connected yet</div>
+                    <div className="pm-empty-description">Users will appear here after connecting their StreamElements account</div>
+                  </div>
                 )}
               </div>
             </div>
@@ -897,10 +951,26 @@ export default function PointsManager() {
 
           {activeTab === 'games' && (
             <div className="pm-games">
-              <div className="pm-games-header">
-                <h2>Game History</h2>
+              <div className="pm-toolbar">
+                <input
+                  type="text"
+                  className="pm-search-input"
+                  placeholder="Search by username..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <select
+                  className="pm-filter-select"
+                  value={gameFilter}
+                  onChange={(e) => setGameFilter(e.target.value)}
+                >
+                  <option value="all">All Games</option>
+                  <option value="blackjack">Blackjack</option>
+                  <option value="mines">Mines</option>
+                  <option value="coinflip">Coin Flip</option>
+                </select>
                 <button onClick={loadGameSessions} className="pm-refresh-btn">
-                  Refresh
+                  ↻ Refresh
                 </button>
               </div>
               <div className="pm-table-container">
@@ -916,7 +986,15 @@ export default function PointsManager() {
                     </tr>
                   </thead>
                   <tbody>
-                    {gameSessions.map((session) => {
+                    {gameSessions
+                      .filter(session => {
+                        const matchesSearch = !searchQuery || 
+                          session.se_username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          session.user_email?.toLowerCase().includes(searchQuery.toLowerCase());
+                        const matchesGame = gameFilter === 'all' || session.game_type === gameFilter;
+                        return matchesSearch && matchesGame;
+                      })
+                      .map((session) => {
                       const profitLoss = session.result_amount - session.bet_amount;
                       const isWin = profitLoss > 0;
                       const isPush = profitLoss === 0;
@@ -924,20 +1002,26 @@ export default function PointsManager() {
                       return (
                         <tr key={session.id}>
                           <td>
-                            <div className="pm-user-info">
-                              <div className="pm-username">{session.se_username}</div>
-                              <div className="pm-email">{session.user_email}</div>
+                            <div className="pm-user-cell">
+                              <div className="pm-user-avatar">
+                                {(session.se_username || session.user_email || 'U')[0].toUpperCase()}
+                              </div>
+                              <div className="pm-user-info">
+                                <div className="pm-user-name">{session.se_username}</div>
+                                <div className="pm-user-email">{session.user_email}</div>
+                              </div>
                             </div>
                           </td>
                           <td>
-                            <span className="pm-game-badge">
-                              {session.game_type === 'blackjack' && 'Blackjack'}
-                              {session.game_type === 'mines' && 'Mines'}
-                              {session.game_type === 'coinflip' && 'Coin Flip'}
+                            <span className={`pm-game-badge ${session.game_type}`}>
+                              {session.game_type === 'blackjack' && '🃏 Blackjack'}
+                              {session.game_type === 'mines' && '💣 Mines'}
+                              {session.game_type === 'coinflip' && '🪙 Coin Flip'}
+                              {!['blackjack', 'mines', 'coinflip'].includes(session.game_type) && session.game_type}
                             </span>
                           </td>
-                          <td className="pm-points">{session.bet_amount.toLocaleString()} pts</td>
-                          <td className="pm-points">{session.result_amount.toLocaleString()} pts</td>
+                          <td>{session.bet_amount.toLocaleString()} pts</td>
+                          <td>{session.result_amount.toLocaleString()} pts</td>
                           <td>
                             <span className={`pm-profit-loss ${isWin ? 'win' : isPush ? 'push' : 'loss'}`}>
                               {isWin && '+'}
@@ -951,7 +1035,11 @@ export default function PointsManager() {
                   </tbody>
                 </table>
                 {gameSessions.length === 0 && (
-                  <div className="pm-empty">No game sessions yet</div>
+                  <div className="pm-empty">
+                    <div className="pm-empty-icon">🎮</div>
+                    <div className="pm-empty-title">No game sessions yet</div>
+                    <div className="pm-empty-description">Game sessions will appear here as users play</div>
+                  </div>
                 )}
               </div>
 
@@ -967,19 +1055,19 @@ export default function PointsManager() {
                     <div className="pm-stat-card">
                       <div className="pm-stat-label">Total Wagered</div>
                       <div className="pm-stat-value">
-                        {gameSessions.reduce((sum, s) => sum + s.bet_amount, 0).toLocaleString()} pts
+                        {gameSessions.reduce((sum, s) => sum + s.bet_amount, 0).toLocaleString()}
                       </div>
                     </div>
                     <div className="pm-stat-card">
-                      <div className="pm-stat-label">Net Profit/Loss</div>
+                      <div className="pm-stat-label">House Edge</div>
                       <div className={`pm-stat-value ${
-                        gameSessions.reduce((sum, s) => sum + (s.result_amount - s.bet_amount), 0) > 0 ? 'win' : 'loss'
+                        gameSessions.reduce((sum, s) => sum + (s.result_amount - s.bet_amount), 0) > 0 ? 'loss' : 'win'
                       }`}>
-                        {gameSessions.reduce((sum, s) => sum + (s.result_amount - s.bet_amount), 0).toLocaleString()} pts
+                        {(-gameSessions.reduce((sum, s) => sum + (s.result_amount - s.bet_amount), 0)).toLocaleString()}
                       </div>
                     </div>
                     <div className="pm-stat-card">
-                      <div className="pm-stat-label">Win Rate</div>
+                      <div className="pm-stat-label">Player Win Rate</div>
                       <div className="pm-stat-value">
                         {((gameSessions.filter(s => s.result_amount > s.bet_amount).length / gameSessions.length) * 100).toFixed(1)}%
                       </div>
@@ -992,11 +1080,27 @@ export default function PointsManager() {
 
           {activeTab === 'redemptions' && (
             <div className="pm-redemptions">
-              <div className="pm-redemptions-header">
-                <h2>Recent Redemptions</h2>
-                <div className="pm-redemptions-info">
-                  <span className="pm-total-count">Total: {redemptions.length}</span>
-                </div>
+              <div className="pm-toolbar">
+                <input
+                  type="text"
+                  className="pm-search-input"
+                  placeholder="Search redemptions..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <select
+                  className="pm-filter-select"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">All Status</option>
+                  <option value="pending">Pending</option>
+                  <option value="approved">Approved</option>
+                  <option value="denied">Denied</option>
+                </select>
+                <button onClick={loadRedemptions} className="pm-refresh-btn">
+                  ↻ Refresh
+                </button>
               </div>
               <div className="pm-table-container">
                 <table className="pm-table">
@@ -1012,6 +1116,15 @@ export default function PointsManager() {
                   </thead>
                   <tbody>
                     {redemptions
+                      .filter(redemption => {
+                        const currentStatus = redemption.status || (redemption.processed ? 'approved' : 'pending');
+                        const matchesSearch = !searchQuery || 
+                          redemption.user?.twitchUsername?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          redemption.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          redemption.item?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+                        const matchesStatus = statusFilter === 'all' || currentStatus === statusFilter;
+                        return matchesSearch && matchesStatus;
+                      })
                       .slice(
                         (redemptionPage - 1) * redemptionsPerPage,
                         redemptionPage * redemptionsPerPage
@@ -1019,9 +1132,14 @@ export default function PointsManager() {
                       .map((redemption) => (
                       <tr key={redemption.id}>
                         <td>
-                          <div className="pm-user-info">
-                            <div className="pm-username">{redemption.user?.twitchUsername || 'Unknown'}</div>
-                            <div className="pm-email">{redemption.user?.seUsername || redemption.user?.email || 'Unknown'}</div>
+                          <div className="pm-user-cell">
+                            <div className="pm-user-avatar">
+                              {(redemption.user?.twitchUsername || redemption.user?.email || 'U')[0].toUpperCase()}
+                            </div>
+                            <div className="pm-user-info">
+                              <div className="pm-user-name">{redemption.user?.twitchUsername || 'Unknown'}</div>
+                              <div className="pm-user-email">{redemption.user?.seUsername || redemption.user?.email || 'Unknown'}</div>
+                            </div>
                           </div>
                         </td>
                         <td>{redemption.item?.name || 'Deleted Item'}</td>
@@ -1031,8 +1149,9 @@ export default function PointsManager() {
                           {(() => {
                             const currentStatus = redemption.status || (redemption.processed ? 'approved' : 'pending');
                             return (
-                              <span className={`pm-status-badge ${currentStatus}`}>
-                                {currentStatus === 'aproved' && 'Aproved'}
+                              <span className={`pm-badge pm-badge-${currentStatus === 'approved' ? 'success' : currentStatus === 'denied' ? 'danger' : 'warning'}`}>
+                                <span className="pm-badge-dot"></span>
+                                {currentStatus === 'approved' && 'Approved'}
                                 {currentStatus === 'denied' && 'Denied'}
                                 {currentStatus === 'pending' && 'Pending'}
                               </span>
@@ -1047,18 +1166,18 @@ export default function PointsManager() {
                                 className="pm-approve-btn"
                                 title="Approve redemption"
                               >
-                                Approve
+                                ✓ Approve
                               </button>
                               <button
                                 onClick={() => handleDenyRedemption(redemption)}
                                 className="pm-deny-btn"
                                 title="Deny and refund"
                               >
-                                Deny
+                                ✕ Deny
                               </button>
                             </div>
                           ) : (
-                            <span className="pm-no-action">-</span>
+                            <span className="pm-no-action">—</span>
                           )}
                         </td>
                       </tr>
@@ -1066,7 +1185,11 @@ export default function PointsManager() {
                   </tbody>
                 </table>
                 {redemptions.length === 0 && (
-                  <div className="pm-empty">No redemptions yet</div>
+                  <div className="pm-empty">
+                    <div className="pm-empty-icon">🎁</div>
+                    <div className="pm-empty-title">No redemptions yet</div>
+                    <div className="pm-empty-description">Redemptions will appear here when users claim rewards</div>
+                  </div>
                 )}
               </div>
               {redemptions.length > redemptionsPerPage && (
@@ -1076,7 +1199,7 @@ export default function PointsManager() {
                     disabled={redemptionPage === 1}
                     className="pm-pagination-btn"
                   >
-                    Previous
+                    ← Previous
                   </button>
                   <span className="pm-pagination-info">
                     Page {redemptionPage} of {Math.ceil(redemptions.length / redemptionsPerPage)}
@@ -1086,7 +1209,7 @@ export default function PointsManager() {
                     disabled={redemptionPage >= Math.ceil(redemptions.length / redemptionsPerPage)}
                     className="pm-pagination-btn"
                   >
-                    Next &gt;
+                    Next →
                   </button>
                 </div>
               )}
@@ -1095,8 +1218,23 @@ export default function PointsManager() {
 
           {activeTab === 'items' && (
             <div className="pm-items">
-              <div className="pm-items-header">
-                <h2>Redemption Items</h2>
+              <div className="pm-toolbar">
+                <input
+                  type="text"
+                  className="pm-search-input"
+                  placeholder="Search items..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+                <select
+                  className="pm-filter-select"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="all">All Items</option>
+                  <option value="active">Active</option>
+                  <option value="inactive">Inactive</option>
+                </select>
                 <button
                   onClick={() => {
                     setEditingItem(null);
@@ -1114,11 +1252,21 @@ export default function PointsManager() {
                   }}
                   className="pm-add-btn"
                 >
-                  + Add New Item
+                  + Add Item
                 </button>
               </div>
               <div className="pm-items-grid">
-                {redemptionItems.map((item) => (
+                {redemptionItems
+                  .filter(item => {
+                    const matchesSearch = !searchQuery || 
+                      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                      item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+                    const matchesStatus = statusFilter === 'all' || 
+                      (statusFilter === 'active' && item.is_active) ||
+                      (statusFilter === 'inactive' && !item.is_active);
+                    return matchesSearch && matchesStatus;
+                  })
+                  .map((item) => (
                   <div key={item.id} className={`pm-item-card ${!item.is_active ? 'inactive' : ''}`}>
                     <div className="pm-item-header">
                       <h3>{item.name}</h3>
@@ -1126,12 +1274,12 @@ export default function PointsManager() {
                     </div>
                     <p className="pm-item-description">{item.description}</p>
                     <div className="pm-item-meta">
-                      <span>Type: {item.reward_type}</span>
+                      <span>{item.reward_type}</span>
                       {item.available_units !== null && (
-                        <span>Stock: {item.available_units} units</span>
+                        <span>📦 {item.available_units}</span>
                       )}
                       <span className={`pm-item-status ${item.is_active ? 'active' : 'inactive'}`}>
-                        {item.is_active ? 'Active' : 'Inactive'}
+                        {item.is_active ? '● Active' : '○ Inactive'}
                       </span>
                     </div>
                     <div className="pm-item-actions">
@@ -1170,6 +1318,13 @@ export default function PointsManager() {
                     </div>
                   </div>
                 ))}
+                {redemptionItems.length === 0 && (
+                  <div className="pm-empty" style={{ gridColumn: '1 / -1' }}>
+                    <div className="pm-empty-icon">🎁</div>
+                    <div className="pm-empty-title">No redemption items yet</div>
+                    <div className="pm-empty-description">Create items for users to redeem with their points</div>
+                  </div>
+                )}
               </div>
             </div>
           )}
