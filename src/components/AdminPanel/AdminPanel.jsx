@@ -6369,26 +6369,28 @@ export default function AdminPanel() {
                           className="slot-search-input"
                         />
                       </div>
-                      <div className="form-group">
-                        <label>Bet Value (€)</label>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={newSlotBetValue}
-                          onChange={(e) => setNewSlotBetValue(parseFloat(e.target.value) || 0)}
-                          placeholder="1.00"
-                          className="bet-input"
-                        />
-                      </div>
-                      <div className="form-group checkbox-group">
-                        <label className="checkbox-label super-checkbox">
+                      <div className="slot-picker-row">
+                        <div className="form-group bet-group">
+                          <label>Bet Value (€)</label>
                           <input
-                            type="checkbox"
-                            checked={newSlotIsSuper}
-                            onChange={(e) => setNewSlotIsSuper(e.target.checked)}
+                            type="number"
+                            step="0.01"
+                            value={newSlotBetValue}
+                            onChange={(e) => setNewSlotBetValue(parseFloat(e.target.value) || 0)}
+                            placeholder="1.00"
+                            className="bet-input"
                           />
-                          <span>⭐ Super</span>
-                        </label>
+                        </div>
+                        <div className="form-group checkbox-group">
+                          <label className="checkbox-label super-checkbox">
+                            <input
+                              type="checkbox"
+                              checked={newSlotIsSuper}
+                              onChange={(e) => setNewSlotIsSuper(e.target.checked)}
+                            />
+                            <span>⭐ Super</span>
+                          </label>
+                        </div>
                       </div>
                     </div>
 

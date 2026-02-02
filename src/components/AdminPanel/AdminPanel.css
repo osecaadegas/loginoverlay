@@ -3969,10 +3969,30 @@
 }
 
 .slot-picker-controls {
-  display: grid;
-  grid-template-columns: 1fr 120px auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.slot-picker-controls .slot-search-group {
+  width: 100%;
+  margin-bottom: 0;
+}
+
+.slot-picker-row {
+  display: flex;
   gap: 12px;
   align-items: end;
+}
+
+.slot-picker-row .form-group {
+  flex: 1;
+  min-width: 0;
+}
+
+.slot-picker-row .form-group.bet-group {
+  flex: 0 0 140px;
+  min-width: 140px;
 }
 
 .slot-search-group {
@@ -3981,6 +4001,7 @@
 
 .slot-search-input {
   width: 100%;
+  min-width: 0;
 }
 
 .bet-input {
@@ -3991,6 +4012,7 @@
   display: flex;
   align-items: center;
   padding-bottom: 10px;
+  flex-shrink: 0;
 }
 
 .super-checkbox {
@@ -4246,8 +4268,13 @@
     grid-template-columns: repeat(2, 1fr);
   }
   
-  .slot-picker-controls {
-    grid-template-columns: 1fr;
+  .slot-picker-row {
+    flex-direction: column;
+  }
+  
+  .slot-picker-row .form-group.bet-group {
+    flex: 1;
+    min-width: 100%;
   }
   
   .slot-catalog-grid {
