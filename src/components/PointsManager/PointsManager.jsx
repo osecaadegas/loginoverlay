@@ -40,9 +40,14 @@ export default function PointsManager() {
   const [imageFile, setImageFile] = useState(null);
   const [uploadingImage, setUploadingImage] = useState(false);
 
-  // Pagination for redemptions
-  const [redemptionPage, setRedemptionPage] = useState(1);
-  const redemptionsPerPage = 10;
+  // Pagination for all tabs
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 15;
+
+  // Reset page when changing tabs or filters
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, statusFilter, gameFilter]);
 
   const SE_CHANNEL_ID = import.meta.env.VITE_SE_CHANNEL_ID;
   const SE_JWT_TOKEN = import.meta.env.VITE_SE_JWT_TOKEN;
@@ -861,15 +866,20 @@ export default function PointsManager() {
                     </tr>
                   </thead>
                   <tbody>
-                    {users
-                      .filter(user => {
+                    {(() => {
+                      const filteredUsers = users.filter(user => {
                         const matchesSearch = !searchQuery || 
                           user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           user.se_username?.toLowerCase().includes(searchQuery.toLowerCase());
                         const matchesStatus = statusFilter === 'all' || user.se_status === statusFilter;
                         return matchesSearch && matchesStatus;
-                      })
-                      .map((user) => {
+                      });
+                      const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+                      const paginatedUsers = filteredUsers.slice(
+                        (currentPage - 1) * itemsPerPage,
+                        currentPage * itemsPerPage
+                      );
+                      return paginatedUsers.map((user) => {
                         const maxPoints = Math.max(...users.map(u => u.current_points || 0), 1);
                         const pointsPercent = ((user.current_points || 0) / maxPoints) * 100;
                         return (
@@ -935,7 +945,8 @@ export default function PointsManager() {
                             </td>
                           </tr>
                         );
-                      })}
+                      });
+                    })()}
                   </tbody>
                 </table>
                 {users.length === 0 && (
@@ -946,6 +957,39 @@ export default function PointsManager() {
                   </div>
                 )}
               </div>
+              {/* Users Pagination */}
+              {(() => {
+                const filteredUsers = users.filter(user => {
+                  const matchesSearch = !searchQuery || 
+                    user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    user.se_username?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesStatus = statusFilter === 'all' || user.se_status === statusFilter;
+                  return matchesSearch && matchesStatus;
+                });
+                const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+                if (totalPages <= 1) return null;
+                return (
+                  <div className="pm-table-pagination">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="pm-pagination-btn"
+                    >
+                      ← Previous
+                    </button>
+                    <span className="pm-pagination-info">
+                      Page {currentPage} of {totalPages} ({filteredUsers.length} users)
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="pm-pagination-btn"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -986,15 +1030,19 @@ export default function PointsManager() {
                     </tr>
                   </thead>
                   <tbody>
-                    {gameSessions
-                      .filter(session => {
+                    {(() => {
+                      const filteredSessions = gameSessions.filter(session => {
                         const matchesSearch = !searchQuery || 
                           session.se_username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           session.user_email?.toLowerCase().includes(searchQuery.toLowerCase());
                         const matchesGame = gameFilter === 'all' || session.game_type === gameFilter;
                         return matchesSearch && matchesGame;
-                      })
-                      .map((session) => {
+                      });
+                      const paginatedSessions = filteredSessions.slice(
+                        (currentPage - 1) * itemsPerPage,
+                        currentPage * itemsPerPage
+                      );
+                      return paginatedSessions.map((session) => {
                       const profitLoss = session.result_amount - session.bet_amount;
                       const isWin = profitLoss > 0;
                       const isPush = profitLoss === 0;
@@ -1031,7 +1079,8 @@ export default function PointsManager() {
                           <td>{new Date(session.created_at).toLocaleString()}</td>
                         </tr>
                       );
-                    })}
+                    });
+                    })()}
                   </tbody>
                 </table>
                 {gameSessions.length === 0 && (
@@ -1042,6 +1091,40 @@ export default function PointsManager() {
                   </div>
                 )}
               </div>
+
+              {/* Games Pagination */}
+              {(() => {
+                const filteredSessions = gameSessions.filter(session => {
+                  const matchesSearch = !searchQuery || 
+                    session.se_username?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    session.user_email?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesGame = gameFilter === 'all' || session.game_type === gameFilter;
+                  return matchesSearch && matchesGame;
+                });
+                const totalPages = Math.ceil(filteredSessions.length / itemsPerPage);
+                if (totalPages <= 1) return null;
+                return (
+                  <div className="pm-table-pagination">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="pm-pagination-btn"
+                    >
+                      ← Previous
+                    </button>
+                    <span className="pm-pagination-info">
+                      Page {currentPage} of {totalPages} ({filteredSessions.length} games)
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="pm-pagination-btn"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                );
+              })()}
 
               {/* Game Statistics Summary */}
               {gameSessions.length > 0 && (
@@ -1115,8 +1198,8 @@ export default function PointsManager() {
                     </tr>
                   </thead>
                   <tbody>
-                    {redemptions
-                      .filter(redemption => {
+                    {(() => {
+                      const filteredRedemptions = redemptions.filter(redemption => {
                         const currentStatus = redemption.status || (redemption.processed ? 'approved' : 'pending');
                         const matchesSearch = !searchQuery || 
                           redemption.user?.twitchUsername?.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -1124,12 +1207,12 @@ export default function PointsManager() {
                           redemption.item?.name?.toLowerCase().includes(searchQuery.toLowerCase());
                         const matchesStatus = statusFilter === 'all' || currentStatus === statusFilter;
                         return matchesSearch && matchesStatus;
-                      })
-                      .slice(
-                        (redemptionPage - 1) * redemptionsPerPage,
-                        redemptionPage * redemptionsPerPage
-                      )
-                      .map((redemption) => (
+                      });
+                      const paginatedRedemptions = filteredRedemptions.slice(
+                        (currentPage - 1) * itemsPerPage,
+                        currentPage * itemsPerPage
+                      );
+                      return paginatedRedemptions.map((redemption) => (
                       <tr key={redemption.id}>
                         <td>
                           <div className="pm-user-cell">
@@ -1181,7 +1264,8 @@ export default function PointsManager() {
                           )}
                         </td>
                       </tr>
-                    ))}
+                    ));
+                    })()}
                   </tbody>
                 </table>
                 {redemptions.length === 0 && (
@@ -1192,27 +1276,41 @@ export default function PointsManager() {
                   </div>
                 )}
               </div>
-              {redemptions.length > redemptionsPerPage && (
-                <div className="pm-table-pagination">
-                  <button
-                    onClick={() => setRedemptionPage(prev => Math.max(1, prev - 1))}
-                    disabled={redemptionPage === 1}
-                    className="pm-pagination-btn"
-                  >
-                    ← Previous
-                  </button>
-                  <span className="pm-pagination-info">
-                    Page {redemptionPage} of {Math.ceil(redemptions.length / redemptionsPerPage)}
-                  </span>
-                  <button
-                    onClick={() => setRedemptionPage(prev => Math.min(Math.ceil(redemptions.length / redemptionsPerPage), prev + 1))}
-                    disabled={redemptionPage >= Math.ceil(redemptions.length / redemptionsPerPage)}
-                    className="pm-pagination-btn"
-                  >
-                    Next →
-                  </button>
-                </div>
-              )}
+              {/* Redemptions Pagination */}
+              {(() => {
+                const filteredRedemptions = redemptions.filter(redemption => {
+                  const currentStatus = redemption.status || (redemption.processed ? 'approved' : 'pending');
+                  const matchesSearch = !searchQuery || 
+                    redemption.user?.twitchUsername?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    redemption.user?.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    redemption.item?.name?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesStatus = statusFilter === 'all' || currentStatus === statusFilter;
+                  return matchesSearch && matchesStatus;
+                });
+                const totalPages = Math.ceil(filteredRedemptions.length / itemsPerPage);
+                if (totalPages <= 1) return null;
+                return (
+                  <div className="pm-table-pagination">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="pm-pagination-btn"
+                    >
+                      ← Previous
+                    </button>
+                    <span className="pm-pagination-info">
+                      Page {currentPage} of {totalPages} ({filteredRedemptions.length} redemptions)
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="pm-pagination-btn"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
@@ -1256,8 +1354,8 @@ export default function PointsManager() {
                 </button>
               </div>
               <div className="pm-items-grid">
-                {redemptionItems
-                  .filter(item => {
+                {(() => {
+                  const filteredItems = redemptionItems.filter(item => {
                     const matchesSearch = !searchQuery || 
                       item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                       item.description?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -1265,8 +1363,12 @@ export default function PointsManager() {
                       (statusFilter === 'active' && item.is_active) ||
                       (statusFilter === 'inactive' && !item.is_active);
                     return matchesSearch && matchesStatus;
-                  })
-                  .map((item) => (
+                  });
+                  const paginatedItems = filteredItems.slice(
+                    (currentPage - 1) * itemsPerPage,
+                    currentPage * itemsPerPage
+                  );
+                  return paginatedItems.map((item) => (
                   <div key={item.id} className={`pm-item-card ${!item.is_active ? 'inactive' : ''}`}>
                     <div className="pm-item-header">
                       <h3>{item.name}</h3>
@@ -1317,7 +1419,8 @@ export default function PointsManager() {
                       </button>
                     </div>
                   </div>
-                ))}
+                ));
+                })()}
                 {redemptionItems.length === 0 && (
                   <div className="pm-empty" style={{ gridColumn: '1 / -1' }}>
                     <div className="pm-empty-icon">🎁</div>
@@ -1326,84 +1429,138 @@ export default function PointsManager() {
                   </div>
                 )}
               </div>
+              {/* Items Pagination */}
+              {(() => {
+                const filteredItems = redemptionItems.filter(item => {
+                  const matchesSearch = !searchQuery || 
+                    item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+                  const matchesStatus = statusFilter === 'all' || 
+                    (statusFilter === 'active' && item.is_active) ||
+                    (statusFilter === 'inactive' && !item.is_active);
+                  return matchesSearch && matchesStatus;
+                });
+                const totalPages = Math.ceil(filteredItems.length / itemsPerPage);
+                if (totalPages <= 1) return null;
+                return (
+                  <div className="pm-table-pagination">
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                      disabled={currentPage === 1}
+                      className="pm-pagination-btn"
+                    >
+                      ← Previous
+                    </button>
+                    <span className="pm-pagination-info">
+                      Page {currentPage} of {totalPages} ({filteredItems.length} items)
+                    </span>
+                    <button
+                      onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                      disabled={currentPage >= totalPages}
+                      className="pm-pagination-btn"
+                    >
+                      Next →
+                    </button>
+                  </div>
+                );
+              })()}
             </div>
           )}
         </>
       )}
 
-      {/* Points Modal */}
+      {/* Points Side Panel */}
       {showPointsModal && selectedUser && (
-        <div className="pm-modal-overlay" onClick={() => setShowPointsModal(false)}>
-          <div className="pm-modal" onClick={(e) => e.stopPropagation()}>
-            <h2>
-              {userRole === 'admin' ? 'Edit' : pointsAction === 'add' ? 'Add' : 'Remove'} Points for {selectedUser.se_username}
-            </h2>
-            <p>Current Points: <strong>{selectedUser.current_points.toLocaleString()}</strong></p>
+        <div className="pm-panel-overlay" onClick={() => setShowPointsModal(false)}>
+          <div className="pm-side-panel" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-panel-header">
+              <h2>{userRole === 'admin' ? 'Edit' : pointsAction === 'add' ? 'Add' : 'Remove'} Points</h2>
+              <button onClick={() => setShowPointsModal(false)} className="pm-panel-close">✕</button>
+            </div>
+            
+            <div className="pm-panel-content">
+              <div className="pm-panel-user-card">
+                <div className="pm-user-avatar large">
+                  {(selectedUser.se_username || 'U')[0].toUpperCase()}
+                </div>
+                <div className="pm-panel-user-info">
+                  <div className="pm-panel-user-name">{selectedUser.se_username}</div>
+                  <div className="pm-panel-user-email">{selectedUser.email}</div>
+                </div>
+              </div>
 
-            <div className="pm-form-group">
-              <label>
-                {userRole === 'admin' 
-                  ? 'Points Amount (positive to add, negative to remove)' 
-                  : `Points to ${pointsAction === 'add' ? 'Add' : 'Remove'}`
-                }
-              </label>
-              <input
-                type="number"
-                value={pointsAmount}
-                onChange={(e) => setPointsAmount(e.target.value)}
-                placeholder={userRole === 'admin' ? 'e.g., 1000 or -500' : 'e.g., 1000'}
-                min={userRole === 'moderator' ? '1' : undefined}
-              />
+              <div className="pm-panel-stat">
+                <span className="pm-panel-stat-label">Current Points</span>
+                <span className="pm-panel-stat-value">{selectedUser.current_points.toLocaleString()}</span>
+              </div>
+
+              <div className="pm-form-group-new">
+                <label>
+                  {userRole === 'admin' 
+                    ? 'Amount (positive to add, negative to remove)' 
+                    : `Points to ${pointsAction === 'add' ? 'Add' : 'Remove'}`
+                  }
+                </label>
+                <input
+                  type="number"
+                  value={pointsAmount}
+                  onChange={(e) => setPointsAmount(e.target.value)}
+                  placeholder={userRole === 'admin' ? 'e.g., 1000 or -500' : 'e.g., 1000'}
+                  min={userRole === 'moderator' ? '1' : undefined}
+                  className="pm-input"
+                />
+              </div>
+
+              {pointsAmount && (
+                <div className="pm-panel-preview-change">
+                  <span className="pm-panel-preview-label">New Balance</span>
+                  <span className={`pm-panel-preview-value ${parseInt(pointsAmount) >= 0 ? 'positive' : 'negative'}`}>
+                    {(selectedUser.current_points + parseInt(pointsAmount || 0)).toLocaleString()}
+                  </span>
+                </div>
+              )}
             </div>
 
-            <div className="pm-modal-actions">
+            <div className="pm-panel-footer">
+              <button
+                onClick={() => setShowPointsModal(false)}
+                className="pm-btn-cancel"
+              >
+                Cancel
+              </button>
               <button
                 onClick={() => {
                   const amount = parseInt(pointsAmount);
                   if (userRole === 'admin') {
-                    // Admin can enter positive or negative values directly
                     handleAddPoints(amount);
                   } else if (pointsAction === 'remove') {
-                    // Moderator removing points - make it negative
                     handleAddPoints(-Math.abs(amount));
                   } else {
-                    // Moderator adding points - make it positive
                     handleAddPoints(Math.abs(amount));
                   }
                 }}
                 disabled={!pointsAmount || loading}
-                className="pm-submit-btn"
+                className="pm-btn-create"
               >
                 {loading ? 'Updating...' : userRole === 'admin' ? 'Update Points' : `${pointsAction === 'add' ? 'Add' : 'Remove'} Points`}
-              </button>
-              <button
-                onClick={() => setShowPointsModal(false)}
-                className="pm-cancel-btn"
-              >
-                Cancel
               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Item Modal - Redesigned with Preview */}
+      {/* Item Side Panel */}
       {showItemModal && (
-        <div className="pm-modal-overlay" onClick={() => setShowItemModal(false)}>
-          <div className="pm-modal-redesigned" onClick={(e) => e.stopPropagation()}>
-            <div className="pm-modal-header">
+        <div className="pm-panel-overlay" onClick={() => setShowItemModal(false)}>
+          <div className="pm-side-panel pm-side-panel-wide" onClick={(e) => e.stopPropagation()}>
+            <div className="pm-panel-header">
               <h2>{editingItem ? 'Edit' : 'Create'} Redemption Item</h2>
-              <button 
-                onClick={() => setShowItemModal(false)} 
-                className="pm-modal-close"
-              >
-                X
-              </button>
+              <button onClick={() => setShowItemModal(false)} className="pm-panel-close">✕</button>
             </div>
 
-            <div className="pm-modal-content-split">
-              {/* Left Side - Form */}
-              <div className="pm-form-section">
+            <div className="pm-panel-content-split">
+              {/* Form Section */}
+              <div className="pm-panel-form-section">
                 <div className="pm-form-group-new">
                   <label>Item Name</label>
                   <input
@@ -1514,26 +1671,10 @@ export default function PointsManager() {
                     )}
                   </div>
                 </div>
-
-                <div className="pm-modal-actions-new">
-                  <button
-                    onClick={() => setShowItemModal(false)}
-                    className="pm-btn-cancel"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSaveItem}
-                    disabled={!itemForm.name || !itemForm.point_cost || loading || uploadingImage}
-                    className="pm-btn-create"
-                  >
-                    {uploadingImage ? 'Uploading...' : loading ? 'Saving...' : editingItem ? 'Update Item' : 'Create Item'}
-                  </button>
-                </div>
               </div>
 
-              {/* Right Side - Live Preview */}
-              <div className="pm-preview-section">
+              {/* Live Preview Section */}
+              <div className="pm-panel-preview-section">
                 <div className="pm-preview-header">
                   <h3>Live Preview</h3>
                   <span className="pm-preview-badge">Points Store</span>
@@ -1563,7 +1704,7 @@ export default function PointsManager() {
                     
                     {itemForm.reward_details && (
                       <div className="pm-preview-details">
-                        <span className="pm-preview-icon">*</span>
+                        <span className="pm-preview-icon">✦</span>
                         {itemForm.reward_details}
                       </div>
                     )}
@@ -1586,6 +1727,22 @@ export default function PointsManager() {
                   </div>
                 </div>
               </div>
+            </div>
+
+            <div className="pm-panel-footer">
+              <button
+                onClick={() => setShowItemModal(false)}
+                className="pm-btn-cancel"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveItem}
+                disabled={!itemForm.name || !itemForm.point_cost || loading || uploadingImage}
+                className="pm-btn-create"
+              >
+                {uploadingImage ? 'Uploading...' : loading ? 'Saving...' : editingItem ? 'Update Item' : 'Create Item'}
+              </button>
             </div>
           </div>
         </div>
