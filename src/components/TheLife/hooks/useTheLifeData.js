@@ -461,14 +461,17 @@ export const useTheLifeData = (user) => {
 
   const loadLeaderboard = async () => {
     try {
+      // Clear existing data first to ensure fresh fetch
+      setLeaderboard([]);
+      
+      // Fetch fresh data from database
       const { data, error } = await supabase
         .from('the_life_players')
         .select('id, user_id, level, xp, cash, bank_balance, pvp_wins, total_robberies, se_username, twitch_username')
         .order('level', { ascending: false })
         .order('xp', { ascending: false })
-        .limit(10);
-
-      if (error) throw error;
+        .limit(10)
+        .throwOnError();
 
       if (!data || data.length === 0) {
         setLeaderboard([]);
@@ -633,10 +636,10 @@ export const useTheLifeData = (user) => {
       loadCategoryInfo();
     }, 60000);
     
-    // Poll leaderboard every hour (3600000ms)
+    // Poll leaderboard every 30 seconds for responsive updates
     const leaderboardInterval = setInterval(() => {
       loadLeaderboard();
-    }, 3600000);
+    }, 30000);
 
     return () => {
       clearInterval(playerInterval);
