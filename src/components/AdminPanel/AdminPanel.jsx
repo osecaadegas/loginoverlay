@@ -6799,30 +6799,22 @@ export default function AdminPanel() {
                                 };
                                 setGuessBalanceSlots(updatedSlots);
                               }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  e.preventDefault();
+                                  // Save current and move to next slot
+                                  if (currentSlotIndex < guessBalanceSlots.length - 1) {
+                                    goToSlot(currentSlotIndex + 1);
+                                  }
+                                }
+                              }}
                               placeholder="Enter win amount..."
                               autoFocus
                             />
                           </div>
-                          <div className="input-group">
-                            <label>📊 Multiplier (x)</label>
-                            <input
-                              type="number"
-                              step="0.01"
-                              value={currentSlot.multiplier || ''}
-                              onChange={(e) => {
-                                const updatedSlots = [...guessBalanceSlots];
-                                updatedSlots[currentSlotIndex] = {
-                                  ...currentSlot,
-                                  multiplier: e.target.value
-                                };
-                                setGuessBalanceSlots(updatedSlots);
-                              }}
-                              placeholder="e.g., 150"
-                            />
-                          </div>
                           {currentSlot.bet_value && currentSlot.bonus_win && (
                             <div className="auto-multiplier">
-                              Auto calc: {(parseFloat(currentSlot.bonus_win) / parseFloat(currentSlot.bet_value)).toFixed(2)}x
+                              📊 Multiplier: {(parseFloat(currentSlot.bonus_win) / parseFloat(currentSlot.bet_value)).toFixed(2)}x
                             </div>
                           )}
                         </div>
