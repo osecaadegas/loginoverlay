@@ -2183,21 +2183,21 @@ export default function AdminPanel() {
 
       if (error) throw error;
 
-      // Get user profiles to get SE usernames
+      // Get SE usernames from streamelements_connections
       const userIds = [...new Set((data || []).map(g => g.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, se_username, twitch_username')
-        .in('id', userIds);
+      const { data: seConnections } = await supabase
+        .from('streamelements_connections')
+        .select('user_id, se_username')
+        .in('user_id', userIds);
 
-      const profilesMap = {};
-      (profiles || []).forEach(p => {
-        profilesMap[p.id] = p.se_username || p.twitch_username || p.id?.slice(0, 8);
+      const usernameMap = {};
+      (seConnections || []).forEach(conn => {
+        usernameMap[conn.user_id] = conn.se_username;
       });
 
       const guessesWithNames = (data || []).map(guess => ({
         ...guess,
-        display_name: profilesMap[guess.user_id] || guess.user_id?.slice(0, 8)
+        display_name: usernameMap[guess.user_id] || guess.user_id?.slice(0, 8)
       }));
 
       setSessionGuesses(guessesWithNames);
@@ -2224,16 +2224,16 @@ export default function AdminPanel() {
         .select('id, slot_name')
         .eq('session_id', sessionId);
 
-      // Get user profiles to get SE usernames
+      // Get SE usernames from streamelements_connections
       const userIds = [...new Set((votesData || []).map(v => v.user_id))];
-      const { data: profiles } = await supabase
-        .from('profiles')
-        .select('id, se_username, twitch_username')
-        .in('id', userIds);
+      const { data: seConnections } = await supabase
+        .from('streamelements_connections')
+        .select('user_id, se_username')
+        .in('user_id', userIds);
 
-      const profilesMap = {};
-      (profiles || []).forEach(p => {
-        profilesMap[p.id] = p.se_username || p.twitch_username || p.id?.slice(0, 8);
+      const usernameMap = {};
+      (seConnections || []).forEach(conn => {
+        usernameMap[conn.user_id] = conn.se_username;
       });
 
       // Map slot names to votes
@@ -2245,7 +2245,7 @@ export default function AdminPanel() {
       const votesWithSlotNames = (votesData || []).map(vote => ({
         ...vote,
         slot_name: slotsMap[vote.slot_id] || 'Unknown Slot',
-        display_name: profilesMap[vote.user_id] || vote.user_id?.slice(0, 8)
+        display_name: usernameMap[vote.user_id] || vote.user_id?.slice(0, 8)
       }));
 
       setSessionVotes(votesWithSlotNames);
