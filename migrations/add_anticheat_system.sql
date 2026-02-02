@@ -41,18 +41,33 @@ CREATE TABLE IF NOT EXISTS the_life_security_logs (
   
   -- Integrity (tamper-proof chain)
   previous_hash TEXT,
-  row_hash TEXT GENERATED ALWAYS AS (
-    encode(sha256(
-      (COALESCE(user_id::TEXT, '') || 
-       COALESCE(event_type, '') || 
-       COALESCE(action_name, '') ||
-       COALESCE(old_values::TEXT, '') ||
-       COALESCE(new_values::TEXT, '') ||
-       COALESCE(created_at::TEXT, '') ||
-       COALESCE(previous_hash, 'GENESIS'))::BYTEA
-    ), 'hex')
-  ) STORED
+  row_hash TEXT  -- Computed by trigger
 );
+
+-- Trigger to compute row_hash (since generated columns require immutable functions)
+CREATE OR REPLACE FUNCTION compute_security_log_hash()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  NEW.row_hash := encode(sha256(
+    (COALESCE(NEW.user_id::TEXT, '') || 
+     COALESCE(NEW.event_type, '') || 
+     COALESCE(NEW.action_name, '') ||
+     COALESCE(NEW.old_values::TEXT, '') ||
+     COALESCE(NEW.new_values::TEXT, '') ||
+     COALESCE(NEW.created_at::TEXT, '') ||
+     COALESCE(NEW.previous_hash, 'GENESIS'))::BYTEA
+  ), 'hex');
+  RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_compute_security_log_hash ON the_life_security_logs;
+CREATE TRIGGER trg_compute_security_log_hash
+  BEFORE INSERT ON the_life_security_logs
+  FOR EACH ROW
+  EXECUTE FUNCTION compute_security_log_hash();
 
 -- Indexes for fast querying
 CREATE INDEX IF NOT EXISTS idx_security_logs_user ON the_life_security_logs(user_id, created_at DESC);
@@ -810,7 +825,7 @@ BEGIN
   SELECT 
     p.id as player_id,
     p.user_id,
-    p.se_username,
+    sec.se_username,  -- Get SE username from streamelements_connections
     p.level,
     p.total_robberies,
     COUNT(f.id) as flag_count,
@@ -822,9 +837,10 @@ BEGIN
       0
     ) as anomaly_score
   FROM the_life_players p
+  LEFT JOIN streamelements_connections sec ON sec.user_id = p.user_id
   LEFT JOIN the_life_player_flags f ON f.player_id = p.id AND f.is_active = true
   WHERE p.level > 20 OR EXISTS (SELECT 1 FROM the_life_player_flags WHERE player_id = p.id AND is_active = true)
-  GROUP BY p.id
+  GROUP BY p.id, sec.se_username
   ORDER BY anomaly_score DESC
   LIMIT p_limit;
 END;
