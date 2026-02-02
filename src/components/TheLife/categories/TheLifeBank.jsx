@@ -1,4 +1,5 @@
 import { supabase } from '../../../config/supabaseClient';
+import { useState } from 'react';
 import '../styles/TheLifeBank.css';
 
 export default function TheLifeBank({ 
@@ -11,56 +12,91 @@ export default function TheLifeBank({
   setMessage,
   user
 }) {
-  // Props include setDepositAmount and setWithdrawAmount for clearing inputs
+  const [loading, setLoading] = useState(false);
+
+  // SECURE: Use server-side RPC for deposits
   const depositToBank = async (amount) => {
-    if (amount > player.cash) {
-      setMessage({ type: 'error', text: 'Not enough cash!' });
+    if (loading) return;
+    
+    const parsedAmount = parseInt(amount);
+    if (!parsedAmount || parsedAmount <= 0) {
+      setMessage({ type: 'error', text: 'Enter a valid amount' });
       return;
     }
 
     try {
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({
-          cash: player.cash - amount,
-          bank_balance: player.bank_balance + amount
-        })
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      setLoading(true);
+      
+      // Call server-side function that validates everything
+      const { data: result, error } = await supabase.rpc('execute_bank_transfer', {
+        p_amount: parsedAmount,
+        p_transfer_type: 'deposit'
+      });
 
       if (error) throw error;
-      setPlayer(data);
-      setMessage({ type: 'success', text: `Deposited $${amount.toLocaleString()}` });
+
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error });
+        return;
+      }
+
+      // Update local state with server-validated values
+      setPlayer(prev => ({
+        ...prev,
+        cash: result.new_cash,
+        bank_balance: result.new_bank
+      }));
+      
+      setMessage({ type: 'success', text: result.message });
       setDepositAmount('');
     } catch (err) {
       console.error('Error depositing:', err);
+      setMessage({ type: 'error', text: 'Failed to deposit' });
+    } finally {
+      setLoading(false);
     }
   };
 
+  // SECURE: Use server-side RPC for withdrawals
   const withdrawFromBank = async (amount) => {
-    if (amount > player.bank_balance) {
-      setMessage({ type: 'error', text: 'Not enough in bank!' });
+    if (loading) return;
+    
+    const parsedAmount = parseInt(amount);
+    if (!parsedAmount || parsedAmount <= 0) {
+      setMessage({ type: 'error', text: 'Enter a valid amount' });
       return;
     }
 
     try {
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({
-          cash: player.cash + amount,
-          bank_balance: player.bank_balance - amount
-        })
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      setLoading(true);
+      
+      // Call server-side function that validates everything
+      const { data: result, error } = await supabase.rpc('execute_bank_transfer', {
+        p_amount: parsedAmount,
+        p_transfer_type: 'withdraw'
+      });
 
       if (error) throw error;
-      setPlayer(data);
-      setMessage({ type: 'success', text: `Withdrew $${amount.toLocaleString()}` });
+
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error });
+        return;
+      }
+
+      // Update local state with server-validated values
+      setPlayer(prev => ({
+        ...prev,
+        cash: result.new_cash,
+        bank_balance: result.new_bank
+      }));
+      
+      setMessage({ type: 'success', text: result.message });
       setWithdrawAmount('');
     } catch (err) {
       console.error('Error withdrawing:', err);
+      setMessage({ type: 'error', text: 'Failed to withdraw' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -99,34 +135,35 @@ export default function TheLifeBank({
               onChange={(e) => setDepositAmount(e.target.value)}
               placeholder="Enter amount"
               className="bank-input"
+              disabled={loading}
             />
           </div>
           <div className="quick-amounts">
             <button 
               className="quick-btn"
               onClick={() => setDepositAmount(Math.floor(player.cash * 0.25))}
-              disabled={player?.cash === 0}
+              disabled={player?.cash === 0 || loading}
             >
               25%
             </button>
             <button 
               className="quick-btn"
               onClick={() => setDepositAmount(Math.floor(player.cash * 0.5))}
-              disabled={player?.cash === 0}
+              disabled={player?.cash === 0 || loading}
             >
               50%
             </button>
             <button 
               className="quick-btn"
               onClick={() => setDepositAmount(Math.floor(player.cash * 0.75))}
-              disabled={player?.cash === 0}
+              disabled={player?.cash === 0 || loading}
             >
               75%
             </button>
             <button 
               className="quick-btn"
               onClick={() => setDepositAmount(player.cash)}
-              disabled={player?.cash === 0}
+              disabled={player?.cash === 0 || loading}
             >
               All
             </button>
@@ -134,10 +171,10 @@ export default function TheLifeBank({
           <button 
             className="action-btn deposit-btn"
             onClick={() => depositToBank(parseInt(depositAmount))}
-            disabled={!depositAmount || depositAmount <= 0 || depositAmount > player.cash}
+            disabled={!depositAmount || depositAmount <= 0 || depositAmount > player.cash || loading}
           >
-            <span className="btn-icon">💸</span>
-            Deposit ${depositAmount ? parseInt(depositAmount).toLocaleString() : '0'}
+            <span className="btn-icon">{loading ? '⏳' : '💸'}</span>
+            {loading ? 'Processing...' : `Deposit $${depositAmount ? parseInt(depositAmount).toLocaleString() : '0'}`}
           </button>
         </div>
 
@@ -157,28 +194,28 @@ export default function TheLifeBank({
             <button 
               className="quick-btn"
               onClick={() => setWithdrawAmount(Math.floor(player.bank_balance * 0.25))}
-              disabled={player?.bank_balance === 0}
+              disabled={player?.bank_balance === 0 || loading}
             >
               25%
             </button>
             <button 
               className="quick-btn"
               onClick={() => setWithdrawAmount(Math.floor(player.bank_balance * 0.5))}
-              disabled={player?.bank_balance === 0}
+              disabled={player?.bank_balance === 0 || loading}
             >
               50%
             </button>
             <button 
               className="quick-btn"
               onClick={() => setWithdrawAmount(Math.floor(player.bank_balance * 0.75))}
-              disabled={player?.bank_balance === 0}
+              disabled={player?.bank_balance === 0 || loading}
             >
               75%
             </button>
             <button 
               className="quick-btn"
               onClick={() => setWithdrawAmount(player.bank_balance)}
-              disabled={player?.bank_balance === 0}
+              disabled={player?.bank_balance === 0 || loading}
             >
               All
             </button>
@@ -186,10 +223,10 @@ export default function TheLifeBank({
           <button 
             className="action-btn withdraw-btn"
             onClick={() => withdrawFromBank(parseInt(withdrawAmount))}
-            disabled={!withdrawAmount || withdrawAmount <= 0 || withdrawAmount > player.bank_balance}
+            disabled={!withdrawAmount || withdrawAmount <= 0 || withdrawAmount > player.bank_balance || loading}
           >
-            <span className="btn-icon">💵</span>
-            Withdraw ${withdrawAmount ? parseInt(withdrawAmount).toLocaleString() : '0'}
+            <span className="btn-icon">{loading ? '⏳' : '💵'}</span>
+            {loading ? 'Processing...' : `Withdraw $${withdrawAmount ? parseInt(withdrawAmount).toLocaleString() : '0'}`}
           </button>
         </div>
       </div>

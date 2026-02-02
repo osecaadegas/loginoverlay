@@ -7,6 +7,8 @@ import '../styles/TheLifeCrimes.css';
 /**
  * Crimes Category Component
  * Handles all crime-related actions and UI
+ * 
+ * SECURITY: All crime calculations happen server-side via RPC
  */
 export default function TheLifeCrimes({ 
   player, 
@@ -34,25 +36,24 @@ export default function TheLifeCrimes({
     }
   };
 
-  // Calculate actual success chance with all modifiers
-  const calculateSuccessChance = (robbery) => {
+  // Display-only calculation for UI (actual success calculated server-side)
+  const calculateDisplaySuccessChance = (robbery) => {
+    // This is ONLY for display purposes - the real roll happens server-side
     let successChance = robbery.success_rate;
     
-    // Crime difficulty factor
     const crimeLevel = robbery.min_level_required;
     if (crimeLevel <= 10) {
-      successChance += 5; // Petty crimes
+      successChance += 5;
     } else if (crimeLevel <= 30) {
-      successChance += 0; // Standard
+      successChance += 0;
     } else if (crimeLevel <= 60) {
-      successChance -= 3; // Serious
+      successChance -= 3;
     } else if (crimeLevel <= 100) {
-      successChance -= 6; // Major
+      successChance -= 6;
     } else {
-      successChance -= 10; // Legendary
+      successChance -= 10;
     }
     
-    // Level difference bonus/penalty
     const levelDifference = player.level - robbery.min_level_required;
     if (levelDifference >= 0) {
       successChance += Math.min(levelDifference * 2, 10);
@@ -60,41 +61,38 @@ export default function TheLifeCrimes({
       successChance += (levelDifference * 5);
     }
     
-    // HP penalty for being low health
     const hpPercentage = player.hp / player.max_hp;
     if (hpPercentage < 0.5) {
       const hpPenalty = (0.5 - hpPercentage) * 20;
       successChance -= hpPenalty;
     }
     
-    // Daily catches penalty
     const dailyCatches = player.daily_catches || 0;
     const catchPenalty = Math.min(dailyCatches * 3, 15);
     successChance -= catchPenalty;
     
-    // Wealth-based risk factor
     const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
     if (totalWealth > 1000000) {
       const wealthPenalty = Math.min(Math.floor(Math.log10(totalWealth / 1000000) + 1), 5);
       successChance -= wealthPenalty;
     }
     
-    // Level-based notoriety penalty
     if (player.level > 20) {
       const notorietyPenalty = Math.min(Math.floor((player.level - 20) * 0.1), 5);
       successChance -= notorietyPenalty;
     }
     
-    // Clamp between 10% and 85% (same as attemptRobbery)
     return Math.max(10, Math.min(85, successChance));
   };
 
+  // SECURE: Use server-side RPC for crime execution
   const attemptRobbery = async (robbery) => {
     // Prevent spam clicking
     if (loading || cooldownCrimeId === robbery.id) {
       return;
     }
 
+    // Client-side checks (server validates these too)
     if (player.stamina < robbery.stamina_cost) {
       setMessage({ type: 'error', text: 'Not enough stamina!' });
       return;
@@ -108,215 +106,79 @@ export default function TheLifeCrimes({
     try {
       setLoading(true);
       setCooldownCrimeId(robbery.id);
+
+      // Call secure server-side function
+      const { data: result, error } = await supabase.rpc('execute_crime_rate_limited', {
+        p_crime_id: robbery.id
+      });
+
+      if (error) throw error;
+
+      if (!result.success && result.error) {
+        // Rate limited or validation error
+        setMessage({ type: 'error', text: result.error });
+        return;
+      }
+
+      // Process server response
+      const crimeResult = result;
       
-      // Use the shared calculation function for consistency
-      const successChance = calculateSuccessChance(robbery);
-      const levelDifference = player.level - robbery.min_level_required;
-      
-      const roll = Math.random() * 100;
-      const success = roll < successChance;
-
-      const reward = success 
-        ? Math.floor(Math.random() * (robbery.max_reward - robbery.base_reward) + robbery.base_reward)
-        : 0;
-
-      let updates = {
-        stamina: player.stamina - robbery.stamina_cost,
-        total_robberies: player.total_robberies + 1,
-        xp: player.xp + (success ? robbery.xp_reward : Math.floor(robbery.xp_reward / 2))
-      };
-
-      if (success) {
-        updates.cash = player.cash + reward;
-        updates.successful_robberies = player.successful_robberies + 1;
+      if (crimeResult.crime_success) {
+        // Successful crime
+        let successMessage = `Success! You earned $${crimeResult.reward?.toLocaleString() || 0} and ${crimeResult.xp_gained || 0} XP! (${Math.round(crimeResult.success_chance)}% chance)`;
         
-        // Check for item drops
-        const { data: drops } = await supabase
-          .from('the_life_crime_drops')
-          .select(`
-            *,
-            item:the_life_items(*)
-          `)
-          .eq('crime_id', robbery.id);
-
-        const droppedItems = [];
-        if (drops && drops.length > 0) {
-          for (const drop of drops) {
-            const dropRoll = Math.random() * 100;
-            if (dropRoll < drop.drop_chance) {
-              const quantity = Math.floor(Math.random() * (drop.max_quantity - drop.min_quantity + 1)) + drop.min_quantity;
-              
-              // Add item to inventory
-              const { data: existingItem } = await supabase
-                .from('the_life_player_inventory')
-                .select('*')
-                .eq('player_id', player.id)
-                .eq('item_id', drop.item_id)
-                .single();
-
-              if (existingItem) {
-                await supabase
-                  .from('the_life_player_inventory')
-                  .update({ quantity: existingItem.quantity + quantity })
-                  .eq('id', existingItem.id);
-              } else {
-                await supabase
-                  .from('the_life_player_inventory')
-                  .insert({
-                    player_id: player.id,
-                    item_id: drop.item_id,
-                    quantity: quantity
-                  });
-              }
-
-              droppedItems.push(`${drop.item.name} x${quantity}`);
-            }
-          }
-        }
-
-        let successMessage = `Success! You earned $${reward.toLocaleString()} and ${robbery.xp_reward} XP! (${Math.round(successChance)}% chance)`;
-        if (droppedItems.length > 0) {
-          successMessage += `\n💎 You also found: ${droppedItems.join(', ')}`;
-          // Refresh inventory immediately when items are dropped
+        // Handle item drops if any
+        if (crimeResult.dropped_items && crimeResult.dropped_items.length > 0) {
+          successMessage += `\n💎 You also found: ${crimeResult.dropped_items.join(', ')}`;
           if (loadTheLifeInventory) {
             loadTheLifeInventory();
           }
         }
         
-        setMessage({ 
-          type: 'success', 
-          text: successMessage
-        });
+        setMessage({ type: 'success', text: successMessage });
+        
+        // Check for level up
+        if (crimeResult.leveled_up) {
+          setMessage({ 
+            type: 'success', 
+            text: `Level Up! You are now level ${crimeResult.new_level}!` 
+          });
+        }
       } else {
-        // === DYNAMIC JAIL TIME SYSTEM ===
-        let jailMultiplier = 1;
-        
-        // === CRIME DIFFICULTY AFFECTS JAIL TIME ===
-        // Easy crimes (low level req) = shorter sentences (petty theft)
-        // Hard crimes (high level req) = longer sentences (major felonies)
-        const crimeLevel = robbery.min_level_required;
-        if (crimeLevel <= 10) {
-          jailMultiplier *= 0.7; // -30% jail for petty crimes
-        } else if (crimeLevel <= 30) {
-          jailMultiplier *= 1.0; // Standard jail time
-        } else if (crimeLevel <= 60) {
-          jailMultiplier *= 1.2; // +20% jail for serious crimes
-        } else if (crimeLevel <= 100) {
-          jailMultiplier *= 1.4; // +40% jail for major crimes
-        } else {
-          jailMultiplier *= 1.7; // +70% jail for legendary heists (101+)
-        }
-        
-        // Under-leveled = longer jail time
-        if (levelDifference < 0) {
-          jailMultiplier += (Math.abs(levelDifference) * 0.3);
-        }
-        
-        // Low HP = longer jail (you're weaker, easier to catch)
-        const hpPercentage = player.hp / player.max_hp;
-        if (hpPercentage < 0.5) {
-          jailMultiplier += (0.5 - hpPercentage) * 0.5;
-        }
-        
-        // === NEW: Daily catches increase jail time ===
-        // Each catch today adds +10% to jail time (max +30%)
-        const currentDailyCatches = player.daily_catches || 0;
-        jailMultiplier += Math.min(currentDailyCatches * 0.1, 0.3);
-        
-        // === NEW: Wealth-based jail time ===
-        // Rich players get slightly longer sentences (courts are harsher)
-        const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
-        if (totalWealth > 1000000) {
-          // Logarithmic scale: $1M = 0%, $10M = ~17%, $100M = ~25%, $1B = ~30%
-          const wealthMultiplier = Math.min(Math.log10(totalWealth / 1000000) * 0.1, 0.3); // Max +30%
-          jailMultiplier += wealthMultiplier;
-        }
-        
-        // === NEW: High level = more notorious = longer sentence ===
-        if (player.level > 30) {
-          // Starts at level 30, max +25% at level 150+
-          jailMultiplier += Math.min((player.level - 30) * 0.002, 0.25); // Max +25%
-        }
-        
-        // Calculate final jail time (minimum 5 mins, max 3x base)
-        const jailTime = Math.max(5, Math.min(Math.floor(robbery.jail_time_minutes * jailMultiplier), robbery.jail_time_minutes * 3));
-        const jailUntil = new Date();
-        jailUntil.setMinutes(jailUntil.getMinutes() + jailTime);
-        const newHP = Math.max(0, player.hp - robbery.hp_loss_on_fail);
-        updates.hp = newHP;
-        
-        // === NEW: Track daily catches ===
-        // Reset if it's a new day
-        const lastCatchReset = player.last_catch_reset ? new Date(player.last_catch_reset) : null;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        if (!lastCatchReset || lastCatchReset < today) {
-          updates.daily_catches = 1;
-          updates.last_catch_reset = today.toISOString().split('T')[0];
-        } else {
-          updates.daily_catches = (player.daily_catches || 0) + 1;
-        }
-        updates.total_times_caught = (player.total_times_caught || 0) + 1;
-        
-        // If HP reaches 0, send to hospital instead of jail
-        if (newHP === 0) {
-          const hospitalUntil = new Date();
-          hospitalUntil.setMinutes(hospitalUntil.getMinutes() + 30);
-          updates.hospital_until = hospitalUntil.toISOString();
+        // Failed crime
+        if (crimeResult.in_hospital) {
           setMessage({ 
             type: 'error', 
-            text: `Failed! You ran out of HP and are sent to hospital for 30 minutes! (${Math.round(successChance)}% chance)` 
+            text: `Failed! You ran out of HP and are sent to hospital for 30 minutes! (${Math.round(crimeResult.success_chance)}% chance)` 
           });
         } else {
-          updates.jail_until = jailUntil.toISOString();
-          const catchCount = updates.daily_catches;
+          const catchCount = crimeResult.daily_catches || 1;
           const catchWarning = catchCount > 1 ? ` 🔴 Caught ${catchCount}x today!` : '';
           setMessage({ 
             type: 'error', 
-            text: `Failed! You're in jail for ${jailTime} min (-${robbery.hp_loss_on_fail} HP).${catchWarning} [${Math.round(successChance)}% success]` 
+            text: `Failed! You're in jail for ${crimeResult.jail_time || 0} min (-${crimeResult.hp_lost || 0} HP).${catchWarning} [${Math.round(crimeResult.success_chance)}% success]` 
           });
         }
         
         showEventMessage('jail_crime');
       }
 
-      const xpForNextLevel = player.level * 100;
-      if (updates.xp >= xpForNextLevel) {
-        updates.level = player.level + 1;
-        updates.xp = updates.xp - xpForNextLevel;
-        setMessage({ 
-          type: 'success', 
-          text: `Level Up! You are now level ${updates.level}!` 
-        });
-      }
-
-      const { data, error } = await supabase
+      // Refresh player data from server
+      const { data: updatedPlayer, error: fetchError } = await supabase
         .from('the_life_players')
-        .update(updates)
+        .select('*')
         .eq('user_id', user.id)
-        .select()
         .single();
 
-      if (error) throw error;
-
-      let jailMultiplierForLog = levelDifference < 0 ? 1 + (Math.abs(levelDifference) * 0.5) : 1;
-      const actualJailTime = success ? 0 : Math.floor(robbery.jail_time_minutes * jailMultiplierForLog);
-      const xpEarned = success ? robbery.xp_reward : Math.floor(robbery.xp_reward / 2);
-      
-      await supabase.from('the_life_robbery_history').insert({
-        player_id: player.id,
-        robbery_id: robbery.id,
-        success,
-        reward,
-        xp_gained: xpEarned,
-        jail_time_minutes: actualJailTime
-      });
+      if (!fetchError && updatedPlayer) {
+        setPlayer(updatedPlayer);
+      }
 
       // Add XP to Season Pass
-      await addSeasonPassXP(user.id, xpEarned, 'crime', robbery.id.toString());
+      if (crimeResult.xp_gained > 0) {
+        await addSeasonPassXP(user.id, crimeResult.xp_gained, 'crime', robbery.id.toString());
+      }
 
-      setPlayer(data);
     } catch (err) {
       console.error('Error attempting robbery:', err);
       setMessage({ type: 'error', text: 'An error occurred' });
@@ -348,8 +210,8 @@ export default function TheLifeCrimes({
           const defaultImage = 'https://images.unsplash.com/photo-1509099836639-18ba1795216d?w=500';
           const imageUrl = robbery.image_url || defaultImage;
           
-          // Use the same calculation function for accurate display
-          const displaySuccessChance = calculateSuccessChance(robbery);
+          // Use display calculation function for UI (actual roll is server-side)
+          const displaySuccessChance = calculateDisplaySuccessChance(robbery);
           
           const isLoading = loading && cooldownCrimeId === robbery.id;
           const isDisabled = player.level < robbery.min_level_required || isInJail || isInHospital || player.stamina < robbery.stamina_cost || loading;
