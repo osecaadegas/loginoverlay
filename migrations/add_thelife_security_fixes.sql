@@ -619,8 +619,9 @@ BEGIN
   v_remaining_minutes := EXTRACT(EPOCH FROM (v_player.jail_until - NOW())) / 60;
   v_total_wealth := COALESCE(v_player.cash, 0) + COALESCE(v_player.bank_balance, 0);
   
-  -- Bribe is 5% of wealth per minute remaining, min 100, max 50% of wealth
-  v_bribe_percentage := LEAST(v_remaining_minutes * 5, 50);
+  -- Bribe is base 5% + 2% per 30 minutes remaining, max 50%
+  -- This matches frontend calculation in gameUtils.js
+  v_bribe_percentage := LEAST(5 + (FLOOR(v_remaining_minutes / 30) * 2), 50);
   v_bribe_amount := GREATEST(
     100,
     FLOOR(v_total_wealth * (v_bribe_percentage / 100))
