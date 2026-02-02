@@ -672,6 +672,11 @@ CREATE TABLE IF NOT EXISTS the_life_action_cooldowns (
 -- Enable RLS
 ALTER TABLE the_life_action_cooldowns ENABLE ROW LEVEL SECURITY;
 
+-- Drop existing policies if they exist (for re-running migration)
+DROP POLICY IF EXISTS "Users can view own cooldowns" ON the_life_action_cooldowns;
+DROP POLICY IF EXISTS "Users can insert own cooldowns" ON the_life_action_cooldowns;
+DROP POLICY IF EXISTS "Users can update own cooldowns" ON the_life_action_cooldowns;
+
 CREATE POLICY "Users can view own cooldowns"
   ON the_life_action_cooldowns FOR SELECT
   USING (auth.uid() = user_id);
@@ -923,3 +928,399 @@ END;
 $$;
 
 GRANT EXECUTE ON FUNCTION collect_brothel_income() TO authenticated;
+
+
+-- =====================================================
+-- 12. LEVEL/XP PROTECTION SYSTEM
+-- =====================================================
+
+-- Add level cap constraint (max level 200)
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'the_life_players_level_cap'
+  ) THEN
+    -- First fix any existing invalid data
+    UPDATE the_life_players SET level = 200 WHERE level > 200;
+    UPDATE the_life_players SET level = 1 WHERE level < 1;
+    
+    ALTER TABLE the_life_players 
+    ADD CONSTRAINT the_life_players_level_cap CHECK (level >= 1 AND level <= 200);
+  END IF;
+END $$;
+
+-- Add XP bounds constraint
+DO $$ 
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_constraint WHERE conname = 'the_life_players_xp_bounds'
+  ) THEN
+    -- Fix any existing negative XP
+    UPDATE the_life_players SET xp = 0 WHERE xp < 0;
+    
+    ALTER TABLE the_life_players 
+    ADD CONSTRAINT the_life_players_xp_bounds CHECK (xp >= 0);
+  END IF;
+END $$;
+
+
+-- =====================================================
+-- 13. AUTO LEVEL-UP TRIGGER
+-- =====================================================
+CREATE OR REPLACE FUNCTION auto_level_up()
+RETURNS TRIGGER AS $$
+BEGIN
+  -- Safety: cap level at 200
+  IF NEW.level > 200 THEN
+    NEW.level := 200;
+    NEW.xp := 0;
+    RETURN NEW;
+  END IF;
+  
+  -- Auto level-up while XP >= required (level * 100)
+  WHILE NEW.xp >= (NEW.level * 100) AND NEW.level < 200 LOOP
+    NEW.xp := NEW.xp - (NEW.level * 100);
+    NEW.level := NEW.level + 1;
+    -- Grant small stat bonuses on level up
+    NEW.max_hp := COALESCE(NEW.max_hp, 100) + 5;
+    NEW.max_stamina := COALESCE(NEW.max_stamina, 300) + 2;
+  END LOOP;
+  
+  -- If at max level, cap XP at threshold - 1
+  IF NEW.level >= 200 THEN
+    NEW.xp := LEAST(NEW.xp, 19999);
+  END IF;
+  
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+DROP TRIGGER IF EXISTS trigger_auto_level_up ON the_life_players;
+CREATE TRIGGER trigger_auto_level_up
+  BEFORE INSERT OR UPDATE OF xp, level ON the_life_players
+  FOR EACH ROW
+  EXECUTE FUNCTION auto_level_up();
+
+
+-- =====================================================
+-- 14. BLOCK DIRECT PLAYER STAT UPDATES (CRITICAL!)
+-- =====================================================
+-- This prevents players from using supabase.update() to cheat
+
+-- First, drop ALL permissive update policies
+DROP POLICY IF EXISTS "Users can update own player" ON the_life_players;
+DROP POLICY IF EXISTS "Users can update own player data" ON the_life_players;
+DROP POLICY IF EXISTS "Users can update own player - safe columns only" ON the_life_players;
+DROP POLICY IF EXISTS "Users can update own player - restricted" ON the_life_players;
+
+-- Create a policy that ONLY allows updating safe columns
+-- Protected columns: level, xp, cash, bank_balance, power, defense, intelligence
+-- Safe columns: avatar_url, se_username, twitch_username, equipped items, etc.
+CREATE POLICY "Users can update own player - safe columns only" ON the_life_players
+    FOR UPDATE
+    USING (auth.uid() = user_id)
+    WITH CHECK (
+      auth.uid() = user_id AND
+      -- These columns MUST NOT be changed via direct update
+      -- They must equal their current database values
+      level IS NOT DISTINCT FROM (SELECT level FROM the_life_players WHERE user_id = auth.uid()) AND
+      xp IS NOT DISTINCT FROM (SELECT xp FROM the_life_players WHERE user_id = auth.uid()) AND
+      cash IS NOT DISTINCT FROM (SELECT cash FROM the_life_players WHERE user_id = auth.uid()) AND
+      bank_balance IS NOT DISTINCT FROM (SELECT bank_balance FROM the_life_players WHERE user_id = auth.uid()) AND
+      power IS NOT DISTINCT FROM (SELECT power FROM the_life_players WHERE user_id = auth.uid()) AND
+      defense IS NOT DISTINCT FROM (SELECT defense FROM the_life_players WHERE user_id = auth.uid()) AND
+      intelligence IS NOT DISTINCT FROM (SELECT intelligence FROM the_life_players WHERE user_id = auth.uid()) AND
+      hp IS NOT DISTINCT FROM (SELECT hp FROM the_life_players WHERE user_id = auth.uid()) AND
+      max_hp IS NOT DISTINCT FROM (SELECT max_hp FROM the_life_players WHERE user_id = auth.uid()) AND
+      stamina IS NOT DISTINCT FROM (SELECT stamina FROM the_life_players WHERE user_id = auth.uid()) AND
+      max_stamina IS NOT DISTINCT FROM (SELECT max_stamina FROM the_life_players WHERE user_id = auth.uid()) AND
+      pvp_wins IS NOT DISTINCT FROM (SELECT pvp_wins FROM the_life_players WHERE user_id = auth.uid()) AND
+      pvp_losses IS NOT DISTINCT FROM (SELECT pvp_losses FROM the_life_players WHERE user_id = auth.uid()) AND
+      total_robberies IS NOT DISTINCT FROM (SELECT total_robberies FROM the_life_players WHERE user_id = auth.uid()) AND
+      successful_robberies IS NOT DISTINCT FROM (SELECT successful_robberies FROM the_life_players WHERE user_id = auth.uid())
+    );
+
+
+-- =====================================================
+-- 15. SERVER-SIDE ITEM USAGE (XP BOOST FIX)
+-- =====================================================
+CREATE OR REPLACE FUNCTION use_consumable_item(
+  p_inventory_id UUID
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_player RECORD;
+  v_inventory RECORD;
+  v_item RECORD;
+  v_effect JSONB;
+  v_effect_type TEXT;
+  v_effect_value INTEGER;
+  v_new_hp INTEGER;
+  v_new_stamina INTEGER;
+  v_new_addiction INTEGER;
+BEGIN
+  -- Get player with lock
+  SELECT * INTO v_player 
+  FROM the_life_players 
+  WHERE user_id = auth.uid()
+  FOR UPDATE;
+  
+  IF v_player IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Player not found');
+  END IF;
+  
+  -- Get inventory item with lock (verify ownership!)
+  SELECT * INTO v_inventory
+  FROM the_life_player_inventory
+  WHERE id = p_inventory_id AND player_id = v_player.id
+  FOR UPDATE;
+  
+  IF v_inventory IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Item not in your inventory');
+  END IF;
+  
+  -- Get item data FROM DATABASE (NOT from client!)
+  SELECT * INTO v_item
+  FROM the_life_items
+  WHERE id = v_inventory.item_id;
+  
+  IF v_item IS NULL OR v_item.effect IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Item has no effect');
+  END IF;
+  
+  -- Parse effect from SERVER-STORED value
+  v_effect := v_item.effect::JSONB;
+  v_effect_type := v_effect->>'type';
+  v_effect_value := COALESCE((v_effect->>'value')::INTEGER, 0);
+  
+  -- Apply effect based on type
+  CASE v_effect_type
+    WHEN 'heal' THEN
+      v_new_hp := LEAST(v_player.max_hp, v_player.hp + v_effect_value);
+      UPDATE the_life_players SET hp = v_new_hp WHERE user_id = auth.uid();
+      
+    WHEN 'stamina' THEN
+      v_new_stamina := LEAST(v_player.max_stamina, v_player.stamina + v_effect_value);
+      v_new_addiction := v_player.addiction;
+      
+      -- Handle addiction if item has it
+      IF (v_effect->>'addiction') IS NOT NULL THEN
+        v_new_addiction := LEAST(
+          COALESCE(v_player.max_addiction, 100), 
+          COALESCE(v_player.addiction, 0) + (v_effect->>'addiction')::INTEGER
+        );
+        
+        -- Overdose check
+        IF v_new_addiction >= 100 THEN
+          UPDATE the_life_players 
+          SET stamina = v_new_stamina,
+              addiction = v_new_addiction,
+              hp = 0,
+              hospital_until = NOW() + INTERVAL '30 minutes'
+          WHERE user_id = auth.uid();
+          
+          -- Consume item
+          IF v_inventory.quantity > 1 THEN
+            UPDATE the_life_player_inventory SET quantity = quantity - 1 WHERE id = p_inventory_id;
+          ELSE
+            DELETE FROM the_life_player_inventory WHERE id = p_inventory_id;
+          END IF;
+          
+          RETURN jsonb_build_object(
+            'success', true,
+            'overdose', true,
+            'message', 'OVERDOSE! Your addiction hit 100! You collapsed!'
+          );
+        END IF;
+      END IF;
+      
+      UPDATE the_life_players 
+      SET stamina = v_new_stamina, addiction = v_new_addiction 
+      WHERE user_id = auth.uid();
+      
+    WHEN 'xp_boost' THEN
+      -- SERVER controls XP amount - no client manipulation possible!
+      UPDATE the_life_players 
+      SET xp = xp + v_effect_value  -- This triggers auto_level_up
+      WHERE user_id = auth.uid();
+      
+    WHEN 'cash' THEN
+      UPDATE the_life_players 
+      SET cash = cash + v_effect_value 
+      WHERE user_id = auth.uid();
+      
+    WHEN 'jail_free' THEN
+      IF v_player.jail_until IS NULL OR v_player.jail_until <= NOW() THEN
+        RETURN jsonb_build_object('success', false, 'error', 'You are not in jail');
+      END IF;
+      UPDATE the_life_players SET jail_until = NULL WHERE user_id = auth.uid();
+      
+    ELSE
+      RETURN jsonb_build_object('success', false, 'error', 'Unknown effect type');
+  END CASE;
+  
+  -- Consume item from inventory
+  IF v_inventory.quantity > 1 THEN
+    UPDATE the_life_player_inventory SET quantity = quantity - 1 WHERE id = p_inventory_id;
+  ELSE
+    DELETE FROM the_life_player_inventory WHERE id = p_inventory_id;
+  END IF;
+  
+  RETURN jsonb_build_object(
+    'success', true,
+    'effect_type', v_effect_type,
+    'effect_value', v_effect_value,
+    'message', 'Used ' || v_item.name || '!'
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION use_consumable_item(UUID) TO authenticated;
+
+
+-- =====================================================
+-- 16. SERVER-SIDE SEASON PASS REWARD CLAIM
+-- =====================================================
+CREATE OR REPLACE FUNCTION claim_season_pass_reward(
+  p_tier INTEGER,
+  p_reward_type TEXT,  -- 'free' or 'premium' or 'budget'
+  p_season_id INTEGER DEFAULT NULL
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+DECLARE
+  v_user_id UUID;
+  v_progress RECORD;
+  v_reward RECORD;
+  v_player RECORD;
+  v_season_id INTEGER;
+  v_reward_column TEXT;
+  v_claimed_array INTEGER[];
+BEGIN
+  v_user_id := auth.uid();
+  
+  IF v_user_id IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Not authenticated');
+  END IF;
+  
+  -- Get current season if not specified
+  v_season_id := COALESCE(p_season_id, 1);
+  
+  -- Get user's season pass progress with lock
+  SELECT * INTO v_progress
+  FROM season_pass_progress
+  WHERE user_id = v_user_id AND season_id = v_season_id
+  FOR UPDATE;
+  
+  IF v_progress IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'No season pass progress found');
+  END IF;
+  
+  -- Check if tier is unlocked
+  IF v_progress.current_tier < p_tier THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Tier not yet unlocked');
+  END IF;
+  
+  -- Check if user has access to this reward track
+  IF p_reward_type = 'premium' AND NOT v_progress.has_premium THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Premium not purchased');
+  END IF;
+  
+  IF p_reward_type = 'budget' AND NOT v_progress.has_budget THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Budget pass not purchased');
+  END IF;
+  
+  -- Determine which claimed array to check
+  v_reward_column := CASE p_reward_type
+    WHEN 'free' THEN 'claimed_free_rewards'
+    WHEN 'premium' THEN 'claimed_premium_rewards'
+    WHEN 'budget' THEN 'claimed_budget_rewards'
+    ELSE 'claimed_free_rewards'
+  END;
+  
+  -- Check if already claimed
+  EXECUTE format('SELECT %I FROM season_pass_progress WHERE user_id = $1 AND season_id = $2', v_reward_column)
+  INTO v_claimed_array
+  USING v_user_id, v_season_id;
+  
+  IF p_tier = ANY(COALESCE(v_claimed_array, ARRAY[]::INTEGER[])) THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Reward already claimed');
+  END IF;
+  
+  -- Get reward data FROM DATABASE (not client!)
+  SELECT * INTO v_reward
+  FROM season_pass_rewards
+  WHERE season_id = v_season_id 
+    AND tier = p_tier 
+    AND track = p_reward_type;
+  
+  IF v_reward IS NULL THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Reward not found');
+  END IF;
+  
+  -- Get player for TheLife rewards
+  SELECT * INTO v_player
+  FROM the_life_players
+  WHERE user_id = v_user_id
+  FOR UPDATE;
+  
+  -- Grant the reward based on type (SERVER controls amounts!)
+  CASE v_reward.type
+    WHEN 'xp' THEN
+      IF v_player IS NOT NULL THEN
+        UPDATE the_life_players 
+        SET xp = xp + COALESCE(v_reward.xp_amount, v_reward.quantity, 0)
+        WHERE user_id = v_user_id;
+      END IF;
+      
+    WHEN 'cash' THEN
+      IF v_player IS NOT NULL THEN
+        UPDATE the_life_players 
+        SET cash = cash + COALESCE(v_reward.cash_amount, v_reward.quantity, 0)
+        WHERE user_id = v_user_id;
+      END IF;
+      
+    WHEN 'stamina' THEN
+      IF v_player IS NOT NULL THEN
+        UPDATE the_life_players 
+        SET stamina = LEAST(max_stamina, stamina + COALESCE(v_reward.quantity, 0))
+        WHERE user_id = v_user_id;
+      END IF;
+      
+    WHEN 'item' THEN
+      IF v_player IS NOT NULL AND v_reward.item_id IS NOT NULL THEN
+        INSERT INTO the_life_player_inventory (player_id, item_id, quantity)
+        VALUES (v_player.id, v_reward.item_id, COALESCE(v_reward.quantity, 1))
+        ON CONFLICT (player_id, item_id)
+        DO UPDATE SET quantity = the_life_player_inventory.quantity + COALESCE(v_reward.quantity, 1);
+      END IF;
+      
+    ELSE
+      -- Unknown reward type - log but don't fail
+      NULL;
+  END CASE;
+  
+  -- Mark as claimed
+  EXECUTE format(
+    'UPDATE season_pass_progress SET %I = array_append(COALESCE(%I, ARRAY[]::INTEGER[]), $1) WHERE user_id = $2 AND season_id = $3',
+    v_reward_column, v_reward_column
+  )
+  USING p_tier, v_user_id, v_season_id;
+  
+  RETURN jsonb_build_object(
+    'success', true,
+    'reward_type', v_reward.type,
+    'quantity', COALESCE(v_reward.quantity, v_reward.xp_amount, v_reward.cash_amount),
+    'message', 'Reward claimed!'
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION claim_season_pass_reward(INTEGER, TEXT, INTEGER) TO authenticated;
