@@ -2261,13 +2261,24 @@ export default function AdminPanel() {
     }
 
     try {
+      // Calculate auto values
+      const startVal = parseFloat(guessSessionFormData.start_value) || 0;
+      const finalBal = guessSessionFormData.final_balance ? parseFloat(guessSessionFormData.final_balance) : null;
+      const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+      
+      // BE Multiplier = (Final Balance / Start Value) / Total Bets
+      let beMultiplier = 1.0;
+      if (startVal > 0 && totalBets > 0 && finalBal) {
+        beMultiplier = (finalBal / startVal) / totalBets;
+      }
+
       const sessionData = {
         title: guessSessionFormData.title,
         description: guessSessionFormData.description,
-        start_value: parseFloat(guessSessionFormData.start_value) || 0,
-        amount_expended: parseFloat(guessSessionFormData.amount_expended) || 0,
-        be_multiplier: parseFloat(guessSessionFormData.be_multiplier) || 1.0,
-        final_balance: guessSessionFormData.final_balance ? parseFloat(guessSessionFormData.final_balance) : null,
+        start_value: startVal,
+        amount_expended: totalBets,
+        be_multiplier: beMultiplier,
+        final_balance: finalBal,
         casino_brand: guessSessionFormData.casino_brand,
         casino_image_url: guessSessionFormData.casino_image_url,
         is_guessing_open: guessSessionFormData.is_guessing_open,
@@ -6266,7 +6277,7 @@ export default function AdminPanel() {
                   </div>
 
                   <div className="form-section-title">💵 Money Settings</div>
-                  <div className="form-row four-cols">
+                  <div className="form-row two-cols">
                     <div className="form-group">
                       <label>Start Value (€)</label>
                       <input
@@ -6278,36 +6289,48 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Amount Expended (€)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={guessSessionFormData.amount_expended}
-                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, amount_expended: e.target.value})}
-                        placeholder="500.00"
-                      />
-                      <small>Auto-calculated from slots</small>
-                    </div>
-                    <div className="form-group">
-                      <label>BE Multiplier (x)</label>
-                      <input
-                        type="number"
-                        step="0.01"
-                        value={guessSessionFormData.be_multiplier}
-                        onChange={(e) => setGuessSessionFormData({...guessSessionFormData, be_multiplier: e.target.value})}
-                        placeholder="1.0"
-                      />
-                    </div>
-                    <div className="form-group">
                       <label>Final Balance (€)</label>
                       <input
                         type="number"
                         step="0.01"
                         value={guessSessionFormData.final_balance}
                         onChange={(e) => setGuessSessionFormData({...guessSessionFormData, final_balance: e.target.value})}
-                        placeholder="Leave empty until end"
+                        placeholder="Set when session ends"
                       />
-                      <small>Set when session ends</small>
+                      <small className="form-hint">Set when session ends</small>
+                    </div>
+                  </div>
+                  <div className="form-row two-cols">
+                    <div className="form-group">
+                      <label>Amount Expended (€)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0).toFixed(2)}
+                        readOnly
+                        className="readonly-input"
+                      />
+                      <small className="form-hint">Auto-calculated from slots</small>
+                    </div>
+                    <div className="form-group">
+                      <label>BE Multiplier (x)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={(() => {
+                          const startVal = parseFloat(guessSessionFormData.start_value) || 0;
+                          const finalBal = parseFloat(guessSessionFormData.final_balance) || 0;
+                          const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
+                          if (startVal > 0 && totalBets > 0 && finalBal > 0) {
+                            return ((finalBal / startVal) / totalBets).toFixed(2);
+                          }
+                          return '';
+                        })()}
+                        readOnly
+                        className="readonly-input"
+                        placeholder="Auto-calculated"
+                      />
+                      <small className="form-hint">= (Final ÷ Start) ÷ Total Bets</small>
                     </div>
                   </div>
 
