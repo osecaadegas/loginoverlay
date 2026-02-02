@@ -69,7 +69,7 @@ export default function GuessBalancePage() {
         .from('guess_balance_slots')
         .select('*')
         .eq('session_id', sessionId)
-        .order('display_order', { ascending: true });
+        .order('bet_value', { ascending: true });
 
       if (slotsError) throw slotsError;
       setSlots(slotsData || []);
@@ -352,9 +352,9 @@ export default function GuessBalancePage() {
         totalSlots: 0,
         openedSlots: 0,
         totalWinnings: 0,
-        avgMulti: 0,
-        profit: 0,
-        currentBE: 0
+        currentBE: 0,
+        totalBets: 0,
+        currentBalance: 0
       };
     }
 
@@ -362,24 +362,26 @@ export default function GuessBalancePage() {
     const totalWinnings = slots.reduce((sum, s) => sum + (parseFloat(s.bonus_win) || 0), 0);
     const totalBets = slots.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
     
-    const multipliers = slots.filter(s => s.multiplier !== null).map(s => parseFloat(s.multiplier));
-    const avgMulti = multipliers.length > 0 ? multipliers.reduce((a, b) => a + b, 0) / multipliers.length : 0;
-    
     const startValue = parseFloat(activeSession.start_value) || 0;
+    
+    // Current Balance = Start - Stop (amount expended) + Total Winnings
+    // But for display: Stop shows how much has been spent (amount expended)
     const amountExpended = parseFloat(activeSession.amount_expended) || totalBets;
     const currentBalance = startValue - amountExpended + totalWinnings;
-    const profit = currentBalance - startValue;
     
-    const currentBE = amountExpended > 0 ? (amountExpended / totalWinnings) : 0;
+    // Current BE = (Start - Stop) / Total Bets = Current Balance / Total Bets
+    // Actually per user: Current BE = (Start - Stop) / Final Bet
+    // Where (Start - Stop) = remaining after spending = currentBalance
+    const currentBE = totalBets > 0 ? (currentBalance / totalBets) : 0;
 
     return {
       totalSlots: slots.length,
       openedSlots,
       totalWinnings,
-      avgMulti,
-      profit,
       currentBE,
-      totalBets: amountExpended
+      totalBets,
+      currentBalance,
+      amountExpended
     };
   };
 
@@ -584,7 +586,7 @@ export default function GuessBalancePage() {
                     <div className="stat-item">
                       <span className="stat-icon">□</span>
                       <span className="stat-label">STOP</span>
-                      <span className="stat-value">0€</span>
+                      <span className="stat-value">{formatCurrency(stats.amountExpended)}</span>
                     </div>
                     <div className="stat-item">
                       <span className="stat-icon">⚐</span>
@@ -612,27 +614,15 @@ export default function GuessBalancePage() {
                     <div className="stat-box">
                       <span className="box-icon">⚡</span>
                       <span className="box-label">CURRENT BE</span>
-                      <span className="box-value">{stats.currentBE.toFixed(2)}x</span>
+                      <span className="box-value">
+                        {stats.currentBE === Infinity || !isFinite(stats.currentBE) ? 'Infinity' : stats.currentBE.toFixed(2)}x
+                      </span>
                     </div>
 
                     <div className="stat-box">
                       <span className="box-icon">◎</span>
                       <span className="box-label">INITIAL BE</span>
                       <span className="box-value">{formatMultiplier(activeSession?.be_multiplier)}</span>
-                    </div>
-
-                    <div className="stat-box">
-                      <span className="box-icon">↗</span>
-                      <span className="box-label">AVG MULTI</span>
-                      <span className="box-value">{stats.avgMulti.toFixed(2)}x</span>
-                    </div>
-
-                    <div className="stat-box">
-                      <span className="box-icon">↓</span>
-                      <span className="box-label">PROFIT</span>
-                      <span className={`box-value ${stats.profit >= 0 ? 'positive' : 'negative'}`}>
-                        {stats.profit >= 0 ? '+' : ''}{formatCurrency(stats.profit)}
-                      </span>
                     </div>
                   </div>
 
