@@ -181,7 +181,6 @@ const FilterPanel = memo(({
 
   if (isCollapsed) {
     return null;
-    );
   }
 
   return (
