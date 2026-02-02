@@ -408,8 +408,6 @@
   color: var(--pm-text-primary);
   border-color: var(--pm-border-hover);
 }
-  font-weight: 600;
-}
 
 /* Mod Actions */
 .pm-mod-actions {
