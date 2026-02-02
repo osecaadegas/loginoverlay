@@ -249,8 +249,8 @@
 
 .pm-table th {
   text-align: left;
-  padding: 12px 20px;
-  font-size: 0.75rem;
+  padding: 8px 12px;
+  font-size: 0.7rem;
   font-weight: 500;
   color: var(--pm-text-muted);
   text-transform: uppercase;
@@ -261,10 +261,10 @@
 }
 
 .pm-table td {
-  padding: 16px 20px;
+  padding: 6px 12px;
   border-bottom: 1px solid var(--pm-border);
   color: var(--pm-text-primary);
-  font-size: 0.875rem;
+  font-size: 0.8rem;
   vertical-align: middle;
 }
 
@@ -291,27 +291,30 @@
 .pm-user-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
 }
 
 .pm-username {
   font-weight: 500;
+  font-size: 0.8rem;
   color: var(--pm-text-primary);
+  line-height: 1.3;
 }
 
 .pm-email {
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--pm-text-muted);
+  line-height: 1.2;
 }
 
 /* Status Badges */
 .pm-status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.75rem;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 500;
 }
 
@@ -338,12 +341,12 @@
 }
 
 .pm-approve-btn {
-  padding: 6px 12px;
+  padding: 3px 8px;
   background: var(--pm-success-bg);
   color: var(--pm-success);
   border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -354,12 +357,12 @@
 }
 
 .pm-deny-btn {
-  padding: 6px 12px;
+  padding: 3px 8px;
   background: var(--pm-danger-bg);
   color: var(--pm-danger);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -375,9 +378,9 @@
 }
 
 .pm-status {
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 500;
 }
 
@@ -392,12 +395,12 @@
 }
 
 .pm-action-btn {
-  padding: 6px 12px;
+  padding: 3px 8px;
   background: transparent;
   border: 1px solid var(--pm-border);
-  border-radius: 6px;
+  border-radius: 4px;
   color: var(--pm-text-secondary);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -416,12 +419,12 @@
 }
 
 .pm-add-points-btn {
-  padding: 6px 12px;
+  padding: 3px 8px;
   background: var(--pm-success-bg);
   color: var(--pm-success);
   border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -432,12 +435,12 @@
 }
 
 .pm-remove-points-btn {
-  padding: 6px 12px;
+  padding: 3px 8px;
   background: var(--pm-danger-bg);
   color: var(--pm-danger);
   border: 1px solid rgba(239, 68, 68, 0.2);
-  border-radius: 6px;
-  font-size: 0.8rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -1194,9 +1197,9 @@
 .pm-game-badge {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 6px;
-  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
   font-weight: 500;
   background: rgba(99, 102, 241, 0.1);
   color: var(--pm-accent);
