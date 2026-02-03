@@ -80,7 +80,7 @@ class AntiCheatLogger {
     try {
       // Get current balance
       const { data: player } = await supabase
-        .from('players')
+        .from('the_life_players')
         .select('cash, bank')
         .eq('id', playerId)
         .single();
@@ -481,7 +481,7 @@ class AntiCheatLogger {
 
       if (Object.keys(updates).length > 0) {
         await supabase
-          .from('players')
+          .from('the_life_players')
           .update(updates)
           .eq('id', playerId);
 
@@ -547,9 +547,9 @@ class AntiCheatLogger {
         })
         .eq('player_id', playerId);
 
-      // Update players table
+      // Update the_life_players table
       await supabase
-        .from('players')
+        .from('the_life_players')
         .update({ risk_score: score })
         .eq('id', playerId);
 

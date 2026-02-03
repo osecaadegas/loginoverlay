@@ -20,10 +20,20 @@ export class SessionTracker {
     if (this.isActive) return;
 
     try {
-      // Get IP from server (more reliable than client-side)
-      const ipResponse = await fetch('/api/get-client-ip');
-      const ipData = await ipResponse.json();
-      const ipAddress = ipData.ip || null;
+      // Get IP from server (more reliable than client-side) - non-blocking
+      let ipAddress = null;
+      try {
+        const ipResponse = await fetch('/api/get-client-ip', { 
+          signal: AbortSignal.timeout(3000) // 3 second timeout
+        });
+        if (ipResponse.ok) {
+          const ipData = await ipResponse.json();
+          ipAddress = ipData.ip || null;
+        }
+      } catch (ipError) {
+        console.warn('Failed to fetch IP (non-critical):', ipError);
+        ipAddress = null; // Continue without IP
+      }
 
       // Create session record
       const { data: session, error } = await supabase
