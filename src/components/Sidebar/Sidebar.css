@@ -1,23 +1,80 @@
 /* Import Google Font for Neon Effect */
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
-/* Full-height Sidebar */
+/* ===== RESPONSIVE SIDEBAR SYSTEM ===== */
+
+/* Full-height Sidebar - Mobile First */
 .sidebar {
   position: fixed;
   top: 0;
-  left: 0;
-  width: 260px;
+  left: -100%;
+  width: 85vw;
+  max-width: 320px;
   height: 100vh;
   background: rgba(30, 33, 39, 0.98);
   backdrop-filter: blur(10px);
   border-right: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 4px 0 20px rgba(0, 0, 0, 0.3);
-  z-index: 1000;
+  z-index: 9999;
   display: flex;
   flex-direction: column;
   border-radius: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: 20px 16px;
+  transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Sidebar open state - mobile */
+.sidebar.open {
+  left: 0;
+}
+
+/* Overlay backdrop for mobile */
+.sidebar-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+  z-index: 9998;
+}
+
+.sidebar-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Tablet: Narrow persistent sidebar */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .sidebar {
+    left: 0;
+    width: 220px;
+    z-index: 1000;
+  }
+  
+  .sidebar-backdrop {
+    display: none;
+  }
+}
+
+/* Desktop: Full sidebar */
+@media (min-width: 1025px) {
+  .sidebar {
+    left: 0;
+    width: 260px;
+    z-index: 1000;
+  }
+  
+  .sidebar-backdrop {
+    display: none;
+  }
 }
 
 /* Logo in Sidebar */

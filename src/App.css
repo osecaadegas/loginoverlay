@@ -7,10 +7,16 @@
 body {
   margin: 0;
   font-family: 'Inter', Arial, sans-serif;
-  background: transparent;
+  background: #0d1117;
   color: #f3f4f6;
   min-height: 100vh;
   position: relative;
+  overflow-x: hidden;
+}
+
+/* Prevent scroll when sidebar open on mobile */
+body.sidebar-open {
+  overflow: hidden;
 }
 
 .app-layout {
@@ -20,34 +26,64 @@ body {
   background: transparent;
 }
 
+/* Main content - responsive margins */
 .main-content {
   flex: 1;
   min-height: 100vh;
-  transition: all 0.3s ease;
+  transition: margin-left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   background: transparent;
   display: flex;
   flex-direction: column;
   width: 100%;
+  margin-left: 0;
 }
 
 .main-content > * {
   width: 100%;
 }
 
-/* Sidebar Toggle Button */
+/* Mobile: Full width, no sidebar margin */
+@media (max-width: 768px) {
+  .main-content {
+    margin-left: 0 !important;
+    width: 100vw;
+  }
+  
+  body.sidebar-open .main-content {
+    pointer-events: none;
+  }
+}
+
+/* Tablet: Narrow sidebar margin */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .main-content {
+    margin-left: 220px;
+  }
+}
+
+/* Desktop: Full sidebar margin */
+@media (min-width: 1025px) {
+  .main-content {
+    margin-left: 260px;
+  }
+}
+
+/* Sidebar Toggle Button - Mobile Only */
 .sidebar-toggle-btn {
   position: fixed;
-  top: 20px;
-  left: 20px;
-  z-index: 1000;
+  top: 16px;
+  left: 16px;
+  z-index: 10000;
   background: rgba(0, 225, 255, 0.9);
   color: #0d1117;
   border: none;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
+  border-radius: 12px;
   cursor: pointer;
-  font-size: 18px;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -57,12 +93,19 @@ body {
 
 .sidebar-toggle-btn:hover {
   background: rgba(0, 225, 255, 1);
-  transform: scale(1.1);
+  transform: scale(1.05);
   box-shadow: 0 6px 16px rgba(0, 225, 255, 0.5);
 }
 
 .sidebar-toggle-btn:active {
   transform: scale(0.95);
+}
+
+/* Hide toggle button on tablet+ */
+@media (min-width: 769px) {
+  .sidebar-toggle-btn {
+    display: none;
+  }
 }
 
 /* Responsive Main Content */

@@ -10,7 +10,7 @@ import { useTranslation, T } from '../../hooks/useTranslation';
 import LanguageSwitcher from '../LanguageSwitcher';
 import './Sidebar.css';
 
-export default function Sidebar() {
+export default function Sidebar({ className = '', onClose }) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showGamesDropdown, setShowGamesDropdown] = useState(false);
@@ -28,7 +28,8 @@ export default function Sidebar() {
   // Close mobile menu when route changes
   useEffect(() => {
     setIsMobileMenuOpen(false);
-  }, [location.pathname]);
+    if (onClose) onClose();
+  }, [location.pathname, onClose]);
 
   // Prevent body scroll when mobile menu is open
   useEffect(() => {
@@ -222,27 +223,7 @@ export default function Sidebar() {
   };
 
   return (
-    <>
-    {/* Mobile Hamburger Button */}
-    <button 
-      className="mobile-menu-toggle"
-      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      aria-label="Toggle menu"
-    >
-      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-    </button>
-
-    {/* Mobile Overlay */}
-    {isMobileMenuOpen && (
-      <div 
-        className="mobile-menu-overlay"
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
-    )}
-
-    <aside className={`sidebar ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+    <aside className={`sidebar ${className}`}>
         {/* Logo */}
         <div className="sidebar-logo">
           <img src="/secalogo.png" alt="Seca Logo" className="sidebar-logo-image" />
@@ -547,6 +528,5 @@ export default function Sidebar() {
         </div>
       </div>
     )}
-    </>
   );
 }

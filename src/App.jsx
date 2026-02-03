@@ -523,25 +523,78 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
 function LayoutWrapper({ children }) {
   const location = useLocation();
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
-  const [sidebarVisible, setSidebarVisible] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
                       !isWidgetRoute;
 
+  // Detect screen size changes
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth <= 768;
+      setIsMobile(mobile);
+      
+      // Auto-close sidebar when switching to desktop
+      if (!mobile && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [sidebarOpen]);
+
+  // Prevent body scroll when sidebar open on mobile
+  useEffect(() => {
+    if (isMobile && sidebarOpen) {
+      document.body.classList.add('sidebar-open');
+    } else {
+      document.body.classList.remove('sidebar-open');
+    }
+    return () => document.body.classList.remove('sidebar-open');
+  }, [sidebarOpen, isMobile]);
+
+  const toggleSidebar = () => {
+    setSidebarOpen(!sidebarOpen);
+  };
+
+  const closeSidebar = () => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="app-layout">
-      {showSidebar && sidebarVisible && <Sidebar />}
       {showSidebar && (
-        <button 
-          className="sidebar-toggle-btn" 
-          onClick={() => setSidebarVisible(!sidebarVisible)}
-          title={sidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
-        >
-          {sidebarVisible ? '◀' : '▶'}
-        </button>
+        <>
+          {/* Mobile toggle button */}
+          {isMobile && (
+            <button 
+              className="sidebar-toggle-btn touch-target" 
+              onClick={toggleSidebar}
+              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+            >
+              {sidebarOpen ? '✕' : '☰'}
+            </button>
+          )}
+          
+          {/* Sidebar with open state */}
+          <Sidebar className={sidebarOpen ? 'open' : ''} onClose={closeSidebar} />
+          
+          {/* Backdrop overlay - mobile only */}
+          {isMobile && sidebarOpen && (
+            <div 
+              className="sidebar-backdrop visible" 
+              onClick={closeSidebar}
+              aria-hidden="true"
+            />
+          )}
+        </>
       )}
-      <div className={showSidebar && sidebarVisible ? 'main-content with-sidebar' : 'main-content'}>
+      <div className="main-content">
         {children}
       </div>
     </div>

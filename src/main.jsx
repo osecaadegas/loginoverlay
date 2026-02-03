@@ -5,6 +5,7 @@ import App from './App.jsx';
 import { queryClient } from './config/queryClient';
 import './index.css';
 import './styles/theme-system.css';
+import './styles/utilities.css';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
