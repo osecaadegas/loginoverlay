@@ -25,7 +25,6 @@ body {
   min-height: 100vh;
   transition: all 0.3s ease;
   background: transparent;
-  width: 100%;
 }
 
 .main-content.with-sidebar {
