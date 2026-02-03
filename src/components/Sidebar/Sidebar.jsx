@@ -223,6 +223,7 @@ export default function Sidebar({ className = '', onClose }) {
   };
 
   return (
+    <>
     <aside className={`sidebar ${className}`}>
         {/* Logo */}
         <div className="sidebar-logo">
@@ -528,5 +529,6 @@ export default function Sidebar({ className = '', onClose }) {
         </div>
       </div>
     )}
+    </>
   );
 }
