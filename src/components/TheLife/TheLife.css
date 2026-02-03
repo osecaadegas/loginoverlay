@@ -5,6 +5,68 @@
 }
 
 /* =============================================
+   DESIGN SYSTEM VARIABLES
+   ============================================= */
+:root {
+  /* Spacing System (8px base) */
+  --space-1: 8px;
+  --space-2: 16px;
+  --space-3: 24px;
+  --space-4: 32px;
+  --space-5: 40px;
+  --space-6: 48px;
+  --space-8: 64px;
+  
+  /* Typography Scale */
+  --text-xs: 0.75rem;    /* 12px */
+  --text-sm: 0.875rem;   /* 14px */
+  --text-base: 1rem;     /* 16px */
+  --text-lg: 1.125rem;   /* 18px */
+  --text-xl: 1.25rem;    /* 20px */
+  --text-2xl: 1.5rem;    /* 24px */
+  --text-3xl: 1.875rem;  /* 30px */
+  --text-4xl: 2.25rem;   /* 36px */
+  --text-5xl: 3rem;      /* 48px */
+  
+  --leading-tight: 1.25;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.75;
+  
+  --weight-normal: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-black: 900;
+  
+  /* Card Dimensions */
+  --card-crime-width: 340px;
+  --card-crime-height: 240px;
+  --card-business-width: 360px;
+  --card-business-min-height: 440px;
+  --card-worker-width: 320px;
+  --card-worker-min-height: 420px;
+  --card-item-width: 180px;
+  --card-item-height: 240px;
+  
+  /* Border Radius */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+  
+  /* Gaps */
+  --gap-inline: 16px;
+  --gap-cards: 24px;
+  --gap-sections: 48px;
+  
+  /* Component Sizes */
+  --btn-height-sm: 40px;
+  --btn-height-md: 44px;
+  --btn-height-lg: 52px;
+}
+
+/* =============================================
    PREVENT IMAGE DRAG FOR SCROLL CONTAINERS
    ============================================= */
 .the-life-container img,
@@ -37,7 +99,7 @@
 
 .the-life-container {
   width: 100%;
-  padding: clamp(10px, 2vw, 20px);
+  padding: var(--space-3, 24px) var(--space-4, 32px);
   min-height: 100vh;
   background: #0d1117 url('https://wallpapers.com/images/hd/gotham-city-1920-x-1080-background-gh854hvhxla18i1z.jpg') center center / cover no-repeat fixed;
   position: relative;

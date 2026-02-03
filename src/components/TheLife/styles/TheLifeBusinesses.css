@@ -5,7 +5,7 @@
 .businesses-section {
   background: linear-gradient(135deg, rgba(30, 30, 35, 0.95) 0%, rgba(20, 20, 25, 0.95) 100%);
   border-radius: 15px;
-  padding: 40px;
+  padding: var(--space-6, 48px);
   border: 2px solid rgba(100, 100, 110, 0.4);
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), inset 0 0 50px rgba(0, 0, 0, 0.3);
 }
@@ -14,12 +14,13 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+  margin-bottom: var(--space-6, 48px);
 }
 
 .businesses-section h2 {
   color: #9ca3af;
-  font-size: 2rem;
+  font-size: var(--text-3xl, 1.875rem);
+  font-weight: var(--weight-bold, 700);
   margin: 0;
   text-shadow: 0 0 10px rgba(156, 163, 175, 0.5), 0 2px 15px rgba(0, 0, 0, 0.8);
 }
@@ -39,12 +40,12 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: var(--gap-inline, 16px);
 }
 
 .businesses-grid {
   display: flex;
-  gap: 20px;
+  gap: var(--gap-cards, 24px);
   overflow-x: auto;
   scroll-behavior: smooth;
   padding: 10px 0;
@@ -72,13 +73,13 @@
 }
 
 .business-card {
-  min-width: 300px;
-  max-width: 300px;
-  width: 300px;
+  min-width: var(--card-business-width, 360px);
+  max-width: var(--card-business-width, 360px);
+  width: var(--card-business-width, 360px);
   flex-shrink: 0;
   background: rgba(25, 25, 30, 0.8);
   border: 1px solid rgba(100, 100, 110, 0.4);
-  border-radius: 8px;
+  border-radius: var(--radius-lg, 12px);
   overflow: hidden;
   transition: all 0.3s;
   position: relative;
