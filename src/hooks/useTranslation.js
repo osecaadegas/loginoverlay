@@ -182,6 +182,7 @@ export const T = {
   NAV_GIVEAWAY_CREATOR: 'nav_giveaway_creator',
   NAV_EDIT_SLOTS: 'nav_edit_slots',
   NAV_ADMIN_PANEL: 'nav_admin_panel',
+  NAV_ANTICHEAT: 'nav_anticheat',
   LOGIN_WITH_TWITCH: 'login_with_twitch',
   LOGOUT: 'nav_logout',
 
