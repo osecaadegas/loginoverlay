@@ -1,0 +1,87 @@
+/* Metric Card Component */
+.metric-card {
+  background: var(--admin-bg-secondary);
+  border: 1px solid var(--admin-border-default);
+  border-radius: 12px;
+  padding: 24px;
+  transition: all var(--admin-transition-fast);
+}
+
+.metric-card:hover {
+  box-shadow: var(--admin-shadow-md);
+  transform: translateY(-2px);
+}
+
+.metric-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.metric-icon {
+  color: var(--admin-text-tertiary);
+  flex-shrink: 0;
+}
+
+.metric-label {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--admin-text-tertiary);
+}
+
+.metric-value {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--admin-text-primary);
+  margin-bottom: 8px;
+  line-height: 1;
+}
+
+.metric-change {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.trend-icon {
+  font-size: 14px;
+  line-height: 1;
+}
+
+.trend-up {
+  color: var(--admin-success);
+}
+
+.trend-down {
+  color: var(--admin-danger);
+}
+
+.trend-neutral {
+  color: var(--admin-text-tertiary);
+}
+
+/* Color Variants */
+.metric-blue .metric-icon {
+  color: #3B82F6;
+}
+
+.metric-green .metric-icon {
+  color: #10B981;
+}
+
+.metric-red .metric-icon {
+  color: #EF4444;
+}
+
+.metric-yellow .metric-icon {
+  color: #F59E0B;
+}
+
+.metric-purple .metric-icon {
+  color: #8B5CF6;
+}

@@ -2,6 +2,8 @@ import { supabase } from '../../../config/supabaseClient';
 import { useRef, useState } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
 import { addSeasonPassXP } from '../hooks/useSeasonPassXP';
+import { antiCheatLogger } from '../../../services/antiCheatLogger';
+import { getActionContext } from '../../../utils/deviceFingerprint';
 import '../styles/TheLifeCrimes.css';
 
 /**
@@ -127,6 +129,41 @@ export default function TheLifeCrimes({
         // Successful crime
         let successMessage = `Success! You earned $${crimeResult.reward?.toLocaleString() || 0} and ${crimeResult.xp_gained || 0} XP! (${Math.round(crimeResult.success_chance)}% chance)`;
         
+        // LOG: Successful crime completion
+        const context = await getActionContext();
+        await antiCheatLogger.logAction(player.id, 'commit_crime', {
+          oldValue: { cash: player.cash, xp: player.xp, hp: player.hp },
+          newValue: { 
+            cash: player.cash + (crimeResult.reward || 0), 
+            xp: player.xp + (crimeResult.xp_gained || 0),
+            hp: player.hp
+          },
+          valueDiff: crimeResult.reward || 0,
+          metadata: {
+            crime_id: robbery.id,
+            crime_name: robbery.name,
+            success: true,
+            reward: crimeResult.reward,
+            xp_gained: crimeResult.xp_gained,
+            success_chance: crimeResult.success_chance,
+            dropped_items: crimeResult.dropped_items || []
+          },
+          ...context
+        });
+        
+        // Log economy transaction
+        if (crimeResult.reward > 0) {
+          await antiCheatLogger.logEconomyTransaction(
+            player.id,
+            'earned',
+            crimeResult.reward,
+            'crime',
+            robbery.id,
+            null,
+            { ...context, crime_name: robbery.name }
+          );
+        }
+        
         // Handle item drops if any
         if (crimeResult.dropped_items && crimeResult.dropped_items.length > 0) {
           successMessage += `\n💎 You also found: ${crimeResult.dropped_items.join(', ')}`;
@@ -146,6 +183,28 @@ export default function TheLifeCrimes({
         }
       } else {
         // Failed crime
+        // LOG: Failed crime attempt
+        const context = await getActionContext();
+        await antiCheatLogger.logAction(player.id, 'commit_crime', {
+          oldValue: { cash: player.cash, hp: player.hp },
+          newValue: { 
+            cash: player.cash, 
+            hp: player.hp - (crimeResult.hp_lost || 0)
+          },
+          valueDiff: 0,
+          metadata: {
+            crime_id: robbery.id,
+            crime_name: robbery.name,
+            success: false,
+            hp_lost: crimeResult.hp_lost,
+            jail_time: crimeResult.jail_time,
+            success_chance: crimeResult.success_chance,
+            daily_catches: crimeResult.daily_catches,
+            in_hospital: crimeResult.in_hospital
+          },
+          ...context
+        });
+        
         if (crimeResult.in_hospital) {
           setMessage({ 
             type: 'error', 
