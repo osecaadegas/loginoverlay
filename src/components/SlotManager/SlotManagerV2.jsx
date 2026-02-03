@@ -341,11 +341,13 @@ const InspectorPanel = memo(({
   if (!slot && !isNew) return null;
 
   return (
-    <div className="inspector-panel" onKeyDown={handleKeyDown}>
-      <div className="inspector-header">
-        <h3>{isNew ? '➕ New Slot' : '✏️ Edit Slot'}</h3>
-        <button className="close-btn" onClick={onClose}>✕</button>
-      </div>
+    <>
+      <div className="inspector-backdrop" onClick={onClose} />
+      <div className="inspector-panel" onKeyDown={handleKeyDown}>
+        <div className="inspector-header">
+          <h3>{isNew ? '➕ New Slot' : '✏️ Edit Slot'}</h3>
+          <button className="close-btn" onClick={onClose}>✕</button>
+        </div>
 
       <div className="inspector-body">
         {/* Image Preview */}
@@ -492,6 +494,7 @@ const InspectorPanel = memo(({
         </div>
       </div>
     </div>
+    </>
   );
 });
 
