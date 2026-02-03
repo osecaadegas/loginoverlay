@@ -8,10 +8,16 @@
 
 .crimes-section h2 {
   color: #d4af37;
-  font-size: var(--text-3xl, 1.875rem);
+  font-size: var(--text-fluid-2xl);
   font-weight: var(--weight-bold, 700);
-  margin-bottom: var(--space-6, 48px);
+  margin-bottom: var(--space-4);
   text-align: center;
+}
+
+@media (min-width: 769px) {
+  .crimes-section h2 {
+    margin-bottom: var(--space-6);
+  }
 }
 
 .crimes-scroll-container {
@@ -33,20 +39,34 @@
   color: #d4af37;
   font-size: var(--text-2xl, 1.5rem);
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
   z-index: 10;
   backdrop-filter: blur(10px);
+  user-select: none;
 }
 
 .scroll-arrow:hover {
   background: rgba(212, 175, 55, 0.35);
   border-color: rgba(212, 175, 55, 0.6);
-  transform: scale(1.1);
+  transform: scale(1.05);
 }
 
 .scroll-arrow:active {
   transform: scale(0.95);
+  transition: all 0.1s ease;
+}
+
+@media (hover: none) {
+  .scroll-arrow:hover {
+    background: rgba(212, 175, 55, 0.2);
+    border-color: rgba(212, 175, 55, 0.4);
+    transform: none;
+  }
+  
+  .scroll-arrow:active {
+    background: rgba(212, 175, 55, 0.3);
+  }
 }
 
 .robberies-grid {
@@ -259,6 +279,37 @@
   z-index: 2;
 }
 
+.crime-button:hover {
+  background: rgba(212, 175, 55, 0.3);
+  color: #ffd700;
+  border-top-color: rgba(212, 175, 55, 0.6);
+}
+
+.crime-button:active {
+  background: rgba(212, 175, 55, 0.4);
+  transform: scale(0.98);
+  transition: all 0.1s;
+}
+
+.crime-button:disabled {
+  background: rgba(100, 100, 100, 0.3);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+}
+
+@media (hover: none) {
+  .crime-button:hover {
+    background: rgba(212, 175, 55, 0.2);
+    color: #f0d68a;
+    border-top-color: rgba(212, 175, 55, 0.4);
+  }
+  
+  .crime-button:active {
+    background: rgba(212, 175, 55, 0.35);
+    transform: scale(0.97);
+  }
+}
+
 .crime-button:hover:not(:disabled) {
   background: rgba(212, 175, 55, 0.35);
   border-top-color: rgba(212, 175, 55, 0.6);
@@ -278,123 +329,113 @@
 }
 
 /* =============================================
-   MOBILE RESPONSIVE
+   RESPONSIVE LAYOUT SYSTEM
    ============================================= */
 
-@media (max-width: 768px) {
-  .robberies-grid {
-    display: flex !important;
-    flex-direction: row !important;
-    flex-wrap: nowrap !important;
-    gap: 12px !important;
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    scroll-snap-type: x mandatory;
-    -webkit-overflow-scrolling: touch;
-    padding: 10px 5px !important;
+/* Mobile: Vertical stack (≤480px) */
+@media (max-width: 480px) {
+  .crimes-scroll-container {
+    flex-direction: column;
+    gap: var(--space-3);
   }
-
-  .crime-card {
-    min-width: 280px !important;
-    max-width: 280px !important;
-    width: 280px !important;
-    height: 220px !important;
-    flex-shrink: 0 !important;
-    display: flex !important;
-    flex-direction: column !important;
-    background: rgba(26, 31, 46, 0.95);
-    border-radius: 12px;
-    border: 2px solid rgba(212, 175, 55, 0.3);
-    overflow: hidden;
-    position: relative;
-    scroll-snap-align: center;
-  }
-
-  .crime-image-container {
-    position: relative;
-    width: 100% !important;
-    flex: 1 !important;
-    min-height: 0 !important;
-    overflow: hidden;
-  }
-
-  .crime-image {
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover;
-    display: block;
-  }
-
-  .crime-overlay-top {
-    position: absolute !important;
-    top: 0;
-    left: 0;
-    right: 0;
-    background: linear-gradient(to bottom, rgba(0,0,0,0.7), transparent) !important;
-    padding: 12px !important;
-    display: flex !important;
-    flex-direction: row !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    z-index: 2;
-  }
-
-  .crime-title {
-    font-size: 1.1rem !important;
-    margin: 0 !important;
-    color: #fff;
-    font-weight: 700;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    flex: 1;
-  }
-
-  .crime-inline-stats {
-    display: flex !important;
-    gap: 8px;
-    font-size: 0.85rem;
-    color: #fff;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 4px 8px;
-    border-radius: 6px;
-    backdrop-filter: blur(4px);
-  }
-
-  .inline-stat {
-    font-size: 0.85rem;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .crime-button {
-    display: block !important;
-    position: relative !important;
-    width: 100% !important;
-    padding: 12px !important;
-    background: rgba(212, 175, 55, 0.9) !important;
-    color: #1a1f2e !important;
-    font-size: 0.9rem !important;
-    font-weight: 700 !important;
-    text-transform: uppercase !important;
-    letter-spacing: 1px !important;
-    border: none !important;
-    border-top: 2px solid rgba(212, 175, 55, 1) !important;
-    cursor: pointer;
-    flex-shrink: 0 !important;
-  }
-
-  .crime-button:disabled {
-    background: rgba(100, 100, 100, 0.8) !important;
-    color: rgba(255, 255, 255, 0.5) !important;
-    border-top-color: rgba(100, 100, 100, 0.5) !important;
-  }
-
-  .crime-tap-hint {
-    display: none !important;
-  }
-
-  /* Hide scroll arrows on mobile */
+  
   .scroll-arrow {
-    display: none !important;
+    display: none;
+  }
+  
+  .robberies-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    overflow: visible;
+    padding: 0;
+  }
+  
+  .crime-card {
+    min-width: 100%;
+    max-width: 100%;
+    width: 100%;
+    height: auto;
+    min-height: 280px;
+  }
+  
+  .crime-card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s ease;
+  }
+  
+  .crime-title {
+    font-size: var(--text-lg);
+  }
+  
+  .crime-button {
+    min-height: 48px;
+    font-size: var(--text-base);
+  }
+}
+
+/* Small tablet: 2-column grid (481-768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .crimes-scroll-container {
+    gap: var(--space-2);
+  }
+  
+  .scroll-arrow {
+    width: 40px;
+    height: 40px;
+    font-size: var(--text-lg);
+  }
+  
+  .robberies-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+    overflow: visible;
+    padding: 0;
+  }
+  
+  .crime-card {
+    min-width: 100%;
+    max-width: 100%;
+    width: 100%;
+    height: 240px;
+  }
+}
+
+/* Tablet: Horizontal scroll with 3 visible (769-1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .robberies-grid {
+    gap: var(--space-3);
+  }
+  
+  .crime-card {
+    min-width: 280px;
+    max-width: 280px;
+    height: 220px;
+  }
+}
+
+/* Laptop: Enhanced sizing (1025-1440px) */
+@media (min-width: 1025px) and (max-width: 1440px) {
+  .crime-card {
+    min-width: 320px;
+    max-width: 320px;
+    height: 230px;
+  }
+}
+
+/* Desktop: Original design (1441px+) */
+@media (min-width: 1441px) {
+  .crime-card {
+    min-width: var(--card-crime-width);
+    max-width: var(--card-crime-width);
+    height: var(--card-crime-height);
+  }
+}
+
+/* Touch feedback for mobile */
+@media (hover: none) {
+  .crime-card:active {
+    transform: scale(0.97);
   }
 }
