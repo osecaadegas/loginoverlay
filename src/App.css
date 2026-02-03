@@ -42,6 +42,40 @@ body {
   }
 }
 
+/* Full-width container override - remove max-width constraints */
+.games-page,
+.tournaments-page,
+.offers-page,
+.giveaways-page,
+.guess-balance-page,
+.profile-page,
+.streamelements-panel,
+.admin-panel,
+.slot-manager-page,
+.thelife-game,
+.landing-page,
+.points-manager,
+.voucher-manager {
+  width: 100%;
+  padding-left: 40px;
+  padding-right: 40px;
+}
+
+.games-container,
+.tournaments-container,
+.offers-container,
+.giveaways-container,
+.admin-header,
+.admin-content,
+.slot-manager-page-header,
+.slot-manager-page-content,
+.streamelements-container,
+.profile-container,
+.points-manager-container {
+  max-width: none !important;
+  width: 100% !important;
+}
+
 
 /* Stars layer 1 - small stars (only for animated-stars background) */
 body.animated-stars::before {
