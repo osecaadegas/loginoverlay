@@ -25,30 +25,6 @@ body {
   min-height: 100vh;
   transition: all 0.3s ease;
   background: transparent;
-  width: 100%;
-}
-
-/* Override max-width on all page containers for full-width layout */
-.games-container,
-.tournaments-container,
-.admin-header,
-.admin-content,
-.slot-manager-page-header,
-.slot-manager-page-content,
-.thelife-container,
-.landing-page-content,
-.offers-container,
-.giveaways-container,
-.points-manager-container,
-.profile-container,
-.voucher-manager-container,
-.streamelements-container {
-  max-width: none !important;
-  width: 100% !important;
-  margin-left: 0 !important;
-  margin-right: 0 !important;
-  padding-left: 20px !important;
-  padding-right: 20px !important;
 }
 
 /* Responsive Main Content */
