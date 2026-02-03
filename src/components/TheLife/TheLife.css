@@ -36,8 +36,7 @@
 }
 
 .the-life-container {
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
   padding: clamp(10px, 2vw, 20px);
   min-height: 100vh;
   background: #0d1117 url('https://wallpapers.com/images/hd/gotham-city-1920-x-1080-background-gh854hvhxla18i1z.jpg') center center / cover no-repeat fixed;
