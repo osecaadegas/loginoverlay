@@ -697,6 +697,8 @@
   font-size: 0.9rem;
 }
 
+/* Mobile Responsive Optimizations */
+@media (max-width: 768px) {
   .about-container {
     flex-direction: column;
     text-align: center;
