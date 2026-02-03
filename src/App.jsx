@@ -34,7 +34,7 @@ import ProfilePage from './components/ProfilePage/ProfilePage';
 import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
 // Anti-Cheat Admin Panel
-import AdminLayout from './components/Admin/layout/AdminLayout';
+import AdminLayout from './components/Admin/AdminLayout';
 import DashboardPage from './components/Admin/pages/DashboardPage';
 import AlertsPage from './components/Admin/pages/AlertsPage';
 import LogsPage from './components/Admin/pages/LogsPage';
