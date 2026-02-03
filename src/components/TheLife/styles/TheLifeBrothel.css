@@ -6,13 +6,19 @@
 /* Container - Metallic Underground */
 .brothel-container {
   width: 100%;
-  padding: 20px;
+  padding: var(--space-3);
   max-width: 1400px;
   margin: 0 auto;
   position: relative;
   z-index: 100;
   background: linear-gradient(to bottom, rgba(30, 30, 35, 0.5), rgba(20, 20, 25, 0.5));
   border-radius: 20px;
+}
+
+@media (min-width: 769px) {
+  .brothel-container {
+    padding: var(--space-5);
+  }
 }
 
 /* ===============================================
@@ -22,12 +28,18 @@
   background: linear-gradient(135deg, rgba(30, 30, 35, 0.95), rgba(20, 20, 25, 0.95));
   border: 2px solid rgba(70, 70, 80, 0.5);
   border-radius: 20px;
-  padding: 60px 40px;
+  padding: var(--space-6);
   text-align: center;
   max-width: 600px;
   margin: 40px auto;
   box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), inset 0 0 50px rgba(0, 0, 0, 0.3);
   backdrop-filter: none;
+}
+
+@media (min-width: 769px) {
+  .brothel-init-card {
+    padding: var(--space-12);
+  }
 }
 
 .init-icon {
@@ -43,8 +55,8 @@
 
 .brothel-init-card h2 {
   color: #8b8b95;
-  font-size: 2rem;
-  margin-bottom: 15px;
+  font-size: var(--text-fluid-2xl);
+  margin-bottom: var(--space-4);
   font-weight: 700;
   text-shadow: 0 0 10px rgba(139, 139, 149, 0.3), 0 2px 15px rgba(0, 0, 0, 0.8);
   letter-spacing: 0.5px;
@@ -176,57 +188,74 @@
   border-color: rgba(50, 50, 60, 0.3);
 }
 
-/* Responsive - Stack on smaller screens */
-@media (max-width: 768px) {
+/* =============================================
+   RESPONSIVE LAYOUT SYSTEM
+   ============================================= */
+
+/* Mobile: 3-column compact grid (≤480px) */
+@media (max-width: 480px) {
   .brothel-stats-grid {
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 8px !important;
-    margin-bottom: 16px !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-2);
   }
-
+  
   .stat-tile {
-    padding: 12px 8px !important;
-    border-radius: 8px !important;
-    gap: 4px !important;
-    min-height: auto !important;
+    padding: var(--space-2);
+    border-radius: 8px;
+    gap: var(--space-1);
   }
-
+  
   .stat-tile-value {
-    font-size: 1rem !important;
-    font-weight: 700 !important;
-    line-height: 1.1 !important;
+    font-size: var(--text-base);
+    font-weight: 700;
   }
-
+  
   .stat-tile-label {
-    font-size: 0.65rem !important;
-    line-height: 1.2 !important;
-    color: #9ca3af !important;
+    font-size: var(--text-xs);
   }
-
-  .stat-tile-action .stat-tile-value {
-    font-size: 0.85rem !important;
+  
+  .init-details {
+    flex-direction: column;
+    gap: var(--space-3);
   }
-
-  .stat-tile-action .stat-tile-label {
-    font-size: 0.6rem !important;
+  
+  .stat-tile:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
   }
 }
 
-@media (max-width: 380px) {
+/* Small tablet: 3-column grid (481-768px) */
+@media (min-width: 481px) and (max-width: 768px) {
   .brothel-stats-grid {
-    gap: 6px !important;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-3);
   }
-
+  
   .stat-tile {
-    padding: 10px 6px !important;
+    padding: var(--space-3);
   }
+}
 
-  .stat-tile-value {
-    font-size: 0.9rem !important;
+/* Tablet: Keep 3-column layout (769-1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .brothel-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
   }
+}
 
-  .stat-tile-label {
-    font-size: 0.55rem !important;
+/* Desktop: Original 3-column layout (1025px+) */
+@media (min-width: 1025px) {
+  .brothel-stats-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .stat-tile-action:active {
+    transform: scale(0.97);
   }
 }
 

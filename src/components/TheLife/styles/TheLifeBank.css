@@ -5,9 +5,15 @@
 .bank-section {
   background: linear-gradient(135deg, rgba(26, 31, 46, 0.95), rgba(15, 23, 42, 0.95));
   border-radius: 20px;
-  padding: 40px;
+  padding: var(--space-5);
   border: 2px solid rgba(212, 175, 55, 0.3);
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+@media (min-width: 769px) {
+  .bank-section {
+    padding: var(--space-8);
+  }
 }
 
 .bank-header {
@@ -17,8 +23,8 @@
 
 .bank-header h2 {
   color: #d4af37;
-  font-size: 2.5rem;
-  margin-bottom: 10px;
+  font-size: var(--text-fluid-3xl);
+  margin-bottom: var(--space-3);
   text-shadow: 0 2px 10px rgba(212, 175, 55, 0.3);
 }
 
@@ -280,79 +286,137 @@
   transform: none;
 }
 
+.action-btn:active {
+  transform: translateY(1px) scale(0.98);
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.4);
+  transition: all 0.1s;
+}
+
+.quick-btn:active {
+  transform: translateY(1px) scale(0.98);
+  transition: all 0.1s;
+}
+
 /* =============================================
-   MOBILE RESPONSIVE
+   RESPONSIVE LAYOUT SYSTEM
    ============================================= */
 
-@media (max-width: 768px) {
+/* Mobile: Single column stack (≤480px) */
+@media (max-width: 480px) {
   .bank-section {
-    padding: 25px 20px;
+    padding: var(--space-4);
   }
-
+  
   .bank-header h2 {
-    font-size: 1.8rem;
+    font-size: var(--text-2xl);
   }
-
-  .bank-header p {
-    font-size: 0.95rem;
-  }
-
+  
   .bank-balance-display {
     grid-template-columns: 1fr;
-    gap: 15px;
-    margin-bottom: 25px;
+    gap: var(--space-3);
   }
-
+  
   .balance-card {
-    padding: 20px;
+    padding: var(--space-4);
   }
-
+  
   .balance-icon {
     font-size: 2.5rem;
   }
-
+  
   .balance-amount {
-    font-size: 1.5rem;
+    font-size: var(--text-xl);
   }
-
+  
   .bank-actions {
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: var(--space-4);
   }
-
+  
   .bank-action-card {
-    padding: 25px 20px;
+    padding: var(--space-5);
   }
-
-  .bank-action-card h3 {
-    font-size: 1.2rem;
-  }
-
+  
   .bank-input {
-    padding: 12px 12px 12px 35px;
-    font-size: 1rem;
+    min-height: 48px;
+    font-size: var(--text-base);
   }
-
-  .input-prefix {
-    font-size: 1.1rem;
-    left: 12px;
-  }
-
+  
   .quick-amounts {
-    gap: 8px;
+    gap: var(--space-2);
   }
-
+  
   .quick-btn {
-    padding: 8px;
-    font-size: 0.85rem;
+    min-height: 44px;
+    padding: var(--space-2);
+    font-size: var(--text-sm);
   }
-
+  
   .action-btn {
-    padding: 14px 20px;
-    font-size: 1rem;
+    min-height: 48px;
+    padding: var(--space-3) var(--space-5);
+    font-size: var(--text-base);
   }
+  
+  .balance-card:active,
+  .bank-action-card:active {
+    transform: scale(0.98);
+    transition: transform 0.1s;
+  }
+}
 
-  .btn-icon {
-    font-size: 1.1rem;
+/* Small tablet: Single column (481-768px) */
+@media (min-width: 481px) and (max-width: 768px) {
+  .bank-balance-display {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+  
+  .bank-actions {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+}
+
+/* Tablet: 2-column grid (769-1024px) */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .bank-balance-display {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .bank-actions {
+    grid-template-columns: 1fr;
+    gap: var(--space-5);
+  }
+}
+
+/* Desktop: Original 2-column layout (1025px+) */
+@media (min-width: 1025px) {
+  .bank-balance-display {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .bank-actions {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  .balance-card:hover,
+  .bank-action-card:hover {
+    transform: none;
+    box-shadow: none;
+  }
+  
+  .action-btn:hover {
+    transform: none;
+  }
+  
+  .balance-card:active,
+  .bank-action-card:active,
+  .action-btn:active,
+  .quick-btn:active {
+    transform: scale(0.97);
   }
 }
