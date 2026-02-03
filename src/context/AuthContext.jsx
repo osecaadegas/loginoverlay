@@ -35,26 +35,15 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
       
       if (_event === 'SIGNED_IN' && session?.user) {
-        // User logged in - start session tracking
-        await initializeSessionTracking(session.user.id);
+        // User logged in - start session tracking (non-blocking)
+        initializeSessionTracking(session.user.id).catch(err => {
+          console.warn('Session tracking failed (non-critical):', err);
+        });
         
-        // Log login action
-        const context = await getActionContext();
-        const { data: playerData } = await supabase
-          .from('the_life_players')
-          .select('id')
-          .eq('user_id', session.user.id)
-          .maybeSingle();
-          
-        if (playerData) {
-          await antiCheatLogger.logAction(playerData.id, 'login', {
-            metadata: {
-              email: session.user.email,
-              provider: session.user.app_metadata?.provider || 'email'
-            },
-            ...context
-          });
-        }
+        // Log login action (non-blocking - don't await)
+        logLoginAction(session.user).catch(err => {
+          console.warn('Anti-cheat login logging failed (non-critical):', err);
+        });
       } else if (_event === 'SIGNED_OUT') {
         // User logged out - end session
         endSession();
@@ -79,6 +68,31 @@ export const AuthProvider = ({ children }) => {
       }
     } catch (error) {
       console.error('Failed to initialize session tracking:', error);
+    }
+  };
+  
+  // Log login action (non-blocking)
+  const logLoginAction = async (user) => {
+    try {
+      const context = await getActionContext();
+      const { data: playerData } = await supabase
+        .from('the_life_players')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+        
+      if (playerData) {
+        await antiCheatLogger.logAction(playerData.id, 'login', {
+          metadata: {
+            email: user.email,
+            provider: user.app_metadata?.provider || 'email'
+          },
+          ...context
+        });
+      }
+    } catch (error) {
+      // Silently fail - don't block login
+      console.warn('Anti-cheat login logging failed:', error);
     }
   };
 
