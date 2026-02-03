@@ -48,7 +48,7 @@ const InvestigationPage = () => {
             Session tracking with IP/device analysis
           </li>
         </ul>
-        <button className="back-home-btn" onClick={() => navigate('/admin/dashboard')}>
+        <button className="back-home-btn" onClick={() => navigate('/anticheat/dashboard')}>
           Return to Dashboard
         </button>
       </div>

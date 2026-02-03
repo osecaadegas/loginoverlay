@@ -189,7 +189,7 @@ const DashboardPage = () => {
             <h2 className="card-title">Recent Alerts</h2>
             <button 
               className="view-all-btn"
-              onClick={() => navigate('/admin/alerts')}
+              onClick={() => navigate('/anticheat/alerts')}
             >
               View All
               <ArrowRight size={14} />
@@ -209,7 +209,7 @@ const DashboardPage = () => {
                   <div 
                     key={alert.id} 
                     className="alert-item"
-                    onClick={() => navigate(`/admin/investigations?player=${alert.player_id}&alert=${alert.id}`)}
+                    onClick={() => navigate(`/anticheat/investigations?player=${alert.player_id}&alert=${alert.id}`)}
                   >
                     <div className="alert-item-header">
                       <SeverityBadge severity={alert.severity} size="sm" />
@@ -252,7 +252,7 @@ const DashboardPage = () => {
                   <div 
                     key={player.id} 
                     className="risk-item"
-                    onClick={() => navigate(`/admin/investigations?player=${player.id}`)}
+                    onClick={() => navigate(`/anticheat/investigations?player=${player.id}`)}
                   >
                     <div className="risk-rank">#{index + 1}</div>
                     <div className="risk-player-info">
@@ -279,7 +279,7 @@ const DashboardPage = () => {
             <div className="quick-actions-grid">
               <button 
                 className="quick-action-btn"
-                onClick={() => navigate('/admin/alerts?status=new')}
+                onClick={() => navigate('/anticheat/alerts?status=new')}
               >
                 <AlertTriangle size={20} />
                 <div className="quick-action-label">New Alerts</div>
@@ -287,7 +287,7 @@ const DashboardPage = () => {
               </button>
               <button 
                 className="quick-action-btn"
-                onClick={() => navigate('/admin/logs?flagged=true')}
+                onClick={() => navigate('/anticheat/logs?flagged=true')}
               >
                 <Activity size={20} />
                 <div className="quick-action-label">Flagged Logs</div>
@@ -303,7 +303,7 @@ const DashboardPage = () => {
               </button>
               <button 
                 className="quick-action-btn"
-                onClick={() => navigate('/admin/rules')}
+                onClick={() => navigate('/anticheat/rules')}
               >
                 <Shield size={20} />
                 <div className="quick-action-label">Manage Rules</div>

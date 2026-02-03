@@ -352,7 +352,7 @@ const LogsPage = () => {
                 <div className="expanded-actions">
                   <button 
                     className="action-btn"
-                    onClick={() => navigate(`/admin/investigations?player=${log.player_id}`)}
+                    onClick={() => navigate(`/anticheat/investigations?player=${log.player_id}`)}
                   >
                     <Eye size={16} />
                     View Player Investigation

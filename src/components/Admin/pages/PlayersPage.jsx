@@ -93,7 +93,7 @@ const PlayersPage = () => {
   };
 
   const handleRowClick = (player) => {
-    navigate(`/admin/investigations?player=${player.id}`);
+    navigate(`/anticheat/investigations?player=${player.id}`);
   };
 
   const getTimeSinceJoined = (date) => {

@@ -14,17 +14,17 @@ const AdminLayout = () => {
   const [searchQuery, setSearchQuery] = useState('');
 
   const navItems = [
-    { icon: Home, label: 'Dashboard', path: '/admin', exact: true },
-    { icon: Shield, label: 'Alerts', path: '/admin/alerts', badge: 3 },
-    { icon: ScrollText, label: 'Logs', path: '/admin/logs' },
-    { icon: Users, label: 'Players', path: '/admin/players' },
-    { icon: SearchIcon, label: 'Investigations', path: '/admin/investigations' },
-    { icon: Sliders, label: 'Rules', path: '/admin/rules' },
+    { icon: Home, label: 'Dashboard', path: '/anticheat', exact: true },
+    { icon: Shield, label: 'Alerts', path: '/anticheat/alerts', badge: 3 },
+    { icon: ScrollText, label: 'Logs', path: '/anticheat/logs' },
+    { icon: Users, label: 'Players', path: '/anticheat/players' },
+    { icon: SearchIcon, label: 'Investigations', path: '/anticheat/investigations' },
+    { icon: Sliders, label: 'Rules', path: '/anticheat/rules' },
   ];
 
   const utilityItems = [
-    { icon: Settings, label: 'Settings', path: '/admin/settings' },
-    { icon: Book, label: 'Documentation', path: '/admin/docs' },
+    { icon: Settings, label: 'Settings', path: '/anticheat/settings' },
+    { icon: Book, label: 'Documentation', path: '/anticheat/docs' },
   ];
 
   const isActive = (path, exact = false) => {
@@ -37,7 +37,7 @@ const AdminLayout = () => {
   const handleSearch = (e) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      navigate(`/admin/search?q=${encodeURIComponent(searchQuery)}`);
+      navigate(`/anticheat/search?q=${encodeURIComponent(searchQuery)}`);
       setSearchQuery('');
       setSearchOpen(false);
     }
