@@ -523,6 +523,7 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
 function LayoutWrapper({ children }) {
   const location = useLocation();
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
+  const [sidebarVisible, setSidebarVisible] = useState(true);
 
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
@@ -530,8 +531,17 @@ function LayoutWrapper({ children }) {
 
   return (
     <div className="app-layout">
-      {showSidebar && <Sidebar />}
-      <div className={showSidebar ? 'main-content with-sidebar' : 'main-content'}>
+      {showSidebar && sidebarVisible && <Sidebar />}
+      {showSidebar && (
+        <button 
+          className="sidebar-toggle-btn" 
+          onClick={() => setSidebarVisible(!sidebarVisible)}
+          title={sidebarVisible ? 'Hide Sidebar' : 'Show Sidebar'}
+        >
+          {sidebarVisible ? '◀' : '▶'}
+        </button>
+      )}
+      <div className={showSidebar && sidebarVisible ? 'main-content with-sidebar' : 'main-content'}>
         {children}
       </div>
     </div>
