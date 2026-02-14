@@ -355,6 +355,8 @@ const InvestigationPage = () => {
           </div>
         )}
       </div>
+
+      <div className="action-footer">
         <button className="back-home-btn" onClick={() => navigate('/anticheat/dashboard')}>
           Return to Dashboard
         </button>
