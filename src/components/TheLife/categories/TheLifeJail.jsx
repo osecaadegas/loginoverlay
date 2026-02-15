@@ -144,14 +144,15 @@ export default function TheLifeJail({
             {(() => {
               const { bribeAmount, percentage } = calculateBribeAmount(player);
               const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
-              const canAfford = totalWealth >= bribeAmount;
+              const canAfford = player.cash >= bribeAmount;
+              const isMinimum = bribeAmount === 100 && totalWealth * (percentage / 100) < 100;
               
               return (
                 <div className="jail-escape-option">
                   <h4>💰 Bribe the Cops</h4>
                   <p>Pay off the police to look the other way...</p>
                   <p className="escape-cost">
-                    Cost: ${bribeAmount.toLocaleString()} ({percentage}% of your wealth)
+                    Cost: ${bribeAmount.toLocaleString()} {isMinimum ? '(minimum)' : `(${percentage}% of your wealth)`}
                   </p>
                   <p className="escape-info">
                     💡 Longer jail time = Higher bribe cost
@@ -161,7 +162,7 @@ export default function TheLifeJail({
                     className={`escape-jail-btn bribe-btn ${!canAfford || loading ? 'disabled' : ''}`}
                     disabled={!canAfford || loading}
                   >
-                    {loading ? '⏳ Processing...' : canAfford ? 'Pay Bribe' : 'Not Enough Money'}
+                    {loading ? '⏳ Processing...' : canAfford ? 'Pay Bribe' : 'Not Enough Cash'}
                   </button>
                 </div>
               );
@@ -195,6 +196,7 @@ export default function TheLifeJail({
             <h3>💰 Bribe System</h3>
             <p>You can always pay a bribe to escape jail early.</p>
             <p>💸 Cost: 5% - 50% of your total wealth (cash + bank)</p>
+            <p>💵 Minimum bribe: $100</p>
             <p>⏱️ Longer sentences require higher bribes</p>
             <p className="hint">💡 Formula: 5% base + 2% per 30 minutes (max 50%)</p>
           </div>

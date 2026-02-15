@@ -31,7 +31,10 @@ export const calculateBribeAmount = (player) => {
   const totalPercentage = Math.min(50, basePercentage + percentageIncrease);
   
   const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
-  const bribeAmount = Math.floor(totalWealth * (totalPercentage / 100));
+  const calculatedBribe = Math.floor(totalWealth * (totalPercentage / 100));
+  
+  // Server enforces minimum of $100 - make sure client shows the same
+  const bribeAmount = Math.max(100, calculatedBribe);
   
   return { bribeAmount, percentage: totalPercentage, remainingMinutes };
 };
