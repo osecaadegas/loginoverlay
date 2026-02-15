@@ -54,21 +54,21 @@ export default function TheLifeBrothel({
     syncWorkerCount();
   }, [brothel, hiredWorkers]);
 
-  // Initialize brothel
+  // Initialize brothel - Unlock first 3 slots for $50,000
   const initBrothel = async () => {
     if (isInHospital) {
       setMessage({ type: 'error', text: 'You cannot manage your brothel while in hospital!' });
       return;
     }
     
-    const cost = 5000;
+    const cost = 50000;
     if (player.cash < cost) {
-      setMessage({ type: 'error', text: 'Need $5,000 to start a brothel!' });
+      setMessage({ type: 'error', text: 'Need $50,000 to unlock the brothel!' });
       return;
     }
 
     try {
-      const initialSlots = player.level + 2;
+      const initialSlots = 3; // Fixed 3 initial slots
 
       await supabase.from('the_life_brothels').insert({
         player_id: player.id,
@@ -76,7 +76,7 @@ export default function TheLifeBrothel({
         income_per_hour: 0,
         worker_slots: initialSlots,
         additional_slots: 0,
-        slots_upgrade_cost: 50000
+        slots_upgrade_cost: 100000
       });
 
       const { data, error } = await supabase
@@ -89,10 +89,10 @@ export default function TheLifeBrothel({
       if (error) throw error;
       setPlayer(data);
       await loadBrothel();
-      setMessage({ type: 'success', text: 'Brothel opened successfully!' });
+      setMessage({ type: 'success', text: 'Brothel unlocked! 3 worker slots available!' });
     } catch (err) {
       console.error('Error initializing brothel:', err);
-      setMessage({ type: 'error', text: 'Failed to open brothel!' });
+      setMessage({ type: 'error', text: 'Failed to unlock brothel!' });
     }
   };
 
@@ -335,33 +335,74 @@ export default function TheLifeBrothel({
     return fullHours * (brothel.income_per_hour || 0);
   };
 
-  // If brothel not opened yet
+  // If brothel not opened yet - show unlock card AND workers preview
   if (!brothel) {
     return (
       <div className="brothel-container">
+        {/* Unlock Card */}
         <div className="brothel-init-card">
-          <div className="init-icon">🏩</div>
-          <h2>Start Your Brothel Empire</h2>
+          <div className="init-icon">🔒</div>
+          <h2>Unlock Your Brothel</h2>
           <p className="init-description">
-            Build and manage your own business. Hire workers to generate passive income every hour.
+            Pay $50,000 to unlock the brothel and get 3 worker slots to start generating passive income.
           </p>
           <div className="init-details">
             <div className="init-detail">
-              <span className="detail-label">Initial Cost:</span>
-              <span className="detail-value">$5,000</span>
+              <span className="detail-label">Unlock Cost:</span>
+              <span className="detail-value">$50,000</span>
             </div>
             <div className="init-detail">
-              <span className="detail-label">Starting Slots:</span>
-              <span className="detail-value">{player.level + 2} Workers</span>
+              <span className="detail-label">Initial Slots:</span>
+              <span className="detail-value">3 Workers</span>
             </div>
           </div>
           <button 
             onClick={initBrothel} 
-            disabled={player?.cash < 5000}
+            disabled={player?.cash < 50000}
             className="btn-primary btn-large"
           >
-            {player?.cash < 5000 ? 'Insufficient Funds' : 'Open Brothel - $5,000'}
+            {player?.cash < 50000 ? `Need $${(50000 - player?.cash).toLocaleString()} more` : 'Unlock Brothel - $50,000'}
           </button>
+        </div>
+
+        {/* Workers Preview (Locked) */}
+        <div className="section">
+          <div className="section-header-compact">
+            <span className="section-title">🎯 Available Workers ({availableWorkers.length})</span>
+          </div>
+          <div className="alert alert-info">
+            🔒 Unlock the brothel above to start hiring workers!
+          </div>
+          <div 
+            className="workers-grid"
+            ref={availableScrollRef}
+            {...availableDragScroll}
+          >
+            {availableWorkers.map(worker => (
+              <div key={worker.id} className={`worker-card worker-rarity-${worker.rarity} worker-locked`}>
+                <div className="worker-image">
+                  <img src={worker.image_url} alt={worker.name} />
+                </div>
+                <div className="worker-details">
+                  <h4 className="worker-name">{worker.name}</h4>
+                  <p className="worker-description">{worker.description}</p>
+                  
+                  <div className="worker-stats">
+                    <div className="worker-stat">
+                      <span className="stat-icon">💵</span>
+                      <span className="stat-text">${worker.income_per_hour}/hr</span>
+                    </div>
+                    <div className="worker-stat">
+                      <span className="stat-icon">⭐</span>
+                      <span className="stat-text">Level {worker.min_level_required}</span>
+                    </div>
+                  </div>
+
+                  <div className="btn-disabled">🔒 Unlock Brothel First</div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     );

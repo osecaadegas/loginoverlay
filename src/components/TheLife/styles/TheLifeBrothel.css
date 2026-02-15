@@ -1044,3 +1044,51 @@
     font-size: 0.85rem !important;
   }
 }
+
+/* ===============================================
+   LOCKED WORKERS STATE
+   =============================================== */
+.worker-locked {
+  opacity: 0.7;
+  filter: grayscale(30%);
+  position: relative;
+}
+
+.worker-locked::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 16px;
+  pointer-events: none;
+}
+
+.worker-locked .worker-image::before {
+  content: '🔒';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2rem;
+  z-index: 10;
+  opacity: 0.8;
+}
+
+/* ===============================================
+   INFO ALERT
+   =============================================== */
+.alert-info {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(59, 130, 246, 0.08));
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin-bottom: 20px;
+  color: #93c5fd;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
