@@ -231,7 +231,26 @@ export default function Sidebar({ className = '', onClose }) {
 
   return (
     <>
-    <aside className={`sidebar ${className}`}>
+    {/* Mobile Hamburger Button */}
+    <button 
+      className="mobile-menu-toggle"
+      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+      aria-label="Toggle menu"
+    >
+      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
+    </button>
+
+    {/* Mobile Overlay */}
+    {isMobileMenuOpen && (
+      <div 
+        className="mobile-menu-overlay"
+        onClick={() => setIsMobileMenuOpen(false)}
+      />
+    )}
+
+    <aside className={`sidebar ${className} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
         {/* Logo */}
         <div className="sidebar-logo">
           <img src="/secalogo.png" alt="Seca Logo" className="sidebar-logo-image" />

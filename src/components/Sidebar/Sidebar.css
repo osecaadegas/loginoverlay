@@ -793,17 +793,17 @@
   transform: rotate(-45deg) translate(7px, -7px);
 }
 
-/* Mobile Overlay */
+/* Mobile Overlay - only rendered when menu is open via React */
 .mobile-menu-overlay {
-  display: none;
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
   background: rgba(0, 0, 0, 0.7);
-  z-index: 999;
+  z-index: 1000;
   backdrop-filter: blur(4px);
+  display: block;
 }
 
 /* Tablet Breakpoint */
@@ -818,11 +818,6 @@
   /* Show hamburger button */
   .mobile-menu-toggle {
     display: flex;
-  }
-
-  /* Show overlay when menu is open */
-  .mobile-menu-overlay {
-    display: block;
   }
 
   /* Sidebar mobile styles */
