@@ -568,37 +568,34 @@ function LayoutWrapper({ children }) {
   };
 
   const closeSidebar = () => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
+    setSidebarOpen(false);
   };
 
   return (
     <div className="app-layout">
       {showSidebar && (
         <>
-          {/* Mobile toggle button */}
-          {isMobile && (
-            <button 
-              className="sidebar-toggle-btn touch-target" 
-              onClick={toggleSidebar}
-              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-            >
-              {sidebarOpen ? '✕' : '☰'}
-            </button>
-          )}
+          {/* Mobile toggle button - always renders, CSS handles visibility */}
+          <button 
+            className={`sidebar-toggle-btn touch-target ${sidebarOpen ? 'sidebar-open' : ''}`}
+            onClick={() => {
+              console.log('🍔 Hamburger clicked! Current state:', sidebarOpen);
+              setSidebarOpen(!sidebarOpen);
+            }}
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+          >
+            {sidebarOpen ? '✕' : '☰'}
+          </button>
           
           {/* Sidebar with open state */}
           <Sidebar className={sidebarOpen ? 'open' : ''} onClose={closeSidebar} />
           
-          {/* Backdrop overlay - mobile only */}
-          {isMobile && sidebarOpen && (
-            <div 
-              className="sidebar-backdrop visible" 
-              onClick={closeSidebar}
-              aria-hidden="true"
-            />
-          )}
+          {/* Backdrop overlay - CSS handles visibility */}
+          <div 
+            className={`sidebar-backdrop ${sidebarOpen ? 'visible' : ''}`}
+            onClick={closeSidebar}
+            aria-hidden="true"
+          />
         </>
       )}
       <div className="main-content">

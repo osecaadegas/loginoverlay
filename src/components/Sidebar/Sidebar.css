@@ -60,7 +60,7 @@
   }
   
   .sidebar-backdrop {
-    display: none;
+    display: none !important;
   }
 }
 
@@ -73,7 +73,7 @@
   }
   
   .sidebar-backdrop {
-    display: none;
+    display: none !important;
   }
 }
 
