@@ -842,7 +842,8 @@
     box-shadow: 4px 0 20px rgba(0, 0, 0, 0.5);
   }
 
-  .sidebar.mobile-open {
+  .sidebar.mobile-open,
+  .sidebar.open {
     left: 0; /* Slide in */
   }
 

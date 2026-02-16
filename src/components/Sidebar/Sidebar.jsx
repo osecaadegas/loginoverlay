@@ -11,7 +11,6 @@ import LanguageSwitcher from '../LanguageSwitcher';
 import './Sidebar.css';
 
 export default function Sidebar({ className = '', onClose }) {
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [showGamesDropdown, setShowGamesDropdown] = useState(false);
   const [showStreamDropdown, setShowStreamDropdown] = useState(false);
@@ -27,21 +26,8 @@ export default function Sidebar({ className = '', onClose }) {
 
   // Close mobile menu when route changes
   useEffect(() => {
-    setIsMobileMenuOpen(false);
     if (onClose) onClose();
   }, [location.pathname, onClose]);
-
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (isMobileMenuOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
-    }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isMobileMenuOpen]);
 
   // Debug logging
   useEffect(() => {
@@ -231,26 +217,7 @@ export default function Sidebar({ className = '', onClose }) {
 
   return (
     <>
-    {/* Mobile Hamburger Button */}
-    <button 
-      className="mobile-menu-toggle"
-      onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-      aria-label="Toggle menu"
-    >
-      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-      <span className={`hamburger-line ${isMobileMenuOpen ? 'open' : ''}`}></span>
-    </button>
-
-    {/* Mobile Overlay */}
-    {isMobileMenuOpen && (
-      <div 
-        className="mobile-menu-overlay"
-        onClick={() => setIsMobileMenuOpen(false)}
-      />
-    )}
-
-    <aside className={`sidebar ${className} ${isMobileMenuOpen ? 'mobile-open' : ''}`}>
+    <aside className={`sidebar ${className}`}>
         {/* Logo */}
         <div className="sidebar-logo">
           <img src="/secalogo.png" alt="Seca Logo" className="sidebar-logo-image" />
