@@ -775,8 +775,8 @@
 
 .hamburger-line {
   width: 24px;
-  height: 2px;
-  background: var(--theme-text);
+  height: 3px;
+  background: var(--theme-text, #ffffff);
   border-radius: 2px;
   transition: all 0.3s ease;
 }
