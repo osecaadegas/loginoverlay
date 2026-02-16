@@ -52,7 +52,10 @@ class AntiCheatLogger {
         .single();
 
       if (error) {
-        console.error('Failed to log action:', error);
+        // Silently fail for RLS/permission errors - tables may not have policies yet
+        if (error.code !== '42501' && error.message?.indexOf('403') === -1) {
+          console.warn('Game logging unavailable:', error.message);
+        }
         return null;
       }
 

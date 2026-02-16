@@ -50,7 +50,10 @@ export class SessionTracker {
         .single();
 
       if (error) {
-        console.error('Failed to create session:', error);
+        // Silently fail for RLS/permission errors (403) - tables may not have policies yet
+        if (error.code !== '42501' && error.message?.indexOf('403') === -1) {
+          console.warn('Session tracking unavailable:', error.message);
+        }
         return;
       }
 
