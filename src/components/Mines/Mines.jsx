@@ -532,10 +532,32 @@ export default function Mines() {
 
               const canClick = gameActive && !isRevealed && !loading;
 
+              // Inline styles to ensure visibility (bypasses Tailwind reset)
+              const cellStyle = {
+                background: isSafe 
+                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.2))'
+                  : showMine 
+                    ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.3))'
+                    : 'rgba(45, 55, 72, 0.95)',
+                border: '3px solid rgba(212, 175, 55, 0.5)',
+                borderRadius: '10px',
+                width: '100%',
+                height: '100%',
+                minWidth: '60px',
+                minHeight: '60px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '2rem',
+                cursor: canClick ? 'pointer' : 'default',
+                opacity: (!gameActive && !gameOver) ? 0.5 : 1,
+              };
+
               return (
                 <button
                   key={i}
                   className={cellClass}
+                  style={cellStyle}
                   onClick={() => {
                     console.log('🖱️ Button clicked:', { i, canClick, gameActive, loading });
                     if (canClick) clickCell(i);
