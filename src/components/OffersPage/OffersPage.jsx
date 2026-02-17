@@ -5,9 +5,10 @@ import { getProviderImage, getProviderName } from '../../utils/gameProviders';
 import './OffersPage.css';
 
 export default function OffersPage() {
+  const [flippedCards, setFlippedCards] = useState({});
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOffer, setSelectedOffer] = useState(null);
+  const [selectedOffer, setSelectedOffer] = useState(null); // For modal
 
   useEffect(() => {
     loadOffers();
@@ -25,14 +26,17 @@ export default function OffersPage() {
         console.error('Error loading offers:', error);
         setCasinoOffers([]);
       } else {
+        // Transform data to match component format
         const transformedOffers = data.map(offer => ({
           id: offer.id,
+          badge: offer.badge,
+          badgeClass: offer.badge_class,
           casino: offer.casino_name,
           title: offer.title,
           image: offer.image_url,
           bonusLink: offer.bonus_link,
           minDeposit: offer.min_deposit,
-          maxWithdrawal: offer.max_withdrawal || '€5,000/week',
+          maxWithdrawal: offer.max_withdrawal || '€5,000 per week',
           withdrawalTime: offer.withdrawal_time || 'Up to 24h',
           cashback: offer.cashback,
           bonusValue: offer.bonus_value,
@@ -40,13 +44,16 @@ export default function OffersPage() {
           depositMethods: offer.deposit_methods,
           vpnFriendly: offer.vpn_friendly,
           isPremium: offer.is_premium,
+          details: offer.details,
           gameProviders: offer.game_providers,
           totalGames: offer.total_games,
-          license: offer.license || 'Curaçao',
+          license: offer.license,
+          welcomeBonus: offer.welcome_bonus,
           cryptoFriendly: offer.crypto_friendly ?? true,
           liveSupport: offer.live_support || '24/7',
           established: offer.established || '2024',
           languages: offer.languages || 'English',
+          highlights: offer.highlights || ['Exclusive offer', 'VIP program', 'Big bonuses']
         }));
         
         setCasinoOffers(transformedOffers || []);
@@ -59,17 +66,28 @@ export default function OffersPage() {
     }
   };
 
-  const openInfoModal = (offer) => setSelectedOffer(offer);
-  const closeInfoModal = () => setSelectedOffer(null);
+  const toggleFlip = (id) => {
+    setFlippedCards(prev => ({
+      ...prev,
+      [id]: !prev[id]
+    }));
+  };
 
-  const defaultProviders = ['Pragmatic Play', 'Hacksaw', 'Evolution', 'NetEnt', 'Quickspin'];
+  const openInfoModal = (offer) => {
+    setSelectedOffer(offer);
+  };
+
+  const closeInfoModal = () => {
+    setSelectedOffer(null);
+  };
+
+  // Game provider logos/names
+  const defaultProviders = ['Pragmatic Play', 'Hacksaw', 'Evolution', 'Quickspin', 'ELK', 'Red Tiger', 'Playson', 'NetEnt'];
 
   if (loading) {
     return (
       <div className="offers-page">
-        <div className="offers-loading">
-          <div className="loading-spinner"></div>
-        </div>
+        <div className="offers-loading">Loading offers...</div>
       </div>
     );
   }
@@ -78,223 +96,286 @@ export default function OffersPage() {
     return (
       <div className="offers-page">
         <div className="offers-container">
-          <div className="offers-empty">
-            <p>No partner offers available at the moment.</p>
+          <h1>Casinos & Offers</h1>
+          <div className="no-offers" style={{textAlign: 'center', padding: '60px 20px', color: 'white'}}>
+            <p>No casino offers available at the moment. Check back soon!</p>
           </div>
         </div>
       </div>
     );
   }
 
-  const featuredOffer = casinoOffers[0];
-  const secondaryOffers = casinoOffers.slice(1);
-
   return (
     <div className="offers-page">
       <div className="offers-container">
+        <h1>Casino Partners & Offers</h1>
+        <p className="offers-subtitle">Exclusive bonuses and promotions from our trusted partners</p>
         
-        {/* Section Header */}
-        <header className="offers-header">
-          <h1>Partner Platforms</h1>
-          <p>Verified platforms with exclusive member benefits</p>
-        </header>
+        {/* Featured Offer - First One Only */}
+        {casinoOffers[0] && (
+          <div className={`modern-offer-card featured ${flippedCards['featured'] ? 'flipped' : ''}`}>
+            <div className="featured-badge">
+              <span>⭐ FEATURED OFFER</span>
+            </div>
 
-        {/* Featured Partner Card */}
-        {featuredOffer && (
-          <article className="featured-card">
-            <div className="featured-content">
-              
-              {/* Logo Section */}
-              <div className="featured-logo">
-                <img src={featuredOffer.image} alt={featuredOffer.casino} />
+            <div className="modern-offer-content">
+              {/* Left Side - Casino Image */}
+              <div className="offer-image-section">
+                <div className="info-icon" title="More Information" onClick={() => setFlippedCards(prev => ({...prev, featured: !prev.featured}))}>
+                  ℹ️
+                </div>
+                <img src={casinoOffers[0].image} alt={casinoOffers[0].casino} className="offer-casino-image" />
               </div>
 
-              {/* Info Section */}
-              <div className="featured-info">
-                <h2 className="featured-name">{featuredOffer.casino}</h2>
-                <p className="featured-headline">{featuredOffer.title}</p>
-
-                {/* Value Pills */}
-                <div className="value-pills">
-                  {featuredOffer.bonusValue && (
-                    <div className="value-pill">
-                      <span className="pill-label">Bonus</span>
-                      <span className="pill-value">{featuredOffer.bonusValue}</span>
-                    </div>
-                  )}
-                  {featuredOffer.freeSpins && (
-                    <div className="value-pill">
-                      <span className="pill-label">Free Spins</span>
-                      <span className="pill-value">{featuredOffer.freeSpins}</span>
-                    </div>
-                  )}
-                  {featuredOffer.cashback && (
-                    <div className="value-pill">
-                      <span className="pill-label">Cashback</span>
-                      <span className="pill-value">{featuredOffer.cashback}</span>
+              {/* Right Side - Details */}
+              <div className="offer-details-section">
+                {/* Casino Name with Premium Badge */}
+                <div className="casino-header">
+                  <h3 className="modern-casino-name">{casinoOffers[0].casino}</h3>
+                  {casinoOffers[0].isPremium && (
+                    <div className="premium-partner-badge">
+                      <span>⭐</span>
+                      <div className="partner-text">
+                        <span className="partner-label">Premium Partner</span>
+                        <span className="partner-sublabel">Licensed & Regulated</span>
+                      </div>
                     </div>
                   )}
                 </div>
-              </div>
 
-              {/* CTA Section */}
-              <div className="featured-cta">
+                {/* Main Bonus Display */}
+                <div className="bonus-highlight-box">
+                  <div className="bonus-main-text">{casinoOffers[0].title}</div>
+                  {casinoOffers[0].freeSpins && (
+                    <div className="bonus-sub-text">+ {casinoOffers[0].freeSpins}</div>
+                  )}
+                  <div className="bonus-exclusive-tag">Exclusive Bonus!</div>
+                </div>
+
+                {/* Stats Grid */}
+                <div className="modern-stats-grid">
+                  <div className="modern-stat-item">
+                    <span className="stat-icon">🎮</span>
+                    <div className="stat-content">
+                      <div className="stat-value-large">{casinoOffers[0].gameProviders || '90+'}</div>
+                      <div className="stat-description">Game Providers</div>
+                    </div>
+                  </div>
+                  <div className="modern-stat-item">
+                    <span className="stat-icon">💳</span>
+                    <div className="stat-content">
+                      <div className="stat-value-large">70+</div>
+                      <div className="stat-description">Payment Methods</div>
+                    </div>
+                  </div>
+                  <div className="modern-stat-item">
+                    <span className="stat-icon">🎰</span>
+                    <div className="stat-content">
+                      <div className="stat-value-large">{casinoOffers[0].totalGames || '15000+'}</div>
+                      <div className="stat-description">Games</div>
+                    </div>
+                  </div>
+                  <div className="modern-stat-item">
+                    <span className="stat-icon">🛡️</span>
+                    <div className="stat-content">
+                      <div className="stat-value-large">{casinoOffers[0].license || 'Curaçao'}</div>
+                      <div className="stat-description">License</div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Payment Methods */}
+                {casinoOffers[0].depositMethods && (
+                  <>
+                    <div className="payment-methods-label">Available Payment Methods:</div>
+                    <div className="payment-methods-badges">
+                      {getMethodIcons(casinoOffers[0].depositMethods).slice(0, 12).map((method, idx) => (
+                        <span key={idx} className="payment-badge" title={method.name}>
+                          {method.icon} {method.name}
+                        </span>
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                {/* Terms */}
+                <div className="offer-terms-modern">
+                  No promo code needed - Bonus activates automatically
+                </div>
+
+                {/* CTA Button */}
                 <a 
-                  href={featuredOffer.bonusLink || '#'} 
+                  href={casinoOffers[0].bonusLink || '#'} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="btn-primary"
+                  className="modern-claim-button"
                 >
-                  View Offer
-                  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                    <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                  </svg>
+                  ✨ Claim Exclusive Bonus Now
                 </a>
-                <button 
-                  className="btn-details"
-                  onClick={() => openInfoModal(featuredOffer)}
-                  aria-label="View details"
-                >
-                  Details
-                </button>
               </div>
             </div>
-
-            {/* Trust Bar */}
-            <div className="trust-bar">
-              <span className="trust-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L4 5v6.09c0 5.05 3.41 9.76 8 10.91 4.59-1.15 8-5.86 8-10.91V5l-8-3z"/></svg>
-                Licensed
-              </span>
-              <span className="trust-divider">·</span>
-              <span className="trust-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>
-                Fast Payouts
-              </span>
-              <span className="trust-divider">·</span>
-              <span className="trust-item">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-                {featuredOffer.liveSupport} Support
-              </span>
-              {featuredOffer.cryptoFriendly && (
-                <>
-                  <span className="trust-divider">·</span>
-                  <span className="trust-item">
-                    <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
-                    Crypto
-                  </span>
-                </>
-              )}
-            </div>
-          </article>
+          </div>
         )}
 
-        {/* Secondary Offers */}
-        {secondaryOffers.length > 0 && (
-          <section className="secondary-section">
-            <h3 className="secondary-title">More Partners</h3>
+        {/* More Offers Section - New Row Design */}
+        {casinoOffers.length > 1 && (
+          <>
+            <div className="more-offers-section">
+              <h2>More Great Offers</h2>
+            </div>
             
-            <div className="offers-list">
-              {secondaryOffers.map((offer) => (
-                <article key={offer.id} className="offer-row">
-                  
+            <div className="offers-rows">
+              {casinoOffers.slice(1).map((offer) => (
+                <div key={offer.id} className="offer-row">
                   {/* Logo */}
-                  <div className="row-logo">
+                  <div className="offer-row-logo">
                     <img src={offer.image} alt={offer.casino} />
                   </div>
 
-                  {/* Name */}
-                  <div className="row-name">
-                    <span>{offer.casino}</span>
+                  {/* Stats Columns */}
+                  <div className="offer-row-stats">
+                    {offer.bonusValue && (
+                      <div className="stat-column">
+                        <span className="stat-label">{offer.freeSpins ? 'BONUS UP TO' : 'BONUS'}</span>
+                        <span className="stat-value">{offer.bonusValue}</span>
+                      </div>
+                    )}
+                    {offer.freeSpins && (
+                      <div className="stat-column">
+                        <span className="stat-label">FREE SPINS</span>
+                        <span className="stat-value">{offer.freeSpins}</span>
+                      </div>
+                    )}
+                    {offer.cashback && (
+                      <div className="stat-column">
+                        <span className="stat-label">CASHBACK</span>
+                        <span className="stat-value">{offer.cashback}</span>
+                      </div>
+                    )}
+                    {!offer.cashback && !offer.freeSpins && (
+                      <div className="stat-column">
+                        <span className="stat-label">-</span>
+                        <span className="stat-value">-</span>
+                      </div>
+                    )}
                   </div>
 
-                  {/* Values */}
-                  <div className="row-values">
-                    {offer.bonusValue && <span className="row-value">{offer.bonusValue}</span>}
-                    {offer.freeSpins && <span className="row-value-muted">{offer.freeSpins} FS</span>}
-                    {offer.cashback && !offer.freeSpins && <span className="row-value-muted">{offer.cashback} CB</span>}
+                  {/* Highlights */}
+                  <div className="offer-row-highlights">
+                    {(offer.highlights || ['Exclusive offer', 'VIP program', 'Big bonuses']).slice(0, 3).map((highlight, idx) => (
+                      <div key={idx} className="highlight-item">
+                        <span className="highlight-check">✓</span>
+                        <span>{highlight}</span>
+                      </div>
+                    ))}
                   </div>
 
-                  {/* CTA */}
-                  <div className="row-cta">
-                    <button 
-                      className="btn-text"
-                      onClick={() => openInfoModal(offer)}
+                  {/* Action Buttons */}
+                  <div className="offer-row-actions">
+                    <a 
+                      href={offer.bonusLink || '#'} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="btn-claim-row"
                     >
-                      Details
-                      <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
-                        <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
+                      CLAIM BONUS
+                    </a>
+                    <button 
+                      className="btn-info"
+                      onClick={() => openInfoModal(offer)}
+                      title="More Information"
+                    >
+                      ℹ
                     </button>
                   </div>
-                </article>
+                </div>
               ))}
             </div>
-          </section>
+          </>
         )}
 
-        {/* Compliance Footer */}
-        <footer className="offers-footer">
-          <p>18+ · Gambling involves risk · Partners licensed under respective jurisdictions · Terms apply · <a href="https://www.begambleaware.org" target="_blank" rel="noopener noreferrer">BeGambleAware.org</a></p>
-        </footer>
-
-        {/* Details Modal */}
+        {/* Info Modal */}
         {selectedOffer && (
-          <div className="modal-overlay" onClick={closeInfoModal}>
-            <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={closeInfoModal} aria-label="Close">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M18 6L6 18M6 6l12 12"/>
-                </svg>
-              </button>
+          <div className="offer-modal-overlay" onClick={closeInfoModal}>
+            <div className="offer-modal" onClick={(e) => e.stopPropagation()}>
+              <button className="modal-close" onClick={closeInfoModal}>×</button>
               
-              {/* Modal Header */}
+              {/* Badge */}
+              {selectedOffer.cryptoFriendly && (
+                <div className="modal-badge crypto">🔶 CRYPTO</div>
+              )}
+              
+              {/* Casino Logo & Title */}
               <div className="modal-header">
                 <img src={selectedOffer.image} alt={selectedOffer.casino} className="modal-logo" />
-                <div className="modal-title-section">
-                  <h2>{selectedOffer.casino}</h2>
-                  <p>{selectedOffer.title}</p>
-                </div>
+                <p className="modal-description">{selectedOffer.title || `Free spins at ${selectedOffer.casino}`}</p>
               </div>
 
-              {/* Info Grid */}
-              <div className="modal-info-grid">
-                <div className="info-cell">
-                  <span className="info-label">Min. Deposit</span>
-                  <span className="info-value">{selectedOffer.minDeposit || '€20'}</span>
-                </div>
-                <div className="info-cell">
-                  <span className="info-label">Max Withdrawal</span>
-                  <span className="info-value">{selectedOffer.maxWithdrawal}</span>
-                </div>
-                <div className="info-cell">
-                  <span className="info-label">Payout Time</span>
-                  <span className="info-value">{selectedOffer.withdrawalTime}</span>
-                </div>
-                <div className="info-cell">
-                  <span className="info-label">Crypto</span>
-                  <span className="info-value">{selectedOffer.cryptoFriendly ? 'Yes' : 'No'}</span>
-                </div>
-                <div className="info-cell">
-                  <span className="info-label">Support</span>
-                  <span className="info-value">{selectedOffer.liveSupport}</span>
-                </div>
-                <div className="info-cell">
-                  <span className="info-label">License</span>
-                  <span className="info-value">{selectedOffer.license}</span>
-                </div>
-              </div>
-
-              {/* Providers */}
+              {/* Casino Info Grid */}
               <div className="modal-section">
-                <h4>Game Providers</h4>
-                <div className="providers-list">
+                <h4>CASINO INFO</h4>
+                <div className="modal-info-grid">
+                  <div className="info-item">
+                    <span className="info-label">Minimum deposit</span>
+                    <span className="info-value gold">{selectedOffer.minDeposit || '€20'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Maximum withdrawal</span>
+                    <span className="info-value">{selectedOffer.maxWithdrawal}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Withdrawal time</span>
+                    <span className="info-value">{selectedOffer.withdrawalTime}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Crypto friendly</span>
+                    <span className="info-value gold">{selectedOffer.cryptoFriendly ? 'Yes' : 'No'}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Live support</span>
+                    <span className="info-value">{selectedOffer.liveSupport}</span>
+                  </div>
+                  <div className="info-item">
+                    <span className="info-label">Established</span>
+                    <span className="info-value">{selectedOffer.established}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Licences */}
+              <div className="modal-section">
+                <h4>Licences</h4>
+                <p className="modal-text">{selectedOffer.license || 'Curaçao'}</p>
+              </div>
+
+              {/* Languages */}
+              <div className="modal-section">
+                <h4>Languages</h4>
+                <p className="modal-text">{selectedOffer.languages}</p>
+              </div>
+
+              {/* Deposit Methods */}
+              <div className="modal-section">
+                <h4>Deposit Methods</h4>
+                <p className="modal-text-small">
+                  {selectedOffer.depositMethods 
+                    ? getMethodIcons(selectedOffer.depositMethods).map(m => m.name).join(', ')
+                    : 'Bitcoin, Cashlib, CashtoCode, Ethereum, Flexepin, inpay, Litecoin, Skrill, Tether, Zimpler, MiFinity, Tron, Binance, Apple Pay, Google Pay, NodaPay, CryptoCurrency, Paysafe Card'
+                  }
+                </p>
+              </div>
+
+              {/* Game Providers */}
+              <div className="modal-section">
+                <h4>TOP GAME PROVIDERS</h4>
+                <div className="modal-providers">
                   {(selectedOffer.gameProviders && selectedOffer.gameProviders.length > 0) ? (
-                    selectedOffer.gameProviders.slice(0, 8).map((providerId, idx) => (
-                      <div key={idx} className="provider-item">
+                    selectedOffer.gameProviders.map((providerId, idx) => (
+                      <div key={idx} className="provider-badge-img">
                         <img 
                           src={getProviderImage(providerId)} 
                           alt={getProviderName(providerId)}
+                          title={getProviderName(providerId)}
                           onError={(e) => e.target.style.display = 'none'}
                         />
                         <span>{getProviderName(providerId)}</span>
@@ -302,39 +383,23 @@ export default function OffersPage() {
                     ))
                   ) : (
                     defaultProviders.map((provider, idx) => (
-                      <div key={idx} className="provider-item text-only">
-                        <span>{provider}</span>
-                      </div>
+                      <div key={idx} className="provider-badge">{provider}</div>
                     ))
                   )}
                 </div>
               </div>
 
-              {/* Payment Methods */}
-              <div className="modal-section">
-                <h4>Payment Methods</h4>
-                <p className="methods-text">
-                  {selectedOffer.depositMethods 
-                    ? getMethodIcons(selectedOffer.depositMethods).slice(0, 10).map(m => m.name).join(' · ')
-                    : 'Bitcoin · Visa · Mastercard · Skrill · Neteller · Bank Transfer'
-                  }
-                </p>
-              </div>
-
-              {/* Modal CTA */}
+              {/* CTA */}
               <a 
                 href={selectedOffer.bonusLink || '#'} 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="modal-cta"
+                className="modal-claim-btn"
               >
-                View Offer
-                <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                  <path d="M6 12L10 8L6 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                </svg>
+                CLAIM BONUS
               </a>
 
-              <p className="modal-disclaimer">18+ · T&C Apply · New Customers Only</p>
+              <p className="modal-terms">T&C APPLY. 18+, NEW CUSTOMERS ONLY, BEGAMBLEAWARE.ORG, AD</p>
             </div>
           </div>
         )}
