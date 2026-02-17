@@ -9,6 +9,9 @@ const MINE_OPTIONS = [5, 7, 10, 15, 20, 24]; // Minimum 5 mines for balanced dif
 // API base URL - uses relative path for Vercel
 const API_URL = '/api/mines';
 
+// DEBUG: Log on module load
+console.log('🔧 Mines module loaded, GRID_SIZE:', GRID_SIZE);
+
 export default function Mines() {
   const { points, isConnected, updateUserPoints } = useStreamElements();
   const [bet, setBet] = useState(50);
@@ -28,6 +31,17 @@ export default function Mines() {
   const [maxMultiplier, setMaxMultiplier] = useState(0);
   const [checkingGame, setCheckingGame] = useState(true);
   const [stuckGame, setStuckGame] = useState(null);
+
+  // DEBUG: Log render state
+  useEffect(() => {
+    console.log('🎰 Mines component rendered:', {
+      checkingGame,
+      stuckGame: !!stuckGame,
+      gameActive,
+      gameOver,
+      GRID_SIZE
+    });
+  }, [checkingGame, stuckGame, gameActive, gameOver]);
 
   // Check for active game on mount
   useEffect(() => {
@@ -511,8 +525,24 @@ export default function Mines() {
         </div>
 
         {/* Grid */}
-        <div className="grid-panel">
-          <div className="mines-grid">
+        <div className="grid-panel" style={{ background: 'blue', minHeight: '400px', position: 'relative' }}>
+          {/* DEBUG: Visible info */}
+          <div style={{ 
+            position: 'absolute', 
+            top: '5px', 
+            left: '5px', 
+            background: 'rgba(255,0,0,0.8)', 
+            color: 'white', 
+            padding: '5px 10px', 
+            fontSize: '12px',
+            borderRadius: '4px',
+            zIndex: 9999
+          }}>
+            DEBUG: Grid={GRID_SIZE} cells | Active={String(gameActive)} | Over={String(gameOver)}
+          </div>
+          
+          <div className="mines-grid" style={{ marginTop: '30px', background: 'purple', padding: '10px' }}>
+            {console.log('🔲 Rendering grid with', GRID_SIZE, 'cells') || null}
             {Array.from({ length: GRID_SIZE }, (_, i) => {
               const isRevealed = revealed.includes(i);
               const isMine = mineLocations.includes(i);
@@ -532,25 +562,26 @@ export default function Mines() {
 
               const canClick = gameActive && !isRevealed && !loading;
 
-              // Inline styles to ensure visibility (bypasses Tailwind reset)
+              // DEBUG: Log first cell
+              if (i === 0) {
+                console.log('🔲 First cell rendering:', { cellClass, canClick, gameActive, gameOver });
+              }
+
+              // Inline styles to ensure visibility - SUPER BRIGHT FOR DEBUG
               const cellStyle = {
-                background: isSafe 
-                  ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.2))'
-                  : showMine 
-                    ? 'linear-gradient(135deg, rgba(239, 68, 68, 0.4), rgba(220, 38, 38, 0.3))'
-                    : 'rgba(45, 55, 72, 0.95)',
-                border: '3px solid rgba(212, 175, 55, 0.5)',
+                background: '#ff0000', // BRIGHT RED FOR DEBUGGING
+                border: '5px solid #00ff00', // BRIGHT GREEN BORDER
                 borderRadius: '10px',
                 width: '100%',
                 height: '100%',
-                minWidth: '60px',
-                minHeight: '60px',
+                minWidth: '80px',
+                minHeight: '80px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '2rem',
-                cursor: canClick ? 'pointer' : 'default',
-                opacity: (!gameActive && !gameOver) ? 0.5 : 1,
+                cursor: 'pointer',
+                position: 'relative',
               };
 
               return (
@@ -564,6 +595,15 @@ export default function Mines() {
                   }}
                   type="button"
                 >
+                  {/* DEBUG: Show cell number */}
+                  <span style={{ 
+                    position: 'absolute', 
+                    top: '2px', 
+                    left: '2px', 
+                    fontSize: '10px', 
+                    color: 'yellow',
+                    fontWeight: 'bold'
+                  }}>{i}</span>
                   {/* Show ❓ when idle OR when game is active but cell not revealed */}
                   {((!gameActive && !gameOver) || (gameActive && !isRevealed)) && <span className="cell-icon">❓</span>}
                   {/* Show 💎 only when revealed and safe */}
