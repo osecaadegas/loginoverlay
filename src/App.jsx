@@ -40,6 +40,7 @@ import AlertsPage from './components/Admin/pages/AlertsPage';
 import LogsPage from './components/Admin/pages/LogsPage';
 import PlayersPage from './components/Admin/pages/PlayersPage';
 import InvestigationPage from './components/Admin/pages/InvestigationPage';
+import CasinoOffersManager from './components/Admin/CasinoOffersManager';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -648,6 +649,11 @@ function App() {
                 <Route path="/webmod/giveaway-creator" element={
                   <ProtectedAdminRoute>
                     <GiveawayCreator />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/webmod/casino-offers" element={
+                  <ProtectedAdminRoute>
+                    <CasinoOffersManager />
                   </ProtectedAdminRoute>
                 } />
                 
