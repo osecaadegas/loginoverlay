@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import { getMethodIcons } from '../../utils/depositMethods';
+import { getProviderImage, getProviderName } from '../../utils/gameProviders';
 import './OffersPage.css';
 
 export default function OffersPage() {
@@ -368,9 +369,23 @@ export default function OffersPage() {
               <div className="modal-section">
                 <h4>TOP GAME PROVIDERS</h4>
                 <div className="modal-providers">
-                  {defaultProviders.map((provider, idx) => (
-                    <div key={idx} className="provider-badge">{provider}</div>
-                  ))}
+                  {(selectedOffer.gameProviders && selectedOffer.gameProviders.length > 0) ? (
+                    selectedOffer.gameProviders.map((providerId, idx) => (
+                      <div key={idx} className="provider-badge-img">
+                        <img 
+                          src={getProviderImage(providerId)} 
+                          alt={getProviderName(providerId)}
+                          title={getProviderName(providerId)}
+                          onError={(e) => e.target.style.display = 'none'}
+                        />
+                        <span>{getProviderName(providerId)}</span>
+                      </div>
+                    ))
+                  ) : (
+                    defaultProviders.map((provider, idx) => (
+                      <div key={idx} className="provider-badge">{provider}</div>
+                    ))
+                  )}
                 </div>
               </div>
 

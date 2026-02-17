@@ -1419,6 +1419,38 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.provider-badge-img {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.2s ease;
+}
+
+.provider-badge-img:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(0, 255, 135, 0.3);
+}
+
+.provider-badge-img img {
+  height: 24px;
+  width: auto;
+  max-width: 70px;
+  object-fit: contain;
+  filter: brightness(1.1);
+}
+
+.provider-badge-img span {
+  font-size: 0.65rem;
+  color: #888;
+  text-align: center;
+  white-space: nowrap;
+}
+
 .modal-claim-btn {
   display: block;
   width: 100%;
