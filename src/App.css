@@ -89,6 +89,8 @@ body.sidebar-open {
   justify-content: center;
   transition: all 0.3s ease;
   box-shadow: 0 4px 12px rgba(0, 225, 255, 0.3);
+  pointer-events: auto;
+  touch-action: manipulation;
 }
 
 .sidebar-toggle-btn:hover {

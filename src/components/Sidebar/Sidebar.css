@@ -24,6 +24,7 @@
   padding: 20px 16px;
   transition: left 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
   -webkit-overflow-scrolling: touch;
+  pointer-events: auto;
 }
 
 /* Sidebar open state - mobile */
@@ -43,11 +44,13 @@
   visibility: hidden;
   transition: all 0.3s ease;
   z-index: 9998;
+  pointer-events: none;
 }
 
 .sidebar-backdrop.visible {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
 }
 
 /* Tablet: Narrow persistent sidebar */

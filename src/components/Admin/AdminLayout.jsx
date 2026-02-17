@@ -151,7 +151,6 @@ const AdminLayout = () => {
               <Menu size={20} />
               <span className="menu-label">Menu</span>
             </button>
-            </button>
             <span className="topbar-title">The Life Admin</span>
           </div>
 
