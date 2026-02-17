@@ -343,6 +343,11 @@
   appearance: none;
   -webkit-appearance: none;
   color: inherit;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+  min-height: 60px;
+  min-width: 60px;
 }
 
 .cell:disabled {
@@ -372,9 +377,11 @@
   pointer-events: auto !important;
   cursor: pointer !important;
   opacity: 1 !important;
+  z-index: 10;
 }
 
-.cell.hidden.clickable:hover {
+.cell.hidden.clickable:hover,
+.cell.hidden.clickable:active {
   background: rgba(212, 175, 55, 0.3);
   border-color: rgba(212, 175, 55, 0.8);
   box-shadow: 0 0 15px rgba(212, 175, 55, 0.4);

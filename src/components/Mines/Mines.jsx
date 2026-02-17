@@ -528,8 +528,16 @@ export default function Mines() {
                 <button
                   key={i}
                   className={cellClass}
-                  onClick={() => canClick && clickCell(i)}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (canClick) clickCell(i);
+                  }}
+                  onTouchEnd={(e) => {
+                    e.preventDefault();
+                    if (canClick) clickCell(i);
+                  }}
                   disabled={!canClick}
+                  type="button"
                 >
                   {/* Show ❓ when idle OR when game is active but cell not revealed */}
                   {((!gameActive && !gameOver) || (gameActive && !isRevealed)) && <span className="cell-icon">❓</span>}
