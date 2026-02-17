@@ -128,6 +128,7 @@ export default function Mines() {
   const risk = getRiskLevel(mines);
 
   const startNewGame = async () => {
+    console.log('🎮 Starting new game...', { isConnected, points, bet, mines });
     if (!isConnected) {
       alert('Connect StreamElements first!');
       return;
@@ -144,6 +145,7 @@ export default function Mines() {
       
       // Start game on server (mine positions generated server-side)
       const data = await apiCall('start', { bet, mineCount: mines });
+      console.log('📦 Start game response:', data);
       
       if (data.success) {
         setGameId(data.game.id);
@@ -158,6 +160,7 @@ export default function Mines() {
         setProfit(0);
         setSafeCellsRemaining(data.game.safeCellsRemaining);
         setMaxMultiplier(data.game.maxMultiplier);
+        console.log('✅ Game started successfully, gameActive set to true');
       }
     } catch (error) {
       console.error('Start game error:', error);
@@ -165,11 +168,16 @@ export default function Mines() {
       alert('Failed to start game: ' + error.message);
     } finally {
       setLoading(false);
+      console.log('🔓 Loading set to false');
     }
   };
 
   const clickCell = async (cellIndex) => {
-    if (!gameActive || revealed.includes(cellIndex) || loading) return;
+    console.log('🎯 clickCell called:', { cellIndex, gameActive, loading, revealed: revealed.length });
+    if (!gameActive || revealed.includes(cellIndex) || loading) {
+      console.log('🚫 Click blocked:', { gameActive, isRevealed: revealed.includes(cellIndex), loading });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -528,15 +536,10 @@ export default function Mines() {
                 <button
                   key={i}
                   className={cellClass}
-                  onClick={(e) => {
-                    e.preventDefault();
+                  onClick={() => {
+                    console.log('🖱️ Button clicked:', { i, canClick, gameActive, loading });
                     if (canClick) clickCell(i);
                   }}
-                  onTouchEnd={(e) => {
-                    e.preventDefault();
-                    if (canClick) clickCell(i);
-                  }}
-                  disabled={!canClick}
                   type="button"
                 >
                   {/* Show ❓ when idle OR when game is active but cell not revealed */}
