@@ -24,10 +24,11 @@ export default function Sidebar({ className = '', onClose }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-  // Close mobile menu when route changes
+  // Close mobile menu when route changes (NOT when onClose changes)
   useEffect(() => {
     if (onClose) onClose();
-  }, [location.pathname, onClose]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.pathname]);
 
   // Debug logging
   useEffect(() => {

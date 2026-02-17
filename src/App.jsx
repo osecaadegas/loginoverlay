@@ -579,8 +579,11 @@ function LayoutWrapper({ children }) {
           <button 
             className={`sidebar-toggle-btn touch-target ${sidebarOpen ? 'sidebar-open' : ''}`}
             onClick={() => {
-              console.log('🍔 Hamburger clicked! Current state:', sidebarOpen);
-              setSidebarOpen(!sidebarOpen);
+              console.log('🍔 Hamburger clicked! Current state:', sidebarOpen, '-> setting to:', !sidebarOpen);
+              setSidebarOpen(prev => {
+                console.log('🍔 State update:', prev, '->', !prev);
+                return !prev;
+              });
             }}
             aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
           >
@@ -588,6 +591,7 @@ function LayoutWrapper({ children }) {
           </button>
           
           {/* Sidebar with open state */}
+          {console.log('🔧 Rendering Sidebar with className:', sidebarOpen ? 'open' : '(empty)')}
           <Sidebar className={sidebarOpen ? 'open' : ''} onClose={closeSidebar} />
           
           {/* Backdrop overlay - CSS handles visibility */}
