@@ -1131,18 +1131,18 @@
 .offers-rows {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .offer-row {
   display: grid;
-  grid-template-columns: 120px 1fr 1fr auto;
+  grid-template-columns: 100px 1fr 1fr auto;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
   background: linear-gradient(135deg, #1e2235 0%, #252a3d 100%);
   border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: 12px;
-  padding: 16px 20px;
+  padding: 12px 16px;
   transition: all 0.3s ease;
 }
 
@@ -1154,44 +1154,48 @@
 
 /* Logo */
 .offer-row-logo {
-  width: 100px;
-  height: 50px;
+  width: 80px;
+  height: auto;
+  min-height: 40px;
+  max-height: 60px;
   background: rgba(255, 255, 255, 0.05);
   border-radius: 8px;
-  overflow: hidden;
+  overflow: visible;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 6px;
 }
 
 .offer-row-logo img {
-  max-width: 90%;
-  max-height: 90%;
+  width: 100%;
+  height: auto;
+  max-height: 48px;
   object-fit: contain;
 }
 
 /* Stats */
 .offer-row-stats {
   display: flex;
-  gap: 30px;
+  gap: 24px;
 }
 
 .stat-column {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  min-width: 80px;
+  gap: 2px;
+  min-width: 70px;
 }
 
 .stat-column .stat-label {
-  font-size: 0.7rem;
+  font-size: 0.65rem;
   color: #9ca3af;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
 .stat-column .stat-value {
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 700;
   color: #fff;
 }
@@ -1200,14 +1204,14 @@
 .offer-row-highlights {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
 }
 
 .highlight-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 0.85rem;
+  gap: 6px;
+  font-size: 0.8rem;
   color: #d1d5db;
 }
 
@@ -1219,7 +1223,7 @@
 /* Actions */
 .offer-row-actions {
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
 
@@ -1227,7 +1231,7 @@
   background: transparent;
   border: 2px solid #fff;
   color: #fff;
-  padding: 10px 20px;
+  padding: 8px 18px;
   border-radius: 6px;
   font-weight: 600;
   font-size: 0.85rem;
@@ -1484,8 +1488,9 @@
 /* Responsive for Offer Rows */
 @media (max-width: 1024px) {
   .offer-row {
-    grid-template-columns: 100px 1fr auto;
-    gap: 15px;
+    grid-template-columns: 80px 1fr auto;
+    gap: 12px;
+    padding: 10px 14px;
   }
 
   .offer-row-highlights {
@@ -1496,14 +1501,15 @@
 @media (max-width: 768px) {
   .offer-row {
     grid-template-columns: 1fr;
-    gap: 12px;
-    padding: 16px;
+    gap: 10px;
+    padding: 14px;
     text-align: center;
   }
 
   .offer-row-logo {
-    width: 100%;
-    height: 60px;
+    width: 100px;
+    margin: 0 auto;
+    height: auto;
   }
 
   .offer-row-stats {
