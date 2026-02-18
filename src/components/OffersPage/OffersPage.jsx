@@ -28,34 +28,62 @@ export default function OffersPage() {
         setCasinoOffers([]);
       } else {
         // Transform data to match component format
-        const transformedOffers = data.map(offer => ({
-          id: offer.id,
-          badge: offer.badge,
-          badgeClass: offer.badge_class,
-          casino: offer.casino_name,
-          title: offer.title,
-          image: offer.image_url,
-          bonusLink: offer.bonus_link,
-          minDeposit: offer.min_deposit,
-          maxWithdrawal: offer.max_withdrawal || '€5,000 per week',
-          withdrawalTime: offer.withdrawal_time || 'Up to 24h',
-          cashback: offer.cashback,
-          bonusValue: offer.bonus_value,
-          freeSpins: offer.free_spins,
-          depositMethods: offer.deposit_methods,
-          vpnFriendly: offer.vpn_friendly,
-          isPremium: offer.is_premium,
-          details: offer.details,
-          gameProviders: offer.game_providers,
-          totalGames: offer.total_games,
-          license: offer.license,
-          welcomeBonus: offer.welcome_bonus,
-          cryptoFriendly: offer.crypto_friendly ?? true,
-          liveSupport: offer.live_support || '24/7',
-          established: offer.established || '2024',
-          languages: offer.languages || 'English',
-          highlights: offer.highlights || ['Exclusive offer', 'VIP program', 'Big bonuses']
-        }));
+        const transformedOffers = data.map(offer => {
+          // Parse game_providers if it's a string
+          let gameProviders = offer.game_providers;
+          if (typeof gameProviders === 'string') {
+            try {
+              gameProviders = JSON.parse(gameProviders);
+            } catch {
+              gameProviders = [];
+            }
+          }
+          if (!Array.isArray(gameProviders)) {
+            gameProviders = [];
+          }
+          
+          // Parse highlights if it's a string
+          let highlights = offer.highlights;
+          if (typeof highlights === 'string') {
+            try {
+              highlights = JSON.parse(highlights);
+            } catch {
+              highlights = ['Exclusive offer', 'VIP program', 'Big bonuses'];
+            }
+          }
+          if (!Array.isArray(highlights)) {
+            highlights = ['Exclusive offer', 'VIP program', 'Big bonuses'];
+          }
+          
+          return {
+            id: offer.id,
+            badge: offer.badge,
+            badgeClass: offer.badge_class,
+            casino: offer.casino_name,
+            title: offer.title,
+            image: offer.image_url,
+            bonusLink: offer.bonus_link,
+            minDeposit: offer.min_deposit,
+            maxWithdrawal: offer.max_withdrawal || '€5,000 per week',
+            withdrawalTime: offer.withdrawal_time || 'Up to 24h',
+            cashback: offer.cashback,
+            bonusValue: offer.bonus_value,
+            freeSpins: offer.free_spins,
+            depositMethods: offer.deposit_methods,
+            vpnFriendly: offer.vpn_friendly,
+            isPremium: offer.is_premium,
+            details: offer.details,
+            gameProviders,
+            totalGames: offer.total_games,
+            license: offer.license,
+            welcomeBonus: offer.welcome_bonus,
+            cryptoFriendly: offer.crypto_friendly ?? true,
+            liveSupport: offer.live_support || '24/7',
+            established: offer.established || '2024',
+            languages: offer.languages || 'English',
+            highlights
+          };
+        });
         
         setCasinoOffers(transformedOffers || []);
       }
@@ -263,7 +291,7 @@ export default function OffersPage() {
 
                   {/* Highlights */}
                   <div className="offer-row-highlights">
-                    {(offer.highlights || ['Exclusive offer', 'VIP program', 'Big bonuses']).slice(0, 3).map((highlight, idx) => (
+                    {(Array.isArray(offer.highlights) ? offer.highlights : ['Exclusive offer', 'VIP program', 'Big bonuses']).slice(0, 3).map((highlight, idx) => (
                       <div key={idx} className="highlight-item">
                         <span className="highlight-check">✓</span>
                         <span>{highlight}</span>
@@ -370,7 +398,7 @@ export default function OffersPage() {
               <div className="modal-section">
                 <h4>TOP GAME PROVIDERS</h4>
                 <div className="modal-providers">
-                  {(selectedOffer.gameProviders && selectedOffer.gameProviders.length > 0) ? (
+                  {(Array.isArray(selectedOffer.gameProviders) && selectedOffer.gameProviders.length > 0) ? (
                     selectedOffer.gameProviders.map((providerId, idx) => (
                       <div key={idx} className="provider-badge-img">
                         <img 
