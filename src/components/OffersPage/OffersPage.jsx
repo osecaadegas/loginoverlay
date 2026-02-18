@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { supabase } from '../../config/supabaseClient';
 import { getMethodIcons } from '../../utils/depositMethods';
 import { getProviderImage, getProviderName } from '../../utils/gameProviders';
@@ -294,8 +295,8 @@ export default function OffersPage() {
           </>
         )}
 
-        {/* Info Modal */}
-        {selectedOffer && (
+        {/* Info Modal - Rendered via Portal */}
+        {selectedOffer && createPortal(
           <div className="offer-modal-overlay" onClick={closeInfoModal}>
             <div className="offer-modal" onClick={(e) => e.stopPropagation()}>
               <button className="modal-close" onClick={closeInfoModal}>×</button>
@@ -401,7 +402,8 @@ export default function OffersPage() {
 
               <p className="modal-terms">T&C APPLY. 18+, NEW CUSTOMERS ONLY, BEGAMBLEAWARE.ORG, AD</p>
             </div>
-          </div>
+          </div>,
+          document.body
         )}
       </div>
     </div>
