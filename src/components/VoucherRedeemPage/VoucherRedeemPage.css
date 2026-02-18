@@ -201,18 +201,18 @@
 
 /* All Redemptions Section */
 .all-redemptions {
-  margin-top: 3rem;
+  margin-top: 2rem;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 2rem;
+  border-radius: 12px;
+  padding: 1.25rem;
 }
 
 .all-redemptions h2 {
   color: #fff;
-  margin: 0 0 1.5rem 0;
+  margin: 0 0 1rem 0;
   text-align: center;
-  font-size: 1.5rem;
+  font-size: 1.25rem;
 }
 
 .redemptions-table {
@@ -224,14 +224,14 @@
 
 .redemptions-table .table-header {
   display: grid;
-  grid-template-columns: 160px 180px 120px 1fr;
+  grid-template-columns: 100px 1fr 100px 160px;
   background: rgba(0, 0, 0, 0.5);
   border-bottom: 1px solid rgba(255, 255, 255, 0.15);
-  padding: 1rem;
+  padding: 0.625rem 1rem;
   font-weight: 600;
   color: rgba(255, 255, 255, 0.7);
   text-transform: uppercase;
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   letter-spacing: 0.5px;
 }
 
@@ -242,8 +242,8 @@
 
 .redemptions-table .table-row {
   display: grid;
-  grid-template-columns: 160px 180px 120px 1fr;
-  padding: 0.875rem 1rem;
+  grid-template-columns: 100px 1fr 100px 160px;
+  padding: 0.5rem 1rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.05);
   transition: background 0.2s;
 }
@@ -260,7 +260,7 @@
   display: flex;
   align-items: center;
   color: rgba(255, 255, 255, 0.8);
-  font-size: 0.875rem;
+  font-size: 0.8125rem;
 }
 
 .redemptions-table .table-cell.code {
@@ -282,45 +282,40 @@
 
 .redemptions-table .table-cell.date {
   color: rgba(255, 255, 255, 0.5);
-  font-size: 0.8125rem;
+  font-size: 0.75rem;
 }
 
 @media (max-width: 968px) {
   .redemptions-table .table-header,
   .redemptions-table .table-row {
-    grid-template-columns: 140px 140px 100px 1fr;
-    padding: 0.75rem;
-    font-size: 0.8125rem;
+    grid-template-columns: 90px 1fr 90px 140px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.75rem;
   }
   
   .redemptions-table .table-header {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
   }
 }
 
-@media (max-width: 768px) {
-  .redemptions-table .table-header {
-    display: none;
-  }
-  
+@media (max-width: 640px) {
+  .redemptions-table .table-header,
   .redemptions-table .table-row {
-    grid-template-columns: 1fr;
-    gap: 0.5rem;
-    padding: 1rem;
+    grid-template-columns: 70px 1fr 70px 100px;
+    gap: 4px;
+    padding: 0.4rem 0.5rem;
+    font-size: 0.7rem;
   }
   
-  .redemptions-table .table-cell {
-    padding: 0.25rem 0;
+  .redemptions-table .table-header {
+    font-size: 0.6rem;
   }
   
-  .redemptions-table .table-cell::before {
-    content: attr(data-label);
-    font-weight: 600;
-    margin-right: 0.5rem;
-    color: rgba(255, 255, 255, 0.5);
+  .redemptions-table .table-cell.date {
+    font-size: 0.65rem;
   }
   
   .all-redemptions {
-    padding: 1.5rem 1rem;
+    padding: 1rem 0.75rem;
   }
 }
