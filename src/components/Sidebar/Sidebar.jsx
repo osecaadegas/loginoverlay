@@ -370,8 +370,8 @@ export default function Sidebar({ className = '', onClose }) {
 
           {/* Premium dropdown removed - overlay system deleted */}
 
-          {/* WebMod dropdown - Only for admins and slot_modders */}
-          {(isAdmin || isSlotModder) && (
+          {/* WebMod dropdown - Only for admins, slot_modders, and moderators */}
+          {(isAdmin || isSlotModder || isModerator) && (
             <div className="sidebar-item-wrapper">
               <button
                 className={`sidebar-item ${showWebModDropdown ? 'active' : ''}`}
@@ -402,6 +402,15 @@ export default function Sidebar({ className = '', onClose }) {
                     >
                       <span className="subitem-icon">🎁</span>
                       <span className="subitem-label">{t('nav_points_manager', 'Points Manager')}</span>
+                    </button>
+                  )}
+                  {(isAdmin || isModerator) && (
+                    <button
+                      className={`sidebar-subitem ${isActive('/webmod/guess-balance') ? 'active' : ''}`}
+                      onClick={() => handleNavigation('/webmod/guess-balance')}
+                    >
+                      <span className="subitem-icon">🎯</span>
+                      <span className="subitem-label">{t('nav_guess_balance', 'Guess Balance')}</span>
                     </button>
                   )}
                   {isAdmin && (

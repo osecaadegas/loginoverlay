@@ -41,6 +41,7 @@ import LogsPage from './components/Admin/pages/LogsPage';
 import PlayersPage from './components/Admin/pages/PlayersPage';
 import InvestigationPage from './components/Admin/pages/InvestigationPage';
 import CasinoOffersManager from './components/Admin/CasinoOffersManager';
+import GuessBalanceManager from './components/Admin/GuessBalanceManager';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -656,6 +657,7 @@ function App() {
                     <CasinoOffersManager />
                   </ProtectedAdminRoute>
                 } />
+                <Route path="/webmod/guess-balance" element={<GuessBalanceManager />} />
                 
                 <Route path="/admin" element={<AdminPanel />} />
 
