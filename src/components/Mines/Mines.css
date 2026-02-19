@@ -444,9 +444,19 @@
     max-width: 600px;
     margin: 0 auto;
   }
+
+  .grid-panel {
+    max-width: 600px;
+    margin: 0 auto;
+  }
 }
 
 @media (max-width: 768px) {
+  .mines-page {
+    max-width: 100%;
+    padding: 16px;
+  }
+
   .mines-header {
     flex-direction: column;
     gap: 10px;
@@ -459,20 +469,25 @@
 
   .grid-panel {
     padding: 15px;
+    width: 100%;
   }
 
   .mines-grid {
     gap: 8px;
+    max-width: 100%;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
   }
 
   .cell {
     font-size: 1.8rem;
+    min-width: 0;
+    min-height: 0;
   }
 }
 
 @media (max-width: 480px) {
   .mines-page {
-    padding: 10px;
+    padding: 12px;
   }
 
   .mines-header h1 {
@@ -485,19 +500,24 @@
 
   .controls-panel {
     padding: 20px;
+    max-width: 100%;
   }
 
   .grid-panel {
     padding: 10px;
+    max-width: 100%;
   }
 
   .mines-grid {
     gap: 6px;
+    max-width: 100%;
   }
 
   .cell {
     font-size: 1.4rem;
     border-width: 2px;
+    min-width: 0;
+    min-height: 0;
   }
 
   .mine-select {
