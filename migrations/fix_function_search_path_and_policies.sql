@@ -4,81 +4,106 @@
 
 -- =====================================================
 -- Fix all functions with mutable search_path
--- Using ALTER FUNCTION to add search_path without recreating
+-- Using DO block with exception handling
 -- =====================================================
 
-ALTER FUNCTION IF EXISTS public.get_available_seats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.cleanup_old_news SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_anticheat_rules_updated_at SET search_path = public;
-ALTER FUNCTION IF EXISTS public.create_player_risk_score SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_session_activity SET search_path = public;
-ALTER FUNCTION IF EXISTS public.prevent_admin_action_deletion SET search_path = public;
-ALTER FUNCTION IF EXISTS public.handle_player_timeout SET search_path = public;
-ALTER FUNCTION IF EXISTS public.cleanup_empty_tables SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_round_bet_totals SET search_path = public;
-ALTER FUNCTION IF EXISTS public.calculate_session_profit SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_admin_role_level SET search_path = public;
-ALTER FUNCTION IF EXISTS public.expire_old_listings SET search_path = public;
-ALTER FUNCTION IF EXISTS public.has_admin_permission SET search_path = public;
-ALTER FUNCTION IF EXISTS public.generate_crime_news SET search_path = public;
-ALTER FUNCTION IF EXISTS public.process_roulette_round SET search_path = public;
-ALTER FUNCTION IF EXISTS public.start_new_roulette_round SET search_path = public;
-ALTER FUNCTION IF EXISTS public.cleanup_old_roulette_bets SET search_path = public;
-ALTER FUNCTION IF EXISTS public.generate_leaderboard_news SET search_path = public;
-ALTER FUNCTION IF EXISTS public.generate_pvp_news SET search_path = public;
-ALTER FUNCTION IF EXISTS public.generate_kingpin_news SET search_path = public;
-ALTER FUNCTION IF EXISTS public.execute_the_life_wipe SET search_path = public;
-ALTER FUNCTION IF EXISTS public.calculate_guess_balance_winner SET search_path = public;
-ALTER FUNCTION IF EXISTS public.sync_season_with_wipe SET search_path = public;
-ALTER FUNCTION IF EXISTS public.grant_season_pass_xp SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_session_slot_stats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_translation SET search_path = public;
-ALTER FUNCTION IF EXISTS public.upsert_translation SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_record_translations SET search_path = public;
-ALTER FUNCTION IF EXISTS public.create_trial_on_signup SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_next_spin_time SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_online_players_count SET search_path = public;
-ALTER FUNCTION IF EXISTS public.log_payment SET search_path = public;
-ALTER FUNCTION IF EXISTS public.rotate_overlay_token SET search_path = public;
-ALTER FUNCTION IF EXISTS public.set_initial_durability SET search_path = public;
-ALTER FUNCTION IF EXISTS public.reset_daily_catches SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_bonus_hunt_session_stats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_casino_offers_updated_at SET search_path = public;
-ALTER FUNCTION IF EXISTS public.add_item_to_inventory SET search_path = public;
-ALTER FUNCTION IF EXISTS public.can_user_spin_today SET search_path = public;
-ALTER FUNCTION IF EXISTS public.cancel_subscription SET search_path = public;
-ALTER FUNCTION IF EXISTS public.cleanup_old_pvp_chat SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_slots_updated_at SET search_path = public;
-ALTER FUNCTION IF EXISTS public.cleanup_stale_pvp_presence SET search_path = public;
-ALTER FUNCTION IF EXISTS public.execute_pvp_attack SET search_path = public;
-ALTER FUNCTION IF EXISTS public.generate_secure_token SET search_path = public;
-ALTER FUNCTION IF EXISTS public.search_slots SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_active_boats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_upcoming_boats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.get_user_metadata SET search_path = public;
-ALTER FUNCTION IF EXISTS public.handle_new_user SET search_path = public;
-ALTER FUNCTION IF EXISTS public.handle_new_user_profile SET search_path = public;
-ALTER FUNCTION IF EXISTS public.handle_stripe_customer_update SET search_path = public;
-ALTER FUNCTION IF EXISTS public.handle_stripe_subscription_update SET search_path = public;
-ALTER FUNCTION IF EXISTS public.has_active_subscription SET search_path = public;
-ALTER FUNCTION IF EXISTS public.increment_highlight_views SET search_path = public;
-ALTER FUNCTION IF EXISTS public.initialize_the_life_player SET search_path = public;
-ALTER FUNCTION IF EXISTS public.process_premium_redemption SET search_path = public;
-ALTER FUNCTION IF EXISTS public.reactivate_subscription SET search_path = public;
-ALTER FUNCTION IF EXISTS public.sync_widget_layout_jsonb SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_leaderboard_ranks SET search_path = public;
-ALTER FUNCTION IF EXISTS public.recalculate_bonus_hunt_stats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.auto_level_up SET search_path = public;
-ALTER FUNCTION IF EXISTS public.refresh_mock_users SET search_path = public;
-ALTER FUNCTION IF EXISTS public.start_trial SET search_path = public;
-ALTER FUNCTION IF EXISTS public.track_widget_view SET search_path = public;
-ALTER FUNCTION IF EXISTS public.trigger_recalculate_bonus_hunt_stats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_game_stats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_pvp_presence SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_slot_stats SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_stream_highlights_updated_at SET search_path = public;
-ALTER FUNCTION IF EXISTS public.update_updated_at_column SET search_path = public;
-ALTER FUNCTION IF EXISTS public.compute_security_log_hash SET search_path = public;
+DO $$
+DECLARE
+  func_names TEXT[] := ARRAY[
+    'get_available_seats',
+    'cleanup_old_news',
+    'update_anticheat_rules_updated_at',
+    'create_player_risk_score',
+    'update_session_activity',
+    'prevent_admin_action_deletion',
+    'handle_player_timeout',
+    'cleanup_empty_tables',
+    'get_round_bet_totals',
+    'calculate_session_profit',
+    'get_admin_role_level',
+    'expire_old_listings',
+    'has_admin_permission',
+    'generate_crime_news',
+    'process_roulette_round',
+    'start_new_roulette_round',
+    'cleanup_old_roulette_bets',
+    'generate_leaderboard_news',
+    'generate_pvp_news',
+    'generate_kingpin_news',
+    'execute_the_life_wipe',
+    'calculate_guess_balance_winner',
+    'sync_season_with_wipe',
+    'grant_season_pass_xp',
+    'update_session_slot_stats',
+    'get_translation',
+    'upsert_translation',
+    'get_record_translations',
+    'create_trial_on_signup',
+    'get_next_spin_time',
+    'get_online_players_count',
+    'log_payment',
+    'rotate_overlay_token',
+    'set_initial_durability',
+    'reset_daily_catches',
+    'update_bonus_hunt_session_stats',
+    'update_casino_offers_updated_at',
+    'add_item_to_inventory',
+    'can_user_spin_today',
+    'cancel_subscription',
+    'cleanup_old_pvp_chat',
+    'update_slots_updated_at',
+    'cleanup_stale_pvp_presence',
+    'execute_pvp_attack',
+    'generate_secure_token',
+    'search_slots',
+    'get_active_boats',
+    'get_upcoming_boats',
+    'get_user_metadata',
+    'handle_new_user',
+    'handle_new_user_profile',
+    'handle_stripe_customer_update',
+    'handle_stripe_subscription_update',
+    'has_active_subscription',
+    'increment_highlight_views',
+    'initialize_the_life_player',
+    'process_premium_redemption',
+    'reactivate_subscription',
+    'sync_widget_layout_jsonb',
+    'update_leaderboard_ranks',
+    'recalculate_bonus_hunt_stats',
+    'auto_level_up',
+    'refresh_mock_users',
+    'start_trial',
+    'track_widget_view',
+    'trigger_recalculate_bonus_hunt_stats',
+    'update_game_stats',
+    'update_pvp_presence',
+    'update_slot_stats',
+    'update_stream_highlights_updated_at',
+    'update_updated_at_column',
+    'compute_security_log_hash'
+  ];
+  func_name TEXT;
+  func_oid OID;
+BEGIN
+  FOREACH func_name IN ARRAY func_names
+  LOOP
+    -- Find all overloaded versions of this function
+    FOR func_oid IN 
+      SELECT p.oid 
+      FROM pg_proc p 
+      JOIN pg_namespace n ON p.pronamespace = n.oid 
+      WHERE n.nspname = 'public' AND p.proname = func_name
+    LOOP
+      BEGIN
+        EXECUTE format('ALTER FUNCTION %s SET search_path = public', func_oid::regprocedure);
+        RAISE NOTICE 'Updated search_path for %', func_oid::regprocedure;
+      EXCEPTION WHEN OTHERS THEN
+        RAISE NOTICE 'Could not update %: %', func_name, SQLERRM;
+      END;
+    END LOOP;
+  END LOOP;
+END $$;
 
 -- =====================================================
 -- Fix "always true" INSERT/UPDATE policies
