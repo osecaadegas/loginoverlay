@@ -787,7 +787,7 @@ function BettingControls({
 
   if (gamePhase === 'betting') {
     return (
-      <div className="animate-slide-up space-y-4">
+      <div className="animate-slide-up space-y-4 mx-auto w-full max-w-3xl">
         <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1">
@@ -834,7 +834,7 @@ function BettingControls({
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2.5 mb-4">
+          <div className="flex flex-wrap gap-2.5 mb-4 justify-center">
             {chipValues.map((value) => (
               <button
                 key={value}
@@ -885,7 +885,7 @@ function BettingControls({
 
   if (gamePhase === 'dealer-turn') {
     return (
-      <div className="flex justify-center py-4">
+      <div className="flex justify-center py-4 mx-auto w-full max-w-2xl">
         <div className="flex items-center gap-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] px-8 py-4">
           <div className="flex gap-1">
             <div className="h-2 w-2 animate-bounce rounded-full bg-amber-500" style={{ animationDelay: '0ms' }} />
@@ -900,7 +900,7 @@ function BettingControls({
 
   if (gamePhase === 'playing') {
     return (
-      <div className="animate-slide-up grid grid-cols-2 gap-3">
+      <div className="animate-slide-up grid grid-cols-2 gap-3 mx-auto w-full max-w-2xl">
         <button
           onClick={onHit}
           disabled={!canHit}
@@ -946,7 +946,7 @@ function BettingControls({
 
   if (gamePhase === 'ended') {
     return (
-      <div className="animate-slide-up">
+      <div className="animate-slide-up mx-auto w-full max-w-2xl">
         <button
           onClick={onNextRound}
           className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-4 text-lg font-black uppercase tracking-[0.1em] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98]"
