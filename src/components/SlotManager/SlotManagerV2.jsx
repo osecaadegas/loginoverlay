@@ -629,20 +629,27 @@ const SlotManagerV2 = () => {
   }, []);
 
   // Load providers
-  useEffect(() => {
-    const loadProviders = async () => {
-      const { data } = await supabase
+  const loadProviders = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
         .from('slots')
         .select('provider')
         .order('provider');
-      
+
+      if (error) throw error;
+
       if (data) {
-        const unique = [...new Set(data.map(d => d.provider))].filter(Boolean);
+        const unique = [...new Set(data.map(d => (d.provider || '').trim()))].filter(Boolean);
         setProviders(unique);
       }
-    };
-    loadProviders();
+    } catch (error) {
+      console.error('Error loading providers:', error);
+    }
   }, []);
+
+  useEffect(() => {
+    loadProviders();
+  }, [loadProviders]);
 
   // Load slots with filters
   const loadSlots = useCallback(async () => {
@@ -738,19 +745,30 @@ const SlotManagerV2 = () => {
   // CRUD handlers
   const handleSave = useCallback(async (formData) => {
     try {
+      const normalizedData = {
+        ...formData,
+        name: formData.name?.trim(),
+        provider: formData.provider?.trim(),
+        image: formData.image?.trim(),
+      };
+
+      if (!normalizedData.name || !normalizedData.provider || !normalizedData.image) {
+        throw new Error('Name, provider, and image are required');
+      }
+
       if (isNewSlot) {
         const { error } = await supabase
           .from('slots')
           .insert([{
-            name: formData.name,
-            provider: formData.provider,
-            image: formData.image,
-            rtp: formData.rtp || null,
-            volatility: formData.volatility || null,
-            reels: formData.reels || null,
-            max_win_multiplier: formData.max_win_multiplier || null,
-            status: formData.status || 'live',
-            is_featured: formData.is_featured || false,
+            name: normalizedData.name,
+            provider: normalizedData.provider,
+            image: normalizedData.image,
+            rtp: normalizedData.rtp || null,
+            volatility: normalizedData.volatility || null,
+            reels: normalizedData.reels || null,
+            max_win_multiplier: normalizedData.max_win_multiplier || null,
+            status: normalizedData.status || 'live',
+            is_featured: normalizedData.is_featured || false,
           }]);
         if (error) throw error;
         showNotification('Slot created successfully!');
@@ -758,28 +776,28 @@ const SlotManagerV2 = () => {
         const { error } = await supabase
           .from('slots')
           .update({
-            name: formData.name,
-            provider: formData.provider,
-            image: formData.image,
-            rtp: formData.rtp || null,
-            volatility: formData.volatility || null,
-            reels: formData.reels || null,
-            max_win_multiplier: formData.max_win_multiplier || null,
-            status: formData.status || 'live',
-            is_featured: formData.is_featured || false,
+            name: normalizedData.name,
+            provider: normalizedData.provider,
+            image: normalizedData.image,
+            rtp: normalizedData.rtp || null,
+            volatility: normalizedData.volatility || null,
+            reels: normalizedData.reels || null,
+            max_win_multiplier: normalizedData.max_win_multiplier || null,
+            status: normalizedData.status || 'live',
+            is_featured: normalizedData.is_featured || false,
           })
-          .eq('id', formData.id);
+          .eq('id', normalizedData.id);
         if (error) throw error;
         showNotification('Slot updated successfully!');
       }
       setInspectorSlot(null);
       setIsNewSlot(false);
-      loadSlots();
+      await Promise.all([loadSlots(), loadProviders()]);
     } catch (error) {
       console.error('Error saving slot:', error);
       showNotification(error.message, 'error');
     }
-  }, [isNewSlot, loadSlots, showNotification]);
+  }, [isNewSlot, loadProviders, loadSlots, showNotification]);
 
   const handleDelete = useCallback(async (id) => {
     try {
