@@ -224,7 +224,7 @@ export default function LandingPage() {
         {/* Hero Section with Image */}
         <section className="hero-image-section">
           <div className="hero-image-container">
-            <img src="/Hero.jpg" alt="Hero" className="hero-image" />
+            <img src="/hero.png" alt="Hero" className="hero-image" />
             <div className="hero-image-fade"></div>
           </div>
           
