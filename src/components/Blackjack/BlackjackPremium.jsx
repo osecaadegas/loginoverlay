@@ -527,29 +527,6 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
               calculateScore={calculateScore}
             />
-
-            <BettingControls
-              gamePhase={gamePhase}
-              currentBet={currentBet}
-              balance={availablePoints}
-              betInput={betInput}
-              lastBet={lastBet}
-              canHit={gamePhase === 'playing'}
-              canStand={gamePhase === 'playing'}
-              canDouble={canDoubleDown}
-              canSplit={canSplit}
-              onSetBet={setBetAmount}
-              onInputChange={setBetInput}
-              onAddChip={addChipToBet}
-              onClearBet={clearBet}
-              onPlaceBet={startNewRound}
-              onHit={hit}
-              onStand={stand}
-              onDouble={doubleDown}
-              onSplit={split}
-              onNextRound={resetRound}
-              chipValues={CHIP_VALUES}
-            />
           </div>
 
           <div className="lg:col-span-4 space-y-5">
@@ -581,6 +558,31 @@ export default function BlackjackPremium() {
               </div>
             </button>
           </div>
+        </div>
+
+        <div className="mt-6">
+          <BettingControls
+            gamePhase={gamePhase}
+            currentBet={currentBet}
+            balance={availablePoints}
+            betInput={betInput}
+            lastBet={lastBet}
+            canHit={gamePhase === 'playing'}
+            canStand={gamePhase === 'playing'}
+            canDouble={canDoubleDown}
+            canSplit={canSplit}
+            onSetBet={setBetAmount}
+            onInputChange={setBetInput}
+            onAddChip={addChipToBet}
+            onClearBet={clearBet}
+            onPlaceBet={startNewRound}
+            onHit={hit}
+            onStand={stand}
+            onDouble={doubleDown}
+            onSplit={split}
+            onNextRound={resetRound}
+            chipValues={CHIP_VALUES}
+          />
         </div>
 
         <div className="mt-6">
