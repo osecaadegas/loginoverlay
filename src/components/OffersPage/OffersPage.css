@@ -1265,7 +1265,7 @@
 }
 
 /* =============================================
-   INFO MODAL (Like Image 3)
+   INFO MODAL V2 - Redesigned
    ============================================= */
 
 .offer-modal-overlay {
@@ -1286,6 +1286,350 @@
   box-sizing: border-box;
 }
 
+.offer-modal-v2 {
+  background: #0F1115;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 90vh;
+  overflow-y: auto;
+  position: relative;
+  padding: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 25px 80px rgba(0, 0, 0, 0.6);
+  z-index: 100000;
+  animation: modalFadeInV2 0.25s ease-out;
+}
+
+.offer-modal-v2::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+  pointer-events: none;
+  border-radius: 16px 16px 0 0;
+}
+
+@keyframes modalFadeInV2 {
+  from {
+    opacity: 0;
+    transform: scale(0.96) translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Header Row */
+.modal-v2-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-v2-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #000;
+}
+
+.modal-v2-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.06);
+  color: #6B7280;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+  margin-left: auto;
+}
+
+.modal-v2-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+/* Branding Section */
+.modal-v2-branding {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 32px;
+  position: relative;
+  z-index: 1;
+}
+
+.modal-v2-logo-wrap {
+  flex-shrink: 0;
+  width: 100px;
+  height: 60px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+}
+
+.modal-v2-logo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.modal-v2-tagline {
+  color: #9CA3AF;
+  font-size: 14px;
+  font-weight: 500;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Section Styling */
+.modal-v2-section {
+  margin-bottom: 24px;
+}
+
+.modal-v2-section-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+/* Info Cards Grid */
+.modal-v2-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.modal-v2-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  transition: border-color 0.15s ease;
+}
+
+.modal-v2-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.modal-v2-card .card-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+}
+
+.modal-v2-card .card-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  line-height: 1.2;
+}
+
+.modal-v2-card .card-value.highlight {
+  color: #F59E0B;
+}
+
+/* Details Row - Licences & Languages */
+.modal-v2-details-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+  margin-bottom: 24px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-v2-detail {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.modal-v2-detail .detail-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6B7280;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.modal-v2-detail .detail-value {
+  font-size: 14px;
+  font-weight: 500;
+  color: #E5E7EB;
+}
+
+/* Tags - Deposit Methods */
+.modal-v2-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modal-v2-tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+  color: #D1D5DB;
+  transition: all 0.15s ease;
+}
+
+.modal-v2-tag:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+/* Providers */
+.modal-v2-providers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.modal-v2-provider {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: #E5E7EB;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.15s ease;
+}
+
+.modal-v2-provider:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* CTA Footer */
+.modal-v2-footer {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.modal-v2-cta {
+  display: block;
+  width: 100%;
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  border: none;
+  border-radius: 10px;
+  padding: 16px 24px;
+  font-size: 15px;
+  font-weight: 600;
+  color: #000;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 16px rgba(245, 158, 11, 0.2);
+}
+
+.modal-v2-cta:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(245, 158, 11, 0.3);
+}
+
+.modal-v2-cta:active {
+  transform: translateY(0);
+}
+
+.modal-v2-disclaimer {
+  text-align: center;
+  color: #6B7280;
+  font-size: 11px;
+  margin-top: 14px;
+  margin-bottom: 0;
+  line-height: 1.4;
+}
+
+/* =============================================
+   MODAL V2 - Responsive
+   ============================================= */
+@media (max-width: 520px) {
+  .offer-modal-v2 {
+    padding: 20px;
+    max-width: calc(100% - 24px);
+  }
+
+  .modal-v2-cards-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .modal-v2-branding {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .modal-v2-tagline {
+    text-align: center;
+  }
+
+  .modal-v2-details-row {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .modal-v2-tag {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .modal-v2-provider {
+    padding: 8px 12px;
+    font-size: 10px;
+  }
+}
+
+/* =============================================
+   LEGACY MODAL (keeping for backwards compat)
+   ============================================= */
 .offer-modal {
   background: linear-gradient(135deg, #1a1d2e 0%, #252836 100%);
   border-radius: 16px;

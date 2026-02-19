@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { supabase } from '../../config/supabaseClient';
 import { getMethodIcons } from '../../utils/depositMethods';
-import { getProviderImage, getProviderName } from '../../utils/gameProviders';
+import { getProviderName } from '../../utils/gameProviders';
 import './OffersPage.css';
 
 export default function OffersPage() {
@@ -326,109 +326,112 @@ export default function OffersPage() {
         {/* Info Modal - Rendered via Portal */}
         {selectedOffer && createPortal(
           <div className="offer-modal-overlay" onClick={closeInfoModal}>
-            <div className="offer-modal" onClick={(e) => e.stopPropagation()}>
-              <button className="modal-close" onClick={closeInfoModal}>×</button>
+            <div className="offer-modal-v2" onClick={(e) => e.stopPropagation()}>
+              {/* Header Row */}
+              <div className="modal-v2-header">
+                {selectedOffer.cryptoFriendly && (
+                  <span className="modal-v2-badge">CRYPTO</span>
+                )}
+                <button className="modal-v2-close" onClick={closeInfoModal}>×</button>
+              </div>
               
-              {/* Badge */}
-              {selectedOffer.cryptoFriendly && (
-                <div className="modal-badge crypto">🔶 CRYPTO</div>
-              )}
-              
-              {/* Casino Logo & Title */}
-              <div className="modal-header">
-                <img src={selectedOffer.image} alt={selectedOffer.casino} className="modal-logo" />
-                <p className="modal-description">{selectedOffer.title || `Free spins at ${selectedOffer.casino}`}</p>
+              {/* Casino Branding */}
+              <div className="modal-v2-branding">
+                <div className="modal-v2-logo-wrap">
+                  <img src={selectedOffer.image} alt={selectedOffer.casino} className="modal-v2-logo" />
+                </div>
+                <p className="modal-v2-tagline">{selectedOffer.title || `Exclusive bonus at ${selectedOffer.casino}`}</p>
               </div>
 
-              {/* Casino Info Grid */}
-              <div className="modal-section">
-                <h4>CASINO INFO</h4>
-                <div className="modal-info-grid">
-                  <div className="info-item">
-                    <span className="info-label">Minimum deposit</span>
-                    <span className="info-value gold">{selectedOffer.minDeposit || '€20'}</span>
+              {/* Info Cards Grid */}
+              <div className="modal-v2-section">
+                <span className="modal-v2-section-label">CASINO INFO</span>
+                <div className="modal-v2-cards-grid">
+                  <div className="modal-v2-card">
+                    <span className="card-label">MINIMUM DEPOSIT</span>
+                    <span className="card-value highlight">{selectedOffer.minDeposit || '€20'}</span>
                   </div>
-                  <div className="info-item">
-                    <span className="info-label">Maximum withdrawal</span>
-                    <span className="info-value">{selectedOffer.maxWithdrawal}</span>
+                  <div className="modal-v2-card">
+                    <span className="card-label">MAX WITHDRAWAL</span>
+                    <span className="card-value">{selectedOffer.maxWithdrawal}</span>
                   </div>
-                  <div className="info-item">
-                    <span className="info-label">Withdrawal time</span>
-                    <span className="info-value">{selectedOffer.withdrawalTime}</span>
+                  <div className="modal-v2-card">
+                    <span className="card-label">WITHDRAWAL TIME</span>
+                    <span className="card-value">{selectedOffer.withdrawalTime}</span>
                   </div>
-                  <div className="info-item">
-                    <span className="info-label">Crypto friendly</span>
-                    <span className="info-value gold">{selectedOffer.cryptoFriendly ? 'Yes' : 'No'}</span>
+                  <div className="modal-v2-card">
+                    <span className="card-label">CRYPTO FRIENDLY</span>
+                    <span className="card-value highlight">
+                      {selectedOffer.cryptoFriendly ? '✓ Yes' : 'No'}
+                    </span>
                   </div>
-                  <div className="info-item">
-                    <span className="info-label">Live support</span>
-                    <span className="info-value">{selectedOffer.liveSupport}</span>
+                  <div className="modal-v2-card">
+                    <span className="card-label">LIVE SUPPORT</span>
+                    <span className="card-value">{selectedOffer.liveSupport}</span>
                   </div>
-                  <div className="info-item">
-                    <span className="info-label">Established</span>
-                    <span className="info-value">{selectedOffer.established}</span>
+                  <div className="modal-v2-card">
+                    <span className="card-label">ESTABLISHED</span>
+                    <span className="card-value">{selectedOffer.established}</span>
                   </div>
                 </div>
               </div>
 
-              {/* Licences */}
-              <div className="modal-section">
-                <h4>Licences</h4>
-                <p className="modal-text">{selectedOffer.license || 'Curaçao'}</p>
+              {/* Licences & Languages - 2 Column */}
+              <div className="modal-v2-details-row">
+                <div className="modal-v2-detail">
+                  <span className="detail-label">LICENCES</span>
+                  <span className="detail-value">{selectedOffer.license || 'Curaçao'}</span>
+                </div>
+                <div className="modal-v2-detail">
+                  <span className="detail-label">LANGUAGES</span>
+                  <span className="detail-value">{selectedOffer.languages}</span>
+                </div>
               </div>
 
-              {/* Languages */}
-              <div className="modal-section">
-                <h4>Languages</h4>
-                <p className="modal-text">{selectedOffer.languages}</p>
-              </div>
-
-              {/* Deposit Methods */}
-              <div className="modal-section">
-                <h4>Deposit Methods</h4>
-                <p className="modal-text-small">
-                  {selectedOffer.depositMethods 
-                    ? getMethodIcons(selectedOffer.depositMethods).map(m => m.name).join(', ')
-                    : 'Bitcoin, Cashlib, CashtoCode, Ethereum, Flexepin, inpay, Litecoin, Skrill, Tether, Zimpler, MiFinity, Tron, Binance, Apple Pay, Google Pay, NodaPay, CryptoCurrency, Paysafe Card'
-                  }
-                </p>
-              </div>
-
-              {/* Game Providers */}
-              <div className="modal-section">
-                <h4>TOP GAME PROVIDERS</h4>
-                <div className="modal-providers">
-                  {(Array.isArray(selectedOffer.gameProviders) && selectedOffer.gameProviders.length > 0) ? (
-                    selectedOffer.gameProviders.map((providerId, idx) => (
-                      <div key={idx} className="provider-badge-img">
-                        <img 
-                          src={getProviderImage(providerId)} 
-                          alt={getProviderName(providerId)}
-                          title={getProviderName(providerId)}
-                          onError={(e) => e.target.style.display = 'none'}
-                        />
-                        <span>{getProviderName(providerId)}</span>
-                      </div>
+              {/* Deposit Methods as Tags */}
+              <div className="modal-v2-section">
+                <span className="modal-v2-section-label">DEPOSIT METHODS</span>
+                <div className="modal-v2-tags">
+                  {selectedOffer.depositMethods ? (
+                    getMethodIcons(selectedOffer.depositMethods).slice(0, 12).map((method, idx) => (
+                      <span key={idx} className="modal-v2-tag">{method.name}</span>
                     ))
                   ) : (
-                    defaultProviders.map((provider, idx) => (
-                      <div key={idx} className="provider-badge">{provider}</div>
+                    ['Visa', 'Mastercard', 'Bitcoin', 'Ethereum', 'Skrill', 'Bank', 'Apple Pay', 'Google Pay', 'Paysafe', 'USDT', 'Litecoin', 'Neteller'].map((method, idx) => (
+                      <span key={idx} className="modal-v2-tag">{method}</span>
                     ))
                   )}
                 </div>
               </div>
 
-              {/* CTA */}
-              <a 
-                href={selectedOffer.bonusLink || '#'} 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="modal-claim-btn"
-              >
-                CLAIM BONUS
-              </a>
+              {/* Game Providers */}
+              <div className="modal-v2-section">
+                <span className="modal-v2-section-label">TOP GAME PROVIDERS</span>
+                <div className="modal-v2-providers">
+                  {(Array.isArray(selectedOffer.gameProviders) && selectedOffer.gameProviders.length > 0) ? (
+                    selectedOffer.gameProviders.slice(0, 8).map((providerId, idx) => (
+                      <span key={idx} className="modal-v2-provider">{getProviderName(providerId)}</span>
+                    ))
+                  ) : (
+                    defaultProviders.slice(0, 8).map((provider, idx) => (
+                      <span key={idx} className="modal-v2-provider">{provider}</span>
+                    ))
+                  )}
+                </div>
+              </div>
 
-              <p className="modal-terms">T&C APPLY. 18+, NEW CUSTOMERS ONLY, BEGAMBLEAWARE.ORG, AD</p>
+              {/* CTA Footer */}
+              <div className="modal-v2-footer">
+                <a 
+                  href={selectedOffer.bonusLink || '#'} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="modal-v2-cta"
+                >
+                  CLAIM BONUS
+                </a>
+                <p className="modal-v2-disclaimer">T&C APPLY. 18+, NEW CUSTOMERS ONLY, BEGAMBLEAWARE.ORG, AD</p>
+              </div>
             </div>
           </div>,
           document.body
