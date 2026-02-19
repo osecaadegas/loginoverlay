@@ -788,7 +788,7 @@ function BettingControls({
   if (gamePhase === 'betting') {
     return (
       <div className="animate-slide-up space-y-4 mx-auto w-full max-w-3xl">
-        <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
+        <div className="mx-auto w-full max-w-2xl rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
           <div className="flex items-center gap-3 mb-4">
             <div className="flex-1">
               <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1.5">
