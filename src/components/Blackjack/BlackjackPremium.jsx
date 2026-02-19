@@ -1,7 +1,6 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState } from 'react';
 import { useStreamElements } from '../../context/StreamElementsContext';
 import { useAuth } from '../../context/AuthContext';
-import * as THREE from 'three';
 import './BlackjackPremium.css';
 
 const CARD_VALUES = {
@@ -10,10 +9,10 @@ const CARD_VALUES = {
 };
 
 const SUITS = {
-  hearts: { symbol: '♥', color: '#e74c3c' },
-  diamonds: { symbol: '♦', color: '#e74c3c' },
-  clubs: { symbol: '♣', color: '#2c3e50' },
-  spades: { symbol: '♠', color: '#2c3e50' }
+  hearts: { symbol: '♥', color: '#EF4444' },
+  diamonds: { symbol: '♦', color: '#EF4444' },
+  clubs: { symbol: '♣', color: '#1F2937' },
+  spades: { symbol: '♠', color: '#1F2937' }
 };
 
 const RANKS = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A'];
@@ -24,8 +23,6 @@ const MAX_SIDE_BET = 10;
 export default function BlackjackPremium() {
   const { points, isConnected, seAccount, updateUserPoints, refreshPoints } = useStreamElements();
   const { user } = useAuth();
-  const canvasRef = useRef(null);
-  const sceneRef = useRef(null);
   
   // Game state
   const [deck, setDeck] = useState([]);
@@ -44,87 +41,13 @@ export default function BlackjackPremium() {
   });
   
   // Game controls
-  const [message, setMessage] = useState('Place Your Bet');
+  const [message, setMessage] = useState('');
   const [canDoubleDown, setCanDoubleDown] = useState(false);
   const [canSplit, setCanSplit] = useState(false);
   const [gameHistory, setGameHistory] = useState([]);
   const [dealerDrawing, setDealerDrawing] = useState(false);
-
-  // Initialize 3D scene
-  useEffect(() => {
-    if (!canvasRef.current) return;
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-    const renderer = new THREE.WebGLRenderer({ 
-      canvas: canvasRef.current, 
-      alpha: true, 
-      antialias: true 
-    });
-
-    renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(window.devicePixelRatio);
-
-    // Add ambient light
-    const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
-    scene.add(ambientLight);
-
-    // Add directional light
-    const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-    directionalLight.position.set(10, 20, 5);
-    scene.add(directionalLight);
-
-    // Add point light for dramatic effect
-    const pointLight = new THREE.PointLight(0xd4af37, 1, 100);
-    pointLight.position.set(0, 10, 0);
-    scene.add(pointLight);
-
-    // Create casino table
-    const tableGeometry = new THREE.CylinderGeometry(15, 15, 1, 64);
-    const tableMaterial = new THREE.MeshPhongMaterial({ 
-      color: 0x0a5c36,
-      shininess: 30
-    });
-    const table = new THREE.Mesh(tableGeometry, tableMaterial);
-    table.position.y = -2;
-    scene.add(table);
-
-    // Add table edge
-    const edgeGeometry = new THREE.TorusGeometry(15, 0.5, 16, 100);
-    const edgeMaterial = new THREE.MeshPhongMaterial({ color: 0x8b4513 });
-    const edge = new THREE.Mesh(edgeGeometry, edgeMaterial);
-    edge.position.y = -1.2;
-    scene.add(edge);
-
-    // Position camera
-    camera.position.z = 25;
-    camera.position.y = 10;
-    camera.lookAt(0, 0, 0);
-
-    sceneRef.current = { scene, camera, renderer, table, edge };
-
-    // Animation loop (static table)
-    const animate = () => {
-      requestAnimationFrame(animate);
-      renderer.render(scene, camera);
-    };
-
-    animate();
-
-    // Handle window resize
-    const handleResize = () => {
-      camera.aspect = window.innerWidth / window.innerHeight;
-      camera.updateProjectionMatrix();
-      renderer.setSize(window.innerWidth, window.innerHeight);
-    };
-
-    window.addEventListener('resize', handleResize);
-
-    return () => {
-      window.removeEventListener('resize', handleResize);
-      renderer.dispose();
-    };
-  }, []);
+  const [showRules, setShowRules] = useState(false);
+  const [selectedChip, setSelectedChip] = useState(null);
 
   // Create and shuffle deck (6 decks)
   const createDeck = () => {
@@ -184,23 +107,8 @@ export default function BlackjackPremium() {
     if (currentBet + value > points) return;
     if (currentBet + value > MAX_BET) return;
     setCurrentBet(prev => prev + value);
-    
-    // Add chip animation
-    animateChipAdd();
-  };
-
-  const animateChipAdd = () => {
-    // 3D chip animation logic
-    if (sceneRef.current) {
-      const { scene } = sceneRef.current;
-      const chipGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.1, 32);
-      const chipMaterial = new THREE.MeshPhongMaterial({ color: 0xd4af37 });
-      const chip = new THREE.Mesh(chipGeometry, chipMaterial);
-      chip.position.set(0, 5, 0);
-      scene.add(chip);
-      
-      setTimeout(() => scene.remove(chip), 1000);
-    }
+    setSelectedChip(value);
+    setTimeout(() => setSelectedChip(null), 200);
   };
 
   // Clear bet
@@ -535,11 +443,14 @@ export default function BlackjackPremium() {
   };
 
   // Add to game history
-  const addToHistory = (result, netChange) => {
+  const addToHistory = (result, netChange, betAmount = currentBet, totalSideBet = sideBets.perfectPair + sideBets.twentyOneThree) => {
     const entry = {
+      username: seAccount?.se_username || user?.email?.split('@')[0] || 'Guest',
+      bet: betAmount,
+      sideBet: totalSideBet,
       result,
-      netChange,
-      timestamp: new Date().toLocaleTimeString()
+      profitLoss: netChange,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
     setGameHistory(prev => [entry, ...prev].slice(0, 10));
@@ -565,332 +476,334 @@ export default function BlackjackPremium() {
   const Card = ({ card, hidden }) => {
     if (hidden) {
       return (
-        <div className="blackjack-card card-back">
-          <i className="fas fa-question"></i>
+        <div className="bj-card bj-card-back">
+          <div className="bj-card-pattern"></div>
         </div>
       );
     }
 
     return (
-      <div className="blackjack-card" style={{ color: card.color }}>
-        <div className="card-corner top-left">
-          <div className="card-rank">{card.rank}</div>
-          <div className="card-suit">{card.suitSymbol}</div>
-        </div>
-        <div className="card-center">
-          <div className="card-suit-large">{card.suitSymbol}</div>
-        </div>
-        <div className="card-corner bottom-right">
-          <div className="card-rank">{card.rank}</div>
-          <div className="card-suit">{card.suitSymbol}</div>
-        </div>
+      <div className="bj-card" style={{ '--card-color': card.color }}>
+        <span className="bj-card-corner bj-card-tl">
+          <span className="bj-card-rank">{card.rank}</span>
+          <span className="bj-card-suit">{card.suitSymbol}</span>
+        </span>
+        <span className="bj-card-center">{card.suitSymbol}</span>
+        <span className="bj-card-corner bj-card-br">
+          <span className="bj-card-rank">{card.rank}</span>
+          <span className="bj-card-suit">{card.suitSymbol}</span>
+        </span>
       </div>
     );
   };
 
+  // Get dynamic action button
+  const getActionButton = () => {
+    if (gamePhase === 'betting') {
+      return {
+        label: currentBet === 0 ? 'Place Bet' : 'Deal',
+        onClick: startNewRound,
+        disabled: currentBet === 0 || !isConnected,
+        variant: 'primary'
+      };
+    }
+    if (gamePhase === 'ended') {
+      return {
+        label: 'New Round',
+        onClick: resetRound,
+        disabled: false,
+        variant: 'primary'
+      };
+    }
+    return null;
+  };
+
+  const actionButton = getActionButton();
+
   return (
-    <div className="blackjack-premium-container">
-      <canvas ref={canvasRef} className="game-canvas-3d"></canvas>
-      
-      <div className="game-overlay">
-        {/* Header */}
-        <header className="bj-header">
-          <div className="bj-header-left">
-            <h1 className="bj-title">
-              <i className="fas fa-spade"></i>
-              Blackjack Casino
-            </h1>
-            <p className="bj-subtitle">Live Dealer • SE Points</p>
+    <div className="bj-container">
+      {/* Top Bar */}
+      <header className="bj-topbar">
+        <div className="bj-topbar-left">
+          <h1 className="bj-logo">Blackjack</h1>
+          <span className="bj-badge">Live</span>
+        </div>
+        <div className="bj-topbar-right">
+          <div className="bj-stat">
+            <span className="bj-stat-label">Balance</span>
+            <span className="bj-stat-value bj-stat-balance">{points?.toLocaleString() || 0}</span>
           </div>
-
-          <div className="bj-player-info">
-            <div className="bj-info-card">
-              <p className="bj-info-label">PLAYER</p>
-              <p className="bj-info-value">{seAccount?.se_username || user?.email?.split('@')[0] || 'Guest'}</p>
-            </div>
-            <div className="bj-info-card">
-              <p className="bj-info-label">BALANCE</p>
-              <p className="bj-info-value bj-balance">
-                {points?.toLocaleString() || 0} <span>pts</span>
-              </p>
-            </div>
-            <div className="bj-info-card">
-              <p className="bj-info-label">CURRENT BET</p>
-              <p className="bj-info-value bj-bet">{currentBet}</p>
-            </div>
+          <div className="bj-stat">
+            <span className="bj-stat-label">Current Bet</span>
+            <span className="bj-stat-value bj-stat-bet">{currentBet}</span>
           </div>
-        </header>
+          <button 
+            className="bj-rules-btn" 
+            onClick={() => setShowRules(!showRules)}
+            aria-label="Game Rules"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="M12 16v-4M12 8h.01"/>
+            </svg>
+          </button>
+        </div>
+      </header>
 
-        <div className="bj-layout">
-          {/* Main Game Area */}
-          <div className="bj-main">
-            <div className="bj-table">
-              {/* Dealer Area */}
-              <div className="bj-dealer-area">
-                <div className="bj-area-header">
-                  <h2 className="bj-area-title">
-                    <i className="fas fa-user-tie"></i>
-                    DEALER
-                    {dealerHand.length > 0 && (
-                      <span className="bj-score-badge bj-dealer-badge">
-                        {dealerRevealed ? calculateScore(dealerHand) : dealerHand[0].value}
-                      </span>
-                    )}
-                  </h2>
-                  <div className="bj-dealer-rule">Stand on 17</div>
-                </div>
-                <div className="bj-cards-area">
-                  {dealerHand.map((card, index) => (
-                    <Card 
-                      key={index} 
-                      card={card} 
-                      hidden={index === 1 && !dealerRevealed} 
-                    />
-                  ))}
-                  {dealerHand.length === 0 && (
-                    <>
-                      <Card hidden />
-                      <Card hidden />
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* Player Area */}
-              <div className="bj-player-area">
-                <div className="bj-area-header">
-                  <h2 className="bj-area-title">
-                    <i className="fas fa-user"></i>
-                    PLAYER
-                    {playerHand.length > 0 && (
-                      <span className="bj-score-badge bj-player-badge">
-                        {calculateScore(splitHands.length > 0 ? splitHands[currentSplitIndex] : playerHand)}
-                      </span>
-                    )}
-                  </h2>
-                  <div className={`bj-game-status ${gamePhase === 'ended' ? 'bj-status-ended' : ''}`}>
-                    {message}
-                  </div>
-                </div>
-                
-                <div className="bj-hands-container">
-                  {splitHands.length > 0 ? (
-                    splitHands.map((hand, index) => (
-                      <div key={index} className={`bj-split-hand ${index === currentSplitIndex ? 'active' : ''}`}>
-                        <div className="bj-hand-label">Hand {index + 1}</div>
-                        <div className="bj-cards-area">
-                          {hand.map((card, cardIndex) => (
-                            <Card key={cardIndex} card={card} />
-                          ))}
-                        </div>
-                      </div>
-                    ))
-                  ) : (
-                    <div className="bj-cards-area">
-                      {playerHand.map((card, index) => (
-                        <Card key={index} card={card} />
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Betting Area */}
-                {gamePhase === 'betting' && (
-                  <div className="bj-betting-area">
-                    <h3 className="bj-betting-title">Place Your Bet</h3>
-                    <div className="bj-chips-grid">
-                      {CHIP_VALUES.map(value => (
-                        <div
-                          key={value}
-                          className={`bj-chip bj-chip-${value}`}
-                          onClick={() => addChipToBet(value)}
-                        >
-                          <div className="chip-inner">{value}</div>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="bj-bet-actions">
-                      <button onClick={clearBet} className="bj-btn bj-btn-secondary">
-                        Clear Bet
-                      </button>
-                      <button 
-                        onClick={startNewRound} 
-                        className="bj-btn bj-btn-primary"
-                        disabled={currentBet === 0 || !isConnected}
-                      >
-                        <i className="fas fa-play mr-2"></i>
-                        Deal Cards
-                      </button>
-                    </div>
-                  </div>
-                )}
-
-                {/* Action Buttons */}
-                {gamePhase === 'playing' && (
-                  <div className="bj-action-buttons">
-                    <button onClick={hit} className="bj-btn bj-btn-hit">
-                      <i className="fas fa-plus"></i>
-                      Hit
-                    </button>
-                    <button onClick={stand} className="bj-btn bj-btn-stand">
-                      <i className="fas fa-hand-paper"></i>
-                      Stand
-                    </button>
-                    <button 
-                      onClick={doubleDown} 
-                      className="bj-btn bj-btn-double"
-                      disabled={!canDoubleDown || points < currentBet}
-                    >
-                      <i className="fas fa-times"></i>
-                      Double
-                    </button>
-                    <button 
-                      onClick={split} 
-                      className="bj-btn bj-btn-split"
-                      disabled={!canSplit || points < currentBet}
-                    >
-                      <i className="fas fa-code-branch"></i>
-                      Split
-                    </button>
-                  </div>
-                )}
-              </div>
+      {/* Rules Modal */}
+      {showRules && (
+        <div className="bj-rules-overlay" onClick={() => setShowRules(false)}>
+          <div className="bj-rules-modal" onClick={e => e.stopPropagation()}>
+            <div className="bj-rules-header">
+              <h2>Game Rules</h2>
+              <button className="bj-rules-close" onClick={() => setShowRules(false)}>×</button>
             </div>
-
-            {/* Game History */}
-            <div className="bj-history-panel">
-              <h3 className="bj-panel-title">
-                <i className="fas fa-history"></i>
-                Game History
-              </h3>
-              <div className="bj-history-list">
-                {gameHistory.length === 0 ? (
-                  <div className="bj-history-empty">No games played yet</div>
-                ) : (
-                  gameHistory.map((entry, index) => (
-                    <div key={index} className="bj-history-item">
-                      <div>
-                        <span className="bj-history-result">{entry.result}</span>
-                        <span className="bj-history-time">{entry.timestamp}</span>
-                      </div>
-                      <div className={`bj-history-change ${entry.netChange > 0 ? 'positive' : entry.netChange < 0 ? 'negative' : 'neutral'}`}>
-                        {entry.netChange > 0 ? '+' : ''}{entry.netChange}
-                      </div>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Sidebar */}
-          <div className="bj-sidebar">
-            {/* Side Bets */}
-            <div className="bj-sidebar-panel">
-              <h3 className="bj-panel-title">
-                <i className="fas fa-star"></i>
-                Side Bets
-              </h3>
-              <p className="bj-panel-subtitle">Boost your winnings!</p>
-
-              <div className="bj-sidebet-list">
-                {/* Perfect Pair */}
-                <div className={`bj-sidebet ${sideBets.perfectPair > 0 ? 'active' : ''}`}>
-                  <div className="bj-sidebet-header">
-                    <div>
-                      <h4 className="bj-sidebet-title">Perfect Pair</h4>
-                      <p className="bj-sidebet-desc">First 2 cards match</p>
-                    </div>
-                    <div className="bj-sidebet-payout">
-                      <p className="payout-value">25:1</p>
-                      <p className="payout-label">Perfect</p>
-                    </div>
-                  </div>
-                  <div className="bj-sidebet-input">
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={sideBets.perfectPair}
-                      onChange={(e) => placeSideBet('perfectPair', parseInt(e.target.value) || 0)}
-                      disabled={gamePhase !== 'betting'}
-                      className="bj-sidebet-amount"
-                    />
-                    <span className="bj-sidebet-current">Bet: {sideBets.perfectPair}</span>
-                  </div>
-                </div>
-
-                {/* 21+3 */}
-                <div className={`bj-sidebet ${sideBets.twentyOneThree > 0 ? 'active' : ''}`}>
-                  <div className="bj-sidebet-header">
-                    <div>
-                      <h4 className="bj-sidebet-title">21+3</h4>
-                      <p className="bj-sidebet-desc">3-card poker hand</p>
-                    </div>
-                    <div className="bj-sidebet-payout">
-                      <p className="payout-value">100:1</p>
-                      <p className="payout-label">Suited Trips</p>
-                    </div>
-                  </div>
-                  <div className="bj-sidebet-input">
-                    <input
-                      type="number"
-                      min="0"
-                      max="10"
-                      value={sideBets.twentyOneThree}
-                      onChange={(e) => placeSideBet('twentyOneThree', parseInt(e.target.value) || 0)}
-                      disabled={gamePhase !== 'betting'}
-                      className="bj-sidebet-amount"
-                    />
-                    <span className="bj-sidebet-current">Bet: {sideBets.twentyOneThree}</span>
-                  </div>
+            <div className="bj-rules-content">
+              <div className="bj-rule-item">
+                <span className="bj-rule-icon">🎯</span>
+                <div>
+                  <strong>Objective</strong>
+                  <p>Beat the dealer by getting closer to 21 without going over.</p>
                 </div>
               </div>
-
-              <div className="bj-sidebet-total">
-                <span>Total Side Bets:</span>
-                <span className="bj-total-value">
-                  {sideBets.perfectPair + sideBets.twentyOneThree}
-                </span>
+              <div className="bj-rule-item">
+                <span className="bj-rule-icon">🃏</span>
+                <div>
+                  <strong>Card Values</strong>
+                  <p>Face cards = 10, Aces = 1 or 11, Number cards = face value.</p>
+                </div>
               </div>
-            </div>
-
-            {/* Game Rules */}
-            <div className="bj-sidebar-panel">
-              <h3 className="bj-panel-title">
-                <i className="fas fa-info-circle"></i>
-                Game Rules
-              </h3>
-              <ul className="bj-rules-list">
-                <li>
-                  <i className="fas fa-check"></i>
-                  Dealer stands on 17
-                </li>
-                <li>
-                  <i className="fas fa-check"></i>
-                  Blackjack pays 3:2
-                </li>
-                <li>
-                  <i className="fas fa-check"></i>
-                  Double on any 2 cards
-                </li>
-                <li>
-                  <i className="fas fa-check"></i>
-                  Split pairs allowed
-                </li>
-                <li>
-                  <i className="fas fa-check"></i>
-                  Perfect Pair: 25:1 (perfect), 12:1 (colored), 6:1 (mixed)
-                </li>
-                <li>
-                  <i className="fas fa-check"></i>
-                  21+3: Up to 100:1 for suited trips
-                </li>
-              </ul>
+              <div className="bj-rule-item">
+                <span className="bj-rule-icon">🏆</span>
+                <div>
+                  <strong>Blackjack</strong>
+                  <p>21 with first 2 cards pays 3:2. Regular win pays 1:1.</p>
+                </div>
+              </div>
+              <div className="bj-rule-item">
+                <span className="bj-rule-icon">🤵</span>
+                <div>
+                  <strong>Dealer Rules</strong>
+                  <p>Dealer must stand on 17 and draw on 16 or less.</p>
+                </div>
+              </div>
+              <div className="bj-rules-sidebets">
+                <h3>Side Bets</h3>
+                <div className="bj-sidebet-info">
+                  <strong>Perfect Pair:</strong> 25:1 (same suit), 12:1 (same color), 6:1 (mixed)
+                </div>
+                <div className="bj-sidebet-info">
+                  <strong>21+3:</strong> Suited Trips 100:1, Straight Flush 40:1, Three of a Kind 30:1
+                </div>
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      )}
+
+      {/* Main Content */}
+      <main className="bj-main">
+        {/* Game Table */}
+        <div className="bj-table">
+          {/* Dealer Section */}
+          <section className="bj-section bj-dealer-section">
+            <div className="bj-section-header">
+              <span className="bj-section-title">Dealer</span>
+              {dealerHand.length > 0 && (
+                <span className="bj-score bj-score-dealer">
+                  {dealerRevealed ? calculateScore(dealerHand) : '?'}
+                </span>
+              )}
+            </div>
+            <div className="bj-cards">
+              {dealerHand.length === 0 ? (
+                <>
+                  <div className="bj-card bj-card-placeholder"></div>
+                  <div className="bj-card bj-card-placeholder"></div>
+                </>
+              ) : (
+                dealerHand.map((card, index) => (
+                  <Card key={index} card={card} hidden={index === 1 && !dealerRevealed} />
+                ))
+              )}
+            </div>
+          </section>
+
+          {/* Game Status */}
+          {message && (
+            <div className={`bj-status ${gamePhase === 'ended' ? 'bj-status-result' : ''}`}>
+              {message}
+            </div>
+          )}
+
+          {/* Player Section */}
+          <section className="bj-section bj-player-section">
+            <div className="bj-section-header">
+              <span className="bj-section-title">Your Hand</span>
+              {playerHand.length > 0 && (
+                <span className="bj-score bj-score-player">
+                  {calculateScore(splitHands.length > 0 ? splitHands[currentSplitIndex] : playerHand)}
+                </span>
+              )}
+            </div>
+            
+            {splitHands.length > 0 ? (
+              <div className="bj-split-container">
+                {splitHands.map((hand, index) => (
+                  <div key={index} className={`bj-split-hand ${index === currentSplitIndex ? 'bj-split-active' : ''}`}>
+                    <span className="bj-split-label">Hand {index + 1}</span>
+                    <div className="bj-cards">
+                      {hand.map((card, cardIndex) => (
+                        <Card key={cardIndex} card={card} />
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="bj-cards">
+                {playerHand.length === 0 ? (
+                  <>
+                    <div className="bj-card bj-card-placeholder"></div>
+                    <div className="bj-card bj-card-placeholder"></div>
+                  </>
+                ) : (
+                  playerHand.map((card, index) => <Card key={index} card={card} />)
+                )}
+              </div>
+            )}
+          </section>
+
+          {/* Betting Panel */}
+          {gamePhase === 'betting' && (
+            <div className="bj-betting">
+              {/* Chips */}
+              <div className="bj-chips">
+                {CHIP_VALUES.map(value => (
+                  <button
+                    key={value}
+                    className={`bj-chip bj-chip-${value} ${selectedChip === value ? 'bj-chip-selected' : ''}`}
+                    onClick={() => addChipToBet(value)}
+                    disabled={currentBet + value > points || currentBet + value > MAX_BET}
+                  >
+                    {value}
+                  </button>
+                ))}
+              </div>
+              
+              {/* Side Bets - Compact */}
+              <div className="bj-sidebets-compact">
+                <div className="bj-sidebet-row">
+                  <label className="bj-sidebet-label">
+                    <span>Perfect Pair</span>
+                    <span className="bj-sidebet-payout">25:1</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={MAX_SIDE_BET}
+                    value={sideBets.perfectPair}
+                    onChange={(e) => placeSideBet('perfectPair', parseInt(e.target.value) || 0)}
+                    className="bj-sidebet-input"
+                  />
+                </div>
+                <div className="bj-sidebet-row">
+                  <label className="bj-sidebet-label">
+                    <span>21+3</span>
+                    <span className="bj-sidebet-payout">100:1</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    max={MAX_SIDE_BET}
+                    value={sideBets.twentyOneThree}
+                    onChange={(e) => placeSideBet('twentyOneThree', parseInt(e.target.value) || 0)}
+                    className="bj-sidebet-input"
+                  />
+                </div>
+              </div>
+
+              {/* Bet Summary */}
+              <div className="bj-bet-summary">
+                <span>Total: {currentBet + sideBets.perfectPair + sideBets.twentyOneThree}</span>
+                <button className="bj-clear-btn" onClick={clearBet} disabled={currentBet === 0}>
+                  Clear
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Action Buttons */}
+          <div className="bj-actions">
+            {gamePhase === 'playing' && (
+              <>
+                <button className="bj-action bj-action-hit" onClick={hit}>Hit</button>
+                <button className="bj-action bj-action-stand" onClick={stand}>Stand</button>
+                <button 
+                  className="bj-action bj-action-double" 
+                  onClick={doubleDown}
+                  disabled={!canDoubleDown || points < currentBet}
+                >
+                  Double
+                </button>
+                <button 
+                  className="bj-action bj-action-split" 
+                  onClick={split}
+                  disabled={!canSplit || points < currentBet}
+                >
+                  Split
+                </button>
+              </>
+            )}
+            {actionButton && (
+              <button 
+                className={`bj-action bj-action-${actionButton.variant}`}
+                onClick={actionButton.onClick}
+                disabled={actionButton.disabled}
+              >
+                {actionButton.label}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Recent Bets Panel */}
+        <div className="bj-history-panel">
+          <h2 className="bj-panel-title">Recent Bets</h2>
+          {gameHistory.length === 0 ? (
+            <p className="bj-history-empty">No bets placed yet</p>
+          ) : (
+            <div className="bj-history-table-wrap">
+              <table className="bj-history-table">
+                <thead>
+                  <tr>
+                    <th>Player</th>
+                    <th>Bet</th>
+                    <th>Side</th>
+                    <th>Result</th>
+                    <th>P/L</th>
+                    <th>Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {gameHistory.map((entry, index) => (
+                    <tr key={index}>
+                      <td className="bj-history-user">{entry.username}</td>
+                      <td>{entry.bet}</td>
+                      <td>{entry.sideBet || '-'}</td>
+                      <td className="bj-history-result">{entry.result}</td>
+                      <td className={`bj-history-pl ${entry.profitLoss > 0 ? 'bj-pl-win' : entry.profitLoss < 0 ? 'bj-pl-loss' : 'bj-pl-push'}`}>
+                        {entry.profitLoss > 0 ? '+' : ''}{entry.profitLoss}
+                      </td>
+                      <td className="bj-history-time">{entry.timestamp}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      </main>
     </div>
   );
 }
