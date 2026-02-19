@@ -561,7 +561,7 @@ export default function BlackjackPremium() {
         </div>
 
         <div className="mt-6 flex justify-center">
-          <div className="w-full max-w-4xl">
+          <div className="w-full max-w-4xl lg:translate-x-8">
             <BettingControls
               gamePhase={gamePhase}
               currentBet={currentBet}
