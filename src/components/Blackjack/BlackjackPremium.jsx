@@ -560,7 +560,7 @@ export default function BlackjackPremium() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 flex justify-center">
           <BettingControls
             gamePhase={gamePhase}
             currentBet={currentBet}
