@@ -126,83 +126,47 @@ export default function TheLifeBlackMarket({
   const buyStoreItem = async (storeItem, quantity = 1) => {
     const totalCost = storeItem.price * quantity;
     
+    // Quick client-side checks
     if (player.cash < totalCost) {
       setMessage({ type: 'error', text: t.notEnoughCash });
       return;
     }
 
-    // Check stock
     if (storeItem.stock_quantity !== null && storeItem.stock_quantity < quantity) {
       setMessage({ type: 'error', text: t.stockLeft(storeItem.stock_quantity) });
       return;
     }
 
     try {
-      // Update player cash
-      const { error: playerError } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - totalCost })
-        .eq('user_id', user.id);
+      // Use secure server-side RPC function
+      const { data: result, error } = await supabase.rpc('execute_store_purchase', {
+        p_store_item_id: storeItem.id,
+        p_quantity: quantity
+      });
 
-      if (playerError) throw playerError;
+      if (error) throw error;
 
-      // Add item to inventory
-      const { data: playerData } = await supabase
-        .from('the_life_players')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (playerData) {
-        // Check if item exists in inventory
-        const { data: existing } = await supabase
-          .from('the_life_player_inventory')
-          .select('*')
-          .eq('player_id', playerData.id)
-          .eq('item_id', storeItem.item_id)
-          .maybeSingle();
-
-        if (existing) {
-          await supabase
-            .from('the_life_player_inventory')
-            .update({ quantity: existing.quantity + quantity })
-            .eq('id', existing.id);
-        } else {
-          await supabase
-            .from('the_life_player_inventory')
-            .insert({
-              player_id: playerData.id,
-              item_id: storeItem.item_id,
-              quantity: quantity
-            });
-        }
-        
-        // LOG: Item purchase
-        const context = await getActionContext();
-        await antiCheatLogger.logInventoryChange(
-          playerData.id,
-          storeItem.item_id,
-          'added',
-          quantity,
-          'purchase',
-          storeItem.id,
-          crypto.randomUUID(),
-          { ...context, item_name: storeItem.item.name, price: totalCost }
-        );
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error || t.purchaseFailed });
+        return;
       }
 
-      // Update stock if limited
-      if (storeItem.stock_quantity !== null) {
-        await supabase
-          .from('the_life_store_items')
-          .update({ stock_quantity: storeItem.stock_quantity - quantity })
-          .eq('id', storeItem.id);
-      }
+      // LOG: Item purchase
+      const context = await getActionContext();
+      await antiCheatLogger.logInventoryChange(
+        player.id,
+        storeItem.item_id,
+        'added',
+        quantity,
+        'purchase',
+        storeItem.id,
+        crypto.randomUUID(),
+        { ...context, item_name: storeItem.item.name, price: totalCost }
+      );
       
       // LOG: Economy transaction
-      const context = await getActionContext();
       await antiCheatLogger.logEconomyTransaction(
-        playerData.id,
+        player.id,
         'spent',
         totalCost,
         'store',
@@ -211,7 +175,7 @@ export default function TheLifeBlackMarket({
         { ...context, item_name: storeItem.item.name, quantity }
       );
 
-      setMessage({ type: 'success', text: t.purchased(quantity, storeItem.item.name) });
+      setMessage({ type: 'success', text: t.purchased(quantity, result.item_name || storeItem.item.name) });
       setQuantities({ ...quantities, [storeItem.id]: 1 }); // Reset quantity to 1
       initializePlayer();
       loadTheLifeInventory();

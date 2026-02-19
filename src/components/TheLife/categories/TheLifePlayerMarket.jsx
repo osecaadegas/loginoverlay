@@ -249,73 +249,29 @@ export default function TheLifePlayerMarket({
     
     const totalCost = listing.price * listing.quantity;
     
+    // Quick client-side check
     if (player.cash < totalCost) {
       setMessage({ type: 'error', text: isPt ? 'Dinheiro insuficiente!' : 'Not enough cash!' });
       return;
     }
 
     try {
-      // Start transaction
-      const { error: buyerError } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - totalCost })
-        .eq('id', player.id);
-
-      if (buyerError) throw buyerError;
-
-      // Add cash to seller
-      const { error: sellerError } = await supabase.rpc('add_player_cash', {
-        p_player_id: listing.seller_id,
-        p_amount: totalCost
+      // Use secure server-side RPC function
+      const { data: result, error } = await supabase.rpc('execute_market_purchase', {
+        p_listing_id: listing.id,
+        p_quantity: listing.quantity
       });
 
-      if (sellerError) throw sellerError;
+      if (error) throw error;
 
-      // Add item to buyer inventory
-      const { data: existingItem } = await supabase
-        .from('the_life_player_inventory')
-        .select('*')
-        .eq('player_id', player.id)
-        .eq('item_id', listing.item_id)
-        .single();
-
-      if (existingItem) {
-        await supabase
-          .from('the_life_player_inventory')
-          .update({ quantity: existingItem.quantity + listing.quantity })
-          .eq('id', existingItem.id);
-      } else {
-        await supabase
-          .from('the_life_player_inventory')
-          .insert({
-            player_id: player.id,
-            item_id: listing.item_id,
-            quantity: listing.quantity
-          });
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error || (isPt ? 'Erro ao comprar item!' : 'Error buying item!') });
+        return;
       }
 
-      // Update listing status
-      await supabase
-        .from('the_life_market_listings')
-        .update({ status: 'sold', sold_at: new Date().toISOString() })
-        .eq('id', listing.id);
-
-      // Record transaction
-      await supabase
-        .from('the_life_market_transactions')
-        .insert({
-          listing_id: listing.id,
-          item_id: listing.item_id,
-          buyer_id: player.id,
-          seller_id: listing.seller_id,
-          price: listing.price,
-          quantity: listing.quantity,
-          total_amount: totalCost
-        });
-
       // Update local state
-      setPlayer(prev => ({ ...prev, cash: prev.cash - totalCost }));
-      showEventMessage?.(isPt ? `Comprou ${listing.item?.name} por $${totalCost.toLocaleString()}!` : `Bought ${listing.item?.name} for $${totalCost.toLocaleString()}!`, 'success');
+      setPlayer(prev => ({ ...prev, cash: result.new_cash || (prev.cash - totalCost) }));
+      showEventMessage?.(isPt ? `Comprou ${result.item_name || listing.item?.name} por $${result.total_cost?.toLocaleString() || totalCost.toLocaleString()}!` : `Bought ${result.item_name || listing.item?.name} for $${result.total_cost?.toLocaleString() || totalCost.toLocaleString()}!`, 'success');
       loadListings();
       loadTheLifeInventory?.();
     } catch (err) {
