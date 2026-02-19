@@ -33,8 +33,14 @@ export default function GuessBalanceManager() {
     casino_brand: '',
     casino_image_url: '',
     is_guessing_open: false,
-    reveal_answer: false
+    reveal_answer: false,
+    conducted_by: '',
+    notes: ''
   });
+  
+  // Hunt Logs state
+  const [activeTab, setActiveTab] = useState('sessions'); // 'sessions' or 'logs'
+  const [huntLogs, setHuntLogs] = useState([]);
   
   // Slot management state
   const [showSlotModal, setShowSlotModal] = useState(false);
@@ -106,6 +112,22 @@ export default function GuessBalanceManager() {
       setSlotCatalog(allSlots);
     } catch (err) {
       console.error('Error loading slot catalog:', err);
+    }
+  }, []);
+
+  // Load hunt logs (completed sessions with profit data)
+  const loadHuntLogs = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('guess_balance_sessions')
+        .select('*')
+        .eq('reveal_answer', true)
+        .order('stream_date', { ascending: false });
+      
+      if (error) throw error;
+      setHuntLogs(data || []);
+    } catch (err) {
+      console.error('Error loading hunt logs:', err);
     }
   }, []);
 
@@ -233,7 +255,9 @@ export default function GuessBalanceManager() {
         casino_brand: session.casino_brand || '',
         casino_image_url: session.casino_image_url || '',
         is_guessing_open: session.is_guessing_open || false,
-        reveal_answer: session.reveal_answer || false
+        reveal_answer: session.reveal_answer || false,
+        conducted_by: session.conducted_by || '',
+        notes: session.notes || ''
       });
       // Load existing slots for this session
       loadGuessBalanceSlots(session.id).then(() => {
@@ -258,7 +282,9 @@ export default function GuessBalanceManager() {
         casino_brand: '',
         casino_image_url: '',
         is_guessing_open: false,
-        reveal_answer: false
+        reveal_answer: false,
+        conducted_by: '',
+        notes: ''
       });
       setSessionSlotsInModal([]);
     }
@@ -305,7 +331,9 @@ export default function GuessBalanceManager() {
             casino_brand: guessSessionFormData.casino_brand || null,
             casino_image_url: guessSessionFormData.casino_image_url || null,
             is_guessing_open: guessSessionFormData.is_guessing_open,
-            reveal_answer: guessSessionFormData.reveal_answer
+            reveal_answer: guessSessionFormData.reveal_answer,
+            conducted_by: guessSessionFormData.conducted_by || null,
+            notes: guessSessionFormData.notes || null
           })
           .eq('id', editingGuessSession.id);
         
@@ -329,7 +357,9 @@ export default function GuessBalanceManager() {
             casino_brand: guessSessionFormData.casino_brand || null,
             casino_image_url: guessSessionFormData.casino_image_url || null,
             is_guessing_open: guessSessionFormData.is_guessing_open,
-            reveal_answer: guessSessionFormData.reveal_answer
+            reveal_answer: guessSessionFormData.reveal_answer,
+            conducted_by: guessSessionFormData.conducted_by || null,
+            notes: guessSessionFormData.notes || null
           })
           .select()
           .single();
@@ -558,10 +588,11 @@ export default function GuessBalanceManager() {
       setLoading(true);
       Promise.all([
         loadGuessBalanceSessions(),
-        loadSlotCatalog()
+        loadSlotCatalog(),
+        loadHuntLogs()
       ]).finally(() => setLoading(false));
     }
-  }, [adminLoading, hasAccess, loadGuessBalanceSessions, loadSlotCatalog]);
+  }, [adminLoading, hasAccess, loadGuessBalanceSessions, loadSlotCatalog, loadHuntLogs]);
 
   // Redirect if no access
   useEffect(() => {
@@ -600,7 +631,107 @@ export default function GuessBalanceManager() {
         <p>Create and manage Guess The Balance sessions for streams</p>
       </div>
 
+      {/* Tab Navigation */}
+      <div className="tab-navigation">
+        <button 
+          className={`tab-btn ${activeTab === 'sessions' ? 'active' : ''}`}
+          onClick={() => setActiveTab('sessions')}
+        >
+          📅 Sessions
+        </button>
+        <button 
+          className={`tab-btn ${activeTab === 'logs' ? 'active' : ''}`}
+          onClick={() => setActiveTab('logs')}
+        >
+          📊 Hunt Logs
+        </button>
+      </div>
+
+      {/* Hunt Logs Section */}
+      {activeTab === 'logs' && (
+        <div className="guess-balance-section hunt-logs-section">
+          <div className="section-header">
+            <h2>📊 Hunt Logs & Profit Tracking</h2>
+          </div>
+
+          {/* Summary Stats */}
+          <div className="hunt-summary-stats">
+            <div className="summary-stat">
+              <span className="stat-value">{huntLogs.length}</span>
+              <span className="stat-label">Total Hunts</span>
+            </div>
+            <div className="summary-stat">
+              <span className={`stat-value ${huntLogs.reduce((sum, h) => sum + (parseFloat(h.final_balance) - parseFloat(h.start_value) || 0), 0) >= 0 ? 'profit' : 'loss'}`}>
+                €{huntLogs.reduce((sum, h) => sum + (parseFloat(h.final_balance) - parseFloat(h.start_value) || 0), 0).toFixed(2)}
+              </span>
+              <span className="stat-label">Total Profit/Loss</span>
+            </div>
+            <div className="summary-stat">
+              <span className="stat-value">
+                €{huntLogs.length > 0 ? (huntLogs.reduce((sum, h) => sum + (parseFloat(h.final_balance) - parseFloat(h.start_value) || 0), 0) / huntLogs.length).toFixed(2) : '0.00'}
+              </span>
+              <span className="stat-label">Avg Profit/Hunt</span>
+            </div>
+            <div className="summary-stat">
+              <span className="stat-value profit">
+                {huntLogs.filter(h => (parseFloat(h.final_balance) - parseFloat(h.start_value)) > 0).length}
+              </span>
+              <span className="stat-label">Profitable Hunts</span>
+            </div>
+          </div>
+
+          {/* Hunt Logs Table */}
+          {huntLogs.length === 0 ? (
+            <div className="empty-state">
+              <p>No completed hunts yet. Complete a session to see it in the logs.</p>
+            </div>
+          ) : (
+            <div className="hunt-logs-table-wrapper">
+              <table className="hunt-logs-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Title</th>
+                    <th>Casino</th>
+                    <th>Conducted By</th>
+                    <th>Start</th>
+                    <th>Final</th>
+                    <th>Profit/Loss</th>
+                    <th>Notes</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {huntLogs.map(hunt => {
+                    const profit = (parseFloat(hunt.final_balance) || 0) - (parseFloat(hunt.start_value) || 0);
+                    return (
+                      <tr key={hunt.id} className={profit >= 0 ? 'profit-row' : 'loss-row'}>
+                        <td>{hunt.stream_date ? new Date(hunt.stream_date).toLocaleDateString() : '-'}</td>
+                        <td>{hunt.title}</td>
+                        <td>
+                          {hunt.casino_image_url && (
+                            <img src={hunt.casino_image_url} alt="" className="mini-casino-logo" />
+                          )}
+                          {hunt.casino_brand || '-'}
+                        </td>
+                        <td>{hunt.conducted_by || '-'}</td>
+                        <td>€{parseFloat(hunt.start_value || 0).toFixed(2)}</td>
+                        <td>€{parseFloat(hunt.final_balance || 0).toFixed(2)}</td>
+                        <td className={`profit-cell ${profit >= 0 ? 'profit' : 'loss'}`}>
+                          {profit >= 0 ? '+' : ''}€{profit.toFixed(2)}
+                        </td>
+                        <td className="notes-cell">{hunt.notes || '-'}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Sessions Section */}
+      {activeTab === 'sessions' && (
       <div className="guess-balance-section">
         <div className="section-header">
           <h2>📅 Sessions</h2>
@@ -651,7 +782,22 @@ export default function GuessBalanceManager() {
                       {session.reveal_answer ? `€${session.final_balance || '---'}` : '🔒 Hidden'}
                     </span>
                   </div>
+                  {session.reveal_answer && session.final_balance && session.start_value && (
+                    <div className="stat">
+                      <span className="stat-label">Profit</span>
+                      <span className={`stat-value ${(parseFloat(session.final_balance) - parseFloat(session.start_value)) >= 0 ? 'profit' : 'loss'}`}>
+                        {(parseFloat(session.final_balance) - parseFloat(session.start_value)) >= 0 ? '+' : ''}
+                        €{(parseFloat(session.final_balance) - parseFloat(session.start_value)).toFixed(2)}
+                      </span>
+                    </div>
+                  )}
                 </div>
+                
+                {session.conducted_by && (
+                  <div className="session-conducted-by">
+                    <span>👤 Conducted by: {session.conducted_by}</span>
+                  </div>
+                )}
 
                 <div className="session-actions">
                   <button 
@@ -715,6 +861,7 @@ export default function GuessBalanceManager() {
           </div>
         )}
       </div>
+      )}
 
       {/* Slots Management Section (when session selected) */}
       {selectedSessionForSlots && (
@@ -901,6 +1048,28 @@ export default function GuessBalanceManager() {
                 placeholder="https://..."
               />
             </div>
+          </div>
+
+          <div className="form-section-title">👤 Hunt Info</div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Conducted By</label>
+              <input
+                type="text"
+                value={guessSessionFormData.conducted_by}
+                onChange={(e) => setGuessSessionFormData({...guessSessionFormData, conducted_by: e.target.value})}
+                placeholder="Who ran this hunt? e.g., StreamerName"
+              />
+            </div>
+          </div>
+          <div className="form-group">
+            <label>Notes</label>
+            <textarea
+              value={guessSessionFormData.notes}
+              onChange={(e) => setGuessSessionFormData({...guessSessionFormData, notes: e.target.value})}
+              placeholder="Any notes about this session..."
+              rows={3}
+            />
           </div>
 
           <div className="form-section-title">⚙️ Settings</div>
