@@ -560,33 +560,30 @@ export default function BlackjackPremium() {
           </div>
         </div>
 
-        <div className="mt-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-            <div className="lg:col-span-8 flex justify-center">
-              <BettingControls
-                gamePhase={gamePhase}
-                currentBet={currentBet}
-                balance={availablePoints}
-                betInput={betInput}
-                lastBet={lastBet}
-                canHit={gamePhase === 'playing'}
-                canStand={gamePhase === 'playing'}
-                canDouble={canDoubleDown}
-                canSplit={canSplit}
-                onSetBet={setBetAmount}
-                onInputChange={setBetInput}
-                onAddChip={addChipToBet}
-                onClearBet={clearBet}
-                onPlaceBet={startNewRound}
-                onHit={hit}
-                onStand={stand}
-                onDouble={doubleDown}
-                onSplit={split}
-                onNextRound={resetRound}
-                chipValues={CHIP_VALUES}
-              />
-            </div>
-            <div className="lg:col-span-4" />
+        <div className="mt-6 flex justify-center">
+          <div className="w-full max-w-4xl">
+            <BettingControls
+              gamePhase={gamePhase}
+              currentBet={currentBet}
+              balance={availablePoints}
+              betInput={betInput}
+              lastBet={lastBet}
+              canHit={gamePhase === 'playing'}
+              canStand={gamePhase === 'playing'}
+              canDouble={canDoubleDown}
+              canSplit={canSplit}
+              onSetBet={setBetAmount}
+              onInputChange={setBetInput}
+              onAddChip={addChipToBet}
+              onClearBet={clearBet}
+              onPlaceBet={startNewRound}
+              onHit={hit}
+              onStand={stand}
+              onDouble={doubleDown}
+              onSplit={split}
+              onNextRound={resetRound}
+              chipValues={CHIP_VALUES}
+            />
           </div>
         </div>
 
