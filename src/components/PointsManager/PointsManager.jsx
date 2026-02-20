@@ -402,6 +402,7 @@ export default function PointsManager() {
     const { data, error } = await supabase
       .from('redemption_items')
       .select('*')
+      .order('sort_order', { ascending: true, nullsFirst: false })
       .order('point_cost', { ascending: true });
 
     if (error) throw error;
@@ -587,6 +588,27 @@ export default function PointsManager() {
 
       if (error) throw error;
       setSuccess('Redemption item deleted');
+      await loadRedemptionItems();
+    } catch (err) {
+      setError(err.message);
+    }
+  };
+
+  const handleMoveItem = async (item, direction) => {
+    try {
+      const currentIndex = redemptionItems.findIndex(i => i.id === item.id);
+      const swapIndex = direction === 'up' ? currentIndex - 1 : currentIndex + 1;
+      if (swapIndex < 0 || swapIndex >= redemptionItems.length) return;
+
+      const swapItem = redemptionItems[swapIndex];
+      const currentOrder = item.sort_order ?? currentIndex;
+      const swapOrder = swapItem.sort_order ?? swapIndex;
+
+      await Promise.all([
+        supabase.from('redemption_items').update({ sort_order: swapOrder }).eq('id', item.id),
+        supabase.from('redemption_items').update({ sort_order: currentOrder }).eq('id', swapItem.id)
+      ]);
+
       await loadRedemptionItems();
     } catch (err) {
       setError(err.message);
@@ -1383,6 +1405,10 @@ export default function PointsManager() {
                       <span className={`pm-item-status ${item.is_active ? 'active' : 'inactive'}`}>
                         {item.is_active ? '● Active' : '○ Inactive'}
                       </span>
+                    </div>
+                    <div className="pm-item-order">
+                      <button onClick={() => handleMoveItem(item, 'up')} className="pm-order-btn" title="Move up">▲</button>
+                      <button onClick={() => handleMoveItem(item, 'down')} className="pm-order-btn" title="Move down">▼</button>
                     </div>
                     <div className="pm-item-actions">
                       <button

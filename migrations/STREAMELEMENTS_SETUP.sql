@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS redemption_items (
   reward_type TEXT NOT NULL, -- 'premium_role', 'premium_duration', 'custom'
   reward_value JSONB, -- e.g., {"duration_days": 30} or {"role": "premium"}
   is_active BOOLEAN DEFAULT true,
+  sort_order INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );

@@ -62,6 +62,7 @@ export default function StreamElementsPanel() {
         .from('redemption_items')
         .select('*')
         .neq('reward_type', 'se_points_reward') // Exclude SE Points Reward items (for Season Pass only)
+        .order('sort_order', { ascending: true, nullsFirst: false })
         .order('point_cost', { ascending: true });
 
       if (error) throw error;
@@ -338,7 +339,7 @@ export default function StreamElementsPanel() {
                     }`}
                   >
                     {/* Image */}
-                    <div className="relative aspect-[16/9] overflow-hidden">
+                    <div className="relative w-full h-44 overflow-hidden">
                       <img src={imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       
