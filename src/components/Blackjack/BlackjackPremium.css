@@ -175,7 +175,9 @@
     align-items: flex-end;
   }
 
-  .bj-main-stack > * {
+  .bj-layout-betting,
+  .bj-layout-history {
     max-width: 720px;
+    align-self: flex-end;
   }
 }
