@@ -22,29 +22,17 @@ export default function TheLifeInventory({
     }
 
     try {
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ jail_until: null })
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      const { data, error } = await supabase.rpc('use_consumable_item', {
+        p_inventory_id: jailCard.id
+      });
 
       if (error) throw error;
-
-      const newQuantity = jailCard.quantity - 1;
-      if (newQuantity <= 0) {
-        await supabase
-          .from('the_life_player_inventory')
-          .delete()
-          .eq('id', jailCard.id);
-      } else {
-        await supabase
-          .from('the_life_player_inventory')
-          .update({ quantity: newQuantity })
-          .eq('id', jailCard.id);
+      if (!data?.success) {
+        setMessage({ type: 'error', text: data?.error || 'Failed to use card!' });
+        return;
       }
 
-      setPlayer(data);
+      initializePlayer?.();
       loadTheLifeInventory();
       setMessage({ type: 'success', text: 'Used Jail Free Card! You\'re free!' });
     } catch (err) {
@@ -60,63 +48,22 @@ export default function TheLifeInventory({
     }
 
     try {
-      const effect = JSON.parse(invItem.item.effect);
-      let updateData = {};
+      const { data, error } = await supabase.rpc('use_consumable_item', {
+        p_inventory_id: invItem.id
+      });
 
-      switch (effect.type) {
-        case 'heal':
-          updateData.hp = Math.min(player.max_hp, player.hp + effect.value);
-          break;
-        case 'stamina':
-          updateData.stamina = Math.min(player.max_stamina, player.stamina + effect.value);
-          if (effect.addiction) {
-            const newAddiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + effect.addiction);
-            updateData.addiction = newAddiction;
-            if (newAddiction >= 100) {
-              updateData.hp = 0;
-              updateData.hospital_until = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-              setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
-            }
-          }
-          break;
-        case 'xp_boost':
-          updateData.xp = player.xp + effect.value;
-          break;
-        case 'cash':
-          updateData.cash = player.cash + effect.value;
-          break;
-        case 'jail_free':
-          if (!player.jail_until) {
-            setMessage({ type: 'error', text: 'You are not in jail!' });
-            return;
-          }
-          updateData.jail_until = null;
-          break;
-        default:
-          setMessage({ type: 'error', text: 'Unknown effect type!' });
-          return;
+      if (error) throw error;
+      if (!data?.success) {
+        setMessage({ type: 'error', text: data?.error || 'Failed to use item' });
+        return;
       }
 
-      const { error: playerError } = await supabase
-        .from('the_life_players')
-        .update(updateData)
-        .eq('user_id', user.id);
-
-      if (playerError) throw playerError;
-
-      if (invItem.quantity > 1) {
-        await supabase
-          .from('the_life_player_inventory')
-          .update({ quantity: invItem.quantity - 1 })
-          .eq('id', invItem.id);
+      if (data.overdose) {
+        setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
       } else {
-        await supabase
-          .from('the_life_player_inventory')
-          .delete()
-          .eq('id', invItem.id);
+        setMessage({ type: 'success', text: data.message || `Used ${invItem.item.name}!` });
       }
 
-      setMessage({ type: 'success', text: `Used ${invItem.item.name}!` });
       if (initializePlayer) initializePlayer();
       loadTheLifeInventory();
     } catch (err) {

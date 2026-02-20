@@ -226,7 +226,7 @@ export default function TheLife() {
       const staminaItems = theLifeInventory.filter(inv => {
         if (!inv.item.effect) return false;
         try {
-          const effect = JSON.parse(inv.item.effect);
+          const effect = typeof inv.item.effect === 'string' ? JSON.parse(inv.item.effect) : inv.item.effect;
           return effect.type === 'stamina';
         } catch {
           return false;
@@ -238,48 +238,26 @@ export default function TheLife() {
         return;
       }
 
-      // Use the first stamina item found
+      // Use the first stamina item found via server-side RPC
       const itemToUse = staminaItems[0];
-      const effect = JSON.parse(itemToUse.item.effect);
+      const { data, error } = await supabase.rpc('use_consumable_item', {
+        p_inventory_id: itemToUse.id
+      });
 
-      // Update player stamina and addiction
-      const newStamina = Math.min(player.max_stamina, player.stamina + effect.value);
-      const addictionGain = effect.addiction || 0;
-      const newAddiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + addictionGain);
-      
-      const updateData = { stamina: newStamina };
-      if (addictionGain > 0) {
-        updateData.addiction = newAddiction;
+      if (error) throw error;
+      if (!data?.success) {
+        setMessage({ type: 'error', text: data?.error || 'Failed to use item' });
+        return;
       }
-      
-      // Check for addiction overdose at 100
-      if (newAddiction >= 100) {
-        updateData.hp = 0;
-        updateData.hospital_until = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 min hospital
+
+      if (data.overdose) {
         setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
-      }
-      
-      const { error: playerError } = await supabase
-        .from('the_life_players')
-        .update(updateData)
-        .eq('user_id', user.id);
-
-      if (playerError) throw playerError;
-
-      // Remove one from inventory
-      if (itemToUse.quantity > 1) {
-        await supabase
-          .from('the_life_player_inventory')
-          .update({ quantity: itemToUse.quantity - 1 })
-          .eq('id', itemToUse.id);
       } else {
-        await supabase
-          .from('the_life_player_inventory')
-          .delete()
-          .eq('id', itemToUse.id);
+        const effect = typeof itemToUse.item.effect === 'string' ? JSON.parse(itemToUse.item.effect) : itemToUse.item.effect;
+        const addictionGain = effect.addiction || 0;
+        setMessage({ type: 'success', text: `Used ${itemToUse.item.name}! +${data.effect_value} stamina${addictionGain > 0 ? ` (+${addictionGain} addiction)` : ''}` });
       }
 
-      setMessage({ type: 'success', text: `Used ${itemToUse.item.name}! +${effect.value} stamina${addictionGain > 0 ? ` (+${addictionGain} addiction)` : ''}` });
       initializePlayer();
       loadTheLifeInventory();
     } catch (err) {

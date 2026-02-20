@@ -122,69 +122,22 @@ export default function TheLifeProfile({
     }
 
     try {
-      const effect = JSON.parse(invItem.item.effect);
-      let updateData = {};
+      const { data, error } = await supabase.rpc('use_consumable_item', {
+        p_inventory_id: invItem.id
+      });
 
-      switch (effect.type) {
-        case 'heal':
-          updateData.hp = Math.min(player.max_hp, player.hp + effect.value);
-          break;
-        case 'stamina':
-          updateData.stamina = Math.min(player.max_stamina, player.stamina + effect.value);
-          // Add addiction if the item has it
-          if (effect.addiction) {
-            const newAddiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + effect.addiction);
-            updateData.addiction = newAddiction;
-            // Check for overdose at 100 addiction
-            if (newAddiction >= 100) {
-              updateData.hp = 0;
-              updateData.hospital_until = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-              setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
-            }
-          }
-          break;
-        case 'xp_boost':
-          updateData.xp = player.xp + effect.value;
-          // Add XP to Season Pass for XP boost items
-          await addSeasonPassXP(user.id, effect.value, 'item_use', invItem.item.id?.toString());
-          break;
-        case 'cash':
-          updateData.cash = player.cash + effect.value;
-          break;
-        case 'jail_free':
-          if (!player.jail_until) {
-            setMessage({ type: 'error', text: 'You are not in jail!' });
-            return;
-          }
-          updateData.jail_until = null;
-          break;
-        default:
-          setMessage({ type: 'error', text: 'Unknown effect type!' });
-          return;
+      if (error) throw error;
+      if (!data?.success) {
+        setMessage({ type: 'error', text: data?.error || 'Failed to use item' });
+        return;
       }
 
-      // Update player
-      const { error: playerError } = await supabase
-        .from('the_life_players')
-        .update(updateData)
-        .eq('user_id', user.id);
-
-      if (playerError) throw playerError;
-
-      // Remove one from inventory
-      if (invItem.quantity > 1) {
-        await supabase
-          .from('the_life_player_inventory')
-          .update({ quantity: invItem.quantity - 1 })
-          .eq('id', invItem.id);
+      if (data.overdose) {
+        setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
       } else {
-        await supabase
-          .from('the_life_player_inventory')
-          .delete()
-          .eq('id', invItem.id);
+        setMessage({ type: 'success', text: data.message || `Used ${invItem.item.name}!` });
       }
 
-      setMessage({ type: 'success', text: `Used ${invItem.item.name}!` });
       initializePlayer();
       loadTheLifeInventory();
     } catch (err) {
