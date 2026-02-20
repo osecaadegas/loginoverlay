@@ -544,7 +544,7 @@ export default function BlackjackPremium() {
               onToggle={() => setShowRules(!showRules)}
             />
 
-            <div className="w-full max-w-xl">
+            <div className="w-full max-w-none">
               <BettingControls
                 gamePhase={gamePhase}
                 currentBet={currentBet}
