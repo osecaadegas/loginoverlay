@@ -527,37 +527,7 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
               calculateScore={calculateScore}
             />
-            <div className="grid gap-6 lg:grid-cols-12">
-              <div className="lg:col-span-5">
-                <div className="w-full max-w-xl">
-                  <BettingControls
-                    gamePhase={gamePhase}
-                    currentBet={currentBet}
-                    balance={availablePoints}
-                    betInput={betInput}
-                    lastBet={lastBet}
-                    canHit={gamePhase === 'playing'}
-                    canStand={gamePhase === 'playing'}
-                    canDouble={canDoubleDown}
-                    canSplit={canSplit}
-                    onSetBet={setBetAmount}
-                    onInputChange={setBetInput}
-                    onAddChip={addChipToBet}
-                    onClearBet={clearBet}
-                    onPlaceBet={startNewRound}
-                    onHit={hit}
-                    onStand={stand}
-                    onDouble={doubleDown}
-                    onSplit={split}
-                    onNextRound={resetRound}
-                    chipValues={CHIP_VALUES}
-                  />
-                </div>
-              </div>
-              <div className="lg:col-span-7">
-                <BetHistory entries={gameHistory} />
-              </div>
-            </div>
+            <BetHistory entries={gameHistory} />
           </div>
 
           <div className="lg:col-span-4 space-y-5">
@@ -569,35 +539,40 @@ export default function BlackjackPremium() {
               onChange={placeSideBet}
             />
 
-            <button
-              onClick={() => setShowRules(true)}
-              className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] px-5 py-4 text-left transition-all hover:bg-white/[0.04] group"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
-                    <span className="text-amber-500 text-sm">📖</span>
-                  </div>
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">Game Rules</h3>
-                    <p className="text-[11px] text-gray-500">How to play blackjack</p>
-                  </div>
-                </div>
-                <svg className="h-4 w-4 text-gray-600 group-hover:text-gray-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7" />
-                </svg>
-              </div>
-            </button>
-          </div>
-        </div>
+            <GameRulesPanel
+              isOpen={showRules}
+              onToggle={() => setShowRules(!showRules)}
+            />
 
-        <div className="mt-6 lg:hidden">
-          <BetHistory entries={gameHistory} />
+            <div className="w-full max-w-xl">
+              <BettingControls
+                gamePhase={gamePhase}
+                currentBet={currentBet}
+                balance={availablePoints}
+                betInput={betInput}
+                lastBet={lastBet}
+                canHit={gamePhase === 'playing'}
+                canStand={gamePhase === 'playing'}
+                canDouble={canDoubleDown}
+                canSplit={canSplit}
+                onSetBet={setBetAmount}
+                onInputChange={setBetInput}
+                onAddChip={addChipToBet}
+                onClearBet={clearBet}
+                onPlaceBet={startNewRound}
+                onHit={hit}
+                onStand={stand}
+                onDouble={doubleDown}
+                onSplit={split}
+                onNextRound={resetRound}
+                chipValues={CHIP_VALUES}
+              />
+            </div>
+          </div>
         </div>
       </div>
 
       <WinOverlay winInfo={winInfo} onDismiss={() => setWinInfo(null)} />
-      <GameRules isOpen={showRules} onClose={() => setShowRules(false)} />
     </div>
   );
 }
@@ -1103,37 +1078,44 @@ function BetHistory({ entries }) {
   );
 }
 
-function GameRules({ isOpen, onClose }) {
-  if (!isOpen) return null;
-
+function GameRulesPanel({ isOpen, onToggle }) {
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={onClose} />
-
-      <div className="relative w-full max-w-xl rounded-2xl border border-white/[0.08] bg-gray-900 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-white/[0.06] px-6 py-4">
-          <h2 className="text-lg font-bold text-white">How to Play</h2>
-          <button
-            onClick={onClose}
-            className="rounded-lg p-1.5 text-gray-500 transition-colors hover:bg-white/[0.06] hover:text-white"
-          >
-            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+      <button
+        onClick={onToggle}
+        className="flex w-full items-center justify-between px-5 py-4 text-left transition-colors hover:bg-white/[0.02]"
+      >
+        <div className="flex items-center gap-3">
+          <div className="h-8 w-8 rounded-lg bg-amber-500/10 flex items-center justify-center">
+            <span className="text-amber-500 text-sm">📖</span>
+          </div>
+          <div>
+            <h3 className="text-sm font-semibold text-white">Game Rules</h3>
+            <p className="text-[11px] text-gray-500">How to play blackjack</p>
+          </div>
         </div>
+        <svg
+          className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
 
-        <div className="max-h-[65vh] overflow-y-auto p-6 space-y-6">
+      {isOpen && (
+        <div className="border-t border-white/[0.04] p-4 space-y-4">
           <section>
-            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-2">Objective</h3>
-            <p className="text-sm text-gray-300 leading-relaxed">
+            <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">Objective</h4>
+            <p className="text-xs text-gray-300 leading-relaxed">
               Beat the dealer by getting a hand value as close to 21 as possible without going over.
             </p>
           </section>
 
           <section>
-            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-2">Card Values</h3>
-            <div className="space-y-1.5 text-sm text-gray-300">
+            <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">Card Values</h4>
+            <div className="space-y-1 text-xs text-gray-300">
               <p>• Number cards (2–10): Face value</p>
               <p>• Face cards (J, Q, K): 10 points</p>
               <p>• Aces: 1 or 11 (best for your hand)</p>
@@ -1141,20 +1123,20 @@ function GameRules({ isOpen, onClose }) {
           </section>
 
           <section>
-            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-2">Game Flow</h3>
-            <ol className="space-y-1.5 text-sm text-gray-300 list-decimal list-inside">
+            <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">Game Flow</h4>
+            <ol className="space-y-1 text-xs text-gray-300 list-decimal list-inside">
               <li>Enter your bet amount and click Deal</li>
               <li>You and the dealer each get two cards</li>
-              <li>Choose Hit (draw), Stand (keep), Double, or Split (when available)</li>
+              <li>Choose Hit, Stand, Double, or Split (when available)</li>
               <li>Going over 21 = bust, you lose</li>
               <li>Dealer reveals and must hit until 17+</li>
-              <li>Closest to 21 wins!</li>
+              <li>Closest to 21 wins</li>
             </ol>
           </section>
 
           <section>
-            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-2">Payouts</h3>
-            <div className="space-y-1.5 text-sm">
+            <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">Payouts</h4>
+            <div className="space-y-1 text-xs">
               <p><span className="text-emerald-400 font-semibold">Blackjack:</span> <span className="text-gray-300">3:2</span></p>
               <p><span className="text-emerald-400 font-semibold">Win:</span> <span className="text-gray-300">1:1</span></p>
               <p><span className="text-gray-400 font-semibold">Push:</span> <span className="text-gray-300">Bet returned</span></p>
@@ -1163,23 +1145,14 @@ function GameRules({ isOpen, onClose }) {
           </section>
 
           <section>
-            <h3 className="text-sm font-bold text-amber-400 uppercase tracking-wider mb-2">Side Bets</h3>
-            <div className="space-y-1.5 text-sm text-gray-300">
+            <h4 className="text-xs font-bold text-amber-400 uppercase tracking-wider mb-1.5">Side Bets</h4>
+            <div className="space-y-1 text-xs text-gray-300">
               <p>• Perfect Pair: 25:1 (perfect), 12:1 (colored), 6:1 (mixed)</p>
               <p>• 21+3: Up to 100:1 for suited trips</p>
             </div>
           </section>
         </div>
-
-        <div className="border-t border-white/[0.06] px-6 py-4">
-          <button
-            onClick={onClose}
-            className="w-full rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-6 py-2.5 text-sm font-bold text-white transition-all hover:from-amber-400 hover:to-amber-500"
-          >
-            Got it!
-          </button>
-        </div>
-      </div>
+      )}
     </div>
   );
 }
