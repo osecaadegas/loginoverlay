@@ -11,6 +11,8 @@ export default function GiveawaysPage() {
   const [successMessage, setSuccessMessage] = useState({});
   const [allParticipants, setAllParticipants] = useState([]);
   const [giveawayWinners, setGiveawayWinners] = useState({});
+  const [redeemsPage, setRedeemsPage] = useState(1);
+  const REDEEMS_PER_PAGE = 10;
 
   useEffect(() => {
     fetchGiveaways();
@@ -118,11 +120,12 @@ export default function GiveawaysPage() {
         .select(`
           user_id,
           tickets_count,
+          total_cost,
           entered_at,
-          giveaways (title, id)
+          giveaways (title, id, ticket_cost)
         `)
         .order('entered_at', { ascending: false })
-        .limit(50);
+        .limit(100);
 
       if (error) throw error;
 
@@ -450,7 +453,10 @@ export default function GiveawaysPage() {
         )}
 
         {/* Latest Redeems Table - Compact */}
-        {allParticipants.length > 0 && (
+        {allParticipants.length > 0 && (() => {
+          const totalPages = Math.ceil(allParticipants.length / REDEEMS_PER_PAGE);
+          const paginatedEntries = allParticipants.slice((redeemsPage - 1) * REDEEMS_PER_PAGE, redeemsPage * REDEEMS_PER_PAGE);
+          return (
           <div className="relative bg-black/40 backdrop-blur-xl border border-yellow-500/30 rounded-2xl overflow-hidden shadow-2xl shadow-yellow-500/10">
             <div className="px-4 py-3 border-b border-yellow-500/20 bg-gradient-to-r from-yellow-500/10 to-transparent">
               <h2 className="text-lg md:text-xl font-bold text-white flex items-center gap-2">
@@ -471,8 +477,8 @@ export default function GiveawaysPage() {
             </div>
             
             {/* Rows */}
-            <div className="divide-y divide-white/5 max-h-[400px] overflow-y-auto">
-              {allParticipants.map((entry, index) => (
+            <div className="divide-y divide-white/5">
+              {paginatedEntries.map((entry, index) => (
                 <div 
                   key={index} 
                   className="grid grid-cols-2 md:grid-cols-[1fr_1fr_1fr_auto_auto] gap-2 px-4 py-2 hover:bg-yellow-500/5 transition-colors items-center"
@@ -500,7 +506,7 @@ export default function GiveawaysPage() {
                   
                   {/* Points */}
                   <div className="text-pink-400 font-bold text-sm text-right">
-                    -1 pts
+                    -{entry.total_cost || entry.giveaways?.ticket_cost || 0} pts
                   </div>
                   
                   {/* Status */}
@@ -516,8 +522,32 @@ export default function GiveawaysPage() {
                 </div>
               ))}
             </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-center gap-4 px-4 py-3 border-t border-yellow-500/20">
+                <button
+                  onClick={() => setRedeemsPage(p => Math.max(1, p - 1))}
+                  disabled={redeemsPage === 1}
+                  className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white/5 border border-white/10 text-white hover:bg-yellow-500/15 hover:border-yellow-500/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  ← Prev
+                </button>
+                <span className="text-gray-400 text-sm">
+                  Page {redeemsPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setRedeemsPage(p => Math.min(totalPages, p + 1))}
+                  disabled={redeemsPage === totalPages}
+                  className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white/5 border border-white/10 text-white hover:bg-yellow-500/15 hover:border-yellow-500/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

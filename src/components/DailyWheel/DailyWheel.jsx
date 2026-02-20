@@ -15,6 +15,8 @@ export default function DailyWheel() {
   const [loading, setLoading] = useState(true);
   const [recentSpins, setRecentSpins] = useState([]);
   const [pointsAwarded, setPointsAwarded] = useState(null); // Track if points were awarded
+  const [spinsPage, setSpinsPage] = useState(1);
+  const SPINS_PER_PAGE = 10;
   
   const canvasRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -141,7 +143,7 @@ export default function DailyWheel() {
         .from('daily_wheel_spins')
         .select('*')
         .order('spin_date', { ascending: false })
-        .limit(20);
+        .limit(100);
 
       if (error) throw error;
 
@@ -752,39 +754,64 @@ export default function DailyWheel() {
       )}
 
       {/* Recent Spins */}
-      {recentSpins.length > 0 && (
-        <div className="recent-spins-section">
-          <h2>🎡 Recent Spins</h2>
-          <div className="spins-table">
-            <div className="table-header">
-              <div className="table-cell">Prize</div>
-              <div className="table-cell">Nickname</div>
-              <div className="table-cell">Points</div>
-              <div className="table-cell">Date</div>
-            </div>
-            <div className="table-body">
-              {recentSpins.map((spin, index) => (
-                <div key={index} className="table-row">
-                  <div className="table-cell prize">{spin.prize_label}</div>
-                  <div className="table-cell username">{spin.username}</div>
-                  <div className="table-cell points">
-                    {spin.se_points_won > 0 ? `+${spin.se_points_won.toLocaleString()} pts` : '-'}
+      {recentSpins.length > 0 && (() => {
+        const totalPages = Math.ceil(recentSpins.length / SPINS_PER_PAGE);
+        const paginatedSpins = recentSpins.slice((spinsPage - 1) * SPINS_PER_PAGE, spinsPage * SPINS_PER_PAGE);
+        return (
+          <div className="recent-spins-section">
+            <h2>🎡 Recent Spins</h2>
+            <div className="spins-table">
+              <div className="table-header">
+                <div className="table-cell">Prize</div>
+                <div className="table-cell">Nickname</div>
+                <div className="table-cell">Points</div>
+                <div className="table-cell">Date</div>
+              </div>
+              <div className="table-body">
+                {paginatedSpins.map((spin, index) => (
+                  <div key={index} className="table-row">
+                    <div className="table-cell prize">{spin.prize_label}</div>
+                    <div className="table-cell username">{spin.username}</div>
+                    <div className="table-cell points">
+                      {spin.se_points_won > 0 ? `+${spin.se_points_won.toLocaleString()} pts` : '-'}
+                    </div>
+                    <div className="table-cell date">
+                      {new Date(spin.spin_date).toLocaleDateString('en-US', { 
+                        month: '2-digit', 
+                        day: '2-digit', 
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </div>
                   </div>
-                  <div className="table-cell date">
-                    {new Date(spin.spin_date).toLocaleDateString('en-US', { 
-                      month: '2-digit', 
-                      day: '2-digit', 
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
+            {totalPages > 1 && (
+              <div className="spins-pagination">
+                <button
+                  onClick={() => setSpinsPage(p => Math.max(1, p - 1))}
+                  disabled={spinsPage === 1}
+                  className="pagination-btn"
+                >
+                  ← Prev
+                </button>
+                <span className="pagination-info">
+                  Page {spinsPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setSpinsPage(p => Math.min(totalPages, p + 1))}
+                  disabled={spinsPage === totalPages}
+                  className="pagination-btn"
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        );
+      })()}
 
     </div>
   );
