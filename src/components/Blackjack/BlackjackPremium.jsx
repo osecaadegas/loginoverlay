@@ -527,6 +527,30 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
               calculateScore={calculateScore}
             />
+            <div className="bj-layout-betting">
+              <BettingControls
+                gamePhase={gamePhase}
+                currentBet={currentBet}
+                balance={availablePoints}
+                betInput={betInput}
+                lastBet={lastBet}
+                canHit={gamePhase === 'playing'}
+                canStand={gamePhase === 'playing'}
+                canDouble={canDoubleDown}
+                canSplit={canSplit}
+                onSetBet={setBetAmount}
+                onInputChange={setBetInput}
+                onAddChip={addChipToBet}
+                onClearBet={clearBet}
+                onPlaceBet={startNewRound}
+                onHit={hit}
+                onStand={stand}
+                onDouble={doubleDown}
+                onSplit={split}
+                onNextRound={resetRound}
+                chipValues={CHIP_VALUES}
+              />
+            </div>
             <BetHistory entries={gameHistory} />
           </div>
 
@@ -548,32 +572,6 @@ export default function BlackjackPremium() {
               />
             </div>
 
-            <div className="bj-side-item bj-side-betting">
-              <div className="bj-layout-betting">
-                <BettingControls
-                  gamePhase={gamePhase}
-                  currentBet={currentBet}
-                  balance={availablePoints}
-                  betInput={betInput}
-                  lastBet={lastBet}
-                  canHit={gamePhase === 'playing'}
-                  canStand={gamePhase === 'playing'}
-                  canDouble={canDoubleDown}
-                  canSplit={canSplit}
-                  onSetBet={setBetAmount}
-                  onInputChange={setBetInput}
-                  onAddChip={addChipToBet}
-                  onClearBet={clearBet}
-                  onPlaceBet={startNewRound}
-                  onHit={hit}
-                  onStand={stand}
-                  onDouble={doubleDown}
-                  onSplit={split}
-                  onNextRound={resetRound}
-                  chipValues={CHIP_VALUES}
-                />
-              </div>
-            </div>
           </div>
         </div>
       </div>
