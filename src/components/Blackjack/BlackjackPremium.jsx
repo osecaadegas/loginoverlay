@@ -560,30 +560,32 @@ export default function BlackjackPremium() {
           </div>
         </div>
 
-        <div className="mt-6 flex justify-center">
-          <div className="w-full max-w-4xl">
-            <BettingControls
-              gamePhase={gamePhase}
-              currentBet={currentBet}
-              balance={availablePoints}
-              betInput={betInput}
-              lastBet={lastBet}
-              canHit={gamePhase === 'playing'}
-              canStand={gamePhase === 'playing'}
-              canDouble={canDoubleDown}
-              canSplit={canSplit}
-              onSetBet={setBetAmount}
-              onInputChange={setBetInput}
-              onAddChip={addChipToBet}
-              onClearBet={clearBet}
-              onPlaceBet={startNewRound}
-              onHit={hit}
-              onStand={stand}
-              onDouble={doubleDown}
-              onSplit={split}
-              onNextRound={resetRound}
-              chipValues={CHIP_VALUES}
-            />
+        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <div className="w-full max-w-xl">
+              <BettingControls
+                gamePhase={gamePhase}
+                currentBet={currentBet}
+                balance={availablePoints}
+                betInput={betInput}
+                lastBet={lastBet}
+                canHit={gamePhase === 'playing'}
+                canStand={gamePhase === 'playing'}
+                canDouble={canDoubleDown}
+                canSplit={canSplit}
+                onSetBet={setBetAmount}
+                onInputChange={setBetInput}
+                onAddChip={addChipToBet}
+                onClearBet={clearBet}
+                onPlaceBet={startNewRound}
+                onHit={hit}
+                onStand={stand}
+                onDouble={doubleDown}
+                onSplit={split}
+                onNextRound={resetRound}
+                chipValues={CHIP_VALUES}
+              />
+            </div>
           </div>
         </div>
 
@@ -791,10 +793,10 @@ function BettingControls({
 
   if (gamePhase === 'betting') {
     return (
-      <div className="animate-slide-up space-y-4 mx-auto w-full max-w-3xl">
-        <div className="mx-auto w-full max-w-2xl rounded-2xl border border-white/[0.06] bg-white/[0.02] p-5">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="flex-1">
+      <div className="animate-slide-up w-full max-w-xl space-y-3">
+        <div className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+          <div className="mb-3 space-y-2.5">
+            <div>
               <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1.5">
                 Bet Amount
               </label>
@@ -813,38 +815,38 @@ function BettingControls({
               </div>
             </div>
 
-            <div className="flex flex-col gap-1.5 pt-5">
+            <div className="grid grid-cols-3 gap-1.5">
               <button
                 onClick={handleHalfBet}
                 disabled={currentBet < 2}
-                className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 ½
               </button>
               <button
                 onClick={handleDoubleBetAmount}
                 disabled={currentBet === 0 || currentBet * 2 > balance + currentBet}
-                className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 2×
               </button>
               <button
                 onClick={handleAllIn}
                 disabled={balance + currentBet === 0}
-                className="rounded-lg bg-white/[0.06] px-3 py-1.5 text-[11px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 MAX
               </button>
             </div>
           </div>
 
-          <div className="flex flex-wrap gap-2.5 mb-4 justify-center">
+          <div className="mb-3 grid grid-cols-5 gap-2 justify-items-center">
             {chipValues.map((value) => (
               <button
                 key={value}
                 onClick={() => onAddChip(value)}
                 disabled={value > balance + currentBet}
-                className={`relative h-[52px] w-[52px] rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
+                className={`relative h-11 w-11 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-105 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
               >
                 <div className="absolute inset-[4px] rounded-full border border-white/20" />
                 <div className="absolute inset-[8px] rounded-full border border-dashed border-white/15" />
@@ -855,12 +857,12 @@ function BettingControls({
             ))}
           </div>
 
-          <div className="flex gap-2">
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
             {lastBet > 0 && (
               <button
                 onClick={handleRebet}
                 disabled={lastBet > balance + currentBet}
-                className="flex-1 rounded-xl border border-white/[0.08] bg-white/[0.03] py-2.5 text-xs font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+                className="rounded-xl border border-white/[0.08] bg-white/[0.03] py-2.5 text-xs font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               >
                 ↺ Rebet {lastBet} pts
               </button>
@@ -868,7 +870,7 @@ function BettingControls({
             {currentBet > 0 && (
               <button
                 onClick={onClearBet}
-                className="flex-1 rounded-xl border border-red-500/20 bg-red-500/5 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all"
+                className="rounded-xl border border-red-500/20 bg-red-500/5 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all"
               >
                 ✕ Clear
               </button>
@@ -889,7 +891,7 @@ function BettingControls({
 
   if (gamePhase === 'dealer-turn') {
     return (
-      <div className="flex justify-center py-4 mx-auto w-full max-w-2xl">
+      <div className="w-full max-w-xl py-2">
         <div className="flex items-center gap-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] px-8 py-4">
           <div className="flex gap-1">
             <div className="h-2 w-2 animate-bounce rounded-full bg-amber-500" style={{ animationDelay: '0ms' }} />
@@ -904,7 +906,7 @@ function BettingControls({
 
   if (gamePhase === 'playing') {
     return (
-      <div className="animate-slide-up grid grid-cols-2 gap-3 mx-auto w-full max-w-2xl">
+      <div className="animate-slide-up grid w-full max-w-xl grid-cols-2 gap-3">
         <button
           onClick={onHit}
           disabled={!canHit}
@@ -950,7 +952,7 @@ function BettingControls({
 
   if (gamePhase === 'ended') {
     return (
-      <div className="animate-slide-up mx-auto w-full max-w-2xl">
+      <div className="animate-slide-up w-full max-w-xl">
         <button
           onClick={onNextRound}
           className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-4 text-lg font-black uppercase tracking-[0.1em] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98]"
