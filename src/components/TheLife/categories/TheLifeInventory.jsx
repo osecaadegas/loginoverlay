@@ -8,6 +8,7 @@ export default function TheLifeInventory({
   setPlayer,
   setMessage,
   loadTheLifeInventory,
+  initializePlayer,
   user
 }) {
   const [filterType, setFilterType] = useState('all');
@@ -49,6 +50,78 @@ export default function TheLifeInventory({
     } catch (err) {
       console.error('Error using jail card:', err);
       setMessage({ type: 'error', text: 'Failed to use card!' });
+    }
+  };
+
+  const useConsumable = async (invItem) => {
+    if (!invItem.item.effect) {
+      setMessage({ type: 'error', text: 'This item has no effect!' });
+      return;
+    }
+
+    try {
+      const effect = JSON.parse(invItem.item.effect);
+      let updateData = {};
+
+      switch (effect.type) {
+        case 'heal':
+          updateData.hp = Math.min(player.max_hp, player.hp + effect.value);
+          break;
+        case 'stamina':
+          updateData.stamina = Math.min(player.max_stamina, player.stamina + effect.value);
+          if (effect.addiction) {
+            const newAddiction = Math.min(player.max_addiction || 100, (player.addiction || 0) + effect.addiction);
+            updateData.addiction = newAddiction;
+            if (newAddiction >= 100) {
+              updateData.hp = 0;
+              updateData.hospital_until = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+              setMessage({ type: 'error', text: '💀 OVERDOSE! Your addiction hit 100! You collapsed and were rushed to the hospital!' });
+            }
+          }
+          break;
+        case 'xp_boost':
+          updateData.xp = player.xp + effect.value;
+          break;
+        case 'cash':
+          updateData.cash = player.cash + effect.value;
+          break;
+        case 'jail_free':
+          if (!player.jail_until) {
+            setMessage({ type: 'error', text: 'You are not in jail!' });
+            return;
+          }
+          updateData.jail_until = null;
+          break;
+        default:
+          setMessage({ type: 'error', text: 'Unknown effect type!' });
+          return;
+      }
+
+      const { error: playerError } = await supabase
+        .from('the_life_players')
+        .update(updateData)
+        .eq('user_id', user.id);
+
+      if (playerError) throw playerError;
+
+      if (invItem.quantity > 1) {
+        await supabase
+          .from('the_life_player_inventory')
+          .update({ quantity: invItem.quantity - 1 })
+          .eq('id', invItem.id);
+      } else {
+        await supabase
+          .from('the_life_player_inventory')
+          .delete()
+          .eq('id', invItem.id);
+      }
+
+      setMessage({ type: 'success', text: `Used ${invItem.item.name}!` });
+      if (initializePlayer) initializePlayer();
+      loadTheLifeInventory();
+    } catch (err) {
+      console.error('Error using item:', err);
+      setMessage({ type: 'error', text: 'Failed to use item' });
     }
   };
 
@@ -121,6 +194,14 @@ export default function TheLifeInventory({
                   className="use-item-btn"
                 >
                   Use Item
+                </button>
+              )}
+              {inv.item.usable && inv.item.effect && inv.item.type !== 'special' && (
+                <button 
+                  onClick={() => useConsumable(inv)}
+                  className="use-item-btn"
+                >
+                  Use
                 </button>
               )}
             </div>

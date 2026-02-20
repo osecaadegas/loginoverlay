@@ -707,6 +707,7 @@ export default function TheLife() {
           setPlayer={setPlayer}
           setMessage={setMessage}
           loadTheLifeInventory={loadTheLifeInventory}
+          initializePlayer={initializePlayer}
           user={user}
         />
       )}

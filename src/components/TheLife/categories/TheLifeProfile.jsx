@@ -146,7 +146,7 @@ export default function TheLifeProfile({
         case 'xp_boost':
           updateData.xp = player.xp + effect.value;
           // Add XP to Season Pass for XP boost items
-          await addSeasonPassXP(user.id, effect.value, 'item_use', item.id?.toString());
+          await addSeasonPassXP(user.id, effect.value, 'item_use', invItem.item.id?.toString());
           break;
         case 'cash':
           updateData.cash = player.cash + effect.value;
