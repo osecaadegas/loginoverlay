@@ -133,8 +133,12 @@
 }
 
 .bj-layout-betting-right > * {
-  max-width: 480px;
+  max-width: 100%;
   width: 100%;
+}
+
+.bj-layout-main .bj-layout-betting {
+  max-width: 100%;
 }
 
 .bj-side-item {
