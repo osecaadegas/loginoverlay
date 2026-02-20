@@ -527,6 +527,30 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
               calculateScore={calculateScore}
             />
+            <div className="w-full max-w-xl">
+              <BettingControls
+                gamePhase={gamePhase}
+                currentBet={currentBet}
+                balance={availablePoints}
+                betInput={betInput}
+                lastBet={lastBet}
+                canHit={gamePhase === 'playing'}
+                canStand={gamePhase === 'playing'}
+                canDouble={canDoubleDown}
+                canSplit={canSplit}
+                onSetBet={setBetAmount}
+                onInputChange={setBetInput}
+                onAddChip={addChipToBet}
+                onClearBet={clearBet}
+                onPlaceBet={startNewRound}
+                onHit={hit}
+                onStand={stand}
+                onDouble={doubleDown}
+                onSplit={split}
+                onNextRound={resetRound}
+                chipValues={CHIP_VALUES}
+              />
+            </div>
           </div>
 
           <div className="lg:col-span-4 space-y-5">
@@ -557,35 +581,6 @@ export default function BlackjackPremium() {
                 </svg>
               </div>
             </button>
-          </div>
-        </div>
-
-        <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-8">
-            <div className="w-full max-w-xl">
-              <BettingControls
-                gamePhase={gamePhase}
-                currentBet={currentBet}
-                balance={availablePoints}
-                betInput={betInput}
-                lastBet={lastBet}
-                canHit={gamePhase === 'playing'}
-                canStand={gamePhase === 'playing'}
-                canDouble={canDoubleDown}
-                canSplit={canSplit}
-                onSetBet={setBetAmount}
-                onInputChange={setBetInput}
-                onAddChip={addChipToBet}
-                onClearBet={clearBet}
-                onPlaceBet={startNewRound}
-                onHit={hit}
-                onStand={stand}
-                onDouble={doubleDown}
-                onSplit={split}
-                onNextRound={resetRound}
-                chipValues={CHIP_VALUES}
-              />
-            </div>
           </div>
         </div>
 
@@ -695,8 +690,8 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
         <div className="absolute inset-0 rounded-3xl border-2 border-emerald-950/80" />
         <div className="absolute inset-[2px] rounded-[22px] border border-emerald-500/10" />
 
-        <div className="relative space-y-6 md:space-y-10">
-          <div className="space-y-3">
+        <div className="relative grid gap-5 md:gap-7">
+          <div className="grid gap-3 rounded-2xl border border-white/[0.08] bg-black/10 p-3 md:p-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-full bg-gray-900/60 flex items-center justify-center border border-white/10">
@@ -712,15 +707,17 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
             </div>
           </div>
 
-          <div className="flex items-center gap-4">
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+            <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
             <div className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ${gamePhase === 'ended' && message.toLowerCase().includes('bust') ? 'bg-red-500/15 text-red-400 border border-red-500/20' : gamePhase === 'ended' && message.toLowerCase().includes('win') ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/20' : gamePhase === 'playing' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' : 'bg-white/[0.06] text-white/70 border border-white/[0.08]'}`}>
               {message}
             </div>
-            <div className="flex-1 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+            <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           </div>
 
-          {renderPlayerArea()}
+          <div className="rounded-2xl border border-white/[0.08] bg-black/10 p-3 md:p-4">
+            {renderPlayerArea()}
+          </div>
 
           {hasCards && currentBet > 0 && (
             <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6">
