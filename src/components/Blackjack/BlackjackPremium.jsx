@@ -527,29 +527,36 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
               calculateScore={calculateScore}
             />
-            <div className="w-full max-w-xl">
-              <BettingControls
-                gamePhase={gamePhase}
-                currentBet={currentBet}
-                balance={availablePoints}
-                betInput={betInput}
-                lastBet={lastBet}
-                canHit={gamePhase === 'playing'}
-                canStand={gamePhase === 'playing'}
-                canDouble={canDoubleDown}
-                canSplit={canSplit}
-                onSetBet={setBetAmount}
-                onInputChange={setBetInput}
-                onAddChip={addChipToBet}
-                onClearBet={clearBet}
-                onPlaceBet={startNewRound}
-                onHit={hit}
-                onStand={stand}
-                onDouble={doubleDown}
-                onSplit={split}
-                onNextRound={resetRound}
-                chipValues={CHIP_VALUES}
-              />
+            <div className="grid gap-6 lg:grid-cols-12">
+              <div className="lg:col-span-5">
+                <div className="w-full max-w-xl">
+                  <BettingControls
+                    gamePhase={gamePhase}
+                    currentBet={currentBet}
+                    balance={availablePoints}
+                    betInput={betInput}
+                    lastBet={lastBet}
+                    canHit={gamePhase === 'playing'}
+                    canStand={gamePhase === 'playing'}
+                    canDouble={canDoubleDown}
+                    canSplit={canSplit}
+                    onSetBet={setBetAmount}
+                    onInputChange={setBetInput}
+                    onAddChip={addChipToBet}
+                    onClearBet={clearBet}
+                    onPlaceBet={startNewRound}
+                    onHit={hit}
+                    onStand={stand}
+                    onDouble={doubleDown}
+                    onSplit={split}
+                    onNextRound={resetRound}
+                    chipValues={CHIP_VALUES}
+                  />
+                </div>
+              </div>
+              <div className="lg:col-span-7">
+                <BetHistory entries={gameHistory} />
+              </div>
             </div>
           </div>
 
@@ -584,7 +591,7 @@ export default function BlackjackPremium() {
           </div>
         </div>
 
-        <div className="mt-6">
+        <div className="mt-6 lg:hidden">
           <BetHistory entries={gameHistory} />
         </div>
       </div>
