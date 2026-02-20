@@ -167,8 +167,15 @@
 }
 
 @media (min-width: 1024px) {
-  .bj-layout-main {
+  .bj-layout-grid {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+  }
+
+  .bj-main-stack {
+    align-items: flex-end;
+  }
+
+  .bj-main-stack > * {
     max-width: 720px;
-    margin: 0 auto;
   }
 }
