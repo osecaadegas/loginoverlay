@@ -320,7 +320,7 @@ export default function StreamElementsPanel() {
               <p className="text-gray-400 text-lg">No redemption items available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
               {redemptionItems.map(item => {
                 const canAfford = isConnected && points >= item.point_cost;
                 const isRedeeming = redeeming === item.id;
@@ -331,61 +331,58 @@ export default function StreamElementsPanel() {
                 return (
                   <div 
                     key={item.id} 
-                    className={`group relative bg-black/40 backdrop-blur-xl border rounded-2xl overflow-hidden transition-all duration-300 flex flex-row ${
+                    className={`group relative bg-black/40 backdrop-blur-xl border rounded-2xl overflow-hidden transition-all duration-300 ${
                       isDisabled || !canAfford || isOutOfStock || !isConnected 
                         ? 'border-gray-700/30 opacity-60' 
-                        : 'border-purple-500/20 hover:border-purple-500/60 hover:shadow-2xl hover:shadow-purple-500/25'
+                        : 'border-purple-500/20 hover:border-purple-500/60 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/25'
                     }`}
                   >
-                    {/* Image - Left Side */}
-                    <div className="relative w-36 min-h-[140px] flex-shrink-0 overflow-hidden">
+                    {/* Image */}
+                    <div className="relative aspect-[16/9] overflow-hidden">
                       <img src={imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-r from-transparent to-black/60" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                       
                       {isDisabled && (
-                        <div className="absolute top-2 left-2 bg-yellow-500 text-black font-black text-[10px] px-2 py-0.5 rounded-md shadow-lg">
+                        <div className="absolute top-2 right-2 bg-yellow-500 text-black font-black text-[10px] px-2 py-0.5 rounded-md transform rotate-3 shadow-xl">
                           COMING SOON
                         </div>
                       )}
                       
                       {!isDisabled && isOutOfStock && (
-                        <div className="absolute top-2 left-2 bg-red-500 text-white font-black text-[10px] px-2 py-0.5 rounded-md shadow-lg">
+                        <div className="absolute top-2 right-2 bg-red-500 text-white font-black text-[10px] px-2 py-0.5 rounded-md shadow-xl">
                           OUT OF STOCK
                         </div>
                       )}
                     </div>
                     
-                    {/* Info - Right Side */}
-                    <div className="flex-1 p-3 flex flex-col justify-between min-w-0">
-                      <div>
-                        <div className="flex justify-between items-start gap-2 mb-1">
-                          <h4 className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors truncate">{item.name}</h4>
-                          <div className="bg-gradient-to-br from-purple-500/30 to-blue-500/20 border border-purple-500/50 rounded-lg px-2 py-0.5 flex-shrink-0">
-                            <div className="text-xs font-black text-purple-400 whitespace-nowrap">
-                              {item.point_cost.toLocaleString()}
-                            </div>
+                    <div className="p-3">
+                      <div className="flex justify-between items-start gap-1 mb-1">
+                        <h4 className="text-sm font-bold text-white group-hover:text-purple-400 transition-colors flex-1 line-clamp-1">{item.name}</h4>
+                        <div className="bg-gradient-to-br from-purple-500/30 to-blue-500/20 border border-purple-500/50 rounded-lg px-2 py-0.5 ml-1">
+                          <div className="text-xs font-black text-purple-400 whitespace-nowrap">
+                            {item.point_cost.toLocaleString()}
                           </div>
                         </div>
-                        
-                        <p className="text-gray-400 text-[11px] mb-1.5 line-clamp-1">{item.description}</p>
-                        
-                        {(item.reward_details || item.reward_value?.details) && (
-                          <div className="bg-purple-500/10 border border-purple-500/30 rounded-md px-2 py-1 mb-1.5">
-                            <div className="flex items-center gap-1">
-                              <span className="text-sm">🎁</span>
-                              <span className="text-[11px] text-purple-300 font-medium truncate">
-                                {item.reward_details || item.reward_value?.details}
-                              </span>
-                            </div>
-                          </div>
-                        )}
-                        
-                        {item.available_units !== null && !isDisabled && (
-                          <p className="text-gray-400 text-[11px] mb-1.5">
-                            Stock: <strong className="text-white">{item.available_units}</strong>
-                          </p>
-                        )}
                       </div>
+                      
+                      <p className="text-gray-400 text-xs mb-2 line-clamp-2">{item.description}</p>
+                      
+                      {(item.reward_details || item.reward_value?.details) && (
+                        <div className="bg-purple-500/10 border border-purple-500/30 rounded-md px-2 py-1 mb-2">
+                          <div className="flex items-start gap-1">
+                            <span className="text-sm">🎁</span>
+                            <span className="text-xs text-purple-300 font-medium line-clamp-2">
+                              {item.reward_details || item.reward_value?.details}
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {item.available_units !== null && !isDisabled && (
+                        <p className="text-gray-400 text-xs mb-2">
+                          Stock: <strong className="text-white">{item.available_units}</strong>
+                        </p>
+                      )}
                       
                       <button
                         onClick={() => handleRedeem(item)}
@@ -393,7 +390,7 @@ export default function StreamElementsPanel() {
                         className={`w-full font-bold py-2 px-3 rounded-lg text-xs transition-all duration-300 ${
                           !isConnected || isDisabled || !canAfford || isOutOfStock
                             ? 'bg-gray-700/50 border border-gray-600 text-gray-300 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/40 hover:shadow-xl hover:shadow-purple-500/60'
+                            : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/40 hover:shadow-xl hover:shadow-purple-500/60 hover:scale-105'
                         }`}
                       >
                         {!isConnected ? '🔒 Connect' : isDisabled ? 'Soon' : isOutOfStock ? 'Sold Out' : isRedeeming ? '⏳...' : canAfford ? '✨ Redeem' : '💰 Need More'}
