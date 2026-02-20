@@ -441,10 +441,10 @@ export default function BlackjackPremium() {
       sideBet: totalSideBet,
       result,
       profitLoss: netChange,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: new Date().toLocaleDateString([], { month: 'short', day: '2-digit' }) + ', ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
-    setGameHistory(prev => [entry, ...prev].slice(0, 10));
+    setGameHistory(prev => [entry, ...prev].slice(0, 50));
   };
 
   const resetRound = async () => {
@@ -549,7 +549,6 @@ export default function BlackjackPremium() {
               onNextRound={resetRound}
               chipValues={CHIP_VALUES}
             />
-            <BetHistory entries={gameHistory} />
           </div>
 
           <div className="bj-layout-side">
@@ -572,6 +571,8 @@ export default function BlackjackPremium() {
 
           </div>
         </div>
+
+        <BetHistory entries={gameHistory} />
       </div>
 
       <WinOverlay winInfo={winInfo} onDismiss={() => setWinInfo(null)} />
@@ -1027,42 +1028,62 @@ function SideBetRow({ title, description, payout, value, onChange, disabled }) {
 }
 
 function BetHistory({ entries }) {
+  const [page, setPage] = useState(0);
+  const perPage = 10;
+  const totalPages = Math.max(1, Math.ceil(entries.length / perPage));
+  const paged = entries.slice(page * perPage, (page + 1) * perPage);
+  const start = entries.length > 0 ? page * perPage + 1 : 0;
+  const end = Math.min((page + 1) * perPage, entries.length);
+
   return (
     <div className="rounded-2xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
-      <div className="flex items-center justify-between px-5 py-4">
-        <h2 className="text-sm font-bold text-white">Recent Bets</h2>
-        <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-[10px] font-bold text-gray-500 tabular-nums">
-          {entries.length}
-        </span>
+      <div className="flex items-center justify-between px-5 py-3">
+        <div className="flex items-center gap-3">
+          <h2 className="text-sm font-bold text-white">Recent Bets</h2>
+          <span className="rounded-md bg-white/[0.06] px-2 py-0.5 text-[10px] font-bold text-gray-500 tabular-nums">
+            {entries.length}
+          </span>
+        </div>
+        <div className="flex items-center gap-3">
+          {entries.length > 0 && (
+            <span className="text-[11px] text-gray-500 tabular-nums">{start}–{end} of {entries.length}</span>
+          )}
+          <button
+            onClick={() => { /* Record functionality placeholder */ }}
+            className="rounded-lg border border-white/[0.08] bg-white/[0.04] px-3 py-1.5 text-[11px] font-semibold text-gray-400 hover:bg-white/[0.08] hover:text-white transition-colors"
+          >
+            🔴 Record
+          </button>
+        </div>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
             <tr className="border-y border-white/[0.04] bg-white/[0.02]">
               <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500">Player</th>
-              <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500">Bet</th>
+              <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500">Bet ▽</th>
               <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500 hidden md:table-cell">Side Bet</th>
               <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500">Result</th>
-              <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500">P/L</th>
-              <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500 hidden sm:table-cell">Time</th>
+              <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500">BL ▽</th>
+              <th className="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-wider text-gray-500 hidden sm:table-cell">Time ▽</th>
             </tr>
           </thead>
           <tbody>
-            {entries.map((entry, index) => (
+            {paged.map((entry, index) => (
               <tr
                 key={index}
                 className={`transition-colors hover:bg-white/[0.02] ${index % 2 === 0 ? 'bg-white/[0.01]' : 'bg-transparent'}`}
               >
                 <td className="px-5 py-3 text-sm font-medium text-white whitespace-nowrap">{entry.username}</td>
-                <td className="px-5 py-3 text-sm text-gray-400 tabular-nums">{entry.bet.toLocaleString()} pts</td>
-                <td className="px-5 py-3 text-sm text-gray-500 hidden md:table-cell">{entry.sideBet || '—'}</td>
+                <td className="px-5 py-3 text-sm text-gray-400 tabular-nums">${entry.bet.toFixed(2)}</td>
+                <td className="px-5 py-3 text-sm text-gray-500 hidden md:table-cell">{entry.sideBet ? `${entry.sideBet} : 1` : '—'}</td>
                 <td className="px-5 py-3">
                   <span className={`inline-flex rounded-md border px-2 py-0.5 text-[10px] font-bold uppercase ${entry.result.toLowerCase().includes('blackjack') ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' : entry.result.toLowerCase().includes('win') ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : entry.result.toLowerCase().includes('lose') || entry.result.toLowerCase().includes('bust') ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-gray-500/10 text-gray-400 border-gray-500/20'}`}>
                     {entry.result}
                   </span>
                 </td>
                 <td className={`px-5 py-3 text-sm font-bold tabular-nums ${entry.profitLoss > 0 ? 'text-emerald-400' : entry.profitLoss < 0 ? 'text-red-400' : 'text-gray-400'}`}>
-                  {entry.profitLoss > 0 ? '+' : ''}{entry.profitLoss.toLocaleString()} pts
+                  {entry.profitLoss > 0 ? '+' : ''}{entry.profitLoss >= 0 ? '$' : '-$'}{Math.abs(entry.profitLoss).toFixed(2)}
                 </td>
                 <td className="px-5 py-3 text-sm text-gray-500 hidden sm:table-cell whitespace-nowrap">{entry.timestamp}</td>
               </tr>
@@ -1076,6 +1097,37 @@ function BetHistory({ entries }) {
           </div>
         )}
       </div>
+
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-5 py-3 border-t border-white/[0.04]">
+          <span className="text-[11px] text-gray-500 tabular-nums">{start}–{end} of {entries.length}</span>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={() => setPage(p => Math.max(0, p - 1))}
+              disabled={page === 0}
+              className="w-7 h-7 rounded-md border border-white/[0.08] bg-white/[0.04] text-gray-400 text-xs disabled:opacity-30 hover:bg-white/[0.08] transition-colors"
+            >
+              ←
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i)}
+                className={`w-7 h-7 rounded-md text-xs font-bold transition-colors ${i === page ? 'bg-amber-500 text-black' : 'border border-white/[0.08] bg-white/[0.04] text-gray-400 hover:bg-white/[0.08]'}`}
+              >
+                {i + 1}
+              </button>
+            ))}
+            <button
+              onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+              disabled={page === totalPages - 1}
+              className="w-7 h-7 rounded-md border border-white/[0.08] bg-white/[0.04] text-gray-400 text-xs disabled:opacity-30 hover:bg-white/[0.08] transition-colors"
+            >
+              →
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

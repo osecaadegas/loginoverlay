@@ -151,8 +151,6 @@
 
 @media (min-width: 1024px) {
   .bj-layout-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 280px);
   }
-
-
 }
