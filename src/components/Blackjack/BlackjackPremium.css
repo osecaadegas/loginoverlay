@@ -104,26 +104,31 @@
 }
 
 .bj-layout {
+  position: relative;
   max-width: 80rem;
   margin: 0 auto;
   padding: 1.5rem 1rem;
 }
 
-.bj-layout-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-.bj-layout-main,
-.bj-layout-side {
-  min-width: 0;
+.bj-layout-main {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  min-width: 0;
 }
 
+.bj-layout-side {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+}
 
+.bj-side-sticky {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
 
 .bj-side-item {
   display: flex;
@@ -139,10 +144,6 @@
   order: 2;
 }
 
-.bj-side-betting {
-  order: 3;
-}
-
 @media (min-width: 768px) {
   .bj-layout {
     padding: 2rem 1rem;
@@ -150,7 +151,24 @@
 }
 
 @media (min-width: 1024px) {
-  .bj-layout-grid {
-    grid-template-columns: minmax(0, 1fr) minmax(0, 280px);
+  .bj-layout {
+    padding: 2rem 1rem 2rem 1rem;
+  }
+
+  .bj-layout-main {
+    max-width: calc(100% - 240px);
+  }
+
+  .bj-layout-side {
+    position: absolute;
+    top: 2rem;
+    right: 1rem;
+    width: 220px;
+    margin-top: 0;
+  }
+
+  .bj-side-sticky {
+    position: sticky;
+    top: 5rem;
   }
 }

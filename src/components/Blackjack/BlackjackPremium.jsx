@@ -514,22 +514,47 @@ export default function BlackjackPremium() {
       </header>
 
       <div className="bj-layout">
-        <div className="bj-layout-grid">
-          <div className="bj-layout-main">
-            <BlackjackTable
-              dealerHand={dealerHand}
-              playerHand={playerHand}
-              splitHands={splitHands}
-              currentSplitIndex={currentSplitIndex}
-              currentBet={currentBet}
-              gamePhase={gamePhase}
-              message={message || GAME_PHASE_LABELS[gamePhase]}
-              dealerRevealed={dealerRevealed}
-              calculateScore={calculateScore}
-            />
-          </div>
+        <div className="bj-layout-main">
+          <BlackjackTable
+            dealerHand={dealerHand}
+            playerHand={playerHand}
+            splitHands={splitHands}
+            currentSplitIndex={currentSplitIndex}
+            currentBet={currentBet}
+            gamePhase={gamePhase}
+            message={message || GAME_PHASE_LABELS[gamePhase]}
+            dealerRevealed={dealerRevealed}
+            calculateScore={calculateScore}
+          />
 
-          <div className="bj-layout-side">
+          <BettingControls
+            gamePhase={gamePhase}
+            currentBet={currentBet}
+            balance={availablePoints}
+            betInput={betInput}
+            lastBet={lastBet}
+            canHit={gamePhase === 'playing'}
+            canStand={gamePhase === 'playing'}
+            canDouble={canDoubleDown}
+            canSplit={canSplit}
+            onSetBet={setBetAmount}
+            onInputChange={setBetInput}
+            onAddChip={addChipToBet}
+            onClearBet={clearBet}
+            onPlaceBet={startNewRound}
+            onHit={hit}
+            onStand={stand}
+            onDouble={doubleDown}
+            onSplit={split}
+            onNextRound={resetRound}
+            chipValues={CHIP_VALUES}
+          />
+
+          <BetHistory entries={gameHistory} />
+        </div>
+
+        <div className="bj-layout-side">
+          <div className="bj-side-sticky">
             <div className="bj-side-item bj-side-bets">
               <SideBetsPanel
                 isOpen={sideBetsOpen}
@@ -546,34 +571,8 @@ export default function BlackjackPremium() {
                 onToggle={() => setShowRules(!showRules)}
               />
             </div>
-
           </div>
         </div>
-
-        <BettingControls
-          gamePhase={gamePhase}
-          currentBet={currentBet}
-          balance={availablePoints}
-          betInput={betInput}
-          lastBet={lastBet}
-          canHit={gamePhase === 'playing'}
-          canStand={gamePhase === 'playing'}
-          canDouble={canDoubleDown}
-          canSplit={canSplit}
-          onSetBet={setBetAmount}
-          onInputChange={setBetInput}
-          onAddChip={addChipToBet}
-          onClearBet={clearBet}
-          onPlaceBet={startNewRound}
-          onHit={hit}
-          onStand={stand}
-          onDouble={doubleDown}
-          onSplit={split}
-          onNextRound={resetRound}
-          chipValues={CHIP_VALUES}
-        />
-
-        <BetHistory entries={gameHistory} />
       </div>
 
       <WinOverlay winInfo={winInfo} onDismiss={() => setWinInfo(null)} />
