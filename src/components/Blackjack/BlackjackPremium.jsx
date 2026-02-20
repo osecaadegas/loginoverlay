@@ -527,7 +527,7 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
               calculateScore={calculateScore}
             />
-            <div className="bj-layout-betting">
+            <div className="bj-layout-betting bj-layout-betting-right">
               <BettingControls
                 gamePhase={gamePhase}
                 currentBet={currentBet}

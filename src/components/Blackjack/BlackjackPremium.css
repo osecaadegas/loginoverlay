@@ -127,6 +127,16 @@
   width: 100%;
 }
 
+.bj-layout-betting-right {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.bj-layout-betting-right > * {
+  max-width: 480px;
+  width: 100%;
+}
+
 .bj-side-item {
   display: flex;
   flex-direction: column;
