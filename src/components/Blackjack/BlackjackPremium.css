@@ -123,24 +123,7 @@
   gap: 1.25rem;
 }
 
-.bj-layout-betting {
-  width: 100%;
-}
 
-.bj-main-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 1.25rem;
-  width: 100%;
-}
-
-.bj-main-stack > * {
-  width: 100%;
-}
-
-.bj-layout-history {
-  width: 100%;
-}
 
 .bj-side-item {
   display: flex;
@@ -171,11 +154,5 @@
     grid-template-columns: minmax(0, 1fr) minmax(0, 360px);
   }
 
-  .bj-main-stack {
-    align-items: flex-end;
-  }
 
-  .bj-main-stack > * {
-    max-width: 720px;
-  }
 }
