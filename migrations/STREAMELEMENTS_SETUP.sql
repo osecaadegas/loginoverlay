@@ -50,7 +50,7 @@ CREATE TABLE IF NOT EXISTS redemption_items (
 CREATE TABLE IF NOT EXISTS point_redemptions (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  redemption_id UUID NOT NULL REFERENCES redemption_items(id),
+  redemption_id UUID NOT NULL REFERENCES redemption_items(id) ON DELETE CASCADE,
   points_spent INTEGER NOT NULL,
   redeemed_at TIMESTAMPTZ DEFAULT NOW(),
   processed BOOLEAN DEFAULT false,
