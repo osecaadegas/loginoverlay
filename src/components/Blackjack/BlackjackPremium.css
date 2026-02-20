@@ -162,21 +162,8 @@
 
 .bj-betting {
   width: 100%;
-  max-width: 100%;          /* match parent (table) width */
-  margin-left: auto;
-  margin-right: auto;
-}
-
-/* On tablet+, constrain betting to 480px centered under table */
-@media (min-width: 768px) {
-  .bj-betting {
-    max-width: 480px;
-  }
-}
-
-/* On desktop, let it stretch to match the table again */
-@media (min-width: 1280px) {
-  .bj-betting {
-    max-width: 100%;
-  }
+  max-width: 100%;
+  margin-top: -1rem;         /* pull up to close the flex gap with the table */
+  position: relative;
+  z-index: 1;
 }
