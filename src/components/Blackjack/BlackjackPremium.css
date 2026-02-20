@@ -84,7 +84,7 @@
 /* ─── Page & Content Layout ───────────────────────────────── */
 
 .bj-content {
-  max-width: 64rem;
+  max-width: 80rem;          /* 1280px — room for table + sidebar */
   margin: 0 auto;
   padding: 1.5rem 1rem;
 }
@@ -92,6 +92,12 @@
 @media (min-width: 768px) {
   .bj-content {
     padding: 2rem 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .bj-content {
+    padding: 2rem 2rem;
   }
 }
 
@@ -108,28 +114,44 @@
   flex-direction: column;
   gap: 1rem;
   min-width: 0;
+  width: 100%;
 }
 
 .bj-aside {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
+  width: 100%;
 }
 
+/* ── Tablet: sidebar sits below main, 2-col for sidebar items ── */
+@media (min-width: 768px) and (max-width: 1279px) {
+  .bj-aside {
+    flex-direction: row;
+    gap: 1rem;
+  }
+  .bj-aside > * {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* ── Desktop: side-by-side layout ── */
 @media (min-width: 1280px) {
   .bj-grid {
     flex-direction: row;
     align-items: flex-start;
-    gap: 1.25rem;
+    gap: 1.5rem;
   }
 
   .bj-main {
-    flex: 1;
+    flex: 1 1 0%;
     min-width: 0;
+    width: auto;
   }
 
   .bj-aside {
-    width: 260px;
+    width: 280px;
     flex-shrink: 0;
     position: sticky;
     top: 5rem;
