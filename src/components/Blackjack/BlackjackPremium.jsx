@@ -527,31 +527,35 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
               calculateScore={calculateScore}
             />
-            <div className="bj-layout-betting bj-layout-betting-right">
-              <BettingControls
-                gamePhase={gamePhase}
-                currentBet={currentBet}
-                balance={availablePoints}
-                betInput={betInput}
-                lastBet={lastBet}
-                canHit={gamePhase === 'playing'}
-                canStand={gamePhase === 'playing'}
-                canDouble={canDoubleDown}
-                canSplit={canSplit}
-                onSetBet={setBetAmount}
-                onInputChange={setBetInput}
-                onAddChip={addChipToBet}
-                onClearBet={clearBet}
-                onPlaceBet={startNewRound}
-                onHit={hit}
-                onStand={stand}
-                onDouble={doubleDown}
-                onSplit={split}
-                onNextRound={resetRound}
-                chipValues={CHIP_VALUES}
-              />
+            <div className="bj-main-stack">
+              <div className="bj-layout-betting">
+                <BettingControls
+                  gamePhase={gamePhase}
+                  currentBet={currentBet}
+                  balance={availablePoints}
+                  betInput={betInput}
+                  lastBet={lastBet}
+                  canHit={gamePhase === 'playing'}
+                  canStand={gamePhase === 'playing'}
+                  canDouble={canDoubleDown}
+                  canSplit={canSplit}
+                  onSetBet={setBetAmount}
+                  onInputChange={setBetInput}
+                  onAddChip={addChipToBet}
+                  onClearBet={clearBet}
+                  onPlaceBet={startNewRound}
+                  onHit={hit}
+                  onStand={stand}
+                  onDouble={doubleDown}
+                  onSplit={split}
+                  onNextRound={resetRound}
+                  chipValues={CHIP_VALUES}
+                />
+              </div>
+              <div className="bj-layout-history">
+                <BetHistory entries={gameHistory} />
+              </div>
             </div>
-            <BetHistory entries={gameHistory} />
           </div>
 
           <div className="bj-layout-side">
