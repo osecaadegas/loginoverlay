@@ -513,9 +513,9 @@ export default function BlackjackPremium() {
         </div>
       </header>
 
-      <div className="mx-auto max-w-7xl px-4 py-6 md:py-8">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,360px)]">
-          <div className="min-w-0 space-y-5">
+      <div className="bj-layout">
+        <div className="bj-layout-grid">
+          <div className="bj-layout-main">
             <BlackjackTable
               dealerHand={dealerHand}
               playerHand={playerHand}
@@ -530,43 +530,49 @@ export default function BlackjackPremium() {
             <BetHistory entries={gameHistory} />
           </div>
 
-          <div className="min-w-0 space-y-5">
-            <SideBetsPanel
-              isOpen={sideBetsOpen}
-              onToggle={() => setSideBetsOpen(!sideBetsOpen)}
-              gamePhase={gamePhase}
-              sideBets={sideBets}
-              onChange={placeSideBet}
-            />
-
-            <GameRulesPanel
-              isOpen={showRules}
-              onToggle={() => setShowRules(!showRules)}
-            />
-
-            <div className="w-full max-w-none">
-              <BettingControls
+          <div className="bj-layout-side">
+            <div className="bj-side-item bj-side-bets">
+              <SideBetsPanel
+                isOpen={sideBetsOpen}
+                onToggle={() => setSideBetsOpen(!sideBetsOpen)}
                 gamePhase={gamePhase}
-                currentBet={currentBet}
-                balance={availablePoints}
-                betInput={betInput}
-                lastBet={lastBet}
-                canHit={gamePhase === 'playing'}
-                canStand={gamePhase === 'playing'}
-                canDouble={canDoubleDown}
-                canSplit={canSplit}
-                onSetBet={setBetAmount}
-                onInputChange={setBetInput}
-                onAddChip={addChipToBet}
-                onClearBet={clearBet}
-                onPlaceBet={startNewRound}
-                onHit={hit}
-                onStand={stand}
-                onDouble={doubleDown}
-                onSplit={split}
-                onNextRound={resetRound}
-                chipValues={CHIP_VALUES}
+                sideBets={sideBets}
+                onChange={placeSideBet}
               />
+            </div>
+
+            <div className="bj-side-item bj-side-rules">
+              <GameRulesPanel
+                isOpen={showRules}
+                onToggle={() => setShowRules(!showRules)}
+              />
+            </div>
+
+            <div className="bj-side-item bj-side-betting">
+              <div className="bj-layout-betting">
+                <BettingControls
+                  gamePhase={gamePhase}
+                  currentBet={currentBet}
+                  balance={availablePoints}
+                  betInput={betInput}
+                  lastBet={lastBet}
+                  canHit={gamePhase === 'playing'}
+                  canStand={gamePhase === 'playing'}
+                  canDouble={canDoubleDown}
+                  canSplit={canSplit}
+                  onSetBet={setBetAmount}
+                  onInputChange={setBetInput}
+                  onAddChip={addChipToBet}
+                  onClearBet={clearBet}
+                  onPlaceBet={startNewRound}
+                  onHit={hit}
+                  onStand={stand}
+                  onDouble={doubleDown}
+                  onSplit={split}
+                  onNextRound={resetRound}
+                  chipValues={CHIP_VALUES}
+                />
+              </div>
             </div>
           </div>
         </div>
