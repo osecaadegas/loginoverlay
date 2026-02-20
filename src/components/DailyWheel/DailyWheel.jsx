@@ -795,7 +795,7 @@ export default function DailyWheel() {
                   disabled={spinsPage === 1}
                   className="pagination-btn"
                 >
-                  ← Prev
+                  ←
                 </button>
                 <span className="pagination-info">
                   Page {spinsPage} of {totalPages}
@@ -805,7 +805,7 @@ export default function DailyWheel() {
                   disabled={spinsPage === totalPages}
                   className="pagination-btn"
                 >
-                  Next →
+                  →
                 </button>
               </div>
             )}

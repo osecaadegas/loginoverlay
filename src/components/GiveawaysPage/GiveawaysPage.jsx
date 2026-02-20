@@ -531,7 +531,7 @@ export default function GiveawaysPage() {
                   disabled={redeemsPage === 1}
                   className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white/5 border border-white/10 text-white hover:bg-yellow-500/15 hover:border-yellow-500/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
-                  ← Prev
+                  ←
                 </button>
                 <span className="text-gray-400 text-sm">
                   Page {redeemsPage} of {totalPages}
@@ -541,7 +541,7 @@ export default function GiveawaysPage() {
                   disabled={redeemsPage === totalPages}
                   className="px-3 py-1.5 rounded-lg text-sm font-semibold bg-white/5 border border-white/10 text-white hover:bg-yellow-500/15 hover:border-yellow-500/40 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
                 >
-                  Next →
+                  →
                 </button>
               </div>
             )}
