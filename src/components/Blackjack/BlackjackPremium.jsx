@@ -515,7 +515,7 @@ export default function BlackjackPremium() {
 
       <div className="mx-auto max-w-7xl px-4 py-6 md:py-8">
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-8 space-y-5">
+          <div className="lg:col-span-8 lg:col-start-1 min-w-0 space-y-5">
             <BlackjackTable
               dealerHand={dealerHand}
               playerHand={playerHand}
@@ -530,7 +530,7 @@ export default function BlackjackPremium() {
             <BetHistory entries={gameHistory} />
           </div>
 
-          <div className="lg:col-span-4 space-y-5">
+          <div className="lg:col-span-4 lg:col-start-9 min-w-0 space-y-5">
             <SideBetsPanel
               isOpen={sideBetsOpen}
               onToggle={() => setSideBetsOpen(!sideBetsOpen)}
