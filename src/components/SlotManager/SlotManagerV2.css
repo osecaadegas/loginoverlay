@@ -216,7 +216,7 @@
    MAIN CONTENT LAYOUT
    ============================================================================ */
 
-.main-content {
+.sm-main-content {
   display: flex;
   flex: 1;
   overflow: hidden;

@@ -966,7 +966,7 @@ const SlotManagerV2 = () => {
       </div>
 
       {/* Main Content */}
-      <div className="main-content">
+      <div className="sm-main-content">
         {/* Filter Panel */}
         <FilterPanel
           providers={providers}
