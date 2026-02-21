@@ -216,7 +216,7 @@
    MAIN CONTENT LAYOUT
    ============================================================================ */
 
-.main-content {
+.slot-manager-v2 > .main-content {
   display: flex;
   flex: 1;
   overflow: hidden;
