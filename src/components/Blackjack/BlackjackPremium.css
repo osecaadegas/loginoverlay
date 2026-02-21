@@ -161,9 +161,8 @@
 /* ─── Betting Area ────────────────────────────────────────── */
 
 .bj-betting {
-  width: 100%;
-  max-width: 100%;
-  margin-top: -1rem;         /* pull up to close the flex gap with the table */
-  position: relative;
-  z-index: 1;
+    width: 280px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 5rem;
 }
