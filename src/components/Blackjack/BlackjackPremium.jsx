@@ -1436,7 +1436,7 @@ export default function BlackjackPremium() {
      RENDER
      ═══════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-[#0c1117] to-gray-950">
+    <div className="min-h-screen w-full bg-gradient-to-b from-gray-950 via-[#0c1117] to-gray-950" style={{ flex: '1 1 100%', overflow: 'visible' }}>
       {/* ─── Top Bar ─── */}
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-gray-950/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
