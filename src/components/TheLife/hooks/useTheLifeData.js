@@ -190,10 +190,31 @@ export const useTheLifeData = (user) => {
       // Use server-side RPC to claim daily bonus (bypasses RLS security)
       const { data: result, error } = await supabase.rpc('claim_daily_bonus');
       
-      if (error) throw error;
-      if (!result.success) return; // Silently skip if already claimed
+      if (error) {
+        // If RPC doesn't exist, fall back to direct update
+        if (error.code === '42883') {
+          const newStamina = Math.min((playerData.stamina || 0) + 10, playerData.max_stamina || 300);
+          const { data: updated } = await supabase
+            .from('the_life_players')
+            .update({ 
+              stamina: newStamina, 
+              last_daily_bonus: new Date().toISOString(),
+              consecutive_logins: newStreak
+            })
+            .eq('user_id', user.id)
+            .select()
+            .single();
+          if (updated) {
+            setPlayerFromAction(updated);
+            setMessage({ type: 'success', text: `Daily bonus claimed! +10 stamina (${newStreak} day streak)` });
+          }
+          return;
+        }
+        throw error;
+      }
+      if (!result?.success) return; // Silently skip if already claimed
       
-      setPlayerFromAction(result.player);
+      if (result.player) setPlayerFromAction(result.player);
       setMessage({ 
         type: 'success', 
         text: `Daily bonus claimed! +10 stamina (${result.new_streak} day streak)` 
@@ -212,8 +233,31 @@ export const useTheLifeData = (user) => {
         const { data: result, error } = await supabase.rpc('refill_stamina');
         
         if (error) {
-          // Silently ignore if function doesn't exist yet
-          if (error.code !== '42883') console.error('Stamina refill error:', error);
+          // Silently ignore if function doesn't exist yet — fall back to direct update
+          if (error.code === '42883') {
+            // Direct fallback: calculate stamina refill
+            const { data: p } = await supabase
+              .from('the_life_players')
+              .select('stamina, max_stamina, last_stamina_refill')
+              .eq('user_id', user.id)
+              .single();
+            if (p && p.stamina < p.max_stamina && p.last_stamina_refill) {
+              const hoursPassed = (Date.now() - new Date(p.last_stamina_refill).getTime()) / 3600000;
+              if (hoursPassed >= 1) {
+                const toAdd = Math.floor(hoursPassed) * 20;
+                const newStamina = Math.min(p.stamina + toAdd, p.max_stamina);
+                const { data: updated } = await supabase
+                  .from('the_life_players')
+                  .update({ stamina: newStamina, last_stamina_refill: new Date().toISOString() })
+                  .eq('user_id', user.id)
+                  .select()
+                  .single();
+                if (updated) setPlayerFromAction(updated);
+              }
+            }
+            return;
+          }
+          console.error('Stamina refill error:', error);
           return;
         }
         

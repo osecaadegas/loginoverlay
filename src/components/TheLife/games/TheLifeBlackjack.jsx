@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import { adjustPlayerCash } from '../utils/safeRpc';
 import './TheLifeBlackjack.css';
 
 // Game Constants
@@ -84,15 +85,14 @@ export default function TheLifeBlackjack({
     return score;
   };
 
-  // Update player cash via secure RPC
+  // Update player cash via secure RPC (with fallback)
   const updatePlayerCash = async (newCash) => {
     try {
       const cashChange = newCash - player.cash;
-      const { data: cashResult, error } = await supabase.rpc('adjust_player_cash', { p_amount: cashChange });
-      if (error) throw error;
-      if (!cashResult.success) throw new Error(cashResult.error);
+      const cashResult = await adjustPlayerCash(cashChange, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
 
-      setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
+      setPlayer(prev => ({ ...prev, cash: cashResult.player?.cash ?? newCash }));
       return true;
     } catch (error) {
       console.error('Error updating cash:', error);

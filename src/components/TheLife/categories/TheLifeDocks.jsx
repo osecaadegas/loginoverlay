@@ -1,6 +1,7 @@
 import '../styles/TheLifeDocks.css';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import { adjustPlayerCash } from '../utils/safeRpc';
 
 /**
  * Docks Category - Ship drugs safely via boats
@@ -156,10 +157,9 @@ export default function TheLifeDocks({ player, setPlayer, setPlayerFromAction, t
       const dockPrice = Math.floor(quantity * streetPrice * 0.8);
       const newQuantity = inventoryItem.quantity - quantity;
       
-      // Update player cash via secure RPC
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: dockPrice });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
+      // Update player cash via secure RPC (with fallback)
+      const cashResult = await adjustPlayerCash(dockPrice, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
 
       // Log the shipment
       await supabase
@@ -194,7 +194,7 @@ export default function TheLifeDocks({ player, setPlayer, setPlayerFromAction, t
       }
 
       setMessage({ type: 'success', text: `Loaded ${quantity}x ${boat.item_name} for $${dockPrice.toLocaleString()}! Safe delivery confirmed.` });
-      setPlayerFromAction(cashResult.player);
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       setLoadAmounts(prev => ({ ...prev, [boat.id]: '' })); // Clear input
       
       // Reload data

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../../config/supabaseClient';
+import { adjustPlayerCash } from '../../utils/safeRpc';
 import RouletteWheel, { WHEEL_NUMBERS, getNumberColor } from './RouletteWheel';
 import './GlobalRoulette.css';
 
@@ -291,21 +292,21 @@ export default function GlobalRoulette({
       setShowWinModal(true);
       playSound('win');
 
-      // Update player cash via secure RPC
+      // Update player cash via secure RPC (with fallback)
       const newCash = player.cash + netWin;
       setPlayer(prev => ({ ...prev, cash: newCash }));
 
-      supabase.rpc('adjust_player_cash', { p_amount: netWin })
-        .then(({ data }) => { if (data?.player) setPlayer(prev => ({ ...prev, cash: data.player.cash })); });
+      adjustPlayerCash(netWin, player, user.id)
+        .then((result) => { if (result?.player) setPlayer(prev => ({ ...prev, cash: result.player.cash })); });
     } else if (totalBetAmount > 0) {
       playSound('lose');
       
-      // Deduct losses via secure RPC
+      // Deduct losses via secure RPC (with fallback)
       const newCash = player.cash - totalBetAmount;
       setPlayer(prev => ({ ...prev, cash: newCash }));
 
-      supabase.rpc('adjust_player_cash', { p_amount: -totalBetAmount })
-        .then(({ data }) => { if (data?.player) setPlayer(prev => ({ ...prev, cash: data.player.cash })); });
+      adjustPlayerCash(-totalBetAmount, player, user.id)
+        .then((result) => { if (result?.player) setPlayer(prev => ({ ...prev, cash: result.player.cash })); });
     }
 
     // Update recent numbers

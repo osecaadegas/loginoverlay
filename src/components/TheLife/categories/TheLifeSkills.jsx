@@ -1,5 +1,5 @@
 import '../styles/TheLifeSkills.css';
-import { supabase } from '../../../config/supabaseClient';
+import { upgradePlayerSkill } from '../utils/safeRpc';
 
 /**
  * Skills Category Component
@@ -18,19 +18,17 @@ export default function TheLifeSkills({
     const skillKey = skillName.toLowerCase();
 
     try {
-      // Use server-side RPC to upgrade skill (bypasses RLS security policy)
-      // The RPC handles: fetching fresh DB values, cost calculation, validation, and atomic update
-      const { data: result, error } = await supabase.rpc('upgrade_player_skill', { p_skill_name: skillKey });
+      // Use server-side RPC to upgrade skill (with fallback if RPC not yet created)
+      const result = await upgradePlayerSkill(skillKey, player, user.id);
       
-      if (error) throw error;
       if (!result.success) {
-        setMessage({ type: 'error', text: result.error });
+        setMessage({ type: 'error', text: result.error || 'Failed to upgrade' });
         return;
       }
 
       console.log('Skill upgraded:', result.skill, 'to level', result.new_level, 'cost:', result.cost);
-      setPlayerFromAction(result.player);
-      setMessage({ type: 'success', text: `${skillName} upgraded to level ${result.new_level}! (-$${result.cost.toLocaleString()})` });
+      if (result.player) setPlayerFromAction(result.player);
+      setMessage({ type: 'success', text: `${skillName} upgraded to level ${result.new_level}! (-$${(result.cost || 0).toLocaleString()})` });
     } catch (err) {
       console.error('Error upgrading skill:', err);
       setMessage({ type: 'error', text: `Failed to upgrade: ${err.message || 'Unknown error'}` });

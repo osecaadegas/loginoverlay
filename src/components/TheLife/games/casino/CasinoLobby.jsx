@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../../config/supabaseClient';
+import { adjustPlayerCash } from '../../utils/safeRpc';
 import PokerTable from './PokerTable';
 import './CasinoLobby.css';
 import { 
@@ -256,8 +257,7 @@ export default function CasinoLobby({
       try {
         // Return balance to player
         if (myTableBalance > 0) {
-          const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: myTableBalance });
-          if (cashError) console.error('Error returning balance:', cashError);
+          const cashResult = await adjustPlayerCash(myTableBalance, player, user.id);
           if (cashResult?.player) setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
         }
 

@@ -11,6 +11,30 @@
 -- Generated: 2026-02-22
 
 -- =====================================================
+-- 0. FIX THE RESTRICTIVE RLS POLICY
+-- =====================================================
+-- The old "safe columns only" policy blocks ALL gameplay updates.
+-- Replace it with a simple permissive policy. The RPCs below handle
+-- server-side validation instead.
+
+DROP POLICY IF EXISTS "Users can update own player - safe columns only" ON the_life_players;
+DROP POLICY IF EXISTS "Users can update own player - restricted" ON the_life_players;
+
+-- Re-create a simple permissive update policy
+DO $$ BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_policies 
+    WHERE tablename = 'the_life_players' 
+    AND policyname = 'Users can update own player'
+  ) THEN
+    CREATE POLICY "Users can update own player" ON the_life_players
+      FOR UPDATE
+      USING (auth.uid() = user_id)
+      WITH CHECK (auth.uid() = user_id);
+  END IF;
+END $$;
+
+-- =====================================================
 -- 1. adjust_player_cash(p_amount BIGINT)
 -- =====================================================
 -- Atomically adds/subtracts cash. Validates player exists and

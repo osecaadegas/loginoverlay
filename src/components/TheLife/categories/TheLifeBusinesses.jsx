@@ -1,4 +1,5 @@
 import { supabase } from '../../../config/supabaseClient';
+import { adjustPlayerCash, adjustPlayerCashAndStamina } from '../utils/safeRpc';
 import { getMaxBusinessSlots, getUpgradeCost } from '../utils/gameUtils';
 import { useRef, useState } from 'react';
 import { useDragScroll } from '../hooks/useDragScroll';
@@ -86,11 +87,10 @@ export default function TheLifeBusinesses({
 
       if (insertError) throw insertError;
 
-      // Use server-side RPC to deduct cash
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -business.purchase_price });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to deduct cash (with fallback)
+      const cashResult = await adjustPlayerCash(-business.purchase_price, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       loadOwnedBusinesses();
       loadDrugOps();
       setMessage({ type: 'success', text: `Purchased ${business.name}!` });
@@ -246,14 +246,10 @@ export default function TheLifeBusinesses({
 
       setDrugOps(prev => ({ ...prev, ...opData }));
 
-      // Use server-side RPC to deduct cash and stamina
-      const { data: cashResult, error: costError } = await supabase.rpc('adjust_player_cash_and_stamina', {
-        p_cash_change: -productionCost,
-        p_stamina_change: -requiredStamina
-      });
-      if (costError) throw costError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to deduct cash and stamina (with fallback)
+      const cashResult = await adjustPlayerCashAndStamina(-productionCost, -requiredStamina, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cost update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       setMessage({ type: 'success', text: `Started ${business.name}! Wait ${business.duration_minutes} minutes. (-${requiredStamina} stamina)` });
     } catch (err) {
       console.error('Error running business:', err);
@@ -287,11 +283,10 @@ export default function TheLifeBusinesses({
       if (storedCashReward > 0) {
         const cashProfit = Math.floor(storedCashReward * cashMultiplier);
         
-        // Use server-side RPC to add cash
-        const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: cashProfit });
-        if (cashError) throw cashError;
-        if (!cashResult.success) throw new Error(cashResult.error);
-        setPlayerFromAction(cashResult.player);
+        // Use server-side RPC to add cash (with fallback)
+        const cashResult = await adjustPlayerCash(cashProfit, player, user.id);
+        if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+        if (cashResult.player) setPlayerFromAction(cashResult.player);
         setMessage({ 
           type: 'success', 
           text: `Collected $${cashProfit.toLocaleString()}! ${upgradeLevel > 1 ? `(Lvl ${upgradeLevel} bonus!)` : ''}` 
@@ -333,11 +328,10 @@ export default function TheLifeBusinesses({
         const baseCashProfit = business.profit || 0;
         const cashProfit = Math.floor(baseCashProfit * cashMultiplier);
         
-        // Use server-side RPC to add cash
-        const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: cashProfit });
-        if (cashError) throw cashError;
-        if (!cashResult.success) throw new Error(cashResult.error);
-        setPlayerFromAction(cashResult.player);
+        // Use server-side RPC to add cash (with fallback)
+        const cashResult = await adjustPlayerCash(cashProfit, player, user.id);
+        if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+        if (cashResult.player) setPlayerFromAction(cashResult.player);
         setMessage({ 
           type: 'success', 
           text: `Collected $${cashProfit.toLocaleString()}! ${upgradeLevel > 1 ? `(Lvl ${upgradeLevel} bonus!)` : ''}` 
@@ -394,11 +388,10 @@ export default function TheLifeBusinesses({
 
       if (upgradeError) throw upgradeError;
 
-      // Use server-side RPC to deduct cash
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -upgradeCost });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to deduct cash (with fallback)
+      const cashResult = await adjustPlayerCash(-upgradeCost, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       setMessage({ 
         type: 'success', 
         text: `${business.name} upgraded to level ${currentLevel + 1}!` 
@@ -427,11 +420,10 @@ export default function TheLifeBusinesses({
       
       if (error) throw error;
 
-      // Use server-side RPC to add cash
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: sellPrice });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to add cash (with fallback)
+      const cashResult = await adjustPlayerCash(sellPrice, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       setMessage({ type: 'success', text: `Sold ${business.name} for $${sellPrice.toLocaleString()}!` });
       loadOwnedBusinesses();
       loadDrugOps();

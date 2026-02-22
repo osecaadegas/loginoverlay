@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import { adjustPlayerCash } from '../utils/safeRpc';
 import { useDragScroll } from '../hooks/useDragScroll';
 import '../styles/TheLifeBrothel.css';
 
@@ -81,11 +82,10 @@ export default function TheLifeBrothel({
       });
       if (insertError) throw insertError;
 
-      // Use server-side RPC to deduct cash (bypasses RLS security policy)
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -cost });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to deduct cash (with fallback if RPC not yet created)
+      const cashResult = await adjustPlayerCash(-cost, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       await loadBrothel();
       setMessage({ type: 'success', text: 'Brothel unlocked! 3 worker slots available!' });
     } catch (err) {
@@ -161,11 +161,10 @@ export default function TheLifeBrothel({
       }).eq('id', brothel.id);
       if (brothelError) throw brothelError;
 
-      // Use server-side RPC to deduct cash
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -totalCost });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to deduct cash (with fallback)
+      const cashResult = await adjustPlayerCash(-totalCost, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       await loadBrothel();
       await loadHiredWorkers();
       setMessage({ type: 'success', text: `Hired ${quantity}x ${worker.name} successfully!` });
@@ -212,11 +211,10 @@ export default function TheLifeBrothel({
       }).eq('id', brothel.id);
       if (brothelError) throw brothelError;
 
-      // Use server-side RPC to add cash
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: sellPrice });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to add cash (with fallback)
+      const cashResult = await adjustPlayerCash(sellPrice, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       await loadBrothel();
       await loadHiredWorkers();
       setMessage({ type: 'success', text: `Sold ${quantity}x ${hiredWorker.worker.name} for $${sellPrice.toLocaleString()}!` });
@@ -303,11 +301,10 @@ export default function TheLifeBrothel({
       }).eq('id', brothel.id);
       if (upgradeError) throw upgradeError;
 
-      // Use server-side RPC to deduct cash
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -upgradeCost });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      setPlayerFromAction(cashResult.player);
+      // Use server-side RPC to deduct cash (with fallback)
+      const cashResult = await adjustPlayerCash(-upgradeCost, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       await loadBrothel();
       setMessage({ type: 'success', text: 'Brothel upgraded! +2 worker slots' });
     } catch (err) {

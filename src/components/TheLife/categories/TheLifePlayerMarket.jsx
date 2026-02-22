@@ -1,5 +1,6 @@
 import '../styles/TheLifePlayerMarket.css';
 import { supabase } from '../../../config/supabaseClient';
+import { adjustPlayerCash } from '../utils/safeRpc';
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useLanguage } from '../../../contexts/LanguageContext';
 import { 
@@ -256,10 +257,9 @@ export default function TheLifePlayerMarket({
     }
 
     try {
-      // Deduct buyer cash via secure RPC
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -totalCost });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
+      // Deduct buyer cash via secure RPC (with fallback)
+      const cashResult = await adjustPlayerCash(-totalCost, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
 
       // Add cash to seller
       const { error: sellerError } = await supabase.rpc('add_player_cash', {
@@ -312,7 +312,7 @@ export default function TheLifePlayerMarket({
         });
 
       // Update local state from RPC result
-      setPlayerFromAction(cashResult.player);
+      if (cashResult.player) setPlayerFromAction(cashResult.player);
       showEventMessage?.(isPt ? `Comprou ${listing.item?.name} por $${totalCost.toLocaleString()}!` : `Bought ${listing.item?.name} for $${totalCost.toLocaleString()}!`, 'success');
       loadListings();
       loadTheLifeInventory?.();

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useStreamElements } from '../../context/StreamElementsContext';
 import { supabase } from '../../config/supabaseClient';
+import { adjustPlayerCash } from '../TheLife/utils/safeRpc';
 import './SeasonPass.css';
 
 /**
@@ -315,13 +316,11 @@ export default function SeasonPass() {
     switch (reward.type?.toLowerCase()) {
       case 'currency':
       case 'cash':
-        // Add cash to player
+        // Add cash to player via secure RPC (with fallback)
         const cashAmount = reward.cash_amount || reward.quantity || 0;
-        await supabase
-          .from('the_life_players')
-          .update({ cash: (playerData?.cash || 0) + cashAmount })
-          .eq('user_id', user.id);
-        setPlayerData(prev => ({ ...prev, cash: (prev?.cash || 0) + cashAmount }));
+        const cashResult = await adjustPlayerCash(cashAmount, playerData, user.id);
+        if (cashResult?.player) setPlayerData(cashResult.player);
+        else setPlayerData(prev => ({ ...prev, cash: (prev?.cash || 0) + cashAmount }));
         break;
 
       case 'se_points':
@@ -368,7 +367,7 @@ export default function SeasonPass() {
         break;
 
       case 'xp':
-        // Add XP to player
+        // Add XP to player via direct update
         const xpAmount = reward.xp_amount || reward.quantity || 0;
         await supabase
           .from('the_life_players')

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../../config/supabaseClient';
+import { adjustPlayerCash } from '../../utils/safeRpc';
 import { SidePanel, PanelSection, PanelButton, PanelButtonGroup } from '../../components/SidePanel';
 import './PokerTable.css';
 
@@ -284,11 +285,9 @@ export default function PokerTable({
         return;
       }
 
-      // Deduct from player cash via secure RPC
-      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -buyInAmount });
-      if (cashError) throw cashError;
-      if (!cashResult.success) throw new Error(cashResult.error);
-      const newCash = cashResult.player.cash;
+      // Deduct from player cash via secure RPC (with fallback)
+      const cashResult = await adjustPlayerCash(-buyInAmount, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
 
       // Create seat
       const { error: seatError } = await supabase
@@ -305,7 +304,7 @@ export default function PokerTable({
 
       if (seatError) throw seatError;
 
-      setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
+      setPlayer(prev => ({ ...prev, cash: cashResult.player?.cash ?? (player.cash - buyInAmount) }));
       setMySeat(selectedSeat);
       setMyBalance(buyInAmount);
       setShowBuyInModal(false);
@@ -329,10 +328,9 @@ export default function PokerTable({
     }
 
     try {
-      // Return chips to player cash via secure RPC
+      // Return chips to player cash via secure RPC (with fallback)
       if (myBalance > 0) {
-        const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: myBalance });
-        if (cashError) throw cashError;
+        const cashResult = await adjustPlayerCash(myBalance, player, user.id);
         if (cashResult?.player) setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
       }
 

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import { adjustPlayerCash } from '../utils/safeRpc';
 import { SidePanel, PanelSection, PanelButton, PanelButtonGroup } from '../components/SidePanel';
 import './TheLifeStockMarket.css';
 
@@ -551,7 +552,7 @@ export default function TheLifeStockMarket({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stocks.length > 0]);
 
-  // Update player cash via secure RPC
+  // Update player cash via secure RPC (with fallback)
   const updatePlayerCash = async (newCash) => {
     if (!user?.id) {
       console.error('No user ID available');
@@ -562,14 +563,10 @@ export default function TheLifeStockMarket({
     const cashChange = Math.round((newCash - player.cash) * 100) / 100;
     
     try {
-      const { data: cashResult, error } = await supabase.rpc('adjust_player_cash', { p_amount: cashChange });
-      if (error) {
-        console.error('Supabase error:', error.message, error.code, error.details);
-        throw error;
-      }
-      if (!cashResult.success) throw new Error(cashResult.error);
+      const cashResult = await adjustPlayerCash(cashChange, player, user.id);
+      if (!cashResult.success) throw new Error(cashResult.error || 'Cash update failed');
       
-      setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
+      setPlayer(prev => ({ ...prev, cash: cashResult.player?.cash ?? newCash }));
       return true;
     } catch (error) {
       console.error('Error updating cash:', error);
