@@ -5,6 +5,7 @@ import '../styles/TheLifeBank.css';
 export default function TheLifeBank({ 
   player,
   setPlayer,
+  setPlayerFromAction,
   depositAmount,
   setDepositAmount,
   withdrawAmount,
@@ -41,7 +42,7 @@ export default function TheLifeBank({
       }
 
       // Update local state with server-validated values
-      setPlayer(prev => ({
+      setPlayerFromAction(prev => ({
         ...prev,
         cash: result.new_cash,
         bank_balance: result.new_bank
@@ -84,7 +85,7 @@ export default function TheLifeBank({
       }
 
       // Update local state with server-validated values
-      setPlayer(prev => ({
+      setPlayerFromAction(prev => ({
         ...prev,
         cash: result.new_cash,
         bank_balance: result.new_bank

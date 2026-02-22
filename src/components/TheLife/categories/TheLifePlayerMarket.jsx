@@ -20,6 +20,7 @@ import {
 export default function TheLifePlayerMarket({ 
   player,
   setPlayer,
+  setPlayerFromAction,
   theLifeInventory,
   setMessage,
   loadTheLifeInventory,
@@ -314,7 +315,7 @@ export default function TheLifePlayerMarket({
         });
 
       // Update local state
-      setPlayer(prev => ({ ...prev, cash: prev.cash - totalCost }));
+      setPlayerFromAction(prev => ({ ...prev, cash: prev.cash - totalCost }));
       showEventMessage?.(isPt ? `Comprou ${listing.item?.name} por $${totalCost.toLocaleString()}!` : `Bought ${listing.item?.name} for $${totalCost.toLocaleString()}!`, 'success');
       loadListings();
       loadTheLifeInventory?.();

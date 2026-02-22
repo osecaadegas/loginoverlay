@@ -8,6 +8,7 @@ import TheLifePlayerMarket from './TheLifePlayerMarket';
 export default function TheLifeBlackMarket({ 
   player,
   setPlayer,
+  setPlayerFromAction,
   theLifeInventory,
   marketSubTab,
   setMarketSubTab,
@@ -246,6 +247,7 @@ export default function TheLifeBlackMarket({
         <TheLifePlayerMarket
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           theLifeInventory={theLifeInventory}
           setMessage={setMessage}
           loadTheLifeInventory={loadTheLifeInventory}

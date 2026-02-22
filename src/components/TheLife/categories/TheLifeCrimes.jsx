@@ -12,7 +12,8 @@ import '../styles/TheLifeCrimes.css';
  */
 export default function TheLifeCrimes({ 
   player, 
-  setPlayer, 
+  setPlayer,
+  setPlayerFromAction, 
   robberies, 
   setMessage, 
   showEventMessage,
@@ -171,7 +172,7 @@ export default function TheLifeCrimes({
         .single();
 
       if (!fetchError && updatedPlayer) {
-        setPlayer(updatedPlayer);
+        setPlayerFromAction(updatedPlayer);
       }
 
       // Add XP to Season Pass

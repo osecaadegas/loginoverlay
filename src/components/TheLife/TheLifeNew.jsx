@@ -135,6 +135,7 @@ export default function TheLife() {
   const {
     player,
     setPlayer,
+    setPlayerFromAction,
     loading,
     message,
     setMessage,
@@ -608,6 +609,7 @@ export default function TheLife() {
         <TheLifeCrimes
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           robberies={robberies}
           setMessage={setMessage}
           showEventMessage={showEventMessage}
@@ -622,6 +624,7 @@ export default function TheLife() {
         <TheLifeBank
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           depositAmount={depositAmount}
           setDepositAmount={setDepositAmount}
           withdrawAmount={withdrawAmount}
@@ -635,6 +638,7 @@ export default function TheLife() {
         <TheLifePVP
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           onlinePlayers={onlinePlayers}
           loadOnlinePlayers={loadOnlinePlayers}
           setMessage={setMessage}
@@ -648,6 +652,7 @@ export default function TheLife() {
         <TheLifeBusinesses
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           businesses={businesses}
           ownedBusinesses={ownedBusinesses}
           drugOps={drugOps}
@@ -664,6 +669,7 @@ export default function TheLife() {
         <TheLifeBrothel
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           brothel={brothel}
           setBrothel={setBrothel}
           availableWorkers={availableWorkers}
@@ -683,6 +689,7 @@ export default function TheLife() {
           theLifeInventory={theLifeInventory}
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           setMessage={setMessage}
           loadTheLifeInventory={loadTheLifeInventory}
           initializePlayer={initializePlayer}
@@ -694,6 +701,7 @@ export default function TheLife() {
         <TheLifeJail
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           jailTimeRemaining={jailTimeRemaining}
           isInJail={isInJail}
           theLifeInventory={theLifeInventory}
@@ -715,6 +723,7 @@ export default function TheLife() {
         <TheLifeHospital
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           isInHospital={isInHospital}
           hospitalTimeRemaining={hospitalTimeRemaining}
           setMessage={setMessage}
@@ -727,6 +736,7 @@ export default function TheLife() {
         <TheLifeBlackMarket
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           theLifeInventory={theLifeInventory}
           marketSubTab={marketSubTab}
           setMarketSubTab={setMarketSubTab}
@@ -743,6 +753,7 @@ export default function TheLife() {
         <TheLifeDocks
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           theLifeInventory={theLifeInventory}
           setMessage={setMessage}
           loadTheLifeInventory={loadTheLifeInventory}
@@ -754,6 +765,7 @@ export default function TheLife() {
         <TheLifeProfile
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           theLifeInventory={theLifeInventory}
           setMessage={setMessage}
           loadTheLifeInventory={loadTheLifeInventory}
@@ -766,6 +778,7 @@ export default function TheLife() {
         <TheLifeSkills
           player={player}
           setPlayer={setPlayer}
+          setPlayerFromAction={setPlayerFromAction}
           setMessage={setMessage}
           isInHospital={isInHospital}
           user={user}
@@ -777,6 +790,7 @@ export default function TheLife() {
           <TheLifeHighStakes
             player={player}
             setPlayer={setPlayer}
+            setPlayerFromAction={setPlayerFromAction}
             setMessage={setMessage}
             showEventMessage={showEventMessage}
             user={user}

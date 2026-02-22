@@ -6,6 +6,7 @@ import { useState } from 'react';
 export default function TheLifeJail({ 
   player,
   setPlayer,
+  setPlayerFromAction,
   jailTimeRemaining,
   isInJail,
   theLifeInventory,
@@ -58,7 +59,7 @@ export default function TheLifeJail({
 
       if (error) throw error;
       // Merge with current player state to preserve local values like stamina
-      setPlayer(prev => ({ ...prev, ...data }));
+      setPlayerFromAction(prev => ({ ...prev, ...data }));
       await loadTheLifeInventory();
       setMessage({ type: 'success', text: '🔓 You escaped jail using a Jail Free Card!' });
     } catch (err) {
@@ -102,7 +103,7 @@ export default function TheLifeJail({
         .single();
 
       if (updatedPlayer) {
-        setPlayer(prev => ({ ...prev, ...updatedPlayer }));
+        setPlayerFromAction(prev => ({ ...prev, ...updatedPlayer }));
       }
 
       setMessage({ 

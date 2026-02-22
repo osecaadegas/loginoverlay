@@ -8,6 +8,7 @@ import { supabase } from '../../../config/supabaseClient';
 export default function TheLifeSkills({ 
   player,
   setPlayer,
+  setPlayerFromAction,
   setMessage,
   isInHospital,
   user
@@ -62,7 +63,7 @@ export default function TheLifeSkills({
       }
       
       console.log('Updated player data:', data);
-      setPlayer(data);
+      setPlayerFromAction(data);
       setMessage({ type: 'success', text: `${skillName} upgraded to level ${currentLevel + 1}!` });
     } catch (err) {
       console.error('Error upgrading skill:', err);

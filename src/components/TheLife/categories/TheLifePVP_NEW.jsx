@@ -6,7 +6,8 @@ import { useState, useEffect, useRef } from 'react';
  */
 export default function TheLifePVP({ 
   player, 
-  setPlayer, 
+  setPlayer,
+  setPlayerFromAction, 
   onlinePlayers,
   loadOnlinePlayers,
   setMessage,
@@ -199,7 +200,7 @@ export default function TheLifePVP({
         .single();
 
       if (updatedPlayer) {
-        setPlayer(updatedPlayer);
+        setPlayerFromAction(updatedPlayer);
       }
 
       // DISABLED BROADCAST NOTIFICATION TO REDUCE EGRESS

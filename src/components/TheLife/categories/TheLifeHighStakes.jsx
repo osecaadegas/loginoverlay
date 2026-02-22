@@ -15,6 +15,7 @@ import GlobalRoulette from '../games/casino/GlobalRoulette';
 export default function TheLifeHighStakes({
   player,
   setPlayer,
+  setPlayerFromAction,
   setMessage,
   showEventMessage,
   user,
@@ -99,7 +100,7 @@ export default function TheLifeHighStakes({
         return (
           <TheLifeBlackjack
             player={player}
-            setPlayer={setPlayer}
+            setPlayer={setPlayerFromAction || setPlayer}
             setMessage={setMessage}
             user={user}
             onBack={handleBackToGames}
@@ -109,7 +110,7 @@ export default function TheLifeHighStakes({
         return (
           <CasinoLobby
             player={player}
-            setPlayer={setPlayer}
+            setPlayer={setPlayerFromAction || setPlayer}
             setMessage={setMessage}
             user={user}
             onBack={handleBackToGames}
@@ -119,7 +120,7 @@ export default function TheLifeHighStakes({
         return (
           <GlobalRoulette
             player={player}
-            setPlayer={setPlayer}
+            setPlayer={setPlayerFromAction || setPlayer}
             setMessage={setMessage}
             user={user}
             onBack={handleBackToGames}
@@ -156,7 +157,7 @@ export default function TheLifeHighStakes({
           <div className="highstakes-content stockmarket-content">
             <TheLifeStockMarket
               player={player}
-              setPlayer={setPlayer}
+              setPlayer={setPlayerFromAction || setPlayer}
               setMessage={setMessage}
               user={user}
               onBack={() => setActiveSubTab('casino')}

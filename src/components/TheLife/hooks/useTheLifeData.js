@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 
 /**
@@ -10,6 +10,36 @@ export const useTheLifeData = (user) => {
   const [player, setPlayer] = useState(null);
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState({ type: '', text: '' });
+  
+  // Guard: track when user actions update player to prevent poll from overwriting with stale data
+  const lastPlayerActionRef = useRef(0);
+  
+  // Wrapped setPlayer that preserves equipment bonuses and marks user action timestamp
+  // Accepts either raw DB data object OR a functional updater (prev => newState)
+  const setPlayerFromAction = (dataOrUpdater) => {
+    lastPlayerActionRef.current = Date.now();
+    if (typeof dataOrUpdater === 'function') {
+      // Functional updater: just set the timestamp, let the component handle the merge
+      setPlayer(dataOrUpdater);
+    } else {
+      // Raw data from DB: merge and preserve equipment bonuses
+      setPlayer(prev => {
+        const powerBonus = prev?.equipment_power_bonus || 0;
+        const defenseBonus = prev?.equipment_defense_bonus || 0;
+        const merged = { ...prev, ...dataOrUpdater };
+        // If data contains power/defense from DB, re-add equipment bonuses
+        if ('power' in dataOrUpdater) {
+          merged.power = dataOrUpdater.power + powerBonus;
+        }
+        if ('defense' in dataOrUpdater) {
+          merged.defense = dataOrUpdater.defense + defenseBonus;
+        }
+        merged.equipment_power_bonus = powerBonus;
+        merged.equipment_defense_bonus = defenseBonus;
+        return merged;
+      });
+    }
+  };
   
   // Tab management
   const [activeTab, setActiveTab] = useState('crimes');
@@ -169,7 +199,7 @@ export const useTheLifeData = (user) => {
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      setPlayerFromAction(data);
       setMessage({ 
         type: 'success', 
         text: `Daily bonus claimed! +10 stamina (${newStreak} day streak)` 
@@ -210,7 +240,7 @@ export const useTheLifeData = (user) => {
           .select()
           .single();
 
-        if (!error) setPlayer(data);
+        if (!error) setPlayerFromAction(data);
       }
     }, 60000);
 
@@ -612,11 +642,17 @@ export const useTheLifeData = (user) => {
     
     // Poll player data every 15 seconds (needs to be responsive for gameplay)
     const playerInterval = setInterval(async () => {
+      // Skip poll if a user action just updated the player (prevent stale data overwrite)
+      if (Date.now() - lastPlayerActionRef.current < 3000) return;
+      
       const { data } = await supabase
         .from('the_life_players')
         .select('*')
         .eq('user_id', user.id)
         .single();
+      
+      // Double-check guard again after async query (action may have happened during query)
+      if (Date.now() - lastPlayerActionRef.current < 3000) return;
       
       if (data) {
         setPlayer(prevPlayer => {
@@ -715,6 +751,7 @@ export const useTheLifeData = (user) => {
     // State
     player,
     setPlayer,
+    setPlayerFromAction,
     loading,
     message,
     setMessage,

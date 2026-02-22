@@ -20,6 +20,7 @@ import {
 export default function TheLifeBusinesses({ 
   player,
   setPlayer,
+  setPlayerFromAction,
   businesses,
   ownedBusinesses,
   drugOps,
@@ -93,7 +94,7 @@ export default function TheLifeBusinesses({
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      setPlayerFromAction(data);
       loadOwnedBusinesses();
       loadDrugOps();
       setMessage({ type: 'success', text: `Purchased ${business.name}!` });
@@ -261,7 +262,7 @@ export default function TheLifeBusinesses({
         .single();
 
       if (costError) throw costError;
-      setPlayer(updatedPlayer);
+      setPlayerFromAction(updatedPlayer);
       setMessage({ type: 'success', text: `Started ${business.name}! Wait ${business.duration_minutes} minutes. (-${requiredStamina} stamina)` });
     } catch (err) {
       console.error('Error running business:', err);
@@ -303,7 +304,7 @@ export default function TheLifeBusinesses({
           .single();
 
         if (cashError) throw cashError;
-        setPlayer(updatedPlayer);
+        setPlayerFromAction(updatedPlayer);
         setMessage({ 
           type: 'success', 
           text: `Collected $${cashProfit.toLocaleString()}! ${upgradeLevel > 1 ? `(Lvl ${upgradeLevel} bonus!)` : ''}` 
@@ -353,7 +354,7 @@ export default function TheLifeBusinesses({
           .single();
 
         if (cashError) throw cashError;
-        setPlayer(updatedPlayer);
+        setPlayerFromAction(updatedPlayer);
         setMessage({ 
           type: 'success', 
           text: `Collected $${cashProfit.toLocaleString()}! ${upgradeLevel > 1 ? `(Lvl ${upgradeLevel} bonus!)` : ''}` 
@@ -418,7 +419,7 @@ export default function TheLifeBusinesses({
         .single();
 
       if (cashError) throw cashError;
-      setPlayer(data);
+      setPlayerFromAction(data);
       setMessage({ 
         type: 'success', 
         text: `${business.name} upgraded to level ${currentLevel + 1}!` 
@@ -455,7 +456,7 @@ export default function TheLifeBusinesses({
         .single();
       
       if (cashError) throw cashError;
-      setPlayer(data);
+      setPlayerFromAction(data);
       setMessage({ type: 'success', text: `Sold ${business.name} for $${sellPrice.toLocaleString()}!` });
       loadOwnedBusinesses();
       loadDrugOps();

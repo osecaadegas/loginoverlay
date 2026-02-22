@@ -10,6 +10,7 @@ import '../styles/TheLifeBrothel.css';
 export default function TheLifeBrothel({ 
   player,
   setPlayer,
+  setPlayerFromAction,
   brothel,
   setBrothel,
   availableWorkers,
@@ -88,7 +89,7 @@ export default function TheLifeBrothel({
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      setPlayerFromAction(data);
       await loadBrothel();
       setMessage({ type: 'success', text: 'Brothel unlocked! 3 worker slots available!' });
     } catch (err) {
@@ -172,7 +173,7 @@ export default function TheLifeBrothel({
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      setPlayerFromAction(data);
       await loadBrothel();
       await loadHiredWorkers();
       setMessage({ type: 'success', text: `Hired ${quantity}x ${worker.name} successfully!` });
@@ -227,7 +228,7 @@ export default function TheLifeBrothel({
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      setPlayerFromAction(data);
       await loadBrothel();
       await loadHiredWorkers();
       setMessage({ type: 'success', text: `Sold ${quantity}x ${hiredWorker.worker.name} for $${sellPrice.toLocaleString()}!` });
@@ -267,7 +268,7 @@ export default function TheLifeBrothel({
         .single();
 
       if (updatedPlayer) {
-        setPlayer(updatedPlayer);
+        setPlayerFromAction(updatedPlayer);
       }
 
       await loadBrothel();
@@ -322,7 +323,7 @@ export default function TheLifeBrothel({
         .single();
 
       if (error) throw error;
-      setPlayer(data);
+      setPlayerFromAction(data);
       await loadBrothel();
       setMessage({ type: 'success', text: 'Brothel upgraded! +2 worker slots' });
     } catch (err) {

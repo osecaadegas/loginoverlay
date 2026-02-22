@@ -5,7 +5,7 @@ import { supabase } from '../../../config/supabaseClient';
 /**
  * Docks Category - Ship drugs safely via boats
  */
-export default function TheLifeDocks({ player, setPlayer, theLifeInventory, setMessage, user, loadTheLifeInventory }) {
+export default function TheLifeDocks({ player, setPlayer, setPlayerFromAction, theLifeInventory, setMessage, user, loadTheLifeInventory }) {
   const [activeBoats, setActiveBoats] = useState([]);
   const [upcomingBoats, setUpcomingBoats] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -199,7 +199,7 @@ export default function TheLifeDocks({ player, setPlayer, theLifeInventory, setM
       }
 
       setMessage({ type: 'success', text: `Loaded ${quantity}x ${boat.item_name} for $${dockPrice.toLocaleString()}! Safe delivery confirmed.` });
-      setPlayer(prev => ({ ...prev, cash: prev.cash + dockPrice }));
+      setPlayerFromAction(prev => ({ ...prev, cash: prev.cash + dockPrice }));
       setLoadAmounts(prev => ({ ...prev, [boat.id]: '' })); // Clear input
       
       // Reload data
