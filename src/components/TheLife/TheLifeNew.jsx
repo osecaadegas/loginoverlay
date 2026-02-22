@@ -224,7 +224,7 @@ export default function TheLife() {
     try {
       // Find stamina consumables in inventory
       const staminaItems = theLifeInventory.filter(inv => {
-        if (!inv.item.effect) return false;
+        if (!inv.item?.effect) return false;
         try {
           const effect = typeof inv.item.effect === 'string' ? JSON.parse(inv.item.effect) : inv.item.effect;
           return effect.type === 'stamina';
@@ -268,7 +268,7 @@ export default function TheLife() {
 
   // Get stamina item count
   const staminaItemCount = theLifeInventory.filter(inv => {
-    if (!inv.item.effect) return false;
+    if (!inv.item?.effect) return false;
     try {
       const effect = JSON.parse(inv.item.effect);
       return effect.type === 'stamina';

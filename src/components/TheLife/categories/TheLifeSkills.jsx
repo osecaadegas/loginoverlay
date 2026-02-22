@@ -15,19 +15,34 @@ export default function TheLifeSkills({
   
   const upgradeSkill = async (skillName) => {
     const skillKey = skillName.toLowerCase();
-    const currentLevel = player[skillKey] || 0;
-
-    // Cost increases by 1000 each level
-    const cost = (currentLevel + 1) * 1000;
-    
-    if (player.cash < cost) {
-      setMessage({ type: 'error', text: `Need $${cost.toLocaleString()} to upgrade ${skillName}!` });
-      return;
-    }
 
     try {
+      // Fetch raw DB value to avoid equipment bonus inflation
+      const { data: freshPlayer, error: fetchError } = await supabase
+        .from('the_life_players')
+        .select('id, cash, power, intelligence, defense')
+        .eq('user_id', user.id)
+        .single();
+
+      if (fetchError) throw fetchError;
+
+      const currentLevel = freshPlayer[skillKey] || 0;
+
+      // Cost increases by 1000 each level
+      const cost = (currentLevel + 1) * 1000;
+      
+      if (freshPlayer.cash < cost) {
+        setMessage({ type: 'error', text: `Need $${cost.toLocaleString()} to upgrade ${skillName}!` });
+        return;
+      }
+
+      if (currentLevel >= 100) {
+        setMessage({ type: 'error', text: `${skillName} is already at max level (100)!` });
+        return;
+      }
+
       const updates = {
-        cash: player.cash - cost,
+        cash: freshPlayer.cash - cost,
         [skillKey]: currentLevel + 1
       };
 
@@ -56,6 +71,8 @@ export default function TheLifeSkills({
   };
 
   const getSkillCost = (skillKey) => {
+    // Use player value as display (may include equipment bonus), 
+    // but actual cost is calculated from fresh DB value on upgrade
     const currentLevel = player[skillKey] || 0;
     return (currentLevel + 1) * 1000;
   };
@@ -137,7 +154,7 @@ export default function TheLifeSkills({
           <li>Skills permanently improve your character</li>
           <li>Each upgrade costs $1,000 more than the previous level</li>
           <li>Skills stack with equipment and level bonuses</li>
-          <li>No level cap - upgrade infinitely!</li>
+          <li>Max skill level: 100</li>
         </ul>
       </div>
     </div>

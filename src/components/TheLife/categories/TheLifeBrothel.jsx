@@ -70,7 +70,7 @@ export default function TheLifeBrothel({
     try {
       const initialSlots = 3; // Fixed 3 initial slots
 
-      await supabase.from('the_life_brothels').insert({
+      const { error: insertError } = await supabase.from('the_life_brothels').insert({
         player_id: player.id,
         workers: 0,
         income_per_hour: 0,
@@ -78,6 +78,7 @@ export default function TheLifeBrothel({
         additional_slots: 0,
         slots_upgrade_cost: 100000
       });
+      if (insertError) throw insertError;
 
       const { data, error } = await supabase
         .from('the_life_players')
@@ -151,15 +152,17 @@ export default function TheLifeBrothel({
         worker_id: worker.id
       }));
 
-      await supabase.from('the_life_player_brothel_workers').insert(workersToInsert);
+      const { error: insertError } = await supabase.from('the_life_player_brothel_workers').insert(workersToInsert);
+      if (insertError) throw insertError;
 
       const newTotalIncome = (brothel.income_per_hour || 0) + (worker.income_per_hour * quantity);
       const newWorkerCount = currentUsedSlots + quantity;
 
-      await supabase.from('the_life_brothels').update({
+      const { error: brothelError } = await supabase.from('the_life_brothels').update({
         workers: newWorkerCount,
         income_per_hour: newTotalIncome
       }).eq('id', brothel.id);
+      if (brothelError) throw brothelError;
 
       const { data, error } = await supabase
         .from('the_life_players')
@@ -202,17 +205,19 @@ export default function TheLifeBrothel({
         ? hiredWorker.allInstances.slice(0, quantity).map(w => w.id)
         : [hiredWorker.id];
 
-      await supabase.from('the_life_player_brothel_workers')
+      const { error: deleteError } = await supabase.from('the_life_player_brothel_workers')
         .delete()
         .in('id', instancesToDelete);
+      if (deleteError) throw deleteError;
 
       const newTotalIncome = (brothel.income_per_hour || 0) - (hiredWorker.worker.income_per_hour * quantity);
       const newWorkerCount = hiredWorkers.length - quantity;
 
-      await supabase.from('the_life_brothels').update({
+      const { error: brothelError } = await supabase.from('the_life_brothels').update({
         workers: Math.max(0, newWorkerCount),
         income_per_hour: Math.max(0, newTotalIncome)
       }).eq('id', brothel.id);
+      if (brothelError) throw brothelError;
 
       const { data, error } = await supabase
         .from('the_life_players')
@@ -303,10 +308,11 @@ export default function TheLifeBrothel({
       const newAdditionalSlots = (brothel.additional_slots || 0) + 2;
       const newUpgradeCost = upgradeCost * 2;
 
-      await supabase.from('the_life_brothels').update({
+      const { error: upgradeError } = await supabase.from('the_life_brothels').update({
         additional_slots: newAdditionalSlots,
         slots_upgrade_cost: newUpgradeCost
       }).eq('id', brothel.id);
+      if (upgradeError) throw upgradeError;
 
       const { data, error } = await supabase
         .from('the_life_players')

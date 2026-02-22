@@ -147,13 +147,13 @@ export default function TheLifeProfile({
   };
 
   // Get equipped items
-  const equippedWeapon = theLifeInventory.find(inv => inv.item.id === player.equipped_weapon_id);
-  const equippedGear = theLifeInventory.find(inv => inv.item.id === player.equipped_gear_id);
+  const equippedWeapon = theLifeInventory.find(inv => inv.item?.id === player.equipped_weapon_id);
+  const equippedGear = theLifeInventory.find(inv => inv.item?.id === player.equipped_gear_id);
 
   // Filter inventory by type
-  const weaponItems = theLifeInventory.filter(inv => inv.item.boost_type === 'power');
-  const gearItems = theLifeInventory.filter(inv => inv.item.boost_type === 'defense');
-  const consumableItems = theLifeInventory.filter(inv => inv.item.usable && inv.item.effect);
+  const weaponItems = theLifeInventory.filter(inv => inv.item?.boost_type === 'power');
+  const gearItems = theLifeInventory.filter(inv => inv.item?.boost_type === 'defense');
+  const consumableItems = theLifeInventory.filter(inv => inv.item?.usable && inv.item?.effect);
 
   return (
     <div className="profile-section">

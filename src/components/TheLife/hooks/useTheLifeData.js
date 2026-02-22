@@ -98,7 +98,10 @@ export const useTheLifeData = (user) => {
         }
       }
 
-      // Calculate equipped item bonuses
+      // Calculate equipped item bonuses (store separately, don't overwrite base stats)
+      playerData.equipment_power_bonus = 0;
+      playerData.equipment_defense_bonus = 0;
+      
       if (playerData.equipped_weapon_id || playerData.equipped_gear_id) {
         const equipmentIds = [];
         if (playerData.equipped_weapon_id) equipmentIds.push(playerData.equipped_weapon_id);
@@ -112,12 +115,16 @@ export const useTheLifeData = (user) => {
         if (equippedItems) {
           equippedItems.forEach(item => {
             if (item.boost_type === 'power' && item.boost_amount) {
-              playerData.power = (playerData.power || 0) + item.boost_amount;
+              playerData.equipment_power_bonus += item.boost_amount;
             } else if (item.boost_type === 'defense' && item.boost_amount) {
-              playerData.defense = (playerData.defense || 0) + item.boost_amount;
+              playerData.equipment_defense_bonus += item.boost_amount;
             }
           });
         }
+        
+        // Add bonuses to displayed values (base stats stay intact in DB columns)
+        playerData.power = (playerData.power || 0) + playerData.equipment_power_bonus;
+        playerData.defense = (playerData.defense || 0) + playerData.equipment_defense_bonus;
       }
 
       setPlayer(playerData);
@@ -274,7 +281,8 @@ export const useTheLifeData = (user) => {
         .eq('player_id', player.id);
 
       if (error) throw error;
-      setTheLifeInventory(data || []);
+      // Filter out any inventory entries where item join returned null (RLS or deleted item)
+      setTheLifeInventory((data || []).filter(inv => inv.item !== null));
     } catch (err) {
       console.error('Error loading inventory:', err);
       setTheLifeInventory([]);
@@ -452,7 +460,8 @@ export const useTheLifeData = (user) => {
         .eq('player_id', player.id);
 
       if (error) throw error;
-      setHiredWorkers(data || []);
+      // Filter out entries where worker join returned null
+      setHiredWorkers((data || []).filter(hw => hw.worker !== null));
     } catch (err) {
       console.error('Error loading hired workers:', err);
       setHiredWorkers([]);
@@ -610,10 +619,19 @@ export const useTheLifeData = (user) => {
         .single();
       
       if (data) {
-        setPlayer(prevPlayer => ({
-          ...prevPlayer,
-          ...data
-        }));
+        setPlayer(prevPlayer => {
+          // Preserve equipment bonuses from initializePlayer
+          const powerBonus = prevPlayer?.equipment_power_bonus || 0;
+          const defenseBonus = prevPlayer?.equipment_defense_bonus || 0;
+          return {
+            ...prevPlayer,
+            ...data,
+            equipment_power_bonus: powerBonus,
+            equipment_defense_bonus: defenseBonus,
+            power: (data.power || 0) + powerBonus,
+            defense: (data.defense || 0) + defenseBonus
+          };
+        });
         
         // If player was sent to hospital or jail, show message
         if (data.hp === 0 && data.hospital_until && (!player || player.hp !== 0)) {

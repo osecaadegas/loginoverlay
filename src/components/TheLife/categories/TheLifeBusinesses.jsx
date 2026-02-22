@@ -76,12 +76,14 @@ export default function TheLifeBusinesses({
     }
 
     try {
-      await supabase
+      const { error: insertError } = await supabase
         .from('the_life_player_businesses')
         .insert({
           player_id: player.id,
           business_id: business.id
         });
+
+      if (insertError) throw insertError;
 
       const { data, error } = await supabase
         .from('the_life_players')
