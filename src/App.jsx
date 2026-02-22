@@ -35,13 +35,12 @@ import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
 // Anti-Cheat Admin Panel
 import AdminLayout from './components/Admin/AdminLayout';
+import PlayerManagementPage from './components/Admin/pages/PlayerManagementPage';
 import DashboardPage from './components/Admin/pages/DashboardPage';
 import AlertsPage from './components/Admin/pages/AlertsPage';
 import LogsPage from './components/Admin/pages/LogsPage';
 import PlayersPage from './components/Admin/pages/PlayersPage';
 import InvestigationPage from './components/Admin/pages/InvestigationPage';
-import CasinoOffersManager from './components/Admin/CasinoOffersManager';
-import GuessBalanceManager from './components/Admin/GuessBalanceManager';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -537,7 +536,8 @@ function LayoutWrapper({ children }) {
 
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
-                      !isWidgetRoute;
+                      !isWidgetRoute &&
+                      !location.pathname.startsWith('/anticheat');
 
   // Detect screen size changes
   useEffect(() => {
@@ -570,38 +570,37 @@ function LayoutWrapper({ children }) {
   };
 
   const closeSidebar = () => {
-    setSidebarOpen(false);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
   };
 
   return (
     <div className="app-layout">
       {showSidebar && (
         <>
-          {/* Mobile toggle button - always renders, CSS handles visibility */}
-          <button 
-            className={`sidebar-toggle-btn touch-target ${sidebarOpen ? 'sidebar-open' : ''}`}
-            onClick={() => {
-              console.log('🍔 Hamburger clicked! Current state:', sidebarOpen, '-> setting to:', !sidebarOpen);
-              setSidebarOpen(prev => {
-                console.log('🍔 State update:', prev, '->', !prev);
-                return !prev;
-              });
-            }}
-            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-          >
-            {sidebarOpen ? '✕' : '☰'}
-          </button>
+          {/* Mobile toggle button */}
+          {isMobile && (
+            <button 
+              className="sidebar-toggle-btn touch-target" 
+              onClick={toggleSidebar}
+              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+            >
+              {sidebarOpen ? '✕' : '☰'}
+            </button>
+          )}
           
           {/* Sidebar with open state */}
-          {console.log('🔧 Rendering Sidebar with className:', sidebarOpen ? 'open' : '(empty)')}
           <Sidebar className={sidebarOpen ? 'open' : ''} onClose={closeSidebar} />
           
-          {/* Backdrop overlay - CSS handles visibility */}
-          <div 
-            className={`sidebar-backdrop ${sidebarOpen ? 'visible' : ''}`}
-            onClick={closeSidebar}
-            aria-hidden="true"
-          />
+          {/* Backdrop overlay - mobile only */}
+          {isMobile && sidebarOpen && (
+            <div 
+              className="sidebar-backdrop visible" 
+              onClick={closeSidebar}
+              aria-hidden="true"
+            />
+          )}
         </>
       )}
       <div className="main-content">
@@ -652,12 +651,6 @@ function App() {
                     <GiveawayCreator />
                   </ProtectedAdminRoute>
                 } />
-                <Route path="/webmod/casino-offers" element={
-                  <ProtectedAdminRoute>
-                    <CasinoOffersManager />
-                  </ProtectedAdminRoute>
-                } />
-                <Route path="/webmod/guess-balance" element={<GuessBalanceManager />} />
                 
                 <Route path="/admin" element={<AdminPanel />} />
 
@@ -669,6 +662,7 @@ function App() {
                   <Route path="logs" element={<LogsPage />} />
                   <Route path="players" element={<PlayersPage />} />
                   <Route path="investigations" element={<InvestigationPage />} />
+                  <Route path="player-management" element={<PlayerManagementPage />} />
                   <Route path="rules" element={<div style={{ padding: '20px' }}>Rules manager coming soon...</div>} />
                   <Route path="settings" element={<div style={{ padding: '20px' }}>Settings coming soon...</div>} />
                   <Route path="docs" element={<div style={{ padding: '20px' }}>Documentation coming soon...</div>} />

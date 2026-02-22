@@ -1,6 +1,4 @@
 {
-  "buildCommand": "npm install && npx vite build",
-  "outputDirectory": "dist",
   "crons": [
     {
       "path": "/api/auto-draw-winners",

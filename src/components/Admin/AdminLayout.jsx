@@ -2,22 +2,23 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { 
   Home, Shield, ScrollText, Users, Search as SearchIcon, 
-  Settings, Sliders, Book, Bell, User, Menu, X 
+  Settings, Sliders, Book, Bell, User, Menu, X, UserCog 
 } from 'lucide-react';
 import './AdminLayout.css';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [sidebarOpen, setSidebarOpen] = useState(false); // Start closed
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(';');
+  const [searchQuery, setSearchQuery] = useState('');
 
   const navItems = [
     { icon: Home, label: 'Dashboard', path: '/anticheat', exact: true },
     { icon: Shield, label: 'Alerts', path: '/anticheat/alerts', badge: 3 },
     { icon: ScrollText, label: 'Logs', path: '/anticheat/logs' },
     { icon: Users, label: 'Players', path: '/anticheat/players' },
+    { icon: UserCog, label: 'Player Management', path: '/anticheat/player-management' },
     { icon: SearchIcon, label: 'Investigations', path: '/anticheat/investigations' },
     { icon: Sliders, label: 'Rules', path: '/anticheat/rules' },
   ];
@@ -62,28 +63,13 @@ const AdminLayout = () => {
 
   return (
     <div className="admin-layout">
-      {/* Sidebar Backdrop */}
-      {sidebarOpen && (
-        <div 
-          className="admin-sidebar-backdrop" 
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar Panel */}
+      {/* Sidebar */}
       <aside className={`admin-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-header">
           <div className="sidebar-logo">
             <Shield className="logo-icon" />
             <span className="logo-text">The Life Admin</span>
           </div>
-          <button 
-            className="sidebar-close-btn"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Close panel"
-          >
-            <X size={20} />
-          </button>
         </div>
 
         <nav className="sidebar-nav">
@@ -96,10 +82,7 @@ const AdminLayout = () => {
                 <button
                   key={item.path}
                   className={`nav-item ${active ? 'active' : ''}`}
-                  onClick={() => {
-                    navigate(item.path);
-                    setSidebarOpen(false);
-                  }}
+                  onClick={() => navigate(item.path)}
                   title={item.label}
                 >
                   <Icon className="nav-icon" size={20} />
@@ -123,10 +106,7 @@ const AdminLayout = () => {
                 <button
                   key={item.path}
                   className={`nav-item ${active ? 'active' : ''}`}
-                  onClick={() => {
-                    navigate(item.path);
-                    setSidebarOpen(false);
-                  }}
+                  onClick={() => navigate(item.path)}
                   title={item.label}
                 >
                   <Icon className="nav-icon" size={20} />
@@ -139,17 +119,16 @@ const AdminLayout = () => {
       </aside>
 
       {/* Main Content */}
-      <div className="admin-main full-width">
+      <div className="admin-main">
         {/* Top Bar */}
         <header className="admin-topbar">
           <div className="topbar-left">
             <button 
-              className="sidebar-toggle menu-btn"
+              className="sidebar-toggle"
               onClick={() => setSidebarOpen(!sidebarOpen)}
-              aria-label="Open navigation panel"
+              aria-label="Toggle sidebar"
             >
-              <Menu size={20} />
-              <span className="menu-label">Menu</span>
+              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
             <span className="topbar-title">The Life Admin</span>
           </div>

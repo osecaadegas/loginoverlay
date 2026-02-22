@@ -25,34 +25,44 @@ const PlayersPage = () => {
   const fetchPlayers = async () => {
     setLoading(true);
     try {
-      // Fetch players with risk scores
+      // Fetch players (basic query - no joins that could fail)
       const { data: playersData, error: playersError } = await supabase
         .from('the_life_players')
-        .select(`
-          id,
-          username,
-          created_at,
-          player_risk_scores(
-            total_risk_score,
-            updated_at
-          )
-        `)
+        .select('id, username, created_at, is_banned, is_flagged, risk_score')
         .order('created_at', { ascending: false });
 
       if (playersError) throw playersError;
 
-      // Fetch alert counts per player
-      const { data: alertCounts, error: alertError } = await supabase
-        .from('security_alerts')
-        .select('player_id, status')
-        .in('status', ['new', 'investigating']);
+      // Try to fetch risk scores from dedicated table (may not exist)
+      let riskScoresMap = {};
+      try {
+        const { data: riskData } = await supabase
+          .from('player_risk_scores')
+          .select('player_id, risk_score, risk_level');
+        if (riskData) {
+          riskData.forEach(r => { riskScoresMap[r.player_id] = r; });
+        }
+      } catch (e) { /* table may not exist yet */ }
 
-      if (alertError) throw alertError;
+      // Try to fetch alert counts (may not exist)
+      let alertCountsMap = {};
+      try {
+        const { data: alertCounts } = await supabase
+          .from('security_alerts')
+          .select('player_id, status')
+          .in('status', ['new', 'investigating']);
+        if (alertCounts) {
+          alertCounts.forEach(a => {
+            alertCountsMap[a.player_id] = (alertCountsMap[a.player_id] || 0) + 1;
+          });
+        }
+      } catch (e) { /* table may not exist yet */ }
 
       // Process player data
       const processedPlayers = (playersData || []).map(player => {
-        const riskScore = player.player_risk_scores?.[0]?.total_risk_score || 0;
-        const activeAlerts = alertCounts?.filter(a => a.player_id === player.id).length || 0;
+        const detailedRisk = riskScoresMap[player.id];
+        const riskScore = detailedRisk?.risk_score || player.risk_score || 0;
+        const activeAlerts = alertCountsMap[player.id] || 0;
         
         return {
           id: player.id,
@@ -60,14 +70,14 @@ const PlayersPage = () => {
           joinedAt: player.created_at,
           riskScore,
           activeAlerts,
-          status: riskScore > 70 ? 'flagged' : 'online'
+          status: player.is_banned ? 'banned' : (player.is_flagged || riskScore > 70) ? 'flagged' : 'online'
         };
       });
 
       // Calculate stats
       const totalPlayers = processedPlayers.length;
       const highRiskCount = processedPlayers.filter(p => p.riskScore >= 50).length;
-      const flaggedCount = processedPlayers.filter(p => p.riskScore > 70).length;
+      const flaggedCount = processedPlayers.filter(p => p.status === 'flagged').length;
       const bannedCount = processedPlayers.filter(p => p.status === 'banned').length;
 
       setPlayers(processedPlayers);
