@@ -447,7 +447,7 @@ export default function Sidebar({ className = '', onClose }) {
             </button>
           )}
 
-          {menuItems[5].show && (
+          {menuItems[5]?.show && (
             <button
               className={`sidebar-item ${isActive(menuItems[5].path) ? 'active' : ''}`}
               onClick={() => handleNavigation(menuItems[5].path)}
