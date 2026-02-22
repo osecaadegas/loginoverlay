@@ -551,7 +551,7 @@ export default function TheLifeStockMarket({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stocks.length > 0]);
 
-  // Update player cash in database
+  // Update player cash via secure RPC
   const updatePlayerCash = async (newCash) => {
     if (!user?.id) {
       console.error('No user ID available');
@@ -559,28 +559,17 @@ export default function TheLifeStockMarket({
       return false;
     }
     
-    // Round to 2 decimal places for numeric column
-    const roundedCash = Math.round(newCash * 100) / 100;
+    const cashChange = Math.round((newCash - player.cash) * 100) / 100;
     
     try {
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ cash: roundedCash, updated_at: new Date().toISOString() })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
+      const { data: cashResult, error } = await supabase.rpc('adjust_player_cash', { p_amount: cashChange });
       if (error) {
         console.error('Supabase error:', error.message, error.code, error.details);
         throw error;
       }
+      if (!cashResult.success) throw new Error(cashResult.error);
       
-      if (!data) {
-        console.error('No data returned from update');
-        throw new Error('Update returned no data');
-      }
-      
-      setPlayer(prev => ({ ...prev, cash: roundedCash }));
+      setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
       return true;
     } catch (error) {
       console.error('Error updating cash:', error);

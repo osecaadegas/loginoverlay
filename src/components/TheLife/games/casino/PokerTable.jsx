@@ -284,12 +284,11 @@ export default function PokerTable({
         return;
       }
 
-      // Deduct from player cash
-      const newCash = player.cash - buyInAmount;
-      await supabase
-        .from('the_life_players')
-        .update({ cash: Math.round(newCash * 100) / 100 })
-        .eq('user_id', user.id);
+      // Deduct from player cash via secure RPC
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -buyInAmount });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
+      const newCash = cashResult.player.cash;
 
       // Create seat
       const { error: seatError } = await supabase
@@ -306,7 +305,7 @@ export default function PokerTable({
 
       if (seatError) throw seatError;
 
-      setPlayer(prev => ({ ...prev, cash: newCash }));
+      setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
       setMySeat(selectedSeat);
       setMyBalance(buyInAmount);
       setShowBuyInModal(false);
@@ -330,15 +329,11 @@ export default function PokerTable({
     }
 
     try {
-      // Return chips to player cash
+      // Return chips to player cash via secure RPC
       if (myBalance > 0) {
-        const newCash = player.cash + myBalance;
-        await supabase
-          .from('the_life_players')
-          .update({ cash: Math.round(newCash * 100) / 100 })
-          .eq('id', player.id);
-
-        setPlayer(prev => ({ ...prev, cash: newCash }));
+        const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: myBalance });
+        if (cashError) throw cashError;
+        if (cashResult?.player) setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
       }
 
       // Remove seat

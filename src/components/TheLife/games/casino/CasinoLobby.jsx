@@ -256,13 +256,9 @@ export default function CasinoLobby({
       try {
         // Return balance to player
         if (myTableBalance > 0) {
-          const newCash = player.cash + myTableBalance;
-          await supabase
-            .from('the_life_players')
-            .update({ cash: Math.round(newCash * 100) / 100 })
-            .eq('user_id', user.id);
-          
-          setPlayer(prev => ({ ...prev, cash: newCash }));
+          const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: myTableBalance });
+          if (cashError) console.error('Error returning balance:', cashError);
+          if (cashResult?.player) setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
         }
 
         // Remove seat

@@ -84,21 +84,19 @@ export default function TheLifeBlackjack({
     return score;
   };
 
-  // Update player cash in database
+  // Update player cash via secure RPC
   const updatePlayerCash = async (newCash) => {
     try {
-      const { error } = await supabase
-        .from('the_life_players')
-        .update({ cash: newCash, updated_at: new Date().toISOString() })
-        .eq('user_id', user.id);
-
+      const cashChange = newCash - player.cash;
+      const { data: cashResult, error } = await supabase.rpc('adjust_player_cash', { p_amount: cashChange });
       if (error) throw error;
+      if (!cashResult.success) throw new Error(cashResult.error);
 
-      setPlayer(prev => ({ ...prev, cash: newCash }));
+      setPlayer(prev => ({ ...prev, cash: cashResult.player.cash }));
       return true;
     } catch (error) {
       console.error('Error updating cash:', error);
-      setMessage({ type: 'error', text: 'Failed to update cash!' });
+      setMessage({ type: 'error', text: `Failed to update cash: ${error.message}` });
       return false;
     }
   };

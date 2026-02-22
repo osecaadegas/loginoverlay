@@ -81,20 +81,16 @@ export default function TheLifeBrothel({
       });
       if (insertError) throw insertError;
 
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - cost })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setPlayerFromAction(data);
+      // Use server-side RPC to deduct cash (bypasses RLS security policy)
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -cost });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       await loadBrothel();
       setMessage({ type: 'success', text: 'Brothel unlocked! 3 worker slots available!' });
     } catch (err) {
       console.error('Error initializing brothel:', err);
-      setMessage({ type: 'error', text: 'Failed to unlock brothel!' });
+      setMessage({ type: 'error', text: `Failed to unlock brothel: ${err.message}` });
     }
   };
 
@@ -165,21 +161,17 @@ export default function TheLifeBrothel({
       }).eq('id', brothel.id);
       if (brothelError) throw brothelError;
 
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - totalCost })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setPlayerFromAction(data);
+      // Use server-side RPC to deduct cash
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -totalCost });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       await loadBrothel();
       await loadHiredWorkers();
       setMessage({ type: 'success', text: `Hired ${quantity}x ${worker.name} successfully!` });
     } catch (err) {
       console.error('Error hiring worker:', err);
-      setMessage({ type: 'error', text: 'Failed to hire worker!' });
+      setMessage({ type: 'error', text: `Failed to hire worker: ${err.message}` });
     } finally {
       setIsHiring(false);
     }
@@ -220,21 +212,17 @@ export default function TheLifeBrothel({
       }).eq('id', brothel.id);
       if (brothelError) throw brothelError;
 
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash + sellPrice })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setPlayerFromAction(data);
+      // Use server-side RPC to add cash
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: sellPrice });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       await loadBrothel();
       await loadHiredWorkers();
       setMessage({ type: 'success', text: `Sold ${quantity}x ${hiredWorker.worker.name} for $${sellPrice.toLocaleString()}!` });
     } catch (err) {
       console.error('Error selling worker:', err);
-      setMessage({ type: 'error', text: 'Failed to sell worker!' });
+      setMessage({ type: 'error', text: `Failed to sell worker: ${err.message}` });
     }
   };
 
@@ -315,20 +303,16 @@ export default function TheLifeBrothel({
       }).eq('id', brothel.id);
       if (upgradeError) throw upgradeError;
 
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - upgradeCost })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setPlayerFromAction(data);
+      // Use server-side RPC to deduct cash
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -upgradeCost });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       await loadBrothel();
       setMessage({ type: 'success', text: 'Brothel upgraded! +2 worker slots' });
     } catch (err) {
       console.error('Error upgrading brothel:', err);
-      setMessage({ type: 'error', text: 'Failed to upgrade brothel!' });
+      setMessage({ type: 'error', text: `Failed to upgrade brothel: ${err.message}` });
     }
   };
 

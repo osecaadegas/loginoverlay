@@ -86,21 +86,17 @@ export default function TheLifeBusinesses({
 
       if (insertError) throw insertError;
 
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - business.purchase_price })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-      setPlayerFromAction(data);
+      // Use server-side RPC to deduct cash
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -business.purchase_price });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       loadOwnedBusinesses();
       loadDrugOps();
       setMessage({ type: 'success', text: `Purchased ${business.name}!` });
     } catch (err) {
       console.error('Error buying business:', err);
-      setMessage({ type: 'error', text: 'Failed to buy business!' });
+      setMessage({ type: 'error', text: `Failed to buy business: ${err.message}` });
     }
   };
 
@@ -250,19 +246,14 @@ export default function TheLifeBusinesses({
 
       setDrugOps(prev => ({ ...prev, ...opData }));
 
-      const { data: updatedPlayer, error: costError } = await supabase
-        .from('the_life_players')
-        .update({ 
-          cash: player.cash - productionCost,
-          stamina: player.stamina - requiredStamina,
-          last_stamina_refill: new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
+      // Use server-side RPC to deduct cash and stamina
+      const { data: cashResult, error: costError } = await supabase.rpc('adjust_player_cash_and_stamina', {
+        p_cash_change: -productionCost,
+        p_stamina_change: -requiredStamina
+      });
       if (costError) throw costError;
-      setPlayerFromAction(updatedPlayer);
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       setMessage({ type: 'success', text: `Started ${business.name}! Wait ${business.duration_minutes} minutes. (-${requiredStamina} stamina)` });
     } catch (err) {
       console.error('Error running business:', err);
@@ -296,15 +287,11 @@ export default function TheLifeBusinesses({
       if (storedCashReward > 0) {
         const cashProfit = Math.floor(storedCashReward * cashMultiplier);
         
-        const { data: updatedPlayer, error: cashError } = await supabase
-          .from('the_life_players')
-          .update({ cash: player.cash + cashProfit })
-          .eq('user_id', user.id)
-          .select()
-          .single();
-
+        // Use server-side RPC to add cash
+        const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: cashProfit });
         if (cashError) throw cashError;
-        setPlayerFromAction(updatedPlayer);
+        if (!cashResult.success) throw new Error(cashResult.error);
+        setPlayerFromAction(cashResult.player);
         setMessage({ 
           type: 'success', 
           text: `Collected $${cashProfit.toLocaleString()}! ${upgradeLevel > 1 ? `(Lvl ${upgradeLevel} bonus!)` : ''}` 
@@ -346,15 +333,11 @@ export default function TheLifeBusinesses({
         const baseCashProfit = business.profit || 0;
         const cashProfit = Math.floor(baseCashProfit * cashMultiplier);
         
-        const { data: updatedPlayer, error: cashError } = await supabase
-          .from('the_life_players')
-          .update({ cash: player.cash + cashProfit })
-          .eq('user_id', user.id)
-          .select()
-          .single();
-
+        // Use server-side RPC to add cash
+        const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: cashProfit });
         if (cashError) throw cashError;
-        setPlayerFromAction(updatedPlayer);
+        if (!cashResult.success) throw new Error(cashResult.error);
+        setPlayerFromAction(cashResult.player);
         setMessage({ 
           type: 'success', 
           text: `Collected $${cashProfit.toLocaleString()}! ${upgradeLevel > 1 ? `(Lvl ${upgradeLevel} bonus!)` : ''}` 
@@ -411,15 +394,11 @@ export default function TheLifeBusinesses({
 
       if (upgradeError) throw upgradeError;
 
-      const { data, error: cashError } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - upgradeCost })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
+      // Use server-side RPC to deduct cash
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -upgradeCost });
       if (cashError) throw cashError;
-      setPlayerFromAction(data);
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       setMessage({ 
         type: 'success', 
         text: `${business.name} upgraded to level ${currentLevel + 1}!` 
@@ -448,21 +427,17 @@ export default function TheLifeBusinesses({
       
       if (error) throw error;
 
-      const { data, error: cashError } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash + sellPrice })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-      
+      // Use server-side RPC to add cash
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: sellPrice });
       if (cashError) throw cashError;
-      setPlayerFromAction(data);
+      if (!cashResult.success) throw new Error(cashResult.error);
+      setPlayerFromAction(cashResult.player);
       setMessage({ type: 'success', text: `Sold ${business.name} for $${sellPrice.toLocaleString()}!` });
       loadOwnedBusinesses();
       loadDrugOps();
     } catch (err) {
       console.error('Error selling business:', err);
-      setMessage({ type: 'error', text: 'Failed to sell business!' });
+      setMessage({ type: 'error', text: `Failed to sell business: ${err.message}` });
     }
   };
 

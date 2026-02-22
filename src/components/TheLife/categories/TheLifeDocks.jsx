@@ -156,15 +156,10 @@ export default function TheLifeDocks({ player, setPlayer, setPlayerFromAction, t
       const dockPrice = Math.floor(quantity * streetPrice * 0.8);
       const newQuantity = inventoryItem.quantity - quantity;
       
-      // Update player cash
-      const { error: playerError } = await supabase
-        .from('the_life_players')
-        .update({ 
-          cash: player.cash + dockPrice
-        })
-        .eq('user_id', user.id);
-
-      if (playerError) throw playerError;
+      // Update player cash via secure RPC
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: dockPrice });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
 
       // Log the shipment
       await supabase
@@ -199,7 +194,7 @@ export default function TheLifeDocks({ player, setPlayer, setPlayerFromAction, t
       }
 
       setMessage({ type: 'success', text: `Loaded ${quantity}x ${boat.item_name} for $${dockPrice.toLocaleString()}! Safe delivery confirmed.` });
-      setPlayerFromAction(prev => ({ ...prev, cash: prev.cash + dockPrice }));
+      setPlayerFromAction(cashResult.player);
       setLoadAmounts(prev => ({ ...prev, [boat.id]: '' })); // Clear input
       
       // Reload data

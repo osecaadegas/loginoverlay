@@ -291,26 +291,21 @@ export default function GlobalRoulette({
       setShowWinModal(true);
       playSound('win');
 
-      // Update player cash
+      // Update player cash via secure RPC
       const newCash = player.cash + netWin;
       setPlayer(prev => ({ ...prev, cash: newCash }));
 
-      // Update in database
-      supabase.from('the_life_players')
-        .update({ cash: newCash })
-        .eq('id', player.id)
-        .then(() => {});
+      supabase.rpc('adjust_player_cash', { p_amount: netWin })
+        .then(({ data }) => { if (data?.player) setPlayer(prev => ({ ...prev, cash: data.player.cash })); });
     } else if (totalBetAmount > 0) {
       playSound('lose');
       
-      // Deduct losses
+      // Deduct losses via secure RPC
       const newCash = player.cash - totalBetAmount;
       setPlayer(prev => ({ ...prev, cash: newCash }));
 
-      supabase.from('the_life_players')
-        .update({ cash: newCash })
-        .eq('id', player.id)
-        .then(() => {});
+      supabase.rpc('adjust_player_cash', { p_amount: -totalBetAmount })
+        .then(({ data }) => { if (data?.player) setPlayer(prev => ({ ...prev, cash: data.player.cash })); });
     }
 
     // Update recent numbers

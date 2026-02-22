@@ -18,53 +18,19 @@ export default function TheLifeSkills({
     const skillKey = skillName.toLowerCase();
 
     try {
-      // Fetch raw DB value to avoid equipment bonus inflation
-      const { data: freshPlayer, error: fetchError } = await supabase
-        .from('the_life_players')
-        .select('id, cash, power, intelligence, defense')
-        .eq('user_id', user.id)
-        .single();
-
-      if (fetchError) throw fetchError;
-
-      const currentLevel = freshPlayer[skillKey] || 0;
-
-      // Cost increases by 1000 each level
-      const cost = (currentLevel + 1) * 1000;
+      // Use server-side RPC to upgrade skill (bypasses RLS security policy)
+      // The RPC handles: fetching fresh DB values, cost calculation, validation, and atomic update
+      const { data: result, error } = await supabase.rpc('upgrade_player_skill', { p_skill_name: skillKey });
       
-      if (freshPlayer.cash < cost) {
-        setMessage({ type: 'error', text: `Need $${cost.toLocaleString()} to upgrade ${skillName}!` });
+      if (error) throw error;
+      if (!result.success) {
+        setMessage({ type: 'error', text: result.error });
         return;
       }
 
-      if (currentLevel >= 100) {
-        setMessage({ type: 'error', text: `${skillName} is already at max level (100)!` });
-        return;
-      }
-
-      const updates = {
-        cash: freshPlayer.cash - cost,
-        [skillKey]: currentLevel + 1
-      };
-
-      console.log('Upgrading skill:', skillName, 'to level', currentLevel + 1);
-      console.log('Updates:', updates);
-
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update(updates)
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) {
-        console.error('Supabase error:', error);
-        throw error;
-      }
-      
-      console.log('Updated player data:', data);
-      setPlayerFromAction(data);
-      setMessage({ type: 'success', text: `${skillName} upgraded to level ${currentLevel + 1}!` });
+      console.log('Skill upgraded:', result.skill, 'to level', result.new_level, 'cost:', result.cost);
+      setPlayerFromAction(result.player);
+      setMessage({ type: 'success', text: `${skillName} upgraded to level ${result.new_level}! (-$${result.cost.toLocaleString()})` });
     } catch (err) {
       console.error('Error upgrading skill:', err);
       setMessage({ type: 'error', text: `Failed to upgrade: ${err.message || 'Unknown error'}` });
@@ -75,7 +41,7 @@ export default function TheLifeSkills({
     // Use player value as display (may include equipment bonus), 
     // but actual cost is calculated from fresh DB value on upgrade
     const currentLevel = player[skillKey] || 0;
-    return (currentLevel + 1) * 1000;
+    return Math.floor(500 * Math.pow(1.15, currentLevel));
   };
 
   return (

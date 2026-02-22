@@ -256,13 +256,10 @@ export default function TheLifePlayerMarket({
     }
 
     try {
-      // Start transaction
-      const { error: buyerError } = await supabase
-        .from('the_life_players')
-        .update({ cash: player.cash - totalCost })
-        .eq('id', player.id);
-
-      if (buyerError) throw buyerError;
+      // Deduct buyer cash via secure RPC
+      const { data: cashResult, error: cashError } = await supabase.rpc('adjust_player_cash', { p_amount: -totalCost });
+      if (cashError) throw cashError;
+      if (!cashResult.success) throw new Error(cashResult.error);
 
       // Add cash to seller
       const { error: sellerError } = await supabase.rpc('add_player_cash', {
@@ -314,8 +311,8 @@ export default function TheLifePlayerMarket({
           total_amount: totalCost
         });
 
-      // Update local state
-      setPlayerFromAction(prev => ({ ...prev, cash: prev.cash - totalCost }));
+      // Update local state from RPC result
+      setPlayerFromAction(cashResult.player);
       showEventMessage?.(isPt ? `Comprou ${listing.item?.name} por $${totalCost.toLocaleString()}!` : `Bought ${listing.item?.name} for $${totalCost.toLocaleString()}!`, 'success');
       loadListings();
       loadTheLifeInventory?.();
