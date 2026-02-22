@@ -3,8 +3,6 @@ import { supabase } from '../../../config/supabaseClient';
 import { useState, useEffect } from 'react';
 import { addSeasonPassXP } from '../hooks/useSeasonPassXP';
 import { useLanguage } from '../../../contexts/LanguageContext';
-import { antiCheatLogger } from '../../../services/antiCheatLogger';
-import { getActionContext } from '../../../utils/deviceFingerprint';
 import TheLifePlayerMarket from './TheLifePlayerMarket';
 
 export default function TheLifeBlackMarket({ 
@@ -151,30 +149,6 @@ export default function TheLifeBlackMarket({
         return;
       }
 
-      // LOG: Item purchase
-      const context = await getActionContext();
-      await antiCheatLogger.logInventoryChange(
-        player.id,
-        storeItem.item_id,
-        'added',
-        quantity,
-        'purchase',
-        storeItem.id,
-        crypto.randomUUID(),
-        { ...context, item_name: storeItem.item.name, price: totalCost }
-      );
-      
-      // LOG: Economy transaction
-      await antiCheatLogger.logEconomyTransaction(
-        player.id,
-        'spent',
-        totalCost,
-        'store',
-        storeItem.id,
-        null,
-        { ...context, item_name: storeItem.item.name, quantity }
-      );
-
       setMessage({ type: 'success', text: t.purchased(quantity, result.item_name || storeItem.item.name) });
       setQuantities({ ...quantities, [storeItem.id]: 1 }); // Reset quantity to 1
       initializePlayer();
@@ -216,54 +190,12 @@ export default function TheLifeBlackMarket({
         return;
       }
       
-      // LOG: Street sale action
-      const context = await getActionContext();
-      await antiCheatLogger.logAction(player.id, 'street_sale', {
-        oldValue: { cash: player.cash },
-        newValue: { cash: player.cash + (result.cash_earned || 0) },
-        valueDiff: result.caught ? -result.items_lost : result.cash_earned,
-        metadata: {
-          item_id: inv.item_id,
-          item_name: inv.item?.name,
-          quantity: quantity,
-          caught: result.caught,
-          cash_earned: result.cash_earned || 0,
-          xp_earned: result.xp_earned || 0,
-          jail_time: result.jail_time || 0,
-          items_lost: result.items_lost || 0
-        },
-        ...context
-      });
-
       if (result.caught) {
         // Got busted
         showEventMessage('jail_street');
         setMessage({ type: 'error', text: t.busted(result.items_lost, result.jail_time) });
       } else {
         // Successful sale
-        // LOG: Economy transaction
-        await antiCheatLogger.logEconomyTransaction(
-          player.id,
-          'earned',
-          result.cash_earned,
-          'street_sale',
-          inv.item_id,
-          null,
-          { ...context, item_name: inv.item?.name, quantity }
-        );
-        
-        // LOG: Inventory removal
-        await antiCheatLogger.logInventoryChange(
-          player.id,
-          inv.item_id,
-          'removed',
-          -quantity,
-          'street_sale',
-          inv.id,
-          crypto.randomUUID(),
-          { ...context, item_name: inv.item?.name }
-        );
-        
         // Add XP to Season Pass
         if (result.xp_earned > 0) {
           await addSeasonPassXP(user.id, result.xp_earned, 'street_sale', inv.item_id?.toString());

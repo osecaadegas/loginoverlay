@@ -1,8 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../config/supabaseClient';
-import { initSessionTracker, endSession } from '../utils/sessionTracker';
-import { antiCheatLogger } from '../services/antiCheatLogger';
-import { getActionContext } from '../utils/deviceFingerprint';
+
 
 const AuthContext = createContext({});
 
@@ -24,10 +22,7 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
       setLoading(false);
       
-      // Initialize session tracking if logged in
-      if (session?.user) {
-        initializeSessionTracking(session.user.id);
-      }
+
     });
 
     // Listen for auth changes
@@ -35,67 +30,15 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
       
       if (_event === 'SIGNED_IN' && session?.user) {
-        // User logged in - start session tracking (non-blocking)
-        initializeSessionTracking(session.user.id).catch(err => {
-          console.warn('Session tracking failed (non-critical):', err);
-        });
-        
-        // Log login action (non-blocking - don't await)
-        logLoginAction(session.user).catch(err => {
-          console.warn('Anti-cheat login logging failed (non-critical):', err);
-        });
+        // User logged in
       } else if (_event === 'SIGNED_OUT') {
-        // User logged out - end session
-        endSession();
+        // User logged out
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
   
-  // Initialize session tracking for a user
-  const initializeSessionTracking = async (userId) => {
-    try {
-      // Get player ID
-      const { data: playerData } = await supabase
-        .from('the_life_players')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle();
-        
-      if (playerData) {
-        initSessionTracker(userId, playerData.id);
-      }
-    } catch (error) {
-      console.error('Failed to initialize session tracking:', error);
-    }
-  };
-  
-  // Log login action (non-blocking)
-  const logLoginAction = async (user) => {
-    try {
-      const context = await getActionContext();
-      const { data: playerData } = await supabase
-        .from('the_life_players')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-        
-      if (playerData) {
-        await antiCheatLogger.logAction(playerData.id, 'login', {
-          metadata: {
-            email: user.email,
-            provider: user.app_metadata?.provider || 'email'
-          },
-          ...context
-        });
-      }
-    } catch (error) {
-      // Silently fail - don't block login
-      console.warn('Anti-cheat login logging failed:', error);
-    }
-  };
-
   const signUp = async (email, password) => {
     const { data, error } = await supabase.auth.signUp({
       email,
