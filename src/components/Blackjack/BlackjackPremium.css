@@ -83,6 +83,16 @@
 
 /* ─── Page & Content Layout ───────────────────────────────── */
 
+/* BJ page root — counteracts .main-content being flex-row + overflow:hidden */
+.bj-page {
+  flex: 1 1 100%;
+  width: 100%;
+  min-width: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
 .bj-content {
   max-width: 80rem;          /* 1280px — room for table + sidebar */
   margin: 0 auto;
