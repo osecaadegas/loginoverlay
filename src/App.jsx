@@ -12,7 +12,6 @@ import AdminPanel from './components/AdminPanel/AdminPanel';
 import Sidebar from './components/Sidebar/Sidebar';
 import OffersPage from './components/OffersPage/OffersPage';
 import AboutPage from './components/AboutPage/AboutPage';
-import GamesPage from './components/GamesPage/GamesPage';
 import TournamentsPage from './components/TournamentsPage/TournamentsPage';
 import GuessBalancePage from './components/GuessBalancePage/GuessBalancePage';
 import GiveawaysPage from './components/GiveawaysPage/GiveawaysPage';
@@ -625,8 +624,8 @@ function App() {
                 <Route path="/giveaways" element={<GiveawaysPage />} />
                 <Route path="/vouchers" element={<VoucherRedeemPage />} />
                 <Route path="/daily-wheel" element={<DailyWheelPage />} />
-                <Route path="/games/dice" element={<GamesPage gameType="dice" />} />
-                <Route path="/games/roulette" element={<GamesPage gameType="roulette" />} />
+                <Route path="/games/dice" element={<div style={{ padding: '20px', color: '#fff' }}>Dice - Coming Soon</div>} />
+                <Route path="/games/roulette" element={<div style={{ padding: '20px', color: '#fff' }}>Roulette - Coming Soon</div>} />
                 <Route path="/games/blackjack" element={<BlackjackPremium />} />
                 <Route path="/games/mines" element={<Mines />} />
                 <Route path="/games/thelife" element={<TheLife />} />
