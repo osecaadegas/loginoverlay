@@ -376,16 +376,26 @@ const ProviderManager = memo(({ onClose }) => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase.from('slot_providers').select('*').order('name');
+      // Try slot_providers table first
+      const { data, error } = await supabase.from('slot_providers').select('*').order('name').limit(1000);
       if (error) throw error;
       setList(data || []);
     } catch {
+      // Fallback: pull distinct providers from slots table (paginated to get ALL rows)
       try {
-        const { data } = await supabase.from('slots').select('provider').order('provider');
-        if (data) {
-          const unique = [...new Set(data.map(d => (d.provider || '').trim()))].filter(Boolean);
-          setList(unique.map(name => ({ name, slug: name.toLowerCase().replace(/\s+/g, '-'), logo_url: null, slot_count: 0 })));
+        let allProviders = [];
+        let from = 0;
+        const step = 1000;
+        let done = false;
+        while (!done) {
+          const { data } = await supabase.from('slots').select('provider').range(from, from + step - 1);
+          if (!data || data.length === 0) { done = true; break; }
+          allProviders = allProviders.concat(data);
+          if (data.length < step) done = true;
+          from += step;
         }
+        const unique = [...new Set(allProviders.map(d => (d.provider || '').trim()))].filter(Boolean).sort();
+        setList(unique.map(name => ({ name, slug: name.toLowerCase().replace(/\s+/g, '-'), logo_url: null, slot_count: 0 })));
       } catch { /* noop */ }
     } finally {
       setLoading(false);
@@ -507,9 +517,20 @@ const SlotManagerV2 = () => {
   /* ── Load providers ────────────────────────────────────────── */
   const loadProviders = useCallback(async () => {
     try {
-      const { data, error } = await supabase.from('slots').select('provider').order('provider');
-      if (error) throw error;
-      if (data) setProviders([...new Set(data.map(d => (d.provider || '').trim()))].filter(Boolean));
+      // Paginate to get ALL slots — Supabase defaults to 1000 row limit
+      let all = [];
+      let from = 0;
+      const step = 1000;
+      let done = false;
+      while (!done) {
+        const { data, error } = await supabase.from('slots').select('provider').range(from, from + step - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) { done = true; break; }
+        all = all.concat(data);
+        if (data.length < step) done = true;
+        from += step;
+      }
+      setProviders([...new Set(all.map(d => (d.provider || '').trim()))].filter(Boolean).sort());
     } catch (e) {
       console.error('loadProviders:', e);
     }
