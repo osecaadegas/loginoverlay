@@ -28,59 +28,123 @@ import TheLifeSkills from './categories/TheLifeSkills';
 import TheLifeProfile from './categories/TheLifeProfile';
 import TheLifeHighStakes from './categories/TheLifeHighStakes';
 
+// Fallback images for category info (local files)
+const categoryFallbackImages = {
+  crimes: '/thelife/categories/crimes.png',
+  pvp: '/thelife/categories/pvp.png',
+  businesses: '/thelife/categories/businesses.png',
+  brothel: '/thelife/categories/brothel.png',
+  inventory: '/thelife/categories/Inventory.png',
+  jail: '/thelife/categories/Jail.png',
+  hospital: '/thelife/categories/Hospital.png',
+  market: '/thelife/categories/BlackMarket.png',
+  bank: '/thelife/categories/BlackMarket.png',
+  docks: '/thelife/categories/Docks.png',
+  stats: '/thelife/categories/skills.png',
+  leaderboard: '/thelife/categories/pvp.png',
+  highstakes: '/thelife/categories/high-stakes.png',
+  skills: '/thelife/categories/skills.png',
+  playermarket: '/thelife/categories/playermarket.png',
+  profile: '/thelife/categories/pvp.png',
+};
+
 // Portuguese translations for category info
 const categoryTranslations = {
   crimes: {
     name: 'Crimes',
-    desc: 'Realize assaltos e roubos para ganhar dinheiro rápido. Crimes de nível mais alto oferecem recompensas maiores, mas com maior risco de prisão.'
+    nameEn: 'Crimes',
+    desc: 'Realize assaltos e roubos para ganhar dinheiro rápido. Crimes de nível mais alto oferecem recompensas maiores, mas com maior risco de prisão.',
+    descEn: 'Pull off heists and robberies for fast cash. Higher-level crimes offer bigger rewards but carry greater risk of jail time.'
   },
   pvp: {
     name: 'Combate PvP',
-    desc: 'Ataque outros jogadores para roubar seu dinheiro e enviá-los ao hospital. Seu nível e HP determinam suas chances de vitória.'
+    nameEn: 'PvP Combat',
+    desc: 'Ataque outros jogadores para roubar seu dinheiro e enviá-los ao hospital. Seu nível e HP determinam suas chances de vitória.',
+    descEn: 'Attack other players to steal their cash and send them to the hospital. Your level and HP determine your chances of winning.'
   },
   businesses: {
     name: 'Negócios',
-    desc: 'Possua e opere vários negócios para gerar renda passiva. Melhore seus negócios para aumentar a produção e os lucros.'
+    nameEn: 'Businesses',
+    desc: 'Possua e opere vários negócios para gerar renda passiva. Melhore seus negócios para aumentar a produção e os lucros.',
+    descEn: 'Own and operate businesses to generate passive income. Upgrade to increase production and profits.'
   },
   brothel: {
     name: 'Bordel',
-    desc: 'Contrate trabalhadores para gerar renda passiva. Melhore seu bordel para desbloquear mais vagas e aumentar seus ganhos por hora.'
+    nameEn: 'Brothel',
+    desc: 'Contrate trabalhadores para gerar renda passiva. Melhore seu bordel para desbloquear mais vagas e aumentar seus ganhos por hora.',
+    descEn: 'Hire workers to generate passive income. Upgrade your brothel to unlock more slots and boost hourly earnings.'
   },
   inventory: {
     name: 'Estoque',
-    desc: 'Armazene itens ganhos de negócios e atividades. Itens especiais como Cartões de Saída da Prisão podem ajudá-lo a escapar de situações difíceis.'
+    nameEn: 'Inventory',
+    desc: 'Armazene itens ganhos de negócios e atividades. Itens especiais como Cartões de Saída da Prisão podem ajudá-lo a escapar de situações difíceis.',
+    descEn: 'Store items earned from businesses and activities. Special items like Get Out of Jail cards can help you escape tough situations.'
   },
   jail: {
     name: 'Prisão',
-    desc: 'Quando crimes falham, você acaba aqui. Use um Cartão de Saída da Prisão ou pague suborno para escapar cedo, ou aguarde sua sentença.'
+    nameEn: 'Jail',
+    desc: 'Quando crimes falham, você acaba aqui. Use um Cartão de Saída da Prisão ou pague suborno para escapar cedo, ou aguarde sua sentença.',
+    descEn: 'When crimes fail, you end up here. Use a Get Out of Jail card or pay a bribe to escape early, or wait out your sentence.'
   },
   hospital: {
     name: 'Hospital',
-    desc: 'Recupere seu HP após batalhas ou crimes fracassados. Pague por serviços médicos para voltar à ação mais rápido.'
+    nameEn: 'Hospital',
+    desc: 'Recupere seu HP após batalhas ou crimes fracassados. Pague por serviços médicos para voltar à ação mais rápido.',
+    descEn: 'Recover your HP after battles or failed crimes. Pay for medical services to get back into action faster.'
   },
   market: {
     name: 'Mercado Negro',
-    desc: 'Venda drogas nas ruas para altos lucros mas com risco de prisão, ou use as docas seguras para vendas garantidas com pagamentos menores.'
+    nameEn: 'Black Market',
+    desc: 'Venda drogas nas ruas para altos lucros mas com risco de prisão, ou use as docas seguras para vendas garantidas com pagamentos menores.',
+    descEn: 'Sell drugs on the streets for high profits but risk jail, or use the safe docks for guaranteed sales at lower payouts.'
   },
   bank: {
     name: 'Banco',
-    desc: 'Mantenha seu dinheiro seguro de outros jogadores. Deposite seu dinheiro para protegê-lo de perdas em PvP e roubos.'
+    nameEn: 'Bank',
+    desc: 'Mantenha seu dinheiro seguro de outros jogadores. Deposite seu dinheiro para protegê-lo de perdas em PvP e roubos.',
+    descEn: 'Keep your money safe from other players. Deposit your cash to protect it from PvP losses and robberies.'
   },
   stats: {
     name: 'Estatísticas',
-    desc: 'Acompanhe o progresso da sua carreira criminal incluindo total de crimes, taxa de sucesso, registro PvP e sequências de login.'
+    nameEn: 'Stats',
+    desc: 'Acompanhe o progresso da sua carreira criminal incluindo total de crimes, taxa de sucesso, registro PvP e sequências de login.',
+    descEn: 'Track your criminal career progress including total crimes, success rate, PvP record, and login streaks.'
   },
   leaderboard: {
     name: 'Classificação',
-    desc: 'Compita com outros jogadores pelos primeiros lugares. Rankings são baseados em dinheiro total, nível e sucesso criminal.'
+    nameEn: 'Leaderboard',
+    desc: 'Compita com outros jogadores pelos primeiros lugares. Rankings são baseados em dinheiro total, nível e sucesso criminal.',
+    descEn: 'Compete with other players for the top spots. Rankings are based on total cash, level, and criminal success.'
   },
   highstakes: {
     name: 'Apostas Altas',
-    desc: 'Jogue jogos de cassino de alto risco. Aposte seu dinheiro suado em Blackjack, Roleta e mais!'
+    nameEn: 'High Stakes',
+    desc: 'Jogue jogos de cassino de alto risco. Aposte seu dinheiro suado em Blackjack, Roleta e mais!',
+    descEn: 'Play high-risk casino games. Bet your hard-earned cash on Blackjack, Roulette and more!'
   },
   playermarket: {
     name: 'Mercado de Jogadores',
-    desc: 'Compre, venda e troque itens com outros jogadores. Liste seus itens ou faça ofertas no mercado peer-to-peer.'
+    nameEn: 'Player Market',
+    desc: 'Compre, venda e troque itens com outros jogadores. Liste seus itens ou faça ofertas no mercado peer-to-peer.',
+    descEn: 'Buy, sell and trade items with other players. List your items or make offers on the peer-to-peer market.'
+  },
+  skills: {
+    name: 'Habilidades',
+    nameEn: 'Skills',
+    desc: 'Treine e melhore suas habilidades para desbloquear vantagens no jogo.',
+    descEn: 'Train and improve your skills to unlock advantages in the game.'
+  },
+  docks: {
+    name: 'Docas',
+    nameEn: 'Docks',
+    desc: 'Venda mercadorias de forma segura nas docas por pagamentos garantidos.',
+    descEn: 'Sell goods safely at the docks for guaranteed payments.'
+  },
+  profile: {
+    name: 'Perfil',
+    nameEn: 'Profile',
+    desc: 'Veja e personalize o seu perfil de jogador.',
+    descEn: 'View and customize your player profile.'
   }
 };
 
@@ -192,20 +256,29 @@ export default function TheLife() {
     }
   }, [message.text, setMessage]);
 
-  // Get current category info with translation support (must be before any early returns)
+  // Get current category info with translation support + fallback images (must be before any early returns)
   const currentCategoryInfo = useMemo(() => {
-    if (!categoryInfo || !categoryInfo[activeTab]) return null;
-    const info = categoryInfo[activeTab];
-    
-    // If Portuguese and we have a translation, use it
-    if (isPt && categoryTranslations[activeTab]) {
-      return {
-        ...info,
-        category_name: categoryTranslations[activeTab].name,
-        description: categoryTranslations[activeTab].desc
-      };
-    }
-    return info;
+    const info = categoryInfo?.[activeTab];
+    const translation = categoryTranslations[activeTab];
+    const fallbackImg = categoryFallbackImages[activeTab];
+
+    // Build info object — use DB data when available, fall back to translations + local images
+    const name = isPt
+      ? (translation?.name || info?.category_name || activeTab)
+      : (info?.category_name || translation?.nameEn || translation?.name || activeTab);
+    const desc = isPt
+      ? (translation?.desc || info?.description || '')
+      : (info?.description || translation?.descEn || translation?.desc || '');
+    const img = info?.image_url || fallbackImg || '';
+
+    if (!name && !desc) return null;
+
+    return {
+      ...(info || {}),
+      category_name: name,
+      description: desc,
+      image_url: img,
+    };
   }, [categoryInfo, activeTab, isPt]);
 
   if (loading) {
