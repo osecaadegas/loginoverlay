@@ -273,7 +273,15 @@ export default function LandingPage() {
             {casinoOffers.map((offer) => (
               <div key={offer.id} className="offer-card" onClick={() => handleOfferClick(offer.bonus_link)}>
                 <div className="offer-logo">
-                  <img src={offer.list_image_url || offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&h=100&fit=crop'} alt={offer.casino_name} />
+                  {offer.video_url ? (
+                    <video
+                      src={offer.video_url}
+                      autoPlay muted loop playsInline
+                      className="offer-logo-media"
+                    />
+                  ) : (
+                    <img src={offer.list_image_url || offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&h=100&fit=crop'} alt={offer.casino_name} />
+                  )}
                 </div>
                 <div className="offer-name">{offer.casino_name}</div>
                 <div className="offer-details">
@@ -702,11 +710,19 @@ export default function LandingPage() {
                         
                         {/* Image */}
                         <div className="relative aspect-video overflow-hidden">
-                          <img 
-                            src={offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=450&fit=crop'} 
-                            alt={offer.casino_name}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                          />
+                          {offer.video_url ? (
+                            <video 
+                              src={offer.video_url}
+                              autoPlay muted loop playsInline
+                              className="w-full h-full object-contain bg-black group-hover:scale-110 transition-transform duration-500"
+                            />
+                          ) : (
+                            <img 
+                              src={offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=800&h=450&fit=crop'} 
+                              alt={offer.casino_name}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                            />
+                          )}
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                         </div>
                         

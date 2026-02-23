@@ -848,16 +848,27 @@
 .op-card-image {
   position: relative;
   width: 100%;
-  aspect-ratio: 16 / 9;
   overflow: hidden;
   background: #0d1117;
 }
 
 .op-card-media {
   width: 100%;
-  height: 100%;
-  object-fit: cover;
+  height: auto;
   display: block;
+}
+
+/* If an image has no natural height, fall back to a 16:9 ratio */
+img.op-card-media {
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+}
+
+/* Videos show their full natural frame */
+video.op-card-media {
+  max-height: 280px;
+  object-fit: contain;
+  background: #0d1117;
 }
 
 .op-card-badge {
