@@ -265,89 +265,47 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Offers Section */}
+        {/* Offers Section - List Style */}
         <section className="offers-section">
           <h2 className="offers-heading">Casinos & Offers</h2>
           <p className="offers-subheading">Best offers and bonuses exclusive for you</p>
           <div className="offers-container">
             {casinoOffers.map((offer) => (
-              <div key={offer.id} className="offer-card">
-                {/* Card Image with Badge */}
-                <div className="offer-card-image">
-                  {offer.video_url ? (
-                    <video
-                      src={offer.video_url}
-                      autoPlay muted loop playsInline
-                      className="offer-card-media"
-                    />
-                  ) : (
-                    <img
-                      src={offer.list_image_url || offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&h=100&fit=crop'}
-                      alt={offer.casino_name}
-                      className="offer-card-media"
-                    />
+              <div key={offer.id} className="offer-card" onClick={() => handleOfferClick(offer.bonus_link)}>
+                <div className="offer-logo">
+                  <img src={offer.list_image_url || offer.image_url || 'https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&h=100&fit=crop'} alt={offer.casino_name} />
+                </div>
+                <div className="offer-name">{offer.casino_name}</div>
+                <div className="offer-details">
+                  {offer.bonus_value && (
+                    <div className="offer-detail">
+                      <span className="offer-detail-label">BONUS</span>
+                      <span className="offer-detail-value">{offer.bonus_value}</span>
+                    </div>
                   )}
-                  {offer.badge && (
-                    <span className={`offer-card-badge ${offer.badge_class || ''}`}>
-                      <span className="badge-dot"></span>
-                      {offer.badge}
-                    </span>
+                  {offer.free_spins && (
+                    <div className="offer-detail">
+                      <span className="offer-detail-label">FREE SPINS</span>
+                      <span className="offer-detail-value">{offer.free_spins}</span>
+                    </div>
+                  )}
+                  {offer.cashback && (
+                    <div className="offer-detail">
+                      <span className="offer-detail-label">CASHBACK</span>
+                      <span className="offer-detail-value">{offer.cashback}</span>
+                    </div>
+                  )}
+                  {offer.promo_code && (
+                    <div className="offer-detail">
+                      <span className="offer-detail-label">PROMO CODE</span>
+                      <span className="offer-detail-value promo-code">{offer.promo_code}</span>
+                    </div>
                   )}
                 </div>
-
-                {/* Title Row */}
-                <div className="offer-card-title-row">
-                  <span className="offer-card-title">{offer.title}</span>
-                  <div className="offer-card-title-right">
-                    <button className="offer-card-info-btn" onClick={(e) => { e.stopPropagation(); navigate('/offers'); }}>MORE INFO</button>
-                    <span className="offer-card-tc">+18 | T&C APPLY</span>
-                  </div>
+                <div className="offer-actions">
+                  <button className="offer-btn claim" onClick={(e) => { e.stopPropagation(); handleOfferClick(offer.bonus_link); }}>CLAIM BONUS</button>
+                  <button className="offer-btn more" onClick={(e) => { e.stopPropagation(); navigate('/offers'); }}>🔍 SHOW MORE</button>
                 </div>
-
-                {/* Stats Grid 2x2 */}
-                <div className="offer-card-stats">
-                  <div className="offer-card-stat">
-                    <span className="offer-card-stat-icon">💰</span>
-                    <div>
-                      <span className="offer-card-stat-label">Min. deposit</span>
-                      <span className="offer-card-stat-value">{offer.min_deposit || '—'}</span>
-                    </div>
-                  </div>
-                  <div className="offer-card-stat">
-                    <span className="offer-card-stat-icon">🔄</span>
-                    <div>
-                      <span className="offer-card-stat-label">Cashback</span>
-                      <span className="offer-card-stat-value">{offer.cashback || '—'}</span>
-                    </div>
-                  </div>
-                  <div className="offer-card-stat">
-                    <span className="offer-card-stat-icon">🎁</span>
-                    <div>
-                      <span className="offer-card-stat-label">Bonus value</span>
-                      <span className="offer-card-stat-value">{offer.bonus_value || '—'}</span>
-                    </div>
-                  </div>
-                  <div className="offer-card-stat">
-                    <span className="offer-card-stat-icon">🎰</span>
-                    <div>
-                      <span className="offer-card-stat-label">Free spins</span>
-                      <span className="offer-card-stat-value">{offer.free_spins || '—'}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Promo Code */}
-                {offer.promo_code && (
-                  <div className="offer-card-promo">
-                    <span className="offer-card-promo-label">CODE:</span>
-                    <span className="offer-card-promo-value">{offer.promo_code}</span>
-                  </div>
-                )}
-
-                {/* CTA */}
-                <button className="offer-card-claim" onClick={(e) => { e.stopPropagation(); handleOfferClick(offer.bonus_link); }}>
-                  CLAIM BONUS
-                </button>
               </div>
             ))}
           </div>
