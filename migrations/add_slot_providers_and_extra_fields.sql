@@ -36,14 +36,24 @@ CREATE INDEX IF NOT EXISTS idx_slot_providers_name ON slot_providers(name);
 CREATE INDEX IF NOT EXISTS idx_slot_providers_slug ON slot_providers(slug);
 
 -- Seed from existing slots (populate from distinct providers already in DB)
+-- Use a CTE with ROW_NUMBER to deduplicate slugs (pick first name alphabetically)
 INSERT INTO slot_providers (name, slug, logo_url)
-SELECT DISTINCT
-  provider AS name,
-  LOWER(REGEXP_REPLACE(REGEXP_REPLACE(provider, '[^a-zA-Z0-9 ]', '', 'g'), '\s+', '-', 'g')) AS slug,
-  NULL AS logo_url
-FROM slots
-WHERE provider IS NOT NULL AND provider != ''
-ON CONFLICT (name) DO NOTHING;
+SELECT name, slug, NULL
+FROM (
+  SELECT
+    name,
+    slug,
+    ROW_NUMBER() OVER (PARTITION BY slug ORDER BY name) AS rn
+  FROM (
+    SELECT DISTINCT
+      provider AS name,
+      LOWER(REGEXP_REPLACE(REGEXP_REPLACE(provider, '[^a-zA-Z0-9 ]', '', 'g'), '\s+', '-', 'g')) AS slug
+    FROM slots
+    WHERE provider IS NOT NULL AND provider != ''
+  ) raw
+) deduped
+WHERE rn = 1
+ON CONFLICT DO NOTHING;
 
 -- Function to update provider slot counts
 CREATE OR REPLACE FUNCTION update_provider_slot_counts()
