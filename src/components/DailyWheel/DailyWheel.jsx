@@ -671,7 +671,7 @@ export default function DailyWheel() {
           {/* Center Logo */}
           <div className="wheel-center-button">
             <div className="wheel-center-logo">
-              <img src="/secalogo.png" alt="Logo" className="wheel-logo-img" />
+              <img src="/maincircle.png" alt="OSECA ADEGAS" className="wheel-logo-img" />
             </div>
           </div>
         </div>
