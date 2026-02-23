@@ -86,8 +86,8 @@
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
-  /* Scroll snap — each tab snaps to center */
-  scroll-snap-type: x mandatory;
+  /* Scroll snap — proximity is gentler; mandatory fights touch gestures */
+  scroll-snap-type: x proximity;
   scroll-padding: 0 48px;
   /* Hide native scrollbar across all browsers */
   scrollbar-width: none;
@@ -98,6 +98,7 @@
   position: relative;
   touch-action: pan-x;
   user-select: none;
+  flex-wrap: nowrap;
 }
 
 .cn-track::-webkit-scrollbar {

@@ -127,13 +127,11 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
   }, []);
 
   // ==========================================
-  // 4. CLICK-AND-DRAG SCROLL
+  // 4. CLICK-AND-DRAG SCROLL (mouse only — touch uses native scroll)
   // ==========================================
   const onPointerDown = (e) => {
-    // Ignore if clicking directly on a button/image
-    if (e.target.closest('.cn-tab')) {
-      // We still track in case it becomes a drag
-    }
+    // Let touch/pen use native scrolling — only hijack mouse drag
+    if (e.pointerType !== 'mouse') return;
     const el = trackRef.current;
     if (!el) return;
     dragState.current = {
@@ -147,6 +145,7 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
   };
 
   const onPointerMove = (e) => {
+    if (e.pointerType !== 'mouse') return;
     const ds = dragState.current;
     if (!ds.isDragging) return;
     const dx = e.clientX - ds.startX;
@@ -155,10 +154,11 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
   };
 
   const onPointerUp = (e) => {
+    if (e.pointerType !== 'mouse') return;
     const ds = dragState.current;
     ds.isDragging = false;
     if (trackRef.current) {
-      trackRef.current.releasePointerCapture(e.pointerId);
+      try { trackRef.current.releasePointerCapture(e.pointerId); } catch (_) {}
       trackRef.current.style.cursor = '';
     }
   };
