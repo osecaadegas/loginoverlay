@@ -106,6 +106,7 @@
 }
 
 /* ---- Individual tab ---- */
+/* Show exactly 6 tabs at once: (100% - 5 gaps) / 6 */
 .cn-tab {
   flex-shrink: 0;
   scroll-snap-align: center;
@@ -124,7 +125,8 @@
               border-color 0.3s ease,
               box-shadow 0.3s ease,
               background 0.3s ease;
-  width: clamp(85px, 11vw, 140px);
+  width: calc((100% - 5 * 10px) / 6);
+  min-width: 0;
   overflow: hidden;
   position: relative;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
@@ -269,7 +271,7 @@
 /* Tablets */
 @media (max-width: 1024px) {
   .cn-tab {
-    width: clamp(80px, 14vw, 130px);
+    width: calc((100% - 5 * 8px) / 6);
   }
 
   .cn-track {
@@ -297,7 +299,7 @@
   }
 
   .cn-tab {
-    width: clamp(72px, 22vw, 110px);
+    width: calc((100% - 5 * 6px) / 6);
     border-radius: 10px;
   }
 
@@ -333,7 +335,7 @@
   }
 
   .cn-tab {
-    width: clamp(64px, 24vw, 90px);
+    width: calc((100% - 5 * 5px) / 6);
     border-width: 1.5px;
   }
 

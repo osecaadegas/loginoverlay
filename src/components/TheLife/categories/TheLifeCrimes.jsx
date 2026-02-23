@@ -29,7 +29,8 @@ export default function TheLifeCrimes({
 
   const scroll = (direction) => {
     if (scrollContainerRef.current) {
-      const scrollAmount = 400;
+      // Scroll exactly one "page" (the full visible width = 4 cards)
+      const scrollAmount = scrollContainerRef.current.clientWidth;
       scrollContainerRef.current.scrollBy({
         left: direction === 'left' ? -scrollAmount : scrollAmount,
         behavior: 'smooth'

@@ -98,9 +98,10 @@
   background: rgba(212, 175, 55, 0.7);
 }
 
+/* Show exactly 4 crime cards at once: (100% - 3 gaps) / 4 */
 .crime-card {
-  min-width: var(--card-crime-width, 340px);
-  max-width: var(--card-crime-width, 340px);
+  min-width: calc((100% - 3 * var(--gap-cards, 24px)) / 4);
+  max-width: calc((100% - 3 * var(--gap-cards, 24px)) / 4);
   height: var(--card-crime-height, 240px);
   flex-shrink: 0;
   background: rgba(30, 36, 50, 0.6);
@@ -402,33 +403,33 @@
   }
 }
 
-/* Tablet: Horizontal scroll with 3 visible (769-1024px) */
+/* Tablet: 4 visible (769-1024px) */
 @media (min-width: 769px) and (max-width: 1024px) {
   .robberies-grid {
     gap: var(--space-3);
   }
   
   .crime-card {
-    min-width: 280px;
-    max-width: 280px;
+    min-width: calc((100% - 3 * var(--space-3, 24px)) / 4);
+    max-width: calc((100% - 3 * var(--space-3, 24px)) / 4);
     height: 220px;
   }
 }
 
-/* Laptop: Enhanced sizing (1025-1440px) */
+/* Laptop: 4 visible (1025-1440px) */
 @media (min-width: 1025px) and (max-width: 1440px) {
   .crime-card {
-    min-width: 320px;
-    max-width: 320px;
+    min-width: calc((100% - 3 * var(--gap-cards, 24px)) / 4);
+    max-width: calc((100% - 3 * var(--gap-cards, 24px)) / 4);
     height: 230px;
   }
 }
 
-/* Desktop: Original design (1441px+) */
+/* Desktop: 4 visible (1441px+) */
 @media (min-width: 1441px) {
   .crime-card {
-    min-width: var(--card-crime-width);
-    max-width: var(--card-crime-width);
+    min-width: calc((100% - 3 * var(--gap-cards, 24px)) / 4);
+    max-width: calc((100% - 3 * var(--gap-cards, 24px)) / 4);
     height: var(--card-crime-height);
   }
 }

@@ -195,8 +195,8 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
   const scrollBy = (dir) => {
     const el = trackRef.current;
     if (!el) return;
-    const amount = el.clientWidth * 0.55; // scroll ~55% of visible width
-    el.scrollBy({ left: dir * amount, behavior: 'smooth' });
+    // Scroll exactly one page (6 tabs = full visible width)
+    el.scrollBy({ left: dir * el.clientWidth, behavior: 'smooth' });
   };
 
   return (
