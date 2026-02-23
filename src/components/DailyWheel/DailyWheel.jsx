@@ -430,12 +430,6 @@ export default function DailyWheel() {
       const currentSegmentIndex = Math.floor(angleAtPointer / degreesPerSegment) % numSegments;
 
       if (currentSegmentIndex !== lastSegmentIndexRef.current) {
-        const pointer = document.querySelector('.wheel-pointer');
-        if (pointer) {
-          pointer.classList.remove('wiggle');
-          void pointer.offsetWidth;
-          pointer.classList.add('wiggle');
-        }
         if (lastSegmentIndexRef.current !== -1) playTickSound();
         lastSegmentIndexRef.current = currentSegmentIndex;
       }
@@ -659,10 +653,10 @@ export default function DailyWheel() {
           
           {/* Pointer */}
           <div className="wheel-pointer">
-            <svg viewBox="0 0 100 100" className="w-full h-full fill-yellow-400 drop-shadow-md">
-              <path d="M50 95 L15 10 L85 10 Z" />
+            <svg viewBox="0 0 40 50" className="w-full h-full" style={{ filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.5))' }}>
+              <polygon points="20,46 4,8 36,8" fill="#facc15" stroke="#a16207" strokeWidth="1.5" />
+              <circle cx="20" cy="18" r="3" fill="#fff" opacity="0.6" />
             </svg>
-            <div className="w-2 h-2 bg-white rounded-full absolute top-4 shadow-inner"></div>
           </div>
           
           {/* The Wheel */}
@@ -674,10 +668,10 @@ export default function DailyWheel() {
             className="wheel-canvas"
           />
           
-          {/* Center Button */}
+          {/* Center Logo */}
           <div className="wheel-center-button">
-            <div className="w-16 h-16 bg-black rounded-full border-4 border-yellow-500 shadow-xl flex items-center justify-center">
-              <div className="w-4 h-4 bg-yellow-500 rounded-full animate-pulse"></div>
+            <div className="wheel-center-logo">
+              <img src="/secalogo.png" alt="Logo" className="wheel-logo-img" />
             </div>
           </div>
         </div>
