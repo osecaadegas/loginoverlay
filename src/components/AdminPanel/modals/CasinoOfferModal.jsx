@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+﻿import { useState, useEffect } from 'react';
 import { ConfirmButton } from '../components';
 import './CasinoOfferModal.css';
 
@@ -18,10 +18,38 @@ const DEPOSIT_METHODS = [
   { id: 'google', name: 'Google Pay', icon: '📱' },
 ];
 
-/**
- * Casino Offer Modal Component
- * Isolated modal for creating/editing casino offers
- */
+const EMPTY_FORM = {
+  casino_name: '',
+  bonus_link: '',
+  title: '',
+  image_url: '',
+  list_image_url: '',
+  badge: '',
+  badge_class: '',
+  min_deposit: '',
+  max_withdrawal: '',
+  withdrawal_time: '',
+  cashback: '',
+  bonus_value: '',
+  free_spins: '',
+  game_providers: '',
+  total_games: '',
+  license: '',
+  welcome_bonus: '',
+  languages: '',
+  established: '',
+  live_support: '',
+  details: '',
+  deposit_methods: '',
+  video_url: '',
+  promo_code: '',
+  crypto_friendly: true,
+  vpn_friendly: false,
+  is_premium: false,
+  is_active: true,
+  display_order: 0
+};
+
 export default function CasinoOfferModal({ 
   isOpen, 
   onClose, 
@@ -30,78 +58,36 @@ export default function CasinoOfferModal({
   editingOffer = null,
   saving = false 
 }) {
-  const [formData, setFormData] = useState({
-    casino_name: '',
-    bonus_link: '',
-    title: '',
-    image_url: '',
-    list_image_url: '',
-    badge: '',
-    badge_class: '',
-    min_deposit: '',
-    cashback: '',
-    bonus_value: '',
-    free_spins: '',
-    game_providers: '',
-    total_games: '',
-    license: '',
-    welcome_bonus: '',
-    details: '',
-    deposit_methods: '',
-    video_url: '',
-    promo_code: '',
-    vpn_friendly: false,
-    is_premium: false,
-    is_active: true,
-    display_order: 0
-  });
+  const [formData, setFormData] = useState({ ...EMPTY_FORM });
 
-  // Reset form when modal opens/closes or editing offer changes
   useEffect(() => {
     if (isOpen) {
       if (editingOffer) {
         setFormData({
+          ...EMPTY_FORM,
           ...editingOffer,
           deposit_methods: editingOffer.deposit_methods || '',
           video_url: editingOffer.video_url || '',
           promo_code: editingOffer.promo_code || '',
+          max_withdrawal: editingOffer.max_withdrawal || '',
+          withdrawal_time: editingOffer.withdrawal_time || '',
+          languages: editingOffer.languages || '',
+          established: editingOffer.established || '',
+          live_support: editingOffer.live_support || '',
+          crypto_friendly: editingOffer.crypto_friendly ?? true,
           vpn_friendly: editingOffer.vpn_friendly || false,
           is_premium: editingOffer.is_premium || false,
           is_active: editingOffer.is_active !== false,
           display_order: editingOffer.display_order || 0
         });
       } else {
-        setFormData({
-          casino_name: '',
-          bonus_link: '',
-          title: '',
-          image_url: '',
-          list_image_url: '',
-          badge: '',
-          badge_class: '',
-          min_deposit: '',
-          cashback: '',
-          bonus_value: '',
-          free_spins: '',
-          game_providers: '',
-          total_games: '',
-          license: '',
-          welcome_bonus: '',
-          details: '',
-          deposit_methods: '',
-          video_url: '',
-          promo_code: '',
-          vpn_friendly: false,
-          is_premium: false,
-          is_active: true,
-          display_order: 0
-        });
+        setFormData({ ...EMPTY_FORM });
       }
     }
   }, [isOpen, editingOffer]);
 
   const handleChange = (field, value) => {
-    setFormData({ ...formData, [field]: value });
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   const handleSubmit = () => {
@@ -112,338 +98,231 @@ export default function CasinoOfferModal({
     onSave(formData);
   };
 
-  const handleOverlayClick = (e) => {
-    if (e.target === e.currentTarget) {
-      onClose();
-    }
+  const handleBackdropClick = (e) => {
+    if (e.target === e.currentTarget) onClose();
   };
 
   if (!isOpen) return null;
 
   return (
-    <div className="casino-offer-modal-overlay" onClick={handleOverlayClick}>
-      <div className="casino-offer-modal">
+    <div className={`co-panel-backdrop ${isOpen ? 'open' : ''}`} onClick={handleBackdropClick}>
+      <div className="co-panel">
         {/* Header */}
-        <div className="casino-offer-modal-header">
-          <h2>{editingOffer ? 'Edit Casino Offer' : 'Create New Casino Offer'}</h2>
-          <button className="casino-offer-modal-close" onClick={onClose}>
-            <i className="fas fa-times"></i>
-          </button>
+        <div className="co-panel-header">
+          <h2>{editingOffer ? 'Edit Offer' : 'New Offer'}</h2>
+          <button className="co-panel-close" onClick={onClose}>✕</button>
         </div>
 
-        {/* Body */}
-        <div className="casino-offer-modal-body">
-          {/* Form Fields */}
-          <div className="co-form-fields">
-            <div className="co-form-row">
-              <div className="co-form-group">
+        {/* Scrollable Body */}
+        <div className="co-panel-body">
+
+          {/* Basic Info */}
+          <div className="co-section">
+            <div className="co-section-title">Basic Info</div>
+            <div className="co-row">
+              <div className="co-field">
                 <label>Casino Name *</label>
-                <input
-                  type="text"
-                  value={formData.casino_name}
-                  onChange={(e) => handleChange('casino_name', e.target.value)}
-                  placeholder="e.g., Ignibet"
-                />
+                <input type="text" value={formData.casino_name} onChange={e => handleChange('casino_name', e.target.value)} placeholder="e.g., Megarich" />
               </div>
-              <div className="co-form-group">
-                <label>Bonus Link *</label>
-                <input
-                  type="text"
-                  value={formData.bonus_link}
-                  onChange={(e) => handleChange('bonus_link', e.target.value)}
-                  placeholder="https://..."
-                />
+              <div className="co-field">
+                <label>Display Order</label>
+                <input type="number" value={formData.display_order} onChange={e => handleChange('display_order', parseInt(e.target.value) || 0)} min="0" />
               </div>
             </div>
-
-            <div className="co-form-group full">
-              <label>Title *</label>
-              <input
-                type="text"
-                value={formData.title}
-                onChange={(e) => handleChange('title', e.target.value)}
-                placeholder="e.g., 665% Bonus & 750 FS up to €6250"
-              />
+            <div className="co-field">
+              <label>Title / Headline *</label>
+              <input type="text" value={formData.title} onChange={e => handleChange('title', e.target.value)} placeholder="e.g., 665% Bonus & 750 FS up to €6250" />
             </div>
-
-            <div className="co-form-group full">
-              <label>Card Image URL * (for offers page cards)</label>
-              <input
-                type="text"
-                value={formData.image_url}
-                onChange={(e) => handleChange('image_url', e.target.value)}
-                placeholder="https://..."
-              />
+            <div className="co-field">
+              <label>Bonus Link *</label>
+              <input type="text" value={formData.bonus_link} onChange={e => handleChange('bonus_link', e.target.value)} placeholder="https://..." />
             </div>
+          </div>
 
-            <div className="co-form-group full">
-              <label>List Image URL (for landing page list)</label>
-              <input
-                type="text"
-                value={formData.list_image_url}
-                onChange={(e) => handleChange('list_image_url', e.target.value)}
-                placeholder="https://..."
-              />
+          {/* Media */}
+          <div className="co-section">
+            <div className="co-section-title">Media</div>
+            <div className="co-field">
+              <label>Card Image URL *</label>
+              <input type="text" value={formData.image_url} onChange={e => handleChange('image_url', e.target.value)} placeholder="https://..." />
+              {formData.image_url && (
+                <div className="co-image-preview">
+                  <img src={formData.image_url} alt="Preview" onError={e => e.target.style.display='none'} />
+                </div>
+              )}
             </div>
+            <div className="co-field">
+              <label>List Image URL (landing page)</label>
+              <input type="text" value={formData.list_image_url} onChange={e => handleChange('list_image_url', e.target.value)} placeholder="https://..." />
+            </div>
+            <div className="co-field">
+              <label>Video URL (.mp4)</label>
+              <input type="text" value={formData.video_url} onChange={e => handleChange('video_url', e.target.value)} placeholder="https://example.com/promo.mp4" />
+            </div>
+          </div>
 
-            <div className="co-form-row">
-              <div className="co-form-group">
+          {/* Badge */}
+          <div className="co-section">
+            <div className="co-section-title">Badge</div>
+            <div className="co-row">
+              <div className="co-field">
                 <label>Badge Text</label>
-                <input
-                  type="text"
-                  value={formData.badge}
-                  onChange={(e) => handleChange('badge', e.target.value)}
-                  placeholder="HOT, NEW, etc."
-                />
+                <input type="text" value={formData.badge} onChange={e => handleChange('badge', e.target.value)} placeholder="HOT, NEW, etc." />
               </div>
-              <div className="co-form-group">
-                <label>Badge Class</label>
-                <select
-                  value={formData.badge_class}
-                  onChange={(e) => handleChange('badge_class', e.target.value)}
-                >
+              <div className="co-field">
+                <label>Badge Style</label>
+                <select value={formData.badge_class} onChange={e => handleChange('badge_class', e.target.value)}>
                   <option value="">None</option>
-                  <option value="hot">Hot</option>
-                  <option value="new">New</option>
-                  <option value="exclusive">Exclusive</option>
+                  <option value="hot">🔴 Hot</option>
+                  <option value="new">🟢 New</option>
+                  <option value="exclusive">🟣 Exclusive</option>
                 </select>
               </div>
             </div>
+          </div>
 
-            <div className="co-form-row-4">
-              <div className="co-form-group">
+          {/* Bonus Stats */}
+          <div className="co-section">
+            <div className="co-section-title">Bonus Stats</div>
+            <div className="co-grid-4">
+              <div className="co-field">
                 <label>Min Deposit</label>
-                <input
-                  type="text"
-                  value={formData.min_deposit}
-                  onChange={(e) => handleChange('min_deposit', e.target.value)}
-                  placeholder="20€"
-                />
+                <input type="text" value={formData.min_deposit} onChange={e => handleChange('min_deposit', e.target.value)} placeholder="20€" />
               </div>
-              <div className="co-form-group">
+              <div className="co-field">
                 <label>Cashback</label>
-                <input
-                  type="text"
-                  value={formData.cashback}
-                  onChange={(e) => handleChange('cashback', e.target.value)}
-                  placeholder="30%"
-                />
+                <input type="text" value={formData.cashback} onChange={e => handleChange('cashback', e.target.value)} placeholder="30%" />
               </div>
-              <div className="co-form-group">
+              <div className="co-field">
                 <label>Bonus Value</label>
-                <input
-                  type="text"
-                  value={formData.bonus_value}
-                  onChange={(e) => handleChange('bonus_value', e.target.value)}
-                  placeholder="665%"
-                />
+                <input type="text" value={formData.bonus_value} onChange={e => handleChange('bonus_value', e.target.value)} placeholder="665%" />
               </div>
-              <div className="co-form-group">
+              <div className="co-field">
                 <label>Free Spins</label>
-                <input
-                  type="text"
-                  value={formData.free_spins}
-                  onChange={(e) => handleChange('free_spins', e.target.value)}
-                  placeholder="Up to 750"
-                />
+                <input type="text" value={formData.free_spins} onChange={e => handleChange('free_spins', e.target.value)} placeholder="Up to 750" />
               </div>
             </div>
-
-            <div className="co-form-row-4">
-              <div className="co-form-group">
-                <label>Game Providers</label>
-                <input
-                  type="text"
-                  value={formData.game_providers}
-                  onChange={(e) => handleChange('game_providers', e.target.value)}
-                  placeholder="90+"
-                />
-              </div>
-              <div className="co-form-group">
-                <label>Total Games</label>
-                <input
-                  type="text"
-                  value={formData.total_games}
-                  onChange={(e) => handleChange('total_games', e.target.value)}
-                  placeholder="5000+"
-                />
-              </div>
-              <div className="co-form-group">
-                <label>License</label>
-                <input
-                  type="text"
-                  value={formData.license}
-                  onChange={(e) => handleChange('license', e.target.value)}
-                  placeholder="Curaçao"
-                />
-              </div>
-              <div className="co-form-group">
+            <div className="co-row">
+              <div className="co-field">
                 <label>Welcome Bonus</label>
-                <input
-                  type="text"
-                  value={formData.welcome_bonus}
-                  onChange={(e) => handleChange('welcome_bonus', e.target.value)}
-                  placeholder="100% up to €500"
-                />
+                <input type="text" value={formData.welcome_bonus} onChange={e => handleChange('welcome_bonus', e.target.value)} placeholder="100% up to €500" />
               </div>
-            </div>
-
-            <div className="co-form-row">
-              <div className="co-form-group">
-                <label>Video URL (.mp4)</label>
-                <input
-                  type="text"
-                  value={formData.video_url}
-                  onChange={(e) => handleChange('video_url', e.target.value)}
-                  placeholder="https://example.com/promo.mp4"
-                />
-              </div>
-              <div className="co-form-group">
+              <div className="co-field">
                 <label>Promo Code</label>
-                <input
-                  type="text"
-                  value={formData.promo_code}
-                  onChange={(e) => handleChange('promo_code', e.target.value)}
-                  placeholder="e.g., SECA100"
-                />
-              </div>
-            </div>
-
-            <div className="co-form-group full">
-              <label>Details / Terms</label>
-              <textarea
-                value={formData.details}
-                onChange={(e) => handleChange('details', e.target.value)}
-                placeholder="Wagering requirements, terms, etc."
-              />
-            </div>
-
-            {/* Deposit Methods */}
-            <div className="co-form-group full">
-              <label>Deposit Methods</label>
-              <div className="co-deposit-methods">
-                {DEPOSIT_METHODS.map(method => {
-                  const selectedMethods = formData.deposit_methods ? formData.deposit_methods.split(',').map(m => m.trim()) : [];
-                  const isSelected = selectedMethods.includes(method.id);
-                  
-                  return (
-                    <label key={method.id} className={`co-deposit-method ${isSelected ? 'selected' : ''}`}>
-                      <input
-                        type="checkbox"
-                        checked={isSelected}
-                        onChange={(e) => {
-                          let methods = selectedMethods.filter(m => m);
-                          if (e.target.checked) {
-                            methods.push(method.id);
-                          } else {
-                            methods = methods.filter(m => m !== method.id);
-                          }
-                          handleChange('deposit_methods', methods.join(','));
-                        }}
-                      />
-                      <span className="method-icon">{method.icon}</span>
-                      <span className="method-name">{method.name}</span>
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Options Row */}
-            <div className="co-form-row">
-              <div className="co-form-group">
-                <label>Display Order</label>
-                <input
-                  type="number"
-                  value={formData.display_order}
-                  onChange={(e) => handleChange('display_order', parseInt(e.target.value) || 0)}
-                  min="0"
-                />
-              </div>
-              <div className="co-form-group">
-                <label>Options</label>
-                <div className="co-checkbox-group">
-                  <label className="co-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_premium}
-                      onChange={(e) => handleChange('is_premium', e.target.checked)}
-                    />
-                    <span>⭐ Premium</span>
-                  </label>
-                  <label className="co-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={formData.vpn_friendly}
-                      onChange={(e) => handleChange('vpn_friendly', e.target.checked)}
-                    />
-                    <span>✅ VPN Friendly</span>
-                  </label>
-                  <label className="co-checkbox">
-                    <input
-                      type="checkbox"
-                      checked={formData.is_active}
-                      onChange={(e) => handleChange('is_active', e.target.checked)}
-                    />
-                    <span>🟢 Active</span>
-                  </label>
-                </div>
+                <input type="text" value={formData.promo_code} onChange={e => handleChange('promo_code', e.target.value)} placeholder="SECA100" />
               </div>
             </div>
           </div>
 
-          {/* Live Preview */}
-          <div className="co-preview-section">
-            <div className="co-preview-header">Live Preview</div>
-            <div className="co-preview-card">
-              <div className="co-preview-image">
-                {formData.image_url ? (
-                  <img src={formData.image_url} alt="Preview" onError={(e) => e.target.style.display = 'none'} />
-                ) : (
-                  <div className="placeholder">
-                    <i className="fas fa-image"></i>
-                    Preview
-                  </div>
-                )}
-                {formData.badge && formData.badge_class && (
-                  <div className={`co-preview-badge ${formData.badge_class}`}>
-                    {formData.badge}
-                  </div>
-                )}
+          {/* Casino Details */}
+          <div className="co-section">
+            <div className="co-section-title">Casino Details</div>
+            <div className="co-grid-4">
+              <div className="co-field">
+                <label>Max Withdrawal</label>
+                <input type="text" value={formData.max_withdrawal} onChange={e => handleChange('max_withdrawal', e.target.value)} placeholder="€5,000/week" />
               </div>
-              <div className="co-preview-content">
-                <div className="co-preview-casino-name">
-                  {formData.casino_name || 'Casino Name'}
-                </div>
-                <div className="co-preview-title">
-                  {formData.title || 'Offer Title'}
-                </div>
-                <div className="co-preview-stats">
-                  <div className="co-preview-stat">
-                    <div className="co-preview-stat-label">Min Deposit</div>
-                    <div className="co-preview-stat-value">{formData.min_deposit || '-'}</div>
-                  </div>
-                  <div className="co-preview-stat">
-                    <div className="co-preview-stat-label">Cashback</div>
-                    <div className="co-preview-stat-value">{formData.cashback || '-'}</div>
-                  </div>
-                </div>
-                {formData.promo_code && (
-                  <div className="co-preview-promo">
-                    <span className="co-preview-promo-label">CODE:</span>
-                    <span className="co-preview-promo-value">{formData.promo_code}</span>
-                  </div>
-                )}
-                {formData.video_url && (
-                  <div className="co-preview-video-tag">🎬 Video attached</div>
-                )}
+              <div className="co-field">
+                <label>Withdrawal Time</label>
+                <input type="text" value={formData.withdrawal_time} onChange={e => handleChange('withdrawal_time', e.target.value)} placeholder="Up to 24h" />
+              </div>
+              <div className="co-field">
+                <label>Live Support</label>
+                <input type="text" value={formData.live_support} onChange={e => handleChange('live_support', e.target.value)} placeholder="24/7" />
+              </div>
+              <div className="co-field">
+                <label>Established</label>
+                <input type="text" value={formData.established} onChange={e => handleChange('established', e.target.value)} placeholder="2024" />
+              </div>
+            </div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>License</label>
+                <input type="text" value={formData.license} onChange={e => handleChange('license', e.target.value)} placeholder="Curaçao" />
+              </div>
+              <div className="co-field">
+                <label>Languages</label>
+                <input type="text" value={formData.languages} onChange={e => handleChange('languages', e.target.value)} placeholder="English, Portuguese" />
+              </div>
+            </div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Game Providers</label>
+                <input type="text" value={formData.game_providers} onChange={e => handleChange('game_providers', e.target.value)} placeholder="90+" />
+              </div>
+              <div className="co-field">
+                <label>Total Games</label>
+                <input type="text" value={formData.total_games} onChange={e => handleChange('total_games', e.target.value)} placeholder="5000+" />
               </div>
             </div>
           </div>
+
+          {/* Details / Terms */}
+          <div className="co-section">
+            <div className="co-section-title">Details / Terms</div>
+            <div className="co-field">
+              <textarea value={formData.details} onChange={e => handleChange('details', e.target.value)} placeholder="Wagering requirements, terms, etc." rows={4} />
+            </div>
+          </div>
+
+          {/* Deposit Methods */}
+          <div className="co-section">
+            <div className="co-section-title">Deposit Methods</div>
+            <div className="co-deposit-methods">
+              {DEPOSIT_METHODS.map(method => {
+                const selectedMethods = formData.deposit_methods ? formData.deposit_methods.split(',').map(m => m.trim()) : [];
+                const isSelected = selectedMethods.includes(method.id);
+                return (
+                  <label key={method.id} className={`co-deposit-method ${isSelected ? 'selected' : ''}`}>
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={(e) => {
+                        let methods = selectedMethods.filter(m => m);
+                        if (e.target.checked) methods.push(method.id);
+                        else methods = methods.filter(m => m !== method.id);
+                        handleChange('deposit_methods', methods.join(','));
+                      }}
+                    />
+                    <span className="method-icon">{method.icon}</span>
+                    <span className="method-name">{method.name}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Options / Toggles */}
+          <div className="co-section">
+            <div className="co-section-title">Options</div>
+            <div className="co-toggles">
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.is_active} onChange={e => handleChange('is_active', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">🟢 Active</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.is_premium} onChange={e => handleChange('is_premium', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">⭐ Premium</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.vpn_friendly} onChange={e => handleChange('vpn_friendly', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">🛡️ VPN Friendly</span>
+              </label>
+              <label className="co-toggle">
+                <input type="checkbox" checked={formData.crypto_friendly} onChange={e => handleChange('crypto_friendly', e.target.checked)} />
+                <span className="co-toggle-slider"></span>
+                <span className="co-toggle-label">₿ Crypto Friendly</span>
+              </label>
+            </div>
+          </div>
+
         </div>
 
         {/* Footer */}
-        <div className="casino-offer-modal-footer">
+        <div className="co-panel-footer">
           {editingOffer && onDelete && (
             <ConfirmButton
               onConfirm={() => onDelete(editingOffer.id)}
@@ -451,26 +330,19 @@ export default function CasinoOfferModal({
               className="co-btn co-btn-delete"
               variant="danger"
             >
-              <i className="fas fa-trash"></i>
-              Delete
+              <i className="fas fa-trash"></i> Delete
             </ConfirmButton>
           )}
-          <button className="co-btn co-btn-cancel" onClick={onClose}>
-            Cancel
-          </button>
-          <button className="co-btn co-btn-save" onClick={handleSubmit} disabled={saving}>
-            {saving ? (
-              <>
-                <i className="fas fa-spinner fa-spin"></i>
-                Saving...
-              </>
-            ) : (
-              <>
-                <i className="fas fa-check"></i>
-                {editingOffer ? 'Update Offer' : 'Create Offer'}
-              </>
-            )}
-          </button>
+          <div className="co-footer-right">
+            <button className="co-btn co-btn-cancel" onClick={onClose}>Cancel</button>
+            <button className="co-btn co-btn-save" onClick={handleSubmit} disabled={saving}>
+              {saving ? (
+                <><i className="fas fa-spinner fa-spin"></i> Saving...</>
+              ) : (
+                <><i className="fas fa-check"></i> {editingOffer ? 'Update' : 'Create'}</>
+              )}
+            </button>
+          </div>
         </div>
       </div>
     </div>
