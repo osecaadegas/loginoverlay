@@ -167,21 +167,21 @@ export default function Sidebar({ className = '', onClose }) {
 
   const menuItems = [
     { 
-      icon: '🏛', 
+      icon: 'fa-solid fa-building-columns', 
       labelKey: 'nav_partners',
       label: 'Casinos & Offers', 
       path: '/offers', 
       show: true 
     },
     { 
-      icon: '🛒', 
+      icon: 'fa-solid fa-cart-shopping', 
       labelKey: 'nav_points_store',
       label: 'Shop', 
       path: '/points', 
       show: user 
     },
     { 
-      icon: '🎮', 
+      icon: 'fa-solid fa-gamepad', 
       labelKey: 'nav_games',
       label: 'Mini Games', 
       path: '/games', 
@@ -189,14 +189,14 @@ export default function Sidebar({ className = '', onClose }) {
       isDropdown: true
     },
     { 
-      icon: '🎁', 
+      icon: 'fa-solid fa-gift', 
       labelKey: 'nav_points_manager',
       label: 'Points Manager', 
       path: '/points-manager', 
       show: isModerator 
     },
     { 
-      icon: '⚙️', 
+      icon: 'fa-solid fa-gear', 
       labelKey: 'nav_admin_panel',
       label: 'Admin Panel', 
       path: '/admin', 
@@ -247,7 +247,7 @@ export default function Sidebar({ className = '', onClose }) {
             className={`sidebar-item ${isActive('/') ? 'active' : ''}`}
             onClick={() => handleNavigation('/')}
           >
-            <span className="sidebar-icon">🏠</span>
+            <span className="sidebar-icon"><i className="fa-solid fa-house" /></span>
             <span className="sidebar-label">{t(T.NAV_HOME, 'Home')}</span>
           </button>
 
@@ -258,7 +258,7 @@ export default function Sidebar({ className = '', onClose }) {
                 className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
                 onClick={() => handleNavigation(item.path)}
               >
-                <span className="sidebar-emoji">{item.icon}</span>
+                <span className="sidebar-emoji"><i className={item.icon} /></span>
                 <span className="sidebar-label">{t(item.labelKey, item.label)}</span>
               </button>
             ) : null
@@ -270,7 +270,7 @@ export default function Sidebar({ className = '', onClose }) {
               className={`sidebar-item ${showStreamDropdown ? 'active' : ''}`}
               onClick={() => setShowStreamDropdown(!showStreamDropdown)}
             >
-              <span className="sidebar-emoji">👥</span>
+              <span className="sidebar-emoji"><i className="fa-solid fa-users" /></span>
               <span className="sidebar-label">{t('nav_community', 'Community')}</span>
               <span className={`dropdown-arrow ${showStreamDropdown ? 'open' : ''}`}>›</span>
             </button>
@@ -281,35 +281,35 @@ export default function Sidebar({ className = '', onClose }) {
                   className={`sidebar-subitem ${isActive('/daily-wheel') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/daily-wheel')}
                 >
-                  <span className="subitem-icon">🎡</span>
+                  <span className="subitem-icon"><i className="fa-solid fa-dharmachakra" /></span>
                   <span className="subitem-label">{t('nav_daily_wheel', 'Daily Wheel')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/guess-balance') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/guess-balance')}
                 >
-                  <span className="subitem-icon">💰</span>
+                  <span className="subitem-icon"><i className="fa-solid fa-coins" /></span>
                   <span className="subitem-label">{t('nav_guess_balance', 'Guess the Balance')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/tournaments') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/tournaments')}
                 >
-                  <span className="subitem-icon">🏆</span>
+                  <span className="subitem-icon"><i className="fa-solid fa-trophy" /></span>
                   <span className="subitem-label">{t('nav_tournaments', 'Tournaments')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/giveaways') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/giveaways')}
                 >
-                  <span className="subitem-icon">🎁</span>
+                  <span className="subitem-icon"><i className="fa-solid fa-gift" /></span>
                   <span className="subitem-label">{t('nav_giveaways', 'Giveaways')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/vouchers') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/vouchers')}
                 >
-                  <span className="subitem-icon">🎟️</span>
+                  <span className="subitem-icon"><i className="fa-solid fa-ticket" /></span>
                   <span className="subitem-label">{t('nav_vouchers', 'Vouchers')}</span>
                 </button>
               </div>
@@ -323,7 +323,7 @@ export default function Sidebar({ className = '', onClose }) {
                 className={`sidebar-item ${showGamesDropdown ? 'active' : ''}`}
                 onClick={() => setShowGamesDropdown(!showGamesDropdown)}
               >
-                <span className="sidebar-emoji">{menuItems[2].icon}</span>
+                <span className="sidebar-emoji"><i className={menuItems[2].icon} /></span>
                 <span className="sidebar-label">{t(T.NAV_GAMES, menuItems[2].label)}</span>
                 <span className={`dropdown-arrow ${showGamesDropdown ? 'open' : ''}`}>›</span>
               </button>
@@ -334,21 +334,21 @@ export default function Sidebar({ className = '', onClose }) {
                     className={`sidebar-subitem ${isActive('/games/blackjack') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/games/blackjack')}
                   >
-                    <span className="subitem-icon">🃏</span>
+                    <span className="subitem-icon"><i className="fa-solid fa-cards" /></span>
                     <span className="subitem-label">{t('nav_blackjack', 'Blackjack')}</span>
                   </button>
                   <button
                     className={`sidebar-subitem ${isActive('/games/mines') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/games/mines')}
                   >
-                    <span className="subitem-icon">💣</span>
+                    <span className="subitem-icon"><i className="fa-solid fa-bomb" /></span>
                     <span className="subitem-label">{t('nav_mines', 'Mines')}</span>
                   </button>
                   <button
                     className={`sidebar-subitem ${isActive('/games/thelife') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/games/thelife')}
                   >
-                    <span className="subitem-icon">🔫</span>
+                    <span className="subitem-icon"><i className="fa-solid fa-crosshairs" /></span>
                     <span className="subitem-label">{t('nav_thelife', 'The Life')}</span>
                   </button>
                 </div>
@@ -365,7 +365,7 @@ export default function Sidebar({ className = '', onClose }) {
                 className={`sidebar-item ${showWebModDropdown ? 'active' : ''}`}
                 onClick={() => setShowWebModDropdown(!showWebModDropdown)}
               >
-                <span className="sidebar-emoji">🔧</span>
+                <span className="sidebar-emoji"><i className="fa-solid fa-wrench" /></span>
                 <span className="sidebar-label">{t('nav_webmod', 'WebMod')}</span>
                 <span className={`dropdown-arrow ${showWebModDropdown ? 'open' : ''}`}>›</span>
               </button>
@@ -377,7 +377,7 @@ export default function Sidebar({ className = '', onClose }) {
                       className={`sidebar-subitem ${isActive('/webmod/slot-manager') ? 'active' : ''}`}
                       onClick={() => handleNavigation('/webmod/slot-manager')}
                     >
-                      <span className="subitem-icon">🎰</span>
+                      <span className="subitem-icon"><i className="fa-solid fa-dice" /></span>
                       <span className="subitem-label">{t('nav_slot_manager', 'Slot Manager')}</span>
                     </button>
                   )}
@@ -386,7 +386,7 @@ export default function Sidebar({ className = '', onClose }) {
                       className={`sidebar-subitem ${isActive('/webmod/points-manager') ? 'active' : ''}`}
                       onClick={() => handleNavigation('/webmod/points-manager')}
                     >
-                      <span className="subitem-icon">🎁</span>
+                      <span className="subitem-icon"><i className="fa-solid fa-gift" /></span>
                       <span className="subitem-label">{t('nav_points_manager', 'Points Manager')}</span>
                     </button>
                   )}
@@ -395,7 +395,7 @@ export default function Sidebar({ className = '', onClose }) {
                       className={`sidebar-subitem ${isActive('/webmod/guess-balance') ? 'active' : ''}`}
                       onClick={() => handleNavigation('/webmod/guess-balance')}
                     >
-                      <span className="subitem-icon">🎯</span>
+                      <span className="subitem-icon"><i className="fa-solid fa-bullseye" /></span>
                       <span className="subitem-label">{t('nav_guess_balance', 'Guess Balance')}</span>
                     </button>
                   )}
@@ -405,21 +405,21 @@ export default function Sidebar({ className = '', onClose }) {
                         className={`sidebar-subitem ${isActive('/webmod/voucher-manager') ? 'active' : ''}`}
                         onClick={() => handleNavigation('/webmod/voucher-manager')}
                       >
-                        <span className="subitem-icon">🎟️</span>
+                        <span className="subitem-icon"><i className="fa-solid fa-ticket" /></span>
                         <span className="subitem-label">{t('nav_voucher_manager', 'Voucher Manager')}</span>
                       </button>
                       <button
                         className={`sidebar-subitem ${isActive('/webmod/giveaway-creator') ? 'active' : ''}`}
                         onClick={() => handleNavigation('/webmod/giveaway-creator')}
                       >
-                        <span className="subitem-icon">🎁</span>
+                        <span className="subitem-icon"><i className="fa-solid fa-gift" /></span>
                         <span className="subitem-label">{t('nav_giveaway_creator', 'Giveaway Creator')}</span>
                       </button>
                       <button
                         className={`sidebar-subitem ${isActive('/webmod/edit-slots') ? 'active' : ''}`}
                         onClick={() => handleNavigation('/webmod/edit-slots')}
                       >
-                        <span className="subitem-icon">✏️</span>
+                        <span className="subitem-icon"><i className="fa-solid fa-pen-to-square" /></span>
                         <span className="subitem-label">{t('nav_edit_slots', 'Edit Slots')}</span>
                       </button>
                     </>
@@ -437,7 +437,7 @@ export default function Sidebar({ className = '', onClose }) {
                 className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
                 onClick={() => handleNavigation(item.path)}
               >
-                <span className="sidebar-emoji">{item.icon}</span>
+                <span className="sidebar-emoji"><i className={item.icon} /></span>
                 <span className="sidebar-label">{t(item.labelKey, item.label)}</span>
               </button>
             ) : null
@@ -450,7 +450,7 @@ export default function Sidebar({ className = '', onClose }) {
                 className="sidebar-item logout"
                 onClick={handleLogout}
               >
-                <span className="sidebar-emoji">🚪</span>
+                <span className="sidebar-emoji"><i className="fa-solid fa-right-from-bracket" /></span>
                 <span className="sidebar-label">{t(T.LOGOUT, 'Log Out')}</span>
               </button>
             </>
