@@ -441,8 +441,8 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
 
   const renderPlaceholders = () => (
     <div className="flex items-center gap-3">
-      <div className="h-[140px] w-[100px] rounded-xl border-2 border-dashed border-white/10" />
-      <div className="h-[140px] w-[100px] rounded-xl border-2 border-dashed border-white/10" />
+      <div className="h-[110px] w-[80px] rounded-xl border-2 border-dashed border-white/10" />
+      <div className="h-[110px] w-[80px] rounded-xl border-2 border-dashed border-white/10" />
     </div>
   );
 
@@ -459,7 +459,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Hand {index + 1}</span>
                 {renderScoreBadge(hand, 'Hand')}
               </div>
-              <div className="flex min-h-[150px] items-center justify-center">
+              <div className="flex min-h-[120px] items-center justify-center">
                 {hand.length > 0 ? renderCards(hand, false) : renderPlaceholders()}
               </div>
             </div>
@@ -479,7 +479,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
           </div>
           {renderScoreBadge(playerHand, 'Hand')}
         </div>
-        <div className="flex min-h-[150px] items-center justify-center">
+        <div className="flex min-h-[120px] items-center justify-center">
           {playerHand.length > 0 ? renderCards(playerHand, false) : renderPlaceholders()}
         </div>
       </div>
@@ -489,7 +489,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
   return (
     <div className="relative rounded-3xl overflow-hidden">
       {/* Green felt background */}
-      <div className="relative bg-gradient-to-b from-[#11612b] via-[#157a36] to-[#11612b] px-6 py-8 md:px-10 md:py-10">
+      <div className="relative bg-gradient-to-b from-[#11612b] via-[#157a36] to-[#11612b] px-5 py-5 md:px-8 md:py-6">
         {/* Felt texture overlay */}
         <div
           className="absolute inset-0 opacity-[0.07] pointer-events-none"
@@ -503,9 +503,9 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
         <div className="absolute inset-0 rounded-3xl border-2 border-emerald-950/80 pointer-events-none" />
         <div className="absolute inset-[2px] rounded-[22px] border border-emerald-500/10 pointer-events-none" />
 
-        <div className="relative grid gap-5 md:gap-7">
+        <div className="relative grid gap-3 md:gap-4">
           {/* ─── Dealer Zone ─── */}
-          <div className="grid gap-3 rounded-2xl border border-white/[0.08] bg-black/10 p-3 md:p-4">
+          <div className="grid gap-2 rounded-2xl border border-white/[0.08] bg-black/10 p-2.5 md:p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-full bg-gray-900/60 flex items-center justify-center border border-white/10">
@@ -515,7 +515,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
               </div>
               {renderScoreBadge(dealerHand, 'Hand', true)}
             </div>
-            <div className="flex min-h-[150px] items-center justify-center">
+            <div className="flex min-h-[120px] items-center justify-center">
               {dealerHand.length > 0 ? renderCards(dealerHand, true) : renderPlaceholders()}
             </div>
           </div>
@@ -538,7 +538,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
           </div>
 
           {/* ─── Player Zone ─── */}
-          <div className="rounded-2xl border border-white/[0.08] bg-black/10 p-3 md:p-4">
+          <div className="rounded-2xl border border-white/[0.08] bg-black/10 p-2.5 md:p-3">
             {renderPlayerArea()}
           </div>
 
