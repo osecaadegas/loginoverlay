@@ -5,6 +5,7 @@ import { supabase } from '../../config/supabaseClient';
 import { useState, useRef, useEffect, useMemo } from 'react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './TheLife.css';
+import './TheLifeClean.css';
 
 // Components
 import WipeCountdown from './components/WipeCountdown';
@@ -163,6 +164,7 @@ export default function TheLife() {
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
   const [contentKey, setContentKey] = useState(0); // for content transition animation
+  const [showSecondary, setShowSecondary] = useState(false); // collapsible secondary stats
   
   // Initialize audio and load saved preferences
   useEffect(() => {
@@ -352,7 +354,7 @@ export default function TheLife() {
 
   return (
     <div className="the-life-page">
-    <div className="the-life-container">
+    <div className="the-life-container tl-clean">
       {/* Background Music */}
       <audio 
         ref={audioRef} 
@@ -361,172 +363,137 @@ export default function TheLife() {
         preload="auto"
       />
 
-      <div className="the-life-header">
-        <img src="/thelife/thelife.png" alt="The Life" className="game-logo" />
+      {/* ===== COMPACT HEADER ===== */}
+      <header className="tl-header">
+        <img src="/thelife/thelife.png" alt="The Life" className="tl-logo" />
         <WipeCountdown />
-      </div>
+      </header>
 
+      {/* Toast Message */}
       {message.text && (
-        <div className={`game-message ${message.type}`}>
-          <span className="message-icon">{message.type === 'success' ? '✓' : message.type === 'error' ? '!' : 'ℹ'}</span>
-          <span className="message-text">{message.text}</span>
-          <button onClick={() => setMessage({ type: '', text: '' })}>×</button>
+        <div className={`tl-toast tl-toast--${message.type}`}>
+          <span className="tl-toast__icon">{message.type === 'success' ? '✓' : message.type === 'error' ? '✕' : 'ℹ'}</span>
+          <span className="tl-toast__text">{message.text}</span>
+          <button className="tl-toast__close" onClick={() => setMessage({ type: '', text: '' })}>×</button>
         </div>
       )}
 
-      {/* ===== REDESIGNED MENUS AREA ===== */}
-
-      {/* Player Stats Card */}
-      <div className="player-stats-bar">
-        <div className="stats-left-section">
-          <div className="stat-group">
-            <div className="stat-bar">
-              <div className="stat-fill xp-fill" style={{ width: `${(player?.xp / (player?.level * 100)) * 100}%` }} />
-              <span className="stat-text">LEVEL {player?.level} - {player?.xp} / {player?.level * 100} XP</span>
-            </div>
+      {/* ===== PRIMARY STATS BAR — always visible ===== */}
+      <div className="tl-stats">
+        <div className="tl-stats__row">
+          {/* Level + XP */}
+          <div className="tl-bar" title={`${player?.xp} / ${player?.level * 100} XP`}>
+            <div className="tl-bar__fill tl-bar--xp" style={{ width: `${(player?.xp / (player?.level * 100)) * 100}%` }} />
+            <span className="tl-bar__label">LVL {player?.level}</span>
+            <span className="tl-bar__value">{player?.xp}/{player?.level * 100} XP</span>
           </div>
-          <div className="stat-group">
-            <div className="stat-bar">
-              <div className="stat-fill hp-fill" style={{ width: `${(player?.hp / player?.max_hp) * 100}%` }} />
-              <span className="stat-text">HP: {player?.hp} / {player?.max_hp}</span>
-            </div>
+          {/* HP */}
+          <div className="tl-bar" title={`${player?.hp} / ${player?.max_hp} HP`}>
+            <div className="tl-bar__fill tl-bar--hp" style={{ width: `${(player?.hp / player?.max_hp) * 100}%` }} />
+            <span className="tl-bar__label">HP</span>
+            <span className="tl-bar__value">{player?.hp}/{player?.max_hp}</span>
           </div>
-          <div className="stat-group">
-            <div className="stat-bar">
-              <div className="stat-fill stamina-fill" style={{ width: `${(player?.stamina / player?.max_stamina) * 100}%` }} />
-              <span className="stat-text">STAMINA: {player?.stamina} / {player?.max_stamina}</span>
-            </div>
-          </div>
-          <div className="stat-group">
-            <div className="stat-bar addiction-bar">
-              <div className="stat-fill addiction-fill" style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }} />
-              <span className="stat-text">ADDICTION: {player?.addiction || 0} / {player?.max_addiction || 100}</span>
-            </div>
+          {/* Stamina */}
+          <div className="tl-bar" title={`${player?.stamina} / ${player?.max_stamina} Stamina`}>
+            <div className="tl-bar__fill tl-bar--stamina" style={{ width: `${(player?.stamina / player?.max_stamina) * 100}%` }} />
+            <span className="tl-bar__label">⚡</span>
+            <span className="tl-bar__value">{player?.stamina}/{player?.max_stamina}</span>
           </div>
         </div>
 
-        <div className="stats-right-section">
-          <div className="stat-group">
-            <div className="stat-bar">
-              <div className="stat-fill power-fill" style={{ width: `${Math.min(((player?.power || 0) / 100) * 100, 100)}%` }} />
-              <span className="stat-text">POWER: {player?.power || 0}</span>
-            </div>
-          </div>
-          <div className="stat-group">
-            <div className="stat-bar">
-              <div className="stat-fill intelligence-fill" style={{ width: `${Math.min(((player?.intelligence || 0) / 100) * 100, 100)}%` }} />
-              <span className="stat-text">INTELLIGENCE: {player?.intelligence || 0}</span>
-            </div>
-          </div>
-          <div className="stat-group">
-            <div className="stat-bar">
-              <div className="stat-fill defense-fill" style={{ width: `${Math.min(((player?.defense || 0) / 100) * 100, 100)}%` }} />
-              <span className="stat-text">DEFENSE: {player?.defense || 0}</span>
-            </div>
-          </div>
+        {/* Cash + Bank — inline with stats */}
+        <div className="tl-stats__money">
+          <span className="tl-money tl-money--cash">
+            <span className="tl-money__icon">💵</span>
+            ${player?.cash?.toLocaleString()}
+          </span>
+          <span className="tl-money tl-money--bank">
+            <span className="tl-money__icon">🏦</span>
+            ${player?.bank_balance?.toLocaleString()}
+          </span>
         </div>
+
+        {/* Toggle secondary stats */}
+        <button
+          className="tl-stats__toggle"
+          onClick={() => setShowSecondary(s => !s)}
+          aria-expanded={showSecondary}
+          aria-label="Toggle secondary stats"
+        >
+          {showSecondary ? '▲ Hide Stats' : '▼ More Stats'}
+        </button>
+
+        {/* Collapsible secondary stats panel */}
+        {showSecondary && (
+          <div className="tl-stats__secondary">
+            <div className="tl-bar tl-bar--sm" title={`Power: ${player?.power || 0}`}>
+              <div className="tl-bar__fill tl-bar--power" style={{ width: `${Math.min((player?.power || 0), 100)}%` }} />
+              <span className="tl-bar__label">PWR</span>
+              <span className="tl-bar__value">{player?.power || 0}</span>
+            </div>
+            <div className="tl-bar tl-bar--sm" title={`Intelligence: ${player?.intelligence || 0}`}>
+              <div className="tl-bar__fill tl-bar--intel" style={{ width: `${Math.min((player?.intelligence || 0), 100)}%` }} />
+              <span className="tl-bar__label">INT</span>
+              <span className="tl-bar__value">{player?.intelligence || 0}</span>
+            </div>
+            <div className="tl-bar tl-bar--sm" title={`Defense: ${player?.defense || 0}`}>
+              <div className="tl-bar__fill tl-bar--def" style={{ width: `${Math.min((player?.defense || 0), 100)}%` }} />
+              <span className="tl-bar__label">DEF</span>
+              <span className="tl-bar__value">{player?.defense || 0}</span>
+            </div>
+            <div className="tl-bar tl-bar--sm" title={`Addiction: ${player?.addiction || 0} / ${player?.max_addiction || 100}`}>
+              <div className="tl-bar__fill tl-bar--addiction" style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }} />
+              <span className="tl-bar__label">ADC</span>
+              <span className="tl-bar__value">{player?.addiction || 0}/{player?.max_addiction || 100}</span>
+            </div>
+          </div>
+        )}
       </div>
 
-      {/* Cash + Quick Access Row */}
-      <div className="menus-action-bar">
-        <div className="cash-display compact">
-          <div className="cash-item">
-            <span className="cash-icon">💵</span>
-            <div className="cash-info">
-              <span className="cash-value">${player?.cash?.toLocaleString()}</span>
-              <span className="cash-label">{isPt ? 'Dinheiro' : 'Cash'}</span>
-            </div>
-          </div>
-          <div className="cash-item">
-            <span className="cash-icon">🏦</span>
-            <div className="cash-info">
-              <span className="cash-value">${player?.bank_balance?.toLocaleString()}</span>
-              <span className="cash-label">{isPt ? 'Banco' : 'Bank'}</span>
-            </div>
-          </div>
-        </div>
-        <div className="quick-access-tabs-inline">
-          <button className="quick-tab-inline compact settings-btn" onClick={() => setShowSettings(true)}>
-            ⚙️ Settings
+      {/* ===== QUICK ACCESS TOOLBAR ===== */}
+      <div className="tl-toolbar">
+        <button className="tl-toolbar__btn" onClick={() => setShowSettings(true)}>⚙️</button>
+        <button className={`tl-toolbar__btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>🏆</button>
+        <button
+          className={`tl-toolbar__btn ${activeTab === 'bank' ? 'active' : ''}`}
+          onClick={() => !isRestricted && setActiveTab('bank')}
+          disabled={isRestricted}
+        >🏦</button>
+        <button className={`tl-toolbar__btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>👤</button>
+        <button className="tl-toolbar__btn tl-toolbar__btn--gold" onClick={() => navigate('/games/thelife/season-pass')}>
+          ⭐ <span className="tl-toolbar__label">Pass</span>
+        </button>
+        <button className="tl-toolbar__btn tl-toolbar__btn--blue" onClick={() => navigate('/games/thelife/news')}>
+          📰 <span className="tl-toolbar__label">News</span>
+        </button>
+        {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
+          <button className="tl-toolbar__btn tl-toolbar__btn--gold" onClick={quickRefillStamina} title={`Use stamina item (${staminaItemCount} left)`}>
+            ⚡ Refill ({staminaItemCount})
           </button>
-          <button className={`quick-tab-inline compact ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
-            🏆 Leaderboard
-          </button>
-          <button
-            className={`quick-tab-inline compact ${activeTab === 'bank' ? 'active' : ''}`}
-            onClick={() => !isRestricted && setActiveTab('bank')}
-            disabled={isRestricted}
-            style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-          >
-            🏦 Bank
-          </button>
-          <button className={`quick-tab-inline compact ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
-            👤 Profile
-          </button>
-          <button className="quick-tab-inline compact season-pass-btn" onClick={() => navigate('/games/thelife/season-pass')}>
-            <span className="sp-icon">⭐</span>
-            <span className="sp-text">Season Pass</span>
-            <span className="sp-badge">NEW</span>
-          </button>
-          <button className="quick-tab-inline compact news-btn" onClick={() => navigate('/games/thelife/news')}>
-            <span className="news-icon-btn">📰</span>
-            <span className="news-text">News</span>
-            <span className="news-live-dot"></span>
-          </button>
-          {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
-            <button className="quick-tab-inline compact refill-btn" onClick={quickRefillStamina} title={`Use stamina item (${staminaItemCount} available)`}>
-              ⚡ Refill ({staminaItemCount})
-            </button>
-          )}
-        </div>
+        )}
       </div>
-
-      {/* Category Info Display */}
-      {currentCategoryInfo && (
-        <div className="category-info-display">
-          {currentCategoryInfo.image_url && (
-            <div className="category-info-image">
-              <img
-                src={currentCategoryInfo.image_url}
-                alt={currentCategoryInfo.category_name}
-                onError={(e) => {
-                  const fallback = categoryFallbackImages[activeTab];
-                  if (fallback && e.target.src !== fallback) {
-                    e.target.src = fallback;
-                  }
-                }}
-              />
-            </div>
-          )}
-          <div className="category-info-text">
-            <h3>{currentCategoryInfo.category_name}</h3>
-            <p>{currentCategoryInfo.description}</p>
-          </div>
-        </div>
-      )}
 
       {/* Status Warnings */}
       {isInJail && (
-        <div className="status-warning jail">
-          ⚠️ {isPt ? 'Você está na prisão até' : 'You are in jail until'} {new Date(player.jail_until).toLocaleTimeString()}
+        <div className="tl-alert tl-alert--warn">
+          ⚠️ {isPt ? 'Você está na prisão até' : 'In jail until'} {new Date(player.jail_until).toLocaleTimeString()}
         </div>
       )}
-
       {isInHospital && (
-        <div className="status-warning hospital">
-          🏥 {isPt ? 'Você está no hospital até' : 'You are in hospital until'} {new Date(player.hospital_until).toLocaleTimeString()}
+        <div className="tl-alert tl-alert--danger">
+          🏥 {isPt ? 'Você está no hospital até' : 'In hospital until'} {new Date(player.hospital_until).toLocaleTimeString()}
         </div>
       )}
 
-      {/* Premium Category Navigation */}
+      {/* ===== CATEGORY NAVIGATION ===== */}
       <CategoryNav
         activeTab={activeTab}
         setActiveTab={(tab) => {
           setActiveTab(tab);
-          setContentKey(k => k + 1); // trigger content transition
+          setContentKey(k => k + 1);
         }}
         isRestricted={isRestricted}
-        onCategorySound={null} // placeholder: pass a sound function here
+        onCategorySound={null}
       />
 
       {/* Render Active Tab Content — wrapped for animated transition */}

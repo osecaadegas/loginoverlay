@@ -1,359 +1,211 @@
 /* ==============================================
-   CategoryNav — Premium Casino-Grade Navigation
-   ==============================================
-   Mobile-first, scales to unlimited tabs.
-   Uses scroll-snap, gradient fades, animated
-   underline slider, and glass-blur aesthetic.
+   CategoryNav — Clean Pill-Style Tabs
+   Minimal, scalable, mobile-first.
    ============================================== */
 
-/* ---- Wrapper: positions arrows + fade masks ---- */
-.cn-wrapper {
+/* ---- Wrapper ---- */
+.cn-wrap {
   position: relative;
   width: 100%;
-  margin-bottom: 12px;
-  /* Fade masks via pseudo-elements */
+  margin-bottom: 8px;
 }
 
-/* Gradient fade edges — only shown when there's overflow */
-.cn-wrapper::before,
-.cn-wrapper::after {
+/* Gradient fade edges */
+.cn-wrap::before,
+.cn-wrap::after {
   content: '';
   position: absolute;
   top: 0;
   bottom: 0;
-  width: 48px;
+  width: 40px;
   z-index: 5;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.25s ease;
 }
 
-.cn-wrapper::before {
+.cn-wrap::before {
   left: 0;
-  background: linear-gradient(90deg, rgba(10, 12, 20, 0.95) 0%, transparent 100%);
+  background: linear-gradient(90deg, var(--tl-bg, #0a0c14) 0%, transparent 100%);
 }
 
-.cn-wrapper::after {
+.cn-wrap::after {
   right: 0;
-  background: linear-gradient(-90deg, rgba(10, 12, 20, 0.95) 0%, transparent 100%);
+  background: linear-gradient(-90deg, var(--tl-bg, #0a0c14) 0%, transparent 100%);
 }
 
-.cn-wrapper.cn-fade-left::before { opacity: 1; }
-.cn-wrapper.cn-fade-right::after { opacity: 1; }
+.cn-wrap.cn-fade-l::before { opacity: 1; }
+.cn-wrap.cn-fade-r::after  { opacity: 1; }
 
 /* ---- Arrow buttons ---- */
-.cn-arrow {
+.cn-arr {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
   z-index: 10;
-  width: 38px;
-  height: 38px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
-  border: 2px solid rgba(212, 175, 55, 0.6);
-  background: rgba(15, 18, 28, 0.9);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: #d4af37;
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 18px;
+  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: all 0.25s ease;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 20px rgba(212, 175, 55, 0.1);
+  transition: all 0.2s ease;
+  padding: 0;
 }
 
-.cn-arrow:hover {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: #d4af37;
-  box-shadow: 0 0 24px rgba(212, 175, 55, 0.35);
-  transform: translateY(-50%) scale(1.1);
+.cn-arr:hover {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: #fff;
 }
 
-.cn-arrow-left  { left: 4px; }
-.cn-arrow-right { right: 4px; }
-
-.cn-arrow svg {
-  pointer-events: none;
-  flex-shrink: 0;
-}
+.cn-arr--l { left: 2px; }
+.cn-arr--r { right: 2px; }
 
 /* ---- Scrollable track ---- */
 .cn-track {
   display: flex;
-  gap: 10px;
-  padding: 10px 48px;
+  gap: 6px;
+  padding: 6px 36px;
   overflow-x: auto;
   overflow-y: hidden;
   scroll-behavior: smooth;
-  /* Scroll snap — proximity is gentler; mandatory fights touch gestures */
   scroll-snap-type: x proximity;
-  scroll-padding: 0 48px;
-  /* Hide native scrollbar across all browsers */
   scrollbar-width: none;
   -ms-overflow-style: none;
-  /* Touch momentum */
   -webkit-overflow-scrolling: touch;
-  /* Relative for the slider */
-  position: relative;
   touch-action: pan-x;
   user-select: none;
   flex-wrap: nowrap;
 }
 
-.cn-track::-webkit-scrollbar {
-  display: none;
-}
+.cn-track::-webkit-scrollbar { display: none; }
 
-/* ---- Individual tab ---- */
-/* Show exactly 6 tabs at once: (100% - 5 gaps) / 6 */
-.cn-tab {
+/* ---- Pill tab ---- */
+.cn-pill {
   flex-shrink: 0;
   scroll-snap-align: center;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 0;
-  border: 2px solid rgba(212, 175, 55, 0.2);
-  border-radius: 12px;
-  background: rgba(18, 22, 35, 0.65);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  cursor: pointer;
-  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1),
-              border-color 0.3s ease,
-              box-shadow 0.3s ease,
-              background 0.3s ease;
-  width: calc((100% - 5 * 10px) / 6);
-  min-width: 0;
-  overflow: hidden;
-  position: relative;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-/* Image container */
-.cn-tab-img {
-  width: 100%;
-  aspect-ratio: 16 / 10;
-  overflow: hidden;
-  position: relative;
-}
-
-.cn-tab-img img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transform: scale(1.08);
-  transition: transform 0.4s ease, filter 0.4s ease;
-  filter: brightness(0.75) saturate(0.9);
-  pointer-events: none;
-}
-
-/* Label below image */
-.cn-tab-label {
-  font-size: clamp(0.6rem, 1vw, 0.8rem);
-  font-weight: 700;
-  color: rgba(200, 210, 225, 0.8);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  padding: 0 4px 6px;
-  text-align: center;
-  line-height: 1.1;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  gap: 5px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  border: 1.5px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(200, 210, 225, 0.7);
+  font-size: 0.78rem;
+  font-weight: 600;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  letter-spacing: 0.3px;
 }
 
-/* ---- Hover state ---- */
-.cn-tab:hover:not(.disabled) {
-  transform: translateY(-3px);
-  border-color: rgba(212, 175, 55, 0.45);
-  background: rgba(22, 28, 45, 0.8);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4),
-              0 0 15px rgba(212, 175, 55, 0.1);
+.cn-pill:hover:not(.cn-pill--disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #fff;
 }
 
-.cn-tab:hover:not(.disabled) .cn-tab-img img {
-  transform: scale(1.15);
-  filter: brightness(0.9) saturate(1.05);
-}
-
-.cn-tab:hover:not(.disabled) .cn-tab-label {
-  color: rgba(212, 175, 55, 0.9);
-}
-
-/* ---- Active state ---- */
-.cn-tab.active {
-  border-color: #d4af37;
-  background: rgba(212, 175, 55, 0.1);
-  transform: scale(1.05);
-  box-shadow: 0 4px 20px rgba(212, 175, 55, 0.25),
-              0 0 30px rgba(212, 175, 55, 0.08),
-              inset 0 0 20px rgba(212, 175, 55, 0.05);
-}
-
-.cn-tab.active .cn-tab-img img {
-  filter: brightness(1) saturate(1.15);
-  transform: scale(1.12);
-}
-
-.cn-tab.active .cn-tab-label {
+/* Active pill */
+.cn-pill--active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.5);
   color: #d4af37;
-  text-shadow: 0 0 12px rgba(212, 175, 55, 0.5);
+  box-shadow: 0 0 12px rgba(212, 175, 55, 0.15);
 }
 
-/* Subtle inner glow on active — top border accent */
-.cn-tab.active::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 10%;
-  right: 10%;
-  height: 2px;
-  background: linear-gradient(90deg, transparent, #d4af37, transparent);
-  border-radius: 0 0 4px 4px;
-  z-index: 2;
+.cn-pill--active:hover {
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.6);
+  color: #d4af37;
 }
 
-/* ---- Disabled state ---- */
-.cn-tab.disabled {
-  opacity: 0.4;
+/* Disabled pill */
+.cn-pill--disabled {
+  opacity: 0.35;
   cursor: not-allowed;
-  filter: grayscale(0.5);
 }
 
-.cn-tab.disabled .cn-tab-img img {
-  filter: brightness(0.5) saturate(0.4) grayscale(0.4);
+/* Icon inside pill */
+.cn-pill__icon {
+  font-size: 0.9rem;
+  line-height: 1;
 }
 
-/* ---- Animated underline slider ---- */
-.cn-slider {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  height: 3px;
-  background: linear-gradient(90deg, rgba(212, 175, 55, 0.3), #d4af37, rgba(212, 175, 55, 0.3));
-  border-radius: 3px 3px 0 0;
-  /* Smooth transitions when tab changes */
-  transition: transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
-              width 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  pointer-events: none;
-  z-index: 3;
-  box-shadow: 0 0 10px rgba(212, 175, 55, 0.5),
-              0 0 25px rgba(212, 175, 55, 0.2);
+.cn-pill__label {
+  line-height: 1;
 }
 
-/* ---- Content transition wrapper ---- */
+/* ---- Content transition ---- */
 .cn-content-enter {
-  animation: cnContentIn 0.35s ease-out both;
+  animation: cnFadeIn 0.3s ease-out both;
 }
 
-@keyframes cnContentIn {
-  from {
-    opacity: 0;
-    transform: translateY(8px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+@keyframes cnFadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 /* =============================================
    RESPONSIVE
    ============================================= */
 
-/* Tablets */
-@media (max-width: 1024px) {
-  .cn-tab {
-    width: calc((100% - 5 * 8px) / 6);
-  }
-
-  .cn-track {
-    gap: 8px;
-    padding: 8px 42px;
-  }
-
-  .cn-arrow {
-    width: 34px;
-    height: 34px;
-  }
-}
-
-/* Mobile */
 @media (max-width: 768px) {
-  .cn-wrapper::before,
-  .cn-wrapper::after {
-    width: 32px;
+  .cn-pill {
+    padding: 5px 10px;
+    font-size: 0.72rem;
+    gap: 4px;
   }
 
-  .cn-track {
-    gap: 6px;
-    padding: 6px 36px;
-    scroll-padding: 0 36px;
+  .cn-pill__icon {
+    font-size: 0.82rem;
   }
 
-  .cn-tab {
-    width: calc((100% - 5 * 6px) / 6);
-    border-radius: 10px;
-  }
-
-  .cn-tab-label {
-    font-size: 0.55rem;
-    padding: 0 3px 5px;
-    letter-spacing: 0.5px;
-  }
-
-  .cn-tab-img {
-    aspect-ratio: 16 / 9;
-  }
-
-  .cn-arrow {
-    width: 30px;
-    height: 30px;
-  }
-
-  .cn-arrow-left  { left: 2px; }
-  .cn-arrow-right { right: 2px; }
-
-  .cn-slider {
-    height: 2px;
-  }
-}
-
-/* Small phones */
-@media (max-width: 480px) {
   .cn-track {
     gap: 5px;
-    padding: 5px 28px;
-    scroll-padding: 0 28px;
+    padding: 5px 30px;
   }
 
-  .cn-tab {
-    width: calc((100% - 5 * 5px) / 6);
-    border-width: 1.5px;
-  }
-
-  .cn-tab-label {
-    font-size: 0.5rem;
-    padding: 0 2px 4px;
-  }
-
-  .cn-wrapper::before,
-  .cn-wrapper::after {
+  .cn-arr {
     width: 24px;
+    height: 24px;
+    font-size: 15px;
   }
 
-  .cn-arrow {
-    width: 26px;
-    height: 26px;
+  .cn-wrap::before,
+  .cn-wrap::after {
+    width: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .cn-pill {
+    padding: 4px 8px;
+    font-size: 0.68rem;
+    gap: 3px;
+    border-radius: 16px;
   }
 
-  .cn-arrow-left  { left: 1px; }
-  .cn-arrow-right { right: 1px; }
+  .cn-track {
+    gap: 4px;
+    padding: 4px 24px;
+  }
+
+  .cn-arr {
+    width: 22px;
+    height: 22px;
+    font-size: 14px;
+  }
+
+  .cn-wrap::before,
+  .cn-wrap::after {
+    width: 22px;
+  }
 }

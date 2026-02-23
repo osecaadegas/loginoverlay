@@ -1,0 +1,449 @@
+/* ==============================================
+   TheLifeClean.css — Clean Design System Override
+   ==============================================
+   BEM-style `tl-` prefix classes.
+   Imported AFTER TheLife.css to override defaults.
+   
+   Color system:
+     --tl-green:  #22c55e  (positive / success)
+     --tl-red:    #ef4444  (risk / danger / HP)
+     --tl-gold:   #d4af37  (premium / active)
+     --tl-blue:   #3b82f6  (neutral / info)
+     --tl-bg:     #0a0c14  (page background)
+     --tl-surface:#12162380 (card / panel surface)
+     --tl-text:   #c8d2e1  (primary text)
+     --tl-muted:  #6b7280  (secondary text)
+   ============================================== */
+
+/* ---- Design tokens ---- */
+.tl-clean {
+  --tl-green: #22c55e;
+  --tl-red: #ef4444;
+  --tl-gold: #d4af37;
+  --tl-blue: #3b82f6;
+  --tl-bg: #0a0c14;
+  --tl-surface: rgba(18, 22, 35, 0.5);
+  --tl-text: #c8d2e1;
+  --tl-muted: #6b7280;
+  --tl-border: rgba(255, 255, 255, 0.06);
+  --tl-radius: 8px;
+}
+
+/* ---- Page wrapper ---- */
+.the-life-page {
+  background: var(--tl-bg, #0a0c14);
+  min-height: 100vh;
+}
+
+.tl-clean {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 12px 16px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* ======================
+   HEADER — compact logo + wipe timer
+   ====================== */
+.tl-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 0;
+  gap: 12px;
+}
+
+.tl-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(1.1);
+}
+
+/* Hide bulky original headers when tl-clean is active */
+.tl-clean .player-stats-bar,
+.tl-clean .cash-display,
+.tl-clean .quick-access-tabs-inline,
+.tl-clean .category-info-display,
+.tl-clean .menus-action-bar,
+.tl-clean .the-life-header,
+.tl-clean .player-header-bar {
+  display: none !important;
+}
+
+/* ======================
+   TOAST — notification bar
+   ====================== */
+.tl-toast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: var(--tl-radius);
+  font-size: 0.82rem;
+  font-weight: 500;
+  animation: tlSlideIn 0.3s ease-out;
+  border: 1px solid;
+}
+
+.tl-toast--success {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.3);
+  color: var(--tl-green);
+}
+
+.tl-toast--error {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--tl-red);
+}
+
+.tl-toast--info {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.3);
+  color: var(--tl-blue);
+}
+
+.tl-toast__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+  width: 20px;
+  text-align: center;
+}
+
+.tl-toast__text {
+  flex: 1;
+  line-height: 1.3;
+}
+
+.tl-toast__close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 2px;
+  line-height: 1;
+}
+
+.tl-toast__close:hover {
+  opacity: 1;
+}
+
+@keyframes tlSlideIn {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ======================
+   STATS — primary bars + money + secondary
+   ====================== */
+.tl-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  background: var(--tl-surface);
+  border: 1px solid var(--tl-border);
+  border-radius: var(--tl-radius);
+}
+
+.tl-stats__row {
+  display: flex;
+  gap: 6px;
+}
+
+/* ---- Stat bar (thin inline) ---- */
+.tl-bar {
+  position: relative;
+  flex: 1;
+  height: 22px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.tl-bar--sm {
+  height: 18px;
+}
+
+.tl-bar__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* Bar variants */
+.tl-bar--xp        { background: rgba(59, 130, 246, 0.35); }
+.tl-bar--hp        { background: rgba(239, 68, 68, 0.45); }
+.tl-bar--stamina   { background: rgba(234, 179, 8, 0.4); }
+.tl-bar--power     { background: rgba(249, 115, 22, 0.4); }
+.tl-bar--intel     { background: rgba(99, 102, 241, 0.4); }
+.tl-bar--def       { background: rgba(20, 184, 166, 0.4); }
+.tl-bar--addiction  { background: rgba(168, 85, 247, 0.4); }
+
+.tl-bar__label {
+  position: relative;
+  z-index: 1;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.85);
+  padding-left: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.tl-bar__value {
+  position: relative;
+  z-index: 1;
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: auto;
+  padding-right: 6px;
+  white-space: nowrap;
+}
+
+/* ---- Money line ---- */
+.tl-stats__money {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 2px 0;
+}
+
+.tl-money {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 700;
+  font-size: 0.85rem;
+  letter-spacing: 0.3px;
+}
+
+.tl-money--cash {
+  color: var(--tl-green);
+}
+
+.tl-money--bank {
+  color: var(--tl-blue);
+}
+
+.tl-money__icon {
+  font-size: 0.9rem;
+}
+
+/* ---- Toggle button for secondary stats ---- */
+.tl-stats__toggle {
+  background: none;
+  border: none;
+  color: var(--tl-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 2px 0;
+  text-align: center;
+  transition: color 0.2s ease;
+  letter-spacing: 0.3px;
+}
+
+.tl-stats__toggle:hover {
+  color: var(--tl-text);
+}
+
+/* ---- Secondary stats (collapsible) ---- */
+.tl-stats__secondary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px;
+  padding-top: 4px;
+  border-top: 1px solid var(--tl-border);
+  animation: tlFadeIn 0.25s ease-out;
+}
+
+@keyframes tlFadeIn {
+  from { opacity: 0; max-height: 0; }
+  to   { opacity: 1; max-height: 200px; }
+}
+
+/* ======================
+   TOOLBAR — icon buttons
+   ====================== */
+.tl-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+}
+
+.tl-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: 1px solid var(--tl-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--tl-text);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.tl-toolbar__btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.tl-toolbar__btn.active {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: var(--tl-gold);
+}
+
+.tl-toolbar__btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.tl-toolbar__btn--gold {
+  border-color: rgba(212, 175, 55, 0.25);
+  color: var(--tl-gold);
+}
+
+.tl-toolbar__btn--gold:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.tl-toolbar__btn--blue {
+  border-color: rgba(59, 130, 246, 0.25);
+  color: var(--tl-blue);
+}
+
+.tl-toolbar__btn--blue:hover {
+  background: rgba(59, 130, 246, 0.1);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.tl-toolbar__label {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+/* ======================
+   ALERT — status warnings
+   ====================== */
+.tl-alert {
+  padding: 8px 12px;
+  border-radius: var(--tl-radius);
+  font-size: 0.8rem;
+  font-weight: 500;
+  border: 1px solid;
+  text-align: center;
+}
+
+.tl-alert--warn {
+  background: rgba(234, 179, 8, 0.08);
+  border-color: rgba(234, 179, 8, 0.25);
+  color: #eab308;
+}
+
+.tl-alert--danger {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.25);
+  color: var(--tl-red);
+}
+
+/* ======================
+   RESPONSIVE
+   ====================== */
+@media (max-width: 768px) {
+  .tl-clean {
+    padding: 8px 10px 20px;
+    gap: 6px;
+  }
+
+  .tl-logo {
+    height: 26px;
+  }
+
+  .tl-stats__row {
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tl-bar {
+    height: 20px;
+  }
+
+  .tl-bar--sm {
+    height: 16px;
+  }
+
+  .tl-stats__secondary {
+    grid-template-columns: 1fr;
+  }
+
+  .tl-stats__money {
+    gap: 12px;
+  }
+
+  .tl-money {
+    font-size: 0.8rem;
+  }
+
+  .tl-toolbar {
+    gap: 3px;
+  }
+
+  .tl-toolbar__btn {
+    padding: 4px 8px;
+    font-size: 0.74rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .tl-clean {
+    padding: 6px 8px 16px;
+  }
+
+  .tl-logo {
+    height: 22px;
+  }
+
+  .tl-bar {
+    height: 18px;
+  }
+
+  .tl-bar__label {
+    font-size: 0.62rem;
+  }
+
+  .tl-bar__value {
+    font-size: 0.58rem;
+  }
+
+  .tl-money {
+    font-size: 0.75rem;
+  }
+
+  .tl-toolbar__btn {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+  }
+
+  .tl-toolbar__label {
+    display: none;
+  }
+}
