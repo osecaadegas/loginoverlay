@@ -32,16 +32,6 @@ import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
 import ProfilePage from './components/ProfilePage/ProfilePage';
 import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
-// Anti-Cheat Admin Panel
-import AdminLayout from './components/Admin/AdminLayout';
-import DashboardPage from './components/Admin/pages/DashboardPage';
-import AlertsPage from './components/Admin/pages/AlertsPage';
-import LogsPage from './components/Admin/pages/LogsPage';
-import PlayersPage from './components/Admin/pages/PlayersPage';
-import InvestigationPage from './components/Admin/pages/InvestigationPage';
-import CasinoOffersManager from './components/Admin/CasinoOffersManager';
-import GuessBalanceManager from './components/Admin/GuessBalanceManager';
-
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
   const { user } = useAuth();
@@ -649,27 +639,9 @@ function App() {
                     <GiveawayCreator />
                   </ProtectedAdminRoute>
                 } />
-                <Route path="/webmod/casino-offers" element={
-                  <ProtectedAdminRoute>
-                    <CasinoOffersManager />
-                  </ProtectedAdminRoute>
-                } />
-                <Route path="/webmod/guess-balance" element={<GuessBalanceManager />} />
                 
                 <Route path="/admin" element={<AdminPanel />} />
 
-                {/* Anti-Cheat Admin Panel Routes */}
-                <Route path="/anticheat" element={<AdminLayout />}>
-                  <Route index element={<Navigate to="/anticheat/dashboard" replace />} />
-                  <Route path="dashboard" element={<DashboardPage />} />
-                  <Route path="alerts" element={<AlertsPage />} />
-                  <Route path="logs" element={<LogsPage />} />
-                  <Route path="players" element={<PlayersPage />} />
-                  <Route path="investigations" element={<InvestigationPage />} />
-                  <Route path="rules" element={<div style={{ padding: '20px' }}>Rules manager coming soon...</div>} />
-                  <Route path="settings" element={<div style={{ padding: '20px' }}>Settings coming soon...</div>} />
-                  <Route path="docs" element={<div style={{ padding: '20px' }}>Documentation coming soon...</div>} />
-                </Route>
               </Routes>
             </LayoutWrapper>
           </BrowserRouter>
