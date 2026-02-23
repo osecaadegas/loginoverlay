@@ -1165,6 +1165,447 @@
 }
 
 /* ============================================================================
+   MAX WIN COLUMN
+   ============================================================================ */
+
+.slot-manager-v2 .col-maxwin {
+  width: 100px;
+  text-align: center;
+}
+
+.slot-manager-v2 .maxwin-value {
+  font-weight: 600;
+  color: #fbbf24;
+  font-size: 13px;
+}
+
+/* ============================================================================
+   PROVIDERS BUTTON
+   ============================================================================ */
+
+.slot-manager-v2 .provider-btn {
+  padding: 8px 14px;
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  color: #93c5fd;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slot-manager-v2 .provider-btn:hover {
+  background: rgba(59, 130, 246, 0.25);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #fff;
+}
+
+/* ============================================================================
+   INSPECTOR HEADER ACTIONS
+   ============================================================================ */
+
+.slot-manager-v2 .inspector-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================================================
+   AI FETCH BUTTON
+   ============================================================================ */
+
+.slot-manager-v2 .ai-fetch-btn {
+  padding: 6px 14px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  border: none;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.slot-manager-v2 .ai-fetch-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+}
+
+.slot-manager-v2 .ai-fetch-btn.loading {
+  opacity: 0.7;
+  cursor: wait;
+}
+
+.slot-manager-v2 .ai-fetch-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ============================================================================
+   FETCH RESULT BANNER
+   ============================================================================ */
+
+.slot-manager-v2 .fetch-result-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 16px;
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+}
+
+.slot-manager-v2 .fetch-result-banner.success {
+  background: rgba(16, 185, 129, 0.1);
+  border-bottom-color: rgba(16, 185, 129, 0.2);
+}
+
+.slot-manager-v2 .fetch-result-banner.error {
+  background: rgba(239, 68, 68, 0.1);
+  border-bottom-color: rgba(239, 68, 68, 0.2);
+}
+
+.slot-manager-v2 .fetch-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.slot-manager-v2 .fetch-badge {
+  padding: 2px 8px;
+  background: rgba(16, 185, 129, 0.2);
+  border-radius: 4px;
+  color: #6ee7b7;
+  font-weight: 600;
+  font-size: 11px;
+}
+
+.slot-manager-v2 .fetch-source {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 11px;
+}
+
+.slot-manager-v2 .apply-btn {
+  padding: 5px 12px;
+  background: linear-gradient(135deg, #059669, #10b981);
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slot-manager-v2 .apply-btn:hover {
+  transform: scale(1.05);
+}
+
+.slot-manager-v2 .applied-badge {
+  color: #6ee7b7;
+  font-weight: 600;
+}
+
+.slot-manager-v2 .fetch-error {
+  color: #fca5a5;
+}
+
+.slot-manager-v2 .dismiss-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  font-size: 14px;
+  padding: 2px 6px;
+}
+
+.slot-manager-v2 .dismiss-btn:hover {
+  color: #fff;
+}
+
+/* ============================================================================
+   INSPECTOR TABS
+   ============================================================================ */
+
+.slot-manager-v2 .inspector-tabs {
+  display: flex;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.5);
+  padding: 0 16px;
+}
+
+.slot-manager-v2 .inspector-tabs button {
+  flex: 1;
+  padding: 10px 8px;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.slot-manager-v2 .inspector-tabs button:hover {
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(139, 92, 246, 0.05);
+}
+
+.slot-manager-v2 .inspector-tabs button.active {
+  color: #c4b5fd;
+  border-bottom-color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+/* ============================================================================
+   FEATURE GRID
+   ============================================================================ */
+
+.slot-manager-v2 .feature-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slot-manager-v2 .feature-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 5px 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slot-manager-v2 .feature-tag:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.slot-manager-v2 .feature-tag input[type="checkbox"] {
+  display: none;
+}
+
+.slot-manager-v2 .feature-tag.active {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
+}
+
+/* ============================================================================
+   FORM TEXTAREA
+   ============================================================================ */
+
+.slot-manager-v2 .form-group textarea {
+  width: 100%;
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  font-family: inherit;
+  resize: vertical;
+  min-height: 80px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.slot-manager-v2 .form-group textarea:focus {
+  outline: none;
+  border-color: #8b5cf6;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+/* ============================================================================
+   FILTER - features filter & max win
+   ============================================================================ */
+
+.slot-manager-v2 .features-filter {
+  flex-wrap: wrap;
+}
+
+.slot-manager-v2 .feature-tag-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.slot-manager-v2 .feature-tag-option span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.slot-manager-v2 .feature-tag-option input:checked + span {
+  color: #c4b5fd;
+}
+
+/* ============================================================================
+   PROVIDER MANAGER
+   ============================================================================ */
+
+.slot-manager-v2 .provider-panel {
+  width: 480px !important;
+}
+
+.slot-manager-v2 .provider-toolbar {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slot-manager-v2 .provider-search-input {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 13px;
+}
+
+.slot-manager-v2 .provider-search-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+
+.slot-manager-v2 .add-provider-btn {
+  padding: 8px 14px;
+  background: rgba(16, 185, 129, 0.15);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  border-radius: 8px;
+  color: #6ee7b7;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.slot-manager-v2 .add-provider-btn:hover {
+  background: rgba(16, 185, 129, 0.25);
+}
+
+.slot-manager-v2 .provider-edit-form {
+  padding: 16px;
+  background: rgba(139, 92, 246, 0.05);
+  border-bottom: 1px solid rgba(139, 92, 246, 0.2);
+}
+
+.slot-manager-v2 .provider-logo-preview {
+  margin-top: 8px;
+  width: 80px;
+  height: 80px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.slot-manager-v2 .provider-logo-preview img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.slot-manager-v2 .provider-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  justify-content: flex-end;
+}
+
+.slot-manager-v2 .provider-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  padding: 8px;
+}
+
+.slot-manager-v2 .provider-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.slot-manager-v2 .provider-card:hover {
+  background: rgba(139, 92, 246, 0.1);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.slot-manager-v2 .provider-card-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+}
+
+.slot-manager-v2 .provider-card-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.slot-manager-v2 .provider-card-initial {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+  color: #8b5cf6;
+  background: rgba(139, 92, 246, 0.15);
+  border-radius: 8px;
+}
+
+.slot-manager-v2 .provider-card-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.slot-manager-v2 .provider-card-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-manager-v2 .provider-card-count {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+/* ============================================================================
    RESPONSIVE
    ============================================================================ */
 
