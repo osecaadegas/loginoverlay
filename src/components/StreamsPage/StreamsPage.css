@@ -173,23 +173,23 @@
 /* Clip Card */
 .streams-clip-card {
   flex-shrink: 0;
-  width: 320px;
-  border-radius: 10px;
+  width: 180px;
+  border-radius: 14px;
   overflow: hidden;
   background: #161b22;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 2px solid rgba(145, 71, 255, 0.15);
   scroll-snap-align: start;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .streams-clip-card:hover {
-  border-color: rgba(145, 71, 255, 0.4);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  border-color: rgba(145, 71, 255, 0.5);
+  box-shadow: 0 6px 24px rgba(145, 71, 255, 0.25);
 }
 
 .streams-clip-thumb {
   position: relative;
-  aspect-ratio: 16 / 9;
+  aspect-ratio: 9 / 16;
   background: #000;
   cursor: pointer;
   overflow: hidden;
@@ -271,7 +271,7 @@
   }
 
   .streams-clip-card {
-    width: 260px;
+    width: 150px;
   }
 
   .streams-clips-title {
