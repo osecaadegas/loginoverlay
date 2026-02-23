@@ -170,36 +170,44 @@ export default function OffersPage() {
                     </div>
                   </div>
 
-                  {/* Stats Grid 2x2 */}
+                  {/* Stats Grid - only show filled fields */}
                   <div className="op-card-stats">
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">💰</span>
-                      <div>
-                        <span className="op-card-stat-label">Min. deposit</span>
-                        <span className="op-card-stat-value">{offer.minDeposit || '—'}</span>
+                    {offer.minDeposit && (
+                      <div className="op-card-stat">
+                        <span className="op-card-stat-icon"><i className="fa-solid fa-coins" /></span>
+                        <div>
+                          <span className="op-card-stat-label">Min. deposit</span>
+                          <span className="op-card-stat-value">{offer.minDeposit}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">🔄</span>
-                      <div>
-                        <span className="op-card-stat-label">Cashback</span>
-                        <span className="op-card-stat-value">{offer.cashback || '—'}</span>
+                    )}
+                    {offer.cashback && (
+                      <div className="op-card-stat">
+                        <span className="op-card-stat-icon"><i className="fa-solid fa-rotate" /></span>
+                        <div>
+                          <span className="op-card-stat-label">Cashback</span>
+                          <span className="op-card-stat-value">{offer.cashback}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">🎁</span>
-                      <div>
-                        <span className="op-card-stat-label">Bonus value</span>
-                        <span className="op-card-stat-value">{offer.bonusValue || '—'}</span>
+                    )}
+                    {offer.bonusValue && (
+                      <div className="op-card-stat">
+                        <span className="op-card-stat-icon"><i className="fa-solid fa-gift" /></span>
+                        <div>
+                          <span className="op-card-stat-label">Bonus value</span>
+                          <span className="op-card-stat-value">{offer.bonusValue}</span>
+                        </div>
                       </div>
-                    </div>
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">🎰</span>
-                      <div>
-                        <span className="op-card-stat-label">Free spins</span>
-                        <span className="op-card-stat-value">{offer.freeSpins || '—'}</span>
+                    )}
+                    {offer.freeSpins && (
+                      <div className="op-card-stat">
+                        <span className="op-card-stat-icon"><i className="fa-solid fa-dice" /></span>
+                        <div>
+                          <span className="op-card-stat-label">Free spins</span>
+                          <span className="op-card-stat-value">{offer.freeSpins}</span>
+                        </div>
                       </div>
-                    </div>
+                    )}
                   </div>
 
                   {/* Promo Code */}
@@ -241,30 +249,40 @@ export default function OffersPage() {
                     <div className="op-back-section">
                       <span className="op-back-section-label">CASINO INFO</span>
                       <div className="op-back-info-grid">
-                        <div className="op-back-info-item">
-                          <span className="op-back-info-label">MIN DEPOSIT</span>
-                          <span className="op-back-info-value gold">{offer.minDeposit || '€20'}</span>
-                        </div>
-                        <div className="op-back-info-item">
-                          <span className="op-back-info-label">MAX WITHDRAWAL</span>
-                          <span className="op-back-info-value">{offer.maxWithdrawal}</span>
-                        </div>
-                        <div className="op-back-info-item">
-                          <span className="op-back-info-label">WITHDRAWAL TIME</span>
-                          <span className="op-back-info-value">{offer.withdrawalTime}</span>
-                        </div>
+                        {offer.minDeposit && (
+                          <div className="op-back-info-item">
+                            <span className="op-back-info-label">MIN DEPOSIT</span>
+                            <span className="op-back-info-value gold">{offer.minDeposit}</span>
+                          </div>
+                        )}
+                        {offer.maxWithdrawal && (
+                          <div className="op-back-info-item">
+                            <span className="op-back-info-label">MAX WITHDRAWAL</span>
+                            <span className="op-back-info-value">{offer.maxWithdrawal}</span>
+                          </div>
+                        )}
+                        {offer.withdrawalTime && (
+                          <div className="op-back-info-item">
+                            <span className="op-back-info-label">WITHDRAWAL TIME</span>
+                            <span className="op-back-info-value">{offer.withdrawalTime}</span>
+                          </div>
+                        )}
                         <div className="op-back-info-item">
                           <span className="op-back-info-label">CRYPTO</span>
                           <span className="op-back-info-value gold">{offer.cryptoFriendly ? '✓ Yes' : 'No'}</span>
                         </div>
-                        <div className="op-back-info-item">
-                          <span className="op-back-info-label">LIVE SUPPORT</span>
-                          <span className="op-back-info-value">{offer.liveSupport}</span>
-                        </div>
-                        <div className="op-back-info-item">
-                          <span className="op-back-info-label">ESTABLISHED</span>
-                          <span className="op-back-info-value">{offer.established}</span>
-                        </div>
+                        {offer.liveSupport && (
+                          <div className="op-back-info-item">
+                            <span className="op-back-info-label">LIVE SUPPORT</span>
+                            <span className="op-back-info-value">{offer.liveSupport}</span>
+                          </div>
+                        )}
+                        {offer.established && (
+                          <div className="op-back-info-item">
+                            <span className="op-back-info-label">ESTABLISHED</span>
+                            <span className="op-back-info-value">{offer.established}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
 
