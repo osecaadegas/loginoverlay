@@ -1,153 +1,214 @@
 /* =============================================
-   THELIFE BLACKJACK GAME STYLES
+   THELIFE BLACKJACK — Premium Casino Style
    ============================================= */
 
-.bj-game-container {
+/* ─── Wrapper ─── */
+.tl-bj-wrapper {
   width: 100%;
   max-width: 900px;
   margin: 0 auto;
   padding: 20px;
 }
 
-/* Header */
-.bj-header {
+/* ─── Header ─── */
+.tl-bj-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 15px;
-  border-bottom: 2px solid rgba(139, 0, 0, 0.5);
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   flex-wrap: wrap;
-  gap: 15px;
+  gap: 12px;
 }
 
-.bj-back-btn {
+.tl-bj-back {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
-  background: rgba(139, 0, 0, 0.3);
-  border: 2px solid rgba(139, 0, 0, 0.5);
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: #ff6b6b;
-  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
 }
 
-.bj-back-btn:hover {
-  background: rgba(139, 0, 0, 0.5);
-  border-color: #ff6b6b;
-  transform: translateX(-5px);
+.tl-bj-back:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: white;
 }
 
-.bj-title {
+.tl-bj-title-area {
   text-align: center;
   flex: 1;
 }
 
-.bj-title h1 {
-  font-family: 'Nosifer', cursive, sans-serif;
-  color: #8b0000;
-  font-size: 1.8rem;
+.tl-bj-title {
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: white;
   margin: 0;
-  text-shadow: 0 0 20px rgba(139, 0, 0, 0.5);
-  letter-spacing: 2px;
+  letter-spacing: 0.1em;
 }
 
-.bj-title p {
-  color: #666;
-  font-size: 0.75rem;
-  margin: 5px 0 0 0;
+.tl-bj-subtitle {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.7rem;
+  margin: 2px 0 0 0;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 
-.bj-balance {
+.tl-bj-cash {
   text-align: right;
 }
 
-.bj-balance-label {
+.tl-bj-cash-label {
   display: block;
-  color: #666;
-  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.65rem;
+  font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
 }
 
-.bj-balance-amount {
+.tl-bj-cash-val {
   display: block;
-  color: #ffd700;
-  font-size: 1.8rem;
+  color: #fbbf24;
+  font-size: 1.4rem;
   font-weight: 700;
-  text-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
+  font-variant-numeric: tabular-nums;
 }
 
-/* Table */
-.bj-table {
-  background: radial-gradient(ellipse at center, #1a3d1a 0%, #0a1f0a 70%, #050f05 100%);
-  border: 12px solid #2a2a2a;
-  border-radius: 150px 150px 30px 30px;
-  padding: 40px 30px;
-  min-height: 400px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+/* ─── Green Felt Table ─── */
+.tl-bj-felt {
   position: relative;
-  box-shadow: 
-    inset 0 0 50px rgba(0, 0, 0, 0.5),
-    0 10px 40px rgba(0, 0, 0, 0.8);
+  border-radius: 24px;
+  overflow: hidden;
+  background: linear-gradient(to bottom, #11612b, #157a36, #11612b);
+  padding: 20px 20px 24px;
 }
 
-/* Dealer/Player Areas */
-.bj-dealer-area,
-.bj-player-area {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 10px;
+@media (min-width: 768px) {
+  .tl-bj-felt {
+    padding: 28px 32px 32px;
+  }
 }
 
-.bj-label {
-  color: rgba(139, 0, 0, 0.8);
+.tl-bj-felt-texture {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  pointer-events: none;
+  background-image: radial-gradient(circle at 1px 1px, black 1px, transparent 0);
+  background-size: 4px 4px;
+}
+
+.tl-bj-felt-shadow {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  box-shadow: inset 0 2px 30px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+.tl-bj-felt-border-outer {
+  position: absolute;
+  inset: 0;
+  border-radius: 24px;
+  border: 2px solid rgba(5, 46, 22, 0.8);
+  pointer-events: none;
+}
+
+.tl-bj-felt-border-inner {
+  position: absolute;
+  inset: 2px;
+  border-radius: 22px;
+  border: 1px solid rgba(16, 185, 129, 0.1);
+  pointer-events: none;
+}
+
+.tl-bj-felt-content {
+  position: relative;
+  display: grid;
+  gap: 12px;
+}
+
+@media (min-width: 768px) {
+  .tl-bj-felt-content {
+    gap: 16px;
+  }
+}
+
+/* ─── Dealer/Player Zones ─── */
+.tl-bj-zone {
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(0, 0, 0, 0.1);
+  padding: 10px 12px;
+  display: grid;
+  gap: 8px;
+}
+
+@media (min-width: 768px) {
+  .tl-bj-zone {
+    padding: 12px;
+  }
+}
+
+/* ─── Game Message Pill ─── */
+.tl-bj-msg {
+  padding: 8px 20px;
+  border-radius: 9999px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 3px;
-  font-size: 0.85rem;
+  letter-spacing: 0.05em;
+  animation: tlBjMsgPop 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-.bj-score {
-  color: #fff;
-  font-size: 1.5rem;
-  font-weight: 700;
-  min-height: 36px;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+.tl-bj-msg-good {
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  border: 1px solid rgba(34, 197, 94, 0.3);
 }
 
-.bj-cards {
-  display: flex;
-  gap: 10px;
-  min-height: 145px;
-  justify-content: center;
-  flex-wrap: wrap;
+.tl-bj-msg-bad {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* Card Styles */
+.tl-bj-msg-neutral {
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+@keyframes tlBjMsgPop {
+  0% { opacity: 0; transform: scale(0.7); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ─── Cards ─── */
 .bj-card-slot {
   perspective: 1000px;
-  width: 90px;
-  height: 130px;
+  width: 80px;
+  height: 110px;
 }
 
 .bj-card {
   width: 100%;
   height: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
   position: relative;
-  transition: transform 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+  transition: transform 0.5s cubic-bezier(0.23, 1, 0.32, 1);
   transform-style: preserve-3d;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
 }
 
 .bj-card.flipped {
@@ -160,34 +221,29 @@
   width: 100%;
   height: 100%;
   backface-visibility: hidden;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .bj-card-front {
-  background: linear-gradient(145deg, #f5f5f5 0%, #e0e0e0 100%);
+  background: linear-gradient(145deg, #fafafa 0%, #e8e8e8 100%);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: 6px;
+  padding: 5px;
 }
 
-.bj-card-front.red {
-  color: #cc0000;
-}
-
-.bj-card-front.black {
-  color: #1a1a1a;
-}
+.bj-card-front.red { color: #dc2626; }
+.bj-card-front.black { color: #1a1a1a; }
 
 .bj-card-back {
-  background: linear-gradient(135deg, #1a1a1a 0%, #330000 100%);
+  background: linear-gradient(135deg, #1e3a5f 0%, #0f1f33 100%);
   background-image: repeating-linear-gradient(
-    45deg, 
-    transparent, 
-    transparent 8px, 
-    rgba(139, 0, 0, 0.1) 8px, 
-    rgba(139, 0, 0, 0.1) 16px
+    45deg,
+    transparent,
+    transparent 6px,
+    rgba(59, 130, 246, 0.08) 6px,
+    rgba(59, 130, 246, 0.08) 12px
   );
   transform: rotateY(180deg);
 }
@@ -198,27 +254,14 @@
   align-items: center;
   line-height: 1;
 }
+.bj-card-corner.top-left { align-self: flex-start; }
+.bj-card-corner.bottom-right { align-self: flex-end; transform: rotate(180deg); }
 
-.bj-card-corner.top-left {
-  align-self: flex-start;
-}
-
-.bj-card-corner.bottom-right {
-  align-self: flex-end;
-  transform: rotate(180deg);
-}
-
-.bj-card-value {
-  font-size: 1.1rem;
-  font-weight: 700;
-}
-
-.bj-card-suit {
-  font-size: 0.9rem;
-}
+.bj-card-value { font-size: 1rem; font-weight: 700; }
+.bj-card-suit { font-size: 0.8rem; }
 
 .bj-card-center {
-  font-size: 2.5rem;
+  font-size: 2rem;
   text-align: center;
   flex: 1;
   display: flex;
@@ -226,295 +269,43 @@
   justify-content: center;
 }
 
-/* Game Message */
-.bj-game-message {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  font-size: 2rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  padding: 15px 30px;
-  border-radius: 10px;
-  animation: messagePopIn 0.5s ease;
+/* ─── Deck info ─── */
+.tl-bj-deck-info {
   text-align: center;
-  z-index: 10;
-}
-
-.bj-game-message.good {
-  color: #22c55e;
-  background: rgba(34, 197, 94, 0.2);
-  border: 2px solid rgba(34, 197, 94, 0.5);
-  text-shadow: 0 0 20px rgba(34, 197, 94, 0.5);
-}
-
-.bj-game-message.bad {
-  color: #ef4444;
-  background: rgba(239, 68, 68, 0.2);
-  border: 2px solid rgba(239, 68, 68, 0.5);
-  text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
-}
-
-.bj-game-message.neutral {
-  color: #ffd700;
-  background: rgba(255, 215, 0, 0.2);
-  border: 2px solid rgba(255, 215, 0, 0.5);
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-}
-
-@keyframes messagePopIn {
-  0% {
-    transform: translate(-50%, -50%) scale(0.5);
-    opacity: 0;
-  }
-  100% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-}
-
-/* Controls */
-.bj-controls {
-  margin-top: 25px;
-  background: rgba(0, 0, 0, 0.4);
-  padding: 25px;
-  border-radius: 15px;
-  border: 1px solid rgba(139, 0, 0, 0.3);
-}
-
-/* Betting Controls */
-.bj-betting-controls {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
-  align-items: center;
-  justify-content: center;
-}
-
-.bj-bet-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.bj-bet-btn {
-  padding: 12px 20px;
-  background: linear-gradient(to bottom, #2d0000, #000);
-  border: 2px solid #4a0000;
-  border-radius: 8px;
-  color: #ff6b6b;
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.bj-bet-btn:hover:not(:disabled) {
-  border-color: #ff0000;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-  transform: translateY(-2px);
-}
-
-.bj-bet-btn.active {
-  border-color: #ff0000;
-  background: linear-gradient(to bottom, #4a0000, #1a0000);
-  box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);
-}
-
-.bj-bet-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.bj-current-bet {
-  text-align: center;
-  padding: 0 20px;
-}
-
-.bj-bet-label {
-  display: block;
-  color: #666;
+  margin-top: 12px;
+  color: rgba(255, 255, 255, 0.25);
   font-size: 0.75rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.1em;
 }
 
-.bj-bet-amount {
-  display: block;
-  color: #fff;
-  font-size: 1.8rem;
-  font-weight: 700;
-}
-
-.bj-deal-btn {
-  padding: 15px 40px;
-  background: linear-gradient(to bottom, #2d0000, #000);
-  border: 3px solid #8b0000;
-  border-radius: 50px;
-  color: #ff0000;
-  font-size: 1.3rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 3px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.bj-deal-btn:hover:not(:disabled) {
-  border-color: #ff0000;
-  box-shadow: 0 0 25px rgba(255, 0, 0, 0.4);
-  transform: translateY(-3px);
-}
-
-.bj-deal-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-/* Action Controls */
-.bj-action-controls {
-  display: flex;
-  gap: 15px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.bj-action-btn {
-  padding: 15px 35px;
-  background: linear-gradient(to bottom, #2d0000, #000);
-  border: 2px solid #4a0000;
-  border-radius: 10px;
-  color: #e0e0e0;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.bj-action-btn:hover:not(:disabled) {
-  border-color: #ff0000;
-  box-shadow: 0 0 15px rgba(255, 0, 0, 0.3);
-  transform: translateY(-2px);
-}
-
-.bj-action-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.bj-action-btn.hit:hover:not(:disabled) {
-  border-color: #22c55e;
-  box-shadow: 0 0 15px rgba(34, 197, 94, 0.3);
-}
-
-.bj-action-btn.stand:hover:not(:disabled) {
-  border-color: #ffd700;
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
-}
-
-.bj-action-btn.double:hover:not(:disabled) {
-  border-color: #3b82f6;
-  box-shadow: 0 0 15px rgba(59, 130, 246, 0.3);
-}
-
-/* Deck Status */
-.bj-deck-status {
-  text-align: center;
-  margin-top: 15px;
-  color: #666;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-}
-
-/* Responsive */
+/* ─── Responsive ─── */
 @media (max-width: 768px) {
-  .bj-header {
+  .tl-bj-header {
     flex-direction: column;
     text-align: center;
   }
-
-  .bj-back-btn {
-    align-self: flex-start;
-  }
-
-  .bj-balance {
-    text-align: center;
-  }
-
-  .bj-title h1 {
-    font-size: 1.4rem;
-  }
-
-  .bj-table {
-    padding: 25px 15px;
-    border-radius: 80px 80px 20px 20px;
-    border-width: 8px;
-    min-height: 350px;
-  }
+  .tl-bj-back { align-self: flex-start; }
+  .tl-bj-cash { text-align: center; }
+  .tl-bj-title { font-size: 1.2rem; }
+  .tl-bj-cash-val { font-size: 1.2rem; }
 
   .bj-card-slot {
-    width: 70px;
-    height: 100px;
+    width: 65px;
+    height: 90px;
   }
-
-  .bj-card-value {
-    font-size: 0.9rem;
-  }
-
-  .bj-card-suit {
-    font-size: 0.7rem;
-  }
-
-  .bj-card-center {
-    font-size: 1.8rem;
-  }
-
-  .bj-game-message {
-    font-size: 1.3rem;
-    padding: 10px 20px;
-  }
-
-  .bj-bet-btn {
-    padding: 10px 15px;
-    font-size: 0.9rem;
-  }
-
-  .bj-deal-btn {
-    padding: 12px 30px;
-    font-size: 1.1rem;
-  }
-
-  .bj-action-btn {
-    padding: 12px 25px;
-    font-size: 1rem;
-  }
+  .bj-card-value { font-size: 0.85rem; }
+  .bj-card-suit { font-size: 0.65rem; }
+  .bj-card-center { font-size: 1.5rem; }
 }
 
 @media (max-width: 480px) {
+  .tl-bj-wrapper { padding: 12px; }
+
   .bj-card-slot {
     width: 55px;
-    height: 80px;
+    height: 78px;
   }
-
-  .bj-cards {
-    gap: 5px;
-  }
-
-  .bj-card-corner {
-    font-size: 0.7rem;
-  }
-
-  .bj-card-center {
-    font-size: 1.4rem;
-  }
-
-  .bj-score {
-    font-size: 1.2rem;
-  }
+  .bj-card-value { font-size: 0.75rem; }
+  .bj-card-center { font-size: 1.2rem; }
 }
