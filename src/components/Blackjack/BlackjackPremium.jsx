@@ -1542,17 +1542,8 @@ export default function BlackjackPremium() {
       {/* ─── Content Area ─── */}
       <div className="bj-content">
         <div className="bj-grid">
-          {/* Left: Game Rules + Bet History */}
+          {/* Left: Table + Rules + History */}
           <div className="bj-left">
-            <GameRulesPanel
-              isOpen={showRules}
-              onToggle={() => setShowRules(!showRules)}
-            />
-            <BetHistory entries={gameHistory} />
-          </div>
-
-          {/* Center: Table */}
-          <div className="bj-center">
             <BlackjackTable
               dealerHand={dealerHand}
               playerHand={playerHand}
@@ -1563,6 +1554,15 @@ export default function BlackjackPremium() {
               message={message || GAME_PHASE_LABELS[gamePhase]}
               dealerRevealed={dealerRevealed}
             />
+
+            {/* Rules + History row on desktop */}
+            <div className="bj-below-table">
+              <GameRulesPanel
+                isOpen={showRules}
+                onToggle={() => setShowRules(!showRules)}
+              />
+              <BetHistory entries={gameHistory} />
+            </div>
           </div>
 
           {/* Right: Betting + Side Bets */}

@@ -104,7 +104,7 @@
   }
 }
 
-/* ─── Game Grid: 3-Column Layout ─────────────────────────── */
+/* ─── Game Grid: 2-Column Layout ─────────────────────────── */
 
 .bj-grid {
   display: flex;
@@ -113,7 +113,6 @@
 }
 
 .bj-left,
-.bj-center,
 .bj-right {
   display: flex;
   flex-direction: column;
@@ -122,54 +121,38 @@
 }
 
 /* Mobile ordering: table → betting → rules+history */
-.bj-center { order: 0; }
-.bj-right  { order: 1; }
-.bj-left   { order: 2; }
+.bj-left  { order: 0; }
+.bj-right { order: 1; }
 
-/* ── Tablet: table + betting side-by-side, rules below ── */
+/* ── Tablet: table left, betting right ── */
 @media (min-width: 768px) and (max-width: 1279px) {
   .bj-grid {
     display: grid;
     grid-template-columns: 1fr 280px;
-    grid-template-rows: auto auto;
     gap: 0.75rem;
   }
-  .bj-center {
+  .bj-left {
     grid-column: 1;
-    grid-row: 1;
     order: unset;
   }
   .bj-right {
     grid-column: 2;
-    grid-row: 1 / 3;
     order: unset;
-  }
-  .bj-left {
-    grid-column: 1;
-    grid-row: 2;
-    order: unset;
-    flex-direction: row;
-    gap: 0.75rem;
-  }
-  .bj-left > * {
-    flex: 1;
-    min-width: 0;
   }
 }
 
-/* ── Desktop: full 3-column layout, fill viewport ── */
+/* ── Desktop: table left, betting right, fill viewport ── */
 @media (min-width: 1280px) {
   .bj-grid {
     display: grid;
-    grid-template-columns: 240px 1fr 280px;
-    gap: 0.75rem;
+    grid-template-columns: 1fr 300px;
+    gap: 1rem;
     flex: 1;
     min-height: 0;
     align-items: start;
   }
 
   .bj-left,
-  .bj-center,
   .bj-right {
     order: unset;
     max-height: calc(100vh - 5.5rem);
@@ -179,6 +162,30 @@
   .bj-left::-webkit-scrollbar,
   .bj-right::-webkit-scrollbar {
     width: 0;
+  }
+}
+
+@media (min-width: 1536px) {
+  .bj-grid {
+    grid-template-columns: 1fr 340px;
+  }
+}
+
+/* ─── Below-table row: rules + history side-by-side on desktop ─── */
+.bj-below-table {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .bj-below-table {
+    flex-direction: row;
+    gap: 0.75rem;
+  }
+  .bj-below-table > * {
+    flex: 1;
+    min-width: 0;
   }
 }
 
