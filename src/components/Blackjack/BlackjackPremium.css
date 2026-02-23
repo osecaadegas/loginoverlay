@@ -112,15 +112,8 @@
   width: 100%;
 }
 
-/* Centre the betting panel with a comfortable max-width */
-.bj-controls-history > .w-full.animate-slide-up,
-.bj-controls-history > .w-full.py-2 {
-  max-width: 420px;
-  width: 100%;
-}
-
-/* Recent bets table stays full-width */
-.bj-controls-history > .rounded-2xl {
+/* Both betting panel and recent bets stay full-width */
+.bj-controls-history > * {
   width: 100%;
 }
 
