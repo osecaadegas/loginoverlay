@@ -1,15 +1,9 @@
 .daily-wheel-page {
   min-height: 100vh;
-  padding: 2rem 1rem;
-  background: radial-gradient(circle at center, #2c3e50 0%, #000000 100%);
+  padding: 0;
+  background: #0f172a;
   position: relative;
   z-index: 1;
   margin-left: 0;
   width: 100%;
-}
-
-@media (max-width: 768px) {
-  .daily-wheel-page {
-    padding: 1rem 0.5rem;
-  }
 }
