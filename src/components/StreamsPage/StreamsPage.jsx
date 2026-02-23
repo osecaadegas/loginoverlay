@@ -63,7 +63,7 @@ export default function StreamsPage() {
             <div className="streams-clips-header">
               <div className="streams-clips-title-row">
                 <span className="streams-clips-bar"></span>
-                <h2 className="streams-clips-title">Últimas Transmissões</h2>
+                <h2 className="streams-clips-title">Stream Highlights</h2>
               </div>
               <div className="streams-clips-nav">
                 <button onClick={() => scrollClips('left')} className="streams-clips-arrow">
