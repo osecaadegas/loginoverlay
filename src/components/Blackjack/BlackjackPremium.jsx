@@ -537,18 +537,17 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
             <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
           </div>
 
+          {/* ─── Betting / Action Zone (center of felt) ─── */}
+          {children && (
+            <div className="flex flex-col items-center">
+              {children}
+            </div>
+          )}
+
           {/* ─── Player Zone ─── */}
           <div className="rounded-2xl border border-white/[0.08] bg-black/10 p-2.5 md:p-3">
             {renderPlayerArea()}
           </div>
-
-          {/* ─── Betting / Action Zone (inside felt) ─── */}
-          {children && (
-            <div className="mt-1">
-              <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent mb-3" />
-              {children}
-            </div>
-          )}
         </div>
       </div>
     </div>
