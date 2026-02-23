@@ -175,10 +175,10 @@ function Card({ card, hidden, index = 0 }) {
     return (
       <div
         style={{ animationDelay: `${index * 0.15}s` }}
-        className="relative h-[110px] w-[78px] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-card-deal opacity-0"
+        className="relative h-[90px] w-[64px] rounded-lg overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-card-deal opacity-0"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900" />
-        <div className="absolute inset-[3px] rounded-[9px] border border-blue-500/30 overflow-hidden">
+        <div className="absolute inset-[3px] rounded-[7px] border border-blue-500/30 overflow-hidden">
           <div
             className="absolute inset-0 opacity-30"
             style={{
@@ -192,8 +192,8 @@ function Card({ card, hidden, index = 0 }) {
             }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-10 h-10 rounded-full border-2 border-blue-400/40 flex items-center justify-center">
-              <span className="text-blue-300/60 text-xl">♠</span>
+            <div className="w-8 h-8 rounded-full border-2 border-blue-400/40 flex items-center justify-center">
+              <span className="text-blue-300/60 text-lg">♠</span>
             </div>
           </div>
         </div>
@@ -215,7 +215,7 @@ function Card({ card, hidden, index = 0 }) {
   return (
     <div
       style={{ animationDelay: `${index * 0.15}s` }}
-      className="relative h-[110px] w-[78px] rounded-xl overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-gray-200/80 animate-card-deal opacity-0"
+      className="relative h-[90px] w-[64px] rounded-lg overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-gray-200/80 animate-card-deal opacity-0"
     >
       <div
         className="absolute inset-0 opacity-[0.03]"
@@ -225,24 +225,24 @@ function Card({ card, hidden, index = 0 }) {
         }}
       />
       {/* Top-left rank + suit */}
-      <div className="absolute top-1.5 left-2 flex flex-col items-center leading-none">
-        <span className={`text-[15px] font-black tracking-tight ${textColor}`}>{rank}</span>
-        <span className={`text-[13px] -mt-0.5 ${textColor}`}>{suitSymbol}</span>
+      <div className="absolute top-1 left-1.5 flex flex-col items-center leading-none">
+        <span className={`text-[13px] font-black tracking-tight ${textColor}`}>{rank}</span>
+        <span className={`text-[11px] -mt-0.5 ${textColor}`}>{suitSymbol}</span>
       </div>
       {/* Bottom-right rank + suit (rotated) */}
-      <div className="absolute bottom-1.5 right-2 flex flex-col items-center leading-none rotate-180">
-        <span className={`text-[15px] font-black tracking-tight ${textColor}`}>{rank}</span>
-        <span className={`text-[13px] -mt-0.5 ${textColor}`}>{suitSymbol}</span>
+      <div className="absolute bottom-1 right-1.5 flex flex-col items-center leading-none rotate-180">
+        <span className={`text-[13px] font-black tracking-tight ${textColor}`}>{rank}</span>
+        <span className={`text-[11px] -mt-0.5 ${textColor}`}>{suitSymbol}</span>
       </div>
       {/* Center artwork */}
       <div className="absolute inset-0 flex items-center justify-center">
         {isAce && (
-          <span className={`text-[44px] leading-none drop-shadow-sm ${textColor}`}>{suitSymbol}</span>
+          <span className={`text-[36px] leading-none drop-shadow-sm ${textColor}`}>{suitSymbol}</span>
         )}
         {isFaceCard && (
           <div className="flex flex-col items-center">
-            <span className={`text-[36px] leading-none ${accentColor}`}>{getFaceCardArt(rank)}</span>
-            <span className={`text-[11px] mt-0.5 font-bold opacity-60 ${textColor}`}>{suitSymbol}</span>
+            <span className={`text-[30px] leading-none ${accentColor}`}>{getFaceCardArt(rank)}</span>
+            <span className={`text-[9px] mt-0.5 font-bold opacity-60 ${textColor}`}>{suitSymbol}</span>
           </div>
         )}
         {!isAce && !isFaceCard && pipCount > 0 && (
@@ -440,9 +440,9 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
   );
 
   const renderPlaceholders = () => (
-    <div className="flex items-center gap-3">
-      <div className="h-[110px] w-[78px] rounded-xl border-2 border-dashed border-white/10" />
-      <div className="h-[110px] w-[78px] rounded-xl border-2 border-dashed border-white/10" />
+    <div className="flex items-center gap-2">
+      <div className="h-[90px] w-[64px] rounded-lg border-2 border-dashed border-white/10" />
+      <div className="h-[90px] w-[64px] rounded-lg border-2 border-dashed border-white/10" />
     </div>
   );
 
@@ -459,7 +459,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Hand {index + 1}</span>
                 {renderScoreBadge(hand, 'Hand')}
               </div>
-              <div className="flex min-h-[100px] items-center justify-center">
+              <div className="flex min-h-[80px] items-center justify-center">
                 {hand.length > 0 ? renderCards(hand, false) : renderPlaceholders()}
               </div>
             </div>
@@ -479,7 +479,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
           </div>
           {renderScoreBadge(playerHand, 'Hand')}
         </div>
-        <div className="flex min-h-[100px] items-center justify-center">
+        <div className="flex min-h-[80px] items-center justify-center">
           {playerHand.length > 0 ? renderCards(playerHand, false) : renderPlaceholders()}
         </div>
       </div>
@@ -487,9 +487,9 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
   };
 
   return (
-    <div className="relative rounded-3xl overflow-hidden">
+    <div className="relative rounded-2xl overflow-hidden">
       {/* Green felt background */}
-      <div className="relative bg-gradient-to-b from-[#11612b] via-[#157a36] to-[#11612b] px-4 py-4 md:px-8 md:py-5">
+      <div className="relative bg-gradient-to-b from-[#11612b] via-[#157a36] to-[#11612b] px-3 py-3 md:px-5 md:py-3">
         {/* Felt texture overlay */}
         <div
           className="absolute inset-0 opacity-[0.07] pointer-events-none"
@@ -499,13 +499,13 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
           }}
         />
         {/* Inner shadow + border */}
-        <div className="absolute inset-0 rounded-3xl shadow-[inset_0_2px_30px_rgba(0,0,0,0.4)] pointer-events-none" />
-        <div className="absolute inset-0 rounded-3xl border-2 border-emerald-950/80 pointer-events-none" />
-        <div className="absolute inset-[2px] rounded-[22px] border border-emerald-500/10 pointer-events-none" />
+        <div className="absolute inset-0 rounded-2xl shadow-[inset_0_2px_30px_rgba(0,0,0,0.4)] pointer-events-none" />
+        <div className="absolute inset-0 rounded-2xl border-2 border-emerald-950/80 pointer-events-none" />
+        <div className="absolute inset-[2px] rounded-[14px] border border-emerald-500/10 pointer-events-none" />
 
-        <div className="relative grid gap-3 md:gap-4">
+        <div className="relative grid gap-2">
           {/* ─── Dealer Zone ─── */}
-          <div className="grid gap-3 rounded-2xl border border-white/[0.08] bg-black/10 p-3 md:p-4">
+          <div className="grid gap-2 rounded-xl border border-white/[0.08] bg-black/10 p-2 md:p-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-6 w-6 rounded-full bg-gray-900/60 flex items-center justify-center border border-white/10">
@@ -515,15 +515,15 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
               </div>
               {renderScoreBadge(dealerHand, 'Hand', true)}
             </div>
-            <div className="flex min-h-[100px] items-center justify-center">
+            <div className="flex min-h-[80px] items-center justify-center">
               {dealerHand.length > 0 ? renderCards(dealerHand, true) : renderPlaceholders()}
             </div>
           </div>
 
           {/* ─── Status Divider ─── */}
-          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-4">
+          <div className="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
             <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
-            <div className={`px-5 py-2 rounded-full text-sm font-bold transition-all duration-300 ${
+            <div className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all duration-300 ${
               gamePhase === 'ended' && message.toLowerCase().includes('bust')
                 ? 'bg-red-500/15 text-red-400 border border-red-500/20'
                 : gamePhase === 'ended' && message.toLowerCase().includes('win')
@@ -538,7 +538,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
           </div>
 
           {/* ─── Player Zone ─── */}
-          <div className="rounded-2xl border border-white/[0.08] bg-black/10 p-3 md:p-4">
+          <div className="rounded-xl border border-white/[0.08] bg-black/10 p-2 md:p-3">
             {renderPlayerArea()}
           </div>
 
@@ -590,22 +590,22 @@ function BettingControls({
   /* ── Betting Phase ── */
   if (gamePhase === 'betting') {
     return (
-      <div className="w-full animate-slide-up space-y-3">
-        <div className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
+      <div className="w-full animate-slide-up space-y-2">
+        <div className="w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
           {/* Bet input */}
-          <div className="mb-3 space-y-2.5">
+          <div className="mb-2 space-y-2">
             <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1.5">
+              <label className="block text-[9px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1">
                 Bet Amount
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-lg font-bold text-gray-500">pts</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500">pts</span>
                 <input
                   type="number"
                   value={betInput}
                   onChange={(e) => handleInputChange(e.target.value)}
                   placeholder="0"
-                  className="w-full rounded-xl border bg-white/[0.04] pl-14 pr-4 py-3 text-2xl font-bold text-white tabular-nums placeholder:text-gray-600 outline-none transition-all duration-200 border-white/[0.08] focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                  className="w-full rounded-lg border bg-white/[0.04] pl-12 pr-3 py-2 text-lg font-bold text-white tabular-nums placeholder:text-gray-600 outline-none transition-all duration-200 border-white/[0.08] focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
                   min={0}
                   max={balance + currentBet}
                   step={1}
@@ -614,31 +614,31 @@ function BettingControls({
             </div>
 
             {/* Quick-adjust buttons */}
-            <div className="grid grid-cols-3 gap-1.5">
-              <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            <div className="grid grid-cols-3 gap-1">
+              <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                 ½
               </button>
-              <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                 2×
               </button>
-              <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                 MAX
               </button>
             </div>
           </div>
 
           {/* Chip rack */}
-          <div className="mb-3 grid grid-cols-5 gap-2 justify-items-center">
+          <div className="mb-2 grid grid-cols-5 gap-1.5 justify-items-center">
             {chipValues.map((value) => (
               <button
                 key={value}
                 onClick={() => onAddChip(value)}
                 disabled={value > balance + currentBet}
-                className={`relative h-11 w-11 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-105 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
+                className={`relative h-9 w-9 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-105 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
               >
-                <div className="absolute inset-[4px] rounded-full border border-white/20" />
-                <div className="absolute inset-[8px] rounded-full border border-dashed border-white/15" />
-                <span className="relative text-xs font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
+                <div className="absolute inset-[3px] rounded-full border border-white/20" />
+                <div className="absolute inset-[6px] rounded-full border border-dashed border-white/15" />
+                <span className="relative text-[10px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
               </button>
             ))}
           </div>
@@ -699,14 +699,14 @@ function BettingControls({
           </div>
 
           {/* Rebet / Clear */}
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+          <div className="grid grid-cols-2 gap-1.5">
             {lastBet > 0 && (
-              <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-xl border border-white/[0.08] bg-white/[0.03] py-2.5 text-xs font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                ↺ Rebet {lastBet} pts
+              <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-lg border border-white/[0.08] bg-white/[0.03] py-1.5 text-[10px] font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+                ↺ Rebet {lastBet}
               </button>
             )}
             {currentBet > 0 && (
-              <button onClick={onClearBet} className="rounded-xl border border-red-500/20 bg-red-500/5 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all">
+              <button onClick={onClearBet} className="rounded-lg border border-red-500/20 bg-red-500/5 py-1.5 text-[10px] font-semibold text-red-400 hover:bg-red-500/10 transition-all">
                 ✕ Clear
               </button>
             )}
@@ -717,7 +717,7 @@ function BettingControls({
         <button
           onClick={onPlaceBet}
           disabled={currentBet === 0}
-          className={`relative w-full overflow-hidden rounded-2xl py-4 text-lg font-black uppercase tracking-[0.1em] transition-all duration-200 ${
+          className={`relative w-full overflow-hidden rounded-xl py-3 text-sm font-black uppercase tracking-[0.1em] transition-all duration-200 ${
             currentBet > 0
               ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:from-emerald-400 hover:to-emerald-500 active:scale-[0.98]'
               : 'bg-white/[0.04] text-gray-600 cursor-not-allowed border border-white/[0.06]'
@@ -732,8 +732,8 @@ function BettingControls({
   /* ── Dealer Turn Phase ── */
   if (gamePhase === 'dealer-turn') {
     return (
-      <div className="w-full py-2">
-        <div className="flex items-center gap-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] px-8 py-4">
+      <div className="w-full py-1">
+        <div className="flex items-center gap-3 rounded-xl bg-white/[0.04] border border-white/[0.06] px-4 py-3">
           <div className="flex gap-1">
             <div className="h-2 w-2 animate-bounce rounded-full bg-amber-500" style={{ animationDelay: '0ms' }} />
             <div className="h-2 w-2 animate-bounce rounded-full bg-amber-500" style={{ animationDelay: '150ms' }} />
@@ -748,11 +748,11 @@ function BettingControls({
   /* ── Playing Phase ── */
   if (gamePhase === 'playing') {
     return (
-      <div className="w-full animate-slide-up grid grid-cols-2 gap-3">
+      <div className="w-full animate-slide-up grid grid-cols-2 gap-2">
         <button
           onClick={onHit}
           disabled={!canHit}
-          className="group relative overflow-hidden rounded-2xl py-4 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-400 hover:to-blue-500 hover:shadow-xl active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          className="group relative overflow-hidden rounded-xl py-3 font-black text-sm uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-400 hover:to-blue-500 hover:shadow-xl active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
         >
           <span className="relative z-10">Hit</span>
           <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium text-blue-200/60 normal-case tracking-normal">Draw a card</span>
@@ -761,20 +761,20 @@ function BettingControls({
         <button
           onClick={onStand}
           disabled={!canStand}
-          className="group relative overflow-hidden rounded-2xl py-4 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:from-red-400 hover:to-red-500 hover:shadow-xl active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          className="group relative overflow-hidden rounded-xl py-3 font-black text-sm uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:from-red-400 hover:to-red-500 hover:shadow-xl active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
         >
           <span className="relative z-10">Stand</span>
-          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium text-red-200/60 normal-case tracking-normal">Keep hand</span>
+          <span className="absolute bottom-0.5 left-1/2 -translate-x-1/2 text-[9px] font-medium text-red-200/60 normal-case tracking-normal">Keep hand</span>
         </button>
 
         {canDouble && (
-          <button onClick={onDouble} className="col-span-2 group relative overflow-hidden rounded-2xl py-3.5 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 hover:from-amber-400 hover:to-amber-500 hover:shadow-xl active:scale-[0.97]">
-            Double Down · {currentBet.toLocaleString()} pts
+          <button onClick={onDouble} className="col-span-2 group relative overflow-hidden rounded-xl py-2.5 font-black text-sm uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 hover:from-amber-400 hover:to-amber-500 hover:shadow-xl active:scale-[0.97]">
+            Double · {currentBet.toLocaleString()} pts
           </button>
         )}
 
         {canSplit && (
-          <button onClick={onSplit} className="col-span-2 group relative overflow-hidden rounded-2xl py-3.5 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-400 hover:to-purple-500 hover:shadow-xl active:scale-[0.97]">
+          <button onClick={onSplit} className="col-span-2 group relative overflow-hidden rounded-xl py-2.5 font-black text-sm uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-400 hover:to-purple-500 hover:shadow-xl active:scale-[0.97]">
             Split Hand
           </button>
         )}
@@ -786,7 +786,7 @@ function BettingControls({
   if (gamePhase === 'ended') {
     return (
       <div className="w-full animate-slide-up">
-        <button onClick={onNextRound} className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-4 text-lg font-black uppercase tracking-[0.1em] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98]">
+        <button onClick={onNextRound} className="w-full rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-3 text-sm font-black uppercase tracking-[0.1em] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98]">
           New Round
         </button>
       </div>
