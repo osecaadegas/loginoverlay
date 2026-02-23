@@ -278,6 +278,13 @@ export default function Sidebar({ className = '', onClose }) {
             {showStreamDropdown && (
               <div className="sidebar-dropdown">
                 <button
+                  className={`sidebar-subitem ${isActive('/streams') ? 'active' : ''}`}
+                  onClick={() => handleNavigation('/streams')}
+                >
+                  <span className="subitem-icon"><i className="fa-brands fa-twitch" /></span>
+                  <span className="subitem-label">{t('nav_streams', 'Streams')}</span>
+                </button>
+                <button
                   className={`sidebar-subitem ${isActive('/daily-wheel') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/daily-wheel')}
                 >

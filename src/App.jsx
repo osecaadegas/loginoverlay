@@ -32,6 +32,7 @@ import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
 import ProfilePage from './components/ProfilePage/ProfilePage';
 import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
+import StreamsPage from './components/StreamsPage/StreamsPage';
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
   const { user } = useAuth();
@@ -610,6 +611,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/offers" element={<OffersPage />} />
+                <Route path="/streams" element={<StreamsPage />} />
                 <Route path="/tournaments" element={<TournamentsPage />} />
                 <Route path="/guess-balance" element={<GuessBalancePage />} />
                 <Route path="/giveaways" element={<GiveawaysPage />} />

@@ -1,0 +1,280 @@
+/* =============================================
+   STREAMS PAGE
+   ============================================= */
+
+.streams-page {
+  width: 100%;
+  min-height: 100vh;
+  background: #0d1117;
+  padding: 24px 16px 48px;
+}
+
+.streams-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+/* ── Player + Chat Row ── */
+
+.streams-player-section {
+  width: 100%;
+}
+
+.streams-player-row {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #161b22;
+}
+
+.streams-video {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.streams-video iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* Chat */
+.streams-chat {
+  display: flex;
+  flex-direction: column;
+  background: #18181b;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  min-height: 0;
+}
+
+.streams-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: #1f1f23;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.streams-chat-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+}
+
+.streams-chat-badge {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.streams-chat-embed {
+  flex: 1;
+  position: relative;
+  min-height: 400px;
+}
+
+.streams-chat-embed iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+/* ── Clips / Últimas Transmissões ── */
+
+.streams-clips-section {
+  width: 100%;
+}
+
+.streams-clips-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.streams-clips-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.streams-clips-bar {
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+  background: #9147ff;
+}
+
+.streams-clips-title {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.streams-clips-nav {
+  display: flex;
+  gap: 6px;
+}
+
+.streams-clips-arrow {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.streams-clips-arrow:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+}
+
+/* Horizontal scroll track */
+.streams-clips-track {
+  display: flex;
+  gap: 14px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  padding-bottom: 8px;
+  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.12) transparent;
+}
+
+.streams-clips-track::-webkit-scrollbar {
+  height: 6px;
+}
+
+.streams-clips-track::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+}
+
+/* Clip Card */
+.streams-clip-card {
+  flex-shrink: 0;
+  width: 320px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  scroll-snap-align: start;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.streams-clip-card:hover {
+  border-color: rgba(145, 71, 255, 0.4);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+}
+
+.streams-clip-thumb {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.streams-clip-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.streams-clip-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  transition: background 0.2s;
+}
+
+.streams-clip-card:hover .streams-clip-play {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.streams-clip-play i {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 165, 0, 0.9);
+  border-radius: 50%;
+  color: #fff;
+  font-size: 1rem;
+  box-shadow: 0 4px 16px rgba(255, 165, 0, 0.4);
+  transition: transform 0.2s;
+}
+
+.streams-clip-card:hover .streams-clip-play i {
+  transform: scale(1.1);
+}
+
+.streams-clip-info {
+  padding: 10px 14px;
+}
+
+.streams-clip-name {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+/* ── Responsive ── */
+
+@media (max-width: 900px) {
+  .streams-player-row {
+    grid-template-columns: 1fr;
+  }
+
+  .streams-chat {
+    border-left: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .streams-chat-embed {
+    min-height: 350px;
+  }
+}
+
+@media (max-width: 640px) {
+  .streams-page {
+    padding: 16px 10px 32px;
+  }
+
+  .streams-clip-card {
+    width: 260px;
+  }
+
+  .streams-clips-title {
+    font-size: 1rem;
+  }
+}
