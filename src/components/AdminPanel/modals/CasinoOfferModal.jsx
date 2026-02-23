@@ -1,5 +1,6 @@
 ﻿import { useState, useEffect } from 'react';
 import { ConfirmButton } from '../components';
+import { GAME_PROVIDERS } from '../../../utils/gameProviders';
 import './CasinoOfferModal.css';
 
 // Deposit methods list
@@ -32,7 +33,7 @@ const EMPTY_FORM = {
   cashback: '',
   bonus_value: '',
   free_spins: '',
-  game_providers: '',
+  game_providers: '[]',
   total_games: '',
   license: '',
   welcome_bonus: '',
@@ -59,13 +60,30 @@ export default function CasinoOfferModal({
   saving = false 
 }) {
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
+  const [providerSearch, setProviderSearch] = useState('');
 
   useEffect(() => {
     if (isOpen) {
+      setProviderSearch('');
       if (editingOffer) {
+        // Parse game_providers — could be JSON array string or plain string
+        let parsedProviders = '[]';
+        if (editingOffer.game_providers) {
+          if (typeof editingOffer.game_providers === 'string') {
+            try {
+              const parsed = JSON.parse(editingOffer.game_providers);
+              parsedProviders = Array.isArray(parsed) ? JSON.stringify(parsed) : '[]';
+            } catch {
+              parsedProviders = '[]';
+            }
+          } else if (Array.isArray(editingOffer.game_providers)) {
+            parsedProviders = JSON.stringify(editingOffer.game_providers);
+          }
+        }
         setFormData({
           ...EMPTY_FORM,
           ...editingOffer,
+          game_providers: parsedProviders,
           deposit_methods: editingOffer.deposit_methods || '',
           video_url: editingOffer.video_url || '',
           promo_code: editingOffer.promo_code || '',
@@ -245,15 +263,53 @@ export default function CasinoOfferModal({
                 <input type="text" value={formData.languages} onChange={e => handleChange('languages', e.target.value)} placeholder="English, Portuguese" />
               </div>
             </div>
-            <div className="co-row">
-              <div className="co-field">
-                <label>Game Providers</label>
-                <input type="text" value={formData.game_providers} onChange={e => handleChange('game_providers', e.target.value)} placeholder="90+" />
-              </div>
-              <div className="co-field">
-                <label>Total Games</label>
-                <input type="text" value={formData.total_games} onChange={e => handleChange('total_games', e.target.value)} placeholder="5000+" />
-              </div>
+            <div className="co-field">
+              <label>Total Games</label>
+              <input type="text" value={formData.total_games} onChange={e => handleChange('total_games', e.target.value)} placeholder="5000+" />
+            </div>
+          </div>
+
+          {/* Top Providers Picker */}
+          <div className="co-section">
+            <div className="co-section-title">
+              Top Providers
+              {(() => {
+                try { const arr = JSON.parse(formData.game_providers); return Array.isArray(arr) && arr.length > 0 ? ` (${arr.length} selected)` : ''; } catch { return ''; }
+              })()}
+            </div>
+            <div className="co-field" style={{ marginBottom: 8 }}>
+              <input
+                type="text"
+                value={providerSearch}
+                onChange={e => setProviderSearch(e.target.value)}
+                placeholder="Search providers..."
+                className="co-provider-search"
+              />
+            </div>
+            <div className="co-provider-grid">
+              {GAME_PROVIDERS
+                .filter(p => !providerSearch || p.name.toLowerCase().includes(providerSearch.toLowerCase()))
+                .map(provider => {
+                  let selectedProviders = [];
+                  try { selectedProviders = JSON.parse(formData.game_providers) || []; } catch { selectedProviders = []; }
+                  const isSelected = selectedProviders.includes(provider.id);
+                  return (
+                    <label key={provider.id} className={`co-provider-chip ${isSelected ? 'selected' : ''}`}>
+                      <input
+                        type="checkbox"
+                        checked={isSelected}
+                        onChange={(e) => {
+                          let providers = [...selectedProviders];
+                          if (e.target.checked) providers.push(provider.id);
+                          else providers = providers.filter(id => id !== provider.id);
+                          handleChange('game_providers', JSON.stringify(providers));
+                        }}
+                      />
+                      <span className="co-provider-name">{provider.name}</span>
+                      {isSelected && <i className="fa-solid fa-check co-provider-check" />}
+                    </label>
+                  );
+                })}
             </div>
           </div>
 
