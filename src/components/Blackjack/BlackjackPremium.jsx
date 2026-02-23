@@ -568,7 +568,8 @@ function BettingControls({
   canHit, canStand, canDouble, canSplit,
   onSetBet, onInputChange, onAddChip, onClearBet, onPlaceBet,
   onHit, onStand, onDouble, onSplit, onNextRound,
-  chipValues
+  chipValues,
+  sideBets, sideBetsOpen, onToggleSideBets, onSideBetChange
 }) {
   const handleInputChange = (val) => {
     const num = val.replace(/[^0-9]/g, '');
@@ -640,6 +641,61 @@ function BettingControls({
                 <span className="relative text-xs font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
               </button>
             ))}
+          </div>
+
+          {/* Side Bets (inline) */}
+          <div className="mb-3">
+            <button
+              onClick={onToggleSideBets}
+              className="flex w-full items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-purple-400 text-xs">🎲</span>
+                <span className="text-xs font-semibold text-white">Side Bets</span>
+                {(sideBets.perfectPair + sideBets.twentyOneThree) > 0 && (
+                  <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-bold text-purple-400">
+                    {sideBets.perfectPair + sideBets.twentyOneThree} pts
+                  </span>
+                )}
+              </div>
+              <svg className={`h-3 w-3 text-gray-500 transition-transform duration-200 ${sideBetsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            {sideBetsOpen && (
+              <div className="mt-2 space-y-2">
+                <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-semibold text-white">Perfect Pair</span>
+                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">25:1</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 mb-1.5">First 2 cards match</p>
+                  <input
+                    type="number"
+                    min="0"
+                    max={10}
+                    value={sideBets.perfectPair}
+                    onChange={(e) => onSideBetChange('perfectPair', parseInt(e.target.value || '0', 10))}
+                    className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-sm text-white outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20"
+                  />
+                </div>
+                <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[11px] font-semibold text-white">21+3</span>
+                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">100:1</span>
+                  </div>
+                  <p className="text-[10px] text-gray-500 mb-1.5">3-card poker hand</p>
+                  <input
+                    type="number"
+                    min="0"
+                    max={10}
+                    value={sideBets.twentyOneThree}
+                    onChange={(e) => onSideBetChange('twentyOneThree', parseInt(e.target.value || '0', 10))}
+                    className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-sm text-white outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20"
+                  />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Rebet / Clear */}
@@ -1486,8 +1542,17 @@ export default function BlackjackPremium() {
       {/* ─── Content Area ─── */}
       <div className="bj-content">
         <div className="bj-grid">
-          {/* Main Column: Table + Controls + History */}
-          <div className="bj-main">
+          {/* Left: Game Rules + Bet History */}
+          <div className="bj-left">
+            <GameRulesPanel
+              isOpen={showRules}
+              onToggle={() => setShowRules(!showRules)}
+            />
+            <BetHistory entries={gameHistory} />
+          </div>
+
+          {/* Center: Table */}
+          <div className="bj-center">
             <BlackjackTable
               dealerHand={dealerHand}
               playerHand={playerHand}
@@ -1498,8 +1563,10 @@ export default function BlackjackPremium() {
               message={message || GAME_PHASE_LABELS[gamePhase]}
               dealerRevealed={dealerRevealed}
             />
+          </div>
 
-            <div className="bj-controls-history">
+          {/* Right: Betting + Side Bets */}
+          <div className="bj-right">
             <BettingControls
               gamePhase={gamePhase}
               currentBet={currentBet}
@@ -1521,24 +1588,10 @@ export default function BlackjackPremium() {
               onSplit={split}
               onNextRound={resetRound}
               chipValues={CHIP_VALUES}
-            />
-
-            <BetHistory entries={gameHistory} />
-            </div>
-          </div>
-
-          {/* Sidebar: Side Bets + Rules */}
-          <div className="bj-aside">
-            <SideBetsPanel
-              isOpen={sideBetsOpen}
-              onToggle={() => setSideBetsOpen(!sideBetsOpen)}
-              gamePhase={gamePhase}
               sideBets={sideBets}
-              onChange={placeSideBet}
-            />
-            <GameRulesPanel
-              isOpen={showRules}
-              onToggle={() => setShowRules(!showRules)}
+              sideBetsOpen={sideBetsOpen}
+              onToggleSideBets={() => setSideBetsOpen(!sideBetsOpen)}
+              onSideBetChange={placeSideBet}
             />
           </div>
         </div>
