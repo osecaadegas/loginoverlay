@@ -535,9 +535,20 @@ export default function TheLife() {
               <h3>{currentCategoryInfo.category_name}</h3>
               <p>{currentCategoryInfo.description}</p>
             </div>
-            <div className="category-info-image">
-              <img src={currentCategoryInfo.image_url} alt={currentCategoryInfo.category_name} />
-            </div>
+            {currentCategoryInfo.image_url && (
+              <div className="category-info-image">
+                <img 
+                  src={currentCategoryInfo.image_url} 
+                  alt={currentCategoryInfo.category_name}
+                  onError={(e) => {
+                    const fallback = categoryFallbackImages[activeTab];
+                    if (fallback && e.target.src !== fallback) {
+                      e.target.src = fallback;
+                    }
+                  }}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -563,8 +574,9 @@ export default function TheLife() {
             const container = document.querySelector('.game-tabs-scroll');
             container.scrollBy({ left: -150, behavior: 'smooth' });
           }}
+          aria-label="Scroll tabs left"
         >
-          ‹
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
         <div 
           className="game-tabs-scroll"
@@ -672,8 +684,9 @@ export default function TheLife() {
             const container = document.querySelector('.game-tabs-scroll');
             container.scrollBy({ left: 150, behavior: 'smooth' });
           }}
+          aria-label="Scroll tabs right"
         >
-          ›
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
       </div>
 
