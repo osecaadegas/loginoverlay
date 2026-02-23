@@ -1499,6 +1499,7 @@ export default function BlackjackPremium() {
               dealerRevealed={dealerRevealed}
             />
 
+            <div className="bj-controls-history">
             <BettingControls
               gamePhase={gamePhase}
               currentBet={currentBet}
@@ -1523,6 +1524,7 @@ export default function BlackjackPremium() {
             />
 
             <BetHistory entries={gameHistory} />
+            </div>
           </div>
 
           {/* Sidebar: Side Bets + Rules */}

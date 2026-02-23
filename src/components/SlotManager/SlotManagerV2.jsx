@@ -3,9 +3,9 @@ import { supabase } from '../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
 import './SlotManagerV2.css';
 
-// ============================================================================
-// HOOKS
-// ============================================================================
+/* ═══════════════════════════════════════════════════════════════════
+   HOOKS
+   ═══════════════════════════════════════════════════════════════════ */
 
 const useDebounce = (value, delay) => {
   const [debouncedValue, setDebouncedValue] = useState(value);
@@ -16,9 +16,9 @@ const useDebounce = (value, delay) => {
   return debouncedValue;
 };
 
-// ============================================================================
-// CONSTANTS
-// ============================================================================
+/* ═══════════════════════════════════════════════════════════════════
+   CONSTANTS
+   ═══════════════════════════════════════════════════════════════════ */
 
 const VOLATILITY_OPTIONS = [
   { value: 'low', label: 'Low', color: '#22c55e' },
@@ -37,225 +37,118 @@ const FEATURE_OPTIONS = [
   'Free Spins', 'Multiplier', 'Buy Bonus', 'Cascading Reels', 'Expanding Wilds',
   'Sticky Wilds', 'Scatter', 'Bonus Game', 'Megaways', 'Hold and Spin',
   'Respins', 'Jackpot', 'Gamble Feature', 'Random Wilds', 'Cluster Pays',
-  'Tumble', 'Wild Symbols', 'Stacked Wilds', 'Mystery Symbols', 'Walking Wilds'
+  'Tumble', 'Wild Symbols', 'Stacked Wilds', 'Mystery Symbols', 'Walking Wilds',
 ];
 
 const PAGE_SIZES = [25, 50, 100, 200];
 
-// ============================================================================
-// SUB-COMPONENTS
-// ============================================================================
+/* ═══════════════════════════════════════════════════════════════════
+   TINY INLINE COMPONENTS
+   ═══════════════════════════════════════════════════════════════════ */
 
-const StatusBadge = memo(({ status }) => {
-  const option = STATUS_OPTIONS.find(o => o.value === status) || STATUS_OPTIONS[0];
-  return (
-    <span className="status-badge" style={{ '--status-color': option.color }}>
-      <span className="status-dot" />
-      {option.label}
-    </span>
-  );
+const StatusDot = memo(({ status }) => {
+  const s = STATUS_OPTIONS.find(o => o.value === status) || STATUS_OPTIONS[0];
+  return <span className="sm-dot" style={{ '--c': s.color }}>{s.label}</span>;
 });
 
-const VolatilityBadge = memo(({ volatility }) => {
-  if (!volatility) return <span className="vol-badge vol-unknown">-</span>;
-  const option = VOLATILITY_OPTIONS.find(o => o.value === volatility);
-  return (
-    <span className="vol-badge" style={{ '--vol-color': option?.color || '#6b7280' }}>
-      {option?.label || volatility}
-    </span>
-  );
+const VolBadge = memo(({ v }) => {
+  if (!v) return <span className="sm-vol sm-vol--none">—</span>;
+  const o = VOLATILITY_OPTIONS.find(x => x.value === v);
+  return <span className="sm-vol" style={{ '--c': o?.color || '#6b7280' }}>{o?.label || v}</span>;
 });
 
-const Checkbox = memo(({ checked, onChange, indeterminate }) => {
+/* ═══════════════════════════════════════════════════════════════════
+   DROPDOWN FILTER (reusable)
+   ═══════════════════════════════════════════════════════════════════ */
+
+const DropdownFilter = memo(({ label, options, selected, onChange }) => {
+  const [open, setOpen] = useState(false);
   const ref = useRef(null);
+
   useEffect(() => {
-    if (ref.current) ref.current.indeterminate = indeterminate;
-  }, [indeterminate]);
-  return (
-    <input ref={ref} type="checkbox" checked={checked} onChange={onChange} className="slot-checkbox" />
-  );
-});
+    const h = (e) => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
+    document.addEventListener('mousedown', h);
+    return () => document.removeEventListener('mousedown', h);
+  }, []);
 
-const SlotRow = memo(({ slot, isSelected, onSelect, onEdit, onDelete, index }) => (
-  <tr className={`slot-row ${isSelected ? 'selected' : ''} ${index % 2 === 0 ? 'even' : 'odd'}`} onClick={() => onEdit(slot)}>
-    <td className="col-checkbox" onClick={e => e.stopPropagation()}>
-      <Checkbox checked={isSelected} onChange={() => onSelect(slot.id)} />
-    </td>
-    <td className="col-image">
-      <div className="slot-image-wrapper">
-        <img src={slot.image || DEFAULT_SLOT_IMAGE} alt={slot.name} loading="lazy" onError={e => e.target.src = DEFAULT_SLOT_IMAGE} />
-      </div>
-    </td>
-    <td className="col-name">
-      <div className="name-cell">
-        <span className="slot-name-text">{slot.name}</span>
-        {slot.is_featured && <span className="featured-star">⭐</span>}
-      </div>
-    </td>
-    <td className="col-provider"><span className="provider-tag">{slot.provider}</span></td>
-    <td className="col-rtp">{slot.rtp ? <span className="rtp-value">{slot.rtp}%</span> : <span className="no-data">—</span>}</td>
-    <td className="col-maxwin">{slot.max_win_multiplier ? <span className="maxwin-value">{Number(slot.max_win_multiplier).toLocaleString()}x</span> : <span className="no-data">—</span>}</td>
-    <td className="col-volatility"><VolatilityBadge volatility={slot.volatility} /></td>
-    <td className="col-status"><StatusBadge status={slot.status || 'live'} /></td>
-    <td className="col-actions" onClick={e => e.stopPropagation()}>
-      <div className="row-actions">
-        <button className="action-btn edit" onClick={() => onEdit(slot)} title="Edit">✏️</button>
-        <button className="action-btn delete" onClick={() => { if (confirm(`Delete "${slot.name}"?`)) onDelete(slot.id); }} title="Delete">🗑️</button>
-      </div>
-    </td>
-  </tr>
-));
-
-// ──────────────── FILTER PANEL ────────────────
-const FilterPanel = memo(({ providers, filters, onFilterChange, isCollapsed, onToggleCollapse }) => {
-  const [providerSearch, setProviderSearch] = useState('');
-  const filteredProviders = providers.filter(p => p.toLowerCase().includes(providerSearch.toLowerCase()));
-
-  const toggle = (key, value, defaults) => {
-    const current = filters[key] || defaults || [];
-    const updated = current.includes(value) ? current.filter(v => v !== value) : [...current, value];
-    onFilterChange(key, updated.length ? updated : null);
+  const toggle = (val) => {
+    const next = selected.includes(val) ? selected.filter(v => v !== val) : [...selected, val];
+    onChange(next);
   };
 
-  if (isCollapsed) return null;
+  const count = selected.length;
 
   return (
-    <div className="filter-panel">
-      <div className="filter-header">
-        <h3>Filters</h3>
-        <button className="filter-toggle" onClick={onToggleCollapse}>✕</button>
-      </div>
-      <div className="filter-section">
-        <h4>Status</h4>
-        <div className="filter-options">
-          {STATUS_OPTIONS.map(opt => (
-            <label key={opt.value} className="filter-option">
-              <input type="checkbox" checked={(filters.status || ['live']).includes(opt.value)} onChange={() => toggle('status', opt.value, ['live'])} />
-              <span style={{ color: opt.color }}>{opt.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div className="filter-section">
-        <h4>Provider ({(filters.providers || []).length || 'All'})</h4>
-        <input type="text" placeholder="Search providers..." value={providerSearch} onChange={e => setProviderSearch(e.target.value)} className="provider-search" />
-        <div className="provider-list">
-          {filteredProviders.map(provider => (
-            <label key={provider} className="filter-option">
-              <input type="checkbox" checked={(filters.providers || []).includes(provider)} onChange={() => toggle('providers', provider)} />
-              <span>{provider}</span>
-            </label>
-          ))}
-        </div>
-        {(filters.providers || []).length > 0 && (
-          <button className="clear-btn" onClick={() => onFilterChange('providers', null)}>Clear providers</button>
-        )}
-      </div>
-      <div className="filter-section">
-        <h4>Volatility</h4>
-        <div className="filter-options">
-          {VOLATILITY_OPTIONS.map(opt => (
-            <label key={opt.value} className="filter-option">
-              <input type="checkbox" checked={(filters.volatility || []).includes(opt.value)} onChange={() => toggle('volatility', opt.value)} />
-              <span style={{ color: opt.color }}>{opt.label}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <div className="filter-section">
-        <h4>RTP Range</h4>
-        <div className="rtp-range">
-          <input type="number" placeholder="Min" value={filters.rtpMin || ''} onChange={e => onFilterChange('rtpMin', e.target.value || null)} min="80" max="100" step="0.1" />
-          <span>to</span>
-          <input type="number" placeholder="Max" value={filters.rtpMax || ''} onChange={e => onFilterChange('rtpMax', e.target.value || null)} min="80" max="100" step="0.1" />
-        </div>
-      </div>
-      <div className="filter-section">
-        <h4>Max Win</h4>
-        <div className="rtp-range">
-          <input type="number" placeholder="Min x" value={filters.maxWinMin || ''} onChange={e => onFilterChange('maxWinMin', e.target.value || null)} min="0" />
-          <span>to</span>
-          <input type="number" placeholder="Max x" value={filters.maxWinMax || ''} onChange={e => onFilterChange('maxWinMax', e.target.value || null)} min="0" />
-        </div>
-      </div>
-      <div className="filter-section">
-        <h4>Features</h4>
-        <div className="filter-options features-filter">
-          {FEATURE_OPTIONS.slice(0, 10).map(feat => (
-            <label key={feat} className="filter-option feature-tag-option">
-              <input type="checkbox" checked={(filters.features || []).includes(feat)} onChange={() => toggle('features', feat)} />
-              <span>{feat}</span>
-            </label>
-          ))}
-        </div>
-      </div>
-      <button className="clear-all-btn" onClick={() => {
-        onFilterChange('providers', null);
-        onFilterChange('volatility', null);
-        onFilterChange('status', ['live']);
-        onFilterChange('rtpMin', null);
-        onFilterChange('rtpMax', null);
-        onFilterChange('maxWinMin', null);
-        onFilterChange('maxWinMax', null);
-        onFilterChange('features', null);
-      }}>
-        Reset All Filters
+    <div className="sm-dropdown" ref={ref}>
+      <button className={`sm-dropdown-btn ${count > 0 ? 'active' : ''}`} onClick={() => setOpen(!open)}>
+        {label}{count > 0 && <span className="sm-badge">{count}</span>}
+        <svg width="10" height="6" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4" stroke="currentColor" strokeWidth="1.5" fill="none" /></svg>
       </button>
+      {open && (
+        <div className="sm-dropdown-menu">
+          {count > 0 && (
+            <button className="sm-dropdown-clear" onClick={() => { onChange([]); setOpen(false); }}>Clear all</button>
+          )}
+          {options.map(opt => (
+            <label key={opt.value} className="sm-dropdown-item">
+              <input type="checkbox" checked={selected.includes(opt.value)} onChange={() => toggle(opt.value)} />
+              {opt.color && <span className="sm-dropdown-dot" style={{ background: opt.color }} />}
+              <span>{opt.label}</span>
+            </label>
+          ))}
+        </div>
+      )}
     </div>
   );
 });
 
-// ──────────────── INSPECTOR PANEL (enhanced) ────────────────
-const InspectorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew }) => {
-  const [formData, setFormData] = useState(slot || {});
+/* ═══════════════════════════════════════════════════════════════════
+   SLIDE-IN EDITOR PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+
+const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew }) => {
+  const [form, setForm] = useState(slot || {});
   const [saving, setSaving] = useState(false);
   const [fetching, setFetching] = useState(false);
   const [fetchResult, setFetchResult] = useState(null);
-  const [activeTab, setActiveTab] = useState('basic');
-  const nameInputRef = useRef(null);
+  const [tab, setTab] = useState('basic');
+  const nameRef = useRef(null);
 
   useEffect(() => {
-    setFormData(slot || {});
+    setForm(slot || {});
     setFetchResult(null);
-    setActiveTab('basic');
-    if (isNew && nameInputRef.current) nameInputRef.current.focus();
+    setTab('basic');
+    if (isNew) setTimeout(() => nameRef.current?.focus(), 100);
   }, [slot, isNew]);
 
-  const handleSave = async () => {
-    if (!formData.name || !formData.provider || !formData.image) {
-      alert('Name, provider, and image are required');
-      return;
-    }
+  const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const save = async () => {
+    if (!form.name || !form.provider || !form.image) return alert('Name, Provider, and Image URL are required.');
     setSaving(true);
-    await onSave(formData);
+    await onSave(form);
     setSaving(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) handleSave();
+  const onKey = (e) => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save();
     if (e.key === 'Escape') onClose();
   };
 
   // AI Fetch
-  const handleAIFetch = async () => {
-    if (!formData.name) {
-      alert('Enter a slot name first');
-      return;
-    }
+  const aiFetch = async () => {
+    if (!form.name) return alert('Enter a slot name first.');
     setFetching(true);
     setFetchResult(null);
     try {
       const res = await fetch('/api/fetch-slot-info', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: formData.name, provider: formData.provider })
+        body: JSON.stringify({ name: form.name, provider: form.provider }),
       });
       const json = await res.json();
-      if (json.success && json.data) {
-        setFetchResult({ ...json, applied: false });
-      } else {
-        setFetchResult({ success: false, message: json.message || 'No data found' });
-      }
+      if (json.success && json.data) setFetchResult({ ...json, applied: false });
+      else setFetchResult({ success: false, message: json.message || 'No data found' });
     } catch (err) {
       setFetchResult({ success: false, message: err.message });
     } finally {
@@ -263,10 +156,10 @@ const InspectorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew
     }
   };
 
-  const applyFetchedData = () => {
+  const applyFetched = () => {
     if (!fetchResult?.data) return;
     const d = fetchResult.data;
-    setFormData(prev => ({
+    setForm(prev => ({
       ...prev,
       ...(d.provider && !prev.provider ? { provider: d.provider } : {}),
       ...(d.rtp ? { rtp: d.rtp } : {}),
@@ -284,193 +177,183 @@ const InspectorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew
     setFetchResult(prev => ({ ...prev, applied: true }));
   };
 
-  const toggleFeature = (feat) => {
-    const current = Array.isArray(formData.features) ? formData.features : [];
-    const updated = current.includes(feat) ? current.filter(f => f !== feat) : [...current, feat];
-    setFormData({ ...formData, features: updated });
+  const toggleFeat = (feat) => {
+    const cur = Array.isArray(form.features) ? form.features : [];
+    set('features', cur.includes(feat) ? cur.filter(f => f !== feat) : [...cur, feat]);
   };
 
   if (!slot && !isNew) return null;
 
+  const tabs = [
+    { id: 'basic', label: 'Basic' },
+    { id: 'stats', label: 'Stats' },
+    { id: 'features', label: 'Features' },
+    { id: 'extra', label: 'Extra' },
+  ];
+
   return (
     <>
-      <div className="inspector-backdrop" onClick={onClose} />
-      <div className="inspector-panel" onKeyDown={handleKeyDown}>
-        <div className="inspector-header">
-          <h3>{isNew ? '➕ New Slot' : '✏️ Edit Slot'}</h3>
-          <div className="inspector-header-actions">
-            <button className={`ai-fetch-btn ${fetching ? 'loading' : ''}`} onClick={handleAIFetch} disabled={fetching} title="Auto-fill slot info using AI">
-              {fetching ? '⏳ Fetching...' : '🤖 AI Fetch'}
+      <div className="sm-overlay" onClick={onClose} />
+      <div className="sm-editor" onKeyDown={onKey}>
+        {/* Header */}
+        <div className="sm-editor-head">
+          <h3>{isNew ? 'Add Slot' : 'Edit Slot'}</h3>
+          <div className="sm-editor-head-actions">
+            <button className={`sm-btn-ai ${fetching ? 'loading' : ''}`} onClick={aiFetch} disabled={fetching}>
+              {fetching ? 'Fetching…' : 'AI Fill'}
             </button>
-            <button className="close-btn" onClick={onClose}>✕</button>
+            <button className="sm-btn-close" onClick={onClose}>
+              <svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+            </button>
           </div>
         </div>
 
-        {/* AI Fetch Result Banner */}
+        {/* Fetch banner */}
         {fetchResult && (
-          <div className={`fetch-result-banner ${fetchResult.success ? 'success' : 'error'}`}>
+          <div className={`sm-fetch-banner ${fetchResult.success ? 'ok' : 'err'}`}>
             {fetchResult.success ? (
               <>
-                <div className="fetch-info">
-                  <span className="fetch-badge">✨ {fetchResult.confidence} confidence</span>
-                  <span className="fetch-source">Source: {fetchResult.source}</span>
-                </div>
-                {!fetchResult.applied ? (
-                  <button className="apply-btn" onClick={applyFetchedData}>Apply Data</button>
-                ) : (
-                  <span className="applied-badge">✅ Applied</span>
-                )}
+                <span className="sm-fetch-info">{fetchResult.confidence} confidence · {fetchResult.source}</span>
+                {!fetchResult.applied
+                  ? <button className="sm-btn-sm" onClick={applyFetched}>Apply</button>
+                  : <span className="sm-applied">Applied</span>}
               </>
             ) : (
-              <span className="fetch-error">{fetchResult.message}</span>
+              <span>{fetchResult.message}</span>
             )}
-            <button className="dismiss-btn" onClick={() => setFetchResult(null)}>✕</button>
+            <button className="sm-btn-close-sm" onClick={() => setFetchResult(null)}>×</button>
           </div>
         )}
 
-        {/* Tab Navigation */}
-        <div className="inspector-tabs">
-          <button className={activeTab === 'basic' ? 'active' : ''} onClick={() => setActiveTab('basic')}>Basic</button>
-          <button className={activeTab === 'stats' ? 'active' : ''} onClick={() => setActiveTab('stats')}>Stats</button>
-          <button className={activeTab === 'features' ? 'active' : ''} onClick={() => setActiveTab('features')}>Features</button>
-          <button className={activeTab === 'extra' ? 'active' : ''} onClick={() => setActiveTab('extra')}>Extra</button>
+        {/* Tabs */}
+        <div className="sm-tabs">
+          {tabs.map(t => (
+            <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>{t.label}</button>
+          ))}
         </div>
 
-        <div className="inspector-body">
-          {/* BASIC TAB */}
-          {activeTab === 'basic' && (
+        {/* Body */}
+        <div className="sm-editor-body">
+          {tab === 'basic' && (
             <>
-              <div className="image-preview">
-                <img src={formData.image || DEFAULT_SLOT_IMAGE} alt="Preview" onError={e => e.target.src = DEFAULT_SLOT_IMAGE} />
-              </div>
-              <div className="form-group">
-                <label>Name *</label>
-                <input ref={nameInputRef} type="text" value={formData.name || ''} onChange={e => setFormData({ ...formData, name: e.target.value })} placeholder="Slot name" />
-              </div>
-              <div className="form-group">
-                <label>Provider *</label>
-                <input type="text" list="provider-list" value={formData.provider || ''} onChange={e => setFormData({ ...formData, provider: e.target.value })} placeholder="Provider name" />
-                <datalist id="provider-list">
-                  {providers.map(p => <option key={p} value={p} />)}
-                </datalist>
-              </div>
-              <div className="form-group">
-                <label>Image URL *</label>
-                <input type="url" value={formData.image || ''} onChange={e => setFormData({ ...formData, image: e.target.value })} placeholder="https://..." />
-              </div>
-              <div className="form-group">
-                <label>Status</label>
-                <select value={formData.status || 'live'} onChange={e => setFormData({ ...formData, status: e.target.value })}>
-                  {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
+              {form.image && (
+                <div className="sm-img-preview">
+                  <img src={form.image || DEFAULT_SLOT_IMAGE} alt="" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                </div>
+              )}
+              <label className="sm-field">
+                <span>Name <em>*</em></span>
+                <input ref={nameRef} value={form.name || ''} onChange={e => set('name', e.target.value)} placeholder="Sweet Bonanza" />
+              </label>
+              <label className="sm-field">
+                <span>Provider <em>*</em></span>
+                <input list="sm-prov-list" value={form.provider || ''} onChange={e => set('provider', e.target.value)} placeholder="Pragmatic Play" />
+                <datalist id="sm-prov-list">{providers.map(p => <option key={p} value={p} />)}</datalist>
+              </label>
+              <label className="sm-field">
+                <span>Image URL <em>*</em></span>
+                <input value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="https://…" />
+              </label>
+              <label className="sm-field">
+                <span>Status</span>
+                <select value={form.status || 'live'} onChange={e => set('status', e.target.value)}>
+                  {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
-              </div>
-              <div className="form-group">
-                <label className="checkbox-label">
-                  <input type="checkbox" checked={formData.is_featured || false} onChange={e => setFormData({ ...formData, is_featured: e.target.checked })} />
-                  <span>⭐ Featured Slot</span>
+              </label>
+              <label className="sm-check">
+                <input type="checkbox" checked={form.is_featured || false} onChange={e => set('is_featured', e.target.checked)} />
+                <span>Featured Slot</span>
+              </label>
+            </>
+          )}
+
+          {tab === 'stats' && (
+            <>
+              <div className="sm-form-row">
+                <label className="sm-field half">
+                  <span>RTP (%)</span>
+                  <input type="number" value={form.rtp || ''} onChange={e => set('rtp', e.target.value || null)} placeholder="96.50" step="0.01" min="80" max="100" />
+                </label>
+                <label className="sm-field half">
+                  <span>Volatility</span>
+                  <select value={form.volatility || ''} onChange={e => set('volatility', e.target.value || null)}>
+                    <option value="">Select…</option>
+                    {VOLATILITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                  </select>
                 </label>
               </div>
+              <div className="sm-form-row">
+                <label className="sm-field half">
+                  <span>Max Win (x)</span>
+                  <input type="number" value={form.max_win_multiplier || ''} onChange={e => set('max_win_multiplier', e.target.value || null)} placeholder="10000" />
+                </label>
+                <label className="sm-field half">
+                  <span>Reels</span>
+                  <input value={form.reels || ''} onChange={e => set('reels', e.target.value || null)} placeholder="5x3" />
+                </label>
+              </div>
+              <div className="sm-form-row">
+                <label className="sm-field half">
+                  <span>Min Bet (€)</span>
+                  <input type="number" value={form.min_bet || ''} onChange={e => set('min_bet', e.target.value || null)} placeholder="0.20" step="0.01" min="0" />
+                </label>
+                <label className="sm-field half">
+                  <span>Max Bet (€)</span>
+                  <input type="number" value={form.max_bet || ''} onChange={e => set('max_bet', e.target.value || null)} placeholder="100" step="0.01" min="0" />
+                </label>
+              </div>
+              <label className="sm-field">
+                <span>Paylines</span>
+                <input value={form.paylines || ''} onChange={e => set('paylines', e.target.value || null)} placeholder="10, 20, 243, Megaways" />
+              </label>
             </>
           )}
 
-          {/* STATS TAB */}
-          {activeTab === 'stats' && (
+          {tab === 'features' && (
             <>
-              <div className="form-row">
-                <div className="form-group half">
-                  <label>RTP (%)</label>
-                  <input type="number" value={formData.rtp || ''} onChange={e => setFormData({ ...formData, rtp: e.target.value || null })} placeholder="96.50" step="0.01" min="80" max="100" />
-                </div>
-                <div className="form-group half">
-                  <label>Volatility</label>
-                  <select value={formData.volatility || ''} onChange={e => setFormData({ ...formData, volatility: e.target.value || null })}>
-                    <option value="">Select...</option>
-                    {VOLATILITY_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-                  </select>
-                </div>
+              <div className="sm-feature-grid">
+                {FEATURE_OPTIONS.map(feat => {
+                  const active = (Array.isArray(form.features) ? form.features : []).includes(feat);
+                  return (
+                    <button key={feat} className={`sm-feat-tag ${active ? 'on' : ''}`} onClick={() => toggleFeat(feat)}>{feat}</button>
+                  );
+                })}
               </div>
-              <div className="form-row">
-                <div className="form-group half">
-                  <label>Max Win (x)</label>
-                  <input type="number" value={formData.max_win_multiplier || ''} onChange={e => setFormData({ ...formData, max_win_multiplier: e.target.value || null })} placeholder="10000" />
-                </div>
-                <div className="form-group half">
-                  <label>Reels</label>
-                  <input type="text" value={formData.reels || ''} onChange={e => setFormData({ ...formData, reels: e.target.value || null })} placeholder="5x3, 6x5, Megaways" />
-                </div>
-              </div>
-              <div className="form-row">
-                <div className="form-group half">
-                  <label>Min Bet (€)</label>
-                  <input type="number" value={formData.min_bet || ''} onChange={e => setFormData({ ...formData, min_bet: e.target.value || null })} placeholder="0.20" step="0.01" min="0" />
-                </div>
-                <div className="form-group half">
-                  <label>Max Bet (€)</label>
-                  <input type="number" value={formData.max_bet || ''} onChange={e => setFormData({ ...formData, max_bet: e.target.value || null })} placeholder="100.00" step="0.01" min="0" />
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Paylines</label>
-                <input type="text" value={formData.paylines || ''} onChange={e => setFormData({ ...formData, paylines: e.target.value || null })} placeholder="10, 20, 243, Megaways, Cluster" />
-              </div>
+              <label className="sm-field">
+                <span>Tags (comma separated)</span>
+                <input value={Array.isArray(form.tags) ? form.tags.join(', ') : (form.tags || '')} onChange={e => set('tags', e.target.value.split(',').map(t => t.trim()).filter(Boolean))} placeholder="popular, new, bonus-buy" />
+              </label>
             </>
           )}
 
-          {/* FEATURES TAB */}
-          {activeTab === 'features' && (
+          {tab === 'extra' && (
             <>
-              <div className="form-group">
-                <label>Features</label>
-                <div className="feature-grid">
-                  {FEATURE_OPTIONS.map(feat => {
-                    const features = Array.isArray(formData.features) ? formData.features : [];
-                    return (
-                      <label key={feat} className={`feature-tag ${features.includes(feat) ? 'active' : ''}`}>
-                        <input type="checkbox" checked={features.includes(feat)} onChange={() => toggleFeature(feat)} />
-                        {feat}
-                      </label>
-                    );
-                  })}
-                </div>
-              </div>
-              <div className="form-group">
-                <label>Tags (comma-separated)</label>
-                <input type="text" value={Array.isArray(formData.tags) ? formData.tags.join(', ') : (formData.tags || '')} onChange={e => setFormData({ ...formData, tags: e.target.value.split(',').map(t => t.trim()).filter(Boolean) })} placeholder="popular, new, bonus-buy" />
-              </div>
-            </>
-          )}
-
-          {/* EXTRA TAB */}
-          {activeTab === 'extra' && (
-            <>
-              <div className="form-group">
-                <label>Theme</label>
-                <input type="text" value={formData.theme || ''} onChange={e => setFormData({ ...formData, theme: e.target.value || null })} placeholder="Egyptian, Fruits, Mythology..." />
-              </div>
-              <div className="form-group">
-                <label>Release Date</label>
-                <input type="date" value={formData.release_date || ''} onChange={e => setFormData({ ...formData, release_date: e.target.value || null })} />
-              </div>
-              <div className="form-group">
-                <label>Description</label>
-                <textarea value={formData.description || ''} onChange={e => setFormData({ ...formData, description: e.target.value || null })} placeholder="Brief slot description..." rows={4} />
-              </div>
+              <label className="sm-field">
+                <span>Theme</span>
+                <input value={form.theme || ''} onChange={e => set('theme', e.target.value || null)} placeholder="Egyptian, Fruits, Mythology…" />
+              </label>
+              <label className="sm-field">
+                <span>Release Date</span>
+                <input type="date" value={form.release_date || ''} onChange={e => set('release_date', e.target.value || null)} />
+              </label>
+              <label className="sm-field">
+                <span>Description</span>
+                <textarea value={form.description || ''} onChange={e => set('description', e.target.value || null)} placeholder="Brief slot description…" rows={4} />
+              </label>
             </>
           )}
         </div>
 
-        <div className="inspector-footer">
-          <div className="footer-left">
-            {!isNew && (
-              <button className="delete-btn" onClick={() => { if (confirm(`Delete "${formData.name}"?`)) onDelete(formData.id); }}>
-                🗑️ Delete
-              </button>
-            )}
-          </div>
-          <div className="footer-right">
-            <button className="cancel-btn" onClick={onClose}>Cancel</button>
-            <button className="save-btn" onClick={handleSave} disabled={saving}>
-              {saving ? '💾 Saving...' : '💾 Save'} <span className="shortcut">Ctrl+Enter</span>
+        {/* Footer */}
+        <div className="sm-editor-foot">
+          {!isNew && (
+            <button className="sm-btn-danger" onClick={() => { if (confirm(`Delete "${form.name}"?`)) onDelete(form.id); }}>Delete</button>
+          )}
+          <div className="sm-foot-right">
+            <button className="sm-btn-ghost" onClick={onClose}>Cancel</button>
+            <button className="sm-btn-primary" onClick={save} disabled={saving}>
+              {saving ? 'Saving…' : 'Save'}
+              <kbd>⌘↵</kbd>
             </button>
           </div>
         </div>
@@ -479,134 +362,100 @@ const InspectorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew
   );
 });
 
-// ──────────────── PROVIDER MANAGER ────────────────
+/* ═══════════════════════════════════════════════════════════════════
+   PROVIDER MANAGER PANEL
+   ═══════════════════════════════════════════════════════════════════ */
+
 const ProviderManager = memo(({ onClose }) => {
-  const [providersList, setProvidersList] = useState([]);
+  const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [editingProvider, setEditingProvider] = useState(null);
+  const [editing, setEditing] = useState(null);
   const [saving, setSaving] = useState(false);
 
-  const loadProviders = useCallback(async () => {
+  const load = useCallback(async () => {
     setLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('slot_providers')
-        .select('*')
-        .order('name');
+      const { data, error } = await supabase.from('slot_providers').select('*').order('name');
       if (error) throw error;
-      setProvidersList(data || []);
-    } catch (err) {
-      console.error('Error loading providers:', err);
-      // Fallback: load from slots directly
+      setList(data || []);
+    } catch {
       try {
         const { data } = await supabase.from('slots').select('provider').order('provider');
         if (data) {
           const unique = [...new Set(data.map(d => (d.provider || '').trim()))].filter(Boolean);
-          setProvidersList(unique.map(name => ({ name, slug: name.toLowerCase().replace(/\s+/g, '-'), logo_url: null, slot_count: 0 })));
+          setList(unique.map(name => ({ name, slug: name.toLowerCase().replace(/\s+/g, '-'), logo_url: null, slot_count: 0 })));
         }
-      } catch (e2) {
-        console.error(e2);
-      }
+      } catch { /* noop */ }
     } finally {
       setLoading(false);
     }
   }, []);
 
-  useEffect(() => { loadProviders(); }, [loadProviders]);
+  useEffect(() => { load(); }, [load]);
 
-  const handleSave = async (provider) => {
+  const handleSave = async (prov) => {
     setSaving(true);
     try {
-      if (provider.id) {
-        const { error } = await supabase.from('slot_providers').update({
-          name: provider.name,
-          logo_url: provider.logo_url,
-          website_url: provider.website_url,
-        }).eq('id', provider.id);
+      if (prov.id) {
+        const { error } = await supabase.from('slot_providers').update({ name: prov.name, logo_url: prov.logo_url, website_url: prov.website_url }).eq('id', prov.id);
         if (error) throw error;
       } else {
-        const { error } = await supabase.from('slot_providers').insert([{
-          name: provider.name,
-          slug: provider.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-          logo_url: provider.logo_url,
-          website_url: provider.website_url,
-        }]);
+        const { error } = await supabase.from('slot_providers').insert([{ name: prov.name, slug: prov.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'), logo_url: prov.logo_url, website_url: prov.website_url }]);
         if (error) throw error;
       }
-      setEditingProvider(null);
-      loadProviders();
+      setEditing(null);
+      load();
     } catch (err) {
-      alert('Error saving: ' + err.message);
+      alert('Error: ' + err.message);
     } finally {
       setSaving(false);
     }
   };
 
-  const filtered = providersList.filter(p =>
-    (p.name || '').toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = list.filter(p => (p.name || '').toLowerCase().includes(search.toLowerCase()));
 
   return (
     <>
-      <div className="inspector-backdrop" onClick={onClose} />
-      <div className="inspector-panel provider-panel" style={{ width: '480px' }}>
-        <div className="inspector-header">
-          <h3>🎮 Provider Manager</h3>
-          <button className="close-btn" onClick={onClose}>✕</button>
+      <div className="sm-overlay" onClick={onClose} />
+      <div className="sm-editor sm-editor--providers">
+        <div className="sm-editor-head">
+          <h3>Providers</h3>
+          <button className="sm-btn-close" onClick={onClose}>
+            <svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+          </button>
         </div>
-        <div className="provider-toolbar">
-          <input type="text" placeholder="Search providers..." value={search} onChange={e => setSearch(e.target.value)} className="provider-search-input" />
-          <button className="add-provider-btn" onClick={() => setEditingProvider({ name: '', logo_url: '', website_url: '' })}>+ Add</button>
+        <div className="sm-prov-toolbar">
+          <input placeholder="Search…" value={search} onChange={e => setSearch(e.target.value)} />
+          <button className="sm-btn-sm" onClick={() => setEditing({ name: '', logo_url: '', website_url: '' })}>+ Add</button>
         </div>
 
-        {editingProvider && (
-          <div className="provider-edit-form">
-            <div className="form-group">
-              <label>Name</label>
-              <input type="text" value={editingProvider.name} onChange={e => setEditingProvider({ ...editingProvider, name: e.target.value })} placeholder="Provider name" />
-            </div>
-            <div className="form-group">
-              <label>Logo URL</label>
-              <input type="text" value={editingProvider.logo_url || ''} onChange={e => setEditingProvider({ ...editingProvider, logo_url: e.target.value })} placeholder="https://..." />
-              {editingProvider.logo_url && (
-                <div className="provider-logo-preview">
-                  <img src={editingProvider.logo_url} alt="Logo" onError={e => e.target.style.display='none'} />
-                </div>
-              )}
-            </div>
-            <div className="form-group">
-              <label>Website URL</label>
-              <input type="text" value={editingProvider.website_url || ''} onChange={e => setEditingProvider({ ...editingProvider, website_url: e.target.value })} placeholder="https://..." />
-            </div>
-            <div className="provider-edit-actions">
-              <button className="cancel-btn" onClick={() => setEditingProvider(null)}>Cancel</button>
-              <button className="save-btn" onClick={() => handleSave(editingProvider)} disabled={saving}>{saving ? 'Saving...' : 'Save'}</button>
+        {editing && (
+          <div className="sm-prov-form">
+            <label className="sm-field"><span>Name</span><input value={editing.name} onChange={e => setEditing({ ...editing, name: e.target.value })} /></label>
+            <label className="sm-field"><span>Logo URL</span><input value={editing.logo_url || ''} onChange={e => setEditing({ ...editing, logo_url: e.target.value })} /></label>
+            {editing.logo_url && <img className="sm-prov-logo-preview" src={editing.logo_url} alt="" onError={e => (e.target.style.display = 'none')} />}
+            <label className="sm-field"><span>Website</span><input value={editing.website_url || ''} onChange={e => setEditing({ ...editing, website_url: e.target.value })} /></label>
+            <div className="sm-prov-form-actions">
+              <button className="sm-btn-ghost" onClick={() => setEditing(null)}>Cancel</button>
+              <button className="sm-btn-primary" onClick={() => handleSave(editing)} disabled={saving}>{saving ? 'Saving…' : 'Save'}</button>
             </div>
           </div>
         )}
 
-        <div className="inspector-body">
+        <div className="sm-editor-body">
           {loading ? (
-            <div className="loading-state"><div className="spinner"></div><p>Loading...</p></div>
+            <div className="sm-empty"><div className="sm-spinner" /><p>Loading…</p></div>
           ) : (
-            <div className="provider-grid">
-              {filtered.map((provider, i) => (
-                <div key={provider.id || i} className="provider-card" onClick={() => setEditingProvider({ ...provider })}>
-                  <div className="provider-card-logo">
-                    {provider.logo_url ? (
-                      <img src={provider.logo_url} alt={provider.name} onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }} />
-                    ) : null}
-                    <div className="provider-card-initial" style={{ display: provider.logo_url ? 'none' : 'flex' }}>
-                      {(provider.name || '?')[0].toUpperCase()}
-                    </div>
-                  </div>
-                  <div className="provider-card-info">
-                    <span className="provider-card-name">{provider.name}</span>
-                    {provider.slot_count > 0 && <span className="provider-card-count">{provider.slot_count} slots</span>}
-                  </div>
-                </div>
+            <div className="sm-prov-grid">
+              {filtered.map((p, i) => (
+                <button key={p.id || i} className="sm-prov-card" onClick={() => setEditing({ ...p })}>
+                  <span className="sm-prov-initial">{(p.name || '?')[0].toUpperCase()}</span>
+                  <span className="sm-prov-name">{p.name}</span>
+                  {p.slot_count > 0 && <span className="sm-prov-count">{p.slot_count}</span>}
+                </button>
               ))}
+              {filtered.length === 0 && <p className="sm-no-results">No providers found</p>}
             </div>
           )}
         </div>
@@ -615,142 +464,93 @@ const ProviderManager = memo(({ onClose }) => {
   );
 });
 
-// ──────────────── BULK ACTION BAR ────────────────
-const BulkActionBar = memo(({ selectedCount, onClear, onBulkDelete, onBulkStatusChange, onBulkFeature }) => {
-  if (selectedCount === 0) return null;
-  return (
-    <div className="bulk-bar">
-      <span className="bulk-count">{selectedCount} selected</span>
-      <div className="bulk-actions">
-        <select onChange={e => { if (e.target.value) { onBulkStatusChange(e.target.value); e.target.value = ''; } }} defaultValue="">
-          <option value="" disabled>Set Status...</option>
-          {STATUS_OPTIONS.map(opt => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
-        </select>
-        <button onClick={() => onBulkFeature(true)}>⭐ Feature</button>
-        <button onClick={() => onBulkFeature(false)}>☆ Unfeature</button>
-        <button className="danger" onClick={onBulkDelete}>🗑️ Delete</button>
-      </div>
-      <button className="clear-selection" onClick={onClear}>✕ Clear</button>
-    </div>
-  );
-});
-
-// ──────────────── PAGINATION ────────────────
-const Pagination = memo(({ page, totalPages, totalCount, pageSize, onPageChange, onPageSizeChange }) => {
-  const startItem = (page - 1) * pageSize + 1;
-  const endItem = Math.min(page * pageSize, totalCount);
-  return (
-    <div className="pagination">
-      <div className="pagination-info">Showing {startItem}-{endItem} of {totalCount}</div>
-      <div className="pagination-controls">
-        <button disabled={page <= 1} onClick={() => onPageChange(1)} title="First page">⏮</button>
-        <button disabled={page <= 1} onClick={() => onPageChange(page - 1)} title="Previous page">◀</button>
-        <span className="page-indicator">Page {page} of {totalPages}</span>
-        <button disabled={page >= totalPages} onClick={() => onPageChange(page + 1)} title="Next page">▶</button>
-        <button disabled={page >= totalPages} onClick={() => onPageChange(totalPages)} title="Last page">⏭</button>
-      </div>
-      <div className="page-size-selector">
-        <select value={pageSize} onChange={e => onPageSizeChange(Number(e.target.value))}>
-          {PAGE_SIZES.map(size => <option key={size} value={size}>{size} per page</option>)}
-        </select>
-      </div>
-    </div>
-  );
-});
-
-// ============================================================================
-// MAIN COMPONENT
-// ============================================================================
+/* ═══════════════════════════════════════════════════════════════════
+   MAIN COMPONENT
+   ═══════════════════════════════════════════════════════════════════ */
 
 const SlotManagerV2 = () => {
+  // Data
   const [slots, setSlots] = useState([]);
   const [providers, setProviders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Filters & search
   const [searchTerm, setSearchTerm] = useState('');
-  const [filters, setFilters] = useState({ status: ['live'] });
+  const [statusFilter, setStatusFilter] = useState(['live']);
+  const [providerFilter, setProviderFilter] = useState([]);
+  const [volFilter, setVolFilter] = useState([]);
+
+  // Pagination & sort
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(50);
   const [sortBy, setSortBy] = useState('name');
   const [sortDir, setSortDir] = useState('asc');
-  const [filtersCollapsed, setFiltersCollapsed] = useState(false);
 
+  // UI state
   const [selectedIds, setSelectedIds] = useState(new Set());
-  const [inspectorSlot, setInspectorSlot] = useState(null);
+  const [editorSlot, setEditorSlot] = useState(null);
   const [isNewSlot, setIsNewSlot] = useState(false);
-  const [showProviderManager, setShowProviderManager] = useState(false);
+  const [showProviders, setShowProviders] = useState(false);
   const [notification, setNotification] = useState(null);
 
   const debouncedSearch = useDebounce(searchTerm, 300);
+  const searchRef = useRef(null);
 
-  const showNotification = useCallback((message, type = 'success') => {
+  /* ── Notifications ─────────────────────────────────────────── */
+  const notify = useCallback((message, type = 'success') => {
     setNotification({ message, type });
     setTimeout(() => setNotification(null), 3000);
   }, []);
 
+  /* ── Load providers ────────────────────────────────────────── */
   const loadProviders = useCallback(async () => {
     try {
       const { data, error } = await supabase.from('slots').select('provider').order('provider');
       if (error) throw error;
-      if (data) {
-        const unique = [...new Set(data.map(d => (d.provider || '').trim()))].filter(Boolean);
-        setProviders(unique);
-      }
-    } catch (error) {
-      console.error('Error loading providers:', error);
+      if (data) setProviders([...new Set(data.map(d => (d.provider || '').trim()))].filter(Boolean));
+    } catch (e) {
+      console.error('loadProviders:', e);
     }
   }, []);
 
   useEffect(() => { loadProviders(); }, [loadProviders]);
 
+  /* ── Load slots (paginated + filtered) ─────────────────────── */
   const loadSlots = useCallback(async () => {
     setLoading(true);
     try {
-      let query = supabase.from('slots').select('*', { count: 'exact' });
+      let q = supabase.from('slots').select('*', { count: 'exact' });
 
-      if (debouncedSearch) query = query.or(`name.ilike.%${debouncedSearch}%,provider.ilike.%${debouncedSearch}%`);
-      if (filters.providers?.length) query = query.in('provider', filters.providers);
-      if (filters.status?.length) query = query.in('status', filters.status);
-      if (filters.volatility?.length) query = query.in('volatility', filters.volatility);
-      if (filters.rtpMin) query = query.gte('rtp', filters.rtpMin);
-      if (filters.rtpMax) query = query.lte('rtp', filters.rtpMax);
-      if (filters.maxWinMin) query = query.gte('max_win_multiplier', filters.maxWinMin);
-      if (filters.maxWinMax) query = query.lte('max_win_multiplier', filters.maxWinMax);
-      // Features filter (JSONB contains)
-      if (filters.features?.length) {
-        filters.features.forEach(feat => {
-          query = query.contains('features', JSON.stringify([feat]));
-        });
-      }
+      if (debouncedSearch) q = q.or(`name.ilike.%${debouncedSearch}%,provider.ilike.%${debouncedSearch}%`);
+      if (statusFilter.length) q = q.in('status', statusFilter);
+      if (providerFilter.length) q = q.in('provider', providerFilter);
+      if (volFilter.length) q = q.in('volatility', volFilter);
 
-      query = query.order(sortBy, { ascending: sortDir === 'asc', nullsFirst: false });
+      q = q.order(sortBy, { ascending: sortDir === 'asc', nullsFirst: false });
       const from = (page - 1) * pageSize;
-      query = query.range(from, from + pageSize - 1);
+      q = q.range(from, from + pageSize - 1);
 
-      const { data, error, count } = await query;
+      const { data, error, count } = await q;
       if (error) throw error;
 
       setSlots(data || []);
       setTotalCount(count || 0);
       setTotalPages(Math.ceil((count || 0) / pageSize));
-    } catch (error) {
-      console.error('Error loading slots:', error);
-      showNotification('Error loading slots', 'error');
+    } catch (e) {
+      console.error('loadSlots:', e);
+      notify('Error loading slots', 'error');
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearch, filters, page, pageSize, sortBy, sortDir, showNotification]);
+  }, [debouncedSearch, statusFilter, providerFilter, volFilter, page, pageSize, sortBy, sortDir, notify]);
 
   useEffect(() => { loadSlots(); }, [loadSlots]);
-  useEffect(() => { setPage(1); }, [debouncedSearch, filters, pageSize]);
+  useEffect(() => { setPage(1); }, [debouncedSearch, statusFilter, providerFilter, volFilter, pageSize]);
 
-  const handleFilterChange = useCallback((key, value) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
-  }, []);
-
-  const handleSelect = useCallback((id) => {
+  /* ── Selection ─────────────────────────────────────────────── */
+  const toggleSelect = useCallback((id) => {
     setSelectedIds(prev => {
       const next = new Set(prev);
       next.has(id) ? next.delete(id) : next.add(id);
@@ -758,12 +558,13 @@ const SlotManagerV2 = () => {
     });
   }, []);
 
-  const handleSelectAll = useCallback(() => {
+  const toggleAll = useCallback(() => {
     setSelectedIds(prev => prev.size === slots.length ? new Set() : new Set(slots.map(s => s.id)));
   }, [slots]);
 
   const clearSelection = useCallback(() => setSelectedIds(new Set()), []);
 
+  /* ── CRUD ──────────────────────────────────────────────────── */
   const handleSave = useCallback(async (formData) => {
     try {
       const d = {
@@ -786,184 +587,256 @@ const SlotManagerV2 = () => {
         is_featured: formData.is_featured || false,
       };
 
-      if (!d.name || !d.provider || !d.image) throw new Error('Name, provider, and image are required');
+      if (!d.name || !d.provider || !d.image) throw new Error('Name, Provider, and Image URL are required.');
 
       if (isNewSlot) {
         const { error } = await supabase.from('slots').insert([d]);
         if (error) throw error;
-        showNotification('Slot created successfully!');
+        notify('Slot created');
       } else {
         const { error } = await supabase.from('slots').update(d).eq('id', formData.id);
         if (error) throw error;
-        showNotification('Slot updated successfully!');
+        notify('Slot updated');
       }
-      setInspectorSlot(null);
+      setEditorSlot(null);
       setIsNewSlot(false);
       await Promise.all([loadSlots(), loadProviders()]);
-    } catch (error) {
-      console.error('Error saving slot:', error);
-      showNotification(error.message, 'error');
+    } catch (e) {
+      console.error('handleSave:', e);
+      notify(e.message, 'error');
     }
-  }, [isNewSlot, loadProviders, loadSlots, showNotification]);
+  }, [isNewSlot, loadSlots, loadProviders, notify]);
 
   const handleDelete = useCallback(async (id) => {
     try {
       const { error } = await supabase.from('slots').delete().eq('id', id);
       if (error) throw error;
-      showNotification('Slot deleted');
-      setInspectorSlot(null);
+      notify('Slot deleted');
+      setEditorSlot(null);
       loadSlots();
-    } catch (error) {
-      showNotification(error.message, 'error');
+    } catch (e) {
+      notify(e.message, 'error');
     }
-  }, [loadSlots, showNotification]);
+  }, [loadSlots, notify]);
 
-  const handleBulkDelete = useCallback(async () => {
-    if (!confirm(`Delete ${selectedIds.size} slots?`)) return;
+  /* ── Bulk actions ──────────────────────────────────────────── */
+  const bulkDelete = useCallback(async () => {
+    if (!confirm(`Delete ${selectedIds.size} slot(s)?`)) return;
     try {
-      const { error } = await supabase.from('slots').delete().in('id', Array.from(selectedIds));
+      const { error } = await supabase.from('slots').delete().in('id', [...selectedIds]);
       if (error) throw error;
-      showNotification(`${selectedIds.size} slots deleted`);
+      notify(`${selectedIds.size} deleted`);
       clearSelection();
       loadSlots();
-    } catch (error) {
-      showNotification(error.message, 'error');
-    }
-  }, [selectedIds, loadSlots, clearSelection, showNotification]);
+    } catch (e) { notify(e.message, 'error'); }
+  }, [selectedIds, loadSlots, clearSelection, notify]);
 
-  const handleBulkStatusChange = useCallback(async (status) => {
+  const bulkStatus = useCallback(async (status) => {
     try {
-      const { error } = await supabase.from('slots').update({ status }).in('id', Array.from(selectedIds));
+      const { error } = await supabase.from('slots').update({ status }).in('id', [...selectedIds]);
       if (error) throw error;
-      showNotification(`${selectedIds.size} slots updated to ${status}`);
+      notify(`${selectedIds.size} → ${status}`);
       clearSelection();
       loadSlots();
-    } catch (error) {
-      showNotification(error.message, 'error');
-    }
-  }, [selectedIds, loadSlots, clearSelection, showNotification]);
+    } catch (e) { notify(e.message, 'error'); }
+  }, [selectedIds, loadSlots, clearSelection, notify]);
 
-  const handleBulkFeature = useCallback(async (featured) => {
+  const bulkFeature = useCallback(async (featured) => {
     try {
-      const { error } = await supabase.from('slots').update({ is_featured: featured }).in('id', Array.from(selectedIds));
+      const { error } = await supabase.from('slots').update({ is_featured: featured }).in('id', [...selectedIds]);
       if (error) throw error;
-      showNotification(`${selectedIds.size} slots ${featured ? 'featured' : 'unfeatured'}`);
+      notify(`${selectedIds.size} ${featured ? 'featured' : 'unfeatured'}`);
       clearSelection();
       loadSlots();
-    } catch (error) {
-      showNotification(error.message, 'error');
-    }
-  }, [selectedIds, loadSlots, clearSelection, showNotification]);
+    } catch (e) { notify(e.message, 'error'); }
+  }, [selectedIds, loadSlots, clearSelection, notify]);
 
-  // Keyboard shortcuts
+  /* ── Keyboard shortcuts ────────────────────────────────────── */
   useEffect(() => {
-    const handleKeyDown = (e) => {
+    const handleKey = (e) => {
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) return;
-      switch (e.key) {
-        case '/': e.preventDefault(); document.querySelector('.search-input')?.focus(); break;
-        case 'n': e.preventDefault(); setInspectorSlot({}); setIsNewSlot(true); break;
-        case 'Escape':
-          if (showProviderManager) setShowProviderManager(false);
-          else if (inspectorSlot) { setInspectorSlot(null); setIsNewSlot(false); }
-          else if (selectedIds.size > 0) clearSelection();
-          break;
+      if (e.key === '/') { e.preventDefault(); searchRef.current?.focus(); }
+      if (e.key === 'n' || e.key === 'N') { e.preventDefault(); setEditorSlot({}); setIsNewSlot(true); }
+      if (e.key === 'Escape') {
+        if (showProviders) setShowProviders(false);
+        else if (editorSlot) { setEditorSlot(null); setIsNewSlot(false); }
+        else if (selectedIds.size > 0) clearSelection();
       }
     };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [inspectorSlot, selectedIds.size, clearSelection, showProviderManager]);
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [editorSlot, selectedIds.size, clearSelection, showProviders]);
 
-  const handleSort = useCallback((column) => {
-    if (sortBy === column) setSortDir(prev => prev === 'asc' ? 'desc' : 'asc');
-    else { setSortBy(column); setSortDir('asc'); }
+  /* ── Sort ───────────────────────────────────────────────────── */
+  const handleSort = useCallback((col) => {
+    if (sortBy === col) setSortDir(p => (p === 'asc' ? 'desc' : 'asc'));
+    else { setSortBy(col); setSortDir('asc'); }
   }, [sortBy]);
 
-  const SortIcon = ({ column }) => {
-    if (sortBy !== column) return <span className="sort-icon">↕</span>;
-    return <span className="sort-icon active">{sortDir === 'asc' ? '↑' : '↓'}</span>;
+  const SortArrow = ({ col }) => {
+    if (sortBy !== col) return <span className="sm-sort">↕</span>;
+    return <span className="sm-sort active">{sortDir === 'asc' ? '↑' : '↓'}</span>;
   };
 
+  /* ── Active filter count ───────────────────────────────────── */
+  const hasNonDefaultFilters = (statusFilter.length > 0 && !(statusFilter.length === 1 && statusFilter[0] === 'live'))
+    || providerFilter.length > 0
+    || volFilter.length > 0;
+
+  const clearAllFilters = () => {
+    setStatusFilter(['live']);
+    setProviderFilter([]);
+    setVolFilter([]);
+    setSearchTerm('');
+  };
+
+  const providerOptions = providers.map(p => ({ value: p, label: p }));
+
+  /* ── Render ─────────────────────────────────────────────────── */
   return (
     <div className="slot-manager-v2">
-      {notification && <div className={`notification ${notification.type}`}>{notification.message}</div>}
+      {/* Toast */}
+      {notification && <div className={`sm-toast ${notification.type}`}>{notification.message}</div>}
 
-      {/* Toolbar */}
-      <div className="toolbar">
-        <div className="toolbar-left">
-          <button className={`filter-toggle-btn ${!filtersCollapsed ? 'active' : ''}`} onClick={() => setFiltersCollapsed(!filtersCollapsed)} title="Toggle filters">
-            {filtersCollapsed ? '☰' : '✕'} Filters
-            {(() => {
-              const count = (filters.providers?.length || 0) + (filters.volatility?.length || 0) + (filters.rtpMin ? 1 : 0) + (filters.rtpMax ? 1 : 0) + (filters.maxWinMin ? 1 : 0) + (filters.maxWinMax ? 1 : 0) + (filters.features?.length || 0);
-              return count > 0 ? <span className="filter-count">{count}</span> : null;
-            })()}
-          </button>
-          <div className="search-wrapper">
-            <span className="search-icon">🔍</span>
-            <input type="text" className="search-input" placeholder="Search slots... (press /)" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
-            {searchTerm && <button className="clear-search" onClick={() => setSearchTerm('')}>✕</button>}
+      {/* ── Toolbar ──────────────────────────────────────── */}
+      <div className="sm-toolbar">
+        <div className="sm-toolbar-left">
+          <div className="sm-search">
+            <svg className="sm-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+            <input ref={searchRef} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search slots…" />
+            {searchTerm && <button className="sm-search-clear" onClick={() => setSearchTerm('')}>×</button>}
           </div>
+          <DropdownFilter label="Status" options={STATUS_OPTIONS} selected={statusFilter} onChange={setStatusFilter} />
+          <DropdownFilter label="Provider" options={providerOptions} selected={providerFilter} onChange={setProviderFilter} />
+          <DropdownFilter label="Volatility" options={VOLATILITY_OPTIONS} selected={volFilter} onChange={setVolFilter} />
+          {hasNonDefaultFilters && (
+            <button className="sm-clear-filters" onClick={clearAllFilters}>Clear filters</button>
+          )}
         </div>
-        <div className="toolbar-right">
-          <span className="total-badge">{totalCount.toLocaleString()} slots</span>
-          <button className="provider-btn" onClick={() => setShowProviderManager(true)} title="Manage Providers">
-            🎮 Providers
-          </button>
-          <button className="add-btn" onClick={() => { setInspectorSlot({}); setIsNewSlot(true); }}>
-            + Add Slot <span className="shortcut">N</span>
-          </button>
+        <div className="sm-toolbar-right">
+          <span className="sm-count">{totalCount.toLocaleString()} slots</span>
+          <button className="sm-btn-ghost" onClick={() => setShowProviders(true)}>Providers</button>
+          <button className="sm-btn-primary" onClick={() => { setEditorSlot({}); setIsNewSlot(true); }}>+ Add Slot</button>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="main-content">
-        <FilterPanel providers={providers} filters={filters} onFilterChange={handleFilterChange} isCollapsed={filtersCollapsed} onToggleCollapse={() => setFiltersCollapsed(!filtersCollapsed)} />
-        <div className="table-container">
-          {loading ? (
-            <div className="loading-state"><div className="spinner"></div><p>Loading slots...</p></div>
-          ) : slots.length === 0 ? (
-            <div className="empty-state"><span className="empty-icon">🎰</span><h3>No slots found</h3><p>Try adjusting your filters or search term</p></div>
-          ) : (
-            <table className="slot-table">
-              <thead>
-                <tr>
-                  <th className="col-checkbox"><Checkbox checked={selectedIds.size === slots.length && slots.length > 0} indeterminate={selectedIds.size > 0 && selectedIds.size < slots.length} onChange={handleSelectAll} /></th>
-                  <th className="col-image">Image</th>
-                  <th className="col-name" onClick={() => handleSort('name')}>Name <SortIcon column="name" /></th>
-                  <th className="col-provider" onClick={() => handleSort('provider')}>Provider <SortIcon column="provider" /></th>
-                  <th className="col-rtp" onClick={() => handleSort('rtp')}>RTP <SortIcon column="rtp" /></th>
-                  <th className="col-maxwin" onClick={() => handleSort('max_win_multiplier')}>Max Win <SortIcon column="max_win_multiplier" /></th>
-                  <th className="col-volatility">Volatility</th>
-                  <th className="col-status">Status</th>
-                  <th className="col-actions">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {slots.map((slot, index) => (
-                  <SlotRow key={slot.id} slot={slot} index={index} isSelected={selectedIds.has(slot.id)} onSelect={handleSelect} onEdit={s => { setInspectorSlot(s); setIsNewSlot(false); }} onDelete={handleDelete} />
-                ))}
-              </tbody>
-            </table>
-          )}
-          {!loading && totalCount > 0 && (
-            <Pagination page={page} totalPages={totalPages} totalCount={totalCount} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} />
-          )}
-        </div>
-
-        {(inspectorSlot || isNewSlot) && (
-          <InspectorPanel slot={inspectorSlot} isNew={isNewSlot} providers={providers} onClose={() => { setInspectorSlot(null); setIsNewSlot(false); }} onSave={handleSave} onDelete={handleDelete} />
-        )}
-
-        {showProviderManager && (
-          <ProviderManager onClose={() => setShowProviderManager(false)} />
+      {/* ── Table ────────────────────────────────────────── */}
+      <div className="sm-table-wrap">
+        {loading ? (
+          <div className="sm-empty"><div className="sm-spinner" /><p>Loading slots…</p></div>
+        ) : slots.length === 0 ? (
+          <div className="sm-empty">
+            <p className="sm-empty-icon">No slots found</p>
+            <p className="sm-empty-sub">Adjust search or filters, or add a new slot.</p>
+          </div>
+        ) : (
+          <table className="sm-table">
+            <thead>
+              <tr>
+                <th className="sm-th-check">
+                  <input
+                    type="checkbox"
+                    checked={selectedIds.size === slots.length && slots.length > 0}
+                    ref={el => { if (el) el.indeterminate = selectedIds.size > 0 && selectedIds.size < slots.length; }}
+                    onChange={toggleAll}
+                  />
+                </th>
+                <th className="sm-th-img" />
+                <th className="sm-th-name" onClick={() => handleSort('name')}>Name <SortArrow col="name" /></th>
+                <th className="sm-th-prov" onClick={() => handleSort('provider')}>Provider <SortArrow col="provider" /></th>
+                <th className="sm-th-rtp" onClick={() => handleSort('rtp')}>RTP <SortArrow col="rtp" /></th>
+                <th className="sm-th-maxwin" onClick={() => handleSort('max_win_multiplier')}>Max Win <SortArrow col="max_win_multiplier" /></th>
+                <th className="sm-th-vol">Vol.</th>
+                <th className="sm-th-status">Status</th>
+                <th className="sm-th-actions" />
+              </tr>
+            </thead>
+            <tbody>
+              {slots.map((slot, i) => {
+                const selected = selectedIds.has(slot.id);
+                return (
+                  <tr key={slot.id} className={`sm-row ${selected ? 'selected' : ''} ${i % 2 ? 'odd' : ''}`} onClick={() => { setEditorSlot(slot); setIsNewSlot(false); }}>
+                    <td className="sm-td-check" onClick={e => e.stopPropagation()}>
+                      <input type="checkbox" checked={selected} onChange={() => toggleSelect(slot.id)} />
+                    </td>
+                    <td className="sm-td-img">
+                      <img src={slot.image || DEFAULT_SLOT_IMAGE} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                    </td>
+                    <td className="sm-td-name">
+                      {slot.name}
+                      {slot.is_featured && <span className="sm-star" title="Featured">★</span>}
+                    </td>
+                    <td className="sm-td-prov">{slot.provider}</td>
+                    <td className="sm-td-rtp">{slot.rtp ? `${slot.rtp}%` : '—'}</td>
+                    <td className="sm-td-maxwin">{slot.max_win_multiplier ? `${Number(slot.max_win_multiplier).toLocaleString()}x` : '—'}</td>
+                    <td className="sm-td-vol"><VolBadge v={slot.volatility} /></td>
+                    <td className="sm-td-status"><StatusDot status={slot.status || 'live'} /></td>
+                    <td className="sm-td-actions" onClick={e => e.stopPropagation()}>
+                      <button className="sm-row-btn" onClick={() => { setEditorSlot(slot); setIsNewSlot(false); }} title="Edit">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" /></svg>
+                      </button>
+                      <button className="sm-row-btn danger" onClick={() => { if (confirm(`Delete "${slot.name}"?`)) handleDelete(slot.id); }} title="Delete">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" /></svg>
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         )}
       </div>
 
-      <BulkActionBar selectedCount={selectedIds.size} onClear={clearSelection} onBulkDelete={handleBulkDelete} onBulkStatusChange={handleBulkStatusChange} onBulkFeature={handleBulkFeature} />
+      {/* ── Pagination ───────────────────────────────────── */}
+      {!loading && totalCount > 0 && (
+        <div className="sm-pagination">
+          <span className="sm-pag-info">
+            {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount}
+          </span>
+          <div className="sm-pag-controls">
+            <button disabled={page <= 1} onClick={() => setPage(1)}>«</button>
+            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>‹</button>
+            <span>{page} / {totalPages}</span>
+            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>›</button>
+            <button disabled={page >= totalPages} onClick={() => setPage(totalPages)}>»</button>
+          </div>
+          <select className="sm-pag-size" value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>
+            {PAGE_SIZES.map(s => <option key={s} value={s}>{s} / page</option>)}
+          </select>
+        </div>
+      )}
 
-      <div className="shortcuts-hint">
-        <span><kbd>/</kbd> Search</span>
-        <span><kbd>N</kbd> New</span>
-        <span><kbd>Esc</kbd> Close/Clear</span>
+      {/* ── Bulk action bar ──────────────────────────────── */}
+      {selectedIds.size > 0 && (
+        <div className="sm-bulk">
+          <span className="sm-bulk-count">{selectedIds.size} selected</span>
+          <select onChange={e => { if (e.target.value) { bulkStatus(e.target.value); e.target.value = ''; } }} defaultValue="">
+            <option value="" disabled>Status…</option>
+            {STATUS_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+          <button className="sm-btn-sm" onClick={() => bulkFeature(true)}>★ Feature</button>
+          <button className="sm-btn-sm" onClick={() => bulkFeature(false)}>☆ Unfeature</button>
+          <button className="sm-btn-sm danger" onClick={bulkDelete}>Delete</button>
+          <button className="sm-btn-close-sm" onClick={clearSelection}>×</button>
+        </div>
+      )}
+
+      {/* ── Editor / Providers panels ────────────────────── */}
+      {(editorSlot || isNewSlot) && (
+        <EditorPanel
+          slot={editorSlot}
+          isNew={isNewSlot}
+          providers={providers}
+          onClose={() => { setEditorSlot(null); setIsNewSlot(false); }}
+          onSave={handleSave}
+          onDelete={handleDelete}
+        />
+      )}
+      {showProviders && <ProviderManager onClose={() => setShowProviders(false)} />}
+
+      {/* ── Shortcuts hint ───────────────────────────────── */}
+      <div className="sm-shortcuts">
+        <kbd>/</kbd> Search &nbsp; <kbd>N</kbd> New &nbsp; <kbd>Esc</kbd> Close
       </div>
     </div>
   );
