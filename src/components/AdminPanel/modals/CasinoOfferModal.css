@@ -480,3 +480,36 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+/* Promo code preview */
+.co-preview-promo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 10px;
+  background: rgba(212, 175, 55, 0.12);
+  border: 1px dashed rgba(212, 175, 55, 0.5);
+  border-radius: 6px;
+  font-size: 12px;
+}
+.co-preview-promo-label {
+  color: #999;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.co-preview-promo-value {
+  color: #d4af37;
+  font-weight: 700;
+  font-family: monospace;
+  letter-spacing: 1px;
+}
+
+/* Video tag preview */
+.co-preview-video-tag {
+  margin-top: 6px;
+  font-size: 11px;
+  color: #8b5cf6;
+  font-weight: 600;
+}

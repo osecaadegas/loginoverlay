@@ -48,6 +48,8 @@ export default function CasinoOfferModal({
     welcome_bonus: '',
     details: '',
     deposit_methods: '',
+    video_url: '',
+    promo_code: '',
     vpn_friendly: false,
     is_premium: false,
     is_active: true,
@@ -61,6 +63,8 @@ export default function CasinoOfferModal({
         setFormData({
           ...editingOffer,
           deposit_methods: editingOffer.deposit_methods || '',
+          video_url: editingOffer.video_url || '',
+          promo_code: editingOffer.promo_code || '',
           vpn_friendly: editingOffer.vpn_friendly || false,
           is_premium: editingOffer.is_premium || false,
           is_active: editingOffer.is_active !== false,
@@ -85,6 +89,8 @@ export default function CasinoOfferModal({
           welcome_bonus: '',
           details: '',
           deposit_methods: '',
+          video_url: '',
+          promo_code: '',
           vpn_friendly: false,
           is_premium: false,
           is_active: true,
@@ -282,6 +288,27 @@ export default function CasinoOfferModal({
               </div>
             </div>
 
+            <div className="co-form-row">
+              <div className="co-form-group">
+                <label>Video URL (.mp4)</label>
+                <input
+                  type="text"
+                  value={formData.video_url}
+                  onChange={(e) => handleChange('video_url', e.target.value)}
+                  placeholder="https://example.com/promo.mp4"
+                />
+              </div>
+              <div className="co-form-group">
+                <label>Promo Code</label>
+                <input
+                  type="text"
+                  value={formData.promo_code}
+                  onChange={(e) => handleChange('promo_code', e.target.value)}
+                  placeholder="e.g., SECA100"
+                />
+              </div>
+            </div>
+
             <div className="co-form-group full">
               <label>Details / Terms</label>
               <textarea
@@ -401,6 +428,15 @@ export default function CasinoOfferModal({
                     <div className="co-preview-stat-value">{formData.cashback || '-'}</div>
                   </div>
                 </div>
+                {formData.promo_code && (
+                  <div className="co-preview-promo">
+                    <span className="co-preview-promo-label">CODE:</span>
+                    <span className="co-preview-promo-value">{formData.promo_code}</span>
+                  </div>
+                )}
+                {formData.video_url && (
+                  <div className="co-preview-video-tag">🎬 Video attached</div>
+                )}
               </div>
             </div>
           </div>

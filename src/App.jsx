@@ -32,6 +32,15 @@ import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
 import ProfilePage from './components/ProfilePage/ProfilePage';
 import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
+// Anti-Cheat Admin Panel
+import AdminLayout from './components/Admin/AdminLayout';
+import DashboardPage from './components/Admin/pages/DashboardPage';
+import AlertsPage from './components/Admin/pages/AlertsPage';
+import LogsPage from './components/Admin/pages/LogsPage';
+import PlayersPage from './components/Admin/pages/PlayersPage';
+import InvestigationPage from './components/Admin/pages/InvestigationPage';
+import CasinoOffersManager from './components/Admin/CasinoOffersManager';
+import GuessBalanceManager from './components/Admin/GuessBalanceManager';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -560,37 +569,38 @@ function LayoutWrapper({ children }) {
   };
 
   const closeSidebar = () => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
+    setSidebarOpen(false);
   };
 
   return (
     <div className="app-layout">
       {showSidebar && (
         <>
-          {/* Mobile toggle button */}
-          {isMobile && (
-            <button 
-              className="sidebar-toggle-btn touch-target" 
-              onClick={toggleSidebar}
-              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-            >
-              {sidebarOpen ? '✕' : '☰'}
-            </button>
-          )}
+          {/* Mobile toggle button - always renders, CSS handles visibility */}
+          <button 
+            className={`sidebar-toggle-btn touch-target ${sidebarOpen ? 'sidebar-open' : ''}`}
+            onClick={() => {
+              console.log('🍔 Hamburger clicked! Current state:', sidebarOpen, '-> setting to:', !sidebarOpen);
+              setSidebarOpen(prev => {
+                console.log('🍔 State update:', prev, '->', !prev);
+                return !prev;
+              });
+            }}
+            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+          >
+            {sidebarOpen ? '✕' : '☰'}
+          </button>
           
           {/* Sidebar with open state */}
+          {console.log('🔧 Rendering Sidebar with className:', sidebarOpen ? 'open' : '(empty)')}
           <Sidebar className={sidebarOpen ? 'open' : ''} onClose={closeSidebar} />
           
-          {/* Backdrop overlay - mobile only */}
-          {isMobile && sidebarOpen && (
-            <div 
-              className="sidebar-backdrop visible" 
-              onClick={closeSidebar}
-              aria-hidden="true"
-            />
-          )}
+          {/* Backdrop overlay - CSS handles visibility */}
+          <div 
+            className={`sidebar-backdrop ${sidebarOpen ? 'visible' : ''}`}
+            onClick={closeSidebar}
+            aria-hidden="true"
+          />
         </>
       )}
       <div className="main-content">
@@ -615,8 +625,6 @@ function App() {
                 <Route path="/giveaways" element={<GiveawaysPage />} />
                 <Route path="/vouchers" element={<VoucherRedeemPage />} />
                 <Route path="/daily-wheel" element={<DailyWheelPage />} />
-                <Route path="/games/dice" element={<div style={{ padding: '20px', color: '#fff' }}>Dice - Coming Soon</div>} />
-                <Route path="/games/roulette" element={<div style={{ padding: '20px', color: '#fff' }}>Roulette - Coming Soon</div>} />
                 <Route path="/games/blackjack" element={<BlackjackPremium />} />
                 <Route path="/games/mines" element={<Mines />} />
                 <Route path="/games/thelife" element={<TheLife />} />
@@ -641,8 +649,27 @@ function App() {
                     <GiveawayCreator />
                   </ProtectedAdminRoute>
                 } />
+                <Route path="/webmod/casino-offers" element={
+                  <ProtectedAdminRoute>
+                    <CasinoOffersManager />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/webmod/guess-balance" element={<GuessBalanceManager />} />
                 
                 <Route path="/admin" element={<AdminPanel />} />
+
+                {/* Anti-Cheat Admin Panel Routes */}
+                <Route path="/anticheat" element={<AdminLayout />}>
+                  <Route index element={<Navigate to="/anticheat/dashboard" replace />} />
+                  <Route path="dashboard" element={<DashboardPage />} />
+                  <Route path="alerts" element={<AlertsPage />} />
+                  <Route path="logs" element={<LogsPage />} />
+                  <Route path="players" element={<PlayersPage />} />
+                  <Route path="investigations" element={<InvestigationPage />} />
+                  <Route path="rules" element={<div style={{ padding: '20px' }}>Rules manager coming soon...</div>} />
+                  <Route path="settings" element={<div style={{ padding: '20px' }}>Settings coming soon...</div>} />
+                  <Route path="docs" element={<div style={{ padding: '20px' }}>Documentation coming soon...</div>} />
+                </Route>
               </Routes>
             </LayoutWrapper>
           </BrowserRouter>

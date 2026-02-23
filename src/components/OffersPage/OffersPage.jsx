@@ -81,6 +81,8 @@ export default function OffersPage() {
             liveSupport: offer.live_support || '24/7',
             established: offer.established || '2024',
             languages: offer.languages || 'English',
+            videoUrl: offer.video_url || '',
+            promoCode: offer.promo_code || '',
             highlights
           };
         });
@@ -148,12 +150,23 @@ export default function OffersPage() {
             </div>
 
             <div className="modern-offer-content">
-              {/* Left Side - Casino Image */}
+              {/* Left Side - Casino Image / Video */}
               <div className="offer-image-section">
                 <div className="info-icon" title="More Information" onClick={() => setFlippedCards(prev => ({...prev, featured: !prev.featured}))}>
                   ℹ️
                 </div>
-                <img src={casinoOffers[0].image} alt={casinoOffers[0].casino} className="offer-casino-image" />
+                {casinoOffers[0].videoUrl ? (
+                  <video
+                    src={casinoOffers[0].videoUrl}
+                    className="offer-casino-video"
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                  />
+                ) : (
+                  <img src={casinoOffers[0].image} alt={casinoOffers[0].casino} className="offer-casino-image" />
+                )}
               </div>
 
               {/* Right Side - Details */}
@@ -229,7 +242,11 @@ export default function OffersPage() {
 
                 {/* Terms */}
                 <div className="offer-terms-modern">
-                  No promo code needed - Bonus activates automatically
+                  {casinoOffers[0].promoCode ? (
+                    <span>Use code <span className="offer-promo-code">{casinoOffers[0].promoCode}</span> at signup</span>
+                  ) : (
+                    'No promo code needed - Bonus activates automatically'
+                  )}
                 </div>
 
                 {/* CTA Button */}
@@ -256,9 +273,20 @@ export default function OffersPage() {
             <div className="offers-rows">
               {casinoOffers.slice(1).map((offer) => (
                 <div key={offer.id} className="offer-row">
-                  {/* Logo */}
+                  {/* Logo / Video */}
                   <div className="offer-row-logo">
-                    <img src={offer.image} alt={offer.casino} />
+                    {offer.videoUrl ? (
+                      <video
+                        src={offer.videoUrl}
+                        className="offer-row-video"
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                      />
+                    ) : (
+                      <img src={offer.image} alt={offer.casino} />
+                    )}
                   </div>
 
                   {/* Stats Columns */}
@@ -289,7 +317,7 @@ export default function OffersPage() {
                     )}
                   </div>
 
-                  {/* Highlights */}
+                  {/* Highlights + Promo Code */}
                   <div className="offer-row-highlights">
                     {(Array.isArray(offer.highlights) ? offer.highlights : ['Exclusive offer', 'VIP program', 'Big bonuses']).slice(0, 3).map((highlight, idx) => (
                       <div key={idx} className="highlight-item">
@@ -297,6 +325,12 @@ export default function OffersPage() {
                         <span>{highlight}</span>
                       </div>
                     ))}
+                    {offer.promoCode && (
+                      <div className="highlight-item promo">
+                        <span className="highlight-check">🎟️</span>
+                        <span>Code: <span className="offer-promo-code">{offer.promoCode}</span></span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Action Buttons */}
