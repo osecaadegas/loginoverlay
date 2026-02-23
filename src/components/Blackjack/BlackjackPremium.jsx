@@ -589,71 +589,70 @@ function BettingControls({
   /* ── Betting Phase ── */
   if (gamePhase === 'betting') {
     return (
-      <div className="w-full animate-slide-up space-y-3">
-        <div className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-4">
-          {/* Bet input */}
-          <div className="mb-3 space-y-2.5">
-            <div>
-              <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1.5">
+      <div className="w-full animate-slide-up space-y-2">
+        <div className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
+          {/* Bet input + quick-adjust in one row */}
+          <div className="mb-2 flex items-end gap-2">
+            <div className="flex-1">
+              <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1">
                 Bet Amount
               </label>
               <div className="relative">
-                <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-lg font-bold text-gray-500">pts</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500">pts</span>
                 <input
                   type="number"
                   value={betInput}
                   onChange={(e) => handleInputChange(e.target.value)}
                   placeholder="0"
-                  className="w-full rounded-xl border bg-white/[0.04] pl-14 pr-4 py-3 text-2xl font-bold text-white tabular-nums placeholder:text-gray-600 outline-none transition-all duration-200 border-white/[0.08] focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
+                  className="w-full rounded-lg border bg-white/[0.04] pl-12 pr-3 py-2 text-xl font-bold text-white tabular-nums placeholder:text-gray-600 outline-none transition-all duration-200 border-white/[0.08] focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
                   min={0}
                   max={balance + currentBet}
                   step={1}
                 />
               </div>
             </div>
-
             {/* Quick-adjust buttons */}
-            <div className="grid grid-cols-3 gap-1.5">
-              <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            <div className="flex gap-1">
+              <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-lg bg-white/[0.06] px-2.5 py-2 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                 ½
               </button>
-              <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-lg bg-white/[0.06] px-2.5 py-2 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                 2×
               </button>
-              <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-lg bg-white/[0.06] px-2 py-1.5 text-[11px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-lg bg-white/[0.06] px-2.5 py-2 text-[11px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
                 MAX
               </button>
             </div>
           </div>
 
-          {/* Chip rack */}
-          <div className="mb-3 grid grid-cols-5 gap-2 justify-items-center">
-            {chipValues.map((value) => (
-              <button
-                key={value}
-                onClick={() => onAddChip(value)}
-                disabled={value > balance + currentBet}
-                className={`relative h-11 w-11 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-105 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
-              >
-                <div className="absolute inset-[4px] rounded-full border border-white/20" />
-                <div className="absolute inset-[8px] rounded-full border border-dashed border-white/15" />
-                <span className="relative text-xs font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Rebet / Clear */}
-          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-            {lastBet > 0 && (
-              <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-xl border border-white/[0.08] bg-white/[0.03] py-2.5 text-xs font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                ↺ Rebet {lastBet} pts
-              </button>
-            )}
-            {currentBet > 0 && (
-              <button onClick={onClearBet} className="rounded-xl border border-red-500/20 bg-red-500/5 py-2.5 text-xs font-semibold text-red-400 hover:bg-red-500/10 transition-all">
-                ✕ Clear
-              </button>
-            )}
+          {/* Chip rack + Rebet/Clear in one row */}
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex gap-1.5">
+              {chipValues.map((value) => (
+                <button
+                  key={value}
+                  onClick={() => onAddChip(value)}
+                  disabled={value > balance + currentBet}
+                  className={`relative h-10 w-10 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-105 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
+                >
+                  <div className="absolute inset-[3px] rounded-full border border-white/20" />
+                  <div className="absolute inset-[7px] rounded-full border border-dashed border-white/15" />
+                  <span className="relative text-[10px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-1.5">
+              {lastBet > 0 && (
+                <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[10px] font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap">
+                  ↺ {lastBet}
+                </button>
+              )}
+              {currentBet > 0 && (
+                <button onClick={onClearBet} className="rounded-lg border border-red-500/20 bg-red-500/5 px-2.5 py-1.5 text-[10px] font-semibold text-red-400 hover:bg-red-500/10 transition-all">
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
@@ -661,7 +660,7 @@ function BettingControls({
         <button
           onClick={onPlaceBet}
           disabled={currentBet === 0}
-          className={`relative w-full overflow-hidden rounded-2xl py-4 text-lg font-black uppercase tracking-[0.1em] transition-all duration-200 ${
+          className={`relative w-full overflow-hidden rounded-xl py-3 text-base font-black uppercase tracking-[0.1em] transition-all duration-200 ${
             currentBet > 0
               ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:from-emerald-400 hover:to-emerald-500 active:scale-[0.98]'
               : 'bg-white/[0.04] text-gray-600 cursor-not-allowed border border-white/[0.06]'
