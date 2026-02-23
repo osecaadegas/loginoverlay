@@ -189,13 +189,6 @@ export default function Sidebar({ className = '', onClose }) {
       isDropdown: true
     },
     { 
-      icon: 'fa-solid fa-gift', 
-      labelKey: 'nav_points_manager',
-      label: 'Points Manager', 
-      path: '/points-manager', 
-      show: isModerator 
-    },
-    { 
       icon: 'fa-solid fa-gear', 
       labelKey: 'nav_admin_panel',
       label: 'Admin Panel', 
@@ -421,13 +414,6 @@ export default function Sidebar({ className = '', onClose }) {
                       >
                         <span className="subitem-icon"><i className="fa-solid fa-gift" /></span>
                         <span className="subitem-label">{t('nav_giveaway_creator', 'Giveaway Creator')}</span>
-                      </button>
-                      <button
-                        className={`sidebar-subitem ${isActive('/webmod/edit-slots') ? 'active' : ''}`}
-                        onClick={() => handleNavigation('/webmod/edit-slots')}
-                      >
-                        <span className="subitem-icon"><i className="fa-solid fa-pen-to-square" /></span>
-                        <span className="subitem-label">{t('nav_edit_slots', 'Edit Slots')}</span>
                       </button>
                     </>
                   )}
