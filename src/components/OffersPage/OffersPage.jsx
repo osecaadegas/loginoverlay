@@ -309,7 +309,13 @@ export default function OffersPage() {
                         <span className="stat-value">{offer.cashback}</span>
                       </div>
                     )}
-                    {!offer.cashback && !offer.freeSpins && (
+                    {offer.promoCode && (
+                      <div className="stat-column">
+                        <span className="stat-label">CODE</span>
+                        <span className="stat-value"><span className="offer-promo-code">{offer.promoCode}</span></span>
+                      </div>
+                    )}
+                    {!offer.cashback && !offer.freeSpins && !offer.promoCode && (
                       <div className="stat-column">
                         <span className="stat-label">-</span>
                         <span className="stat-value">-</span>
@@ -317,7 +323,7 @@ export default function OffersPage() {
                     )}
                   </div>
 
-                  {/* Highlights + Promo Code */}
+                  {/* Highlights */}
                   <div className="offer-row-highlights">
                     {(Array.isArray(offer.highlights) ? offer.highlights : ['Exclusive offer', 'VIP program', 'Big bonuses']).slice(0, 3).map((highlight, idx) => (
                       <div key={idx} className="highlight-item">
@@ -325,12 +331,6 @@ export default function OffersPage() {
                         <span>{highlight}</span>
                       </div>
                     ))}
-                    {offer.promoCode && (
-                      <div className="highlight-item promo">
-                        <span className="highlight-check">🎟️</span>
-                        <span>Code: <span className="offer-promo-code">{offer.promoCode}</span></span>
-                      </div>
-                    )}
                   </div>
 
                   {/* Action Buttons */}
