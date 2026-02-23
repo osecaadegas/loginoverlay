@@ -128,10 +128,11 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
 
   // ==========================================
   // 4. CLICK-AND-DRAG SCROLL (mouse only — touch uses native scroll)
+  //    Uses document-level listeners so clicks on tabs aren't blocked.
   // ==========================================
-  const onPointerDown = (e) => {
-    // Let touch/pen use native scrolling — only hijack mouse drag
-    if (e.pointerType !== 'mouse') return;
+  const onMouseDown = (e) => {
+    // Only left mouse button
+    if (e.button !== 0) return;
     const el = trackRef.current;
     if (!el) return;
     dragState.current = {
@@ -140,28 +141,25 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
       scrollLeft: el.scrollLeft,
       hasMoved: false,
     };
-    el.setPointerCapture(e.pointerId);
     el.style.cursor = 'grabbing';
+    document.addEventListener('mousemove', onDocMouseMove);
+    document.addEventListener('mouseup', onDocMouseUp);
   };
 
-  const onPointerMove = (e) => {
-    if (e.pointerType !== 'mouse') return;
+  const onDocMouseMove = useCallback((e) => {
     const ds = dragState.current;
     if (!ds.isDragging) return;
     const dx = e.clientX - ds.startX;
-    if (Math.abs(dx) > 3) ds.hasMoved = true;
-    trackRef.current.scrollLeft = ds.scrollLeft - dx;
-  };
+    if (Math.abs(dx) > 4) ds.hasMoved = true;
+    if (trackRef.current) trackRef.current.scrollLeft = ds.scrollLeft - dx;
+  }, []);
 
-  const onPointerUp = (e) => {
-    if (e.pointerType !== 'mouse') return;
-    const ds = dragState.current;
-    ds.isDragging = false;
-    if (trackRef.current) {
-      try { trackRef.current.releasePointerCapture(e.pointerId); } catch (_) {}
-      trackRef.current.style.cursor = '';
-    }
-  };
+  const onDocMouseUp = useCallback(() => {
+    dragState.current.isDragging = false;
+    if (trackRef.current) trackRef.current.style.cursor = '';
+    document.removeEventListener('mousemove', onDocMouseMove);
+    document.removeEventListener('mouseup', onDocMouseUp);
+  }, [onDocMouseMove]);
 
   // ==========================================
   // 5. TAB CLICK HANDLER
@@ -217,10 +215,7 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
       <div
         className="cn-track"
         ref={trackRef}
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
+        onMouseDown={onMouseDown}
       >
         {CATEGORY_TABS.map((tab) => {
           const isActive = activeTab === tab.key;
