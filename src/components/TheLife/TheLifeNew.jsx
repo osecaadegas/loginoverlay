@@ -3,12 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTheLifeData } from './hooks/useTheLifeData';
 import { supabase } from '../../config/supabaseClient';
 import { useState, useRef, useEffect, useMemo } from 'react';
-import { useDragScroll } from './hooks/useDragScroll';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './TheLife.css';
 
 // Components
 import WipeCountdown from './components/WipeCountdown';
+import CategoryNav from './components/CategoryNav';
 
 // Category Components
 import TheLifeCrimes from './categories/TheLifeCrimes';
@@ -160,10 +160,9 @@ export default function TheLife() {
   
   // Background music state - default to true for autoplay
   const audioRef = useRef(null);
-  const tabsScrollRef = useRef(null);
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const tabsDragScroll = useDragScroll(tabsScrollRef);
+  const [contentKey, setContentKey] = useState(0); // for content transition animation
   
   // Initialize audio and load saved preferences
   useEffect(() => {
@@ -519,131 +518,19 @@ export default function TheLife() {
         </div>
       )}
 
-      {/* Tab Navigation */}
-      <div className="game-tabs-wrapper">
-        <button 
-          className="tab-scroll-btn left"
-          onClick={() => {
-            const container = document.querySelector('.game-tabs-scroll');
-            container.scrollBy({ left: -150, behavior: 'smooth' });
-          }}
-          aria-label="Scroll tabs left"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-        </button>
-        <div 
-          className="game-tabs-scroll"
-          ref={tabsScrollRef}
-          {...tabsDragScroll}
-        >
-          <div className="game-tabs">
-            {/* CRIMES */}
-            <button 
-              className={`tab tab-image ${activeTab === 'crimes' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('crimes')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/crimes.png" alt="Crimes" />
-            </button>
-            {/* BUSINESSES */}
-            <button
-              className={`tab tab-image ${activeTab === 'businesses' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('businesses')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/businesses.png" alt="Businesses" />
-            </button>
-            {/* BROTHEL */}
-            <button 
-              className={`tab tab-image ${activeTab === 'brothel' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('brothel')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/brothel.png" alt="Brothel" />
-            </button>
-            {/* PVP */}
-            <button 
-              className={`tab tab-image ${activeTab === 'pvp' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('pvp')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/pvp.png" alt="PvP" />
-            </button>
-            {/* HIGH STAKES */}
-            <button 
-              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('highstakes')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-              title="High Stakes"
-            >
-              <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
-            </button>
-            {/* DOCKS */}
-            <button 
-              className={`tab tab-image ${activeTab === 'docks' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('docks')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/Docks.png" alt="Docks" />
-            </button>
-            {/* BLACK MARKET */}
-            <button 
-              className={`tab tab-image ${activeTab === 'market' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('market')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              <img src="/thelife/categories/BlackMarket.png" alt="Market" />
-            </button>
-            {/* SKILLS */}
-            <button 
-              className={`tab tab-image ${activeTab === 'skills' ? 'active' : ''}`}
-              onClick={() => setActiveTab('skills')}
-            >
-              <img src="/thelife/categories/skills.png" alt="Skills" />
-            </button>
-            {/* INVENTORY/STASH */}
-            <button 
-              className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}
-              onClick={() => setActiveTab('inventory')}
-            >
-              <img src="/thelife/categories/Inventory.png" alt="Inventory" />
-            </button>
-            {/* JAIL */}
-            <button 
-              className={`tab tab-image ${activeTab === 'jail' ? 'active' : ''}`}
-              onClick={() => setActiveTab('jail')}
-            >
-              <img src="/thelife/categories/Jail.png" alt="Jail" />
-            </button>
-            {/* HOSPITAL */}
-            <button 
-              className={`tab tab-image ${activeTab === 'hospital' ? 'active' : ''}`}
-              onClick={() => setActiveTab('hospital')}
-            >
-              <img src="/thelife/categories/Hospital.png" alt="Hospital" />
-            </button>
-          </div>
-        </div>
-        <button 
-          className="tab-scroll-btn right"
-          onClick={() => {
-            const container = document.querySelector('.game-tabs-scroll');
-            container.scrollBy({ left: 150, behavior: 'smooth' });
-          }}
-          aria-label="Scroll tabs right"
-        >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-        </button>
-      </div>
+      {/* Premium Category Navigation */}
+      <CategoryNav
+        activeTab={activeTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          setContentKey(k => k + 1); // trigger content transition
+        }}
+        isRestricted={isRestricted}
+        onCategorySound={null} // placeholder: pass a sound function here
+      />
 
-      {/* Render Active Tab Content */}
+      {/* Render Active Tab Content — wrapped for animated transition */}
+      <div className="cn-content-enter" key={contentKey}>
       {activeTab === 'crimes' && (
         <TheLifeCrimes
           player={player}
@@ -845,6 +732,7 @@ export default function TheLife() {
           </div>
         )
       )}
+      </div>{/* end cn-content-enter */}
 
       {/* Event Popup Modal */}
       {showEventPopup && eventPopupData && (

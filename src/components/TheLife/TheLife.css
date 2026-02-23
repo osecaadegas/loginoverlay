@@ -1326,11 +1326,6 @@ input:checked + .toggle-slider:before {
     font-size: 1rem;
   }
 
-  .tab {
-    width: 170px;
-    min-height: 75px;
-  }
-
   .crime-card {
     min-width: 360px;
   }
@@ -1348,11 +1343,6 @@ input:checked + .toggle-slider:before {
 
   .category-info-text p {
     font-size: 1.05rem;
-  }
-
-  .tab {
-    width: 190px;
-    min-height: 80px;
   }
 
   .crime-card {
@@ -1374,16 +1364,6 @@ input:checked + .toggle-slider:before {
   .category-info-text p {
     font-size: 1.15rem;
     line-height: 1.7;
-  }
-
-  .tab {
-    width: 220px;
-    min-height: 90px;
-  }
-
-  .tab-scroll-btn {
-    width: 55px;
-    height: 55px;
   }
 
   .crime-card {
@@ -1463,133 +1443,7 @@ input:checked + .toggle-slider:before {
   transform: scale(1.08);
 }
 
-/* ===== Tabs - Redesigned ===== */
-.game-tabs-wrapper {
-  position: relative;
-  margin-bottom: 10px;
-  overflow: visible;
-}
-
-.game-tabs-scroll {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  scroll-behavior: smooth;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  padding: 5px 48px;
-}
-
-.game-tabs-scroll::-webkit-scrollbar {
-  display: none;
-}
-
-.game-tabs {
-  display: flex;
-  gap: 8px;
-  min-width: min-content;
-}
-
-.tab {
-  flex-shrink: 0;
-  padding: 0;
-  background: rgba(26, 31, 46, 0.7);
-  border: 2px solid rgba(212, 175, 55, 0.35);
-  border-radius: 10px;
-  color: #cbd5e0;
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s;
-  overflow: hidden;
-  width: clamp(90px, 12vw, 160px);
-  min-height: clamp(55px, 7vw, 70px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-}
-
-.tab-scroll-btn {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(212, 175, 55, 0.95);
-  border: 2px solid rgba(212, 175, 55, 0.5);
-  border-radius: 50%;
-  width: 45px;
-  height: 45px;
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 20;
-  transition: all 0.3s;
-  color: #1a1f2e;
-  font-size: 1.4rem;
-  font-weight: bold;
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-  pointer-events: auto;
-}
-
-.tab-scroll-btn svg {
-  pointer-events: none;
-  flex-shrink: 0;
-}
-
-.tab-scroll-btn:hover {
-  background: rgba(212, 175, 55, 1);
-  transform: translateY(-50%) scale(1.15);
-  box-shadow: 0 6px 16px rgba(212, 175, 55, 0.5);
-}
-
-.tab-scroll-btn.left {
-  left: 0;
-}
-
-.tab-scroll-btn.right {
-  right: 0;
-}
-
-.tab-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center;
-  display: block;
-  transform: scale(1.10);
-}
-
-/* Locked Tab Badge */
-.tab-locked {
-  position: relative;
-  filter: grayscale(70%);
-}
-
-.tab-lock-badge {
-  position: absolute;
-  bottom: 2px;
-  right: 2px;
-  background: rgba(0, 0, 0, 0.8);
-  color: #ffd700;
-  font-size: 0.65rem;
-  padding: 2px 5px;
-  border-radius: 4px;
-  border: 1px solid rgba(255, 215, 0, 0.5);
-  font-weight: bold;
-  white-space: nowrap;
-}
-
-.tab:hover {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.5);
-  transform: translateY(-2px);
-}
-
-.tab.active {
-  background: rgba(212, 175, 55, 0.3);
-  border-color: #d4af37;
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
-}
+/* Old tab CSS removed — now in CategoryNav.css */
 
 /* Tab Content */
 .tab-content {
@@ -7190,16 +7044,6 @@ input:checked + .toggle-slider:before {
     display: none;
   }
 
-  /* Navigation Tabs mobile */
-  .game-tabs-scroll {
-    padding: 4px 40px;
-  }
-
-  .tab-scroll-btn {
-    width: 34px;
-    height: 34px;
-  }
-
   /* Stats Display */
   .stats-display {
     flex-direction: column;
@@ -7313,11 +7157,6 @@ input:checked + .toggle-slider:before {
 
   .equipment-grid {
     grid-template-columns: 1fr;
-  }
-
-  .game-tab {
-    padding: 8px 12px;
-    font-size: 0.8125rem;
   }
 
   .modal-content {
