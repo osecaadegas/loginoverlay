@@ -375,47 +375,32 @@ export default function TheLife() {
         </div>
       )}
 
-      {/* Player Stats and Category Info Container */}
-      <div className="stats-and-info-container">
-        {/* Player Stats Bar */}
-        <div className="player-stats-bar">
-          <div className="stats-left-section">
+      {/* ===== REDESIGNED MENUS AREA ===== */}
+
+      {/* Player Stats Card */}
+      <div className="player-stats-bar">
+        <div className="stats-left-section">
           <div className="stat-group">
             <div className="stat-bar">
-              <div 
-                className="stat-fill xp-fill" 
-                style={{ width: `${(player?.xp / (player?.level * 100)) * 100}%` }}
-              />
+              <div className="stat-fill xp-fill" style={{ width: `${(player?.xp / (player?.level * 100)) * 100}%` }} />
               <span className="stat-text">LEVEL {player?.level} - {player?.xp} / {player?.level * 100} XP</span>
             </div>
           </div>
-
           <div className="stat-group">
             <div className="stat-bar">
-              <div 
-                className="stat-fill hp-fill" 
-                style={{ width: `${(player?.hp / player?.max_hp) * 100}%` }}
-              />
+              <div className="stat-fill hp-fill" style={{ width: `${(player?.hp / player?.max_hp) * 100}%` }} />
               <span className="stat-text">HP: {player?.hp} / {player?.max_hp}</span>
             </div>
           </div>
-
           <div className="stat-group">
             <div className="stat-bar">
-              <div 
-                className="stat-fill stamina-fill" 
-                style={{ width: `${(player?.stamina / player?.max_stamina) * 100}%` }}
-              />
+              <div className="stat-fill stamina-fill" style={{ width: `${(player?.stamina / player?.max_stamina) * 100}%` }} />
               <span className="stat-text">STAMINA: {player?.stamina} / {player?.max_stamina}</span>
             </div>
           </div>
-
           <div className="stat-group">
             <div className="stat-bar addiction-bar">
-              <div 
-                className="stat-fill addiction-fill" 
-                style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }}
-              />
+              <div className="stat-fill addiction-fill" style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }} />
               <span className="stat-text">ADDICTION: {player?.addiction || 0} / {player?.max_addiction || 100}</span>
             </div>
           </div>
@@ -424,134 +409,102 @@ export default function TheLife() {
         <div className="stats-right-section">
           <div className="stat-group">
             <div className="stat-bar">
-              <div 
-                className="stat-fill power-fill" 
-                style={{ width: `${Math.min(((player?.power || 0) / 100) * 100, 100)}%` }}
-              />
+              <div className="stat-fill power-fill" style={{ width: `${Math.min(((player?.power || 0) / 100) * 100, 100)}%` }} />
               <span className="stat-text">POWER: {player?.power || 0}</span>
             </div>
           </div>
-
           <div className="stat-group">
             <div className="stat-bar">
-              <div 
-                className="stat-fill intelligence-fill" 
-                style={{ width: `${Math.min(((player?.intelligence || 0) / 100) * 100, 100)}%` }}
-              />
+              <div className="stat-fill intelligence-fill" style={{ width: `${Math.min(((player?.intelligence || 0) / 100) * 100, 100)}%` }} />
               <span className="stat-text">INTELLIGENCE: {player?.intelligence || 0}</span>
             </div>
           </div>
-
           <div className="stat-group">
             <div className="stat-bar">
-              <div 
-                className="stat-fill defense-fill" 
-                style={{ width: `${Math.min(((player?.defense || 0) / 100) * 100, 100)}%` }}
-              />
+              <div className="stat-fill defense-fill" style={{ width: `${Math.min(((player?.defense || 0) / 100) * 100, 100)}%` }} />
               <span className="stat-text">DEFENSE: {player?.defense || 0}</span>
             </div>
           </div>
         </div>
-
-        <div className="stats-bottom-section">
-          {/* Quick Access Buttons Inside Stats Card */}
-          <div className="quick-access-tabs-inline">
-            <button 
-              className="quick-tab-inline compact settings-btn"
-              onClick={() => setShowSettings(true)}
-            >
-              ⚙️ Settings
-            </button>
-            <button 
-              className={`quick-tab-inline compact ${activeTab === 'leaderboard' ? 'active' : ''}`}
-              onClick={() => setActiveTab('leaderboard')}
-            >
-              🏆 Leaderboard
-            </button>
-            <button 
-              className={`quick-tab-inline compact ${activeTab === 'bank' ? 'active' : ''}`}
-              onClick={() => !isRestricted && setActiveTab('bank')}
-              disabled={isRestricted}
-              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
-            >
-              🏦 Bank
-            </button>
-            <button 
-              className={`quick-tab-inline compact ${activeTab === 'profile' ? 'active' : ''}`}
-              onClick={() => setActiveTab('profile')}
-            >
-              👤 Profile
-            </button>
-            <button 
-              className="quick-tab-inline compact season-pass-btn"
-              onClick={() => navigate('/games/thelife/season-pass')}
-            >
-              <span className="sp-icon">⭐</span>
-              <span className="sp-text">Season Pass</span>
-              <span className="sp-badge">NEW</span>
-            </button>
-            <button 
-              className="quick-tab-inline compact news-btn"
-              onClick={() => navigate('/games/thelife/news')}
-            >
-              <span className="news-icon-btn">📰</span>
-              <span className="news-text">News</span>
-              <span className="news-live-dot"></span>
-            </button>
-            {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
-              <button 
-                className="quick-tab-inline compact refill-btn"
-                onClick={quickRefillStamina}
-                title={`Use stamina item (${staminaItemCount} available)`}
-              >
-                ⚡ Refill ({staminaItemCount})
-              </button>
-            )}
-          </div>
-
-          <div className="cash-display compact">
-            <div className="cash-item">
-              <span className="cash-icon">💵</span>
-              <div className="cash-info">
-                <span className="cash-value">${player?.cash?.toLocaleString()}</span>
-                <span className="cash-label">{isPt ? 'Dinheiro' : 'Cash'}</span>
-              </div>
-            </div>
-            <div className="cash-item">
-              <span className="cash-icon">🏦</span>
-              <div className="cash-info">
-                <span className="cash-value">${player?.bank_balance?.toLocaleString()}</span>
-                <span className="cash-label">{isPt ? 'Banco' : 'Bank'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-        </div>
-
-        {/* Category Info Display */}
-        {currentCategoryInfo && (
-          <div className="category-info-display">
-            <div className="category-info-text">
-              <h3>{currentCategoryInfo.category_name}</h3>
-              <p>{currentCategoryInfo.description}</p>
-            </div>
-            {currentCategoryInfo.image_url && (
-              <div className="category-info-image">
-                <img 
-                  src={currentCategoryInfo.image_url} 
-                  alt={currentCategoryInfo.category_name}
-                  onError={(e) => {
-                    const fallback = categoryFallbackImages[activeTab];
-                    if (fallback && e.target.src !== fallback) {
-                      e.target.src = fallback;
-                    }
-                  }}
-                />
-              </div>
-            )}
-          </div>
-        )}
       </div>
+
+      {/* Cash + Quick Access Row */}
+      <div className="menus-action-bar">
+        <div className="cash-display compact">
+          <div className="cash-item">
+            <span className="cash-icon">💵</span>
+            <div className="cash-info">
+              <span className="cash-value">${player?.cash?.toLocaleString()}</span>
+              <span className="cash-label">{isPt ? 'Dinheiro' : 'Cash'}</span>
+            </div>
+          </div>
+          <div className="cash-item">
+            <span className="cash-icon">🏦</span>
+            <div className="cash-info">
+              <span className="cash-value">${player?.bank_balance?.toLocaleString()}</span>
+              <span className="cash-label">{isPt ? 'Banco' : 'Bank'}</span>
+            </div>
+          </div>
+        </div>
+        <div className="quick-access-tabs-inline">
+          <button className="quick-tab-inline compact settings-btn" onClick={() => setShowSettings(true)}>
+            ⚙️ Settings
+          </button>
+          <button className={`quick-tab-inline compact ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>
+            🏆 Leaderboard
+          </button>
+          <button
+            className={`quick-tab-inline compact ${activeTab === 'bank' ? 'active' : ''}`}
+            onClick={() => !isRestricted && setActiveTab('bank')}
+            disabled={isRestricted}
+            style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+          >
+            🏦 Bank
+          </button>
+          <button className={`quick-tab-inline compact ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+            👤 Profile
+          </button>
+          <button className="quick-tab-inline compact season-pass-btn" onClick={() => navigate('/games/thelife/season-pass')}>
+            <span className="sp-icon">⭐</span>
+            <span className="sp-text">Season Pass</span>
+            <span className="sp-badge">NEW</span>
+          </button>
+          <button className="quick-tab-inline compact news-btn" onClick={() => navigate('/games/thelife/news')}>
+            <span className="news-icon-btn">📰</span>
+            <span className="news-text">News</span>
+            <span className="news-live-dot"></span>
+          </button>
+          {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
+            <button className="quick-tab-inline compact refill-btn" onClick={quickRefillStamina} title={`Use stamina item (${staminaItemCount} available)`}>
+              ⚡ Refill ({staminaItemCount})
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Category Info Display */}
+      {currentCategoryInfo && (
+        <div className="category-info-display">
+          {currentCategoryInfo.image_url && (
+            <div className="category-info-image">
+              <img
+                src={currentCategoryInfo.image_url}
+                alt={currentCategoryInfo.category_name}
+                onError={(e) => {
+                  const fallback = categoryFallbackImages[activeTab];
+                  if (fallback && e.target.src !== fallback) {
+                    e.target.src = fallback;
+                  }
+                }}
+              />
+            </div>
+          )}
+          <div className="category-info-text">
+            <h3>{currentCategoryInfo.category_name}</h3>
+            <p>{currentCategoryInfo.description}</p>
+          </div>
+        </div>
+      )}
 
       {/* Status Warnings */}
       {isInJail && (
