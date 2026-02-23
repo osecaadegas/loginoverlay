@@ -13,20 +13,21 @@
   font-size: 1.2rem;
 }
 
-.offers-container {
+.offers-page .offers-container {
   max-width: 1400px;
   margin: 0 auto;
   width: 100%;
+  display: block;
 }
 
-.offers-container h1 {
+.offers-page .offers-container h1 {
   font-size: 2rem;
   color: white;
   margin-bottom: 8px;
   font-weight: 600;
 }
 
-.offers-subtitle {
+.offers-page .offers-subtitle {
   color: #6b7280;
   font-size: 0.95rem;
   margin-bottom: 40px;
@@ -82,20 +83,7 @@
   background-image: linear-gradient(45deg, #FF512F 0%, #F09819 51%, #FF512F 100%);
 }
 
-.offers-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 20px;
-}
 
-/* Modern Offers Grid */
-.offers-modern-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  max-width: 1000px;
-  margin: 0 auto;
-}
 
 /* Featured Card Highlight */
 .op-card-featured {
@@ -112,18 +100,7 @@
   background: #000 !important;
 }
 
-/* More Offers Section */
-.more-offers-section {
-  margin-top: 40px;
-  margin-bottom: 24px;
-}
 
-.more-offers-section h2 {
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin: 0;
-}
 
 /* ========== NEW OFFERS LIST STYLES ========== */
 .offers-list {
@@ -677,17 +654,12 @@
     padding: 60px 15px 30px;
   }
 
-  .offers-container h1 {
+  .offers-page .offers-container h1 {
     font-size: 1.5rem;
   }
 
-  .offers-subtitle {
+  .offers-page .offers-subtitle {
     font-size: 0.9rem;
-  }
-  
-  .offers-grid {
-    grid-template-columns: 1fr;
-    gap: 20px;
   }
 
   /* Modern card responsive */
@@ -756,11 +728,11 @@
     padding: 60px 10px 30px;
   }
 
-  .offers-container h1 {
+  .offers-page .offers-container h1 {
     font-size: 1.25rem;
   }
 
-  .offers-subtitle {
+  .offers-page .offers-subtitle {
     font-size: 0.8rem;
     margin-bottom: 20px;
   }
@@ -815,8 +787,9 @@
 
 .offers-card-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 20px;
+  width: 100%;
 }
 
 /* Card */
@@ -1019,7 +992,7 @@
   border-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Responsive */
+/* Responsive card grid */
 @media (max-width: 640px) {
   .offers-card-grid {
     grid-template-columns: 1fr;
@@ -1032,18 +1005,6 @@
     flex-direction: row;
     align-items: center;
     gap: 8px;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 900px) {
-  .offers-card-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (min-width: 901px) and (max-width: 1200px) {
-  .offers-card-grid {
-    grid-template-columns: repeat(3, 1fr);
   }
 }
 
