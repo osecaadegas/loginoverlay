@@ -406,7 +406,7 @@ function WinOverlay({ winInfo, onDismiss }) {
    GAME TABLE
    ═══════════════════════════════════════════════════════════════ */
 
-function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex, currentBet, gamePhase, message, dealerRevealed }) {
+function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex, currentBet, gamePhase, message, dealerRevealed, children }) {
   const hasCards = dealerHand.length > 0 || playerHand.length > 0;
 
   const renderScoreBadge = (hand, label, isDealer) => {
@@ -542,15 +542,11 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
             {renderPlayerArea()}
           </div>
 
-          {/* ─── Bet Chip Display ─── */}
-          {hasCards && currentBet > 0 && (
-            <div className="absolute bottom-4 right-4 md:bottom-6 md:right-6">
-              <div className="flex items-center gap-2 rounded-full bg-gray-950/70 border border-amber-500/20 pl-3 pr-4 py-1.5">
-                <div className="h-5 w-5 rounded-full bg-gradient-to-b from-amber-400 to-amber-600 flex items-center justify-center">
-                  <span className="text-[8px] font-black text-white">$</span>
-                </div>
-                <span className="text-sm font-bold text-amber-400 tabular-nums">{currentBet.toLocaleString()} pts</span>
-              </div>
+          {/* ─── Betting / Action Zone (inside felt) ─── */}
+          {children && (
+            <div className="mt-1">
+              <div className="h-px bg-gradient-to-r from-transparent via-white/15 to-transparent mb-3" />
+              {children}
             </div>
           )}
         </div>
@@ -589,85 +585,75 @@ function BettingControls({
   /* ── Betting Phase ── */
   if (gamePhase === 'betting') {
     return (
-      <div className="w-full animate-slide-up space-y-2">
-        <div className="w-full rounded-2xl border border-white/[0.06] bg-white/[0.02] p-3">
-          {/* Bet input + quick-adjust in one row */}
-          <div className="mb-2 flex items-end gap-2">
-            <div className="flex-1">
-              <label className="block text-[10px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1">
-                Bet Amount
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500">pts</span>
-                <input
-                  type="number"
-                  value={betInput}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  placeholder="0"
-                  className="w-full rounded-lg border bg-white/[0.04] pl-12 pr-3 py-2 text-xl font-bold text-white tabular-nums placeholder:text-gray-600 outline-none transition-all duration-200 border-white/[0.08] focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
-                  min={0}
-                  max={balance + currentBet}
-                  step={1}
-                />
-              </div>
-            </div>
-            {/* Quick-adjust buttons */}
-            <div className="flex gap-1">
-              <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-lg bg-white/[0.06] px-2.5 py-2 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                ½
-              </button>
-              <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-lg bg-white/[0.06] px-2.5 py-2 text-[11px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                2×
-              </button>
-              <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-lg bg-white/[0.06] px-2.5 py-2 text-[11px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                MAX
-              </button>
-            </div>
-          </div>
+      <div className="w-full animate-slide-up space-y-2.5">
+        {/* Chip rack — centered */}
+        <div className="flex justify-center gap-2">
+          {chipValues.map((value) => (
+            <button
+              key={value}
+              onClick={() => onAddChip(value)}
+              disabled={value > balance + currentBet}
+              className={`relative h-12 w-12 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl hover:-translate-y-1 active:scale-95 ${getChipColor(value)}`}
+            >
+              <div className="absolute inset-[3px] rounded-full border border-white/20" />
+              <div className="absolute inset-[7px] rounded-full border border-dashed border-white/15" />
+              <span className="relative text-[11px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
+            </button>
+          ))}
+        </div>
 
-          {/* Chip rack + Rebet/Clear in one row */}
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex gap-1.5">
-              {chipValues.map((value) => (
-                <button
-                  key={value}
-                  onClick={() => onAddChip(value)}
-                  disabled={value > balance + currentBet}
-                  className={`relative h-10 w-10 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-105 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
-                >
-                  <div className="absolute inset-[3px] rounded-full border border-white/20" />
-                  <div className="absolute inset-[7px] rounded-full border border-dashed border-white/15" />
-                  <span className="relative text-[10px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
-                </button>
-              ))}
-            </div>
-            <div className="flex gap-1.5">
-              {lastBet > 0 && (
-                <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-lg border border-white/[0.08] bg-white/[0.03] px-2.5 py-1.5 text-[10px] font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap">
-                  ↺ {lastBet}
-                </button>
-              )}
-              {currentBet > 0 && (
-                <button onClick={onClearBet} className="rounded-lg border border-red-500/20 bg-red-500/5 px-2.5 py-1.5 text-[10px] font-semibold text-red-400 hover:bg-red-500/10 transition-all">
-                  ✕
-                </button>
-              )}
-            </div>
+        {/* Bet amount display + quick actions */}
+        <div className="flex items-center justify-center gap-2">
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-emerald-200/50">pts</span>
+            <input
+              type="number"
+              value={betInput}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder="0"
+              className="w-40 rounded-xl border bg-black/30 pl-12 pr-3 py-2 text-xl font-bold text-white tabular-nums placeholder:text-white/20 outline-none transition-all duration-200 border-white/10 focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20 text-center"
+              min={0}
+              max={balance + currentBet}
+              step={1}
+            />
           </div>
+          <div className="flex gap-1">
+            <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-lg bg-black/25 border border-white/10 px-2.5 py-2 text-[11px] font-bold text-white/60 hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              ½
+            </button>
+            <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-lg bg-black/25 border border-white/10 px-2.5 py-2 text-[11px] font-bold text-white/60 hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              2×
+            </button>
+            <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-lg bg-black/25 border border-amber-400/20 px-2.5 py-2 text-[11px] font-bold text-amber-400/80 hover:bg-amber-500/15 hover:text-amber-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              MAX
+            </button>
+          </div>
+          {lastBet > 0 && (
+            <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-lg bg-black/25 border border-white/10 px-2.5 py-2 text-[11px] font-bold text-white/60 hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap">
+              ↺ {lastBet}
+            </button>
+          )}
+          {currentBet > 0 && (
+            <button onClick={onClearBet} className="rounded-lg bg-red-500/15 border border-red-400/20 px-2.5 py-2 text-[11px] font-bold text-red-400 hover:bg-red-500/25 transition-all">
+              ✕
+            </button>
+          )}
         </div>
 
         {/* Deal button */}
-        <button
-          onClick={onPlaceBet}
-          disabled={currentBet === 0}
-          className={`relative w-full overflow-hidden rounded-xl py-3 text-base font-black uppercase tracking-[0.1em] transition-all duration-200 ${
-            currentBet > 0
-              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:from-emerald-400 hover:to-emerald-500 active:scale-[0.98]'
-              : 'bg-white/[0.04] text-gray-600 cursor-not-allowed border border-white/[0.06]'
-          }`}
-        >
-          {currentBet > 0 ? `Deal · ${currentBet.toLocaleString()} pts` : 'Enter Bet to Deal'}
-        </button>
+        <div className="flex justify-center">
+          <button
+            onClick={onPlaceBet}
+            disabled={currentBet === 0}
+            className={`overflow-hidden rounded-xl px-10 py-3 text-base font-black uppercase tracking-[0.1em] transition-all duration-200 ${
+              currentBet > 0
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 hover:from-amber-400 hover:to-amber-500 active:scale-[0.97]'
+                : 'bg-black/25 text-white/30 cursor-not-allowed border border-white/[0.08]'
+            }`}
+          >
+            {currentBet > 0 ? `Deal · ${currentBet.toLocaleString()} pts` : 'Place Your Bet'}
+          </button>
+        </div>
       </div>
     );
   }
@@ -675,14 +661,14 @@ function BettingControls({
   /* ── Dealer Turn Phase ── */
   if (gamePhase === 'dealer-turn') {
     return (
-      <div className="w-full py-2">
-        <div className="flex items-center gap-3 rounded-2xl bg-white/[0.04] border border-white/[0.06] px-8 py-4">
+      <div className="w-full py-2 flex justify-center">
+        <div className="flex items-center gap-3 rounded-full bg-black/25 border border-white/10 px-6 py-2.5">
           <div className="flex gap-1">
-            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-500" style={{ animationDelay: '0ms' }} />
-            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-500" style={{ animationDelay: '150ms' }} />
-            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-500" style={{ animationDelay: '300ms' }} />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '0ms' }} />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '150ms' }} />
+            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '300ms' }} />
           </div>
-          <span className="text-sm font-semibold text-gray-400">Dealer is playing...</span>
+          <span className="text-sm font-semibold text-white/70">Dealer is playing...</span>
         </div>
       </div>
     );
@@ -691,34 +677,32 @@ function BettingControls({
   /* ── Playing Phase ── */
   if (gamePhase === 'playing') {
     return (
-      <div className="w-full animate-slide-up grid grid-cols-2 gap-3">
+      <div className="w-full animate-slide-up flex flex-wrap justify-center gap-2.5">
         <button
           onClick={onHit}
           disabled={!canHit}
-          className="group relative overflow-hidden rounded-2xl py-4 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-400 hover:to-blue-500 hover:shadow-xl active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-400 hover:to-blue-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
         >
-          <span className="relative z-10">Hit</span>
-          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium text-blue-200/60 normal-case tracking-normal">Draw a card</span>
+          Hit
         </button>
 
         <button
           onClick={onStand}
           disabled={!canStand}
-          className="group relative overflow-hidden rounded-2xl py-4 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:from-red-400 hover:to-red-500 hover:shadow-xl active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:from-red-400 hover:to-red-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
         >
-          <span className="relative z-10">Stand</span>
-          <span className="absolute bottom-1 left-1/2 -translate-x-1/2 text-[10px] font-medium text-red-200/60 normal-case tracking-normal">Keep hand</span>
+          Stand
         </button>
 
         {canDouble && (
-          <button onClick={onDouble} className="col-span-2 group relative overflow-hidden rounded-2xl py-3.5 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 hover:from-amber-400 hover:to-amber-500 hover:shadow-xl active:scale-[0.97]">
-            Double Down · {currentBet.toLocaleString()} pts
+          <button onClick={onDouble} className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 hover:from-amber-400 hover:to-amber-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97]">
+            Double · {currentBet.toLocaleString()}
           </button>
         )}
 
         {canSplit && (
-          <button onClick={onSplit} className="col-span-2 group relative overflow-hidden rounded-2xl py-3.5 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-400 hover:to-purple-500 hover:shadow-xl active:scale-[0.97]">
-            Split Hand
+          <button onClick={onSplit} className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-400 hover:to-purple-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97]">
+            Split
           </button>
         )}
       </div>
@@ -728,8 +712,8 @@ function BettingControls({
   /* ── Ended Phase ── */
   if (gamePhase === 'ended') {
     return (
-      <div className="w-full animate-slide-up">
-        <button onClick={onNextRound} className="w-full rounded-2xl bg-gradient-to-r from-emerald-500 to-emerald-600 py-4 text-lg font-black uppercase tracking-[0.1em] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.98]">
+      <div className="w-full animate-slide-up flex justify-center">
+        <button onClick={onNextRound} className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-10 py-3 text-base font-black uppercase tracking-[0.1em] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.97]">
           New Round
         </button>
       </div>
@@ -1485,7 +1469,7 @@ export default function BlackjackPremium() {
       {/* ─── Content Area ─── */}
       <div className="bj-content">
         <div className="bj-grid">
-          {/* Main Column: Table + Controls + History */}
+          {/* Main Column: Table + History */}
           <div className="bj-main">
             <BlackjackTable
               dealerHand={dealerHand}
@@ -1496,34 +1480,32 @@ export default function BlackjackPremium() {
               gamePhase={gamePhase}
               message={message || GAME_PHASE_LABELS[gamePhase]}
               dealerRevealed={dealerRevealed}
-            />
-
-            <div className="bj-controls-history">
-            <BettingControls
-              gamePhase={gamePhase}
-              currentBet={currentBet}
-              balance={availablePoints}
-              betInput={betInput}
-              lastBet={lastBet}
-              canHit={gamePhase === 'playing'}
-              canStand={gamePhase === 'playing'}
-              canDouble={canDoubleDown}
-              canSplit={canSplit}
-              onSetBet={setBetAmount}
-              onInputChange={setBetInput}
-              onAddChip={addChipToBet}
-              onClearBet={clearBet}
-              onPlaceBet={startNewRound}
-              onHit={hit}
-              onStand={stand}
-              onDouble={doubleDown}
-              onSplit={split}
-              onNextRound={resetRound}
-              chipValues={CHIP_VALUES}
-            />
+            >
+              <BettingControls
+                gamePhase={gamePhase}
+                currentBet={currentBet}
+                balance={availablePoints}
+                betInput={betInput}
+                lastBet={lastBet}
+                canHit={gamePhase === 'playing'}
+                canStand={gamePhase === 'playing'}
+                canDouble={canDoubleDown}
+                canSplit={canSplit}
+                onSetBet={setBetAmount}
+                onInputChange={setBetInput}
+                onAddChip={addChipToBet}
+                onClearBet={clearBet}
+                onPlaceBet={startNewRound}
+                onHit={hit}
+                onStand={stand}
+                onDouble={doubleDown}
+                onSplit={split}
+                onNextRound={resetRound}
+                chipValues={CHIP_VALUES}
+              />
+            </BlackjackTable>
 
             <BetHistory entries={gameHistory} />
-            </div>
           </div>
 
           {/* Sidebar: Side Bets + Rules */}
