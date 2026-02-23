@@ -175,7 +175,7 @@ function Card({ card, hidden, index = 0 }) {
     return (
       <div
         style={{ animationDelay: `${index * 0.15}s` }}
-        className="relative h-[140px] w-[100px] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-card-deal opacity-0"
+        className="relative h-[110px] w-[78px] rounded-xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.5)] animate-card-deal opacity-0"
       >
         <div className="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900" />
         <div className="absolute inset-[3px] rounded-[9px] border border-blue-500/30 overflow-hidden">
@@ -192,8 +192,8 @@ function Card({ card, hidden, index = 0 }) {
             }}
           />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-12 h-12 rounded-full border-2 border-blue-400/40 flex items-center justify-center">
-              <span className="text-blue-300/60 text-2xl">♠</span>
+            <div className="w-10 h-10 rounded-full border-2 border-blue-400/40 flex items-center justify-center">
+              <span className="text-blue-300/60 text-xl">♠</span>
             </div>
           </div>
         </div>
@@ -215,7 +215,7 @@ function Card({ card, hidden, index = 0 }) {
   return (
     <div
       style={{ animationDelay: `${index * 0.15}s` }}
-      className="relative h-[140px] w-[100px] rounded-xl overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-gray-200/80 animate-card-deal opacity-0"
+      className="relative h-[110px] w-[78px] rounded-xl overflow-hidden bg-gradient-to-br from-white via-gray-50 to-gray-100 shadow-[0_4px_20px_rgba(0,0,0,0.4)] border border-gray-200/80 animate-card-deal opacity-0"
     >
       <div
         className="absolute inset-0 opacity-[0.03]"
@@ -237,11 +237,11 @@ function Card({ card, hidden, index = 0 }) {
       {/* Center artwork */}
       <div className="absolute inset-0 flex items-center justify-center">
         {isAce && (
-          <span className={`text-[52px] leading-none drop-shadow-sm ${textColor}`}>{suitSymbol}</span>
+          <span className={`text-[44px] leading-none drop-shadow-sm ${textColor}`}>{suitSymbol}</span>
         )}
         {isFaceCard && (
           <div className="flex flex-col items-center">
-            <span className={`text-[42px] leading-none ${accentColor}`}>{getFaceCardArt(rank)}</span>
+            <span className={`text-[36px] leading-none ${accentColor}`}>{getFaceCardArt(rank)}</span>
             <span className={`text-[11px] mt-0.5 font-bold opacity-60 ${textColor}`}>{suitSymbol}</span>
           </div>
         )}
@@ -441,8 +441,8 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
 
   const renderPlaceholders = () => (
     <div className="flex items-center gap-3">
-      <div className="h-[140px] w-[100px] rounded-xl border-2 border-dashed border-white/10" />
-      <div className="h-[140px] w-[100px] rounded-xl border-2 border-dashed border-white/10" />
+      <div className="h-[110px] w-[78px] rounded-xl border-2 border-dashed border-white/10" />
+      <div className="h-[110px] w-[78px] rounded-xl border-2 border-dashed border-white/10" />
     </div>
   );
 
@@ -459,7 +459,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
                 <span className="text-[10px] font-semibold uppercase tracking-wider text-white/60">Hand {index + 1}</span>
                 {renderScoreBadge(hand, 'Hand')}
               </div>
-              <div className="flex min-h-[150px] items-center justify-center">
+              <div className="flex min-h-[100px] items-center justify-center">
                 {hand.length > 0 ? renderCards(hand, false) : renderPlaceholders()}
               </div>
             </div>
@@ -479,7 +479,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
           </div>
           {renderScoreBadge(playerHand, 'Hand')}
         </div>
-        <div className="flex min-h-[150px] items-center justify-center">
+        <div className="flex min-h-[100px] items-center justify-center">
           {playerHand.length > 0 ? renderCards(playerHand, false) : renderPlaceholders()}
         </div>
       </div>
@@ -489,7 +489,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
   return (
     <div className="relative rounded-3xl overflow-hidden">
       {/* Green felt background */}
-      <div className="relative bg-gradient-to-b from-[#11612b] via-[#157a36] to-[#11612b] px-6 py-8 md:px-10 md:py-10">
+      <div className="relative bg-gradient-to-b from-[#11612b] via-[#157a36] to-[#11612b] px-4 py-4 md:px-8 md:py-5">
         {/* Felt texture overlay */}
         <div
           className="absolute inset-0 opacity-[0.07] pointer-events-none"
@@ -503,7 +503,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
         <div className="absolute inset-0 rounded-3xl border-2 border-emerald-950/80 pointer-events-none" />
         <div className="absolute inset-[2px] rounded-[22px] border border-emerald-500/10 pointer-events-none" />
 
-        <div className="relative grid gap-5 md:gap-7">
+        <div className="relative grid gap-3 md:gap-4">
           {/* ─── Dealer Zone ─── */}
           <div className="grid gap-3 rounded-2xl border border-white/[0.08] bg-black/10 p-3 md:p-4">
             <div className="flex items-center justify-between">
@@ -515,7 +515,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
               </div>
               {renderScoreBadge(dealerHand, 'Hand', true)}
             </div>
-            <div className="flex min-h-[150px] items-center justify-center">
+            <div className="flex min-h-[100px] items-center justify-center">
               {dealerHand.length > 0 ? renderCards(dealerHand, true) : renderPlaceholders()}
             </div>
           </div>
@@ -1436,7 +1436,7 @@ export default function BlackjackPremium() {
      RENDER
      ═══════════════════════════════════════════════════════════ */
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-950 via-[#0c1117] to-gray-950">
+    <div className="h-screen overflow-hidden bg-gradient-to-b from-gray-950 via-[#0c1117] to-gray-950">
       {/* ─── Top Bar ─── */}
       <header className="sticky top-0 z-40 border-b border-white/[0.06] bg-gray-950/90 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 md:px-6">
