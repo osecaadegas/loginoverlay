@@ -635,6 +635,8 @@ input:checked + .toggle-slider:before {
   gap: 15px;
   margin-bottom: 15px;
   align-items: stretch;
+  max-width: 100%;
+  width: 100%;
 }
 
 /* Player Stats Bar */
@@ -647,8 +649,8 @@ input:checked + .toggle-slider:before {
   grid-template-rows: auto auto;
   gap: 10px 18px;
   border: 2px solid rgba(212, 175, 55, 0.4);
-  flex: 0 0 auto;
-  width: 50%;
+  flex: 1 1 50%;
+  min-width: 280px;
   min-height: 100%;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
 }
@@ -1480,7 +1482,8 @@ input:checked + .toggle-slider:before {
 .category-info-image {
   width: 220px;
   height: 220px;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 120px;
   overflow: hidden;
   margin: 0;
   padding: 0;
@@ -6309,28 +6312,27 @@ input:checked + .toggle-slider:before {
 /* Medium tablets (landscape) */
 @media (min-width: 769px) and (max-width: 900px) {
   .category-info-display {
-    width: 75% !important;
-    height: 260px !important;
-    min-height: 260px !important;
-    max-height: 260px !important;
+    height: 200px !important;
+    min-height: 200px !important;
+    max-height: 200px !important;
   }
 
   .category-info-text h3 {
-    font-size: 1.8rem !important;
+    font-size: 1.4rem !important;
   }
 
   .category-info-text p {
-    font-size: 1rem !important;
+    font-size: 0.85rem !important;
   }
 
   .category-info-image {
-    width: 260px !important;
-    height: 260px !important;
+    width: 200px !important;
+    height: 200px !important;
   }
 
   .tab {
-    width: 150px !important;
-    min-height: 65px !important;
+    width: 120px !important;
+    min-height: 55px !important;
   }
 }
 
@@ -6340,9 +6342,8 @@ input:checked + .toggle-slider:before {
     padding: 10px 15px;
   }
 
-  /* Category info - adjust for tablets */
+  /* Category info - flex:1 handles width, just adjust height */
   .category-info-display {
-    width: 80% !important;
     height: 200px !important;
     min-height: 200px !important;
     max-height: 200px !important;
@@ -7243,7 +7244,9 @@ input:checked + .toggle-slider:before {
   }
 
   .player-stats-bar {
-    width: 100%;
+    width: 100% !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
     padding: 4px 8px;
     gap: 4px 8px;
   }
