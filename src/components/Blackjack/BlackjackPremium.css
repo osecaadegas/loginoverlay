@@ -107,7 +107,7 @@
 .bj-controls-history {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-end;
   gap: 1rem;
   width: 100%;
 }
