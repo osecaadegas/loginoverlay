@@ -538,11 +538,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
           </div>
 
           {/* ─── Betting / Action Zone (center of felt) ─── */}
-          {children && (
-            <div className="flex flex-col items-center">
-              {children}
-            </div>
-          )}
+          {children}
 
           {/* ─── Player Zone ─── */}
           <div className="rounded-2xl border border-white/[0.08] bg-black/10 p-2.5 md:p-3">
@@ -584,138 +580,150 @@ function BettingControls({
   /* ── Betting Phase ── */
   if (gamePhase === 'betting') {
     return (
-      <div className="w-full animate-slide-up space-y-2.5">
-        {/* Chip rack — centered */}
-        <div className="flex justify-center gap-2">
+      <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', width: '100%' }}>
+        {/* Chip rack */}
+        <nav style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
           {chipValues.map((value) => (
             <button
               key={value}
               onClick={() => onAddChip(value)}
               disabled={value > balance + currentBet}
-              className={`relative h-12 w-12 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl hover:-translate-y-1 active:scale-95 ${getChipColor(value)}`}
+              style={{ width: '48px', height: '48px', borderRadius: '50%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.2)', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s' }}
+              className={`bg-gradient-to-b shadow-lg disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl hover:-translate-y-1 active:scale-95 ${getChipColor(value)}`}
             >
-              <div className="absolute inset-[3px] rounded-full border border-white/20" />
-              <div className="absolute inset-[7px] rounded-full border border-dashed border-white/15" />
-              <span className="relative text-[11px] font-black text-white drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">{value}</span>
+              <span style={{ position: 'absolute', inset: '3px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', pointerEvents: 'none' }} />
+              <span style={{ position: 'absolute', inset: '7px', borderRadius: '50%', border: '1px dashed rgba(255,255,255,0.15)', pointerEvents: 'none' }} />
+              <span style={{ position: 'relative', fontSize: '11px', fontWeight: 900, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{value}</span>
             </button>
           ))}
-        </div>
+        </nav>
 
-        {/* Bet amount display + quick actions */}
-        <div className="flex items-center justify-center gap-2">
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-emerald-200/50">pts</span>
+        {/* Bet amount + quick-adjust */}
+        <fieldset style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', border: 'none', padding: 0, margin: 0 }}>
+          <label style={{ position: 'relative', display: 'block' }}>
+            <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', fontSize: '14px', fontWeight: 700, color: 'rgba(167,243,208,0.5)' }}>pts</span>
             <input
               type="number"
               value={betInput}
               onChange={(e) => handleInputChange(e.target.value)}
               placeholder="0"
-              className="w-40 rounded-xl border bg-black/30 pl-12 pr-3 py-2 text-xl font-bold text-white tabular-nums placeholder:text-white/20 outline-none transition-all duration-200 border-white/10 focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/20 text-center"
+              style={{ width: '160px', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.3)', paddingLeft: '48px', paddingRight: '12px', paddingTop: '8px', paddingBottom: '8px', fontSize: '20px', fontWeight: 700, color: 'white', textAlign: 'center', outline: 'none', fontVariantNumeric: 'tabular-nums' }}
               min={0}
               max={balance + currentBet}
               step={1}
             />
-          </div>
-          <div className="flex gap-1">
-            <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-lg bg-black/25 border border-white/10 px-2.5 py-2 text-[11px] font-bold text-white/60 hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+          </label>
+          <span style={{ display: 'flex', gap: '4px' }}>
+            <button onClick={handleHalfBet} disabled={currentBet < 2} style={{ borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 10px', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }} className="hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
               ½
             </button>
-            <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-lg bg-black/25 border border-white/10 px-2.5 py-2 text-[11px] font-bold text-white/60 hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} style={{ borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 10px', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', cursor: 'pointer' }} className="hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
               2×
             </button>
-            <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-lg bg-black/25 border border-amber-400/20 px-2.5 py-2 text-[11px] font-bold text-amber-400/80 hover:bg-amber-500/15 hover:text-amber-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+            <button onClick={handleAllIn} disabled={balance + currentBet === 0} style={{ borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(251,191,36,0.2)', padding: '8px 10px', fontSize: '11px', fontWeight: 700, color: 'rgba(251,191,36,0.8)', cursor: 'pointer' }} className="hover:bg-amber-500/15 hover:text-amber-300 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
               MAX
             </button>
-          </div>
+          </span>
           {lastBet > 0 && (
-            <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-lg bg-black/25 border border-white/10 px-2.5 py-2 text-[11px] font-bold text-white/60 hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed whitespace-nowrap">
+            <button onClick={handleRebet} disabled={lastBet > balance + currentBet} style={{ borderRadius: '8px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', padding: '8px 10px', fontSize: '11px', fontWeight: 700, color: 'rgba(255,255,255,0.6)', cursor: 'pointer', whiteSpace: 'nowrap' }} className="hover:bg-black/40 hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
               ↺ {lastBet}
             </button>
           )}
           {currentBet > 0 && (
-            <button onClick={onClearBet} className="rounded-lg bg-red-500/15 border border-red-400/20 px-2.5 py-2 text-[11px] font-bold text-red-400 hover:bg-red-500/25 transition-all">
+            <button onClick={onClearBet} style={{ borderRadius: '8px', background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(248,113,113,0.2)', padding: '8px 10px', fontSize: '11px', fontWeight: 700, color: '#f87171', cursor: 'pointer' }} className="hover:bg-red-500/25 transition-all">
               ✕
             </button>
           )}
-        </div>
+        </fieldset>
 
         {/* Deal button */}
-        <div className="flex justify-center">
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
           <button
             onClick={onPlaceBet}
             disabled={currentBet === 0}
-            className={`overflow-hidden rounded-xl px-10 py-3 text-base font-black uppercase tracking-[0.1em] transition-all duration-200 ${
-              currentBet > 0
-                ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30 hover:shadow-xl hover:shadow-amber-500/40 hover:from-amber-400 hover:to-amber-500 active:scale-[0.97]'
-                : 'bg-black/25 text-white/30 cursor-not-allowed border border-white/[0.08]'
-            }`}
+            style={{ borderRadius: '12px', padding: '12px 40px', fontSize: '16px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: currentBet > 0 ? 'pointer' : 'not-allowed', transition: 'all 0.2s', border: 'none' }}
+            className={currentBet > 0
+              ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30 hover:shadow-xl hover:from-amber-400 hover:to-amber-500 active:scale-[0.97]'
+              : 'bg-black/25 text-white/30 border border-white/[0.08]'
+            }
           >
             {currentBet > 0 ? `Deal · ${currentBet.toLocaleString()} pts` : 'Place Your Bet'}
           </button>
         </div>
-      </div>
+      </section>
     );
   }
 
   /* ── Dealer Turn Phase ── */
   if (gamePhase === 'dealer-turn') {
     return (
-      <div className="w-full py-2 flex justify-center">
-        <div className="flex items-center gap-3 rounded-full bg-black/25 border border-white/10 px-6 py-2.5">
-          <div className="flex gap-1">
-            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '0ms' }} />
-            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '150ms' }} />
-            <div className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '300ms' }} />
-          </div>
-          <span className="text-sm font-semibold text-white/70">Dealer is playing...</span>
-        </div>
-      </div>
+      <section style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', borderRadius: '9999px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 24px' }}>
+          <span style={{ display: 'flex', gap: '4px' }}>
+            <span className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '0ms' }} />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '150ms' }} />
+            <span className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '300ms' }} />
+          </span>
+          <span style={{ fontSize: '14px', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Dealer is playing...</span>
+        </span>
+      </section>
     );
   }
 
   /* ── Playing Phase ── */
   if (gamePhase === 'playing') {
     return (
-      <div className="w-full animate-slide-up flex flex-wrap justify-center gap-2.5">
+      <section style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px', width: '100%' }}>
         <button
           onClick={onHit}
           disabled={!canHit}
-          className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-400 hover:to-blue-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          className="overflow-hidden bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/25 hover:from-blue-400 hover:to-blue-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          style={{ borderRadius: '12px', padding: '12px 32px', fontWeight: 900, fontSize: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', border: 'none', transition: 'all 0.15s' }}
         >
           Hit
         </button>
-
         <button
           onClick={onStand}
           disabled={!canStand}
-          className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:from-red-400 hover:to-red-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          className="overflow-hidden bg-gradient-to-b from-red-500 to-red-600 text-white shadow-lg shadow-red-500/25 hover:from-red-400 hover:to-red-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed disabled:shadow-none"
+          style={{ borderRadius: '12px', padding: '12px 32px', fontWeight: 900, fontSize: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', border: 'none', transition: 'all 0.15s' }}
         >
           Stand
         </button>
-
         {canDouble && (
-          <button onClick={onDouble} className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 hover:from-amber-400 hover:to-amber-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97]">
+          <button
+            onClick={onDouble}
+            className="overflow-hidden bg-gradient-to-b from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25 hover:from-amber-400 hover:to-amber-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97]"
+            style={{ borderRadius: '12px', padding: '12px 32px', fontWeight: 900, fontSize: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', border: 'none', transition: 'all 0.15s' }}
+          >
             Double · {currentBet.toLocaleString()}
           </button>
         )}
-
         {canSplit && (
-          <button onClick={onSplit} className="group relative overflow-hidden rounded-xl px-8 py-3 font-black text-base uppercase tracking-wider transition-all duration-150 bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-400 hover:to-purple-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97]">
+          <button
+            onClick={onSplit}
+            className="overflow-hidden bg-gradient-to-b from-purple-500 to-purple-600 text-white shadow-lg shadow-purple-500/25 hover:from-purple-400 hover:to-purple-500 hover:shadow-xl hover:-translate-y-0.5 active:scale-[0.97]"
+            style={{ borderRadius: '12px', padding: '12px 32px', fontWeight: 900, fontSize: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', cursor: 'pointer', border: 'none', transition: 'all 0.15s' }}
+          >
             Split
           </button>
         )}
-      </div>
+      </section>
     );
   }
 
   /* ── Ended Phase ── */
   if (gamePhase === 'ended') {
     return (
-      <div className="w-full animate-slide-up flex justify-center">
-        <button onClick={onNextRound} className="rounded-xl bg-gradient-to-r from-emerald-500 to-emerald-600 px-10 py-3 text-base font-black uppercase tracking-[0.1em] text-white shadow-lg shadow-emerald-500/25 transition-all hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl hover:shadow-emerald-500/30 active:scale-[0.97]">
+      <section style={{ display: 'flex', justifyContent: 'center' }}>
+        <button
+          onClick={onNextRound}
+          className="bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-emerald-500 hover:shadow-xl active:scale-[0.97]"
+          style={{ borderRadius: '12px', padding: '12px 40px', fontSize: '16px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer', border: 'none', transition: 'all 0.2s' }}
+        >
           New Round
         </button>
-      </div>
+      </section>
     );
   }
 
