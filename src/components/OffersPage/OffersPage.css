@@ -1135,150 +1135,235 @@
 }
 
 /* =============================================
-   NEW OFFER ROWS DESIGN (Like Image 2)
+   OFFER CARD GRID DESIGN
    ============================================= */
 
-.offers-rows {
+.offers-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+/* Card */
+.op-card {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-}
-
-.offer-row {
-  display: grid;
-  grid-template-columns: 100px 1fr 1fr auto;
-  align-items: center;
-  gap: 16px;
-  background: linear-gradient(135deg, #1e2235 0%, #252a3d 100%);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  border-radius: 12px;
-  padding: 12px 16px;
-  transition: all 0.3s ease;
-}
-
-.offer-row:hover {
-  border-color: rgba(139, 92, 246, 0.4);
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-}
-
-/* Logo */
-.offer-row-logo {
-  width: 120px;
-  height: 60px;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
+  background: #161b22;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.op-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+/* Image */
+.op-card-image {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.op-card-media {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.op-card-badge {
+  position: absolute;
+  top: 12px;
+  left: 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 0;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: white;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(6px);
+}
+
+.op-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #22c55e;
+}
+
+.op-card-badge.hot .op-badge-dot { background: #ef4444; }
+.op-card-badge.new .op-badge-dot { background: #22c55e; }
+.op-card-badge.exclusive .op-badge-dot { background: #d4af37; }
+
+/* Title row */
+.op-card-title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 14px 16px 0;
+}
+
+.op-card-title {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+  line-height: 1.3;
+  flex: 1;
+}
+
+.op-card-title-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
   flex-shrink: 0;
 }
 
-.offer-row-logo img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.offer-row-video {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 10px;
-}
-
-/* Stats */
-.offer-row-stats {
-  display: flex;
-  gap: 24px;
-}
-
-.stat-column {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 70px;
-}
-
-.stat-column .stat-label {
-  font-size: 0.65rem;
-  color: #9ca3af;
-  text-transform: uppercase;
+.op-card-info-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
   letter-spacing: 0.5px;
 }
 
-.stat-column .stat-value {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: #fff;
+.op-card-info-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
-/* Highlights */
-.offer-row-highlights {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.highlight-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.8rem;
-  color: #d1d5db;
-}
-
-.highlight-check {
-  color: #22c55e;
-  font-weight: 700;
-}
-
-/* Actions */
-.offer-row-actions {
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-
-.btn-claim-row {
-  background: transparent;
-  border: 2px solid #fff;
-  color: #fff;
-  padding: 8px 18px;
-  border-radius: 6px;
-  font-weight: 600;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
+.op-card-tc {
+  font-size: 0.55rem;
+  color: rgba(255, 255, 255, 0.35);
   white-space: nowrap;
 }
 
-.btn-claim-row:hover {
-  background: #fff;
-  color: #1e2235;
+/* Stats grid 2x2 */
+.op-card-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  padding: 16px;
 }
 
-.btn-info {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  background: transparent;
-  color: #fff;
-  font-size: 1rem;
-  cursor: pointer;
+.op-card-stat {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.op-card-stat-icon {
+  font-size: 0.9rem;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.2s ease;
+  background: rgba(139, 92, 246, 0.12);
+  border-radius: 6px;
+  flex-shrink: 0;
 }
 
-.btn-info:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: #fff;
+.op-card-stat div {
+  display: flex;
+  flex-direction: column;
+}
+
+.op-card-stat-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.op-card-stat-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: white;
+}
+
+/* Promo code */
+.op-card-promo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 16px;
+  padding: 6px 10px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px dashed rgba(212, 175, 55, 0.4);
+  border-radius: 6px;
+}
+
+.op-card-promo-label {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+}
+
+.op-card-promo-value {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #d4af37;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+/* CTA button */
+.op-card-claim {
+  display: block;
+  margin: auto 16px 16px;
+  padding: 12px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+  text-decoration: none;
+}
+
+.op-card-claim:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .offers-card-grid {
+    grid-template-columns: 1fr;
+  }
+  .op-card-title-row {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .op-card-title-right {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 640px) {
+  .offers-card-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 /* =============================================

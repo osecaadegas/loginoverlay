@@ -263,94 +263,93 @@ export default function OffersPage() {
           </div>
         )}
 
-        {/* More Offers Section - New Row Design */}
+        {/* More Offers Section - Card Grid */}
         {casinoOffers.length > 1 && (
           <>
             <div className="more-offers-section">
               <h2>More Great Offers</h2>
             </div>
             
-            <div className="offers-rows">
+            <div className="offers-card-grid">
               {casinoOffers.slice(1).map((offer) => (
-                <div key={offer.id} className="offer-row">
-                  {/* Logo / Video */}
-                  <div className="offer-row-logo">
+                <div key={offer.id} className="op-card">
+                  {/* Card Image with Badge */}
+                  <div className="op-card-image">
                     {offer.videoUrl ? (
                       <video
                         src={offer.videoUrl}
-                        className="offer-row-video"
-                        autoPlay
-                        muted
-                        loop
-                        playsInline
+                        autoPlay muted loop playsInline
+                        className="op-card-media"
                       />
                     ) : (
-                      <img src={offer.image} alt={offer.casino} />
+                      <img src={offer.image} alt={offer.casino} className="op-card-media" />
+                    )}
+                    {offer.badge && (
+                      <span className={`op-card-badge ${offer.badgeClass || ''}`}>
+                        <span className="op-badge-dot"></span>
+                        {offer.badge}
+                      </span>
                     )}
                   </div>
 
-                  {/* Stats Columns */}
-                  <div className="offer-row-stats">
-                    {offer.bonusValue && (
-                      <div className="stat-column">
-                        <span className="stat-label">{offer.freeSpins ? 'BONUS UP TO' : 'BONUS'}</span>
-                        <span className="stat-value">{offer.bonusValue}</span>
-                      </div>
-                    )}
-                    {offer.freeSpins && (
-                      <div className="stat-column">
-                        <span className="stat-label">FREE SPINS</span>
-                        <span className="stat-value">{offer.freeSpins}</span>
-                      </div>
-                    )}
-                    {offer.cashback && (
-                      <div className="stat-column">
-                        <span className="stat-label">CASHBACK</span>
-                        <span className="stat-value">{offer.cashback}</span>
-                      </div>
-                    )}
-                    {offer.promoCode && (
-                      <div className="stat-column">
-                        <span className="stat-label">CODE</span>
-                        <span className="stat-value"><span className="offer-promo-code">{offer.promoCode}</span></span>
-                      </div>
-                    )}
-                    {!offer.cashback && !offer.freeSpins && !offer.promoCode && (
-                      <div className="stat-column">
-                        <span className="stat-label">-</span>
-                        <span className="stat-value">-</span>
-                      </div>
-                    )}
+                  {/* Title Row */}
+                  <div className="op-card-title-row">
+                    <span className="op-card-title">{offer.title}</span>
+                    <div className="op-card-title-right">
+                      <button className="op-card-info-btn" onClick={() => openInfoModal(offer)}>MORE INFO</button>
+                      <span className="op-card-tc">+18 | T&C APPLY</span>
+                    </div>
                   </div>
 
-                  {/* Highlights */}
-                  <div className="offer-row-highlights">
-                    {(Array.isArray(offer.highlights) ? offer.highlights : ['Exclusive offer', 'VIP program', 'Big bonuses']).slice(0, 3).map((highlight, idx) => (
-                      <div key={idx} className="highlight-item">
-                        <span className="highlight-check">✓</span>
-                        <span>{highlight}</span>
+                  {/* Stats Grid 2x2 */}
+                  <div className="op-card-stats">
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">💰</span>
+                      <div>
+                        <span className="op-card-stat-label">Min. deposit</span>
+                        <span className="op-card-stat-value">{offer.minDeposit || '—'}</span>
                       </div>
-                    ))}
+                    </div>
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">🔄</span>
+                      <div>
+                        <span className="op-card-stat-label">Cashback</span>
+                        <span className="op-card-stat-value">{offer.cashback || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">🎁</span>
+                      <div>
+                        <span className="op-card-stat-label">Bonus value</span>
+                        <span className="op-card-stat-value">{offer.bonusValue || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">🎰</span>
+                      <div>
+                        <span className="op-card-stat-label">Free spins</span>
+                        <span className="op-card-stat-value">{offer.freeSpins || '—'}</span>
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Action Buttons */}
-                  <div className="offer-row-actions">
-                    <a 
-                      href={offer.bonusLink || '#'} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="btn-claim-row"
-                    >
-                      CLAIM BONUS
-                    </a>
-                    <button 
-                      className="btn-info"
-                      onClick={() => openInfoModal(offer)}
-                      title="More Information"
-                    >
-                      ℹ
-                    </button>
-                  </div>
+                  {/* Promo Code */}
+                  {offer.promoCode && (
+                    <div className="op-card-promo">
+                      <span className="op-card-promo-label">CODE:</span>
+                      <span className="op-card-promo-value">{offer.promoCode}</span>
+                    </div>
+                  )}
+
+                  {/* CTA */}
+                  <a
+                    href={offer.bonusLink || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="op-card-claim"
+                  >
+                    CLAIM BONUS
+                  </a>
                 </div>
               ))}
             </div>
