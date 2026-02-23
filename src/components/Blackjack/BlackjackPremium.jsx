@@ -590,51 +590,50 @@ function BettingControls({
   /* ── Betting Phase ── */
   if (gamePhase === 'betting') {
     return (
-      <div className="w-full animate-slide-up space-y-2">
-        <div className="w-full rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
-          {/* Bet input */}
-          <div className="mb-2 space-y-2">
-            <div>
-              <label className="block text-[9px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1">
-                Bet Amount
-              </label>
-              <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-bold text-gray-500">pts</span>
-                <input
-                  type="number"
-                  value={betInput}
-                  onChange={(e) => handleInputChange(e.target.value)}
-                  placeholder="0"
-                  className="w-full rounded-lg border bg-white/[0.04] pl-12 pr-3 py-2 text-lg font-bold text-white tabular-nums placeholder:text-gray-600 outline-none transition-all duration-200 border-white/[0.08] focus:border-amber-500/50 focus:ring-2 focus:ring-amber-500/20"
-                  min={0}
-                  max={balance + currentBet}
-                  step={1}
-                />
-              </div>
-            </div>
-
-            {/* Quick-adjust buttons */}
-            <div className="grid grid-cols-3 gap-1">
-              <button onClick={handleHalfBet} disabled={currentBet < 2} className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                ½
-              </button>
-              <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-bold text-gray-400 hover:bg-white/[0.1] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                2×
-              </button>
-              <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="rounded-md bg-white/[0.06] px-2 py-1 text-[10px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed">
-                MAX
-              </button>
-            </div>
+      <div className="w-full animate-slide-up flex flex-col gap-2">
+        {/* Bet Amount */}
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+          <label className="block text-[9px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-1.5">
+            Bet Amount
+          </label>
+          <div className="relative mb-2">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-gray-500">pts</span>
+            <input
+              type="number"
+              value={betInput}
+              onChange={(e) => handleInputChange(e.target.value)}
+              placeholder="0"
+              className="w-full rounded-lg border bg-white/[0.04] pl-10 pr-3 py-2 text-base font-bold text-white tabular-nums placeholder:text-gray-600 outline-none transition-all border-white/[0.08] focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/20"
+              min={0}
+              max={balance + currentBet}
+              step={1}
+            />
           </div>
+          <div className="flex gap-1">
+            <button onClick={handleHalfBet} disabled={currentBet < 2} className="flex-1 rounded-md bg-white/[0.06] py-1 text-[10px] font-bold text-gray-400 hover:bg-white/10 hover:text-white transition-all disabled:opacity-30">
+              ½
+            </button>
+            <button onClick={handleDoubleBetAmount} disabled={currentBet === 0 || currentBet * 2 > balance + currentBet} className="flex-1 rounded-md bg-white/[0.06] py-1 text-[10px] font-bold text-gray-400 hover:bg-white/10 hover:text-white transition-all disabled:opacity-30">
+              2×
+            </button>
+            <button onClick={handleAllIn} disabled={balance + currentBet === 0} className="flex-1 rounded-md bg-white/[0.06] py-1 text-[10px] font-bold text-amber-500/80 hover:bg-amber-500/10 hover:text-amber-400 transition-all disabled:opacity-30">
+              MAX
+            </button>
+          </div>
+        </div>
 
-          {/* Chip rack */}
-          <div className="mb-2 grid grid-cols-5 gap-1.5 justify-items-center">
+        {/* Chips */}
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] p-3">
+          <label className="block text-[9px] font-semibold uppercase tracking-[0.15em] text-gray-500 mb-2">
+            Add Chips
+          </label>
+          <div className="flex flex-wrap justify-center gap-2">
             {chipValues.map((value) => (
               <button
                 key={value}
                 onClick={() => onAddChip(value)}
                 disabled={value > balance + currentBet}
-                className={`relative h-9 w-9 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-105 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
+                className={`relative h-10 w-10 rounded-full bg-gradient-to-b border-2 shadow-lg flex items-center justify-center transition-all duration-150 disabled:opacity-20 disabled:saturate-0 disabled:cursor-not-allowed hover:scale-110 hover:shadow-xl active:scale-95 ${getChipColor(value)}`}
               >
                 <div className="absolute inset-[3px] rounded-full border border-white/20" />
                 <div className="absolute inset-[6px] rounded-full border border-dashed border-white/15" />
@@ -642,84 +641,78 @@ function BettingControls({
               </button>
             ))}
           </div>
+        </div>
 
-          {/* Side Bets (inline) */}
-          <div className="mb-3">
-            <button
-              onClick={onToggleSideBets}
-              className="flex w-full items-center justify-between rounded-lg bg-white/[0.04] px-3 py-2 text-left transition-colors hover:bg-white/[0.06]"
-            >
+        {/* Side Bets */}
+        <div className="rounded-xl border border-white/[0.06] bg-white/[0.02] overflow-hidden">
+          <button
+            onClick={onToggleSideBets}
+            className="flex w-full items-center justify-between px-3 py-2.5 text-left transition-colors hover:bg-white/[0.03]"
+          >
+            <div className="flex items-center gap-2">
+              <span className="text-purple-400 text-xs">🎲</span>
+              <span className="text-[11px] font-semibold text-white">Side Bets</span>
+              {(sideBets.perfectPair + sideBets.twentyOneThree) > 0 && (
+                <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-[9px] font-bold text-purple-400">
+                  {sideBets.perfectPair + sideBets.twentyOneThree} pts
+                </span>
+              )}
+            </div>
+            <svg className={`h-3 w-3 text-gray-500 transition-transform duration-200 ${sideBetsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+          {sideBetsOpen && (
+            <div className="border-t border-white/[0.04] p-3 space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-purple-400 text-xs">🎲</span>
-                <span className="text-xs font-semibold text-white">Side Bets</span>
-                {(sideBets.perfectPair + sideBets.twentyOneThree) > 0 && (
-                  <span className="rounded bg-purple-500/20 px-1.5 py-0.5 text-[10px] font-bold text-purple-400">
-                    {sideBets.perfectPair + sideBets.twentyOneThree} pts
-                  </span>
-                )}
-              </div>
-              <svg className={`h-3 w-3 text-gray-500 transition-transform duration-200 ${sideBetsOpen ? 'rotate-180' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-            {sideBetsOpen && (
-              <div className="mt-2 space-y-2">
-                <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-semibold text-white">Perfect Pair</span>
-                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">25:1</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-semibold text-white">Perfect Pair</span>
+                    <span className="text-[9px] font-bold text-amber-400">25:1</span>
                   </div>
-                  <p className="text-[10px] text-gray-500 mb-1.5">First 2 cards match</p>
-                  <input
-                    type="number"
-                    min="0"
-                    max={10}
-                    value={sideBets.perfectPair}
+                  <input type="number" min="0" max={10} value={sideBets.perfectPair}
                     onChange={(e) => onSideBetChange('perfectPair', parseInt(e.target.value || '0', 10))}
-                    className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-sm text-white outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20"
+                    className="w-full rounded border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-xs text-white outline-none focus:border-purple-500/50"
                   />
                 </div>
-                <div className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2.5">
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="text-[11px] font-semibold text-white">21+3</span>
-                    <span className="rounded bg-amber-500/10 px-1.5 py-0.5 text-[10px] font-bold text-amber-400">100:1</span>
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-[10px] font-semibold text-white">21+3</span>
+                    <span className="text-[9px] font-bold text-amber-400">100:1</span>
                   </div>
-                  <p className="text-[10px] text-gray-500 mb-1.5">3-card poker hand</p>
-                  <input
-                    type="number"
-                    min="0"
-                    max={10}
-                    value={sideBets.twentyOneThree}
+                  <input type="number" min="0" max={10} value={sideBets.twentyOneThree}
                     onChange={(e) => onSideBetChange('twentyOneThree', parseInt(e.target.value || '0', 10))}
-                    className="w-full rounded-lg border border-white/[0.08] bg-white/[0.03] px-3 py-1.5 text-sm text-white outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20"
+                    className="w-full rounded border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-xs text-white outline-none focus:border-purple-500/50"
                   />
                 </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
 
-          {/* Rebet / Clear */}
-          <div className="grid grid-cols-2 gap-1.5">
+        {/* Rebet / Clear */}
+        {(lastBet > 0 || currentBet > 0) && (
+          <div className="flex gap-1.5">
             {lastBet > 0 && (
-              <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="rounded-lg border border-white/[0.08] bg-white/[0.03] py-1.5 text-[10px] font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed">
+              <button onClick={handleRebet} disabled={lastBet > balance + currentBet} className="flex-1 rounded-lg border border-white/[0.08] bg-white/[0.03] py-1.5 text-[10px] font-semibold text-gray-400 hover:bg-white/[0.06] hover:text-white transition-all disabled:opacity-30">
                 ↺ Rebet {lastBet}
               </button>
             )}
             {currentBet > 0 && (
-              <button onClick={onClearBet} className="rounded-lg border border-red-500/20 bg-red-500/5 py-1.5 text-[10px] font-semibold text-red-400 hover:bg-red-500/10 transition-all">
+              <button onClick={onClearBet} className="flex-1 rounded-lg border border-red-500/20 bg-red-500/5 py-1.5 text-[10px] font-semibold text-red-400 hover:bg-red-500/10 transition-all">
                 ✕ Clear
               </button>
             )}
           </div>
-        </div>
+        )}
 
-        {/* Deal button */}
+        {/* Deal */}
         <button
           onClick={onPlaceBet}
           disabled={currentBet === 0}
-          className={`relative w-full overflow-hidden rounded-xl py-3 text-sm font-black uppercase tracking-[0.1em] transition-all duration-200 ${
+          className={`w-full rounded-xl py-2.5 text-sm font-black uppercase tracking-wider transition-all duration-200 ${
             currentBet > 0
-              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:shadow-emerald-500/30 hover:from-emerald-400 hover:to-emerald-500 active:scale-[0.98]'
+              ? 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-lg shadow-emerald-500/25 hover:shadow-xl hover:from-emerald-400 hover:to-emerald-500 active:scale-[0.98]'
               : 'bg-white/[0.04] text-gray-600 cursor-not-allowed border border-white/[0.06]'
           }`}
         >
