@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { createPortal } from 'react-dom';
 import { supabase } from '../../config/supabaseClient';
 import { getMethodIcons } from '../../utils/depositMethods';
 import { getProviderName } from '../../utils/gameProviders';
@@ -8,7 +7,7 @@ import './OffersPage.css';
 export default function OffersPage() {
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOffer, setSelectedOffer] = useState(null); // For modal
+  const [flippedCards, setFlippedCards] = useState({}); // Track which cards are flipped
 
   useEffect(() => {
     loadOffers();
@@ -96,12 +95,8 @@ export default function OffersPage() {
     }
   };
 
-  const openInfoModal = (offer) => {
-    setSelectedOffer(offer);
-  };
-
-  const closeInfoModal = () => {
-    setSelectedOffer(null);
+  const toggleFlip = (offerId) => {
+    setFlippedCards(prev => ({ ...prev, [offerId]: !prev[offerId] }));
   };
 
   // Game provider logos/names
@@ -137,207 +132,204 @@ export default function OffersPage() {
         {/* All Offers - Unified Card Grid */}
         <div className="offers-card-grid">
           {casinoOffers.map((offer, index) => (
-            <div key={offer.id} className={`op-card ${index === 0 ? 'op-card-featured' : ''}`}>
-              {/* Card Image with Badge */}
-              <div className="op-card-image">
-                {offer.videoUrl ? (
-                  <video
-                    src={offer.videoUrl}
-                    autoPlay muted loop playsInline
-                    className="op-card-media"
-                  />
-                ) : (
-                  <img src={offer.image} alt={offer.casino} className="op-card-media" />
-                )}
-                {index === 0 && (
-                  <span className="op-card-badge op-card-badge-featured">
-                    <span className="op-badge-dot"></span>
-                    ⭐ FEATURED
-                  </span>
-                )}
-                {index !== 0 && offer.badge && (
-                  <span className={`op-card-badge ${offer.badgeClass || ''}`}>
-                    <span className="op-badge-dot"></span>
-                    {offer.badge}
-                  </span>
-                )}
+            <div key={offer.id} className={`op-card-wrapper ${flippedCards[offer.id] ? 'flipped' : ''}`}>
+              <div className="op-card-inner">
+                {/* ===== FRONT FACE ===== */}
+                <div className={`op-card op-card-front ${index === 0 ? 'op-card-featured' : ''}`}>
+                  {/* Card Image with Badge */}
+                  <div className="op-card-image">
+                    {offer.videoUrl ? (
+                      <video
+                        src={offer.videoUrl}
+                        autoPlay muted loop playsInline
+                        className="op-card-media"
+                      />
+                    ) : (
+                      <img src={offer.image} alt={offer.casino} className="op-card-media" />
+                    )}
+                    {index === 0 && (
+                      <span className="op-card-badge op-card-badge-featured">
+                        <span className="op-badge-dot"></span>
+                        ⭐ FEATURED
+                      </span>
+                    )}
+                    {index !== 0 && offer.badge && (
+                      <span className={`op-card-badge ${offer.badgeClass || ''}`}>
+                        <span className="op-badge-dot"></span>
+                        {offer.badge}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Title Row */}
+                  <div className="op-card-title-row">
+                    <span className="op-card-title">{offer.title}</span>
+                    <div className="op-card-title-right">
+                      <button className="op-card-info-btn" onClick={() => toggleFlip(offer.id)}>MORE INFO</button>
+                      <span className="op-card-tc">+18 | T&C APPLY</span>
+                    </div>
+                  </div>
+
+                  {/* Stats Grid 2x2 */}
+                  <div className="op-card-stats">
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">💰</span>
+                      <div>
+                        <span className="op-card-stat-label">Min. deposit</span>
+                        <span className="op-card-stat-value">{offer.minDeposit || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">🔄</span>
+                      <div>
+                        <span className="op-card-stat-label">Cashback</span>
+                        <span className="op-card-stat-value">{offer.cashback || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">🎁</span>
+                      <div>
+                        <span className="op-card-stat-label">Bonus value</span>
+                        <span className="op-card-stat-value">{offer.bonusValue || '—'}</span>
+                      </div>
+                    </div>
+                    <div className="op-card-stat">
+                      <span className="op-card-stat-icon">🎰</span>
+                      <div>
+                        <span className="op-card-stat-label">Free spins</span>
+                        <span className="op-card-stat-value">{offer.freeSpins || '—'}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Promo Code */}
+                  {offer.promoCode && (
+                    <div className="op-card-promo">
+                      <span className="op-card-promo-label">CODE:</span>
+                      <span className="op-card-promo-value">{offer.promoCode}</span>
+                    </div>
+                  )}
+
+                  {/* CTA */}
+                  <a
+                    href={offer.bonusLink || '#'}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="op-card-claim"
+                  >
+                    CLAIM BONUS
+                  </a>
+                </div>
+
+                {/* ===== BACK FACE ===== */}
+                <div className={`op-card op-card-back ${index === 0 ? 'op-card-featured' : ''}`}>
+                  {/* Back Header */}
+                  <div className="op-back-header">
+                    <div className="op-back-logo-wrap">
+                      <img src={offer.image} alt={offer.casino} className="op-back-logo" />
+                    </div>
+                    <div className="op-back-header-text">
+                      <span className="op-back-casino">{offer.casino}</span>
+                      {offer.cryptoFriendly && <span className="op-back-crypto-badge">CRYPTO</span>}
+                    </div>
+                    <button className="op-back-close" onClick={() => toggleFlip(offer.id)}>✕</button>
+                  </div>
+
+                  {/* Scrollable Info Content */}
+                  <div className="op-back-content">
+                    {/* Info Grid */}
+                    <div className="op-back-section">
+                      <span className="op-back-section-label">CASINO INFO</span>
+                      <div className="op-back-info-grid">
+                        <div className="op-back-info-item">
+                          <span className="op-back-info-label">MIN DEPOSIT</span>
+                          <span className="op-back-info-value gold">{offer.minDeposit || '€20'}</span>
+                        </div>
+                        <div className="op-back-info-item">
+                          <span className="op-back-info-label">MAX WITHDRAWAL</span>
+                          <span className="op-back-info-value">{offer.maxWithdrawal}</span>
+                        </div>
+                        <div className="op-back-info-item">
+                          <span className="op-back-info-label">WITHDRAWAL TIME</span>
+                          <span className="op-back-info-value">{offer.withdrawalTime}</span>
+                        </div>
+                        <div className="op-back-info-item">
+                          <span className="op-back-info-label">CRYPTO</span>
+                          <span className="op-back-info-value gold">{offer.cryptoFriendly ? '✓ Yes' : 'No'}</span>
+                        </div>
+                        <div className="op-back-info-item">
+                          <span className="op-back-info-label">LIVE SUPPORT</span>
+                          <span className="op-back-info-value">{offer.liveSupport}</span>
+                        </div>
+                        <div className="op-back-info-item">
+                          <span className="op-back-info-label">ESTABLISHED</span>
+                          <span className="op-back-info-value">{offer.established}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Licence & Languages */}
+                    <div className="op-back-detail-row">
+                      <div className="op-back-detail">
+                        <span className="op-back-info-label">LICENCE</span>
+                        <span className="op-back-info-value">{offer.license || 'Curaçao'}</span>
+                      </div>
+                      <div className="op-back-detail">
+                        <span className="op-back-info-label">LANGUAGES</span>
+                        <span className="op-back-info-value">{offer.languages}</span>
+                      </div>
+                    </div>
+
+                    {/* Deposit Methods */}
+                    <div className="op-back-section">
+                      <span className="op-back-section-label">DEPOSIT METHODS</span>
+                      <div className="op-back-tags">
+                        {offer.depositMethods ? (
+                          getMethodIcons(offer.depositMethods).slice(0, 8).map((method, idx) => (
+                            <span key={idx} className="op-back-tag">{method.name}</span>
+                          ))
+                        ) : (
+                          ['Visa', 'Mastercard', 'Bitcoin', 'Ethereum', 'Skrill', 'Bank'].map((method, idx) => (
+                            <span key={idx} className="op-back-tag">{method}</span>
+                          ))
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Game Providers */}
+                    <div className="op-back-section">
+                      <span className="op-back-section-label">TOP PROVIDERS</span>
+                      <div className="op-back-tags">
+                        {(Array.isArray(offer.gameProviders) && offer.gameProviders.length > 0) ? (
+                          offer.gameProviders.slice(0, 6).map((providerId, idx) => (
+                            <span key={idx} className="op-back-tag provider">{getProviderName(providerId)}</span>
+                          ))
+                        ) : (
+                          defaultProviders.slice(0, 6).map((provider, idx) => (
+                            <span key={idx} className="op-back-tag provider">{provider}</span>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Back Footer */}
+                  <div className="op-back-footer">
+                    <a
+                      href={offer.bonusLink || '#'}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="op-back-cta"
+                    >
+                      CLAIM BONUS
+                    </a>
+                    <p className="op-back-disclaimer">T&C APPLY. 18+, BEGAMBLEAWARE.ORG</p>
+                  </div>
+                </div>
               </div>
-
-              {/* Title Row */}
-              <div className="op-card-title-row">
-                <span className="op-card-title">{offer.title}</span>
-                <div className="op-card-title-right">
-                  <button className="op-card-info-btn" onClick={() => openInfoModal(offer)}>MORE INFO</button>
-                  <span className="op-card-tc">+18 | T&C APPLY</span>
-                </div>
-              </div>
-
-              {/* Stats Grid 2x2 */}
-              <div className="op-card-stats">
-                <div className="op-card-stat">
-                  <span className="op-card-stat-icon">💰</span>
-                  <div>
-                    <span className="op-card-stat-label">Min. deposit</span>
-                    <span className="op-card-stat-value">{offer.minDeposit || '—'}</span>
-                  </div>
-                </div>
-                <div className="op-card-stat">
-                  <span className="op-card-stat-icon">🔄</span>
-                  <div>
-                    <span className="op-card-stat-label">Cashback</span>
-                    <span className="op-card-stat-value">{offer.cashback || '—'}</span>
-                  </div>
-                </div>
-                <div className="op-card-stat">
-                  <span className="op-card-stat-icon">🎁</span>
-                  <div>
-                    <span className="op-card-stat-label">Bonus value</span>
-                    <span className="op-card-stat-value">{offer.bonusValue || '—'}</span>
-                  </div>
-                </div>
-                <div className="op-card-stat">
-                  <span className="op-card-stat-icon">🎰</span>
-                  <div>
-                    <span className="op-card-stat-label">Free spins</span>
-                    <span className="op-card-stat-value">{offer.freeSpins || '—'}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Promo Code */}
-              {offer.promoCode && (
-                <div className="op-card-promo">
-                  <span className="op-card-promo-label">CODE:</span>
-                  <span className="op-card-promo-value">{offer.promoCode}</span>
-                </div>
-              )}
-
-              {/* CTA */}
-              <a
-                href={offer.bonusLink || '#'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="op-card-claim"
-              >
-                CLAIM BONUS
-              </a>
             </div>
           ))}
         </div>
-
-        {/* Info Modal - Rendered via Portal */}
-        {selectedOffer && createPortal(
-          <div className="offer-modal-overlay" onClick={closeInfoModal}>
-            <div className="offer-modal-v2" onClick={(e) => e.stopPropagation()}>
-              {/* Header Row */}
-              <div className="modal-v2-header">
-                {selectedOffer.cryptoFriendly && (
-                  <span className="modal-v2-badge">CRYPTO</span>
-                )}
-                <button className="modal-v2-close" onClick={closeInfoModal}>×</button>
-              </div>
-              
-              {/* Casino Branding */}
-              <div className="modal-v2-branding">
-                <div className="modal-v2-logo-wrap">
-                  <img src={selectedOffer.image} alt={selectedOffer.casino} className="modal-v2-logo" />
-                </div>
-                <p className="modal-v2-tagline">{selectedOffer.title || `Exclusive bonus at ${selectedOffer.casino}`}</p>
-              </div>
-
-              {/* Info Cards Grid */}
-              <div className="modal-v2-section">
-                <span className="modal-v2-section-label">CASINO INFO</span>
-                <div className="modal-v2-cards-grid">
-                  <div className="modal-v2-card">
-                    <span className="card-label">MINIMUM DEPOSIT</span>
-                    <span className="card-value highlight">{selectedOffer.minDeposit || '€20'}</span>
-                  </div>
-                  <div className="modal-v2-card">
-                    <span className="card-label">MAX WITHDRAWAL</span>
-                    <span className="card-value">{selectedOffer.maxWithdrawal}</span>
-                  </div>
-                  <div className="modal-v2-card">
-                    <span className="card-label">WITHDRAWAL TIME</span>
-                    <span className="card-value">{selectedOffer.withdrawalTime}</span>
-                  </div>
-                  <div className="modal-v2-card">
-                    <span className="card-label">CRYPTO FRIENDLY</span>
-                    <span className="card-value highlight">
-                      {selectedOffer.cryptoFriendly ? '✓ Yes' : 'No'}
-                    </span>
-                  </div>
-                  <div className="modal-v2-card">
-                    <span className="card-label">LIVE SUPPORT</span>
-                    <span className="card-value">{selectedOffer.liveSupport}</span>
-                  </div>
-                  <div className="modal-v2-card">
-                    <span className="card-label">ESTABLISHED</span>
-                    <span className="card-value">{selectedOffer.established}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Licences & Languages - 2 Column */}
-              <div className="modal-v2-details-row">
-                <div className="modal-v2-detail">
-                  <span className="detail-label">LICENCES</span>
-                  <span className="detail-value">{selectedOffer.license || 'Curaçao'}</span>
-                </div>
-                <div className="modal-v2-detail">
-                  <span className="detail-label">LANGUAGES</span>
-                  <span className="detail-value">{selectedOffer.languages}</span>
-                </div>
-              </div>
-
-              {/* Deposit Methods as Tags */}
-              <div className="modal-v2-section">
-                <span className="modal-v2-section-label">DEPOSIT METHODS</span>
-                <div className="modal-v2-tags">
-                  {selectedOffer.depositMethods ? (
-                    getMethodIcons(selectedOffer.depositMethods).slice(0, 12).map((method, idx) => (
-                      <span key={idx} className="modal-v2-tag">{method.name}</span>
-                    ))
-                  ) : (
-                    ['Visa', 'Mastercard', 'Bitcoin', 'Ethereum', 'Skrill', 'Bank', 'Apple Pay', 'Google Pay', 'Paysafe', 'USDT', 'Litecoin', 'Neteller'].map((method, idx) => (
-                      <span key={idx} className="modal-v2-tag">{method}</span>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* Game Providers */}
-              <div className="modal-v2-section">
-                <span className="modal-v2-section-label">TOP GAME PROVIDERS</span>
-                <div className="modal-v2-providers">
-                  {(Array.isArray(selectedOffer.gameProviders) && selectedOffer.gameProviders.length > 0) ? (
-                    selectedOffer.gameProviders.slice(0, 8).map((providerId, idx) => (
-                      <span key={idx} className="modal-v2-provider">{getProviderName(providerId)}</span>
-                    ))
-                  ) : (
-                    defaultProviders.slice(0, 8).map((provider, idx) => (
-                      <span key={idx} className="modal-v2-provider">{provider}</span>
-                    ))
-                  )}
-                </div>
-              </div>
-
-              {/* CTA Footer */}
-              <div className="modal-v2-footer">
-                <a 
-                  href={selectedOffer.bonusLink || '#'} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="modal-v2-cta"
-                >
-                  CLAIM BONUS
-                </a>
-                <p className="modal-v2-disclaimer">T&C APPLY. 18+, NEW CUSTOMERS ONLY, BEGAMBLEAWARE.ORG, AD</p>
-              </div>
-            </div>
-          </div>,
-          document.body
-        )}
       </div>
     </div>
   );
