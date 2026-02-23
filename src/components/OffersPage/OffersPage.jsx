@@ -6,7 +6,6 @@ import { getProviderName } from '../../utils/gameProviders';
 import './OffersPage.css';
 
 export default function OffersPage() {
-  const [flippedCards, setFlippedCards] = useState({});
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState(null); // For modal
@@ -97,13 +96,6 @@ export default function OffersPage() {
     }
   };
 
-  const toggleFlip = (id) => {
-    setFlippedCards(prev => ({
-      ...prev,
-      [id]: !prev[id]
-    }));
-  };
-
   const openInfoModal = (offer) => {
     setSelectedOffer(offer);
   };
@@ -142,219 +134,96 @@ export default function OffersPage() {
         <h1>Casino Partners & Offers</h1>
         <p className="offers-subtitle">Exclusive bonuses and promotions from our trusted partners</p>
         
-        {/* Featured Offer - First One Only */}
-        {casinoOffers[0] && (
-          <div className={`modern-offer-card featured ${flippedCards['featured'] ? 'flipped' : ''}`}>
-            <div className="featured-badge">
-              <span>⭐ FEATURED OFFER</span>
-            </div>
-
-            <div className="modern-offer-content">
-              {/* Left Side - Casino Image / Video */}
-              <div className="offer-image-section">
-                <div className="info-icon" title="More Information" onClick={() => setFlippedCards(prev => ({...prev, featured: !prev.featured}))}>
-                  ℹ️
-                </div>
-                {casinoOffers[0].videoUrl ? (
+        {/* All Offers - Unified Card Grid */}
+        <div className="offers-card-grid">
+          {casinoOffers.map((offer, index) => (
+            <div key={offer.id} className={`op-card ${index === 0 ? 'op-card-featured' : ''}`}>
+              {/* Card Image with Badge */}
+              <div className="op-card-image">
+                {offer.videoUrl ? (
                   <video
-                    src={casinoOffers[0].videoUrl}
-                    className="offer-casino-video"
-                    autoPlay
-                    muted
-                    loop
-                    playsInline
+                    src={offer.videoUrl}
+                    autoPlay muted loop playsInline
+                    className="op-card-media"
                   />
                 ) : (
-                  <img src={casinoOffers[0].image} alt={casinoOffers[0].casino} className="offer-casino-image" />
+                  <img src={offer.image} alt={offer.casino} className="op-card-media" />
+                )}
+                {index === 0 && (
+                  <span className="op-card-badge op-card-badge-featured">
+                    <span className="op-badge-dot"></span>
+                    ⭐ FEATURED
+                  </span>
+                )}
+                {index !== 0 && offer.badge && (
+                  <span className={`op-card-badge ${offer.badgeClass || ''}`}>
+                    <span className="op-badge-dot"></span>
+                    {offer.badge}
+                  </span>
                 )}
               </div>
 
-              {/* Right Side - Details */}
-              <div className="offer-details-section">
-                {/* Casino Name with Premium Badge */}
-                <div className="casino-header">
-                  <h3 className="modern-casino-name">{casinoOffers[0].casino}</h3>
-                  {casinoOffers[0].isPremium && (
-                    <div className="premium-partner-badge">
-                      <span>⭐</span>
-                      <div className="partner-text">
-                        <span className="partner-label">Premium Partner</span>
-                        <span className="partner-sublabel">Licensed & Regulated</span>
-                      </div>
-                    </div>
-                  )}
+              {/* Title Row */}
+              <div className="op-card-title-row">
+                <span className="op-card-title">{offer.title}</span>
+                <div className="op-card-title-right">
+                  <button className="op-card-info-btn" onClick={() => openInfoModal(offer)}>MORE INFO</button>
+                  <span className="op-card-tc">+18 | T&C APPLY</span>
                 </div>
-
-                {/* Main Bonus Display */}
-                <div className="bonus-highlight-box">
-                  <div className="bonus-main-text">{casinoOffers[0].title}</div>
-                  {casinoOffers[0].freeSpins && (
-                    <div className="bonus-sub-text">+ {casinoOffers[0].freeSpins}</div>
-                  )}
-                  <div className="bonus-exclusive-tag">Exclusive Bonus!</div>
-                </div>
-
-                {/* Stats Grid */}
-                <div className="modern-stats-grid">
-                  <div className="modern-stat-item">
-                    <span className="stat-icon">🎮</span>
-                    <div className="stat-content">
-                      <div className="stat-value-large">{casinoOffers[0].gameProviders || '90+'}</div>
-                      <div className="stat-description">Game Providers</div>
-                    </div>
-                  </div>
-                  <div className="modern-stat-item">
-                    <span className="stat-icon">💳</span>
-                    <div className="stat-content">
-                      <div className="stat-value-large">70+</div>
-                      <div className="stat-description">Payment Methods</div>
-                    </div>
-                  </div>
-                  <div className="modern-stat-item">
-                    <span className="stat-icon">🎰</span>
-                    <div className="stat-content">
-                      <div className="stat-value-large">{casinoOffers[0].totalGames || '15000+'}</div>
-                      <div className="stat-description">Games</div>
-                    </div>
-                  </div>
-                  <div className="modern-stat-item">
-                    <span className="stat-icon">🛡️</span>
-                    <div className="stat-content">
-                      <div className="stat-value-large">{casinoOffers[0].license || 'Curaçao'}</div>
-                      <div className="stat-description">License</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Payment Methods */}
-                {casinoOffers[0].depositMethods && (
-                  <>
-                    <div className="payment-methods-label">Available Payment Methods:</div>
-                    <div className="payment-methods-badges">
-                      {getMethodIcons(casinoOffers[0].depositMethods).slice(0, 12).map((method, idx) => (
-                        <span key={idx} className="payment-badge" title={method.name}>
-                          {method.icon} {method.name}
-                        </span>
-                      ))}
-                    </div>
-                  </>
-                )}
-
-                {/* Terms */}
-                <div className="offer-terms-modern">
-                  {casinoOffers[0].promoCode ? (
-                    <span>Use code <span className="offer-promo-code">{casinoOffers[0].promoCode}</span> at signup</span>
-                  ) : (
-                    'No promo code needed - Bonus activates automatically'
-                  )}
-                </div>
-
-                {/* CTA Button */}
-                <a 
-                  href={casinoOffers[0].bonusLink || '#'} 
-                  target="_blank" 
-                  rel="noopener noreferrer"
-                  className="modern-claim-button"
-                >
-                  ✨ Claim Exclusive Bonus Now
-                </a>
               </div>
-            </div>
-          </div>
-        )}
 
-        {/* More Offers Section - Card Grid */}
-        {casinoOffers.length > 1 && (
-          <>
-            <div className="more-offers-section">
-              <h2>More Great Offers</h2>
-            </div>
-            
-            <div className="offers-card-grid">
-              {casinoOffers.slice(1).map((offer) => (
-                <div key={offer.id} className="op-card">
-                  {/* Card Image with Badge */}
-                  <div className="op-card-image">
-                    {offer.videoUrl ? (
-                      <video
-                        src={offer.videoUrl}
-                        autoPlay muted loop playsInline
-                        className="op-card-media"
-                      />
-                    ) : (
-                      <img src={offer.image} alt={offer.casino} className="op-card-media" />
-                    )}
-                    {offer.badge && (
-                      <span className={`op-card-badge ${offer.badgeClass || ''}`}>
-                        <span className="op-badge-dot"></span>
-                        {offer.badge}
-                      </span>
-                    )}
+              {/* Stats Grid 2x2 */}
+              <div className="op-card-stats">
+                <div className="op-card-stat">
+                  <span className="op-card-stat-icon">💰</span>
+                  <div>
+                    <span className="op-card-stat-label">Min. deposit</span>
+                    <span className="op-card-stat-value">{offer.minDeposit || '—'}</span>
                   </div>
-
-                  {/* Title Row */}
-                  <div className="op-card-title-row">
-                    <span className="op-card-title">{offer.title}</span>
-                    <div className="op-card-title-right">
-                      <button className="op-card-info-btn" onClick={() => openInfoModal(offer)}>MORE INFO</button>
-                      <span className="op-card-tc">+18 | T&C APPLY</span>
-                    </div>
-                  </div>
-
-                  {/* Stats Grid 2x2 */}
-                  <div className="op-card-stats">
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">💰</span>
-                      <div>
-                        <span className="op-card-stat-label">Min. deposit</span>
-                        <span className="op-card-stat-value">{offer.minDeposit || '—'}</span>
-                      </div>
-                    </div>
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">🔄</span>
-                      <div>
-                        <span className="op-card-stat-label">Cashback</span>
-                        <span className="op-card-stat-value">{offer.cashback || '—'}</span>
-                      </div>
-                    </div>
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">🎁</span>
-                      <div>
-                        <span className="op-card-stat-label">Bonus value</span>
-                        <span className="op-card-stat-value">{offer.bonusValue || '—'}</span>
-                      </div>
-                    </div>
-                    <div className="op-card-stat">
-                      <span className="op-card-stat-icon">🎰</span>
-                      <div>
-                        <span className="op-card-stat-label">Free spins</span>
-                        <span className="op-card-stat-value">{offer.freeSpins || '—'}</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Promo Code */}
-                  {offer.promoCode && (
-                    <div className="op-card-promo">
-                      <span className="op-card-promo-label">CODE:</span>
-                      <span className="op-card-promo-value">{offer.promoCode}</span>
-                    </div>
-                  )}
-
-                  {/* CTA */}
-                  <a
-                    href={offer.bonusLink || '#'}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="op-card-claim"
-                  >
-                    CLAIM BONUS
-                  </a>
                 </div>
-              ))}
+                <div className="op-card-stat">
+                  <span className="op-card-stat-icon">🔄</span>
+                  <div>
+                    <span className="op-card-stat-label">Cashback</span>
+                    <span className="op-card-stat-value">{offer.cashback || '—'}</span>
+                  </div>
+                </div>
+                <div className="op-card-stat">
+                  <span className="op-card-stat-icon">🎁</span>
+                  <div>
+                    <span className="op-card-stat-label">Bonus value</span>
+                    <span className="op-card-stat-value">{offer.bonusValue || '—'}</span>
+                  </div>
+                </div>
+                <div className="op-card-stat">
+                  <span className="op-card-stat-icon">🎰</span>
+                  <div>
+                    <span className="op-card-stat-label">Free spins</span>
+                    <span className="op-card-stat-value">{offer.freeSpins || '—'}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Promo Code */}
+              {offer.promoCode && (
+                <div className="op-card-promo">
+                  <span className="op-card-promo-label">CODE:</span>
+                  <span className="op-card-promo-value">{offer.promoCode}</span>
+                </div>
+              )}
+
+              {/* CTA */}
+              <a
+                href={offer.bonusLink || '#'}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="op-card-claim"
+              >
+                CLAIM BONUS
+              </a>
             </div>
-          </>
-        )}
+          ))}
+        </div>
 
         {/* Info Modal - Rendered via Portal */}
         {selectedOffer && createPortal(
