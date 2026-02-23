@@ -8,6 +8,7 @@ export default function OffersPage() {
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flippedCards, setFlippedCards] = useState({}); // Track which cards are flipped
+  const [copiedId, setCopiedId] = useState(null);
 
   useEffect(() => {
     loadOffers();
@@ -97,6 +98,15 @@ export default function OffersPage() {
 
   const toggleFlip = (offerId) => {
     setFlippedCards(prev => ({ ...prev, [offerId]: !prev[offerId] }));
+  };
+
+  const copyPromoCode = (e, offerId, code) => {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(code).then(() => {
+      setCopiedId(offerId);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
   };
 
   // Game provider logos/names
@@ -212,9 +222,21 @@ export default function OffersPage() {
 
                   {/* Promo Code */}
                   {offer.promoCode && (
-                    <div className="op-card-promo">
-                      <span className="op-card-promo-label">CODE:</span>
-                      <span className="op-card-promo-value">{offer.promoCode}</span>
+                    <div
+                      className={`op-card-promo ${copiedId === offer.id ? 'copied' : ''}`}
+                      onClick={(e) => copyPromoCode(e, offer.id, offer.promoCode)}
+                      title="Click to copy"
+                    >
+                      <span className="op-card-promo-icon">
+                        <i className="fa-solid fa-ticket" />
+                      </span>
+                      <div className="op-card-promo-text">
+                        <span className="op-card-promo-label">Promo Code</span>
+                        <span className="op-card-promo-value">{offer.promoCode}</span>
+                      </div>
+                      <span className="op-card-promo-copy">
+                        <i className={copiedId === offer.id ? 'fa-solid fa-check' : 'fa-regular fa-copy'} />
+                      </span>
                     </div>
                   )}
 

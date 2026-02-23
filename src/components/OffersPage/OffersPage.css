@@ -864,15 +864,14 @@
   display: block;
 }
 
-/* If an image has no natural height, fall back to a 16:9 ratio */
+/* Both images and videos get the same 16:9 container so cards match height */
 img.op-card-media {
   aspect-ratio: 16 / 9;
   object-fit: cover;
 }
 
-/* Videos show their full natural frame */
 video.op-card-media {
-  max-height: 280px;
+  aspect-ratio: 16 / 9;
   object-fit: contain;
   background: #0d1117;
 }
@@ -998,30 +997,89 @@ video.op-card-media {
   color: white;
 }
 
-/* Promo code */
+/* Promo code — modern ticket / coupon style */
 .op-card-promo {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 10px;
   margin: 0 16px;
-  padding: 6px 10px;
-  background: rgba(212, 175, 55, 0.1);
-  border: 1px dashed rgba(212, 175, 55, 0.4);
+  padding: 10px 14px;
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.06) 100%);
+  border: 1px dashed rgba(212, 175, 55, 0.45);
+  border-radius: 8px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.op-card-promo:hover {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
+  border-color: rgba(212, 175, 55, 0.65);
+}
+
+.op-card-promo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  background: rgba(212, 175, 55, 0.15);
   border-radius: 6px;
+  flex-shrink: 0;
+}
+
+.op-card-promo-icon i {
+  font-size: 0.85rem;
+  color: #d4af37;
+}
+
+.op-card-promo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+  min-width: 0;
 }
 
 .op-card-promo-label {
-  font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.6rem;
+  color: rgba(255, 255, 255, 0.45);
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .op-card-promo-value {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 0.95rem;
+  font-weight: 800;
   color: #d4af37;
   font-family: 'Courier New', monospace;
-  letter-spacing: 1px;
+  letter-spacing: 2px;
+}
+
+.op-card-promo-copy {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.op-card-promo:hover .op-card-promo-copy {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.op-card-promo-copy i {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.op-card-promo.copied .op-card-promo-copy i {
+  color: #22c55e;
 }
 
 /* CTA button */
