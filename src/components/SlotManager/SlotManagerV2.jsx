@@ -368,6 +368,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
 
 const ProviderManager = memo(({ onClose }) => {
   const [list, setList] = useState([]);
+  const [hasProvTable, setHasProvTable] = useState(false);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [editing, setEditing] = useState(null);
@@ -376,35 +377,41 @@ const ProviderManager = memo(({ onClose }) => {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      // Try slot_providers table first
-      const { data, error } = await supabase.from('slot_providers').select('*').order('name').limit(1000);
-      if (error) throw error;
-      setList(data || []);
-    } catch {
-      // Fallback: pull distinct providers from slots table (paginated to get ALL rows)
-      try {
-        let allProviders = [];
-        let from = 0;
-        const step = 1000;
-        let done = false;
-        while (!done) {
-          const { data } = await supabase.from('slots').select('provider').range(from, from + step - 1);
-          if (!data || data.length === 0) { done = true; break; }
-          allProviders = allProviders.concat(data);
-          if (data.length < step) done = true;
-          from += step;
-        }
-        const unique = [...new Set(allProviders.map(d => (d.provider || '').trim()))].filter(Boolean).sort();
-        setList(unique.map(name => ({ name, slug: name.toLowerCase().replace(/\s+/g, '-'), logo_url: null, slot_count: 0 })));
-      } catch { /* noop */ }
-    } finally {
-      setLoading(false);
-    }
+      // Probe slot_providers table (may not exist yet)
+      const { data: provData, error: provErr } = await supabase.from('slot_providers').select('*').order('name').limit(1000);
+      if (!provErr && provData) {
+        setHasProvTable(true);
+        setList(provData);
+        setLoading(false);
+        return;
+      }
+    } catch { /* table doesn't exist */ }
+
+    // Fallback: pull distinct providers from slots table (paginated)
+    try {
+      let all = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data } = await supabase.from('slots').select('provider').range(from, from + step - 1);
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < step) break;
+        from += step;
+      }
+      const unique = [...new Set(all.map(d => (d.provider || '').trim()))].filter(Boolean).sort();
+      setList(unique.map(name => ({ name, slug: name.toLowerCase().replace(/\s+/g, '-'), logo_url: null, slot_count: 0 })));
+    } catch { /* noop */ }
+    setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const handleSave = async (prov) => {
+    if (!hasProvTable) {
+      alert('The slot_providers table has not been created yet. Run the migration SQL in Supabase first.');
+      return;
+    }
     setSaving(true);
     try {
       if (prov.id) {
