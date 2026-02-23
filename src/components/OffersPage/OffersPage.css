@@ -791,17 +791,22 @@
   gap: 20px;
   width: 100%;
   perspective: 1200px;
+  align-items: stretch;
 }
 
 /* Wrapper — holds the 3D space for flipping */
 .op-card-wrapper {
   position: relative;
-  /* auto height from content */
+  display: flex;
+  flex-direction: column;
 }
 
 .op-card-inner {
   position: relative;
   width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
   transform-style: preserve-3d;
 }
@@ -825,6 +830,7 @@
 .op-card-front {
   display: flex;
   flex-direction: column;
+  flex: 1;
   transition: box-shadow 0.25s ease;
 }
 
@@ -948,12 +954,14 @@ video.op-card-media {
   white-space: nowrap;
 }
 
-/* Stats grid 2x2 */
+/* Stats grid - grows to fill remaining space */
 .op-card-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 12px;
   padding: 16px;
+  flex: 1;
+  align-content: start;
 }
 
 .op-card-stat {
