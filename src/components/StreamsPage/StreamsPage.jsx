@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import './StreamsPage.css';
 
-const TWITCH_CHANNEL = 'torres14xd';
+const TWITCH_CHANNEL = 'osecaadegas95';
 const TWITCH_PARENTS = 'www.osecaadegas.pt&parent=osecaadegas.pt&parent=localhost';
 
 export default function StreamsPage() {
