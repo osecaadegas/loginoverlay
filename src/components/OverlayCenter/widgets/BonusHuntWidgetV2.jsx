@@ -270,7 +270,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
 
                 return (
                   <div key={`${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                    className={`bht2-slot-row ${isActive ? 'bht2-slot-row--active' : ''} ${isOpened ? '' : 'bht2-slot-row--locked'}`}>
+                    className={`bht2-slot-row ${isActive ? 'bht2-slot-row--active' : ''} ${isOpened ? '' : 'bht2-slot-row--locked'} ${bonus.isSuperBonus ? 'bht2-slot-row--super' : ''}`}>
                     <div className="bht2-slot-img-wrap">
                       {bonus.slot?.image ? (
                         <img src={bonus.slot.image} alt={bonus.slotName}

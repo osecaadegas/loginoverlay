@@ -217,7 +217,7 @@ export default function BonusHuntWidget({ config, theme }) {
                     className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
                     {bonus.slot?.image && (
                       <img src={bonus.slot.image} alt={bonus.slotName}
-                        className="bht-bonus-card-img"
+                        className={`bht-bonus-card-img ${bonus.isSuperBonus ? 'bht-bonus-card-img--super' : ''}`}
                         onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
                     )}
                     <div className="bht-bonus-card-overlay">
