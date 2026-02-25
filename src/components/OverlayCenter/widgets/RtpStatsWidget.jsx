@@ -1,40 +1,33 @@
-import React, { useMemo, useState, useEffect } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { supabase } from '../../../config/supabaseClient';
 
-/* ─── Embedded KNOWN_SLOTS database (same as api/fetch-slot-info.js) ─── */
-const KNOWN_SLOTS = {
-  'sweet bonanza': { provider: 'Pragmatic Play', rtp: 96.48, volatility: 'high', max_win_multiplier: 21175 },
-  'gates of olympus': { provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high', max_win_multiplier: 5000 },
-  'wanted dead or a wild': { provider: 'Hacksaw Gaming', rtp: 96.38, volatility: 'very_high', max_win_multiplier: 12500 },
-  'dog house megaways': { provider: 'Pragmatic Play', rtp: 96.55, volatility: 'high', max_win_multiplier: 12305 },
-  'big bass bonanza': { provider: 'Pragmatic Play', rtp: 96.71, volatility: 'high', max_win_multiplier: 2100 },
-  'sugar rush': { provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high', max_win_multiplier: 5000 },
-  'starlight princess': { provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high', max_win_multiplier: 5000 },
-  'mental': { provider: 'Nolimit City', rtp: 96.08, volatility: 'very_high', max_win_multiplier: 66666 },
-  'san quentin': { provider: 'Nolimit City', rtp: 96.03, volatility: 'very_high', max_win_multiplier: 150000 },
-  'fire in the hole': { provider: 'Nolimit City', rtp: 96.06, volatility: 'very_high', max_win_multiplier: 60000 },
-  'tombstone rip': { provider: 'Nolimit City', rtp: 96.08, volatility: 'very_high', max_win_multiplier: 300000 },
-  'razor shark': { provider: 'Push Gaming', rtp: 96.70, volatility: 'high', max_win_multiplier: 50000 },
-  'book of dead': { provider: "Play'n GO", rtp: 96.21, volatility: 'high', max_win_multiplier: 5000 },
-  'reactoonz': { provider: "Play'n GO", rtp: 96.51, volatility: 'high', max_win_multiplier: 4570 },
-  'fruit party': { provider: 'Pragmatic Play', rtp: 96.47, volatility: 'high', max_win_multiplier: 5000 },
-  'wild west gold': { provider: 'Pragmatic Play', rtp: 96.51, volatility: 'high', max_win_multiplier: 10000 },
-  'dead or alive 2': { provider: 'NetEnt', rtp: 96.80, volatility: 'very_high', max_win_multiplier: 111111 },
-  "gonzo's quest": { provider: 'NetEnt', rtp: 95.97, volatility: 'medium', max_win_multiplier: 2500 },
-  'chaos crew': { provider: 'Hacksaw Gaming', rtp: 96.35, volatility: 'very_high', max_win_multiplier: 10000 },
-  'money train 3': { provider: 'Relax Gaming', rtp: 96.00, volatility: 'very_high', max_win_multiplier: 100000 },
-};
-
-/* ─── Fuzzy slot lookup ─── */
-function findSlotInfo(name) {
+/* ─── Fetch slot info from the database (slots table) ─── */
+async function fetchSlotFromDB(name) {
   if (!name) return null;
-  const normalized = name.toLowerCase().trim();
+  const normalized = name.trim();
 
-  // Exact match
-  if (KNOWN_SLOTS[normalized]) return KNOWN_SLOTS[normalized];
+  try {
+    // 1. Exact match (case-insensitive via ilike)
+    let { data, error } = await supabase
+      .from('slots')
+      .select('name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
+      .ilike('name', normalized)
+      .limit(1)
+      .single();
 
-  // Partial match
-  for (const [key, data] of Object.entries(KNOWN_SLOTS)) {
-    if (normalized.includes(key) || key.includes(normalized)) return data;
+    if (!error && data) return { ...data, source: 'database', confidence: 'high' };
+
+    // 2. Fuzzy match (contains)
+    ({ data, error } = await supabase
+      .from('slots')
+      .select('name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
+      .ilike('name', `%${normalized}%`)
+      .limit(1)
+      .single());
+
+    if (!error && data) return { ...data, source: 'database', confidence: 'medium' };
+  } catch {
+    // DB not reachable — fall through to API
   }
   return null;
 }
@@ -70,8 +63,6 @@ function fmtMultiplier(m) {
 /* ─── Main widget ─── */
 export default function RtpStatsWidget({ config, theme, allWidgets }) {
   const c = config || {};
-  const [apiData, setApiData] = useState(null);
-  const [lastSlotName, setLastSlotName] = useState('');
 
   /* ── Find bonus hunt widget ── */
   const bhWidget = useMemo(() => {
@@ -88,24 +79,36 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
   const currentBonus = useMemo(() => bonuses.find(b => !b.opened), [bonuses]);
   const slotName = currentBonus?.slotName || '';
 
-  /* ── Slot info (local DB first, API fallback) ── */
-  const localInfo = useMemo(() => findSlotInfo(slotName), [slotName]);
+  /* ── Slot info from DB (primary) or API (fallback) ── */
+  const [slotInfo, setSlotInfo] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const lastSlotRef = useRef('');
 
   useEffect(() => {
-    if (!slotName || slotName === lastSlotName) return;
-    if (localInfo) {
-      setApiData(null);
-      setLastSlotName(slotName);
-      return;
-    }
-    // Fallback to API
-    setLastSlotName(slotName);
-    fetchSlotInfoAPI(slotName).then(data => {
-      if (data) setApiData(data);
-    });
-  }, [slotName, localInfo, lastSlotName]);
+    if (!slotName || slotName === lastSlotRef.current) return;
+    lastSlotRef.current = slotName;
+    let cancelled = false;
 
-  const slotInfo = localInfo || apiData;
+    async function lookup() {
+      setLoading(true);
+      // 1. Try database first
+      const dbResult = await fetchSlotFromDB(slotName);
+      if (!cancelled && dbResult) {
+        setSlotInfo(dbResult);
+        setLoading(false);
+        return;
+      }
+      // 2. Fallback to API (KNOWN_SLOTS + web scrape)
+      const apiResult = await fetchSlotInfoAPI(slotName);
+      if (!cancelled) {
+        setSlotInfo(apiResult);
+        setLoading(false);
+      }
+    }
+
+    lookup();
+    return () => { cancelled = true; };
+  }, [slotName]);
 
   /* ── Style config ── */
   const barBgFrom = c.barBgFrom || '#111827';
