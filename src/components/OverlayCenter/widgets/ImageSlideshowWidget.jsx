@@ -1,16 +1,17 @@
 import React, { useEffect, useState, useRef } from 'react';
 
+/**
+ * ImageSlideshowWidget — fills the entire widget slot (W × H set in admin).
+ * Images always cover the full area regardless of their native size.
+ */
 export default function ImageSlideshowWidget({ config, theme }) {
   const c = config || {};
   const images = (c.images || []).filter(url => url && url.trim());
   const interval = (c.interval || 5) * 1000;
   const fadeDuration = (c.fadeDuration || 1) * 1000;
-  const width = c.width || 400;
-  const height = c.height || 225;
-  const borderRadius = c.borderRadius || 12;
+  const borderRadius = c.borderRadius ?? 12;
   const borderColor = c.borderColor || 'rgba(51,65,85,0.5)';
-  const borderWidth = c.borderWidth || 1;
-  const objectFit = c.objectFit || 'cover';
+  const borderWidth = c.borderWidth ?? 1;
   const showGradient = c.showGradient !== false;
   const gradientColor = c.gradientColor || 'rgba(15,23,42,0.8)';
   const showCaption = c.showCaption && c.caption;
@@ -18,6 +19,7 @@ export default function ImageSlideshowWidget({ config, theme }) {
   const captionSize = c.captionSize || 14;
   const captionFont = c.captionFont || "'Inter', sans-serif";
   const pauseOnHover = c.pauseOnHover || false;
+  const animType = c.animationType || 'fade'; // fade | slide | zoom
 
   const [currentIdx, setCurrentIdx] = useState(0);
   const [nextIdx, setNextIdx] = useState(1);
@@ -46,10 +48,11 @@ export default function ImageSlideshowWidget({ config, theme }) {
     return () => clearTimeout(timerRef.current);
   }, [images.length, interval, fadeDuration]);
 
+  /* ─── Empty state ─── */
   if (images.length === 0) {
     return (
       <div className="ov-slideshow-empty" style={{
-        width: `${width}px`, height: `${height}px`,
+        width: '100%', height: '100%',
         borderRadius: `${borderRadius}px`,
         border: `${borderWidth}px solid ${borderColor}`,
       }}>
@@ -59,24 +62,53 @@ export default function ImageSlideshowWidget({ config, theme }) {
     );
   }
 
+  /* ─── Container fills the whole slot ─── */
   const containerStyle = {
-    width: `${width}px`,
-    height: `${height}px`,
+    width: '100%',
+    height: '100%',
     borderRadius: `${borderRadius}px`,
     border: `${borderWidth}px solid ${borderColor}`,
     position: 'relative',
     overflow: 'hidden',
+    background: '#000',
   };
 
-  const imgStyle = (isVisible) => ({
-    position: 'absolute',
-    inset: 0,
-    width: '100%',
-    height: '100%',
-    objectFit,
-    transition: `opacity ${fadeDuration}ms ease`,
-    opacity: isVisible ? 1 : 0,
-  });
+  /* ─── Image transition styles per animation type ─── */
+  const imgStyle = (isVisible) => {
+    const base = {
+      position: 'absolute',
+      inset: 0,
+      width: '100%',
+      height: '100%',
+      objectFit: 'cover',        // always fill the area
+      objectPosition: 'center',
+    };
+
+    if (animType === 'slide') {
+      return {
+        ...base,
+        transition: `transform ${fadeDuration}ms ease, opacity ${fadeDuration}ms ease`,
+        transform: isVisible ? 'translateX(0)' : 'translateX(100%)',
+        opacity: 1,
+      };
+    }
+
+    if (animType === 'zoom') {
+      return {
+        ...base,
+        transition: `transform ${fadeDuration}ms ease, opacity ${fadeDuration}ms ease`,
+        transform: isVisible ? 'scale(1)' : 'scale(1.15)',
+        opacity: isVisible ? 1 : 0,
+      };
+    }
+
+    // Default: fade
+    return {
+      ...base,
+      transition: `opacity ${fadeDuration}ms ease`,
+      opacity: isVisible ? 1 : 0,
+    };
+  };
 
   return (
     <div
