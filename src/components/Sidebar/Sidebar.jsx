@@ -436,8 +436,8 @@ export default function Sidebar({ className = '', onClose }) {
             ) : null
           )}
 
-          {/* Overlay Control Center - for logged-in users */}
-          {user && (
+          {/* Overlay Control Center - admin only */}
+          {isAdmin && (
             <button
               className={`sidebar-item ${isActive('/overlay-center') ? 'active' : ''}`}
               onClick={() => handleNavigation('/overlay-center')}

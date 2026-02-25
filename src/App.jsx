@@ -647,7 +647,11 @@ function App() {
                 } />
                 
                 <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/overlay-center" element={<OverlayControlCenter />} />
+                <Route path="/overlay-center" element={
+                  <ProtectedAdminRoute>
+                    <OverlayControlCenter />
+                  </ProtectedAdminRoute>
+                } />
                 <Route path="/overlay/:token" element={<OverlayRenderer />} />
 
               </Routes>
