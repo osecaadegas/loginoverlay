@@ -187,9 +187,9 @@ export default function NavbarConfig({ config, onChange }) {
           <div className="nb-badge-grid">
             {[
               { value: '', label: 'None' },
-              { value: '/overlay/content.png', label: 'Content' },
-              { value: '/overlay/raw.png', label: 'Raw' },
-              { value: '/overlay/wager.png', label: 'Wager' },
+              { value: '/badges/content.png', label: 'Content' },
+              { value: '/badges/raw.png', label: 'Raw' },
+              { value: '/badges/wager.png', label: 'Wager' },
             ].map(b => (
               <button key={b.value}
                 className={`nb-badge-option ${(c.badgeImage || '') === b.value ? 'nb-badge-option--active' : ''}`}

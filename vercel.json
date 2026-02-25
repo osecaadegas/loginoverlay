@@ -30,6 +30,10 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/badges/(.*)",
+      "destination": "/badges/$1"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
