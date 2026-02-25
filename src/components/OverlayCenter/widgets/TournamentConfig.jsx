@@ -1,106 +1,91 @@
 import React, { useState, useEffect } from 'react';
 import { getAllSlots } from '../../../utils/slotUtils';
 
-export default function TournamentConfig({ config, onChange }) {
-  const c = config || {};
-  const [showModal, setShowModal] = useState(false);
+const FONT_OPTIONS = [
+  { value: "'Inter', sans-serif", label: 'Inter' },
+  { value: "'Roboto', sans-serif", label: 'Roboto' },
+  { value: "'Poppins', sans-serif", label: 'Poppins' },
+  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
+  { value: "'Fira Code', monospace", label: 'Fira Code' },
+  { value: "'Arial', sans-serif", label: 'Arial' },
+];
 
+/* ─── Helpers ─── */
+function ColorPicker({ label, value, onChange }) {
   return (
-    <div className="oc-config-form">
-      <label className="oc-config-field">
-        <span>Title</span>
-        <input value={c.title || ''} onChange={e => onChange({ ...c, title: e.target.value })} placeholder="Tournament name" />
-      </label>
-      <label className="oc-config-field">
-        <span>Prize</span>
-        <input value={c.prize || ''} onChange={e => onChange({ ...c, prize: e.target.value })} placeholder="€1,000" />
-      </label>
-      <button className="oc-btn oc-btn--primary" style={{ marginTop: 8, width: '100%' }} onClick={() => setShowModal(true)}>
-        🏆 Configure Tournament Bracket
-      </button>
-      {showModal && (
-        <TournamentBracketModal config={c} onChange={onChange} onClose={() => setShowModal(false)} />
-      )}
-    </div>
+    <label className="nb-color-item">
+      <input type="color" value={value} onChange={e => onChange(e.target.value)} />
+      <span>{label}</span>
+    </label>
   );
 }
 
-/* ─── Full Tournament Bracket Modal (ported from old system) ─── */
-function TournamentBracketModal({ config, onChange, onClose }) {
-  const c = config || {};
-  const [players, setPlayers] = useState(c.players || ['', '', '', '', '', '', '', '']);
-  const [selectedSlots, setSelectedSlots] = useState(c.slots || [null, null, null, null, null, null, null, null]);
-  const [slotSearches, setSlotSearches] = useState(Array(8).fill(''));
-  const [showSlotSuggestions, setShowSlotSuggestions] = useState(Array(8).fill(false));
-  const [matchFormat, setMatchFormat] = useState(c.format || 'single');
-  const [tournamentStarted, setTournamentStarted] = useState(!!c.active);
-  const [editMode, setEditMode] = useState(false);
-  const [slots, setSlots] = useState([]);
+function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suffix = '' }) {
+  return (
+    <label className="nb-slider-field">
+      <span>{label}</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <input type="range" min={min} max={max} step={step} value={value} onChange={e => onChange(+e.target.value)} />
+        <span className="nb-slider-val">{value}{suffix}</span>
+      </div>
+    </label>
+  );
+}
 
+export default function TournamentConfig({ config, onChange, allWidgets }) {
+  const c = config || {};
+  const set = (key, val) => onChange({ ...c, [key]: val });
+  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const [activeTab, setActiveTab] = useState('setup');
+
+  /* ─── Slot data (for search) ─── */
+  const [slots, setSlots] = useState([]);
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getAllSlots();
-        setSlots(data || []);
-      } catch { setSlots([]); }
-    };
-    load();
+    getAllSlots().then(d => setSlots(d || [])).catch(() => setSlots([]));
   }, []);
 
-  // Init slot searches from selected slots
+  /* ─── Player/slot state ─── */
+  const [players, setPlayers] = useState(c.players || ['', '', '', '', '', '', '', '']);
+  const [selectedSlots, setSelectedSlots] = useState(c.slots || Array(8).fill(null));
+  const [slotSearches, setSlotSearches] = useState((c.slots || []).map(s => s?.name || '').concat(Array(8).fill('')).slice(0, 8));
+  const [showSuggestions, setShowSuggestions] = useState(Array(8).fill(false));
+  const [matchFormat, setMatchFormat] = useState(c.format || 'single');
+  const tournamentStarted = !!c.active;
+
+  /* Sync local state if config changes externally */
   useEffect(() => {
+    if (c.players) setPlayers(c.players);
     if (c.slots) {
+      setSelectedSlots(c.slots);
       setSlotSearches(c.slots.map(s => s?.name || ''));
     }
-  }, []);
+    if (c.format) setMatchFormat(c.format);
+  }, [c.active]);
 
-  const save = (extras = {}) => {
-    onChange({
-      ...config,
-      players,
-      slots: selectedSlots,
-      format: matchFormat,
-      active: tournamentStarted,
-      ...extras,
-    });
-  };
-
-  const handlePlayerChange = (index, value) => {
-    const next = [...players];
-    next[index] = value;
-    setPlayers(next);
+  const handlePlayerChange = (i, val) => {
+    const next = [...players]; next[i] = val; setPlayers(next);
     if (tournamentStarted && c.data) {
-      onChange({ ...config, players: next, data: { ...c.data, players: next } });
+      onChange({ ...c, players: next, data: { ...c.data, players: next } });
     }
   };
 
-  const handleSlotSearch = (index, value) => {
-    const next = [...slotSearches];
-    next[index] = value;
-    setSlotSearches(next);
-    const show = [...showSlotSuggestions];
-    show[index] = value.length > 0;
-    setShowSlotSuggestions(show);
+  const handleSlotSearch = (i, val) => {
+    const next = [...slotSearches]; next[i] = val; setSlotSearches(next);
+    const sh = [...showSuggestions]; sh[i] = val.length > 0; setShowSuggestions(sh);
   };
 
-  const handleSlotSelect = (index, slot) => {
-    const nextSlots = [...selectedSlots];
-    nextSlots[index] = slot;
-    setSelectedSlots(nextSlots);
-    const nextSearches = [...slotSearches];
-    nextSearches[index] = slot.name;
-    setSlotSearches(nextSearches);
-    const show = [...showSlotSuggestions];
-    show[index] = false;
-    setShowSlotSuggestions(show);
+  const handleSlotSelect = (i, slot) => {
+    const ns = [...selectedSlots]; ns[i] = slot; setSelectedSlots(ns);
+    const nq = [...slotSearches]; nq[i] = slot.name; setSlotSearches(nq);
+    const sh = [...showSuggestions]; sh[i] = false; setShowSuggestions(sh);
     if (tournamentStarted && c.data) {
-      onChange({ ...config, slots: nextSlots, data: { ...c.data, slots: nextSlots } });
+      onChange({ ...c, slots: ns, data: { ...c.data, slots: ns } });
     }
   };
 
   const filteredSlots = (term) => {
-    if (!term || term.length === 0) return [];
-    return slots.filter(s => s && s.name && s.name.toLowerCase().includes(term.toLowerCase())).slice(0, 5);
+    if (!term) return [];
+    return slots.filter(s => s?.name?.toLowerCase().includes(term.toLowerCase())).slice(0, 5);
   };
 
   const generateBracket = () => [
@@ -116,28 +101,66 @@ function TournamentBracketModal({ config, onChange, onClose }) {
       return;
     }
     const data = {
-      players,
-      slots: selectedSlots,
-      format: matchFormat,
-      phase: 'quarterfinals',
-      matches: generateBracket(),
-      history: [],
+      players, slots: selectedSlots, format: matchFormat,
+      phase: 'quarterfinals', matches: generateBracket(), history: [],
     };
-    onChange({ ...config, active: true, players, slots: selectedSlots, format: matchFormat, data });
-    setTournamentStarted(true);
+    onChange({ ...c, active: true, players, slots: selectedSlots, format: matchFormat, data });
+  };
+
+  const resetTournament = () => {
+    onChange({ ...c, active: false, data: null });
+  };
+
+  const calcMulti = (bet, payout) => {
+    const b = parseFloat(bet), p = parseFloat(payout);
+    return (isNaN(b) || isNaN(p) || b === 0) ? 0 : p / b;
+  };
+
+  const autoCalcWinner = (matchIndex) => {
+    const data = c.data; if (!data) return;
+    const match = data.matches[matchIndex];
+    const md = match.data || {};
+    const p1 = md.player1 || {}, p2 = md.player2 || {};
+    const isBo3 = data.format === 'bo3';
+    let p1X, p2X;
+    if (isBo3) {
+      p1X = calcMulti(p1.bet, (parseFloat(p1.payout1)||0)+(parseFloat(p1.payout2)||0)+(parseFloat(p1.payout3)||0));
+      p2X = calcMulti(p2.bet, (parseFloat(p2.payout1)||0)+(parseFloat(p2.payout2)||0)+(parseFloat(p2.payout3)||0));
+    } else {
+      p1X = calcMulti(p1.bet, p1.payout);
+      p2X = calcMulti(p2.bet, p2.payout);
+    }
+    if (p1X > 0 || p2X > 0) {
+      const updated = { ...data, matches: [...data.matches] };
+      updated.matches[matchIndex] = { ...match, winner: p1X > p2X ? match.player1 : match.player2 };
+      onChange({ ...c, data: updated });
+    }
+  };
+
+  const setMatchWinner = (matchIndex, winnerId) => {
+    const data = c.data; if (!data) return;
+    const updated = { ...data, matches: [...data.matches] };
+    updated.matches[matchIndex] = { ...data.matches[matchIndex], winner: winnerId };
+    onChange({ ...c, data: updated });
+  };
+
+  const savePlayerData = (matchIndex, playerKey, field, value) => {
+    const data = c.data; if (!data) return;
+    const updated = { ...data, matches: [...data.matches] };
+    const match = { ...data.matches[matchIndex] };
+    const md = { ...(match.data || {}) };
+    md[playerKey] = { ...(md[playerKey] || {}), [field]: parseFloat(value) || 0 };
+    match.data = md;
+    updated.matches[matchIndex] = match;
+    onChange({ ...c, data: updated });
   };
 
   const advanceToNextPhase = () => {
-    const data = c.data;
-    if (!data) return;
+    const data = c.data; if (!data) return;
     const { matches, phase } = data;
-    if (matches.some(m => m.winner === null)) {
-      alert('Complete all matches before advancing');
-      return;
-    }
+    if (matches.some(m => m.winner === null)) { alert('Complete all matches first'); return; }
     const winners = matches.map(m => m.winner);
-    let newPhase = phase;
-    let newMatches = [];
+    let newPhase = phase, newMatches = [];
     if (phase === 'quarterfinals') {
       newPhase = 'semifinals';
       newMatches = [
@@ -148,282 +171,331 @@ function TournamentBracketModal({ config, onChange, onClose }) {
       newPhase = 'finals';
       newMatches = [{ player1: winners[0], player2: winners[1], winner: null, data: {} }];
     }
-    onChange({ ...config, data: { ...data, phase: newPhase, matches: newMatches, history: [...(data.history || []), { phase, matches }] } });
-  };
-
-  const calcMulti = (bet, payout) => {
-    const b = parseFloat(bet), p = parseFloat(payout);
-    if (isNaN(b) || isNaN(p) || b === 0) return 0;
-    return p / b;
-  };
-
-  const autoCalcWinner = (matchIndex) => {
-    const data = c.data;
-    if (!data) return;
-    const match = data.matches[matchIndex];
-    const md = match.data || {};
-    const p1 = md.player1 || {}, p2 = md.player2 || {};
-    const isBo3 = data.format === 'bo3';
-    let p1X, p2X;
-    if (isBo3) {
-      const p1Total = (parseFloat(p1.payout1) || 0) + (parseFloat(p1.payout2) || 0) + (parseFloat(p1.payout3) || 0);
-      const p2Total = (parseFloat(p2.payout1) || 0) + (parseFloat(p2.payout2) || 0) + (parseFloat(p2.payout3) || 0);
-      p1X = calcMulti(p1.bet, p1Total);
-      p2X = calcMulti(p2.bet, p2Total);
-    } else {
-      p1X = calcMulti(p1.bet, p1.payout);
-      p2X = calcMulti(p2.bet, p2.payout);
-    }
-    if (p1X > 0 || p2X > 0) {
-      const updated = { ...data };
-      updated.matches = [...data.matches];
-      updated.matches[matchIndex] = { ...match, winner: p1X > p2X ? match.player1 : match.player2 };
-      onChange({ ...config, data: updated });
-    }
-  };
-
-  const setMatchWinner = (matchIndex, winnerId) => {
-    const data = c.data;
-    if (!data) return;
-    const updated = { ...data };
-    updated.matches = [...data.matches];
-    updated.matches[matchIndex] = { ...data.matches[matchIndex], winner: winnerId };
-    onChange({ ...config, data: updated });
-  };
-
-  const savePlayerData = (matchIndex, playerKey, field, value) => {
-    const data = c.data;
-    if (!data) return;
-    const updated = { ...data };
-    updated.matches = [...data.matches];
-    const match = { ...data.matches[matchIndex] };
-    const md = { ...(match.data || {}) };
-    md[playerKey] = { ...(md[playerKey] || {}), [field]: parseFloat(value) || 0 };
-    match.data = md;
-    updated.matches[matchIndex] = match;
-    onChange({ ...config, data: updated });
+    onChange({ ...c, data: { ...data, phase: newPhase, matches: newMatches, history: [...(data.history || []), { phase, matches }] } });
   };
 
   const phaseLabels = { quarterfinals: 'Quarter-Finals', semifinals: 'Semi-Finals', finals: 'Finals' };
 
+  /* ─── Navbar sync ─── */
+  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
+  const syncFromNavbar = () => {
+    if (!navbarConfig) return;
+    setMulti({
+      bgColor: navbarConfig.bgColor || '#13151e',
+      cardBg: navbarConfig.bgColor || '#1a1d2e',
+      cardBorder: navbarConfig.accentColor || 'rgba(255,255,255,0.08)',
+      nameColor: navbarConfig.textColor || '#ffffff',
+      fontFamily: navbarConfig.fontFamily || "'Inter', sans-serif",
+    });
+  };
+
+  /* ─── Preset system ─── */
+  const [presetName, setPresetName] = useState('');
+  const PRESET_KEYS = [
+    'bgColor', 'cardBg', 'cardBorder', 'cardRadius', 'cardBorderWidth',
+    'nameColor', 'nameSize', 'multiColor', 'multiSize',
+    'tabBg', 'tabActiveBg', 'tabColor', 'tabActiveColor', 'tabBorder',
+    'eliminatedOpacity', 'showSlotName', 'slotNameColor', 'slotNameSize',
+    'fontFamily', 'borderRadius', 'borderWidth', 'borderColor',
+    'cardGap', 'containerPadding', 'xIconColor', 'xIconBg',
+  ];
+
+  const savePreset = () => {
+    const name = presetName.trim(); if (!name) return;
+    const snapshot = {};
+    PRESET_KEYS.forEach(k => { if (c[k] !== undefined) snapshot[k] = c[k]; });
+    const existing = c.tournamentPresets || [];
+    const idx = existing.findIndex(p => p.name === name);
+    const updated = idx >= 0
+      ? existing.map((p, i) => i === idx ? { name, values: snapshot, savedAt: Date.now() } : p)
+      : [...existing, { name, values: snapshot, savedAt: Date.now() }];
+    set('tournamentPresets', updated);
+    setPresetName('');
+  };
+  const loadPreset = (preset) => setMulti(preset.values);
+  const deletePreset = (name) => set('tournamentPresets', (c.tournamentPresets || []).filter(p => p.name !== name));
+
+  const tabs = [
+    { id: 'setup',   label: '⚙️ Setup' },
+    { id: 'matches', label: '🏆 Matches' },
+    { id: 'style',   label: '🎨 Style' },
+    { id: 'presets', label: '💾 Presets' },
+  ];
+
   return (
-    <div className="tm-modal-overlay" onClick={onClose}>
-      <div className="tm-modal" onClick={e => e.stopPropagation()}>
-        <div className="tm-modal-header">
-          <h2>🏆 Tournament Manager</h2>
-          <button className="tm-modal-close" onClick={onClose}>✕</button>
-        </div>
+    <div className="bh-config">
 
-        <div className="tm-modal-body">
-          {!tournamentStarted ? (
-            <>
-              {/* Format */}
-              <div className="tm-section">
-                <h3>Match Format</h3>
-                <div className="tm-format-row">
-                  <button className={`tm-format-btn ${matchFormat === 'single' ? 'active' : ''}`}
-                    onClick={() => setMatchFormat('single')}>Single Match</button>
-                  <button className={`tm-format-btn ${matchFormat === 'bo3' ? 'active' : ''}`}
-                    onClick={() => setMatchFormat('bo3')}>Best of 3</button>
-                </div>
-              </div>
+      {/* Tab nav */}
+      <div className="nb-tabs" style={{ marginTop: 4 }}>
+        {tabs.map(t => (
+          <button key={t.id}
+            className={`nb-tab ${activeTab === t.id ? 'nb-tab--active' : ''}`}
+            onClick={() => setActiveTab(t.id)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-              {/* Players & Slots */}
-              <div className="tm-section">
-                <h3>Players & Slots</h3>
-                <div className="tm-players-grid">
-                  {players.map((player, i) => (
-                    <div key={i} className="tm-player-entry">
-                      <div className="tm-player-header">
-                        <span className="tm-player-num">#{i + 1}</span>
-                        <span className="tm-player-label">Player {i + 1}</span>
-                      </div>
-                      <input type="text" value={player}
-                        onChange={e => handlePlayerChange(i, e.target.value)}
-                        placeholder="Player name" className="tm-player-input" />
-                      <div className="tm-slot-wrapper">
-                        <input type="text" value={slotSearches[i]}
-                          onChange={e => handleSlotSearch(i, e.target.value)}
-                          onFocus={() => { const s = [...showSlotSuggestions]; s[i] = slotSearches[i].length > 0; setShowSlotSuggestions(s); }}
-                          placeholder="Search slot..." className="tm-slot-input" />
-                        {selectedSlots[i] && (
-                          <div className="tm-slot-preview">
-                            <img src={selectedSlots[i].image} alt={selectedSlots[i].name} />
-                          </div>
-                        )}
-                        {showSlotSuggestions[i] && filteredSlots(slotSearches[i]).length > 0 && (
-                          <div className="tm-slot-suggestions">
-                            {filteredSlots(slotSearches[i]).map(slot => (
-                              <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelect(i, slot)}>
-                                <img src={slot.image} alt={slot.name} />
-                                <span>{slot.name}</span>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-                      </div>
+      {/* ═══════ SETUP TAB ═══════ */}
+      {activeTab === 'setup' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Tournament Info</h4>
+          <label className="nb-field">
+            <span>Title</span>
+            <input value={c.title || ''} onChange={e => set('title', e.target.value)} placeholder="Tournament name" />
+          </label>
+          <label className="nb-field">
+            <span>Prize</span>
+            <input value={c.prize || ''} onChange={e => set('prize', e.target.value)} placeholder="€1,000" />
+          </label>
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Match Format</h4>
+          <div className="oc-bg-mode-grid">
+            {[
+              { id: 'single', icon: '🎯', label: 'Single' },
+              { id: 'bo3', icon: '🔥', label: 'Best of 3' },
+            ].map(f => (
+              <button key={f.id}
+                className={`oc-bg-mode-btn ${matchFormat === f.id ? 'oc-bg-mode-btn--active' : ''}`}
+                onClick={() => { setMatchFormat(f.id); if (!tournamentStarted) {} }}>
+                <span style={{ fontSize: 20 }}>{f.icon}</span>
+                <span>{f.label}</span>
+              </button>
+            ))}
+          </div>
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Players & Slots</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6 }}>
+            8 players, each assigned a slot from your database.
+          </p>
+          <div className="tm-players-inline">
+            {players.map((player, i) => (
+              <div key={i} className="tm-player-row-inline">
+                <span className="tm-player-num-inline">#{i + 1}</span>
+                <input type="text" value={player} onChange={e => handlePlayerChange(i, e.target.value)}
+                  placeholder="Player name" className="tm-player-input-inline" disabled={tournamentStarted} />
+                <div className="tm-slot-wrapper-inline">
+                  <input type="text" value={slotSearches[i] || ''} onChange={e => handleSlotSearch(i, e.target.value)}
+                    onFocus={() => { const s = [...showSuggestions]; s[i] = (slotSearches[i]||'').length > 0; setShowSuggestions(s); }}
+                    placeholder="Search slot..." className="tm-slot-input-inline" disabled={tournamentStarted} />
+                  {selectedSlots[i] && (
+                    <img src={selectedSlots[i].image} alt="" className="tm-slot-thumb-inline" />
+                  )}
+                  {showSuggestions[i] && filteredSlots(slotSearches[i]).length > 0 && (
+                    <div className="tm-slot-suggestions">
+                      {filteredSlots(slotSearches[i]).map(slot => (
+                        <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelect(i, slot)}>
+                          <img src={slot.image} alt={slot.name} />
+                          <span>{slot.name}</span>
+                        </div>
+                      ))}
                     </div>
-                  ))}
+                  )}
                 </div>
               </div>
+            ))}
+          </div>
 
-              <button className="tm-start-btn" onClick={startTournament}>🚀 Start Tournament</button>
-            </>
+          <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+            {!tournamentStarted ? (
+              <button className="nb-preset-load-btn" style={{ flex: 1 }} onClick={startTournament}>
+                🚀 Start Tournament
+              </button>
+            ) : (
+              <button className="nb-preset-del-btn" style={{ flex: 1, padding: '10px 16px' }} onClick={resetTournament}>
+                🗑️ Reset Tournament
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* ═══════ MATCHES TAB ═══════ */}
+      {activeTab === 'matches' && (
+        <div className="nb-section">
+          {!tournamentStarted ? (
+            <p className="oc-config-hint">Start a tournament in the Setup tab first.</p>
           ) : (
             <>
-              {(() => {
-                const data = c.data || {};
-                const phase = data.phase || 'quarterfinals';
+              <h4 className="nb-subtitle">
+                {phaseLabels[c.data?.phase] || 'Tournament'} — {c.data?.matches?.length || 0} match{(c.data?.matches?.length || 0) !== 1 ? 'es' : ''}
+              </h4>
+
+              {(c.data?.matches || []).map((match, idx) => {
+                const md = match.data || {};
+                const p1d = md.player1 || {}, p2d = md.player2 || {};
+                const isBo3 = c.data?.format === 'bo3';
+                const p1Name = players[match.player1] || '?';
+                const p2Name = players[match.player2] || '?';
+
                 return (
-                  <>
-                    <div className="tm-section">
-                      <h3>Current Phase: {phaseLabels[phase]}</h3>
-                      <div className="tm-phase-badge">
-                        {data.matches?.length || 0} {data.matches?.length === 1 ? 'Match' : 'Matches'}
-                      </div>
+                  <div key={idx} className="tm-match-inline">
+                    <div className="tm-match-inline-header">
+                      <span>Match {idx + 1}: <strong>{p1Name}</strong> vs <strong>{p2Name}</strong></span>
                     </div>
 
-                    <div className="tm-section">
-                      <h3>Match Results</h3>
-                      <div className="tm-matches-grid">
-                        {data.matches?.map((match, idx) => {
-                          const md = match.data || {};
-                          const p1d = md.player1 || {}, p2d = md.player2 || {};
-                          const isBo3 = data.format === 'bo3';
-                          return (
-                            <div key={idx} className={`tm-match-card ${match.winner !== null ? '' : 'tm-match-active'}`}>
-                              <div className="tm-match-title">Match {idx + 1}</div>
-                              <div className="tm-match-players">
-                                {/* Player 1 */}
-                                <div className="tm-match-player">
-                                  {selectedSlots[match.player1]?.image && (
-                                    <img className="tm-match-slot-img" src={selectedSlots[match.player1].image} alt="" />
-                                  )}
-                                  <div className="tm-match-inputs">
-                                    <div className="tm-input-group">
-                                      <label>Bet (€)</label>
-                                      <input type="number" defaultValue={p1d.bet || ''} placeholder="0.00"
-                                        onBlur={e => savePlayerData(idx, 'player1', 'bet', e.target.value)} />
-                                    </div>
-                                    {isBo3 ? (
-                                      <div className="tm-bo3-inputs">
-                                        {['payout1', 'payout2', 'payout3'].map((f, gi) => (
-                                          <div key={f} className="tm-input-group">
-                                            <label>G{gi + 1}</label>
-                                            <input type="number" defaultValue={p1d[f] || ''} placeholder="0"
-                                              onBlur={e => { savePlayerData(idx, 'player1', f, e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} />
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <div className="tm-input-group">
-                                        <label>Payout (€)</label>
-                                        <input type="number" defaultValue={p1d.payout || ''} placeholder="0.00"
-                                          onBlur={e => { savePlayerData(idx, 'player1', 'payout', e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <button className={`tm-winner-btn ${match.winner === match.player1 ? 'tm-winner' : ''}`}
-                                    onClick={() => setMatchWinner(idx, match.winner === match.player1 ? null : match.player1)}>
-                                    {match.winner === match.player1 && '👑 '}{players[match.player1]}
-                                  </button>
-                                </div>
-
-                                <span className="tm-vs">VS</span>
-
-                                {/* Player 2 */}
-                                <div className="tm-match-player">
-                                  {selectedSlots[match.player2]?.image && (
-                                    <img className="tm-match-slot-img" src={selectedSlots[match.player2].image} alt="" />
-                                  )}
-                                  <div className="tm-match-inputs">
-                                    <div className="tm-input-group">
-                                      <label>Bet (€)</label>
-                                      <input type="number" defaultValue={p2d.bet || ''} placeholder="0.00"
-                                        onBlur={e => savePlayerData(idx, 'player2', 'bet', e.target.value)} />
-                                    </div>
-                                    {isBo3 ? (
-                                      <div className="tm-bo3-inputs">
-                                        {['payout1', 'payout2', 'payout3'].map((f, gi) => (
-                                          <div key={f} className="tm-input-group">
-                                            <label>G{gi + 1}</label>
-                                            <input type="number" defaultValue={p2d[f] || ''} placeholder="0"
-                                              onBlur={e => { savePlayerData(idx, 'player2', f, e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} />
-                                          </div>
-                                        ))}
-                                      </div>
-                                    ) : (
-                                      <div className="tm-input-group">
-                                        <label>Payout (€)</label>
-                                        <input type="number" defaultValue={p2d.payout || ''} placeholder="0.00"
-                                          onBlur={e => { savePlayerData(idx, 'player2', 'payout', e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} />
-                                      </div>
-                                    )}
-                                  </div>
-                                  <button className={`tm-winner-btn ${match.winner === match.player2 ? 'tm-winner' : ''}`}
-                                    onClick={() => setMatchWinner(idx, match.winner === match.player2 ? null : match.player2)}>
-                                    {match.winner === match.player2 && '👑 '}{players[match.player2]}
-                                  </button>
-                                </div>
-                              </div>
+                    <div className="tm-match-inline-body">
+                      {/* P1 inputs */}
+                      <div className="tm-match-inline-player">
+                        <span className="tm-match-inline-pname">{p1Name}</span>
+                        <div className="tm-match-inline-inputs">
+                          <label>Bet €<input type="number" defaultValue={p1d.bet || ''} placeholder="0"
+                            onBlur={e => savePlayerData(idx, 'player1', 'bet', e.target.value)} /></label>
+                          {isBo3 ? (
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              {['payout1','payout2','payout3'].map((f, gi) => (
+                                <label key={f}>G{gi+1}<input type="number" defaultValue={p1d[f] || ''} placeholder="0"
+                                  onBlur={e => { savePlayerData(idx, 'player1', f, e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
+                              ))}
                             </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-
-                    <div className="tm-actions">
-                      {phase !== 'finals' && (
-                        <button className="tm-advance-btn" onClick={advanceToNextPhase}>⏭️ Advance</button>
-                      )}
-                      <button className="tm-edit-btn" onClick={() => setEditMode(!editMode)}>
-                        {editMode ? '✓ Done' : '✏️ Edit'}
-                      </button>
-                    </div>
-
-                    {editMode && (
-                      <div className="tm-section">
-                        <div className="tm-players-grid tm-edit-grid">
-                          {players.map((player, i) => (
-                            <div key={i} className="tm-player-entry">
-                              <div className="tm-player-header">
-                                <span className="tm-player-num">#{i + 1}</span>
-                              </div>
-                              <input type="text" value={player}
-                                onChange={e => handlePlayerChange(i, e.target.value)}
-                                className="tm-player-input" />
-                              <div className="tm-slot-wrapper">
-                                <input type="text" value={slotSearches[i]}
-                                  onChange={e => handleSlotSearch(i, e.target.value)}
-                                  className="tm-slot-input" />
-                                {selectedSlots[i] && (
-                                  <div className="tm-slot-preview">
-                                    <img src={selectedSlots[i].image} alt={selectedSlots[i].name} />
-                                  </div>
-                                )}
-                                {showSlotSuggestions[i] && filteredSlots(slotSearches[i]).length > 0 && (
-                                  <div className="tm-slot-suggestions">
-                                    {filteredSlots(slotSearches[i]).map(slot => (
-                                      <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelect(i, slot)}>
-                                        <img src={slot.image} alt={slot.name} />
-                                        <span>{slot.name}</span>
-                                      </div>
-                                    ))}
-                                  </div>
-                                )}
-                              </div>
-                            </div>
-                          ))}
+                          ) : (
+                            <label>Payout €<input type="number" defaultValue={p1d.payout || ''} placeholder="0"
+                              onBlur={e => { savePlayerData(idx, 'player1', 'payout', e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
+                          )}
                         </div>
+                        <button className={`tm-winner-inline ${match.winner === match.player1 ? 'tm-winner-active' : ''}`}
+                          onClick={() => setMatchWinner(idx, match.winner === match.player1 ? null : match.player1)}>
+                          {match.winner === match.player1 ? '👑 Winner' : 'Set Winner'}
+                        </button>
                       </div>
-                    )}
-                  </>
+
+                      <span className="tm-vs-inline">VS</span>
+
+                      {/* P2 inputs */}
+                      <div className="tm-match-inline-player">
+                        <span className="tm-match-inline-pname">{p2Name}</span>
+                        <div className="tm-match-inline-inputs">
+                          <label>Bet €<input type="number" defaultValue={p2d.bet || ''} placeholder="0"
+                            onBlur={e => savePlayerData(idx, 'player2', 'bet', e.target.value)} /></label>
+                          {isBo3 ? (
+                            <div style={{ display: 'flex', gap: 4 }}>
+                              {['payout1','payout2','payout3'].map((f, gi) => (
+                                <label key={f}>G{gi+1}<input type="number" defaultValue={p2d[f] || ''} placeholder="0"
+                                  onBlur={e => { savePlayerData(idx, 'player2', f, e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
+                              ))}
+                            </div>
+                          ) : (
+                            <label>Payout €<input type="number" defaultValue={p2d.payout || ''} placeholder="0"
+                              onBlur={e => { savePlayerData(idx, 'player2', 'payout', e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
+                          )}
+                        </div>
+                        <button className={`tm-winner-inline ${match.winner === match.player2 ? 'tm-winner-active' : ''}`}
+                          onClick={() => setMatchWinner(idx, match.winner === match.player2 ? null : match.player2)}>
+                          {match.winner === match.player2 ? '👑 Winner' : 'Set Winner'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
                 );
-              })()}
+              })}
+
+              {c.data?.phase !== 'finals' && (
+                <button className="nb-preset-load-btn" style={{ marginTop: 10, width: '100%' }} onClick={advanceToNextPhase}>
+                  ⏭️ Advance to Next Phase
+                </button>
+              )}
             </>
           )}
         </div>
-      </div>
+      )}
+
+      {/* ═══════ STYLE TAB ═══════ */}
+      {activeTab === 'style' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Sync</h4>
+          {navbarConfig && (
+            <button className="nb-preset-load-btn" onClick={syncFromNavbar} style={{ marginBottom: 10, width: '100%' }}>
+              🔗 Sync Colors from Navbar
+            </button>
+          )}
+
+          <h4 className="nb-subtitle">Container</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Background" value={c.bgColor || '#13151e'} onChange={v => set('bgColor', v)} />
+            <ColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.06)'} onChange={v => set('borderColor', v)} />
+          </div>
+          <SliderField label="Border Radius" value={c.borderRadius ?? 14} onChange={v => set('borderRadius', v)} min={0} max={40} suffix="px" />
+          <SliderField label="Border Width" value={c.borderWidth ?? 1} onChange={v => set('borderWidth', v)} min={0} max={6} suffix="px" />
+          <SliderField label="Padding" value={c.containerPadding ?? 12} onChange={v => set('containerPadding', v)} min={0} max={30} suffix="px" />
+          <SliderField label="Card Gap" value={c.cardGap ?? 10} onChange={v => set('cardGap', v)} min={2} max={24} suffix="px" />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Cards</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Card BG" value={c.cardBg || '#1a1d2e'} onChange={v => set('cardBg', v)} />
+            <ColorPicker label="Card Border" value={c.cardBorder || 'rgba(255,255,255,0.08)'} onChange={v => set('cardBorder', v)} />
+          </div>
+          <SliderField label="Card Radius" value={c.cardRadius ?? 12} onChange={v => set('cardRadius', v)} min={0} max={30} suffix="px" />
+          <SliderField label="Card Border Width" value={c.cardBorderWidth ?? 1} onChange={v => set('cardBorderWidth', v)} min={0} max={6} suffix="px" />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Tabs</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Tab BG" value={c.tabBg || 'rgba(255,255,255,0.05)'} onChange={v => set('tabBg', v)} />
+            <ColorPicker label="Active BG" value={c.tabActiveBg || 'rgba(147,70,255,0.2)'} onChange={v => set('tabActiveBg', v)} />
+            <ColorPicker label="Tab Text" value={c.tabColor || '#94a3b8'} onChange={v => set('tabColor', v)} />
+            <ColorPicker label="Active Text" value={c.tabActiveColor || '#ffffff'} onChange={v => set('tabActiveColor', v)} />
+            <ColorPicker label="Active Border" value={c.tabBorder || 'rgba(147,70,255,0.4)'} onChange={v => set('tabBorder', v)} />
+          </div>
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Text</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Player Name" value={c.nameColor || '#ffffff'} onChange={v => set('nameColor', v)} />
+            <ColorPicker label="Multiplier" value={c.multiColor || '#facc15'} onChange={v => set('multiColor', v)} />
+            <ColorPicker label="Slot Name" value={c.slotNameColor || '#ffffff'} onChange={v => set('slotNameColor', v)} />
+          </div>
+          <SliderField label="Name Size" value={c.nameSize ?? 13} onChange={v => set('nameSize', v)} min={8} max={24} suffix="px" />
+          <SliderField label="Multi Size" value={c.multiSize ?? 14} onChange={v => set('multiSize', v)} min={8} max={24} suffix="px" />
+          <SliderField label="Slot Name Size" value={c.slotNameSize ?? 11} onChange={v => set('slotNameSize', v)} min={8} max={18} suffix="px" />
+
+          <label className="nb-field" style={{ marginTop: 8 }}>
+            <span>Font</span>
+            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+          </label>
+
+          <label className="nb-field" style={{ marginTop: 6 }}>
+            <span>Show Slot Names</span>
+            <input type="checkbox" checked={c.showSlotName !== false} onChange={e => set('showSlotName', e.target.checked)} />
+          </label>
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Eliminated</h4>
+          <SliderField label="Eliminated Opacity" value={c.eliminatedOpacity ?? 0.35} onChange={v => set('eliminatedOpacity', v)} min={0.1} max={1} step={0.05} suffix="" />
+          <div className="nb-color-grid">
+            <ColorPicker label="X Icon Color" value={c.xIconColor || '#eab308'} onChange={v => set('xIconColor', v)} />
+            <ColorPicker label="X Icon BG" value={c.xIconBg || 'rgba(0,0,0,0.7)'} onChange={v => set('xIconBg', v)} />
+          </div>
+        </div>
+      )}
+
+      {/* ═══════ PRESETS TAB ═══════ */}
+      {activeTab === 'presets' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Save Current Style</h4>
+          <div className="nb-preset-save">
+            <input className="nb-preset-input"
+              value={presetName} onChange={e => setPresetName(e.target.value)}
+              placeholder="Preset name…" onKeyDown={e => e.key === 'Enter' && savePreset()} />
+            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>Save</button>
+          </div>
+
+          {(c.tournamentPresets || []).length === 0 && (
+            <p className="oc-config-hint" style={{ marginTop: 8, opacity: 0.6 }}>No saved presets yet.</p>
+          )}
+
+          {(c.tournamentPresets || []).map(p => (
+            <div key={p.name} className="nb-preset-item">
+              <div className="nb-preset-info">
+                <span className="nb-preset-name">{p.name}</span>
+                <span className="nb-preset-date">{new Date(p.savedAt).toLocaleDateString()}</span>
+              </div>
+              <div className="nb-preset-actions">
+                <button className="nb-preset-load-btn" onClick={() => loadPreset(p)}>Load</button>
+                <button className="nb-preset-del-btn" onClick={() => deletePreset(p.name)}>✕</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

@@ -1,8 +1,14 @@
 import React, { useEffect, useState, useRef } from 'react';
 
 /**
- * ImageSlideshowWidget — fills the entire widget slot (W × H set in admin).
- * Images always cover the full area regardless of their native size.
+ * ImageSlideshowWidget — double-buffered crossfade.
+ *
+ * Two image layers alternate roles:
+ *   • The VISIBLE layer shows the current image at full opacity / position.
+ *   • The HIDDEN layer pre-loads the next image off-screen / at opacity 0.
+ *   • On each cycle we flip which layer is visible (CSS transition).
+ *   • After the transition finishes we swap src's on the now-hidden layer
+ *     with `transition: none` so there is never a visual glitch.
  */
 export default function ImageSlideshowWidget({ config, theme }) {
   const c = config || {};
@@ -21,32 +27,68 @@ export default function ImageSlideshowWidget({ config, theme }) {
   const pauseOnHover = c.pauseOnHover || false;
   const animType = c.animationType || 'fade'; // fade | slide | zoom
 
+  /* ── Double-buffer state ── */
   const [currentIdx, setCurrentIdx] = useState(0);
-  const [nextIdx, setNextIdx] = useState(1);
+  const [nextIdx, setNextIdx] = useState(images.length > 1 ? 1 : 0);
   const [transitioning, setTransitioning] = useState(false);
+  const [instant, setInstant] = useState(false); // disables CSS transition during layer swap
   const paused = useRef(false);
   const timerRef = useRef(null);
+  const swapTimerRef = useRef(null);
+
+  /* Stable key — reset everything when the image list itself changes */
+  const imageKey = images.join('|');
 
   useEffect(() => {
+    clearTimeout(timerRef.current);
+    clearTimeout(swapTimerRef.current);
+    setCurrentIdx(0);
+    setNextIdx(images.length > 1 ? 1 : 0);
+    setTransitioning(false);
+    setInstant(false);
+
     if (images.length < 2) return;
 
-    function tick() {
+    function cycle() {
       if (paused.current) {
-        timerRef.current = setTimeout(tick, 500);
+        timerRef.current = setTimeout(cycle, 500);
         return;
       }
+
+      /* 1.  Start the CSS transition (current fades out, next fades in) */
       setTransitioning(true);
-      setTimeout(() => {
+
+      /* 2.  After the CSS transition finishes, do an INSTANT layer swap:
+       *     - Disable CSS transition (`instant = true`)
+       *     - Move currentIdx forward (the "current" layer now holds the same
+       *       image the "next" layer just showed → no visible change)
+       *     - Move nextIdx forward (the "next" layer loads the upcoming image,
+       *       but it's hidden so there is no flash)
+       *     - Flip transitioning back to false
+       *     - Re-enable CSS transitions on the next animation frame            */
+      swapTimerRef.current = setTimeout(() => {
+        setInstant(true);
         setCurrentIdx(prev => (prev + 1) % images.length);
         setNextIdx(prev => (prev + 1) % images.length);
         setTransitioning(false);
-      }, fadeDuration);
-      timerRef.current = setTimeout(tick, interval);
+
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            setInstant(false);
+          });
+        });
+      }, fadeDuration + 60);
+
+      /* 3.  Schedule the next cycle (display-time + transition-time) */
+      timerRef.current = setTimeout(cycle, interval + fadeDuration + 80);
     }
 
-    timerRef.current = setTimeout(tick, interval);
-    return () => clearTimeout(timerRef.current);
-  }, [images.length, interval, fadeDuration]);
+    timerRef.current = setTimeout(cycle, interval);
+    return () => {
+      clearTimeout(timerRef.current);
+      clearTimeout(swapTimerRef.current);
+    };
+  }, [imageKey, interval, fadeDuration]);
 
   /* ─── Empty state ─── */
   if (images.length === 0) {
@@ -62,7 +104,7 @@ export default function ImageSlideshowWidget({ config, theme }) {
     );
   }
 
-  /* ─── Container fills the whole slot ─── */
+  /* ─── Container ─── */
   const containerStyle = {
     width: '100%',
     height: '100%',
@@ -73,42 +115,72 @@ export default function ImageSlideshowWidget({ config, theme }) {
     background: '#000',
   };
 
-  /* ─── Image transition styles per animation type ─── */
-  const imgStyle = (isVisible) => {
-    const base = {
-      position: 'absolute',
-      inset: 0,
-      width: '100%',
-      height: '100%',
-      objectFit: 'cover',        // always fill the area
-      objectPosition: 'center',
-    };
+  /* ── Safe index ── */
+  const safe = (i) => ((i % images.length) + images.length) % images.length;
+
+  /* ── Shared image base ── */
+  const baseImg = {
+    position: 'absolute',
+    inset: 0,
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+    objectPosition: 'center',
+  };
+
+  /* ── "current" layer (bottom, z-index 1) ── */
+  const currentLayerStyle = (() => {
+    const visible = !transitioning;
+    const noTx = instant ? 'none' : undefined;
 
     if (animType === 'slide') {
       return {
-        ...base,
-        transition: `transform ${fadeDuration}ms ease, opacity ${fadeDuration}ms ease`,
-        transform: isVisible ? 'translateX(0)' : 'translateX(100%)',
-        opacity: 1,
+        ...baseImg, zIndex: 1,
+        transition: noTx || `transform ${fadeDuration}ms ease`,
+        transform: visible ? 'translateX(0)' : 'translateX(-100%)',
       };
     }
-
     if (animType === 'zoom') {
       return {
-        ...base,
-        transition: `transform ${fadeDuration}ms ease, opacity ${fadeDuration}ms ease`,
-        transform: isVisible ? 'scale(1)' : 'scale(1.15)',
-        opacity: isVisible ? 1 : 0,
+        ...baseImg, zIndex: 1,
+        transition: noTx || `opacity ${fadeDuration}ms ease, transform ${fadeDuration}ms ease`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'scale(1)' : 'scale(1.15)',
       };
     }
-
-    // Default: fade
     return {
-      ...base,
-      transition: `opacity ${fadeDuration}ms ease`,
-      opacity: isVisible ? 1 : 0,
+      ...baseImg, zIndex: 1,
+      transition: noTx || `opacity ${fadeDuration}ms ease`,
+      opacity: visible ? 1 : 0,
     };
-  };
+  })();
+
+  /* ── "next" layer (top, z-index 2) ── */
+  const nextLayerStyle = (() => {
+    const visible = transitioning;
+    const noTx = instant ? 'none' : undefined;
+
+    if (animType === 'slide') {
+      return {
+        ...baseImg, zIndex: 2,
+        transition: noTx || `transform ${fadeDuration}ms ease`,
+        transform: visible ? 'translateX(0)' : 'translateX(100%)',
+      };
+    }
+    if (animType === 'zoom') {
+      return {
+        ...baseImg, zIndex: 2,
+        transition: noTx || `opacity ${fadeDuration}ms ease, transform ${fadeDuration}ms ease`,
+        opacity: visible ? 1 : 0,
+        transform: visible ? 'scale(1)' : 'scale(1.15)',
+      };
+    }
+    return {
+      ...baseImg, zIndex: 2,
+      transition: noTx || `opacity ${fadeDuration}ms ease`,
+      opacity: visible ? 1 : 0,
+    };
+  })();
 
   return (
     <div
@@ -117,24 +189,26 @@ export default function ImageSlideshowWidget({ config, theme }) {
       onMouseEnter={() => { if (pauseOnHover) paused.current = true; }}
       onMouseLeave={() => { if (pauseOnHover) paused.current = false; }}
     >
+      {/* Bottom layer — "current" image */}
       <img
-        src={images[currentIdx % images.length]}
+        src={images[safe(currentIdx)]}
         alt="Slideshow"
-        style={imgStyle(!transitioning)}
+        style={currentLayerStyle}
         onError={e => { e.target.style.display = 'none'; }}
       />
+      {/* Top layer — "next" image */}
       {images.length > 1 && (
         <img
-          src={images[nextIdx % images.length]}
+          src={images[safe(nextIdx)]}
           alt="Slideshow"
-          style={imgStyle(transitioning)}
+          style={nextLayerStyle}
           onError={e => { e.target.style.display = 'none'; }}
         />
       )}
 
       {showGradient && (
         <div style={{
-          position: 'absolute', inset: 0,
+          position: 'absolute', inset: 0, zIndex: 3,
           background: `linear-gradient(to top, ${gradientColor}, transparent 60%)`,
           pointerEvents: 'none',
         }} />
@@ -145,15 +219,16 @@ export default function ImageSlideshowWidget({ config, theme }) {
           fontFamily: captionFont,
           fontSize: `${captionSize}px`,
           color: captionColor,
+          zIndex: 4,
         }}>
           {c.caption}
         </div>
       )}
 
       {images.length > 1 && c.showDots && (
-        <div className="ov-slideshow-dots">
+        <div className="ov-slideshow-dots" style={{ zIndex: 5 }}>
           {images.map((_, i) => (
-            <span key={i} className={`ov-slideshow-dot ${i === (transitioning ? nextIdx : currentIdx) % images.length ? 'ov-slideshow-dot--active' : ''}`} />
+            <span key={i} className={`ov-slideshow-dot ${i === safe(transitioning ? nextIdx : currentIdx) ? 'ov-slideshow-dot--active' : ''}`} />
           ))}
         </div>
       )}
