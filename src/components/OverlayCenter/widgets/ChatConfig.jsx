@@ -11,11 +11,28 @@ const FONT_OPTIONS = [
   "'Georgia', serif",
 ];
 
-export default function ChatConfig({ config, onChange }) {
+export default function ChatConfig({ config, onChange, allWidgets }) {
   const c = config || {};
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
   const [expandedSection, setExpandedSection] = useState('platforms');
+
+  // Find navbar widget config for sync
+  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
+
+  const syncFromNavbar = () => {
+    if (!navbarConfig) return;
+    const nb = navbarConfig;
+    setMulti({
+      bgColor: nb.bgColor || '#111318',
+      textColor: nb.textColor || '#f1f5f9',
+      headerBg: nb.bgColor || '#111318',
+      headerText: nb.mutedColor || '#94a3b8',
+      borderColor: nb.accentColor || '#f59e0b',
+      fontFamily: nb.fontFamily || "'Inter', sans-serif",
+      fontSize: nb.fontSize ?? 13,
+    });
+  };
 
   const toggle = (section) => setExpandedSection(expandedSection === section ? '' : section);
 
@@ -91,6 +108,11 @@ export default function ChatConfig({ config, onChange }) {
 
       {/* ─── Appearance ─── */}
       <Section id="appearance" icon="🎨" title="Colors & Fonts">
+        {navbarConfig && (
+          <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ marginBottom: 12, width: '100%' }} onClick={syncFromNavbar}>
+            🔗 Sync Colors from Navbar
+          </button>
+        )}
         <label className="oc-config-field">
           <span>Background</span>
           <input type="color" value={c.bgColor || '#0f172a'} onChange={e => set('bgColor', e.target.value)} />
