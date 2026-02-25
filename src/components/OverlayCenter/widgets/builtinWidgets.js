@@ -298,6 +298,10 @@ import ImageSlideshowConfig from './ImageSlideshowConfig';
 // ─── 16. RTP STATS BAR ─────────────────────────────────
 import RtpStatsWidget from './RtpStatsWidget';
 import RtpStatsConfig from './RtpStatsConfig';
+
+// ─── 17. BACKGROUND ────────────────────────────────────
+import BackgroundWidget from './BackgroundWidget';
+import BackgroundConfig from './BackgroundConfig';
 registerWidget({
   type: 'image_slideshow',
   label: 'Image Slideshow',
@@ -366,5 +370,41 @@ registerWidget({
     contrast: 100,
     saturation: 100,
     rtpPresets: [],
+  },
+});
+
+// ─── 17. BACKGROUND ────────────────────────────────────
+registerWidget({
+  type: 'background',
+  label: 'Background',
+  icon: '🎨',
+  category: 'general',
+  component: BackgroundWidget,
+  configPanel: BackgroundConfig,
+  defaults: {
+    bgMode: 'texture',
+    textureType: 'gradient',
+    color1: '#0f172a',
+    color2: '#1e293b',
+    color3: '#0f172a',
+    gradientAngle: 135,
+    patternSize: 20,
+    animSpeed: 8,
+    imageUrl: '',
+    videoUrl: '',
+    imageFit: 'cover',
+    imagePosition: 'center',
+    opacity: 100,
+    borderRadius: 0,
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    blur: 0,
+    hueRotate: 0,
+    grayscale: 0,
+    sepia: 0,
+    overlayColor: '#000000',
+    overlayOpacity: 0,
+    bgPresets: [],
   },
 });

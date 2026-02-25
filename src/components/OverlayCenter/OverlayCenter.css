@@ -2842,3 +2842,132 @@
   pointer-events: none;
 }
 
+
+/* ═══════════════════════════════════════════════════════════
+   17. BACKGROUND WIDGET
+   ═══════════════════════════════════════════════════════════ */
+.oc-bg-widget {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.oc-bg-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.oc-bg-texture { z-index: 0; }
+.oc-bg-image  { z-index: 0; display: block; }
+.oc-bg-video  { z-index: 0; display: block; }
+.oc-bg-overlay { z-index: 1; pointer-events: none; }
+
+/* Chameleon animation */
+@keyframes bg-chameleon-shift {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Config: source mode buttons ── */
+.oc-bg-mode-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.oc-bg-mode-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: #94a3b8;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.oc-bg-mode-btn:hover {
+  background: rgba(255,255,255,0.06);
+  color: #e2e8f0;
+}
+
+.oc-bg-mode-btn--active {
+  background: rgba(99,102,241,0.15);
+  border-color: rgba(99,102,241,0.4);
+  color: #a5b4fc;
+}
+
+/* ── Config: texture grid ── */
+.oc-bg-texture-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.oc-bg-texture-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 4px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.06);
+  background: rgba(255,255,255,0.02);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.oc-bg-texture-btn:hover {
+  background: rgba(255,255,255,0.05);
+  color: #e2e8f0;
+}
+
+.oc-bg-texture-btn--active {
+  background: rgba(99,102,241,0.15);
+  border-color: rgba(99,102,241,0.4);
+  color: #a5b4fc;
+}
+
+.oc-bg-texture-icon { font-size: 16px; }
+.oc-bg-texture-name { font-size: 0.68rem; font-weight: 600; }
+.oc-bg-texture-desc { font-size: 0.58rem; opacity: 0.55; line-height: 1.2; }
+
+/* ── Config: quick presets ── */
+.oc-bg-quick-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  margin-bottom: 10px;
+}
+
+.oc-bg-quick-btn {
+  padding: 7px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: #cbd5e1;
+  font-size: 0.68rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.oc-bg-quick-btn:hover {
+  background: rgba(99,102,241,0.12);
+  border-color: rgba(99,102,241,0.3);
+  color: #e2e8f0;
+}
+
