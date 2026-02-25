@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useState, useMemo } from 'react';
 
 /**
  * TournamentWidget — OBS bracket display.
@@ -80,15 +80,15 @@ export default function TournamentWidget({ config, theme }) {
   };
 
   /* ─── Determine which phase tab to display ─── */
-  const [displayPhase, setDisplayPhase] = React.useState(null);
+  const [displayPhase, setDisplayPhase] = useState(null);
   const activePhase = displayPhase || phase;
 
   const activeData = useMemo(() => {
     return phases.find(p => p.phase === activePhase) || (phases.length > 0 ? phases[phases.length - 1] : null);
   }, [phases, activePhase]);
 
-  /* ─── Empty state ─── */
-  if (!c.active || phases.length === 0) {
+  /* ─── Empty state — show only when there's truly nothing to display ─── */
+  if (phases.length === 0) {
     return (
       <div className="tw-root tw-empty" style={{
         width: '100%', height: '100%', fontFamily,

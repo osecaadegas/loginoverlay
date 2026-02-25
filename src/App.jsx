@@ -599,9 +599,14 @@ function LayoutWrapper({ children }) {
           />
         </>
       )}
-      <div className="main-content">
-        {children}
-      </div>
+      {/* OBS overlay routes bypass the main-content wrapper entirely */}
+      {isOBSOverlay || isWidgetRoute ? (
+        children
+      ) : (
+        <div className="main-content">
+          {children}
+        </div>
+      )}
     </div>
   );
 }
