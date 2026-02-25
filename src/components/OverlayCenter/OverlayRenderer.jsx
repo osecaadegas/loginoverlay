@@ -77,19 +77,22 @@ export default function OverlayRenderer() {
   const [error, setError] = useState(null);
   const channelRef = useRef(null);
 
-  // ── Lock scrolling + transparent bg only while this page is mounted ──
+  // ── Force full-viewport transparent OBS mode ──
   useEffect(() => {
     const html = document.documentElement;
     const body = document.body;
-    html.style.overflow = 'hidden';
-    body.style.overflow = 'hidden';
-    body.style.background = 'transparent';
-    html.style.background = 'transparent';
+    // Strip all App.css interference
+    html.style.cssText = 'margin:0;padding:0;overflow:hidden;background:transparent;width:100%;height:100%;';
+    body.style.cssText = 'margin:0;padding:0;overflow:hidden;background:transparent;width:100%;height:100%;min-height:0;';
+    // Also hide app-layout flex styling
+    const appLayout = document.querySelector('.app-layout');
+    if (appLayout) {
+      appLayout.style.cssText = 'display:block;min-height:0;background:transparent;width:100%;height:100%;';
+    }
     return () => {
-      html.style.overflow = '';
-      body.style.overflow = '';
-      body.style.background = '';
-      html.style.background = '';
+      html.style.cssText = '';
+      body.style.cssText = '';
+      if (appLayout) appLayout.style.cssText = '';
     };
   }, []);
 
@@ -139,18 +142,36 @@ export default function OverlayRenderer() {
   // ── Only render visible widgets ──
   const visibleWidgets = useMemo(() => widgets.filter(w => w.is_visible), [widgets]);
 
-  if (error) return null; // blank for OBS
-  if (!userId) return null; // still loading
-
-  // Dynamic canvas size from theme (default 1920×1080)
+  // ── Viewport-fit scaling ──
+  // The canvas is always authored at a fixed resolution (e.g. 1920×1080).
+  // We scale it to fill the OBS browser source viewport exactly.
   const canvasWidth = theme?.canvas_width || 1920;
   const canvasHeight = theme?.canvas_height || 1080;
+
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    function calcScale() {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const s = Math.min(vw / canvasWidth, vh / canvasHeight);
+      setScale(s);
+    }
+    calcScale();
+    window.addEventListener('resize', calcScale);
+    return () => window.removeEventListener('resize', calcScale);
+  }, [canvasWidth, canvasHeight]);
+
+  if (error) return null; // blank for OBS
+  if (!userId) return null; // still loading
 
   return (
     <div className="or-canvas" style={{
       ...themeVars,
       width: canvasWidth,
       height: canvasHeight,
+      transform: `scale(${scale})`,
+      transformOrigin: 'top left',
     }}>
       {customCSS && <style>{customCSS}</style>}
 

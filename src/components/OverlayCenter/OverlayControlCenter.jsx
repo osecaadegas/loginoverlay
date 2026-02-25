@@ -146,6 +146,22 @@ export default function OverlayControlCenter() {
             ))}
           </nav>
 
+          {/* ─── Resolution Selector ─── */}
+          <div className="oc-sidebar-resolution">
+            <label className="oc-sidebar-url-label">📐 Canvas Resolution</label>
+            <select
+              className="oc-sidebar-resolution-select"
+              value={`${theme?.canvas_width || 1920}x${theme?.canvas_height || 1080}`}
+              onChange={e => {
+                const [w, h] = e.target.value.split('x').map(Number);
+                saveTheme({ canvas_width: w, canvas_height: h });
+              }}
+            >
+              <option value="1920x1080">1920 × 1080 (1080p)</option>
+              <option value="2560x1440">2560 × 1440 (1440p)</option>
+            </select>
+          </div>
+
           {/* ─── Global Presets ─── */}
           <div className="oc-sidebar-presets">
             <label className="oc-sidebar-url-label">💾 Global Presets</label>

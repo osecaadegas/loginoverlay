@@ -8,8 +8,8 @@ import { getWidgetDef } from './widgets/widgetRegistry';
 // Register built-in widgets (idempotent)
 import './widgets/builtinWidgets';
 
-const CANVAS_W = 1920;
-const CANVAS_H = 1080;
+const DEFAULT_W = 1920;
+const DEFAULT_H = 1080;
 
 const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets }) {
   const def = getWidgetDef(widget.widget_type);
@@ -34,6 +34,9 @@ export default function OverlayPreview({ widgets, theme }) {
   const wrapRef = useRef(null);
   const [scale, setScale] = useState(0.5);
 
+  const CANVAS_W = theme?.canvas_width || DEFAULT_W;
+  const CANVAS_H = theme?.canvas_height || DEFAULT_H;
+
   /* Dynamic scale to fit container width */
   useEffect(() => {
     if (!wrapRef.current) return;
@@ -45,7 +48,7 @@ export default function OverlayPreview({ widgets, theme }) {
     });
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
-  }, []);
+  }, [CANVAS_W]);
 
   const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
 

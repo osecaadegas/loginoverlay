@@ -3133,6 +3133,38 @@
   font-weight: 600;
 }
 
+/* ═══════ SIDEBAR RESOLUTION SELECTOR ═══════ */
+
+.oc-sidebar-resolution {
+  padding: 12px 16px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+.oc-sidebar-resolution-select {
+  width: 100%;
+  margin-top: 6px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.oc-sidebar-resolution-select:hover,
+.oc-sidebar-resolution-select:focus {
+  border-color: var(--oc-primary, #9346ff);
+}
+
+.oc-sidebar-resolution-select option {
+  background: #1a1d2e;
+  color: #e2e8f0;
+}
+
 /* ═══════ SIDEBAR GLOBAL PRESETS ═══════ */
 
 .oc-sidebar-presets {
