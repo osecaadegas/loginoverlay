@@ -2472,10 +2472,15 @@
   flex-shrink: 0;
   margin-top: 2px;
 }
+.ov-chat-msg-body {
+  flex: 1;
+  min-width: 0;
+  line-height: 1.45;
+}
 .ov-chat-username {
   font-weight: 600;
-  flex-shrink: 0;
-  margin-right: 4px;
+  margin-right: 5px;
+  white-space: nowrap;
 }
 .ov-chat-username::after { content: ':'; }
 .ov-chat-text {

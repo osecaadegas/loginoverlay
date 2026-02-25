@@ -258,10 +258,12 @@ export default function ChatWidget({ config, theme }) {
                 background: plt.color + '33',
                 color: plt.color,
               }}>{plt.icon}</span>
-              <span className="ov-chat-username" style={{ color: nameColor }}>
-                {msg.username}
-              </span>
-              <span className="ov-chat-text">{msg.message}</span>
+              <div className="ov-chat-msg-body">
+                <span className="ov-chat-username" style={{ color: nameColor }}>
+                  {msg.username}
+                </span>
+                <span className="ov-chat-text">{msg.message}</span>
+              </div>
             </div>
           );
         })}
