@@ -82,22 +82,18 @@ export default function NavbarWidget({ config }) {
     return () => clearInterval(id);
   }, [c.showCrypto, c.cryptoCoins?.join(',')]);
 
-  // Crypto carousel / fade cycling
+  // Crypto cycling — all modes show one coin at a time
   const cryptoMode = c.cryptoDisplayMode || 'horizontal';
   const activeCoins = (c.cryptoCoins || []).filter(coin => cryptoPrices[coin]);
   useEffect(() => {
-    if (cryptoMode === 'horizontal' || activeCoins.length <= 1) return;
-    const interval = cryptoMode === 'fade' ? 4000 : 3000;
+    if (activeCoins.length <= 1) return;
+    const interval = cryptoMode === 'fade' ? 4000 : 3500;
     const id = setInterval(() => {
-      if (cryptoMode === 'fade') {
-        setCryptoFading(true);
-        setTimeout(() => {
-          setCryptoIndex(prev => (prev + 1) % activeCoins.length);
-          setCryptoFading(false);
-        }, 400);
-      } else {
+      setCryptoFading(true);
+      setTimeout(() => {
         setCryptoIndex(prev => (prev + 1) % activeCoins.length);
-      }
+        setCryptoFading(false);
+      }, 350);
     }, interval);
     return () => clearInterval(id);
   }, [cryptoMode, activeCoins.length]);
@@ -366,46 +362,47 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
 
 /* ─── Crypto Ticker with display modes ─── */
 function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, cryptoUpColor, cryptoDownColor }) {
+  const safeIdx = index % coins.length;
+  const coin = coins[safeIdx];
+
+  // Horizontal = slide left/right
   if (mode === 'horizontal') {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        {coins.map(coin => (
-          <CryptoCoin key={coin} coin={coin} price={prices[coin]}
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          transform: `translateX(${fading ? '-8px' : '0'})`,
+          opacity: fading ? 0 : 1,
+          transition: 'all 0.35s ease',
+        }}>
+          <CryptoCoin coin={coin} price={prices[coin]}
             fontSize={fontSize} bgColor={bgColor}
             cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
-        ))}
-      </div>
-    );
-  }
-
-  // Carousel — slide through one at a time
-  if (mode === 'carousel') {
-    const safeIdx = index % coins.length;
-    return (
-      <div style={{ overflow: 'hidden', position: 'relative', minWidth: 120 }}>
-        <div style={{
-          display: 'flex',
-          transform: `translateX(-${safeIdx * 100}%)`,
-          transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-        }}>
-          {coins.map(coin => (
-            <div key={coin} style={{ flexShrink: 0, width: '100%' }}>
-              <CryptoCoin coin={coin} price={prices[coin]}
-                fontSize={fontSize} bgColor={bgColor}
-                cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
-            </div>
-          ))}
         </div>
       </div>
     );
   }
 
-  // Fade — crossfade between coins
-  if (mode === 'fade') {
-    const safeIdx = index % coins.length;
-    const coin = coins[safeIdx];
+  // Carousel = slide up/down vertically
+  if (mode === 'carousel') {
     return (
-      <div style={{ position: 'relative', minWidth: 120 }}>
+      <div style={{ position: 'relative' }}>
+        <div style={{
+          transform: `translateY(${fading ? '-12px' : '0'})`,
+          opacity: fading ? 0 : 1,
+          transition: 'all 0.35s ease',
+        }}>
+          <CryptoCoin coin={coin} price={prices[coin]}
+            fontSize={fontSize} bgColor={bgColor}
+            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
+        </div>
+      </div>
+    );
+  }
+
+  // Fade = crossfade in place
+  if (mode === 'fade') {
+    return (
+      <div style={{ position: 'relative' }}>
         <div style={{
           opacity: fading ? 0 : 1,
           transition: 'opacity 0.4s ease',

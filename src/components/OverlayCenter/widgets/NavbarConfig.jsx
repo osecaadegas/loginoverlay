@@ -213,12 +213,12 @@ export default function NavbarConfig({ config, onChange }) {
 
           {c.showCrypto && (
             <>
-              <h4 className="nb-subtitle">Display Mode</h4>
+              <h4 className="nb-subtitle">Transition Style</h4>
               <div className="nb-radio-row" style={{ flexWrap: 'wrap', gap: '8px 16px' }}>
                 {[
-                  { value: 'horizontal', label: 'All Visible (horizontal)' },
-                  { value: 'carousel', label: 'Carousel (slide)' },
-                  { value: 'fade', label: 'Fade (one at a time)' },
+                  { value: 'horizontal', label: 'Slide Left' },
+                  { value: 'carousel', label: 'Slide Up' },
+                  { value: 'fade', label: 'Fade' },
                 ].map(m => (
                   <label key={m.value} className="nb-radio">
                     <input type="radio" name="cryptoMode" value={m.value}
