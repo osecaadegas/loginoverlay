@@ -1,0 +1,252 @@
+/* ============================================================================
+   GameCard — Dark casino aesthetic with glassmorphism
+   ============================================================================ */
+
+/* CSS Variables for theming */
+.gc-card {
+  --gc-vol-extreme: #ef4444;
+  --gc-vol-high: #f97316;
+  --gc-vol-medium: #eab308;
+  --gc-vol-low: #22c55e;
+  --gc-bg: rgba(255, 255, 255, 0.04);
+  --gc-border: rgba(255, 255, 255, 0.08);
+  --gc-hover-border: rgba(139, 92, 246, 0.5);
+  --gc-text: #e2e8f0;
+  --gc-text-muted: #94a3b8;
+  --gc-radius: 12px;
+}
+
+/* Base card */
+.gc-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 200px;
+  flex-shrink: 0;
+  background: var(--gc-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--gc-border);
+  border-radius: var(--gc-radius);
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.25s ease,
+              box-shadow 0.25s ease;
+  user-select: none;
+}
+
+.gc-card:hover,
+.gc-card:focus-visible {
+  transform: translateY(-4px) scale(1.02);
+  border-color: var(--gc-hover-border);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.15), 0 0 0 1px var(--gc-hover-border);
+}
+
+.gc-card:focus-visible {
+  outline: 2px solid #8b5cf6;
+  outline-offset: 2px;
+}
+
+/* Size variants */
+.gc-card--compact { width: 160px; }
+.gc-card--large { width: 260px; }
+
+/* Featured glow */
+.gc-card--featured {
+  border-color: rgba(234, 179, 8, 0.3);
+}
+.gc-card--featured:hover {
+  border-color: rgba(234, 179, 8, 0.6);
+  box-shadow: 0 8px 32px rgba(234, 179, 8, 0.15);
+}
+
+/* ---- Image ---- */
+.gc-image-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.gc-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.gc-image--loaded {
+  opacity: 1;
+}
+
+.gc-image-skeleton {
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* Hover overlay */
+.gc-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gc-card:hover .gc-overlay {
+  opacity: 1;
+}
+
+.gc-play-icon {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.85);
+  color: white;
+  font-size: 18px;
+  transform: scale(0.8);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.gc-card:hover .gc-play-icon {
+  transform: scale(1);
+}
+
+/* ---- Badges ---- */
+.gc-badge {
+  position: absolute;
+  top: 8px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  z-index: 2;
+}
+
+.gc-badge--featured {
+  left: 8px;
+  background: linear-gradient(135deg, #eab308, #f59e0b);
+  color: #000;
+}
+
+.gc-badge--hot {
+  right: 8px;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+}
+
+/* ---- Info ---- */
+.gc-info {
+  padding: 10px 12px 6px;
+}
+
+.gc-name {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--gc-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.3;
+}
+
+.gc-provider {
+  display: block;
+  font-size: 11px;
+  color: var(--gc-text-muted);
+  margin-top: 2px;
+}
+
+/* ---- Stats bar ---- */
+.gc-stats {
+  display: flex;
+  gap: 2px;
+  padding: 6px 8px 8px;
+  border-top: 1px solid var(--gc-border);
+  margin-top: auto;
+}
+
+.gc-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.gc-stat-label {
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--gc-text-muted);
+}
+
+.gc-stat-value {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gc-text);
+}
+
+.gc-stat-vol {
+  font-weight: 700;
+  font-size: 10px;
+}
+
+.gc-stat-max {
+  color: #a78bfa;
+}
+
+/* ---- Skeleton ---- */
+.gc-card--skeleton {
+  pointer-events: none;
+}
+
+.gc-skel-line {
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+/* ---- Shimmer animation ---- */
+.gc-shimmer {
+  animation: gc-shimmer 1.5s infinite;
+  background: linear-gradient(90deg,
+    rgba(255,255,255,0.04) 0%,
+    rgba(255,255,255,0.08) 50%,
+    rgba(255,255,255,0.04) 100%
+  );
+  background-size: 200% 100%;
+}
+
+@keyframes gc-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .gc-card { width: 160px; }
+  .gc-card--large { width: 200px; }
+  .gc-card--compact { width: 130px; }
+  .gc-name { font-size: 12px; }
+  .gc-stats { padding: 4px 6px 6px; }
+}
+
+@media (max-width: 480px) {
+  .gc-card { width: 140px; }
+  .gc-card--large { width: 170px; }
+  .gc-card--compact { width: 120px; }
+}

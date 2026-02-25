@@ -35,6 +35,7 @@ import SeasonPass from './components/SeasonPass/SeasonPass';
 import StreamsPage from './components/StreamsPage/StreamsPage';
 import OverlayControlCenter from './components/OverlayCenter/OverlayControlCenter';
 import OverlayRenderer from './components/OverlayCenter/OverlayRenderer';
+import CasinoDashboard from './components/Dashboard/CasinoDashboard';
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
   const { user } = useAuth();
@@ -616,6 +617,7 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/offers" element={<OffersPage />} />
                 <Route path="/streams" element={<StreamsPage />} />
+                <Route path="/casino" element={<CasinoDashboard />} />
                 <Route path="/tournaments" element={<TournamentsPage />} />
                 <Route path="/guess-balance" element={<GuessBalancePage />} />
                 <Route path="/giveaways" element={<GiveawaysPage />} />

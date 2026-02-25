@@ -244,6 +244,15 @@ export default function Sidebar({ className = '', onClose }) {
             <span className="sidebar-label">{t(T.NAV_HOME, 'Home')}</span>
           </button>
 
+          {/* Casino Dashboard */}
+          <button
+            className={`sidebar-item ${isActive('/casino') ? 'active' : ''}`}
+            onClick={() => handleNavigation('/casino')}
+          >
+            <span className="sidebar-icon"><i className="fa-solid fa-dice" /></span>
+            <span className="sidebar-label">{t('nav_casino', 'Casino')}</span>
+          </button>
+
           {menuItems.slice(0, 2).map((item, index) => 
             item.show ? (
               <button

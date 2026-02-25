@@ -1,0 +1,142 @@
+/* ============================================================================
+   CarouselSection — Horizontal snap-scroll carousel
+   ============================================================================ */
+
+.cs-section {
+  position: relative;
+  margin-bottom: 32px;
+}
+
+/* ---- Header ---- */
+.cs-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 4px;
+  margin-bottom: 14px;
+}
+
+.cs-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cs-header-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-icon {
+  font-size: 22px;
+}
+
+.cs-title {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+  color: #f1f5f9;
+  line-height: 1.2;
+}
+
+.cs-subtitle {
+  margin: 2px 0 0;
+  font-size: 12px;
+  color: #64748b;
+}
+
+/* ---- Arrows ---- */
+.cs-arrows {
+  display: flex;
+  gap: 4px;
+}
+
+.cs-arrow {
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.cs-arrow:hover:not(.cs-arrow--disabled) {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.4);
+  color: #c4b5fd;
+}
+
+.cs-arrow--disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* ---- Track ---- */
+.cs-track {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 0 8px;
+
+  /* Hide scrollbar */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.cs-track::-webkit-scrollbar {
+  display: none;
+}
+
+.cs-track--dragging {
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+  cursor: grabbing;
+  user-select: none;
+}
+
+.cs-track > * {
+  scroll-snap-align: start;
+}
+
+/* ---- Fade indicators ---- */
+.cs-fade {
+  position: absolute;
+  top: 48px; /* below header */
+  bottom: 0;
+  width: 48px;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.cs-fade--left {
+  left: 0;
+  background: linear-gradient(90deg, rgba(10, 10, 20, 0.9) 0%, transparent 100%);
+}
+
+.cs-fade--right {
+  right: 0;
+  background: linear-gradient(-90deg, rgba(10, 10, 20, 0.9) 0%, transparent 100%);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 768px) {
+  .cs-section { margin-bottom: 24px; }
+  .cs-title { font-size: 16px; }
+  .cs-arrows { display: none; }
+  .cs-track { gap: 8px; }
+  .cs-fade { width: 24px; }
+}
+
+@media (max-width: 480px) {
+  .cs-title { font-size: 14px; }
+}
