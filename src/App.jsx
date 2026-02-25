@@ -35,6 +35,7 @@ import SeasonPass from './components/SeasonPass/SeasonPass';
 import StreamsPage from './components/StreamsPage/StreamsPage';
 import OverlayControlCenter from './components/OverlayCenter/OverlayControlCenter';
 import OverlayRenderer from './components/OverlayCenter/OverlayRenderer';
+import SpotifyCallback from './components/SpotifyCallback';
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
   const { user } = useAuth();
@@ -653,6 +654,7 @@ function App() {
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/overlay/:token" element={<OverlayRenderer />} />
+                <Route path="/spotify-callback" element={<SpotifyCallback />} />
 
               </Routes>
             </LayoutWrapper>
