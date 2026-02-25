@@ -862,7 +862,7 @@
 }
 .bht2-slot-row {
   display: flex;
-  border-radius: calc(var(--bht2-card-radius, 24px) - 8px);
+  border-radius: calc(var(--bht2-card-radius, 24px) - 14px);
   border: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.6));
   background: var(--bht2-list-bg, rgba(2,6,23,0.8));
   overflow: hidden;
