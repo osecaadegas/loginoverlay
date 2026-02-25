@@ -618,15 +618,15 @@
 }
 .bht2-stat-tile {
   border-radius: calc(var(--bht2-card-radius, 24px) - 8px);
-  background: rgba(15,23,42,0.9);
-  border: 1px solid rgba(51,65,85,0.6);
+  background: var(--bht2-header-bg, rgba(15,23,42,0.9));
+  border: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.6));
   padding: 8px 12px;
 }
 .bht2-stat-tile-label {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.55em;
+  font-size: 0.65em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
@@ -642,6 +642,9 @@
 }
 
 /* ── Bonuses Summary ── */
+.bht2-summary-section {
+  background: var(--bht2-count-bg, rgba(2,6,23,0.85));
+}
 .bht2-summary-top {
   display: flex;
   align-items: center;
@@ -655,11 +658,11 @@
 }
 .bht2-pill {
   display: inline-block;
-  font-size: 0.6em;
-  padding: 1px 8px;
+  font-size: 0.7em;
+  padding: 2px 10px;
   border-radius: 999px;
-  background: rgba(15,23,42,0.9);
-  border: 1px solid rgba(51,65,85,0.7);
+  background: var(--bht2-header-bg, rgba(15,23,42,0.9));
+  border: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.7));
   color: var(--bht2-header-accent, #7dd3fc);
   font-variant-numeric: tabular-nums;
 }
@@ -697,7 +700,7 @@
 .bht2-progress-track {
   height: 6px;
   border-radius: 999px;
-  background: rgba(15,23,42,0.9);
+  background: var(--bht2-header-bg, rgba(15,23,42,0.9));
   overflow: hidden;
 }
 .bht2-progress-fill {
@@ -710,8 +713,8 @@
 
 /* ── Active Bonus ── */
 .bht2-active {
-  background: linear-gradient(135deg, rgba(8,47,73,0.6), var(--bht2-current-bg, rgba(2,6,23,0.85)));
-  border-color: rgba(56,189,248,0.35);
+  background: var(--bht2-current-bg, rgba(2,6,23,0.85));
+  border-color: var(--bht2-current-accent, rgba(56,189,248,0.35));
 }
 .bht2-active-top {
   display: flex;
@@ -722,8 +725,8 @@
   width: 56px; height: 56px;
   border-radius: 14px;
   object-fit: cover;
-  border: 1px solid rgba(56,189,248,0.4);
-  background: rgba(15,23,42,0.7);
+  border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.4));
+  background: var(--bht2-header-bg, rgba(15,23,42,0.7));
   flex-shrink: 0;
 }
 .bht2-active-info { flex: 1; min-width: 0; }
@@ -740,20 +743,20 @@
 }
 .bht2-mini-tile {
   border-radius: calc(var(--bht2-card-radius, 24px) - 12px);
-  background: rgba(2,6,23,0.8);
-  border: 1px solid rgba(56,189,248,0.3);
+  background: var(--bht2-header-bg, rgba(2,6,23,0.8));
+  border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.3));
   padding: 4px 8px;
 }
 .bht2-mini-label {
   display: block;
-  font-size: 0.5em;
+  font-size: 0.6em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
 }
 .bht2-mini-value {
   display: block;
-  font-size: 0.7em;
+  font-size: 0.8em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
@@ -762,8 +765,8 @@
 .bht2-active-img-placeholder {
   width: 56px; height: 56px;
   border-radius: 14px;
-  background: rgba(15,23,42,0.7);
-  border: 1px solid rgba(56,189,248,0.25);
+  background: var(--bht2-header-bg, rgba(15,23,42,0.7));
+  border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.25));
   flex-shrink: 0;
 }
 
@@ -776,14 +779,14 @@
 }
 .bht2-detail-box {
   border-radius: calc(var(--bht2-card-radius, 24px) - 12px);
-  background: rgba(2,6,23,0.8);
-  border: 1px solid rgba(51,65,85,0.6);
+  background: var(--bht2-header-bg, rgba(2,6,23,0.8));
+  border: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.6));
   padding: 6px 10px;
   text-align: center;
 }
 .bht2-detail-label {
   display: block;
-  font-size: 0.5em;
+  font-size: 0.6em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
@@ -791,28 +794,16 @@
 }
 .bht2-detail-value {
   display: block;
-  font-size: 0.8em;
+  font-size: 0.9em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
 }
 
-/* ── Breakeven note ── */
-.bht2-be-note {
-  margin-top: 10px;
-  font-size: 0.5em;
-  line-height: 1.5;
-  color: var(--bht2-muted, #64748b);
-  padding: 8px 10px;
-  border-radius: calc(var(--bht2-card-radius, 24px) - 12px);
-  background: rgba(2,6,23,0.6);
-  border: 1px solid rgba(51,65,85,0.35);
-}
-.bht2-be-note strong {
-  color: var(--bht2-header-accent, #38bdf8);
-}
-
 /* ── Slot Carousel ── */
+.bht2-carousel {
+  background: var(--bht2-list-bg, rgba(2,6,23,0.85));
+}
 .bht2-carousel-header {
   display: flex;
   align-items: center;
@@ -827,8 +818,8 @@
 .bht2-carousel-btn {
   width: 24px; height: 24px;
   border-radius: 50%;
-  background: rgba(15,23,42,0.9);
-  border: 1px solid rgba(51,65,85,0.6);
+  background: var(--bht2-header-bg, rgba(15,23,42,0.9));
+  border: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.6));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -858,13 +849,13 @@
 .bht2-slot-row {
   display: flex;
   border-radius: calc(var(--bht2-card-radius, 24px) - 8px);
-  border: 1px solid rgba(51,65,85,0.6);
-  background: rgba(2,6,23,0.8);
+  border: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.6));
+  background: var(--bht2-list-bg, rgba(2,6,23,0.8));
   overflow: hidden;
   transition: all 0.25s ease;
 }
 .bht2-slot-row--active {
-  border-color: rgba(56,189,248,0.6);
+  border-color: var(--bht2-current-accent, rgba(56,189,248,0.6));
   box-shadow: 0 4px 16px rgba(14,165,233,0.25);
 }
 .bht2-slot-row--super {
@@ -892,7 +883,7 @@
   width: 80px; height: 72px;
   flex-shrink: 0;
   overflow: hidden;
-  background: rgba(15,23,42,0.8);
+  background: var(--bht2-header-bg, rgba(15,23,42,0.8));
 }
 .bht2-slot-img {
   width: 100%; height: 100%;
@@ -901,7 +892,7 @@
 .bht2-slot-img--grey { filter: grayscale(1); }
 .bht2-slot-img-placeholder {
   width: 100%; height: 100%;
-  background: rgba(15,23,42,0.9);
+  background: var(--bht2-header-bg, rgba(15,23,42,0.9));
 }
 .bht2-slot-info {
   flex: 1;
@@ -920,7 +911,7 @@
 .bht2-slot-name-col { min-width: 0; }
 .bht2-slot-name {
   display: block;
-  font-size: 0.7em;
+  font-size: 0.8em;
   font-weight: 600;
   color: var(--bht2-stat-value, #f1f5f9);
   white-space: nowrap;
@@ -928,11 +919,11 @@
   text-overflow: ellipsis;
 }
 .bht2-slot-bet {
-  font-size: 0.6em;
+  font-size: 0.7em;
   color: var(--bht2-muted, #64748b);
 }
 .bht2-slot-num {
-  font-size: 0.6em;
+  font-size: 0.7em;
   color: var(--bht2-muted, #475569);
   flex-shrink: 0;
 }
@@ -945,19 +936,22 @@
 .bht2-slot-stat-col { display: flex; flex-direction: column; gap: 1px; }
 .bht2-slot-stat-col--right { align-items: flex-end; }
 .bht2-slot-stat-label {
-  font-size: 0.5em;
+  font-size: 0.6em;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--bht2-muted, #475569);
 }
 .bht2-slot-stat-val {
-  font-size: 0.65em;
+  font-size: 0.75em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
 }
 
 /* ── Footer Stats ── */
+.bht2-footer {
+  background: var(--bht2-summary-bg, rgba(2,6,23,0.85));
+}
 .bht2-footer-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -969,15 +963,15 @@
   align-items: center;
   justify-content: space-between;
   border-radius: calc(var(--bht2-card-radius, 24px) - 8px);
-  background: rgba(2,6,23,0.9);
-  border: 1px solid rgba(51,65,85,0.6);
+  background: var(--bht2-summary-bg, rgba(2,6,23,0.9));
+  border: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.6));
   padding: 8px 10px;
 }
 .bht2-footer-stat-label {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.55em;
+  font-size: 0.65em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
@@ -985,7 +979,7 @@
 .bht2-footer-stat-label svg { color: var(--bht2-header-accent, #38bdf8); }
 .bht2-footer-stat-label.bht2-accent-green svg { color: #34d399; }
 .bht2-footer-stat-val {
-  font-size: 0.75em;
+  font-size: 0.85em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
@@ -996,13 +990,13 @@
   justify-content: space-between;
   padding-top: 8px;
   margin-top: 4px;
-  border-top: 1px solid rgba(51,65,85,0.5);
+  border-top: 1px solid var(--bht2-card-outline, rgba(51,65,85,0.5));
 }
 .bht2-total-left {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.65em;
+  font-size: 0.75em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);

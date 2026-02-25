@@ -230,11 +230,6 @@ export default function BonusHuntWidgetV2({ config, theme }) {
               <span className="bht2-detail-value">{startMoney}</span>
             </div>
           </div>
-
-          {/* Breakeven note */}
-          <div className="bht2-be-note">
-            Breakeven X is calculated as <strong>start balance / sum of bets</strong>. As you type wins, the tracker recomputes the <strong>BE X needed on remaining bonuses</strong> to get back to your starting amount.
-          </div>
         </section>
       )}
 
