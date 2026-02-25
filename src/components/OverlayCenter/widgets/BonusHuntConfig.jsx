@@ -296,6 +296,10 @@ function BonusHuntPanel({ config, onChange }) {
   const [bonusList, setBonusList] = useState(c.bonuses || []);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [slots, setSlots] = useState([]);
+  const [bonusOpening, setBonusOpening] = useState(c.bonusOpening ?? false);
+  const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
+  const [editBet, setEditBet] = useState('');
   const searchRef = useRef(null);
 
   useEffect(() => {
@@ -312,12 +316,12 @@ function BonusHuntPanel({ config, onChange }) {
       startMoney: Number(startMoney) || 0,
       targetMoney: Number(targetMoney) || 0,
       stopLoss: Number(stopLoss) || 0,
-      showStatistics, animatedTracker,
+      showStatistics, animatedTracker, bonusOpening,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
       ...extras,
     });
-  }, [config, onChange, startMoney, targetMoney, stopLoss, showStatistics, animatedTracker, bonusList]);
+  }, [config, onChange, startMoney, targetMoney, stopLoss, showStatistics, animatedTracker, bonusOpening, bonusList]);
 
   const handleAddBonus = () => {
     const betNum = Number(betSize);
@@ -351,6 +355,37 @@ function BonusHuntPanel({ config, onChange }) {
 
   const handleRemoveBonus = (bonusId) => {
     const updated = bonusList.filter(b => b.id !== bonusId);
+    setBonusList(updated);
+    save(updated);
+  };
+
+  const handleCopyName = (bonus) => {
+    const name = bonus.slotName || bonus.slot?.name || '';
+    navigator.clipboard.writeText(name).catch(() => {});
+  };
+
+  const handleStartEdit = (bonus) => {
+    setEditingId(bonus.id);
+    setEditName(bonus.slotName || bonus.slot?.name || '');
+    setEditBet(String(bonus.betSize || ''));
+  };
+
+  const handleSaveEdit = (bonusId) => {
+    const updated = bonusList.map(b =>
+      b.id === bonusId ? { ...b, slotName: editName, betSize: Number(editBet) || b.betSize } : b
+    );
+    setBonusList(updated);
+    save(updated);
+    setEditingId(null);
+  };
+
+  const handleCancelEdit = () => setEditingId(null);
+
+  const handlePayoutChange = (bonusId, value) => {
+    const payout = Number(value) || 0;
+    const updated = bonusList.map(b =>
+      b.id === bonusId ? { ...b, opened: payout > 0, payout, result: payout } : b
+    );
     setBonusList(updated);
     save(updated);
   };
@@ -465,6 +500,21 @@ function BonusHuntPanel({ config, onChange }) {
 
       {/* ─── Bonus List ─── */}
       <div className="bh-panel-section">
+        {/* ── Bonus Opening toggle — prominent ── */}
+        <div className={`bh-opening-toggle ${bonusOpening ? 'bh-opening-toggle--active' : ''}`}>
+          <label className="bh-opening-label">
+            <input type="checkbox" checked={bonusOpening}
+              onChange={e => { setBonusOpening(e.target.checked); save(bonusList, { bonusOpening: e.target.checked }); }} />
+            <span className="bh-opening-switch" />
+            <span className="bh-opening-text">
+              {bonusOpening ? '🎰 Bonus Opening — ACTIVE' : '🔒 Bonus Opening — OFF'}
+            </span>
+          </label>
+          {!bonusOpening && (
+            <span className="bh-opening-hint">Enable to unlock payout inputs</span>
+          )}
+        </div>
+
         <h4 className="bh-panel-label">
           Bonuses <span className="bh-count">{bonusList.length}</span>
         </h4>
@@ -473,26 +523,90 @@ function BonusHuntPanel({ config, onChange }) {
             <p className="bh-list-empty">No bonuses added yet</p>
           ) : bonusList.map((bonus, i) => (
             <div key={bonus.id} className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''}`}>
-              <span className="bh-list-num">{i + 1}</span>
+
+              {/* Drag handle + number */}
+              <span className="bh-list-grip">⠿</span>
+              <span className="bh-list-num">#{i + 1}</span>
+
+              {/* Slot image */}
               {bonus.slot?.image && (
                 <img src={bonus.slot.image} alt={bonus.slotName} className="bh-list-img"
                   onError={e => { e.target.style.display = 'none'; }} />
               )}
-              <div className="bh-list-info">
-                <span className="bh-list-name">{bonus.slotName || bonus.slot?.name}</span>
-                <span className="bh-list-bet">{currency}{bonus.betSize} {bonus.isSuperBonus && '⭐'}</span>
-              </div>
-              <div className="bh-list-actions">
-                {bonus.opened ? (
-                  <span className="bh-list-result">{currency}{bonus.result}</span>
-                ) : (
-                  <button className="bh-list-open" onClick={() => {
-                    const result = prompt(`Enter result (${currency}):`);
-                    if (result) handleOpenBonus(bonus.id, Number(result));
-                  }}>Open</button>
-                )}
-                <button className="bh-list-remove" onClick={() => handleRemoveBonus(bonus.id)}>✕</button>
-              </div>
+
+              {/* Name + provider — or inline edit */}
+              {editingId === bonus.id ? (
+                <div className="bh-list-edit-row">
+                  <input className="bh-list-edit-input" value={editName}
+                    onChange={e => setEditName(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
+                    placeholder="Slot name" autoFocus />
+                  <input className="bh-list-edit-input bh-list-edit-bet" value={editBet}
+                    type="number" step="0.1"
+                    onChange={e => setEditBet(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
+                    placeholder="Bet" />
+                  <button className="bh-list-edit-save" onClick={() => handleSaveEdit(bonus.id)}>✓</button>
+                  <button className="bh-list-edit-cancel" onClick={handleCancelEdit}>✕</button>
+                </div>
+              ) : (
+                <>
+                  <div className="bh-list-info">
+                    <span className="bh-list-name">
+                      {bonus.slotName || bonus.slot?.name}
+                      {bonus.isSuperBonus && <span className="bh-list-super-badge">⭐</span>}
+                    </span>
+                    {bonus.slot?.provider && <span className="bh-list-provider">{bonus.slot.provider}</span>}
+                  </div>
+
+                  {/* Copy + Edit buttons */}
+                  <button className="bh-list-icon-btn" title="Copy name" onClick={() => handleCopyName(bonus)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/>
+                    </svg>
+                  </button>
+                  <button className="bh-list-icon-btn" title="Edit" onClick={() => handleStartEdit(bonus)}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M17 3a2.828 2.828 0 114 4L7.5 20.5 2 22l1.5-5.5L17 3z"/>
+                    </svg>
+                  </button>
+
+                  {/* Bet */}
+                  <div className="bh-list-field">
+                    <span className="bh-list-field-label">Bet</span>
+                    <span className="bh-list-field-value">{bonus.betSize}</span>
+                  </div>
+
+                  {/* Payment — locked unless bonusOpening */}
+                  <div className="bh-list-field">
+                    <span className="bh-list-field-label">Payment {!bonusOpening && '🔒'}</span>
+                    {bonusOpening ? (
+                      <input className="bh-list-payout-input" type="number"
+                        value={bonus.payout || ''}
+                        placeholder="0"
+                        onChange={e => handlePayoutChange(bonus.id, e.target.value)}
+                        step="0.01" />
+                    ) : (
+                      <span className="bh-list-field-value bh-list-field-locked">Locked</span>
+                    )}
+                  </div>
+
+                  {/* Mult */}
+                  <div className="bh-list-field bh-list-field--mult">
+                    <span className="bh-list-field-label">Mult</span>
+                    <span className="bh-list-field-value bh-list-field-mult">
+                      {bonus.betSize > 0 && bonus.payout > 0
+                        ? ((bonus.payout / bonus.betSize).toFixed(1)) + 'x'
+                        : '0x'}
+                    </span>
+                  </div>
+
+                  {/* Delete */}
+                  <button className="bh-list-remove" onClick={() => handleRemoveBonus(bonus.id)} title="Remove bonus">
+                    🗑️
+                  </button>
+                </>
+              )}
             </div>
           ))}
         </div>
