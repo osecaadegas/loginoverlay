@@ -25,7 +25,7 @@ import './OverlayRenderer.css';
 import './widgets/builtinWidgets';
 
 // ─── Single widget wrapper with animation ───
-const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed }) {
+const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   if (!Component) return null;
@@ -45,7 +45,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed }) {
 
   return (
     <div className={`or-widget-slot ${animClass}`} style={style}>
-      <Component config={widget.config} theme={theme} />
+      <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
     </div>
   );
 });
@@ -165,6 +165,7 @@ export default function OverlayRenderer() {
           widget={w}
           theme={theme}
           animSpeed={theme?.animation_speed}
+          allWidgets={widgets}
         />
       ))}
     </div>

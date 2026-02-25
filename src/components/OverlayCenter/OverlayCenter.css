@@ -2704,3 +2704,120 @@
 }
 .ov-slide-cfg-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
+
+/* ═══════════════════════════════════════════════════════════
+   16. RTP STATS BAR WIDGET
+   ═══════════════════════════════════════════════════════════ */
+.rtp-stats-bar {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.rtp-stats-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: linear-gradient(
+    to right,
+    var(--rtp-bg-from, #111827),
+    var(--rtp-bg-via, #1e3a5f),
+    var(--rtp-bg-to, #111827)
+  );
+  border: var(--rtp-border-width, 1px) solid var(--rtp-border-color, #1d4ed8);
+  border-radius: var(--rtp-border-radius, 8px);
+  padding: var(--rtp-py, 8px) var(--rtp-px, 16px);
+  box-sizing: border-box;
+  gap: 16px;
+  min-height: 40px;
+}
+
+/* ── Left section (provider + slot name) ── */
+.rtp-stats-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+  min-width: 0;
+}
+
+.rtp-stats-provider {
+  color: var(--rtp-provider, #ffffff);
+  font-size: var(--rtp-provider-size, 16px);
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+.rtp-stats-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--rtp-divider, #3b82f6);
+  flex-shrink: 0;
+  opacity: 0.6;
+}
+
+.rtp-stats-slot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.rtp-stats-spinner {
+  color: var(--rtp-spinner, #60a5fa);
+  flex-shrink: 0;
+  animation: rtp-spin 1.2s linear infinite;
+}
+
+@keyframes rtp-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.rtp-stats-slot-name {
+  color: var(--rtp-slot-name, #ffffff);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+/* ── Right section (RTP / Potential / Volatility) ── */
+.rtp-stats-right {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-shrink: 0;
+}
+
+.rtp-stats-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.rtp-stats-item--rtp .rtp-stats-icon { color: var(--rtp-icon-rtp, #60a5fa); }
+.rtp-stats-item--potential .rtp-stats-icon { color: var(--rtp-icon-potential, #facc15); }
+.rtp-stats-item--volatility .rtp-stats-icon { color: var(--rtp-icon-volatility, #3b82f6); }
+
+.rtp-stats-icon {
+  font-size: 1.1em;
+}
+
+.rtp-stats-value {
+  color: var(--rtp-text, #ffffff);
+  font-weight: 500;
+}
+
+.rtp-stats-label {
+  color: var(--rtp-label, #94a3b8);
+  font-size: 0.85em;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+

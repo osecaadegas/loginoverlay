@@ -294,6 +294,10 @@ registerWidget({
 // ─── 15. IMAGE SLIDESHOW ────────────────────────────────
 import ImageSlideshowWidget from './ImageSlideshowWidget';
 import ImageSlideshowConfig from './ImageSlideshowConfig';
+
+// ─── 16. RTP STATS BAR ─────────────────────────────────
+import RtpStatsWidget from './RtpStatsWidget';
+import RtpStatsConfig from './RtpStatsConfig';
 registerWidget({
   type: 'image_slideshow',
   label: 'Image Slideshow',
@@ -320,5 +324,46 @@ registerWidget({
     captionSize: 14,
     captionFont: "'Inter', sans-serif",
     pauseOnHover: false,
+  },
+});
+
+// ─── 16. RTP STATS BAR ─────────────────────────────────
+registerWidget({
+  type: 'rtp_stats',
+  label: 'RTP Stats Bar',
+  icon: '📊',
+  category: 'stream',
+  component: RtpStatsWidget,
+  configPanel: RtpStatsConfig,
+  defaults: {
+    barBgFrom: '#111827',
+    barBgVia: '#1e3a5f',
+    barBgTo: '#111827',
+    borderColor: '#1d4ed8',
+    borderWidth: 1,
+    borderRadius: 8,
+    textColor: '#ffffff',
+    providerColor: '#ffffff',
+    slotNameColor: '#ffffff',
+    labelColor: '#94a3b8',
+    rtpIconColor: '#60a5fa',
+    potentialIconColor: '#facc15',
+    volatilityIconColor: '#3b82f6',
+    dividerColor: '#3b82f6',
+    spinnerColor: '#60a5fa',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 14,
+    providerFontSize: 16,
+    paddingX: 16,
+    paddingY: 8,
+    showSpinner: true,
+    showProvider: true,
+    showRtp: true,
+    showPotential: true,
+    showVolatility: true,
+    brightness: 100,
+    contrast: 100,
+    saturation: 100,
+    rtpPresets: [],
   },
 });
