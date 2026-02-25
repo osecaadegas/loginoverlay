@@ -28,6 +28,8 @@ export default function BonusHuntWidget({ config, theme }) {
   const textColor = c.textColor || '#ffffff';
   const mutedTextColor = c.mutedTextColor || '#93c5fd';
   const statValueColor = c.statValueColor || '#ffffff';
+  const cardOutlineColor = c.cardOutlineColor || 'transparent';
+  const cardOutlineWidth = c.cardOutlineWidth ?? 2;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const fontSize = c.fontSize ?? 13;
   const cardRadius = c.cardRadius ?? 16;
@@ -64,6 +66,8 @@ export default function BonusHuntWidget({ config, theme }) {
     '--bht-text': textColor,
     '--bht-muted': mutedTextColor,
     '--bht-stat-value': statValueColor,
+    '--bht-card-outline': cardOutlineColor,
+    '--bht-card-outline-width': `${cardOutlineWidth}px`,
     '--bht-card-radius': `${cardRadius}px`,
     '--bht-card-padding': `${cardPadding}px`,
     '--bht-slot-img-height': `${slotImageHeight}px`,

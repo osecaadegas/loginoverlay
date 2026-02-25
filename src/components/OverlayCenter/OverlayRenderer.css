@@ -217,6 +217,7 @@
   border-radius: var(--bht-card-radius, 16px);
   padding: var(--bht-card-padding, 14px);
   box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  border: var(--bht-card-outline-width, 2px) solid var(--bht-card-outline, transparent);
 }
 
 /* ── Header card ── */
@@ -529,7 +530,7 @@
 /* ── Card base ── */
 .bht2-card {
   border-radius: var(--bht2-card-radius, 24px);
-  border: 1px solid rgba(51,65,85,0.7);
+  border: var(--bht2-card-outline-width, 1px) solid var(--bht2-card-outline, rgba(51,65,85,0.7));
   background: var(--bht2-header-bg, rgba(2,6,23,0.85));
   padding: var(--bht2-card-padding, 12px) 14px;
 }
@@ -734,10 +735,83 @@
   color: var(--bht2-stat-value, #e0f2fe);
   margin-top: 2px;
 }
+.bht2-active-img-placeholder {
+  width: 56px; height: 56px;
+  border-radius: 14px;
+  background: rgba(15,23,42,0.7);
+  border: 1px solid rgba(56,189,248,0.25);
+  flex-shrink: 0;
+}
+
+/* ── Detail boxes (BET / WIN / START row) ── */
+.bht2-detail-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  margin-top: 10px;
+}
+.bht2-detail-box {
+  border-radius: calc(var(--bht2-card-radius, 24px) - 12px);
+  background: rgba(2,6,23,0.8);
+  border: 1px solid rgba(51,65,85,0.6);
+  padding: 6px 10px;
+  text-align: center;
+}
+.bht2-detail-label {
+  display: block;
+  font-size: 0.5em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bht2-muted, #64748b);
+  margin-bottom: 2px;
+}
+.bht2-detail-value {
+  display: block;
+  font-size: 0.8em;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--bht2-stat-value, #e0f2fe);
+}
+
+/* ── Breakeven note ── */
+.bht2-be-note {
+  margin-top: 10px;
+  font-size: 0.5em;
+  line-height: 1.5;
+  color: var(--bht2-muted, #64748b);
+  padding: 8px 10px;
+  border-radius: calc(var(--bht2-card-radius, 24px) - 12px);
+  background: rgba(2,6,23,0.6);
+  border: 1px solid rgba(51,65,85,0.35);
+}
+.bht2-be-note strong {
+  color: var(--bht2-header-accent, #38bdf8);
+}
 
 /* ── Slot Carousel ── */
 .bht2-carousel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-bottom: 10px;
+}
+.bht2-carousel-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bht2-carousel-btn {
+  width: 24px; height: 24px;
+  border-radius: 50%;
+  background: rgba(15,23,42,0.9);
+  border: 1px solid rgba(51,65,85,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--bht2-muted, #64748b);
+}
+.bht2-carousel-btn--info {
+  color: var(--bht2-header-accent, #38bdf8);
 }
 .bht2-slot-list {
   display: flex;

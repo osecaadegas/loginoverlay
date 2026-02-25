@@ -41,6 +41,8 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
       textColor: nb.textColor || '#f1f5f9',
       mutedTextColor: nb.mutedColor || '#94a3b8',
       statValueColor: nb.textColor || '#f1f5f9',
+      cardOutlineColor: nb.borderColor || nb.accentColor || '#f59e0b',
+      cardOutlineWidth: nb.borderWidth ?? 2,
       fontFamily: nb.fontFamily || "'Inter', sans-serif",
       fontSize: nb.fontSize ?? 13,
       ...(nb.brightness != null && { brightness: nb.brightness }),
@@ -55,6 +57,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
     'headerColor', 'headerAccent', 'countCardColor', 'currentBonusColor', 'currentBonusAccent',
     'listCardColor', 'listCardAccent', 'summaryColor', 'totalPayColor', 'totalPayText',
     'superBadgeColor', 'extremeBadgeColor', 'textColor', 'mutedTextColor', 'statValueColor',
+    'cardOutlineColor', 'cardOutlineWidth',
     'fontFamily', 'fontSize', 'cardRadius', 'cardGap', 'widgetWidth', 'cardPadding',
     'slotImageHeight', 'listMaxHeight',
     'brightness', 'contrast', 'saturation',
@@ -156,6 +159,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
             <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
             <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#d8b4fe'} onChange={v => set('listCardAccent', v)} />
             <ColorPicker label="Summary BG" value={c.summaryColor || '#1e3a8a'} onChange={v => set('summaryColor', v)} />
+            <ColorPicker label="Card Outline" value={c.cardOutlineColor || 'transparent'} onChange={v => set('cardOutlineColor', v)} />
           </div>
 
           <h4 className="nb-subtitle">Badge Colors</h4>
@@ -192,6 +196,8 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
             onChange={v => set('cardRadius', v)} />
           <SliderField label="Card Gap" value={c.cardGap ?? 12} min={4} max={24} step={1} unit="px"
             onChange={v => set('cardGap', v)} />
+          <SliderField label="Outline Width" value={c.cardOutlineWidth ?? 2} min={0} max={6} step={1} unit="px"
+            onChange={v => set('cardOutlineWidth', v)} />
           <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 180} min={80} max={400} step={10} unit="px"
             onChange={v => set('slotImageHeight', v)} />
           <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"

@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 
 /**
- * BonusHuntWidgetV2 — Style 2: Sleek dark slate design with progress bar & horizontal slot list.
+ * BonusHuntWidgetV2 — Style 2: Sleek dark slate design matching reference layout.
  * Reads from the same config shape as V1.
  */
 export default function BonusHuntWidgetV2({ config, theme }) {
@@ -26,6 +26,8 @@ export default function BonusHuntWidgetV2({ config, theme }) {
   const textColor = c.textColor || '#e2e8f0';
   const mutedTextColor = c.mutedTextColor || '#64748b';
   const statValueColor = c.statValueColor || '#f1f5f9';
+  const cardOutlineColor = c.cardOutlineColor || 'rgba(51,65,85,0.7)';
+  const cardOutlineWidth = c.cardOutlineWidth ?? 1;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const fontSize = c.fontSize ?? 13;
   const cardRadius = c.cardRadius ?? 12;
@@ -62,6 +64,8 @@ export default function BonusHuntWidgetV2({ config, theme }) {
     '--bht2-text': textColor,
     '--bht2-muted': mutedTextColor,
     '--bht2-stat-value': statValueColor,
+    '--bht2-card-outline': cardOutlineColor,
+    '--bht2-card-outline-width': `${cardOutlineWidth}px`,
     '--bht2-card-radius': `${cardRadius}px`,
     '--bht2-card-padding': `${cardPadding}px`,
     '--bht2-slot-img-height': `${slotImageHeight}px`,
@@ -78,11 +82,8 @@ export default function BonusHuntWidgetV2({ config, theme }) {
     const superCount = bonuses.filter(b => b.isSuperBonus).length;
     const extremeCount = bonuses.filter(b => b.isExtreme).length;
 
-    // Overall breakeven: start / sum(all bets)
     const overallBE = totalBetAll > 0 ? startMoney / totalBetAll : 0;
-    // Average multi on opened bonuses
     const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
-    // Remaining BE: what's still needed / remaining bets
     const remaining = Math.max(startMoney - totalWin, 0);
     const currentBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
 
@@ -108,9 +109,9 @@ export default function BonusHuntWidgetV2({ config, theme }) {
     );
   }
 
+  const activeWin = currentBonus && currentBonus.opened ? (Number(currentBonus.payout) || 0) : 0;
   const activeMultiX = currentBonus && currentBonus.opened && Number(currentBonus.betSize) > 0
-    ? (Number(currentBonus.payout) || 0) / Number(currentBonus.betSize) : 0;
-
+    ? activeWin / Number(currentBonus.betSize) : 0;
   const progressPct = bonuses.length > 0 ? (stats.openedCount / bonuses.length) * 100 : 0;
 
   return (
@@ -128,11 +129,11 @@ export default function BonusHuntWidgetV2({ config, theme }) {
               </div>
             </div>
             <div>
-              <div className="bht2-label-sm">Bonus Opening</div>
+              <div className="bht2-label-sm" style={{ fontWeight: 700, letterSpacing: '0.18em' }}>BONUS OPENING</div>
               <div className="bht2-label-xs">Session Tracker</div>
             </div>
           </div>
-          <span className="bht2-tag-muted">#{bonuses.length}</span>
+          <span className="bht2-tag-muted">#{bonuses.length > 0 ? bonuses.length : '—'}</span>
         </div>
 
         <div className="bht2-header-stats">
@@ -158,9 +159,12 @@ export default function BonusHuntWidgetV2({ config, theme }) {
       </section>
 
       {/* ═══ Bonuses Summary ═══ */}
-      <section className="bht2-card bht2-summary">
+      <section className="bht2-card bht2-summary-section">
         <div className="bht2-summary-top">
           <div className="bht2-summary-left">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: headerAccent, flexShrink: 0 }}>
+              <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
             <span className="bht2-label-sm">Bonuses</span>
             <span className="bht2-pill">{bonuses.length}</span>
           </div>
@@ -176,29 +180,28 @@ export default function BonusHuntWidgetV2({ config, theme }) {
             Extreme <strong>{stats.extremeCount}</strong>
           </span>
         </div>
-        <div className="bht2-progress-track">
-          <div className="bht2-progress-fill" style={{ width: `${progressPct}%` }} />
-        </div>
       </section>
 
       {/* ═══ Active Bonus ═══ */}
       {currentBonus && (
         <section className="bht2-card bht2-active">
           <div className="bht2-active-top">
-            {currentBonus.slot?.image && (
+            {currentBonus.slot?.image ? (
               <img src={currentBonus.slot.image} alt={currentBonus.slotName}
                 className="bht2-active-img"
                 onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div className="bht2-active-img-placeholder" />
             )}
             <div className="bht2-active-info">
               <div className="bht2-active-header">
-                <div className="bht2-label-sm bht2-accent-sky">{currentBonus.slotName}</div>
+                <div className="bht2-label-sm bht2-accent-sky" style={{ fontWeight: 700 }}>{currentBonus.slotName}</div>
                 <div className="bht2-label-xs">#{currentIndex + 1}</div>
               </div>
               <div className="bht2-active-mini-stats">
                 <div className="bht2-mini-tile">
                   <span className="bht2-mini-label">Win</span>
-                  <span className="bht2-mini-value">{currentBonus.opened ? fmt(Number(currentBonus.payout) || 0) : '—'}</span>
+                  <span className="bht2-mini-value">{currentBonus.opened ? fmt(activeWin) : '—'}</span>
                 </div>
                 <div className="bht2-mini-tile">
                   <span className="bht2-mini-label">Multi</span>
@@ -211,10 +214,31 @@ export default function BonusHuntWidgetV2({ config, theme }) {
               </div>
             </div>
           </div>
+
+          {/* Detail stat boxes — BET / WIN / START */}
+          <div className="bht2-detail-row">
+            <div className="bht2-detail-box">
+              <span className="bht2-detail-label">Bet</span>
+              <span className="bht2-detail-value">{(Number(currentBonus.betSize) || 0)}</span>
+            </div>
+            <div className="bht2-detail-box">
+              <span className="bht2-detail-label">Win</span>
+              <span className="bht2-detail-value">{currentBonus.opened ? (Number(currentBonus.payout) || 0) : '—'}</span>
+            </div>
+            <div className="bht2-detail-box">
+              <span className="bht2-detail-label">Start</span>
+              <span className="bht2-detail-value">{startMoney}</span>
+            </div>
+          </div>
+
+          {/* Breakeven note */}
+          <div className="bht2-be-note">
+            Breakeven X is calculated as <strong>start balance / sum of bets</strong>. As you type wins, the tracker recomputes the <strong>BE X needed on remaining bonuses</strong> to get back to your starting amount.
+          </div>
         </section>
       )}
 
-      {/* ═══ Vertical Slot Carousel ═══ */}
+      {/* ═══ Vertical Slot List ═══ */}
       {bonuses.length > 0 && (
         <section className="bht2-card bht2-carousel">
           <div className="bht2-carousel-header">
@@ -222,7 +246,19 @@ export default function BonusHuntWidgetV2({ config, theme }) {
               <span className="bht2-label-sm">Slots</span>
               <span className="bht2-pill">{(currentIndex >= 0 ? currentIndex + 1 : stats.openedCount)}/{bonuses.length}</span>
             </div>
+            <div className="bht2-carousel-actions">
+              <span className="bht2-carousel-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="15 18 9 12 15 6" /></svg>
+              </span>
+              <span className="bht2-carousel-btn">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="9 18 15 12 9 6" /></svg>
+              </span>
+              <span className="bht2-carousel-btn bht2-carousel-btn--info">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
+              </span>
+            </div>
           </div>
+
           <div className="bht2-slot-list">
             {bonuses.map((bonus, index) => {
               const isActive = index === currentIndex;
@@ -236,7 +272,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
                   <div className="bht2-slot-img-wrap">
                     {bonus.slot?.image ? (
                       <img src={bonus.slot.image} alt={bonus.slotName}
-                        className={`bht2-slot-img ${!isOpened ? 'bht2-slot-img--grey' : ''}`}
+                        className={`bht2-slot-img ${!isOpened && !isActive ? 'bht2-slot-img--grey' : ''}`}
                         onError={e => { e.target.style.display = 'none'; }} />
                     ) : (
                       <div className="bht2-slot-img-placeholder" />
