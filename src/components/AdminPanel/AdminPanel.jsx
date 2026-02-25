@@ -2706,12 +2706,11 @@ export default function AdminPanel() {
       const user = (await supabase.auth.getUser()).data.user;
       if (!user) throw new Error('Not authenticated');
 
-      // Deactivate any existing active passwords
+      // Remove all existing passwords for this user (clean slate)
       await supabase
         .from('gtb_transfer_passwords')
-        .update({ is_active: false })
-        .eq('user_id', user.id)
-        .eq('is_active', true);
+        .delete()
+        .eq('user_id', user.id);
 
       // Generate and hash new password
       const plainPassword = generateRandomPassword();

@@ -2390,3 +2390,304 @@
   opacity: 0.5;
   cursor: not-allowed;
 }
+
+/* ═══════════════════════════════════════════════════════════
+   CHAT WIDGET — Multi-platform overlay chat
+   ═══════════════════════════════════════════════════════════ */
+.ov-chat-widget {
+  box-sizing: border-box;
+}
+.ov-chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.ov-chat-header-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.ov-chat-header-badges {
+  display: flex;
+  gap: 5px;
+}
+.ov-chat-platform-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 700;
+}
+.ov-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(51 65 85) transparent;
+}
+.ov-chat-messages::-webkit-scrollbar { width: 4px; }
+.ov-chat-messages::-webkit-scrollbar-track { background: transparent; }
+.ov-chat-messages::-webkit-scrollbar-thumb { background: rgb(51 65 85); border-radius: 2px; }
+
+.ov-chat-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 12px;
+  color: #64748b;
+  text-align: center;
+  padding: 20px;
+}
+.ov-chat-msg {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  transition: background 0.15s;
+}
+.ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
+.ov-chat-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 3px;
+  font-size: 9px;
+  font-weight: 700;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.ov-chat-username {
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-right: 4px;
+}
+.ov-chat-username::after { content: ':'; }
+.ov-chat-text {
+  word-break: break-word;
+}
+.ov-chat-legend {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 6px 14px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  flex-shrink: 0;
+}
+.ov-chat-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  color: #94a3b8;
+}
+.ov-chat-legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+}
+
+/* Chat Config Panel */
+.ov-chat-cfg {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ov-chat-cfg-section {
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ov-chat-cfg-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.03);
+  border: none;
+  color: #cbd5e1;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ov-chat-cfg-section-toggle:hover { background: rgba(255,255,255,0.06); }
+.ov-chat-cfg-section-body {
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ov-chat-cfg-platform {
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.ov-chat-cfg-platform-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+.ov-chat-cfg-platform-header input[type="checkbox"] {
+  accent-color: #9346ff;
+  width: 16px;
+  height: 16px;
+}
+.ov-chat-cfg-platform-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.ov-chat-cfg-platform-fields {
+  padding: 4px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   IMAGE SLIDESHOW WIDGET
+   ═══════════════════════════════════════════════════════════ */
+.ov-slideshow-widget {
+  box-sizing: border-box;
+}
+.ov-slideshow-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(15,23,42,0.8);
+  color: #64748b;
+  font-size: 12px;
+  box-sizing: border-box;
+}
+.ov-slideshow-empty span:first-child { font-size: 24px; }
+.ov-slideshow-caption {
+  position: absolute;
+  bottom: 10px;
+  left: 14px;
+  right: 14px;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+  z-index: 2;
+}
+.ov-slideshow-dots {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 5px;
+  z-index: 3;
+}
+.ov-slideshow-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  transition: background 0.3s, transform 0.3s;
+}
+.ov-slideshow-dot--active {
+  background: #fff;
+  transform: scale(1.3);
+}
+
+/* Slideshow Config Panel */
+.ov-slide-cfg-images {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ov-slide-cfg-image-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+.ov-slide-cfg-thumb {
+  width: 40px;
+  height: 24px;
+  object-fit: cover;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+.ov-slide-cfg-url {
+  flex: 1;
+  font-size: 11px;
+  color: #94a3b8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.ov-slide-cfg-image-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+.ov-slide-cfg-image-actions button {
+  background: rgba(255,255,255,0.06);
+  border: none;
+  color: #94a3b8;
+  font-size: 11px;
+  padding: 3px 6px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.ov-slide-cfg-image-actions button:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+.ov-slide-cfg-image-actions button:disabled { opacity: 0.3; cursor: not-allowed; }
+.ov-slide-cfg-remove:hover { background: rgba(239,68,68,0.2) !important; color: #f87171 !important; }
+.ov-slide-cfg-add-row {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+.ov-slide-cfg-add-input {
+  flex: 1;
+  padding: 7px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: #e2e8f0;
+  font-size: 0.78rem;
+}
+.ov-slide-cfg-add-input:focus {
+  outline: none;
+  border-color: rgba(99,102,241,0.5);
+}
+.ov-slide-cfg-add-btn {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  color: #fff;
+  padding: 7px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s;
+}
+.ov-slide-cfg-add-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, #818cf8, #a78bfa);
+}
+.ov-slide-cfg-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+

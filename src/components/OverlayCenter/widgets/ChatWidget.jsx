@@ -1,22 +1,275 @@
-import React from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 
-export default function ChatWidget({ config }) {
+/* ─── Platform helpers ─── */
+const PLATFORM_META = {
+  twitch:  { label: 'Twitch',  icon: 'T', color: '#a855f7' },
+  youtube: { label: 'YouTube', icon: 'Y', color: '#ef4444' },
+  kick:    { label: 'Kick',    icon: 'K', color: '#22c55e' },
+};
+
+/* ─── Twitch IRC (anonymous/read-only) ─── */
+function useTwitchChat(channel, onMessage) {
+  const wsRef = useRef(null);
+  const reconnectTimer = useRef(null);
+
+  const connect = useCallback(() => {
+    if (!channel) return;
+    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      ws.send('CAP REQ :twitch.tv/tags');
+      ws.send('NICK justinfan' + Math.floor(Math.random() * 99999));
+      ws.send('JOIN #' + channel.toLowerCase().trim());
+    };
+
+    ws.onmessage = (evt) => {
+      const lines = evt.data.split('\r\n');
+      for (const line of lines) {
+        if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
+        const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
+        if (!m) continue;
+        const tags = Object.fromEntries(m[1].split(';').map(t => t.split('=')));
+        onMessage({
+          id: tags['id'] || Date.now().toString() + Math.random(),
+          platform: 'twitch',
+          username: tags['display-name'] || m[2],
+          message: m[3],
+          color: tags['color'] || '',
+          timestamp: Date.now(),
+        });
+      }
+    };
+
+    ws.onclose = () => {
+      reconnectTimer.current = setTimeout(connect, 3000);
+    };
+  }, [channel, onMessage]);
+
+  useEffect(() => {
+    connect();
+    return () => {
+      clearTimeout(reconnectTimer.current);
+      if (wsRef.current) wsRef.current.close();
+    };
+  }, [connect]);
+}
+
+/* ─── YouTube live chat polling ─── */
+function useYoutubeChat(videoId, apiKey, onMessage) {
+  const chatIdRef = useRef(null);
+  const pageTokenRef = useRef('');
+  const timerRef = useRef(null);
+
+  useEffect(() => {
+    if (!videoId || !apiKey) return;
+
+    async function fetchChatId() {
+      try {
+        const res = await fetch(`https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${apiKey}`);
+        const data = await res.json();
+        chatIdRef.current = data?.items?.[0]?.liveStreamingDetails?.activeLiveChatId || null;
+        if (chatIdRef.current) poll();
+      } catch { /* silent */ }
+    }
+
+    async function poll() {
+      if (!chatIdRef.current) return;
+      try {
+        const url = `https://www.googleapis.com/youtube/v3/liveChat/messages?liveChatId=${chatIdRef.current}&part=snippet,authorDetails&key=${apiKey}` +
+          (pageTokenRef.current ? `&pageToken=${pageTokenRef.current}` : '');
+        const res = await fetch(url);
+        const data = await res.json();
+        pageTokenRef.current = data.nextPageToken || '';
+        (data.items || []).forEach(item => {
+          onMessage({
+            id: item.id,
+            platform: 'youtube',
+            username: item.authorDetails?.displayName || 'Unknown',
+            message: item.snippet?.displayMessage || '',
+            color: '',
+            timestamp: Date.now(),
+          });
+        });
+        timerRef.current = setTimeout(poll, Math.max(data.pollingIntervalMillis || 5000, 4000));
+      } catch {
+        timerRef.current = setTimeout(poll, 8000);
+      }
+    }
+
+    fetchChatId();
+    return () => clearTimeout(timerRef.current);
+  }, [videoId, apiKey, onMessage]);
+}
+
+/* ─── Kick chat via pusher-like WS ─── */
+function useKickChat(channelName, onMessage) {
+  const wsRef = useRef(null);
+  const reconnectTimer = useRef(null);
+
+  const connect = useCallback(() => {
+    if (!channelName) return;
+    const ws = new WebSocket('wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=8.4.0-rc2&flash=false');
+    wsRef.current = ws;
+
+    ws.onopen = () => {
+      ws.send(JSON.stringify({
+        event: 'pusher:subscribe',
+        data: { channel: `chatrooms.${channelName}.v2` }
+      }));
+    };
+
+    ws.onmessage = (evt) => {
+      try {
+        const parsed = JSON.parse(evt.data);
+        if (parsed.event === 'App\\Events\\ChatMessageEvent') {
+          const msg = JSON.parse(parsed.data);
+          onMessage({
+            id: msg.id || Date.now().toString() + Math.random(),
+            platform: 'kick',
+            username: msg.sender?.username || 'Unknown',
+            message: msg.content || '',
+            color: '',
+            timestamp: Date.now(),
+          });
+        }
+      } catch { /* silent */ }
+    };
+
+    ws.onclose = () => {
+      reconnectTimer.current = setTimeout(connect, 3000);
+    };
+  }, [channelName, onMessage]);
+
+  useEffect(() => {
+    connect();
+    return () => {
+      clearTimeout(reconnectTimer.current);
+      if (wsRef.current) wsRef.current.close();
+    };
+  }, [connect]);
+}
+
+/* ─── Main Widget ─── */
+export default function ChatWidget({ config, theme }) {
   const c = config || {};
+  const [messages, setMessages] = useState([]);
+  const scrollRef = useRef(null);
+  const maxMessages = c.maxMessages || 50;
+
+  /* Style config */
+  const bgColor = c.bgColor || 'rgba(15,23,42,0.95)';
+  const textColor = c.textColor || '#e2e8f0';
+  const headerBg = c.headerBg || 'rgba(30,41,59,0.5)';
+  const headerText = c.headerText || '#94a3b8';
+  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const fontSize = c.fontSize || 13;
+  const msgSpacing = c.msgSpacing || 2;
+  const borderRadius = c.borderRadius || 12;
+  const borderColor = c.borderColor || 'rgba(51,65,85,0.5)';
+  const showHeader = c.showHeader !== false;
+  const showLegend = c.showLegend !== false;
+  const width = c.width || 350;
+  const height = c.height || 500;
+
+  const handleMessage = useCallback((msg) => {
+    setMessages(prev => {
+      const next = [...prev, msg];
+      return next.length > maxMessages ? next.slice(-maxMessages) : next;
+    });
+  }, [maxMessages]);
+
+  /* Connect to enabled platforms */
+  useTwitchChat(c.twitchEnabled ? c.twitchChannel : '', handleMessage);
+  useYoutubeChat(
+    c.youtubeEnabled ? c.youtubeVideoId : '',
+    c.youtubeEnabled ? c.youtubeApiKey : '',
+    handleMessage
+  );
+  useKickChat(c.kickEnabled ? c.kickChannelId : '', handleMessage);
+
+  /* Auto-scroll */
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  /* Filter by platform if needed */
+  const enabledPlatforms = [];
+  if (c.twitchEnabled) enabledPlatforms.push('twitch');
+  if (c.youtubeEnabled) enabledPlatforms.push('youtube');
+  if (c.kickEnabled) enabledPlatforms.push('kick');
+
+  const style = {
+    width: `${width}px`,
+    height: `${height}px`,
+    background: bgColor,
+    border: `1px solid ${borderColor}`,
+    borderRadius: `${borderRadius}px`,
+    fontFamily,
+    fontSize: `${fontSize}px`,
+    color: textColor,
+    display: 'flex',
+    flexDirection: 'column',
+    overflow: 'hidden',
+  };
+
   return (
-    <div className="overlay-chat">
-      <div className="overlay-chat-header">
-        {c.channel ? `#${c.channel}` : 'Chat'}
-      </div>
-      <div className="overlay-chat-messages">
-        {(c.messages || []).slice(-(c.maxMessages || 15)).map((msg, i) => (
-          <div key={i} className="overlay-chat-msg">
-            <span className="overlay-chat-user">{msg.user}:</span> {msg.text}
+    <div className="ov-chat-widget" style={style}>
+      {showHeader && (
+        <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
+          <span className="ov-chat-header-title">Live Chat</span>
+          <div className="ov-chat-header-badges">
+            {enabledPlatforms.map(p => (
+              <span key={p} className="ov-chat-platform-badge" style={{
+                background: PLATFORM_META[p].color + '33',
+                color: PLATFORM_META[p].color,
+              }}>
+                {PLATFORM_META[p].icon}
+              </span>
+            ))}
           </div>
-        ))}
-        {(!c.messages || c.messages.length === 0) && (
-          <div className="overlay-chat-empty">Waiting for messages...</div>
+        </div>
+      )}
+
+      <div className="ov-chat-messages" ref={scrollRef}>
+        {messages.length === 0 && (
+          <div className="ov-chat-empty">
+            {enabledPlatforms.length === 0
+              ? 'No platforms enabled — configure channels in the panel'
+              : 'Waiting for messages...'}
+          </div>
         )}
+        {messages.map(msg => {
+          const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
+          const nameColor = c.useNativeColors && msg.color ? msg.color : plt.color;
+          return (
+            <div key={msg.id} className="ov-chat-msg" style={{ padding: `${msgSpacing}px 10px` }}>
+              <span className="ov-chat-badge" style={{
+                background: plt.color + '33',
+                color: plt.color,
+              }}>{plt.icon}</span>
+              <span className="ov-chat-username" style={{ color: nameColor }}>
+                {msg.username}
+              </span>
+              <span className="ov-chat-text">{msg.message}</span>
+            </div>
+          );
+        })}
       </div>
+
+      {showLegend && enabledPlatforms.length > 0 && (
+        <div className="ov-chat-legend" style={{ background: headerBg }}>
+          {enabledPlatforms.map(p => (
+            <div key={p} className="ov-chat-legend-item">
+              <span className="ov-chat-legend-dot" style={{ background: PLATFORM_META[p].color }} />
+              <span>{PLATFORM_META[p].label}</span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
+

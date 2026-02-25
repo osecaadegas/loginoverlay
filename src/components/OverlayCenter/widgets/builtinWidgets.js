@@ -155,9 +155,28 @@ registerWidget({
   component: ChatWidget,
   configPanel: ChatConfig,
   defaults: {
-    channel: '',
-    maxMessages: 15,
-    messages: [],
+    twitchEnabled: false,
+    twitchChannel: '',
+    youtubeEnabled: false,
+    youtubeVideoId: '',
+    youtubeApiKey: '',
+    kickEnabled: false,
+    kickChannelId: '',
+    maxMessages: 50,
+    bgColor: 'rgba(15,23,42,0.95)',
+    textColor: '#e2e8f0',
+    headerBg: 'rgba(30,41,59,0.5)',
+    headerText: '#94a3b8',
+    borderColor: 'rgba(51,65,85,0.5)',
+    fontFamily: "'Inter', sans-serif",
+    fontSize: 13,
+    msgSpacing: 2,
+    borderRadius: 12,
+    width: 350,
+    height: 500,
+    showHeader: true,
+    showLegend: true,
+    useNativeColors: true,
   },
 });
 
@@ -270,4 +289,36 @@ registerWidget({
   component: PlaceholderWidget,
   configPanel: null,
   defaults: { html: '<div style="color:#fff;">Custom content</div>' },
+});
+
+// ─── 15. IMAGE SLIDESHOW ────────────────────────────────
+import ImageSlideshowWidget from './ImageSlideshowWidget';
+import ImageSlideshowConfig from './ImageSlideshowConfig';
+registerWidget({
+  type: 'image_slideshow',
+  label: 'Image Slideshow',
+  icon: '🖼️',
+  category: 'stream',
+  component: ImageSlideshowWidget,
+  configPanel: ImageSlideshowConfig,
+  defaults: {
+    images: [],
+    interval: 5,
+    fadeDuration: 1,
+    width: 400,
+    height: 225,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(51,65,85,0.5)',
+    objectFit: 'cover',
+    showGradient: true,
+    gradientColor: 'rgba(15,23,42,0.8)',
+    showDots: false,
+    showCaption: false,
+    caption: '',
+    captionColor: '#e2e8f0',
+    captionSize: 14,
+    captionFont: "'Inter', sans-serif",
+    pauseOnHover: false,
+  },
 });

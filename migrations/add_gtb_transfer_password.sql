@@ -10,14 +10,22 @@ CREATE TABLE IF NOT EXISTS gtb_transfer_passwords (
   created_at TIMESTAMPTZ DEFAULT now(),
   expires_at TIMESTAMPTZ DEFAULT (now() + INTERVAL '24 hours'),
   used_at TIMESTAMPTZ DEFAULT NULL,
-  is_active BOOLEAN DEFAULT true,
-  UNIQUE(user_id, is_active) -- only one active password per user
+  is_active BOOLEAN DEFAULT true
 );
+
+-- Only one ACTIVE password per user (allows multiple inactive rows)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_gtb_transfer_passwords_active
+  ON gtb_transfer_passwords (user_id) WHERE is_active = true;
+
+-- Drop the old broken constraint if it exists
+ALTER TABLE gtb_transfer_passwords
+  DROP CONSTRAINT IF EXISTS gtb_transfer_passwords_user_id_is_active_key;
 
 -- RLS
 ALTER TABLE gtb_transfer_passwords ENABLE ROW LEVEL SECURITY;
 
 -- Admin can manage their own passwords
+DROP POLICY IF EXISTS "admin_manage_own_transfer_passwords" ON gtb_transfer_passwords;
 CREATE POLICY "admin_manage_own_transfer_passwords"
   ON gtb_transfer_passwords FOR ALL
   USING (auth.uid() = user_id)
