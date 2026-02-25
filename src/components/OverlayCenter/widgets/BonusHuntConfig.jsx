@@ -1,32 +1,46 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getAllSlots } from '../../../utils/slotUtils';
 
 export default function BonusHuntConfig({ config, onChange }) {
   const c = config || {};
-  const [showModal, setShowModal] = useState(false);
+  const [open, setOpen] = useState(false);
+  const set = (key, val) => onChange({ ...c, [key]: val });
 
   return (
-    <div className="oc-config-form">
-      <label className="oc-config-field">
-        <span>Currency</span>
-        <input value={c.currency || '€'} onChange={e => onChange({ ...c, currency: e.target.value })} />
-      </label>
-      <label className="oc-config-field">
-        <span>Hunt Active</span>
-        <input type="checkbox" checked={!!c.huntActive} onChange={e => onChange({ ...c, huntActive: e.target.checked })} />
-      </label>
-      <button className="oc-btn oc-btn--primary" style={{ marginTop: 8, width: '100%' }} onClick={() => setShowModal(true)}>
-        ⚙️ Configure Bonus Hunt
+    <div className="bh-config">
+      {/* Top quick toggles */}
+      <div className="bh-quick-row">
+        <label className="oc-config-field" style={{ flex: 1 }}>
+          <span>Currency</span>
+          <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} />
+        </label>
+        <label className="bh-check-row">
+          <input type="checkbox" checked={!!c.huntActive} onChange={e => set('huntActive', e.target.checked)} />
+          <span>Hunt Active</span>
+        </label>
+      </div>
+
+      {/* Toggle dropdown */}
+      <button
+        className={`bh-config-toggle ${open ? 'bh-config-toggle--open' : ''}`}
+        onClick={() => setOpen(v => !v)}
+      >
+        <span>⚙️ Configure Bonus Hunt</span>
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"
+          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+          <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        </svg>
       </button>
-      {showModal && (
-        <BonusHuntModal config={c} onChange={onChange} onClose={() => setShowModal(false)} />
+
+      {open && (
+        <BonusHuntPanel config={c} onChange={onChange} />
       )}
     </div>
   );
 }
 
-/* ─── Full Bonus Hunt Modal (ported from old system) ─── */
-function BonusHuntModal({ config, onChange, onClose }) {
+/* ─── Inline Dropdown Panel (replaces old modal) ─── */
+function BonusHuntPanel({ config, onChange }) {
   const c = config || {};
   const [startMoney, setStartMoney] = useState(c.startMoney || 0);
   const [targetMoney, setTargetMoney] = useState(c.targetMoney || 0);
@@ -38,31 +52,23 @@ function BonusHuntModal({ config, onChange, onClose }) {
   const [showStatistics, setShowStatistics] = useState(c.showStatistics ?? true);
   const [animatedTracker, setAnimatedTracker] = useState(c.animatedTracker ?? true);
   const [bonusList, setBonusList] = useState(c.bonuses || []);
-  const [showSlotSuggestions, setShowSlotSuggestions] = useState(false);
+  const [showSuggestions, setShowSuggestions] = useState(false);
   const [slots, setSlots] = useState([]);
+  const searchRef = useRef(null);
 
   useEffect(() => {
-    const load = async () => {
-      try {
-        const data = await getAllSlots();
-        setSlots(data || []);
-      } catch { setSlots([]); }
-    };
-    load();
+    getAllSlots().then(d => setSlots(d || [])).catch(() => setSlots([]));
   }, []);
 
-  const filteredSlots = slotSearch.trim().length > 0 && Array.isArray(slots) && slots.length > 0
-    ? slots.filter(s => s && s.name && s.name.toLowerCase().includes(slotSearch.toLowerCase()))
+  const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
+    ? slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase()))
     : [];
 
   const save = useCallback((list = bonusList, extras = {}) => {
     onChange({
       ...config,
-      startMoney,
-      targetMoney,
-      stopLoss,
-      showStatistics,
-      animatedTracker,
+      startMoney, targetMoney, stopLoss,
+      showStatistics, animatedTracker,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
       ...extras,
@@ -105,129 +111,140 @@ function BonusHuntModal({ config, onChange, onClose }) {
     save(updated);
   };
 
+  const currency = config?.currency || '€';
+
   return (
-    <div className="bh-modal-overlay" onClick={onClose}>
-      <div className="bh-modal" onClick={e => e.stopPropagation()}>
-        <div className="bh-modal-header">
-          <h2>🎯 Bonus Hunt Configuration</h2>
-          <button className="bh-modal-close" onClick={onClose}>✕</button>
+    <div className="bh-panel">
+
+      {/* ─── Hunt Settings ─── */}
+      <div className="bh-panel-section">
+        <h4 className="bh-panel-label">Hunt Settings</h4>
+        <div className="bh-settings-grid">
+          <label className="bh-input-group">
+            <span>Start ({currency})</span>
+            <input type="number" value={startMoney}
+              onChange={e => setStartMoney(Number(e.target.value))}
+              onBlur={() => save()} />
+          </label>
+          <label className="bh-input-group">
+            <span>Target ({currency})</span>
+            <input type="number" value={targetMoney}
+              onChange={e => setTargetMoney(Number(e.target.value))}
+              onBlur={() => save()} />
+          </label>
+          <label className="bh-input-group">
+            <span>Stop Loss ({currency})</span>
+            <input type="number" value={stopLoss}
+              onChange={e => setStopLoss(Number(e.target.value))}
+              onBlur={() => save()} />
+          </label>
         </div>
+      </div>
 
-        <div className="bh-modal-body">
-          {/* Hunt Settings */}
-          <div className="bh-section">
-            <h3>Hunt Settings</h3>
-            <div className="bh-form-grid">
-              <div className="bh-form-group">
-                <label>Start Money (€)</label>
-                <input type="number" value={startMoney}
-                  onChange={e => setStartMoney(Number(e.target.value))}
-                  onBlur={() => save()} />
-              </div>
-              <div className="bh-form-group">
-                <label>Target Money (€)</label>
-                <input type="number" value={targetMoney}
-                  onChange={e => setTargetMoney(Number(e.target.value))}
-                  onBlur={() => save()} />
-              </div>
-              <div className="bh-form-group">
-                <label>Stop Loss (€)</label>
-                <input type="number" value={stopLoss}
-                  onChange={e => setStopLoss(Number(e.target.value))}
-                  onBlur={() => save()} />
-              </div>
-            </div>
-          </div>
+      {/* ─── Add Bonus ─── */}
+      <div className="bh-panel-section">
+        <h4 className="bh-panel-label">Add Bonus</h4>
 
-          {/* Add Bonus */}
-          <div className="bh-section">
-            <h3>Add Bonus</h3>
-            <div className="bh-add-row">
-              <div className="bh-slot-search">
-                <input type="text"
-                  value={selectedSlot ? selectedSlot.name : slotSearch}
-                  onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSlotSuggestions(true); }}
-                  onFocus={() => setShowSlotSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSlotSuggestions(false), 200)}
-                  placeholder={`Search ${slots.length} slots...`}
-                />
-                {showSlotSuggestions && slotSearch.trim().length > 0 && (
-                  <div className="bh-slot-suggestions">
-                    {filteredSlots.length > 0 ? (
-                      filteredSlots.slice(0, 8).map(slot => (
-                        <div key={slot.id} className="bh-slot-suggestion"
-                          onMouseDown={e => e.preventDefault()}
-                          onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSlotSuggestions(false); }}>
-                          <img src={slot.image || 'https://via.placeholder.com/40x40/1a1d23/9346ff?text=S'} alt={slot.name}
-                            onError={e => { e.target.src = 'https://via.placeholder.com/40x40/1a1d23/9346ff?text=S'; }} />
-                          <div>
-                            <div className="bh-slot-name">{slot.name}</div>
-                            <div className="bh-slot-provider">{slot.provider}</div>
-                          </div>
-                        </div>
-                      ))
-                    ) : (
-                      <div className="bh-no-results">{slots.length === 0 ? 'Loading slots...' : `No slots found for "${slotSearch}"`}</div>
-                    )}
+        {/* Slot search with dropdown suggestions */}
+        <div className="bh-search-container" ref={searchRef}>
+          <input
+            type="text"
+            className="bh-search-input"
+            value={selectedSlot ? selectedSlot.name : slotSearch}
+            onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            placeholder={`Search ${slots.length} slots...`}
+          />
+
+          {showSuggestions && slotSearch.trim().length > 0 && (
+            <div className="bh-suggestions-dropdown">
+              {filteredSlots.length > 0 ? (
+                filteredSlots.slice(0, 8).map(slot => (
+                  <div key={slot.id} className="bh-suggestion-item"
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); }}>
+                    <img
+                      src={slot.image || 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'}
+                      alt={slot.name}
+                      className="bh-suggestion-img"
+                      onError={e => { e.target.src = 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'; }}
+                    />
+                    <div className="bh-suggestion-info">
+                      <span className="bh-suggestion-name">{slot.name}</span>
+                      {slot.provider && <span className="bh-suggestion-provider">{slot.provider}</span>}
+                    </div>
                   </div>
-                )}
-              </div>
-              <input type="number" className="bh-bet-input" value={betSize}
-                onChange={e => setBetSize(e.target.value)} placeholder="Bet" step="0.1" />
-              <label className="bh-super-label">
-                <input type="checkbox" checked={isSuperBonus} onChange={e => setIsSuperBonus(e.target.checked)} />
-                <span>⭐ Super</span>
-              </label>
-            </div>
-
-            <div className="bh-add-actions">
-              <button className="bh-add-btn" onClick={handleAddBonus}>➕ Add to Hunt</button>
-              <div className="bh-toggles">
-                <label className="bh-toggle-option">
-                  <span>Show Statistics</span>
-                  <input type="checkbox" checked={showStatistics}
-                    onChange={e => { setShowStatistics(e.target.checked); save(bonusList, { showStatistics: e.target.checked }); }} />
-                </label>
-                <label className="bh-toggle-option">
-                  <span>Animated Tracker</span>
-                  <input type="checkbox" checked={animatedTracker}
-                    onChange={e => { setAnimatedTracker(e.target.checked); save(bonusList, { animatedTracker: e.target.checked }); }} />
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Bonus List */}
-          <div className="bh-section">
-            <h3>Bonus List ({bonusList.length})</h3>
-            <div className="bh-bonus-list">
-              {bonusList.map(bonus => (
-                <div key={bonus.id} className={`bh-bonus-item ${bonus.opened ? 'bh-opened' : ''}`}>
-                  {bonus.slot?.image && <img src={bonus.slot.image} alt={bonus.slotName} className="bh-bonus-img" />}
-                  <div className="bh-bonus-info">
-                    <div className="bh-bonus-name">{bonus.slotName || bonus.slot?.name}</div>
-                    <div className="bh-bonus-details">€{bonus.betSize} {bonus.isSuperBonus && '⭐'}</div>
-                  </div>
-                  <div className="bh-bonus-actions">
-                    {bonus.opened ? (
-                      <div className="bh-bonus-result">€{bonus.result}</div>
-                    ) : (
-                      <button className="bh-open-btn" onClick={() => {
-                        const result = prompt('Enter result (€):');
-                        if (result) handleOpenBonus(bonus.id, Number(result));
-                      }}>Open</button>
-                    )}
-                    <button className="bh-remove-btn" onClick={() => handleRemoveBonus(bonus.id)} title="Remove">✕</button>
-                  </div>
+                ))
+              ) : (
+                <div className="bh-suggestion-empty">
+                  {slots.length === 0 ? 'Loading slots...' : `No slots found for "${slotSearch}"`}
                 </div>
-              ))}
-              {bonusList.length === 0 && <p className="bh-empty">No bonuses added yet</p>}
+              )}
             </div>
-          </div>
+          )}
         </div>
 
-        <div className="bh-modal-footer">
-          <button className="bh-done-btn" onClick={onClose}>Done</button>
+        {/* Bet + Super + Add button row */}
+        <div className="bh-add-controls">
+          <input type="number" className="bh-bet-field" value={betSize}
+            onChange={e => setBetSize(e.target.value)} placeholder={`Bet (${currency})`} step="0.1" />
+          <label className="bh-super-check">
+            <input type="checkbox" checked={isSuperBonus} onChange={e => setIsSuperBonus(e.target.checked)} />
+            <span>⭐</span>
+          </label>
+          <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
+            + Add
+          </button>
+        </div>
+
+        {/* Options row */}
+        <div className="bh-options-row">
+          <label className="bh-option">
+            <input type="checkbox" checked={showStatistics}
+              onChange={e => { setShowStatistics(e.target.checked); save(bonusList, { showStatistics: e.target.checked }); }} />
+            <span>Statistics</span>
+          </label>
+          <label className="bh-option">
+            <input type="checkbox" checked={animatedTracker}
+              onChange={e => { setAnimatedTracker(e.target.checked); save(bonusList, { animatedTracker: e.target.checked }); }} />
+            <span>Animated</span>
+          </label>
+        </div>
+      </div>
+
+      {/* ─── Bonus List ─── */}
+      <div className="bh-panel-section">
+        <h4 className="bh-panel-label">
+          Bonuses <span className="bh-count">{bonusList.length}</span>
+        </h4>
+        <div className="bh-list">
+          {bonusList.length === 0 ? (
+            <p className="bh-list-empty">No bonuses added yet</p>
+          ) : bonusList.map((bonus, i) => (
+            <div key={bonus.id} className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''}`}>
+              <span className="bh-list-num">{i + 1}</span>
+              {bonus.slot?.image && (
+                <img src={bonus.slot.image} alt={bonus.slotName} className="bh-list-img"
+                  onError={e => { e.target.style.display = 'none'; }} />
+              )}
+              <div className="bh-list-info">
+                <span className="bh-list-name">{bonus.slotName || bonus.slot?.name}</span>
+                <span className="bh-list-bet">{currency}{bonus.betSize} {bonus.isSuperBonus && '⭐'}</span>
+              </div>
+              <div className="bh-list-actions">
+                {bonus.opened ? (
+                  <span className="bh-list-result">{currency}{bonus.result}</span>
+                ) : (
+                  <button className="bh-list-open" onClick={() => {
+                    const result = prompt(`Enter result (${currency}):`);
+                    if (result) handleOpenBonus(bonus.id, Number(result));
+                  }}>Open</button>
+                )}
+                <button className="bh-list-remove" onClick={() => handleRemoveBonus(bonus.id)}>✕</button>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     </div>
