@@ -1,0 +1,417 @@
+/* =========================================================
+   OverlayRenderer.css — OBS Browser Source Styles
+   Transparent bg, 1920×1080 canvas, GPU-accelerated.
+   ========================================================= */
+
+/* Reset */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent !important;
+}
+
+/* ─── Canvas ─── */
+.or-canvas {
+  position: relative;
+  width: 1920px;
+  height: 1080px;
+  overflow: hidden;
+  background: transparent;
+  font-family: var(--ov-font, 'Inter', sans-serif);
+  color: var(--ov-text, #ffffff);
+}
+
+/* ─── Texture overlay ─── */
+.or-texture {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.05;
+}
+
+.or-texture--dots {
+  background-image: radial-gradient(circle, currentColor 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.or-texture--grid {
+  background-image:
+    linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.or-texture--noise {
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.07'/%3E%3C/svg%3E");
+  background-size: 200px 200px;
+}
+
+.or-texture--diagonal {
+  background-image: repeating-linear-gradient(
+    45deg,
+    rgba(255,255,255,0.03),
+    rgba(255,255,255,0.03) 1px,
+    transparent 1px,
+    transparent 12px
+  );
+}
+
+/* ─── Widget Slot ─── */
+.or-widget-slot {
+  position: absolute;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+}
+
+/* ─── Widget base glass card ─── */
+.or-widget-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: calc(var(--ov-radius, 12) * 1px);
+  background: rgba(
+    var(--ov-bg-r, 15),
+    var(--ov-bg-g, 17),
+    var(--ov-bg-b, 30),
+    var(--ov-opacity, 0.85)
+  );
+  backdrop-filter: blur(calc(var(--ov-blur, 12) * 1px));
+  -webkit-backdrop-filter: blur(calc(var(--ov-blur, 12) * 1px));
+  box-shadow: 0 0 calc(var(--ov-shadow, 20) * 1px) rgba(0,0,0,0.4),
+              0 0 calc(var(--ov-glow, 0) * 1px) var(--ov-accent, #9346ff);
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Entrance Animations ─── */
+.or-anim-in--fade {
+  animation: or-fadeIn var(--ov-anim-speed, 0.4s) ease-out both;
+}
+
+.or-anim-in--slide {
+  animation: or-slideIn var(--ov-anim-speed, 0.4s) ease-out both;
+}
+
+.or-anim-in--scale {
+  animation: or-scaleIn var(--ov-anim-speed, 0.4s) ease-out both;
+}
+
+.or-anim-in--glow {
+  animation: or-glowIn var(--ov-anim-speed, 0.4s) ease-out both;
+}
+
+@keyframes or-fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes or-slideIn {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes or-scaleIn {
+  from { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+@keyframes or-glowIn {
+  0%   { opacity: 0; filter: brightness(2) blur(4px); }
+  100% { opacity: 1; filter: brightness(1) blur(0); }
+}
+
+/* Exit Animations */
+.or-anim-out--fade {
+  animation: or-fadeOut var(--ov-anim-speed, 0.4s) ease-in both;
+}
+
+.or-anim-out--slide {
+  animation: or-slideOut var(--ov-anim-speed, 0.4s) ease-in both;
+}
+
+.or-anim-out--scale {
+  animation: or-scaleOut var(--ov-anim-speed, 0.4s) ease-in both;
+}
+
+.or-anim-out--glow {
+  animation: or-glowOut var(--ov-anim-speed, 0.4s) ease-in both;
+}
+
+@keyframes or-fadeOut {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+@keyframes or-slideOut {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(30px); }
+}
+
+@keyframes or-scaleOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.85); }
+}
+
+@keyframes or-glowOut {
+  0%   { opacity: 1; filter: brightness(1) blur(0); }
+  100% { opacity: 0; filter: brightness(2) blur(4px); }
+}
+
+/* ─── Widget Typography ─── */
+.oc-widget-title, .or-widget-title {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--ov-accent, #9346ff);
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+/* ─── Stats Widget ─── */
+.oc-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 8px;
+  flex: 1;
+}
+
+.oc-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.oc-stat-label {
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.45);
+}
+
+.oc-stat-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: #fff;
+}
+
+.oc-stat--profit .oc-stat-value { color: #4ade80; }
+
+/* ─── Bonus Hunt Widget ─── */
+.oc-bh-summary {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.oc-bh-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.oc-bh-stat-label {
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+}
+
+.oc-bh-stat-val {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.oc-bh-list { list-style: none; }
+
+.oc-bh-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.78rem;
+}
+
+.oc-bh-item-name { color: rgba(255,255,255,0.75); }
+.oc-bh-item-result { font-weight: 700; color: var(--ov-accent, #9346ff); }
+
+/* ─── Current Slot Widget ─── */
+.oc-cs-layout {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex: 1;
+}
+
+.oc-cs-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.08);
+}
+
+.oc-cs-info { flex: 1; }
+
+.oc-cs-name {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.oc-cs-provider {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+}
+
+.oc-cs-meta {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.oc-cs-meta span {
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.6);
+}
+
+.oc-cs-meta strong {
+  color: #fff;
+  font-weight: 700;
+}
+
+/* ─── Tournament Widget ─── */
+.oc-tour-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.oc-tour-timer {
+  font-size: 1.2rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  color: var(--ov-accent, #9346ff);
+}
+
+.oc-tour-board { list-style: none; }
+
+.oc-tour-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 4px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  font-size: 0.82rem;
+}
+
+.oc-tour-rank {
+  width: 24px;
+  text-align: center;
+  font-weight: 800;
+  color: rgba(255,255,255,0.5);
+}
+
+.oc-tour-rank:first-child { color: #fbbf24; }
+
+.oc-tour-name {
+  flex: 1;
+  margin: 0 10px;
+  color: rgba(255,255,255,0.8);
+}
+
+.oc-tour-score {
+  font-weight: 700;
+  color: #fff;
+}
+
+/* ─── Giveaway Widget ─── */
+.oc-give-active {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  text-align: center;
+}
+
+.oc-give-prize {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: #fff;
+}
+
+.oc-give-keyword {
+  padding: 6px 16px;
+  border-radius: 999px;
+  background: rgba(147, 70, 255, 0.15);
+  border: 1px solid rgba(147, 70, 255, 0.4);
+  color: var(--ov-accent, #9346ff);
+  font-weight: 700;
+  font-size: 0.95rem;
+}
+
+.oc-give-entries {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.45);
+}
+
+.oc-give-winner {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: center;
+  text-align: center;
+}
+
+.oc-give-winner-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+}
+
+.oc-give-winner-name {
+  font-size: 1.8rem;
+  font-weight: 900;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* ─── Placeholder Widget ─── */
+.oc-placeholder-html * {
+  max-width: 100%;
+}
+
+/* ─── Widget Empty State ─── */
+.oc-widget-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.25);
+  font-size: 0.82rem;
+}
+
+/* ─── Error / Loading inside renderer ─── */
+.or-loading, .or-error {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(255,255,255,0.5);
+  font-family: 'Inter', sans-serif;
+}
+
+.or-error { color: #ef4444; }
+
+/* ─── Custom CSS container marker ─── */
+.or-custom-css { display: contents; }
