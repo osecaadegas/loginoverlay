@@ -244,6 +244,22 @@ export default function NavbarWidget({ config }) {
             </div>
           </div>
 
+          {/* ─── Badge Image (after name/motto) ─── */}
+          {c.badgeImage && (
+            <>
+              <div style={sep} />
+              <div style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                height: barHeight * 0.65, flexShrink: 0,
+              }}>
+                <img src={c.badgeImage} alt="" style={{
+                  height: '100%', width: 'auto', objectFit: 'contain',
+                  filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.2))',
+                }} />
+              </div>
+            </>
+          )}
+
           {/* ─── Middle: Clock + Now Playing ─── */}
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, minWidth: 0 }}>
             {c.showClock !== false && (

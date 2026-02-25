@@ -105,7 +105,7 @@ export default function NavbarConfig({ config, onChange }) {
     'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
     'brightness', 'contrast', 'saturation',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
-    'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto',
+    'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
   ];
 
   const savePreset = () => {
@@ -181,6 +181,28 @@ export default function NavbarConfig({ config, onChange }) {
             <span>Motto</span>
             <input value={c.motto || ''} onChange={e => set('motto', e.target.value)} placeholder="Just Content" />
           </label>
+
+          <h4 className="nb-subtitle">Badge Image</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6 }}>Shows next to your name &amp; motto.</p>
+          <div className="nb-badge-grid">
+            {[
+              { value: '', label: 'None' },
+              { value: '/overlay/content.png', label: 'Content' },
+              { value: '/overlay/raw.png', label: 'Raw' },
+              { value: '/overlay/wager.png', label: 'Wager' },
+            ].map(b => (
+              <button key={b.value}
+                className={`nb-badge-option ${(c.badgeImage || '') === b.value ? 'nb-badge-option--active' : ''}`}
+                onClick={() => set('badgeImage', b.value)}>
+                {b.value ? (
+                  <img src={b.value} alt={b.label} className="nb-badge-preview" />
+                ) : (
+                  <span className="nb-badge-none">✕</span>
+                )}
+                <span>{b.label}</span>
+              </button>
+            ))}
+          </div>
 
           <h4 className="nb-subtitle">Sections</h4>
           <label className="nb-toggle-row">
