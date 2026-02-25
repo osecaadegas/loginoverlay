@@ -22,8 +22,68 @@ export default function OverlayControlCenter() {
     updateState, regenToken,
   } = useOverlay();
 
-  const [activePanel, setActivePanel] = useState('widgets'); // widgets | theme | preview
+  const [activePanel, setActivePanel] = useState('widgets'); // widgets | preview
   const [copyMsg, setCopyMsg] = useState('');
+
+  /* ── Global Presets (stored in overlay_state) ── */
+  const globalPresets = overlayState?.globalPresets || [];
+  const [presetName, setPresetName] = useState('');
+  const [presetMsg, setPresetMsg] = useState('');
+
+  const saveGlobalPreset = useCallback(async () => {
+    const name = presetName.trim();
+    if (!name || widgets.length === 0) return;
+    const snapshot = widgets.map(w => ({
+      id: w.id,
+      widget_type: w.widget_type,
+      label: w.label,
+      config: w.config,
+      is_visible: w.is_visible,
+      position_x: w.position_x,
+      position_y: w.position_y,
+      width: w.width,
+      height: w.height,
+      z_index: w.z_index,
+      animation: w.animation,
+    }));
+    const entry = { name, snapshot, savedAt: Date.now() };
+    const existing = [...globalPresets];
+    const idx = existing.findIndex(p => p.name === name);
+    const updated = idx >= 0
+      ? existing.map((p, i) => i === idx ? entry : p)
+      : [...existing, entry];
+    await updateState({ globalPresets: updated });
+    setPresetName('');
+    setPresetMsg('Saved!');
+    setTimeout(() => setPresetMsg(''), 2000);
+  }, [presetName, widgets, globalPresets, updateState]);
+
+  const loadGlobalPreset = useCallback(async (preset) => {
+    if (!preset?.snapshot) return;
+    for (const snap of preset.snapshot) {
+      const existing = widgets.find(w => w.id === snap.id);
+      if (existing) {
+        await saveWidget({
+          ...existing,
+          config: snap.config,
+          is_visible: snap.is_visible,
+          position_x: snap.position_x,
+          position_y: snap.position_y,
+          width: snap.width,
+          height: snap.height,
+          z_index: snap.z_index,
+          animation: snap.animation,
+        });
+      }
+    }
+    setPresetMsg('Loaded!');
+    setTimeout(() => setPresetMsg(''), 2000);
+  }, [widgets, saveWidget]);
+
+  const deleteGlobalPreset = useCallback(async (name) => {
+    const updated = globalPresets.filter(p => p.name !== name);
+    await updateState({ globalPresets: updated });
+  }, [globalPresets, updateState]);
 
   const overlayUrl = useMemo(() => {
     if (!instance) return '';
@@ -73,7 +133,6 @@ export default function OverlayControlCenter() {
           <nav className="oc-sidebar-nav">
             {[
               { key: 'widgets', icon: '🧩', label: 'Widgets' },
-              { key: 'theme', icon: '🎨', label: 'Theme' },
               { key: 'preview', icon: '👁️', label: 'Preview' },
             ].map(tab => (
               <button
@@ -86,6 +145,41 @@ export default function OverlayControlCenter() {
               </button>
             ))}
           </nav>
+
+          {/* ─── Global Presets ─── */}
+          <div className="oc-sidebar-presets">
+            <label className="oc-sidebar-url-label">💾 Global Presets</label>
+            <p className="oc-sidebar-preset-hint">Save & load ALL widget configs at once.</p>
+            <div className="oc-sidebar-preset-save">
+              <input
+                className="oc-sidebar-preset-input"
+                value={presetName}
+                onChange={e => setPresetName(e.target.value)}
+                placeholder="Preset name…"
+                onKeyDown={e => e.key === 'Enter' && saveGlobalPreset()}
+              />
+              <button className="oc-sidebar-preset-save-btn" onClick={saveGlobalPreset} disabled={!presetName.trim()}>
+                Save
+              </button>
+            </div>
+            {presetMsg && <span className="oc-sidebar-preset-msg">{presetMsg}</span>}
+            {globalPresets.length > 0 && (
+              <div className="oc-sidebar-preset-list">
+                {globalPresets.map(p => (
+                  <div key={p.name} className="oc-sidebar-preset-item">
+                    <div className="oc-sidebar-preset-info">
+                      <span className="oc-sidebar-preset-name">{p.name}</span>
+                      <span className="oc-sidebar-preset-date">{new Date(p.savedAt).toLocaleDateString()}</span>
+                    </div>
+                    <div className="oc-sidebar-preset-actions">
+                      <button className="oc-sidebar-preset-load" onClick={() => loadGlobalPreset(p)}>Load</button>
+                      <button className="oc-sidebar-preset-del" onClick={() => deleteGlobalPreset(p.name)}>✕</button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* OBS URL */}
           <div className="oc-sidebar-url">
@@ -122,7 +216,7 @@ export default function OverlayControlCenter() {
             <ThemeEditor theme={theme} onSave={saveTheme} />
           )}
           {activePanel === 'preview' && (
-            <OverlayPreview overlayUrl={overlayUrl} />
+            <OverlayPreview widgets={widgets} theme={theme} />
           )}
         </main>
       </div>
