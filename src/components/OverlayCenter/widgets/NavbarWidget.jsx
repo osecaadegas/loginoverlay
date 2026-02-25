@@ -4,6 +4,9 @@ export default function NavbarWidget({ config }) {
   const c = config || {};
   return (
     <div className="overlay-navbar">
+      {c.avatarUrl && (
+        <img src={c.avatarUrl} alt="" className="overlay-navbar-avatar" />
+      )}
       <div className="overlay-navbar-name">{c.streamerName || 'Streamer'}</div>
       {c.motto && <div className="overlay-navbar-motto">{c.motto}</div>}
       {c.displayMode && c.displayMode !== 'none' && (
