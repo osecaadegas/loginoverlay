@@ -153,7 +153,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <circle cx="12" cy="12" r="10" /><path d="M4 12h16" /><path d="M12 4a8 8 0 0 1 0 16" />
               </svg>
-              Breakeven
+              Start BEx
             </div>
             <div className="bht2-stat-tile-value bht2-accent-green">{fmtX(stats.overallBE)}</div>
           </div>
@@ -315,7 +315,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 3v18h18" /><path d="M7 14l4-4 4 4 4-6" />
                 </svg>
-                Average
+                avgX
               </div>
               <span className="bht2-footer-stat-val">{fmtX(stats.avgMulti)}</span>
             </div>
@@ -324,7 +324,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
                 </svg>
-                Breakeven
+                BE x
               </div>
               <span className="bht2-footer-stat-val bht2-accent-green">{fmtX(stats.currentBE)}</span>
             </div>

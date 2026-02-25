@@ -140,7 +140,7 @@ export default function BonusHuntWidget({ config, theme }) {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
               </svg>
-              BREAK EVEN
+              Start BEx
             </div>
             <div className="bht-stat-value">{stats.breakEven.toFixed(2)}x</div>
           </div>
@@ -254,7 +254,7 @@ export default function BonusHuntWidget({ config, theme }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
                 </svg>
-                AVERAGE
+                avgX
               </div>
               <div className="bht-stat-value">{stats.avgMulti.toFixed(2)}x</div>
             </div>
@@ -263,7 +263,7 @@ export default function BonusHuntWidget({ config, theme }) {
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                LIVE BE
+                BE x
               </div>
               <div className="bht-stat-value">{stats.liveBE.toFixed(2)}x</div>
             </div>
