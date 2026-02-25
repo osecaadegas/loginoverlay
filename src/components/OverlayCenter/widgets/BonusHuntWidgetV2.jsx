@@ -9,6 +9,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
+  const stopLoss = Number(c.stopLoss) || 0;
 
   /* ─── Custom style vars ─── */
   const headerColor = c.headerColor || '#0f172a';
@@ -82,9 +83,10 @@ export default function BonusHuntWidgetV2({ config, theme }) {
     const superCount = bonuses.filter(b => b.isSuperBonus).length;
     const extremeCount = bonuses.filter(b => b.isExtreme).length;
 
-    const overallBE = totalBetAll > 0 ? startMoney / totalBetAll : 0;
+    const target = Math.max(startMoney - stopLoss, 0);
+    const overallBE = totalBetAll > 0 ? target / totalBetAll : 0;
     const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
-    const remaining = Math.max(startMoney - totalWin, 0);
+    const remaining = Math.max(target - totalWin, 0);
     const currentBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
 
     return {
@@ -92,7 +94,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
       overallBE, avgMulti, currentBE,
       openedCount: openedBonuses.length,
     };
-  }, [bonuses, startMoney]);
+  }, [bonuses, startMoney, stopLoss]);
 
   const fmt = (v) => `${currency}${v.toFixed(2)}`;
   const fmtX = (v) => (!Number.isFinite(v) || v <= 0) ? '0.00x' : `${v.toFixed(2)}x`;

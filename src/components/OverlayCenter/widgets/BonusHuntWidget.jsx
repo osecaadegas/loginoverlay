@@ -11,6 +11,7 @@ export default function BonusHuntWidget({ config, theme }) {
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
+  const stopLoss = Number(c.stopLoss) || 0;
 
   /* ─── Custom style vars ─── */
   const headerColor = c.headerColor || '#1e3a8a';
@@ -76,16 +77,21 @@ export default function BonusHuntWidget({ config, theme }) {
 
   /* ─── Derived stats ─── */
   const stats = useMemo(() => {
-    const totalCost = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const totalWin = bonuses.reduce((s, b) => s + (b.opened ? (Number(b.payout) || 0) : 0), 0);
+    const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
     const openedBonuses = bonuses.filter(b => b.opened);
+    const totalBetOpened = openedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const totalWin = openedBonuses.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
     const superCount = bonuses.filter(b => b.isSuperBonus).length;
-    const breakEven = totalWin > 0 ? (totalCost / totalWin * 100).toFixed(2) : '0.00';
-    const avgMulti = openedBonuses.length > 0
-      ? (openedBonuses.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / openedBonuses.length).toFixed(2)
-      : '0.00';
-    return { totalCost, totalWin, superCount, breakEven, avgMulti, openedCount: openedBonuses.length };
-  }, [bonuses]);
+
+    const target = Math.max(startMoney - stopLoss, 0);
+    const breakEven = totalBetAll > 0 ? target / totalBetAll : 0;
+    const remaining = Math.max(target - totalWin, 0);
+    const liveBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
+    const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
+
+    return { totalBetAll, totalWin, superCount, breakEven, liveBE, avgMulti, openedCount: openedBonuses.length };
+  }, [bonuses, startMoney, stopLoss]);
 
   /* ─── Find current bonus (first not-opened) ─── */
   const currentBonus = bonuses.find(b => !b.opened);
@@ -136,7 +142,7 @@ export default function BonusHuntWidget({ config, theme }) {
               </svg>
               BREAK EVEN
             </div>
-            <div className="bht-stat-value">{stats.breakEven}x</div>
+            <div className="bht-stat-value">{stats.breakEven.toFixed(2)}x</div>
           </div>
         </div>
       </div>
@@ -250,16 +256,16 @@ export default function BonusHuntWidget({ config, theme }) {
                 </svg>
                 AVERAGE
               </div>
-              <div className="bht-stat-value">{stats.avgMulti}x</div>
+              <div className="bht-stat-value">{stats.avgMulti.toFixed(2)}x</div>
             </div>
             <div className="bht-stat-box">
               <div className="bht-stat-label">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
                 </svg>
-                BREAK EVEN
+                LIVE BE
               </div>
-              <div className="bht-stat-value">{stats.breakEven}x</div>
+              <div className="bht-stat-value">{stats.liveBE.toFixed(2)}x</div>
             </div>
           </div>
           <div className="bht-total-pay">
