@@ -207,7 +207,7 @@
 .oc-bonushunt {
   display: flex;
   flex-direction: column;
-  gap: var(--bht-card-gap, 12px);
+  gap: 12px;
   font-family: var(--oc-font, 'Inter', sans-serif);
   overflow: hidden;
 }
@@ -221,7 +221,8 @@
 
 /* ── Header card ── */
 .bht-header {
-  background: linear-gradient(135deg, var(--bht-header-bg, #1e3a8a), color-mix(in srgb, var(--bht-header-bg, #1e3a8a), #000 10%));
+  background: var(--bht-header-bg, #1e3a8a);
+  background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
 }
 .bht-header-top {
   display: flex;
@@ -245,17 +246,17 @@
   flex-shrink: 0;
 }
 .bht-title {
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 700;
   color: var(--bht-text, #fff);
   line-height: 1.2;
 }
 .bht-subtitle {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: var(--bht-muted, #93c5fd);
 }
 .bht-badge {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: var(--bht-muted, #93c5fd);
 }
 .bht-header-stats {
@@ -272,20 +273,21 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.6rem;
+  font-size: 0.6em;
   text-transform: uppercase;
   color: var(--bht-muted, #93c5fd);
   margin-bottom: 4px;
 }
 .bht-stat-value {
-  font-size: 1.2rem;
+  font-size: 1.2em;
   font-weight: 700;
   color: var(--bht-stat-value, #fff);
 }
 
 /* ── Bonuses count card ── */
 .bht-count-card {
-  background: linear-gradient(to right, var(--bht-count-bg, #1e3a8a), color-mix(in srgb, var(--bht-count-bg, #1e3a8a), #000 10%));
+  background: var(--bht-count-bg, #1e3a8a);
+  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.1));
 }
 .bht-count-header {
   display: flex;
@@ -297,11 +299,11 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: var(--bht-muted, #93c5fd);
 }
 .bht-count-num {
-  font-size: 1.3rem;
+  font-size: 1.3em;
   font-weight: 700;
   color: var(--bht-text, #fff);
 }
@@ -311,33 +313,36 @@
   gap: 8px;
 }
 .bht-badge-super {
-  background: linear-gradient(to right, var(--bht-super-badge, #eab308), color-mix(in srgb, var(--bht-super-badge, #eab308), #000 15%));
+  background: var(--bht-super-badge, #eab308);
+  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.18));
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
   padding: 6px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 700;
   color: #fff;
 }
 .bht-badge-extreme {
-  background: linear-gradient(to right, var(--bht-extreme-badge, #ef4444), color-mix(in srgb, var(--bht-extreme-badge, #ef4444), #000 15%));
+  background: var(--bht-extreme-badge, #ef4444);
+  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.18));
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
   padding: 6px 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 700;
   color: #fff;
 }
 
 /* ── Current bonus card ── */
 .bht-current {
-  background: linear-gradient(135deg, var(--bht-current-bg, #166534), color-mix(in srgb, var(--bht-current-bg, #166534), #000 15%));
+  background: var(--bht-current-bg, #166534);
+  background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.18));
 }
 .bht-current-top {
   display: flex;
@@ -354,12 +359,12 @@
 }
 .bht-current-info { flex: 1; }
 .bht-current-name {
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 700;
   color: var(--bht-text, #fff);
 }
 .bht-current-bet {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: var(--bht-current-accent, #86efac);
 }
 .bht-current-stats {
@@ -376,26 +381,27 @@
   align-items: center;
   gap: 4px;
   color: var(--bht-current-accent, #86efac);
-  font-size: 0.7rem;
+  font-size: 0.7em;
 }
 .bht-current-stat span {
-  font-size: 0.85rem;
+  font-size: 0.85em;
   font-weight: 700;
   color: var(--bht-text, #fff);
 }
 
 /* ── Bonus list card ── */
 .bht-list-card {
-  background: linear-gradient(135deg, var(--bht-list-bg, #581c87), color-mix(in srgb, var(--bht-list-bg, #581c87), #1e3a8a 40%));
+  background: var(--bht-list-bg, #581c87);
+  background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.2));
 }
 .bht-list-title {
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 700;
   color: var(--bht-text, #fff);
   margin-bottom: 2px;
 }
 .bht-list-bet {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: var(--bht-list-accent, #d8b4fe);
   margin-bottom: 12px;
 }
@@ -445,22 +451,22 @@
   justify-content: space-between;
 }
 .bht-bonus-card-name {
-  font-size: 1.1rem;
+  font-size: 1.1em;
   font-weight: 700;
   color: var(--bht-text, #fff);
 }
 .bht-bonus-card-bet {
-  font-size: 0.7rem;
+  font-size: 0.7em;
   color: var(--bht-list-accent, #d8b4fe);
 }
 .bht-bonus-card-num {
-  font-size: 0.85rem;
+  font-size: 0.85em;
   font-weight: 700;
   color: var(--bht-text, #fff);
 }
 .bht-bonus-card-result {
   margin-top: 6px;
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 700;
   color: #4ade80;
   display: flex;
@@ -468,14 +474,15 @@
   gap: 8px;
 }
 .bht-bonus-card-multi {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   color: var(--bht-current-accent, #86efac);
   font-weight: 600;
 }
 
 /* ── Summary card ── */
 .bht-summary {
-  background: linear-gradient(135deg, var(--bht-summary-bg, #1e3a8a), color-mix(in srgb, var(--bht-summary-bg, #1e3a8a), #000 10%));
+  background: var(--bht-summary-bg, #1e3a8a);
+  background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
 }
 .bht-summary-stats {
   display: grid;
@@ -484,7 +491,8 @@
   margin-bottom: 12px;
 }
 .bht-total-pay {
-  background: linear-gradient(to right, var(--bht-total-pay-bg, #eab308), color-mix(in srgb, var(--bht-total-pay-bg, #eab308), #f97316 50%));
+  background: var(--bht-total-pay-bg, #eab308);
+  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.15));
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
   padding: 12px;
   display: flex;
@@ -495,12 +503,12 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.9rem;
+  font-size: 0.9em;
   font-weight: 700;
   color: var(--bht-total-pay-text, #fff);
 }
 .bht-total-pay-value {
-  font-size: 1.4rem;
+  font-size: 1.4em;
   font-weight: 700;
   color: var(--bht-total-pay-text, #fff);
 }
@@ -546,7 +554,8 @@
 .bht2-icon {
   width: 36px; height: 36px;
   border-radius: 14px;
-  background: linear-gradient(135deg, var(--bht2-header-accent, #0ea5e9), color-mix(in srgb, var(--bht2-header-accent, #0ea5e9), #22d3ee 50%));
+  background: var(--bht2-header-accent, #0ea5e9);
+  background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.15));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -562,17 +571,17 @@
   color: #020617;
 }
 .bht2-label-sm {
-  font-size: 0.65rem;
+  font-size: 0.65em;
   letter-spacing: 0.16em;
   text-transform: uppercase;
   color: var(--bht2-muted, #94a3b8);
 }
 .bht2-label-xs {
-  font-size: 0.6rem;
+  font-size: 0.6em;
   color: var(--bht2-muted, #64748b);
 }
 .bht2-tag-muted {
-  font-size: 0.65rem;
+  font-size: 0.65em;
   color: var(--bht2-muted, #475569);
   font-weight: 500;
 }
@@ -592,7 +601,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.55rem;
+  font-size: 0.55em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
@@ -601,7 +610,7 @@
 .bht2-stat-tile-label svg { color: var(--bht2-header-accent, #38bdf8); flex-shrink: 0; }
 .bht2-stat-tile-label.bht2-accent-green svg { color: #34d399; }
 .bht2-stat-tile-value {
-  font-size: 1.15rem;
+  font-size: 1.15em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #f1f5f9);
@@ -621,7 +630,7 @@
 }
 .bht2-pill {
   display: inline-block;
-  font-size: 0.6rem;
+  font-size: 0.6em;
   padding: 1px 8px;
   border-radius: 999px;
   background: rgba(15,23,42,0.9);
@@ -638,7 +647,7 @@
   display: inline-flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.6rem;
+  font-size: 0.6em;
   letter-spacing: 0.13em;
   text-transform: uppercase;
   padding: 2px 10px;
@@ -646,12 +655,12 @@
 }
 .bht2-badge--super {
   background: rgba(245,158,11,0.12);
-  border: 1px solid color-mix(in srgb, var(--bht2-super-badge, #fbbf24), transparent 50%);
+  border: 1px solid rgba(251,191,36,0.5);
   color: #fde68a;
 }
 .bht2-badge--extreme {
   background: rgba(244,63,94,0.08);
-  border: 1px solid color-mix(in srgb, var(--bht2-extreme-badge, #fb7185), transparent 50%);
+  border: 1px solid rgba(251,113,133,0.5);
   color: #fecdd3;
 }
 .bht2-badge-dot {
@@ -669,14 +678,15 @@
 .bht2-progress-fill {
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(to right, var(--bht2-header-accent, #38bdf8), color-mix(in srgb, var(--bht2-header-accent, #0ea5e9), #22d3ee 50%));
+  background: var(--bht2-header-accent, #38bdf8);
+  background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.2));
   transition: width 0.5s ease;
 }
 
 /* ── Active Bonus ── */
 .bht2-active {
   background: linear-gradient(135deg, rgba(8,47,73,0.6), var(--bht2-current-bg, rgba(2,6,23,0.85)));
-  border-color: color-mix(in srgb, var(--bht2-current-accent, #38bdf8), transparent 65%);
+  border-color: rgba(56,189,248,0.35);
 }
 .bht2-active-top {
   display: flex;
@@ -687,7 +697,7 @@
   width: 56px; height: 56px;
   border-radius: 14px;
   object-fit: cover;
-  border: 1px solid color-mix(in srgb, var(--bht2-current-accent, #38bdf8), transparent 60%);
+  border: 1px solid rgba(56,189,248,0.4);
   background: rgba(15,23,42,0.7);
   flex-shrink: 0;
 }
@@ -706,19 +716,19 @@
 .bht2-mini-tile {
   border-radius: calc(var(--bht2-card-radius, 24px) - 12px);
   background: rgba(2,6,23,0.8);
-  border: 1px solid color-mix(in srgb, var(--bht2-current-accent, #38bdf8), transparent 70%);
+  border: 1px solid rgba(56,189,248,0.3);
   padding: 4px 8px;
 }
 .bht2-mini-label {
   display: block;
-  font-size: 0.5rem;
+  font-size: 0.5em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
 }
 .bht2-mini-value {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.7em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
@@ -746,7 +756,7 @@
   transition: all 0.25s ease;
 }
 .bht2-slot-row--active {
-  border-color: color-mix(in srgb, var(--bht2-current-accent, #38bdf8), transparent 40%);
+  border-color: rgba(56,189,248,0.6);
   box-shadow: 0 4px 16px rgba(14,165,233,0.25);
 }
 .bht2-slot-row--locked {
@@ -784,7 +794,7 @@
 .bht2-slot-name-col { min-width: 0; }
 .bht2-slot-name {
   display: block;
-  font-size: 0.7rem;
+  font-size: 0.7em;
   font-weight: 600;
   color: var(--bht2-stat-value, #f1f5f9);
   white-space: nowrap;
@@ -792,11 +802,11 @@
   text-overflow: ellipsis;
 }
 .bht2-slot-bet {
-  font-size: 0.6rem;
+  font-size: 0.6em;
   color: var(--bht2-muted, #64748b);
 }
 .bht2-slot-num {
-  font-size: 0.6rem;
+  font-size: 0.6em;
   color: var(--bht2-muted, #475569);
   flex-shrink: 0;
 }
@@ -809,13 +819,13 @@
 .bht2-slot-stat-col { display: flex; flex-direction: column; gap: 1px; }
 .bht2-slot-stat-col--right { align-items: flex-end; }
 .bht2-slot-stat-label {
-  font-size: 0.5rem;
+  font-size: 0.5em;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: var(--bht2-muted, #475569);
 }
 .bht2-slot-stat-val {
-  font-size: 0.65rem;
+  font-size: 0.65em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
@@ -841,7 +851,7 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.55rem;
+  font-size: 0.55em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
@@ -849,7 +859,7 @@
 .bht2-footer-stat-label svg { color: var(--bht2-header-accent, #38bdf8); }
 .bht2-footer-stat-label.bht2-accent-green svg { color: #34d399; }
 .bht2-footer-stat-val {
-  font-size: 0.75rem;
+  font-size: 0.75em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
@@ -866,14 +876,14 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.65rem;
+  font-size: 0.65em;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
 }
 .bht2-total-left svg { color: var(--bht2-total-pay-bg, #38bdf8); }
 .bht2-total-value {
-  font-size: 1rem;
+  font-size: 1em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-total-pay-text, #e0f2fe);
