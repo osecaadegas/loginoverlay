@@ -436,6 +436,17 @@ export default function Sidebar({ className = '', onClose }) {
             ) : null
           )}
 
+          {/* Overlay Control Center - for logged-in users */}
+          {user && (
+            <button
+              className={`sidebar-item ${isActive('/overlay-center') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/overlay-center')}
+            >
+              <span className="sidebar-emoji"><i className="fa-solid fa-display" /></span>
+              <span className="sidebar-label">{t('nav_overlay_center', 'Overlay Center')}</span>
+            </button>
+          )}
+
           {user && (
             <>
               <div className="sidebar-divider"></div>

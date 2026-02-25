@@ -77,6 +77,22 @@ export default function OverlayRenderer() {
   const [error, setError] = useState(null);
   const channelRef = useRef(null);
 
+  // ── Lock scrolling + transparent bg only while this page is mounted ──
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+    html.style.overflow = 'hidden';
+    body.style.overflow = 'hidden';
+    body.style.background = 'transparent';
+    html.style.background = 'transparent';
+    return () => {
+      html.style.overflow = '';
+      body.style.overflow = '';
+      body.style.background = '';
+      html.style.background = '';
+    };
+  }, []);
+
   // ── Resolve token → userId → load all data ──
   useEffect(() => {
     let cancelled = false;

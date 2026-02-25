@@ -1,19 +1,19 @@
 /* =========================================================
    OverlayRenderer.css — OBS Browser Source Styles
    Transparent bg, 1920×1080 canvas, GPU-accelerated.
+   All styles scoped to .or-canvas to avoid leaking globally.
    ========================================================= */
 
-/* Reset */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-html, body, #root {
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  background: transparent !important;
+/* ─── Canvas ─── */
+.or-canvas,
+.or-canvas *,
+.or-canvas *::before,
+.or-canvas *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* ─── Canvas ─── */
 .or-canvas {
   position: relative;
   width: 1920px;
