@@ -97,11 +97,46 @@ export default function NavbarConfig({ config, onChange }) {
     set('cryptoCoins', next);
   };
 
+  // ─── Preset system ───
+  const [presetName, setPresetName] = useState('');
+  const PRESET_KEYS = [
+    'accentColor', 'bgColor', 'textColor', 'mutedColor', 'ctaColor',
+    'cryptoUpColor', 'cryptoDownColor', 'fontFamily', 'fontSize',
+    'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
+    'brightness', 'contrast', 'saturation',
+    'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
+    'cryptoCoins', 'ctaText', 'motto',
+  ];
+
+  const savePreset = () => {
+    const name = presetName.trim();
+    if (!name) return;
+    const snapshot = {};
+    PRESET_KEYS.forEach(k => { if (c[k] !== undefined) snapshot[k] = c[k]; });
+    const existing = c.savedPresets || [];
+    const idx = existing.findIndex(p => p.name === name);
+    const updated = idx >= 0
+      ? existing.map((p, i) => i === idx ? { name, values: snapshot, savedAt: Date.now() } : p)
+      : [...existing, { name, values: snapshot, savedAt: Date.now() }];
+    set('savedPresets', updated);
+    setPresetName('');
+  };
+
+  const loadPreset = (preset) => {
+    setMulti(preset.values);
+  };
+
+  const deletePreset = (name) => {
+    const updated = (c.savedPresets || []).filter(p => p.name !== name);
+    set('savedPresets', updated);
+  };
+
   const tabs = [
-    { id: 'content', label: '📋 Content', },
+    { id: 'content', label: '📋 Content' },
     { id: 'music', label: '🎵 Music' },
     { id: 'style', label: '🎨 Style' },
     { id: 'filters', label: '✨ Filters' },
+    { id: 'presets', label: '💾 Presets' },
   ];
 
   return (
@@ -300,6 +335,58 @@ export default function NavbarConfig({ config, onChange }) {
             onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
             Reset Filters
           </button>
+        </div>
+      )}
+
+      {/* ═══════ PRESETS TAB ═══════ */}
+      {activeTab === 'presets' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Save Current Style</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Save your current colors, fonts, dimensions and filters as a reusable preset.
+          </p>
+          <div className="nb-preset-save-row">
+            <input
+              className="nb-preset-input"
+              value={presetName}
+              onChange={e => setPresetName(e.target.value)}
+              placeholder="Preset name..."
+              maxLength={30}
+              onKeyDown={e => e.key === 'Enter' && savePreset()}
+            />
+            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>
+              💾 Save
+            </button>
+          </div>
+
+          <h4 className="nb-subtitle">Saved Presets</h4>
+          {(!c.savedPresets || c.savedPresets.length === 0) ? (
+            <p className="oc-config-hint">No presets saved yet. Customize your style and save it above.</p>
+          ) : (
+            <div className="nb-preset-list">
+              {c.savedPresets.map(p => (
+                <div key={p.name} className="nb-preset-card">
+                  <div className="nb-preset-info">
+                    <span className="nb-preset-name">{p.name}</span>
+                    <span className="nb-preset-date">
+                      {p.savedAt ? new Date(p.savedAt).toLocaleDateString() : ''}
+                    </span>
+                    <div className="nb-preset-swatches">
+                      {['accentColor', 'bgColor', 'textColor', 'ctaColor'].map(k =>
+                        p.values[k] ? (
+                          <span key={k} className="nb-preset-swatch" style={{ background: p.values[k] }} title={k} />
+                        ) : null
+                      )}
+                    </div>
+                  </div>
+                  <div className="nb-preset-actions">
+                    <button className="oc-btn oc-btn--sm oc-btn--primary" onClick={() => loadPreset(p)}>Load</button>
+                    <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => deletePreset(p.name)}>🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </div>
