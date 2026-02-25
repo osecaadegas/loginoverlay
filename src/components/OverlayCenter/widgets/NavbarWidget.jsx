@@ -250,11 +250,11 @@ export default function NavbarWidget({ config }) {
               <div style={sep} />
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: barHeight * 0.65, flexShrink: 0,
+                height: barHeight, flexShrink: 0, padding: '2px 0',
               }}>
                 <img src={c.badgeImage} alt="" style={{
-                  height: '100%', width: 'auto', objectFit: 'contain',
-                  filter: 'drop-shadow(0 0 6px rgba(255,255,255,0.2))',
+                  height: barHeight * 0.85, width: 'auto', objectFit: 'contain',
+                  filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
                 }} />
               </div>
             </>
