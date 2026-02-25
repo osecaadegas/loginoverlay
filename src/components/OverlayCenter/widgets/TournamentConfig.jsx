@@ -197,7 +197,8 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
     'tabBg', 'tabActiveBg', 'tabColor', 'tabActiveColor', 'tabBorder',
     'eliminatedOpacity', 'showSlotName', 'slotNameColor', 'slotNameSize',
     'fontFamily', 'borderRadius', 'borderWidth', 'borderColor',
-    'cardGap', 'containerPadding', 'xIconColor', 'xIconBg',
+    'cardGap', 'containerPadding', 'swordColor', 'swordBg', 'swordSize',
+    'xIconColor', 'xIconBg',
   ];
 
   const savePreset = () => {
@@ -457,6 +458,13 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
             <span>Show Slot Names</span>
             <input type="checkbox" checked={c.showSlotName !== false} onChange={e => set('showSlotName', e.target.checked)} />
           </label>
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Sword Icon</h4>
+          <SliderField label="Sword Size" value={c.swordSize ?? 22} onChange={v => set('swordSize', v)} min={14} max={40} step={1} suffix="px" />
+          <div className="nb-color-grid">
+            <ColorPicker label="Sword Color" value={c.swordColor || '#eab308'} onChange={v => set('swordColor', v)} />
+            <ColorPicker label="Sword BG" value={c.swordBg || 'rgba(0,0,0,0.85)'} onChange={v => set('swordBg', v)} />
+          </div>
 
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Eliminated</h4>
           <SliderField label="Eliminated Opacity" value={c.eliminatedOpacity ?? 0.35} onChange={v => set('eliminatedOpacity', v)} min={0.1} max={1} step={0.05} suffix="" />
