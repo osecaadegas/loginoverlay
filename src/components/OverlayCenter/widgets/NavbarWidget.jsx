@@ -253,7 +253,7 @@ export default function NavbarWidget({ config }) {
                 height: barHeight, flexShrink: 0, padding: '2px 0',
               }}>
                 <img src={c.badgeImage} alt="" style={{
-                  height: barHeight * 0.85, width: 'auto', objectFit: 'contain',
+                  height: barHeight * 0.85, minWidth: barHeight * 1.2, objectFit: 'contain',
                   filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
                 }} />
               </div>
