@@ -172,6 +172,7 @@ registerWidget({
     fontSize: 13,
     msgSpacing: 2,
     borderRadius: 12,
+    borderWidth: 1,
     width: 350,
     height: 500,
     showHeader: true,

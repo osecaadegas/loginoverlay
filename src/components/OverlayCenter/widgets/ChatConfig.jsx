@@ -42,7 +42,7 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
   const PRESET_KEYS = [
     'bgColor', 'textColor', 'headerBg', 'headerText', 'borderColor',
     'fontFamily', 'fontSize', 'useNativeColors',
-    'width', 'height', 'borderRadius', 'msgSpacing', 'maxMessages',
+    'width', 'height', 'borderRadius', 'borderWidth', 'msgSpacing', 'maxMessages',
     'showHeader', 'showLegend',
     'brightness', 'contrast', 'saturation',
   ];
@@ -208,6 +208,8 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
             onChange={v => set('height', v)} />
           <SliderField label="Border Radius" value={c.borderRadius ?? 12} min={0} max={50} step={1} unit="px"
             onChange={v => set('borderRadius', v)} />
+          <SliderField label="Border Width" value={c.borderWidth ?? 1} min={0} max={8} step={1} unit="px"
+            onChange={v => set('borderWidth', v)} />
 
           <h4 className="nb-subtitle">Messages</h4>
           <SliderField label="Msg Spacing" value={c.msgSpacing ?? 2} min={0} max={12} step={1} unit="px"

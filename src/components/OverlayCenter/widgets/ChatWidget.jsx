@@ -213,6 +213,7 @@ export default function ChatWidget({ config, theme }) {
   const fontSize = c.fontSize || 13;
   const msgSpacing = c.msgSpacing || 2;
   const borderRadius = c.borderRadius || 12;
+  const borderWidth = c.borderWidth ?? 1;
   const borderColor = c.borderColor || 'rgba(51,65,85,0.5)';
   const showHeader = c.showHeader !== false;
   const showLegend = c.showLegend !== false;
@@ -260,7 +261,7 @@ export default function ChatWidget({ config, theme }) {
     width: `${width}px`,
     height: `${height}px`,
     background: bgColor,
-    border: `1px solid ${borderColor}`,
+    border: `${borderWidth}px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,
     fontFamily,
     fontSize: `${fontSize}px`,
