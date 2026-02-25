@@ -10,6 +10,64 @@ export default function BonusHuntWidgetV2({ config, theme }) {
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
 
+  /* ─── Custom style vars ─── */
+  const headerColor = c.headerColor || '#0f172a';
+  const headerAccent = c.headerAccent || '#38bdf8';
+  const countCardColor = c.countCardColor || '#0f172a';
+  const currentBonusColor = c.currentBonusColor || '#0f172a';
+  const currentBonusAccent = c.currentBonusAccent || '#38bdf8';
+  const listCardColor = c.listCardColor || '#0f172a';
+  const listCardAccent = c.listCardAccent || '#94a3b8';
+  const summaryColor = c.summaryColor || '#0f172a';
+  const totalPayColor = c.totalPayColor || '#22c55e';
+  const totalPayText = c.totalPayText || '#ffffff';
+  const superBadgeColor = c.superBadgeColor || '#eab308';
+  const extremeBadgeColor = c.extremeBadgeColor || '#ef4444';
+  const textColor = c.textColor || '#e2e8f0';
+  const mutedTextColor = c.mutedTextColor || '#64748b';
+  const statValueColor = c.statValueColor || '#f1f5f9';
+  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const fontSize = c.fontSize ?? 13;
+  const cardRadius = c.cardRadius ?? 12;
+  const cardGap = c.cardGap ?? 8;
+  const widgetWidth = c.widgetWidth ?? 400;
+  const cardPadding = c.cardPadding ?? 12;
+  const slotImageHeight = c.slotImageHeight ?? 36;
+  const listMaxHeight = c.listMaxHeight ?? 400;
+  const brightness = c.brightness ?? 100;
+  const contrast = c.contrast ?? 100;
+  const saturation = c.saturation ?? 100;
+
+  /* ─── Root inline style ─── */
+  const rootStyle = {
+    fontFamily,
+    fontSize: `${fontSize}px`,
+    maxWidth: `${widgetWidth}px`,
+    gap: `${cardGap}px`,
+    filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
+      ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+      : undefined,
+    '--bht2-header-bg': headerColor,
+    '--bht2-header-accent': headerAccent,
+    '--bht2-count-bg': countCardColor,
+    '--bht2-current-bg': currentBonusColor,
+    '--bht2-current-accent': currentBonusAccent,
+    '--bht2-list-bg': listCardColor,
+    '--bht2-list-accent': listCardAccent,
+    '--bht2-summary-bg': summaryColor,
+    '--bht2-total-pay-bg': totalPayColor,
+    '--bht2-total-pay-text': totalPayText,
+    '--bht2-super-badge': superBadgeColor,
+    '--bht2-extreme-badge': extremeBadgeColor,
+    '--bht2-text': textColor,
+    '--bht2-muted': mutedTextColor,
+    '--bht2-stat-value': statValueColor,
+    '--bht2-card-radius': `${cardRadius}px`,
+    '--bht2-card-padding': `${cardPadding}px`,
+    '--bht2-slot-img-height': `${slotImageHeight}px`,
+    '--bht2-list-max-height': `${listMaxHeight}px`,
+  };
+
   /* ─── Derived stats ─── */
   const stats = useMemo(() => {
     const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
@@ -56,7 +114,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
   const progressPct = bonuses.length > 0 ? (stats.openedCount / bonuses.length) * 100 : 0;
 
   return (
-    <div className="oc-widget-inner oc-bonushunt bht2-root">
+    <div className="oc-widget-inner oc-bonushunt bht2-root" style={rootStyle}>
 
       {/* ═══ Session Header ═══ */}
       <section className="bht2-card bht2-header">

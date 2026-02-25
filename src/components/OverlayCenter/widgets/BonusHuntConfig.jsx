@@ -1,10 +1,59 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getAllSlots } from '../../../utils/slotUtils';
 
+const FONT_OPTIONS = [
+  { value: "'Inter', sans-serif", label: 'Inter' },
+  { value: "'Poppins', sans-serif", label: 'Poppins' },
+  { value: "'Roboto', sans-serif", label: 'Roboto' },
+  { value: "'Oswald', sans-serif", label: 'Oswald' },
+  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
+  { value: "'Fira Code', monospace", label: 'Fira Code' },
+  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
+  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
+];
+
 export default function BonusHuntConfig({ config, onChange }) {
   const c = config || {};
   const [open, setOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('content');
   const set = (key, val) => onChange({ ...c, [key]: val });
+  const setMulti = (obj) => onChange({ ...c, ...obj });
+
+  // ─── Preset system ───
+  const [presetName, setPresetName] = useState('');
+  const PRESET_KEYS = [
+    'headerColor', 'headerAccent', 'countCardColor', 'currentBonusColor', 'currentBonusAccent',
+    'listCardColor', 'listCardAccent', 'summaryColor', 'totalPayColor', 'totalPayText',
+    'superBadgeColor', 'extremeBadgeColor', 'textColor', 'mutedTextColor', 'statValueColor',
+    'fontFamily', 'fontSize', 'cardRadius', 'cardGap', 'widgetWidth', 'cardPadding',
+    'slotImageHeight', 'listMaxHeight',
+    'brightness', 'contrast', 'saturation',
+    'displayStyle',
+  ];
+
+  const savePreset = () => {
+    const name = presetName.trim();
+    if (!name) return;
+    const snapshot = {};
+    PRESET_KEYS.forEach(k => { if (c[k] !== undefined) snapshot[k] = c[k]; });
+    const existing = c.bhPresets || [];
+    const idx = existing.findIndex(p => p.name === name);
+    const updated = idx >= 0
+      ? existing.map((p, i) => i === idx ? { name, values: snapshot, savedAt: Date.now() } : p)
+      : [...existing, { name, values: snapshot, savedAt: Date.now() }];
+    set('bhPresets', updated);
+    setPresetName('');
+  };
+
+  const loadPreset = (preset) => setMulti(preset.values);
+  const deletePreset = (name) => set('bhPresets', (c.bhPresets || []).filter(p => p.name !== name));
+
+  const tabs = [
+    { id: 'content', label: '📋 Content' },
+    { id: 'style', label: '🎨 Style' },
+    { id: 'filters', label: '✨ Filters' },
+    { id: 'presets', label: '💾 Presets' },
+  ];
 
   return (
     <div className="bh-config">
@@ -27,20 +76,165 @@ export default function BonusHuntConfig({ config, onChange }) {
         </label>
       </div>
 
-      {/* Toggle dropdown */}
-      <button
-        className={`bh-config-toggle ${open ? 'bh-config-toggle--open' : ''}`}
-        onClick={() => setOpen(v => !v)}
-      >
-        <span>⚙️ Configure Bonus Hunt</span>
-        <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"
-          style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
-          <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-        </svg>
-      </button>
+      {/* Tab nav */}
+      <div className="nb-tabs" style={{ marginTop: 8 }}>
+        {tabs.map(t => (
+          <button key={t.id}
+            className={`nb-tab ${activeTab === t.id ? 'nb-tab--active' : ''}`}
+            onClick={() => setActiveTab(t.id)}>
+            {t.label}
+          </button>
+        ))}
+      </div>
 
-      {open && (
-        <BonusHuntPanel config={c} onChange={onChange} />
+      {/* ═══════ CONTENT TAB ═══════ */}
+      {activeTab === 'content' && (
+        <>
+          {/* Toggle dropdown */}
+          <button
+            className={`bh-config-toggle ${open ? 'bh-config-toggle--open' : ''}`}
+            onClick={() => setOpen(v => !v)}
+          >
+            <span>⚙️ Configure Bonus Hunt</span>
+            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"
+              style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
+              <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
+            </svg>
+          </button>
+
+          {open && (
+            <BonusHuntPanel config={c} onChange={onChange} />
+          )}
+        </>
+      )}
+
+      {/* ═══════ STYLE TAB ═══════ */}
+      {activeTab === 'style' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Card Colors</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
+            <ColorPicker label="Header Accent" value={c.headerAccent || '#60a5fa'} onChange={v => set('headerAccent', v)} />
+            <ColorPicker label="Count Card BG" value={c.countCardColor || '#1e3a8a'} onChange={v => set('countCardColor', v)} />
+            <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || '#166534'} onChange={v => set('currentBonusColor', v)} />
+            <ColorPicker label="Current Accent" value={c.currentBonusAccent || '#86efac'} onChange={v => set('currentBonusAccent', v)} />
+            <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
+            <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#d8b4fe'} onChange={v => set('listCardAccent', v)} />
+            <ColorPicker label="Summary BG" value={c.summaryColor || '#1e3a8a'} onChange={v => set('summaryColor', v)} />
+          </div>
+
+          <h4 className="nb-subtitle">Badge Colors</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Super Badge" value={c.superBadgeColor || '#eab308'} onChange={v => set('superBadgeColor', v)} />
+            <ColorPicker label="Extreme Badge" value={c.extremeBadgeColor || '#ef4444'} onChange={v => set('extremeBadgeColor', v)} />
+            <ColorPicker label="Total Pay BG" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
+            <ColorPicker label="Total Pay Text" value={c.totalPayText || '#ffffff'} onChange={v => set('totalPayText', v)} />
+          </div>
+
+          <h4 className="nb-subtitle">Text Colors</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
+            <ColorPicker label="Muted Text" value={c.mutedTextColor || '#93c5fd'} onChange={v => set('mutedTextColor', v)} />
+            <ColorPicker label="Stat Values" value={c.statValueColor || '#ffffff'} onChange={v => set('statValueColor', v)} />
+          </div>
+
+          <h4 className="nb-subtitle">Typography</h4>
+          <label className="nb-field">
+            <span>Font</span>
+            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+          </label>
+          <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={22} step={1} unit="px"
+            onChange={v => set('fontSize', v)} />
+
+          <h4 className="nb-subtitle">Dimensions</h4>
+          <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
+            onChange={v => set('widgetWidth', v)} />
+          <SliderField label="Card Padding" value={c.cardPadding ?? 14} min={6} max={30} step={1} unit="px"
+            onChange={v => set('cardPadding', v)} />
+          <SliderField label="Card Radius" value={c.cardRadius ?? 16} min={0} max={32} step={1} unit="px"
+            onChange={v => set('cardRadius', v)} />
+          <SliderField label="Card Gap" value={c.cardGap ?? 12} min={4} max={24} step={1} unit="px"
+            onChange={v => set('cardGap', v)} />
+          <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 180} min={80} max={400} step={10} unit="px"
+            onChange={v => set('slotImageHeight', v)} />
+          <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"
+            onChange={v => set('listMaxHeight', v)} />
+        </div>
+      )}
+
+      {/* ═══════ FILTERS TAB ═══════ */}
+      {activeTab === 'filters' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Image Filters</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 12 }}>
+            Adjust the overall look of the entire bonus hunt widget on the OBS overlay.
+          </p>
+          <SliderField label="Brightness" value={c.brightness ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('brightness', v)} />
+          <SliderField label="Contrast" value={c.contrast ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('contrast', v)} />
+          <SliderField label="Saturation" value={c.saturation ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('saturation', v)} />
+
+          <button className="oc-btn oc-btn--sm" style={{ marginTop: 12 }}
+            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
+            Reset Filters
+          </button>
+        </div>
+      )}
+
+      {/* ═══════ PRESETS TAB ═══════ */}
+      {activeTab === 'presets' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Save Current Style</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Save your current colors, fonts, dimensions and filters as a reusable preset.
+          </p>
+          <div className="nb-preset-save-row">
+            <input
+              className="nb-preset-input"
+              value={presetName}
+              onChange={e => setPresetName(e.target.value)}
+              placeholder="Preset name..."
+              maxLength={30}
+              onKeyDown={e => e.key === 'Enter' && savePreset()}
+            />
+            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>
+              💾 Save
+            </button>
+          </div>
+
+          <h4 className="nb-subtitle">Saved Presets</h4>
+          {(!c.bhPresets || c.bhPresets.length === 0) ? (
+            <p className="oc-config-hint">No presets saved yet. Customize your style and save it above.</p>
+          ) : (
+            <div className="nb-preset-list">
+              {c.bhPresets.map(p => (
+                <div key={p.name} className="nb-preset-card">
+                  <div className="nb-preset-info">
+                    <span className="nb-preset-name">{p.name}</span>
+                    <span className="nb-preset-date">
+                      {p.savedAt ? new Date(p.savedAt).toLocaleDateString() : ''}
+                    </span>
+                    <div className="nb-preset-swatches">
+                      {['headerColor', 'currentBonusColor', 'listCardColor', 'totalPayColor'].map(k =>
+                        p.values[k] ? (
+                          <span key={k} className="nb-preset-swatch" style={{ background: p.values[k] }} title={k} />
+                        ) : null
+                      )}
+                    </div>
+                  </div>
+                  <div className="nb-preset-actions">
+                    <button className="oc-btn oc-btn--sm oc-btn--primary" onClick={() => loadPreset(p)}>Load</button>
+                    <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => deletePreset(p.name)}>🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
@@ -262,6 +456,30 @@ function BonusHuntPanel({ config, onChange }) {
           ))}
         </div>
       </div>
+    </div>
+  );
+}
+
+/* ─── Sub-components ─── */
+function ColorPicker({ label, value, onChange }) {
+  return (
+    <label className="nb-color-field">
+      <input type="color" value={value} onChange={e => onChange(e.target.value)} />
+      <span className="nb-color-label">{label}</span>
+      <span className="nb-color-hex">{value}</span>
+    </label>
+  );
+}
+
+function SliderField({ label, value, min, max, step, unit, onChange }) {
+  return (
+    <div className="nb-slider-field">
+      <div className="nb-slider-head">
+        <span>{label}</span>
+        <span className="nb-slider-val">{value}{unit}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={e => onChange(Number(e.target.value))} />
     </div>
   );
 }
