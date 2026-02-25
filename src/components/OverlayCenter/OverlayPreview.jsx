@@ -40,15 +40,15 @@ export default function OverlayPreview({ widgets, theme }) {
   /* Dynamic scale to fit container width */
   useEffect(() => {
     if (!wrapRef.current) return;
-    const ro = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const availW = entry.contentRect.width - 32; // padding
-        setScale(Math.min(availW / CANVAS_W, 0.65));
-      }
-    });
+    function calcScale() {
+      const availW = wrapRef.current.getBoundingClientRect().width - 32;
+      setScale(Math.min(availW / CANVAS_W, 0.65));
+    }
+    calcScale(); // recalc immediately on canvas size change
+    const ro = new ResizeObserver(() => calcScale());
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
-  }, [CANVAS_W]);
+  }, [CANVAS_W, CANVAS_H]);
 
   const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
 
