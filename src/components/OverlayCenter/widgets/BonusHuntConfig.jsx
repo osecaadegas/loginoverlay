@@ -42,9 +42,9 @@ export default function BonusHuntConfig({ config, onChange }) {
 /* ─── Inline Dropdown Panel (replaces old modal) ─── */
 function BonusHuntPanel({ config, onChange }) {
   const c = config || {};
-  const [startMoney, setStartMoney] = useState(c.startMoney || 0);
-  const [targetMoney, setTargetMoney] = useState(c.targetMoney || 0);
-  const [stopLoss, setStopLoss] = useState(c.stopLoss || 0);
+  const [startMoney, setStartMoney] = useState(c.startMoney || '');
+  const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
+  const [stopLoss, setStopLoss] = useState(c.stopLoss || '');
   const [betSize, setBetSize] = useState('');
   const [slotSearch, setSlotSearch] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -67,7 +67,9 @@ function BonusHuntPanel({ config, onChange }) {
   const save = useCallback((list = bonusList, extras = {}) => {
     onChange({
       ...config,
-      startMoney, targetMoney, stopLoss,
+      startMoney: Number(startMoney) || 0,
+      targetMoney: Number(targetMoney) || 0,
+      stopLoss: Number(stopLoss) || 0,
       showStatistics, animatedTracker,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
@@ -123,19 +125,22 @@ function BonusHuntPanel({ config, onChange }) {
           <label className="bh-input-group">
             <span>Start ({currency})</span>
             <input type="number" value={startMoney}
-              onChange={e => setStartMoney(Number(e.target.value))}
+              placeholder="0"
+              onChange={e => setStartMoney(e.target.value)}
               onBlur={() => save()} />
           </label>
           <label className="bh-input-group">
             <span>Target ({currency})</span>
             <input type="number" value={targetMoney}
-              onChange={e => setTargetMoney(Number(e.target.value))}
+              placeholder="0"
+              onChange={e => setTargetMoney(e.target.value)}
               onBlur={() => save()} />
           </label>
           <label className="bh-input-group">
             <span>Stop Loss ({currency})</span>
             <input type="number" value={stopLoss}
-              onChange={e => setStopLoss(Number(e.target.value))}
+              placeholder="0"
+              onChange={e => setStopLoss(e.target.value)}
               onBlur={() => save()} />
           </label>
         </div>
@@ -154,6 +159,7 @@ function BonusHuntPanel({ config, onChange }) {
             onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); }}
             onFocus={() => setShowSuggestions(true)}
             onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
             placeholder={`Search ${slots.length} slots...`}
           />
 
@@ -188,7 +194,9 @@ function BonusHuntPanel({ config, onChange }) {
         {/* Bet + Super + Add button row */}
         <div className="bh-add-controls">
           <input type="number" className="bh-bet-field" value={betSize}
-            onChange={e => setBetSize(e.target.value)} placeholder={`Bet (${currency})`} step="0.1" />
+            onChange={e => setBetSize(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
+            placeholder={`Bet (${currency})`} step="0.1" />
           <label className="bh-super-check">
             <input type="checkbox" checked={isSuperBonus} onChange={e => setIsSuperBonus(e.target.checked)} />
             <span>⭐</span>
