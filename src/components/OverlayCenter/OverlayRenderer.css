@@ -894,16 +894,16 @@
   opacity: 0.65;
 }
 .bht2-slot-img-wrap {
-  width: 80px; height: 72px;
+  width: 80px;
   flex-shrink: 0;
   overflow: hidden;
   background: var(--bht2-header-bg, rgba(15,23,42,0.8));
+  align-self: stretch;
 }
 .bht2-slot-img {
   width: 100%; height: 100%;
   object-fit: cover;
 }
-.bht2-slot-img--grey { filter: grayscale(1); }
 .bht2-slot-img-placeholder {
   width: 100%; height: 100%;
   background: var(--bht2-header-bg, rgba(15,23,42,0.9));

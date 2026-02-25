@@ -269,7 +269,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
                     <div className="bht2-slot-img-wrap">
                       {bonus.slot?.image ? (
                         <img src={bonus.slot.image} alt={bonus.slotName}
-                          className={`bht2-slot-img ${!isOpened && !isActive ? 'bht2-slot-img--grey' : ''}`}
+                          className="bht2-slot-img"
                           onError={e => { e.target.style.display = 'none'; }} />
                       ) : (
                         <div className="bht2-slot-img-placeholder" />
