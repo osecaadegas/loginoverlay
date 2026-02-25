@@ -277,7 +277,7 @@ export default function NavbarConfig({ config, onChange }) {
             onChange={v => set('borderWidth', v)} />
           <SliderField label="Border Radius" value={c.borderRadius ?? 999} min={0} max={999} step={1} unit="px"
             onChange={v => set('borderRadius', v)} />
-          <SliderField label="Max Width" value={c.maxWidth ?? 1200} min={600} max={1920} step={10} unit="px"
+          <SliderField label="Max Width" value={c.maxWidth ?? 1200} min={600} max={3840} step={10} unit="px"
             onChange={v => set('maxWidth', v)} />
         </div>
       )}
