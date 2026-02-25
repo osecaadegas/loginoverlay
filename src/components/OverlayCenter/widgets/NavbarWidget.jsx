@@ -174,7 +174,7 @@ export default function NavbarWidget({ config }) {
     color: textColor,
     fontSize,
     gap: 0,
-    overflow: 'hidden',
+    overflow: 'visible',
   };
 
   const sep = {
