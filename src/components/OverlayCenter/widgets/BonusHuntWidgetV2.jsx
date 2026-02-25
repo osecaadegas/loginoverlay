@@ -260,48 +260,51 @@ export default function BonusHuntWidgetV2({ config, theme }) {
           </div>
 
           <div className="bht2-slot-list">
-            {bonuses.map((bonus, index) => {
-              const isActive = index === currentIndex;
-              const isOpened = bonus.opened;
-              const multiX = isOpened && Number(bonus.betSize) > 0
-                ? (Number(bonus.payout) || 0) / Number(bonus.betSize) : 0;
+            <div className="bht2-slot-list-track" style={{ '--bht2-item-count': bonuses.length }}>
+              {[...bonuses, ...bonuses].map((bonus, i) => {
+                const idx = i % bonuses.length;
+                const isActive = idx === currentIndex;
+                const isOpened = bonus.opened;
+                const multiX = isOpened && Number(bonus.betSize) > 0
+                  ? (Number(bonus.payout) || 0) / Number(bonus.betSize) : 0;
 
-              return (
-                <div key={bonus.id || index}
-                  className={`bht2-slot-row ${isActive ? 'bht2-slot-row--active' : ''} ${isOpened ? '' : 'bht2-slot-row--locked'}`}>
-                  <div className="bht2-slot-img-wrap">
-                    {bonus.slot?.image ? (
-                      <img src={bonus.slot.image} alt={bonus.slotName}
-                        className={`bht2-slot-img ${!isOpened && !isActive ? 'bht2-slot-img--grey' : ''}`}
-                        onError={e => { e.target.style.display = 'none'; }} />
-                    ) : (
-                      <div className="bht2-slot-img-placeholder" />
-                    )}
-                  </div>
-                  <div className="bht2-slot-info">
-                    <div className="bht2-slot-top-row">
-                      <div className="bht2-slot-name-col">
-                        <span className="bht2-slot-name">{bonus.slotName || bonus.slot?.name}</span>
-                        <span className="bht2-slot-bet">{fmt(Number(bonus.betSize) || 0)}</span>
-                      </div>
-                      <span className="bht2-slot-num">#{index + 1}</span>
+                return (
+                  <div key={`${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
+                    className={`bht2-slot-row ${isActive ? 'bht2-slot-row--active' : ''} ${isOpened ? '' : 'bht2-slot-row--locked'}`}>
+                    <div className="bht2-slot-img-wrap">
+                      {bonus.slot?.image ? (
+                        <img src={bonus.slot.image} alt={bonus.slotName}
+                          className={`bht2-slot-img ${!isOpened && !isActive ? 'bht2-slot-img--grey' : ''}`}
+                          onError={e => { e.target.style.display = 'none'; }} />
+                      ) : (
+                        <div className="bht2-slot-img-placeholder" />
+                      )}
                     </div>
-                    <div className="bht2-slot-bottom-row">
-                      <div className="bht2-slot-stat-col">
-                        <span className="bht2-slot-stat-label">{isOpened ? 'Win' : 'Locked'}</span>
-                        <span className="bht2-slot-stat-val">{isOpened ? fmt(Number(bonus.payout) || 0) : '—'}</span>
+                    <div className="bht2-slot-info">
+                      <div className="bht2-slot-top-row">
+                        <div className="bht2-slot-name-col">
+                          <span className="bht2-slot-name">{bonus.slotName || bonus.slot?.name}</span>
+                          <span className="bht2-slot-bet">{fmt(Number(bonus.betSize) || 0)}</span>
+                        </div>
+                        <span className="bht2-slot-num">#{idx + 1}</span>
                       </div>
-                      <div className="bht2-slot-stat-col bht2-slot-stat-col--right">
-                        <span className="bht2-slot-stat-label">Multi</span>
-                        <span className={`bht2-slot-stat-val ${multiX >= 100 ? 'bht2-accent-green' : multiX >= 50 ? 'bht2-accent-amber' : ''}`}>
-                          {fmtX(multiX)}
-                        </span>
+                      <div className="bht2-slot-bottom-row">
+                        <div className="bht2-slot-stat-col">
+                          <span className="bht2-slot-stat-label">{isOpened ? 'Win' : 'Locked'}</span>
+                          <span className="bht2-slot-stat-val">{isOpened ? fmt(Number(bonus.payout) || 0) : '—'}</span>
+                        </div>
+                        <div className="bht2-slot-stat-col bht2-slot-stat-col--right">
+                          <span className="bht2-slot-stat-label">Multi</span>
+                          <span className={`bht2-slot-stat-val ${multiX >= 100 ? 'bht2-accent-green' : multiX >= 50 ? 'bht2-accent-amber' : ''}`}>
+                            {fmtX(multiX)}
+                          </span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
         </section>
       )}

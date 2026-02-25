@@ -209,33 +209,38 @@ export default function BonusHuntWidget({ config, theme }) {
             </>
           )}
           <div className="bht-bonus-list">
-            {bonuses.map((bonus, index) => (
-              <div key={bonus.id || index}
-                className={`bht-bonus-card ${index === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
-                {bonus.slot?.image && (
-                  <img src={bonus.slot.image} alt={bonus.slotName}
-                    className="bht-bonus-card-img"
-                    onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
-                )}
-                <div className="bht-bonus-card-overlay">
-                  <div className="bht-bonus-card-bottom">
-                    <div className="bht-bonus-card-info">
-                      <div className="bht-bonus-card-name">{bonus.slotName || bonus.slot?.name}</div>
-                      <div className="bht-bonus-card-bet">{currency}{(Number(bonus.betSize) || 0).toFixed(2)}</div>
+            <div className="bht-bonus-list-track" style={{ '--bht-item-count': bonuses.length }}>
+              {[...bonuses, ...bonuses].map((bonus, i) => {
+                const idx = i % bonuses.length;
+                return (
+                  <div key={`${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
+                    className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
+                    {bonus.slot?.image && (
+                      <img src={bonus.slot.image} alt={bonus.slotName}
+                        className="bht-bonus-card-img"
+                        onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
+                    )}
+                    <div className="bht-bonus-card-overlay">
+                      <div className="bht-bonus-card-bottom">
+                        <div className="bht-bonus-card-info">
+                          <div className="bht-bonus-card-name">{bonus.slotName || bonus.slot?.name}</div>
+                          <div className="bht-bonus-card-bet">{currency}{(Number(bonus.betSize) || 0).toFixed(2)}</div>
+                        </div>
+                        <span className="bht-bonus-card-num">#{idx + 1}</span>
+                      </div>
+                      {bonus.opened && (
+                        <div className="bht-bonus-card-result">
+                          {currency}{(Number(bonus.payout) || 0).toFixed(2)}
+                          <span className="bht-bonus-card-multi">
+                            {((Number(bonus.payout) || 0) / (Number(bonus.betSize) || 1)).toFixed(1)}x
+                          </span>
+                        </div>
+                      )}
                     </div>
-                    <span className="bht-bonus-card-num">#{index + 1}</span>
                   </div>
-                  {bonus.opened && (
-                    <div className="bht-bonus-card-result">
-                      {currency}{(Number(bonus.payout) || 0).toFixed(2)}
-                      <span className="bht-bonus-card-multi">
-                        {((Number(bonus.payout) || 0) / (Number(bonus.betSize) || 1)).toFixed(1)}x
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
         </div>
       )}
