@@ -139,14 +139,25 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
   const showPotential = c.showPotential !== false;
   const showVolatility = c.showVolatility !== false;
   const spinnerColor = c.spinnerColor || '#60a5fa';
+  const previewMode = c.previewMode === true;
 
-  /* ── Hide if bonus opening is not active ── */
-  if (!bonusOpening) return null;
+  /* ── Determine what to display ── */
+  const isLive = bonusOpening && !!currentBonus;
+  const shouldShow = isLive || previewMode;
 
-  /* ── Hide if no current bonus ── */
-  if (!currentBonus) return null;
+  /* ── Hide entirely only when NOT in preview AND not live ── */
+  if (!shouldShow) return null;
 
-  const provider = slotInfo?.provider || currentBonus?.slot?.provider || '';
+  /* ── Demo data for preview mode when no live slot ── */
+  const demoSlotName = 'SWEET BONANZA';
+  const demoProvider = 'PRAGMATIC PLAY';
+  const demoInfo = { rtp: 96.48, max_win_multiplier: 21175, volatility: 'high' };
+
+  const displaySlotName = isLive ? slotName : demoSlotName;
+  const displayProvider = isLive
+    ? (slotInfo?.provider || currentBonus?.slot?.provider || '')
+    : demoProvider;
+  const displayInfo = isLive ? slotInfo : demoInfo;
 
   const rootStyle = {
     fontFamily,
@@ -176,13 +187,18 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
 
   return (
     <div className="oc-widget-inner rtp-stats-bar" style={rootStyle}>
-      <div className="rtp-stats-inner">
+      <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''}`}>
+
+        {/* Preview badge */}
+        {!isLive && previewMode && (
+          <span className="rtp-stats-preview-badge">PREVIEW</span>
+        )}
 
         {/* ═══ Left Section — Provider + Slot Name ═══ */}
         <div className="rtp-stats-left">
-          {showProvider && provider && (
+          {showProvider && displayProvider && (
             <>
-              <span className="rtp-stats-provider">{provider.toUpperCase()}</span>
+              <span className="rtp-stats-provider">{displayProvider.toUpperCase()}</span>
               <div className="rtp-stats-divider" />
             </>
           )}
@@ -193,7 +209,7 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
                 <path d="M22 12A10 10 0 0 1 12 22v-2a8 8 0 0 0 8-8z" />
               </svg>
             )}
-            <span className="rtp-stats-slot-name">{slotName.toUpperCase()}</span>
+            <span className="rtp-stats-slot-name">{(displaySlotName || '').toUpperCase()}</span>
           </div>
         </div>
 
@@ -204,7 +220,7 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
               <span className="rtp-stats-icon">⚡</span>
               <span className="rtp-stats-value">
                 <span className="rtp-stats-label">RTP </span>
-                {slotInfo?.rtp ? `${slotInfo.rtp}%` : '—'}
+                {displayInfo?.rtp ? `${displayInfo.rtp}%` : '—'}
               </span>
             </div>
           )}
@@ -214,7 +230,7 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
               <span className="rtp-stats-icon">⚡</span>
               <span className="rtp-stats-value">
                 <span className="rtp-stats-label">POTENTIAL </span>
-                {fmtMultiplier(slotInfo?.max_win_multiplier)}
+                {fmtMultiplier(displayInfo?.max_win_multiplier)}
               </span>
             </div>
           )}
@@ -224,7 +240,7 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
               <span className="rtp-stats-icon">⚡</span>
               <span className="rtp-stats-value">
                 <span className="rtp-stats-label">VOLATILITY </span>
-                {fmtVolatility(slotInfo?.volatility)}
+                {fmtVolatility(displayInfo?.volatility)}
               </span>
             </div>
           )}

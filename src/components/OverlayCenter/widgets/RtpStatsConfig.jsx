@@ -155,6 +155,15 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
             Toggle which info sections appear on the bar.
           </p>
 
+          <label className="ov-chat-cfg-platform-header" style={{ marginBottom: 10, padding: '8px 10px', borderRadius: 8, background: 'rgba(99,102,241,0.1)', border: '1px solid rgba(99,102,241,0.25)' }}>
+            <input type="checkbox" checked={!!c.previewMode} onChange={e => set('previewMode', e.target.checked)} />
+            <span style={{ fontWeight: 600 }}>👁️ Always Show (Preview Mode)</span>
+          </label>
+          <p className="oc-config-hint" style={{ marginBottom: 12, marginTop: -4, fontSize: 11 }}>
+            When ON, the bar always shows with demo data so you can position and style it.
+            Turn OFF for live — bar will only appear during Bonus Opening.
+          </p>
+
           <label className="ov-chat-cfg-platform-header" style={{ marginBottom: 6 }}>
             <input type="checkbox" checked={c.showProvider !== false} onChange={e => set('showProvider', e.target.checked)} />
             <span>Show Provider Name</span>

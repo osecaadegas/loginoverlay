@@ -361,6 +361,7 @@ registerWidget({
     showRtp: true,
     showPotential: true,
     showVolatility: true,
+    previewMode: true,
     brightness: 100,
     contrast: 100,
     saturation: 100,
