@@ -60,6 +60,8 @@ export default function NavbarWidget({ config }) {
   const time = useClock();
   const [cryptoPrices, setCryptoPrices] = useState({});
   const [nowPlaying, setNowPlaying] = useState(null);
+  const [cryptoIndex, setCryptoIndex] = useState(0);
+  const [cryptoFading, setCryptoFading] = useState(false);
   const spotifyTokenRef = useRef(c.spotify_access_token);
   const spotifyRefreshRef = useRef(c.spotify_refresh_token);
   const spotifyExpiresRef = useRef(c.spotify_expires_at);
@@ -79,6 +81,26 @@ export default function NavbarWidget({ config }) {
     const id = setInterval(poll, 60000);
     return () => clearInterval(id);
   }, [c.showCrypto, c.cryptoCoins?.join(',')]);
+
+  // Crypto carousel / fade cycling
+  const cryptoMode = c.cryptoDisplayMode || 'horizontal';
+  const activeCoins = (c.cryptoCoins || []).filter(coin => cryptoPrices[coin]);
+  useEffect(() => {
+    if (cryptoMode === 'horizontal' || activeCoins.length <= 1) return;
+    const interval = cryptoMode === 'fade' ? 4000 : 3000;
+    const id = setInterval(() => {
+      if (cryptoMode === 'fade') {
+        setCryptoFading(true);
+        setTimeout(() => {
+          setCryptoIndex(prev => (prev + 1) % activeCoins.length);
+          setCryptoFading(false);
+        }, 400);
+      } else {
+        setCryptoIndex(prev => (prev + 1) % activeCoins.length);
+      }
+    }, interval);
+    return () => clearInterval(id);
+  }, [cryptoMode, activeCoins.length]);
 
   // Spotify "Now Playing" polling
   useEffect(() => {
@@ -267,42 +289,19 @@ export default function NavbarWidget({ config }) {
 
           {/* ─── Right: Crypto + CTA ─── */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 16, flexShrink: 0 }}>
-            {c.showCrypto && c.cryptoCoins?.length > 0 && (
+            {c.showCrypto && activeCoins.length > 0 && (
               <>
-                {c.cryptoCoins.map(coin => {
-                  const p = cryptoPrices[coin];
-                  if (!p) return null;
-                  const isUp = p.change >= 0;
-                  const changeColor = isUp ? cryptoUpColor : cryptoDownColor;
-                  return (
-                    <div key={coin} style={{
-                      display: 'flex', alignItems: 'center', gap: 8,
-                      borderRadius: 999, padding: '6px 14px',
-                      border: `1px solid ${changeColor}50`,
-                      background: `linear-gradient(to right, ${bgColor}b3, ${changeColor}15)`,
-                      boxShadow: `0 0 14px ${changeColor}50`,
-                      fontSize: fontSize * 0.82,
-                    }}>
-                      <div style={{
-                        width: 22, height: 22, borderRadius: '50%',
-                        background: `linear-gradient(135deg, #6366f1, #a855f7, ${cryptoUpColor})`,
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontSize: fontSize * 0.9, fontWeight: 900, color: '#fff',
-                      }}>
-                        {CRYPTO_SYMBOLS[coin] || coin[0].toUpperCase()}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-                        <span style={{ fontWeight: 600, color: changeColor }}>
-                          {coin.toUpperCase()} {isUp ? '↑' : '↓'}
-                        </span>
-                        <span style={{ fontSize: fontSize * 0.75, color: changeColor, opacity: 0.9 }}>
-                          ${p.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-                          <span>{isUp ? '+' : ''}{p.change?.toFixed(2)}%</span>
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })}
+                <CryptoTicker
+                  coins={activeCoins}
+                  prices={cryptoPrices}
+                  mode={cryptoMode}
+                  index={cryptoIndex}
+                  fading={cryptoFading}
+                  fontSize={fontSize}
+                  bgColor={bgColor}
+                  cryptoUpColor={cryptoUpColor}
+                  cryptoDownColor={cryptoDownColor}
+                />
                 {c.showCTA && <div style={sep} />}
               </>
             )}
@@ -327,6 +326,99 @@ export default function NavbarWidget({ config }) {
       </div>
     </div>
   );
+}
+
+/* ─── Single Crypto Coin pill ─── */
+function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownColor, style }) {
+  const isUp = price.change >= 0;
+  const changeColor = isUp ? cryptoUpColor : cryptoDownColor;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      borderRadius: 999, padding: '6px 14px',
+      border: `1px solid ${changeColor}50`,
+      background: `linear-gradient(to right, ${bgColor}b3, ${changeColor}15)`,
+      boxShadow: `0 0 14px ${changeColor}50`,
+      fontSize: fontSize * 0.82,
+      flexShrink: 0,
+      ...style,
+    }}>
+      <div style={{
+        width: 22, height: 22, borderRadius: '50%',
+        background: `linear-gradient(135deg, #6366f1, #a855f7, ${cryptoUpColor})`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        fontSize: fontSize * 0.9, fontWeight: 900, color: '#fff',
+      }}>
+        {CRYPTO_SYMBOLS[coin] || coin[0].toUpperCase()}
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
+        <span style={{ fontWeight: 600, color: changeColor }}>
+          {coin.toUpperCase()} {isUp ? '↑' : '↓'}
+        </span>
+        <span style={{ fontSize: fontSize * 0.75, color: changeColor, opacity: 0.9 }}>
+          ${price.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
+          <span>{isUp ? '+' : ''}{price.change?.toFixed(2)}%</span>
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* ─── Crypto Ticker with display modes ─── */
+function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, cryptoUpColor, cryptoDownColor }) {
+  if (mode === 'horizontal') {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        {coins.map(coin => (
+          <CryptoCoin key={coin} coin={coin} price={prices[coin]}
+            fontSize={fontSize} bgColor={bgColor}
+            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
+        ))}
+      </div>
+    );
+  }
+
+  // Carousel — slide through one at a time
+  if (mode === 'carousel') {
+    const safeIdx = index % coins.length;
+    return (
+      <div style={{ overflow: 'hidden', position: 'relative', minWidth: 120 }}>
+        <div style={{
+          display: 'flex',
+          transform: `translateX(-${safeIdx * 100}%)`,
+          transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+        }}>
+          {coins.map(coin => (
+            <div key={coin} style={{ flexShrink: 0, width: '100%' }}>
+              <CryptoCoin coin={coin} price={prices[coin]}
+                fontSize={fontSize} bgColor={bgColor}
+                cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  // Fade — crossfade between coins
+  if (mode === 'fade') {
+    const safeIdx = index % coins.length;
+    const coin = coins[safeIdx];
+    return (
+      <div style={{ position: 'relative', minWidth: 120 }}>
+        <div style={{
+          opacity: fading ? 0 : 1,
+          transition: 'opacity 0.4s ease',
+        }}>
+          <CryptoCoin coin={coin} price={prices[coin]}
+            fontSize={fontSize} bgColor={bgColor}
+            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }
 
 /* ─── Hex to RGB helper ─── */

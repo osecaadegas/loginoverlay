@@ -105,7 +105,7 @@ export default function NavbarConfig({ config, onChange }) {
     'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
     'brightness', 'contrast', 'saturation',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
-    'cryptoCoins', 'ctaText', 'motto',
+    'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto',
   ];
 
   const savePreset = () => {
@@ -213,6 +213,22 @@ export default function NavbarConfig({ config, onChange }) {
 
           {c.showCrypto && (
             <>
+              <h4 className="nb-subtitle">Display Mode</h4>
+              <div className="nb-radio-row" style={{ flexWrap: 'wrap', gap: '8px 16px' }}>
+                {[
+                  { value: 'horizontal', label: 'All Visible (horizontal)' },
+                  { value: 'carousel', label: 'Carousel (slide)' },
+                  { value: 'fade', label: 'Fade (one at a time)' },
+                ].map(m => (
+                  <label key={m.value} className="nb-radio">
+                    <input type="radio" name="cryptoMode" value={m.value}
+                      checked={(c.cryptoDisplayMode || 'horizontal') === m.value}
+                      onChange={() => set('cryptoDisplayMode', m.value)} />
+                    <span>{m.label}</span>
+                  </label>
+                ))}
+              </div>
+
               <h4 className="nb-subtitle">Crypto Coins</h4>
               <div className="nb-crypto-grid">
                 {AVAILABLE_CRYPTOS.map(coin => (
