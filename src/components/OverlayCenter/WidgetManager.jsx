@@ -123,7 +123,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
                     {/* Widget-specific config */}
                     {ConfigPanel && (
-                      <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} />
+                      <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets} />
                     )}
                   </div>
                 )}

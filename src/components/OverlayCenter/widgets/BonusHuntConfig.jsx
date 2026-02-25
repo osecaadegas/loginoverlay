@@ -12,12 +12,42 @@ const FONT_OPTIONS = [
   { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
 ];
 
-export default function BonusHuntConfig({ config, onChange }) {
+export default function BonusHuntConfig({ config, onChange, allWidgets }) {
   const c = config || {};
   const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('content');
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
+
+  // Find navbar widget config for sync
+  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
+
+  const syncFromNavbar = () => {
+    if (!navbarConfig) return;
+    const nb = navbarConfig;
+    setMulti({
+      headerColor: nb.bgColor || '#111318',
+      headerAccent: nb.accentColor || '#f59e0b',
+      countCardColor: nb.bgColor || '#111318',
+      currentBonusColor: nb.bgColor || '#111318',
+      currentBonusAccent: nb.accentColor || '#f59e0b',
+      listCardColor: nb.bgColor || '#111318',
+      listCardAccent: nb.accentColor || '#f59e0b',
+      summaryColor: nb.bgColor || '#111318',
+      totalPayColor: nb.accentColor || '#f59e0b',
+      totalPayText: nb.textColor || '#f1f5f9',
+      superBadgeColor: nb.ctaColor || '#f43f5e',
+      extremeBadgeColor: nb.ctaColor || '#f43f5e',
+      textColor: nb.textColor || '#f1f5f9',
+      mutedTextColor: nb.mutedColor || '#94a3b8',
+      statValueColor: nb.textColor || '#f1f5f9',
+      fontFamily: nb.fontFamily || "'Inter', sans-serif",
+      fontSize: nb.fontSize ?? 13,
+      ...(nb.brightness != null && { brightness: nb.brightness }),
+      ...(nb.contrast != null && { contrast: nb.contrast }),
+      ...(nb.saturation != null && { saturation: nb.saturation }),
+    });
+  };
 
   // ─── Preset system ───
   const [presetName, setPresetName] = useState('');
@@ -111,6 +141,11 @@ export default function BonusHuntConfig({ config, onChange }) {
       {/* ═══════ STYLE TAB ═══════ */}
       {activeTab === 'style' && (
         <div className="nb-section">
+          {navbarConfig && (
+            <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ marginBottom: 12, width: '100%' }} onClick={syncFromNavbar}>
+              🔗 Sync Colors from Navbar
+            </button>
+          )}
           <h4 className="nb-subtitle">Card Colors</h4>
           <div className="nb-color-grid">
             <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
