@@ -195,8 +195,8 @@ export default function NavbarWidget({ config }) {
             {c.showAvatar !== false && (
               <div style={{
                 position: 'relative',
-                width: barHeight * 0.72,
-                height: barHeight * 0.72,
+                width: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
+                height: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
                 borderRadius: '50%',
                 background: `linear-gradient(135deg, ${accentColor}, ${accentColor}88)`,
                 boxShadow: `0 0 20px ${accentColor}cc`,
@@ -253,7 +253,7 @@ export default function NavbarWidget({ config }) {
                 height: barHeight, flexShrink: 0, padding: '2px 0',
               }}>
                 <img src={c.badgeImage} alt="" style={{
-                  height: barHeight * 0.85, minWidth: barHeight * 1.2, objectFit: 'contain',
+                  height: barHeight * 0.85 * ((c.badgeSize ?? 100) / 100), minWidth: barHeight * 1.2 * ((c.badgeSize ?? 100) / 100), objectFit: 'contain',
                   filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
                 }} />
               </div>

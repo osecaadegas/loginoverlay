@@ -106,6 +106,7 @@ export default function NavbarConfig({ config, onChange }) {
     'brightness', 'contrast', 'saturation',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
     'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
+    'avatarSize', 'badgeSize',
   ];
 
   const savePreset = () => {
@@ -352,6 +353,10 @@ export default function NavbarConfig({ config, onChange }) {
             onChange={v => set('borderRadius', v)} />
           <SliderField label="Max Width" value={c.maxWidth ?? 1200} min={600} max={3840} step={10} unit="px"
             onChange={v => set('maxWidth', v)} />
+          <SliderField label="Avatar Size" value={c.avatarSize ?? 100} min={50} max={200} step={5} unit="%"
+            onChange={v => set('avatarSize', v)} />
+          <SliderField label="Badge Size" value={c.badgeSize ?? 100} min={50} max={200} step={5} unit="%"
+            onChange={v => set('badgeSize', v)} />
         </div>
       )}
 
