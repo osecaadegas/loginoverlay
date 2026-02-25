@@ -168,12 +168,8 @@ export default function NavbarWidget({ config }) {
   };
 
   return (
-    <div style={{
-      position: 'fixed', top: 16, left: 0, width: '100vw',
-      display: 'flex', justifyContent: 'center',
-      pointerEvents: 'none', zIndex: 9999,
-    }}>
-      <div style={{ ...barOuter, pointerEvents: 'auto' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
+      <div style={barOuter}>
         <div style={barInner}>
 
           {/* ─── Left: Avatar + Name + Motto ─── */}

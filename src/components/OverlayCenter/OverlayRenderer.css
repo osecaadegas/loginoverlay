@@ -18,7 +18,7 @@
   position: relative;
   width: 1920px;
   height: 1080px;
-  overflow: hidden;
+  overflow: visible;
   background: transparent;
   font-family: var(--ov-font, 'Inter', sans-serif);
   color: var(--ov-text, #ffffff);

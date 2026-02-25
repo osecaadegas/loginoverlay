@@ -134,6 +134,26 @@ export default function ThemeEditor({ theme, onSave }) {
         </div>
       </section>
 
+      {/* Canvas Resolution */}
+      <section className="oc-theme-section">
+        <h3 className="oc-theme-section-title">Canvas Resolution</h3>
+        <p className="oc-config-hint" style={{ marginBottom: 8, fontSize: 11, color: '#94a3b8' }}>
+          Match this to your OBS Browser Source size.
+        </p>
+        <div className="oc-texture-row">
+          {[
+            { w: 1920, h: 1080, label: '1920×1080' },
+            { w: 2560, h: 1440, label: '2560×1440' },
+          ].map(r => (
+            <button
+              key={r.label}
+              className={`oc-texture-btn ${(draft.canvas_width || 1920) === r.w ? 'oc-texture-btn--active' : ''}`}
+              onClick={() => { update('canvas_width', r.w); update('canvas_height', r.h); }}
+            >{r.label}</button>
+          ))}
+        </div>
+      </section>
+
       {/* Custom CSS */}
       <section className="oc-theme-section">
         <h3 className="oc-theme-section-title">Custom CSS</h3>

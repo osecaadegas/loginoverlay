@@ -142,8 +142,16 @@ export default function OverlayRenderer() {
   if (error) return null; // blank for OBS
   if (!userId) return null; // still loading
 
+  // Dynamic canvas size from theme (default 1920×1080)
+  const canvasWidth = theme?.canvas_width || 1920;
+  const canvasHeight = theme?.canvas_height || 1080;
+
   return (
-    <div className="or-canvas" style={themeVars}>
+    <div className="or-canvas" style={{
+      ...themeVars,
+      width: canvasWidth,
+      height: canvasHeight,
+    }}>
       {customCSS && <style>{customCSS}</style>}
 
       {/* Texture overlay */}
