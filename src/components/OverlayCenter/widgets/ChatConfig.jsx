@@ -1,23 +1,26 @@
 import React, { useState } from 'react';
 
 const FONT_OPTIONS = [
-  "'Inter', sans-serif",
-  "'Roboto', sans-serif",
-  "'Poppins', sans-serif",
-  "'Montserrat', sans-serif",
-  "'Fira Code', monospace",
-  "'JetBrains Mono', monospace",
-  "'Arial', sans-serif",
-  "'Georgia', serif",
+  { value: "'Inter', sans-serif", label: 'Inter' },
+  { value: "'Roboto', sans-serif", label: 'Roboto' },
+  { value: "'Poppins', sans-serif", label: 'Poppins' },
+  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
+  { value: "'Oswald', sans-serif", label: 'Oswald' },
+  { value: "'Fira Code', monospace", label: 'Fira Code' },
+  { value: "'JetBrains Mono', monospace", label: 'JetBrains Mono' },
+  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
+  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
+  { value: "'Arial', sans-serif", label: 'Arial' },
+  { value: "'Georgia', serif", label: 'Georgia' },
 ];
 
 export default function ChatConfig({ config, onChange, allWidgets }) {
   const c = config || {};
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
-  const [expandedSection, setExpandedSection] = useState('platforms');
+  const [activeTab, setActiveTab] = useState('platforms');
 
-  // Find navbar widget config for sync
+  // ─── Navbar sync ───
   const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
 
   const syncFromNavbar = () => {
@@ -34,157 +37,283 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
     });
   };
 
-  const toggle = (section) => setExpandedSection(expandedSection === section ? '' : section);
+  // ─── Preset system ───
+  const [presetName, setPresetName] = useState('');
+  const PRESET_KEYS = [
+    'bgColor', 'textColor', 'headerBg', 'headerText', 'borderColor',
+    'fontFamily', 'fontSize', 'useNativeColors',
+    'width', 'height', 'borderRadius', 'msgSpacing', 'maxMessages',
+    'showHeader', 'showLegend',
+    'brightness', 'contrast', 'saturation',
+  ];
 
-  const Section = ({ id, icon, title, children }) => (
-    <div className="ov-chat-cfg-section">
-      <button className="ov-chat-cfg-section-toggle" onClick={() => toggle(id)}>
-        <span>{icon} {title}</span>
-        <span>{expandedSection === id ? '▾' : '▸'}</span>
-      </button>
-      {expandedSection === id && <div className="ov-chat-cfg-section-body">{children}</div>}
-    </div>
-  );
+  const savePreset = () => {
+    const name = presetName.trim();
+    if (!name) return;
+    const snapshot = {};
+    PRESET_KEYS.forEach(k => { if (c[k] !== undefined) snapshot[k] = c[k]; });
+    const existing = c.chatPresets || [];
+    const idx = existing.findIndex(p => p.name === name);
+    const updated = idx >= 0
+      ? existing.map((p, i) => i === idx ? { name, values: snapshot, savedAt: Date.now() } : p)
+      : [...existing, { name, values: snapshot, savedAt: Date.now() }];
+    set('chatPresets', updated);
+    setPresetName('');
+  };
+
+  const loadPreset = (preset) => setMulti(preset.values);
+  const deletePreset = (name) => set('chatPresets', (c.chatPresets || []).filter(p => p.name !== name));
+
+  const tabs = [
+    { id: 'platforms', label: '📡 Platforms' },
+    { id: 'style', label: '🎨 Style' },
+    { id: 'layout', label: '📐 Layout' },
+    { id: 'filters', label: '✨ Filters' },
+    { id: 'presets', label: '💾 Presets' },
+  ];
 
   return (
-    <div className="ov-chat-cfg">
-      {/* ─── Platforms ─── */}
-      <Section id="platforms" icon="📡" title="Platforms & Channels">
-        {/* Twitch */}
-        <div className="ov-chat-cfg-platform">
-          <label className="ov-chat-cfg-platform-header">
-            <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} />
-            <span className="ov-chat-cfg-platform-dot" style={{ background: '#a855f7' }} />
-            <span>Twitch</span>
-          </label>
-          {c.twitchEnabled && (
-            <div className="ov-chat-cfg-platform-fields">
-              <label className="oc-config-field">
-                <span>Channel</span>
-                <input value={c.twitchChannel || ''} onChange={e => set('twitchChannel', e.target.value)} placeholder="e.g. xQc" />
-              </label>
-            </div>
-          )}
-        </div>
-
-        {/* YouTube */}
-        <div className="ov-chat-cfg-platform">
-          <label className="ov-chat-cfg-platform-header">
-            <input type="checkbox" checked={!!c.youtubeEnabled} onChange={e => set('youtubeEnabled', e.target.checked)} />
-            <span className="ov-chat-cfg-platform-dot" style={{ background: '#ef4444' }} />
-            <span>YouTube</span>
-          </label>
-          {c.youtubeEnabled && (
-            <div className="ov-chat-cfg-platform-fields">
-              <label className="oc-config-field">
-                <span>Video ID</span>
-                <input value={c.youtubeVideoId || ''} onChange={e => set('youtubeVideoId', e.target.value)} placeholder="Live stream video ID" />
-              </label>
-              <label className="oc-config-field">
-                <span>API Key</span>
-                <input type="password" value={c.youtubeApiKey || ''} onChange={e => set('youtubeApiKey', e.target.value)} placeholder="YouTube Data API key" />
-              </label>
-            </div>
-          )}
-        </div>
-
-        {/* Kick */}
-        <div className="ov-chat-cfg-platform">
-          <label className="ov-chat-cfg-platform-header">
-            <input type="checkbox" checked={!!c.kickEnabled} onChange={e => set('kickEnabled', e.target.checked)} />
-            <span className="ov-chat-cfg-platform-dot" style={{ background: '#22c55e' }} />
-            <span>Kick</span>
-          </label>
-          {c.kickEnabled && (
-            <div className="ov-chat-cfg-platform-fields">
-              <label className="oc-config-field">
-                <span>Channel ID</span>
-                <input value={c.kickChannelId || ''} onChange={e => set('kickChannelId', e.target.value)} placeholder="Kick chatroom ID (number)" />
-              </label>
-            </div>
-          )}
-        </div>
-      </Section>
-
-      {/* ─── Appearance ─── */}
-      <Section id="appearance" icon="🎨" title="Colors & Fonts">
-        {navbarConfig && (
-          <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ marginBottom: 12, width: '100%' }} onClick={syncFromNavbar}>
-            🔗 Sync Colors from Navbar
+    <div className="bh-config">
+      {/* Tab nav */}
+      <div className="nb-tabs" style={{ marginTop: 4 }}>
+        {tabs.map(t => (
+          <button key={t.id}
+            className={`nb-tab ${activeTab === t.id ? 'nb-tab--active' : ''}`}
+            onClick={() => setActiveTab(t.id)}>
+            {t.label}
           </button>
-        )}
-        <label className="oc-config-field">
-          <span>Background</span>
-          <input type="color" value={c.bgColor || '#0f172a'} onChange={e => set('bgColor', e.target.value)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Text Color</span>
-          <input type="color" value={c.textColor || '#e2e8f0'} onChange={e => set('textColor', e.target.value)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Header BG</span>
-          <input type="color" value={c.headerBg || '#1e293b'} onChange={e => set('headerBg', e.target.value)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Header Text</span>
-          <input type="color" value={c.headerText || '#94a3b8'} onChange={e => set('headerText', e.target.value)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Border Color</span>
-          <input type="color" value={c.borderColor || '#334155'} onChange={e => set('borderColor', e.target.value)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Font</span>
-          <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-            {FONT_OPTIONS.map(f => <option key={f} value={f} style={{ fontFamily: f }}>{f.split("'")[1] || f}</option>)}
-          </select>
-        </label>
-        <label className="oc-config-field">
-          <span>Font Size</span>
-          <input type="number" min={8} max={24} value={c.fontSize || 13} onChange={e => set('fontSize', parseInt(e.target.value) || 13)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Use Native Colors</span>
-          <input type="checkbox" checked={!!c.useNativeColors} onChange={e => set('useNativeColors', e.target.checked)} />
-        </label>
-      </Section>
+        ))}
+      </div>
 
-      {/* ─── Sizing ─── */}
-      <Section id="sizing" icon="📐" title="Size & Layout">
-        <label className="oc-config-field">
-          <span>Width (px)</span>
-          <input type="number" min={150} max={800} value={c.width || 350} onChange={e => set('width', parseInt(e.target.value) || 350)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Height (px)</span>
-          <input type="number" min={150} max={1200} value={c.height || 500} onChange={e => set('height', parseInt(e.target.value) || 500)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Border Radius</span>
-          <input type="number" min={0} max={50} value={c.borderRadius || 12} onChange={e => set('borderRadius', parseInt(e.target.value) || 12)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Msg Spacing (px)</span>
-          <input type="number" min={0} max={12} value={c.msgSpacing || 2} onChange={e => set('msgSpacing', parseInt(e.target.value) || 2)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Max Messages</span>
-          <input type="number" min={5} max={200} value={c.maxMessages || 50} onChange={e => set('maxMessages', parseInt(e.target.value) || 50)} />
-        </label>
-      </Section>
+      {/* ═══════ PLATFORMS TAB ═══════ */}
+      {activeTab === 'platforms' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Platforms & Channels</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Enable platforms and provide channel credentials for each.
+          </p>
 
-      {/* ─── Display ─── */}
-      <Section id="display" icon="👁️" title="Display Options">
-        <label className="oc-config-field">
-          <span>Show Header</span>
-          <input type="checkbox" checked={c.showHeader !== false} onChange={e => set('showHeader', e.target.checked)} />
-        </label>
-        <label className="oc-config-field">
-          <span>Show Legend</span>
-          <input type="checkbox" checked={c.showLegend !== false} onChange={e => set('showLegend', e.target.checked)} />
-        </label>
-      </Section>
+          {/* Twitch */}
+          <div className="ov-chat-cfg-platform">
+            <label className="ov-chat-cfg-platform-header">
+              <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: '#a855f7' }} />
+              <span>Twitch</span>
+            </label>
+            {c.twitchEnabled && (
+              <div className="ov-chat-cfg-platform-fields">
+                <label className="nb-field">
+                  <span>Channel Name</span>
+                  <input value={c.twitchChannel || ''} onChange={e => set('twitchChannel', e.target.value)} placeholder="e.g. xQc" />
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* YouTube */}
+          <div className="ov-chat-cfg-platform">
+            <label className="ov-chat-cfg-platform-header">
+              <input type="checkbox" checked={!!c.youtubeEnabled} onChange={e => set('youtubeEnabled', e.target.checked)} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: '#ef4444' }} />
+              <span>YouTube</span>
+            </label>
+            {c.youtubeEnabled && (
+              <div className="ov-chat-cfg-platform-fields">
+                <label className="nb-field">
+                  <span>Video ID</span>
+                  <input value={c.youtubeVideoId || ''} onChange={e => set('youtubeVideoId', e.target.value)} placeholder="Live stream video ID" />
+                </label>
+                <label className="nb-field">
+                  <span>API Key</span>
+                  <input type="password" value={c.youtubeApiKey || ''} onChange={e => set('youtubeApiKey', e.target.value)} placeholder="YouTube Data API key" />
+                </label>
+              </div>
+            )}
+          </div>
+
+          {/* Kick */}
+          <div className="ov-chat-cfg-platform">
+            <label className="ov-chat-cfg-platform-header">
+              <input type="checkbox" checked={!!c.kickEnabled} onChange={e => set('kickEnabled', e.target.checked)} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: '#22c55e' }} />
+              <span>Kick</span>
+            </label>
+            {c.kickEnabled && (
+              <div className="ov-chat-cfg-platform-fields">
+                <label className="nb-field">
+                  <span>Chatroom ID</span>
+                  <input value={c.kickChannelId || ''} onChange={e => set('kickChannelId', e.target.value)} placeholder="Kick chatroom ID (number)" />
+                </label>
+              </div>
+            )}
+          </div>
+
+          <h4 className="nb-subtitle">Display</h4>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <input type="checkbox" checked={c.showHeader !== false} onChange={e => set('showHeader', e.target.checked)} />
+            <span>Show Header Bar</span>
+          </label>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <input type="checkbox" checked={c.showLegend !== false} onChange={e => set('showLegend', e.target.checked)} />
+            <span>Show Platform Legend</span>
+          </label>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <input type="checkbox" checked={!!c.useNativeColors} onChange={e => set('useNativeColors', e.target.checked)} />
+            <span>Use Native Username Colors</span>
+          </label>
+        </div>
+      )}
+
+      {/* ═══════ STYLE TAB ═══════ */}
+      {activeTab === 'style' && (
+        <div className="nb-section">
+          {navbarConfig && (
+            <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ marginBottom: 12, width: '100%' }} onClick={syncFromNavbar}>
+              🔗 Sync Colors from Navbar
+            </button>
+          )}
+
+          <h4 className="nb-subtitle">Widget Colors</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Background" value={c.bgColor || '#0f172a'} onChange={v => set('bgColor', v)} />
+            <ColorPicker label="Text Color" value={c.textColor || '#e2e8f0'} onChange={v => set('textColor', v)} />
+            <ColorPicker label="Border" value={c.borderColor || '#334155'} onChange={v => set('borderColor', v)} />
+          </div>
+
+          <h4 className="nb-subtitle">Header Colors</h4>
+          <div className="nb-color-grid">
+            <ColorPicker label="Header BG" value={c.headerBg || '#1e293b'} onChange={v => set('headerBg', v)} />
+            <ColorPicker label="Header Text" value={c.headerText || '#94a3b8'} onChange={v => set('headerText', v)} />
+          </div>
+
+          <h4 className="nb-subtitle">Typography</h4>
+          <label className="nb-field">
+            <span>Font Family</span>
+            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
+          </label>
+          <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={24} step={1} unit="px"
+            onChange={v => set('fontSize', v)} />
+        </div>
+      )}
+
+      {/* ═══════ LAYOUT TAB ═══════ */}
+      {activeTab === 'layout' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Dimensions</h4>
+          <SliderField label="Width" value={c.width ?? 350} min={150} max={800} step={10} unit="px"
+            onChange={v => set('width', v)} />
+          <SliderField label="Height" value={c.height ?? 500} min={150} max={1200} step={10} unit="px"
+            onChange={v => set('height', v)} />
+          <SliderField label="Border Radius" value={c.borderRadius ?? 12} min={0} max={50} step={1} unit="px"
+            onChange={v => set('borderRadius', v)} />
+
+          <h4 className="nb-subtitle">Messages</h4>
+          <SliderField label="Msg Spacing" value={c.msgSpacing ?? 2} min={0} max={12} step={1} unit="px"
+            onChange={v => set('msgSpacing', v)} />
+          <SliderField label="Max Messages" value={c.maxMessages ?? 50} min={5} max={200} step={5} unit=""
+            onChange={v => set('maxMessages', v)} />
+        </div>
+      )}
+
+      {/* ═══════ FILTERS TAB ═══════ */}
+      {activeTab === 'filters' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Image Filters</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 12 }}>
+            Adjust the overall look of the chat widget on the OBS overlay.
+          </p>
+          <SliderField label="Brightness" value={c.brightness ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('brightness', v)} />
+          <SliderField label="Contrast" value={c.contrast ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('contrast', v)} />
+          <SliderField label="Saturation" value={c.saturation ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('saturation', v)} />
+
+          <button className="oc-btn oc-btn--sm" style={{ marginTop: 12 }}
+            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
+            Reset Filters
+          </button>
+        </div>
+      )}
+
+      {/* ═══════ PRESETS TAB ═══════ */}
+      {activeTab === 'presets' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Save Current Style</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Save your current colors, fonts, dimensions and filters as a reusable preset.
+          </p>
+          <div className="nb-preset-save-row">
+            <input
+              className="nb-preset-input"
+              value={presetName}
+              onChange={e => setPresetName(e.target.value)}
+              placeholder="Preset name..."
+              maxLength={30}
+              onKeyDown={e => e.key === 'Enter' && savePreset()}
+            />
+            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>
+              💾 Save
+            </button>
+          </div>
+
+          <h4 className="nb-subtitle">Saved Presets</h4>
+          {(!c.chatPresets || c.chatPresets.length === 0) ? (
+            <p className="oc-config-hint">No presets saved yet. Customize your style and save it above.</p>
+          ) : (
+            <div className="nb-preset-list">
+              {c.chatPresets.map(p => (
+                <div key={p.name} className="nb-preset-card">
+                  <div className="nb-preset-info">
+                    <span className="nb-preset-name">{p.name}</span>
+                    <span className="nb-preset-date">
+                      {p.savedAt ? new Date(p.savedAt).toLocaleDateString() : ''}
+                    </span>
+                    <div className="nb-preset-swatches">
+                      {['bgColor', 'headerBg', 'textColor', 'borderColor'].map(k =>
+                        p.values[k] ? (
+                          <span key={k} className="nb-preset-swatch" style={{ background: p.values[k] }} title={k} />
+                        ) : null
+                      )}
+                    </div>
+                  </div>
+                  <div className="nb-preset-actions">
+                    <button className="oc-btn oc-btn--sm oc-btn--primary" onClick={() => loadPreset(p)}>Load</button>
+                    <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => deletePreset(p.name)}>🗑️</button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
 
+/* ─── Helper: ColorPicker ─── */
+function ColorPicker({ label, value, onChange }) {
+  return (
+    <label className="nb-color-field">
+      <input type="color" value={value} onChange={e => onChange(e.target.value)} />
+      <span className="nb-color-label">{label}</span>
+      <span className="nb-color-hex">{value}</span>
+    </label>
+  );
+}
+
+/* ─── Helper: SliderField ─── */
+function SliderField({ label, value, min, max, step, unit, onChange }) {
+  return (
+    <div className="nb-slider-field">
+      <div className="nb-slider-head">
+        <span>{label}</span>
+        <span className="nb-slider-val">{value}{unit}</span>
+      </div>
+      <input type="range" min={min} max={max} step={step} value={value}
+        onChange={e => onChange(Number(e.target.value))} />
+    </div>
+  );
+}

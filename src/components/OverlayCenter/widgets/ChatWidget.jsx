@@ -202,6 +202,13 @@ export default function ChatWidget({ config, theme }) {
   if (c.youtubeEnabled) enabledPlatforms.push('youtube');
   if (c.kickEnabled) enabledPlatforms.push('kick');
 
+  const brightness = c.brightness ?? 100;
+  const contrast = c.contrast ?? 100;
+  const saturation = c.saturation ?? 100;
+  const filterStyle = (brightness !== 100 || contrast !== 100 || saturation !== 100)
+    ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+    : undefined;
+
   const style = {
     width: `${width}px`,
     height: `${height}px`,
@@ -214,6 +221,7 @@ export default function ChatWidget({ config, theme }) {
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
+    filter: filterStyle,
   };
 
   return (
