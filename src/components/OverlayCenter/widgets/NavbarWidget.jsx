@@ -162,6 +162,7 @@ export default function NavbarWidget({ config }) {
     boxShadow: `0 18px 40px rgba(0,0,0,0.8)`,
     filter: filterStr,
     fontFamily,
+    overflow: 'visible',
   };
 
   const barInner = {
