@@ -15,7 +15,7 @@ export default function TournamentWidget({ config, theme }) {
   const matches = data.matches || [];
 
   /* ─── Style config ─── */
-  const bgColor = c.bgColor || '#13151e';
+  const bgColor = c.bgColor || 'transparent';
   const cardBg = c.cardBg || '#1a1d2e';
   const cardBorder = c.cardBorder || 'rgba(255,255,255,0.08)';
   const cardRadius = c.cardRadius ?? 12;
@@ -35,8 +35,8 @@ export default function TournamentWidget({ config, theme }) {
   const slotNameSize = c.slotNameSize ?? 11;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const borderRadius = c.borderRadius ?? 14;
-  const borderWidth = c.borderWidth ?? 1;
-  const borderColor = c.borderColor || 'rgba(255,255,255,0.06)';
+  const borderWidth = c.borderWidth ?? 0;
+  const borderColor = c.borderColor || 'transparent';
   const gap = c.cardGap ?? 12;
   const padding = c.containerPadding ?? 14;
   const swordColor = c.swordColor || '#eab308';
