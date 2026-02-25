@@ -1,0 +1,251 @@
+import React, { useMemo } from 'react';
+
+/**
+ * BonusHuntWidgetV2 — Style 2: Sleek dark slate design with progress bar & horizontal slot list.
+ * Reads from the same config shape as V1.
+ */
+export default function BonusHuntWidgetV2({ config, theme }) {
+  const c = config || {};
+  const bonuses = c.bonuses || [];
+  const currency = c.currency || '€';
+  const startMoney = Number(c.startMoney) || 0;
+
+  /* ─── Derived stats ─── */
+  const stats = useMemo(() => {
+    const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const openedBonuses = bonuses.filter(b => b.opened);
+    const totalBetOpened = openedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const totalWin = openedBonuses.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
+    const superCount = bonuses.filter(b => b.isSuperBonus).length;
+    const extremeCount = bonuses.filter(b => b.isExtreme).length;
+
+    // Overall breakeven: start / sum(all bets)
+    const overallBE = totalBetAll > 0 ? startMoney / totalBetAll : 0;
+    // Average multi on opened bonuses
+    const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
+    // Remaining BE: what's still needed / remaining bets
+    const remaining = Math.max(startMoney - totalWin, 0);
+    const currentBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
+
+    return {
+      totalBetAll, totalWin, superCount, extremeCount,
+      overallBE, avgMulti, currentBE,
+      openedCount: openedBonuses.length,
+    };
+  }, [bonuses, startMoney]);
+
+  const fmt = (v) => `${currency}${v.toFixed(2)}`;
+  const fmtX = (v) => (!Number.isFinite(v) || v <= 0) ? '0.00x' : `${v.toFixed(2)}x`;
+
+  /* Current bonus = first unopened */
+  const currentBonus = bonuses.find(b => !b.opened);
+  const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
+
+  if (!c.huntActive && bonuses.length === 0) {
+    return (
+      <div className="oc-widget-inner oc-bonushunt">
+        <p className="oc-widget-empty">No active bonus hunt</p>
+      </div>
+    );
+  }
+
+  const activeMultiX = currentBonus && currentBonus.opened && Number(currentBonus.betSize) > 0
+    ? (Number(currentBonus.payout) || 0) / Number(currentBonus.betSize) : 0;
+
+  const progressPct = bonuses.length > 0 ? (stats.openedCount / bonuses.length) * 100 : 0;
+
+  return (
+    <div className="oc-widget-inner oc-bonushunt bht2-root">
+
+      {/* ═══ Session Header ═══ */}
+      <section className="bht2-card bht2-header">
+        <div className="bht2-header-top">
+          <div className="bht2-header-left">
+            <div className="bht2-icon">
+              <div className="bht2-icon-inner">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 12a9 9 0 1 1-3.68-7.21" /><polyline points="21 3 21 9 15 9" />
+                </svg>
+              </div>
+            </div>
+            <div>
+              <div className="bht2-label-sm">Bonus Opening</div>
+              <div className="bht2-label-xs">Session Tracker</div>
+            </div>
+          </div>
+          <span className="bht2-tag-muted">#{bonuses.length}</span>
+        </div>
+
+        <div className="bht2-header-stats">
+          <div className="bht2-stat-tile">
+            <div className="bht2-stat-tile-label">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="9 11 12 14 22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+              </svg>
+              Start
+            </div>
+            <div className="bht2-stat-tile-value">{fmt(startMoney)}</div>
+          </div>
+          <div className="bht2-stat-tile">
+            <div className="bht2-stat-tile-label bht2-accent-green">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><path d="M4 12h16" /><path d="M12 4a8 8 0 0 1 0 16" />
+              </svg>
+              Breakeven
+            </div>
+            <div className="bht2-stat-tile-value bht2-accent-green">{fmtX(stats.overallBE)}</div>
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ Bonuses Summary ═══ */}
+      <section className="bht2-card bht2-summary">
+        <div className="bht2-summary-top">
+          <div className="bht2-summary-left">
+            <span className="bht2-label-sm">Bonuses</span>
+            <span className="bht2-pill">{bonuses.length}</span>
+          </div>
+          <div className="bht2-label-xs">Opened {stats.openedCount}/{bonuses.length}</div>
+        </div>
+        <div className="bht2-badges">
+          <span className="bht2-badge bht2-badge--super">
+            <span className="bht2-badge-dot bht2-badge-dot--super" />
+            Super <strong>{stats.superCount}</strong>
+          </span>
+          <span className="bht2-badge bht2-badge--extreme">
+            <span className="bht2-badge-dot bht2-badge-dot--extreme" />
+            Extreme <strong>{stats.extremeCount}</strong>
+          </span>
+        </div>
+        <div className="bht2-progress-track">
+          <div className="bht2-progress-fill" style={{ width: `${progressPct}%` }} />
+        </div>
+      </section>
+
+      {/* ═══ Active Bonus ═══ */}
+      {currentBonus && (
+        <section className="bht2-card bht2-active">
+          <div className="bht2-active-top">
+            {currentBonus.slot?.image && (
+              <img src={currentBonus.slot.image} alt={currentBonus.slotName}
+                className="bht2-active-img"
+                onError={e => { e.target.style.display = 'none'; }} />
+            )}
+            <div className="bht2-active-info">
+              <div className="bht2-active-header">
+                <div className="bht2-label-sm bht2-accent-sky">{currentBonus.slotName}</div>
+                <div className="bht2-label-xs">#{currentIndex + 1}</div>
+              </div>
+              <div className="bht2-active-mini-stats">
+                <div className="bht2-mini-tile">
+                  <span className="bht2-mini-label">Win</span>
+                  <span className="bht2-mini-value">{currentBonus.opened ? fmt(Number(currentBonus.payout) || 0) : '—'}</span>
+                </div>
+                <div className="bht2-mini-tile">
+                  <span className="bht2-mini-label">Multi</span>
+                  <span className="bht2-mini-value bht2-accent-green">{fmtX(activeMultiX)}</span>
+                </div>
+                <div className="bht2-mini-tile">
+                  <span className="bht2-mini-label">Bet</span>
+                  <span className="bht2-mini-value">{fmt(Number(currentBonus.betSize) || 0)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* ═══ Vertical Slot Carousel ═══ */}
+      {bonuses.length > 0 && (
+        <section className="bht2-card bht2-carousel">
+          <div className="bht2-carousel-header">
+            <div className="bht2-summary-left">
+              <span className="bht2-label-sm">Slots</span>
+              <span className="bht2-pill">{(currentIndex >= 0 ? currentIndex + 1 : stats.openedCount)}/{bonuses.length}</span>
+            </div>
+          </div>
+          <div className="bht2-slot-list">
+            {bonuses.map((bonus, index) => {
+              const isActive = index === currentIndex;
+              const isOpened = bonus.opened;
+              const multiX = isOpened && Number(bonus.betSize) > 0
+                ? (Number(bonus.payout) || 0) / Number(bonus.betSize) : 0;
+
+              return (
+                <div key={bonus.id || index}
+                  className={`bht2-slot-row ${isActive ? 'bht2-slot-row--active' : ''} ${isOpened ? '' : 'bht2-slot-row--locked'}`}>
+                  <div className="bht2-slot-img-wrap">
+                    {bonus.slot?.image ? (
+                      <img src={bonus.slot.image} alt={bonus.slotName}
+                        className={`bht2-slot-img ${!isOpened ? 'bht2-slot-img--grey' : ''}`}
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div className="bht2-slot-img-placeholder" />
+                    )}
+                  </div>
+                  <div className="bht2-slot-info">
+                    <div className="bht2-slot-top-row">
+                      <div className="bht2-slot-name-col">
+                        <span className="bht2-slot-name">{bonus.slotName || bonus.slot?.name}</span>
+                        <span className="bht2-slot-bet">{fmt(Number(bonus.betSize) || 0)}</span>
+                      </div>
+                      <span className="bht2-slot-num">#{index + 1}</span>
+                    </div>
+                    <div className="bht2-slot-bottom-row">
+                      <div className="bht2-slot-stat-col">
+                        <span className="bht2-slot-stat-label">{isOpened ? 'Win' : 'Locked'}</span>
+                        <span className="bht2-slot-stat-val">{isOpened ? fmt(Number(bonus.payout) || 0) : '—'}</span>
+                      </div>
+                      <div className="bht2-slot-stat-col bht2-slot-stat-col--right">
+                        <span className="bht2-slot-stat-label">Multi</span>
+                        <span className={`bht2-slot-stat-val ${multiX >= 100 ? 'bht2-accent-green' : multiX >= 50 ? 'bht2-accent-amber' : ''}`}>
+                          {fmtX(multiX)}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+      )}
+
+      {/* ═══ Footer Stats ═══ */}
+      {c.showStatistics !== false && (
+        <section className="bht2-card bht2-footer">
+          <div className="bht2-footer-stats">
+            <div className="bht2-footer-stat">
+              <div className="bht2-footer-stat-label">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 3v18h18" /><path d="M7 14l4-4 4 4 4-6" />
+                </svg>
+                Average
+              </div>
+              <span className="bht2-footer-stat-val">{fmtX(stats.avgMulti)}</span>
+            </div>
+            <div className="bht2-footer-stat">
+              <div className="bht2-footer-stat-label bht2-accent-green">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" />
+                </svg>
+                Breakeven
+              </div>
+              <span className="bht2-footer-stat-val bht2-accent-green">{fmtX(stats.currentBE)}</span>
+            </div>
+          </div>
+          <div className="bht2-total-bar">
+            <div className="bht2-total-left">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path d="M12 8v8" />
+              </svg>
+              Total Pay
+            </div>
+            <span className="bht2-total-value">{fmt(stats.totalWin)}</span>
+          </div>
+        </section>
+      )}
+    </div>
+  );
+}

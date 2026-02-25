@@ -1,6 +1,12 @@
 import React, { useMemo } from 'react';
+import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
 
 export default function BonusHuntWidget({ config, theme }) {
+  /* ─── Style switcher ─── */
+  if ((config || {}).displayStyle === 'v2') {
+    return <BonusHuntWidgetV2 config={config} theme={theme} />;
+  }
+
   const c = config || {};
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';

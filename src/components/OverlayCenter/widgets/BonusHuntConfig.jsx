@@ -14,6 +14,13 @@ export default function BonusHuntConfig({ config, onChange }) {
           <span>Currency</span>
           <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} />
         </label>
+        <label className="oc-config-field" style={{ flex: 1 }}>
+          <span>Display Style</span>
+          <select value={c.displayStyle || 'v1'} onChange={e => set('displayStyle', e.target.value)}>
+            <option value="v1">Style 1 — Classic</option>
+            <option value="v2">Style 2 — Sleek Dark</option>
+          </select>
+        </label>
         <label className="bh-check-row">
           <input type="checkbox" checked={!!c.huntActive} onChange={e => set('huntActive', e.target.checked)} />
           <span>Hunt Active</span>
