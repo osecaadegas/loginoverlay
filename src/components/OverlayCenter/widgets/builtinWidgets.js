@@ -36,10 +36,13 @@ registerWidget({
   configPanel: BonusHuntConfig,
   defaults: {
     bonuses: [],
-    totalCost: 0,
-    totalPayout: 0,
     huntActive: false,
     currency: '€',
+    startMoney: 0,
+    targetMoney: 0,
+    stopLoss: 0,
+    showStatistics: true,
+    animatedTracker: true,
   },
 });
 
