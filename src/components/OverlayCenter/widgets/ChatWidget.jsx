@@ -102,52 +102,99 @@ function useYoutubeChat(videoId, apiKey, onMessage) {
   }, [videoId, apiKey, onMessage]);
 }
 
-/* ─── Kick chat via pusher-like WS ─── */
-function useKickChat(channelName, onMessage) {
+/* ─── Kick chat via Pusher WebSocket (direct, no StreamElements) ─── */
+const KICK_PUSHER_KEY = '32cbd69e4b950bf97679';
+const KICK_PUSHER_CLUSTER = 'us2';
+
+function useKickChat(chatroomId, onMessage) {
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
+  const pingInterval = useRef(null);
 
   const connect = useCallback(() => {
-    if (!channelName) return;
-    const ws = new WebSocket('wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=8.4.0-rc2&flash=false');
+    if (!chatroomId) return;
+
+    // Clean up any previous connection
+    if (wsRef.current) { try { wsRef.current.close(); } catch {} }
+    if (pingInterval.current) clearInterval(pingInterval.current);
+
+    const wsUrl = `wss://ws-${KICK_PUSHER_CLUSTER}.pusher.com/app/${KICK_PUSHER_KEY}?protocol=7&client=js&version=8.4.0-rc2&flash=false`;
+    const ws = new WebSocket(wsUrl);
     wsRef.current = ws;
 
     ws.onopen = () => {
-      ws.send(JSON.stringify({
-        event: 'pusher:subscribe',
-        data: { channel: `chatrooms.${channelName}.v2` }
-      }));
+      // Start keepalive ping every 2 minutes
+      pingInterval.current = setInterval(() => {
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ event: 'pusher:ping', data: {} }));
+        }
+      }, 120000);
     };
 
     ws.onmessage = (evt) => {
       try {
         const parsed = JSON.parse(evt.data);
+
+        // Step 1: Wait for Pusher handshake, THEN subscribe
+        if (parsed.event === 'pusher:connection_established') {
+          // Subscribe to v2 chatroom channel
+          ws.send(JSON.stringify({
+            event: 'pusher:subscribe',
+            data: { auth: '', channel: `chatrooms.${chatroomId}.v2` }
+          }));
+          // Also subscribe to legacy channel
+          ws.send(JSON.stringify({
+            event: 'pusher:subscribe',
+            data: { auth: '', channel: `chatroom_${chatroomId}` }
+          }));
+          return;
+        }
+
+        // Handle chat messages
         if (parsed.event === 'App\\Events\\ChatMessageEvent') {
           const msg = JSON.parse(parsed.data);
+          const sender = msg.sender || {};
+          // Generate color from username hash (Kick has no user colors like Twitch)
+          const color = generateKickColor(sender.username || '');
           onMessage({
-            id: msg.id || Date.now().toString() + Math.random(),
+            id: `kick-${msg.id || Date.now()}`,
             platform: 'kick',
-            username: msg.sender?.username || 'Unknown',
+            username: sender.username || 'Unknown',
             message: msg.content || '',
-            color: '',
+            color,
             timestamp: Date.now(),
           });
         }
-      } catch { /* silent */ }
+      } catch { /* not all frames are relevant JSON */ }
     };
 
+    ws.onerror = () => { /* will trigger onclose */ };
+
     ws.onclose = () => {
-      reconnectTimer.current = setTimeout(connect, 3000);
+      wsRef.current = null;
+      if (pingInterval.current) { clearInterval(pingInterval.current); pingInterval.current = null; }
+      reconnectTimer.current = setTimeout(connect, 5000);
     };
-  }, [channelName, onMessage]);
+  }, [chatroomId, onMessage]);
 
   useEffect(() => {
     connect();
     return () => {
       clearTimeout(reconnectTimer.current);
+      if (pingInterval.current) clearInterval(pingInterval.current);
       if (wsRef.current) wsRef.current.close();
     };
   }, [connect]);
+}
+
+/* Generate a deterministic hue-based color for Kick users */
+function generateKickColor(username) {
+  let hash = 0;
+  for (let i = 0; i < username.length; i++) {
+    hash = username.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 70%, 60%)`;
 }
 
 /* ─── Main Widget ─── */
