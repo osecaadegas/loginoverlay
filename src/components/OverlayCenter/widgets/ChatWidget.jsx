@@ -195,7 +195,8 @@ export default function ChatWidget({ config, theme }) {
     }
   }, [messages]);
 
-  /* Filter by platform if needed */
+  /* All platforms for display (always show all 3 badges) */
+  const allPlatforms = ['twitch', 'youtube', 'kick'];
   const enabledPlatforms = [];
   if (c.twitchEnabled) enabledPlatforms.push('twitch');
   if (c.youtubeEnabled) enabledPlatforms.push('youtube');
@@ -221,10 +222,11 @@ export default function ChatWidget({ config, theme }) {
         <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
           <span className="ov-chat-header-title">Live Chat</span>
           <div className="ov-chat-header-badges">
-            {enabledPlatforms.map(p => (
+            {allPlatforms.map(p => (
               <span key={p} className="ov-chat-platform-badge" style={{
-                background: PLATFORM_META[p].color + '33',
+                background: PLATFORM_META[p].color + (enabledPlatforms.includes(p) ? '33' : '15'),
                 color: PLATFORM_META[p].color,
+                opacity: enabledPlatforms.includes(p) ? 1 : 0.35,
               }}>
                 {PLATFORM_META[p].icon}
               </span>
@@ -235,10 +237,8 @@ export default function ChatWidget({ config, theme }) {
 
       <div className="ov-chat-messages" ref={scrollRef}>
         {messages.length === 0 && (
-          <div className="ov-chat-empty">
-            {enabledPlatforms.length === 0
-              ? 'No platforms enabled — configure channels in the panel'
-              : 'Waiting for messages...'}
+          <div className="ov-chat-empty-hint">
+            💬 Waiting for messages...
           </div>
         )}
         {messages.map(msg => {
@@ -259,10 +259,10 @@ export default function ChatWidget({ config, theme }) {
         })}
       </div>
 
-      {showLegend && enabledPlatforms.length > 0 && (
+      {showLegend && (
         <div className="ov-chat-legend" style={{ background: headerBg }}>
-          {enabledPlatforms.map(p => (
-            <div key={p} className="ov-chat-legend-item">
+          {allPlatforms.map(p => (
+            <div key={p} className="ov-chat-legend-item" style={{ opacity: enabledPlatforms.includes(p) ? 1 : 0.35 }}>
               <span className="ov-chat-legend-dot" style={{ background: PLATFORM_META[p].color }} />
               <span>{PLATFORM_META[p].label}</span>
             </div>
