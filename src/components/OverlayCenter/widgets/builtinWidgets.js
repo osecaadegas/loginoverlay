@@ -99,7 +99,140 @@ registerWidget({
   },
 });
 
-// ─── 6. PLACEHOLDER (extensible) ───────────────────────
+// ─── 6. NAVBAR ─────────────────────────────────────────
+import NavbarWidget from './NavbarWidget';
+import NavbarConfig from './NavbarConfig';
+registerWidget({
+  type: 'navbar',
+  label: 'Navbar',
+  icon: '📌',
+  category: 'stream',
+  component: NavbarWidget,
+  configPanel: NavbarConfig,
+  defaults: {
+    streamerName: '',
+    motto: '',
+    displayMode: 'raw',
+  },
+});
+
+// ─── 7. CHAT ───────────────────────────────────────────
+import ChatWidget from './ChatWidget';
+import ChatConfig from './ChatConfig';
+registerWidget({
+  type: 'chat',
+  label: 'Chat',
+  icon: '💬',
+  category: 'stream',
+  component: ChatWidget,
+  configPanel: ChatConfig,
+  defaults: {
+    channel: '',
+    maxMessages: 15,
+    messages: [],
+  },
+});
+
+// ─── 8. SESSION STATS ──────────────────────────────────
+import SessionStatsWidget from './SessionStatsWidget';
+registerWidget({
+  type: 'session_stats',
+  label: 'Session Stats',
+  icon: '📈',
+  category: 'casino',
+  component: SessionStatsWidget,
+  configPanel: null,
+  defaults: {
+    wagered: 0,
+    won: 0,
+    profit: 0,
+    bestWin: 0,
+    bestMulti: 0,
+    slotsPlayed: 0,
+    currency: '€',
+  },
+});
+
+// ─── 9. RECENT WINS ────────────────────────────────────
+import RecentWinsWidget from './RecentWinsWidget';
+registerWidget({
+  type: 'recent_wins',
+  label: 'Recent Wins',
+  icon: '🏅',
+  category: 'casino',
+  component: RecentWinsWidget,
+  configPanel: null,
+  defaults: {
+    wins: [],
+    maxDisplay: 5,
+    currency: '€',
+  },
+});
+
+// ─── 10. COIN FLIP ─────────────────────────────────────
+import CoinFlipWidget from './CoinFlipWidget';
+registerWidget({
+  type: 'coinflip',
+  label: 'Coin Flip',
+  icon: '🪙',
+  category: 'casino',
+  component: CoinFlipWidget,
+  configPanel: null,
+  defaults: {
+    flipping: false,
+    result: 'heads',
+    label: '',
+  },
+});
+
+// ─── 11. SLOT MACHINE ──────────────────────────────────
+import SlotmachineWidget from './SlotmachineWidget';
+registerWidget({
+  type: 'slotmachine',
+  label: 'Slot Machine',
+  icon: '🎰',
+  category: 'casino',
+  component: SlotmachineWidget,
+  configPanel: null,
+  defaults: {
+    spinning: false,
+    reels: ['🍒', '🍒', '🍒'],
+    label: '',
+  },
+});
+
+// ─── 12. RANDOM SLOT PICKER ────────────────────────────
+import RandomSlotPickerWidget from './RandomSlotPickerWidget';
+registerWidget({
+  type: 'random_slot_picker',
+  label: 'Random Slot Picker',
+  icon: '🎲',
+  category: 'casino',
+  component: RandomSlotPickerWidget,
+  configPanel: null,
+  defaults: {
+    picking: false,
+    selectedSlot: null,
+  },
+});
+
+// ─── 13. WHEEL OF NAMES ────────────────────────────────
+import WheelOfNamesWidget from './WheelOfNamesWidget';
+registerWidget({
+  type: 'wheel_of_names',
+  label: 'Wheel of Names',
+  icon: '🎡',
+  category: 'casino',
+  component: WheelOfNamesWidget,
+  configPanel: null,
+  defaults: {
+    entries: [],
+    spinning: false,
+    winner: '',
+  },
+});
+
+// ─── 14. PLACEHOLDER (extensible) ──────────────────────
 import PlaceholderWidget from './PlaceholderWidget';
 registerWidget({
   type: 'placeholder',
