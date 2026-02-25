@@ -301,6 +301,12 @@ export default function AdminPanel() {
     display_order: 0
   });
 
+  // GTB Transfer Password State
+  const [transferPassword, setTransferPassword] = useState('');
+  const [transferPasswordLoading, setTransferPasswordLoading] = useState(false);
+  const [activeTransferPassword, setActiveTransferPassword] = useState(null);
+  const [showTransferPassword, setShowTransferPassword] = useState(false);
+
   // Wipe Settings State
   const [wipeSettings, setWipeSettings] = useState({
     wipe_inventory: false,
@@ -361,6 +367,7 @@ export default function AdminPanel() {
     loadCategoryInfo();
     loadWipeSettings();
     loadGuessBalanceSessions();
+    loadActiveTransferPassword();
   }, []);
 
   const loadUsers = async () => {
@@ -2645,6 +2652,110 @@ export default function AdminPanel() {
       if (index >= 0 && index < guessBalanceSlots.length) {
         setCurrentSlotIndex(index);
       }
+    }
+  };
+
+  // === GTB TRANSFER PASSWORD MANAGEMENT ===
+
+  // SHA-256 hash helper
+  const hashPassword = async (password) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  // Generate a random 8-character alphanumeric password
+  const generateRandomPassword = () => {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+      result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
+  };
+
+  // Load active transfer password info
+  const loadActiveTransferPassword = async () => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+      const { data, error } = await supabase
+        .from('gtb_transfer_passwords')
+        .select('id, created_at, expires_at, is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .is('used_at', null)
+        .gt('expires_at', new Date().toISOString())
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      setActiveTransferPassword(data || null);
+    } catch (err) {
+      console.error('Error loading transfer password:', err);
+    }
+  };
+
+  // Generate a new transfer password
+  const generateTransferPassword = async () => {
+    setTransferPasswordLoading(true);
+    setError('');
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) throw new Error('Not authenticated');
+
+      // Deactivate any existing active passwords
+      await supabase
+        .from('gtb_transfer_passwords')
+        .update({ is_active: false })
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      // Generate and hash new password
+      const plainPassword = generateRandomPassword();
+      const hash = await hashPassword(plainPassword);
+
+      // Store hashed password
+      const { error: insertError } = await supabase
+        .from('gtb_transfer_passwords')
+        .insert({
+          user_id: user.id,
+          password_hash: hash,
+          expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+        });
+
+      if (insertError) throw insertError;
+
+      setTransferPassword(plainPassword);
+      setShowTransferPassword(true);
+      setSuccess('Transfer password generated! It expires in 24 hours. Copy it now — you won\'t see it again.');
+      loadActiveTransferPassword();
+    } catch (err) {
+      setError('Failed to generate password: ' + err.message);
+    } finally {
+      setTransferPasswordLoading(false);
+    }
+  };
+
+  // Revoke active transfer password
+  const revokeTransferPassword = async () => {
+    try {
+      const user = (await supabase.auth.getUser()).data.user;
+      if (!user) return;
+      await supabase
+        .from('gtb_transfer_passwords')
+        .update({ is_active: false })
+        .eq('user_id', user.id)
+        .eq('is_active', true);
+
+      setActiveTransferPassword(null);
+      setTransferPassword('');
+      setShowTransferPassword(false);
+      setSuccess('Transfer password revoked.');
+    } catch (err) {
+      setError('Failed to revoke password: ' + err.message);
     }
   };
 
@@ -6163,6 +6274,88 @@ export default function AdminPanel() {
               </button>
             </div>
 
+            {/* Transfer Password Section */}
+            <div className="gtb-transfer-section">
+              <div className="gtb-transfer-header">
+                <h3>🔑 Bonus Hunt Transfer Password</h3>
+                <p className="gtb-transfer-desc">
+                  Generate a password to allow transferring bonuses from the Overlay Bonus Hunt tracker into a new GTB session.
+                </p>
+              </div>
+
+              <div className="gtb-transfer-controls">
+                {activeTransferPassword ? (
+                  <div className="gtb-transfer-active">
+                    <span className="gtb-transfer-status gtb-transfer-status--active">
+                      ✅ Active password exists
+                    </span>
+                    <span className="gtb-transfer-expires">
+                      Expires: {new Date(activeTransferPassword.expires_at).toLocaleString()}
+                    </span>
+                    <div className="gtb-transfer-actions">
+                      <button 
+                        className="btn-primary"
+                        onClick={generateTransferPassword}
+                        disabled={transferPasswordLoading}
+                      >
+                        🔄 Regenerate
+                      </button>
+                      <ConfirmButton
+                        onConfirm={revokeTransferPassword}
+                        confirmText="Revoke?"
+                        className="btn-delete"
+                        variant="danger"
+                      >
+                        🗑️ Revoke
+                      </ConfirmButton>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="gtb-transfer-none">
+                    <span className="gtb-transfer-status gtb-transfer-status--none">
+                      No active password
+                    </span>
+                    <button 
+                      className="btn-primary"
+                      onClick={generateTransferPassword}
+                      disabled={transferPasswordLoading}
+                    >
+                      {transferPasswordLoading ? '⏳ Generating...' : '🔐 Generate Password'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Show generated password (only visible right after generation) */}
+                {transferPassword && showTransferPassword && (
+                  <div className="gtb-transfer-reveal">
+                    <div className="gtb-transfer-password-box">
+                      <span className="gtb-transfer-password-label">Your transfer password:</span>
+                      <code className="gtb-transfer-password-value">{transferPassword}</code>
+                      <button 
+                        className="btn-copy"
+                        onClick={() => {
+                          navigator.clipboard.writeText(transferPassword);
+                          setSuccess('Password copied to clipboard!');
+                        }}
+                        title="Copy to clipboard"
+                      >
+                        📋 Copy
+                      </button>
+                    </div>
+                    <p className="gtb-transfer-warning">
+                      ⚠️ Copy this password now! It will not be shown again. Use it in the Bonus Hunt tracker to send bonuses to GTB.
+                    </p>
+                    <button 
+                      className="btn-secondary gtb-transfer-dismiss"
+                      onClick={() => { setShowTransferPassword(false); setTransferPassword(''); }}
+                    >
+                      I've copied it — dismiss
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+
             {/* Sessions List */}
             <div className="sessions-list">
               {guessBalanceSessions.length === 0 ? (
@@ -6354,6 +6547,59 @@ export default function AdminPanel() {
             }
           >
             <form className="guess-session-form">
+                  {/* Transfer Password Quick Access */}
+                  <div className="gtb-sidepanel-transfer">
+                    <div className="gtb-sidepanel-transfer-header">
+                      <span>🔑 Transfer Password</span>
+                      {activeTransferPassword ? (
+                        <span className="gtb-sp-badge gtb-sp-badge--active">Active</span>
+                      ) : (
+                        <span className="gtb-sp-badge gtb-sp-badge--none">None</span>
+                      )}
+                    </div>
+                    <p className="gtb-sidepanel-transfer-desc">
+                      Generate a password to send bonuses from the Overlay Bonus Hunt into a GTB session.
+                    </p>
+                    <div className="gtb-sidepanel-transfer-controls">
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={generateTransferPassword}
+                        disabled={transferPasswordLoading}
+                      >
+                        {transferPasswordLoading ? '⏳...' : activeTransferPassword ? '🔄 Regenerate' : '🔐 Generate'}
+                      </button>
+                      {activeTransferPassword && (
+                        <button
+                          type="button"
+                          className="btn-delete"
+                          onClick={revokeTransferPassword}
+                        >
+                          🗑️ Revoke
+                        </button>
+                      )}
+                    </div>
+                    {transferPassword && showTransferPassword && (
+                      <div className="gtb-sidepanel-transfer-reveal">
+                        <code className="gtb-transfer-password-value">{transferPassword}</code>
+                        <button
+                          type="button"
+                          className="btn-copy"
+                          onClick={() => {
+                            navigator.clipboard.writeText(transferPassword);
+                            setSuccess('Password copied!');
+                          }}
+                        >📋</button>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ fontSize: '11px', padding: '4px 8px' }}
+                          onClick={() => { setShowTransferPassword(false); setTransferPassword(''); }}
+                        >Dismiss</button>
+                      </div>
+                    )}
+                  </div>
+
                   <div className="form-row">
                     <div className="form-group">
                       <label>Title *</label>
