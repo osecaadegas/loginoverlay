@@ -601,7 +601,7 @@ function LayoutWrapper({ children }) {
           )}
         </>
       )}
-      <div className="main-content">
+      <div className={`main-content ${showSidebar ? '' : 'main-content--no-sidebar'}`}>
         {children}
       </div>
     </div>
