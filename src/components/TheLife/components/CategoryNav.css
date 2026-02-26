@@ -94,12 +94,13 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 6px;
+  padding: 0;
   border-radius: 10px;
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
   transition: all 0.2s ease;
+  overflow: hidden;
 }
 
 .cn-pill:hover:not(.cn-pill--disabled) {
@@ -136,13 +137,13 @@
 
 /* Image inside pill */
 .cn-pill__img {
-  width: 72px;
-  height: 48px;
-  object-fit: contain;
-  border-radius: 4px;
+  display: block;
+  width: 90px;
+  height: 56px;
+  object-fit: cover;
+  border-radius: 8px;
   pointer-events: none;
   transition: transform 0.2s ease, filter 0.2s ease;
-  image-rendering: auto;
 }
 
 /* ---- Content transition ---- */
@@ -160,13 +161,9 @@
    ============================================= */
 
 @media (max-width: 768px) {
-  .cn-pill {
-    padding: 5px;
-  }
-
   .cn-pill__img {
-    width: 60px;
-    height: 40px;
+    width: 76px;
+    height: 48px;
   }
 
   .cn-track {
@@ -188,13 +185,12 @@
 
 @media (max-width: 480px) {
   .cn-pill {
-    padding: 4px;
     border-radius: 8px;
   }
 
   .cn-pill__img {
-    width: 50px;
-    height: 34px;
+    width: 64px;
+    height: 42px;
   }
 
   .cn-track {
