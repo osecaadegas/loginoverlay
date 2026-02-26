@@ -219,15 +219,17 @@ export default function TheLife() {
         {/* ===== MONEY BAR ===== */}
         <div className="tls-money-bar">
           <div className="tls-money tls-money--cash">
-            <span className="tls-money__icon">💵</span>
+            <span className="tls-money__label">{isPt ? 'Dinheiro' : 'Cash'}</span>
             <span className="tls-money__val">${player?.cash?.toLocaleString() || '0'}</span>
           </div>
+          <span className="tls-money-bar__divider" />
           <div className="tls-money tls-money--bank">
-            <span className="tls-money__icon">🏦</span>
+            <span className="tls-money__label">{isPt ? 'Banco' : 'Bank'}</span>
             <span className="tls-money__val">${player?.bank_balance?.toLocaleString() || '0'}</span>
           </div>
           <div className="tls-level-badge">
-            Lv.{player?.level || 1}
+            <span className="tls-level-badge__num">{player?.level || 1}</span>
+            <span className="tls-level-badge__tag">LV</span>
           </div>
         </div>
 
@@ -316,6 +318,19 @@ export default function TheLife() {
           setActiveTab={setActiveTab}
           isRestricted={isRestricted}
         />
+
+        {/* ===== CATEGORY INFO STRIP ===== */}
+        {categoryInfo[activeTab] && (
+          <div className="tls-cat-info" key={activeTab}>
+            <span className="tls-cat-info__name">{categoryInfo[activeTab].category_name}</span>
+            {categoryInfo[activeTab].description && (
+              <>
+                <span className="tls-cat-info__dot">·</span>
+                <span className="tls-cat-info__desc">{categoryInfo[activeTab].description}</span>
+              </>
+            )}
+          </div>
+        )}
 
         {/* ===== ACTIVE TAB CONTENT ===== */}
         <div className="tls-content">
