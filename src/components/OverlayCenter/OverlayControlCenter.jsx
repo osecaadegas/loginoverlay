@@ -2,9 +2,11 @@
  * OverlayControlCenter.jsx — Main admin panel page.
  * Auth-protected. Manages widgets, theme, overlay URL.
  */
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useOverlay } from '../../hooks/useOverlay';
+import { useAdmin } from '../../hooks/useAdmin';
+import { getSharedPresets, saveSharedPreset, deleteSharedPreset } from '../../services/overlayService';
 import ThemeEditor from './ThemeEditor';
 import WidgetManager from './WidgetManager';
 import OverlayPreview from './OverlayPreview';
@@ -16,6 +18,7 @@ import { getAllWidgetDefs } from './widgets/widgetRegistry';
 
 export default function OverlayControlCenter() {
   const { user } = useAuth();
+  const { isAdmin } = useAdmin();
   const {
     instance, theme, widgets, overlayState, loading,
     saveTheme, addWidget, saveWidget, removeWidget,
@@ -29,6 +32,42 @@ export default function OverlayControlCenter() {
   const globalPresets = overlayState?.globalPresets || [];
   const [presetName, setPresetName] = useState('');
   const [presetMsg, setPresetMsg] = useState('');
+
+  /* ── Shared / Built-in Presets (from shared_overlay_presets table) ── */
+  const [sharedPresets, setSharedPresets] = useState([]);
+
+  useEffect(() => {
+    getSharedPresets()
+      .then(setSharedPresets)
+      .catch(err => console.error('[OCC] Failed to load shared presets:', err));
+  }, []);
+
+  const sharePreset = useCallback(async (preset) => {
+    if (!user || !isAdmin) return;
+    try {
+      await saveSharedPreset(preset.name, preset.snapshot, user.id);
+      const refreshed = await getSharedPresets();
+      setSharedPresets(refreshed);
+      setPresetMsg(`"${preset.name}" shared globally!`);
+      setTimeout(() => setPresetMsg(''), 2500);
+    } catch (err) {
+      console.error('[OCC] share error:', err);
+      setPresetMsg('Share failed');
+      setTimeout(() => setPresetMsg(''), 2500);
+    }
+  }, [user, isAdmin]);
+
+  const unsharePreset = useCallback(async (sharedId) => {
+    if (!isAdmin) return;
+    try {
+      await deleteSharedPreset(sharedId);
+      setSharedPresets(prev => prev.filter(p => p.id !== sharedId));
+      setPresetMsg('Removed shared preset');
+      setTimeout(() => setPresetMsg(''), 2500);
+    } catch (err) {
+      console.error('[OCC] unshare error:', err);
+    }
+  }, [isAdmin]);
 
   const saveGlobalPreset = useCallback(async () => {
     const name = presetName.trim();
@@ -179,8 +218,36 @@ export default function OverlayControlCenter() {
               </button>
             </div>
             {presetMsg && <span className="oc-sidebar-preset-msg">{presetMsg}</span>}
+
+            {/* ── Shared / Built-in Presets (visible to everyone) ── */}
+            {sharedPresets.length > 0 && (
+              <div className="oc-sidebar-preset-list">
+                <span className="oc-sidebar-preset-section-label">🌐 Shared Presets</span>
+                {sharedPresets.map(sp => (
+                  <div key={sp.id} className="oc-sidebar-preset-item oc-sidebar-preset-item--shared">
+                    <div className="oc-sidebar-preset-info">
+                      <span className="oc-sidebar-preset-name">
+                        🌐 {sp.name}
+                      </span>
+                      <span className="oc-sidebar-preset-date">{new Date(sp.created_at).toLocaleDateString()}</span>
+                    </div>
+                    <div className="oc-sidebar-preset-actions">
+                      <button className="oc-sidebar-preset-load" onClick={() => loadGlobalPreset(sp)}>Load</button>
+                      {isAdmin && (
+                        <button className="oc-sidebar-preset-del" onClick={() => unsharePreset(sp.id)} title="Remove shared preset">✕</button>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* ── Personal Presets ── */}
             {globalPresets.length > 0 && (
               <div className="oc-sidebar-preset-list">
+                {sharedPresets.length > 0 && (
+                  <span className="oc-sidebar-preset-section-label">👤 My Presets</span>
+                )}
                 {globalPresets.map(p => (
                   <div key={p.name} className="oc-sidebar-preset-item">
                     <div className="oc-sidebar-preset-info">
@@ -189,6 +256,13 @@ export default function OverlayControlCenter() {
                     </div>
                     <div className="oc-sidebar-preset-actions">
                       <button className="oc-sidebar-preset-load" onClick={() => loadGlobalPreset(p)}>Load</button>
+                      {isAdmin && (
+                        <button
+                          className="oc-sidebar-preset-share"
+                          onClick={() => sharePreset(p)}
+                          title="Share this preset with all users"
+                        >🌐</button>
+                      )}
                       <button className="oc-sidebar-preset-del" onClick={() => deleteGlobalPreset(p.name)}>✕</button>
                     </div>
                   </div>

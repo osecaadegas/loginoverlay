@@ -203,3 +203,35 @@ export function subscribeToOverlay(userId, { onState, onWidgets, onTheme }) {
 export function unsubscribeOverlay(channel) {
   if (channel) supabase.removeChannel(channel);
 }
+
+// ─── SHARED / GLOBAL PRESETS ────────────────────────────
+
+export async function getSharedPresets() {
+  const { data, error } = await supabase
+    .from('shared_overlay_presets')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function saveSharedPreset(name, snapshot, userId) {
+  const { data, error } = await supabase
+    .from('shared_overlay_presets')
+    .upsert(
+      { name, snapshot, created_by: userId, updated_at: new Date().toISOString() },
+      { onConflict: 'name' }
+    )
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteSharedPreset(id) {
+  const { error } = await supabase
+    .from('shared_overlay_presets')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}
