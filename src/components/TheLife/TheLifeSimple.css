@@ -1,0 +1,1040 @@
+/* ==============================================
+   TheLifeSimple.css — Simplified Game UI
+   ==============================================
+   Clean, mobile-first layout.
+   Prefix: tls- (The Life Simple)
+   
+   Layout order:
+     1. Toast notification (fixed top)
+     2. Compact header (logo + wipe + icons)
+     3. Money bar (cash + bank + level)
+     4. Stats panel (collapsible)
+     5. Quick toolbar (icon buttons)
+     6. Status alerts (jail/hospital)
+     7. Category pill tabs
+     8. Active content
+     9. Mobile bottom nav (fixed)
+   ============================================== */
+
+/* ---- Design Tokens ---- */
+:root {
+  --tls-bg: #0a0c14;
+  --tls-surface: rgba(18, 22, 35, 0.85);
+  --tls-border: rgba(255, 255, 255, 0.08);
+  --tls-text: #c8d2e1;
+  --tls-muted: #6b7280;
+  --tls-gold: #d4af37;
+  --tls-green: #22c55e;
+  --tls-red: #ef4444;
+  --tls-blue: #3b82f6;
+  --tls-purple: #a855f7;
+  --tls-radius: 10px;
+  --tls-radius-sm: 6px;
+  --tls-bottom-nav-h: 0px; /* overridden on mobile */
+}
+
+/* ---- Page ---- */
+.tls-page {
+  min-height: 100vh;
+  background: var(--tls-bg);
+  color: var(--tls-text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---- Container ---- */
+.tls-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 12px 16px;
+  padding-bottom: calc(16px + var(--tls-bottom-nav-h));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-height: 100vh;
+}
+
+/* =====================
+   LOADING
+   ===================== */
+.tls-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  min-height: 60vh;
+  color: var(--tls-gold);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.tls-loading-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(212, 175, 55, 0.2);
+  border-top-color: var(--tls-gold);
+  border-radius: 50%;
+  animation: tls-spin 0.8s linear infinite;
+}
+
+@keyframes tls-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* =====================
+   TOAST NOTIFICATION
+   ===================== */
+.tls-toast {
+  position: fixed;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-radius: var(--tls-radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+  max-width: 90vw;
+  width: auto;
+  min-width: 200px;
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid;
+  animation: tls-toast-in 0.3s ease-out, tls-toast-out 0.4s ease-in 2.6s forwards;
+}
+
+.tls-toast--success {
+  background: rgba(34, 197, 94, 0.15);
+  border-color: rgba(34, 197, 94, 0.4);
+  color: #86efac;
+}
+
+.tls-toast--error {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.4);
+  color: #fca5a5;
+}
+
+.tls-toast--info {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+  color: #93c5fd;
+}
+
+.tls-toast__icon {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.tls-toast--success .tls-toast__icon { background: rgba(34, 197, 94, 0.3); color: #22c55e; }
+.tls-toast--error .tls-toast__icon { background: rgba(239, 68, 68, 0.3); color: #ef4444; }
+.tls-toast--info .tls-toast__icon { background: rgba(59, 130, 246, 0.3); color: #3b82f6; }
+
+.tls-toast__text { flex: 1; line-height: 1.3; }
+
+.tls-toast__close {
+  background: none;
+  border: none;
+  color: inherit;
+  opacity: 0.5;
+  cursor: pointer;
+  font-size: 1.2rem;
+  padding: 0 2px;
+  line-height: 1;
+}
+.tls-toast__close:hover { opacity: 1; }
+
+@keyframes tls-toast-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+  to { opacity: 1; transform: translateX(-50%) translateY(0); }
+}
+
+@keyframes tls-toast-out {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateX(-50%) translateY(-10px); }
+}
+
+/* =====================
+   COMPACT HEADER
+   ===================== */
+.tls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 4px 0;
+}
+
+.tls-logo {
+  height: 32px;
+  width: auto;
+  object-fit: contain;
+  filter: brightness(1.1);
+  flex-shrink: 0;
+}
+
+.tls-header__right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.tls-icon-btn {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--tls-border);
+  border-radius: 8px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: all 0.15s ease;
+  color: var(--tls-text);
+  padding: 0;
+}
+.tls-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* =====================
+   MONEY BAR
+   ===================== */
+.tls-money-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  background: var(--tls-surface);
+  border: 1px solid var(--tls-border);
+  border-radius: var(--tls-radius);
+}
+
+.tls-money {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tls-money__icon {
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.tls-money__val {
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tls-money--cash .tls-money__val { color: var(--tls-green); }
+.tls-money--bank .tls-money__val { color: var(--tls-blue); }
+
+.tls-level-badge {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), rgba(212, 175, 55, 0.1));
+  border: 1.5px solid rgba(212, 175, 55, 0.5);
+  color: var(--tls-gold);
+  font-weight: 800;
+  font-size: 0.8rem;
+  padding: 4px 10px;
+  border-radius: 20px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+/* =====================
+   STATS PANEL
+   ===================== */
+.tls-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--tls-surface);
+  border: 1px solid var(--tls-border);
+  border-radius: var(--tls-radius);
+}
+
+.tls-stats__primary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ---- Stat Bar ---- */
+.tls-bar {
+  position: relative;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 5px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+}
+
+.tls-bar--sm {
+  height: 20px;
+}
+
+.tls-bar__fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  border-radius: 5px;
+  transition: width 0.5s ease;
+  min-width: 2px;
+}
+
+/* Bar color variants */
+.tls-bar--hp .tls-bar__fill { background: linear-gradient(90deg, #dc2626, #ef4444); }
+.tls-bar--stamina .tls-bar__fill { background: linear-gradient(90deg, #b8860b, #d4af37); }
+.tls-bar--xp .tls-bar__fill { background: linear-gradient(90deg, #2563eb, #3b82f6); }
+.tls-bar--power .tls-bar__fill { background: linear-gradient(90deg, #ea580c, #f97316); }
+.tls-bar--intel .tls-bar__fill { background: linear-gradient(90deg, #6d28d9, #7c3aed); }
+.tls-bar--defense .tls-bar__fill { background: linear-gradient(90deg, #047857, #059669); }
+.tls-bar--addiction .tls-bar__fill { background: linear-gradient(90deg, #7c2d12, #dc2626); }
+
+.tls-bar__label {
+  position: relative;
+  z-index: 1;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.9);
+  padding-left: 8px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+  white-space: nowrap;
+  letter-spacing: 0.3px;
+}
+
+/* Stamina refill button inside bar */
+.tls-bar__action {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  background: rgba(212, 175, 55, 0.9);
+  color: #000;
+  border: none;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.tls-bar__action:hover {
+  background: #ffd700;
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* Toggle more stats */
+.tls-stats__toggle {
+  background: none;
+  border: none;
+  color: var(--tls-muted);
+  font-size: 0.7rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 0 0;
+  text-align: center;
+  transition: color 0.2s;
+  letter-spacing: 0.3px;
+}
+.tls-stats__toggle:hover { color: var(--tls-text); }
+
+/* Secondary stats (collapsible) */
+.tls-stats__secondary {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-top: 6px;
+  border-top: 1px solid var(--tls-border);
+  animation: tls-fade-in 0.25s ease-out;
+}
+
+@keyframes tls-fade-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =====================
+   QUICK TOOLBAR
+   ===================== */
+.tls-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding: 2px 0;
+}
+.tls-toolbar::-webkit-scrollbar { display: none; }
+
+.tls-toolbar__btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: var(--tls-radius-sm);
+  border: 1px solid var(--tls-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--tls-text);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+  min-height: 34px;
+}
+.tls-toolbar__btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+.tls-toolbar__btn.active {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: var(--tls-gold);
+}
+.tls-toolbar__btn--gold {
+  border-color: rgba(212, 175, 55, 0.3);
+  color: var(--tls-gold);
+}
+.tls-toolbar__btn--gold:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.5);
+}
+.tls-toolbar__label {
+  font-weight: 600;
+  font-size: 0.72rem;
+}
+
+/* =====================
+   STATUS ALERTS
+   ===================== */
+.tls-alert {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: var(--tls-radius);
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid;
+  text-align: center;
+}
+
+.tls-alert--warn {
+  background: rgba(234, 179, 8, 0.1);
+  border-color: rgba(234, 179, 8, 0.3);
+  color: #eab308;
+}
+
+.tls-alert--danger {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: var(--tls-red);
+}
+
+.tls-alert__action {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: inherit;
+  padding: 3px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.78rem;
+  font-weight: 700;
+  transition: all 0.15s;
+  margin-left: auto;
+}
+.tls-alert__action:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* =====================
+   CONTENT AREA
+   ===================== */
+.tls-content {
+  flex: 1;
+  min-height: 300px;
+  animation: tls-content-in 0.2s ease-out;
+}
+
+@keyframes tls-content-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* =====================
+   LOCKED CONTENT
+   ===================== */
+.tls-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.tls-locked__icon {
+  font-size: 3rem;
+  opacity: 0.6;
+}
+
+.tls-locked h3 {
+  color: var(--tls-gold);
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.tls-locked p {
+  color: var(--tls-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+/* =====================
+   MOBILE BOTTOM NAV
+   ===================== */
+.tls-bottom-nav {
+  display: none;
+}
+
+/* =====================
+   MODAL
+   ===================== */
+.tls-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+  animation: tls-fade-in 0.2s ease-out;
+}
+
+.tls-modal {
+  background: linear-gradient(135deg, rgba(26, 31, 46, 0.98), rgba(18, 22, 35, 0.98));
+  border: 1.5px solid rgba(212, 175, 55, 0.4);
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+  animation: tls-modal-in 0.3s ease-out;
+  position: relative;
+}
+
+.tls-modal--settings {
+  max-width: 380px;
+}
+
+@keyframes tls-modal-in {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.tls-modal__close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+  opacity: 0.6;
+}
+.tls-modal__close:hover {
+  opacity: 1;
+  background: rgba(239, 68, 68, 0.2);
+}
+
+.tls-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.tls-modal__header h2 {
+  color: var(--tls-gold);
+  font-size: 1.3rem;
+  margin: 0;
+}
+
+.tls-modal__header .tls-modal__close {
+  position: static;
+}
+
+.tls-modal__body {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.tls-modal__img {
+  width: 100%;
+  max-height: 200px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.tls-modal__text {
+  color: var(--tls-text);
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ---- Setting item ---- */
+.tls-setting {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--tls-border);
+  border-radius: var(--tls-radius-sm);
+  color: #fff;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.tls-setting__hint {
+  color: var(--tls-muted);
+  font-size: 0.78rem;
+  margin: 0;
+  padding-left: 12px;
+}
+
+/* ---- Toggle switch ---- */
+.tls-toggle {
+  position: relative;
+  display: inline-block;
+  width: 48px;
+  height: 26px;
+  flex-shrink: 0;
+}
+.tls-toggle input { opacity: 0; width: 0; height: 0; }
+
+.tls-toggle__slider {
+  position: absolute;
+  cursor: pointer;
+  inset: 0;
+  background: rgba(239, 68, 68, 0.4);
+  border-radius: 26px;
+  transition: 0.3s;
+  border: 1.5px solid rgba(239, 68, 68, 0.3);
+}
+.tls-toggle__slider::before {
+  content: '';
+  position: absolute;
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 2.5px;
+  background: white;
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.tls-toggle input:checked + .tls-toggle__slider {
+  background: rgba(34, 197, 94, 0.4);
+  border-color: rgba(34, 197, 94, 0.5);
+}
+.tls-toggle input:checked + .tls-toggle__slider::before {
+  transform: translateX(22px);
+}
+
+/* =============================================
+   RESPONSIVE — MOBILE (< 768px)
+   ============================================= */
+@media (max-width: 768px) {
+  :root {
+    --tls-bottom-nav-h: 64px;
+  }
+
+  .tls-container {
+    padding: 8px 10px;
+    padding-bottom: calc(12px + var(--tls-bottom-nav-h));
+    gap: 6px;
+  }
+
+  .tls-logo {
+    height: 26px;
+  }
+
+  .tls-icon-btn {
+    width: 30px;
+    height: 30px;
+    font-size: 0.9rem;
+  }
+
+  .tls-money-bar {
+    padding: 6px 10px;
+    gap: 6px;
+  }
+
+  .tls-money__val {
+    font-size: 0.85rem;
+  }
+
+  .tls-level-badge {
+    font-size: 0.72rem;
+    padding: 3px 8px;
+  }
+
+  .tls-bar {
+    height: 22px;
+  }
+
+  .tls-bar--sm {
+    height: 18px;
+  }
+
+  .tls-bar__label {
+    font-size: 0.65rem;
+  }
+
+  .tls-toolbar__btn {
+    padding: 5px 8px;
+    font-size: 0.75rem;
+    min-height: 30px;
+  }
+
+  .tls-toolbar__label {
+    display: none;
+  }
+
+  /* ---- BOTTOM NAV ---- */
+  .tls-bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: var(--tls-bottom-nav-h);
+    background: rgba(10, 12, 20, 0.97);
+    backdrop-filter: blur(12px);
+    border-top: 1px solid rgba(212, 175, 55, 0.2);
+    z-index: 9999;
+    padding: 4px 6px;
+    padding-bottom: env(safe-area-inset-bottom, 4px);
+    align-items: center;
+    justify-content: space-around;
+  }
+
+  .tls-bottom-nav__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: 4px 8px;
+    border: none;
+    background: none;
+    color: var(--tls-muted);
+    cursor: pointer;
+    border-radius: 8px;
+    transition: all 0.15s;
+    min-width: 52px;
+    flex: 1;
+  }
+
+  .tls-bottom-nav__item.active {
+    color: var(--tls-gold);
+    background: rgba(212, 175, 55, 0.1);
+  }
+
+  .tls-bottom-nav__item.disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .tls-bottom-nav__icon {
+    font-size: 1.3rem;
+    line-height: 1;
+  }
+
+  .tls-bottom-nav__label {
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+}
+
+/* =============================================
+   RESPONSIVE — SMALL MOBILE (< 480px)
+   ============================================= */
+@media (max-width: 480px) {
+  .tls-container {
+    padding: 6px 8px;
+    padding-bottom: calc(10px + var(--tls-bottom-nav-h));
+    gap: 5px;
+  }
+
+  .tls-logo {
+    height: 22px;
+  }
+
+  .tls-money__val {
+    font-size: 0.8rem;
+  }
+
+  .tls-bar {
+    height: 20px;
+  }
+
+  .tls-bar--sm {
+    height: 16px;
+  }
+
+  .tls-bar__label {
+    font-size: 0.6rem;
+    padding-left: 6px;
+  }
+
+  .tls-toolbar__btn {
+    padding: 4px 6px;
+    font-size: 0.7rem;
+    min-height: 28px;
+  }
+
+  .tls-bottom-nav__icon {
+    font-size: 1.15rem;
+  }
+
+  .tls-bottom-nav__label {
+    font-size: 0.55rem;
+  }
+
+  .tls-modal {
+    padding: 18px;
+    margin: 10px;
+    border-radius: 12px;
+  }
+}
+
+/* =============================================
+   RESPONSIVE — TABLET / DESKTOP (> 768px)
+   ============================================= */
+@media (min-width: 769px) {
+  .tls-container {
+    padding: 16px 24px;
+    gap: 10px;
+  }
+
+  .tls-logo {
+    height: 38px;
+  }
+
+  .tls-money-bar {
+    padding: 10px 16px;
+    gap: 16px;
+  }
+
+  .tls-money__val {
+    font-size: 1.05rem;
+  }
+
+  .tls-level-badge {
+    font-size: 0.85rem;
+    padding: 5px 14px;
+  }
+
+  .tls-stats__primary {
+    flex-direction: row;
+    gap: 6px;
+  }
+
+  .tls-stats__primary .tls-bar {
+    flex: 1;
+    height: 28px;
+  }
+
+  .tls-stats__secondary {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 8px;
+  }
+
+  .tls-bar__label {
+    font-size: 0.75rem;
+  }
+
+  .tls-toolbar__btn {
+    min-height: 36px;
+    padding: 6px 12px;
+    font-size: 0.82rem;
+  }
+}
+
+/* =============================================
+   RESPONSIVE — LARGE DESKTOP (> 1200px)
+   ============================================= */
+@media (min-width: 1200px) {
+  .tls-container {
+    padding: 20px 32px;
+  }
+
+  .tls-stats__primary .tls-bar {
+    height: 30px;
+  }
+
+  .tls-bar__label {
+    font-size: 0.78rem;
+  }
+
+  .tls-logo {
+    height: 42px;
+  }
+}
+
+/* =============================================
+   HIDE OLD UI ELEMENTS (from TheLife.css)
+   We need to hide the old layout when tls-page is active
+   ============================================= */
+.tls-page .the-life-page,
+.tls-page .the-life-container,
+.tls-page .the-life-header,
+.tls-page .player-stats-bar,
+.tls-page .stats-and-info-container,
+.tls-page .category-info-display,
+.tls-page .game-tabs-wrapper,
+.tls-page .quick-access-tabs-inline,
+.tls-page .cash-display,
+.tls-page .menus-action-bar {
+  display: none !important;
+}
+
+/* =============================================
+   WIPE COUNTDOWN — override for compact header
+   ============================================= */
+.tls-header .wipe-countdown {
+  position: static !important;
+  font-size: 0.72rem !important;
+  padding: 4px 8px !important;
+  margin: 0 !important;
+  white-space: nowrap;
+  animation: none !important;
+  box-shadow: none !important;
+  border-width: 1px !important;
+  border-radius: 6px !important;
+  background: rgba(20, 20, 20, 0.8) !important;
+}
+
+.tls-header .wipe-countdown-header {
+  margin-bottom: 2px !important;
+  padding-bottom: 2px !important;
+  gap: 4px !important;
+}
+
+.tls-header .wipe-icon {
+  font-size: 0.7rem !important;
+}
+
+.tls-header .wipe-label {
+  font-size: 0.55rem !important;
+  letter-spacing: 1px !important;
+}
+
+.tls-header .wipe-countdown-timer {
+  gap: 2px !important;
+}
+
+.tls-header .time-segment {
+  min-width: 22px !important;
+  padding: 2px 3px !important;
+}
+
+.tls-header .time-value {
+  font-size: 0.8rem !important;
+}
+
+.tls-header .time-unit {
+  font-size: 0.4rem !important;
+  margin-top: 0 !important;
+}
+
+.tls-header .time-separator {
+  font-size: 0.7rem !important;
+  padding-bottom: 6px !important;
+}
+
+@media (max-width: 480px) {
+  .tls-header .wipe-countdown {
+    padding: 3px 5px !important;
+  }
+  .tls-header .wipe-countdown-header {
+    display: none !important;
+  }
+  .tls-header .time-value {
+    font-size: 0.7rem !important;
+  }
+  .tls-header .time-segment {
+    min-width: 18px !important;
+    padding: 1px 2px !important;
+  }
+}
+
+/* =============================================
+   ACCESSIBILITY
+   ============================================= */
+.tls-page *:focus-visible {
+  outline: 2px solid var(--tls-gold);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.tls-page *:focus:not(:focus-visible) {
+  outline: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tls-page *,
+  .tls-page *::before,
+  .tls-page *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
