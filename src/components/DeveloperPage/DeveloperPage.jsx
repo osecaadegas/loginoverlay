@@ -160,8 +160,11 @@ function EnvPanel() {
   const envVars = [
     { key: 'VITE_SUPABASE_URL', status: !!import.meta.env.VITE_SUPABASE_URL },
     { key: 'VITE_SUPABASE_ANON_KEY', status: !!import.meta.env.VITE_SUPABASE_ANON_KEY },
-    { key: 'VITE_TWITCH_CLIENT_ID', status: !!import.meta.env.VITE_TWITCH_CLIENT_ID },
-    { key: 'VITE_SITE_URL', status: !!import.meta.env.VITE_SITE_URL },
+    { key: 'VITE_SPOTIFY_CLIENT_ID', status: !!import.meta.env.VITE_SPOTIFY_CLIENT_ID },
+    { key: 'VITE_SE_CHANNEL_ID', status: !!import.meta.env.VITE_SE_CHANNEL_ID },
+    { key: 'VITE_SE_JWT_TOKEN', status: !!import.meta.env.VITE_SE_JWT_TOKEN },
+    { key: 'VITE_AZURE_TRANSLATOR_KEY', status: !!import.meta.env.VITE_AZURE_TRANSLATOR_KEY },
+    { key: 'VITE_STRIPE_PREMIUM_PRICE_ID', status: !!import.meta.env.VITE_STRIPE_PREMIUM_PRICE_ID },
   ];
 
   return (
