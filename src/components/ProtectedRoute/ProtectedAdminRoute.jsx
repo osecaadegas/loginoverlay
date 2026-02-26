@@ -4,7 +4,7 @@ import { useAdmin } from '../../hooks/useAdmin';
 
 export default function ProtectedAdminRoute({ children }) {
   const { user, loading } = useAuth();
-  const { isAdmin, loading: adminLoading } = useAdmin();
+  const { isAdmin, isPremium, loading: adminLoading } = useAdmin();
 
   if (loading || adminLoading) {
     return (
@@ -24,7 +24,7 @@ export default function ProtectedAdminRoute({ children }) {
     return <Navigate to="/login" replace />;
   }
 
-  if (!isAdmin) {
+  if (!isAdmin && !isPremium) {
     return <Navigate to="/overlay" replace />;
   }
 
