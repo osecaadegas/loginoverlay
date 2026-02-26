@@ -31,10 +31,44 @@ function playAlertSound(soundUrl) {
   } catch {}
 }
 
+/* ─── Build a correct Twitch clip embed URL using the CURRENT hostname ─── */
+function buildClipEmbedSrc(clipId, clipEmbedUrl) {
+  // Always resolve parent from the browser so it matches where the page is loaded
+  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+
+  // Prefer building from clip ID (most reliable)
+  if (clipId) {
+    return `https://clips.twitch.tv/embed?clip=${encodeURIComponent(clipId)}&parent=${host}&autoplay=true&muted=false`;
+  }
+
+  // Fallback: rewrite the stored embed URL's parent param
+  if (clipEmbedUrl) {
+    try {
+      const url = new URL(clipEmbedUrl);
+      url.searchParams.set('parent', host);
+      url.searchParams.set('autoplay', 'true');
+      url.searchParams.set('muted', 'false');
+      return url.toString();
+    } catch {
+      return `${clipEmbedUrl}&parent=${host}&autoplay=true&muted=false`;
+    }
+  }
+
+  return null;
+}
+
 /* ─── Clip Embed (iframe-based Twitch clip player) ─── */
-function ClipPlayer({ clipEmbedUrl, clipThumbnail, clipTitle, onEnded, duration, config }) {
+function ClipPlayer({ clipId, clipEmbedUrl, clipThumbnail, clipTitle, onEnded, duration, config }) {
   const [loaded, setLoaded] = useState(false);
+  const [embedError, setEmbedError] = useState(false);
   const timerRef = useRef(null);
+  const iframeRef = useRef(null);
+
+  // Build the correct embed src using current hostname
+  const embedSrc = useMemo(
+    () => buildClipEmbedSrc(clipId, clipEmbedUrl),
+    [clipId, clipEmbedUrl]
+  );
 
   // Auto-advance after clip duration + buffer
   useEffect(() => {
@@ -44,8 +78,16 @@ function ClipPlayer({ clipEmbedUrl, clipThumbnail, clipTitle, onEnded, duration,
     return () => clearTimeout(timerRef.current);
   }, [duration, onEnded]);
 
-  if (!clipEmbedUrl) {
-    // No clip available — show profile card with thumbnail
+  // Fallback: if iframe doesn't load in 8 seconds, show error state
+  useEffect(() => {
+    if (loaded || !embedSrc) return;
+    const fallbackTimer = setTimeout(() => {
+      if (!loaded) setEmbedError(true);
+    }, 8000);
+    return () => clearTimeout(fallbackTimer);
+  }, [loaded, embedSrc]);
+
+  if (!embedSrc) {
     return (
       <div className="rs-clip-fallback">
         <div className="rs-no-clip-text">No clips available</div>
@@ -58,13 +100,21 @@ function ClipPlayer({ clipEmbedUrl, clipThumbnail, clipTitle, onEnded, duration,
       {!loaded && clipThumbnail && (
         <img src={clipThumbnail} alt="" className="rs-clip-poster" />
       )}
+      {embedError && (
+        <div className="rs-clip-error-overlay">
+          {clipThumbnail && <img src={clipThumbnail} alt="" className="rs-clip-poster" />}
+          <div className="rs-clip-error-text">Clip could not load</div>
+        </div>
+      )}
       <iframe
-        src={`${clipEmbedUrl}&autoplay=true&muted=false`}
+        ref={iframeRef}
+        src={embedSrc}
         className="rs-clip-iframe"
         title={clipTitle || 'Raid clip'}
         allowFullScreen
-        allow="autoplay"
-        onLoad={() => setLoaded(true)}
+        allow="autoplay; encrypted-media; fullscreen"
+        referrerPolicy="no-referrer-when-downgrade"
+        onLoad={() => { setLoaded(true); setEmbedError(false); }}
       />
       {clipTitle && (
         <div className="rs-clip-title-bar">
@@ -270,8 +320,9 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
         </div>
 
         {/* ── Clip Player ── */}
-        {showClip && currentAlert.clip_embed_url && (
+        {showClip && (currentAlert.clip_id || currentAlert.clip_embed_url) && (
           <ClipPlayer
+            clipId={currentAlert.clip_id}
             clipEmbedUrl={currentAlert.clip_embed_url}
             clipThumbnail={currentAlert.clip_thumbnail_url}
             clipTitle={currentAlert.clip_title}
@@ -282,7 +333,7 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
         )}
 
         {/* ── No clip fallback ── */}
-        {showClip && !currentAlert.clip_embed_url && (
+        {showClip && !currentAlert.clip_id && !currentAlert.clip_embed_url && (
           <div className="rs-no-clip">
             <div className="rs-no-clip-avatar-large">
               {currentAlert.raider_avatar_url ? (
