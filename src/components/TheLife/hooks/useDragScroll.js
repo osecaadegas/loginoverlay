@@ -52,6 +52,20 @@ export function useDragScroll(scrollRef) {
     }
   }, [scrollRef]);
 
+  // Convert vertical mouse wheel to horizontal scroll
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const onWheel = (e) => {
+      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
+        e.preventDefault();
+        el.scrollBy({ left: e.deltaY * 2, behavior: 'smooth' });
+      }
+    };
+    el.addEventListener('wheel', onWheel, { passive: false });
+    return () => el.removeEventListener('wheel', onWheel);
+  }, [scrollRef]);
+
   return {
     onMouseDown: handleMouseDown,
     onMouseUp: handleMouseUp,
