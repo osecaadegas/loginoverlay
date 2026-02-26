@@ -119,7 +119,6 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
             tabIndex={tab.restricted && isRestricted ? -1 : 0}
           >
             <img className="cn-pill__img" src={tab.img} alt={tab.label} draggable={false} />
-            <span className="cn-pill__label">{tab.label}</span>
           </button>
         ))}
       </div>

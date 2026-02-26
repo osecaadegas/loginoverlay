@@ -71,7 +71,7 @@
 /* ---- Scrollable track ---- */
 .cn-track {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   padding: 6px 36px;
   overflow-x: auto;
   overflow-y: hidden;
@@ -92,31 +92,23 @@
   flex-shrink: 0;
   scroll-snap-align: center;
   display: inline-flex;
-  flex-direction: column;
   align-items: center;
-  gap: 4px;
-  padding: 8px 14px 6px;
-  border-radius: 12px;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 10px;
   border: 1.5px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
-  color: rgba(200, 210, 225, 0.7);
-  font-size: 0.72rem;
-  font-weight: 600;
-  white-space: nowrap;
   cursor: pointer;
   transition: all 0.2s ease;
-  letter-spacing: 0.3px;
-  min-width: 68px;
 }
 
 .cn-pill:hover:not(.cn-pill--disabled) {
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(255, 255, 255, 0.18);
-  color: #fff;
 }
 
 .cn-pill:hover:not(.cn-pill--disabled) .cn-pill__img {
-  transform: scale(1.08);
+  transform: scale(1.06);
   filter: brightness(1.15);
 }
 
@@ -124,14 +116,12 @@
 .cn-pill--active {
   background: rgba(212, 175, 55, 0.15);
   border-color: rgba(212, 175, 55, 0.5);
-  color: #d4af37;
   box-shadow: 0 0 12px rgba(212, 175, 55, 0.15);
 }
 
 .cn-pill--active:hover {
   background: rgba(212, 175, 55, 0.2);
   border-color: rgba(212, 175, 55, 0.6);
-  color: #d4af37;
 }
 
 .cn-pill--active .cn-pill__img {
@@ -146,18 +136,13 @@
 
 /* Image inside pill */
 .cn-pill__img {
-  width: 40px;
-  height: 40px;
+  width: 72px;
+  height: 48px;
   object-fit: contain;
-  border-radius: 6px;
+  border-radius: 4px;
   pointer-events: none;
   transition: transform 0.2s ease, filter 0.2s ease;
   image-rendering: auto;
-}
-
-.cn-pill__label {
-  line-height: 1;
-  font-size: 0.68rem;
 }
 
 /* ---- Content transition ---- */
@@ -176,23 +161,16 @@
 
 @media (max-width: 768px) {
   .cn-pill {
-    padding: 6px 10px 5px;
-    font-size: 0.68rem;
-    gap: 3px;
-    min-width: 58px;
+    padding: 5px;
   }
 
   .cn-pill__img {
-    width: 34px;
-    height: 34px;
-  }
-
-  .cn-pill__label {
-    font-size: 0.62rem;
+    width: 60px;
+    height: 40px;
   }
 
   .cn-track {
-    gap: 5px;
+    gap: 6px;
     padding: 5px 30px;
   }
 
@@ -210,24 +188,17 @@
 
 @media (max-width: 480px) {
   .cn-pill {
-    padding: 5px 8px 4px;
-    font-size: 0.62rem;
-    gap: 2px;
-    border-radius: 10px;
-    min-width: 52px;
+    padding: 4px;
+    border-radius: 8px;
   }
 
   .cn-pill__img {
-    width: 28px;
-    height: 28px;
-  }
-
-  .cn-pill__label {
-    font-size: 0.58rem;
+    width: 50px;
+    height: 34px;
   }
 
   .cn-track {
-    gap: 4px;
+    gap: 5px;
     padding: 4px 24px;
   }
 
