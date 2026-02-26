@@ -2391,6 +2391,120 @@
   cursor: not-allowed;
 }
 
+/* ═══════ SAVE HUNT TO LIBRARY ═══════ */
+
+.bh-save-hunt-section {
+  background: rgba(99, 102, 241, 0.06);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 12px;
+  padding: 16px;
+}
+
+.bh-save-hunt-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.bh-save-hunt-icon {
+  font-size: 1.3rem;
+}
+
+.bh-save-hunt-title {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+
+.bh-save-hunt-desc {
+  display: block;
+  font-size: 0.7rem;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.bh-save-hunt-btn {
+  width: 100%;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+  border: 1px solid rgba(99, 102, 241, 0.35);
+  border-radius: 10px;
+  color: #c4b5fd;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bh-save-hunt-btn:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+  border-color: rgba(99, 102, 241, 0.5);
+  color: #e2e8f0;
+}
+
+.bh-save-hunt-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.bh-save-hunt-summary {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  font-size: 0.72rem;
+  color: #94a3b8;
+  padding: 6px 0;
+}
+
+.bh-save-hunt-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.bh-save-hunt-confirm {
+  flex: 1;
+  padding: 10px 16px;
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(22, 163, 74, 0.2));
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  border-radius: 10px;
+  color: #86efac;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bh-save-hunt-confirm:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.3), rgba(22, 163, 74, 0.3));
+  border-color: rgba(34, 197, 94, 0.5);
+  color: #fff;
+}
+
+.bh-save-hunt-confirm:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bh-save-hunt-cancel {
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.bh-save-hunt-cancel:hover {
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
 /* ═══════ BONUS HUNT HISTORY ═══════ */
 
 .bh-history-current-stats {

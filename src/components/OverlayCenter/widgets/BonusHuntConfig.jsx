@@ -143,7 +143,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
           </button>
 
           {open && (
-            <BonusHuntPanel config={c} onChange={onChange} />
+            <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} currency={c.currency || '€'} />
           )}
         </>
       )}
@@ -294,7 +294,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
 }
 
 /* ─── Inline Dropdown Panel (replaces old modal) ─── */
-function BonusHuntPanel({ config, onChange }) {
+function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   const c = config || {};
   const [startMoney, setStartMoney] = useState(c.startMoney || '');
   const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
@@ -313,6 +313,12 @@ function BonusHuntPanel({ config, onChange }) {
   const [editName, setEditName] = useState('');
   const [editBet, setEditBet] = useState('');
   const searchRef = useRef(null);
+
+  // Save & Close state
+  const [saveHuntName, setSaveHuntName] = useState('');
+  const [savingHunt, setSavingHunt] = useState(false);
+  const [saveHuntMsg, setSaveHuntMsg] = useState('');
+  const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
   // GTB Transfer state
   const [showGtbModal, setShowGtbModal] = useState(false);
@@ -477,6 +483,73 @@ function BonusHuntPanel({ config, onChange }) {
       setGtbMessage({ type: 'error', text: err.message || 'Transfer failed. Check your password.' });
     } finally {
       setGtbTransferring(false);
+    }
+  };
+
+  // Save hunt to library & start new
+  const handleSaveAndClose = async () => {
+    if (!userId) { setSaveHuntMsg('⚠️ Not logged in'); return; }
+    if (bonusList.length === 0) { setSaveHuntMsg('⚠️ No bonuses to save'); return; }
+    const name = saveHuntName.trim() || `Hunt ${new Date().toLocaleDateString()}`;
+    setSavingHunt(true);
+    setSaveHuntMsg('');
+    try {
+      const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+      const opened = bonusList.filter(b => b.opened);
+      const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+      const profit = totalWin - (Number(startMoney) || 0);
+      const avgMulti = opened.length > 0
+        ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
+        : 0;
+      let bestMulti = 0, bestSlotName = '';
+      opened.forEach(b => {
+        const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
+        if (m > bestMulti) { bestMulti = m; bestSlotName = b.slotName || b.slot?.name || ''; }
+      });
+      const record = {
+        hunt_name: name,
+        currency: panelCurrency,
+        start_money: Number(startMoney) || 0,
+        stop_loss: Number(stopLoss) || 0,
+        total_bet: totalBet,
+        total_win: totalWin,
+        profit,
+        bonus_count: bonusList.length,
+        bonuses_opened: opened.length,
+        avg_multi: Math.round(avgMulti * 100) / 100,
+        best_multi: Math.round(bestMulti * 100) / 100,
+        best_slot_name: bestSlotName,
+        bonuses: bonusList,
+      };
+      await saveBonusHuntToHistory(userId, record);
+      // Reset the hunt
+      setBonusList([]);
+      setStartMoney('');
+      setTargetMoney('');
+      setStopLoss('');
+      setBonusOpening(false);
+      setSaveHuntName('');
+      setShowSaveConfirm(false);
+      onChange({
+        ...config,
+        bonuses: [],
+        startMoney: 0,
+        targetMoney: 0,
+        stopLoss: 0,
+        bonusOpening: false,
+        huntActive: false,
+      });
+      setSaveHuntMsg('✅ Hunt saved to Library! Ready for a new hunt.');
+      setTimeout(() => setSaveHuntMsg(''), 4000);
+    } catch (err) {
+      const msg = err?.message || '';
+      if (msg.includes('42P01')) {
+        setSaveHuntMsg('⚠️ Table not found. Run the migration: add_bonus_hunt_history.sql');
+      } else {
+        setSaveHuntMsg('⚠️ ' + (msg || 'Save failed'));
+      }
+    } finally {
+      setSavingHunt(false);
     }
   };
 
@@ -797,6 +870,68 @@ function BonusHuntPanel({ config, onChange }) {
           ))}
         </div>
       </div>
+
+      {/* ─── Save Hunt to Library & Start New ─── */}
+      {bonusList.length > 0 && (
+        <div className="bh-panel-section">
+          <div className="bh-save-hunt-section">
+            <div className="bh-save-hunt-header">
+              <span className="bh-save-hunt-icon">📚</span>
+              <div>
+                <span className="bh-save-hunt-title">Save Hunt to Library</span>
+                <span className="bh-save-hunt-desc">Archive this hunt and start fresh</span>
+              </div>
+            </div>
+
+            {saveHuntMsg && (
+              <div className={`bh-gtb-message ${saveHuntMsg.startsWith('✅') ? 'bh-gtb-message--success' : 'bh-gtb-message--error'}`}>
+                {saveHuntMsg}
+              </div>
+            )}
+
+            {!showSaveConfirm ? (
+              <button
+                className="bh-save-hunt-btn"
+                onClick={() => setShowSaveConfirm(true)}
+              >
+                💾 Save & Close Hunt
+              </button>
+            ) : (
+              <div className="bh-save-hunt-form">
+                <input
+                  className="bh-gtb-input"
+                  value={saveHuntName}
+                  onChange={e => setSaveHuntName(e.target.value)}
+                  placeholder={`Hunt name (default: Hunt ${new Date().toLocaleDateString()})`}
+                  maxLength={60}
+                  onKeyDown={e => e.key === 'Enter' && handleSaveAndClose()}
+                  autoFocus
+                />
+                <div className="bh-save-hunt-summary">
+                  <span>🎰 {bonusList.length} bonuses</span>
+                  <span>💰 Start: {currency}{Number(startMoney) || 0}</span>
+                  <span>📊 Total bet: {currency}{bonusList.reduce((s, b) => s + (b.betSize || 0), 0).toFixed(2)}</span>
+                </div>
+                <div className="bh-save-hunt-actions">
+                  <button
+                    className="bh-save-hunt-confirm"
+                    onClick={handleSaveAndClose}
+                    disabled={savingHunt}
+                  >
+                    {savingHunt ? '⏳ Saving...' : '✅ Confirm Save & Reset'}
+                  </button>
+                  <button
+                    className="bh-save-hunt-cancel"
+                    onClick={() => { setShowSaveConfirm(false); setSaveHuntMsg(''); }}
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
     </div>
   );
