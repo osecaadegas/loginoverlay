@@ -2,8 +2,10 @@ import React, { useState, useMemo } from 'react';
 
 /**
  * TournamentWidget — OBS bracket display.
- * Two-column player cards with a swinging ⚔️ sword between them.
- * Slot images scale with widget size and are always fully visible.
+ * Three layout modes:
+ *   grid      → 2-column card grid (classic)
+ *   showcase  → single match fills the widget with large images
+ *   vertical  → matches stacked top-to-bottom, horizontal rows
  */
 export default function TournamentWidget({ config, theme }) {
   const c = config || {};
@@ -14,8 +16,11 @@ export default function TournamentWidget({ config, theme }) {
   const history = data.history || [];
   const matches = data.matches || [];
 
+  /* ─── Layout mode ─── */
+  const layout = c.layout || 'grid'; // 'grid' | 'showcase' | 'vertical'
+
   /* ─── Style config ─── */
-  const showBg = c.showBg !== false; // toggle for outer background
+  const showBg = c.showBg !== false;
   const bgColor = showBg ? (c.bgColor || '#13151e') : 'transparent';
   const cardBg = c.cardBg || '#1a1d2e';
   const cardBorder = c.cardBorder || 'rgba(255,255,255,0.08)';
@@ -63,7 +68,6 @@ export default function TournamentWidget({ config, theme }) {
     semifinals: 'Semi Finals',
     finals: 'Final',
   };
-
   const phaseOrder = ['quarterfinals', 'semifinals', 'finals'];
 
   /* ─── Calculate multiplier ─── */
@@ -105,20 +109,20 @@ export default function TournamentWidget({ config, theme }) {
   }
 
   const currentMatches = activeData?.matches || [];
-  const matchCount = currentMatches.length;
-  const cols = matchCount === 1 ? 1 : 2;
-  const rows = Math.ceil(matchCount / cols);
-
-  /* ─── Current active match (synced from config) ─── */
   const currentMatchIdx = data.currentMatch ?? 0;
-  const isLivePhase = activePhase === phase; // only animate on the live phase
+  const isLivePhase = activePhase === phase;
 
-  /* ─── Player column renderer ─── */
-  const renderPlayer = (pIdx, matchData, playerKey, isEliminated) => {
+  /* ═══════════════════════════════════════════════════════════════
+     PLAYER COLUMN — used in grid & showcase layouts
+     ═══════════════════════════════════════════════════════════════ */
+  const renderPlayerCol = (pIdx, matchData, playerKey, isEliminated, large = false) => {
     const name = players[pIdx] || `Player ${pIdx + 1}`;
     const slot = slots[pIdx];
     const multi = calcMulti(matchData, playerKey);
     const op = isEliminated ? eliminatedOpacity : 1;
+    const ns = large ? Math.max(nameSize, 16) : nameSize;
+    const ms = large ? Math.max(multiSize, 18) : multiSize;
+    const sns = large ? Math.max(slotNameSize, 13) : slotNameSize;
 
     return (
       <div className="tw-player-col" style={{
@@ -127,14 +131,15 @@ export default function TournamentWidget({ config, theme }) {
       }}>
         {/* Name */}
         <div className="tw-player-name" style={{
-          padding: '3px 4px 2px', fontSize: `${nameSize}px`, fontWeight: 700,
+          padding: large ? '6px 8px 4px' : '3px 4px 2px',
+          fontSize: `${ns}px`, fontWeight: 700,
           color: nameColor, fontFamily, textAlign: 'center', lineHeight: 1.2,
           width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {name}
         </div>
 
-        {/* Slot image — absolute-positioned so it always shrinks with the cell */}
+        {/* Slot image */}
         <div className="tw-slot-cell" style={{
           position: 'relative', width: '100%', flex: 1, minHeight: 0,
           overflow: 'hidden',
@@ -143,8 +148,7 @@ export default function TournamentWidget({ config, theme }) {
             <img src={slot.image} alt={slot.name || ''} style={{
               position: 'absolute', top: 0, left: 0,
               width: '100%', height: '100%',
-              objectFit: 'contain', display: 'block',
-              borderRadius: 4,
+              objectFit: 'contain', display: 'block', borderRadius: 4,
             }} />
           ) : (
             <div style={{
@@ -153,11 +157,10 @@ export default function TournamentWidget({ config, theme }) {
               borderRadius: 4,
             }} />
           )}
-          {/* Slot name overlay */}
           {showSlotName && slot?.name && (
             <div className="tw-slot-name" style={{
               position: 'absolute', bottom: 0, left: 0, right: 0,
-              padding: '2px 4px', fontSize: `${slotNameSize}px`,
+              padding: large ? '4px 6px' : '2px 4px', fontSize: `${sns}px`,
               color: slotNameColor, fontWeight: 700, fontFamily,
               textShadow: '0 1px 3px rgba(0,0,0,0.9)',
               background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
@@ -168,17 +171,16 @@ export default function TournamentWidget({ config, theme }) {
               {slot.name}
             </div>
           )}
-          {/* X overlay for eliminated */}
           {isEliminated && (
             <div className="tw-eliminated-icon" style={{
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <div style={{
-                width: 30, height: 30, borderRadius: '50%',
+                width: large ? 40 : 30, height: large ? 40 : 30, borderRadius: '50%',
                 background: xIconBg, border: `2px solid ${xIconColor}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 15, color: xIconColor, fontWeight: 700,
+                fontSize: large ? 20 : 15, color: xIconColor, fontWeight: 700,
               }}>✕</div>
             </div>
           )}
@@ -186,13 +188,252 @@ export default function TournamentWidget({ config, theme }) {
 
         {/* Multiplier */}
         <div className="tw-multi" style={{
-          padding: '2px 4px', textAlign: 'center',
-          fontSize: `${multiSize}px`, fontWeight: 700,
+          padding: large ? '4px 6px' : '2px 4px', textAlign: 'center',
+          fontSize: `${ms}px`, fontWeight: 700,
           color: parseFloat(multi) > 0 ? multiColor : '#64748b',
           fontFamily, lineHeight: 1.2,
         }}>
           {multi}x
         </div>
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
+     PLAYER ROW — used in vertical layout (horizontal match row)
+     ═══════════════════════════════════════════════════════════════ */
+  const renderPlayerRow = (pIdx, matchData, playerKey, isEliminated, side = 'left') => {
+    const name = players[pIdx] || `Player ${pIdx + 1}`;
+    const slot = slots[pIdx];
+    const multi = calcMulti(matchData, playerKey);
+    const op = isEliminated ? eliminatedOpacity : 1;
+    const isRight = side === 'right';
+
+    return (
+      <div className="tw-player-row" style={{
+        display: 'flex', alignItems: 'center', gap: 8,
+        opacity: op, flex: 1, minWidth: 0,
+        flexDirection: isRight ? 'row-reverse' : 'row',
+      }}>
+        {/* Slot thumbnail */}
+        <div className="tw-slot-thumb" style={{
+          position: 'relative', width: 60, height: 60, flexShrink: 0,
+          overflow: 'hidden', borderRadius: 6,
+        }}>
+          {slot?.image ? (
+            <img src={slot.image} alt={slot.name || ''} style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', display: 'block', borderRadius: 6,
+            }} />
+          ) : (
+            <div style={{ width: '100%', height: '100%', background: 'rgba(0,0,0,0.3)', borderRadius: 6 }} />
+          )}
+          {isEliminated && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{
+                width: 24, height: 24, borderRadius: '50%',
+                background: xIconBg, border: `2px solid ${xIconColor}`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 12, color: xIconColor, fontWeight: 700,
+              }}>✕</div>
+            </div>
+          )}
+        </div>
+
+        {/* Name + multiplier + slot name */}
+        <div style={{
+          display: 'flex', flexDirection: 'column', gap: 1,
+          minWidth: 0, flex: 1,
+          alignItems: isRight ? 'flex-end' : 'flex-start',
+          textAlign: isRight ? 'right' : 'left',
+        }}>
+          <span style={{
+            fontSize: nameSize + 2, fontWeight: 700, color: nameColor, fontFamily,
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            maxWidth: '100%',
+          }}>{name}</span>
+          {showSlotName && slot?.name && (
+            <span style={{
+              fontSize: slotNameSize, color: slotNameColor, fontFamily,
+              opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              maxWidth: '100%', textTransform: 'uppercase', letterSpacing: '0.3px',
+            }}>{slot.name}</span>
+          )}
+          <span style={{
+            fontSize: multiSize, fontWeight: 700, fontFamily,
+            color: parseFloat(multi) > 0 ? multiColor : '#64748b',
+          }}>{multi}x</span>
+        </div>
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
+     SWORD ICON (shared across layouts)
+     ═══════════════════════════════════════════════════════════════ */
+  const renderSword = (hasWinner, isCurrentMatch, size = swordSize) => (
+    <div className="tw-sword-icon" style={{
+      position: 'absolute',
+      top: '50%', left: '50%',
+      width: size + 16, height: size + 16,
+      borderRadius: '50%',
+      background: swordBg,
+      border: `2px solid ${swordColor}`,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      zIndex: 5, pointerEvents: 'none',
+      ...(isCurrentMatch
+        ? { animation: 'tw-sword-swing 1.2s ease-in-out infinite' }
+        : { transform: 'translate(-50%, -50%)' }),
+    }}>
+      <span style={{ fontSize: size, lineHeight: 1 }}>
+        {hasWinner ? '✕' : '⚔️'}
+      </span>
+    </div>
+  );
+
+  /* ═══════════════════════════════════════════════════════════════
+     MATCH CARD — grid layout (classic 2-col)
+     ═══════════════════════════════════════════════════════════════ */
+  const renderGridMatch = (match, idx) => {
+    const p1Won = match.winner === match.player1;
+    const p2Won = match.winner === match.player2;
+    const hasWinner = match.winner !== null && match.winner !== undefined;
+    const isCurrentMatch = isLivePhase && idx === currentMatchIdx && !hasWinner;
+
+    return (
+      <div key={idx} className="tw-match-card" style={{
+        background: cardBg,
+        border: `${cardBorderWidth}px solid ${cardBorder}`,
+        borderRadius: `${cardRadius}px`,
+        overflow: 'hidden', position: 'relative',
+        padding: `3px ${gap > 4 ? 4 : 2}px`,
+        display: 'flex', flexDirection: 'column', minHeight: 0,
+      }}>
+        <div className="tw-match-inner" style={{
+          display: 'flex', gap: 4, flex: 1, minHeight: 0,
+        }}>
+          {renderPlayerCol(match.player1, match, 'player1', hasWinner && !p1Won)}
+          {renderPlayerCol(match.player2, match, 'player2', hasWinner && !p2Won)}
+        </div>
+        {renderSword(hasWinner, isCurrentMatch)}
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
+     SHOWCASE — single match at a time with large images
+     ═══════════════════════════════════════════════════════════════ */
+  const renderShowcase = () => {
+    const match = currentMatches[currentMatchIdx] || currentMatches[0];
+    if (!match) return null;
+    const hasWinner = match.winner !== null && match.winner !== undefined;
+    const p1Won = match.winner === match.player1;
+    const isCurrentMatch = isLivePhase && !hasWinner;
+    const totalMatches = currentMatches.length;
+
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', padding: `${padding}px`, minHeight: 0 }}>
+        {/* Match counter pills */}
+        {totalMatches > 1 && (
+          <div style={{
+            display: 'flex', justifyContent: 'center', gap: 4,
+            marginBottom: 4, flexShrink: 0,
+          }}>
+            {currentMatches.map((_, i) => {
+              const mDone = currentMatches[i].winner !== null && currentMatches[i].winner !== undefined;
+              const isCur = i === currentMatchIdx;
+              return (
+                <div key={i} style={{
+                  width: isCur ? 18 : 8, height: 8, borderRadius: 4,
+                  background: mDone ? '#22c55e' : isCur ? swordColor : 'rgba(255,255,255,0.2)',
+                  transition: 'all 0.2s',
+                }} />
+              );
+            })}
+          </div>
+        )}
+
+        {/* Single match card, fills remaining space */}
+        <div style={{
+          flex: 1, minHeight: 0, background: cardBg,
+          border: `${cardBorderWidth}px solid ${cardBorder}`,
+          borderRadius: `${cardRadius}px`,
+          overflow: 'hidden', position: 'relative',
+          padding: `${Math.max(padding, 6)}px`,
+          display: 'flex', flexDirection: 'column',
+        }}>
+          <div className="tw-match-inner" style={{
+            display: 'flex', gap: 8, flex: 1, minHeight: 0,
+          }}>
+            {renderPlayerCol(match.player1, match, 'player1', hasWinner && !p1Won, true)}
+            {renderPlayerCol(match.player2, match, 'player2', hasWinner && p1Won, true)}
+          </div>
+          {renderSword(hasWinner, isCurrentMatch, Math.max(swordSize, 26))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
+     VERTICAL — matches stacked, each as a horizontal row
+     ═══════════════════════════════════════════════════════════════ */
+  const renderVertical = () => {
+    return (
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        padding: `${padding}px`, gap: `${gap}px`, minHeight: 0,
+        overflow: 'hidden',
+      }}>
+        {currentMatches.map((match, idx) => {
+          const hasWinner = match.winner !== null && match.winner !== undefined;
+          const p1Won = match.winner === match.player1;
+          const isCurrentMatch = isLivePhase && idx === currentMatchIdx && !hasWinner;
+
+          return (
+            <div key={idx} style={{
+              flex: 1, minHeight: 0,
+              background: cardBg,
+              border: `${cardBorderWidth}px solid ${isCurrentMatch ? swordColor : cardBorder}`,
+              borderRadius: `${cardRadius}px`,
+              overflow: 'hidden', position: 'relative',
+              padding: `${Math.max(padding, 4)}px 8px`,
+              display: 'flex', alignItems: 'center', gap: 6,
+            }}>
+              {renderPlayerRow(match.player1, match, 'player1', hasWinner && !p1Won, 'left')}
+
+              {/* Center sword */}
+              <div style={{ position: 'relative', width: swordSize + 20, height: swordSize + 20, flexShrink: 0 }}>
+                {renderSword(hasWinner, isCurrentMatch)}
+              </div>
+
+              {renderPlayerRow(match.player2, match, 'player2', hasWinner && p1Won, 'right')}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
+     GRID — classic 2-column layout
+     ═══════════════════════════════════════════════════════════════ */
+  const renderGrid = () => {
+    const matchCount = currentMatches.length;
+    const cols = matchCount === 1 ? 1 : 2;
+    const rows = Math.ceil(matchCount / cols);
+
+    return (
+      <div className="tw-matches" style={{
+        flex: 1, padding: `${padding}px`, minHeight: 0,
+        display: 'grid',
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, 1fr)`,
+        gap: `${gap}px`,
+      }}>
+        {currentMatches.map((match, idx) => renderGridMatch(match, idx))}
       </div>
     );
   };
@@ -205,8 +446,7 @@ export default function TournamentWidget({ config, theme }) {
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
-
-      {/* Injected keyframes for sword swing animation */}
+      {/* Injected keyframes */}
       <style>{`
         @keyframes tw-sword-swing {
           0%, 100% { transform: translate(-50%, -50%) rotate(-20deg); }
@@ -235,10 +475,8 @@ export default function TournamentWidget({ config, theme }) {
                   textTransform: 'uppercase', letterSpacing: '0.6px',
                   background: isActive ? tabActiveBg : 'transparent',
                   color: isActive ? tabActiveColor : tabColor,
-                  border: 'none',
-                  cursor: 'pointer',
-                  transition: 'all 0.15s',
-                  whiteSpace: 'nowrap',
+                  border: 'none', cursor: 'pointer',
+                  transition: 'all 0.15s', whiteSpace: 'nowrap',
                   borderRadius: isActive ? 4 : 0,
                 }}>
                 {phaseLabels[p] || p}
@@ -248,66 +486,10 @@ export default function TournamentWidget({ config, theme }) {
         </div>
       </div>
 
-      {/* ── Matchup Cards Grid ── */}
-      <div className="tw-matches" style={{
-        flex: 1, padding: `${padding}px`, minHeight: 0,
-        display: 'grid',
-        gridTemplateColumns: `repeat(${cols}, 1fr)`,
-        gridTemplateRows: `repeat(${rows}, 1fr)`,
-        gap: `${gap}px`,
-      }}>
-        {currentMatches.map((match, idx) => {
-          const p1Idx = match.player1;
-          const p2Idx = match.player2;
-          const p1Won = match.winner === p1Idx;
-          const p2Won = match.winner === p2Idx;
-          const hasWinner = match.winner !== null && match.winner !== undefined;
-          const p1Eliminated = hasWinner && !p1Won;
-          const p2Eliminated = hasWinner && !p2Won;
-          const isCurrentMatch = isLivePhase && idx === currentMatchIdx && !hasWinner;
-
-          return (
-            <div key={idx} className="tw-match-card" style={{
-              background: cardBg,
-              border: `${cardBorderWidth}px solid ${cardBorder}`,
-              borderRadius: `${cardRadius}px`,
-              overflow: 'hidden', position: 'relative',
-              padding: `3px ${gap > 4 ? 4 : 2}px`,
-              display: 'flex', flexDirection: 'column',
-              minHeight: 0,
-            }}>
-              {/* Two-column player layout — fills the card */}
-              <div className="tw-match-inner" style={{
-                display: 'flex', gap: 4, flex: 1, minHeight: 0,
-              }}>
-                {renderPlayer(p1Idx, match, 'player1', p1Eliminated)}
-                {renderPlayer(p2Idx, match, 'player2', p2Eliminated)}
-              </div>
-
-              {/* ⚔️ Sword icon — only swings on the current active match */}
-              <div className="tw-sword-icon" style={{
-                position: 'absolute',
-                top: '50%', left: '50%',
-                width: swordSize + 16, height: swordSize + 16,
-                borderRadius: '50%',
-                background: swordBg,
-                border: `2px solid ${swordColor}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 5,
-                pointerEvents: 'none',
-                ...(isCurrentMatch
-                  ? { animation: 'tw-sword-swing 1.2s ease-in-out infinite' }
-                  : { transform: 'translate(-50%, -50%)' }
-                ),
-              }}>
-                <span style={{ fontSize: swordSize, lineHeight: 1 }}>
-                  {hasWinner ? '✕' : '⚔️'}
-                </span>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* ── Layout-specific content ── */}
+      {layout === 'showcase' ? renderShowcase()
+        : layout === 'vertical' ? renderVertical()
+        : renderGrid()}
     </div>
   );
 }

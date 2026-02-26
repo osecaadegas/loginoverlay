@@ -192,13 +192,57 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
   /* ─── Preset system ─── */
   const [presetName, setPresetName] = useState('');
   const PRESET_KEYS = [
-    'showBg', 'bgColor', 'cardBg', 'cardBorder', 'cardRadius', 'cardBorderWidth',
+    'layout', 'showBg', 'bgColor', 'cardBg', 'cardBorder', 'cardRadius', 'cardBorderWidth',
     'nameColor', 'nameSize', 'multiColor', 'multiSize',
     'tabBg', 'tabActiveBg', 'tabColor', 'tabActiveColor', 'tabBorder',
     'eliminatedOpacity', 'showSlotName', 'slotNameColor', 'slotNameSize',
     'fontFamily', 'borderRadius', 'borderWidth', 'borderColor',
     'cardGap', 'containerPadding', 'swordColor', 'swordBg', 'swordSize',
     'xIconColor', 'xIconBg',
+  ];
+
+  /* ─── Built-in presets ─── */
+  const BUILTIN_PRESETS = [
+    {
+      name: '🖼️ Showcase (Large Images)',
+      builtin: true,
+      values: {
+        layout: 'showcase',
+        showBg: false,
+        cardBg: '#1a1d2e',
+        cardBorder: 'rgba(255,255,255,0.1)',
+        cardRadius: 14,
+        cardBorderWidth: 1,
+        nameSize: 18,
+        multiSize: 20,
+        slotNameSize: 13,
+        showSlotName: true,
+        swordSize: 28,
+        containerPadding: 6,
+        cardGap: 6,
+        eliminatedOpacity: 0.3,
+      },
+    },
+    {
+      name: '📋 Vertical Stack',
+      builtin: true,
+      values: {
+        layout: 'vertical',
+        showBg: false,
+        cardBg: '#1a1d2e',
+        cardBorder: 'rgba(255,255,255,0.08)',
+        cardRadius: 10,
+        cardBorderWidth: 1,
+        nameSize: 13,
+        multiSize: 14,
+        slotNameSize: 10,
+        showSlotName: true,
+        swordSize: 18,
+        containerPadding: 4,
+        cardGap: 4,
+        eliminatedOpacity: 0.35,
+      },
+    },
   ];
 
   const savePreset = () => {
@@ -479,6 +523,29 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
             </button>
           )}
 
+          <h4 className="nb-subtitle">Layout Mode</h4>
+          <div className="oc-bg-mode-grid" style={{ marginBottom: 10 }}>
+            {[
+              { id: 'grid',     icon: '⊞', label: 'Grid' },
+              { id: 'showcase', icon: '🖼️', label: 'Showcase' },
+              { id: 'vertical', icon: '📋', label: 'Vertical' },
+            ].map(m => (
+              <button key={m.id}
+                className={`oc-bg-mode-btn ${(c.layout || 'grid') === m.id ? 'oc-bg-mode-btn--active' : ''}`}
+                onClick={() => set('layout', m.id)}>
+                <span style={{ fontSize: 18 }}>{m.icon}</span>
+                <span>{m.label}</span>
+              </button>
+            ))}
+          </div>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            {(c.layout || 'grid') === 'showcase'
+              ? 'One match at a time — large images, great readability.'
+              : (c.layout || 'grid') === 'vertical'
+              ? 'All matches stacked vertically — compact horizontal rows.'
+              : 'Classic 2-column grid — fits all matches at once.'}
+          </p>
+
           <h4 className="nb-subtitle">Container</h4>
           <label className="nb-field">
             <span>Show Background</span>
@@ -563,8 +630,22 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
             <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>Save</button>
           </div>
 
+          {/* Built-in presets */}
+          <h4 className="nb-subtitle" style={{ marginTop: 10 }}>Built-in</h4>
+          {BUILTIN_PRESETS.map(p => (
+            <div key={p.name} className="nb-preset-item" style={{ borderLeft: '2px solid #38bdf8' }}>
+              <div className="nb-preset-info">
+                <span className="nb-preset-name">{p.name}</span>
+              </div>
+              <div className="nb-preset-actions">
+                <button className="nb-preset-load-btn" onClick={() => loadPreset(p)}>Load</button>
+              </div>
+            </div>
+          ))}
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Saved</h4>
           {(c.tournamentPresets || []).length === 0 && (
-            <p className="oc-config-hint" style={{ marginTop: 8, opacity: 0.6 }}>No saved presets yet.</p>
+            <p className="oc-config-hint" style={{ marginTop: 4, opacity: 0.6 }}>No saved presets yet.</p>
           )}
 
           {(c.tournamentPresets || []).map(p => (

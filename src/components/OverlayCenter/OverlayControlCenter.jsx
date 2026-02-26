@@ -52,8 +52,13 @@ export default function OverlayControlCenter() {
       setTimeout(() => setPresetMsg(''), 2500);
     } catch (err) {
       console.error('[OCC] share error:', err);
-      setPresetMsg('Share failed');
-      setTimeout(() => setPresetMsg(''), 2500);
+      const msg = err?.message || String(err);
+      if (msg.includes('does not exist') || msg.includes('42P01')) {
+        setPresetMsg('Run add_shared_overlay_presets.sql migration first!');
+      } else {
+        setPresetMsg(`Share failed: ${msg.slice(0, 60)}`);
+      }
+      setTimeout(() => setPresetMsg(''), 5000);
     }
   }, [user, isAdmin]);
 
