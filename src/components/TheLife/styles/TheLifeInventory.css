@@ -340,6 +340,78 @@
   transition: all 0.1s;
 }
 
+/* ---- Inventory Equip System ---- */
+.inv-boost-tag {
+  color: #22c55e;
+  font-weight: 700;
+  font-size: 0.78rem;
+  margin: 4px 0;
+  letter-spacing: 0.3px;
+}
+
+.inv-equipped-badge {
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  background: rgba(212, 175, 55, 0.9);
+  color: #000;
+  font-size: 0.55rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 4px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  z-index: 5;
+}
+
+.inv-card-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.inv-card-actions .use-item-btn {
+  margin-top: 0;
+}
+
+.inv-equip-btn,
+.inv-unequip-btn {
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.75rem;
+  cursor: pointer;
+  border: 1.5px solid transparent;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  transition: all 0.2s ease;
+}
+
+.inv-equip-btn {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.25), rgba(59, 130, 246, 0.15));
+  color: #93c5fd;
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.inv-equip-btn:hover {
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.4), rgba(59, 130, 246, 0.25));
+  border-color: rgba(59, 130, 246, 0.6);
+  transform: translateY(-1px);
+}
+
+.inv-unequip-btn {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.25), rgba(212, 175, 55, 0.15));
+  color: #d4af37;
+  border-color: rgba(212, 175, 55, 0.4);
+}
+
+.inv-unequip-btn:hover {
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.4), rgba(212, 175, 55, 0.25));
+  border-color: rgba(212, 175, 55, 0.6);
+  transform: translateY(-1px);
+}
+
 @media (hover: none) {
   .equip-btn:hover,
   .unequip-btn:hover,

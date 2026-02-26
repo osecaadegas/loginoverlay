@@ -6,6 +6,7 @@ export default function TheLifeInventory({
   theLifeInventory,
   player,
   setPlayer,
+  setPlayerFromAction,
   setMessage,
   loadTheLifeInventory,
   initializePlayer,
@@ -72,6 +73,64 @@ export default function TheLifeInventory({
     }
   };
 
+  // Equip an equipment item (weapon or gear)
+  const equipItem = async (item) => {
+    if (!item.boost_type) {
+      setMessage({ type: 'error', text: 'This item cannot be equipped!' });
+      return;
+    }
+
+    const equipSlot = item.boost_type === 'power' ? 'equipped_weapon_id' : 
+                      item.boost_type === 'defense' ? 'equipped_gear_id' : null;
+
+    if (!equipSlot) {
+      setMessage({ type: 'error', text: 'Unknown equipment type!' });
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('the_life_players')
+        .update({ [equipSlot]: item.id })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      setMessage({ type: 'success', text: `Equipped ${item.name}! +${item.boost_amount} ${item.boost_type === 'power' ? 'Power' : 'Defense'}` });
+      if (initializePlayer) initializePlayer();
+    } catch (err) {
+      console.error('Error equipping item:', err);
+      setMessage({ type: 'error', text: 'Failed to equip item' });
+    }
+  };
+
+  // Unequip from a slot
+  const unequipItem = async (slot) => {
+    try {
+      const { error } = await supabase
+        .from('the_life_players')
+        .update({ [slot]: null })
+        .eq('user_id', user.id);
+
+      if (error) throw error;
+      setMessage({ type: 'success', text: 'Item unequipped!' });
+      if (initializePlayer) initializePlayer();
+    } catch (err) {
+      console.error('Error unequipping item:', err);
+      setMessage({ type: 'error', text: 'Failed to unequip item' });
+    }
+  };
+
+  // Check if an item is currently equipped
+  const isEquipped = (item) => {
+    return item.id === player?.equipped_weapon_id || item.id === player?.equipped_gear_id;
+  };
+
+  const getEquipSlotForItem = (item) => {
+    if (item.id === player?.equipped_weapon_id) return 'equipped_weapon_id';
+    if (item.id === player?.equipped_gear_id) return 'equipped_gear_id';
+    return null;
+  };
+
   // Filter inventory
   const filteredInventory = theLifeInventory.filter(inv => {
     const typeMatch = filterType === 'all' || inv.item.type === filterType;
@@ -119,40 +178,59 @@ export default function TheLifeInventory({
         <p className="no-items">No items match your filters</p>
       ) : (
         <div className="equipment-grid compact">
-          {filteredInventory.map(inv => (
-            <div key={inv.id} className={`equipment-card compact item-rarity-${inv.item.rarity}`}>
+          {filteredInventory.map(inv => {
+            const equipped = isEquipped(inv.item);
+            const isGear = inv.item.type === 'equipment' && inv.item.boost_type;
+            return (
+            <div key={inv.id} className={`equipment-card compact item-rarity-${inv.item.rarity} ${equipped ? 'equipped' : ''}`}>
               <div className="item-image-container">
                 <img 
                   src={inv.item.icon || 'https://images.unsplash.com/photo-1606400082777-ef05f3c5cde9?w=400'} 
                   alt={inv.item.name}
                   className="item-image"
                 />
+                {equipped && <span className="inv-equipped-badge">EQUIPPED</span>}
               </div>
               <h4>{inv.item.name}</h4>
               <p className="item-description">{inv.item.description}</p>
-              <p className="item-quantity">Quantity: {inv.quantity}</p>
-              {inv.item.type === 'special' && inv.item.usable && (
-                <button 
-                  onClick={() => {
-                    if (inv.item.name === 'Jail Free Card') {
-                      useJailFreeCard();
-                    }
-                  }}
-                  className="use-item-btn"
-                >
-                  Use Item
-                </button>
+              {isGear && (
+                <p className="inv-boost-tag">
+                  {inv.item.boost_type === 'power' ? '⚔️' : '🛡️'} +{inv.item.boost_amount} {inv.item.boost_type === 'power' ? 'Power' : 'Defense'}
+                </p>
               )}
-              {inv.item.usable && inv.item.effect && inv.item.type !== 'special' && (
-                <button 
-                  onClick={() => useConsumable(inv)}
-                  className="use-item-btn"
-                >
-                  Use
-                </button>
-              )}
+              <p className="item-quantity">x{inv.quantity}</p>
+              <div className="inv-card-actions">
+                {/* Equipment: equip / unequip */}
+                {isGear && !equipped && (
+                  <button className="inv-equip-btn" onClick={() => equipItem(inv.item)}>
+                    Equip
+                  </button>
+                )}
+                {isGear && equipped && (
+                  <button className="inv-unequip-btn" onClick={() => unequipItem(getEquipSlotForItem(inv.item))}>
+                    Unequip
+                  </button>
+                )}
+                {/* Consumable: use */}
+                {inv.item.type === 'special' && inv.item.usable && (
+                  <button 
+                    onClick={() => {
+                      if (inv.item.name === 'Jail Free Card') useJailFreeCard();
+                    }}
+                    className="use-item-btn"
+                  >
+                    Use
+                  </button>
+                )}
+                {inv.item.usable && inv.item.effect && inv.item.type !== 'special' && (
+                  <button onClick={() => useConsumable(inv)} className="use-item-btn">
+                    Use
+                  </button>
+                )}
+              </div>
             </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

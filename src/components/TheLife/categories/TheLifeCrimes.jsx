@@ -126,11 +126,11 @@ export default function TheLifeCrimes({
       
       if (crimeResult.crime_success) {
         // Successful crime
-        let successMessage = `Success! You earned $${crimeResult.reward?.toLocaleString() || 0} and ${crimeResult.xp_gained || 0} XP! (${Math.round(crimeResult.success_chance)}% chance)`;
+        let successMessage = `Success! +$${crimeResult.reward?.toLocaleString() || 0} +${crimeResult.xp_gained || 0}XP (${Math.round(crimeResult.success_chance)}%)`;
         
         // Handle item drops if any
         if (crimeResult.dropped_items && crimeResult.dropped_items.length > 0) {
-          successMessage += `\n💎 You also found: ${crimeResult.dropped_items.join(', ')}`;
+          successMessage += ` 💎 Loot: ${crimeResult.dropped_items.join(', ')}`;
           if (loadTheLifeInventory) {
             loadTheLifeInventory();
           }
