@@ -282,17 +282,17 @@ export default function TheLife() {
 
         {/* ===== QUICK TOOLBAR ===== */}
         <div className="tls-toolbar">
-          <button className={`tls-toolbar__btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>🏆</button>
-          <button className={`tls-toolbar__btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>👤</button>
-          <button className={`tls-toolbar__btn ${activeTab === 'stats' ? 'active' : ''}`} onClick={() => setActiveTab('stats')}>📊</button>
+          <button className={`tls-toolbar__btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>🏆 <span className="tls-toolbar__label">{isPt ? 'Ranking' : 'Leaderboard'}</span></button>
+          <button className={`tls-toolbar__btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>👤 <span className="tls-toolbar__label">{isPt ? 'Perfil' : 'Profile'}</span></button>
+          <button className={`tls-toolbar__btn ${activeTab === 'stats' ? 'active' : ''}`} onClick={() => setActiveTab('stats')}>📊 <span className="tls-toolbar__label">{isPt ? 'Estatísticas' : 'Stats'}</span></button>
           <button className="tls-toolbar__btn tls-toolbar__btn--gold" onClick={() => navigate('/games/thelife/season-pass')}>
             ⭐ <span className="tls-toolbar__label">{isPt ? 'Passe' : 'Pass'}</span>
           </button>
           <button className={`tls-toolbar__btn ${activeTab === 'skills' ? 'active' : ''}`} onClick={() => setActiveTab('skills')}>📈 <span className="tls-toolbar__label">{isPt ? 'Habilidades' : 'Skills'}</span></button>
           {isMusicEnabled ? (
-            <button className="tls-toolbar__btn" onClick={toggleMusic} title="Mute music">🔊</button>
+            <button className="tls-toolbar__btn" onClick={toggleMusic} title="Mute music">🔊 <span className="tls-toolbar__label">{isPt ? 'Som' : 'Sound'}</span></button>
           ) : (
-            <button className="tls-toolbar__btn" onClick={toggleMusic} title="Enable music">🔇</button>
+            <button className="tls-toolbar__btn" onClick={toggleMusic} title="Enable music">🔇 <span className="tls-toolbar__label">{isPt ? 'Som' : 'Sound'}</span></button>
           )}
         </div>
 
