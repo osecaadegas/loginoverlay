@@ -204,17 +204,6 @@ export default function OverlayControlCenter() {
                 <span className="oc-sidebar-btn-label">{tab.label}</span>
               </button>
             ))}
-
-            {/* Admin — only visible to admins */}
-            {isAdmin && (
-              <button
-                className="oc-sidebar-btn"
-                onClick={() => navigate('/admin')}
-              >
-                <span className="oc-sidebar-btn-icon">🛡️</span>
-                <span className="oc-sidebar-btn-label">Admin</span>
-              </button>
-            )}
           </nav>
 
           {/* ─── Resolution Selector ─── */}

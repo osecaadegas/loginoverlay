@@ -24,6 +24,7 @@ const ICONS = {
   games: 'M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z',
   webmod: 'M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z',
   admin: 'M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 10.99h7c-.53 4.12-3.28 7.79-7 8.94V12H5V6.3l7-3.11v8.8z',
+  code: 'M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z',
   overlay: 'M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z',
   logout: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z',
   chevron: 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
@@ -185,6 +186,9 @@ export default function Sidebar({ className = '', onClose }) {
 
         {isAdmin && (
           <NavItem icon={ICONS.admin} labelKey="nav_admin_panel" label="Admin Panel" path="/admin" />
+        )}
+        {isAdmin && (
+          <NavItem icon={ICONS.code} labelKey="nav_developer" label="Developer" path="/developer" />
         )}
         {(isAdmin || isPremium) && (
           <NavItem icon={ICONS.overlay} labelKey="nav_overlay_center" label="Overlay Center" path="/overlay-center" />

@@ -1,0 +1,348 @@
+/* ═══════════════════════════════════════════════
+   DeveloperPage.css — Admin-only developer tools
+   ═══════════════════════════════════════════════ */
+
+.dev-page {
+  min-height: 100vh;
+  background: var(--theme-bg-primary, #0a0a14);
+  color: var(--theme-text-primary, #e0e0f0);
+  padding: 24px;
+}
+
+.dev-layout {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+
+/* ── Header ── */
+.dev-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dev-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.dev-header-icon {
+  font-size: 1.6rem;
+}
+
+.dev-header-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.dev-user-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+  background: rgba(255, 255, 255, 0.04);
+  padding: 5px 12px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dev-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+}
+
+/* ── Tabs ── */
+.dev-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 4px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.dev-tab {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-size: 0.82rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.dev-tab:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.dev-tab--active {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.dev-tab-icon {
+  font-size: 0.9rem;
+}
+
+/* ── Content / Panel ── */
+.dev-content {
+  animation: devFadeIn 0.2s ease;
+}
+
+@keyframes devFadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.dev-panel {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.dev-panel-title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0 0 16px;
+  letter-spacing: -0.01em;
+}
+
+.dev-section-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 20px 0 10px;
+  color: var(--theme-text-secondary, #a0a0b4);
+}
+
+.dev-muted {
+  font-size: 0.8rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+  margin: 0 0 14px;
+}
+
+/* ── Info Cards Grid ── */
+.dev-card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+}
+
+.dev-info-card {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 12px;
+  transition: border-color 0.2s;
+}
+
+.dev-info-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.dev-info-card-icon {
+  font-size: 1.3rem;
+  flex-shrink: 0;
+}
+
+.dev-info-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.dev-info-card-title {
+  font-size: 0.7rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dev-info-card-value {
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+/* ── Links ── */
+.dev-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dev-link {
+  display: inline-block;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  color: #60a5fa;
+  font-size: 0.8rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.dev-link:hover {
+  background: rgba(96, 165, 250, 0.1);
+  border-color: rgba(96, 165, 250, 0.3);
+}
+
+/* ── Table ── */
+.dev-table-wrap {
+  overflow-x: auto;
+}
+
+.dev-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+
+.dev-table th {
+  text-align: left;
+  padding: 8px 12px;
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-weight: 600;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.dev-table td {
+  padding: 7px 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dev-table code {
+  background: rgba(255, 255, 255, 0.06);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.78rem;
+  color: #c084fc;
+}
+
+.dev-table tr:hover td {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+/* ── Environment ── */
+.dev-env-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.dev-env-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.dev-env-key {
+  font-size: 0.78rem;
+  color: #c084fc;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.dev-env-status {
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.dev-env-status--ok {
+  color: #4ade80;
+}
+
+.dev-env-status--missing {
+  color: #f87171;
+}
+
+/* ── Placeholder ── */
+.dev-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 40px;
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-size: 0.82rem;
+}
+
+.dev-placeholder-icon {
+  font-size: 2rem;
+  opacity: 0.5;
+}
+
+/* ── Loading ── */
+.dev-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 60vh;
+  gap: 12px;
+  color: var(--theme-text-secondary, #a0a0b4);
+}
+
+.dev-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: devSpin 0.7s linear infinite;
+}
+
+@keyframes devSpin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .dev-page {
+    padding: 14px;
+  }
+
+  .dev-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .dev-tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .dev-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
