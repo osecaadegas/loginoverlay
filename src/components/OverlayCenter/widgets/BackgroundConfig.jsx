@@ -85,6 +85,9 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
     'opacity', 'borderRadius',
     'brightness', 'contrast', 'saturation', 'blur', 'hueRotate', 'grayscale', 'sepia',
     'overlayColor', 'overlayOpacity',
+    'fxParticles', 'fxParticleColor', 'fxParticleCount', 'fxParticleSpeed', 'fxParticleSize',
+    'fxFog', 'fxFogColor',
+    'fxGlimpse', 'fxGlimpseColor', 'fxGlimpseSpeed',
   ];
 
   const savePreset = () => {
@@ -116,10 +119,25 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
     { name: 'Cinema Vignette', values: { bgMode: 'texture', textureType: 'vignette', color1: '#000000', color2: '#1a1a2e' } },
   ];
 
+  /* ─── Effects quick presets ─── */
+  const fxQuickPresets = [
+    { name: '❄️ Snowfall', values: { fxParticles: 'snow', fxParticleColor: '#ffffff', fxParticleCount: 40, fxParticleSpeed: 40, fxParticleSize: 50 } },
+    { name: '🌧️ Rain', values: { fxParticles: 'rain', fxParticleColor: '#94a3b8', fxParticleCount: 50, fxParticleSpeed: 70, fxParticleSize: 30 } },
+    { name: '✨ Fireflies', values: { fxParticles: 'fireflies', fxParticleColor: '#fbbf24', fxParticleCount: 15, fxParticleSpeed: 30, fxParticleSize: 40 } },
+    { name: '🔮 Orbs', values: { fxParticles: 'orbs', fxParticleColor: '#a855f7', fxParticleCount: 20, fxParticleSpeed: 35, fxParticleSize: 50 } },
+    { name: '💫 Bokeh', values: { fxParticles: 'bokeh', fxParticleColor: '#f59e0b', fxParticleCount: 12, fxParticleSpeed: 25, fxParticleSize: 60 } },
+    { name: '🌫️ Light Fog', values: { fxFog: 'light', fxFogColor: '#1e293b' } },
+    { name: '💨 Heavy Smoke', values: { fxFog: 'heavy', fxFogColor: '#000000' } },
+    { name: '🔦 Sweep', values: { fxGlimpse: 'sweep', fxGlimpseColor: '#ffffff', fxGlimpseSpeed: 50 } },
+    { name: '💜 Pulse Glow', values: { fxGlimpse: 'pulse', fxGlimpseColor: '#a855f7', fxGlimpseSpeed: 40 } },
+    { name: '⚡ Flicker', values: { fxGlimpse: 'flicker', fxGlimpseColor: '#fbbf24', fxGlimpseSpeed: 70 } },
+  ];
+
   const tabs = [
     { id: 'source', label: '🖼️ Source' },
     { id: 'texture', label: '🎨 Texture' },
     { id: 'colors', label: '🌈 Colors' },
+    { id: 'effects', label: '🌀 Effects' },
     { id: 'filters', label: '✨ Filters' },
     { id: 'presets', label: '💾 Presets' },
   ];
@@ -288,6 +306,88 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
             <ColorPicker label="Overlay Color" value={c.overlayColor || '#000000'} onChange={v => set('overlayColor', v)} />
           </div>
           <SliderField label="Overlay Opacity" value={c.overlayOpacity ?? 0} onChange={v => set('overlayOpacity', v)} min={0} max={100} suffix="%" />
+        </div>
+      )}
+
+      {/* ═══════ EFFECTS TAB ═══════ */}
+      {activeTab === 'effects' && (
+        <div className="nb-section">
+          <h4 className="nb-subtitle">Quick Effects</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Apply animated overlays on top of your background.
+          </p>
+          <div className="oc-bg-quick-grid">
+            {fxQuickPresets.map(p => (
+              <button key={p.name} className="oc-bg-quick-btn" onClick={() => setMulti(p.values)}>
+                {p.name}
+              </button>
+            ))}
+          </div>
+          <button className="nb-preset-load-btn" style={{ marginTop: 8, width: '100%', fontSize: 11 }}
+            onClick={() => setMulti({ fxParticles: 'none', fxFog: 'none', fxGlimpse: 'none' })}>
+            🚫 Clear All Effects
+          </button>
+
+          {/* ── Particles ── */}
+          <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Particles</h4>
+          <label className="nb-field">
+            <span>Type</span>
+            <select value={c.fxParticles || 'none'} onChange={e => set('fxParticles', e.target.value)}>
+              <option value="none">None</option>
+              <option value="orbs">🔮 Floating Orbs</option>
+              <option value="fireflies">✨ Fireflies</option>
+              <option value="bokeh">💫 Bokeh Blur</option>
+              <option value="snow">❄️ Snow</option>
+              <option value="rain">🌧️ Rain</option>
+            </select>
+          </label>
+          {(c.fxParticles && c.fxParticles !== 'none') && (
+            <>
+              <div className="nb-color-grid" style={{ marginTop: 4 }}>
+                <ColorPicker label="Color" value={c.fxParticleColor || '#ffffff'} onChange={v => set('fxParticleColor', v)} />
+              </div>
+              <SliderField label="Count" value={c.fxParticleCount ?? 25} onChange={v => set('fxParticleCount', v)} min={5} max={80} />
+              <SliderField label="Speed" value={c.fxParticleSpeed ?? 50} onChange={v => set('fxParticleSpeed', v)} min={0} max={100} suffix="%" />
+              <SliderField label="Size" value={c.fxParticleSize ?? 50} onChange={v => set('fxParticleSize', v)} min={10} max={100} suffix="%" />
+            </>
+          )}
+
+          {/* ── Fog / Smoke ── */}
+          <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Fog / Smoke</h4>
+          <label className="nb-field">
+            <span>Intensity</span>
+            <select value={c.fxFog || 'none'} onChange={e => set('fxFog', e.target.value)}>
+              <option value="none">None</option>
+              <option value="light">🌫️ Light</option>
+              <option value="medium">💨 Medium</option>
+              <option value="heavy">🌑 Heavy</option>
+            </select>
+          </label>
+          {(c.fxFog && c.fxFog !== 'none') && (
+            <div className="nb-color-grid" style={{ marginTop: 4 }}>
+              <ColorPicker label="Fog Color" value={c.fxFogColor || '#000000'} onChange={v => set('fxFogColor', v)} />
+            </div>
+          )}
+
+          {/* ── Light Glimpse ── */}
+          <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Light Effects</h4>
+          <label className="nb-field">
+            <span>Type</span>
+            <select value={c.fxGlimpse || 'none'} onChange={e => set('fxGlimpse', e.target.value)}>
+              <option value="none">None</option>
+              <option value="sweep">🔦 Light Sweep</option>
+              <option value="pulse">💜 Pulse Glow</option>
+              <option value="flicker">⚡ Flicker</option>
+            </select>
+          </label>
+          {(c.fxGlimpse && c.fxGlimpse !== 'none') && (
+            <>
+              <div className="nb-color-grid" style={{ marginTop: 4 }}>
+                <ColorPicker label="Light Color" value={c.fxGlimpseColor || '#ffffff'} onChange={v => set('fxGlimpseColor', v)} />
+              </div>
+              <SliderField label="Speed" value={c.fxGlimpseSpeed ?? 50} onChange={v => set('fxGlimpseSpeed', v)} min={0} max={100} suffix="%" />
+            </>
+          )}
         </div>
       )}
 

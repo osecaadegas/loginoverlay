@@ -45,6 +45,7 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
     'width', 'height', 'borderRadius', 'borderWidth', 'msgSpacing', 'maxMessages',
     'showHeader', 'showLegend',
     'brightness', 'contrast', 'saturation',
+    'raidBgColor', 'raidBorderColor', 'raidTextColor', 'showRaidAvatar',
   ];
 
   const savePreset = () => {
@@ -185,6 +186,20 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
             <ColorPicker label="Header BG" value={c.headerBg || '#1e293b'} onChange={v => set('headerBg', v)} />
             <ColorPicker label="Header Text" value={c.headerText || '#94a3b8'} onChange={v => set('headerText', v)} />
           </div>
+
+          <h4 className="nb-subtitle">Raid Highlight</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Customize how incoming raid events appear in chat.
+          </p>
+          <div className="nb-color-grid">
+            <ColorPicker label="Raid BG" value={c.raidBgColor || '#7c3aed'} onChange={v => set('raidBgColor', v)} />
+            <ColorPicker label="Raid Border" value={c.raidBorderColor || '#a855f7'} onChange={v => set('raidBorderColor', v)} />
+            <ColorPicker label="Raid Text" value={c.raidTextColor || '#ffffff'} onChange={v => set('raidTextColor', v)} />
+          </div>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8, marginTop: 6 }}>
+            <input type="checkbox" checked={c.showRaidAvatar !== false} onChange={e => set('showRaidAvatar', e.target.checked)} />
+            <span>Show Raider's Avatar</span>
+          </label>
 
           <h4 className="nb-subtitle">Typography</h4>
           <label className="nb-field">

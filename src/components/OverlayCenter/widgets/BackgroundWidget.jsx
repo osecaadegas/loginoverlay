@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect } from 'react';
 
 /* ─── Texture CSS generators ─── */
 const TEXTURES = {
@@ -96,6 +96,18 @@ export default function BackgroundWidget({ config, theme }) {
   const overlayColor = c.overlayColor || '';
   const overlayOpacity = c.overlayOpacity ?? 0;
 
+  /* ─── Effects config ─── */
+  const fxParticles = c.fxParticles || 'none';     // none | orbs | fireflies | bokeh | snow | rain
+  const fxParticleColor = c.fxParticleColor || '#ffffff';
+  const fxParticleCount = c.fxParticleCount ?? 25;
+  const fxParticleSpeed = c.fxParticleSpeed ?? 50;
+  const fxParticleSize = c.fxParticleSize ?? 50;
+  const fxFog = c.fxFog || 'none';                 // none | light | medium | heavy
+  const fxFogColor = c.fxFogColor || '#000000';
+  const fxGlimpse = c.fxGlimpse || 'none';         // none | sweep | pulse | flicker
+  const fxGlimpseColor = c.fxGlimpseColor || '#ffffff';
+  const fxGlimpseSpeed = c.fxGlimpseSpeed ?? 50;
+
   /* ─── Build CSS filter ─── */
   const filterParts = [];
   if (brightness !== 100) filterParts.push(`brightness(${brightness}%)`);
@@ -184,6 +196,171 @@ export default function BackgroundWidget({ config, theme }) {
           }}
         />
       )}
+
+      {/* ── Animated Effects Layer ── */}
+      {(fxParticles !== 'none' || fxFog !== 'none' || fxGlimpse !== 'none') && (
+        <div className="oc-bg-layer oc-bg-fx" style={{ ...mediaStyle, filter: undefined, zIndex: 2, pointerEvents: 'none' }}>
+
+          {/* Particles / Snow / Rain / Fireflies / Bokeh / Orbs */}
+          {fxParticles !== 'none' && (
+            <ParticleLayer
+              type={fxParticles}
+              color={fxParticleColor}
+              count={fxParticleCount}
+              speed={fxParticleSpeed}
+              size={fxParticleSize}
+            />
+          )}
+
+          {/* Fog / Smoke */}
+          {fxFog !== 'none' && (
+            <FogLayer intensity={fxFog} color={fxFogColor} />
+          )}
+
+          {/* Glimpse / Sweep / Pulse */}
+          {fxGlimpse !== 'none' && (
+            <GlimpseLayer type={fxGlimpse} color={fxGlimpseColor} speed={fxGlimpseSpeed} />
+          )}
+        </div>
+      )}
     </div>
   );
+}
+
+/* ═══════════════════════════════════════════════
+   PARTICLE LAYER – generates CSS-animated particles
+   ═══════════════════════════════════════════════ */
+function ParticleLayer({ type, color, count, speed, size }) {
+  const clamped = Math.min(Math.max(count, 5), 80);
+  const speedFactor = (100 - speed) / 50 + 0.5; // 0.5x to 2.5x
+  const sizeFactor = size / 50; // 0-2x
+
+  const particles = useMemo(() => {
+    const arr = [];
+    for (let i = 0; i < clamped; i++) {
+      const rng = seededRandom(i * 137 + 42);
+      arr.push({
+        x: rng() * 100,           // start X %
+        y: rng() * 100,           // start Y %
+        delay: rng() * 10,        // animation delay
+        dur: (rng() * 6 + 4) * speedFactor,  // duration
+        s: (rng() * 0.6 + 0.4) * sizeFactor, // size multiplier
+        drift: (rng() - 0.5) * 60,           // horizontal drift
+        opacity: rng() * 0.5 + 0.3,
+      });
+    }
+    return arr;
+  }, [clamped, speedFactor, sizeFactor]);
+
+  const baseSize = type === 'rain' ? 2 : type === 'snow' ? 6 : type === 'fireflies' ? 4 : type === 'bokeh' ? 30 : 8;
+  const animName = type === 'rain' ? 'oc-fx-rain' : type === 'snow' ? 'oc-fx-snow' : type === 'fireflies' ? 'oc-fx-firefly' : type === 'bokeh' ? 'oc-fx-bokeh' : 'oc-fx-orb';
+
+  return (
+    <div className="oc-fx-particles" style={{ position: 'absolute', inset: 0, overflow: 'hidden' }}>
+      {particles.map((p, i) => {
+        const w = baseSize * p.s;
+        const h = type === 'rain' ? w * 6 : w;
+        return (
+          <span
+            key={i}
+            className={`oc-fx-particle oc-fx-particle--${type}`}
+            style={{
+              '--fx-x': `${p.x}%`,
+              '--fx-drift': `${p.drift}px`,
+              '--fx-color': color,
+              '--fx-opacity': p.opacity,
+              position: 'absolute',
+              left: `${p.x}%`,
+              top: type === 'rain' || type === 'snow' ? '-5%' : `${p.y}%`,
+              width: `${w}px`,
+              height: `${h}px`,
+              borderRadius: type === 'rain' ? '1px' : '50%',
+              background: type === 'fireflies'
+                ? `radial-gradient(circle, ${color}, transparent 70%)`
+                : type === 'bokeh'
+                  ? `radial-gradient(circle, ${color}33, ${color}11 60%, transparent 70%)`
+                  : color,
+              opacity: p.opacity,
+              animation: `${animName} ${p.dur}s ${p.delay}s ease-in-out infinite`,
+              pointerEvents: 'none',
+              filter: type === 'bokeh' ? `blur(${w * 0.3}px)` : type === 'fireflies' ? 'blur(1px)' : undefined,
+              boxShadow: type === 'fireflies' ? `0 0 ${w * 2}px ${color}` : type === 'orbs' ? `0 0 ${w}px ${color}44` : undefined,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   FOG LAYER – animated gradient fog
+   ═══════════════════════════════════════════════ */
+function FogLayer({ intensity, color }) {
+  const opMap = { light: 0.15, medium: 0.3, heavy: 0.5 };
+  const op = opMap[intensity] || 0.2;
+
+  return (
+    <div className="oc-fx-fog" style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      <div className="oc-fx-fog-layer oc-fx-fog-1" style={{
+        '--fog-color': color,
+        '--fog-opacity': op,
+      }} />
+      <div className="oc-fx-fog-layer oc-fx-fog-2" style={{
+        '--fog-color': color,
+        '--fog-opacity': op * 0.7,
+      }} />
+      {intensity === 'heavy' && (
+        <div className="oc-fx-fog-layer oc-fx-fog-3" style={{
+          '--fog-color': color,
+          '--fog-opacity': op * 0.5,
+        }} />
+      )}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   GLIMPSE LAYER – light sweep / pulse / flicker
+   ═══════════════════════════════════════════════ */
+function GlimpseLayer({ type, color, speed }) {
+  const dur = ((100 - speed) / 10 + 2); // 2s to 12s
+
+  if (type === 'sweep') {
+    return (
+      <div className="oc-fx-glimpse oc-fx-glimpse--sweep" style={{
+        '--glimpse-color': color,
+        '--glimpse-dur': `${dur}s`,
+      }} />
+    );
+  }
+
+  if (type === 'pulse') {
+    return (
+      <div className="oc-fx-glimpse oc-fx-glimpse--pulse" style={{
+        '--glimpse-color': color,
+        '--glimpse-dur': `${dur}s`,
+      }} />
+    );
+  }
+
+  if (type === 'flicker') {
+    return (
+      <div className="oc-fx-glimpse oc-fx-glimpse--flicker" style={{
+        '--glimpse-color': color,
+        '--glimpse-dur': `${dur * 0.3}s`,
+      }} />
+    );
+  }
+
+  return null;
+}
+
+/* ─── Seeded PRNG for deterministic particles ─── */
+function seededRandom(seed) {
+  let s = seed;
+  return () => {
+    s = (s * 9301 + 49297) % 233280;
+    return s / 233280;
+  };
 }

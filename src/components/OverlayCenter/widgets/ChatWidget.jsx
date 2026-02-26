@@ -18,7 +18,7 @@ function useTwitchChat(channel, onMessage) {
     wsRef.current = ws;
 
     ws.onopen = () => {
-      ws.send('CAP REQ :twitch.tv/tags');
+      ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
       ws.send('NICK justinfan' + Math.floor(Math.random() * 99999));
       ws.send('JOIN #' + channel.toLowerCase().trim());
     };
@@ -27,6 +27,33 @@ function useTwitchChat(channel, onMessage) {
       const lines = evt.data.split('\r\n');
       for (const line of lines) {
         if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
+
+        /* ── Raid USERNOTICE ── */
+        if (line.includes('USERNOTICE') && line.includes('msg-id=raid')) {
+          const tagStr = line.match(/@([^ ]+)/)?.[1] || '';
+          const tags = Object.fromEntries(tagStr.split(';').map(t => { const [k, ...v] = t.split('='); return [k, v.join('=')]; }));
+          const raider = tags['msg-param-displayName'] || tags['display-name'] || tags['login'] || 'Someone';
+          const viewerCount = parseInt(tags['msg-param-viewerCount'] || '0', 10);
+          // Twitch sends profile image URL in raid USERNOTICEs (may be URL-encoded)
+          let avatar = (tags['msg-param-profileImageURL'] || '').replace(/%s/g, '');
+          // Fallback: if no profile image tag, leave empty
+          if (avatar && !avatar.startsWith('http')) avatar = '';
+
+          onMessage({
+            id: tags['id'] || 'raid-' + Date.now(),
+            platform: 'twitch',
+            username: raider,
+            message: `is raiding with ${viewerCount} viewer${viewerCount !== 1 ? 's' : ''}!`,
+            color: tags['color'] || '#a855f7',
+            timestamp: Date.now(),
+            isRaid: true,
+            raidViewers: viewerCount,
+            raidAvatar: avatar || '',
+          });
+          continue;
+        }
+
+        /* ── Normal PRIVMSG ── */
         const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
         if (!m) continue;
         const tags = Object.fromEntries(m[1].split(';').map(t => t.split('=')));
@@ -300,6 +327,76 @@ export default function ChatWidget({ config, theme }) {
         {messages.map(msg => {
           const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
           const nameColor = c.useNativeColors && msg.color ? msg.color : plt.color;
+
+          /* ── Raid message highlight ── */
+          if (msg.isRaid) {
+            const raidBg = c.raidBgColor || '#7c3aed';
+            const raidBorder = c.raidBorderColor || '#a855f7';
+            const raidText = c.raidTextColor || '#ffffff';
+            const showAvatar = c.showRaidAvatar !== false;
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-raid" style={{
+                padding: `${msgSpacing + 4}px 10px`,
+                background: raidBg,
+                border: `2px solid ${raidBorder}`,
+                borderRadius: '8px',
+                margin: `${msgSpacing}px 6px`,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                animation: 'ov-raid-glow 2s ease-in-out 3',
+              }}>
+                {showAvatar && msg.raidAvatar && (
+                  <img
+                    src={msg.raidAvatar}
+                    alt={msg.username}
+                    className="ov-chat-raid-avatar"
+                    style={{
+                      width: '42px',
+                      height: '42px',
+                      borderRadius: '50%',
+                      border: `2px solid ${raidBorder}`,
+                      flexShrink: 0,
+                    }}
+                  />
+                )}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{
+                      background: '#a855f733',
+                      color: '#d8b4fe',
+                      padding: '1px 6px',
+                      borderRadius: '4px',
+                      fontSize: '0.75em',
+                      fontWeight: 700,
+                      letterSpacing: '0.05em',
+                      textTransform: 'uppercase',
+                    }}>⚔️ RAID</span>
+                    <span className="ov-chat-username" style={{ color: raidText, fontWeight: 700, fontSize: '1.05em' }}>
+                      {msg.username}
+                    </span>
+                  </div>
+                  <span className="ov-chat-text" style={{ color: raidText, opacity: 0.92 }}>
+                    {msg.message}
+                  </span>
+                </div>
+                {msg.raidViewers > 0 && (
+                  <span style={{
+                    background: '#a855f744',
+                    color: '#e9d5ff',
+                    padding: '2px 8px',
+                    borderRadius: '12px',
+                    fontSize: '0.8em',
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                    flexShrink: 0,
+                  }}>👥 {msg.raidViewers}</span>
+                )}
+              </div>
+            );
+          }
+
+          /* ── Normal message ── */
           return (
             <div key={msg.id} className="ov-chat-msg" style={{ padding: `${msgSpacing}px 10px` }}>
               <span className="ov-chat-badge" style={{
