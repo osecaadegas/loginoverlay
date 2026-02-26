@@ -1,16 +1,11 @@
-import React, { useMemo, lazy, Suspense } from 'react';
+import React, { useMemo } from 'react';
 import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
-
-const BonusHuntWidgetV3 = lazy(() => import('./BonusHuntWidgetV3'));
+import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
 
 export default function BonusHuntWidget({ config, theme }) {
   /* ─── Style switcher ─── */
   if ((config || {}).displayStyle === 'v3') {
-    return (
-      <Suspense fallback={<div style={{ color: '#64748b', padding: 20 }}>Loading Flip Card…</div>}>
-        <BonusHuntWidgetV3 config={config} theme={theme} />
-      </Suspense>
-    );
+    return <BonusHuntWidgetV3 config={config} theme={theme} />;
   }
   if ((config || {}).displayStyle === 'v2') {
     return <BonusHuntWidgetV2 config={config} theme={theme} />;
