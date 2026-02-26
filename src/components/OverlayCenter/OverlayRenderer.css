@@ -1211,11 +1211,21 @@
   to   { transform: rotateY(360deg); }
 }
 
-/* ── Root ── */
+/* ── Root — override .or-widget-inner & .oc-bonushunt glass styles ── */
 .bht3-root {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  /* Kill the glass card background so V3 cards show their own bg */
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  /* Must be visible so 3D flipping is not clipped */
+  overflow: visible !important;
+  /* Preserve 3D context through the tree */
+  transform-style: preserve-3d;
 }
 
 /* ── Card base ── */
@@ -1362,11 +1372,15 @@
 /* ── Flip area ── */
 .bht3-flip-area {
   width: 100%;
+  overflow: visible;
+  transform-style: preserve-3d;
 }
 
 .bht3-flip-container {
   perspective: 1000px;
   width: 100%;
+  overflow: visible;
+  transform-style: preserve-3d;
 }
 
 .bht3-flip-inner {
@@ -1374,6 +1388,7 @@
   width: 100%;
   height: var(--bht3-flip-height, 220px);
   transform-style: preserve-3d;
+  -webkit-transform-style: preserve-3d;
   animation: bht3-spin var(--bht3-spin-duration, 8s) linear infinite;
 }
 
