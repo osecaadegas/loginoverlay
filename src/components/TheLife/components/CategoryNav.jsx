@@ -6,17 +6,17 @@ import './CategoryNav.css';
  * Add new categories by pushing objects here.
  */
 const CATEGORY_TABS = [
-  { key: 'crimes',     label: 'Crimes',       icon: '🔫' },
-  { key: 'businesses', label: 'Business',      icon: '🏢' },
-  { key: 'brothel',    label: 'Brothel',       icon: '💋', restricted: true },
-  { key: 'pvp',        label: 'PvP',           icon: '⚔️', restricted: true },
-  { key: 'highstakes', label: 'High Stakes',   icon: '🎰', restricted: true },
-  { key: 'docks',      label: 'Docks',         icon: '🚢', restricted: true },
-  { key: 'market',     label: 'Black Market',  icon: '💀', restricted: true },
-  { key: 'skills',     label: 'Skills',        icon: '📈' },
-  { key: 'inventory',  label: 'Stash',         icon: '🎒' },
-  { key: 'jail',       label: 'Jail',          icon: '🔒' },
-  { key: 'hospital',   label: 'Hospital',      icon: '🏥' },
+  { key: 'crimes',     label: 'Crimes',       icon: '🔫', img: '/thelife/categories/crimes.png' },
+  { key: 'businesses', label: 'Business',      icon: '🏢', img: '/thelife/categories/businesses.png' },
+  { key: 'brothel',    label: 'Brothel',       icon: '💋', img: '/thelife/categories/brothel.png', restricted: true },
+  { key: 'pvp',        label: 'PvP',           icon: '⚔️', img: '/thelife/categories/pvp.png', restricted: true },
+  { key: 'highstakes', label: 'High Stakes',   icon: '🎰', img: '/thelife/categories/high-stakes.png', restricted: true },
+  { key: 'docks',      label: 'Docks',         icon: '🚢', img: '/thelife/categories/Docks.png', restricted: true },
+  { key: 'market',     label: 'Black Market',  icon: '💀', img: '/thelife/categories/BlackMarket.png', restricted: true },
+  { key: 'skills',     label: 'Skills',        icon: '📈', img: '/thelife/categories/skills.png' },
+  { key: 'inventory',  label: 'Stash',         icon: '🎒', img: '/thelife/categories/Inventory.png' },
+  { key: 'jail',       label: 'Jail',          icon: '🔒', img: '/thelife/categories/Jail.png' },
+  { key: 'hospital',   label: 'Hospital',      icon: '🏥', img: '/thelife/categories/Hospital.png' },
 ];
 
 /**
@@ -118,7 +118,7 @@ export default function CategoryNav({ activeTab, setActiveTab, isRestricted, onC
             onClick={() => handleTabClick(tab)}
             tabIndex={tab.restricted && isRestricted ? -1 : 0}
           >
-            <span className="cn-pill__icon">{tab.icon}</span>
+            <img className="cn-pill__img" src={tab.img} alt={tab.label} draggable={false} />
             <span className="cn-pill__label">{tab.label}</span>
           </button>
         ))}
