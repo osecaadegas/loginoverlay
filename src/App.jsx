@@ -527,13 +527,15 @@ function LayoutWrapper({ children }) {
   const location = useLocation();
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
+  const isOverlayCenter = location.pathname === '/overlay-center';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
                       !isWidgetRoute &&
-                      !isOBSOverlay;
+                      !isOBSOverlay &&
+                      !isOverlayCenter;
 
   // Detect screen size changes
   useEffect(() => {
