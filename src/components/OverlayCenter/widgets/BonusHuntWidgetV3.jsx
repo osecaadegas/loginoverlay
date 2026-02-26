@@ -37,6 +37,7 @@ export default function BonusHuntWidgetV3({ config, theme }) {
   const cardRadius = c.cardRadius ?? 16;
   const slotImageHeight = c.slotImageHeight ?? 220;
   const spinDuration = c.flipSpinDuration ?? 8;
+  const cardStyle = c.cardStyle || 'default';
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -136,7 +137,7 @@ export default function BonusHuntWidgetV3({ config, theme }) {
   };
 
   return (
-    <div className="oc-widget-inner oc-bonushunt bht3-root" style={rootStyle}>
+    <div className={`oc-widget-inner oc-bonushunt bht3-root bht3-style-${cardStyle}`} style={rootStyle}>
 
       {/* ═══ Flip Card Carousel ═══ */}
       {bonuses.length > 0 && (
