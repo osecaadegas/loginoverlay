@@ -447,13 +447,15 @@ export default function Sidebar({ className = '', onClose }) {
             </button>
           )}
 
-          {menuItems[5]?.show && (
+          {(isAdmin || isPremium) && (
             <button
-              className={`sidebar-item ${isActive(menuItems[5].path) ? 'active' : ''}`}
-              onClick={() => handleNavigation(menuItems[5].path)}
+              className={`sidebar-item ${isActive('/overlay-center') ? 'active' : ''}`}
+              onClick={() => handleNavigation('/overlay-center')}
             >
-              <span className="sidebar-icon">{menuItems[5].icon}</span>
-              <span className="sidebar-label">{t(menuItems[5].labelKey, menuItems[5].label)}</span>
+              <span className="sidebar-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M21 3H3c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h5v2h8v-2h5c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 14H3V5h18v12z"/></svg>
+              </span>
+              <span className="sidebar-label">{t('nav_overlay_center', 'Overlay Center')}</span>
             </button>
           )}
 

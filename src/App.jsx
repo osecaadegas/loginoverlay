@@ -32,6 +32,9 @@ import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
 import ProfilePage from './components/ProfilePage/ProfilePage';
 import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
+import OverlayControlCenter from './components/OverlayCenter/OverlayControlCenter';
+import OverlayRenderer from './components/OverlayCenter/OverlayRenderer';
+import SpotifyCallback from './components/SpotifyCallback';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -522,12 +525,14 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
 function LayoutWrapper({ children }) {
   const location = useLocation();
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
+  const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
-                      !isWidgetRoute;
+                      !isWidgetRoute &&
+                      !isOBSOverlay;
 
   // Detect screen size changes
   useEffect(() => {
@@ -643,6 +648,13 @@ function App() {
                 } />
                 
                 <Route path="/admin" element={<AdminPanel />} />
+                <Route path="/overlay-center" element={
+                  <ProtectedAdminRoute>
+                    <OverlayControlCenter />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/overlay/:token" element={<OverlayRenderer />} />
+                <Route path="/spotify-callback" element={<SpotifyCallback />} />
               </Routes>
             </LayoutWrapper>
           </BrowserRouter>
