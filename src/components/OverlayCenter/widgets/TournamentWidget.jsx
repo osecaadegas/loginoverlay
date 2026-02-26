@@ -3,7 +3,7 @@ import React, { useState, useMemo } from 'react';
 /**
  * TournamentWidget — OBS bracket display.
  * Two-column player cards with a swinging ⚔️ sword between them.
- * Shows phase tabs, matchup cards with slot images, player names and multipliers.
+ * Slot images scale with widget size and are always fully visible.
  */
 export default function TournamentWidget({ config, theme }) {
   const c = config || {};
@@ -15,15 +15,16 @@ export default function TournamentWidget({ config, theme }) {
   const matches = data.matches || [];
 
   /* ─── Style config ─── */
-  const bgColor = c.bgColor || 'transparent';
+  const showBg = c.showBg !== false; // toggle for outer background
+  const bgColor = showBg ? (c.bgColor || '#13151e') : 'transparent';
   const cardBg = c.cardBg || '#1a1d2e';
   const cardBorder = c.cardBorder || 'rgba(255,255,255,0.08)';
-  const cardRadius = c.cardRadius ?? 12;
+  const cardRadius = c.cardRadius ?? 10;
   const cardBorderWidth = c.cardBorderWidth ?? 1;
   const nameColor = c.nameColor || '#ffffff';
-  const nameSize = c.nameSize ?? 13;
+  const nameSize = c.nameSize ?? 12;
   const multiColor = c.multiColor || '#facc15';
-  const multiSize = c.multiSize ?? 14;
+  const multiSize = c.multiSize ?? 13;
   const tabBg = c.tabBg || 'rgba(255,255,255,0.06)';
   const tabActiveBg = c.tabActiveBg || 'rgba(255,255,255,0.15)';
   const tabColor = c.tabColor || '#94a3b8';
@@ -32,16 +33,16 @@ export default function TournamentWidget({ config, theme }) {
   const eliminatedOpacity = c.eliminatedOpacity ?? 0.35;
   const showSlotName = c.showSlotName !== false;
   const slotNameColor = c.slotNameColor || '#ffffff';
-  const slotNameSize = c.slotNameSize ?? 11;
+  const slotNameSize = c.slotNameSize ?? 10;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const borderRadius = c.borderRadius ?? 14;
-  const borderWidth = c.borderWidth ?? 0;
-  const borderColor = c.borderColor || 'transparent';
-  const gap = c.cardGap ?? 12;
-  const padding = c.containerPadding ?? 14;
+  const borderRadius = showBg ? (c.borderRadius ?? 12) : 0;
+  const borderWidth = showBg ? (c.borderWidth ?? 0) : 0;
+  const borderColor = showBg ? (c.borderColor || 'transparent') : 'transparent';
+  const gap = c.cardGap ?? 6;
+  const padding = c.containerPadding ?? 6;
   const swordColor = c.swordColor || '#eab308';
   const swordBg = c.swordBg || 'rgba(0,0,0,0.85)';
-  const swordSize = c.swordSize ?? 22;
+  const swordSize = c.swordSize ?? 20;
   const xIconColor = c.xIconColor || '#eab308';
   const xIconBg = c.xIconBg || 'rgba(0,0,0,0.7)';
 
@@ -104,9 +105,12 @@ export default function TournamentWidget({ config, theme }) {
   }
 
   const currentMatches = activeData?.matches || [];
+  const matchCount = currentMatches.length;
+  const cols = matchCount === 1 ? 1 : 2;
+  const rows = Math.ceil(matchCount / cols);
 
   /* ─── Player column renderer ─── */
-  const renderPlayer = (pIdx, matchData, playerKey, isEliminated, isWinner) => {
+  const renderPlayer = (pIdx, matchData, playerKey, isEliminated) => {
     const name = players[pIdx] || `Player ${pIdx + 1}`;
     const slot = slots[pIdx];
     const multi = calcMulti(matchData, playerKey);
@@ -115,42 +119,43 @@ export default function TournamentWidget({ config, theme }) {
     return (
       <div className="tw-player-col" style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
-        opacity: op, flex: 1, minWidth: 0,
+        opacity: op, flex: 1, minWidth: 0, overflow: 'hidden',
       }}>
         {/* Name */}
         <div className="tw-player-name" style={{
-          padding: '6px 8px 4px', fontSize: `${nameSize}px`, fontWeight: 700,
-          color: nameColor, fontFamily, textAlign: 'center',
+          padding: '3px 4px 2px', fontSize: `${nameSize}px`, fontWeight: 700,
+          color: nameColor, fontFamily, textAlign: 'center', lineHeight: 1.2,
           width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {name}
         </div>
 
-        {/* Slot image */}
+        {/* Slot image — fills available space, always fully visible */}
         <div className="tw-slot-cell" style={{
-          position: 'relative', width: '100%', aspectRatio: '1 / 1',
+          position: 'relative', width: '100%', flex: 1, minHeight: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
         }}>
           {slot?.image ? (
             <img src={slot.image} alt={slot.name || ''} style={{
-              width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-              borderRadius: 6,
+              maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block',
+              borderRadius: 4,
             }} />
           ) : (
             <div style={{
               width: '100%', height: '100%', background: 'rgba(0,0,0,0.3)',
-              borderRadius: 6,
+              borderRadius: 4,
             }} />
           )}
           {/* Slot name overlay */}
           {showSlotName && slot?.name && (
             <div className="tw-slot-name" style={{
               position: 'absolute', bottom: 0, left: 0, right: 0,
-              padding: '3px 6px', fontSize: `${slotNameSize}px`,
+              padding: '2px 4px', fontSize: `${slotNameSize}px`,
               color: slotNameColor, fontWeight: 700, fontFamily,
-              textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+              textShadow: '0 1px 3px rgba(0,0,0,0.9)',
               background: 'linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 100%)',
               textTransform: 'uppercase', letterSpacing: '0.3px',
-              textAlign: 'center', borderRadius: '0 0 6px 6px',
+              textAlign: 'center', borderRadius: '0 0 4px 4px',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             }}>
               {slot.name}
@@ -163,10 +168,10 @@ export default function TournamentWidget({ config, theme }) {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}>
               <div style={{
-                width: 36, height: 36, borderRadius: '50%',
+                width: 30, height: 30, borderRadius: '50%',
                 background: xIconBg, border: `2px solid ${xIconColor}`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 18, color: xIconColor, fontWeight: 700,
+                fontSize: 15, color: xIconColor, fontWeight: 700,
               }}>✕</div>
             </div>
           )}
@@ -174,10 +179,10 @@ export default function TournamentWidget({ config, theme }) {
 
         {/* Multiplier */}
         <div className="tw-multi" style={{
-          padding: '4px 8px', textAlign: 'center',
+          padding: '2px 4px', textAlign: 'center',
           fontSize: `${multiSize}px`, fontWeight: 700,
           color: parseFloat(multi) > 0 ? multiColor : '#64748b',
-          fontFamily,
+          fontFamily, lineHeight: 1.2,
         }}>
           {multi}x
         </div>
@@ -202,13 +207,13 @@ export default function TournamentWidget({ config, theme }) {
         }
       `}</style>
 
-      {/* ── Phase Tabs (pill / segmented control) ── */}
+      {/* ── Phase Tabs ── */}
       <div className="tw-tabs" style={{
         padding: `${padding}px ${padding}px 0`,
-        display: 'flex', justifyContent: 'center',
+        display: 'flex', justifyContent: 'center', flexShrink: 0,
       }}>
         <div style={{
-          display: 'inline-flex', borderRadius: 8, overflow: 'hidden',
+          display: 'inline-flex', borderRadius: 6, overflow: 'hidden',
           background: tabBg, border: `1px solid ${tabBorder}`,
         }}>
           {phaseOrder.filter(p => phases.some(ph => ph.phase === p)).map(p => {
@@ -218,16 +223,16 @@ export default function TournamentWidget({ config, theme }) {
                 className="tw-tab"
                 onClick={() => setDisplayPhase(p)}
                 style={{
-                  padding: '8px 20px',
-                  fontSize: 12, fontWeight: 700, fontFamily,
-                  textTransform: 'uppercase', letterSpacing: '0.8px',
+                  padding: '5px 14px',
+                  fontSize: 11, fontWeight: 700, fontFamily,
+                  textTransform: 'uppercase', letterSpacing: '0.6px',
                   background: isActive ? tabActiveBg : 'transparent',
                   color: isActive ? tabActiveColor : tabColor,
                   border: 'none',
                   cursor: 'pointer',
                   transition: 'all 0.15s',
                   whiteSpace: 'nowrap',
-                  borderRadius: isActive ? 6 : 0,
+                  borderRadius: isActive ? 4 : 0,
                 }}>
                 {phaseLabels[p] || p}
               </button>
@@ -238,12 +243,11 @@ export default function TournamentWidget({ config, theme }) {
 
       {/* ── Matchup Cards Grid ── */}
       <div className="tw-matches" style={{
-        flex: 1, padding: `${padding}px`,
+        flex: 1, padding: `${padding}px`, minHeight: 0,
         display: 'grid',
-        gridTemplateColumns: currentMatches.length === 1 ? '1fr' : 'repeat(2, 1fr)',
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, 1fr)`,
         gap: `${gap}px`,
-        alignContent: 'start',
-        overflow: 'auto',
       }}>
         {currentMatches.map((match, idx) => {
           const p1Idx = match.player1;
@@ -260,24 +264,23 @@ export default function TournamentWidget({ config, theme }) {
               border: `${cardBorderWidth}px solid ${cardBorder}`,
               borderRadius: `${cardRadius}px`,
               overflow: 'hidden', position: 'relative',
-              padding: '4px 8px',
+              padding: `3px ${gap > 4 ? 4 : 2}px`,
+              display: 'flex', flexDirection: 'column',
+              minHeight: 0,
             }}>
-              {/* Two-column player layout */}
+              {/* Two-column player layout — fills the card */}
               <div className="tw-match-inner" style={{
-                display: 'flex', gap: 8,
+                display: 'flex', gap: 4, flex: 1, minHeight: 0,
               }}>
-                {/* Player 1 */}
-                {renderPlayer(p1Idx, match, 'player1', p1Eliminated, p1Won)}
-
-                {/* Player 2 */}
-                {renderPlayer(p2Idx, match, 'player2', p2Eliminated, p2Won)}
+                {renderPlayer(p1Idx, match, 'player1', p1Eliminated)}
+                {renderPlayer(p2Idx, match, 'player2', p2Eliminated)}
               </div>
 
               {/* ⚔️ Sword icon — centered between the two players */}
               <div className="tw-sword-icon" style={{
                 position: 'absolute',
                 top: '50%', left: '50%',
-                width: swordSize + 20, height: swordSize + 20,
+                width: swordSize + 16, height: swordSize + 16,
                 borderRadius: '50%',
                 background: swordBg,
                 border: `2px solid ${swordColor}`,

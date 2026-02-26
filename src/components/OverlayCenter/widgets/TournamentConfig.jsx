@@ -192,7 +192,7 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
   /* ─── Preset system ─── */
   const [presetName, setPresetName] = useState('');
   const PRESET_KEYS = [
-    'bgColor', 'cardBg', 'cardBorder', 'cardRadius', 'cardBorderWidth',
+    'showBg', 'bgColor', 'cardBg', 'cardBorder', 'cardRadius', 'cardBorderWidth',
     'nameColor', 'nameSize', 'multiColor', 'multiSize',
     'tabBg', 'tabActiveBg', 'tabColor', 'tabActiveColor', 'tabBorder',
     'eliminatedOpacity', 'showSlotName', 'slotNameColor', 'slotNameSize',
@@ -411,14 +411,22 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
           )}
 
           <h4 className="nb-subtitle">Container</h4>
-          <div className="nb-color-grid">
-            <ColorPicker label="Background" value={c.bgColor || '#13151e'} onChange={v => set('bgColor', v)} />
-            <ColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.06)'} onChange={v => set('borderColor', v)} />
-          </div>
-          <SliderField label="Border Radius" value={c.borderRadius ?? 14} onChange={v => set('borderRadius', v)} min={0} max={40} suffix="px" />
-          <SliderField label="Border Width" value={c.borderWidth ?? 1} onChange={v => set('borderWidth', v)} min={0} max={6} suffix="px" />
-          <SliderField label="Padding" value={c.containerPadding ?? 12} onChange={v => set('containerPadding', v)} min={0} max={30} suffix="px" />
-          <SliderField label="Card Gap" value={c.cardGap ?? 10} onChange={v => set('cardGap', v)} min={2} max={24} suffix="px" />
+          <label className="nb-field">
+            <span>Show Background</span>
+            <input type="checkbox" checked={c.showBg !== false} onChange={e => set('showBg', e.target.checked)} />
+          </label>
+          {c.showBg !== false && (
+            <>
+              <div className="nb-color-grid">
+                <ColorPicker label="Background" value={c.bgColor || '#13151e'} onChange={v => set('bgColor', v)} />
+                <ColorPicker label="Border" value={c.borderColor || 'transparent'} onChange={v => set('borderColor', v)} />
+              </div>
+              <SliderField label="Border Radius" value={c.borderRadius ?? 12} onChange={v => set('borderRadius', v)} min={0} max={40} suffix="px" />
+              <SliderField label="Border Width" value={c.borderWidth ?? 0} onChange={v => set('borderWidth', v)} min={0} max={6} suffix="px" />
+            </>
+          )}
+          <SliderField label="Padding" value={c.containerPadding ?? 6} onChange={v => set('containerPadding', v)} min={0} max={30} suffix="px" />
+          <SliderField label="Card Gap" value={c.cardGap ?? 6} onChange={v => set('cardGap', v)} min={0} max={24} suffix="px" />
 
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Cards</h4>
           <div className="nb-color-grid">
