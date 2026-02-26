@@ -309,12 +309,12 @@
 .oc-widget-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 .oc-wcard {
   border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 10px;
+  border-radius: 8px;
   background: rgba(255,255,255,0.02);
   overflow: hidden;
   transition: border-color 0.2s;
@@ -328,7 +328,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 14px;
+  padding: 8px 12px;
   gap: 8px;
 }
 
