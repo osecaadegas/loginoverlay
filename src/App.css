@@ -54,60 +54,81 @@ body.sidebar-open {
   }
 }
 
-/* Tablet: Narrow sidebar margin */
+/* Tablet: sidebar margin */
 @media (min-width: 769px) and (max-width: 1024px) {
   .main-content {
-    margin-left: 220px;
+    margin-left: 240px;
   }
 }
 
-/* Desktop: Full sidebar margin */
+/* Desktop: sidebar margin */
 @media (min-width: 1025px) {
   .main-content {
     margin-left: 260px;
   }
 }
 
-/* Sidebar Toggle Button - Mobile Only */
+/* Sidebar Toggle Button — Mobile Only */
 .sidebar-toggle-btn {
   position: fixed;
-  top: 16px;
-  left: 16px;
+  top: 14px;
+  left: 14px;
   z-index: 10000;
-  background: rgba(0, 225, 255, 0.9);
-  color: #0d1117;
-  border: none;
-  width: 48px;
-  height: 48px;
-  min-width: 48px;
-  min-height: 48px;
+  background: rgba(17, 24, 39, 0.92);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  color: #e5e7eb;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  min-height: 44px;
   border-radius: 12px;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 225, 255, 0.3);
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   pointer-events: auto;
   touch-action: manipulation;
 }
 
 .sidebar-toggle-btn:hover {
-  background: rgba(0, 225, 255, 1);
-  transform: scale(1.05);
-  box-shadow: 0 6px 16px rgba(0, 225, 255, 0.5);
+  background: rgba(17, 24, 39, 1);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
 .sidebar-toggle-btn:active {
   transform: scale(0.95);
 }
 
-/* Hide toggle button on tablet+ */
+/* Hide toggle on tablet+ */
 @media (min-width: 769px) {
   .sidebar-toggle-btn {
     display: none;
   }
+}
+
+/* Sidebar backdrop overlay — mobile only */
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 9998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s, visibility 0.25s;
+  pointer-events: none;
+}
+.sidebar-backdrop.visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+@media (min-width: 769px) {
+  .sidebar-backdrop { display: none !important; }
 }
 
 /* Responsive Main Content */

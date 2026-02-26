@@ -1,650 +1,601 @@
 /* =============================================
-   THE LIFE - SIDE PANEL STYLES
+   SIDE PANEL — Modern Clean Rewrite
+   Right-side slide panel for The Life game
    ============================================= */
 
-/* Overlay */
-.thelife-sidepanel-overlay {
+/* ── Overlay ── */
+.sp-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index: 10000;
-  animation: fadeIn 0.2s ease;
+  animation: spFadeIn 0.2s ease;
 }
-
-@keyframes fadeIn {
+@keyframes spFadeIn {
   from { opacity: 0; }
-  to { opacity: 1; }
+  to   { opacity: 1; }
 }
 
-/* Panel Container */
-.thelife-sidepanel {
+/* ── Panel container ── */
+.sp {
   position: fixed;
   top: 0;
   right: 0;
-  width: var(--panel-width, 420px);
+  width: var(--sp-w, 420px);
   max-width: 95vw;
   height: 100vh;
-  background: linear-gradient(180deg, #1a1f2e 0%, #0f1419 100%);
-  border-left: 1px solid rgba(212, 175, 55, 0.3);
   display: flex;
   flex-direction: column;
-  animation: slideIn 0.25s ease;
-  box-shadow: -10px 0 40px rgba(0, 0, 0, 0.5);
+  background: #111827;
+  border-left: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.45);
+  animation: spSlideIn 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 }
-
-@keyframes slideIn {
+@keyframes spSlideIn {
   from { transform: translateX(100%); }
-  to { transform: translateX(0); }
+  to   { transform: translateX(0); }
 }
 
-/* Header */
-.thelife-sidepanel-header {
+/* ── Header ── */
+.sp-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  padding: 20px 24px;
-  border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-  background: rgba(0, 0, 0, 0.3);
+  gap: 12px;
+  padding: 18px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
 }
-
-.thelife-sidepanel-title-group {
-  flex: 1;
-}
-
-.thelife-sidepanel-title {
+.sp-header__text { flex: 1; min-width: 0; }
+.sp-title {
   color: #d4af37;
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin: 0;
+  line-height: 1.3;
 }
-
-.thelife-sidepanel-subtitle {
-  color: #8a8d96;
-  font-size: 0.85rem;
+.sp-subtitle {
+  color: #6b7280;
+  font-size: 0.82rem;
   margin: 4px 0 0;
 }
-
-.thelife-sidepanel-close {
-  width: 36px;
-  height: 36px;
+.sp-close {
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
-  color: #8a8d96;
-  font-size: 1.1rem;
+  color: #6b7280;
+  font-size: 1rem;
   cursor: pointer;
-  transition: all 0.15s ease;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.sp-close:hover {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
 }
 
-.thelife-sidepanel-close:hover {
-  background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.4);
-  color: #ef4444;
-}
-
-/* Content */
-.thelife-sidepanel-content {
+/* ── Body ── */
+.sp-body {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 20px;
+}
+.sp-body::-webkit-scrollbar { width: 4px; }
+.sp-body::-webkit-scrollbar-track { background: transparent; }
+.sp-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+/* ── Footer ── */
+.sp-footer {
+  flex-shrink: 0;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(0, 0, 0, 0.2);
 }
 
-/* Footer */
-.thelife-sidepanel-footer {
-  padding: 16px 24px;
-  border-top: 1px solid rgba(212, 175, 55, 0.2);
-  background: rgba(0, 0, 0, 0.3);
-}
+/* ═══════════════════════════════════════════
+   SUB-COMPONENTS
+   ═══════════════════════════════════════════ */
 
-/* =============================================
-   PANEL COMPONENTS
-   ============================================= */
-
-/* Section */
-.thelife-panel-section {
-  margin-bottom: 24px;
-}
-
-.thelife-panel-section:last-child {
-  margin-bottom: 0;
-}
-
-.thelife-panel-section-title {
-  color: #8a8d96;
-  font-size: 0.75rem;
+/* ── Section ── */
+.sp-section { margin-bottom: 20px; }
+.sp-section:last-child { margin-bottom: 0; }
+.sp-section__title {
+  color: #6b7280;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  margin: 0 0 12px;
+  margin: 0 0 10px;
 }
 
-/* Item Preview */
-.thelife-panel-item-preview {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 12px;
-  border: 1px solid rgba(212, 175, 55, 0.2);
-}
-
-.thelife-panel-item-icon {
-  width: 64px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(145deg, rgba(212, 175, 55, 0.1), transparent);
-  border-radius: 10px;
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  overflow: hidden;
-}
-
-.thelife-panel-item-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.thelife-panel-item-icon span {
-  font-size: 2rem;
-}
-
-.thelife-panel-item-info h4 {
-  color: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 600;
-  margin: 0 0 4px;
-}
-
-.thelife-panel-item-info p {
-  font-size: 0.85rem;
-  margin: 0;
-}
-
-.thelife-panel-item-badge {
-  display: inline-block;
-  padding: 4px 10px;
-  background: rgba(212, 175, 55, 0.15);
-  border-radius: 6px;
-  color: #d4af37;
-  font-size: 0.8rem;
-  font-weight: 500;
-  margin-top: 6px;
-}
-
-/* Form Field */
-.thelife-panel-field {
-  margin-bottom: 20px;
-}
-
-.thelife-panel-field:last-child {
-  margin-bottom: 0;
-}
-
-.thelife-panel-field label {
-  display: block;
-  color: #8a8d96;
-  font-size: 0.8rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-}
-
-/* Quantity Input */
-.thelife-panel-quantity {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.thelife-panel-quantity .qty-btn {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 10px;
-  color: #ffffff;
-  font-size: 1.4rem;
-  font-weight: 300;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.thelife-panel-quantity .qty-btn:hover:not(:disabled) {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.5);
-}
-
-.thelife-panel-quantity .qty-btn:disabled {
-  opacity: 0.3;
-  cursor: not-allowed;
-}
-
-.thelife-panel-quantity .qty-display {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 10px;
-  padding: 0 14px;
-  height: 44px;
-}
-
-.thelife-panel-quantity .qty-display input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #ffffff;
-  font-size: 1.1rem;
-  font-weight: 700;
-  text-align: center;
-  width: 50px;
-  padding: 0;
-}
-
-.thelife-panel-quantity .qty-display input:focus {
-  outline: none;
-}
-
-.thelife-panel-quantity .qty-max {
-  color: #5a5d65;
-  font-size: 0.85rem;
-  font-weight: 500;
-}
-
-.thelife-panel-quantity .qty-max-btn {
-  padding: 0 16px;
-  height: 44px;
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 10px;
-  color: #d4af37;
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.thelife-panel-quantity .qty-max-btn:hover:not(:disabled) {
-  background: rgba(212, 175, 55, 0.25);
-  border-color: rgba(212, 175, 55, 0.5);
-}
-
-.thelife-panel-quantity .qty-max-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-/* Price Input */
-.thelife-panel-price {
-  display: flex;
-  align-items: center;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 10px;
-  padding: 0 16px;
-  height: 52px;
-  transition: all 0.15s ease;
-}
-
-.thelife-panel-price:focus-within {
-  border-color: rgba(34, 197, 94, 0.5);
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
-}
-
-.thelife-panel-price .price-symbol {
-  color: #22c55e;
-  font-size: 1.3rem;
-  font-weight: 700;
-  margin-right: 6px;
-}
-
-.thelife-panel-price input {
-  flex: 1;
-  background: transparent;
-  border: none;
-  color: #22c55e;
-  font-size: 1.3rem;
-  font-weight: 700;
-  padding: 0;
-}
-
-.thelife-panel-price input:focus {
-  outline: none;
-}
-
-.thelife-panel-price input::placeholder {
-  color: #3a3d45;
-}
-
-/* Duration Select */
-.thelife-panel-duration {
-  display: flex;
-  gap: 8px;
-}
-
-.thelife-panel-duration .duration-btn {
-  flex: 1;
-  padding: 12px 8px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(212, 175, 55, 0.3);
-  border-radius: 10px;
-  color: #8a8d96;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.thelife-panel-duration .duration-btn:hover {
-  background: rgba(212, 175, 55, 0.1);
-  border-color: rgba(212, 175, 55, 0.4);
-  color: #a0a3ab;
-}
-
-.thelife-panel-duration .duration-btn.active {
-  background: rgba(212, 175, 55, 0.2);
-  border-color: rgba(212, 175, 55, 0.5);
-  color: #d4af37;
-}
-
-/* Selectable Card */
-.thelife-panel-selectable-card {
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  border-radius: 12px;
-  padding: 16px;
-  margin-bottom: 12px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.thelife-panel-selectable-card:last-child {
-  margin-bottom: 0;
-}
-
-.thelife-panel-selectable-card:hover {
-  border-color: rgba(212, 175, 55, 0.4);
-}
-
-.thelife-panel-selectable-card.selected {
-  background: rgba(212, 175, 55, 0.1);
-  border-color: #d4af37;
-}
-
-.thelife-panel-selectable-card .card-header {
+/* ── Item preview ── */
+.sp-item-preview {
   display: flex;
   align-items: center;
   gap: 14px;
+  padding: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
 }
-
-.thelife-panel-selectable-card .card-icon {
+.sp-item-preview__icon {
   width: 56px;
   height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: rgba(212, 175, 55, 0.06);
   border-radius: 10px;
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.2);
   overflow: hidden;
+  flex-shrink: 0;
 }
-
-.thelife-panel-selectable-card .card-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.sp-item-preview__icon img { width: 100%; height: 100%; object-fit: cover; }
+.sp-item-preview__icon span { font-size: 1.8rem; }
+.sp-item-preview__info h4 {
+  color: #f0f0f0;
+  font-size: 1rem;
+  font-weight: 600;
+  margin: 0 0 3px;
 }
-
-.thelife-panel-selectable-card .card-icon span {
-  font-size: 1.5rem;
-}
-
-.thelife-panel-selectable-card .card-info {
-  flex: 1;
-}
-
-.thelife-panel-selectable-card .card-info h4 {
+.sp-item-preview__info p { font-size: 0.82rem; margin: 0; }
+.sp-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  background: rgba(212, 175, 55, 0.12);
+  border-radius: 6px;
   color: #d4af37;
-  font-size: 1rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+/* ── Field ── */
+.sp-field,
+.thelife-panel-field {
+  margin-bottom: 18px;
+}
+.sp-field:last-child,
+.thelife-panel-field:last-child { margin-bottom: 0; }
+
+.sp-field label,
+.thelife-panel-field label {
+  display: block;
+  color: #6b7280;
+  font-size: 0.75rem;
   font-weight: 600;
-  margin: 0 0 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
 }
 
-.thelife-panel-selectable-card .card-info p {
-  color: #8a8d96;
-  font-size: 0.85rem;
-  margin: 0;
+/* ── Quantity input ── */
+.sp-qty,
+.thelife-panel-quantity {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
-
-.thelife-panel-selectable-card .card-badge {
-  padding: 6px 12px;
-  background: rgba(34, 197, 94, 0.15);
-  border-radius: 8px;
-  color: #22c55e;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.thelife-panel-selectable-card .card-content {
-  margin-top: 16px;
-  padding-top: 16px;
-  border-top: 1px solid rgba(212, 175, 55, 0.2);
-}
-
-/* Reward Preview */
-.thelife-panel-reward {
-  padding: 12px 16px;
-  background: rgba(34, 197, 94, 0.1);
-  border: 1px solid rgba(34, 197, 94, 0.3);
+.sp-qty__btn,
+.thelife-panel-quantity .qty-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  margin-top: 12px;
+  color: #f0f0f0;
+  font-size: 1.2rem;
+  font-weight: 300;
+  cursor: pointer;
+  transition: all 0.15s;
 }
-
-.thelife-panel-reward .reward-amount {
-  color: #22c55e;
-  font-size: 1rem;
-  font-weight: 600;
+.sp-qty__btn:hover:not(:disabled),
+.thelife-panel-quantity .qty-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.12);
+  border-color: rgba(212, 175, 55, 0.3);
 }
-
-.thelife-panel-reward .reward-fee {
-  color: #8a8d96;
-  font-size: 0.85rem;
-  margin-left: 8px;
+.sp-qty__btn:disabled,
+.thelife-panel-quantity .qty-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
-
-/* Buttons */
-.thelife-panel-btn {
-  padding: 14px 24px;
+.sp-qty__display,
+.thelife-panel-quantity .qty-display {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
+  padding: 0 12px;
+  height: 40px;
+}
+.sp-qty__display input,
+.thelife-panel-quantity .qty-display input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #f0f0f0;
   font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  width: 50px;
+  padding: 0;
+}
+.sp-qty__display input:focus,
+.thelife-panel-quantity .qty-display input:focus { outline: none; }
+.sp-qty__max,
+.thelife-panel-quantity .qty-max {
+  color: #4b5563;
+  font-size: 0.82rem;
+  font-weight: 500;
+}
+.sp-qty__maxbtn,
+.thelife-panel-quantity .qty-max-btn {
+  padding: 0 14px;
+  height: 40px;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 10px;
+  color: #d4af37;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sp-qty__maxbtn:hover:not(:disabled),
+.thelife-panel-quantity .qty-max-btn:hover:not(:disabled) {
+  background: rgba(212, 175, 55, 0.18);
+  border-color: rgba(212, 175, 55, 0.35);
+}
+.sp-qty__maxbtn:disabled,
+.thelife-panel-quantity .qty-max-btn:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── Price input ── */
+.sp-price,
+.thelife-panel-price {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 0 14px;
+  height: 48px;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+.sp-price:focus-within,
+.thelife-panel-price:focus-within {
+  border-color: rgba(34, 197, 94, 0.4);
+  box-shadow: 0 0 0 2px rgba(34, 197, 94, 0.08);
+}
+.sp-price__symbol,
+.thelife-panel-price .price-symbol {
+  color: #22c55e;
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-right: 6px;
+}
+.sp-price input,
+.thelife-panel-price input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: #22c55e;
+  font-size: 1.2rem;
+  font-weight: 700;
+  padding: 0;
+}
+.sp-price input:focus,
+.thelife-panel-price input:focus { outline: none; }
+.sp-price input::placeholder,
+.thelife-panel-price input::placeholder { color: #374151; }
+
+/* ── Duration select ── */
+.sp-duration,
+.thelife-panel-duration {
+  display: flex;
+  gap: 6px;
+}
+.sp-duration__btn,
+.thelife-panel-duration .duration-btn {
+  flex: 1;
+  padding: 10px 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  color: #6b7280;
+  font-size: 0.85rem;
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.15s ease;
-  border: none;
+  transition: all 0.15s;
+}
+.sp-duration__btn:hover,
+.thelife-panel-duration .duration-btn:hover {
+  background: rgba(212, 175, 55, 0.08);
+  color: #9ca3af;
+}
+.sp-duration__btn--active,
+.thelife-panel-duration .duration-btn.active {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.35);
+  color: #d4af37;
 }
 
-.thelife-panel-btn.full-width {
-  width: 100%;
+/* ── Selectable card ── */
+.sp-selcard,
+.thelife-panel-selectable-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: all 0.15s;
 }
-
-.thelife-panel-btn.primary {
-  background: linear-gradient(135deg, #d4af37, #b8960c);
-  color: #000000;
+.sp-selcard:last-child,
+.thelife-panel-selectable-card:last-child { margin-bottom: 0; }
+.sp-selcard:hover,
+.thelife-panel-selectable-card:hover { border-color: rgba(212, 175, 55, 0.3); }
+.sp-selcard--selected,
+.thelife-panel-selectable-card.selected {
+  background: rgba(212, 175, 55, 0.08);
+  border-color: #d4af37;
 }
-
-.thelife-panel-btn.primary:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
-}
-
-.thelife-panel-btn.primary:disabled {
-  background: #4a4d55;
-  color: #8a8d96;
-  cursor: not-allowed;
-}
-
-.thelife-panel-btn.success {
-  background: #22c55e;
-  color: #ffffff;
-}
-
-.thelife-panel-btn.success:hover:not(:disabled) {
-  background: #16a34a;
-}
-
-.thelife-panel-btn.danger {
-  background: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-}
-
-.thelife-panel-btn.danger:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.25);
-}
-
-.thelife-panel-btn.sell {
-  background: linear-gradient(135deg, #ef4444, #dc2626);
-  color: #ffffff;
-}
-
-.thelife-panel-btn.sell:hover:not(:disabled) {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-}
-
-.thelife-panel-btn.sell:disabled {
-  background: #4a4d55;
-  color: #8a8d96;
-  cursor: not-allowed;
-}
-
-.thelife-panel-btn.secondary {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #8a8d96;
-}
-
-.thelife-panel-btn.secondary:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
-
-/* Button Group */
-.thelife-panel-btn-group {
+.sp-selcard__header,
+.thelife-panel-selectable-card .card-header {
   display: flex;
+  align-items: center;
   gap: 12px;
 }
-
-.thelife-panel-btn-group .thelife-panel-btn {
-  flex: 1;
+.sp-selcard__icon,
+.thelife-panel-selectable-card .card-icon {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.sp-selcard__icon img,
+.thelife-panel-selectable-card .card-icon img { width: 100%; height: 100%; object-fit: cover; }
+.sp-selcard__icon span,
+.thelife-panel-selectable-card .card-icon span { font-size: 1.3rem; }
+.sp-selcard__info,
+.thelife-panel-selectable-card .card-info { flex: 1; min-width: 0; }
+.sp-selcard__info h4,
+.thelife-panel-selectable-card .card-info h4 {
+  color: #d4af37;
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin: 0 0 3px;
+}
+.sp-selcard__info p,
+.thelife-panel-selectable-card .card-info p {
+  color: #6b7280;
+  font-size: 0.82rem;
+  margin: 0;
+}
+.sp-selcard__badge,
+.thelife-panel-selectable-card .card-badge {
+  padding: 5px 10px;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 8px;
+  color: #22c55e;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.sp-selcard__content,
+.thelife-panel-selectable-card .card-content {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
-/* Text Input / Textarea */
+/* ── Reward preview ── */
+.sp-reward,
+.thelife-panel-reward {
+  padding: 10px 14px;
+  background: rgba(34, 197, 94, 0.08);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 10px;
+  margin-top: 10px;
+}
+.sp-reward__amount,
+.thelife-panel-reward .reward-amount {
+  color: #22c55e;
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+.sp-reward__fee,
+.thelife-panel-reward .reward-fee {
+  color: #6b7280;
+  font-size: 0.82rem;
+  margin-left: 6px;
+}
+
+/* ── Buttons ── */
+.sp-btn,
+.thelife-panel-btn {
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: all 0.15s;
+}
+.sp-btn--full,
+.thelife-panel-btn.full-width { width: 100%; }
+
+.sp-btn--primary,
+.thelife-panel-btn.primary {
+  background: linear-gradient(135deg, #d4af37, #b8960c);
+  color: #000;
+}
+.sp-btn--primary:hover:not(:disabled),
+.thelife-panel-btn.primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.25);
+}
+.sp-btn--primary:disabled,
+.thelife-panel-btn.primary:disabled {
+  background: #374151;
+  color: #6b7280;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.sp-btn--success,
+.thelife-panel-btn.success { background: #22c55e; color: #fff; }
+.sp-btn--success:hover:not(:disabled),
+.thelife-panel-btn.success:hover:not(:disabled) { background: #16a34a; }
+
+.sp-btn--danger,
+.thelife-panel-btn.danger {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  color: #f87171;
+}
+.sp-btn--danger:hover:not(:disabled),
+.thelife-panel-btn.danger:hover:not(:disabled) { background: rgba(239, 68, 68, 0.18); }
+
+.sp-btn--sell,
+.thelife-panel-btn.sell {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  color: #fff;
+}
+.sp-btn--sell:hover:not(:disabled),
+.thelife-panel-btn.sell:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+}
+.sp-btn--sell:disabled,
+.thelife-panel-btn.sell:disabled {
+  background: #374151;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.sp-btn--secondary,
+.thelife-panel-btn.secondary {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: #9ca3af;
+}
+.sp-btn--secondary:hover:not(:disabled),
+.thelife-panel-btn.secondary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  color: #f0f0f0;
+}
+
+/* ── Button group ── */
+.sp-btn-group,
+.thelife-panel-btn-group {
+  display: flex;
+  gap: 10px;
+}
+.sp-btn-group .sp-btn,
+.sp-btn-group .thelife-panel-btn,
+.thelife-panel-btn-group .sp-btn,
+.thelife-panel-btn-group .thelife-panel-btn { flex: 1; }
+
+/* ── Text / textarea inputs (used directly by consumers) ── */
+.sp-field input[type="text"],
+.sp-field input[type="number"],
+.sp-field textarea,
 .thelife-panel-field input[type="text"],
 .thelife-panel-field input[type="number"],
 .thelife-panel-field textarea {
   width: 100%;
-  padding: 14px 16px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  padding: 12px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  color: #ffffff;
-  font-size: 1rem;
-  transition: all 0.15s ease;
+  color: #f0f0f0;
+  font-size: 0.95rem;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
-
+.sp-field input:focus,
+.sp-field textarea:focus,
 .thelife-panel-field input:focus,
 .thelife-panel-field textarea:focus {
-  border-color: rgba(212, 175, 55, 0.5);
+  border-color: rgba(212, 175, 55, 0.35);
   outline: none;
-  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.1);
+  box-shadow: 0 0 0 2px rgba(212, 175, 55, 0.08);
 }
-
-.thelife-panel-field textarea {
-  min-height: 100px;
-  resize: vertical;
-}
-
+.sp-field textarea,
+.thelife-panel-field textarea { min-height: 90px; resize: vertical; }
+.sp-field input::placeholder,
+.sp-field textarea::placeholder,
 .thelife-panel-field input::placeholder,
-.thelife-panel-field textarea::placeholder {
-  color: #4a4d55;
-}
+.thelife-panel-field textarea::placeholder { color: #374151; }
 
-/* Helper text */
+/* ── Helper text ── */
+.sp-helper,
 .thelife-panel-helper {
-  color: #6a6d75;
-  font-size: 0.8rem;
+  color: #4b5563;
+  font-size: 0.78rem;
   margin-top: 6px;
 }
 
-/* Info Row */
+/* ── Info row ── */
+.sp-info-row,
 .thelife-panel-info-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
 }
+.sp-info-row:last-child,
+.thelife-panel-info-row:last-child { border-bottom: none; }
+.sp-info-row .label,
+.thelife-panel-info-row .label { color: #6b7280; font-size: 0.85rem; }
+.sp-info-row .value,
+.thelife-panel-info-row .value { color: #f0f0f0; font-size: 0.85rem; font-weight: 600; }
+.sp-info-row .value.success,
+.thelife-panel-info-row .value.success { color: #22c55e; }
+.sp-info-row .value.warning,
+.thelife-panel-info-row .value.warning { color: #f59e0b; }
 
-.thelife-panel-info-row:last-child {
-  border-bottom: none;
-}
-
-.thelife-panel-info-row .label {
-  color: #8a8d96;
-  font-size: 0.9rem;
-}
-
-.thelife-panel-info-row .value {
-  color: #ffffff;
-  font-size: 0.9rem;
+/* ── Backward-compat section aliases ── */
+.thelife-panel-section { margin-bottom: 20px; }
+.thelife-panel-section:last-child { margin-bottom: 0; }
+.thelife-panel-section-title {
+  color: #6b7280;
+  font-size: 0.72rem;
   font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 0 0 10px;
 }
 
-.thelife-panel-info-row .value.success {
-  color: #22c55e;
-}
-
-.thelife-panel-info-row .value.warning {
-  color: #f59e0b;
-}
-
-/* Mobile */
+/* ── Mobile ── */
 @media (max-width: 480px) {
-  .thelife-sidepanel {
-    width: 100vw !important;
-  }
-  
-  .thelife-sidepanel-header {
-    padding: 16px 20px;
-  }
-  
-  .thelife-sidepanel-content {
-    padding: 20px;
-  }
-  
-  .thelife-sidepanel-footer {
-    padding: 14px 20px;
-  }
-  
-  .thelife-panel-duration {
-    flex-wrap: wrap;
-  }
-  
-  .thelife-panel-duration .duration-btn {
-    flex: 0 0 calc(33.333% - 6px);
-  }
+  .sp { width: 100vw !important; }
+  .sp-header { padding: 14px 16px; }
+  .sp-body { padding: 16px; }
+  .sp-footer { padding: 12px 16px; }
+  .sp-duration,
+  .thelife-panel-duration { flex-wrap: wrap; }
+  .sp-duration__btn,
+  .thelife-panel-duration .duration-btn { flex: 0 0 calc(33.333% - 4px); }
 }
