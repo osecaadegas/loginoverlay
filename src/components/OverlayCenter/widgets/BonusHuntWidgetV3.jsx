@@ -138,58 +138,6 @@ export default function BonusHuntWidgetV3({ config, theme }) {
   return (
     <div className="oc-widget-inner oc-bonushunt bht3-root" style={rootStyle}>
 
-      {/* ═══ Header ═══ */}
-      <div className="bht3-card bht3-header">
-        <div className="bht3-header-row">
-          <div className="bht3-header-left">
-            <div className="bht3-icon-circle">🎰</div>
-            <div>
-              <div className="bht3-title">BONUS HUNT</div>
-              <div className="bht3-subtitle">{c.huntName || ''}</div>
-            </div>
-          </div>
-          <span className="bht3-badge">#{bonuses.length}</span>
-        </div>
-        <div className="bht3-header-stats">
-          <div className="bht3-stat">
-            <span className="bht3-stat-label">START</span>
-            <span className="bht3-stat-val">{currency}{fmt(startMoney)}</span>
-          </div>
-          <div className="bht3-stat">
-            <span className="bht3-stat-label">BEx</span>
-            <span className="bht3-stat-val">{stats.breakEven.toFixed(2)}x</span>
-          </div>
-          <div className="bht3-stat">
-            <span className="bht3-stat-label">BONUSES</span>
-            <span className="bht3-stat-val">{bonuses.length}</span>
-          </div>
-          <div className="bht3-stat">
-            <span className="bht3-stat-label">SUPER</span>
-            <span className="bht3-stat-val" style={{ color: superBadgeColor }}>{stats.superCount}</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ Current Bonus ═══ */}
-      {currentBonus && (
-        <div className="bht3-card bht3-current">
-          <div className="bht3-current-label">▶ NOW PLAYING</div>
-          <div className="bht3-current-row">
-            {currentBonus.slot?.image && (
-              <img src={currentBonus.slot.image} alt="" className="bht3-current-img"
-                onError={e => { e.target.style.display = 'none'; }} />
-            )}
-            <div className="bht3-current-info">
-              <div className="bht3-current-name">{currentBonus.slotName}</div>
-              <div className="bht3-current-bet">{currency}{fmt(currentBonus.betSize)} BET</div>
-              {currentBonus.slot?.provider && (
-                <div className="bht3-current-provider">{currentBonus.slot.provider}</div>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ═══ Flip Card Carousel ═══ */}
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
@@ -268,30 +216,6 @@ export default function BonusHuntWidgetV3({ config, theme }) {
                 </div>
               </div>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* ═══ Summary ═══ */}
-      {c.showStatistics !== false && (
-        <div className="bht3-card bht3-summary">
-          <div className="bht3-summary-row">
-            <div className="bht3-stat">
-              <span className="bht3-stat-label">OPENED</span>
-              <span className="bht3-stat-val">{stats.openedCount}/{bonuses.length}</span>
-            </div>
-            <div className="bht3-stat">
-              <span className="bht3-stat-label">AVG X</span>
-              <span className="bht3-stat-val">{stats.avgMulti.toFixed(2)}x</span>
-            </div>
-            <div className="bht3-stat">
-              <span className="bht3-stat-label">LIVE BE</span>
-              <span className="bht3-stat-val">{stats.liveBE.toFixed(2)}x</span>
-            </div>
-          </div>
-          <div className="bht3-total-pay">
-            <span className="bht3-total-label">💰 TOTAL PAY</span>
-            <span className="bht3-total-val">{currency}{fmt(stats.totalWin)}</span>
           </div>
         </div>
       )}
