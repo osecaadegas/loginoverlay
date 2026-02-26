@@ -1620,12 +1620,10 @@
 }
 
 /* =========================================================
-   RAID SHOUTOUT WIDGET — Alert Overlay Styles
-   Full-featured raid alert with clip player, animations,
-   and Twitch-inspired design.
+   RAID SHOUTOUT WIDGET — Minimal Expand/Collapse Alert
    ========================================================= */
 
-/* ─── Wrapper: full widget area, centered alert ─── */
+/* ─── Wrapper: full widget area, centered ─── */
 .rs-alert-wrapper {
   position: absolute;
   inset: 0;
@@ -1641,37 +1639,14 @@
   pointer-events: auto;
 }
 
-/* ─── Glow border effect ─── */
-.rs-glow-border {
-  position: absolute;
-  inset: -3px;
-  border-radius: calc(var(--rs-radius, 16px) + 3px);
-  background: linear-gradient(
-    135deg,
-    var(--rs-accent, #9146FF),
-    transparent 40%,
-    var(--rs-accent, #9146FF) 60%,
-    transparent
-  );
-  opacity: 0.6;
-  filter: blur(8px);
-  animation: rs-glow-pulse 2s ease-in-out infinite;
-  z-index: -1;
-}
-
-@keyframes rs-glow-pulse {
-  0%, 100% { opacity: 0.4; filter: blur(8px); }
-  50%      { opacity: 0.8; filter: blur(12px); }
-}
-
-/* ─── Main alert card ─── */
+/* ─── Main card ─── */
 .rs-alert-card {
   position: relative;
   width: 420px;
   max-width: 95%;
   background: var(--rs-bg, rgba(13, 13, 20, 0.95));
   border-radius: var(--rs-radius, 16px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(145, 70, 255, 0.2);
   box-shadow:
     0 0 40px rgba(145, 70, 255, 0.15),
     0 20px 60px rgba(0, 0, 0, 0.5),
@@ -1681,13 +1656,13 @@
   -webkit-backdrop-filter: blur(20px);
 }
 
-/* ─── Header: RAID ALERT badge ─── */
+/* ─── Header: RAID ALERT ─── */
 .rs-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
-  background: linear-gradient(135deg, rgba(145, 70, 255, 0.15), rgba(145, 70, 255, 0.05));
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(145, 70, 255, 0.18), rgba(145, 70, 255, 0.06));
   border-bottom: 1px solid rgba(145, 70, 255, 0.15);
 }
 
@@ -1695,17 +1670,17 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 800;
-  letter-spacing: 2px;
+  letter-spacing: 2.5px;
   color: var(--rs-accent, #9146FF);
   text-transform: uppercase;
   text-shadow: 0 0 20px var(--rs-accent, #9146FF);
 }
 
 .rs-raid-icon {
-  width: 18px;
-  height: 18px;
+  width: 20px;
+  height: 20px;
   color: var(--rs-accent, #9146FF);
   animation: rs-bolt-flash 1.5s ease-in-out infinite;
 }
@@ -1718,7 +1693,7 @@
 .rs-queue-badge {
   display: flex;
   align-items: center;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 10px;
   background: rgba(255, 255, 255, 0.08);
   font-size: 10px;
@@ -1726,80 +1701,23 @@
   font-weight: 600;
 }
 
-/* ─── Raider Info Section ─── */
-.rs-raider-info {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 16px;
+/* ─── Expandable clip reveal area ─── */
+.rs-clip-reveal {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.rs-avatar-container {
-  position: relative;
-  flex-shrink: 0;
+.rs-clip-reveal--open {
+  max-height: 240px; /* 16:9 at 420px ≈ 236px */
 }
 
-.rs-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid var(--rs-accent, #9146FF);
+.rs-clip-reveal--closing {
+  max-height: 0;
+  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.8, 1);
 }
 
-.rs-avatar-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #9146FF, #6441A5);
-  color: #fff;
-  font-size: 24px;
-  font-weight: 800;
-}
-
-.rs-avatar-ring {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
-  border: 2px solid var(--rs-accent, #9146FF);
-  opacity: 0.3;
-  animation: rs-ring-pulse 2s ease-in-out infinite;
-}
-
-@keyframes rs-ring-pulse {
-  0%, 100% { transform: scale(1); opacity: 0.3; }
-  50%      { transform: scale(1.1); opacity: 0.6; }
-}
-
-.rs-raider-details {
-  flex: 1;
-  min-width: 0;
-}
-
-.rs-raider-name {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--rs-text, #ffffff);
-  line-height: 1.2;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.rs-raider-game {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--rs-subtext, #a0a0b4);
-}
-
-.rs-game-icon {
-  width: 14px;
-  height: 14px;
-  opacity: 0.6;
-}
-
-/* ─── Clip Player ─── */
+/* ─── Clip container ─── */
 .rs-clip-container {
   position: relative;
   width: 100%;
@@ -1826,47 +1744,7 @@
   z-index: 1;
 }
 
-.rs-clip-error-overlay {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.75);
-  z-index: 3;
-}
-
-.rs-clip-error-overlay .rs-clip-poster {
-  opacity: 0.4;
-  filter: blur(4px);
-}
-
-.rs-clip-error-text {
-  position: relative;
-  z-index: 4;
-  color: #ff6b6b;
-  font-size: 14px;
-  font-weight: 600;
-  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
-}
-
-.rs-clip-title-bar {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: 8px 12px;
-  background: linear-gradient(transparent, rgba(0, 0, 0, 0.8));
-  z-index: 2;
-}
-
-.rs-clip-title-text {
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.9);
-  font-weight: 500;
-}
-
-/* ─── No Clip Fallback ─── */
+/* ─── No-clip fallback ─── */
 .rs-no-clip {
   display: flex;
   flex-direction: column;
@@ -1903,65 +1781,16 @@
   font-weight: 800;
 }
 
-.rs-no-clip-text {
-  font-size: 16px;
-  color: var(--rs-text, #ffffff);
-  text-align: center;
-}
-
-.rs-no-clip-text strong {
-  color: var(--rs-accent, #9146FF);
-}
-
-.rs-no-clip-game {
-  font-size: 12px;
-  color: var(--rs-subtext, #a0a0b4);
-  padding: 2px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
-/* ─── Clip Metadata Bar ─── */
-.rs-clip-meta {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 16px;
-  background: rgba(255, 255, 255, 0.03);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.rs-clip-views {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 11px;
-  color: var(--rs-subtext, #a0a0b4);
-}
-
-.rs-views-icon {
-  width: 12px;
-  height: 12px;
-}
-
-.rs-clip-game {
-  font-size: 11px;
-  color: var(--rs-subtext, #a0a0b4);
-  padding: 1px 8px;
-  border-radius: 8px;
-  background: rgba(255, 255, 255, 0.06);
-}
-
 /* ─── Footer ─── */
 .rs-footer {
-  padding: 12px 16px;
-  background: linear-gradient(180deg, transparent, rgba(145, 70, 255, 0.05));
+  padding: 14px 18px;
+  background: linear-gradient(180deg, transparent, rgba(145, 70, 255, 0.06));
   border-top: 1px solid rgba(255, 255, 255, 0.04);
 }
 
 .rs-follow-cta {
   text-align: center;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--rs-subtext, #a0a0b4);
 }
 
@@ -1971,134 +1800,32 @@
   text-shadow: 0 0 12px var(--rs-accent, #9146FF);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ENTRANCE ANIMATIONS
-   ═══════════════════════════════════════════════════════════ */
+/* ═══════════════════════════════════════════════════
+   PHASE ANIMATIONS — Enter / Visible / Exit
+   ═══════════════════════════════════════════════════ */
 
-.rs-enter--slideUp {
-  animation: rs-enterSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+/* Entering: slide up from below */
+.rs-phase-enter {
+  animation: rs-slideIn 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-.rs-enter--slideDown {
-  animation: rs-enterSlideDown 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.rs-enter--slideLeft {
-  animation: rs-enterSlideLeft 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.rs-enter--slideRight {
-  animation: rs-enterSlideRight 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.rs-enter--zoomIn {
-  animation: rs-enterZoom 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-}
-
-.rs-enter--fadeIn {
-  animation: rs-enterFade 0.7s ease-out forwards;
-}
-
-@keyframes rs-enterSlideUp {
-  from { opacity: 0; transform: translateY(80px) scale(0.95); }
+@keyframes rs-slideIn {
+  from { opacity: 0; transform: translateY(60px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
-@keyframes rs-enterSlideDown {
-  from { opacity: 0; transform: translateY(-80px) scale(0.95); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-@keyframes rs-enterSlideLeft {
-  from { opacity: 0; transform: translateX(80px) scale(0.95); }
-  to   { opacity: 1; transform: translateX(0) scale(1); }
-}
-
-@keyframes rs-enterSlideRight {
-  from { opacity: 0; transform: translateX(-80px) scale(0.95); }
-  to   { opacity: 1; transform: translateX(0) scale(1); }
-}
-
-@keyframes rs-enterZoom {
-  from { opacity: 0; transform: scale(0.5); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-@keyframes rs-enterFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* ═══════════════════════════════════════════════════════════
-   EXIT ANIMATIONS
-   ═══════════════════════════════════════════════════════════ */
-
-.rs-exit--slideDown {
-  animation: rs-exitSlideDown 0.5s cubic-bezier(0.5, 0, 0.75, 0) forwards;
-}
-
-.rs-exit--slideUp {
-  animation: rs-exitSlideUp 0.5s cubic-bezier(0.5, 0, 0.75, 0) forwards;
-}
-
-.rs-exit--slideLeft {
-  animation: rs-exitSlideLeft 0.5s cubic-bezier(0.5, 0, 0.75, 0) forwards;
-}
-
-.rs-exit--slideRight {
-  animation: rs-exitSlideRight 0.5s cubic-bezier(0.5, 0, 0.75, 0) forwards;
-}
-
-.rs-exit--zoomOut {
-  animation: rs-exitZoom 0.5s cubic-bezier(0.5, 0, 0.75, 0) forwards;
-}
-
-.rs-exit--fadeOut {
-  animation: rs-exitFade 0.5s ease-in forwards;
-}
-
-@keyframes rs-exitSlideDown {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to   { opacity: 0; transform: translateY(80px) scale(0.95); }
-}
-
-@keyframes rs-exitSlideUp {
-  from { opacity: 1; transform: translateY(0) scale(1); }
-  to   { opacity: 0; transform: translateY(-80px) scale(0.95); }
-}
-
-@keyframes rs-exitSlideLeft {
-  from { opacity: 1; transform: translateX(0) scale(1); }
-  to   { opacity: 0; transform: translateX(-80px) scale(0.95); }
-}
-
-@keyframes rs-exitSlideRight {
-  from { opacity: 1; transform: translateX(0) scale(1); }
-  to   { opacity: 0; transform: translateX(80px) scale(0.95); }
-}
-
-@keyframes rs-exitZoom {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.5); }
-}
-
-@keyframes rs-exitFade {
-  from { opacity: 1; }
-  to   { opacity: 0; }
-}
-
-/* ─── Visible (static) state ─── */
-.rs-visible {
+/* Visible: static */
+.rs-phase-visible {
   opacity: 1;
   transform: none;
 }
 
-/* ─── Clip fallback styling ─── */
-.rs-clip-fallback {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  background: linear-gradient(135deg, rgba(145, 70, 255, 0.1), rgba(100, 65, 165, 0.05));
+/* Exiting: slide down and fade */
+.rs-phase-exit {
+  animation: rs-slideOut 0.45s cubic-bezier(0.5, 0, 0.75, 0) forwards;
+}
+
+@keyframes rs-slideOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(60px) scale(0.96); }
 }
