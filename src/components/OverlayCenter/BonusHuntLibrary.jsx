@@ -127,6 +127,35 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
     }
   };
 
+  // ── Download hunt as JSON ──
+  const handleDownloadJSON = (hunt) => {
+    const data = {
+      hunt_name: hunt.hunt_name,
+      currency: hunt.currency || '€',
+      hunt_date: hunt.hunt_date || hunt.created_at,
+      start_money: hunt.start_money,
+      stop_loss: hunt.stop_loss,
+      total_bet: hunt.total_bet,
+      total_win: hunt.total_win,
+      profit: hunt.profit,
+      bonus_count: hunt.bonus_count,
+      bonuses_opened: hunt.bonuses_opened,
+      avg_multi: hunt.avg_multi,
+      best_multi: hunt.best_multi,
+      best_slot_name: hunt.best_slot_name,
+      bonuses: hunt.bonuses || [],
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${(hunt.hunt_name || 'hunt').replace(/[^a-z0-9]/gi, '_')}_${new Date(hunt.created_at).toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   // ── Formatting helpers ──
   const fmtDate = (d) => {
     if (!d) return '';
@@ -439,6 +468,14 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
                             onClick={() => handleLoadToOverlay(hunt)}
                           >
                             📥 Load to Overlay
+                          </button>
+
+                          <button
+                            className="bhl-download-btn"
+                            onClick={() => handleDownloadJSON(hunt)}
+                            title="Download hunt data as JSON"
+                          >
+                            💾 Download JSON
                           </button>
 
                           {confirmDelete === hunt.id ? (
