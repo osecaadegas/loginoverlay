@@ -354,200 +354,106 @@ export default function TheLifeBlackjack({
   const dealerScore = calculateScore(dealerHand);
   const showDealerCards = gameState === 'dealer_turn' || gameState === 'resolved';
 
-  /* ── Chip colors ── */
-  const chipColor = (v) => {
-    if (v >= 1000) return 'from-amber-400 to-amber-600 border-amber-300';
-    if (v >= 500) return 'from-purple-500 to-purple-700 border-purple-400';
-    if (v >= 100) return 'from-orange-400 to-orange-600 border-orange-300';
-    if (v >= 50) return 'from-emerald-400 to-emerald-600 border-emerald-300';
-    return 'from-blue-500 to-blue-700 border-blue-400';
-  };
-
-  /* ── Score badge ── */
-  const renderScore = (score, label, hidden) => {
-    if (score === 0 && !hidden) return null;
-    const busted = !hidden && score > 21;
-    const isBJ = !hidden && score === 21;
-    return (
-      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', borderRadius: '12px', padding: '4px 14px', background: 'rgba(0,0,0,0.6)', border: '1px solid rgba(255,255,255,0.08)' }}>
-        <span style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.4)' }}>{label}</span>
-        <span style={{ width: '1px', height: '12px', background: 'rgba(255,255,255,0.1)' }} />
-        <span style={{ fontSize: '18px', fontWeight: 900, fontVariantNumeric: 'tabular-nums', color: busted ? '#f87171' : isBJ ? '#fbbf24' : '#fff' }}>
-          {hidden ? '?' : score}
-        </span>
-        {isBJ && <span style={{ fontSize: '10px', fontWeight: 700, color: '#fbbf24' }}>BJ!</span>}
-        {busted && <span style={{ fontSize: '10px', fontWeight: 700, color: '#f87171' }}>BUST</span>}
-      </span>
-    );
-  };
-
-  /* ── Card renderer (overlapping) ── */
-  const renderCards = (hand, hideSecond) => (
-    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '120px' }}>
-      {hand.length === 0 ? (
-        <>
-          <div style={{ width: '80px', height: '110px', borderRadius: '12px', border: '2px dashed rgba(255,255,255,0.1)' }} />
-          <div style={{ width: '80px', height: '110px', borderRadius: '12px', border: '2px dashed rgba(255,255,255,0.1)', marginLeft: '-28px' }} />
-        </>
-      ) : hand.map((card, i) => {
-        const hidden = hideSecond && i === 1;
-        return (
-          <div key={i} style={{ marginLeft: i > 0 ? '-28px' : '0', zIndex: i }}>
-            {renderCard(card, hidden)}
-          </div>
-        );
-      })}
-    </div>
-  );
-
   return (
-    <div className="tl-bj-wrapper">
+    <div className="bj-game-container">
       {/* Header */}
-      <header className="tl-bj-header">
-        <button className="tl-bj-back" onClick={onBack}>← Back</button>
-        <div className="tl-bj-title-area">
-          <h1 className="tl-bj-title">BLACKJACK</h1>
-          <p className="tl-bj-subtitle">6 Decks • Dealer stands on 17 • Pays 3:2</p>
+      <div className="bj-header">
+        <button className="bj-back-btn" onClick={onBack}>
+          ← Back to Casino
+        </button>
+        <div className="bj-title">
+          <h1>BLACKJACK</h1>
+          <p>6 Decks • Dealer stands on 17 • Pays 3:2</p>
         </div>
-        <div className="tl-bj-cash">
-          <span className="tl-bj-cash-label">CASH</span>
-          <span className="tl-bj-cash-val">${player.cash?.toLocaleString() || 0}</span>
-        </div>
-      </header>
-
-      {/* Green felt table */}
-      <div className="tl-bj-felt">
-        {/* Felt overlays */}
-        <div className="tl-bj-felt-texture" />
-        <div className="tl-bj-felt-shadow" />
-        <div className="tl-bj-felt-border-outer" />
-        <div className="tl-bj-felt-border-inner" />
-
-        <div className="tl-bj-felt-content">
-          {/* Dealer zone */}
-          <div className="tl-bj-zone">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(0,0,0,0.4)', border: '1px solid rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#ccc' }}>D</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)' }}>Dealer</span>
-              </div>
-              {dealerHand.length > 0 && renderScore(dealerScore, 'Hand', !showDealerCards)}
-            </div>
-            {renderCards(dealerHand, !showDealerCards)}
-          </div>
-
-          {/* Status divider */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr auto 1fr', alignItems: 'center', gap: '16px' }}>
-            <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent)' }} />
-            {gameMessage.text ? (
-              <span className={`tl-bj-msg tl-bj-msg-${gameMessage.type}`}>{gameMessage.text}</span>
-            ) : (
-              <span style={{ padding: '8px 20px', borderRadius: '9999px', fontSize: '14px', fontWeight: 700, background: 'rgba(255,255,255,0.06)', color: 'rgba(255,255,255,0.7)', border: '1px solid rgba(255,255,255,0.08)' }}>
-                {gameState === 'betting' ? 'Place your bet' : gameState === 'playing' ? 'Your turn' : gameState === 'dealer_turn' ? 'Dealer playing...' : ''}
-              </span>
-            )}
-            <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.15), transparent)' }} />
-          </div>
-
-          {/* Player zone */}
-          <div className="tl-bj-zone">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'rgba(59,130,246,0.3)', border: '1px solid rgba(96,165,250,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '10px', fontWeight: 700, color: '#93c5fd' }}>P</span>
-                <span style={{ fontSize: '12px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.1em', color: 'rgba(255,255,255,0.5)' }}>Player</span>
-              </div>
-              {playerHand.length > 0 && renderScore(playerScore, 'Hand', false)}
-            </div>
-            {renderCards(playerHand, false)}
-          </div>
-
-          {/* ─── Betting / Action controls (bottom of felt) ─── */}
-          <div style={{ height: '1px', background: 'linear-gradient(to right, transparent, rgba(255,255,255,0.12), transparent)' }} />
-
-          {gameState === 'betting' && (
-            <section style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
-              {/* Chips */}
-              <nav style={{ display: 'flex', justifyContent: 'center', gap: '10px' }}>
-                {BET_OPTIONS.map((val) => (
-                  <button
-                    key={val}
-                    onClick={() => adjustBet(val)}
-                    disabled={val > player.cash}
-                    style={{ width: '48px', height: '48px', borderRadius: '50%', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '2px solid rgba(255,255,255,0.2)', cursor: 'pointer', transition: 'transform 0.15s, box-shadow 0.15s', opacity: val > player.cash ? 0.2 : 1 }}
-                    className={`bg-gradient-to-b shadow-lg hover:scale-110 hover:-translate-y-1 active:scale-95 ${currentBet === val ? 'ring-2 ring-white/40 scale-110' : ''} ${chipColor(val)}`}
-                  >
-                    <span style={{ position: 'absolute', inset: '3px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.2)', pointerEvents: 'none' }} />
-                    <span style={{ position: 'absolute', inset: '7px', borderRadius: '50%', border: '1px dashed rgba(255,255,255,0.15)', pointerEvents: 'none' }} />
-                    <span style={{ position: 'relative', fontSize: val >= 1000 ? '9px' : '11px', fontWeight: 900, color: 'white', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{val >= 1000 ? `${val/1000}K` : val}</span>
-                  </button>
-                ))}
-              </nav>
-
-              {/* Current bet display */}
-              <span style={{ fontSize: '22px', fontWeight: 900, color: '#fbbf24', textShadow: '0 0 15px rgba(251,191,36,0.4)', fontVariantNumeric: 'tabular-nums' }}>
-                ${currentBet}
-              </span>
-
-              {/* Deal button */}
-              <button
-                onClick={dealHand}
-                disabled={isProcessing || player.cash < currentBet}
-                className="bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ borderRadius: '12px', padding: '12px 40px', fontSize: '16px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'white', cursor: 'pointer', border: 'none', transition: 'all 0.2s', boxShadow: '0 4px 20px rgba(245,158,11,0.3)' }}
-              >
-                DEAL
-              </button>
-            </section>
-          )}
-
-          {gameState === 'playing' && (
-            <section style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '10px' }}>
-              <button
-                onClick={hit}
-                disabled={isProcessing}
-                className="bg-gradient-to-b from-blue-500 to-blue-600 hover:from-blue-400 hover:to-blue-500 hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ borderRadius: '12px', padding: '12px 32px', fontWeight: 900, fontSize: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'white', cursor: 'pointer', border: 'none', transition: 'all 0.15s', boxShadow: '0 4px 15px rgba(59,130,246,0.3)' }}
-              >
-                Hit
-              </button>
-              <button
-                onClick={stand}
-                disabled={isProcessing}
-                className="bg-gradient-to-b from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-                style={{ borderRadius: '12px', padding: '12px 32px', fontWeight: 900, fontSize: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'white', cursor: 'pointer', border: 'none', transition: 'all 0.15s', boxShadow: '0 4px 15px rgba(239,68,68,0.3)' }}
-              >
-                Stand
-              </button>
-              {playerHand.length === 2 && player.cash >= currentBet && (
-                <button
-                  onClick={doubleDown}
-                  disabled={isProcessing}
-                  className="bg-gradient-to-b from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 hover:-translate-y-0.5 active:scale-[0.97] disabled:opacity-40 disabled:cursor-not-allowed"
-                  style={{ borderRadius: '12px', padding: '12px 32px', fontWeight: 900, fontSize: '16px', textTransform: 'uppercase', letterSpacing: '0.05em', color: 'white', cursor: 'pointer', border: 'none', transition: 'all 0.15s', boxShadow: '0 4px 15px rgba(245,158,11,0.3)' }}
-                >
-                  Double · ${currentBet}
-                </button>
-              )}
-            </section>
-          )}
-
-          {gameState === 'dealer_turn' && (
-            <section style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '12px', borderRadius: '9999px', background: 'rgba(0,0,0,0.25)', border: '1px solid rgba(255,255,255,0.1)', padding: '10px 24px' }}>
-                <span style={{ display: 'flex', gap: '4px' }}>
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '0ms' }} />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '150ms' }} />
-                  <span className="h-2 w-2 animate-bounce rounded-full bg-amber-400" style={{ animationDelay: '300ms' }} />
-                </span>
-                <span style={{ fontSize: '14px', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Dealer is playing...</span>
-              </span>
-            </section>
-          )}
+        <div className="bj-balance">
+          <span className="bj-balance-label">CASH</span>
+          <span className="bj-balance-amount">${player.cash?.toLocaleString() || 0}</span>
         </div>
       </div>
 
-      {/* Deck status */}
-      <div className="tl-bj-deck-info">Shoe: {shoe.length} cards remaining</div>
+      {/* Table */}
+      <div className="bj-table">
+        {/* Dealer Area */}
+        <div className="bj-dealer-area">
+          <div className="bj-label">Dealer</div>
+          <div className="bj-score">{dealerHand.length > 0 ? (showDealerCards ? dealerScore : '?') : ''}</div>
+          <div className="bj-cards">
+            {dealerHand.map((card, i) => renderCard(card, !showDealerCards && i === 1))}
+          </div>
+        </div>
+
+        {/* Game Message */}
+        {gameMessage.text && (
+          <div className={`bj-game-message ${gameMessage.type}`}>
+            {gameMessage.text}
+          </div>
+        )}
+
+        {/* Player Area */}
+        <div className="bj-player-area">
+          <div className="bj-cards">
+            {playerHand.map((card) => renderCard(card, false))}
+          </div>
+          <div className="bj-score">{playerHand.length > 0 ? playerScore : ''}</div>
+          <div className="bj-label">Your Hand</div>
+        </div>
+      </div>
+
+      {/* Controls */}
+      <div className="bj-controls">
+        {/* Betting Controls */}
+        {gameState === 'betting' && (
+          <div className="bj-betting-controls">
+            <div className="bj-bet-buttons">
+              {BET_OPTIONS.map(amount => (
+                <button
+                  key={amount}
+                  className={`bj-bet-btn ${currentBet === amount ? 'active' : ''}`}
+                  onClick={() => adjustBet(amount)}
+                  disabled={amount > player.cash}
+                >
+                  ${amount}
+                </button>
+              ))}
+            </div>
+            <div className="bj-current-bet">
+              <span className="bj-bet-label">Current Bet</span>
+              <span className="bj-bet-amount">${currentBet}</span>
+            </div>
+            <button 
+              className="bj-deal-btn"
+              onClick={dealHand}
+              disabled={isProcessing || player.cash < currentBet}
+            >
+              DEAL
+            </button>
+          </div>
+        )}
+
+        {/* Action Controls */}
+        {gameState === 'playing' && (
+          <div className="bj-action-controls">
+            <button className="bj-action-btn hit" onClick={hit} disabled={isProcessing}>
+              HIT
+            </button>
+            <button className="bj-action-btn stand" onClick={stand} disabled={isProcessing}>
+              STAND
+            </button>
+            <button 
+              className="bj-action-btn double" 
+              onClick={doubleDown}
+              disabled={isProcessing || playerHand.length !== 2 || player.cash < currentBet}
+            >
+              DOUBLE
+            </button>
+          </div>
+        )}
+
+        {/* Deck Status */}
+        <div className="bj-deck-status">
+          Shoe: {shoe.length} cards remaining
+        </div>
+      </div>
     </div>
   );
 }

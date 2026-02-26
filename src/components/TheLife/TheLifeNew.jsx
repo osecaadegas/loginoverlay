@@ -3,13 +3,12 @@ import { useNavigate } from 'react-router-dom';
 import { useTheLifeData } from './hooks/useTheLifeData';
 import { supabase } from '../../config/supabaseClient';
 import { useState, useRef, useEffect, useMemo } from 'react';
+import { useDragScroll } from './hooks/useDragScroll';
 import { useLanguage } from '../../contexts/LanguageContext';
 import './TheLife.css';
-import './TheLifeClean.css';
 
 // Components
 import WipeCountdown from './components/WipeCountdown';
-import CategoryNav from './components/CategoryNav';
 
 // Category Components
 import TheLifeCrimes from './categories/TheLifeCrimes';
@@ -29,123 +28,59 @@ import TheLifeSkills from './categories/TheLifeSkills';
 import TheLifeProfile from './categories/TheLifeProfile';
 import TheLifeHighStakes from './categories/TheLifeHighStakes';
 
-// Fallback images for category info (local files)
-const categoryFallbackImages = {
-  crimes: '/thelife/categories/crimes.png',
-  pvp: '/thelife/categories/pvp.png',
-  businesses: '/thelife/categories/businesses.png',
-  brothel: '/thelife/categories/brothel.png',
-  inventory: '/thelife/categories/Inventory.png',
-  jail: '/thelife/categories/Jail.png',
-  hospital: '/thelife/categories/Hospital.png',
-  market: '/thelife/categories/BlackMarket.png',
-  bank: '/thelife/categories/BlackMarket.png',
-  docks: '/thelife/categories/Docks.png',
-  stats: '/thelife/categories/skills.png',
-  leaderboard: '/thelife/categories/pvp.png',
-  highstakes: '/thelife/categories/high-stakes.png',
-  skills: '/thelife/categories/skills.png',
-  playermarket: '/thelife/categories/playermarket.png',
-  profile: '/thelife/categories/pvp.png',
-};
-
 // Portuguese translations for category info
 const categoryTranslations = {
   crimes: {
     name: 'Crimes',
-    nameEn: 'Crimes',
-    desc: 'Realize assaltos e roubos para ganhar dinheiro rápido. Crimes de nível mais alto oferecem recompensas maiores, mas com maior risco de prisão.',
-    descEn: 'Pull off heists and robberies for fast cash. Higher-level crimes offer bigger rewards but carry greater risk of jail time.'
+    desc: 'Realize assaltos e roubos para ganhar dinheiro rápido. Crimes de nível mais alto oferecem recompensas maiores, mas com maior risco de prisão.'
   },
   pvp: {
     name: 'Combate PvP',
-    nameEn: 'PvP Combat',
-    desc: 'Ataque outros jogadores para roubar seu dinheiro e enviá-los ao hospital. Seu nível e HP determinam suas chances de vitória.',
-    descEn: 'Attack other players to steal their cash and send them to the hospital. Your level and HP determine your chances of winning.'
+    desc: 'Ataque outros jogadores para roubar seu dinheiro e enviá-los ao hospital. Seu nível e HP determinam suas chances de vitória.'
   },
   businesses: {
     name: 'Negócios',
-    nameEn: 'Businesses',
-    desc: 'Possua e opere vários negócios para gerar renda passiva. Melhore seus negócios para aumentar a produção e os lucros.',
-    descEn: 'Own and operate businesses to generate passive income. Upgrade to increase production and profits.'
+    desc: 'Possua e opere vários negócios para gerar renda passiva. Melhore seus negócios para aumentar a produção e os lucros.'
   },
   brothel: {
     name: 'Bordel',
-    nameEn: 'Brothel',
-    desc: 'Contrate trabalhadores para gerar renda passiva. Melhore seu bordel para desbloquear mais vagas e aumentar seus ganhos por hora.',
-    descEn: 'Hire workers to generate passive income. Upgrade your brothel to unlock more slots and boost hourly earnings.'
+    desc: 'Contrate trabalhadores para gerar renda passiva. Melhore seu bordel para desbloquear mais vagas e aumentar seus ganhos por hora.'
   },
   inventory: {
     name: 'Estoque',
-    nameEn: 'Inventory',
-    desc: 'Armazene itens ganhos de negócios e atividades. Itens especiais como Cartões de Saída da Prisão podem ajudá-lo a escapar de situações difíceis.',
-    descEn: 'Store items earned from businesses and activities. Special items like Get Out of Jail cards can help you escape tough situations.'
+    desc: 'Armazene itens ganhos de negócios e atividades. Itens especiais como Cartões de Saída da Prisão podem ajudá-lo a escapar de situações difíceis.'
   },
   jail: {
     name: 'Prisão',
-    nameEn: 'Jail',
-    desc: 'Quando crimes falham, você acaba aqui. Use um Cartão de Saída da Prisão ou pague suborno para escapar cedo, ou aguarde sua sentença.',
-    descEn: 'When crimes fail, you end up here. Use a Get Out of Jail card or pay a bribe to escape early, or wait out your sentence.'
+    desc: 'Quando crimes falham, você acaba aqui. Use um Cartão de Saída da Prisão ou pague suborno para escapar cedo, ou aguarde sua sentença.'
   },
   hospital: {
     name: 'Hospital',
-    nameEn: 'Hospital',
-    desc: 'Recupere seu HP após batalhas ou crimes fracassados. Pague por serviços médicos para voltar à ação mais rápido.',
-    descEn: 'Recover your HP after battles or failed crimes. Pay for medical services to get back into action faster.'
+    desc: 'Recupere seu HP após batalhas ou crimes fracassados. Pague por serviços médicos para voltar à ação mais rápido.'
   },
   market: {
     name: 'Mercado Negro',
-    nameEn: 'Black Market',
-    desc: 'Venda drogas nas ruas para altos lucros mas com risco de prisão, ou use as docas seguras para vendas garantidas com pagamentos menores.',
-    descEn: 'Sell drugs on the streets for high profits but risk jail, or use the safe docks for guaranteed sales at lower payouts.'
+    desc: 'Venda drogas nas ruas para altos lucros mas com risco de prisão, ou use as docas seguras para vendas garantidas com pagamentos menores.'
   },
   bank: {
     name: 'Banco',
-    nameEn: 'Bank',
-    desc: 'Mantenha seu dinheiro seguro de outros jogadores. Deposite seu dinheiro para protegê-lo de perdas em PvP e roubos.',
-    descEn: 'Keep your money safe from other players. Deposit your cash to protect it from PvP losses and robberies.'
+    desc: 'Mantenha seu dinheiro seguro de outros jogadores. Deposite seu dinheiro para protegê-lo de perdas em PvP e roubos.'
   },
   stats: {
     name: 'Estatísticas',
-    nameEn: 'Stats',
-    desc: 'Acompanhe o progresso da sua carreira criminal incluindo total de crimes, taxa de sucesso, registro PvP e sequências de login.',
-    descEn: 'Track your criminal career progress including total crimes, success rate, PvP record, and login streaks.'
+    desc: 'Acompanhe o progresso da sua carreira criminal incluindo total de crimes, taxa de sucesso, registro PvP e sequências de login.'
   },
   leaderboard: {
     name: 'Classificação',
-    nameEn: 'Leaderboard',
-    desc: 'Compita com outros jogadores pelos primeiros lugares. Rankings são baseados em dinheiro total, nível e sucesso criminal.',
-    descEn: 'Compete with other players for the top spots. Rankings are based on total cash, level, and criminal success.'
+    desc: 'Compita com outros jogadores pelos primeiros lugares. Rankings são baseados em dinheiro total, nível e sucesso criminal.'
   },
   highstakes: {
     name: 'Apostas Altas',
-    nameEn: 'High Stakes',
-    desc: 'Jogue jogos de cassino de alto risco. Aposte seu dinheiro suado em Blackjack, Roleta e mais!',
-    descEn: 'Play high-risk casino games. Bet your hard-earned cash on Blackjack, Roulette and more!'
+    desc: 'Jogue jogos de cassino de alto risco. Aposte seu dinheiro suado em Blackjack, Roleta e mais!'
   },
   playermarket: {
     name: 'Mercado de Jogadores',
-    nameEn: 'Player Market',
-    desc: 'Compre, venda e troque itens com outros jogadores. Liste seus itens ou faça ofertas no mercado peer-to-peer.',
-    descEn: 'Buy, sell and trade items with other players. List your items or make offers on the peer-to-peer market.'
-  },
-  skills: {
-    name: 'Habilidades',
-    nameEn: 'Skills',
-    desc: 'Treine e melhore suas habilidades para desbloquear vantagens no jogo.',
-    descEn: 'Train and improve your skills to unlock advantages in the game.'
-  },
-  docks: {
-    name: 'Docas',
-    nameEn: 'Docks',
-    desc: 'Venda mercadorias de forma segura nas docas por pagamentos garantidos.',
-    descEn: 'Sell goods safely at the docks for guaranteed payments.'
-  },
-  profile: {
-    name: 'Perfil',
-    nameEn: 'Profile',
-    desc: 'Veja e personalize o seu perfil de jogador.',
-    descEn: 'View and customize your player profile.'
+    desc: 'Compre, venda e troque itens com outros jogadores. Liste seus itens ou faça ofertas no mercado peer-to-peer.'
   }
 };
 
@@ -161,10 +96,10 @@ export default function TheLife() {
   
   // Background music state - default to true for autoplay
   const audioRef = useRef(null);
+  const tabsScrollRef = useRef(null);
   const [isMusicEnabled, setIsMusicEnabled] = useState(true);
   const [showSettings, setShowSettings] = useState(false);
-  const [contentKey, setContentKey] = useState(0); // for content transition animation
-  const [showSecondary, setShowSecondary] = useState(false); // collapsible secondary stats
+  const tabsDragScroll = useDragScroll(tabsScrollRef);
   
   // Initialize audio and load saved preferences
   useEffect(() => {
@@ -257,29 +192,20 @@ export default function TheLife() {
     }
   }, [message.text, setMessage]);
 
-  // Get current category info with translation support + fallback images (must be before any early returns)
+  // Get current category info with translation support (must be before any early returns)
   const currentCategoryInfo = useMemo(() => {
-    const info = categoryInfo?.[activeTab];
-    const translation = categoryTranslations[activeTab];
-    const fallbackImg = categoryFallbackImages[activeTab];
-
-    // Build info object — use DB data when available, fall back to translations + local images
-    const name = isPt
-      ? (translation?.name || info?.category_name || activeTab)
-      : (info?.category_name || translation?.nameEn || translation?.name || activeTab);
-    const desc = isPt
-      ? (translation?.desc || info?.description || '')
-      : (info?.description || translation?.descEn || translation?.desc || '');
-    const img = info?.image_url || fallbackImg || '';
-
-    if (!name && !desc) return null;
-
-    return {
-      ...(info || {}),
-      category_name: name,
-      description: desc,
-      image_url: img,
-    };
+    if (!categoryInfo || !categoryInfo[activeTab]) return null;
+    const info = categoryInfo[activeTab];
+    
+    // If Portuguese and we have a translation, use it
+    if (isPt && categoryTranslations[activeTab]) {
+      return {
+        ...info,
+        category_name: categoryTranslations[activeTab].name,
+        description: categoryTranslations[activeTab].desc
+      };
+    }
+    return info;
   }, [categoryInfo, activeTab, isPt]);
 
   if (loading) {
@@ -354,7 +280,7 @@ export default function TheLife() {
 
   return (
     <div className="the-life-page">
-    <div className="the-life-container tl-clean">
+    <div className="the-life-container">
       {/* Background Music */}
       <audio 
         ref={audioRef} 
@@ -363,141 +289,322 @@ export default function TheLife() {
         preload="auto"
       />
 
-      {/* ===== COMPACT HEADER ===== */}
-      <header className="tl-header">
-        <img src="/thelife/thelife.png" alt="The Life" className="tl-logo" />
+      <div className="the-life-header">
+        <img src="/thelife/thelife.png" alt="The Life" className="game-logo" />
         <WipeCountdown />
-      </header>
+      </div>
 
-      {/* Toast Message */}
       {message.text && (
-        <div className={`tl-toast tl-toast--${message.type}`}>
-          <span className="tl-toast__icon">{message.type === 'success' ? '✓' : message.type === 'error' ? '✕' : 'ℹ'}</span>
-          <span className="tl-toast__text">{message.text}</span>
-          <button className="tl-toast__close" onClick={() => setMessage({ type: '', text: '' })}>×</button>
+        <div className={`game-message ${message.type}`}>
+          <span className="message-icon">{message.type === 'success' ? '✓' : message.type === 'error' ? '!' : 'ℹ'}</span>
+          <span className="message-text">{message.text}</span>
+          <button onClick={() => setMessage({ type: '', text: '' })}>×</button>
         </div>
       )}
 
-      {/* ===== PRIMARY STATS BAR — always visible ===== */}
-      <div className="tl-stats">
-        <div className="tl-stats__row">
-          {/* Level + XP */}
-          <div className="tl-bar" title={`${player?.xp} / ${player?.level * 100} XP`}>
-            <div className="tl-bar__fill tl-bar--xp" style={{ width: `${(player?.xp / (player?.level * 100)) * 100}%` }} />
-            <span className="tl-bar__label">LVL {player?.level}</span>
-            <span className="tl-bar__value">{player?.xp}/{player?.level * 100} XP</span>
+      {/* Player Stats and Category Info Container */}
+      <div className="stats-and-info-container">
+        {/* Player Stats Bar */}
+        <div className="player-stats-bar">
+          <div className="stats-left-section">
+          <div className="stat-group">
+            <div className="stat-bar">
+              <div 
+                className="stat-fill xp-fill" 
+                style={{ width: `${(player?.xp / (player?.level * 100)) * 100}%` }}
+              />
+              <span className="stat-text">LEVEL {player?.level} - {player?.xp} / {player?.level * 100} XP</span>
+            </div>
           </div>
-          {/* HP */}
-          <div className="tl-bar" title={`${player?.hp} / ${player?.max_hp} HP`}>
-            <div className="tl-bar__fill tl-bar--hp" style={{ width: `${(player?.hp / player?.max_hp) * 100}%` }} />
-            <span className="tl-bar__label">HP</span>
-            <span className="tl-bar__value">{player?.hp}/{player?.max_hp}</span>
+
+          <div className="stat-group">
+            <div className="stat-bar">
+              <div 
+                className="stat-fill hp-fill" 
+                style={{ width: `${(player?.hp / player?.max_hp) * 100}%` }}
+              />
+              <span className="stat-text">HP: {player?.hp} / {player?.max_hp}</span>
+            </div>
           </div>
-          {/* Stamina */}
-          <div className="tl-bar" title={`${player?.stamina} / ${player?.max_stamina} Stamina`}>
-            <div className="tl-bar__fill tl-bar--stamina" style={{ width: `${(player?.stamina / player?.max_stamina) * 100}%` }} />
-            <span className="tl-bar__label">⚡</span>
-            <span className="tl-bar__value">{player?.stamina}/{player?.max_stamina}</span>
+
+          <div className="stat-group">
+            <div className="stat-bar">
+              <div 
+                className="stat-fill stamina-fill" 
+                style={{ width: `${(player?.stamina / player?.max_stamina) * 100}%` }}
+              />
+              <span className="stat-text">STAMINA: {player?.stamina} / {player?.max_stamina}</span>
+            </div>
+          </div>
+
+          <div className="stat-group">
+            <div className="stat-bar addiction-bar">
+              <div 
+                className="stat-fill addiction-fill" 
+                style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }}
+              />
+              <span className="stat-text">ADDICTION: {player?.addiction || 0} / {player?.max_addiction || 100}</span>
+            </div>
           </div>
         </div>
 
-        {/* Cash + Bank — inline with stats */}
-        <div className="tl-stats__money">
-          <span className="tl-money tl-money--cash">
-            <span className="tl-money__icon">💵</span>
-            ${player?.cash?.toLocaleString()}
-          </span>
-          <span className="tl-money tl-money--bank">
-            <span className="tl-money__icon">🏦</span>
-            ${player?.bank_balance?.toLocaleString()}
-          </span>
-        </div>
-
-        {/* Toggle secondary stats */}
-        <button
-          className="tl-stats__toggle"
-          onClick={() => setShowSecondary(s => !s)}
-          aria-expanded={showSecondary}
-          aria-label="Toggle secondary stats"
-        >
-          {showSecondary ? '▲ Hide Stats' : '▼ More Stats'}
-        </button>
-
-        {/* Collapsible secondary stats panel */}
-        {showSecondary && (
-          <div className="tl-stats__secondary">
-            <div className="tl-bar tl-bar--sm" title={`Power: ${player?.power || 0}`}>
-              <div className="tl-bar__fill tl-bar--power" style={{ width: `${Math.min((player?.power || 0), 100)}%` }} />
-              <span className="tl-bar__label">PWR</span>
-              <span className="tl-bar__value">{player?.power || 0}</span>
-            </div>
-            <div className="tl-bar tl-bar--sm" title={`Intelligence: ${player?.intelligence || 0}`}>
-              <div className="tl-bar__fill tl-bar--intel" style={{ width: `${Math.min((player?.intelligence || 0), 100)}%` }} />
-              <span className="tl-bar__label">INT</span>
-              <span className="tl-bar__value">{player?.intelligence || 0}</span>
-            </div>
-            <div className="tl-bar tl-bar--sm" title={`Defense: ${player?.defense || 0}`}>
-              <div className="tl-bar__fill tl-bar--def" style={{ width: `${Math.min((player?.defense || 0), 100)}%` }} />
-              <span className="tl-bar__label">DEF</span>
-              <span className="tl-bar__value">{player?.defense || 0}</span>
-            </div>
-            <div className="tl-bar tl-bar--sm" title={`Addiction: ${player?.addiction || 0} / ${player?.max_addiction || 100}`}>
-              <div className="tl-bar__fill tl-bar--addiction" style={{ width: `${((player?.addiction || 0) / (player?.max_addiction || 100)) * 100}%` }} />
-              <span className="tl-bar__label">ADC</span>
-              <span className="tl-bar__value">{player?.addiction || 0}/{player?.max_addiction || 100}</span>
+        <div className="stats-right-section">
+          <div className="stat-group">
+            <div className="stat-bar">
+              <div 
+                className="stat-fill power-fill" 
+                style={{ width: `${Math.min(((player?.power || 0) / 100) * 100, 100)}%` }}
+              />
+              <span className="stat-text">POWER: {player?.power || 0}</span>
             </div>
           </div>
-        )}
-      </div>
 
-      {/* ===== QUICK ACCESS TOOLBAR ===== */}
-      <div className="tl-toolbar">
-        <button className="tl-toolbar__btn" onClick={() => setShowSettings(true)}>⚙️</button>
-        <button className={`tl-toolbar__btn ${activeTab === 'leaderboard' ? 'active' : ''}`} onClick={() => setActiveTab('leaderboard')}>🏆</button>
-        <button
-          className={`tl-toolbar__btn ${activeTab === 'bank' ? 'active' : ''}`}
-          onClick={() => !isRestricted && setActiveTab('bank')}
-          disabled={isRestricted}
-        >🏦</button>
-        <button className={`tl-toolbar__btn ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>👤</button>
-        <button className="tl-toolbar__btn tl-toolbar__btn--gold" onClick={() => navigate('/games/thelife/season-pass')}>
-          ⭐ <span className="tl-toolbar__label">Pass</span>
-        </button>
-        <button className="tl-toolbar__btn tl-toolbar__btn--blue" onClick={() => navigate('/games/thelife/news')}>
-          📰 <span className="tl-toolbar__label">News</span>
-        </button>
-        {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
-          <button className="tl-toolbar__btn tl-toolbar__btn--gold" onClick={quickRefillStamina} title={`Use stamina item (${staminaItemCount} left)`}>
-            ⚡ Refill ({staminaItemCount})
-          </button>
+          <div className="stat-group">
+            <div className="stat-bar">
+              <div 
+                className="stat-fill intelligence-fill" 
+                style={{ width: `${Math.min(((player?.intelligence || 0) / 100) * 100, 100)}%` }}
+              />
+              <span className="stat-text">INTELLIGENCE: {player?.intelligence || 0}</span>
+            </div>
+          </div>
+
+          <div className="stat-group">
+            <div className="stat-bar">
+              <div 
+                className="stat-fill defense-fill" 
+                style={{ width: `${Math.min(((player?.defense || 0) / 100) * 100, 100)}%` }}
+              />
+              <span className="stat-text">DEFENSE: {player?.defense || 0}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="stats-bottom-section">
+          {/* Quick Access Buttons Inside Stats Card */}
+          <div className="quick-access-tabs-inline">
+            <button 
+              className="quick-tab-inline compact settings-btn"
+              onClick={() => setShowSettings(true)}
+            >
+              ⚙️ Settings
+            </button>
+            <button 
+              className={`quick-tab-inline compact ${activeTab === 'leaderboard' ? 'active' : ''}`}
+              onClick={() => setActiveTab('leaderboard')}
+            >
+              🏆 Leaderboard
+            </button>
+            <button 
+              className={`quick-tab-inline compact ${activeTab === 'bank' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('bank')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              🏦 Bank
+            </button>
+            <button 
+              className={`quick-tab-inline compact ${activeTab === 'profile' ? 'active' : ''}`}
+              onClick={() => setActiveTab('profile')}
+            >
+              👤 Profile
+            </button>
+            <button 
+              className="quick-tab-inline compact season-pass-btn"
+              onClick={() => navigate('/games/thelife/season-pass')}
+            >
+              <span className="sp-icon">⭐</span>
+              <span className="sp-text">Season Pass</span>
+              <span className="sp-badge">NEW</span>
+            </button>
+            <button 
+              className="quick-tab-inline compact news-btn"
+              onClick={() => navigate('/games/thelife/news')}
+            >
+              <span className="news-icon-btn">📰</span>
+              <span className="news-text">News</span>
+              <span className="news-live-dot"></span>
+            </button>
+            {staminaItemCount > 0 && player?.stamina < player?.max_stamina && (
+              <button 
+                className="quick-tab-inline compact refill-btn"
+                onClick={quickRefillStamina}
+                title={`Use stamina item (${staminaItemCount} available)`}
+              >
+                ⚡ Refill ({staminaItemCount})
+              </button>
+            )}
+          </div>
+
+          <div className="cash-display compact">
+            <div className="cash-item">
+              <span className="cash-icon">💵</span>
+              <div className="cash-info">
+                <span className="cash-value">${player?.cash?.toLocaleString()}</span>
+                <span className="cash-label">{isPt ? 'Dinheiro' : 'Cash'}</span>
+              </div>
+            </div>
+            <div className="cash-item">
+              <span className="cash-icon">🏦</span>
+              <div className="cash-info">
+                <span className="cash-value">${player?.bank_balance?.toLocaleString()}</span>
+                <span className="cash-label">{isPt ? 'Banco' : 'Bank'}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        {/* Category Info Display */}
+        {currentCategoryInfo && (
+          <div className="category-info-display">
+            <div className="category-info-text">
+              <h3>{currentCategoryInfo.category_name}</h3>
+              <p>{currentCategoryInfo.description}</p>
+            </div>
+            <div className="category-info-image">
+              <img src={currentCategoryInfo.image_url} alt={currentCategoryInfo.category_name} />
+            </div>
+          </div>
         )}
       </div>
 
       {/* Status Warnings */}
       {isInJail && (
-        <div className="tl-alert tl-alert--warn">
-          ⚠️ {isPt ? 'Você está na prisão até' : 'In jail until'} {new Date(player.jail_until).toLocaleTimeString()}
+        <div className="status-warning jail">
+          ⚠️ {isPt ? 'Você está na prisão até' : 'You are in jail until'} {new Date(player.jail_until).toLocaleTimeString()}
         </div>
       )}
+
       {isInHospital && (
-        <div className="tl-alert tl-alert--danger">
-          🏥 {isPt ? 'Você está no hospital até' : 'In hospital until'} {new Date(player.hospital_until).toLocaleTimeString()}
+        <div className="status-warning hospital">
+          🏥 {isPt ? 'Você está no hospital até' : 'You are in hospital until'} {new Date(player.hospital_until).toLocaleTimeString()}
         </div>
       )}
 
-      {/* ===== CATEGORY NAVIGATION ===== */}
-      <CategoryNav
-        activeTab={activeTab}
-        setActiveTab={(tab) => {
-          setActiveTab(tab);
-          setContentKey(k => k + 1);
-        }}
-        isRestricted={isRestricted}
-        onCategorySound={null}
-      />
+      {/* Tab Navigation */}
+      <div className="game-tabs-wrapper">
+        <button 
+          className="tab-scroll-btn left"
+          onClick={() => {
+            const container = document.querySelector('.game-tabs-scroll');
+            container.scrollBy({ left: -150, behavior: 'smooth' });
+          }}
+        >
+          ‹
+        </button>
+        <div 
+          className="game-tabs-scroll"
+          ref={tabsScrollRef}
+          {...tabsDragScroll}
+        >
+          <div className="game-tabs">
+            {/* CRIMES */}
+            <button 
+              className={`tab tab-image ${activeTab === 'crimes' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('crimes')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/crimes.png" alt="Crimes" />
+            </button>
+            {/* BUSINESSES */}
+            <button
+              className={`tab tab-image ${activeTab === 'businesses' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('businesses')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/businesses.png" alt="Businesses" />
+            </button>
+            {/* BROTHEL */}
+            <button 
+              className={`tab tab-image ${activeTab === 'brothel' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('brothel')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/brothel.png" alt="Brothel" />
+            </button>
+            {/* PVP */}
+            <button 
+              className={`tab tab-image ${activeTab === 'pvp' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('pvp')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/pvp.png" alt="PvP" />
+            </button>
+            {/* HIGH STAKES */}
+            <button 
+              className={`tab tab-image ${activeTab === 'highstakes' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('highstakes')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+              title="High Stakes"
+            >
+              <img src="/thelife/categories/high-stakes.png" alt="High Stakes" />
+            </button>
+            {/* DOCKS */}
+            <button 
+              className={`tab tab-image ${activeTab === 'docks' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('docks')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/Docks.png" alt="Docks" />
+            </button>
+            {/* BLACK MARKET */}
+            <button 
+              className={`tab tab-image ${activeTab === 'market' ? 'active' : ''}`}
+              onClick={() => !isRestricted && setActiveTab('market')}
+              disabled={isRestricted}
+              style={{opacity: isRestricted ? 0.5 : 1, cursor: isRestricted ? 'not-allowed' : 'pointer'}}
+            >
+              <img src="/thelife/categories/BlackMarket.png" alt="Market" />
+            </button>
+            {/* SKILLS */}
+            <button 
+              className={`tab tab-image ${activeTab === 'skills' ? 'active' : ''}`}
+              onClick={() => setActiveTab('skills')}
+            >
+              <img src="/thelife/categories/skills.png" alt="Skills" />
+            </button>
+            {/* INVENTORY/STASH */}
+            <button 
+              className={`tab tab-image ${activeTab === 'inventory' ? 'active' : ''}`}
+              onClick={() => setActiveTab('inventory')}
+            >
+              <img src="/thelife/categories/Inventory.png" alt="Inventory" />
+            </button>
+            {/* JAIL */}
+            <button 
+              className={`tab tab-image ${activeTab === 'jail' ? 'active' : ''}`}
+              onClick={() => setActiveTab('jail')}
+            >
+              <img src="/thelife/categories/Jail.png" alt="Jail" />
+            </button>
+            {/* HOSPITAL */}
+            <button 
+              className={`tab tab-image ${activeTab === 'hospital' ? 'active' : ''}`}
+              onClick={() => setActiveTab('hospital')}
+            >
+              <img src="/thelife/categories/Hospital.png" alt="Hospital" />
+            </button>
+          </div>
+        </div>
+        <button 
+          className="tab-scroll-btn right"
+          onClick={() => {
+            const container = document.querySelector('.game-tabs-scroll');
+            container.scrollBy({ left: 150, behavior: 'smooth' });
+          }}
+        >
+          ›
+        </button>
+      </div>
 
-      {/* Render Active Tab Content — wrapped for animated transition */}
-      <div className="cn-content-enter" key={contentKey}>
+      {/* Render Active Tab Content */}
       {activeTab === 'crimes' && (
         <TheLifeCrimes
           player={player}
@@ -699,7 +806,6 @@ export default function TheLife() {
           </div>
         )
       )}
-      </div>{/* end cn-content-enter */}
 
       {/* Event Popup Modal */}
       {showEventPopup && eventPopupData && (

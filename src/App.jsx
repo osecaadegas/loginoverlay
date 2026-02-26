@@ -32,10 +32,7 @@ import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
 import ProfilePage from './components/ProfilePage/ProfilePage';
 import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
-import StreamsPage from './components/StreamsPage/StreamsPage';
-import OverlayControlCenter from './components/OverlayCenter/OverlayControlCenter';
-import OverlayRenderer from './components/OverlayCenter/OverlayRenderer';
-import SpotifyCallback from './components/SpotifyCallback';
+
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
   const { user } = useAuth();
@@ -528,11 +525,9 @@ function LayoutWrapper({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
-                      !isWidgetRoute &&
-                      !isOBSOverlay;
+                      !isWidgetRoute;
 
   // Detect screen size changes
   useEffect(() => {
@@ -565,48 +560,42 @@ function LayoutWrapper({ children }) {
   };
 
   const closeSidebar = () => {
-    setSidebarOpen(false);
+    if (isMobile) {
+      setSidebarOpen(false);
+    }
   };
 
   return (
     <div className="app-layout">
       {showSidebar && (
         <>
-          {/* Mobile toggle button - always renders, CSS handles visibility */}
-          <button 
-            className={`sidebar-toggle-btn touch-target ${sidebarOpen ? 'sidebar-open' : ''}`}
-            onClick={() => {
-              console.log('🍔 Hamburger clicked! Current state:', sidebarOpen, '-> setting to:', !sidebarOpen);
-              setSidebarOpen(prev => {
-                console.log('🍔 State update:', prev, '->', !prev);
-                return !prev;
-              });
-            }}
-            aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-          >
-            {sidebarOpen ? '✕' : '☰'}
-          </button>
+          {/* Mobile toggle button */}
+          {isMobile && (
+            <button 
+              className="sidebar-toggle-btn touch-target" 
+              onClick={toggleSidebar}
+              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
+            >
+              {sidebarOpen ? '✕' : '☰'}
+            </button>
+          )}
           
           {/* Sidebar with open state */}
-          {console.log('🔧 Rendering Sidebar with className:', sidebarOpen ? 'open' : '(empty)')}
           <Sidebar className={sidebarOpen ? 'open' : ''} onClose={closeSidebar} />
           
-          {/* Backdrop overlay - CSS handles visibility */}
-          <div 
-            className={`sidebar-backdrop ${sidebarOpen ? 'visible' : ''}`}
-            onClick={closeSidebar}
-            aria-hidden="true"
-          />
+          {/* Backdrop overlay - mobile only */}
+          {isMobile && sidebarOpen && (
+            <div 
+              className="sidebar-backdrop visible" 
+              onClick={closeSidebar}
+              aria-hidden="true"
+            />
+          )}
         </>
       )}
-      {/* OBS overlay routes bypass the main-content wrapper entirely */}
-      {isOBSOverlay || isWidgetRoute ? (
-        children
-      ) : (
-        <div className="main-content">
-          {children}
-        </div>
-      )}
+      <div className="main-content">
+        {children}
+      </div>
     </div>
   );
 }
@@ -621,12 +610,13 @@ function App() {
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/offers" element={<OffersPage />} />
-                <Route path="/streams" element={<StreamsPage />} />
                 <Route path="/tournaments" element={<TournamentsPage />} />
                 <Route path="/guess-balance" element={<GuessBalancePage />} />
                 <Route path="/giveaways" element={<GiveawaysPage />} />
                 <Route path="/vouchers" element={<VoucherRedeemPage />} />
                 <Route path="/daily-wheel" element={<DailyWheelPage />} />
+                <Route path="/games/dice" element={<div style={{ padding: '20px', color: '#fff' }}>Dice - Coming Soon</div>} />
+                <Route path="/games/roulette" element={<div style={{ padding: '20px', color: '#fff' }}>Roulette - Coming Soon</div>} />
                 <Route path="/games/blackjack" element={<BlackjackPremium />} />
                 <Route path="/games/mines" element={<Mines />} />
                 <Route path="/games/thelife" element={<TheLife />} />
@@ -653,14 +643,6 @@ function App() {
                 } />
                 
                 <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/overlay-center" element={
-                  <ProtectedAdminRoute>
-                    <OverlayControlCenter />
-                  </ProtectedAdminRoute>
-                } />
-                <Route path="/overlay/:token" element={<OverlayRenderer />} />
-                <Route path="/spotify-callback" element={<SpotifyCallback />} />
-
               </Routes>
             </LayoutWrapper>
           </BrowserRouter>

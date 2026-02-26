@@ -167,34 +167,43 @@ export default function Sidebar({ className = '', onClose }) {
 
   const menuItems = [
     { 
-      icon: 'fa-solid fa-building-columns', 
+      icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M21.41 11.58l-9-9C12.05 2.22 11.55 2 11 2H4c-1.1 0-2 .9-2 2v7c0 .55.22 1.05.59 1.42l9 9c.36.36.86.58 1.41.58.55 0 1.05-.22 1.41-.59l7-7c.37-.36.59-.86.59-1.41 0-.55-.23-1.06-.59-1.42zM5.5 7C4.67 7 4 6.33 4 5.5S4.67 4 5.5 4 7 4.67 7 5.5 6.33 7 5.5 7z"/></svg>, 
       labelKey: 'nav_partners',
-      label: 'Casinos & Offers', 
+      label: 'Partners', 
       path: '/offers', 
       show: true 
     },
     { 
-      icon: 'fa-solid fa-cart-shopping', 
+      icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-2.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>, 
       labelKey: 'nav_points_store',
-      label: 'Shop', 
+      label: 'Points Store', 
       path: '/points', 
       show: user 
     },
     { 
-      icon: 'fa-solid fa-gamepad', 
+      icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M15 7.5V2H9v5.5l3 3 3-3zM7.5 9H2v6h5.5l3-3-3-3zM9 16.5V22h6v-5.5l-3-3-3 3zM16.5 9l-3 3 3 3H22V9h-5.5z"/></svg>, 
       labelKey: 'nav_games',
-      label: 'Mini Games', 
+      label: 'Games', 
       path: '/games', 
       show: true,
       isDropdown: true
     },
     { 
-      icon: 'fa-solid fa-gear', 
+      icon: <svg viewBox="0 0 24 25" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/></svg>, 
+      labelKey: 'nav_points_manager',
+      label: 'Points Manager', 
+      path: '/points-manager', 
+      show: isModerator 
+    },
+
+    { 
+      icon: <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5.5-2.5l7.51-3.49L17.5 6.5 9.99 9.99 6.5 17.5zm5.5-6.6c.61 0 1.1.49 1.1 1.1s-.49 1.1-1.1 1.1-1.1-.49-1.1-1.1.49-1.1 1.1-1.1z"/></svg>, 
       labelKey: 'nav_admin_panel',
       label: 'Admin Panel', 
       path: '/admin', 
       show: isAdmin 
     },
+
   ];
 
   const handleTwitchLogin = () => {
@@ -235,12 +244,14 @@ export default function Sidebar({ className = '', onClose }) {
         )}
 
         <nav className="sidebar-nav">
-          {/* Home - Standalone at top */}
+          {/* Home (Live Stream) - Standalone at top */}
           <button
             className={`sidebar-item ${isActive('/') ? 'active' : ''}`}
             onClick={() => handleNavigation('/')}
           >
-            <span className="sidebar-icon"><i className="fa-solid fa-house" /></span>
+            <span className="sidebar-icon">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+            </span>
             <span className="sidebar-label">{t(T.NAV_HOME, 'Home')}</span>
           </button>
 
@@ -251,7 +262,7 @@ export default function Sidebar({ className = '', onClose }) {
                 className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
                 onClick={() => handleNavigation(item.path)}
               >
-                <span className="sidebar-emoji"><i className={item.icon} /></span>
+                <span className="sidebar-icon">{item.icon}</span>
                 <span className="sidebar-label">{t(item.labelKey, item.label)}</span>
               </button>
             ) : null
@@ -263,69 +274,64 @@ export default function Sidebar({ className = '', onClose }) {
               className={`sidebar-item ${showStreamDropdown ? 'active' : ''}`}
               onClick={() => setShowStreamDropdown(!showStreamDropdown)}
             >
-              <span className="sidebar-emoji"><i className="fa-solid fa-users" /></span>
+              <span className="sidebar-icon">
+                <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z"/></svg>
+              </span>
               <span className="sidebar-label">{t('nav_community', 'Community')}</span>
-              <span className={`dropdown-arrow ${showStreamDropdown ? 'open' : ''}`}>›</span>
+              <span className={`dropdown-arrow ${showStreamDropdown ? 'open' : ''}`}>▼</span>
             </button>
 
             {showStreamDropdown && (
               <div className="sidebar-dropdown">
                 <button
-                  className={`sidebar-subitem ${isActive('/streams') ? 'active' : ''}`}
-                  onClick={() => handleNavigation('/streams')}
-                >
-                  <span className="subitem-icon"><i className="fa-brands fa-twitch" /></span>
-                  <span className="subitem-label">{t('nav_streams', 'Streams')}</span>
-                </button>
-                <button
                   className={`sidebar-subitem ${isActive('/daily-wheel') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/daily-wheel')}
                 >
-                  <span className="subitem-icon"><i className="fa-solid fa-dharmachakra" /></span>
+                  <span className="subitem-icon">🎡</span>
                   <span className="subitem-label">{t('nav_daily_wheel', 'Daily Wheel')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/guess-balance') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/guess-balance')}
                 >
-                  <span className="subitem-icon"><i className="fa-solid fa-coins" /></span>
+                  <span className="subitem-icon">💰</span>
                   <span className="subitem-label">{t('nav_guess_balance', 'Guess the Balance')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/tournaments') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/tournaments')}
                 >
-                  <span className="subitem-icon"><i className="fa-solid fa-trophy" /></span>
+                  <span className="subitem-icon">🏆</span>
                   <span className="subitem-label">{t('nav_tournaments', 'Tournaments')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/giveaways') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/giveaways')}
                 >
-                  <span className="subitem-icon"><i className="fa-solid fa-gift" /></span>
+                  <span className="subitem-icon">🎁</span>
                   <span className="subitem-label">{t('nav_giveaways', 'Giveaways')}</span>
                 </button>
                 <button
                   className={`sidebar-subitem ${isActive('/vouchers') ? 'active' : ''}`}
                   onClick={() => handleNavigation('/vouchers')}
                 >
-                  <span className="subitem-icon"><i className="fa-solid fa-ticket" /></span>
+                  <span className="subitem-icon">🎟️</span>
                   <span className="subitem-label">{t('nav_vouchers', 'Vouchers')}</span>
                 </button>
               </div>
             )}
           </div>
 
-          {/* Mini Games dropdown */}
+          {/* Games dropdown */}
           {menuItems[2].show && (
             <div className="sidebar-item-wrapper">
               <button
                 className={`sidebar-item ${showGamesDropdown ? 'active' : ''}`}
                 onClick={() => setShowGamesDropdown(!showGamesDropdown)}
               >
-                <span className="sidebar-emoji"><i className={menuItems[2].icon} /></span>
-                <span className="sidebar-label">{t(T.NAV_GAMES, menuItems[2].label)}</span>
-                <span className={`dropdown-arrow ${showGamesDropdown ? 'open' : ''}`}>›</span>
+                <span className="sidebar-icon">{menuItems[2].icon}</span>
+                <span className="sidebar-label">{t(T.NAV_GAMES, 'Games')}</span>
+                <span className={`dropdown-arrow ${showGamesDropdown ? 'open' : ''}`}>▼</span>
               </button>
 
               {showGamesDropdown && (
@@ -334,21 +340,21 @@ export default function Sidebar({ className = '', onClose }) {
                     className={`sidebar-subitem ${isActive('/games/blackjack') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/games/blackjack')}
                   >
-                    <span className="subitem-icon"><i className="fa-solid fa-cards" /></span>
+                    <span className="subitem-icon">🃏</span>
                     <span className="subitem-label">{t('nav_blackjack', 'Blackjack')}</span>
                   </button>
                   <button
                     className={`sidebar-subitem ${isActive('/games/mines') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/games/mines')}
                   >
-                    <span className="subitem-icon"><i className="fa-solid fa-bomb" /></span>
+                    <span className="subitem-icon">💣</span>
                     <span className="subitem-label">{t('nav_mines', 'Mines')}</span>
                   </button>
                   <button
                     className={`sidebar-subitem ${isActive('/games/thelife') ? 'active' : ''}`}
                     onClick={() => handleNavigation('/games/thelife')}
                   >
-                    <span className="subitem-icon"><i className="fa-solid fa-crosshairs" /></span>
+                    <span className="subitem-icon">🔫</span>
                     <span className="subitem-label">{t('nav_thelife', 'The Life')}</span>
                   </button>
                 </div>
@@ -365,9 +371,11 @@ export default function Sidebar({ className = '', onClose }) {
                 className={`sidebar-item ${showWebModDropdown ? 'active' : ''}`}
                 onClick={() => setShowWebModDropdown(!showWebModDropdown)}
               >
-                <span className="sidebar-emoji"><i className="fa-solid fa-wrench" /></span>
+                <span className="sidebar-icon">
+                  <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path fill="currentColor" d="M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z"/></svg>
+                </span>
                 <span className="sidebar-label">{t('nav_webmod', 'WebMod')}</span>
-                <span className={`dropdown-arrow ${showWebModDropdown ? 'open' : ''}`}>›</span>
+                <span className={`dropdown-arrow ${showWebModDropdown ? 'open' : ''}`}>▼</span>
               </button>
 
               {showWebModDropdown && (
@@ -377,7 +385,7 @@ export default function Sidebar({ className = '', onClose }) {
                       className={`sidebar-subitem ${isActive('/webmod/slot-manager') ? 'active' : ''}`}
                       onClick={() => handleNavigation('/webmod/slot-manager')}
                     >
-                      <span className="subitem-icon"><i className="fa-solid fa-dice" /></span>
+                      <span className="subitem-icon">🎰</span>
                       <span className="subitem-label">{t('nav_slot_manager', 'Slot Manager')}</span>
                     </button>
                   )}
@@ -386,7 +394,7 @@ export default function Sidebar({ className = '', onClose }) {
                       className={`sidebar-subitem ${isActive('/webmod/points-manager') ? 'active' : ''}`}
                       onClick={() => handleNavigation('/webmod/points-manager')}
                     >
-                      <span className="subitem-icon"><i className="fa-solid fa-gift" /></span>
+                      <span className="subitem-icon">🎁</span>
                       <span className="subitem-label">{t('nav_points_manager', 'Points Manager')}</span>
                     </button>
                   )}
@@ -395,7 +403,7 @@ export default function Sidebar({ className = '', onClose }) {
                       className={`sidebar-subitem ${isActive('/webmod/guess-balance') ? 'active' : ''}`}
                       onClick={() => handleNavigation('/webmod/guess-balance')}
                     >
-                      <span className="subitem-icon"><i className="fa-solid fa-bullseye" /></span>
+                      <span className="subitem-icon">🎯</span>
                       <span className="subitem-label">{t('nav_guess_balance', 'Guess Balance')}</span>
                     </button>
                   )}
@@ -405,15 +413,22 @@ export default function Sidebar({ className = '', onClose }) {
                         className={`sidebar-subitem ${isActive('/webmod/voucher-manager') ? 'active' : ''}`}
                         onClick={() => handleNavigation('/webmod/voucher-manager')}
                       >
-                        <span className="subitem-icon"><i className="fa-solid fa-ticket" /></span>
+                        <span className="subitem-icon">🎟️</span>
                         <span className="subitem-label">{t('nav_voucher_manager', 'Voucher Manager')}</span>
                       </button>
                       <button
                         className={`sidebar-subitem ${isActive('/webmod/giveaway-creator') ? 'active' : ''}`}
                         onClick={() => handleNavigation('/webmod/giveaway-creator')}
                       >
-                        <span className="subitem-icon"><i className="fa-solid fa-gift" /></span>
+                        <span className="subitem-icon">🎁</span>
                         <span className="subitem-label">{t('nav_giveaway_creator', 'Giveaway Creator')}</span>
+                      </button>
+                      <button
+                        className={`sidebar-subitem ${isActive('/webmod/edit-slots') ? 'active' : ''}`}
+                        onClick={() => handleNavigation('/webmod/edit-slots')}
+                      >
+                        <span className="subitem-icon">✏️</span>
+                        <span className="subitem-label">{t('nav_edit_slots', 'Edit Slots')}</span>
                       </button>
                     </>
                   )}
@@ -422,28 +437,23 @@ export default function Sidebar({ className = '', onClose }) {
             </div>
           )}
 
-          {/* Remaining items (Points Manager, Admin Panel) */}
-          {menuItems.slice(3).map((item, index) =>
-            item.show ? (
-              <button
-                key={`extra-${index}`}
-                className={`sidebar-item ${isActive(item.path) ? 'active' : ''}`}
-                onClick={() => handleNavigation(item.path)}
-              >
-                <span className="sidebar-emoji"><i className={item.icon} /></span>
-                <span className="sidebar-label">{t(item.labelKey, item.label)}</span>
-              </button>
-            ) : null
+          {menuItems[4].show && (
+            <button
+              className={`sidebar-item ${isActive(menuItems[4].path) ? 'active' : ''}`}
+              onClick={() => handleNavigation(menuItems[4].path)}
+            >
+              <span className="sidebar-icon">{menuItems[4].icon}</span>
+              <span className="sidebar-label">{t(menuItems[4].labelKey, menuItems[4].label)}</span>
+            </button>
           )}
 
-          {/* Overlay Control Center - admin & premium */}
-          {(isAdmin || isPremium) && (
+          {menuItems[5]?.show && (
             <button
-              className={`sidebar-item ${isActive('/overlay-center') ? 'active' : ''}`}
-              onClick={() => handleNavigation('/overlay-center')}
+              className={`sidebar-item ${isActive(menuItems[5].path) ? 'active' : ''}`}
+              onClick={() => handleNavigation(menuItems[5].path)}
             >
-              <span className="sidebar-emoji"><i className="fa-solid fa-display" /></span>
-              <span className="sidebar-label">{t('nav_overlay_center', 'Overlay Center')}</span>
+              <span className="sidebar-icon">{menuItems[5].icon}</span>
+              <span className="sidebar-label">{t(menuItems[5].labelKey, menuItems[5].label)}</span>
             </button>
           )}
 
@@ -454,7 +464,7 @@ export default function Sidebar({ className = '', onClose }) {
                 className="sidebar-item logout"
                 onClick={handleLogout}
               >
-                <span className="sidebar-emoji"><i className="fa-solid fa-right-from-bracket" /></span>
+                <span className="sidebar-icon">🚪</span>
                 <span className="sidebar-label">{t(T.LOGOUT, 'Log Out')}</span>
               </button>
             </>
@@ -468,27 +478,18 @@ export default function Sidebar({ className = '', onClose }) {
 
         {/* Social Media Links */}
         <div className="sidebar-social">
-          <a href="https://discord.gg/ASvCcpp5b8" target="_blank" rel="noopener noreferrer" className="discord-card" title="Discord">
-            <div className="discord-card-icon">
-              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" width="24" height="24"><path fill="currentColor" d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03z"/></svg>
-            </div>
-            <div className="discord-card-text">
-              <span className="discord-card-title">DISCORD</span>
-              <span className="discord-card-desc">Junta-te à comunidade</span>
-            </div>
-            <span className="discord-card-arrow">→</span>
+          <a href="https://www.twitch.tv/osecaadegas95" target="_blank" rel="noopener noreferrer" className="social-card social-twitch" title="Twitch">
+            <span className="social-card-text">Twitch</span>
           </a>
-          <div className="sidebar-social-row">
-            <a href="https://www.twitch.tv/osecaadegas95" target="_blank" rel="noopener noreferrer" className="social-card social-twitch" title="Twitch">
-              <span className="social-card-text">Twitch</span>
-            </a>
-            <a href="https://www.youtube.com/@osecaadegas" target="_blank" rel="noopener noreferrer" className="social-card social-youtube" title="YouTube">
-              <span className="social-card-text">YouTube</span>
-            </a>
-            <a href="https://www.instagram.com/osecaadegas/" target="_blank" rel="noopener noreferrer" className="social-card social-instagram" title="Instagram">
-              <span className="social-card-text">Instagram</span>
-            </a>
-          </div>
+          <a href="https://www.youtube.com/@osecaadegas" target="_blank" rel="noopener noreferrer" className="social-card social-youtube" title="YouTube">
+            <span className="social-card-text">YouTube</span>
+          </a>
+          <a href="https://www.instagram.com/osecaadegas/" target="_blank" rel="noopener noreferrer" className="social-card social-instagram" title="Instagram">
+            <span className="social-card-text">Instagram</span>
+          </a>
+          <a href="https://discord.gg/ASvCcpp5b8" target="_blank" rel="noopener noreferrer" className="social-card social-discord" title="Discord">
+            <span className="social-card-text">Discord</span>
+          </a>
         </div>
     </aside>
 

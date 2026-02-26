@@ -10,6 +10,7 @@ import { getSharedPresets, saveSharedPreset, deleteSharedPreset } from '../../se
 import ThemeEditor from './ThemeEditor';
 import WidgetManager from './WidgetManager';
 import OverlayPreview from './OverlayPreview';
+import BonusHuntLibrary from './BonusHuntLibrary';
 import './OverlayCenter.css';
 
 // Register all built-in widgets
@@ -177,6 +178,7 @@ export default function OverlayControlCenter() {
           <nav className="oc-sidebar-nav">
             {[
               { key: 'widgets', icon: '🧩', label: 'Widgets' },
+              { key: 'library', icon: '📚', label: 'Library' },
               { key: 'preview', icon: '👁️', label: 'Preview' },
             ].map(tab => (
               <button
@@ -306,6 +308,9 @@ export default function OverlayControlCenter() {
               onRemove={removeWidget}
               availableWidgets={getAllWidgetDefs()}
             />
+          )}
+          {activePanel === 'library' && (
+            <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />
           )}
           {activePanel === 'theme' && (
             <ThemeEditor theme={theme} onSave={saveTheme} />
