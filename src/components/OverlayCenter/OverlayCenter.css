@@ -2391,6 +2391,217 @@
   cursor: not-allowed;
 }
 
+/* ═══════ BONUS HUNT HISTORY ═══════ */
+
+.bh-history-current-stats {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 10px;
+  background: rgba(99,102,241,0.08);
+  border-radius: 8px;
+  margin-top: 8px;
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.bh-history-msg {
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  margin-top: 8px;
+  font-weight: 500;
+}
+.bh-history-msg--ok { background: rgba(34,197,94,0.12); color: #86efac; }
+.bh-history-msg--del { background: rgba(239,68,68,0.08); color: #fca5a5; }
+.bh-history-msg--err { background: rgba(239,68,68,0.12); color: #fca5a5; }
+
+.bh-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.bh-history-card {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.bh-history-card:hover {
+  border-color: rgba(99,102,241,0.25);
+}
+.bh-history-card--expanded {
+  border-color: rgba(99,102,241,0.3);
+  background: rgba(99,102,241,0.04);
+}
+
+.bh-history-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.bh-history-main {
+  flex: 1;
+  min-width: 0;
+}
+.bh-history-name {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bh-history-date {
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.bh-history-quick {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.bh-history-stat-pill {
+  background: rgba(255,255,255,0.06);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+.bh-history-pill--profit {
+  background: rgba(34,197,94,0.12);
+  color: #86efac;
+}
+.bh-history-pill--loss {
+  background: rgba(239,68,68,0.1);
+  color: #fca5a5;
+}
+
+.bh-history-chevron {
+  flex-shrink: 0;
+  color: #64748b;
+  transition: transform 0.2s;
+}
+.bh-history-chevron--open {
+  transform: rotate(180deg);
+}
+
+/* Expanded details */
+.bh-history-details {
+  padding: 0 12px 12px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.bh-history-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 6px;
+  margin-top: 10px;
+}
+
+.bh-history-stat-box {
+  background: rgba(255,255,255,0.04);
+  border-radius: 8px;
+  padding: 8px;
+  text-align: center;
+}
+.bh-history-stat-box--wide {
+  grid-column: 1 / -1;
+}
+.bh-history-stat-label {
+  display: block;
+  font-size: 0.6rem;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 3px;
+}
+.bh-history-stat-val {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #e2e8f0;
+}
+.bh-history-val--profit { color: #86efac; }
+.bh-history-val--loss { color: #fca5a5; }
+
+/* Bonus preview chips */
+.bh-history-bonus-preview {
+  margin-top: 10px;
+}
+.bh-history-bonus-preview-label {
+  display: block;
+  font-size: 0.65rem;
+  color: #64748b;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bh-history-bonus-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.bh-history-bonus-chip {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 0.62rem;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+.bh-history-chip--opened {
+  background: rgba(99,102,241,0.1);
+  border-color: rgba(99,102,241,0.2);
+  color: #c4b5fd;
+}
+.bh-history-chip--opened em {
+  font-style: normal;
+  color: #86efac;
+  margin-left: 2px;
+}
+.bh-history-chip--super {
+  border-color: rgba(234,179,8,0.3);
+  background: rgba(234,179,8,0.08);
+}
+.bh-history-chip--more {
+  background: transparent;
+  border-color: transparent;
+  color: #64748b;
+  font-style: italic;
+}
+
+/* Actions */
+.bh-history-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  align-items: center;
+}
+.bh-history-confirm-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bh-history-confirm-text {
+  font-size: 0.72rem;
+  color: #fca5a5;
+  font-weight: 600;
+}
+
 /* ═══════════════════════════════════════════════════════════
    CHAT WIDGET — Multi-platform overlay chat
    ═══════════════════════════════════════════════════════════ */

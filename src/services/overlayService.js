@@ -235,3 +235,33 @@ export async function deleteSharedPreset(id) {
     .eq('id', id);
   if (error) throw error;
 }
+
+// ─── BONUS HUNT HISTORY ─────────────────────────────────
+
+export async function getBonusHuntHistory(userId) {
+  const { data, error } = await supabase
+    .from('bonus_hunt_history')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data || [];
+}
+
+export async function saveBonusHuntToHistory(userId, huntData) {
+  const { data, error } = await supabase
+    .from('bonus_hunt_history')
+    .insert({ user_id: userId, ...huntData })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteBonusHuntHistory(id) {
+  const { error } = await supabase
+    .from('bonus_hunt_history')
+    .delete()
+    .eq('id', id);
+  if (error) throw error;
+}

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getAllSlots } from '../../../utils/slotUtils';
 import { supabase } from '../../../config/supabaseClient';
+import { useAuth } from '../../../context/AuthContext';
+import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../services/overlayService';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -19,6 +21,9 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
   const [activeTab, setActiveTab] = useState('content');
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
+
+  // Auth for history
+  const { user } = useAuth();
 
   // Find navbar widget config for sync
   const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
@@ -84,6 +89,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
 
   const tabs = [
     { id: 'content', label: '📋 Content' },
+    { id: 'history', label: '📜 History' },
     { id: 'style', label: '🎨 Style' },
     { id: 'filters', label: '✨ Filters' },
     { id: 'presets', label: '💾 Presets' },
@@ -140,6 +146,11 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
             <BonusHuntPanel config={c} onChange={onChange} />
           )}
         </>
+      )}
+
+      {/* ═══════ HISTORY TAB ═══════ */}
+      {activeTab === 'history' && (
+        <BonusHuntHistoryTab config={c} onChange={onChange} userId={user?.id} currency={c.currency || '€'} />
       )}
 
       {/* ═══════ STYLE TAB ═══════ */}
@@ -787,6 +798,301 @@ function BonusHuntPanel({ config, onChange }) {
         </div>
       </div>
 
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   BONUS HUNT HISTORY TAB
+   ═══════════════════════════════════════════════════════ */
+function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
+  const c = config || {};
+  const [history, setHistory] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+  const [expandedId, setExpandedId] = useState(null);
+  const [saveName, setSaveName] = useState(c.huntName || '');
+  const [confirmDelete, setConfirmDelete] = useState(null);
+
+  // Load history on mount
+  useEffect(() => {
+    if (!userId) { setLoading(false); return; }
+    getBonusHuntHistory(userId)
+      .then(data => setHistory(data))
+      .catch(err => setMessage('⚠️ Could not load history. Run the migration first.'))
+      .finally(() => setLoading(false));
+  }, [userId]);
+
+  const bonuses = c.bonuses || [];
+
+  // Calculate current hunt stats
+  const calcStats = (bonusList, startMoney, stopLoss) => {
+    const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const opened = bonusList.filter(b => b.opened);
+    const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const profit = totalWin - (Number(startMoney) || 0);
+    const avgMulti = opened.length > 0
+      ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
+      : 0;
+
+    let bestMulti = 0;
+    let bestSlotName = '';
+    opened.forEach(b => {
+      const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
+      if (m > bestMulti) { bestMulti = m; bestSlotName = b.slotName || b.slot?.name || ''; }
+    });
+
+    return { totalBet, totalWin, profit, avgMulti, bestMulti, bestSlotName, bonusesOpened: opened.length };
+  };
+
+  // Save current hunt to history
+  const handleSave = async () => {
+    if (!userId) { setMessage('⚠️ Not logged in'); return; }
+    if (bonuses.length === 0) { setMessage('⚠️ No bonuses to save'); return; }
+    if (!saveName.trim()) { setMessage('⚠️ Enter a name for this hunt'); return; }
+
+    setSaving(true);
+    setMessage('');
+
+    try {
+      const stats = calcStats(bonuses, c.startMoney, c.stopLoss);
+      const record = {
+        hunt_name: saveName.trim(),
+        currency: currency,
+        start_money: Number(c.startMoney) || 0,
+        stop_loss: Number(c.stopLoss) || 0,
+        total_bet: stats.totalBet,
+        total_win: stats.totalWin,
+        profit: stats.profit,
+        bonus_count: bonuses.length,
+        bonuses_opened: stats.bonusesOpened,
+        avg_multi: Math.round(stats.avgMulti * 100) / 100,
+        best_multi: Math.round(stats.bestMulti * 100) / 100,
+        best_slot_name: stats.bestSlotName,
+        bonuses: bonuses,
+      };
+
+      const saved = await saveBonusHuntToHistory(userId, record);
+      setHistory(prev => [saved, ...prev]);
+      setMessage('✅ Hunt saved to history!');
+      setSaveName('');
+      setTimeout(() => setMessage(''), 3000);
+    } catch (err) {
+      const msg = err?.message || '';
+      if (msg.includes('42P01')) {
+        setMessage('⚠️ Table not found. Run the migration: add_bonus_hunt_history.sql');
+      } else {
+        setMessage('⚠️ ' + msg);
+      }
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // Load a hunt from history onto the overlay
+  const handleLoad = (record) => {
+    onChange({
+      ...c,
+      huntName: record.hunt_name,
+      currency: record.currency || currency,
+      startMoney: record.start_money,
+      stopLoss: record.stop_loss,
+      bonuses: record.bonuses || [],
+      huntActive: true,
+    });
+    setMessage(`✅ Loaded "${record.hunt_name}" onto overlay`);
+    setTimeout(() => setMessage(''), 3000);
+  };
+
+  // Delete from history
+  const handleDelete = async (id) => {
+    try {
+      await deleteBonusHuntHistory(id);
+      setHistory(prev => prev.filter(h => h.id !== id));
+      setConfirmDelete(null);
+      setMessage('🗑️ Deleted');
+      setTimeout(() => setMessage(''), 2000);
+    } catch (err) {
+      setMessage('⚠️ ' + (err?.message || 'Delete failed'));
+    }
+  };
+
+  // Format date
+  const fmtDate = (d) => {
+    if (!d) return '';
+    const dt = new Date(d);
+    return dt.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+  };
+
+  const fmtNum = (n) => {
+    const num = Number(n) || 0;
+    return num.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  return (
+    <div className="nb-section">
+      {/* ── Save current hunt ── */}
+      <h4 className="nb-subtitle">Save Current Hunt</h4>
+      <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+        Archive the current bonus hunt. You can load it back anytime to view or display on overlay.
+      </p>
+      <div className="nb-preset-save-row">
+        <input
+          className="nb-preset-input"
+          value={saveName}
+          onChange={e => setSaveName(e.target.value)}
+          placeholder="Hunt name (e.g. Bonus Hunt #42)"
+          maxLength={60}
+          onKeyDown={e => e.key === 'Enter' && handleSave()}
+        />
+        <button className="nb-preset-save-btn" onClick={handleSave} disabled={saving || bonuses.length === 0}>
+          {saving ? '⏳' : '💾'} Save
+        </button>
+      </div>
+
+      {/* Current hunt quick stats */}
+      {bonuses.length > 0 && (() => {
+        const s = calcStats(bonuses, c.startMoney, c.stopLoss);
+        return (
+          <div className="bh-history-current-stats">
+            <span>🎰 {bonuses.length} bonuses</span>
+            <span>💰 {currency}{fmtNum(s.totalWin)} won</span>
+            <span>{s.profit >= 0 ? '📈' : '📉'} {currency}{fmtNum(s.profit)}</span>
+          </div>
+        );
+      })()}
+
+      {message && (
+        <div className={`bh-history-msg ${message.startsWith('✅') ? 'bh-history-msg--ok' : message.startsWith('🗑') ? 'bh-history-msg--del' : 'bh-history-msg--err'}`}>
+          {message}
+        </div>
+      )}
+
+      {/* ── History list ── */}
+      <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Hunt History</h4>
+
+      {loading && <p className="oc-config-hint">Loading history...</p>}
+
+      {!loading && history.length === 0 && (
+        <p className="oc-config-hint" style={{ opacity: 0.6 }}>
+          No hunts saved yet. Complete a hunt and save it above to build your history.
+        </p>
+      )}
+
+      {!loading && history.length > 0 && (
+        <div className="bh-history-list">
+          {history.map(h => {
+            const isExpanded = expandedId === h.id;
+            const prof = Number(h.profit) || 0;
+            const isProfit = prof >= 0;
+
+            return (
+              <div key={h.id} className={`bh-history-card ${isExpanded ? 'bh-history-card--expanded' : ''}`}>
+                {/* Main row */}
+                <div className="bh-history-row" onClick={() => setExpandedId(isExpanded ? null : h.id)}>
+                  <div className="bh-history-main">
+                    <div className="bh-history-name">{h.hunt_name}</div>
+                    <div className="bh-history-date">{fmtDate(h.created_at)}</div>
+                  </div>
+                  <div className="bh-history-quick">
+                    <span className="bh-history-stat-pill">🎰 {h.bonus_count}</span>
+                    <span className={`bh-history-stat-pill ${isProfit ? 'bh-history-pill--profit' : 'bh-history-pill--loss'}`}>
+                      {isProfit ? '+' : ''}{h.currency || currency}{fmtNum(prof)}
+                    </span>
+                  </div>
+                  <svg className={`bh-history-chevron ${isExpanded ? 'bh-history-chevron--open' : ''}`}
+                    width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M3 5l4 4 4-4" strokeLinecap="round" />
+                  </svg>
+                </div>
+
+                {/* Expanded details */}
+                {isExpanded && (
+                  <div className="bh-history-details">
+                    <div className="bh-history-stats-grid">
+                      <div className="bh-history-stat-box">
+                        <span className="bh-history-stat-label">Start</span>
+                        <span className="bh-history-stat-val">{h.currency || currency}{fmtNum(h.start_money)}</span>
+                      </div>
+                      <div className="bh-history-stat-box">
+                        <span className="bh-history-stat-label">Total Bet</span>
+                        <span className="bh-history-stat-val">{h.currency || currency}{fmtNum(h.total_bet)}</span>
+                      </div>
+                      <div className="bh-history-stat-box">
+                        <span className="bh-history-stat-label">Total Win</span>
+                        <span className="bh-history-stat-val">{h.currency || currency}{fmtNum(h.total_win)}</span>
+                      </div>
+                      <div className="bh-history-stat-box">
+                        <span className="bh-history-stat-label">Profit</span>
+                        <span className={`bh-history-stat-val ${isProfit ? 'bh-history-val--profit' : 'bh-history-val--loss'}`}>
+                          {isProfit ? '+' : ''}{h.currency || currency}{fmtNum(prof)}
+                        </span>
+                      </div>
+                      <div className="bh-history-stat-box">
+                        <span className="bh-history-stat-label">Avg Multi</span>
+                        <span className="bh-history-stat-val">{Number(h.avg_multi || 0).toFixed(2)}x</span>
+                      </div>
+                      <div className="bh-history-stat-box">
+                        <span className="bh-history-stat-label">Best Multi</span>
+                        <span className="bh-history-stat-val">{Number(h.best_multi || 0).toFixed(2)}x</span>
+                      </div>
+                      <div className="bh-history-stat-box">
+                        <span className="bh-history-stat-label">Bonuses</span>
+                        <span className="bh-history-stat-val">{h.bonuses_opened || 0}/{h.bonus_count || 0}</span>
+                      </div>
+                      {h.best_slot_name && (
+                        <div className="bh-history-stat-box bh-history-stat-box--wide">
+                          <span className="bh-history-stat-label">🏆 Best Slot</span>
+                          <span className="bh-history-stat-val">{h.best_slot_name}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bonus list preview (collapsed by default in details) */}
+                    {Array.isArray(h.bonuses) && h.bonuses.length > 0 && (
+                      <div className="bh-history-bonus-preview">
+                        <span className="bh-history-bonus-preview-label">
+                          {h.bonuses.length} bonus{h.bonuses.length !== 1 ? 'es' : ''} in this hunt
+                        </span>
+                        <div className="bh-history-bonus-chips">
+                          {h.bonuses.slice(0, 12).map((b, i) => (
+                            <span key={i} className={`bh-history-bonus-chip ${b.opened ? 'bh-history-chip--opened' : ''} ${b.isSuperBonus ? 'bh-history-chip--super' : ''}`}>
+                              {b.slotName || b.slot?.name || '?'}
+                              {b.opened && <em> {((Number(b.payout) || 0) / (Number(b.betSize) || 1)).toFixed(1)}x</em>}
+                            </span>
+                          ))}
+                          {h.bonuses.length > 12 && (
+                            <span className="bh-history-bonus-chip bh-history-chip--more">+{h.bonuses.length - 12} more</span>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Actions */}
+                    <div className="bh-history-actions">
+                      <button className="oc-btn oc-btn--sm oc-btn--primary" onClick={() => handleLoad(h)}>
+                        📥 Load to Overlay
+                      </button>
+                      {confirmDelete === h.id ? (
+                        <div className="bh-history-confirm-row">
+                          <span className="bh-history-confirm-text">Delete?</span>
+                          <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => handleDelete(h.id)}>Yes</button>
+                          <button className="oc-btn oc-btn--sm" onClick={() => setConfirmDelete(null)}>No</button>
+                        </div>
+                      ) : (
+                        <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => setConfirmDelete(h.id)}>
+                          🗑️ Delete
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
