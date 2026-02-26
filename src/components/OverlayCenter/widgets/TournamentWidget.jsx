@@ -109,6 +109,10 @@ export default function TournamentWidget({ config, theme }) {
   const cols = matchCount === 1 ? 1 : 2;
   const rows = Math.ceil(matchCount / cols);
 
+  /* ─── Current active match (synced from config) ─── */
+  const currentMatchIdx = data.currentMatch ?? 0;
+  const isLivePhase = activePhase === phase; // only animate on the live phase
+
   /* ─── Player column renderer ─── */
   const renderPlayer = (pIdx, matchData, playerKey, isEliminated) => {
     const name = players[pIdx] || `Player ${pIdx + 1}`;
@@ -130,18 +134,21 @@ export default function TournamentWidget({ config, theme }) {
           {name}
         </div>
 
-        {/* Slot image — fills available space, always fully visible */}
+        {/* Slot image — absolute-positioned so it always shrinks with the cell */}
         <div className="tw-slot-cell" style={{
           position: 'relative', width: '100%', flex: 1, minHeight: 0,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden',
         }}>
           {slot?.image ? (
             <img src={slot.image} alt={slot.name || ''} style={{
-              maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block',
+              position: 'absolute', top: 0, left: 0,
+              width: '100%', height: '100%',
+              objectFit: 'contain', display: 'block',
               borderRadius: 4,
             }} />
           ) : (
             <div style={{
+              position: 'absolute', top: 0, left: 0,
               width: '100%', height: '100%', background: 'rgba(0,0,0,0.3)',
               borderRadius: 4,
             }} />
@@ -257,6 +264,7 @@ export default function TournamentWidget({ config, theme }) {
           const hasWinner = match.winner !== null && match.winner !== undefined;
           const p1Eliminated = hasWinner && !p1Won;
           const p2Eliminated = hasWinner && !p2Won;
+          const isCurrentMatch = isLivePhase && idx === currentMatchIdx && !hasWinner;
 
           return (
             <div key={idx} className="tw-match-card" style={{
@@ -276,7 +284,7 @@ export default function TournamentWidget({ config, theme }) {
                 {renderPlayer(p2Idx, match, 'player2', p2Eliminated)}
               </div>
 
-              {/* ⚔️ Sword icon — centered between the two players */}
+              {/* ⚔️ Sword icon — only swings on the current active match */}
               <div className="tw-sword-icon" style={{
                 position: 'absolute',
                 top: '50%', left: '50%',
@@ -287,9 +295,9 @@ export default function TournamentWidget({ config, theme }) {
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 zIndex: 5,
                 pointerEvents: 'none',
-                ...(hasWinner
-                  ? { transform: 'translate(-50%, -50%)' }
-                  : { animation: 'tw-sword-swing 1.2s ease-in-out infinite' }
+                ...(isCurrentMatch
+                  ? { animation: 'tw-sword-swing 1.2s ease-in-out infinite' }
+                  : { transform: 'translate(-50%, -50%)' }
                 ),
               }}>
                 <span style={{ fontSize: swordSize, lineHeight: 1 }}>

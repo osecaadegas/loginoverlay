@@ -171,7 +171,7 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
       newPhase = 'finals';
       newMatches = [{ player1: winners[0], player2: winners[1], winner: null, data: {} }];
     }
-    onChange({ ...c, data: { ...data, phase: newPhase, matches: newMatches, history: [...(data.history || []), { phase, matches }] } });
+    onChange({ ...c, data: { ...data, phase: newPhase, matches: newMatches, currentMatch: 0, history: [...(data.history || []), { phase, matches }] } });
   };
 
   const phaseLabels = { quarterfinals: 'Quarter-Finals', semifinals: 'Semi-Finals', finals: 'Finals' };
@@ -318,77 +318,146 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
             <p className="oc-config-hint">Start a tournament in the Setup tab first.</p>
           ) : (
             <>
-              <h4 className="nb-subtitle">
-                {phaseLabels[c.data?.phase] || 'Tournament'} — {c.data?.matches?.length || 0} match{(c.data?.matches?.length || 0) !== 1 ? 'es' : ''}
-              </h4>
+              {(() => {
+                const matchList = c.data?.matches || [];
+                const currentMatchIdx = c.data?.currentMatch ?? 0;
+                const isBo3 = c.data?.format === 'bo3';
+                const totalMatches = matchList.length;
 
-              {(c.data?.matches || []).map((match, idx) => {
+                const goToMatch = (idx) => {
+                  if (!c.data) return;
+                  onChange({ ...c, data: { ...c.data, currentMatch: idx } });
+                };
+
+                const match = matchList[currentMatchIdx];
+                if (!match) return <p className="oc-config-hint">No matches available.</p>;
+
                 const md = match.data || {};
                 const p1d = md.player1 || {}, p2d = md.player2 || {};
-                const isBo3 = c.data?.format === 'bo3';
                 const p1Name = players[match.player1] || '?';
                 const p2Name = players[match.player2] || '?';
 
                 return (
-                  <div key={idx} className="tm-match-inline">
-                    <div className="tm-match-inline-header">
-                      <span>Match {idx + 1}: <strong>{p1Name}</strong> vs <strong>{p2Name}</strong></span>
+                  <>
+                    <h4 className="nb-subtitle">
+                      {phaseLabels[c.data?.phase] || 'Tournament'} — {totalMatches} match{totalMatches !== 1 ? 'es' : ''}
+                    </h4>
+
+                    {/* Match Navigator */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      gap: 12, margin: '8px 0 12px', padding: '8px 0',
+                    }}>
+                      <button
+                        className="nb-preset-load-btn"
+                        style={{ padding: '6px 14px', opacity: currentMatchIdx === 0 ? 0.4 : 1 }}
+                        disabled={currentMatchIdx === 0}
+                        onClick={() => goToMatch(currentMatchIdx - 1)}>
+                        ◀ Prev
+                      </button>
+                      <span style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>
+                        Match {currentMatchIdx + 1} / {totalMatches}
+                      </span>
+                      <button
+                        className="nb-preset-load-btn"
+                        style={{ padding: '6px 14px', opacity: currentMatchIdx >= totalMatches - 1 ? 0.4 : 1 }}
+                        disabled={currentMatchIdx >= totalMatches - 1}
+                        onClick={() => goToMatch(currentMatchIdx + 1)}>
+                        Next ▶
+                      </button>
                     </div>
 
-                    <div className="tm-match-inline-body">
-                      {/* P1 inputs */}
-                      <div className="tm-match-inline-player">
-                        <span className="tm-match-inline-pname">{p1Name}</span>
-                        <div className="tm-match-inline-inputs">
-                          <label>Bet €<input type="number" defaultValue={p1d.bet || ''} placeholder="0"
-                            onBlur={e => savePlayerData(idx, 'player1', 'bet', e.target.value)} /></label>
-                          {isBo3 ? (
-                            <div style={{ display: 'flex', gap: 4 }}>
-                              {['payout1','payout2','payout3'].map((f, gi) => (
-                                <label key={f}>G{gi+1}<input type="number" defaultValue={p1d[f] || ''} placeholder="0"
-                                  onBlur={e => { savePlayerData(idx, 'player1', f, e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
-                              ))}
-                            </div>
-                          ) : (
-                            <label>Payout €<input type="number" defaultValue={p1d.payout || ''} placeholder="0"
-                              onBlur={e => { savePlayerData(idx, 'player1', 'payout', e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
-                          )}
-                        </div>
-                        <button className={`tm-winner-inline ${match.winner === match.player1 ? 'tm-winner-active' : ''}`}
-                          onClick={() => setMatchWinner(idx, match.winner === match.player1 ? null : match.player1)}>
-                          {match.winner === match.player1 ? '👑 Winner' : 'Set Winner'}
-                        </button>
+                    {/* Match overview pills */}
+                    <div style={{
+                      display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10, justifyContent: 'center',
+                    }}>
+                      {matchList.map((m, i) => {
+                        const isCurrent = i === currentMatchIdx;
+                        const hasWinner = m.winner !== null && m.winner !== undefined;
+                        return (
+                          <button key={i} onClick={() => goToMatch(i)} style={{
+                            padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 600,
+                            border: isCurrent ? '2px solid #9346ff' : '1px solid rgba(255,255,255,0.15)',
+                            background: hasWinner ? 'rgba(34,197,94,0.2)' : isCurrent ? 'rgba(147,70,255,0.2)' : 'rgba(255,255,255,0.05)',
+                            color: hasWinner ? '#22c55e' : isCurrent ? '#c084fc' : '#94a3b8',
+                            cursor: 'pointer', transition: 'all 0.15s',
+                          }}>
+                            {hasWinner ? '✓' : ''} M{i + 1}
+                          </button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Active match editing */}
+                    <div className="tm-match-inline">
+                      <div className="tm-match-inline-header">
+                        <span>⚔️ <strong>{p1Name}</strong> vs <strong>{p2Name}</strong></span>
                       </div>
 
-                      <span className="tm-vs-inline">VS</span>
-
-                      {/* P2 inputs */}
-                      <div className="tm-match-inline-player">
-                        <span className="tm-match-inline-pname">{p2Name}</span>
-                        <div className="tm-match-inline-inputs">
-                          <label>Bet €<input type="number" defaultValue={p2d.bet || ''} placeholder="0"
-                            onBlur={e => savePlayerData(idx, 'player2', 'bet', e.target.value)} /></label>
-                          {isBo3 ? (
-                            <div style={{ display: 'flex', gap: 4 }}>
-                              {['payout1','payout2','payout3'].map((f, gi) => (
-                                <label key={f}>G{gi+1}<input type="number" defaultValue={p2d[f] || ''} placeholder="0"
-                                  onBlur={e => { savePlayerData(idx, 'player2', f, e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
-                              ))}
-                            </div>
-                          ) : (
-                            <label>Payout €<input type="number" defaultValue={p2d.payout || ''} placeholder="0"
-                              onBlur={e => { savePlayerData(idx, 'player2', 'payout', e.target.value); setTimeout(() => autoCalcWinner(idx), 100); }} /></label>
-                          )}
+                      <div className="tm-match-inline-body">
+                        {/* P1 inputs */}
+                        <div className="tm-match-inline-player">
+                          <span className="tm-match-inline-pname">{p1Name}</span>
+                          <div className="tm-match-inline-inputs">
+                            <label>Bet €<input type="number" key={`p1bet-${currentMatchIdx}`} defaultValue={p1d.bet || ''} placeholder="0"
+                              onBlur={e => savePlayerData(currentMatchIdx, 'player1', 'bet', e.target.value)} /></label>
+                            {isBo3 ? (
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                {['payout1','payout2','payout3'].map((f, gi) => (
+                                  <label key={f}>G{gi+1}<input type="number" key={`p1${f}-${currentMatchIdx}`} defaultValue={p1d[f] || ''} placeholder="0"
+                                    onBlur={e => { savePlayerData(currentMatchIdx, 'player1', f, e.target.value); setTimeout(() => autoCalcWinner(currentMatchIdx), 100); }} /></label>
+                                ))}
+                              </div>
+                            ) : (
+                              <label>Payout €<input type="number" key={`p1pay-${currentMatchIdx}`} defaultValue={p1d.payout || ''} placeholder="0"
+                                onBlur={e => { savePlayerData(currentMatchIdx, 'player1', 'payout', e.target.value); setTimeout(() => autoCalcWinner(currentMatchIdx), 100); }} /></label>
+                            )}
+                          </div>
+                          <button className={`tm-winner-inline ${match.winner === match.player1 ? 'tm-winner-active' : ''}`}
+                            onClick={() => setMatchWinner(currentMatchIdx, match.winner === match.player1 ? null : match.player1)}>
+                            {match.winner === match.player1 ? '👑 Winner' : 'Set Winner'}
+                          </button>
                         </div>
-                        <button className={`tm-winner-inline ${match.winner === match.player2 ? 'tm-winner-active' : ''}`}
-                          onClick={() => setMatchWinner(idx, match.winner === match.player2 ? null : match.player2)}>
-                          {match.winner === match.player2 ? '👑 Winner' : 'Set Winner'}
-                        </button>
+
+                        <span className="tm-vs-inline">VS</span>
+
+                        {/* P2 inputs */}
+                        <div className="tm-match-inline-player">
+                          <span className="tm-match-inline-pname">{p2Name}</span>
+                          <div className="tm-match-inline-inputs">
+                            <label>Bet €<input type="number" key={`p2bet-${currentMatchIdx}`} defaultValue={p2d.bet || ''} placeholder="0"
+                              onBlur={e => savePlayerData(currentMatchIdx, 'player2', 'bet', e.target.value)} /></label>
+                            {isBo3 ? (
+                              <div style={{ display: 'flex', gap: 4 }}>
+                                {['payout1','payout2','payout3'].map((f, gi) => (
+                                  <label key={f}>G{gi+1}<input type="number" key={`p2${f}-${currentMatchIdx}`} defaultValue={p2d[f] || ''} placeholder="0"
+                                    onBlur={e => { savePlayerData(currentMatchIdx, 'player2', f, e.target.value); setTimeout(() => autoCalcWinner(currentMatchIdx), 100); }} /></label>
+                                ))}
+                              </div>
+                            ) : (
+                              <label>Payout €<input type="number" key={`p2pay-${currentMatchIdx}`} defaultValue={p2d.payout || ''} placeholder="0"
+                                onBlur={e => { savePlayerData(currentMatchIdx, 'player2', 'payout', e.target.value); setTimeout(() => autoCalcWinner(currentMatchIdx), 100); }} /></label>
+                            )}
+                          </div>
+                          <button className={`tm-winner-inline ${match.winner === match.player2 ? 'tm-winner-active' : ''}`}
+                            onClick={() => setMatchWinner(currentMatchIdx, match.winner === match.player2 ? null : match.player2)}>
+                            {match.winner === match.player2 ? '👑 Winner' : 'Set Winner'}
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+
+                    {/* Auto-advance hint */}
+                    {match.winner !== null && match.winner !== undefined && currentMatchIdx < totalMatches - 1 && (
+                      <button className="nb-preset-load-btn"
+                        style={{ marginTop: 8, width: '100%', padding: '8px 16px' }}
+                        onClick={() => goToMatch(currentMatchIdx + 1)}>
+                        ✓ Match done — Go to Match {currentMatchIdx + 2} →
+                      </button>
+                    )}
+                  </>
                 );
-              })}
+              })()}
 
               {c.data?.phase !== 'finals' && (
                 <button className="nb-preset-load-btn" style={{ marginTop: 10, width: '100%' }} onClick={advanceToNextPhase}>
