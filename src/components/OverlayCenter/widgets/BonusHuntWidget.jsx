@@ -1,8 +1,12 @@
 import React, { useMemo } from 'react';
 import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
+import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
 
 export default function BonusHuntWidget({ config, theme }) {
   /* ─── Style switcher ─── */
+  if ((config || {}).displayStyle === 'v3') {
+    return <BonusHuntWidgetV3 config={config} theme={theme} />;
+  }
   if ((config || {}).displayStyle === 'v2') {
     return <BonusHuntWidgetV2 config={config} theme={theme} />;
   }

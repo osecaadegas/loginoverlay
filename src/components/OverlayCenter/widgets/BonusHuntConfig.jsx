@@ -108,6 +108,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
           <select value={c.displayStyle || 'v1'} onChange={e => set('displayStyle', e.target.value)}>
             <option value="v1">Style 1 — Classic</option>
             <option value="v2">Style 2 — Sleek Dark</option>
+            <option value="v3">Style 3 — Flip Card</option>
           </select>
         </label>
         <label className="bh-check-row">

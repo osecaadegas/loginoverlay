@@ -23,6 +23,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^7.10.1",
     "stripe": "^20.1.2",
+    "styled-components": "^6.3.11",
     "three": "^0.182.0"
   },
   "devDependencies": {
