@@ -4,9 +4,92 @@
 import React, { useState, useCallback } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
 
+/* ── Per-widget sync mapping from navbar config ── */
+function buildSyncedConfig(widgetType, currentConfig, nb) {
+  if (!nb) return null;
+  const c = currentConfig || {};
+  switch (widgetType) {
+    case 'image_slideshow':
+      return {
+        ...c,
+        borderColor: nb.accentColor || 'rgba(51,65,85,0.5)',
+        gradientColor: nb.bgColor || 'rgba(15,23,42,0.8)',
+        captionColor: nb.textColor || '#e2e8f0',
+      };
+    case 'rtp_stats':
+      return {
+        ...c,
+        barBgFrom: nb.bgColor || '#111827',
+        barBgVia: nb.bgColor || '#1e3a5f',
+        barBgTo: nb.bgColor || '#111827',
+        borderColor: nb.accentColor || '#1d4ed8',
+        textColor: nb.textColor || '#ffffff',
+        providerColor: nb.textColor || '#ffffff',
+        slotNameColor: nb.textColor || '#ffffff',
+        fontFamily: nb.fontFamily || "'Inter', sans-serif",
+        fontSize: nb.fontSize ?? 14,
+      };
+    case 'background':
+      return {
+        ...c,
+        color1: nb.bgColor || '#0f172a',
+        color2: nb.accentColor || '#1e3a5f',
+      };
+    case 'chat':
+      return {
+        ...c,
+        bgColor: nb.bgColor || '#111318',
+        textColor: nb.textColor || '#f1f5f9',
+        headerBg: nb.bgColor || '#111318',
+        headerText: nb.mutedColor || '#94a3b8',
+        borderColor: nb.accentColor || '#f59e0b',
+        fontFamily: nb.fontFamily || "'Inter', sans-serif",
+        fontSize: nb.fontSize ?? 13,
+      };
+    case 'bonus_hunt':
+      return {
+        ...c,
+        headerColor: nb.bgColor || '#111318',
+        headerAccent: nb.accentColor || '#f59e0b',
+        countCardColor: nb.bgColor || '#111318',
+        currentBonusColor: nb.bgColor || '#111318',
+        currentBonusAccent: nb.accentColor || '#f59e0b',
+        listCardColor: nb.bgColor || '#111318',
+        listCardAccent: nb.accentColor || '#f59e0b',
+        summaryColor: nb.bgColor || '#111318',
+        totalPayColor: nb.accentColor || '#f59e0b',
+        totalPayText: nb.textColor || '#f1f5f9',
+        superBadgeColor: nb.ctaColor || '#f43f5e',
+        extremeBadgeColor: nb.ctaColor || '#f43f5e',
+        textColor: nb.textColor || '#f1f5f9',
+        mutedTextColor: nb.mutedColor || '#94a3b8',
+        statValueColor: nb.textColor || '#f1f5f9',
+        cardOutlineColor: nb.borderColor || nb.accentColor || '#f59e0b',
+        cardOutlineWidth: nb.borderWidth ?? 2,
+        fontFamily: nb.fontFamily || "'Inter', sans-serif",
+        fontSize: nb.fontSize ?? 13,
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
+      };
+    case 'tournament':
+      return {
+        ...c,
+        bgColor: nb.bgColor || '#13151e',
+        cardBg: nb.bgColor || '#1a1d2e',
+        cardBorder: nb.accentColor || 'rgba(255,255,255,0.08)',
+        nameColor: nb.textColor || '#ffffff',
+        fontFamily: nb.fontFamily || "'Inter', sans-serif",
+      };
+    default:
+      return null; // widget has no sync mapping
+  }
+}
+
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets }) {
   const [editingId, setEditingId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [syncMsg, setSyncMsg] = useState('');
 
   const categories = getWidgetsByCategory();
 
@@ -28,13 +111,46 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     setShowAddMenu(false);
   }, [onAdd]);
 
+  /* ── Sync ALL widgets from the navbar ── */
+  const syncAllFromNavbar = useCallback(async () => {
+    const navWidget = widgets.find(w => w.widget_type === 'navbar');
+    if (!navWidget) {
+      setSyncMsg('No navbar widget found');
+      setTimeout(() => setSyncMsg(''), 2500);
+      return;
+    }
+    const nb = navWidget.config || {};
+    let count = 0;
+    for (const w of widgets) {
+      if (w.widget_type === 'navbar') continue;
+      const synced = buildSyncedConfig(w.widget_type, w.config, nb);
+      if (synced) {
+        await onSave({ ...w, config: synced });
+        count++;
+      }
+    }
+    setSyncMsg(`Synced ${count} widget${count !== 1 ? 's' : ''} with Navbar!`);
+    setTimeout(() => setSyncMsg(''), 3000);
+  }, [widgets, onSave]);
+
   return (
     <div className="oc-widgets-panel">
       <div className="oc-panel-header">
         <h2 className="oc-panel-title">🧩 Widgets</h2>
-        <button className="oc-btn oc-btn--primary" onClick={() => setShowAddMenu(v => !v)}>
-          {showAddMenu ? '✕ Close' : '+ Add Widget'}
-        </button>
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+          {syncMsg && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>{syncMsg}</span>}
+          <button
+            className="oc-btn oc-btn--sm"
+            onClick={syncAllFromNavbar}
+            title="Sync all widget colors/fonts from the Navbar widget"
+            style={{ padding: '6px 12px', fontSize: 12 }}
+          >
+            🔗 Sync All from Navbar
+          </button>
+          <button className="oc-btn oc-btn--primary" onClick={() => setShowAddMenu(v => !v)}>
+            {showAddMenu ? '✕ Close' : '+ Add Widget'}
+          </button>
+        </div>
       </div>
 
       {/* Add Widget Menu */}
