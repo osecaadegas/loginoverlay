@@ -3,7 +3,13 @@ import { supabase } from '../config/supabaseClient';
 // Get all users with their roles
 export const getAllUsers = async () => {
   try {
-    // Get user roles
+    // 1. Fetch ALL auth users in one call (no N+1 queries)
+    const { data: authUsers, error: authError } = await supabase
+      .rpc('get_all_auth_users');
+
+    if (authError) throw authError;
+
+    // 2. Fetch all user roles
     const { data: rolesData, error: rolesError } = await supabase
       .from('user_roles')
       .select('*');
@@ -19,56 +25,47 @@ export const getAllUsers = async () => {
       userRolesMap[roleInfo.user_id].push(roleInfo);
     });
 
-    // Fetch emails and provider info for each unique user
-    const usersWithEmails = await Promise.all(
-      Object.keys(userRolesMap).map(async (userId) => {
-        const rolesForUser = userRolesMap[userId];
-        const { data: emailData } = await supabase
-          .rpc('get_user_email', { user_id: userId });
+    // 3. Merge auth users with their roles
+    const usersWithRoles = (authUsers || []).map(user => {
+      const rolesForUser = userRolesMap[user.id] || [];
 
-        // Fetch user metadata to get provider info
-        const { data: userData } = await supabase
-          .rpc('get_user_metadata', { user_id: userId });
+      let provider = 'email';
+      let providerUsername = null;
 
-        let provider = 'Email';
-        let providerUsername = null;
+      // Extract provider from app_metadata or identities
+      if (user.app_metadata?.provider) {
+        provider = user.app_metadata.provider;
+      } else if (user.identities && user.identities.length > 0) {
+        provider = user.identities[0].provider;
+      }
 
-        if (userData) {
-          // Extract provider from app_metadata or identities
-          if (userData.app_metadata?.provider) {
-            provider = userData.app_metadata.provider;
-          } else if (userData.identities && userData.identities.length > 0) {
-            provider = userData.identities[0].provider;
-          }
+      // Get provider username
+      if (provider === 'twitch' && user.user_metadata?.full_name) {
+        providerUsername = user.user_metadata.full_name;
+      } else if (provider === 'twitch' && user.user_metadata?.preferred_username) {
+        providerUsername = user.user_metadata.preferred_username;
+      } else if (provider === 'discord' && user.user_metadata?.full_name) {
+        providerUsername = user.user_metadata.full_name;
+      } else if (provider === 'google' && user.user_metadata?.full_name) {
+        providerUsername = user.user_metadata.full_name;
+      }
 
-          // Get Twitch username if available
-          if (provider === 'twitch' && userData.user_metadata?.full_name) {
-            providerUsername = userData.user_metadata.full_name;
-          } else if (provider === 'twitch' && userData.user_metadata?.preferred_username) {
-            providerUsername = userData.user_metadata.preferred_username;
-          }
-        }
+      const isActive = rolesForUser.length > 0
+        ? rolesForUser.some(role => role.is_active)
+        : true; // auth-only users are considered active
 
-        // Get the earliest created_at and determine overall active status
-        const earliestCreatedAt = rolesForUser.reduce((earliest, role) => {
-          return new Date(role.created_at) < new Date(earliest) ? role.created_at : earliest;
-        }, rolesForUser[0].created_at);
-        
-        const isActive = rolesForUser.some(role => role.is_active);
+      return {
+        id: user.id,
+        email: user.email || `User ${user.id.substring(0, 8)}...`,
+        created_at: user.created_at,
+        roles: rolesForUser.length > 0 ? rolesForUser : [{ role: 'user', is_active: true }],
+        is_active: isActive,
+        provider: provider.charAt(0).toUpperCase() + provider.slice(1),
+        provider_username: providerUsername,
+      };
+    });
 
-        return {
-          id: userId,
-          email: emailData || `User ${userId.substring(0, 8)}...`,
-          created_at: earliestCreatedAt,
-          roles: rolesForUser, // Array of all role objects
-          is_active: isActive,
-          provider: provider.charAt(0).toUpperCase() + provider.slice(1),
-          provider_username: providerUsername
-        };
-      })
-    );
-
-    return { data: usersWithEmails, error: null };
+    return { data: usersWithRoles, error: null };
   } catch (error) {
     console.error('Error fetching users:', error);
     return { data: null, error };
