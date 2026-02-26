@@ -190,14 +190,17 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
               {currentAlert.clip_thumbnail_url && (
                 <img src={currentAlert.clip_thumbnail_url} alt="" className="rs-clip-poster" />
               )}
-              <iframe
-                src={embedSrc}
-                className="rs-clip-iframe"
-                title={currentAlert.clip_title || 'Raid clip'}
-                allowFullScreen
-                allow="autoplay; encrypted-media; fullscreen"
-                referrerPolicy="no-referrer-when-downgrade"
-              />
+              {/* Only mount iframe once the clip area is visible — Twitch won't autoplay in a hidden container */}
+              {(clipExpanded || clipCollapsing) && (
+                <iframe
+                  src={embedSrc}
+                  className="rs-clip-iframe"
+                  title={currentAlert.clip_title || 'Raid clip'}
+                  allowFullScreen
+                  allow="autoplay; encrypted-media; fullscreen"
+                  referrerPolicy="no-referrer-when-downgrade"
+                />
+              )}
             </div>
           ) : (
             <div className="rs-no-clip">
