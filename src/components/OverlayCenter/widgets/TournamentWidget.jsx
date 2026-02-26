@@ -131,9 +131,9 @@ export default function TournamentWidget({ config, theme }) {
       }}>
         {/* Name */}
         <div className="tw-player-name" style={{
-          padding: large ? '6px 8px 4px' : '3px 4px 2px',
+          padding: large ? '4px 6px 2px' : '2px 4px 1px',
           fontSize: `${ns}px`, fontWeight: 700,
-          color: nameColor, fontFamily, textAlign: 'center', lineHeight: 1.2,
+          color: nameColor, fontFamily, textAlign: 'center', lineHeight: 1.1,
           width: '100%', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>
           {name}
@@ -142,13 +142,13 @@ export default function TournamentWidget({ config, theme }) {
         {/* Slot image */}
         <div className="tw-slot-cell" style={{
           position: 'relative', width: '100%', flex: 1, minHeight: 0,
-          overflow: 'hidden',
+          overflow: 'hidden', borderRadius: 4,
         }}>
           {slot?.image ? (
             <img src={slot.image} alt={slot.name || ''} style={{
               position: 'absolute', top: 0, left: 0,
               width: '100%', height: '100%',
-              objectFit: 'contain', display: 'block', borderRadius: 4,
+              objectFit: 'cover', display: 'block', borderRadius: 4,
             }} />
           ) : (
             <div style={{
@@ -188,10 +188,10 @@ export default function TournamentWidget({ config, theme }) {
 
         {/* Multiplier */}
         <div className="tw-multi" style={{
-          padding: large ? '4px 6px' : '2px 4px', textAlign: 'center',
+          padding: large ? '2px 6px' : '1px 4px', textAlign: 'center',
           fontSize: `${ms}px`, fontWeight: 700,
           color: parseFloat(multi) > 0 ? multiColor : '#64748b',
-          fontFamily, lineHeight: 1.2,
+          fontFamily, lineHeight: 1.1,
         }}>
           {multi}x
         </div>
@@ -309,7 +309,7 @@ export default function TournamentWidget({ config, theme }) {
         border: `${cardBorderWidth}px solid ${cardBorder}`,
         borderRadius: `${cardRadius}px`,
         overflow: 'hidden', position: 'relative',
-        padding: `3px ${gap > 4 ? 4 : 2}px`,
+        padding: `2px ${gap > 4 ? 3 : 2}px`,
         display: 'flex', flexDirection: 'column', minHeight: 0,
       }}>
         <div className="tw-match-inner" style={{

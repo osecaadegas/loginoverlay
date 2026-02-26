@@ -11,6 +11,7 @@ import ThemeEditor from './ThemeEditor';
 import WidgetManager from './WidgetManager';
 import OverlayPreview from './OverlayPreview';
 import BonusHuntLibrary from './BonusHuntLibrary';
+import PresetLibrary from './PresetLibrary';
 import './OverlayCenter.css';
 
 // Register all built-in widgets
@@ -179,6 +180,7 @@ export default function OverlayControlCenter() {
             {[
               { key: 'widgets', icon: '🧩', label: 'Widgets' },
               { key: 'library', icon: '📚', label: 'Library' },
+              { key: 'presets', icon: '💾', label: 'Presets' },
               { key: 'preview', icon: '👁️', label: 'Preview' },
             ].map(tab => (
               <button
@@ -218,6 +220,7 @@ export default function OverlayControlCenter() {
                 value={presetName}
                 onChange={e => setPresetName(e.target.value)}
                 placeholder="Preset name…"
+                maxLength={30}
                 onKeyDown={e => e.key === 'Enter' && saveGlobalPreset()}
               />
               <button className="oc-sidebar-preset-save-btn" onClick={saveGlobalPreset} disabled={!presetName.trim()}>
@@ -228,20 +231,18 @@ export default function OverlayControlCenter() {
 
             {/* ── Shared / Built-in Presets (visible to everyone) ── */}
             {sharedPresets.length > 0 && (
-              <div className="oc-sidebar-preset-list">
+              <div className="nb-preset-list" style={{ marginTop: 8 }}>
                 <span className="oc-sidebar-preset-section-label">🌐 Shared Presets</span>
                 {sharedPresets.map(sp => (
-                  <div key={sp.id} className="oc-sidebar-preset-item oc-sidebar-preset-item--shared">
-                    <div className="oc-sidebar-preset-info">
-                      <span className="oc-sidebar-preset-name">
-                        🌐 {sp.name}
-                      </span>
-                      <span className="oc-sidebar-preset-date">{new Date(sp.created_at).toLocaleDateString()}</span>
+                  <div key={sp.id} className="nb-preset-pill nb-preset-pill--shared">
+                    <div className="nb-preset-pill__info">
+                      <span className="nb-preset-pill__name">🌐 {sp.name}</span>
+                      <span className="nb-preset-pill__date">{new Date(sp.created_at).toLocaleDateString()}</span>
                     </div>
-                    <div className="oc-sidebar-preset-actions">
-                      <button className="oc-sidebar-preset-load" onClick={() => loadGlobalPreset(sp)}>Load</button>
+                    <div className="nb-preset-pill__actions">
+                      <button className="nb-preset-pill__load" onClick={() => loadGlobalPreset(sp)}>Load</button>
                       {isAdmin && (
-                        <button className="oc-sidebar-preset-del" onClick={() => unsharePreset(sp.id)} title="Remove shared preset">✕</button>
+                        <button className="nb-preset-pill__delete" onClick={() => unsharePreset(sp.id)} title="Remove shared preset">✕</button>
                       )}
                     </div>
                   </div>
@@ -251,26 +252,26 @@ export default function OverlayControlCenter() {
 
             {/* ── Personal Presets ── */}
             {globalPresets.length > 0 && (
-              <div className="oc-sidebar-preset-list">
+              <div className="nb-preset-list" style={{ marginTop: 8 }}>
                 {sharedPresets.length > 0 && (
                   <span className="oc-sidebar-preset-section-label">👤 My Presets</span>
                 )}
                 {globalPresets.map(p => (
-                  <div key={p.name} className="oc-sidebar-preset-item">
-                    <div className="oc-sidebar-preset-info">
-                      <span className="oc-sidebar-preset-name">{p.name}</span>
-                      <span className="oc-sidebar-preset-date">{new Date(p.savedAt).toLocaleDateString()}</span>
+                  <div key={p.name} className="nb-preset-pill">
+                    <div className="nb-preset-pill__info">
+                      <span className="nb-preset-pill__name">{p.name}</span>
+                      <span className="nb-preset-pill__date">{new Date(p.savedAt).toLocaleDateString()}</span>
                     </div>
-                    <div className="oc-sidebar-preset-actions">
-                      <button className="oc-sidebar-preset-load" onClick={() => loadGlobalPreset(p)}>Load</button>
+                    <div className="nb-preset-pill__actions">
+                      <button className="nb-preset-pill__load" onClick={() => loadGlobalPreset(p)}>Load</button>
                       {isAdmin && (
                         <button
-                          className="oc-sidebar-preset-share"
+                          className="nb-preset-pill__share"
                           onClick={() => sharePreset(p)}
                           title="Share this preset with all users"
                         >🌐</button>
                       )}
-                      <button className="oc-sidebar-preset-del" onClick={() => deleteGlobalPreset(p.name)}>✕</button>
+                      <button className="nb-preset-pill__delete" onClick={() => deleteGlobalPreset(p.name)} title="Delete preset">🗑️</button>
                     </div>
                   </div>
                 ))}
@@ -314,6 +315,19 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'theme' && (
             <ThemeEditor theme={theme} onSave={saveTheme} />
+          )}
+          {activePanel === 'presets' && (
+            <PresetLibrary
+              widgets={widgets}
+              theme={theme}
+              isAdmin={isAdmin}
+              globalPresets={globalPresets}
+              sharedPresets={sharedPresets}
+              onLoadPreset={loadGlobalPreset}
+              onDeletePreset={deleteGlobalPreset}
+              onSharePreset={sharePreset}
+              onUnsharePreset={unsharePreset}
+            />
           )}
           {activePanel === 'preview' && (
             <OverlayPreview widgets={widgets} theme={theme} />

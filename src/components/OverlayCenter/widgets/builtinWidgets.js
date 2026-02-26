@@ -337,6 +337,10 @@ import RtpStatsConfig from './RtpStatsConfig';
 // ─── 17. BACKGROUND ────────────────────────────────────
 import BackgroundWidget from './BackgroundWidget';
 import BackgroundConfig from './BackgroundConfig';
+
+// ─── 18. RAID SHOUTOUT ─────────────────────────────────
+import RaidShoutoutWidget from './RaidShoutoutWidget';
+import RaidShoutoutConfig from './RaidShoutoutConfig';
 registerWidget({
   type: 'image_slideshow',
   label: 'Image Slideshow',
@@ -439,5 +443,30 @@ registerWidget({
     overlayColor: '#000000',
     overlayOpacity: 0,
     bgPresets: [],
+  },
+});
+// ─── 18. RAID SHOUTOUT ─────────────────────────────────
+registerWidget({
+  type: 'raid_shoutout',
+  label: 'Raid Shoutout',
+  icon: '⚡',
+  category: 'stream',
+  component: RaidShoutoutWidget,
+  configPanel: RaidShoutoutConfig,
+  defaults: {
+    alertDuration: 30,
+    enterAnimation: 'slideUp',
+    exitAnimation: 'slideDown',
+    showClip: true,
+    showGame: true,
+    showViewers: true,
+    accentColor: '#9146FF',
+    bgColor: 'rgba(13, 13, 20, 0.95)',
+    textColor: '#ffffff',
+    subtextColor: '#a0a0b4',
+    borderRadius: 16,
+    maxClipDuration: 60,
+    fontFamily: "'Inter', sans-serif",
+    soundUrl: '',
   },
 });

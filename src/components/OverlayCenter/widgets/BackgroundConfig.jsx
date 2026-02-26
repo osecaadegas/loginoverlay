@@ -427,31 +427,34 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
           </div>
 
           <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Saved Presets</h4>
-          <div className="nb-preset-save">
+          <div className="nb-preset-save-row">
             <input className="nb-preset-input"
               value={presetName}
               onChange={e => setPresetName(e.target.value)}
               placeholder="Preset name…"
+              maxLength={30}
               onKeyDown={e => e.key === 'Enter' && savePreset()} />
-            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>Save</button>
+            <button className="nb-preset-save-btn" onClick={savePreset} disabled={!presetName.trim()}>💾 Save</button>
           </div>
 
-          {(c.bgPresets || []).length === 0 && (
+          {(c.bgPresets || []).length === 0 ? (
             <p className="oc-config-hint" style={{ marginTop: 8, opacity: 0.6 }}>No saved presets yet.</p>
-          )}
-
-          {(c.bgPresets || []).map(p => (
-            <div key={p.name} className="nb-preset-item">
-              <div className="nb-preset-info">
-                <span className="nb-preset-name">{p.name}</span>
-                <span className="nb-preset-date">{new Date(p.savedAt).toLocaleDateString()}</span>
-              </div>
-              <div className="nb-preset-actions">
-                <button className="nb-preset-load-btn" onClick={() => loadPreset(p)}>Load</button>
-                <button className="nb-preset-del-btn" onClick={() => deletePreset(p.name)}>✕</button>
-              </div>
+          ) : (
+            <div className="nb-preset-list" style={{ marginTop: 8 }}>
+              {(c.bgPresets || []).map(p => (
+                <div key={p.name} className="nb-preset-pill">
+                  <div className="nb-preset-pill__info">
+                    <span className="nb-preset-pill__name">{p.name}</span>
+                    <span className="nb-preset-pill__date">{new Date(p.savedAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="nb-preset-pill__actions">
+                    <button className="nb-preset-pill__load" onClick={() => loadPreset(p)}>Load</button>
+                    <button className="nb-preset-pill__delete" onClick={() => deletePreset(p.name)} title="Delete preset">🗑️</button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>

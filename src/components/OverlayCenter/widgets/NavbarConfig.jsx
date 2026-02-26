@@ -408,23 +408,23 @@ export default function NavbarConfig({ config, onChange }) {
           ) : (
             <div className="nb-preset-list">
               {c.savedPresets.map(p => (
-                <div key={p.name} className="nb-preset-card">
-                  <div className="nb-preset-info">
-                    <span className="nb-preset-name">{p.name}</span>
-                    <span className="nb-preset-date">
+                <div key={p.name} className="nb-preset-pill">
+                  <div className="nb-preset-pill__info">
+                    <span className="nb-preset-pill__name">{p.name}</span>
+                    <span className="nb-preset-pill__date">
                       {p.savedAt ? new Date(p.savedAt).toLocaleDateString() : ''}
                     </span>
-                    <div className="nb-preset-swatches">
+                    <div className="nb-preset-pill__swatches">
                       {['accentColor', 'bgColor', 'textColor', 'ctaColor'].map(k =>
                         p.values[k] ? (
-                          <span key={k} className="nb-preset-swatch" style={{ background: p.values[k] }} title={k} />
+                          <span key={k} className="nb-preset-pill__swatch" style={{ background: p.values[k] }} title={k} />
                         ) : null
                       )}
                     </div>
                   </div>
-                  <div className="nb-preset-actions">
-                    <button className="oc-btn oc-btn--sm oc-btn--primary" onClick={() => loadPreset(p)}>Load</button>
-                    <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => deletePreset(p.name)}>🗑️</button>
+                  <div className="nb-preset-pill__actions">
+                    <button className="nb-preset-pill__load" onClick={() => loadPreset(p)}>Load</button>
+                    <button className="nb-preset-pill__delete" onClick={() => deletePreset(p.name)} title="Delete preset">🗑️</button>
                   </div>
                 </div>
               ))}

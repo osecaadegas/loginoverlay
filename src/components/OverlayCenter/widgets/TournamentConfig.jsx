@@ -632,34 +632,38 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
 
           {/* Built-in presets */}
           <h4 className="nb-subtitle" style={{ marginTop: 10 }}>Built-in</h4>
-          {BUILTIN_PRESETS.map(p => (
-            <div key={p.name} className="nb-preset-item" style={{ borderLeft: '2px solid #38bdf8' }}>
-              <div className="nb-preset-info">
-                <span className="nb-preset-name">{p.name}</span>
+          <div className="nb-preset-list">
+            {BUILTIN_PRESETS.map(p => (
+              <div key={p.name} className="nb-preset-pill nb-preset-pill--builtin">
+                <div className="nb-preset-pill__info">
+                  <span className="nb-preset-pill__name">{p.name}</span>
+                </div>
+                <div className="nb-preset-pill__actions">
+                  <button className="nb-preset-pill__load" onClick={() => loadPreset(p)}>Load</button>
+                </div>
               </div>
-              <div className="nb-preset-actions">
-                <button className="nb-preset-load-btn" onClick={() => loadPreset(p)}>Load</button>
-              </div>
-            </div>
-          ))}
+            ))}
+          </div>
 
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Saved</h4>
-          {(c.tournamentPresets || []).length === 0 && (
+          {(c.tournamentPresets || []).length === 0 ? (
             <p className="oc-config-hint" style={{ marginTop: 4, opacity: 0.6 }}>No saved presets yet.</p>
-          )}
-
-          {(c.tournamentPresets || []).map(p => (
-            <div key={p.name} className="nb-preset-item">
-              <div className="nb-preset-info">
-                <span className="nb-preset-name">{p.name}</span>
-                <span className="nb-preset-date">{new Date(p.savedAt).toLocaleDateString()}</span>
-              </div>
-              <div className="nb-preset-actions">
-                <button className="nb-preset-load-btn" onClick={() => loadPreset(p)}>Load</button>
-                <button className="nb-preset-del-btn" onClick={() => deletePreset(p.name)}>✕</button>
-              </div>
+          ) : (
+            <div className="nb-preset-list">
+              {(c.tournamentPresets || []).map(p => (
+                <div key={p.name} className="nb-preset-pill">
+                  <div className="nb-preset-pill__info">
+                    <span className="nb-preset-pill__name">{p.name}</span>
+                    <span className="nb-preset-pill__date">{new Date(p.savedAt).toLocaleDateString()}</span>
+                  </div>
+                  <div className="nb-preset-pill__actions">
+                    <button className="nb-preset-pill__load" onClick={() => loadPreset(p)}>Load</button>
+                    <button className="nb-preset-pill__delete" onClick={() => deletePreset(p.name)} title="Delete preset">🗑️</button>
+                  </div>
+                </div>
+              ))}
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
