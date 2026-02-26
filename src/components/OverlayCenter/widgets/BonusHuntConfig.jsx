@@ -68,7 +68,6 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
     'slotImageHeight', 'listMaxHeight',
     'brightness', 'contrast', 'saturation',
     'displayStyle',
-    'cardStyle',
   ];
 
   const savePreset = () => {
@@ -112,17 +111,6 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
             <option value="v3">Style 3 — Flip Card</option>
           </select>
         </label>
-        {c.displayStyle === 'v3' && (
-          <label className="oc-config-field" style={{ flex: 1 }}>
-            <span>Card Look</span>
-            <select value={c.cardStyle || 'default'} onChange={e => set('cardStyle', e.target.value)}>
-              <option value="default">Default — Dark</option>
-              <option value="neon">Neon — Cyber Glow</option>
-              <option value="gold">Gold — Premium</option>
-              <option value="frost">Frost — Ice Blue</option>
-            </select>
-          </label>
-        )}
         <label className="bh-check-row">
           <input type="checkbox" checked={!!c.huntActive} onChange={e => set('huntActive', e.target.checked)} />
           <span>Hunt Active</span>
