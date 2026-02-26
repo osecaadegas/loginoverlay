@@ -3,6 +3,7 @@
  * Auth-protected. Manages widgets, theme, overlay URL.
  */
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useOverlay } from '../../hooks/useOverlay';
 import { useAdmin } from '../../hooks/useAdmin';
@@ -21,6 +22,7 @@ import { getAllWidgetDefs } from './widgets/widgetRegistry';
 export default function OverlayControlCenter() {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
+  const navigate = useNavigate();
   const {
     instance, theme, widgets, overlayState, loading,
     saveTheme, addWidget, saveWidget, removeWidget,
@@ -177,6 +179,16 @@ export default function OverlayControlCenter() {
           </div>
 
           <nav className="oc-sidebar-nav">
+            {/* Home — redirects to Partners/Offers page */}
+            <button
+              className="oc-sidebar-btn"
+              onClick={() => navigate('/offers')}
+            >
+              <span className="oc-sidebar-btn-icon">🏠</span>
+              <span className="oc-sidebar-btn-label">Home</span>
+            </button>
+
+            {/* Panel tabs */}
             {[
               { key: 'widgets', icon: '🧩', label: 'Widgets' },
               { key: 'library', icon: '📚', label: 'Library' },
@@ -192,6 +204,17 @@ export default function OverlayControlCenter() {
                 <span className="oc-sidebar-btn-label">{tab.label}</span>
               </button>
             ))}
+
+            {/* Admin — only visible to admins */}
+            {isAdmin && (
+              <button
+                className="oc-sidebar-btn"
+                onClick={() => navigate('/admin')}
+              >
+                <span className="oc-sidebar-btn-icon">🛡️</span>
+                <span className="oc-sidebar-btn-label">Admin</span>
+              </button>
+            )}
           </nav>
 
           {/* ─── Resolution Selector ─── */}
