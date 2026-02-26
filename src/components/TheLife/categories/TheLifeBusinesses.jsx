@@ -463,139 +463,101 @@ export default function TheLifeBusinesses({
           const ownedBusiness = ownedBusinesses.find(ob => ob.business_id === business.id);
           const upgradeLevel = ownedBusiness?.upgrade_level || 1;
           
+          const upgradeCost = getUpgradeCost(business, upgradeLevel);
+          const openInfo = (e) => {
+            e.stopPropagation();
+            setInfoPopupData({
+              name: business.name,
+              icon: business.item?.icon || '💼',
+              owned: ownsIt,
+              purchasePrice: business.purchase_price || 5000,
+              description: business.description,
+              productionCost: productionCost,
+              duration: business.duration_minutes,
+              profit: business.profit || 0,
+              hasReward: !!business.reward_item_id,
+              minLevel: business.min_level_required
+            });
+            setShowInfoPopup(true);
+          };
+
           return (
-            <div key={business.id} className="business-card">
-              {/* Top Info Bar */}
-              <div className="business-top-bar">
-                <span className="business-name-badge">{business.item?.icon || '💼'} {business.name}</span>
-                {ownsIt && <span className="business-level-badge">Lvl {upgradeLevel}</span>}
-              </div>
+            <div key={business.id} className={`business-card ${ownsIt ? 'owned' : ''} ${isRunning ? 'running' : ''}`}>
+              {/* Image with overlay info */}
               <div className="business-image-container">
-                <img src={imageUrl} alt={business.name} className="business-image" />
-                {!ownsIt && (
-                  <div className="business-header-overlay">
-                    <span className="level-tag">🔒 {business.min_level_required}</span>
+                <img src={imageUrl} alt={business.name} className="business-image" loading="lazy" />
+                <div className="business-card-overlay">
+                  <div className="business-card-top">
+                    {ownsIt && <span className="business-level-badge">Lvl {upgradeLevel}</span>}
+                    <button className="business-info-icon" onClick={openInfo} title="Info">ℹ</button>
+                  </div>
+                  <div className="business-card-bottom">
+                    <span className="business-name-badge">{business.name}</span>
+                    {!ownsIt && !meetsLevel && <span className="level-tag">🔒 Lvl {business.min_level_required}</span>}
+                  </div>
+                </div>
+                {isRunning && !isReady && (
+                  <div className="business-progress-bar">
+                    <div className="business-progress-fill" />
                   </div>
                 )}
               </div>
-              {!ownsIt ? (
-                <div className="business-compact-actions">
-                  {meetsLevel ? (
-                    <>
-                      <div className="business-price-display">
-                        💰 ${(business.purchase_price || 5000).toLocaleString()}
-                      </div>
-                      <button 
-                        onClick={() => buyBusiness(business)} 
-                        disabled={player?.cash < (business.purchase_price || 5000)}
-                        className="compact-btn buy-btn"
-                      >
-                        {player?.cash >= (business.purchase_price || 5000) ? 
-                          '💵 Purchase' : 
-                          '🚫 Not Enough Cash'
-                        }
-                      </button>
-                    </>
+
+              {/* Action Area */}
+              <div className="business-compact-actions">
+                {!ownsIt ? (
+                  meetsLevel ? (
+                    <button 
+                      onClick={() => buyBusiness(business)} 
+                      disabled={player?.cash < (business.purchase_price || 5000)}
+                      className="biz-btn biz-buy"
+                    >
+                      <span className="biz-btn-label">Purchase</span>
+                      <span className="biz-btn-price">${(business.purchase_price || 5000).toLocaleString()}</span>
+                    </button>
                   ) : (
-                    <>
-                      <div className="business-price-display locked">
-                        💰 ${(business.purchase_price || 5000).toLocaleString()}
-                      </div>
-                      <div className="locked-compact">🔒 Lvl {business.min_level_required}</div>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {(() => {
-                    const ownedBusiness = ownedBusinesses.find(ob => ob.business_id === business.id);
-                    const upgradeLevel = ownedBusiness?.upgrade_level || 1;
-                    const upgradeCost = getUpgradeCost(business, upgradeLevel);
-                    
-                    return (
-                      <div className="business-compact-actions">
-                        {meetsLevel ? (
-                          <>
-                            {isRunning ? (
-                              <>
-                                {isReady ? (
-                                  <button 
-                                    onClick={() => collectBusiness(business)} 
-                                    className="compact-btn collect-btn"
-                                  >
-                                    ✅ Collect
-                                  </button>
-                                ) : (
-                                  <div className="timer-compact">
-                                    ⏱️ {Math.ceil((new Date(completedAt) - new Date()) / 60000)}m
-                                  </div>
-                                )}
-                              </>
-                            ) : (
-                              <>
-                                <div className="compact-actions-row">
-                                  <div className="button-with-badge">
-                                    <button 
-                                      onClick={() => startBusiness(business)} 
-                                      disabled={player?.cash < productionCost || player?.stamina < 5}
-                                      className="compact-btn-small start-btn"
-                                    >
-                                      ▶️ Start
-                                    </button>
-                                    <span className="business-owned-badge-bottom">✓ OWNED</span>
-                                  </div>
-                                  <div className="button-with-badge">
-                                    <button 
-                                      onClick={() => sellBusiness(business)}
-                                      className="compact-btn-small sell-btn"
-                                      title={`Sell: $${Math.floor((business.purchase_price || 5000) / 3).toLocaleString()}`}
-                                    >
-                                      💰 Sell
-                                    </button>
-                                    <button 
-                                      className="business-info-btn-bottom"
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setInfoPopupData({
-                                          name: business.name,
-                                          icon: business.item?.icon || '💼',
-                                          owned: ownsIt,
-                                          purchasePrice: business.purchase_price || 5000,
-                                          description: business.description,
-                                          productionCost: productionCost,
-                                          duration: business.duration_minutes,
-                                          profit: business.profit || 0,
-                                          hasReward: !!business.reward_item_id,
-                                          minLevel: business.min_level_required
-                                        });
-                                        setShowInfoPopup(true);
-                                      }}
-                                    >
-                                      ℹ️ Info
-                                    </button>
-                                  </div>
-                                </div>
-                              </>
-                            )}
-                            {business.is_upgradeable !== false && upgradeLevel < 10 && (
-                              <button 
-                                onClick={() => upgradeBusiness(business)}
-                                disabled={player?.cash < upgradeCost}
-                                className="compact-btn upgrade-btn"
-                                title={`Upgrade to Lvl ${upgradeLevel + 1}: $${upgradeCost.toLocaleString()}`}
-                              >
-                                ⬆️ Upgrade to Lvl {upgradeLevel + 1}
-                              </button>
-                            )}
-                          </>
-                        ) : (
-                          <div className="locked-compact">🔒 Lvl {business.min_level_required}</div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </>
-              )}
+                    <div className="locked-compact">🔒 Level {business.min_level_required} Required</div>
+                  )
+                ) : isRunning ? (
+                  isReady ? (
+                    <button onClick={() => collectBusiness(business)} className="biz-btn biz-collect">
+                      ✅ Collect Reward
+                    </button>
+                  ) : (
+                    <div className="timer-compact">
+                      ⏱️ {Math.ceil((new Date(completedAt) - new Date()) / 60000)}m remaining
+                    </div>
+                  )
+                ) : (
+                  <>
+                    <div className="biz-actions-row">
+                      <button 
+                        onClick={() => startBusiness(business)} 
+                        disabled={player?.cash < productionCost || player?.stamina < 5}
+                        className="biz-btn biz-start"
+                      >
+                        ▶ Start
+                      </button>
+                      <button 
+                        onClick={() => sellBusiness(business)}
+                        className="biz-btn biz-sell"
+                        title={`Sell: $${Math.floor((business.purchase_price || 5000) / 3).toLocaleString()}`}
+                      >
+                        Sell
+                      </button>
+                    </div>
+                    {business.is_upgradeable !== false && upgradeLevel < 10 && (
+                      <button 
+                        onClick={() => upgradeBusiness(business)}
+                        disabled={player?.cash < upgradeCost}
+                        className="biz-btn biz-upgrade"
+                      >
+                        ⬆ Lvl {upgradeLevel + 1} · ${upgradeCost.toLocaleString()}
+                      </button>
+                    )}
+                  </>
+                )}
+              </div>
             </div>
           );
         })}

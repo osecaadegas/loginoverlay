@@ -253,10 +253,6 @@
   text-shadow: 0 2px 8px rgba(0, 0, 0, 0.9), 0 0 10px rgba(0, 0, 0, 0.8);
 }
 
-.crime-desc {
-  display: none;
-}
-
 .crime-button {
   position: absolute;
   bottom: 0;
@@ -290,25 +286,6 @@
   background: rgba(212, 175, 55, 0.4);
   transform: scale(0.98);
   transition: all 0.1s;
-}
-
-.crime-button:disabled {
-  background: rgba(100, 100, 100, 0.3);
-  color: rgba(255, 255, 255, 0.4);
-  cursor: not-allowed;
-}
-
-@media (hover: none) {
-  .crime-button:hover {
-    background: rgba(212, 175, 55, 0.2);
-    color: #f0d68a;
-    border-top-color: rgba(212, 175, 55, 0.4);
-  }
-  
-  .crime-button:active {
-    background: rgba(212, 175, 55, 0.35);
-    transform: scale(0.97);
-  }
 }
 
 .crime-button:hover:not(:disabled) {

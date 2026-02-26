@@ -1,49 +1,36 @@
-/* =============================================
-   SKILLS SECTION - DARK UNDERGROUND THEME
-   Blood, Sweat & Grit
+﻿/* =============================================
+   SKILLS SECTION - METALLIC UNDERGROUND THEME
+   Matches game-wide dark metallic design
    ============================================= */
 
 .skills-section {
-  background: linear-gradient(145deg, #0a0a0a 0%, #0f0a0e 100%);
-  border-radius: 8px;
-  padding: 40px;
-  border: 2px solid rgba(139, 0, 0, 0.3);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(139, 0, 0, 0.1);
+  background: linear-gradient(135deg, rgba(30, 30, 35, 0.95) 0%, rgba(20, 20, 25, 0.95) 100%);
+  border-radius: 15px;
+  padding: var(--space-3);
+  border: 2px solid rgba(100, 100, 110, 0.4);
+  box-shadow: 0 0 30px rgba(0, 0, 0, 0.4), inset 0 0 50px rgba(0, 0, 0, 0.3);
   position: relative;
 }
 
-/* Grunge texture overlay */
-.skills-section::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 20% 30%, rgba(139, 0, 0, 0.05) 0%, transparent 50%),
-    radial-gradient(circle at 80% 70%, rgba(139, 0, 0, 0.05) 0%, transparent 50%);
-  pointer-events: none;
-  border-radius: 8px;
+@media (min-width: 769px) {
+  .skills-section {
+    padding: var(--space-5);
+  }
 }
 
 .skills-section h2 {
-  color: #b31b1b;
-  font-size: 2rem;
-  margin-bottom: 10px;
-  text-align: center;
-  text-shadow: 0 0 20px rgba(179, 27, 27, 0.8), 0 4px 8px rgba(0, 0, 0, 0.9);
-  letter-spacing: 2px;
-  font-weight: 900;
-  text-transform: uppercase;
+  color: #d1d5db;
+  font-size: var(--text-fluid-xl, 1.4rem);
+  margin-bottom: 8px;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+  font-weight: 700;
 }
 
 .skills-section > p {
   text-align: center;
-  color: #666;
-  margin-bottom: 30px;
-  font-size: 0.95rem;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.8);
+  color: #8a8d96;
+  margin-bottom: 20px;
+  font-size: 0.85rem;
 }
 
 /* =============================================
@@ -52,67 +39,29 @@
 
 .skills-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 24px;
-  margin-bottom: 30px;
-  position: relative;
-  z-index: 1;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+  margin-bottom: 20px;
 }
 
 /* =============================================
-   SKILL CARDS - UNDERGROUND GRIT STYLE
+   SKILL CARDS
    ============================================= */
 
 .skill-card {
-  background: linear-gradient(145deg, #141414 0%, #0a0a0a 100%);
-  border: 2px solid rgba(80, 20, 20, 0.6);
-  border-radius: 6px;
-  padding: 24px;
+  background: rgba(22, 22, 28, 0.95);
+  border: 1px solid rgba(80, 80, 90, 0.35);
+  border-radius: 10px;
+  padding: 18px;
   text-align: center;
-  transition: all 0.3s ease;
+  transition: border-color 0.25s, box-shadow 0.25s;
   position: relative;
   overflow: hidden;
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(139, 0, 0, 0.1),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
-}
-
-/* Blood splatter effect - top right */
-.skill-card::before {
-  content: '';
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 60px;
-  height: 60px;
-  background: radial-gradient(circle, rgba(139, 0, 0, 0.4) 0%, rgba(80, 0, 0, 0.2) 40%, transparent 70%);
-  filter: blur(2px);
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* Blood drip effect - bottom left */
-.skill-card::after {
-  content: '';
-  position: absolute;
-  bottom: -5px;
-  left: 20%;
-  width: 40px;
-  height: 40px;
-  background: radial-gradient(ellipse at center, rgba(100, 0, 0, 0.3) 0%, transparent 60%);
-  filter: blur(1px);
-  opacity: 0.5;
-  pointer-events: none;
 }
 
 .skill-card:hover {
-  transform: translateY(-4px);
-  border-color: rgba(139, 0, 0, 0.9);
-  box-shadow: 
-    0 12px 35px rgba(139, 0, 0, 0.3),
-    0 0 40px rgba(139, 0, 0, 0.2),
-    inset 0 1px 0 rgba(139, 0, 0, 0.2);
+  border-color: rgba(156, 163, 175, 0.5);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5), 0 0 12px rgba(100, 100, 110, 0.15);
 }
 
 /* =============================================
@@ -120,28 +69,25 @@
    ============================================= */
 
 .skill-icon {
-  font-size: 3.5rem;
-  margin-bottom: 16px;
+  font-size: 2.5rem;
+  margin-bottom: 10px;
   display: block;
-  filter: drop-shadow(0 4px 12px rgba(139, 0, 0, 0.5)) drop-shadow(0 0 8px rgba(0, 0, 0, 0.8));
+  filter: drop-shadow(0 3px 8px rgba(0, 0, 0, 0.6));
 }
 
 .skill-name {
-  color: #c41e1e;
-  font-size: 1.4rem;
-  font-weight: 900;
-  margin-bottom: 12px;
-  text-shadow: 0 0 15px rgba(196, 30, 30, 0.6), 0 2px 8px rgba(0, 0, 0, 0.9);
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  color: #e5e7eb;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 8px;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
 .skill-card p {
-  color: #777;
-  font-size: 0.9rem;
-  margin-bottom: 16px;
+  color: #8a8d96;
+  font-size: 0.8rem;
+  margin-bottom: 12px;
   line-height: 1.4;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 /* =============================================
@@ -149,65 +95,57 @@
    ============================================= */
 
 .skill-level {
-  color: #b31b1b;
-  font-size: 1.2rem;
-  font-weight: 900;
-  margin: 16px 0;
-  background: rgba(139, 0, 0, 0.1);
-  padding: 10px;
-  border-radius: 4px;
-  border: 1px solid rgba(139, 0, 0, 0.3);
-  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
-  text-shadow: 0 0 10px rgba(179, 27, 27, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9);
+  color: #d4af37;
+  font-size: 1rem;
+  font-weight: 700;
+  margin: 12px 0;
+  background: rgba(212, 175, 55, 0.08);
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid rgba(212, 175, 55, 0.2);
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 1px;
 }
 
 .skill-level-label {
-  color: #666;
-  font-size: 0.85rem;
+  color: #8a8d96;
+  font-size: 0.7rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  font-weight: 700;
+  letter-spacing: 0.5px;
+  font-weight: 600;
 }
 
 .skill-level-value {
-  color: #b31b1b;
-  font-weight: 900;
-  font-size: 1.5rem;
-  text-shadow: 0 0 10px rgba(179, 27, 27, 0.8), 0 2px 4px rgba(0, 0, 0, 0.9);
+  color: #d4af37;
+  font-weight: 800;
+  font-size: 1.2rem;
+  text-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
 }
 
 /* =============================================
-   PROGRESS BAR - BLOOD FILLED
+   PROGRESS BAR
    ============================================= */
 
 .skill-progress,
 .skill-progress-bar {
   width: 100%;
-  height: 28px;
-  background: linear-gradient(180deg, #0a0a0a 0%, #000000 100%);
-  border-radius: 4px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
   overflow: hidden;
-  margin: 12px 0;
-  border: 2px solid rgba(80, 20, 20, 0.5);
-  box-shadow: inset 0 3px 8px rgba(0, 0, 0, 0.9);
+  margin: 10px 0;
+  border: 1px solid rgba(80, 80, 90, 0.3);
   position: relative;
 }
 
 .skill-progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #8b0000 0%, #b31b1b 50%, #8b0000 100%);
+  background: linear-gradient(90deg, rgba(34, 197, 94, 0.7) 0%, rgba(34, 197, 94, 0.9) 50%, rgba(34, 197, 94, 0.7) 100%);
   transition: width 0.5s ease;
-  box-shadow: 
-    0 0 20px rgba(139, 0, 0, 0.8),
-    inset 0 1px 0 rgba(255, 100, 100, 0.3),
-    inset 0 -1px 0 rgba(0, 0, 0, 0.5);
+  border-radius: 6px;
   position: relative;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
 }
 
-/* Blood glossy effect */
 .skill-progress-fill::before {
   content: '';
   position: absolute;
@@ -216,105 +154,53 @@
   right: 0;
   height: 50%;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.15) 0%, transparent 100%);
-}
-
-/* Blood drip animation */
-.skill-progress-fill::after {
-  content: '';
-  position: absolute;
-  top: 100%;
-  right: 10%;
-  width: 3px;
-  height: 6px;
-  background: #8b0000;
-  border-radius: 0 0 50% 50%;
-  box-shadow: 0 2px 4px rgba(139, 0, 0, 0.8);
+  border-radius: 6px 6px 0 0;
 }
 
 .skill-xp {
-  color: #555;
-  font-size: 0.8rem;
-  margin-top: 8px;
+  color: #6b7280;
+  font-size: 0.7rem;
+  margin-top: 6px;
   font-weight: 600;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
 /* =============================================
-   UPGRADE BUTTON - BLOOD STAINED
+   UPGRADE BUTTON
    ============================================= */
 
 .train-btn,
 .upgrade-btn {
-  background: linear-gradient(145deg, #1a1a1a 0%, #0a0a0a 100%);
-  color: #e0e0e0;
-  border: 2px solid #2a2a2a;
-  padding: 14px 20px;
-  border-radius: 12px;
-  font-weight: 900;
-  font-size: 0.95rem;
+  background: rgba(212, 175, 55, 0.15);
+  color: #f0d68a;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  padding: 10px 16px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.2s;
   width: 100%;
-  margin-top: 16px;
+  margin-top: 10px;
   text-transform: uppercase;
-  letter-spacing: 1.5px;
-  box-shadow: 
-    0 4px 15px rgba(0, 0, 0, 0.9),
-    inset 0 1px 0 rgba(80, 80, 80, 0.2);
-  position: relative;
-  overflow: hidden;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.9);
-}
-
-/* Blood stain effect on button - top right */
-.train-btn::before,
-.upgrade-btn::before {
-  content: '';
-  position: absolute;
-  top: -5px;
-  right: 20%;
-  width: 35px;
-  height: 35px;
-  background: radial-gradient(circle, rgba(139, 0, 0, 0.6) 0%, rgba(80, 0, 0, 0.4) 40%, transparent 70%);
-  filter: blur(3px);
-  opacity: 0.8;
-}
-
-/* Additional blood splatter - bottom left */
-.train-btn::after,
-.upgrade-btn::after {
-  content: '';
-  position: absolute;
-  bottom: 5px;
-  left: 15%;
-  width: 25px;
-  height: 25px;
-  background: radial-gradient(circle, rgba(100, 0, 0, 0.5) 0%, rgba(60, 0, 0, 0.3) 50%, transparent 70%);
-  filter: blur(2px);
-  opacity: 0.7;
+  letter-spacing: 0.5px;
 }
 
 .train-btn:hover:not(:disabled),
 .upgrade-btn:hover:not(:disabled) {
-  background: linear-gradient(145deg, #2a2a2a 0%, #1a1a1a 100%);
-  border-color: #3a3a3a;
-  color: #ffffff;
-  transform: translateY(-2px);
-  box-shadow: 
-    0 6px 25px rgba(0, 0, 0, 0.9),
-    0 0 20px rgba(139, 0, 0, 0.2),
-    inset 0 1px 0 rgba(100, 100, 100, 0.3);
+  background: rgba(212, 175, 55, 0.25);
+  border-color: rgba(212, 175, 55, 0.5);
+  color: #ffd700;
+}
+
+.train-btn:not(:disabled):active,
+.upgrade-btn:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 .train-btn:disabled,
 .upgrade-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
-  background: linear-gradient(145deg, #0a0a0a 0%, #050505 100%);
-  color: #333;
-  border-color: rgba(50, 50, 50, 0.5);
-  box-shadow: none;
-  text-shadow: none;
 }
 
 /* =============================================
@@ -322,28 +208,21 @@
    ============================================= */
 
 .skills-info {
-  background: linear-gradient(145deg, #0a0a0a 0%, #050505 100%);
-  border: 2px solid rgba(80, 20, 20, 0.5);
-  border-radius: 6px;
-  padding: 24px;
-  margin-top: 30px;
-  box-shadow: 
-    0 6px 20px rgba(0, 0, 0, 0.8),
-    inset 0 1px 0 rgba(139, 0, 0, 0.1);
-  position: relative;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(80, 80, 90, 0.3);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 16px;
 }
 
 .skills-info h3 {
-  color: #b31b1b;
-  font-size: 1.4rem;
-  margin-bottom: 16px;
+  color: #d1d5db;
+  font-size: 1rem;
+  margin-bottom: 10px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  text-shadow: 0 0 15px rgba(179, 27, 27, 0.6), 0 2px 8px rgba(0, 0, 0, 0.9);
-  font-weight: 900;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  gap: 8px;
+  font-weight: 700;
 }
 
 .skills-info ul {
@@ -353,14 +232,12 @@
 }
 
 .skills-info ul li {
-  color: #666;
-  font-size: 0.95rem;
-  padding: 10px 0;
-  padding-left: 28px;
+  color: #8a8d96;
+  font-size: 0.8rem;
+  padding: 6px 0 6px 20px;
   position: relative;
-  line-height: 1.5;
-  border-bottom: 1px solid rgba(80, 20, 20, 0.3);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+  line-height: 1.4;
+  border-bottom: 1px solid rgba(80, 80, 90, 0.2);
 }
 
 .skills-info ul li:last-child {
@@ -368,91 +245,44 @@
 }
 
 .skills-info ul li::before {
-  content: '▸';
+  content: '>';
   position: absolute;
   left: 0;
-  color: #8b0000;
-  font-weight: 900;
-  font-size: 1.3rem;
-  text-shadow: 0 0 10px rgba(139, 0, 0, 0.8);
+  color: #d4af37;
+  font-weight: 700;
+  font-size: 0.9rem;
 }
 
 /* =============================================
-   MOBILE RESPONSIVE
+   RESPONSIVE
    ============================================= */
 
 @media (max-width: 768px) {
-  .skills-section {
-    padding: 20px 15px;
-  }
-
-  .skills-section h2 {
-    font-size: 1.5rem;
-  }
-
   .skills-grid {
     grid-template-columns: 1fr;
-    gap: 16px;
+    gap: 10px;
   }
 
   .skill-card {
-    padding: 20px;
+    padding: 14px;
   }
 
   .skill-icon {
-    font-size: 3rem;
+    font-size: 2rem;
   }
 
   .skill-name {
-    font-size: 1.2rem;
-  }
-
-  .skill-level-value {
-    font-size: 1.3rem;
-  }
-
-  .train-btn,
-  .upgrade-btn {
-    padding: 14px;
-    font-size: 0.9rem;
-  }
-
-  .skills-info {
-    padding: 20px;
-  }
-
-  .skills-info h3 {
-    font-size: 1.2rem;
-  }
-
-  .skills-info ul li {
-    font-size: 0.9rem;
-    padding: 8px 0 8px 24px;
+    font-size: 0.95rem;
   }
 }
 
 @media (max-width: 480px) {
-  .skills-section {
-    padding: 16px 12px;
-  }
-
-  .skills-section h2 {
-    font-size: 1.3rem;
-  }
-
   .skill-card {
-    padding: 16px;
+    padding: 12px;
   }
 
-  .skill-icon {
-    font-size: 2.5rem;
-  }
-
-  .skill-name {
-    font-size: 1.1rem;
-  }
-
-  .skill-progress {
-    height: 24px;
+  .skill-progress,
+  .skill-progress-bar {
+    height: 16px;
   }
 }
