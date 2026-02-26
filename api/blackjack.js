@@ -141,6 +141,23 @@ async function handleDeal(supabase, user, { bet, perfectPairsBet = 0, twentyOneP
     return res.status(400).json({ error: 'You already have an active game', gameId: existingGame.id });
   }
 
+  // Cooldown: prevent bets within 3 seconds of last game
+  const { data: recentGame } = await supabase
+    .from('blackjack_games')
+    .select('ended_at')
+    .eq('user_id', user.id)
+    .eq('status', 'finished')
+    .order('ended_at', { ascending: false })
+    .limit(1)
+    .single();
+
+  if (recentGame?.ended_at) {
+    const elapsed = Date.now() - new Date(recentGame.ended_at).getTime();
+    if (elapsed < 3000) {
+      return res.status(429).json({ error: 'Please wait a few seconds between bets' });
+    }
+  }
+
   // Create deck and deal initial cards
   let deck = createDeck();
   

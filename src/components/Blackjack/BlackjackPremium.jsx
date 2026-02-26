@@ -555,7 +555,7 @@ function BlackjackTable({ dealerHand, playerHand, splitHands, currentSplitIndex,
    ═══════════════════════════════════════════════════════════════ */
 
 function BettingControls({
-  gamePhase, currentBet, balance, betInput, lastBet,
+  gamePhase, currentBet, balance, betInput, lastBet, cooldownRemaining,
   canHit, canStand, canDouble, canSplit,
   onSetBet, onInputChange, onAddChip, onClearBet, onPlaceBet,
   onHit, onStand, onDouble, onSplit, onNextRound,
@@ -640,14 +640,16 @@ function BettingControls({
         <div style={{ display: 'flex', justifyContent: 'center' }}>
           <button
             onClick={onPlaceBet}
-            disabled={currentBet === 0}
-            style={{ borderRadius: '12px', padding: '12px 40px', fontSize: '16px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: currentBet > 0 ? 'pointer' : 'not-allowed', transition: 'all 0.2s', border: 'none' }}
-            className={currentBet > 0
+            disabled={currentBet === 0 || cooldownRemaining > 0}
+            style={{ borderRadius: '12px', padding: '12px 40px', fontSize: '16px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: currentBet > 0 && !cooldownRemaining ? 'pointer' : 'not-allowed', transition: 'all 0.2s', border: 'none' }}
+            className={currentBet > 0 && !cooldownRemaining
               ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/30 hover:shadow-xl hover:from-amber-400 hover:to-amber-500 active:scale-[0.97]'
               : 'bg-black/25 text-white/30 border border-white/[0.08]'
             }
           >
-            {currentBet > 0 ? `Deal · ${currentBet.toLocaleString()} pts` : 'Place Your Bet'}
+            {cooldownRemaining > 0
+              ? `Wait ${Math.ceil(cooldownRemaining / 1000)}s...`
+              : currentBet > 0 ? `Deal · ${currentBet.toLocaleString()} pts` : 'Place Your Bet'}
           </button>
         </div>
       </section>
@@ -1031,6 +1033,20 @@ export default function BlackjackPremium() {
   const [lastBet, setLastBet] = useState(0);
   const [winInfo, setWinInfo] = useState(null);
 
+  /* ── Bet Cooldown (prevents rapid-fire bets) ── */
+  const BET_COOLDOWN_MS = 3000;
+  const [lastBetTime, setLastBetTime] = useState(0);
+  const [cooldownRemaining, setCooldownRemaining] = useState(0);
+
+  useEffect(() => {
+    if (cooldownRemaining <= 0) return;
+    const timer = setInterval(() => {
+      const left = Math.max(0, lastBetTime + BET_COOLDOWN_MS - Date.now());
+      setCooldownRemaining(left);
+    }, 100);
+    return () => clearInterval(timer);
+  }, [cooldownRemaining, lastBetTime]);
+
   const playerName = seAccount?.se_username || user?.email?.split('@')[0] || 'Guest';
   const availablePoints = points || 0;
 
@@ -1096,12 +1112,23 @@ export default function BlackjackPremium() {
       return;
     }
 
+    // Cooldown check — prevent rapid-fire bets
+    const now = Date.now();
+    const elapsed = now - lastBetTime;
+    if (elapsed < BET_COOLDOWN_MS) {
+      const remaining = Math.ceil((BET_COOLDOWN_MS - elapsed) / 1000);
+      setMessage(`Wait ${remaining}s before placing another bet!`);
+      return;
+    }
+
     const totalBet = currentBet + sideBets.perfectPair + sideBets.twentyOneThree;
     if (totalBet > availablePoints) {
       setMessage('Insufficient balance!');
       return;
     }
 
+    setLastBetTime(now);
+    setCooldownRemaining(BET_COOLDOWN_MS);
     setLastBet(currentBet);
     await updateUserPoints(-totalBet);
 
@@ -1509,6 +1536,7 @@ export default function BlackjackPremium() {
                 onSplit={split}
                 onNextRound={resetRound}
                 chipValues={CHIP_VALUES}
+                cooldownRemaining={cooldownRemaining}
               />
             </BlackjackTable>
 
