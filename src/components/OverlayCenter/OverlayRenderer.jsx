@@ -24,10 +24,26 @@ import './OverlayRenderer.css';
 // Register built-in widgets
 import './widgets/builtinWidgets';
 
-// ─── Single widget wrapper with animation ───
+// ─── Single widget wrapper with animation + scale-to-fit ───
 const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
+  const contentRef = useRef(null);
+  const [cs, setCs] = useState(1);
+
+  useEffect(() => {
+    const el = contentRef.current;
+    if (!el) return;
+    let raf = requestAnimationFrame(() => {
+      const natW = el.scrollWidth;
+      const natH = el.scrollHeight;
+      if (natW > 0 && natH > 0) {
+        setCs(Math.min(widget.width / natW, widget.height / natH, 1));
+      }
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [widget.width, widget.height, widget.config, widget.widget_type]);
+
   if (!Component) return null;
 
   const slotId = `ow-${widget.id}`;
@@ -43,12 +59,18 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     zIndex: widget.z_index || 1,
     animationDuration: `${(animSpeed || 1) * 0.35}s`,
     willChange: 'transform, opacity',
+    overflow: 'hidden',
   };
 
   return (
     <div id={slotId} className={`or-widget-slot ${animClass}`} style={style}>
       {customCSS && <style>{`#${slotId} { ${customCSS} }`}</style>}
-      <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+      <div ref={contentRef} style={{
+        transformOrigin: 'top left',
+        transform: cs < 1 ? `scale(${cs})` : undefined,
+      }}>
+        <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+      </div>
     </div>
   );
 });
