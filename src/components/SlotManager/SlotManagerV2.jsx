@@ -135,20 +135,29 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
     if (e.key === 'Escape') onClose();
   };
 
-  // AI Fetch
+  // AI Fetch — uses /api/slot-ai (Gemini + DB pipeline)
   const aiFetch = async () => {
     if (!form.name) return alert('Enter a slot name first.');
     setFetching(true);
     setFetchResult(null);
     try {
-      const res = await fetch('/api/fetch-slot-info', {
+      const res = await fetch('/api/slot-ai', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: form.name, provider: form.provider }),
       });
       const json = await res.json();
-      if (json.success && json.data) setFetchResult({ ...json, applied: false });
-      else setFetchResult({ success: false, message: json.message || 'No data found' });
+      if (json.source === 'blocked') {
+        setFetchResult({ success: false, message: 'Search blocked — not appropriate for streaming platforms.' });
+      } else if (json.source === 'not_found' || json.error) {
+        setFetchResult({ success: false, message: json.error || 'No data found for this slot.' });
+      } else if (json.name) {
+        // slot-ai returns a flat object with name, provider, rtp, etc.
+        const confidence = json.source?.includes('database') ? 'high' : json.source?.includes('google') ? 'medium' : 'medium';
+        setFetchResult({ success: true, data: json, source: json.source, confidence, applied: false });
+      } else {
+        setFetchResult({ success: false, message: 'No data found for this slot.' });
+      }
     } catch (err) {
       setFetchResult({ success: false, message: err.message });
     } finally {

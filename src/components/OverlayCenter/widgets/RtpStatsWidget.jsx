@@ -32,17 +32,19 @@ async function fetchSlotFromDB(name) {
   return null;
 }
 
-/* ─── API fallback ─── */
+/* ─── API fallback (slot-ai pipeline: DB + Gemini) ─── */
 async function fetchSlotInfoAPI(name) {
   try {
-    const res = await fetch('/api/fetch-slot-info', {
+    const res = await fetch('/api/slot-ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name }),
     });
     if (!res.ok) return null;
     const json = await res.json();
-    return json.success ? json.data : null;
+    // slot-ai returns a flat object with name, provider, rtp, etc.
+    if (json.source === 'blocked' || json.source === 'not_found' || json.error) return null;
+    return json.name ? json : null;
   } catch {
     return null;
   }
