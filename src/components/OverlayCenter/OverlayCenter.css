@@ -2018,6 +2018,10 @@
   pointer-events: all;
   z-index: 1;
 }
+.gt-backdrop--passthrough {
+  pointer-events: none;
+  background: rgba(0, 0, 0, 0.45);
+}
 
 .gt-spotlight {
   position: fixed;

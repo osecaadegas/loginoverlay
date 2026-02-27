@@ -83,7 +83,7 @@ const STEPS = [
     target: '[data-tour="bonus-hunt-page"]',
     title: '9. Bonus Hunt 🎯',
     body: 'This is where you run your bonus hunts! Add bonuses with name, bet, and slot info. Start the hunt, open bonuses, record results — the overlay widget updates in real-time for your viewers.',
-    position: 'bottom',
+    position: 'float-top',
     page: 'bonus_hunt',
   },
 
@@ -92,7 +92,7 @@ const STEPS = [
     target: '[data-tour="tournament-page"]',
     title: '10. Tournament 🏆',
     body: 'Set up slot battles and tournaments here. Add players, assign slots, track scores, and run brackets. The Tournament widget on your overlay shows the leaderboard live.',
-    position: 'bottom',
+    position: 'float-top',
     page: 'tournament',
   },
 
@@ -242,6 +242,11 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
       style.top = rect.top + rect.height / 2;
       style.left = rect.right + gap;
       style.transform = 'translateY(-50%)';
+    } else if (pos === 'float-top') {
+      // Fixed near top-left of the content area — doesn't block scrolling
+      style.top = 80;
+      style.right = 40;
+      style.transform = 'none';
     }
 
     setTooltipStyle(style);
@@ -312,8 +317,8 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
   return (
     <div className="gt-overlay">
       {/* Dark backdrop with spotlight cutout */}
-      <div className="gt-backdrop" onClick={handleSkip} />
-      {spotlightStyle && (
+      <div className={`gt-backdrop${current.position === 'float-top' ? ' gt-backdrop--passthrough' : ''}`} onClick={handleSkip} />
+      {spotlightStyle && current.position !== 'float-top' && (
         <div className="gt-spotlight" style={spotlightStyle} />
       )}
 
