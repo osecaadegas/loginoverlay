@@ -3,6 +3,7 @@
  *
  * Shows once on first visit, or when triggered via the "🎓 Tutorial" sidebar button.
  * Steps attach to DOM elements by `data-tour="stepKey"` attributes.
+ * Steps can specify a `page` field — the tour will auto-navigate between pages.
  * Persists completion in localStorage.
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -10,99 +11,176 @@ import React, { useState, useEffect, useCallback, useRef } from 'react';
 const STORAGE_KEY = 'oc_tutorial_done';
 
 const STEPS = [
+  /* ── Welcome ── */
   {
-    target: null, // welcome — no element
+    target: null,
     title: 'Welcome to your Overlay Center! 🎉',
-    body: 'This quick tour will show you how to build, customize, and connect your stream overlay. Takes about 1 minute.',
+    body: 'This quick tour walks you through every feature — from building your overlay to going live on OBS. Takes about 2 minutes. Press Next to start!',
     position: 'center',
+    page: 'widgets',
   },
+
+  /* ── Widgets page ── */
   {
     target: '[data-tour="live-preview"]',
-    title: 'Live Preview',
-    body: 'This is your real-time canvas. Every change you make updates here instantly — just like OBS.',
+    title: '1. Live Preview Canvas',
+    body: 'This is your real-time canvas — it mirrors exactly what your viewers see in OBS. Every change updates here instantly.',
     position: 'bottom',
+    page: 'widgets',
   },
   {
     target: '[data-tour="available-widgets"]',
-    title: 'Add Widgets',
-    body: 'All available widgets are listed here. Click "+\u00A0Add" on any grey tile to activate it. It will appear on the preview above.',
+    title: '2. Add Widgets',
+    body: 'These grey tiles are all the widgets you can add. Click "+ Add" on any tile to activate it — it will appear on the preview above.',
     position: 'top',
+    page: 'widgets',
   },
   {
     target: '[data-tour="active-widgets"]',
-    title: 'Your Active Widgets',
-    body: 'Active widgets show up here with a green glow. Click LIVE/OFF to toggle visibility, or 🗑️ to remove.',
+    title: '3. Active Widgets',
+    body: 'Your active widgets glow green here. Click LIVE/OFF to toggle visibility, click 🗑️ to remove, or drag to reorder layers.',
     position: 'top',
+    page: 'widgets',
   },
   {
     target: '[data-tour="tile-gear"]',
-    title: 'Widget Settings ⚙️',
-    body: 'Click the gear icon to open any widget\'s settings panel — change colors, fonts, sizes, and content.',
+    title: '4. Widget Settings ⚙️',
+    body: 'Click the gear icon on any active tile to open its settings — change colors, fonts, sizes, content, and even connect accounts like Spotify.',
     position: 'left',
+    page: 'widgets',
   },
   {
     target: '[data-tour="preview-drag"]',
-    title: 'Drag & Resize',
-    body: 'Click any widget on the preview to select it, then drag to reposition. Use corner handles to resize, or arrow keys for pixel-perfect nudging (Shift = 10px).',
+    title: '5. Drag & Resize',
+    body: 'Click a widget on the canvas to select it. Drag to move, use corner handles to resize. Arrow keys = 1px nudge, Shift+Arrow = 10px.',
     position: 'bottom',
+    page: 'widgets',
   },
   {
     target: '[data-tour="sync-colors"]',
-    title: 'Sync Colors 🔗',
-    body: 'Set up your Navbar\'s colors first, then hit "Sync Colors" to copy the same palette to every other widget in one click.',
+    title: '6. Sync Colors 🔗',
+    body: 'Set your Navbar\'s colors first, then hit "Sync Colors" to copy the same palette across every widget in one click. Keeps your overlay consistent.',
     position: 'bottom',
+    page: 'widgets',
   },
   {
     target: null,
-    title: 'Background & Effects 🎨',
-    body: 'Add a "Background" widget and open its settings to choose gradients, images, particles, and blur effects for your overlay backdrop.',
+    title: '7. Background & Effects 🎨',
+    body: 'Add the "Background" widget and open its settings to pick gradients, images, video, particles, and blur effects for your overlay backdrop.',
     position: 'center',
+    page: 'widgets',
   },
   {
     target: null,
-    title: 'Connect Your Profiles 🔌',
-    body: 'Some widgets (like the Navbar) let you link your Spotify, Twitch, or Kick accounts. Open the widget settings and look for the profile/connection fields.',
+    title: '8. Connect Profiles 🔌',
+    body: 'Open the Navbar widget\'s settings to link your Spotify (Now Playing), Twitch, or Kick accounts. Other widgets can also have connection fields.',
     position: 'center',
+    page: 'widgets',
+  },
+
+  /* ── Bonus Hunt page ── */
+  {
+    target: '[data-tour="bonus-hunt-page"]',
+    title: '9. Bonus Hunt 🎯',
+    body: 'This is where you run your bonus hunts! Add bonuses with name, bet, and slot info. Start the hunt, open bonuses, record results — the overlay widget updates in real-time for your viewers.',
+    position: 'bottom',
+    page: 'bonus_hunt',
+  },
+
+  /* ── Tournament page ── */
+  {
+    target: '[data-tour="tournament-page"]',
+    title: '10. Tournament 🏆',
+    body: 'Set up slot battles and tournaments here. Add players, assign slots, track scores, and run brackets. The Tournament widget on your overlay shows the leaderboard live.',
+    position: 'bottom',
+    page: 'tournament',
+  },
+
+  /* ── Library page ── */
+  {
+    target: '[data-tour="library-page"]',
+    title: '11. Library 📚',
+    body: 'Every bonus hunt you finish is saved here automatically. Browse your past hunts, view detailed stats and results, and see your full history.',
+    position: 'bottom',
+    page: 'library',
+  },
+
+  /* ── Presets page ── */
+  {
+    target: '[data-tour="presets-page"]',
+    title: '12. Presets — Save Layouts 💾',
+    body: 'Save your current widget layout as a preset. Give it a name and click Save — it captures all widget positions, sizes, colors, and styles.',
+    position: 'bottom',
+    page: 'presets',
   },
   {
-    target: null,
-    title: 'Bonus Hunt & Tournament 🎯🏆',
-    body: 'Use the Bonus Hunt and Tournament pages in the sidebar to fill in your session data. The matching widgets on the overlay update automatically in real-time.',
-    position: 'center',
+    target: '[data-tour="presets-shared"]',
+    title: '13. Presets — Load & Share',
+    body: 'Load any saved preset to instantly restore a layout. Admins can share presets so all users can pick from ready-made layouts in the Shared section.',
+    position: 'top',
+    page: 'presets',
   },
+
+  /* ── Submit Slots page ── */
+  {
+    target: '[data-tour="slots-page"]',
+    title: '14. Submit Slots 🎰',
+    body: 'Add new slot games to the database. Fill in the name, provider, RTP, volatility, and max win — then use the 🔍 Search button to find an image. An admin will review your submission.',
+    position: 'bottom',
+    page: 'slots',
+  },
+
+  /* ── OBS setup ── */
   {
     target: '[data-tour="obs-url"]',
-    title: 'Add to OBS — Full Overlay',
-    body: 'Copy the OBS URL from the sidebar and add it as a Browser Source in OBS. This loads your entire overlay in one source.',
+    title: '15. OBS — Full Overlay',
+    body: 'Copy this URL and add it as a Browser Source in OBS (width: 1920, height: 1080). This loads your entire overlay with all widgets in one source.',
     position: 'right',
+    page: 'widgets',
   },
   {
     target: null,
-    title: 'Single Widget in OBS',
-    body: 'Want just one widget? Open its settings (⚙️), expand "OBS Browser Source URL", and copy the link. Add it as a separate Browser Source in OBS.',
+    title: '16. OBS — Single Widget',
+    body: 'Want just one widget in OBS? Open its settings ⚙️ → expand "OBS Browser Source URL" → copy the link. Add it as a separate Browser Source.',
     position: 'center',
+    page: 'widgets',
   },
+
+  /* ── Finish ── */
   {
     target: null,
     title: 'You\'re all set! 🚀',
-    body: 'You can restart this tutorial anytime from the 🎓 Tutorial button in the sidebar. Now go build something awesome!',
+    body: 'You now know every feature. Restart this tour anytime from the 🎓 Tutorial button in the sidebar. Go build an awesome overlay!',
     position: 'center',
+    page: 'widgets',
   },
 ];
 
-export default function GuidedTutorial({ active, onClose }) {
+export default function GuidedTutorial({ active, onClose, goToPage }) {
   const [step, setStep] = useState(0);
   const [tooltipStyle, setTooltipStyle] = useState({});
   const [spotlightStyle, setSpotlightStyle] = useState(null);
-  const rafRef = useRef(null);
+  const [waitingForPage, setWaitingForPage] = useState(false);
 
   const current = STEPS[step];
   const isFirst = step === 0;
   const isLast = step === STEPS.length - 1;
 
+  /* Navigate to the correct page when step changes */
+  useEffect(() => {
+    if (!active || !current) return;
+    if (current.page && goToPage) {
+      goToPage(current.page);
+      // Give the page time to render before positioning
+      setWaitingForPage(true);
+      const timer = setTimeout(() => setWaitingForPage(false), 350);
+      return () => clearTimeout(timer);
+    }
+  }, [active, step]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* Position the tooltip relative to the target element */
   const positionTooltip = useCallback(() => {
-    if (!current) return;
+    if (!current || waitingForPage) return;
     const sel = current.target;
     if (!sel || current.position === 'center') {
       setSpotlightStyle(null);
@@ -117,6 +195,7 @@ export default function GuidedTutorial({ active, onClose }) {
 
     const el = document.querySelector(sel);
     if (!el) {
+      // Element not found — center the tooltip
       setSpotlightStyle(null);
       setTooltipStyle({
         position: 'fixed',
@@ -165,12 +244,11 @@ export default function GuidedTutorial({ active, onClose }) {
       style.transform = 'translateY(-50%)';
     }
 
-    // Clamp to viewport
     setTooltipStyle(style);
-  }, [current]);
+  }, [current, waitingForPage]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!active || waitingForPage) return;
     positionTooltip();
     const onResize = () => positionTooltip();
     window.addEventListener('resize', onResize);
@@ -179,7 +257,7 @@ export default function GuidedTutorial({ active, onClose }) {
       window.removeEventListener('resize', onResize);
       window.removeEventListener('scroll', onResize, true);
     };
-  }, [active, step, positionTooltip]);
+  }, [active, step, positionTooltip, waitingForPage]);
 
   const handleNext = useCallback(() => {
     if (isLast) {
@@ -197,7 +275,9 @@ export default function GuidedTutorial({ active, onClose }) {
   const handleSkip = useCallback(() => {
     localStorage.setItem(STORAGE_KEY, 'true');
     onClose();
-  }, [onClose]);
+    // Return to Widgets page on skip
+    if (goToPage) goToPage('widgets');
+  }, [onClose, goToPage]);
 
   /* Keyboard navigation */
   useEffect(() => {
@@ -218,6 +298,17 @@ export default function GuidedTutorial({ active, onClose }) {
 
   if (!active || !current) return null;
 
+  /* Category label for current step */
+  const pageLabels = {
+    widgets: 'Widgets',
+    bonus_hunt: 'Bonus Hunt',
+    tournament: 'Tournament',
+    library: 'Library',
+    presets: 'Presets',
+    slots: 'Submit Slots',
+  };
+  const pageLabel = pageLabels[current.page] || '';
+
   return (
     <div className="gt-overlay">
       {/* Dark backdrop with spotlight cutout */}
@@ -230,6 +321,7 @@ export default function GuidedTutorial({ active, onClose }) {
       <div className="gt-tooltip" style={tooltipStyle}>
         <div className="gt-tooltip-header">
           <span className="gt-tooltip-step">{step + 1} / {STEPS.length}</span>
+          {pageLabel && <span className="gt-tooltip-page">{pageLabel}</span>}
           <button className="gt-tooltip-skip" onClick={handleSkip}>Skip tour ✕</button>
         </div>
         <h3 className="gt-tooltip-title">{current.title}</h3>

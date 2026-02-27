@@ -111,7 +111,7 @@ export default function SlotSubmissions() {
   const deniedCount = submissions.filter(s => s.status === 'denied').length;
 
   return (
-    <div className="ss-page">
+    <div className="ss-page" data-tour="slots-page">
       {/* Header */}
       <div className="ss-header">
         <div className="ss-header-left">

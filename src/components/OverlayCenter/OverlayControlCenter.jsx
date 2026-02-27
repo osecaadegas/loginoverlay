@@ -48,7 +48,7 @@ function BonusHuntPanel({ widgets, saveWidget, addWidget, loading }) {
   }
 
   return (
-    <div className="oc-panel-section">
+    <div className="oc-panel-section" data-tour="bonus-hunt-page">
       <BonusHuntConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" />
     </div>
   );
@@ -77,7 +77,7 @@ function TournamentPanel({ widgets, saveWidget, addWidget, loading }) {
   }
 
   return (
-    <div className="oc-panel-section">
+    <div className="oc-panel-section" data-tour="tournament-page">
       <TournamentConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" />
     </div>
   );
@@ -504,7 +504,7 @@ export default function OverlayControlCenter() {
       </div>
 
       {/* Guided Tutorial Overlay */}
-      <GuidedTutorial active={showTutorial} onClose={() => setShowTutorial(false)} />
+      <GuidedTutorial active={showTutorial} onClose={() => setShowTutorial(false)} goToPage={setActivePanel} />
     </div>
   );
 }

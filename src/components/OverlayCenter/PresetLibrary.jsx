@@ -219,7 +219,7 @@ export default function PresetLibrary({
   const totalCount = personalCount + sharedCount;
 
   return (
-    <div className="pl-page">
+    <div className="pl-page" data-tour="presets-page">
       {/* Header */}
       <div className="pl-header">
         <div className="pl-header__top">
@@ -293,7 +293,7 @@ export default function PresetLibrary({
 
       {/* Grid */}
       {filtered.length === 0 ? (
-        <div className="pl-empty">
+        <div className="pl-empty" data-tour="presets-shared">
           <span className="pl-empty__icon">📭</span>
           <h3 className="pl-empty__title">No presets found</h3>
           <p className="pl-empty__text">
@@ -301,7 +301,7 @@ export default function PresetLibrary({
           </p>
         </div>
       ) : (
-        <div className="pl-grid">
+        <div className="pl-grid" data-tour="presets-shared">
           {filtered.map((preset, idx) => (
             <PresetCard
               key={preset.id || preset.name || idx}

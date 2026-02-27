@@ -193,7 +193,7 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
   }
 
   return (
-    <div className="bhl-panel">
+    <div className="bhl-panel" data-tour="library-page">
       {/* ── Header ── */}
       <div className="oc-panel-header">
         <h2 className="oc-panel-title">📚 Bonus Hunt Library</h2>
