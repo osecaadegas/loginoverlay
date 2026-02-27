@@ -1,15 +1,17 @@
 /**
  * SlotSubmissions.jsx — Premium users submit slots for admin approval.
  * Only add — no edit/delete of existing slots.
+ * Includes smart slot search: paste a URL or type a name to auto-fill fields.
  */
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { submitSlot, getMySubmissions } from '../../../services/pendingSlotService';
+import { analyzeSlotUrl, scrapeSlotMetadata, findSlotImage } from '../../../services/slotSearchService';
 import './SlotSubmissions.css';
 
 const EMPTY_FORM = {
   name: '', provider: '', image: '', rtp: '', volatility: '',
-  max_win_multiplier: '',
+  max_win_multiplier: '', slotUrl: '',
 };
 
 export default function SlotSubmissions() {
@@ -20,6 +22,9 @@ export default function SlotSubmissions() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState({ text: '', type: '' });
   const [showForm, setShowForm] = useState(false);
+  const [searchingImage, setSearchingImage] = useState(false);
+  const [analyzingUrl, setAnalyzingUrl] = useState(false);
+  const searchAbort = useRef(null);
 
   const loadSubmissions = useCallback(async () => {
     if (!user) return;
@@ -42,6 +47,88 @@ export default function SlotSubmissions() {
 
   const handleChange = (e) => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  /* ── Smart URL analysis: paste/blur a casino URL → auto-fill name, provider, image ── */
+  const handleUrlAnalysis = useCallback(async (url) => {
+    if (!url || !url.startsWith('http')) return;
+    setAnalyzingUrl(true);
+    try {
+      // 1. Regex-based extraction (instant)
+      const regex = await analyzeSlotUrl(url);
+      setForm(prev => ({
+        ...prev,
+        name: regex.name || prev.name,
+        provider: regex.provider || prev.provider,
+      }));
+
+      // 2. Scrape OG tags (slower, may have better image)
+      const meta = await scrapeSlotMetadata(url);
+      setForm(prev => {
+        const updated = { ...prev };
+        if (meta.name && !prev.name) updated.name = meta.name;
+        if (meta.imageUrl && !prev.image) updated.image = meta.imageUrl;
+        return updated;
+      });
+
+      // 3. If still no image, try Google Image search
+      const nameToSearch = regex.name || meta.name;
+      const provToSearch = regex.provider || '';
+      if (nameToSearch) {
+        setSearchingImage(true);
+        const img = await findSlotImage(nameToSearch, provToSearch);
+        if (img) {
+          setForm(prev => ({ ...prev, image: prev.image || img }));
+        }
+        setSearchingImage(false);
+      }
+    } catch (e) {
+      console.warn('[SlotSubmissions] URL analysis error:', e);
+    } finally {
+      setAnalyzingUrl(false);
+    }
+  }, []);
+
+  const handleUrlPaste = (e) => {
+    const pasted = (e.clipboardData || window.clipboardData).getData('text');
+    if (pasted?.startsWith('http')) {
+      setForm(prev => ({ ...prev, slotUrl: pasted }));
+      setTimeout(() => handleUrlAnalysis(pasted), 50);
+    }
+  };
+
+  const handleUrlBlur = () => {
+    if (form.slotUrl?.startsWith('http')) handleUrlAnalysis(form.slotUrl);
+  };
+
+  /* ── Image search: trigger when user blurs name field or clicks search btn ── */
+  const triggerImageSearch = useCallback(async (name, provider) => {
+    if (!name || name.length < 2) return;
+    if (searchAbort.current) searchAbort.current = true;
+    searchAbort.current = false;
+    setSearchingImage(true);
+    try {
+      const img = await findSlotImage(name, provider || '');
+      if (!searchAbort.current && img) {
+        setForm(prev => ({ ...prev, image: prev.image || img }));
+      }
+    } catch (_) { /* silent */ }
+    setSearchingImage(false);
+  }, []);
+
+  const handleNameBlur = () => {
+    if (form.name && !form.image) {
+      triggerImageSearch(form.name, form.provider);
+    }
+  };
+
+  const handleSearchClick = () => {
+    if (form.name) triggerImageSearch(form.name, form.provider);
+  };
+
+  const openGoogleImages = () => {
+    const q = `${form.name} ${form.provider} slot`.trim();
+    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}&tbm=isch`, '_blank');
   };
 
   const handleSubmit = async (e) => {
@@ -98,19 +185,63 @@ export default function SlotSubmissions() {
       {/* Submission form */}
       {showForm && (
         <form className="ss-form" onSubmit={handleSubmit}>
+          {/* URL auto-fill bar */}
+          <div className="ss-url-bar">
+            <label className="ss-url-label">🔗 Paste a casino URL to auto-fill</label>
+            <div className="ss-url-row">
+              <input
+                name="slotUrl"
+                value={form.slotUrl}
+                onChange={handleChange}
+                onPaste={handleUrlPaste}
+                onBlur={handleUrlBlur}
+                placeholder="https://stake.com/casino/games/gates-of-olympus …"
+                className="ss-url-input"
+              />
+              {analyzingUrl && <span className="ss-url-spinner">⏳ Analyzing…</span>}
+            </div>
+          </div>
+
           <div className="ss-form-grid">
             <div className="ss-field ss-field--required">
               <label>Name *</label>
-              <input name="name" value={form.name} onChange={handleChange} placeholder="e.g. Gates of Olympus" required />
+              <input name="name" value={form.name} onChange={handleChange} onBlur={handleNameBlur} placeholder="e.g. Gates of Olympus" required />
             </div>
             <div className="ss-field ss-field--required">
               <label>Provider *</label>
               <input name="provider" value={form.provider} onChange={handleChange} placeholder="e.g. Pragmatic Play" required />
             </div>
-            <div className="ss-field ss-field--required">
+            <div className="ss-field ss-field--required ss-field--wide ss-field--image">
               <label>Image URL *</label>
-              <input name="image" value={form.image} onChange={handleChange} placeholder="https://..." required />
+              <div className="ss-image-row">
+                <input name="image" value={form.image} onChange={handleChange} placeholder="https://… (auto-filled or paste)" required />
+                <button
+                  type="button"
+                  className="ss-search-btn"
+                  onClick={handleSearchClick}
+                  disabled={searchingImage || !form.name}
+                  title="Search for slot image"
+                >
+                  {searchingImage ? '⏳' : '🔍'}
+                </button>
+                <button
+                  type="button"
+                  className="ss-google-btn"
+                  onClick={openGoogleImages}
+                  disabled={!form.name}
+                  title="Open Google Images"
+                >
+                  🌐
+                </button>
+              </div>
+              {searchingImage && <span className="ss-search-hint">Searching for image…</span>}
             </div>
+            {/* Image preview */}
+            {form.image && (
+              <div className="ss-field ss-field--wide ss-image-preview-wrap">
+                <img src={form.image} alt="Preview" className="ss-image-preview" onError={(e) => { e.target.style.display = 'none'; }} />
+              </div>
+            )}
             <div className="ss-field ss-field--required">
               <label>RTP (%) *</label>
               <input name="rtp" type="number" step="0.01" min="0" max="100" value={form.rtp} onChange={handleChange} placeholder="96.50" required />
