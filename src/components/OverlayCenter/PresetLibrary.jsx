@@ -163,6 +163,7 @@ export default function PresetLibrary({
   globalPresets, sharedPresets,
   onLoadPreset, onDeletePreset,
   onSharePreset, onUnsharePreset,
+  onSavePreset, presetName, setPresetName, presetMsg,
 }) {
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all'); // all | personal | shared
@@ -228,6 +229,26 @@ export default function PresetLibrary({
         <p className="pl-header__subtitle">
           Browse, preview and load your overlay presets. Each card shows a live preview of how the overlay looks.
         </p>
+      </div>
+
+      {/* Save new preset */}
+      <div className="pl-save-bar">
+        <input
+          className="pl-save-bar__input"
+          type="text"
+          placeholder="Preset name…"
+          value={presetName || ''}
+          onChange={e => setPresetName?.(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') onSavePreset?.(); }}
+        />
+        <button
+          className="pl-save-bar__btn"
+          onClick={onSavePreset}
+          disabled={!(presetName || '').trim() || !widgets?.length}
+        >
+          ➕ Save New Preset
+        </button>
+        {presetMsg && <span className="pl-save-bar__msg">{presetMsg}</span>}
       </div>
 
       {/* Toolbar */}

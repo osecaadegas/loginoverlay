@@ -112,11 +112,26 @@ export default function OverlayControlCenter() {
 
   const loadGlobalPreset = useCallback(async (preset) => {
     if (!preset?.snapshot) return;
+
+    // Track which local widgets have been claimed so we don't double-match
+    const claimed = new Set();
+
     for (const snap of preset.snapshot) {
-      const existing = widgets.find(w => w.id === snap.id);
-      if (existing) {
+      // 1) Try exact id match (same user reloading their own preset)
+      let target = widgets.find(w => w.id === snap.id && !claimed.has(w.id));
+
+      // 2) Fall back to widget_type match (different user loading shared preset)
+      if (!target) {
+        target = widgets.find(
+          w => w.widget_type === snap.widget_type && !claimed.has(w.id)
+        );
+      }
+
+      if (target) {
+        claimed.add(target.id);
         await saveWidget({
-          ...existing,
+          ...target,
+          label: snap.label || target.label,
           config: snap.config,
           is_visible: snap.is_visible,
           position_x: snap.position_x,
@@ -126,11 +141,27 @@ export default function OverlayControlCenter() {
           z_index: snap.z_index,
           animation: snap.animation,
         });
+      } else {
+        // 3) Widget type doesn't exist yet — create it with preset data
+        const created = await addWidget(snap.widget_type, snap.config || {});
+        if (created) {
+          await saveWidget({
+            ...created,
+            label: snap.label || created.label,
+            is_visible: snap.is_visible,
+            position_x: snap.position_x,
+            position_y: snap.position_y,
+            width: snap.width,
+            height: snap.height,
+            z_index: snap.z_index,
+            animation: snap.animation,
+          });
+        }
       }
     }
     setPresetMsg('Loaded!');
     setTimeout(() => setPresetMsg(''), 2000);
-  }, [widgets, saveWidget]);
+  }, [widgets, saveWidget, addWidget]);
 
   const deleteGlobalPreset = useCallback(async (name) => {
     const updated = globalPresets.filter(p => p.name !== name);
@@ -277,6 +308,10 @@ export default function OverlayControlCenter() {
               onDeletePreset={deleteGlobalPreset}
               onSharePreset={sharePreset}
               onUnsharePreset={unsharePreset}
+              onSavePreset={saveGlobalPreset}
+              presetName={presetName}
+              setPresetName={setPresetName}
+              presetMsg={presetMsg}
             />
           )}
           {activePanel === 'preview' && (
