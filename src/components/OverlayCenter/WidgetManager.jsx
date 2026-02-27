@@ -657,6 +657,49 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   </label>
                 </div>
 
+                {/* ── Style Switcher for Bonus Hunt ── */}
+                {w.widget_type === 'bonus_hunt' && (
+                  <div className="wm-style-switcher">
+                    <div className="wm-style-switcher-label">🎨 Display Style</div>
+                    <div className="wm-style-switcher-grid">
+                      {[
+                        { id: 'v1', icon: '📊', label: 'Classic' },
+                        { id: 'v2', icon: '🌙', label: 'Sleek Dark' },
+                        { id: 'v3', icon: '🃏', label: 'Flip Card' },
+                      ].map(s => (
+                        <button key={s.id}
+                          className={`wm-style-switcher-btn ${(w.config?.displayStyle || 'v1') === s.id ? 'wm-style-switcher-btn--active' : ''}`}
+                          onClick={() => handleConfigChange(w, { ...w.config, displayStyle: s.id })}>
+                          <span className="wm-style-switcher-icon">{s.icon}</span>
+                          <span>{s.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Style Switcher for Tournament ── */}
+                {w.widget_type === 'tournament' && (
+                  <div className="wm-style-switcher">
+                    <div className="wm-style-switcher-label">🎨 Layout Mode</div>
+                    <div className="wm-style-switcher-grid">
+                      {[
+                        { id: 'grid',     icon: '⊞', label: 'Grid' },
+                        { id: 'showcase', icon: '🖼️', label: 'Showcase' },
+                        { id: 'vertical', icon: '📋', label: 'Vertical' },
+                        { id: 'bracket',  icon: '📊', label: 'Bracket' },
+                      ].map(s => (
+                        <button key={s.id}
+                          className={`wm-style-switcher-btn ${(w.config?.layout || 'grid') === s.id ? 'wm-style-switcher-btn--active' : ''}`}
+                          onClick={() => handleConfigChange(w, { ...w.config, layout: s.id })}>
+                          <span className="wm-style-switcher-icon">{s.icon}</span>
+                          <span>{s.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {/* Widget Config Panel */}
                 {ConfigPanel && (
                   <div className="wm-config-panel">

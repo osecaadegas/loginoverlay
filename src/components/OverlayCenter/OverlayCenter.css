@@ -1803,6 +1803,62 @@
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
 }
 
+/* ── Style Switcher (side panel) ── */
+.wm-style-switcher {
+  margin-top: 20px;
+  padding: 16px 20px;
+  background: #0f172a;
+  border-radius: 14px;
+  border: 1px solid rgba(139, 92, 246, 0.12);
+}
+
+.wm-style-switcher-label {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--oc-text-primary);
+  letter-spacing: 0.3px;
+  margin-bottom: 10px;
+}
+
+.wm-style-switcher-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+  gap: 6px;
+}
+
+.wm-style-switcher-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 6px;
+  border-radius: 10px;
+  border: 1px solid var(--oc-border);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--oc-text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.wm-style-switcher-btn:hover {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: rgba(139, 92, 246, 0.25);
+  color: var(--oc-text-primary);
+}
+
+.wm-style-switcher-btn--active {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.45);
+  color: #fff;
+  box-shadow: 0 0 10px rgba(139, 92, 246, 0.12);
+}
+
+.wm-style-switcher-icon {
+  font-size: 1.2rem;
+}
+
 /* Config Panel wrapper */
 .wm-config-panel {
   margin-top: 20px;
