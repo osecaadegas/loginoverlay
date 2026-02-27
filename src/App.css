@@ -69,8 +69,9 @@ body.sidebar-open {
 }
 
 /* No sidebar — full width, no left margin */
-.main-content--no-sidebar {
+.main-content.main-content--no-sidebar {
   margin-left: 0 !important;
+  padding-left: 0 !important;
 }
 
 /* Sidebar Toggle Button — Mobile Only */
