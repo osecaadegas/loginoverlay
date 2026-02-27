@@ -52,7 +52,51 @@ export default function SlotSubmissions() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  /* ── Smart URL analysis: paste/blur a casino URL → auto-fill name, provider, image ── */
+  /* ── Shared AI auto-fill: fetch RTP, provider, volatility, max win, image ── */
+  const autoFillInFlight = useRef(false);
+  const autoFillSlotData = useCallback(async (slotName, providerHint) => {
+    if (!slotName || slotName.length < 2) return;
+    if (autoFillInFlight.current) return;          // prevent duplicate parallel calls
+    autoFillInFlight.current = true;
+    setAiLoading(true);
+    try {
+      const ai = await fetchSlotAI(slotName);
+      if (ai) {
+        setForm(prev => ({
+          ...prev,
+          name:                ai.name             || prev.name,
+          provider:            ai.provider          || providerHint || prev.provider,
+          rtp:                 ai.rtp != null       ? String(ai.rtp)                 : prev.rtp,
+          volatility:          ai.volatility        || prev.volatility,
+          max_win_multiplier:  ai.max_win_multiplier != null ? String(ai.max_win_multiplier) : prev.max_win_multiplier,
+        }));
+        setDataSource(ai.source || 'gemini_ai');
+        const srcLabel  = ai.source === 'verified_database' ? '✅ Verified DB' : '🤖 AI';
+        const safeLabel = ai.twitch_safe === false ? ' ⚠️ Not Twitch-safe!' : ai.twitch_safe === true ? ' 🟢 Twitch-safe' : '';
+        flash(`${srcLabel}: ${ai.name || slotName} by ${ai.provider || '?'}${safeLabel}`);
+
+        // Also search for a safe image if we don't have one yet
+        const finalName     = ai.name     || slotName;
+        const finalProvider = ai.provider  || providerHint || '';
+        // Read current form image via a ref-like pattern (check after state flushes)
+        setTimeout(() => {
+          setForm(prev => {
+            if (!prev.image && finalName) triggerImageSearch(finalName, finalProvider);
+            return prev;
+          });
+        }, 0);
+      } else {
+        flash('AI could not find this slot.', 'error');
+      }
+    } catch (e) {
+      console.error('[SlotSubmissions] AI auto-fill error:', e);
+    } finally {
+      setAiLoading(false);
+      autoFillInFlight.current = false;
+    }
+  }, []);
+
+  /* ── Smart URL analysis: paste/blur a casino URL → auto-fill ALL fields ── */
   const handleUrlAnalysis = useCallback(async (url) => {
     if (!url || !url.startsWith('http')) return;
     setAnalyzingUrl(true);
@@ -74,23 +118,18 @@ export default function SlotSubmissions() {
         return updated;
       });
 
-      // 3. If still no image, try Google Image search
+      // 3. Auto-fill everything via AI (provider, RTP, volatility, max win, image)
       const nameToSearch = regex.name || meta.name;
-      const provToSearch = regex.provider || '';
+      const providerHint = regex.provider || '';
       if (nameToSearch) {
-        setSearchingImage(true);
-        const img = await findSlotImage(nameToSearch, provToSearch);
-        if (img) {
-          setForm(prev => ({ ...prev, image: prev.image || img }));
-        }
-        setSearchingImage(false);
+        await autoFillSlotData(nameToSearch, providerHint);
       }
     } catch (e) {
       console.warn('[SlotSubmissions] URL analysis error:', e);
     } finally {
       setAnalyzingUrl(false);
     }
-  }, []);
+  }, [autoFillSlotData]);
 
   const handleUrlPaste = (e) => {
     const pasted = (e.clipboardData || window.clipboardData).getData('text');
@@ -131,7 +170,10 @@ export default function SlotSubmissions() {
   }, []);
 
   const handleNameBlur = () => {
-    if (form.name && !form.image) {
+    // Auto-fill ALL fields when name is typed & we're still missing data
+    if (form.name && form.name.length >= 2 && (!form.rtp || !form.provider || !form.max_win_multiplier)) {
+      autoFillSlotData(form.name, form.provider);
+    } else if (form.name && !form.image) {
       triggerImageSearch(form.name, form.provider);
     }
   };
@@ -145,42 +187,13 @@ export default function SlotSubmissions() {
     window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}&tbm=isch`, '_blank');
   };
 
-  /* ── AI auto-fill: send name to Gemini, fill provider + RTP + volatility + max win ── */
-  const handleAiFill = async () => {
+  /* ── AI auto-fill button: reuses shared autoFillSlotData ── */
+  const handleAiFill = () => {
     if (!form.name || form.name.length < 2) {
       flash('Type a slot name first.', 'error');
       return;
     }
-    setAiLoading(true);
-    try {
-      const ai = await fetchSlotAI(form.name);
-      if (!ai) {
-        flash('AI could not find this slot.', 'error');
-        return;
-      }
-      setForm(prev => ({
-        ...prev,
-        name: ai.name || prev.name,
-        provider: ai.provider || prev.provider,
-        rtp: ai.rtp != null ? String(ai.rtp) : prev.rtp,
-        volatility: ai.volatility || prev.volatility,
-        max_win_multiplier: ai.max_win_multiplier != null ? String(ai.max_win_multiplier) : prev.max_win_multiplier,
-      }));
-      setDataSource(ai.source || 'gemini_ai');
-      const srcLabel = ai.source === 'verified_database' ? '✅ Verified DB' : '🤖 AI';
-      const safeLabel = ai.twitch_safe === false ? ' ⚠️ Not Twitch-safe!' : ai.twitch_safe === true ? ' 🟢 Twitch-safe' : '';
-      flash(`${srcLabel}: ${ai.name || form.name} by ${ai.provider || '?'}${safeLabel}`);
-
-      // Also trigger image search with AI-returned name/provider
-      if (!form.image && (ai.name || form.name)) {
-        triggerImageSearch(ai.name || form.name, ai.provider || form.provider);
-      }
-    } catch (e) {
-      console.error('[SlotSubmissions] AI error:', e);
-      flash('AI lookup failed.', 'error');
-    } finally {
-      setAiLoading(false);
-    }
+    autoFillSlotData(form.name, form.provider);
   };
 
   const handleSubmit = async (e) => {
