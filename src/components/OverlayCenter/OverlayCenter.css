@@ -3387,6 +3387,11 @@
   position: relative;
 }
 
+/* ── Empty state (activated but no live data) ── */
+.rtp-stats-inner--empty {
+  opacity: 0.5;
+}
+
 .rtp-stats-preview-badge {
   position: absolute;
   top: -8px;

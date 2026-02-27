@@ -143,21 +143,21 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
 
   /* ── Determine what to display ── */
   const isLive = bonusOpening && !!currentBonus;
-  const shouldShow = isLive || previewMode;
 
-  /* ── Hide entirely only when NOT in preview AND not live ── */
-  if (!shouldShow) return null;
-
-  /* ── Demo data for preview mode when no live slot ── */
+  /* ── Demo data for preview / empty state ── */
   const demoSlotName = 'SWEET BONANZA';
   const demoProvider = 'PRAGMATIC PLAY';
   const demoInfo = { rtp: 96.48, max_win_multiplier: 21175, volatility: 'high' };
 
-  const displaySlotName = isLive ? slotName : demoSlotName;
+  /* ── When not live, show empty bar with dashes (widget stays visible in OBS) ── */
+  const showDemoData = previewMode && !isLive;
+  const showEmptyState = !isLive && !previewMode;
+
+  const displaySlotName = isLive ? slotName : (showDemoData ? demoSlotName : '—');
   const displayProvider = isLive
     ? (slotInfo?.provider || currentBonus?.slot?.provider || '')
-    : demoProvider;
-  const displayInfo = isLive ? slotInfo : demoInfo;
+    : (showDemoData ? demoProvider : '');
+  const displayInfo = isLive ? slotInfo : (showDemoData ? demoInfo : null);
 
   const rootStyle = {
     fontFamily,
@@ -187,7 +187,7 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
 
   return (
     <div className="oc-widget-inner rtp-stats-bar" style={rootStyle}>
-      <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''}`}>
+      <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''} ${showEmptyState ? 'rtp-stats-inner--empty' : ''}`}>
 
         {/* Preview badge */}
         {!isLive && previewMode && (
