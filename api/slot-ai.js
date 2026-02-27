@@ -33,10 +33,12 @@ async function searchSlotsDB(name) {
   const norm = name.trim();
 
   try {
+    const cols = 'id, name, provider, image, rtp, volatility, max_win_multiplier, theme, features';
+
     // 1. Exact match (case-insensitive)
     let { data } = await supabase
       .from('slots')
-      .select('name, provider, image, rtp, volatility, max_win_multiplier, theme, features')
+      .select(cols)
       .ilike('name', norm)
       .limit(1);
 
@@ -45,7 +47,7 @@ async function searchSlotsDB(name) {
     // 2. Contains match (e.g. "gold party" matches "Gold Party")
     ({ data } = await supabase
       .from('slots')
-      .select('name, provider, image, rtp, volatility, max_win_multiplier, theme, features')
+      .select(cols)
       .ilike('name', `%${norm}%`)
       .limit(5));
 
@@ -62,7 +64,7 @@ async function searchSlotsDB(name) {
       const pattern = `%${words[0]}%${words[1]}%`;
       ({ data } = await supabase
         .from('slots')
-        .select('name, provider, image, rtp, volatility, max_win_multiplier, theme, features')
+        .select(cols)
         .ilike('name', pattern)
         .limit(5));
 
@@ -81,6 +83,7 @@ async function searchSlotsDB(name) {
 
 function formatDBSlot(row) {
   return {
+    _dbId: row.id,       // internal — used to update the row if we enrich missing data
     name: row.name,
     provider: row.provider,
     image: row.image || null,
@@ -622,8 +625,64 @@ export default async function handler(req, res) {
     // ── Step 1: Query Supabase slots table (8000+ real slots) ──
     const dbSlot = await searchSlotsDB(name);
     if (dbSlot) {
-      console.log(`[slot-ai] Supabase hit: "${name}" → ${dbSlot.name} by ${dbSlot.provider}`);
-      return res.status(200).json(dbSlot);
+      const missingRtp = dbSlot.rtp == null;
+      const missingMaxWin = dbSlot.max_win_multiplier == null;
+      const missingVolatility = dbSlot.volatility == null;
+
+      // If slot exists but is missing RTP / max win / volatility → ask Gemini for just those
+      if ((missingRtp || missingMaxWin || missingVolatility) && apiKey) {
+        console.log(`[slot-ai] Supabase hit "${dbSlot.name}" but missing: ${[missingRtp && 'rtp', missingMaxWin && 'max_win', missingVolatility && 'volatility'].filter(Boolean).join(', ')} → enriching via Gemini`);
+
+        const enrichPrompt = `You are a slot game data expert. I need the official data for the online slot "${dbSlot.name}" by ${dbSlot.provider || 'unknown provider'}.
+Return ONLY a raw JSON object (no markdown, no backticks):
+{
+  ${missingRtp ? '"rtp": 96.50,' : ''}
+  ${missingMaxWin ? '"max_win_multiplier": 5000,' : ''}
+  ${missingVolatility ? '"volatility": "high",' : ''}
+  "found": true
+}
+RULES:
+- rtp = official default RTP as a number (e.g. 96.50)
+- max_win_multiplier = official max win in x (e.g. 5000 means 5000x)
+- volatility = exactly "low", "medium", "high", or "very_high"
+- If unsure about a value, use null — DO NOT GUESS`;
+
+        const enriched = await askGemini(apiKey, enrichPrompt);
+        if (enriched) {
+          const updates = {};
+          if (missingRtp && enriched.rtp != null) {
+            const rtp = typeof enriched.rtp === 'number' ? enriched.rtp : parseFloat(enriched.rtp);
+            if (rtp && rtp > 0 && rtp <= 100) { dbSlot.rtp = rtp; updates.rtp = rtp; }
+          }
+          if (missingMaxWin && enriched.max_win_multiplier != null) {
+            const mw = typeof enriched.max_win_multiplier === 'number' ? enriched.max_win_multiplier : parseFloat(enriched.max_win_multiplier);
+            if (mw && mw > 0) { dbSlot.max_win_multiplier = mw; updates.max_win_multiplier = mw; }
+          }
+          if (missingVolatility && enriched.volatility) {
+            const vol = normalizeVolatility(enriched.volatility);
+            if (vol) { dbSlot.volatility = vol; updates.volatility = vol; }
+          }
+
+          // Persist enriched values back to the DB so next lookup is instant
+          if (Object.keys(updates).length > 0 && dbSlot._dbId) {
+            const supabase = getSupabase();
+            if (supabase) {
+              const { error } = await supabase
+                .from('slots')
+                .update(updates)
+                .eq('id', dbSlot._dbId);
+              if (error) console.error('[slot-ai] DB update failed:', error.message);
+              else console.log(`[slot-ai] Updated "${dbSlot.name}" in DB:`, updates);
+            }
+          }
+        }
+      } else {
+        console.log(`[slot-ai] Supabase hit: "${name}" → ${dbSlot.name} by ${dbSlot.provider} (complete)`);
+      }
+
+      // Strip internal _dbId before sending to client
+      const { _dbId, ...clientSlot } = dbSlot;
+      return res.status(200).json(clientSlot);
     }
 
     // ── Step 2: Check hardcoded verified database (instant fallback) ──
