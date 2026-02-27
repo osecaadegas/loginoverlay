@@ -146,7 +146,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   return (
     <div className="oc-widgets-panel">
       <div className="oc-panel-header">
-        <h2 className="oc-panel-title">🧩 Widgets</h2>
+        <div>
+          <h2 className="oc-panel-title">🧩 Widgets</h2>
+          <p className="oc-panel-subtitle">Add, remove, and customize your stream overlay elements. Click a widget to expand its settings.</p>
+        </div>
         <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           {syncMsg && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>{syncMsg}</span>}
           <button
@@ -185,7 +188,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
       {/* Widget List */}
       {widgets.length === 0 ? (
         <div className="oc-empty">
-          <p>No widgets yet. Click <strong>+ Add Widget</strong> to get started.</p>
+          <div className="oc-empty-icon">🧩</div>
+          <p><strong>No widgets yet</strong></p>
+          <p>Click <strong>+ Add Widget</strong> above to add your first overlay element like a Bonus Hunt tracker, Navbar, Chat, or Stats panel.</p>
         </div>
       ) : (
         <div className="oc-widget-list">
@@ -204,6 +209,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   <div className="oc-wcard-info">
                     <span className="oc-wcard-icon">{def?.icon || '📦'}</span>
                     <span className="oc-wcard-label">{w.label || def?.label || w.widget_type}</span>
+                    <span className={`oc-wcard-status ${w.is_visible ? 'oc-wcard-status--live' : 'oc-wcard-status--hidden'}`}>
+                      {w.is_visible ? '● LIVE' : '○ Hidden'}
+                    </span>
                     <span className={`oc-wcard-chevron ${isEditing ? 'oc-wcard-chevron--open' : ''}`}>▸</span>
                   </div>
                   <div className="oc-wcard-actions">

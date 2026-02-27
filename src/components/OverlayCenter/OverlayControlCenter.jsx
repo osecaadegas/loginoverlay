@@ -332,19 +332,24 @@ export default function OverlayControlCenter() {
               onClick={() => { navigate('/offers'); setSidebarOpen(false); }}
             >
               <span className="oc-sidebar-btn-icon">🏠</span>
-              <span className="oc-sidebar-btn-label">Home</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Home</span>
+                <span className="oc-sidebar-btn-desc">Back to main site</span>
+              </div>
             </button>
+
+            <div className="oc-sidebar-divider-label">Stream Overlay</div>
 
             {/* Panel tabs */}
             {[
-              { key: 'widgets', icon: '🧩', label: 'Widgets' },
-              { key: 'bonus_hunt', icon: '🎯', label: 'Bonus Hunt' },
-              { key: 'tournament', icon: '🏆', label: 'Tournament' },
-              { key: 'library', icon: '📚', label: 'Library' },
-              { key: 'presets', icon: '💾', label: 'Presets' },
-              { key: 'preview', icon: '👁️', label: 'Preview' },
-              ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots' }] : []),
-              ...(isAdmin ? [{ key: 'approvals', icon: '🛡️', label: 'Approvals' }] : []),
+              { key: 'widgets', icon: '🧩', label: 'Widgets', desc: 'Add & configure overlays' },
+              { key: 'bonus_hunt', icon: '🎯', label: 'Bonus Hunt', desc: 'Manage hunt sessions' },
+              { key: 'tournament', icon: '🏆', label: 'Tournament', desc: 'Run slot battles' },
+              { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
+              { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
+              { key: 'preview', icon: '👁️', label: 'Preview', desc: 'See your overlay live' },
+              ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
+              ...(isAdmin ? [{ key: 'approvals', icon: '🛡️', label: 'Approvals', desc: 'Review submissions' }] : []),
             ].map(tab => (
               <button
                 key={tab.key}
@@ -352,7 +357,10 @@ export default function OverlayControlCenter() {
                 onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
               >
                 <span className="oc-sidebar-btn-icon">{tab.icon}</span>
-                <span className="oc-sidebar-btn-label">{tab.label}</span>
+                <div className="oc-sidebar-btn-text">
+                  <span className="oc-sidebar-btn-label">{tab.label}</span>
+                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
+                </div>
               </button>
             ))}
           </nav>
@@ -394,6 +402,37 @@ export default function OverlayControlCenter() {
 
         {/* ─── MAIN CONTENT ─── */}
         <main className="oc-main">
+          {/* Quick-start steps for new users */}
+          {activePanel === 'widgets' && widgets.length === 0 && (
+            <div className="oc-welcome-card">
+              <h2 className="oc-welcome-title">Welcome to your Overlay Center! 🎉</h2>
+              <p className="oc-welcome-sub">Get your stream overlay running in 3 easy steps:</p>
+              <div className="oc-welcome-steps">
+                <div className="oc-welcome-step">
+                  <span className="oc-welcome-step-num">1</span>
+                  <div>
+                    <strong>Add a widget</strong>
+                    <span>Click "+ Add Widget" above to add your first overlay element</span>
+                  </div>
+                </div>
+                <div className="oc-welcome-step">
+                  <span className="oc-welcome-step-num">2</span>
+                  <div>
+                    <strong>Customize it</strong>
+                    <span>Click a widget to expand it and change colors, text, and layout</span>
+                  </div>
+                </div>
+                <div className="oc-welcome-step">
+                  <span className="oc-welcome-step-num">3</span>
+                  <div>
+                    <strong>Add to OBS</strong>
+                    <span>Copy the OBS URL from the sidebar and add it as a Browser Source</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {activePanel === 'widgets' && (
             <WidgetManager
               widgets={widgets}
