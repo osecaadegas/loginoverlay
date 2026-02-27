@@ -301,6 +301,28 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     setSelectedPreviewId(id);
   }, []);
 
+  /* ── Arrow-key nudge for selected widget (1px per press, 10px with Shift) ── */
+  useEffect(() => {
+    if (!selectedPreviewId) return;
+    function onKeyDown(e) {
+      const delta = e.shiftKey ? 10 : 1;
+      let dx = 0, dy = 0;
+      switch (e.key) {
+        case 'ArrowLeft':  dx = -delta; break;
+        case 'ArrowRight': dx = delta;  break;
+        case 'ArrowUp':    dy = -delta; break;
+        case 'ArrowDown':  dy = delta;  break;
+        default: return;
+      }
+      e.preventDefault();
+      const w = widgets.find(w => w.id === selectedPreviewId);
+      if (!w) return;
+      onSave({ ...w, position_x: Math.max(0, w.position_x + dx), position_y: Math.max(0, w.position_y + dy) });
+    }
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selectedPreviewId, widgets, onSave]);
+
   const handlePreviewMove = useCallback((id, newX, newY) => {
     const w = widgets.find(w => w.id === id);
     if (!w) return;
