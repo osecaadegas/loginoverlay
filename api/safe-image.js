@@ -147,9 +147,14 @@ export default async function handler(req, res) {
   if (!name) return res.status(400).json({ error: 'Provide "name"' });
 
   try {
-    const query = `${name} ${provider || ''} online slot game logo`.trim();
-    // SafeSearch ON → Google filters out explicit results server-side
-    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch&safe=active`;
+    // Build a slot-specific search query — always include provider to disambiguate controversial names
+    const provStr = provider || '';
+    const query = provStr
+      ? `"${provStr}" "${name}" slot game`
+      : `"${name}" online slot game logo`;
+    // SafeSearch OFF for slot searches — we do our own AI validation instead
+    // (SafeSearch blocks legitimate slots with edgy names like "Golden Shower", "Mental")
+    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`;
 
     // Server-side fetch — no CORS issues
     const googleRes = await fetch(googleUrl, {

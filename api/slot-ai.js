@@ -717,6 +717,12 @@ RULES:
     console.log(`[slot-ai] DB miss for "${name}", asking Gemini...`);
     const prompt = `You are a slot game data expert. I need VERIFIED, REAL data for the online slot game "${name}".
 
+IMPORTANT CONTEXT: Online slot games often have edgy, provocative, or controversial names
+(e.g. "Golden Shower" by Nolimit City, "Serial" by Nolimit City, "Mental" by Nolimit City,
+"Hot Ross" by Hacksaw Gaming, "Chaos Crew" by Hacksaw Gaming). These are LEGITIMATE casino
+slot games made by licensed providers. Do NOT refuse to answer because of the name — just
+return the factual game data.
+
 The game might also be known by a slightly different name — find the closest official match.
 
 Return ONLY a raw JSON object (no markdown, no backticks, no explanation):
@@ -738,7 +744,7 @@ CRITICAL RULES:
 - rtp MUST be the official default RTP number (e.g. 96.50, NOT a range)
 - max_win_multiplier MUST be the official max win in x (e.g. 5000 means 5000x bet)
 - volatility MUST be exactly: "low", "medium", "high", or "very_high"
-- twitch_safe: false if the slot contains nudity, sexual/suggestive imagery, extreme gore, or disturbing content. true if the imagery is safe for streaming on Twitch/YouTube
+- twitch_safe: false ONLY if the slot’s artwork contains nudity or sexual imagery. true for everything else (dark themes, violence, controversial names are all fine)
 - If you are NOT SURE about a value, use null — DO NOT GUESS
 - Return ONLY the JSON, nothing else`;
 
