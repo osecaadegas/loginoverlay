@@ -54,6 +54,8 @@ export default function SlotSubmissions() {
 
   /* ── Shared AI auto-fill: fetch RTP, provider, volatility, max win, image ── */
   const autoFillInFlight = useRef(false);
+  const lastAiName = useRef('');   // track which name was last AI-filled
+
   const autoFillSlotData = useCallback(async (slotName, providerHint) => {
     if (!slotName || slotName.length < 2) return;
     if (autoFillInFlight.current) return;          // prevent duplicate parallel calls
@@ -61,35 +63,38 @@ export default function SlotSubmissions() {
     setAiLoading(true);
     try {
       const ai = await fetchSlotAI(slotName);
-      if (ai) {
-        setForm(prev => ({
-          ...prev,
-          name:                ai.name             || prev.name,
-          provider:            ai.provider          || providerHint || prev.provider,
-          rtp:                 ai.rtp != null       ? String(ai.rtp)                 : prev.rtp,
-          volatility:          ai.volatility        || prev.volatility,
-          max_win_multiplier:  ai.max_win_multiplier != null ? String(ai.max_win_multiplier) : prev.max_win_multiplier,
-        }));
-        setDataSource(ai.source || 'gemini_ai');
-        const srcLabel  = ai.source === 'verified_database' ? '✅ Verified DB' : '🤖 AI';
-        const safeLabel = ai.twitch_safe === false ? ' ⚠️ Not Twitch-safe!' : ai.twitch_safe === true ? ' 🟢 Twitch-safe' : '';
-        flash(`${srcLabel}: ${ai.name || slotName} by ${ai.provider || '?'}${safeLabel}`);
-
-        // Also search for a safe image if we don't have one yet
-        const finalName     = ai.name     || slotName;
-        const finalProvider = ai.provider  || providerHint || '';
-        // Read current form image via a ref-like pattern (check after state flushes)
-        setTimeout(() => {
-          setForm(prev => {
-            if (!prev.image && finalName) triggerImageSearch(finalName, finalProvider);
-            return prev;
-          });
-        }, 0);
-      } else {
+      // Skip if API returned not_found or error
+      if (!ai || ai.source === 'not_found' || ai.error) {
         flash('AI could not find this slot.', 'error');
+        return;
       }
+      lastAiName.current = slotName.toLowerCase().trim();
+      setForm(prev => ({
+        ...prev,
+        name:                ai.name             || prev.name,
+        provider:            ai.provider          || providerHint || prev.provider,
+        rtp:                 ai.rtp != null       ? String(ai.rtp)                 : prev.rtp,
+        volatility:          ai.volatility        || prev.volatility,
+        max_win_multiplier:  ai.max_win_multiplier != null ? String(ai.max_win_multiplier) : prev.max_win_multiplier,
+      }));
+      setDataSource(ai.source || 'gemini_ai');
+      const srcLabel  = ai.source === 'verified_database' ? '✅ Verified DB' : '🤖 AI';
+      const safeLabel = ai.twitch_safe === false ? ' ⚠️ Not Twitch-safe!' : ai.twitch_safe === true ? ' 🟢 Twitch-safe' : '';
+      flash(`${srcLabel}: ${ai.name || slotName} by ${ai.provider || '?'}${safeLabel}`);
+
+      // Also search for a safe image if we don't have one yet
+      const finalName     = ai.name     || slotName;
+      const finalProvider = ai.provider  || providerHint || '';
+      // Read current form image via a ref-like pattern (check after state flushes)
+      setTimeout(() => {
+        setForm(prev => {
+          if (!prev.image && finalName) triggerImageSearch(finalName, finalProvider);
+          return prev;
+        });
+      }, 0);
     } catch (e) {
       console.error('[SlotSubmissions] AI auto-fill error:', e);
+      flash('AI lookup failed.', 'error');
     } finally {
       setAiLoading(false);
       autoFillInFlight.current = false;
@@ -170,10 +175,12 @@ export default function SlotSubmissions() {
   }, []);
 
   const handleNameBlur = () => {
-    // Auto-fill ALL fields when name is typed & we're still missing data
-    if (form.name && form.name.length >= 2 && (!form.rtp || !form.provider || !form.max_win_multiplier)) {
+    if (!form.name || form.name.length < 2) return;
+    const currentName = form.name.toLowerCase().trim();
+    // Always re-fill if name changed since last AI fill, or if key fields are still empty
+    if (currentName !== lastAiName.current || !form.rtp || !form.provider || !form.max_win_multiplier || !form.volatility) {
       autoFillSlotData(form.name, form.provider);
-    } else if (form.name && !form.image) {
+    } else if (!form.image) {
       triggerImageSearch(form.name, form.provider);
     }
   };
@@ -218,6 +225,7 @@ export default function SlotSubmissions() {
       setShowForm(false);
       setImageSafety(null);
       setDataSource(null);
+      lastAiName.current = '';
       loadSubmissions();
     } catch (err) {
       console.error('[SlotSubmissions] submit error:', err);

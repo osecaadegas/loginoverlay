@@ -210,13 +210,27 @@ function findKnownSlot(name) {
   // Exact match
   if (KNOWN_SLOTS[norm]) return { ...KNOWN_SLOTS[norm], source: 'verified_database' };
 
-  // Partial match
+  // Partial / substring match
   for (const [key, data] of Object.entries(KNOWN_SLOTS)) {
     if (norm.includes(key) || key.includes(norm)) {
       return { ...data, source: 'verified_database' };
     }
   }
-  return null;
+
+  // Word-overlap match (handles "wanted dead or wild" ↔ "wanted dead or a wild")
+  const normWords = norm.split(' ').filter(w => w.length > 1);
+  let bestMatch = null;
+  let bestScore = 0;
+  for (const [key, data] of Object.entries(KNOWN_SLOTS)) {
+    const keyWords = key.split(' ').filter(w => w.length > 1);
+    const overlap = normWords.filter(w => keyWords.includes(w)).length;
+    const score = overlap / Math.max(normWords.length, keyWords.length);
+    if (score > bestScore && score >= 0.65) {   // at least 65% word overlap
+      bestScore = score;
+      bestMatch = { ...data, source: 'verified_database' };
+    }
+  }
+  return bestMatch;
 }
 
 async function askGemini(apiKey, prompt) {
@@ -242,15 +256,24 @@ async function askGemini(apiKey, prompt) {
   return JSON.parse(raw);
 }
 
+function normalizeVolatility(v) {
+  if (typeof v !== 'string') return null;
+  const low = v.toLowerCase().replace(/[^a-z]/g, '');
+  if (low === 'low') return 'low';
+  if (low === 'medium' || low === 'mediumhigh' || low === 'med') return 'medium';
+  if (low === 'veryhigh' || low === 'extreme') return 'very_high';
+  if (low === 'high') return 'high';
+  return null;
+}
+
 function sanitize(parsed) {
   return {
     name: typeof parsed.name === 'string' ? parsed.name : null,
     provider: typeof parsed.provider === 'string' ? parsed.provider : null,
-    rtp: typeof parsed.rtp === 'number' ? parsed.rtp : null,
-    volatility: ['low', 'medium', 'high', 'very_high'].includes(parsed.volatility)
-      ? parsed.volatility : null,
+    rtp: typeof parsed.rtp === 'number' ? parsed.rtp : (typeof parsed.rtp === 'string' ? parseFloat(parsed.rtp) || null : null),
+    volatility: normalizeVolatility(parsed.volatility),
     max_win_multiplier: typeof parsed.max_win_multiplier === 'number'
-      ? parsed.max_win_multiplier : null,
+      ? parsed.max_win_multiplier : (typeof parsed.max_win_multiplier === 'string' ? parseFloat(parsed.max_win_multiplier) || null : null),
     features: Array.isArray(parsed.features) ? parsed.features : [],
     theme: typeof parsed.theme === 'string' ? parsed.theme : null,
     release_year: typeof parsed.release_year === 'number' ? parsed.release_year : null,
