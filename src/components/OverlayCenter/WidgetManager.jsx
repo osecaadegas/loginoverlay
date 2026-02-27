@@ -1,8 +1,31 @@
 /**
  * WidgetManager.jsx — Widget list + add/remove/configure widgets
  */
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
+
+/* ── Inline preview slot — renders the actual widget component ── */
+const LiveSlot = memo(function LiveSlot({ widget, theme, allWidgets, isHighlighted }) {
+  const def = getWidgetDef(widget.widget_type);
+  const Component = def?.component;
+  if (!Component) return null;
+
+  return (
+    <div
+      className={`wm-live-slot ${isHighlighted ? 'wm-live-slot--active' : ''}`}
+      style={{
+        position: 'absolute',
+        left: widget.position_x,
+        top: widget.position_y,
+        width: widget.width,
+        height: widget.height,
+        zIndex: widget.z_index || 1,
+      }}
+    >
+      <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+    </div>
+  );
+});
 
 /* ── Per-widget sync mapping from navbar config ── */
 function buildSyncedConfig(widgetType, currentConfig, nb) {
@@ -89,8 +112,29 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
   const [editingId, setEditingId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
+  const previewRef = useRef(null);
+  const [previewScale, setPreviewScale] = useState(0.35);
+
+  const CANVAS_W = theme?.canvas_width || 1920;
+  const CANVAS_H = theme?.canvas_height || 1080;
+
+  /* Dynamic scale for live preview */
+  useEffect(() => {
+    if (!showPreview || !previewRef.current) return;
+    function calcScale() {
+      const avail = previewRef.current.getBoundingClientRect().width - 4;
+      setPreviewScale(Math.min(avail / CANVAS_W, 0.55));
+    }
+    calcScale();
+    const ro = new ResizeObserver(calcScale);
+    ro.observe(previewRef.current);
+    return () => ro.disconnect();
+  }, [showPreview, CANVAS_W]);
+
+  const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
 
   const copyWidgetUrl = useCallback((widgetId) => {
     if (!overlayToken) return;
@@ -155,6 +199,13 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         </div>
         <div className="wm-page-header-actions">
           {syncMsg && <span className="wm-sync-toast">{syncMsg}</span>}
+          <button
+            className={`wm-btn ${showPreview ? 'wm-btn--preview-on' : 'wm-btn--ghost'}`}
+            onClick={() => setShowPreview(v => !v)}
+            title="Toggle live overlay preview"
+          >
+            👁️ {showPreview ? 'Hide Preview' : 'Live Preview'}
+          </button>
           <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically">
             🔗 Sync Colors
           </button>
@@ -163,6 +214,54 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           </button>
         </div>
       </div>
+
+      {/* ──── Live Overlay Preview ──── */}
+      {showPreview && (
+        <div className="wm-live-preview" ref={previewRef}>
+          <div className="wm-live-header">
+            <span className="wm-live-title">
+              <span className="wm-live-dot" />
+              Live Preview
+            </span>
+            <span className="wm-live-dims">{CANVAS_W} × {CANVAS_H} &middot; {Math.round(previewScale * 100)}%</span>
+          </div>
+          <div
+            className="wm-live-canvas-wrap"
+            style={{
+              width: CANVAS_W * previewScale,
+              height: CANVAS_H * previewScale,
+            }}
+          >
+            <div
+              className="wm-live-canvas"
+              style={{
+                width: CANVAS_W,
+                height: CANVAS_H,
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              {visibleWidgets.length === 0 && (
+                <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
+              )}
+              {visibleWidgets.map(w => (
+                <LiveSlot
+                  key={w.id}
+                  widget={w}
+                  theme={theme}
+                  allWidgets={widgets}
+                  isHighlighted={w.id === editingId}
+                />
+              ))}
+            </div>
+          </div>
+          <p className="wm-live-hint">
+            {editingId
+              ? '🟣 The highlighted widget is the one you\'re editing. Drag the sliders below to see it move in real-time.'
+              : 'Click a widget card below to start editing — it will be highlighted here.'}
+          </p>
+        </div>
+      )}
 
       {/* ──── Quick Start Tip ──── */}
       {widgets.length === 0 && !showAddMenu && (
