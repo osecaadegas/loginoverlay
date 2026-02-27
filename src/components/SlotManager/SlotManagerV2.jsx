@@ -109,14 +109,11 @@ const DropdownFilter = memo(({ label, options, selected, onChange }) => {
 const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew }) => {
   const [form, setForm] = useState(slot || {});
   const [saving, setSaving] = useState(false);
-  const [fetching, setFetching] = useState(false);
-  const [fetchResult, setFetchResult] = useState(null);
   const [tab, setTab] = useState('basic');
   const nameRef = useRef(null);
 
   useEffect(() => {
     setForm(slot || {});
-    setFetchResult(null);
     setTab('basic');
     if (isNew) setTimeout(() => nameRef.current?.focus(), 100);
   }, [slot, isNew]);
@@ -133,57 +130,6 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
   const onKey = (e) => {
     if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) save();
     if (e.key === 'Escape') onClose();
-  };
-
-  // AI Fetch — uses /api/slot-ai (Gemini + DB pipeline)
-  const aiFetch = async () => {
-    if (!form.name) return alert('Enter a slot name first.');
-    setFetching(true);
-    setFetchResult(null);
-    try {
-      const res = await fetch('/api/slot-ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: form.name, provider: form.provider }),
-      });
-      const json = await res.json();
-      if (json.source === 'blocked') {
-        setFetchResult({ success: false, message: 'Search blocked — not appropriate for streaming platforms.' });
-      } else if (json.source === 'not_found' || json.error) {
-        setFetchResult({ success: false, message: json.error || 'No data found for this slot.' });
-      } else if (json.name) {
-        // slot-ai returns a flat object with name, provider, rtp, etc.
-        const confidence = json.source?.includes('database') ? 'high' : json.source?.includes('google') ? 'medium' : 'medium';
-        setFetchResult({ success: true, data: json, source: json.source, confidence, applied: false });
-      } else {
-        setFetchResult({ success: false, message: 'No data found for this slot.' });
-      }
-    } catch (err) {
-      setFetchResult({ success: false, message: err.message });
-    } finally {
-      setFetching(false);
-    }
-  };
-
-  const applyFetched = () => {
-    if (!fetchResult?.data) return;
-    const d = fetchResult.data;
-    setForm(prev => ({
-      ...prev,
-      ...(d.provider && !prev.provider ? { provider: d.provider } : {}),
-      ...(d.rtp ? { rtp: d.rtp } : {}),
-      ...(d.volatility ? { volatility: d.volatility } : {}),
-      ...(d.max_win_multiplier ? { max_win_multiplier: d.max_win_multiplier } : {}),
-      ...(d.reels ? { reels: d.reels } : {}),
-      ...(d.paylines ? { paylines: d.paylines } : {}),
-      ...(d.min_bet ? { min_bet: d.min_bet } : {}),
-      ...(d.max_bet ? { max_bet: d.max_bet } : {}),
-      ...(d.theme ? { theme: d.theme } : {}),
-      ...(d.release_date ? { release_date: d.release_date } : {}),
-      ...(d.image && !prev.image ? { image: d.image } : {}),
-      ...(d.features ? { features: d.features } : {}),
-    }));
-    setFetchResult(prev => ({ ...prev, applied: true }));
   };
 
   const toggleFeat = (feat) => {
@@ -207,32 +153,10 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
         {/* Header */}
         <div className="sm-editor-head">
           <h3>{isNew ? 'Add Slot' : 'Edit Slot'}</h3>
-          <div className="sm-editor-head-actions">
-            <button className={`sm-btn-ai ${fetching ? 'loading' : ''}`} onClick={aiFetch} disabled={fetching}>
-              {fetching ? 'Fetching…' : 'AI Fill'}
-            </button>
-            <button className="sm-btn-close" onClick={onClose}>
-              <svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-            </button>
-          </div>
+          <button className="sm-btn-close" onClick={onClose}>
+            <svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+          </button>
         </div>
-
-        {/* Fetch banner */}
-        {fetchResult && (
-          <div className={`sm-fetch-banner ${fetchResult.success ? 'ok' : 'err'}`}>
-            {fetchResult.success ? (
-              <>
-                <span className="sm-fetch-info">{fetchResult.confidence} confidence · {fetchResult.source}</span>
-                {!fetchResult.applied
-                  ? <button className="sm-btn-sm" onClick={applyFetched}>Apply</button>
-                  : <span className="sm-applied">Applied</span>}
-              </>
-            ) : (
-              <span>{fetchResult.message}</span>
-            )}
-            <button className="sm-btn-close-sm" onClick={() => setFetchResult(null)}>×</button>
-          </div>
-        )}
 
         {/* Tabs */}
         <div className="sm-tabs">
