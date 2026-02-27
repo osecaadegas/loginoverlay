@@ -9,7 +9,7 @@
  * - 60fps optimized, no polling
  */
 import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { supabase } from '../../config/supabaseClient';
 import {
   getInstanceByToken,
@@ -71,6 +71,8 @@ function buildThemeVars(theme) {
 
 export default function OverlayRenderer() {
   const { token } = useParams();
+  const [searchParams] = useSearchParams();
+  const singleWidgetId = searchParams.get('widget');
   const [userId, setUserId] = useState(null);
   const [widgets, setWidgets] = useState([]);
   const [theme, setTheme] = useState(null);
@@ -139,8 +141,12 @@ export default function OverlayRenderer() {
   // ── Custom CSS injection ──
   const customCSS = theme?.custom_css || '';
 
-  // ── Only render visible widgets ──
-  const visibleWidgets = useMemo(() => widgets.filter(w => w.is_visible), [widgets]);
+  // ── Only render visible widgets (optionally filtered to a single widget) ──
+  const visibleWidgets = useMemo(() => {
+    const visible = widgets.filter(w => w.is_visible);
+    if (singleWidgetId) return visible.filter(w => w.id === singleWidgetId);
+    return visible;
+  }, [widgets, singleWidgetId]);
 
   // ── Viewport-fit scaling ──
   // The canvas is always authored at a fixed resolution (e.g. 1920×1080).

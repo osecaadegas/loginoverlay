@@ -86,10 +86,20 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
   }
 }
 
-export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets }) {
+export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
   const [editingId, setEditingId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
+  const [copiedId, setCopiedId] = useState(null);
+
+  const copyWidgetUrl = useCallback((widgetId) => {
+    if (!overlayToken) return;
+    const url = `${window.location.origin}/overlay/${overlayToken}?widget=${widgetId}`;
+    navigator.clipboard.writeText(url).then(() => {
+      setCopiedId(widgetId);
+      setTimeout(() => setCopiedId(null), 2000);
+    });
+  }, [overlayToken]);
 
   const categories = getWidgetsByCategory();
 
@@ -192,6 +202,15 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     <span className="oc-wcard-label">{w.label || def?.label || w.widget_type}</span>
                   </div>
                   <div className="oc-wcard-actions">
+                    {overlayToken && (
+                      <button
+                        className="oc-btn oc-btn--sm"
+                        onClick={() => copyWidgetUrl(w.id)}
+                        title="Copy single-widget OBS URL"
+                      >
+                        {copiedId === w.id ? '✓' : '🔗'}
+                      </button>
+                    )}
                     <button
                       className={`oc-toggle ${w.is_visible ? 'oc-toggle--on' : ''}`}
                       onClick={() => handleToggle(w)}

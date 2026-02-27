@@ -257,6 +257,7 @@ export default function OverlayControlCenter() {
               onSave={saveWidget}
               onRemove={removeWidget}
               availableWidgets={getAllWidgetDefs()}
+              overlayToken={instance?.overlay_token}
             />
           )}
           {activePanel === 'library' && (
