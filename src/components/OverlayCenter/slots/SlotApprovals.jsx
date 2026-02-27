@@ -16,7 +16,6 @@ export default function SlotApprovals() {
   const [denyNoteId, setDenyNoteId] = useState(null);
   const [denyNote, setDenyNote] = useState('');
   const [msg, setMsg] = useState({ text: '', type: '' });
-  const [expandedId, setExpandedId] = useState(null);
 
   const load = useCallback(async () => {
     try {
@@ -126,26 +125,10 @@ export default function SlotApprovals() {
                 <div className="ss-card-name">{s.name}</div>
                 <div className="ss-card-provider">{s.provider}</div>
                 <div className="ss-card-meta">
-                  {s.rtp && <span>RTP: {s.rtp}%</span>}
-                  {s.volatility && <span>Vol: {s.volatility}</span>}
-                  {s.max_win_multiplier && <span>Max: {s.max_win_multiplier}x</span>}
-                  {s.reels && <span>Reels: {s.reels}</span>}
-                  {s.theme && <span>Theme: {s.theme}</span>}
+                  <span>RTP: {s.rtp}%</span>
+                  <span>Vol: {s.volatility}</span>
+                  <span>Max: {s.max_win_multiplier}x</span>
                 </div>
-                {/* Expand for full details */}
-                <button className="sa-detail-toggle" onClick={() => setExpandedId(expandedId === s.id ? null : s.id)}>
-                  {expandedId === s.id ? '▾ Less' : '▸ Details'}
-                </button>
-                {expandedId === s.id && (
-                  <div className="sa-details">
-                    {s.description && <p><strong>Description:</strong> {s.description}</p>}
-                    {s.paylines && <p><strong>Paylines:</strong> {s.paylines}</p>}
-                    {s.min_bet && <p><strong>Bet range:</strong> {s.min_bet} – {s.max_bet}</p>}
-                    {s.features?.length > 0 && <p><strong>Features:</strong> {s.features.join(', ')}</p>}
-                    {s.tags?.length > 0 && <p><strong>Tags:</strong> {s.tags.join(', ')}</p>}
-                    {s.release_date && <p><strong>Release:</strong> {s.release_date}</p>}
-                  </div>
-                )}
               </div>
               <div className="ss-card-status">
                 <span className={`ss-badge ss-badge--${s.status}`}>

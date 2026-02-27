@@ -7,22 +7,13 @@ CREATE TABLE IF NOT EXISTS pending_slots (
   -- Submitter
   submitted_by  UUID NOT NULL REFERENCES auth.users(id),
   submitted_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  -- Slot data (mirrors slots table)
+  -- Slot data (required fields only)
   name          TEXT NOT NULL,
   provider      TEXT NOT NULL,
-  image         TEXT NOT NULL DEFAULT '',
-  rtp           DECIMAL(5,2),
-  volatility    TEXT CHECK (volatility IN ('low','medium','high','very_high')),
-  max_win_multiplier DECIMAL(10,2),
-  reels         TEXT,
-  min_bet       DECIMAL(10,2) DEFAULT 0.10,
-  max_bet       DECIMAL(10,2) DEFAULT 100.00,
-  features      JSONB DEFAULT '[]',
-  tags          TEXT[] DEFAULT '{}',
-  description   TEXT,
-  release_date  DATE,
-  paylines      TEXT,
-  theme         TEXT,
+  image         TEXT NOT NULL,
+  rtp           DECIMAL(5,2) NOT NULL,
+  volatility    TEXT NOT NULL CHECK (volatility IN ('low','medium','high','very_high')),
+  max_win_multiplier DECIMAL(10,2) NOT NULL,
   -- Approval workflow
   status        TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending','approved','denied')),
   reviewed_by   UUID REFERENCES auth.users(id),

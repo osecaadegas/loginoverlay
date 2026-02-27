@@ -9,9 +9,7 @@ import './SlotSubmissions.css';
 
 const EMPTY_FORM = {
   name: '', provider: '', image: '', rtp: '', volatility: '',
-  max_win_multiplier: '', reels: '', min_bet: '0.10', max_bet: '100',
-  features: '', tags: '', description: '', release_date: '',
-  paylines: '', theme: '',
+  max_win_multiplier: '',
 };
 
 export default function SlotSubmissions() {
@@ -48,20 +46,19 @@ export default function SlotSubmissions() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!form.name.trim() || !form.provider.trim()) {
-      flash('Name and Provider are required.', 'error');
+    if (!form.name.trim() || !form.provider.trim() || !form.image.trim() || !form.rtp || !form.volatility || !form.max_win_multiplier) {
+      flash('All fields are required.', 'error');
       return;
     }
     setSubmitting(true);
     try {
       const slotData = {
-        ...form,
-        rtp: form.rtp ? parseFloat(form.rtp) : null,
-        max_win_multiplier: form.max_win_multiplier ? parseFloat(form.max_win_multiplier) : null,
-        min_bet: form.min_bet ? parseFloat(form.min_bet) : 0.10,
-        max_bet: form.max_bet ? parseFloat(form.max_bet) : 100,
-        features: form.features ? form.features.split(',').map(f => f.trim()).filter(Boolean) : [],
-        tags: form.tags ? form.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+        name: form.name.trim(),
+        provider: form.provider.trim(),
+        image: form.image.trim(),
+        rtp: parseFloat(form.rtp),
+        volatility: form.volatility,
+        max_win_multiplier: parseFloat(form.max_win_multiplier),
       };
       await submitSlot(user.id, slotData);
       flash('Slot submitted for approval!');
@@ -110,17 +107,17 @@ export default function SlotSubmissions() {
               <label>Provider *</label>
               <input name="provider" value={form.provider} onChange={handleChange} placeholder="e.g. Pragmatic Play" required />
             </div>
-            <div className="ss-field">
-              <label>Image URL</label>
-              <input name="image" value={form.image} onChange={handleChange} placeholder="https://..." />
+            <div className="ss-field ss-field--required">
+              <label>Image URL *</label>
+              <input name="image" value={form.image} onChange={handleChange} placeholder="https://..." required />
             </div>
-            <div className="ss-field">
-              <label>RTP (%)</label>
-              <input name="rtp" type="number" step="0.01" min="0" max="100" value={form.rtp} onChange={handleChange} placeholder="96.50" />
+            <div className="ss-field ss-field--required">
+              <label>RTP (%) *</label>
+              <input name="rtp" type="number" step="0.01" min="0" max="100" value={form.rtp} onChange={handleChange} placeholder="96.50" required />
             </div>
-            <div className="ss-field">
-              <label>Volatility</label>
-              <select name="volatility" value={form.volatility} onChange={handleChange}>
+            <div className="ss-field ss-field--required">
+              <label>Volatility *</label>
+              <select name="volatility" value={form.volatility} onChange={handleChange} required>
                 <option value="">—</option>
                 <option value="low">Low</option>
                 <option value="medium">Medium</option>
@@ -128,45 +125,9 @@ export default function SlotSubmissions() {
                 <option value="very_high">Very High</option>
               </select>
             </div>
-            <div className="ss-field">
-              <label>Max Win (x)</label>
-              <input name="max_win_multiplier" type="number" step="0.01" value={form.max_win_multiplier} onChange={handleChange} placeholder="5000" />
-            </div>
-            <div className="ss-field">
-              <label>Reels</label>
-              <input name="reels" value={form.reels} onChange={handleChange} placeholder="5x3" />
-            </div>
-            <div className="ss-field">
-              <label>Paylines</label>
-              <input name="paylines" value={form.paylines} onChange={handleChange} placeholder="20" />
-            </div>
-            <div className="ss-field">
-              <label>Min Bet</label>
-              <input name="min_bet" type="number" step="0.01" value={form.min_bet} onChange={handleChange} />
-            </div>
-            <div className="ss-field">
-              <label>Max Bet</label>
-              <input name="max_bet" type="number" step="0.01" value={form.max_bet} onChange={handleChange} />
-            </div>
-            <div className="ss-field">
-              <label>Theme</label>
-              <input name="theme" value={form.theme} onChange={handleChange} placeholder="Greek Mythology" />
-            </div>
-            <div className="ss-field">
-              <label>Release Date</label>
-              <input name="release_date" type="date" value={form.release_date} onChange={handleChange} />
-            </div>
-            <div className="ss-field ss-field--wide">
-              <label>Features (comma-separated)</label>
-              <input name="features" value={form.features} onChange={handleChange} placeholder="Free Spins, Multiplier, Bonus Buy" />
-            </div>
-            <div className="ss-field ss-field--wide">
-              <label>Tags (comma-separated)</label>
-              <input name="tags" value={form.tags} onChange={handleChange} placeholder="popular, new, megaways" />
-            </div>
-            <div className="ss-field ss-field--wide">
-              <label>Description</label>
-              <textarea name="description" value={form.description} onChange={handleChange} rows={3} placeholder="Short description of the slot..." />
+            <div className="ss-field ss-field--required">
+              <label>Max Win (x) *</label>
+              <input name="max_win_multiplier" type="number" step="0.01" value={form.max_win_multiplier} onChange={handleChange} placeholder="5000" required />
             </div>
           </div>
           <div className="ss-form-actions">

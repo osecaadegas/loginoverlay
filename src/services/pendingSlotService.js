@@ -9,21 +9,12 @@ export async function submitSlot(userId, slotData) {
     .from('pending_slots')
     .insert({
       submitted_by: userId,
-      name: slotData.name?.trim(),
-      provider: slotData.provider?.trim(),
-      image: slotData.image?.trim() || '',
-      rtp: slotData.rtp || null,
-      volatility: slotData.volatility || null,
-      max_win_multiplier: slotData.max_win_multiplier || null,
-      reels: slotData.reels?.trim() || null,
-      min_bet: slotData.min_bet || 0.10,
-      max_bet: slotData.max_bet || 100.00,
-      features: slotData.features || [],
-      tags: slotData.tags || [],
-      description: slotData.description?.trim() || null,
-      release_date: slotData.release_date || null,
-      paylines: slotData.paylines?.trim() || null,
-      theme: slotData.theme?.trim() || null,
+      name: slotData.name,
+      provider: slotData.provider,
+      image: slotData.image,
+      rtp: slotData.rtp,
+      volatility: slotData.volatility,
+      max_win_multiplier: slotData.max_win_multiplier,
     })
     .select()
     .single();
@@ -76,15 +67,6 @@ export async function approveSlot(pendingId, adminId) {
       rtp: pending.rtp,
       volatility: pending.volatility,
       max_win_multiplier: pending.max_win_multiplier,
-      reels: pending.reels,
-      min_bet: pending.min_bet,
-      max_bet: pending.max_bet,
-      features: pending.features,
-      tags: pending.tags,
-      description: pending.description,
-      release_date: pending.release_date,
-      paylines: pending.paylines,
-      theme: pending.theme,
       status: 'live',
       created_by: pending.submitted_by,
     });
