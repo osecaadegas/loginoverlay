@@ -196,10 +196,15 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
             return (
               <div key={w.id} className={`oc-wcard ${w.is_visible ? '' : 'oc-wcard--hidden'}`}>
-                <div className="oc-wcard-header">
+                <div className="oc-wcard-header" onClick={(e) => {
+                  // Don't expand if clicking on action buttons
+                  if (e.target.closest('.oc-wcard-actions')) return;
+                  setEditingId(isEditing ? null : w.id);
+                }} style={{ cursor: 'pointer' }}>
                   <div className="oc-wcard-info">
                     <span className="oc-wcard-icon">{def?.icon || '📦'}</span>
                     <span className="oc-wcard-label">{w.label || def?.label || w.widget_type}</span>
+                    <span className={`oc-wcard-chevron ${isEditing ? 'oc-wcard-chevron--open' : ''}`}>▸</span>
                   </div>
                   <div className="oc-wcard-actions">
                     <button

@@ -330,12 +330,29 @@
   justify-content: space-between;
   padding: 8px 12px;
   gap: 8px;
+  user-select: none;
 }
+
+.oc-wcard-header:hover { background: rgba(255,255,255,0.03); }
 
 .oc-wcard-info {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.oc-wcard-chevron {
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.3);
+  transition: transform 0.2s ease;
+  margin-left: 2px;
+}
+
+.oc-wcard-chevron--open {
+  transform: rotate(90deg);
+  color: rgba(139, 92, 246, 0.7);
 }
 
 .oc-wcard-icon { font-size: 1.1rem; }
