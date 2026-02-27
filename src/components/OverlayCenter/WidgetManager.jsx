@@ -299,7 +299,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   /* ── Drag handlers for live preview ── */
   const handlePreviewSelect = useCallback((id) => {
     setSelectedPreviewId(id);
-    setEditingId(id); // also expand the card below
   }, []);
 
   const handlePreviewMove = useCallback((id, newX, newY) => {
