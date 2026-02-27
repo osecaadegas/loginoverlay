@@ -416,7 +416,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           >
             👁️ {showPreview ? 'Hide Preview' : 'Live Preview'}
           </button>
-          <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically">
+          <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically" data-tour="sync-colors">
             🔗 Sync Colors
           </button>
         </div>
@@ -424,7 +424,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
       {/* ──── Live Overlay Preview — OBS-style drag & resize ──── */}
       {showPreview && (
-        <div className="wm-live-preview" ref={previewRef}>
+        <div className="wm-live-preview" ref={previewRef} data-tour="live-preview">
           <div className="wm-live-header">
             <span className="wm-live-title">
               <span className="wm-live-dot" />
@@ -439,66 +439,40 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               })()}
             </span>
           </div>
-          <div className="wm-live-body">
+          <div
+            className="wm-live-canvas-wrap"
+            style={{
+              width: CANVAS_W * previewScale,
+              height: CANVAS_H * previewScale,
+            }}
+          >
             <div
-              className="wm-live-canvas-wrap"
+              className="wm-live-canvas"
               style={{
-                width: CANVAS_W * previewScale,
-                height: CANVAS_H * previewScale,
+                width: CANVAS_W,
+                height: CANVAS_H,
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'top left',
               }}
+              onMouseDown={handleCanvasClick}
+              data-tour="preview-drag"
             >
-              <div
-                className="wm-live-canvas"
-                style={{
-                  width: CANVAS_W,
-                  height: CANVAS_H,
-                  transform: `scale(${previewScale})`,
-                  transformOrigin: 'top left',
-                }}
-                onMouseDown={handleCanvasClick}
-              >
-                {visibleWidgets.length === 0 && (
-                  <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
-                )}
-                {visibleWidgets.map(w => (
-                  <DraggableSlot
-                    key={w.id}
-                    widget={w}
-                    theme={theme}
-                    allWidgets={widgets}
-                    isSelected={w.id === selectedPreviewId}
-                    scale={previewScale}
-                    onSelect={handlePreviewSelect}
-                    onMove={handlePreviewMove}
-                    onResize={handlePreviewResize}
-                  />
-                ))}
-              </div>
-            </div>
-            <div className="wm-tutorial">
-              <h4 className="wm-tutorial-title">📖 Quick Guide</h4>
-              <div className="wm-tutorial-steps">
-                <div className="wm-tutorial-step">
-                  <span className="wm-tutorial-num">1</span>
-                  <p><strong>Add widgets</strong> — click <strong>+ Add</strong> on any grey tile below.</p>
-                </div>
-                <div className="wm-tutorial-step">
-                  <span className="wm-tutorial-num">2</span>
-                  <p><strong>Move &amp; resize</strong> — drag on preview, corner handles to resize, arrow keys for 1px nudge (<strong>Shift</strong> = 10px).</p>
-                </div>
-                <div className="wm-tutorial-step">
-                  <span className="wm-tutorial-num">3</span>
-                  <p><strong>Customize</strong> — hit ⚙️ on any active tile to change colors, fonts &amp; sizes.</p>
-                </div>
-                <div className="wm-tutorial-step">
-                  <span className="wm-tutorial-num">4</span>
-                  <p><strong>Sync colors</strong> — set Navbar first, then 🔗 Sync Colors to apply everywhere.</p>
-                </div>
-                <div className="wm-tutorial-step">
-                  <span className="wm-tutorial-num">5</span>
-                  <p><strong>Toggle</strong> — click LIVE / OFF badge to show or hide a widget.</p>
-                </div>
-              </div>
+              {visibleWidgets.length === 0 && (
+                <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
+              )}
+              {visibleWidgets.map(w => (
+                <DraggableSlot
+                  key={w.id}
+                  widget={w}
+                  theme={theme}
+                  allWidgets={widgets}
+                  isSelected={w.id === selectedPreviewId}
+                  scale={previewScale}
+                  onSelect={handlePreviewSelect}
+                  onMove={handlePreviewMove}
+                  onResize={handlePreviewResize}
+                />
+              ))}
             </div>
           </div>
         </div>
@@ -506,7 +480,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
       {/* ──── Active Widgets Section ──── */}
       {widgets.length > 0 && (
-        <div className="wm-section">
+        <div className="wm-section" data-tour="active-widgets">
           <h3 className="wm-section-title wm-section-title--active">
             <span className="wm-section-dot wm-section-dot--active" />
             Active Widgets
@@ -534,7 +508,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     {isVisible ? 'LIVE' : 'OFF'}
                   </span>
                   <div className="wm-tile-actions">
-                    <button className="wm-tile-btn" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
+                    <button className="wm-tile-btn" data-tour="tile-gear" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
                     <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
                   </div>
                 </div>
@@ -546,7 +520,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
       {/* ──── Available Widgets Section ──── */}
       {inactiveDefs.length > 0 && (
-        <div className="wm-section">
+        <div className="wm-section" data-tour="available-widgets">
           <h3 className="wm-section-title wm-section-title--inactive">
             <span className="wm-section-dot wm-section-dot--inactive" />
             Available Widgets

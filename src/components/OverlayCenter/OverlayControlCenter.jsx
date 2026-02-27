@@ -12,6 +12,7 @@ import { getSharedPresets, saveSharedPreset, deleteSharedPreset } from '../../se
 import ThemeEditor from './ThemeEditor';
 import WidgetManager from './WidgetManager';
 // OverlayPreview removed — live preview is now inside WidgetManager
+import GuidedTutorial, { isTutorialDone, resetTutorial } from './GuidedTutorial';
 import BonusHuntLibrary from './BonusHuntLibrary';
 import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
@@ -96,6 +97,15 @@ export default function OverlayControlCenter() {
   const [activePanel, setActivePanel] = useState('widgets'); // widgets | preview
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
+
+  /* Auto-start tutorial for first-time users */
+  useEffect(() => {
+    if (!loading && !isTutorialDone()) {
+      const timer = setTimeout(() => setShowTutorial(true), 800);
+      return () => clearTimeout(timer);
+    }
+  }, [loading]);
 
   /* ── Global Presets (stored in overlay_state) ── */
   const globalPresets = overlayState?.globalPresets || [];
@@ -362,6 +372,18 @@ export default function OverlayControlCenter() {
                 </div>
               </button>
             ))}
+
+            {/* Tutorial button */}
+            <button
+              className="oc-sidebar-btn"
+              onClick={() => { resetTutorial(); setShowTutorial(true); setSidebarOpen(false); setActivePanel('widgets'); }}
+            >
+              <span className="oc-sidebar-btn-icon">🎓</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Tutorial</span>
+                <span className="oc-sidebar-btn-desc">Guided walkthrough</span>
+              </div>
+            </button>
           </nav>
 
           {/* ─── Resolution Selector ─── */}
@@ -381,7 +403,7 @@ export default function OverlayControlCenter() {
           </div>
 
           {/* OBS URL */}
-          <div className="oc-sidebar-url">
+          <div className="oc-sidebar-url" data-tour="obs-url">
             <label className="oc-sidebar-url-label">OBS Browser Source URL</label>
             <div className="oc-sidebar-url-box">
               <input readOnly value={overlayUrl} className="oc-sidebar-url-input" onClick={copyUrl} title="Click to copy" />
@@ -480,6 +502,9 @@ export default function OverlayControlCenter() {
           )}
         </main>
       </div>
+
+      {/* Guided Tutorial Overlay */}
+      <GuidedTutorial active={showTutorial} onClose={() => setShowTutorial(false)} />
     </div>
   );
 }
