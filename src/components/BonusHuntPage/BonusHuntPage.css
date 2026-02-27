@@ -1,0 +1,80 @@
+.bh-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  min-height: 100vh;
+  color: #e2e8f0;
+}
+
+.bh-page-header { margin-bottom: 20px; }
+
+.bh-page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.bh-page-subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.bh-page-tabs {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  padding-bottom: 0;
+}
+
+.bh-page-tab {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 10px 16px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s;
+}
+
+.bh-page-tab:hover { color: #e2e8f0; }
+
+.bh-page-tab--active {
+  color: #a78bfa;
+  border-bottom-color: #a78bfa;
+}
+
+.bh-page-content {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.bh-page-empty,
+.bh-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 12px;
+  color: #94a3b8;
+}
+
+.bh-page-empty h2 { color: #fff; }
+
+.bh-page-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: bhSpin 0.8s linear infinite;
+}
+
+@keyframes bhSpin { to { transform: rotate(360deg); } }

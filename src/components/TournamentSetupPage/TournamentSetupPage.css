@@ -1,0 +1,53 @@
+.ts-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 20px;
+  min-height: 100vh;
+  color: #e2e8f0;
+}
+
+.ts-page-header { margin-bottom: 20px; }
+
+.ts-page-title {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 6px;
+}
+
+.ts-page-subtitle {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.ts-page-content {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 16px;
+}
+
+.ts-page-empty,
+.ts-page-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 12px;
+  color: #94a3b8;
+}
+
+.ts-page-empty h2 { color: #fff; }
+
+.ts-page-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255,255,255,0.1);
+  border-top-color: #a78bfa;
+  border-radius: 50%;
+  animation: tsSpin 0.8s linear infinite;
+}
+
+@keyframes tsSpin { to { transform: rotate(360deg); } }
