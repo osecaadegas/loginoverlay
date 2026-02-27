@@ -145,38 +145,51 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
   return (
     <div className="oc-widgets-panel">
-      <div className="oc-panel-header">
-        <div>
-          <h2 className="oc-panel-title">🧩 Widgets</h2>
-          <p className="oc-panel-subtitle">Add, remove, and customize your stream overlay elements. Click a widget to expand its settings.</p>
+      {/* ──── Page Header ──── */}
+      <div className="wm-page-header">
+        <div className="wm-page-header-text">
+          <h2 className="wm-page-title">Widgets</h2>
+          <p className="wm-page-desc">
+            Build your overlay by adding widgets below. Click any widget to open its settings.
+          </p>
         </div>
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-          {syncMsg && <span style={{ fontSize: 12, color: '#22c55e', fontWeight: 600 }}>{syncMsg}</span>}
-          <button
-            className="oc-btn oc-btn--sm"
-            onClick={syncAllFromNavbar}
-            title="Sync all widget colors/fonts from the Navbar widget"
-            style={{ padding: '6px 12px', fontSize: 12 }}
-          >
-            🔗 Sync All from Navbar
+        <div className="wm-page-header-actions">
+          {syncMsg && <span className="wm-sync-toast">{syncMsg}</span>}
+          <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically">
+            🔗 Sync Colors
           </button>
-          <button className="oc-btn oc-btn--primary" onClick={() => setShowAddMenu(v => !v)}>
+          <button className="wm-btn wm-btn--primary" onClick={() => setShowAddMenu(v => !v)}>
             {showAddMenu ? '✕ Close' : '+ Add Widget'}
           </button>
         </div>
       </div>
 
-      {/* Add Widget Menu */}
+      {/* ──── Quick Start Tip ──── */}
+      {widgets.length === 0 && !showAddMenu && (
+        <div className="wm-quickstart">
+          <div className="wm-quickstart-icon">🚀</div>
+          <div>
+            <strong>Getting started?</strong>
+            <p>Click <strong>+ Add Widget</strong> to place your first overlay element. Most streamers start with a <strong>Background</strong>, <strong>Navbar</strong>, and <strong>Bonus Hunt</strong>.</p>
+          </div>
+        </div>
+      )}
+
+      {/* ──── Add Widget Picker ──── */}
       {showAddMenu && (
-        <div className="oc-add-menu">
+        <div className="wm-picker">
+          <p className="wm-picker-hint">Choose a widget to add to your overlay. You can add multiples of the same type.</p>
           {Object.entries(categories).map(([cat, defs]) => (
-            <div key={cat} className="oc-add-category">
-              <h4 className="oc-add-category-title">{cat}</h4>
-              <div className="oc-add-grid">
+            <div key={cat} className="wm-picker-group">
+              <h4 className="wm-picker-group-title">{cat}</h4>
+              <div className="wm-picker-grid">
                 {defs.map(def => (
-                  <button key={def.type} className="oc-add-card" onClick={() => handleAdd(def.type)}>
-                    <span className="oc-add-card-icon">{def.icon}</span>
-                    <span className="oc-add-card-label">{def.label}</span>
+                  <button key={def.type} className="wm-picker-card" onClick={() => handleAdd(def.type)}>
+                    <span className="wm-picker-card-icon">{def.icon}</span>
+                    <div className="wm-picker-card-text">
+                      <span className="wm-picker-card-name">{def.label}</span>
+                      {def.description && <span className="wm-picker-card-desc">{def.description}</span>}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -185,96 +198,112 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         </div>
       )}
 
-      {/* Widget List */}
-      {widgets.length === 0 ? (
-        <div className="oc-empty">
-          <div className="oc-empty-icon">🧩</div>
-          <p><strong>No widgets yet</strong></p>
-          <p>Click <strong>+ Add Widget</strong> above to add your first overlay element like a Bonus Hunt tracker, Navbar, Chat, or Stats panel.</p>
-        </div>
-      ) : (
-        <div className="oc-widget-list">
+      {/* ──── Widget List ──── */}
+      {widgets.length > 0 && (
+        <div className="wm-list">
           {widgets.map(w => {
             const def = getWidgetDef(w.widget_type);
             const ConfigPanel = def?.configPanel;
             const isEditing = editingId === w.id;
+            const isVisible = w.is_visible;
 
             return (
-              <div key={w.id} className={`oc-wcard ${w.is_visible ? '' : 'oc-wcard--hidden'}`}>
-                <div className="oc-wcard-header" onClick={(e) => {
-                  // Don't expand if clicking on action buttons
-                  if (e.target.closest('.oc-wcard-actions')) return;
+              <div key={w.id} className={`wm-card ${isVisible ? '' : 'wm-card--off'} ${isEditing ? 'wm-card--open' : ''}`}>
+                {/* Card Header — click to expand */}
+                <div className="wm-card-header" onClick={(e) => {
+                  if (e.target.closest('.wm-card-controls')) return;
                   setEditingId(isEditing ? null : w.id);
-                }} style={{ cursor: 'pointer' }}>
-                  <div className="oc-wcard-info">
-                    <span className="oc-wcard-icon">{def?.icon || '📦'}</span>
-                    <span className="oc-wcard-label">{w.label || def?.label || w.widget_type}</span>
-                    <span className={`oc-wcard-status ${w.is_visible ? 'oc-wcard-status--live' : 'oc-wcard-status--hidden'}`}>
-                      {w.is_visible ? '● LIVE' : '○ Hidden'}
+                }}>
+                  <div className="wm-card-identity">
+                    <span className="wm-card-icon">{def?.icon || '📦'}</span>
+                    <div className="wm-card-title-group">
+                      <span className="wm-card-name">{w.label || def?.label || w.widget_type}</span>
+                      <span className={`wm-card-badge ${isVisible ? 'wm-card-badge--live' : 'wm-card-badge--off'}`}>
+                        {isVisible ? 'LIVE' : 'OFF'}
+                      </span>
+                    </div>
+                    <span className={`wm-card-arrow ${isEditing ? 'wm-card-arrow--open' : ''}`}>
+                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M3 1l4 4-4 4" /></svg>
                     </span>
-                    <span className={`oc-wcard-chevron ${isEditing ? 'oc-wcard-chevron--open' : ''}`}>▸</span>
                   </div>
-                  <div className="oc-wcard-actions">
+
+                  <div className="wm-card-controls">
+                    {/* Show / Hide toggle */}
                     <button
-                      className={`oc-toggle ${w.is_visible ? 'oc-toggle--on' : ''}`}
+                      className={`wm-toggle ${isVisible ? 'wm-toggle--on' : ''}`}
                       onClick={() => handleToggle(w)}
-                      title={w.is_visible ? 'Hide' : 'Show'}
+                      title={isVisible ? 'Click to hide this widget' : 'Click to show this widget'}
                     >
-                      <span className="oc-toggle-thumb" />
+                      <span className="wm-toggle-thumb" />
                     </button>
-                    <button className="oc-btn oc-btn--sm" onClick={() => setEditingId(isEditing ? null : w.id)}>
+                    <button className="wm-icon-btn" onClick={() => setEditingId(isEditing ? null : w.id)} title="Open settings">
                       {isEditing ? '✕' : '⚙️'}
                     </button>
-                    <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => onRemove(w.id)}>🗑️</button>
+                    <button className="wm-icon-btn wm-icon-btn--danger" onClick={() => onRemove(w.id)} title="Delete this widget">
+                      🗑️
+                    </button>
                   </div>
                 </div>
 
+                {/* Card Body — expanded settings */}
                 {isEditing && (
-                  <div className="oc-wcard-body">
-                    {/* Single-widget OBS URL */}
+                  <div className="wm-card-body">
+
+                    {/* OBS URL — collapsible */}
                     {overlayToken && (
-                      <div className="oc-widget-url">
-                        <label className="oc-widget-url-label">🔗 OBS Browser Source URL (this widget only)</label>
-                        <div className="oc-widget-url-row">
+                      <details className="wm-obs-details">
+                        <summary className="wm-obs-summary">
+                          🔗 OBS Browser Source URL <span className="wm-obs-hint">(for this widget only)</span>
+                        </summary>
+                        <div className="wm-obs-row">
                           <input
                             readOnly
-                            className="oc-widget-url-input"
+                            className="wm-obs-input"
                             value={`${window.location.origin}/overlay/${overlayToken}?widget=${w.id}`}
                             onClick={() => copyWidgetUrl(w.id)}
                             title="Click to copy"
                           />
-                          <button className="oc-widget-url-copy" onClick={() => copyWidgetUrl(w.id)}>
-                            {copiedId === w.id ? '✓ Copied' : '📋 Copy'}
+                          <button className="wm-obs-copy" onClick={() => copyWidgetUrl(w.id)}>
+                            {copiedId === w.id ? '✓ Copied!' : '📋 Copy'}
                           </button>
                         </div>
-                      </div>
+                      </details>
                     )}
 
-                    {/* Position / Size / Z-Index */}
-                    <div className="oc-wcard-layout-section">
-                      <h4 className="oc-wcard-layout-title">📐 Position & Size</h4>
-                      <div className="oc-wcard-layout">
-                        <label>
-                          X <input type="number" value={Math.round(w.position_x)} onChange={e => handlePositionChange(w, 'position_x', +e.target.value)} />
+                    {/* Position & Sizing — clear labels */}
+                    <div className="wm-layout-panel">
+                      <div className="wm-layout-heading">
+                        <span className="wm-layout-icon">📐</span>
+                        <span>Position &amp; Size</span>
+                      </div>
+                      <p className="wm-layout-hint">Set where the widget appears on the overlay canvas (1920×1080).</p>
+                      <div className="wm-layout-grid">
+                        <label className="wm-layout-field">
+                          <span className="wm-layout-label">Left (X)</span>
+                          <input type="number" value={Math.round(w.position_x)} onChange={e => handlePositionChange(w, 'position_x', +e.target.value)} />
                         </label>
-                        <label>
-                          Y <input type="number" value={Math.round(w.position_y)} onChange={e => handlePositionChange(w, 'position_y', +e.target.value)} />
+                        <label className="wm-layout-field">
+                          <span className="wm-layout-label">Top (Y)</span>
+                          <input type="number" value={Math.round(w.position_y)} onChange={e => handlePositionChange(w, 'position_y', +e.target.value)} />
                         </label>
-                        <label>
-                          W <input type="number" value={Math.round(w.width)} onChange={e => handlePositionChange(w, 'width', +e.target.value)} />
+                        <label className="wm-layout-field">
+                          <span className="wm-layout-label">Width</span>
+                          <input type="number" value={Math.round(w.width)} onChange={e => handlePositionChange(w, 'width', +e.target.value)} />
                         </label>
-                        <label>
-                          H <input type="number" value={Math.round(w.height)} onChange={e => handlePositionChange(w, 'height', +e.target.value)} />
+                        <label className="wm-layout-field">
+                          <span className="wm-layout-label">Height</span>
+                          <input type="number" value={Math.round(w.height)} onChange={e => handlePositionChange(w, 'height', +e.target.value)} />
                         </label>
-                        <label>
-                          Z <input type="number" value={w.z_index} onChange={e => handlePositionChange(w, 'z_index', +e.target.value)} />
+                        <label className="wm-layout-field">
+                          <span className="wm-layout-label">Layer</span>
+                          <input type="number" value={w.z_index} onChange={e => handlePositionChange(w, 'z_index', +e.target.value)} title="Higher number = on top of other widgets" />
                         </label>
-                        <label>
-                          Anim
+                        <label className="wm-layout-field">
+                          <span className="wm-layout-label">Animation</span>
                           <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
-                            <option value="fade">Fade</option>
-                            <option value="slide">Slide</option>
-                            <option value="scale">Scale</option>
+                            <option value="fade">Fade In</option>
+                            <option value="slide">Slide In</option>
+                            <option value="scale">Scale Up</option>
                             <option value="glow">Glow</option>
                             <option value="none">None</option>
                           </select>
@@ -282,10 +311,12 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       </div>
                     </div>
 
-                    {/* Widget-specific config */}
+                    {/* Widget Config Panel */}
                     {ConfigPanel && (
-                      <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
-                        mode={(w.widget_type === 'bonus_hunt' || w.widget_type === 'tournament') ? 'widget' : 'full'} />
+                      <div className="wm-config-panel">
+                        <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
+                          mode={(w.widget_type === 'bonus_hunt' || w.widget_type === 'tournament') ? 'widget' : 'full'} />
+                      </div>
                     )}
                   </div>
                 )}
