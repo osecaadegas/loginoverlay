@@ -493,184 +493,172 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         </div>
       )}
 
-      {/* ──── Widget List ──── */}
+      {/* ──── Widget Tile Grid ──── */}
       {widgets.length > 0 && (
-        <div className="wm-list">
+        <div className="wm-tile-grid">
           {widgets.map(w => {
             const def = getWidgetDef(w.widget_type);
-            const ConfigPanel = def?.configPanel;
-            const WidgetComponent = def?.component;
-            const isEditing = editingId === w.id;
             const isVisible = w.is_visible;
 
             return (
-              <div key={w.id} className={`wm-card ${isVisible ? '' : 'wm-card--off'} ${isEditing ? 'wm-card--open' : ''}`}>
-                {/* Card Header — click to expand */}
-                <div className="wm-card-header" onClick={(e) => {
-                  if (e.target.closest('.wm-card-controls')) return;
-                  setEditingId(isEditing ? null : w.id);
-                }}>
-                  <div className="wm-card-identity">
-                    <span className="wm-card-icon">{def?.icon || '📦'}</span>
-                    <div className="wm-card-title-group">
-                      <span className="wm-card-name">{w.label || def?.label || w.widget_type}</span>
-                      <span className={`wm-card-badge ${isVisible ? 'wm-card-badge--live' : 'wm-card-badge--off'}`}>
-                        {isVisible ? 'LIVE' : 'OFF'}
-                      </span>
-                    </div>
-                    <span className={`wm-card-arrow ${isEditing ? 'wm-card-arrow--open' : ''}`}>
-                      <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor"><path d="M3 1l4 4-4 4" /></svg>
-                    </span>
-                  </div>
-
-                  <div className="wm-card-controls">
-                    {/* Show / Hide toggle */}
-                    <button
-                      className={`wm-toggle ${isVisible ? 'wm-toggle--on' : ''}`}
-                      onClick={() => handleToggle(w)}
-                      title={isVisible ? 'Click to hide this widget' : 'Click to show this widget'}
-                    >
-                      <span className="wm-toggle-thumb" />
-                    </button>
-                    <button className="wm-icon-btn" onClick={() => setEditingId(isEditing ? null : w.id)} title="Open settings">
-                      {isEditing ? '✕' : '⚙️'}
-                    </button>
-                    <button className="wm-icon-btn wm-icon-btn--danger" onClick={() => onRemove(w.id)} title="Delete this widget">
-                      🗑️
-                    </button>
-                  </div>
+              <div
+                key={w.id}
+                className={`wm-tile ${isVisible ? 'wm-tile--on' : 'wm-tile--off'}`}
+                onClick={() => handleToggle(w)}
+                title={isVisible ? 'Click to hide' : 'Click to show'}
+              >
+                <span className="wm-tile-icon">{def?.icon || '📦'}</span>
+                <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
+                <span className={`wm-tile-status ${isVisible ? 'wm-tile-status--live' : ''}`}>
+                  {isVisible ? 'LIVE' : 'OFF'}
+                </span>
+                <div className="wm-tile-actions" onClick={e => e.stopPropagation()}>
+                  <button className="wm-tile-btn" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
+                  <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
                 </div>
-
-                {/* Card Body — expanded settings */}
-                {isEditing && (
-                  <div className="wm-card-body">
-
-                    {/* OBS URL — collapsible */}
-                    {overlayToken && (
-                      <details className="wm-obs-details">
-                        <summary className="wm-obs-summary">
-                          🔗 OBS Browser Source URL <span className="wm-obs-hint">(for this widget only)</span>
-                        </summary>
-                        <div className="wm-obs-row">
-                          <input
-                            readOnly
-                            className="wm-obs-input"
-                            value={`${window.location.origin}/overlay/${overlayToken}?widget=${w.id}`}
-                            onClick={() => copyWidgetUrl(w.id)}
-                            title="Click to copy"
-                          />
-                          <button className="wm-obs-copy" onClick={() => copyWidgetUrl(w.id)}>
-                            {copiedId === w.id ? '✓ Copied!' : '📋 Copy'}
-                          </button>
-                        </div>
-                      </details>
-                    )}
-
-                    {/* Position & Sizing — sliders + live widget preview */}
-                    <div className="wm-layout-panel">
-                      <div className="wm-layout-heading">
-                        <span className="wm-layout-icon">📐</span>
-                        <span>Position &amp; Size</span>
-                      </div>
-                      <p className="wm-layout-hint">Drag the sliders or type a number. The live preview on the right updates in real-time.</p>
-
-                      <div className="wm-pos-split">
-                      {/* Left: Slider fields */}
-                      <div className="wm-pos-sliders">
-                      <div className="wm-slider-grid">
-                        {[
-                          { label: 'Left (X)', field: 'position_x', min: 0, max: 1920, val: Math.round(w.position_x) },
-                          { label: 'Top (Y)', field: 'position_y', min: 0, max: 1080, val: Math.round(w.position_y) },
-                          { label: 'Width',    field: 'width',      min: 0, max: 1920, val: Math.round(w.width) },
-                          { label: 'Height',   field: 'height',     min: 0, max: 1080, val: Math.round(w.height) },
-                          { label: 'Layer (Z)', field: 'z_index',   min: 0, max: 100,  val: w.z_index },
-                        ].map(s => (
-                          <label key={s.field} className="wm-slider-field">
-                            <span className="wm-slider-label">{s.label}</span>
-                            <div className="wm-slider-row">
-                              <input
-                                type="range"
-                                className="wm-range"
-                                min={s.min}
-                                max={s.max}
-                                value={s.val}
-                                onChange={e => handlePositionChange(w, s.field, +e.target.value)}
-                              />
-                              <input
-                                type="number"
-                                className="wm-slider-num"
-                                min={s.min}
-                                max={s.max}
-                                value={s.val}
-                                onChange={e => handlePositionChange(w, s.field, +e.target.value)}
-                              />
-                            </div>
-                          </label>
-                        ))}
-                      </div>
-
-                      {/* Animation — full-width dropdown */}
-                      <label className="wm-animation-field">
-                        <span className="wm-slider-label">✨ Animation</span>
-                        <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
-                          <option value="fade">Fade In</option>
-                          <option value="slide">Slide In</option>
-                          <option value="scale">Scale Up</option>
-                          <option value="glow">Glow</option>
-                          <option value="none">None</option>
-                        </select>
-                      </label>
-                      </div>{/* end wm-pos-sliders */}
-
-                      {/* Right: Live mini widget preview — shows ALL widgets */}
-                      <div className="wm-pos-preview">
-                        <div className="wm-pos-preview-canvas">
-                          <div className="wm-pos-preview-scene">
-                            {widgets.filter(wd => wd.is_enabled).map(wd => {
-                              const wDef = getWidgetDef(wd.widget_type);
-                              const WComp = wDef?.component;
-                              const isCurrent = wd.id === w.id;
-                              return (
-                                <div
-                                  key={wd.id}
-                                  style={{
-                                    position: 'absolute',
-                                    left: wd.position_x,
-                                    top: wd.position_y,
-                                    width: wd.width,
-                                    height: wd.height,
-                                    overflow: 'hidden',
-                                    zIndex: wd.z_index || 1,
-                                    opacity: isCurrent ? 1 : 0.45,
-                                    outline: isCurrent ? '3px solid rgba(139,92,246,0.7)' : 'none',
-                                    borderRadius: isCurrent ? 4 : 0,
-                                  }}
-                                >
-                                  {WComp && <WComp config={wd.config} theme={theme} allWidgets={widgets} />}
-                                </div>
-                              );
-                            })}
-                          </div>
-                          <span className="wm-pos-preview-dims">{Math.round(w.position_x)},{Math.round(w.position_y)} — {Math.round(w.width)}×{Math.round(w.height)}</span>
-                        </div>
-                      </div>
-                      </div>{/* end wm-pos-split */}
-                    </div>
-
-                    {/* Widget Config Panel */}
-                    {ConfigPanel && (
-                      <div className="wm-config-panel">
-                        <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
-                          mode={(w.widget_type === 'bonus_hunt' || w.widget_type === 'tournament') ? 'widget' : 'full'} />
-                      </div>
-                    )}
-                  </div>
-                )}
               </div>
             );
           })}
         </div>
       )}
+
+      {/* ──── Side Panel Editor ──── */}
+      {editingId && (() => {
+        const w = widgets.find(x => x.id === editingId);
+        if (!w) return null;
+        const def = getWidgetDef(w.widget_type);
+        const ConfigPanel = def?.configPanel;
+        return (
+          <>
+            <div className="wm-sidepanel-backdrop" onClick={() => setEditingId(null)} />
+            <div className="wm-sidepanel">
+              <div className="wm-sidepanel-header">
+                <div className="wm-sidepanel-title">
+                  <span className="wm-sidepanel-icon">{def?.icon || '📦'}</span>
+                  <span>{w.label || def?.label || w.widget_type}</span>
+                </div>
+                <button className="wm-sidepanel-close" onClick={() => setEditingId(null)}>✕</button>
+              </div>
+
+              <div className="wm-sidepanel-body">
+                {/* OBS URL */}
+                {overlayToken && (
+                  <details className="wm-obs-details">
+                    <summary className="wm-obs-summary">
+                      🔗 OBS Browser Source URL <span className="wm-obs-hint">(for this widget only)</span>
+                    </summary>
+                    <div className="wm-obs-row">
+                      <input
+                        readOnly
+                        className="wm-obs-input"
+                        value={`${window.location.origin}/overlay/${overlayToken}?widget=${w.id}`}
+                        onClick={() => copyWidgetUrl(w.id)}
+                        title="Click to copy"
+                      />
+                      <button className="wm-obs-copy" onClick={() => copyWidgetUrl(w.id)}>
+                        {copiedId === w.id ? '✓ Copied!' : '📋 Copy'}
+                      </button>
+                    </div>
+                  </details>
+                )}
+
+                {/* Position & Sizing */}
+                <div className="wm-layout-panel">
+                  <div className="wm-layout-heading">
+                    <span className="wm-layout-icon">📐</span>
+                    <span>Position &amp; Size</span>
+                  </div>
+                  <p className="wm-layout-hint">Drag the sliders or type a number. The live preview updates in real-time.</p>
+
+                  <div className="wm-slider-grid">
+                    {[
+                      { label: 'Left (X)', field: 'position_x', min: 0, max: 1920, val: Math.round(w.position_x) },
+                      { label: 'Top (Y)', field: 'position_y', min: 0, max: 1080, val: Math.round(w.position_y) },
+                      { label: 'Width',    field: 'width',      min: 0, max: 1920, val: Math.round(w.width) },
+                      { label: 'Height',   field: 'height',     min: 0, max: 1080, val: Math.round(w.height) },
+                      { label: 'Layer (Z)', field: 'z_index',   min: 0, max: 100,  val: w.z_index },
+                    ].map(s => (
+                      <label key={s.field} className="wm-slider-field">
+                        <span className="wm-slider-label">{s.label}</span>
+                        <div className="wm-slider-row">
+                          <input
+                            type="range"
+                            className="wm-range"
+                            min={s.min}
+                            max={s.max}
+                            value={s.val}
+                            onChange={e => handlePositionChange(w, s.field, +e.target.value)}
+                          />
+                          <input
+                            type="number"
+                            className="wm-slider-num"
+                            min={s.min}
+                            max={s.max}
+                            value={s.val}
+                            onChange={e => handlePositionChange(w, s.field, +e.target.value)}
+                          />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+
+                  <label className="wm-animation-field">
+                    <span className="wm-slider-label">✨ Animation</span>
+                    <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
+                      <option value="fade">Fade In</option>
+                      <option value="slide">Slide In</option>
+                      <option value="scale">Scale Up</option>
+                      <option value="glow">Glow</option>
+                      <option value="none">None</option>
+                    </select>
+                  </label>
+
+                  {/* Mini preview — all widgets, current highlighted */}
+                  <div className="wm-pos-preview" style={{ width: '100%', marginTop: 16 }}>
+                    <div className="wm-pos-preview-canvas">
+                      <div className="wm-pos-preview-scene">
+                        {widgets.filter(wd => wd.is_enabled).map(wd => {
+                          const wDef = getWidgetDef(wd.widget_type);
+                          const WComp = wDef?.component;
+                          const isCurrent = wd.id === w.id;
+                          return (
+                            <div
+                              key={wd.id}
+                              style={{
+                                position: 'absolute',
+                                left: wd.position_x,
+                                top: wd.position_y,
+                                width: wd.width,
+                                height: wd.height,
+                                overflow: 'hidden',
+                                zIndex: wd.z_index || 1,
+                                opacity: isCurrent ? 1 : 0.35,
+                                outline: isCurrent ? '3px solid rgba(139,92,246,0.7)' : 'none',
+                                borderRadius: isCurrent ? 4 : 0,
+                              }}
+                            >
+                              {WComp && <WComp config={wd.config} theme={theme} allWidgets={widgets} />}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <span className="wm-pos-preview-dims">{Math.round(w.position_x)},{Math.round(w.position_y)} — {Math.round(w.width)}×{Math.round(w.height)}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Widget Config Panel */}
+                {ConfigPanel && (
+                  <div className="wm-config-panel">
+                    <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
+                      mode={(w.widget_type === 'bonus_hunt' || w.widget_type === 'tournament') ? 'widget' : 'full'} />
+                  </div>
+                )}
+              </div>
+            </div>
+          </>
+        );
+      })()}
     </div>
   );
 }
