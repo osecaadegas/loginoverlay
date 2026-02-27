@@ -145,7 +145,7 @@ function formatDBSlot(row) {
  * Call Gemini AI. If useGrounding = true, enables Google Search tool
  * so Gemini can look up real-time info (new slots, recent releases).
  */
-async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600, systemInstruction = null } = {}) {
+async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600, systemInstruction = null, _debugLog = null } = {}) {
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: { temperature: 0.05, maxOutputTokens: maxTokens },
@@ -169,6 +169,7 @@ async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600
   if (!response.ok) {
     const errText = await response.text();
     console.error('[slot-ai] Gemini error:', response.status, errText);
+    if (_debugLog) _debugLog.push({ step: 'gemini_json_http_error', status: response.status, errBody: errText.substring(0, 500) });
     return null;
   }
 
@@ -183,6 +184,16 @@ async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600
 
   // Check for blocked/filtered responses
   const finishReason = data?.candidates?.[0]?.finishReason;
+  if (_debugLog) {
+    _debugLog.push({
+      step: 'gemini_json_raw',
+      finishReason,
+      candidates: data?.candidates?.length || 0,
+      searchQueries: groundingMeta?.webSearchQueries || [],
+      hasParts: !!(data?.candidates?.[0]?.content?.parts?.length),
+      promptFeedback: data?.promptFeedback || null,
+    });
+  }
   if (finishReason === 'SAFETY' || finishReason === 'RECITATION') {
     console.warn(`[slot-ai] Gemini response blocked: ${finishReason}`);
     return null;
@@ -219,7 +230,7 @@ async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600
  * Used for two-step approach: natural question triggers real Google Search,
  * then a second call extracts structured JSON from the answer.
  */
-async function askGeminiText(apiKey, prompt, { useGrounding = false, maxTokens = 800, systemInstruction = null } = {}) {
+async function askGeminiText(apiKey, prompt, { useGrounding = false, maxTokens = 800, systemInstruction = null, _debugLog = null } = {}) {
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: { temperature: 0.1, maxOutputTokens: maxTokens },
@@ -233,14 +244,31 @@ async function askGeminiText(apiKey, prompt, { useGrounding = false, maxTokens =
     body: JSON.stringify(body),
   });
   if (!response.ok) {
-    console.error('[slot-ai] Gemini text error:', response.status);
+    const errBody = await response.text();
+    console.error('[slot-ai] Gemini text error:', response.status, errBody);
+    if (_debugLog) _debugLog.push({ step: 'gemini_text_http_error', status: response.status, errBody: errBody.substring(0, 500) });
     return null;
   }
   const data = await response.json();
+  const finishReason = data?.candidates?.[0]?.finishReason;
   const groundingMeta = data?.candidates?.[0]?.groundingMetadata;
   if (groundingMeta) {
     const queries = groundingMeta.webSearchQueries || [];
     console.log(`[slot-ai] Gemini text search: ${queries.join(' | ') || '(no queries)'}`);
+  }
+  if (_debugLog) {
+    _debugLog.push({
+      step: 'gemini_text_raw',
+      finishReason,
+      candidates: data?.candidates?.length || 0,
+      searchQueries: groundingMeta?.webSearchQueries || [],
+      hasParts: !!(data?.candidates?.[0]?.content?.parts?.length),
+      promptFeedback: data?.promptFeedback || null,
+    });
+  }
+  if (finishReason === 'SAFETY' || finishReason === 'RECITATION') {
+    console.warn(`[slot-ai] Gemini text blocked: ${finishReason}`);
+    return null;
   }
   const parts = data?.candidates?.[0]?.content?.parts || [];
   let raw = '';
@@ -911,6 +939,7 @@ RULES:
       useGrounding: true,
       maxTokens: 800,
       systemInstruction: searchSysInstruction,
+      _debugLog: debug ? debugLog : null,
     });
 
     if (debug) debugLog.push({ step: 'grounded_text_search', question: searchQuestion, responseLength: searchText?.length || 0, responsePreview: searchText?.substring(0, 500) || null });
@@ -986,6 +1015,7 @@ If you cannot find this slot, return: { "found": false }`;
         useGrounding: true,
         maxTokens: 800,
         systemInstruction: searchSysInstruction,
+        _debugLog: debug ? debugLog : null,
       });
       if (debug) debugLog.push({ step: 'direct_json_grounded', found: direct?.found, directKeys: direct ? Object.keys(direct) : null });
       if (direct && direct.found !== false) {
@@ -1007,7 +1037,7 @@ This is a CASINO SLOT GAME. Return ONLY JSON:
 }
 If you don't know this slot, return: { "found": false }`;
 
-      const fallback = await askGemini(apiKey, fallbackPrompt, { maxTokens: 600 });
+      const fallback = await askGemini(apiKey, fallbackPrompt, { maxTokens: 600, _debugLog: debug ? debugLog : null });
       if (debug) debugLog.push({ step: 'plain_gemini_fallback', found: fallback?.found, fallbackKeys: fallback ? Object.keys(fallback) : null });
       if (fallback && fallback.found !== false) {
         parsed = fallback;
