@@ -1,191 +1,8 @@
 /**
  * WidgetManager.jsx — Widget list + add/remove/configure widgets
  */
-import React, { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
-
-/* ── Draggable preview slot — OBS-style click & drag + resize ── */
-const DraggableSlot = memo(function DraggableSlot({
-  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize,
-}) {
-  const def = getWidgetDef(widget.widget_type);
-  const Component = def?.component;
-  const slotRef = useRef(null);
-  const coordsRef = useRef(null);
-
-  /* Block native text selection during any drag */
-  const blockSelect = useCallback((e) => e.preventDefault(), []);
-
-  function startDrag() {
-    document.body.classList.add('wm-dragging');
-    document.addEventListener('selectstart', blockSelect);
-    window.getSelection()?.removeAllRanges();
-  }
-  function endDrag() {
-    document.body.classList.remove('wm-dragging');
-    document.removeEventListener('selectstart', blockSelect);
-  }
-
-  /* ── Drag to move — update DOM directly, save on mouseup ── */
-  const handleMouseDown = useCallback((e) => {
-    if (e.target.closest('.wm-resize-handle')) return;
-    e.preventDefault();
-    e.stopPropagation();
-    onSelect(widget.id);
-
-    const el = slotRef.current;
-    if (!el) return;
-
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const origPx = widget.position_x;
-    const origPy = widget.position_y;
-    let curX = origPx, curY = origPy;
-
-    startDrag();
-
-    function onMouseMove(ev) {
-      ev.preventDefault();
-      const dx = (ev.clientX - startX) / scale;
-      const dy = (ev.clientY - startY) / scale;
-      curX = Math.max(0, Math.round(origPx + dx));
-      curY = Math.max(0, Math.round(origPy + dy));
-      el.style.left = curX + 'px';
-      el.style.top = curY + 'px';
-      if (coordsRef.current) {
-        coordsRef.current.textContent = `${curX}, ${curY} — ${Math.round(widget.width)}×${Math.round(widget.height)}`;
-      }
-    }
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      endDrag();
-      document.body.style.cursor = '';
-      onMove(widget.id, curX, curY);
-    }
-
-    document.body.style.cursor = 'grabbing';
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  }, [widget.id, widget.position_x, widget.position_y, widget.width, widget.height, scale, onSelect, onMove, blockSelect]);
-
-  /* ── Resize from corner handle — update DOM directly, save on mouseup ── */
-  const handleResizeDown = useCallback((e, corner) => {
-    e.preventDefault();
-    e.stopPropagation();
-    onSelect(widget.id);
-
-    const el = slotRef.current;
-    if (!el) return;
-
-    const startX = e.clientX;
-    const startY = e.clientY;
-    const origW = widget.width;
-    const origH = widget.height;
-    const origPx = widget.position_x;
-    const origPy = widget.position_y;
-    let curX = origPx, curY = origPy, curW = origW, curH = origH;
-
-    startDrag();
-
-    function onMouseMove(ev) {
-      ev.preventDefault();
-      const dx = (ev.clientX - startX) / scale;
-      const dy = (ev.clientY - startY) / scale;
-      curW = origW; curH = origH; curX = origPx; curY = origPy;
-
-      if (corner === 'se') {
-        curW = Math.max(20, origW + dx);
-        curH = Math.max(20, origH + dy);
-      } else if (corner === 'sw') {
-        curW = Math.max(20, origW - dx);
-        curH = Math.max(20, origH + dy);
-        curX = origPx + (origW - curW);
-      } else if (corner === 'ne') {
-        curW = Math.max(20, origW + dx);
-        curH = Math.max(20, origH - dy);
-        curY = origPy + (origH - curH);
-      } else if (corner === 'nw') {
-        curW = Math.max(20, origW - dx);
-        curH = Math.max(20, origH - dy);
-        curX = origPx + (origW - curW);
-        curY = origPy + (origH - curH);
-      }
-
-      curX = Math.round(curX); curY = Math.round(curY);
-      curW = Math.round(curW); curH = Math.round(curH);
-      el.style.left = curX + 'px';
-      el.style.top = curY + 'px';
-      el.style.width = curW + 'px';
-      el.style.height = curH + 'px';
-      if (coordsRef.current) {
-        coordsRef.current.textContent = `${curX}, ${curY} — ${curW}×${curH}`;
-      }
-    }
-
-    function onMouseUp() {
-      document.removeEventListener('mousemove', onMouseMove);
-      document.removeEventListener('mouseup', onMouseUp);
-      endDrag();
-      document.body.style.cursor = '';
-      onResize(widget.id, curX, curY, curW, curH);
-    }
-
-    document.body.style.cursor = corner === 'se' ? 'nwse-resize' : corner === 'sw' ? 'nesw-resize' : corner === 'ne' ? 'nesw-resize' : 'nwse-resize';
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  }, [widget.id, widget.width, widget.height, widget.position_x, widget.position_y, scale, onSelect, onResize, blockSelect]);
-
-  if (!Component) return null;
-
-  return (
-    <div
-      ref={slotRef}
-      className={`wm-live-slot ${isSelected ? 'wm-live-slot--selected' : ''}`}
-      style={{
-        position: 'absolute',
-        left: widget.position_x,
-        top: widget.position_y,
-        width: widget.width,
-        height: widget.height,
-        zIndex: isSelected ? 9999 : (widget.z_index || 1),
-      }}
-    >
-      {/* Widget content — rendered underneath, no interaction */}
-      <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-        <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
-      </div>
-
-      {/* Transparent drag surface on top — catches ALL mouse events */}
-      <div
-        className="wm-drag-overlay"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 2,
-          cursor: isSelected ? 'grab' : 'pointer',
-          background: 'transparent',
-        }}
-        onMouseDown={handleMouseDown}
-        onDragStart={e => e.preventDefault()}
-      />
-
-      {/* Selection overlay + resize handles (highest z) */}
-      {isSelected && (
-        <div className="wm-slot-selection" style={{ zIndex: 3 }}>
-          <div className="wm-resize-handle wm-resize-nw" onMouseDown={e => handleResizeDown(e, 'nw')} />
-          <div className="wm-resize-handle wm-resize-ne" onMouseDown={e => handleResizeDown(e, 'ne')} />
-          <div className="wm-resize-handle wm-resize-sw" onMouseDown={e => handleResizeDown(e, 'sw')} />
-          <div className="wm-resize-handle wm-resize-se" onMouseDown={e => handleResizeDown(e, 'se')} />
-          <div className="wm-slot-coords" ref={coordsRef}>
-            {Math.round(widget.position_x)}, {Math.round(widget.position_y)} — {Math.round(widget.width)}×{Math.round(widget.height)}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-});
 
 /* ── Per-widget sync mapping from navbar config ── */
 function buildSyncedConfig(widgetType, currentConfig, nb) {
@@ -271,76 +88,8 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
 
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
   const [editingId, setEditingId] = useState(null);
-  const [showPreview, setShowPreview] = useState(true);
-  const [selectedPreviewId, setSelectedPreviewId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
-  const previewRef = useRef(null);
-  const [previewScale, setPreviewScale] = useState(0.35);
-
-  const CANVAS_W = theme?.canvas_width || 1920;
-  const CANVAS_H = theme?.canvas_height || 1080;
-
-  /* Dynamic scale for live preview */
-  useEffect(() => {
-    if (!showPreview || !previewRef.current) return;
-    function calcScale() {
-      const avail = previewRef.current.getBoundingClientRect().width - 4;
-      setPreviewScale(Math.min(avail / CANVAS_W, 0.55));
-    }
-    calcScale();
-    const ro = new ResizeObserver(calcScale);
-    ro.observe(previewRef.current);
-    return () => ro.disconnect();
-  }, [showPreview, CANVAS_W]);
-
-  const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
-
-  /* ── Drag handlers for live preview ── */
-  const handlePreviewSelect = useCallback((id) => {
-    setSelectedPreviewId(id);
-  }, []);
-
-  /* ── Arrow-key nudge for selected widget (1px per press, 10px with Shift) ── */
-  useEffect(() => {
-    if (!selectedPreviewId) return;
-    function onKeyDown(e) {
-      const delta = e.shiftKey ? 10 : 1;
-      let dx = 0, dy = 0;
-      switch (e.key) {
-        case 'ArrowLeft':  dx = -delta; break;
-        case 'ArrowRight': dx = delta;  break;
-        case 'ArrowUp':    dy = -delta; break;
-        case 'ArrowDown':  dy = delta;  break;
-        default: return;
-      }
-      e.preventDefault();
-      const w = widgets.find(w => w.id === selectedPreviewId);
-      if (!w) return;
-      onSave({ ...w, position_x: Math.max(0, w.position_x + dx), position_y: Math.max(0, w.position_y + dy) });
-    }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [selectedPreviewId, widgets, onSave]);
-
-  const handlePreviewMove = useCallback((id, newX, newY) => {
-    const w = widgets.find(w => w.id === id);
-    if (!w) return;
-    onSave({ ...w, position_x: Math.max(0, newX), position_y: Math.max(0, newY) });
-  }, [widgets, onSave]);
-
-  const handlePreviewResize = useCallback((id, newX, newY, newW, newH) => {
-    const w = widgets.find(w => w.id === id);
-    if (!w) return;
-    onSave({ ...w, position_x: Math.max(0, newX), position_y: Math.max(0, newY), width: newW, height: newH });
-  }, [widgets, onSave]);
-
-  /* Deselect when clicking on empty canvas area */
-  const handleCanvasClick = useCallback((e) => {
-    if (e.target === e.currentTarget) {
-      setSelectedPreviewId(null);
-    }
-  }, []);
 
   const copyWidgetUrl = useCallback((widgetId) => {
     if (!overlayToken) return;
@@ -409,93 +158,48 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         </div>
         <div className="wm-page-header-actions">
           {syncMsg && <span className="wm-sync-toast">{syncMsg}</span>}
-          <button
-            className={`wm-btn ${showPreview ? 'wm-btn--preview-on' : 'wm-btn--ghost'}`}
-            onClick={() => setShowPreview(v => !v)}
-            title="Toggle live overlay preview"
-          >
-            👁️ {showPreview ? 'Hide Preview' : 'Live Preview'}
-          </button>
           <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically" data-tour="sync-colors">
             🔗 Sync Colors
           </button>
         </div>
       </div>
 
-      {/* ──── Live Overlay Preview — OBS-style drag & resize ──── */}
-      {showPreview && (
-        <div className="wm-live-preview" ref={previewRef} data-tour="live-preview">
-          <div className="wm-live-header">
-            <span className="wm-live-title">
-              <span className="wm-live-dot" />
-              Live Preview
-            </span>
-            <span className="wm-live-dims">
-              {CANVAS_W} × {CANVAS_H} &middot; {Math.round(previewScale * 100)}%
-              {selectedPreviewId && (() => {
-                const sw = widgets.find(w => w.id === selectedPreviewId);
-                const sd = sw ? getWidgetDef(sw.widget_type) : null;
-                return sw ? <span className="wm-live-selected-name"> &middot; {sd?.icon} {sw.label || sd?.label}</span> : null;
-              })()}
-            </span>
-          </div>
-          <div className="wm-live-body">
-            <div
-              className="wm-live-canvas-wrap"
-              style={{
-                width: CANVAS_W * previewScale,
-                height: CANVAS_H * previewScale,
-              }}
-            >
-              <div
-                className="wm-live-canvas"
-                style={{
-                  width: CANVAS_W,
-                  height: CANVAS_H,
-                  transform: `scale(${previewScale})`,
-                  transformOrigin: 'top left',
-                }}
-                onMouseDown={handleCanvasClick}
-                data-tour="preview-drag"
-              >
-                {visibleWidgets.length === 0 && (
-                  <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
-                )}
-                {visibleWidgets.map(w => (
-                  <DraggableSlot
-                    key={w.id}
-                    widget={w}
-                    theme={theme}
-                    allWidgets={widgets}
-                    isSelected={w.id === selectedPreviewId}
-                    scale={previewScale}
-                    onSelect={handlePreviewSelect}
-                    onMove={handlePreviewMove}
-                    onResize={handlePreviewResize}
-                  />
-                ))}
-              </div>
+      {/* ──── OBS Quick Styles — direct access to Chat & Tournament configs ──── */}
+      {(() => {
+        const chatWidget = widgets.find(w => w.widget_type === 'chat');
+        const tournamentWidget = widgets.find(w => w.widget_type === 'tournament');
+        if (!chatWidget && !tournamentWidget) return null;
+        return (
+          <div className="wm-obs-styles" data-tour="obs-styles">
+            <div className="wm-obs-styles-header">
+              <span className="wm-obs-styles-title">🎬 OBS Display Styles</span>
+              <span className="wm-obs-styles-hint">Quick access to style settings for OBS widgets</span>
             </div>
-
-            {/* ── Quick Guide side panel ── */}
-            <div className="wm-quick-guide">
-            <h4 className="wm-qg-title">📋 Quick Guide</h4>
-            <ol className="wm-qg-list">
-              <li><strong>Add widgets</strong> — click <b>+ Add</b> on any grey tile below.</li>
-              <li><strong>Move &amp; resize</strong> — drag on preview, corner handles to resize, arrow keys for 1px nudge (<b>Shift</b> = 10px).</li>
-              <li><strong>Customize</strong> — hit ⚙️ on any active tile to change colors, fonts &amp; sizes.</li>
-              <li><strong>Sync colors</strong> — set Navbar first, then 🔗 Sync Colors to apply everywhere.</li>
-              <li><strong>Toggle</strong> — click LIVE / OFF badge to show or hide a widget.</li>
-              <li><strong>Background &amp; effects</strong> — add the Background widget and open its settings for gradients, images, particles &amp; blur.</li>
-              <li><strong>Connect profiles</strong> — open Navbar settings to link your Spotify, Twitch, or Kick accounts.</li>
-              <li><strong>Bonus Hunt &amp; Tournament</strong> — use the sidebar pages to fill in session data; widgets update in real-time.</li>
-              <li><strong>Full overlay in OBS</strong> — copy the OBS URL from the sidebar and add it as a Browser Source.</li>
-              <li><strong>Single widget in OBS</strong> — open ⚙️ settings, expand "OBS Browser Source URL", and copy the link.</li>
-            </ol>
+            <div className="wm-obs-styles-grid">
+              {chatWidget && (
+                <button className="wm-obs-style-btn" onClick={() => setEditingId(chatWidget.id)}>
+                  <span className="wm-obs-style-icon">💬</span>
+                  <div className="wm-obs-style-text">
+                    <span className="wm-obs-style-name">Chat Style</span>
+                    <span className="wm-obs-style-desc">Colors, font, clean/classic mode</span>
+                  </div>
+                  <span className="wm-obs-style-arrow">⚙️</span>
+                </button>
+              )}
+              {tournamentWidget && (
+                <button className="wm-obs-style-btn" onClick={() => setEditingId(tournamentWidget.id)}>
+                  <span className="wm-obs-style-icon">🏆</span>
+                  <div className="wm-obs-style-text">
+                    <span className="wm-obs-style-name">Tournament Style</span>
+                    <span className="wm-obs-style-desc">Layout, bracket, colors, presets</span>
+                  </div>
+                  <span className="wm-obs-style-arrow">⚙️</span>
+                </button>
+              )}
             </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* ──── Active Widgets Section ──── */}
       {widgets.length > 0 && (
