@@ -95,6 +95,7 @@ export default function OverlayControlCenter() {
 
   const [activePanel, setActivePanel] = useState('widgets'); // widgets | preview
   const [copyMsg, setCopyMsg] = useState('');
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   /* ── Global Presets (stored in overlay_state) ── */
   const globalPresets = overlayState?.globalPresets || [];
@@ -307,9 +308,18 @@ export default function OverlayControlCenter() {
 
   return (
     <div className="oc-page">
+      {/* Mobile hamburger */}
+      <button className="oc-hamburger" onClick={() => setSidebarOpen(o => !o)} aria-label="Toggle menu">
+        <span className={`oc-hamburger-bar${sidebarOpen ? ' open' : ''}`} />
+        <span className={`oc-hamburger-bar${sidebarOpen ? ' open' : ''}`} />
+        <span className={`oc-hamburger-bar${sidebarOpen ? ' open' : ''}`} />
+      </button>
+      {/* Backdrop for mobile sidebar */}
+      {sidebarOpen && <div className="oc-sidebar-backdrop" onClick={() => setSidebarOpen(false)} />}
+
       <div className="oc-layout">
         {/* ─── SIDEBAR NAV ─── */}
-        <aside className="oc-sidebar">
+        <aside className={`oc-sidebar${sidebarOpen ? ' oc-sidebar--open' : ''}`}>
           <div className="oc-sidebar-brand">
             <span className="oc-sidebar-icon">🎛️</span>
             <h1 className="oc-sidebar-title">Overlay Center</h1>
@@ -319,7 +329,7 @@ export default function OverlayControlCenter() {
             {/* Home — redirects to Partners/Offers page */}
             <button
               className="oc-sidebar-btn"
-              onClick={() => navigate('/offers')}
+              onClick={() => { navigate('/offers'); setSidebarOpen(false); }}
             >
               <span className="oc-sidebar-btn-icon">🏠</span>
               <span className="oc-sidebar-btn-label">Home</span>
@@ -339,7 +349,7 @@ export default function OverlayControlCenter() {
               <button
                 key={tab.key}
                 className={`oc-sidebar-btn ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
-                onClick={() => setActivePanel(tab.key)}
+                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
               >
                 <span className="oc-sidebar-btn-icon">{tab.icon}</span>
                 <span className="oc-sidebar-btn-label">{tab.label}</span>
