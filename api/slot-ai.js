@@ -9,6 +9,27 @@ const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
 
 // ═══════════════════════════════════════════════
+// PROVIDERS ALWAYS SAFE FOR TWITCH (controversial names, safe imagery)
+// ═══════════════════════════════════════════════
+const SAFE_PROVIDERS = [
+  'nolimit city', 'nolimit', 'hacksaw gaming', 'hacksaw',
+  'pragmatic play', 'pragmatic', 'push gaming',
+  'big time gaming', 'btg', 'elk studios', 'elk',
+  'thunderkick', 'relax gaming', 'red tiger',
+  'blueprint gaming', 'quickspin', 'yggdrasil',
+  'play\'n go', 'playngo', 'netent', 'evolution',
+  'gamomat', 'kalamba games', 'avatarux', 'fantasma games',
+  'print studios', '3 oaks', 'wazdan', 'spinomenal',
+  'booming games', 'gameart', 'endorphina', 'habanero',
+];
+
+function isProviderSafe(provider) {
+  if (!provider) return null;
+  const low = provider.toLowerCase().trim();
+  return SAFE_PROVIDERS.some(p => low.includes(p) || p.includes(low)) ? true : null;
+}
+
+// ═══════════════════════════════════════════════
 // SUPABASE — query your 8000+ slots database
 // ═══════════════════════════════════════════════
 
@@ -92,7 +113,7 @@ function formatDBSlot(row) {
     max_win_multiplier: row.max_win_multiplier ? parseFloat(row.max_win_multiplier) : null,
     theme: row.theme || null,
     features: Array.isArray(row.features) ? row.features : [],
-    twitch_safe: null,   // DB doesn't have this field; leave for client to check
+    twitch_safe: isProviderSafe(row.provider),
     source: 'slots_database',
   };
 }
@@ -728,6 +749,40 @@ CRITICAL RULES:
 
     const result = sanitize(parsed);
     result.source = 'gemini_ai';
+
+    // Override twitch_safe for known-safe providers
+    const provSafe = isProviderSafe(result.provider);
+    if (provSafe === true) result.twitch_safe = true;
+
+    // ── Auto-add new slot to the database so next lookup is instant ──
+    if (result.name && result.provider) {
+      const supabase = getSupabase();
+      if (supabase) {
+        try {
+          const { error: insErr } = await supabase
+            .from('slots')
+            .insert({
+              name: result.name,
+              provider: result.provider,
+              rtp: result.rtp || null,
+              volatility: result.volatility || null,
+              max_win_multiplier: result.max_win_multiplier || null,
+              theme: result.theme || null,
+              features: result.features?.length ? result.features : null,
+              status: 'live',
+            });
+          if (insErr) {
+            // Duplicate name? Just log, don't fail the response
+            console.warn('[slot-ai] DB insert skipped:', insErr.message);
+          } else {
+            console.log(`[slot-ai] ✅ Added "${result.name}" by ${result.provider} to slots DB`);
+            result.source = 'gemini_ai_saved';  // tell client it was saved
+          }
+        } catch (e) {
+          console.error('[slot-ai] DB insert error:', e);
+        }
+      }
+    }
 
     return res.status(200).json(result);
   } catch (err) {

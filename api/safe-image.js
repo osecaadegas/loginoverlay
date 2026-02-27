@@ -147,7 +147,7 @@ export default async function handler(req, res) {
   if (!name) return res.status(400).json({ error: 'Provide "name"' });
 
   try {
-    const query = `${name} ${provider || ''} slot game official cover art`.trim();
+    const query = `${name} ${provider || ''} online slot game logo`.trim();
     // SafeSearch ON → Google filters out explicit results server-side
     const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch&safe=active`;
 
