@@ -30,7 +30,9 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const Component = def?.component;
   if (!Component) return null;
 
+  const slotId = `ow-${widget.id}`;
   const animClass = widget.is_visible ? `or-anim-in--${widget.animation || 'fade'}` : `or-anim-out--${widget.animation || 'fade'}`;
+  const customCSS = widget.config?.custom_css || '';
 
   const style = {
     position: 'absolute',
@@ -44,7 +46,8 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   };
 
   return (
-    <div className={`or-widget-slot ${animClass}`} style={style}>
+    <div id={slotId} className={`or-widget-slot ${animClass}`} style={style}>
+      {customCSS && <style>{`#${slotId} { ${customCSS} }`}</style>}
       <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
     </div>
   );

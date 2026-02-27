@@ -414,6 +414,45 @@
   color: #c4b5fd;
 }
 
+/* ─── Per-widget Custom CSS ─── */
+.oc-widget-css {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.oc-widget-css-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.oc-widget-css-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: #a5f3fc;
+  font-size: 0.75rem;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  line-height: 1.5;
+  outline: none;
+  resize: vertical;
+  min-height: 60px;
+  transition: border-color 0.2s;
+}
+
+.oc-widget-css-input:focus {
+  border-color: rgba(147, 70, 255, 0.4);
+}
+
+.oc-widget-css-input::placeholder {
+  color: rgba(148, 163, 184, 0.4);
+}
+
 .oc-wcard-layout {
   display: flex;
   flex-wrap: wrap;
