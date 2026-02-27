@@ -150,19 +150,30 @@ const DraggableSlot = memo(function DraggableSlot({
         width: widget.width,
         height: widget.height,
         zIndex: isSelected ? 9999 : (widget.z_index || 1),
-        cursor: isSelected ? 'grab' : 'pointer',
       }}
-      onMouseDown={handleMouseDown}
-      onDragStart={e => e.preventDefault()}
     >
-      {/* Widget content — pointer-events disabled so drag works */}
-      <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden' }}>
+      {/* Widget content — rendered underneath, no interaction */}
+      <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
         <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
       </div>
 
-      {/* Selection overlay + resize handles */}
+      {/* Transparent drag surface on top — catches ALL mouse events */}
+      <div
+        className="wm-drag-overlay"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          zIndex: 2,
+          cursor: isSelected ? 'grab' : 'pointer',
+          background: 'transparent',
+        }}
+        onMouseDown={handleMouseDown}
+        onDragStart={e => e.preventDefault()}
+      />
+
+      {/* Selection overlay + resize handles (highest z) */}
       {isSelected && (
-        <div className="wm-slot-selection">
+        <div className="wm-slot-selection" style={{ zIndex: 3 }}>
           <div className="wm-resize-handle wm-resize-nw" onMouseDown={e => handleResizeDown(e, 'nw')} />
           <div className="wm-resize-handle wm-resize-ne" onMouseDown={e => handleResizeDown(e, 'ne')} />
           <div className="wm-resize-handle wm-resize-sw" onMouseDown={e => handleResizeDown(e, 'sw')} />
