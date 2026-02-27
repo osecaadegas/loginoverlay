@@ -205,7 +205,9 @@
 /* ─── Image preview ─── */
 .ss-image-preview-wrap {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   padding: 8px 0;
 }
 
@@ -216,6 +218,62 @@
   object-fit: cover;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
+}
+
+/* ─── Safety badge ─── */
+.ss-safety-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.ss-safety--safe {
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  color: #4ade80;
+}
+
+.ss-safety--unsafe {
+  background: rgba(248, 113, 113, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.25);
+  color: #f87171;
+}
+
+.ss-safety--unknown {
+  background: rgba(161, 161, 170, 0.12);
+  border: 1px solid rgba(161, 161, 170, 0.2);
+  color: #a1a1aa;
+}
+
+.ss-safety-reason {
+  font-weight: 400;
+  font-size: 0.68rem;
+  opacity: 0.75;
+}
+
+/* ─── Source badge ─── */
+.ss-source-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 5px;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.ss-source--verified {
+  background: rgba(74, 222, 128, 0.1);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.2);
+}
+
+.ss-source--ai {
+  background: rgba(250, 204, 21, 0.1);
+  color: #fbbf24;
+  border: 1px solid rgba(250, 204, 21, 0.2);
 }
 
 /* ─── Name row (input + AI button) ─── */

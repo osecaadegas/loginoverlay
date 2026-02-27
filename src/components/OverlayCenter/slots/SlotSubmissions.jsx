@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { submitSlot, getMySubmissions } from '../../../services/pendingSlotService';
-import { analyzeSlotUrl, scrapeSlotMetadata, findSlotImage, fetchSlotAI } from '../../../services/slotSearchService';
+import { analyzeSlotUrl, scrapeSlotMetadata, findSlotImage, fetchSlotAI, fetchSafeImage } from '../../../services/slotSearchService';
 import './SlotSubmissions.css';
 
 const EMPTY_FORM = {
@@ -25,6 +25,8 @@ export default function SlotSubmissions() {
   const [searchingImage, setSearchingImage] = useState(false);
   const [analyzingUrl, setAnalyzingUrl] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [imageSafety, setImageSafety] = useState(null); // { safe, reason, source }
+  const [dataSource, setDataSource] = useState(null);   // 'verified_database' | 'gemini_ai'
   const searchAbort = useRef(null);
 
   const loadSubmissions = useCallback(async () => {
@@ -102,16 +104,27 @@ export default function SlotSubmissions() {
     if (form.slotUrl?.startsWith('http')) handleUrlAnalysis(form.slotUrl);
   };
 
-  /* ── Image search: trigger when user blurs name field or clicks search btn ── */
+  /* ── Image search: uses server-side safe image pipeline ── */
   const triggerImageSearch = useCallback(async (name, provider) => {
     if (!name || name.length < 2) return;
     if (searchAbort.current) searchAbort.current = true;
     searchAbort.current = false;
     setSearchingImage(true);
+    setImageSafety(null);
     try {
+      // Try safe server-side search first (SafeSearch + Gemini Vision)
+      const safeResult = await fetchSafeImage(name, provider || '');
+      if (!searchAbort.current && safeResult?.imageUrl) {
+        setForm(prev => ({ ...prev, image: prev.image || safeResult.imageUrl }));
+        setImageSafety({ safe: safeResult.safe, reason: safeResult.reason, source: safeResult.source });
+        setSearchingImage(false);
+        return;
+      }
+      // Fallback: client-side Google Images scrape (no safety validation)
       const img = await findSlotImage(name, provider || '');
       if (!searchAbort.current && img) {
         setForm(prev => ({ ...prev, image: prev.image || img }));
+        setImageSafety({ safe: null, reason: 'No AI validation — verify manually', source: 'fallback' });
       }
     } catch (_) { /* silent */ }
     setSearchingImage(false);
@@ -153,7 +166,10 @@ export default function SlotSubmissions() {
         volatility: ai.volatility || prev.volatility,
         max_win_multiplier: ai.max_win_multiplier != null ? String(ai.max_win_multiplier) : prev.max_win_multiplier,
       }));
-      flash(`✨ AI filled: ${ai.name || form.name} by ${ai.provider || '?'}`);
+      setDataSource(ai.source || 'gemini_ai');
+      const srcLabel = ai.source === 'verified_database' ? '✅ Verified DB' : '🤖 AI';
+      const safeLabel = ai.twitch_safe === false ? ' ⚠️ Not Twitch-safe!' : ai.twitch_safe === true ? ' 🟢 Twitch-safe' : '';
+      flash(`${srcLabel}: ${ai.name || form.name} by ${ai.provider || '?'}${safeLabel}`);
 
       // Also trigger image search with AI-returned name/provider
       if (!form.image && (ai.name || form.name)) {
@@ -187,6 +203,8 @@ export default function SlotSubmissions() {
       flash('Slot submitted for approval!');
       setForm(EMPTY_FORM);
       setShowForm(false);
+      setImageSafety(null);
+      setDataSource(null);
       loadSubmissions();
     } catch (err) {
       console.error('[SlotSubmissions] submit error:', err);
@@ -282,12 +300,23 @@ export default function SlotSubmissions() {
                   🌐
                 </button>
               </div>
-              {searchingImage && <span className="ss-search-hint">Searching for image…</span>}
+              {searchingImage && <span className="ss-search-hint">🛡️ Searching with SafeSearch + AI validation…</span>}
             </div>
-            {/* Image preview */}
+            {/* Image preview + safety badge */}
             {form.image && (
               <div className="ss-field ss-field--wide ss-image-preview-wrap">
                 <img src={form.image} alt="Preview" className="ss-image-preview" onError={(e) => { e.target.style.display = 'none'; }} />
+                {imageSafety && (
+                  <div className={`ss-safety-badge ${imageSafety.safe === true ? 'ss-safety--safe' : imageSafety.safe === false ? 'ss-safety--unsafe' : 'ss-safety--unknown'}`}>
+                    {imageSafety.safe === true ? '🟢 Twitch Safe' : imageSafety.safe === false ? '🔴 May be Unsafe' : '⚪ Unverified'}
+                    <span className="ss-safety-reason">{imageSafety.reason}</span>
+                  </div>
+                )}
+                {dataSource && (
+                  <span className={`ss-source-badge ${dataSource === 'verified_database' ? 'ss-source--verified' : 'ss-source--ai'}`}>
+                    {dataSource === 'verified_database' ? '✅ Verified Data' : '🤖 AI Data'}
+                  </span>
+                )}
               </div>
             )}
             <div className="ss-field ss-field--required">

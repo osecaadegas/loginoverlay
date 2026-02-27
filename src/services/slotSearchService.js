@@ -290,6 +290,29 @@ export async function fetchSlotAI(name) {
 }
 
 // ────────────────────────────────────────────────
+// fetchSafeImage — Server-side image search with Twitch safety filter
+// Uses Google SafeSearch + Gemini Vision validation
+// Returns { imageUrl, safe, reason, source }
+// ────────────────────────────────────────────────
+export async function fetchSafeImage(name, provider = '') {
+  try {
+    const res = await fetch('/api/safe-image', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, provider, validate: true }),
+    });
+    if (!res.ok) {
+      console.warn('[slotSearch] safe-image API returned', res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (e) {
+    console.error('[slotSearch] fetchSafeImage error:', e);
+    return null;
+  }
+}
+
+// ────────────────────────────────────────────────
 // findSlotImage — Google Image scrape for slot cover art
 // ────────────────────────────────────────────────
 export async function findSlotImage(name, provider = '') {
