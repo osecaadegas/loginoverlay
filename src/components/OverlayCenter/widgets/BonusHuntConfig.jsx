@@ -17,7 +17,6 @@ const FONT_OPTIONS = [
 
 export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
-  const [open, setOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
@@ -135,23 +134,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 
       {/* ═══════ CONTENT TAB ═══════ */}
       {activeTab === 'content' && (
-        <>
-          {/* Toggle dropdown */}
-          <button
-            className={`bh-config-toggle ${open ? 'bh-config-toggle--open' : ''}`}
-            onClick={() => setOpen(v => !v)}
-          >
-            <span>⚙️ Configure Bonus Hunt</span>
-            <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor"
-              style={{ transform: open ? 'rotate(180deg)' : 'rotate(0)', transition: 'transform 0.2s' }}>
-              <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinecap="round" />
-            </svg>
-          </button>
-
-          {open && (
-            <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} currency={c.currency || '€'} />
-          )}
-        </>
+        <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} currency={c.currency || '€'} />
       )}
 
       {/* ═══════ HISTORY TAB ═══════ */}

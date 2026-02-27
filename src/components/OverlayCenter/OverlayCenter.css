@@ -1425,47 +1425,16 @@
 }
 
 /* Collapsible toggle button */
-.bh-config-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid rgba(147, 70, 255, 0.2);
-  background: rgba(147, 70, 255, 0.06);
-  color: #a78bfa;
-  font-size: 0.85rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-
-.bh-config-toggle:hover {
-  background: rgba(147, 70, 255, 0.12);
-  border-color: rgba(147, 70, 255, 0.35);
-}
-
-.bh-config-toggle--open {
-  border-color: rgba(147, 70, 255, 0.4);
-  background: rgba(147, 70, 255, 0.1);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-  border-bottom: none;
-}
-
-/* Inline dropdown panel */
+/* Bonus Hunt panel — always visible, no dropdown */
 .bh-panel {
-  border: 1px solid rgba(147, 70, 255, 0.2);
-  border-top: none;
-  border-radius: 0 0 8px 8px;
-  background: rgba(12, 14, 22, 0.6);
-  padding: 12px;
+  border: 1px solid rgba(147, 70, 255, 0.15);
+  border-radius: 12px;
+  background: rgba(12, 14, 22, 0.45);
+  padding: 18px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  max-height: 480px;
-  overflow-y: auto;
+  gap: 16px;
+  margin-top: 6px;
 }
 
 .bh-panel-section {
@@ -1705,8 +1674,7 @@
   display: flex;
   flex-direction: column;
   gap: 3px;
-  max-height: 500px;
-  overflow-y: auto;
+  overflow-y: visible;
   padding-right: 2px;
 }
 
