@@ -13,6 +13,9 @@ const DraggableSlot = memo(function DraggableSlot({
   const slotRef = useRef(null);
   const coordsRef = useRef(null);
 
+  /* Block native text selection during any drag */
+  const blockSelect = useCallback((e) => e.preventDefault(), []);
+
   /* ── Drag to move — update DOM directly, save on mouseup ── */
   const handleMouseDown = useCallback((e) => {
     if (e.target.closest('.wm-resize-handle')) return;
@@ -29,7 +32,10 @@ const DraggableSlot = memo(function DraggableSlot({
     const origPy = widget.position_y;
     let curX = origPx, curY = origPy;
 
+    document.addEventListener('selectstart', blockSelect);
+
     function onMouseMove(ev) {
+      ev.preventDefault();
       const dx = (ev.clientX - startX) / scale;
       const dy = (ev.clientY - startY) / scale;
       curX = Math.max(0, Math.round(origPx + dx));
@@ -44,6 +50,7 @@ const DraggableSlot = memo(function DraggableSlot({
     function onMouseUp() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('selectstart', blockSelect);
       document.body.style.cursor = '';
       onMove(widget.id, curX, curY);
     }
@@ -51,7 +58,7 @@ const DraggableSlot = memo(function DraggableSlot({
     document.body.style.cursor = 'grabbing';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  }, [widget.id, widget.position_x, widget.position_y, widget.width, widget.height, scale, onSelect, onMove]);
+  }, [widget.id, widget.position_x, widget.position_y, widget.width, widget.height, scale, onSelect, onMove, blockSelect]);
 
   /* ── Resize from corner handle — update DOM directly, save on mouseup ── */
   const handleResizeDown = useCallback((e, corner) => {
@@ -70,7 +77,10 @@ const DraggableSlot = memo(function DraggableSlot({
     const origPy = widget.position_y;
     let curX = origPx, curY = origPy, curW = origW, curH = origH;
 
+    document.addEventListener('selectstart', blockSelect);
+
     function onMouseMove(ev) {
+      ev.preventDefault();
       const dx = (ev.clientX - startX) / scale;
       const dy = (ev.clientY - startY) / scale;
       curW = origW; curH = origH; curX = origPx; curY = origPy;
@@ -107,6 +117,7 @@ const DraggableSlot = memo(function DraggableSlot({
     function onMouseUp() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
+      document.removeEventListener('selectstart', blockSelect);
       document.body.style.cursor = '';
       onResize(widget.id, curX, curY, curW, curH);
     }
@@ -114,7 +125,7 @@ const DraggableSlot = memo(function DraggableSlot({
     document.body.style.cursor = corner === 'se' ? 'nwse-resize' : corner === 'sw' ? 'nesw-resize' : corner === 'ne' ? 'nesw-resize' : 'nwse-resize';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  }, [widget.id, widget.width, widget.height, widget.position_x, widget.position_y, scale, onSelect, onResize]);
+  }, [widget.id, widget.width, widget.height, widget.position_x, widget.position_y, scale, onSelect, onResize, blockSelect]);
 
   if (!Component) return null;
 
@@ -132,6 +143,7 @@ const DraggableSlot = memo(function DraggableSlot({
         cursor: isSelected ? 'grab' : 'pointer',
       }}
       onMouseDown={handleMouseDown}
+      onDragStart={e => e.preventDefault()}
     >
       {/* Widget content — pointer-events disabled so drag works */}
       <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden' }}>

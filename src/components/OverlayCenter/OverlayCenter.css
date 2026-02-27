@@ -1503,12 +1503,16 @@
   border: 1px solid rgba(139, 92, 246, 0.15);
   background: #0a0a12;
   position: relative;
+  user-select: none;
+  -webkit-user-select: none;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 60px rgba(0, 0, 0, 0.2);
 }
 
 .wm-live-canvas {
   position: relative;
   background: transparent;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .wm-live-empty {
