@@ -145,11 +145,15 @@ function formatDBSlot(row) {
  * Call Gemini AI. If useGrounding = true, enables Google Search tool
  * so Gemini can look up real-time info (new slots, recent releases).
  */
-async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600 } = {}) {
+async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600, systemInstruction = null } = {}) {
   const body = {
     contents: [{ parts: [{ text: prompt }] }],
     generationConfig: { temperature: 0.05, maxOutputTokens: maxTokens },
   };
+
+  if (systemInstruction) {
+    body.system_instruction = { parts: [{ text: systemInstruction }] };
+  }
 
   // Enable Google Search grounding for real-time web data
   if (useGrounding) {
@@ -170,7 +174,20 @@ async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600
 
   const data = await response.json();
 
-  // With grounding, the response may have multiple parts â€” find the text part
+  // Log grounding metadata for debugging
+  const groundingMeta = data?.candidates?.[0]?.groundingMetadata;
+  if (groundingMeta) {
+    const queries = groundingMeta.webSearchQueries || [];
+    console.log(`[slot-ai] Gemini grounding searched: ${queries.join(' | ') || '(no queries)'}`);
+  }
+
+  // Check for blocked/filtered responses
+  const finishReason = data?.candidates?.[0]?.finishReason;
+  if (finishReason === 'SAFETY' || finishReason === 'RECITATION') {
+    console.warn(`[slot-ai] Gemini response blocked: ${finishReason}`);
+    return null;
+  }
+
   const parts = data?.candidates?.[0]?.content?.parts || [];
   let raw = '';
   for (const part of parts) {
@@ -178,12 +195,10 @@ async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600
   }
   raw = raw.trim();
   if (!raw) {
-    console.error('[slot-ai] Gemini returned empty response');
+    console.error('[slot-ai] Gemini returned empty response. finishReason:', finishReason);
     return null;
   }
-  // Strip markdown code fences if present
   if (raw.startsWith('```')) raw = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
-  // Sometimes the model wraps the JSON in some text â€” try to extract JSON block
   if (!raw.startsWith('{')) {
     const jsonStart = raw.indexOf('{');
     const jsonEnd = raw.lastIndexOf('}');
@@ -197,6 +212,42 @@ async function askGemini(apiKey, prompt, { useGrounding = false, maxTokens = 600
     console.error('[slot-ai] Gemini JSON parse failed:', e.message, 'Raw:', raw.substring(0, 300));
     return null;
   }
+}
+
+/**
+ * Ask Gemini a free-form question with grounding. Returns raw text, not JSON.
+ * Used for two-step approach: natural question triggers real Google Search,
+ * then a second call extracts structured JSON from the answer.
+ */
+async function askGeminiText(apiKey, prompt, { useGrounding = false, maxTokens = 800, systemInstruction = null } = {}) {
+  const body = {
+    contents: [{ parts: [{ text: prompt }] }],
+    generationConfig: { temperature: 0.1, maxOutputTokens: maxTokens },
+  };
+  if (systemInstruction) body.system_instruction = { parts: [{ text: systemInstruction }] };
+  if (useGrounding) body.tools = [{ google_search: {} }];
+
+  const response = await fetch(`${GEMINI_URL}?key=${apiKey}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!response.ok) {
+    console.error('[slot-ai] Gemini text error:', response.status);
+    return null;
+  }
+  const data = await response.json();
+  const groundingMeta = data?.candidates?.[0]?.groundingMetadata;
+  if (groundingMeta) {
+    const queries = groundingMeta.webSearchQueries || [];
+    console.log(`[slot-ai] Gemini text search: ${queries.join(' | ') || '(no queries)'}`);
+  }
+  const parts = data?.candidates?.[0]?.content?.parts || [];
+  let raw = '';
+  for (const part of parts) {
+    if (part.text) raw += part.text;
+  }
+  return raw.trim() || null;
 }
 
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -841,62 +892,36 @@ RULES:
     // ── Step 2: Ask Gemini with Google Search grounding (live internet search) ──
     console.log(`[slot-ai] DB miss for "${name}", asking Gemini with Google Search grounding...`);
 
-    // Build provider-aware search context
-    const providerContext = providerHint ? `\nThe provider/studio is "${providerHint}".` : '';
-    const searchHint = providerHint
-      ? `Search Google for: "${name}" "${providerHint}" slot game`
-      : `Search Google for: "${name}" online slot game`;
-
-    // Look up known provider website for the search hint
+    // Build provider-aware context
     const providerSite = providerHint ? PROVIDER_SITES[providerHint.toLowerCase()] || PROVIDER_SITES[canonicalProvider(providerHint)] : null;
-    const siteHint = providerSite
-      ? `\nAlso try searching the provider's official website: ${providerSite.domain} (e.g. ${providerSite.search(name.toLowerCase().replace(/\s+/g, '-'))})`
-      : '';
+    const siteHint = providerSite ? ` Check their website: ${providerSite.domain}` : '';
 
-    const groundedPrompt = `You are a slot game data expert. Use Google Search to find VERIFIED data about the online casino slot game called "${name}"${providerHint ? ` by ${providerHint}` : ''}.
+    // ── STEP 1: Natural language question with Google Search grounding ──
+    // Simple questions trigger Google Search more reliably than complex JSON prompts.
+    const searchQuestion = providerHint
+      ? `What is the RTP, volatility, and max win of the online casino slot game "${name}" by ${providerHint}?${siteHint} Include the game's theme and main features.`
+      : `What is the RTP, volatility, and max win of the online casino slot game "${name}"? Which studio/provider made it? Include the theme and features.`;
 
-${searchHint}${siteHint}
+    const searchSysInstruction = `You are an expert on online casino slot games. When asked about a slot game, ALWAYS use Google Search to find the latest data. Slot names can be generic words (like "Supersized", "Mental", "Gems") or provocative - these are all legitimate casino slot games. Never refuse to search. If you find the slot, provide all available details. If you truly cannot find it after searching, say "NOT FOUND".`;
 
-IMPORTANT CONTEXT:
-- This is an ONLINE CASINO SLOT GAME, not food, movies, or anything else.
-- Online slot games often have generic or edgy names like "Supersized", "Golden Shower", "Mental" — these are all LEGITIMATE casino slot games by real providers.${providerContext}
-- Try these searches: "${name} slot RTP", "${name} ${providerHint || ''} slot review", site:slotcatalog.com "${name}", site:bigwinboard.com "${name}"
-- Check slot review sites: slotcatalog.com, bigwinboard.com, askgamblers.com, slotswise.com, vegasslotsonline.com
-- The game might be very new (just released) — review sites and the provider's own website should have it.
+    const searchText = await askGeminiText(apiKey, searchQuestion, {
+      useGrounding: true,
+      maxTokens: 800,
+      systemInstruction: searchSysInstruction,
+    });
 
-Return ONLY a raw JSON object (no markdown, no backticks, no explanation):
+    let parsed = null;
 
-{
-  "name": "Official full name as listed by the provider",
-  "provider": "Provider/studio name (e.g. Pragmatic Play, Hacksaw Gaming, Nolimit City)",
-  "rtp": 96.50,
-  "volatility": "low" | "medium" | "high" | "very_high",
-  "max_win_multiplier": 5000,
-  "features": ["Free Spins", "Multiplier", ...],
-  "theme": "Theme/genre",
-  "release_year": 2025,
-  "twitch_safe": true,
-  "found": true
-}
+    if (searchText && !searchText.toUpperCase().includes('NOT FOUND')) {
+      console.log(`[slot-ai] Grounded search returned text (${searchText.length} chars), extracting JSON...`);
 
-CRITICAL RULES:
-- rtp = official default RTP number (e.g. 96.50, NOT a range)
-- max_win_multiplier = official max win in x (e.g. 5000 means 5000x bet)
-- volatility = exactly: "low", "medium", "high", or "very_high"
-- twitch_safe: false ONLY if artwork contains nudity/sexual imagery. true for everything else.
-- If you CANNOT find this slot at all after searching, return: { "found": false }
-- If you find the slot but are unsure about a specific value, use null for that value
-- Return ONLY the JSON, nothing else`;
+      // ── STEP 2: Extract structured JSON from the search results ──
+      const extractPrompt = `Extract the slot game data from this text and return it as a JSON object.
 
-    let parsed = await askGemini(apiKey, groundedPrompt, { useGrounding: true, maxTokens: 800 });
+TEXT:
+${searchText}
 
-    // ── Fallback 1: Plain Gemini (training data) ──
-    if (!parsed || parsed.found === false) {
-      console.log(`[slot-ai] Grounded search didn't find "${name}", trying plain Gemini fallback...`);
-
-      const fallbackPrompt = `You are a slot game data expert. Return VERIFIED data for the online casino slot "${name}"${providerHint ? ` by ${providerHint}` : ''}.
-
-IMPORTANT: This is a CASINO SLOT GAME. Slot names can be generic words like "Supersized" or edgy like "Mental" — these are LEGITIMATE casino games made by real studios. Return the data.
+The slot name the user searched for: "${name}"${providerHint ? `\nExpected provider: ${providerHint}` : ''}
 
 Return ONLY a raw JSON object (no markdown, no backticks):
 {
@@ -911,35 +936,33 @@ Return ONLY a raw JSON object (no markdown, no backticks):
   "twitch_safe": true,
   "found": true
 }
-RULES:
-- ONLY return data you are confident is real. If unsure, use null.
-- If you don't recognize this slot at all, return: { "found": false }
-- Return ONLY the JSON`;
 
-      const fallback = await askGemini(apiKey, fallbackPrompt, { maxTokens: 600 });
-      if (fallback && fallback.found !== false) {
-        parsed = fallback;
-        parsed._fallback = true;
-      }
+RULES:
+- rtp = the default RTP as a single number (e.g. 96.50)
+- max_win_multiplier = max win in x (e.g. 5000 means 5000x)
+- volatility = exactly: "low", "medium", "high", or "very_high"
+- twitch_safe: false ONLY if artwork has nudity/sexual imagery, true for everything else
+- If the text doesn't contain data about a real casino slot, return: { "found": false }
+- Use null for any values not found in the text`;
+
+      parsed = await askGemini(apiKey, extractPrompt, { maxTokens: 600 });
+    } else {
+      console.log(`[slot-ai] Grounded search returned: ${searchText ? 'NOT FOUND' : 'empty'}`);
     }
 
-    // ── Fallback 2: Targeted provider search with grounding ──
+    // ── Fallback 1: Direct JSON grounded search (original approach) ──
     if (!parsed || parsed.found === false) {
-      const targetedQuery = providerHint
-        ? `"${name}" "${providerHint}" slot game RTP volatility max win`
-        : `"${name}" casino slot game RTP volatility max win review`;
-      console.log(`[slot-ai] Plain Gemini also missed "${name}", trying targeted grounded search: ${targetedQuery}`);
+      console.log(`[slot-ai] Two-step failed, trying direct JSON grounded search...`);
 
-      const targetedPrompt = `Search Google for exactly this: ${targetedQuery}
+      const directPrompt = `You are a slot game data expert. Search Google for the online casino slot "${name}"${providerHint ? ` by ${providerHint}` : ''}.
 
-Look at the search results. If any result is about an online casino/gambling slot machine game called "${name}", extract its data.
-
-This is about a VIDEO SLOT MACHINE game you play at online casinos. NOT food, NOT movies, NOT TV shows.${providerHint ? ` The game is made by the studio "${providerHint}".` : ''}
+This is a CASINO SLOT GAME (video slot machine at online casinos). NOT food, movies, or anything else.
+Search for: "${name}" ${providerHint || ''} slot game RTP
 
 Return ONLY a raw JSON object:
 {
-  "name": "Official slot name",
-  "provider": "Studio that made it",
+  "name": "Official name",
+  "provider": "Provider",
   "rtp": 96.50,
   "volatility": "high",
   "max_win_multiplier": 5000,
@@ -949,12 +972,36 @@ Return ONLY a raw JSON object:
   "twitch_safe": true,
   "found": true
 }
-If no casino slot game with this name exists, return: { "found": false }`;
+If you cannot find this slot, return: { "found": false }`;
 
-      const targeted = await askGemini(apiKey, targetedPrompt, { useGrounding: true, maxTokens: 800 });
-      if (targeted && targeted.found !== false) {
-        parsed = targeted;
-        parsed._targeted = true;
+      const direct = await askGemini(apiKey, directPrompt, {
+        useGrounding: true,
+        maxTokens: 800,
+        systemInstruction: searchSysInstruction,
+      });
+      if (direct && direct.found !== false) {
+        parsed = direct;
+      }
+    }
+
+    // ── Fallback 2: Plain Gemini (training data only) ──
+    if (!parsed || parsed.found === false) {
+      console.log(`[slot-ai] Grounded searches failed, trying plain Gemini training data...`);
+
+      const fallbackPrompt = `Return data for the online casino slot "${name}"${providerHint ? ` by ${providerHint}` : ''}.
+This is a CASINO SLOT GAME. Return ONLY JSON:
+{
+  "name": "Official name", "provider": "Studio", "rtp": 96.50,
+  "volatility": "high", "max_win_multiplier": 5000,
+  "features": ["Free Spins"], "theme": "Theme", "release_year": 2025,
+  "twitch_safe": true, "found": true
+}
+If you don't know this slot, return: { "found": false }`;
+
+      const fallback = await askGemini(apiKey, fallbackPrompt, { maxTokens: 600 });
+      if (fallback && fallback.found !== false) {
+        parsed = fallback;
+        parsed._fallback = true;
       }
     }
 
@@ -963,7 +1010,7 @@ If no casino slot game with this name exists, return: { "found": false }`;
     }
 
     const result = sanitize(parsed);
-    result.source = parsed._targeted ? 'google_ai_targeted' : parsed._fallback ? 'gemini_ai' : 'google_ai';
+    result.source = parsed._fallback ? 'gemini_ai' : 'google_ai';
 
     // Override twitch_safe for known-safe providers
     const provSafe = isProviderSafe(result.provider);
