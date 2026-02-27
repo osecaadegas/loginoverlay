@@ -97,6 +97,32 @@ function pickRandomClip(clips, maxDuration = 60) {
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
+/**
+ * Resolve the direct .mp4 video URL from a clip's thumbnail URL.
+ * Server-side only — tries a HEAD request to verify the URL is valid.
+ * Returns the verified URL or null.
+ */
+async function resolveClipVideoUrl(thumbnailUrl) {
+  if (!thumbnailUrl) return null;
+
+  // Derive .mp4 from thumbnail: strip "-preview-{W}x{H}.jpg" suffix
+  const mp4Url = thumbnailUrl.replace(/-preview-\d+x\d+\.jpg$/i, '.mp4');
+  if (mp4Url === thumbnailUrl) return null; // regex didn't match
+
+  try {
+    const headRes = await fetch(mp4Url, { method: 'HEAD', redirect: 'follow' });
+    if (headRes.ok) {
+      console.log('[RaidShoutout] Verified clip video URL:', mp4Url);
+      return mp4Url;
+    }
+    console.warn(`[RaidShoutout] Clip .mp4 HEAD returned ${headRes.status}:`, mp4Url);
+    return null;
+  } catch (err) {
+    console.warn('[RaidShoutout] Clip .mp4 HEAD failed:', err.message);
+    return null;
+  }
+}
+
 // ─── Main Handler ───
 export default async function handler(req, res) {
   // CORS
@@ -169,7 +195,10 @@ export default async function handler(req, res) {
     const clips = await fetchClips(twitchUser.id, 50);
     const clip = pickRandomClip(clips, 60);
 
-    // ── Step 4: Build alert payload ──
+    // ── Step 4: Resolve direct .mp4 video URL (server-side, no CORS) ──
+    const clipVideoUrl = clip ? await resolveClipVideoUrl(clip.thumbnail_url) : null;
+
+    // ── Step 5: Build alert payload ──
     const alertPayload = {
       user_id: userId,
       raider_username: twitchUser.login,
@@ -180,6 +209,7 @@ export default async function handler(req, res) {
       clip_url: clip?.url || null,
       clip_embed_url: clip ? `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${process.env.OVERLAY_DOMAIN || 'localhost'}` : null,
       clip_thumbnail_url: clip?.thumbnail_url || null,
+      clip_video_url: clipVideoUrl,
       clip_title: clip?.title || null,
       clip_duration: clip?.duration || null,
       clip_view_count: clip?.view_count || null,
@@ -188,7 +218,7 @@ export default async function handler(req, res) {
       triggered_by: triggeredBy || 'manual',
     };
 
-    // ── Step 5: Insert into Supabase ──
+    // ── Step 6: Insert into Supabase ──
     const supabase = createClient(
       process.env.SUPABASE_URL,
       process.env.SUPABASE_SERVICE_ROLE_KEY

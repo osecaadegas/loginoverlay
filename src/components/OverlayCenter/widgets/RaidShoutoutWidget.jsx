@@ -155,7 +155,8 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
 
   if (!currentAlert || phase === 'idle') return null;
 
-  const videoUrl = getClipVideoUrl(currentAlert.clip_thumbnail_url);
+  // Prefer pre-verified video URL from API, fall back to client-side derivation
+  const videoUrl = currentAlert.clip_video_url || getClipVideoUrl(currentAlert.clip_thumbnail_url);
   const hasClip = !!(currentAlert.clip_id || currentAlert.clip_embed_url);
   const iframeSrc = hasClip ? buildIframeSrc(currentAlert.clip_id, currentAlert.clip_embed_url) : null;
   // Use native video if we have a URL and it hasn't errored; otherwise iframe
