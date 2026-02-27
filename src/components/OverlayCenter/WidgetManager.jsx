@@ -4,15 +4,101 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
 
-/* ── Inline preview slot — renders the actual widget component ── */
-const LiveSlot = memo(function LiveSlot({ widget, theme, allWidgets, isHighlighted }) {
+/* ── Draggable preview slot — OBS-style click & drag + resize ── */
+const DraggableSlot = memo(function DraggableSlot({
+  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize,
+}) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
+  const slotRef = useRef(null);
+
+  /* ── Drag to move ── */
+  const handleMouseDown = useCallback((e) => {
+    // Don't drag when clicking resize handles
+    if (e.target.closest('.wm-resize-handle')) return;
+    e.preventDefault();
+    e.stopPropagation();
+    onSelect(widget.id);
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const origPx = widget.position_x;
+    const origPy = widget.position_y;
+
+    function onMouseMove(ev) {
+      const dx = (ev.clientX - startX) / scale;
+      const dy = (ev.clientY - startY) / scale;
+      onMove(widget.id, Math.round(origPx + dx), Math.round(origPy + dy));
+    }
+
+    function onMouseUp() {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+    }
+
+    document.body.style.cursor = 'grabbing';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [widget.id, widget.position_x, widget.position_y, scale, onSelect, onMove]);
+
+  /* ── Resize from handle ── */
+  const handleResizeDown = useCallback((e, corner) => {
+    e.preventDefault();
+    e.stopPropagation();
+    onSelect(widget.id);
+
+    const startX = e.clientX;
+    const startY = e.clientY;
+    const origW = widget.width;
+    const origH = widget.height;
+    const origPx = widget.position_x;
+    const origPy = widget.position_y;
+
+    function onMouseMove(ev) {
+      const dx = (ev.clientX - startX) / scale;
+      const dy = (ev.clientY - startY) / scale;
+
+      let newW = origW, newH = origH, newPx = origPx, newPy = origPy;
+
+      if (corner === 'se') {
+        newW = Math.max(20, origW + dx);
+        newH = Math.max(20, origH + dy);
+      } else if (corner === 'sw') {
+        newW = Math.max(20, origW - dx);
+        newH = Math.max(20, origH + dy);
+        newPx = origPx + (origW - newW);
+      } else if (corner === 'ne') {
+        newW = Math.max(20, origW + dx);
+        newH = Math.max(20, origH - dy);
+        newPy = origPy + (origH - newH);
+      } else if (corner === 'nw') {
+        newW = Math.max(20, origW - dx);
+        newH = Math.max(20, origH - dy);
+        newPx = origPx + (origW - newW);
+        newPy = origPy + (origH - newH);
+      }
+
+      onResize(widget.id, Math.round(newPx), Math.round(newPy), Math.round(newW), Math.round(newH));
+    }
+
+    function onMouseUp() {
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+      document.body.style.cursor = '';
+    }
+
+    document.body.style.cursor = corner === 'se' ? 'nwse-resize' : corner === 'sw' ? 'nesw-resize' : corner === 'ne' ? 'nesw-resize' : 'nwse-resize';
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+  }, [widget.id, widget.width, widget.height, widget.position_x, widget.position_y, scale, onSelect, onResize]);
+
   if (!Component) return null;
 
   return (
     <div
-      className={`wm-live-slot ${isHighlighted ? 'wm-live-slot--active' : ''}`}
+      ref={slotRef}
+      className={`wm-live-slot ${isSelected ? 'wm-live-slot--selected' : ''}`}
       style={{
         position: 'absolute',
         left: widget.position_x,
@@ -20,9 +106,27 @@ const LiveSlot = memo(function LiveSlot({ widget, theme, allWidgets, isHighlight
         width: widget.width,
         height: widget.height,
         zIndex: widget.z_index || 1,
+        cursor: isSelected ? 'grab' : 'pointer',
       }}
+      onMouseDown={handleMouseDown}
     >
       <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+
+      {/* Selection overlay + resize handles */}
+      {isSelected && (
+        <div className="wm-slot-selection">
+          {/* Corner resize handles */}
+          <div className="wm-resize-handle wm-resize-nw" onMouseDown={e => handleResizeDown(e, 'nw')} />
+          <div className="wm-resize-handle wm-resize-ne" onMouseDown={e => handleResizeDown(e, 'ne')} />
+          <div className="wm-resize-handle wm-resize-sw" onMouseDown={e => handleResizeDown(e, 'sw')} />
+          <div className="wm-resize-handle wm-resize-se" onMouseDown={e => handleResizeDown(e, 'se')} />
+
+          {/* Position label */}
+          <div className="wm-slot-coords">
+            {Math.round(widget.position_x)}, {Math.round(widget.position_y)} — {Math.round(widget.width)}×{Math.round(widget.height)}
+          </div>
+        </div>
+      )}
     </div>
   );
 });
@@ -113,6 +217,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const [editingId, setEditingId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
+  const [selectedPreviewId, setSelectedPreviewId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const previewRef = useRef(null);
@@ -135,6 +240,31 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   }, [showPreview, CANVAS_W]);
 
   const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
+
+  /* ── Drag handlers for live preview ── */
+  const handlePreviewSelect = useCallback((id) => {
+    setSelectedPreviewId(id);
+    setEditingId(id); // also expand the card below
+  }, []);
+
+  const handlePreviewMove = useCallback((id, newX, newY) => {
+    const w = widgets.find(w => w.id === id);
+    if (!w) return;
+    onSave({ ...w, position_x: Math.max(0, newX), position_y: Math.max(0, newY) });
+  }, [widgets, onSave]);
+
+  const handlePreviewResize = useCallback((id, newX, newY, newW, newH) => {
+    const w = widgets.find(w => w.id === id);
+    if (!w) return;
+    onSave({ ...w, position_x: Math.max(0, newX), position_y: Math.max(0, newY), width: newW, height: newH });
+  }, [widgets, onSave]);
+
+  /* Deselect when clicking on empty canvas area */
+  const handleCanvasClick = useCallback((e) => {
+    if (e.target === e.currentTarget) {
+      setSelectedPreviewId(null);
+    }
+  }, []);
 
   const copyWidgetUrl = useCallback((widgetId) => {
     if (!overlayToken) return;
@@ -215,7 +345,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         </div>
       </div>
 
-      {/* ──── Live Overlay Preview ──── */}
+      {/* ──── Live Overlay Preview — OBS-style drag & resize ──── */}
       {showPreview && (
         <div className="wm-live-preview" ref={previewRef}>
           <div className="wm-live-header">
@@ -223,7 +353,14 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               <span className="wm-live-dot" />
               Live Preview
             </span>
-            <span className="wm-live-dims">{CANVAS_W} × {CANVAS_H} &middot; {Math.round(previewScale * 100)}%</span>
+            <span className="wm-live-dims">
+              {CANVAS_W} × {CANVAS_H} &middot; {Math.round(previewScale * 100)}%
+              {selectedPreviewId && (() => {
+                const sw = widgets.find(w => w.id === selectedPreviewId);
+                const sd = sw ? getWidgetDef(sw.widget_type) : null;
+                return sw ? <span className="wm-live-selected-name"> &middot; {sd?.icon} {sw.label || sd?.label}</span> : null;
+              })()}
+            </span>
           </div>
           <div
             className="wm-live-canvas-wrap"
@@ -240,25 +377,28 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 transform: `scale(${previewScale})`,
                 transformOrigin: 'top left',
               }}
+              onMouseDown={handleCanvasClick}
             >
               {visibleWidgets.length === 0 && (
                 <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
               )}
               {visibleWidgets.map(w => (
-                <LiveSlot
+                <DraggableSlot
                   key={w.id}
                   widget={w}
                   theme={theme}
                   allWidgets={widgets}
-                  isHighlighted={w.id === editingId}
+                  isSelected={w.id === selectedPreviewId}
+                  scale={previewScale}
+                  onSelect={handlePreviewSelect}
+                  onMove={handlePreviewMove}
+                  onResize={handlePreviewResize}
                 />
               ))}
             </div>
           </div>
           <p className="wm-live-hint">
-            {editingId
-              ? '🟣 The highlighted widget is the one you\'re editing. Drag the sliders below to see it move in real-time.'
-              : 'Click a widget card below to start editing — it will be highlighted here.'}
+            Click a widget to select it, then <strong>drag to move</strong> or use the <strong>corner handles to resize</strong>. Click empty space to deselect.
           </p>
         </div>
       )}

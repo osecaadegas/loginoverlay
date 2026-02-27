@@ -1532,9 +1532,11 @@
   text-align: center;
 }
 
-/* ── Live slot — actual widget with highlight ring ── */
+/* ── Live slot — OBS-style drag & resize ── */
 .wm-live-slot {
   overflow: hidden;
+  pointer-events: auto;
+  cursor: pointer;
   transition: box-shadow 0.2s ease, outline 0.2s ease;
 }
 
@@ -1544,6 +1546,68 @@
   box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 0 40px rgba(139, 92, 246, 0.1);
   border-radius: 4px;
   z-index: 999 !important;
+}
+
+.wm-live-slot--selected {
+  outline: 2px solid rgba(139, 92, 246, 0.9);
+  outline-offset: 0px;
+  cursor: grab;
+  z-index: 1000 !important;
+}
+.wm-live-slot--selected:active {
+  cursor: grabbing;
+}
+
+/* Selection overlay with resize handles */
+.wm-slot-selection {
+  position: absolute;
+  inset: -4px;
+  border: 2px dashed rgba(139, 92, 246, 0.6);
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.wm-resize-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #fff;
+  border: 2px solid rgba(139, 92, 246, 0.9);
+  border-radius: 2px;
+  pointer-events: auto;
+  z-index: 11;
+}
+.wm-resize-handle:hover {
+  background: rgba(139, 92, 246, 1);
+  transform: scale(1.2);
+}
+.wm-resize-nw { top: -5px; left: -5px; cursor: nw-resize; }
+.wm-resize-ne { top: -5px; right: -5px; cursor: ne-resize; }
+.wm-resize-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
+.wm-resize-se { bottom: -5px; right: -5px; cursor: se-resize; }
+
+/* Coords tooltip */
+.wm-slot-coords {
+  position: absolute;
+  bottom: -22px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #e0d0ff;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 12;
+}
+
+/* Selected widget name in header */
+.wm-live-selected-name {
+  color: rgba(139, 92, 246, 0.9);
+  font-weight: 600;
 }
 
 /* ─── Config Forms (widget-specific — legacy support) ─── */
