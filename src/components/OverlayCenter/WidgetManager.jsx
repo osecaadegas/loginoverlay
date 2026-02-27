@@ -16,6 +16,16 @@ const DraggableSlot = memo(function DraggableSlot({
   /* Block native text selection during any drag */
   const blockSelect = useCallback((e) => e.preventDefault(), []);
 
+  function startDrag() {
+    document.body.classList.add('wm-dragging');
+    document.addEventListener('selectstart', blockSelect);
+    window.getSelection()?.removeAllRanges();
+  }
+  function endDrag() {
+    document.body.classList.remove('wm-dragging');
+    document.removeEventListener('selectstart', blockSelect);
+  }
+
   /* ── Drag to move — update DOM directly, save on mouseup ── */
   const handleMouseDown = useCallback((e) => {
     if (e.target.closest('.wm-resize-handle')) return;
@@ -32,7 +42,7 @@ const DraggableSlot = memo(function DraggableSlot({
     const origPy = widget.position_y;
     let curX = origPx, curY = origPy;
 
-    document.addEventListener('selectstart', blockSelect);
+    startDrag();
 
     function onMouseMove(ev) {
       ev.preventDefault();
@@ -50,7 +60,7 @@ const DraggableSlot = memo(function DraggableSlot({
     function onMouseUp() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('selectstart', blockSelect);
+      endDrag();
       document.body.style.cursor = '';
       onMove(widget.id, curX, curY);
     }
@@ -77,7 +87,7 @@ const DraggableSlot = memo(function DraggableSlot({
     const origPy = widget.position_y;
     let curX = origPx, curY = origPy, curW = origW, curH = origH;
 
-    document.addEventListener('selectstart', blockSelect);
+    startDrag();
 
     function onMouseMove(ev) {
       ev.preventDefault();
@@ -117,7 +127,7 @@ const DraggableSlot = memo(function DraggableSlot({
     function onMouseUp() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
-      document.removeEventListener('selectstart', blockSelect);
+      endDrag();
       document.body.style.cursor = '';
       onResize(widget.id, curX, curY, curW, curH);
     }
