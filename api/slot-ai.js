@@ -600,6 +600,131 @@ async function askGemini(apiKey, prompt) {
   }
 }
 
+// ═══════════════════════════════════════════════
+// GOOGLE-GROUNDED SEARCH — for brand-new slots Gemini doesn't know yet
+// Searches Google for the slot, scrapes top results, feeds to Gemini for parsing.
+// ═══════════════════════════════════════════════
+
+async function googleSlotSearch(apiKey, slotName) {
+  try {
+    // 1. Search Google for the slot's RTP/stats page
+    const queries = [
+      `"${slotName}" slot RTP volatility max win provider`,
+      `"${slotName}" slot review RTP`,
+    ];
+
+    let pageTexts = [];
+
+    for (const query of queries) {
+      if (pageTexts.length >= 2) break;
+      const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(query)}`;
+      const googleRes = await fetch(googleUrl, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept-Language': 'en-US,en;q=0.9',
+        },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (!googleRes.ok) continue;
+
+      const html = await googleRes.text();
+
+      // Extract URLs from Google results
+      const urlRx = /href="\/url\?q=(https?:\/\/[^&"]+)/g;
+      const urls = [];
+      let m;
+      while ((m = urlRx.exec(html)) !== null && urls.length < 3) {
+        const u = decodeURIComponent(m[1]);
+        // Skip Google, YouTube, and image-only sites
+        if (!/google\.|youtube\.|imgur\.|reddit\./i.test(u)) urls.push(u);
+      }
+
+      // Also extract text snippets directly from Google SERP
+      const snippetClean = html
+        .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+        .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      if (snippetClean.length > 200) {
+        // Take the most relevant chunk (around 3000 chars)
+        pageTexts.push(`[Google SERP for "${query}"]:\n${snippetClean.substring(0, 3000)}`);
+      }
+
+      // Try to fetch the first 1-2 result pages for more detail
+      for (const url of urls.slice(0, 2)) {
+        if (pageTexts.length >= 3) break;
+        try {
+          const pageRes = await fetch(url, {
+            headers: { 'User-Agent': 'Mozilla/5.0 (compatible; SlotBot/1.0)' },
+            redirect: 'follow',
+            signal: AbortSignal.timeout(5000),
+          });
+          if (!pageRes.ok) continue;
+          const ct = pageRes.headers.get('content-type') || '';
+          if (!ct.includes('text/html')) continue;
+
+          const pageHtml = await pageRes.text();
+          // Strip scripts/styles, get text
+          const text = pageHtml
+            .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+            .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+            .replace(/<[^>]+>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+
+          if (text.length > 100) {
+            pageTexts.push(`[Page: ${url}]:\n${text.substring(0, 3000)}`);
+          }
+        } catch (_) { /* timeout or fetch error — skip */ }
+      }
+    }
+
+    if (!pageTexts.length) {
+      console.log(`[slot-ai] Google search returned no usable content for "${slotName}"`);
+      return null;
+    }
+
+    // 2. Feed page content to Gemini for extraction
+    const extractPrompt = `I found these web pages about the slot game "${slotName}". Extract the slot data from them.
+
+${pageTexts.join('\n\n---\n\n')}
+
+Based on the above text, return ONLY a raw JSON object (no markdown, no backticks):
+
+{
+  "name": "Official full name",
+  "provider": "Provider/studio name",
+  "rtp": 96.50,
+  "volatility": "low" | "medium" | "high" | "very_high",
+  "max_win_multiplier": 5000,
+  "features": ["Free Spins", "Multiplier", ...],
+  "theme": "Theme/genre",
+  "release_year": 2024,
+  "twitch_safe": true
+}
+
+RULES:
+- Extract ONLY data that is clearly stated in the text above
+- rtp as a number (e.g. 96.50)
+- max_win_multiplier as a number in x (e.g. 5000 means 5000x)
+- volatility exactly: "low", "medium", "high", or "very_high"
+- If a value is not clearly stated, use null
+- Return ONLY the JSON`;
+
+    console.log(`[slot-ai] Feeding ${pageTexts.length} page(s) to Gemini for "${slotName}"`);
+    const extracted = await askGemini(apiKey, extractPrompt);
+    if (!extracted || !extracted.name) return null;
+
+    // Mark that this came from Google so the handler knows
+    extracted._google = true;
+    return extracted;
+  } catch (e) {
+    console.error('[slot-ai] Google-grounded search error:', e);
+    return null;
+  }
+}
+
 function normalizeVolatility(v) {
   if (typeof v !== 'string') return null;
   const low = v.toLowerCase().replace(/[^a-z]/g, '');
@@ -748,13 +873,21 @@ CRITICAL RULES:
 - If you are NOT SURE about a value, use null — DO NOT GUESS
 - Return ONLY the JSON, nothing else`;
 
-    const parsed = await askGemini(apiKey, prompt);
+    let parsed = await askGemini(apiKey, prompt);
+
+    // ── Step 4: If Gemini doesn't know it, Google for slot data and let Gemini parse the page ──
     if (!parsed) {
-      return res.status(200).json({ error: null, name, source: 'not_found' });
+      console.log(`[slot-ai] Gemini miss for "${name}", trying Google-grounded search...`);
+      const googleResult = await googleSlotSearch(apiKey, name);
+      if (googleResult) {
+        parsed = googleResult;
+      } else {
+        return res.status(200).json({ error: null, name, source: 'not_found' });
+      }
     }
 
     const result = sanitize(parsed);
-    result.source = 'gemini_ai';
+    result.source = parsed._google ? 'google_ai' : 'gemini_ai';
 
     // Override twitch_safe for known-safe providers
     const provSafe = isProviderSafe(result.provider);
@@ -782,7 +915,7 @@ CRITICAL RULES:
             console.warn('[slot-ai] DB insert skipped:', insErr.message);
           } else {
             console.log(`[slot-ai] ✅ Added "${result.name}" by ${result.provider} to slots DB`);
-            result.source = 'gemini_ai_saved';  // tell client it was saved
+            result.source = result.source === 'google_ai' ? 'google_ai_saved' : 'gemini_ai_saved';
           }
         } catch (e) {
           console.error('[slot-ai] DB insert error:', e);

@@ -82,7 +82,8 @@ export default function SlotSubmissions() {
       setDataSource(ai.source || 'gemini_ai');
       const srcLabel  = ai.source === 'slots_database' ? '✅ From your DB'
                       : ai.source === 'verified_database' ? '✅ Verified'
-                      : ai.source === 'gemini_ai_saved' ? '✅ AI → Saved to DB'
+                      : ai.source === 'gemini_ai_saved' || ai.source === 'google_ai_saved' ? '✅ AI → Saved to DB'
+                      : ai.source === 'google_ai' ? '🌐 Found via Google'
                       : '🤖 AI';
       const safeLabel = ai.twitch_safe === false ? ' ⚠️ Not Twitch-safe!' : ai.twitch_safe === true ? ' 🟢 Twitch-safe' : '';
       flash(`${srcLabel}: ${ai.name || slotName} by ${ai.provider || '?'}${safeLabel}`);
@@ -339,10 +340,11 @@ export default function SlotSubmissions() {
                   </div>
                 )}
                 {dataSource && (
-                  <span className={`ss-source-badge ${dataSource === 'slots_database' || dataSource === 'verified_database' || dataSource === 'gemini_ai_saved' ? 'ss-source--verified' : 'ss-source--ai'}`}>
+                  <span className={`ss-source-badge ${dataSource === 'slots_database' || dataSource === 'verified_database' || dataSource === 'gemini_ai_saved' || dataSource === 'google_ai_saved' ? 'ss-source--verified' : 'ss-source--ai'}`}>
                     {dataSource === 'slots_database' ? '✅ From Your DB'
                      : dataSource === 'verified_database' ? '✅ Verified Data'
-                     : dataSource === 'gemini_ai_saved' ? '✅ AI → Saved to DB'
+                     : dataSource === 'gemini_ai_saved' || dataSource === 'google_ai_saved' ? '✅ AI → Saved to DB'
+                     : dataSource === 'google_ai' ? '🌐 Found via Google'
                      : '🤖 AI Data'}
                   </span>
                 )}
