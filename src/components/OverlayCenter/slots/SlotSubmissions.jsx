@@ -1,17 +1,16 @@
 /**
- * SlotSubmissions.jsx — Premium users submit slots for admin approval.
- * Only add — no edit/delete of existing slots.
- * Includes smart slot search: paste a URL or type a name to auto-fill fields.
+ * SlotSubmissions.jsx — Users submit slots for admin approval.
+ * Simple manual form: type name, provider, image URL, RTP, volatility, max win.
+ * No AI — just fill in the fields and submit.
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { submitSlot, getMySubmissions } from '../../../services/pendingSlotService';
-import { analyzeSlotUrl, scrapeSlotMetadata, findSlotImage, fetchSlotAI, fetchSafeImage } from '../../../services/slotSearchService';
 import './SlotSubmissions.css';
 
 const EMPTY_FORM = {
   name: '', provider: '', image: '', rtp: '', volatility: '',
-  max_win_multiplier: '', slotUrl: '',
+  max_win_multiplier: '',
 };
 
 export default function SlotSubmissions() {
@@ -22,12 +21,6 @@ export default function SlotSubmissions() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState({ text: '', type: '' });
   const [showForm, setShowForm] = useState(false);
-  const [searchingImage, setSearchingImage] = useState(false);
-  const [analyzingUrl, setAnalyzingUrl] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [imageSafety, setImageSafety] = useState(null); // { safe, reason, source }
-  const [dataSource, setDataSource] = useState(null);   // 'slots_database' | 'gemini_ai' | 'google_ai' | 'provider_site' | etc.
-  const searchAbort = useRef(null);
 
   const loadSubmissions = useCallback(async () => {
     if (!user) return;
@@ -52,171 +45,9 @@ export default function SlotSubmissions() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  /* ── Shared AI auto-fill: fetch RTP, provider, volatility, max win, image ── */
-  const autoFillInFlight = useRef(false);
-  const lastAiName = useRef('');   // track which name was last AI-filled
-
-  const autoFillSlotData = useCallback(async (slotName, providerHint) => {
-    if (!slotName || slotName.length < 2) return;
-    if (autoFillInFlight.current) return;          // prevent duplicate parallel calls
-    autoFillInFlight.current = true;
-    setAiLoading(true);
-    try {
-      const ai = await fetchSlotAI(slotName, providerHint);
-      // Skip if blocked by content safety filter
-      if (ai?.source === 'blocked') {
-        flash('Search blocked — not appropriate for streaming platforms.', 'error');
-        return;
-      }
-      // Skip if API returned not_found, error, or empty
-      if (!ai || ai.source === 'not_found' || ai.source === 'error') {
-        const reason = ai?.error || 'Slot not recognized';
-        flash(`AI could not find "${slotName}" — ${reason}`, 'error');
-        return;
-      }
-      // Block slots with NSFW imagery (not safe for Twitch/YouTube/Kick)
-      if (ai.twitch_safe === false) {
-        flash(`⚠️ "${ai.name || slotName}" contains NSFW imagery — blocked for stream safety.`, 'error');
-        return;
-      }
-      lastAiName.current = slotName.toLowerCase().trim();
-      setForm(prev => ({
-        ...prev,
-        name:                ai.name             || prev.name,
-        provider:            ai.provider          || providerHint || prev.provider,
-        rtp:                 ai.rtp != null       ? String(ai.rtp)                 : prev.rtp,
-        volatility:          ai.volatility        || prev.volatility,
-        max_win_multiplier:  ai.max_win_multiplier != null ? String(ai.max_win_multiplier) : prev.max_win_multiplier,
-        image:               ai.image             || prev.image,  // use DB image if available
-      }));
-      setDataSource(ai.source || 'gemini_ai');
-      const savedSources = ['gemini_ai_saved', 'google_ai_saved'];
-      const srcLabel  = ai.source === 'slots_database' ? '✅ From your DB'
-                      : savedSources.includes(ai.source) ? '✅ AI → Saved to DB'
-                      : ai.source === 'google_ai' ? '🌐 Found via Google'
-                      : '🤖 AI';
-      const safeLabel = ai.twitch_safe === true ? ' 🟢 Stream-safe' : '';
-      flash(`${srcLabel}: ${ai.name || slotName} by ${ai.provider || '?'}${safeLabel}`);
-
-      // Also search for a safe image if we don't have one yet
-      const finalName     = ai.name     || slotName;
-      const finalProvider = ai.provider  || providerHint || '';
-      // Read current form image via a ref-like pattern (check after state flushes)
-      setTimeout(() => {
-        setForm(prev => {
-          if (!prev.image && finalName) triggerImageSearch(finalName, finalProvider);
-          return prev;
-        });
-      }, 0);
-    } catch (e) {
-      console.error('[SlotSubmissions] AI auto-fill error:', e);
-      flash('AI lookup failed.', 'error');
-    } finally {
-      setAiLoading(false);
-      autoFillInFlight.current = false;
-    }
-  }, []);
-
-  /* ── Smart URL analysis: paste/blur a casino URL → auto-fill ALL fields ── */
-  const handleUrlAnalysis = useCallback(async (url) => {
-    if (!url || !url.startsWith('http')) return;
-    setAnalyzingUrl(true);
-    try {
-      // 1. Regex-based extraction (instant)
-      const regex = await analyzeSlotUrl(url);
-      setForm(prev => ({
-        ...prev,
-        name: regex.name || prev.name,
-        provider: regex.provider || prev.provider,
-      }));
-
-      // 2. Scrape OG tags (slower, may have better image)
-      const meta = await scrapeSlotMetadata(url);
-      setForm(prev => {
-        const updated = { ...prev };
-        if (meta.name && !prev.name) updated.name = meta.name;
-        if (meta.imageUrl && !prev.image) updated.image = meta.imageUrl;
-        return updated;
-      });
-
-      // 3. Auto-fill everything via AI (provider, RTP, volatility, max win, image)
-      const nameToSearch = regex.name || meta.name;
-      const providerHint = regex.provider || '';
-      if (nameToSearch) {
-        await autoFillSlotData(nameToSearch, providerHint);
-      }
-    } catch (e) {
-      console.warn('[SlotSubmissions] URL analysis error:', e);
-    } finally {
-      setAnalyzingUrl(false);
-    }
-  }, [autoFillSlotData]);
-
-  const handleUrlPaste = (e) => {
-    const pasted = (e.clipboardData || window.clipboardData).getData('text');
-    if (pasted?.startsWith('http')) {
-      setForm(prev => ({ ...prev, slotUrl: pasted }));
-      setTimeout(() => handleUrlAnalysis(pasted), 50);
-    }
-  };
-
-  const handleUrlBlur = () => {
-    if (form.slotUrl?.startsWith('http')) handleUrlAnalysis(form.slotUrl);
-  };
-
-  /* ── Image search: uses server-side safe image pipeline ── */
-  const triggerImageSearch = useCallback(async (name, provider) => {
-    if (!name || name.length < 2) return;
-    if (searchAbort.current) searchAbort.current = true;
-    searchAbort.current = false;
-    setSearchingImage(true);
-    setImageSafety(null);
-    try {
-      // Try safe server-side search first (SafeSearch + Gemini Vision)
-      const safeResult = await fetchSafeImage(name, provider || '');
-      if (!searchAbort.current && safeResult?.imageUrl) {
-        setForm(prev => ({ ...prev, image: prev.image || safeResult.imageUrl }));
-        setImageSafety({ safe: safeResult.safe, reason: safeResult.reason, source: safeResult.source });
-        setSearchingImage(false);
-        return;
-      }
-      // Fallback: client-side Google Images scrape (no safety validation)
-      const img = await findSlotImage(name, provider || '');
-      if (!searchAbort.current && img) {
-        setForm(prev => ({ ...prev, image: prev.image || img }));
-        setImageSafety({ safe: null, reason: 'No AI validation — verify manually', source: 'fallback' });
-      }
-    } catch (_) { /* silent */ }
-    setSearchingImage(false);
-  }, []);
-
-  const handleNameBlur = () => {
-    if (!form.name || form.name.length < 2) return;
-    const currentName = form.name.toLowerCase().trim();
-    // Always re-fill if name changed since last AI fill, or if key fields are still empty
-    if (currentName !== lastAiName.current || !form.rtp || !form.provider || !form.max_win_multiplier || !form.volatility) {
-      autoFillSlotData(form.name, form.provider);
-    } else if (!form.image) {
-      triggerImageSearch(form.name, form.provider);
-    }
-  };
-
-  const handleSearchClick = () => {
-    if (form.name) triggerImageSearch(form.name, form.provider);
-  };
-
   const openGoogleImages = () => {
     const q = `${form.name} ${form.provider} slot`.trim();
     window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}&tbm=isch`, '_blank');
-  };
-
-  /* ── AI auto-fill button: reuses shared autoFillSlotData ── */
-  const handleAiFill = () => {
-    if (!form.name || form.name.length < 2) {
-      flash('Type a slot name first.', 'error');
-      return;
-    }
-    autoFillSlotData(form.name, form.provider);
   };
 
   const handleSubmit = async (e) => {
@@ -239,9 +70,6 @@ export default function SlotSubmissions() {
       flash('Slot submitted for approval!');
       setForm(EMPTY_FORM);
       setShowForm(false);
-      setImageSafety(null);
-      setDataSource(null);
-      lastAiName.current = '';
       loadSubmissions();
     } catch (err) {
       console.error('[SlotSubmissions] submit error:', err);
@@ -273,42 +101,13 @@ export default function SlotSubmissions() {
         <div className={`ss-flash ss-flash--${msg.type}`}>{msg.text}</div>
       )}
 
-      {/* Submission form */}
+      {/* Submission form — simple manual entry */}
       {showForm && (
         <form className="ss-form" onSubmit={handleSubmit}>
-          {/* URL auto-fill bar */}
-          <div className="ss-url-bar">
-            <label className="ss-url-label">🔗 Paste a casino URL to auto-fill</label>
-            <div className="ss-url-row">
-              <input
-                name="slotUrl"
-                value={form.slotUrl}
-                onChange={handleChange}
-                onPaste={handleUrlPaste}
-                onBlur={handleUrlBlur}
-                placeholder="https://stake.com/casino/games/gates-of-olympus …"
-                className="ss-url-input"
-              />
-              {analyzingUrl && <span className="ss-url-spinner">⏳ Analyzing…</span>}
-            </div>
-          </div>
-
           <div className="ss-form-grid">
-            <div className="ss-field ss-field--required ss-field--name">
+            <div className="ss-field ss-field--required">
               <label>Name *</label>
-              <div className="ss-name-row">
-                <input name="name" value={form.name} onChange={handleChange} onBlur={handleNameBlur} placeholder="e.g. Gates of Olympus" required />
-                <button
-                  type="button"
-                  className="ss-ai-btn"
-                  onClick={handleAiFill}
-                  disabled={aiLoading || !form.name}
-                  title="AI auto-fill all fields"
-                >
-                  {aiLoading ? '⏳' : '✨ AI Fill'}
-                </button>
-              </div>
-              {aiLoading && <span className="ss-ai-hint">Asking Gemini for slot data…</span>}
+              <input name="name" value={form.name} onChange={handleChange} placeholder="e.g. Gates of Olympus" required />
             </div>
             <div className="ss-field ss-field--required">
               <label>Provider *</label>
@@ -317,47 +116,22 @@ export default function SlotSubmissions() {
             <div className="ss-field ss-field--required ss-field--wide ss-field--image">
               <label>Image URL *</label>
               <div className="ss-image-row">
-                <input name="image" value={form.image} onChange={handleChange} placeholder="https://… (auto-filled or paste)" autoComplete="off" required />
-                <button
-                  type="button"
-                  className="ss-search-btn"
-                  onClick={handleSearchClick}
-                  disabled={searchingImage || !form.name}
-                  title="Search for slot image"
-                >
-                  {searchingImage ? '⏳' : '🔍'}
-                </button>
+                <input name="image" value={form.image} onChange={handleChange} placeholder="Paste an image URL" autoComplete="off" required />
                 <button
                   type="button"
                   className="ss-google-btn"
                   onClick={openGoogleImages}
                   disabled={!form.name}
-                  title="Open Google Images"
+                  title="Open Google Images to find a screenshot"
                 >
-                  🌐
+                  🌐 Google
                 </button>
               </div>
-              {searchingImage && <span className="ss-search-hint">🛡️ Searching with SafeSearch + AI validation…</span>}
             </div>
-            {/* Image preview + safety badge */}
+            {/* Image preview */}
             {form.image && (
               <div className="ss-field ss-field--wide ss-image-preview-wrap">
                 <img src={form.image} alt="Preview" className="ss-image-preview" onError={(e) => { e.target.style.display = 'none'; }} />
-                {imageSafety && (
-                  <div className={`ss-safety-badge ${imageSafety.safe === true ? 'ss-safety--safe' : imageSafety.safe === false ? 'ss-safety--unsafe' : 'ss-safety--unknown'}`}>
-                    {imageSafety.safe === true ? '🟢 Twitch Safe' : imageSafety.safe === false ? '🔴 May be Unsafe' : '⚪ Unverified'}
-                    <span className="ss-safety-reason">{imageSafety.reason}</span>
-                  </div>
-                )}
-                {dataSource && (
-                  <span className={`ss-source-badge ${['slots_database','gemini_ai_saved','google_ai_saved','provider_saved','provider_site'].includes(dataSource) ? 'ss-source--verified' : 'ss-source--ai'}`}>
-                    {dataSource === 'slots_database' ? '✅ From Your DB'
-                     : ['gemini_ai_saved','google_ai_saved','provider_saved'].includes(dataSource) ? '✅ AI → Saved to DB'
-                     : dataSource === 'provider_site' ? '🏢 From Provider Site'
-                     : dataSource === 'google_ai' ? '🌐 Found via Google'
-                     : '🤖 AI Data'}
-                  </span>
-                )}
               </div>
             )}
             <div className="ss-field ss-field--required">
