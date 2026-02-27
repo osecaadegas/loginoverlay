@@ -15,6 +15,8 @@ registerWidget({
   category: 'casino',
   component: StatsWidget,
   configPanel: StatsConfig,
+  styles: [{ id: 'v1', icon: '📊', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     totalBet: 0,
     totalWin: 0,
@@ -36,6 +38,12 @@ registerWidget({
   category: 'casino',
   component: BonusHuntWidget,
   configPanel: BonusHuntConfig,
+  styles: [
+    { id: 'v1', icon: '📊', label: 'Classic' },
+    { id: 'v2', icon: '🌙', label: 'Sleek Dark' },
+    { id: 'v3', icon: '🃏', label: 'Flip Card' },
+  ],
+  styleConfigKey: 'displayStyle',
   defaults: {
     bonuses: [],
     huntActive: false,
@@ -59,6 +67,8 @@ registerWidget({
   category: 'casino',
   component: CurrentSlotWidget,
   configPanel: CurrentSlotConfig,
+  styles: [{ id: 'v1', icon: '🎰', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     slotName: '',
     provider: '',
@@ -79,6 +89,13 @@ registerWidget({
   category: 'casino',
   component: TournamentWidget,
   configPanel: TournamentConfig,
+  styles: [
+    { id: 'grid',     icon: '⊞', label: 'Grid' },
+    { id: 'showcase', icon: '🖼️', label: 'Showcase' },
+    { id: 'vertical', icon: '📋', label: 'Vertical' },
+    { id: 'bracket',  icon: '📊', label: 'Bracket' },
+  ],
+  styleConfigKey: 'layout',
   defaults: {
     title: '',
     prize: '',
@@ -140,6 +157,8 @@ registerWidget({
   category: 'casino',
   component: GiveawayWidget,
   configPanel: GiveawayConfig,
+  styles: [{ id: 'v1', icon: '🎁', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     title: '',
     prize: '',
@@ -160,6 +179,8 @@ registerWidget({
   category: 'stream',
   component: NavbarWidget,
   configPanel: NavbarConfig,
+  styles: [{ id: 'v1', icon: '📌', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     streamerName: '',
     motto: '',
@@ -203,6 +224,8 @@ registerWidget({
   category: 'stream',
   component: ChatWidget,
   configPanel: ChatConfig,
+  styles: [{ id: 'v1', icon: '💬', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     chatStyle: 'clean',
     twitchEnabled: false,
@@ -245,6 +268,8 @@ registerWidget({
   category: 'casino',
   component: SessionStatsWidget,
   configPanel: null,
+  styles: [{ id: 'v1', icon: '📈', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     wagered: 0,
     won: 0,
@@ -266,6 +291,8 @@ registerWidget({
   category: 'casino',
   component: RecentWinsWidget,
   configPanel: null,
+  styles: [{ id: 'v1', icon: '🏅', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     wins: [],
     maxDisplay: 5,
@@ -283,6 +310,8 @@ registerWidget({
   category: 'casino',
   component: CoinFlipWidget,
   configPanel: null,
+  styles: [{ id: 'v1', icon: '🪙', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     flipping: false,
     result: 'heads',
@@ -300,6 +329,8 @@ registerWidget({
   category: 'casino',
   component: SlotmachineWidget,
   configPanel: null,
+  styles: [{ id: 'v1', icon: '🎰', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     spinning: false,
     reels: ['🍒', '🍒', '🍒'],
@@ -317,6 +348,8 @@ registerWidget({
   category: 'casino',
   component: RandomSlotPickerWidget,
   configPanel: null,
+  styles: [{ id: 'v1', icon: '🎲', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     picking: false,
     selectedSlot: null,
@@ -333,6 +366,8 @@ registerWidget({
   category: 'casino',
   component: WheelOfNamesWidget,
   configPanel: null,
+  styles: [{ id: 'v1', icon: '🎡', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     entries: [],
     spinning: false,
@@ -350,6 +385,8 @@ registerWidget({
   category: 'general',
   component: PlaceholderWidget,
   configPanel: null,
+  styles: [{ id: 'v1', icon: '🧩', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: { html: '<div style="color:#fff;">Custom content</div>' },
 });
 
@@ -376,6 +413,8 @@ registerWidget({
   category: 'stream',
   component: ImageSlideshowWidget,
   configPanel: ImageSlideshowConfig,
+  styles: [{ id: 'v1', icon: '🖼️', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     images: [],
     interval: 5,
@@ -405,6 +444,8 @@ registerWidget({
   category: 'stream',
   component: RtpStatsWidget,
   configPanel: RtpStatsConfig,
+  styles: [{ id: 'v1', icon: '📊', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     barBgFrom: '#111827',
     barBgVia: '#1e3a5f',
@@ -448,6 +489,8 @@ registerWidget({
   category: 'general',
   component: BackgroundWidget,
   configPanel: BackgroundConfig,
+  styles: [{ id: 'v1', icon: '🎨', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     bgMode: 'texture',
     textureType: 'gradient',
@@ -484,6 +527,8 @@ registerWidget({
   category: 'stream',
   component: RaidShoutoutWidget,
   configPanel: RaidShoutoutConfig,
+  styles: [{ id: 'v1', icon: '⚡', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
   defaults: {
     alertDuration: 30,
     enterAnimation: 'slideUp',
