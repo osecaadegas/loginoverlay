@@ -1,10 +1,98 @@
 // Vercel Serverless Function: /api/slot-ai
-// Pipeline: Known Slot DB (real data) → Gemini AI (structured knowledge) → merged result.
+// Pipeline: Supabase slots DB (8000+ real slots) → Hardcoded fallback → Gemini AI → result.
 // Also returns a Twitch safety rating for the slot's imagery.
-// Requires GEMINI_API_KEY env var in Vercel project settings.
+// Requires GEMINI_API_KEY + SUPABASE env vars in Vercel project settings.
+
+import { createClient } from '@supabase/supabase-js';
 
 const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+
+// ═══════════════════════════════════════════════
+// SUPABASE — query your 8000+ slots database
+// ═══════════════════════════════════════════════
+
+function getSupabase() {
+  const url = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return null;
+  return createClient(url, key);
+}
+
+/**
+ * Search the slots table by name.
+ * Uses Postgres ilike for fuzzy matching + word-based fallback.
+ */
+async function searchSlotsDB(name) {
+  const supabase = getSupabase();
+  if (!supabase) {
+    console.warn('[slot-ai] Supabase not configured, skipping DB search');
+    return null;
+  }
+
+  const norm = name.trim();
+
+  try {
+    // 1. Exact match (case-insensitive)
+    let { data } = await supabase
+      .from('slots')
+      .select('name, provider, image, rtp, volatility, max_win_multiplier, theme, features')
+      .ilike('name', norm)
+      .limit(1);
+
+    if (data?.length) return formatDBSlot(data[0]);
+
+    // 2. Contains match (e.g. "gold party" matches "Gold Party")
+    ({ data } = await supabase
+      .from('slots')
+      .select('name, provider, image, rtp, volatility, max_win_multiplier, theme, features')
+      .ilike('name', `%${norm}%`)
+      .limit(5));
+
+    if (data?.length) {
+      // Pick best match by shortest name (most specific)
+      const best = data.sort((a, b) => a.name.length - b.name.length)[0];
+      return formatDBSlot(best);
+    }
+
+    // 3. Try each word (for multi-word names like "wanted dead wild")
+    const words = norm.split(/\s+/).filter(w => w.length > 2);
+    if (words.length >= 2) {
+      // Search with first two significant words using AND pattern
+      const pattern = `%${words[0]}%${words[1]}%`;
+      ({ data } = await supabase
+        .from('slots')
+        .select('name, provider, image, rtp, volatility, max_win_multiplier, theme, features')
+        .ilike('name', pattern)
+        .limit(5));
+
+      if (data?.length) {
+        const best = data.sort((a, b) => a.name.length - b.name.length)[0];
+        return formatDBSlot(best);
+      }
+    }
+
+    return null;
+  } catch (e) {
+    console.error('[slot-ai] Supabase search error:', e);
+    return null;
+  }
+}
+
+function formatDBSlot(row) {
+  return {
+    name: row.name,
+    provider: row.provider,
+    image: row.image || null,
+    rtp: row.rtp ? parseFloat(row.rtp) : null,
+    volatility: normalizeVolatility(row.volatility),
+    max_win_multiplier: row.max_win_multiplier ? parseFloat(row.max_win_multiplier) : null,
+    theme: row.theme || null,
+    features: Array.isArray(row.features) ? row.features : [],
+    twitch_safe: null,   // DB doesn't have this field; leave for client to check
+    source: 'slots_database',
+  };
+}
 
 // ═══════════════════════════════════════════════
 // KNOWN SLOTS DATABASE — verified real data from provider pages
@@ -531,14 +619,21 @@ export default async function handler(req, res) {
   if (!name) return res.status(400).json({ error: 'Provide "name"' });
 
   try {
-    // ── Step 1: Check verified database (instant, 100% accurate) ──
+    // ── Step 1: Query Supabase slots table (8000+ real slots) ──
+    const dbSlot = await searchSlotsDB(name);
+    if (dbSlot) {
+      console.log(`[slot-ai] Supabase hit: "${name}" → ${dbSlot.name} by ${dbSlot.provider}`);
+      return res.status(200).json(dbSlot);
+    }
+
+    // ── Step 2: Check hardcoded verified database (instant fallback) ──
     const known = findKnownSlot(name);
     if (known) {
-      console.log(`[slot-ai] DB hit: "${name}" → ${known.name}`);
+      console.log(`[slot-ai] Hardcoded DB hit: "${name}" → ${known.name}`);
       return res.status(200).json({ ...known, source: 'verified_database' });
     }
 
-    // ── Step 2: Ask Gemini with strict accuracy prompt ──
+    // ── Step 3: Ask Gemini with strict accuracy prompt ──
     console.log(`[slot-ai] DB miss for "${name}", asking Gemini...`);
     const prompt = `You are a slot game data expert. I need VERIFIED, REAL data for the online slot game "${name}".
 
