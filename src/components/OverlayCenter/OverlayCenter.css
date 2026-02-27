@@ -1176,7 +1176,7 @@
   width: 480px;
   max-width: 90vw;
   height: 100vh;
-  background: var(--oc-bg-card, #13151e);
+  background: #13151e;
   border-left: 1px solid rgba(139, 92, 246, 0.15);
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
   z-index: 901;
