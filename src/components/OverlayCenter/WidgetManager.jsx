@@ -266,23 +266,24 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       </label>
                     </div>
 
-                    {/* Widget-specific config */}
-                    {ConfigPanel && (
-                      <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets} />
-                    )}
-
                     {/* Per-widget Custom CSS */}
                     <div className="oc-widget-css">
-                      <label className="oc-widget-css-label">🎨 Custom CSS (this widget)</label>
+                      <label className="oc-widget-css-label">🎨 Custom CSS</label>
                       <textarea
                         className="oc-widget-css-input"
                         value={w.config?.custom_css || ''}
                         onChange={e => handleConfigChange(w, { ...w.config, custom_css: e.target.value })}
-                        rows={4}
-                        placeholder={`.or-widget-slot { /* your CSS here */ }`}
+                        rows={3}
+                        placeholder={`/* style this widget in OBS */`}
                         spellCheck={false}
                       />
                     </div>
+
+                    {/* Widget-specific config */}
+                    {ConfigPanel && (
+                      <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets} />
+                    )}
+                  </div>
                   </div>
                 )}
               </div>
