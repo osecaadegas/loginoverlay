@@ -36,8 +36,6 @@ import OverlayControlCenter from './components/OverlayCenter/OverlayControlCente
 import OverlayRenderer from './components/OverlayCenter/OverlayRenderer';
 import SpotifyCallback from './components/SpotifyCallback';
 import DeveloperPage from './components/DeveloperPage/DeveloperPage';
-import BonusHuntPage from './components/BonusHuntPage/BonusHuntPage';
-import TournamentSetupPage from './components/TournamentSetupPage/TournamentSetupPage';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -656,16 +654,6 @@ function App() {
                 <Route path="/overlay-center" element={
                   <ProtectedAdminRoute>
                     <OverlayControlCenter />
-                  </ProtectedAdminRoute>
-                } />
-                <Route path="/bonus-hunt" element={
-                  <ProtectedAdminRoute>
-                    <BonusHuntPage />
-                  </ProtectedAdminRoute>
-                } />
-                <Route path="/tournament-setup" element={
-                  <ProtectedAdminRoute>
-                    <TournamentSetupPage />
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/overlay/:token" element={<OverlayRenderer />} />

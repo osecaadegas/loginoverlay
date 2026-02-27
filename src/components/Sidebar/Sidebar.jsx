@@ -195,12 +195,6 @@ export default function Sidebar({ className = '', onClose }) {
         {(isAdmin || isPremium) && (
           <NavItem icon={ICONS.overlay} labelKey="nav_overlay_center" label="Overlay Center" path="/overlay-center" />
         )}
-        {(isAdmin || isPremium) && (
-          <NavItem icon={ICONS.bonushunt} labelKey="nav_bonus_hunt" label="Bonus Hunt" path="/bonus-hunt" />
-        )}
-        {(isAdmin || isPremium) && (
-          <NavItem icon={ICONS.tournament} labelKey="nav_tournament_setup" label="Tournament" path="/tournament-setup" />
-        )}
 
         {user && (
           <>

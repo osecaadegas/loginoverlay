@@ -172,6 +172,25 @@
   word-break: break-all;
 }
 
+/* ─── Panel Helpers ─── */
+.oc-panel-loading {
+  display: flex; align-items: center; justify-content: center;
+  padding: 48px 24px; color: #94a3b8; font-size: 0.95rem;
+}
+.oc-panel-section { padding: 0; }
+.oc-empty-panel {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 48px 24px; text-align: center; color: #94a3b8;
+}
+.oc-empty-panel h2 { color: #e2e8f0; font-size: 1.3rem; margin: 0; }
+.oc-empty-panel p { margin: 0 0 8px; font-size: 0.9rem; }
+.oc-btn-primary {
+  padding: 10px 22px; border: none; border-radius: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6); color: #fff;
+  font-weight: 600; font-size: 0.9rem; cursor: pointer; transition: opacity .15s;
+}
+.oc-btn-primary:hover { opacity: 0.85; }
+
 /* ─── Main Content ─── */
 .oc-main {
   flex: 1;

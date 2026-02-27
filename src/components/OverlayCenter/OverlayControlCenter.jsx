@@ -16,11 +16,71 @@ import BonusHuntLibrary from './BonusHuntLibrary';
 import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
+import BonusHuntConfig from './widgets/BonusHuntConfig';
+import TournamentConfig from './widgets/TournamentConfig';
 import './OverlayCenter.css';
 
 // Register all built-in widgets
 import './widgets/builtinWidgets';
 import { getAllWidgetDefs } from './widgets/widgetRegistry';
+
+/* ── Inline wrapper: renders BonusHuntConfig for the bonus_hunt widget ── */
+function BonusHuntPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'bonus_hunt');
+
+  const handleChange = (newConfig) => {
+    if (widget) saveWidget({ ...widget, config: newConfig });
+  };
+
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+
+  if (!widget) {
+    return (
+      <div className="oc-empty-panel">
+        <h2>🎯 Bonus Hunt</h2>
+        <p>No Bonus Hunt widget found. Add one to get started.</p>
+        <button className="oc-btn-primary" onClick={() => addWidget('bonus_hunt')}>
+          + Add Bonus Hunt Widget
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="oc-panel-section">
+      <BonusHuntConfig config={widget.config} onChange={handleChange} allWidgets={widgets} />
+    </div>
+  );
+}
+
+/* ── Inline wrapper: renders TournamentConfig for the tournament widget ── */
+function TournamentPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'tournament');
+
+  const handleChange = (newConfig) => {
+    if (widget) saveWidget({ ...widget, config: newConfig });
+  };
+
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+
+  if (!widget) {
+    return (
+      <div className="oc-empty-panel">
+        <h2>🏆 Tournament</h2>
+        <p>No Tournament widget found. Add one to get started.</p>
+        <button className="oc-btn-primary" onClick={() => addWidget('tournament')}>
+          + Add Tournament Widget
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="oc-panel-section">
+      <TournamentConfig config={widget.config} onChange={handleChange} allWidgets={widgets} />
+    </div>
+  );
+}
 
 export default function OverlayControlCenter() {
   const { user } = useAuth();
@@ -268,6 +328,8 @@ export default function OverlayControlCenter() {
             {/* Panel tabs */}
             {[
               { key: 'widgets', icon: '🧩', label: 'Widgets' },
+              { key: 'bonus_hunt', icon: '🎯', label: 'Bonus Hunt' },
+              { key: 'tournament', icon: '🏆', label: 'Tournament' },
               { key: 'library', icon: '📚', label: 'Library' },
               { key: 'presets', icon: '💾', label: 'Presets' },
               { key: 'preview', icon: '👁️', label: 'Preview' },
@@ -332,6 +394,12 @@ export default function OverlayControlCenter() {
               availableWidgets={getAllWidgetDefs()}
               overlayToken={instance?.overlay_token}
             />
+          )}
+          {activePanel === 'bonus_hunt' && (
+            <BonusHuntPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
+          )}
+          {activePanel === 'tournament' && (
+            <TournamentPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (
             <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />
