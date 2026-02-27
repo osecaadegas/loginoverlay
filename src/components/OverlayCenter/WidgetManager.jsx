@@ -11,42 +11,56 @@ const DraggableSlot = memo(function DraggableSlot({
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   const slotRef = useRef(null);
+  const coordsRef = useRef(null);
 
-  /* ── Drag to move ── */
+  /* ── Drag to move — update DOM directly, save on mouseup ── */
   const handleMouseDown = useCallback((e) => {
-    // Don't drag when clicking resize handles
     if (e.target.closest('.wm-resize-handle')) return;
     e.preventDefault();
     e.stopPropagation();
     onSelect(widget.id);
 
+    const el = slotRef.current;
+    if (!el) return;
+
     const startX = e.clientX;
     const startY = e.clientY;
     const origPx = widget.position_x;
     const origPy = widget.position_y;
+    let curX = origPx, curY = origPy;
 
     function onMouseMove(ev) {
       const dx = (ev.clientX - startX) / scale;
       const dy = (ev.clientY - startY) / scale;
-      onMove(widget.id, Math.round(origPx + dx), Math.round(origPy + dy));
+      curX = Math.max(0, Math.round(origPx + dx));
+      curY = Math.max(0, Math.round(origPy + dy));
+      el.style.left = curX + 'px';
+      el.style.top = curY + 'px';
+      if (coordsRef.current) {
+        coordsRef.current.textContent = `${curX}, ${curY} — ${Math.round(widget.width)}×${Math.round(widget.height)}`;
+      }
     }
 
     function onMouseUp() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       document.body.style.cursor = '';
+      onMove(widget.id, curX, curY);
     }
 
     document.body.style.cursor = 'grabbing';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
-  }, [widget.id, widget.position_x, widget.position_y, scale, onSelect, onMove]);
+  }, [widget.id, widget.position_x, widget.position_y, widget.width, widget.height, scale, onSelect, onMove]);
 
-  /* ── Resize from handle ── */
+  /* ── Resize from corner handle — update DOM directly, save on mouseup ── */
   const handleResizeDown = useCallback((e, corner) => {
     e.preventDefault();
     e.stopPropagation();
     onSelect(widget.id);
+
+    const el = slotRef.current;
+    if (!el) return;
 
     const startX = e.clientX;
     const startY = e.clientY;
@@ -54,38 +68,47 @@ const DraggableSlot = memo(function DraggableSlot({
     const origH = widget.height;
     const origPx = widget.position_x;
     const origPy = widget.position_y;
+    let curX = origPx, curY = origPy, curW = origW, curH = origH;
 
     function onMouseMove(ev) {
       const dx = (ev.clientX - startX) / scale;
       const dy = (ev.clientY - startY) / scale;
-
-      let newW = origW, newH = origH, newPx = origPx, newPy = origPy;
+      curW = origW; curH = origH; curX = origPx; curY = origPy;
 
       if (corner === 'se') {
-        newW = Math.max(20, origW + dx);
-        newH = Math.max(20, origH + dy);
+        curW = Math.max(20, origW + dx);
+        curH = Math.max(20, origH + dy);
       } else if (corner === 'sw') {
-        newW = Math.max(20, origW - dx);
-        newH = Math.max(20, origH + dy);
-        newPx = origPx + (origW - newW);
+        curW = Math.max(20, origW - dx);
+        curH = Math.max(20, origH + dy);
+        curX = origPx + (origW - curW);
       } else if (corner === 'ne') {
-        newW = Math.max(20, origW + dx);
-        newH = Math.max(20, origH - dy);
-        newPy = origPy + (origH - newH);
+        curW = Math.max(20, origW + dx);
+        curH = Math.max(20, origH - dy);
+        curY = origPy + (origH - curH);
       } else if (corner === 'nw') {
-        newW = Math.max(20, origW - dx);
-        newH = Math.max(20, origH - dy);
-        newPx = origPx + (origW - newW);
-        newPy = origPy + (origH - newH);
+        curW = Math.max(20, origW - dx);
+        curH = Math.max(20, origH - dy);
+        curX = origPx + (origW - curW);
+        curY = origPy + (origH - curH);
       }
 
-      onResize(widget.id, Math.round(newPx), Math.round(newPy), Math.round(newW), Math.round(newH));
+      curX = Math.round(curX); curY = Math.round(curY);
+      curW = Math.round(curW); curH = Math.round(curH);
+      el.style.left = curX + 'px';
+      el.style.top = curY + 'px';
+      el.style.width = curW + 'px';
+      el.style.height = curH + 'px';
+      if (coordsRef.current) {
+        coordsRef.current.textContent = `${curX}, ${curY} — ${curW}×${curH}`;
+      }
     }
 
     function onMouseUp() {
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
       document.body.style.cursor = '';
+      onResize(widget.id, curX, curY, curW, curH);
     }
 
     document.body.style.cursor = corner === 'se' ? 'nwse-resize' : corner === 'sw' ? 'nesw-resize' : corner === 'ne' ? 'nesw-resize' : 'nwse-resize';
@@ -105,24 +128,24 @@ const DraggableSlot = memo(function DraggableSlot({
         top: widget.position_y,
         width: widget.width,
         height: widget.height,
-        zIndex: widget.z_index || 1,
+        zIndex: isSelected ? 9999 : (widget.z_index || 1),
         cursor: isSelected ? 'grab' : 'pointer',
       }}
       onMouseDown={handleMouseDown}
     >
-      <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+      {/* Widget content — pointer-events disabled so drag works */}
+      <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden' }}>
+        <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+      </div>
 
       {/* Selection overlay + resize handles */}
       {isSelected && (
         <div className="wm-slot-selection">
-          {/* Corner resize handles */}
           <div className="wm-resize-handle wm-resize-nw" onMouseDown={e => handleResizeDown(e, 'nw')} />
           <div className="wm-resize-handle wm-resize-ne" onMouseDown={e => handleResizeDown(e, 'ne')} />
           <div className="wm-resize-handle wm-resize-sw" onMouseDown={e => handleResizeDown(e, 'sw')} />
           <div className="wm-resize-handle wm-resize-se" onMouseDown={e => handleResizeDown(e, 'se')} />
-
-          {/* Position label */}
-          <div className="wm-slot-coords">
+          <div className="wm-slot-coords" ref={coordsRef}>
             {Math.round(widget.position_x)}, {Math.round(widget.position_y)} — {Math.round(widget.width)}×{Math.round(widget.height)}
           </div>
         </div>

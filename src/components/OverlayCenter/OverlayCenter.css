@@ -1499,7 +1499,7 @@
 .wm-live-canvas-wrap {
   margin: 0 auto;
   border-radius: 10px;
-  overflow: hidden;
+  overflow: visible;
   border: 1px solid rgba(139, 92, 246, 0.15);
   background: #0a0a12;
   position: relative;
@@ -1534,10 +1534,12 @@
 
 /* ── Live slot — OBS-style drag & resize ── */
 .wm-live-slot {
-  overflow: hidden;
+  overflow: visible;
   pointer-events: auto;
   cursor: pointer;
   transition: box-shadow 0.2s ease, outline 0.2s ease;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .wm-live-slot--active {
@@ -1566,6 +1568,7 @@
   border-radius: 4px;
   pointer-events: none;
   z-index: 10;
+  overflow: visible;
 }
 
 .wm-resize-handle {
