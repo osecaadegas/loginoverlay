@@ -48,7 +48,7 @@ function BonusHuntPanel({ widgets, saveWidget, addWidget, loading }) {
 
   return (
     <div className="oc-panel-section">
-      <BonusHuntConfig config={widget.config} onChange={handleChange} allWidgets={widgets} />
+      <BonusHuntConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" />
     </div>
   );
 }
@@ -77,7 +77,7 @@ function TournamentPanel({ widgets, saveWidget, addWidget, loading }) {
 
   return (
     <div className="oc-panel-section">
-      <TournamentConfig config={widget.config} onChange={handleChange} allWidgets={widgets} />
+      <TournamentConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" />
     </div>
   );
 }

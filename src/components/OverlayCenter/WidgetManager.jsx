@@ -286,7 +286,8 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
                     {/* Widget-specific config */}
                     {ConfigPanel && (
-                      <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets} />
+                      <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
+                        mode={(w.widget_type === 'bonus_hunt' || w.widget_type === 'tournament') ? 'widget' : 'full'} />
                     )}
                   </div>
                 )}

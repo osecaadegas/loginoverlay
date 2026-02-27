@@ -15,10 +15,10 @@ const FONT_OPTIONS = [
   { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
 ];
 
-export default function BonusHuntConfig({ config, onChange, allWidgets }) {
+export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState('content');
+  const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
 
@@ -87,18 +87,23 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
   const loadPreset = (preset) => setMulti(preset.values);
   const deletePreset = (name) => set('bhPresets', (c.bhPresets || []).filter(p => p.name !== name));
 
-  const tabs = [
+  const allTabs = [
     { id: 'content', label: '📋 Content' },
     { id: 'history', label: '📜 History' },
     { id: 'style', label: '🎨 Style' },
     { id: 'filters', label: '✨ Filters' },
     { id: 'presets', label: '💾 Presets' },
   ];
+  const SIDEBAR_TABS = new Set(['content', 'history']);
+  const WIDGET_TABS  = new Set(['style', 'filters', 'presets']);
+  const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
+             : mode === 'widget'  ? allTabs.filter(t => WIDGET_TABS.has(t.id))
+             : allTabs;
 
   return (
     <div className="bh-config">
-      {/* Top quick toggles */}
-      <div className="bh-quick-row">
+      {/* Top quick toggles — only in sidebar or full mode */}
+      {mode !== 'widget' && <div className="bh-quick-row">
         <label className="oc-config-field" style={{ flex: 1 }}>
           <span>Currency</span>
           <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} />
@@ -115,7 +120,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets }) {
           <input type="checkbox" checked={!!c.huntActive} onChange={e => set('huntActive', e.target.checked)} />
           <span>Hunt Active</span>
         </label>
-      </div>
+      </div>}
 
       {/* Tab nav */}
       <div className="nb-tabs" style={{ marginTop: 8 }}>

@@ -32,11 +32,11 @@ function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suf
   );
 }
 
-export default function TournamentConfig({ config, onChange, allWidgets }) {
+export default function TournamentConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
-  const [activeTab, setActiveTab] = useState('setup');
+  const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'setup');
 
   /* ─── Slot data (for search) ─── */
   const [slots, setSlots] = useState([]);
@@ -260,12 +260,17 @@ export default function TournamentConfig({ config, onChange, allWidgets }) {
   const loadPreset = (preset) => setMulti(preset.values);
   const deletePreset = (name) => set('tournamentPresets', (c.tournamentPresets || []).filter(p => p.name !== name));
 
-  const tabs = [
+  const allTabs = [
     { id: 'setup',   label: '⚙️ Setup' },
     { id: 'matches', label: '🏆 Matches' },
     { id: 'style',   label: '🎨 Style' },
     { id: 'presets', label: '💾 Presets' },
   ];
+  const SIDEBAR_TABS = new Set(['setup', 'matches']);
+  const WIDGET_TABS  = new Set(['style', 'presets']);
+  const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
+             : mode === 'widget'  ? allTabs.filter(t => WIDGET_TABS.has(t.id))
+             : allTabs;
 
   return (
     <div className="bh-config">
