@@ -1,7 +1,7 @@
 /**
  * WidgetManager.jsx — Widget list + add/remove/configure widgets
  */
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
 
 /* ── Per-widget sync mapping from navbar config ── */
@@ -90,13 +90,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const [editingId, setEditingId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
-  const configPanelRef = useRef(null);
-
-  const scrollToConfig = useCallback(() => {
-    if (configPanelRef.current) {
-      configPanelRef.current.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  }, []);
 
   const copyWidgetUrl = useCallback((widgetId) => {
     if (!overlayToken) return;
@@ -396,19 +389,14 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           );
                         })}
                       </div>
-                      <button className="wm-preview-style-btn" onClick={scrollToConfig} title="Open style settings">🎨</button>
-                      <span className="wm-pos-preview-dims">
-                        <span className="wm-pos-preview-dims-coords">{Math.round(w.position_x)}, {Math.round(w.position_y)}</span>
-                        <span className="wm-pos-preview-dims-sep">—</span>
-                        <span className="wm-pos-preview-dims-size">{Math.round(w.width)}×{Math.round(w.height)}</span>
-                      </span>
+                      <span className="wm-pos-preview-dims">{Math.round(w.position_x)},{Math.round(w.position_y)} — {Math.round(w.width)}×{Math.round(w.height)}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Widget Config Panel */}
                 {ConfigPanel && (
-                  <div className="wm-config-panel" ref={configPanelRef}>
+                  <div className="wm-config-panel">
                     <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
                       mode={(w.widget_type === 'bonus_hunt' || w.widget_type === 'tournament') ? 'widget' : 'full'} />
                   </div>
