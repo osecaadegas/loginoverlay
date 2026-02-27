@@ -2317,6 +2317,35 @@ body.wm-dragging .wm-resize-handle {
   z-index: 12;
 }
 
+/* Floating style-cycle button on selected widget */
+.wm-style-cycle-btn {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 92, 246, 0.9);
+  background: rgba(15, 17, 30, 0.92);
+  color: #e0d0ff;
+  font-size: 13px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  pointer-events: auto;
+  z-index: 15;
+  transition: transform 0.15s, background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+.wm-style-cycle-btn:hover {
+  background: rgba(139, 92, 246, 0.35);
+  transform: translateX(-50%) scale(1.18);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.5);
+}
+
 /* Selected widget name in header */
 .wm-live-selected-name {
   color: rgba(139, 92, 246, 0.9);

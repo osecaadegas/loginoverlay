@@ -6,7 +6,7 @@ import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
-  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize,
+  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle,
 }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
@@ -178,6 +178,15 @@ const DraggableSlot = memo(function DraggableSlot({
           <div className="wm-resize-handle wm-resize-ne" onMouseDown={e => handleResizeDown(e, 'ne')} />
           <div className="wm-resize-handle wm-resize-sw" onMouseDown={e => handleResizeDown(e, 'sw')} />
           <div className="wm-resize-handle wm-resize-se" onMouseDown={e => handleResizeDown(e, 'se')} />
+          {def?.styles?.length > 1 && (
+            <button
+              className="wm-style-cycle-btn"
+              title={`Style: ${(def.styles.find(s => s.id === (widget.config?.[def.styleConfigKey || 'displayStyle'] || def.styles[0].id)) || def.styles[0]).label} — click to cycle`}
+              onMouseDown={e => { e.stopPropagation(); e.preventDefault(); onStyleCycle?.(widget); }}
+            >
+              🎨
+            </button>
+          )}
           <div className="wm-slot-coords" ref={coordsRef}>
             {Math.round(widget.position_x)}, {Math.round(widget.position_y)} — {Math.round(widget.width)}×{Math.round(widget.height)}
           </div>
@@ -366,6 +375,18 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     onSave({ ...widget, config: newConfig });
   }, [onSave]);
 
+  /* Cycle to next style for a widget (used by floating preview button) */
+  const handleStyleCycle = useCallback((widget) => {
+    const def = getWidgetDef(widget.widget_type);
+    const styles = def?.styles;
+    if (!styles || styles.length < 2) return;
+    const key = def.styleConfigKey || 'displayStyle';
+    const current = widget.config?.[key] || styles[0].id;
+    const idx = styles.findIndex(s => s.id === current);
+    const next = styles[(idx + 1) % styles.length];
+    onSave({ ...widget, config: { ...widget.config, [key]: next.id } });
+  }, [onSave]);
+
   const handlePositionChange = useCallback((widget, field, value) => {
     onSave({ ...widget, [field]: value });
   }, [onSave]);
@@ -472,6 +493,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     onSelect={handlePreviewSelect}
                     onMove={handlePreviewMove}
                     onResize={handlePreviewResize}
+                    onStyleCycle={handleStyleCycle}
                   />
                 ))}
               </div>
