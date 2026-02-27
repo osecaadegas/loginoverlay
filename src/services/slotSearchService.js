@@ -267,6 +267,31 @@ export async function scrapeSlotMetadata(url) {
 // ────────────────────────────────────────────────
 // findSlotImage — Google Image scrape for slot cover art
 // ────────────────────────────────────────────────
+// ────────────────────────────────────────────────
+// fetchSlotAI — Call Gemini via our serverless endpoint for structured slot data
+// Returns { name, provider, rtp, volatility, max_win_multiplier, features, theme }
+// ────────────────────────────────────────────────
+export async function fetchSlotAI(name) {
+  try {
+    const res = await fetch('/api/slot-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name }),
+    });
+    if (!res.ok) {
+      console.warn('[slotSearch] AI API returned', res.status);
+      return null;
+    }
+    return await res.json();
+  } catch (e) {
+    console.error('[slotSearch] fetchSlotAI error:', e);
+    return null;
+  }
+}
+
+// ────────────────────────────────────────────────
+// findSlotImage — Google Image scrape for slot cover art
+// ────────────────────────────────────────────────
 export async function findSlotImage(name, provider = '') {
   try {
     const query = `${name} ${provider} slot cover`.trim();

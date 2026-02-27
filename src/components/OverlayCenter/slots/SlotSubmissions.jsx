@@ -6,7 +6,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import { submitSlot, getMySubmissions } from '../../../services/pendingSlotService';
-import { analyzeSlotUrl, scrapeSlotMetadata, findSlotImage } from '../../../services/slotSearchService';
+import { analyzeSlotUrl, scrapeSlotMetadata, findSlotImage, fetchSlotAI } from '../../../services/slotSearchService';
 import './SlotSubmissions.css';
 
 const EMPTY_FORM = {
@@ -24,6 +24,7 @@ export default function SlotSubmissions() {
   const [showForm, setShowForm] = useState(false);
   const [searchingImage, setSearchingImage] = useState(false);
   const [analyzingUrl, setAnalyzingUrl] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const searchAbort = useRef(null);
 
   const loadSubmissions = useCallback(async () => {
@@ -131,6 +132,41 @@ export default function SlotSubmissions() {
     window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}&tbm=isch`, '_blank');
   };
 
+  /* ── AI auto-fill: send name to Gemini, fill provider + RTP + volatility + max win ── */
+  const handleAiFill = async () => {
+    if (!form.name || form.name.length < 2) {
+      flash('Type a slot name first.', 'error');
+      return;
+    }
+    setAiLoading(true);
+    try {
+      const ai = await fetchSlotAI(form.name);
+      if (!ai) {
+        flash('AI could not find this slot.', 'error');
+        return;
+      }
+      setForm(prev => ({
+        ...prev,
+        name: ai.name || prev.name,
+        provider: ai.provider || prev.provider,
+        rtp: ai.rtp != null ? String(ai.rtp) : prev.rtp,
+        volatility: ai.volatility || prev.volatility,
+        max_win_multiplier: ai.max_win_multiplier != null ? String(ai.max_win_multiplier) : prev.max_win_multiplier,
+      }));
+      flash(`✨ AI filled: ${ai.name || form.name} by ${ai.provider || '?'}`);
+
+      // Also trigger image search with AI-returned name/provider
+      if (!form.image && (ai.name || form.name)) {
+        triggerImageSearch(ai.name || form.name, ai.provider || form.provider);
+      }
+    } catch (e) {
+      console.error('[SlotSubmissions] AI error:', e);
+      flash('AI lookup failed.', 'error');
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim() || !form.provider.trim() || !form.image.trim() || !form.rtp || !form.volatility || !form.max_win_multiplier) {
@@ -205,7 +241,19 @@ export default function SlotSubmissions() {
           <div className="ss-form-grid">
             <div className="ss-field ss-field--required">
               <label>Name *</label>
-              <input name="name" value={form.name} onChange={handleChange} onBlur={handleNameBlur} placeholder="e.g. Gates of Olympus" required />
+              <div className="ss-name-row">
+                <input name="name" value={form.name} onChange={handleChange} onBlur={handleNameBlur} placeholder="e.g. Gates of Olympus" required />
+                <button
+                  type="button"
+                  className="ss-ai-btn"
+                  onClick={handleAiFill}
+                  disabled={aiLoading || !form.name}
+                  title="AI auto-fill all fields"
+                >
+                  {aiLoading ? '⏳' : '✨ AI Fill'}
+                </button>
+              </div>
+              {aiLoading && <span className="ss-ai-hint">Asking Gemini for slot data…</span>}
             </div>
             <div className="ss-field ss-field--required">
               <label>Provider *</label>

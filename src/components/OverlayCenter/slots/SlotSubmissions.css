@@ -218,6 +218,63 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* ─── Name row (input + AI button) ─── */
+.ss-name-row {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+}
+
+.ss-name-row input {
+  flex: 1;
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ss-name-row input:focus {
+  border-color: rgba(147, 70, 255, 0.4);
+}
+
+.ss-ai-btn {
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border: 1px solid rgba(250, 204, 21, 0.25);
+  border-radius: 6px;
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.12), rgba(251, 146, 60, 0.12));
+  color: #fbbf24;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ss-ai-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.22), rgba(251, 146, 60, 0.22));
+  border-color: rgba(250, 204, 21, 0.45);
+  transform: translateY(-1px);
+}
+
+.ss-ai-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.ss-ai-hint {
+  display: block;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: #fbbf24;
+  animation: ssPulse 1.2s ease infinite;
+}
+
 .ss-form-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
