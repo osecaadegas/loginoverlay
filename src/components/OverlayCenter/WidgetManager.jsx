@@ -622,23 +622,34 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       </label>
                       </div>{/* end wm-pos-sliders */}
 
-                      {/* Right: Live mini widget preview */}
+                      {/* Right: Live mini widget preview — shows ALL widgets */}
                       <div className="wm-pos-preview">
                         <div className="wm-pos-preview-canvas">
                           <div className="wm-pos-preview-scene">
-                            <div
-                              style={{
-                                position: 'absolute',
-                                left: w.position_x,
-                                top: w.position_y,
-                                width: w.width,
-                                height: w.height,
-                                overflow: 'hidden',
-                                zIndex: w.z_index || 1,
-                              }}
-                            >
-                              {WidgetComponent && <WidgetComponent config={w.config} theme={theme} allWidgets={widgets} />}
-                            </div>
+                            {widgets.filter(wd => wd.is_enabled).map(wd => {
+                              const wDef = getWidgetDef(wd.widget_type);
+                              const WComp = wDef?.component;
+                              const isCurrent = wd.id === w.id;
+                              return (
+                                <div
+                                  key={wd.id}
+                                  style={{
+                                    position: 'absolute',
+                                    left: wd.position_x,
+                                    top: wd.position_y,
+                                    width: wd.width,
+                                    height: wd.height,
+                                    overflow: 'hidden',
+                                    zIndex: wd.z_index || 1,
+                                    opacity: isCurrent ? 1 : 0.45,
+                                    outline: isCurrent ? '3px solid rgba(139,92,246,0.7)' : 'none',
+                                    borderRadius: isCurrent ? 4 : 0,
+                                  }}
+                                >
+                                  {WComp && <WComp config={wd.config} theme={theme} allWidgets={widgets} />}
+                                </div>
+                              );
+                            })}
                           </div>
                           <span className="wm-pos-preview-dims">{Math.round(w.position_x)},{Math.round(w.position_y)} — {Math.round(w.width)}×{Math.round(w.height)}</span>
                         </div>
