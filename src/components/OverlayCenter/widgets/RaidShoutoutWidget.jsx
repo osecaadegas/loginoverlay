@@ -1,8 +1,8 @@
 /**
  * RaidShoutoutWidget.jsx — OBS Overlay Widget
  *
- * Minimal raid shoutout: just instantly autoplays the Twitch clip.
- * No header, no footer — pure clip playback that fades in, plays, and fades out.
+ * Minimal raid shoutout: instantly autoplays the Twitch clip as a native
+ * <video> element (no iframe, no play-button gate).
  * Queues multiple alerts.
  */
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -24,24 +24,21 @@ function playAlertSound(soundUrl) {
   } catch {}
 }
 
-/* ─── Build Twitch clip embed URL — MUTED so browsers allow autoplay ─── */
-function buildClipEmbedSrc(clipId, clipEmbedUrl) {
-  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-  if (clipId) {
-    return `https://clips.twitch.tv/embed?clip=${encodeURIComponent(clipId)}&parent=${host}&autoplay=true&muted=true`;
+/**
+ * Derive the direct .mp4 URL from a Twitch clip thumbnail URL.
+ * Twitch thumbnails look like:
+ *   https://clips-media-assets2.twitch.tv/xxxxx-preview-480x272.jpg
+ * The video is at:
+ *   https://clips-media-assets2.twitch.tv/xxxxx.mp4
+ */
+function getClipVideoUrl(thumbnailUrl) {
+  if (!thumbnailUrl) return null;
+  try {
+    // Strip the "-preview-{W}x{H}.jpg" suffix → ".mp4"
+    return thumbnailUrl.replace(/-preview-\d+x\d+\.jpg$/i, '.mp4');
+  } catch {
+    return null;
   }
-  if (clipEmbedUrl) {
-    try {
-      const url = new URL(clipEmbedUrl);
-      url.searchParams.set('parent', host);
-      url.searchParams.set('autoplay', 'true');
-      url.searchParams.set('muted', 'true');
-      return url.toString();
-    } catch {
-      return `${clipEmbedUrl}&parent=${host}&autoplay=true&muted=true`;
-    }
-  }
-  return null;
 }
 
 /* ─── Main Widget ─── */
@@ -53,6 +50,7 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   const [phase, setPhase] = useState('idle');
   const channelRef = useRef(null);
   const dismissTimerRef = useRef(null);
+  const videoRef = useRef(null);
 
   const MAX_DURATION = c.alertDuration ?? 30;
   const soundUrl = c.soundUrl ?? '';
@@ -84,16 +82,17 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     let timer;
     switch (phase) {
       case 'entering':
-        // Fade in, then immediately start playing
         timer = setTimeout(() => setPhase('playing'), 600);
         break;
       case 'playing':
-        // Auto-dismiss after MAX_DURATION
+        // Try to force-play the video element
+        if (videoRef.current) {
+          videoRef.current.play().catch(() => {});
+        }
         timer = setTimeout(() => setPhase('exiting'), MAX_DURATION * 1000);
         dismissTimerRef.current = timer;
         break;
       case 'exiting':
-        // Fade out, then go idle
         timer = setTimeout(() => {
           if (currentAlert) markAlertDismissed(currentAlert.id);
           setCurrentAlert(null);
@@ -105,6 +104,14 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     }
     return () => clearTimeout(timer);
   }, [phase, MAX_DURATION, currentAlert]);
+
+  // ── When video ends naturally, exit early ──
+  const handleVideoEnded = useCallback(() => {
+    if (phase === 'playing') {
+      clearTimeout(dismissTimerRef.current);
+      setPhase('exiting');
+    }
+  }, [phase]);
 
   // ── Subscribe to realtime ──
   useEffect(() => {
@@ -121,10 +128,8 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   // ── Nothing to show ──
   if (!currentAlert || phase === 'idle') return null;
 
-  const hasClip = !!(currentAlert.clip_id || currentAlert.clip_embed_url);
-  const embedSrc = hasClip ? buildClipEmbedSrc(currentAlert.clip_id, currentAlert.clip_embed_url) : null;
+  const videoUrl = getClipVideoUrl(currentAlert.clip_thumbnail_url);
 
-  // Wrapper classes
   const wrapperClass = [
     'rs-alert-wrapper',
     phase === 'entering' ? 'rs-phase-enter' : '',
@@ -139,18 +144,17 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   return (
     <div className={wrapperClass} style={alertStyle}>
       <div className="rs-alert-card rs-alert-card--clip-only">
-        {hasClip && embedSrc ? (
+        {videoUrl ? (
           <div className="rs-clip-container">
-            {currentAlert.clip_thumbnail_url && (
-              <img src={currentAlert.clip_thumbnail_url} alt="" className="rs-clip-poster" />
-            )}
-            <iframe
-              src={embedSrc}
-              className="rs-clip-iframe"
-              title={currentAlert.clip_title || 'Raid clip'}
-              allowFullScreen
-              allow="autoplay; encrypted-media; fullscreen"
-              referrerPolicy="no-referrer-when-downgrade"
+            <video
+              ref={videoRef}
+              className="rs-clip-video"
+              src={videoUrl}
+              autoPlay
+              muted
+              playsInline
+              onEnded={handleVideoEnded}
+              poster={currentAlert.clip_thumbnail_url}
             />
           </div>
         ) : (

@@ -1666,6 +1666,13 @@
   overflow: hidden;
 }
 
+.rs-clip-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
 .rs-clip-iframe {
   position: absolute;
   inset: 0;
