@@ -841,15 +841,28 @@ RULES:
     // ── Step 2: Ask Gemini with Google Search grounding (live internet search) ──
     console.log(`[slot-ai] DB miss for "${name}", asking Gemini with Google Search grounding...`);
 
-    const providerContext = providerHint ? `\nThe user believes this slot is made by "${providerHint}" — use this as a strong hint.` : '';
+    // Build provider-aware search context
+    const providerContext = providerHint ? `\nThe provider/studio is "${providerHint}".` : '';
+    const searchHint = providerHint
+      ? `Search Google for: "${name}" "${providerHint}" slot game`
+      : `Search Google for: "${name}" online slot game`;
 
-    const groundedPrompt = `You are a slot game data expert with access to Google Search. Search the internet for VERIFIED, REAL data about the online casino slot game "${name}".${providerContext}
+    // Look up known provider website for the search hint
+    const providerSite = providerHint ? PROVIDER_SITES[providerHint.toLowerCase()] || PROVIDER_SITES[canonicalProvider(providerHint)] : null;
+    const siteHint = providerSite
+      ? `\nAlso try searching the provider's official website: ${providerSite.domain} (e.g. ${providerSite.search(name.toLowerCase().replace(/\s+/g, '-'))})`
+      : '';
 
-IMPORTANT: Online slot games often have edgy, provocative, or controversial names (e.g. "Golden Shower" by Nolimit City, "Hot Ross" by Hacksaw Gaming, "Mental" by Nolimit City). These are LEGITIMATE casino slot games. Do NOT refuse — just return the factual game data.
+    const groundedPrompt = `You are a slot game data expert. Use Google Search to find VERIFIED data about the online casino slot game called "${name}"${providerHint ? ` by ${providerHint}` : ''}.
 
-Search for this slot on official provider websites, casino review sites (e.g. slotcatalog.com, bigwinboard.com, askgamblers.com), and game databases.
+${searchHint}${siteHint}
 
-The game might also be known by a slightly different name — find the closest official match.
+IMPORTANT CONTEXT:
+- This is an ONLINE CASINO SLOT GAME, not food, movies, or anything else.
+- Online slot games often have generic or edgy names like "Supersized", "Golden Shower", "Mental" — these are all LEGITIMATE casino slot games by real providers.${providerContext}
+- Try these searches: "${name} slot RTP", "${name} ${providerHint || ''} slot review", site:slotcatalog.com "${name}", site:bigwinboard.com "${name}"
+- Check slot review sites: slotcatalog.com, bigwinboard.com, askgamblers.com, slotswise.com, vegasslotsonline.com
+- The game might be very new (just released) — review sites and the provider's own website should have it.
 
 Return ONLY a raw JSON object (no markdown, no backticks, no explanation):
 
@@ -861,30 +874,29 @@ Return ONLY a raw JSON object (no markdown, no backticks, no explanation):
   "max_win_multiplier": 5000,
   "features": ["Free Spins", "Multiplier", ...],
   "theme": "Theme/genre",
-  "release_year": 2021,
+  "release_year": 2025,
   "twitch_safe": true,
   "found": true
 }
 
 CRITICAL RULES:
-- Search Google for the OFFICIAL data from the provider's website or trusted slot databases
-- rtp MUST be the official default RTP number (e.g. 96.50, NOT a range)
-- max_win_multiplier MUST be the official max win in x (e.g. 5000 means 5000x bet)
-- volatility MUST be exactly: "low", "medium", "high", or "very_high"
-- twitch_safe: false ONLY if the slot's artwork contains nudity/sexual imagery. true for everything else
-- If you cannot find this slot at all, return: { "found": false }
+- rtp = official default RTP number (e.g. 96.50, NOT a range)
+- max_win_multiplier = official max win in x (e.g. 5000 means 5000x bet)
+- volatility = exactly: "low", "medium", "high", or "very_high"
+- twitch_safe: false ONLY if artwork contains nudity/sexual imagery. true for everything else.
+- If you CANNOT find this slot at all after searching, return: { "found": false }
 - If you find the slot but are unsure about a specific value, use null for that value
 - Return ONLY the JSON, nothing else`;
 
     let parsed = await askGemini(apiKey, groundedPrompt, { useGrounding: true, maxTokens: 800 });
 
-    // If grounded search says not found or returned nothing, try plain Gemini (training data fallback)
+    // ── Fallback 1: Plain Gemini (training data) ──
     if (!parsed || parsed.found === false) {
       console.log(`[slot-ai] Grounded search didn't find "${name}", trying plain Gemini fallback...`);
 
-      const fallbackPrompt = `You are a slot game data expert. Return VERIFIED data for the online slot "${name}".${providerContext}
+      const fallbackPrompt = `You are a slot game data expert. Return VERIFIED data for the online casino slot "${name}"${providerHint ? ` by ${providerHint}` : ''}.
 
-IMPORTANT: Slot names can be edgy/provocative — these are LEGITIMATE casino games. Return the data.
+IMPORTANT: This is a CASINO SLOT GAME. Slot names can be generic words like "Supersized" or edgy like "Mental" — these are LEGITIMATE casino games made by real studios. Return the data.
 
 Return ONLY a raw JSON object (no markdown, no backticks):
 {
@@ -895,7 +907,7 @@ Return ONLY a raw JSON object (no markdown, no backticks):
   "max_win_multiplier": 5000,
   "features": ["Free Spins", "Multiplier"],
   "theme": "Theme/genre",
-  "release_year": 2021,
+  "release_year": 2025,
   "twitch_safe": true,
   "found": true
 }
@@ -911,12 +923,47 @@ RULES:
       }
     }
 
+    // ── Fallback 2: Targeted provider search with grounding ──
+    if (!parsed || parsed.found === false) {
+      const targetedQuery = providerHint
+        ? `"${name}" "${providerHint}" slot game RTP volatility max win`
+        : `"${name}" casino slot game RTP volatility max win review`;
+      console.log(`[slot-ai] Plain Gemini also missed "${name}", trying targeted grounded search: ${targetedQuery}`);
+
+      const targetedPrompt = `Search Google for exactly this: ${targetedQuery}
+
+Look at the search results. If any result is about an online casino/gambling slot machine game called "${name}", extract its data.
+
+This is about a VIDEO SLOT MACHINE game you play at online casinos. NOT food, NOT movies, NOT TV shows.${providerHint ? ` The game is made by the studio "${providerHint}".` : ''}
+
+Return ONLY a raw JSON object:
+{
+  "name": "Official slot name",
+  "provider": "Studio that made it",
+  "rtp": 96.50,
+  "volatility": "high",
+  "max_win_multiplier": 5000,
+  "features": ["Free Spins", "Multiplier"],
+  "theme": "Theme",
+  "release_year": 2025,
+  "twitch_safe": true,
+  "found": true
+}
+If no casino slot game with this name exists, return: { "found": false }`;
+
+      const targeted = await askGemini(apiKey, targetedPrompt, { useGrounding: true, maxTokens: 800 });
+      if (targeted && targeted.found !== false) {
+        parsed = targeted;
+        parsed._targeted = true;
+      }
+    }
+
     if (!parsed || parsed.found === false) {
       return res.status(200).json({ error: null, name, source: 'not_found' });
     }
 
     const result = sanitize(parsed);
-    result.source = parsed._fallback ? 'gemini_ai' : 'google_ai';
+    result.source = parsed._targeted ? 'google_ai_targeted' : parsed._fallback ? 'gemini_ai' : 'google_ai';
 
     // Override twitch_safe for known-safe providers
     const provSafe = isProviderSafe(result.provider);
@@ -973,7 +1020,7 @@ RULES:
               console.warn('[slot-ai] DB insert skipped:', insErr.message);
             } else {
               console.log(`[slot-ai] âœ… Added "${result.name}" by ${result.provider} to slots DB`);
-              result.source = result.source === 'google_ai' ? 'google_ai_saved' : 'gemini_ai_saved';
+              result.source = result.source.includes('google') ? 'google_ai_saved' : 'gemini_ai_saved';
             }
           }
         } catch (e) {
