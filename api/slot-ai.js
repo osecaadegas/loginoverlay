@@ -2,8 +2,17 @@
 // Pipeline: Supabase DB (8000+) â†’ Gemini AI (with live Google Search grounding) â†’ Cross-match DB.
 // New slots found by AI are auto-saved to the DB. Missing RTP/max_win are enriched via Gemini.
 // Requires GEMINI_API_KEY + SUPABASE env vars in Vercel project settings.
+//
+// Admin Ingestion Mode:
+//   POST /api/slot-ai?action=ingest  (requires Authorization: Bearer <admin_jwt>)
+//   Single: { "name": "Mental", "provider": "Nolimit City" }
+//   Batch:  { "batch": [{ "name": "Mental" }, { "name": "Gates of Olympus" }] }
 
 import { createClient } from '@supabase/supabase-js';
+import { verifyAdmin as verifyIngestionAdmin, checkRateLimit as checkIngestionRateLimit } from './_lib/ingestion/db.js';
+import { ingestSlot, ingestBatch } from './_lib/ingestion/pipeline.js';
+import { IngestionError, authError as ingestionAuthError, validationError as ingestionValidationError, classifyError as classifyIngestionError } from './_lib/ingestion/errors.js';
+import { logger as ingestionLogger } from './_lib/ingestion/logger.js';
 
 const GEMINI_MODEL = 'gemini-2.0-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
@@ -732,11 +741,20 @@ function sanitize(parsed) {
 // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', req.headers.origin || '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
+
+  // ── Route: Admin Ingestion Mode (?action=ingest) ──────────────────
+  const action = (req.query?.action || '').toLowerCase();
+  if (action === 'ingest') {
+    return handleIngest(req, res);
+  }
+
+  // ── Route: Normal user slot lookup (default) ──────────────────────
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
@@ -968,5 +986,112 @@ RULES:
   } catch (err) {
     console.error('[slot-ai] Error:', err);
     return res.status(500).json({ error: err.message || 'Internal error' });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════════
+// ADMIN INGESTION HANDLER (?action=ingest)
+// ═══════════════════════════════════════════════════════════════════════
+// Accessed via: POST /api/slot-ai?action=ingest
+// Requires: Authorization: Bearer <supabase_admin_jwt>
+// Single:   { "name": "Mental", "provider": "Nolimit City" }
+// Batch:    { "batch": [{ "name": "Mental" }, { "name": "Gates of Olympus" }] }
+
+function getIngestClientIP(req) {
+  return (
+    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    req.headers['x-real-ip'] ||
+    req.socket?.remoteAddress ||
+    'unknown'
+  );
+}
+
+function formatIngestResult(result) {
+  return {
+    action: result.action,
+    slot: {
+      id: result.slot?.id,
+      name: result.slot?.name,
+      provider: result.slot?.provider,
+      rtp: result.slot?.rtp,
+      volatility: result.slot?.volatility,
+      max_win_multiplier: result.slot?.max_win_multiplier,
+      theme: result.slot?.theme,
+      features: result.slot?.features,
+      image: result.slot?.image,
+      twitch_safe: result.slot?.twitch_safe,
+      release_year: result.slot?.release_year,
+    },
+    confidence: result.confidence,
+    source: result.source,
+    needsReview: result.needsReview,
+    image: result.image ? { status: result.image.status, reason: result.image.reason } : null,
+    warnings: result.warnings || [],
+    duration_ms: result.duration_ms,
+  };
+}
+
+async function handleIngest(req, res) {
+  const ip = getIngestClientIP(req);
+
+  try {
+    // ── Authentication ──────────────────────────────────────────
+    const auth = await verifyIngestionAdmin(req.headers.authorization);
+    if (!auth.authorized) {
+      ingestionLogger.warn('auth.rejected', { ip, error: auth.error });
+      throw ingestionAuthError(auth.error || 'Unauthorized');
+    }
+
+    const userId = auth.user.id;
+    ingestionLogger.info('auth.verified', { userId, ip, roles: auth.roles });
+
+    // ── Rate Limiting ───────────────────────────────────────────
+    await checkIngestionRateLimit(userId, 'ingest-slot');
+
+    // ── Dispatch ────────────────────────────────────────────────
+    const body = req.body || {};
+
+    // Batch mode
+    if (Array.isArray(body.batch)) {
+      if (body.batch.length === 0) {
+        throw ingestionValidationError('Batch array is empty');
+      }
+      if (body.batch.length > 50) {
+        throw ingestionValidationError('Batch size exceeds maximum of 50', { received: body.batch.length });
+      }
+
+      const result = await ingestBatch(body.batch, { userId, ip });
+
+      return res.status(200).json({
+        ok: true,
+        mode: 'batch',
+        ...result.summary,
+        results: result.results.map(formatIngestResult),
+        errors: result.errors,
+      });
+    }
+
+    // Single slot mode
+    if (!body.name) {
+      throw ingestionValidationError('Field "name" is required. For batch, use { "batch": [...] }');
+    }
+
+    const result = await ingestSlot(body, { userId, ip });
+
+    return res.status(200).json({
+      ok: true,
+      mode: 'single',
+      ...formatIngestResult(result),
+    });
+  } catch (err) {
+    const classified = err instanceof IngestionError ? err : classifyIngestionError(err);
+
+    ingestionLogger.error('handler.error', {
+      ip,
+      type: classified.type,
+      message: classified.message,
+    });
+
+    return res.status(classified.statusCode || 500).json(classified.toJSON());
   }
 }
