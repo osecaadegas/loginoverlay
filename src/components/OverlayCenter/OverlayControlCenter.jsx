@@ -110,6 +110,39 @@ export default function OverlayControlCenter() {
     setTimeout(() => setPresetMsg(''), 2000);
   }, [presetName, widgets, globalPresets, updateState]);
 
+  /* ── User-data config keys to SKIP when loading presets (per widget type).
+     Only styling/layout/color keys get applied; user content stays individual. ── */
+  const USER_DATA_KEYS = useMemo(() => ({
+    stats:              ['totalBet', 'totalWin', 'highestWin', 'highestMulti', 'sessionProfit', 'currency'],
+    bonus_hunt:         ['bonuses', 'huntActive', 'currency', 'startMoney', 'targetMoney', 'stopLoss', 'showStatistics', 'animatedTracker', 'bonusOpening'],
+    current_slot:       ['slotName', 'provider', 'betSize', 'imageUrl', 'rtp'],
+    tournament:         ['title', 'prize', 'active', 'players', 'slots', 'format', 'data'],
+    giveaway:           ['title', 'prize', 'keyword', 'isActive', 'winner'],
+    navbar:             ['streamerName', 'motto', 'twitchUsername', 'avatarUrl', 'badgeImage', 'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA', 'musicSource', 'manualArtist', 'manualTrack', 'spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at'],
+    chat:               ['twitchEnabled', 'twitchChannel', 'youtubeEnabled', 'youtubeVideoId', 'youtubeApiKey', 'kickEnabled', 'kickChannelId', 'maxMessages'],
+    session_stats:      ['wagered', 'won', 'profit', 'bestWin', 'bestMulti', 'slotsPlayed', 'currency'],
+    recent_wins:        ['wins', 'currency'],
+    coinflip:           ['flipping', 'result', 'label'],
+    slotmachine:        ['spinning', 'reels', 'label'],
+    random_slot_picker: ['picking', 'selectedSlot'],
+    wheel_of_names:     ['entries', 'spinning', 'winner'],
+    placeholder:        ['html'],
+    image_slideshow:    ['images', 'caption', 'pauseOnHover'],
+    rtp_stats:          ['previewMode'],
+    background:         ['imageUrl', 'videoUrl'],
+    raid_shoutout:      ['soundUrl', 'showClip', 'showGame', 'showViewers'],
+  }), []);
+
+  /** Merge preset config into existing config — keep user data, apply styling only */
+  const mergePresetConfig = useCallback((widgetType, existingConfig, presetConfig) => {
+    const skip = new Set(USER_DATA_KEYS[widgetType] || []);
+    const merged = { ...(existingConfig || {}) };
+    for (const [key, value] of Object.entries(presetConfig || {})) {
+      if (!skip.has(key)) merged[key] = value;
+    }
+    return merged;
+  }, [USER_DATA_KEYS]);
+
   const loadGlobalPreset = useCallback(async (preset) => {
     if (!preset?.snapshot) return;
 
@@ -131,8 +164,7 @@ export default function OverlayControlCenter() {
         claimed.add(target.id);
         await saveWidget({
           ...target,
-          label: snap.label || target.label,
-          config: snap.config,
+          config: mergePresetConfig(target.widget_type, target.config, snap.config),
           is_visible: snap.is_visible,
           position_x: snap.position_x,
           position_y: snap.position_y,
@@ -142,12 +174,12 @@ export default function OverlayControlCenter() {
           animation: snap.animation,
         });
       } else {
-        // 3) Widget type doesn't exist yet — create it with preset data
-        const created = await addWidget(snap.widget_type, snap.config || {});
+        // 3) Widget type doesn't exist yet — create it with merged config
+        const created = await addWidget(snap.widget_type, {});
         if (created) {
           await saveWidget({
             ...created,
-            label: snap.label || created.label,
+            config: mergePresetConfig(created.widget_type, created.config, snap.config),
             is_visible: snap.is_visible,
             position_x: snap.position_x,
             position_y: snap.position_y,
@@ -161,7 +193,7 @@ export default function OverlayControlCenter() {
     }
     setPresetMsg('Loaded!');
     setTimeout(() => setPresetMsg(''), 2000);
-  }, [widgets, saveWidget, addWidget]);
+  }, [widgets, saveWidget, addWidget, mergePresetConfig]);
 
   const deleteGlobalPreset = useCallback(async (name) => {
     const updated = globalPresets.filter(p => p.name !== name);
