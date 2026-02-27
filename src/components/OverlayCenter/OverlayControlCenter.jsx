@@ -11,7 +11,7 @@ import { usePremium } from '../../hooks/usePremium';
 import { getSharedPresets, saveSharedPreset, deleteSharedPreset } from '../../services/overlayService';
 import ThemeEditor from './ThemeEditor';
 import WidgetManager from './WidgetManager';
-import OverlayPreview from './OverlayPreview';
+// OverlayPreview removed — live preview is now inside WidgetManager
 import BonusHuntLibrary from './BonusHuntLibrary';
 import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
@@ -347,7 +347,6 @@ export default function OverlayControlCenter() {
               { key: 'tournament', icon: '🏆', label: 'Tournament', desc: 'Run slot battles' },
               { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
               { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
-              { key: 'preview', icon: '👁️', label: 'Preview', desc: 'See your overlay live' },
               ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
               ...(isAdmin ? [{ key: 'approvals', icon: '🛡️', label: 'Approvals', desc: 'Review submissions' }] : []),
             ].map(tab => (
@@ -472,9 +471,6 @@ export default function OverlayControlCenter() {
               setPresetName={setPresetName}
               presetMsg={presetMsg}
             />
-          )}
-          {activePanel === 'preview' && (
-            <OverlayPreview widgets={widgets} theme={theme} />
           )}
           {activePanel === 'slots' && (isPremium || isAdmin) && (
             <SlotSubmissions />
