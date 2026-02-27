@@ -1,4 +1,4 @@
-﻿// Vercel Serverless Function: /api/slot-ai
+// Vercel Serverless Function: /api/slot-ai
 // Pipeline: Supabase DB (8000+) â†’ Gemini AI (with live Google Search grounding) â†’ Cross-match DB.
 // New slots found by AI are auto-saved to the DB. Missing RTP/max_win are enriched via Gemini.
 // Requires GEMINI_API_KEY + SUPABASE env vars in Vercel project settings.
@@ -806,6 +806,9 @@ export default async function handler(req, res) {
   }
 
   // ── Route: Normal user slot lookup (default) ──────────────────────
+  // Debug mode: add ?debug=1 to see pipeline details
+  const debug = req.query?.debug === '1';
+  const debugLog = [];
 
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
@@ -910,10 +913,13 @@ RULES:
       systemInstruction: searchSysInstruction,
     });
 
+    if (debug) debugLog.push({ step: 'grounded_text_search', question: searchQuestion, responseLength: searchText?.length || 0, responsePreview: searchText?.substring(0, 500) || null });
+
     let parsed = null;
 
     if (searchText && !searchText.toUpperCase().includes('NOT FOUND')) {
       console.log(`[slot-ai] Grounded search returned text (${searchText.length} chars), extracting JSON...`);
+      if (debug) debugLog.push({ step: 'grounded_text_has_data', hasText: true, length: searchText.length });
 
       // ── STEP 2: Extract structured JSON from the search results ──
       const extractPrompt = `Extract the slot game data from this text and return it as a JSON object.
@@ -946,8 +952,10 @@ RULES:
 - Use null for any values not found in the text`;
 
       parsed = await askGemini(apiKey, extractPrompt, { maxTokens: 600 });
+      if (debug) debugLog.push({ step: 'extraction_result', found: parsed?.found, parsedKeys: parsed ? Object.keys(parsed) : null });
     } else {
       console.log(`[slot-ai] Grounded search returned: ${searchText ? 'NOT FOUND' : 'empty'}`);
+      if (debug) debugLog.push({ step: 'grounded_text_no_data', reason: searchText ? 'contains_NOT_FOUND' : 'empty_response' });
     }
 
     // ── Fallback 1: Direct JSON grounded search (original approach) ──
@@ -979,6 +987,7 @@ If you cannot find this slot, return: { "found": false }`;
         maxTokens: 800,
         systemInstruction: searchSysInstruction,
       });
+      if (debug) debugLog.push({ step: 'direct_json_grounded', found: direct?.found, directKeys: direct ? Object.keys(direct) : null });
       if (direct && direct.found !== false) {
         parsed = direct;
       }
@@ -999,6 +1008,7 @@ This is a CASINO SLOT GAME. Return ONLY JSON:
 If you don't know this slot, return: { "found": false }`;
 
       const fallback = await askGemini(apiKey, fallbackPrompt, { maxTokens: 600 });
+      if (debug) debugLog.push({ step: 'plain_gemini_fallback', found: fallback?.found, fallbackKeys: fallback ? Object.keys(fallback) : null });
       if (fallback && fallback.found !== false) {
         parsed = fallback;
         parsed._fallback = true;
@@ -1006,7 +1016,9 @@ If you don't know this slot, return: { "found": false }`;
     }
 
     if (!parsed || parsed.found === false) {
-      return res.status(200).json({ error: null, name, source: 'not_found' });
+      const notFoundResp = { error: null, name, source: 'not_found' };
+      if (debug) notFoundResp._debug = debugLog;
+      return res.status(200).json(notFoundResp);
     }
 
     const result = sanitize(parsed);
@@ -1076,6 +1088,7 @@ If you don't know this slot, return: { "found": false }`;
       }
     }
 
+    if (debug) result._debug = debugLog;
     return res.status(200).json(result);
   } catch (err) {
     console.error('[slot-ai] Error:', err);
