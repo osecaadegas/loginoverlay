@@ -199,6 +199,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     'fontFamily', 'borderRadius', 'borderWidth', 'borderColor',
     'cardGap', 'containerPadding', 'swordColor', 'swordBg', 'swordSize',
     'xIconColor', 'xIconBg',
+    'bkHeaderBg', 'bkHeaderColor', 'bkAccent', 'bkDividerColor',
+    'bkFinalBg', 'bkFinalBorder', 'bkRowBg', 'tournamentNumber',
   ];
 
   /* ─── Built-in presets ─── */
@@ -241,6 +243,29 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         containerPadding: 4,
         cardGap: 4,
         eliminatedOpacity: 0.35,
+      },
+    },
+    {
+      name: '📊 Bracket (OBS)',
+      builtin: true,
+      values: {
+        layout: 'bracket',
+        showBg: false,
+        cardRadius: 6,
+        nameSize: 12,
+        multiSize: 13,
+        slotNameSize: 11,
+        showSlotName: true,
+        containerPadding: 6,
+        cardGap: 5,
+        eliminatedOpacity: 0.35,
+        bkHeaderBg: 'rgba(20,24,40,0.95)',
+        bkHeaderColor: '#e2e8f0',
+        bkAccent: '#6366f1',
+        bkDividerColor: 'rgba(255,255,255,0.08)',
+        bkFinalBg: 'rgba(59,130,246,0.12)',
+        bkFinalBorder: 'rgba(59,130,246,0.35)',
+        bkRowBg: 'rgba(255,255,255,0.02)',
       },
     },
   ];
@@ -297,6 +322,10 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
           <label className="nb-field">
             <span>Prize</span>
             <input value={c.prize || ''} onChange={e => set('prize', e.target.value)} placeholder="€1,000" />
+          </label>
+          <label className="nb-field">
+            <span>Tournament #</span>
+            <input value={c.tournamentNumber || ''} onChange={e => set('tournamentNumber', e.target.value)} placeholder="249" style={{ maxWidth: 100 }} />
           </label>
 
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Match Format</h4>
@@ -534,6 +563,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               { id: 'grid',     icon: '⊞', label: 'Grid' },
               { id: 'showcase', icon: '🖼️', label: 'Showcase' },
               { id: 'vertical', icon: '📋', label: 'Vertical' },
+              { id: 'bracket',  icon: '📊', label: 'Bracket' },
             ].map(m => (
               <button key={m.id}
                 className={`oc-bg-mode-btn ${(c.layout || 'grid') === m.id ? 'oc-bg-mode-btn--active' : ''}`}
@@ -548,6 +578,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               ? 'One match at a time — large images, great readability.'
               : (c.layout || 'grid') === 'vertical'
               ? 'All matches stacked vertically — compact horizontal rows.'
+              : (c.layout || 'grid') === 'bracket'
+              ? 'All phases listed with section headers — clean OBS list style.'
               : 'Classic 2-column grid — fits all matches at once.'}
           </p>
 
@@ -568,6 +600,22 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
           )}
           <SliderField label="Padding" value={c.containerPadding ?? 6} onChange={v => set('containerPadding', v)} min={0} max={30} suffix="px" />
           <SliderField label="Card Gap" value={c.cardGap ?? 6} onChange={v => set('cardGap', v)} min={0} max={24} suffix="px" />
+
+          {/* ── Bracket-specific colors ── */}
+          {(c.layout || 'grid') === 'bracket' && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Bracket Colors</h4>
+              <div className="nb-color-grid">
+                <ColorPicker label="Header BG" value={c.bkHeaderBg || 'rgba(20,24,40,0.95)'} onChange={v => set('bkHeaderBg', v)} />
+                <ColorPicker label="Header Text" value={c.bkHeaderColor || '#e2e8f0'} onChange={v => set('bkHeaderColor', v)} />
+                <ColorPicker label="Accent" value={c.bkAccent || '#6366f1'} onChange={v => set('bkAccent', v)} />
+                <ColorPicker label="Divider" value={c.bkDividerColor || 'rgba(255,255,255,0.08)'} onChange={v => set('bkDividerColor', v)} />
+                <ColorPicker label="Row BG" value={c.bkRowBg || 'rgba(255,255,255,0.02)'} onChange={v => set('bkRowBg', v)} />
+                <ColorPicker label="Final BG" value={c.bkFinalBg || 'rgba(59,130,246,0.12)'} onChange={v => set('bkFinalBg', v)} />
+                <ColorPicker label="Final Border" value={c.bkFinalBorder || 'rgba(59,130,246,0.35)'} onChange={v => set('bkFinalBorder', v)} />
+              </div>
+            </>
+          )}
 
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Cards</h4>
           <div className="nb-color-grid">
