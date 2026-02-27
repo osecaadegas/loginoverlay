@@ -110,14 +110,14 @@ const STEPS = [
     target: '[data-tour="presets-page"]',
     title: '12. Presets — Save Layouts 💾',
     body: 'Save your current widget layout as a preset. Give it a name and click Save — it captures all widget positions, sizes, colors, and styles.',
-    position: 'bottom',
+    position: 'float-top',
     page: 'presets',
   },
   {
     target: '[data-tour="presets-shared"]',
     title: '13. Presets — Load & Share',
     body: 'Load any saved preset to instantly restore a layout. Admins can share presets so all users can pick from ready-made layouts in the Shared section.',
-    position: 'top',
+    position: 'float-top',
     page: 'presets',
   },
 
