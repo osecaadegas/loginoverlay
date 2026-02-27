@@ -474,9 +474,46 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               ))}
             </div>
           </div>
-          <p className="wm-live-hint">
-            Click a widget to select it, then <strong>drag to move</strong> or use the <strong>corner handles to resize</strong>. Click empty space to deselect.
-          </p>
+          <details className="wm-tutorial" open>
+            <summary className="wm-tutorial-toggle">📖 How to build your overlay</summary>
+            <div className="wm-tutorial-steps">
+              <div className="wm-tutorial-step">
+                <span className="wm-tutorial-num">1</span>
+                <div>
+                  <strong>Activate widgets</strong>
+                  <p>Scroll down — all available widgets are listed. Click <strong>+ Add</strong> on any grey tile to activate it. It will appear on the Live Preview above.</p>
+                </div>
+              </div>
+              <div className="wm-tutorial-step">
+                <span className="wm-tutorial-num">2</span>
+                <div>
+                  <strong>Position &amp; resize</strong>
+                  <p><strong>Drag</strong> any widget on the preview to move it. Use the <strong>corner handles</strong> to resize. Arrow keys nudge by 1px (hold <strong>Shift</strong> for 10px).</p>
+                </div>
+              </div>
+              <div className="wm-tutorial-step">
+                <span className="wm-tutorial-num">3</span>
+                <div>
+                  <strong>Change colors &amp; settings</strong>
+                  <p>Click the <strong>⚙️ gear</strong> button on any active tile to open its settings panel. Adjust colors, fonts, sizes — changes update live.</p>
+                </div>
+              </div>
+              <div className="wm-tutorial-step">
+                <span className="wm-tutorial-num">4</span>
+                <div>
+                  <strong>Sync colors instantly</strong>
+                  <p>Set up your <strong>Navbar</strong> colors first, then hit <strong>🔗 Sync Colors</strong> to copy them across all widgets at once.</p>
+                </div>
+              </div>
+              <div className="wm-tutorial-step">
+                <span className="wm-tutorial-num">5</span>
+                <div>
+                  <strong>Toggle on/off</strong>
+                  <p>Click the <strong>LIVE / OFF</strong> badge on any active tile to show or hide it without removing it.</p>
+                </div>
+              </div>
+            </div>
+          </details>
         </div>
       )}
 

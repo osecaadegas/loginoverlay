@@ -1916,6 +1916,96 @@
   text-align: center;
 }
 
+/* ── Tutorial / How-to under Live Preview ── */
+.wm-tutorial {
+  margin: 16px 0 0;
+  border: 1px solid var(--oc-border);
+  border-radius: 14px;
+  background: var(--oc-bg-surface);
+  overflow: hidden;
+}
+
+.wm-tutorial-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 12px 18px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--oc-text-primary);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+}
+
+.wm-tutorial-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.wm-tutorial-toggle::after {
+  content: '▾';
+  margin-left: auto;
+  font-size: 0.65rem;
+  color: var(--oc-text-muted);
+  transition: transform 0.2s ease;
+}
+
+.wm-tutorial[open] .wm-tutorial-toggle::after {
+  transform: rotate(180deg);
+}
+
+.wm-tutorial-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 0 18px 16px;
+}
+
+.wm-tutorial-step {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+}
+
+.wm-tutorial-step:hover {
+  background: rgba(139, 92, 246, 0.04);
+  border-color: rgba(139, 92, 246, 0.08);
+}
+
+.wm-tutorial-num {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: rgba(139, 92, 246, 0.12);
+  color: #a78bfa;
+  font-size: 0.7rem;
+  font-weight: 800;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.wm-tutorial-step strong {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--oc-text-primary);
+  margin-bottom: 2px;
+}
+
+.wm-tutorial-step p {
+  font-size: 0.68rem;
+  color: var(--oc-text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
 /* ── Live slot — OBS-style drag & resize ── */
 
 /* Nuclear: when dragging, block ALL text selection site-wide */
