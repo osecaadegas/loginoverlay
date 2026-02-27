@@ -278,7 +278,7 @@ export default function SlotSubmissions() {
           </div>
 
           <div className="ss-form-grid">
-            <div className="ss-field ss-field--required">
+            <div className="ss-field ss-field--required ss-field--name">
               <label>Name *</label>
               <div className="ss-name-row">
                 <input name="name" value={form.name} onChange={handleChange} onBlur={handleNameBlur} placeholder="e.g. Gates of Olympus" required />

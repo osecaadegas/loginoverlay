@@ -281,10 +281,12 @@
   display: flex;
   gap: 4px;
   align-items: center;
+  min-width: 0;           /* prevent flex children from overflowing grid cell */
 }
 
 .ss-name-row input {
   flex: 1;
+  min-width: 0;           /* allow input to shrink inside flex */
   padding: 7px 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
@@ -375,6 +377,11 @@
 
 .ss-field--wide {
   grid-column: 1 / -1;
+}
+
+.ss-field--name {
+  grid-column: span 2;
+  overflow: hidden;
 }
 
 .ss-field--required label::after {
