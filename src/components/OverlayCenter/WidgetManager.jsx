@@ -284,7 +284,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets} />
                     )}
                   </div>
-                  </div>
                 )}
               </div>
             );
