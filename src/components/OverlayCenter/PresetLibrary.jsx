@@ -2,7 +2,7 @@
  * PresetLibrary.jsx — Full-page preset gallery with live overlay previews.
  * Shows both personal (globalPresets) and shared presets as visual cards.
  */
-import React, { useState, useMemo, memo, useCallback } from 'react';
+import React, { useState, useRef, useEffect, useMemo, memo, useCallback } from 'react';
 import { getWidgetDef } from './widgets/widgetRegistry';
 
 // Register built-in widgets (idempotent)
@@ -10,7 +10,6 @@ import './widgets/builtinWidgets';
 
 const CANVAS_W = 1920;
 const CANVAS_H = 1080;
-const THUMB_SCALE = 0.145; // scale factor for thumbnail
 
 /* ─── Mini overlay renderer for preview thumbnails ─── */
 const PreviewSlotMini = memo(function PreviewSlotMini({ snap, theme }) {
@@ -34,17 +33,32 @@ const PreviewSlotMini = memo(function PreviewSlotMini({ snap, theme }) {
 });
 
 const PresetThumbnail = memo(function PresetThumbnail({ snapshot, theme }) {
+  const wrapRef = useRef(null);
+  const [scale, setScale] = useState(0);
+
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const measure = () => {
+      const w = wrapRef.current?.offsetWidth;
+      if (w) setScale(w / CANVAS_W);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, []);
+
   const visibleSnaps = useMemo(
     () => (snapshot || []).filter(s => s.is_visible !== false),
     [snapshot]
   );
 
   return (
-    <div className="pl-thumb-wrap">
+    <div className="pl-thumb-wrap" ref={wrapRef}>
       <div className="pl-thumb-canvas" style={{
         width: CANVAS_W,
         height: CANVAS_H,
-        transform: `scale(${THUMB_SCALE})`,
+        transform: `scale(${scale})`,
         transformOrigin: 'top left',
         position: 'relative',
         background: '#0a0a14',
