@@ -241,6 +241,17 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
 
           <SliderField label="Font Size" value={c.fontSize ?? 14} onChange={v => set('fontSize', v)} min={8} max={24} suffix="px" />
           <SliderField label="Provider Font Size" value={c.providerFontSize ?? 16} onChange={v => set('providerFontSize', v)} min={10} max={32} suffix="px" />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
+          <textarea
+            className="oc-widget-css-input"
+            value={c.custom_css || ''}
+            onChange={e => set('custom_css', e.target.value)}
+            rows={4}
+            placeholder={`/* custom CSS for this widget */`}
+            spellCheck={false}
+          />
         </div>
       )}
 

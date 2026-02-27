@@ -210,6 +210,17 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
           </label>
           <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={24} step={1} unit="px"
             onChange={v => set('fontSize', v)} />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
+          <textarea
+            className="oc-widget-css-input"
+            value={c.custom_css || ''}
+            onChange={e => set('custom_css', e.target.value)}
+            rows={4}
+            placeholder={`/* custom CSS for this widget */`}
+            spellCheck={false}
+          />
         </div>
       )}
 

@@ -924,22 +924,7 @@
   background: var(--oc-accent-glow-strong);
 }
 
-/* ─── Per-widget Custom CSS ─── */
-.oc-widget-css {
-  margin-top: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.oc-widget-css-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--oc-text-muted);
-  letter-spacing: 0.8px;
-  text-transform: uppercase;
-}
-
+/* ─── Per-widget Custom CSS (inside Style tabs) ─── */
 .oc-widget-css-input {
   width: 100%;
   padding: 12px 14px;
@@ -963,6 +948,24 @@
 
 .oc-widget-css-input::placeholder {
   color: rgba(148, 163, 184, 0.3);
+}
+
+/* ─── Layout Section Title ─── */
+.oc-wcard-layout-section {
+  margin: 12px 0 0;
+  padding: 14px 16px;
+  background: var(--oc-bg-surface);
+  border-radius: var(--oc-radius-sm);
+  border: 1px solid var(--oc-border);
+}
+
+.oc-wcard-layout-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--oc-text-secondary);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin: 0 0 10px;
 }
 
 .oc-wcard-layout {

@@ -350,6 +350,17 @@ export default function NavbarConfig({ config, onChange }) {
             onChange={v => set('avatarSize', v)} />
           <SliderField label="Badge Size" value={c.badgeSize ?? 100} min={50} max={200} step={5} unit="%"
             onChange={v => set('badgeSize', v)} />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
+          <textarea
+            className="oc-widget-css-input"
+            value={c.custom_css || ''}
+            onChange={e => set('custom_css', e.target.value)}
+            rows={4}
+            placeholder={`/* custom CSS for this widget */`}
+            spellCheck={false}
+          />
         </div>
       )}
 

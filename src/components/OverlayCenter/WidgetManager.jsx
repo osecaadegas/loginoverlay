@@ -251,45 +251,35 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     )}
 
                     {/* Position / Size / Z-Index */}
-                    <div className="oc-wcard-layout">
-                      <label>
-                        X <input type="number" value={Math.round(w.position_x)} onChange={e => handlePositionChange(w, 'position_x', +e.target.value)} />
-                      </label>
-                      <label>
-                        Y <input type="number" value={Math.round(w.position_y)} onChange={e => handlePositionChange(w, 'position_y', +e.target.value)} />
-                      </label>
-                      <label>
-                        W <input type="number" value={Math.round(w.width)} onChange={e => handlePositionChange(w, 'width', +e.target.value)} />
-                      </label>
-                      <label>
-                        H <input type="number" value={Math.round(w.height)} onChange={e => handlePositionChange(w, 'height', +e.target.value)} />
-                      </label>
-                      <label>
-                        Z <input type="number" value={w.z_index} onChange={e => handlePositionChange(w, 'z_index', +e.target.value)} />
-                      </label>
-                      <label>
-                        Anim
-                        <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
-                          <option value="fade">Fade</option>
-                          <option value="slide">Slide</option>
-                          <option value="scale">Scale</option>
-                          <option value="glow">Glow</option>
-                          <option value="none">None</option>
-                        </select>
-                      </label>
-                    </div>
-
-                    {/* Per-widget Custom CSS */}
-                    <div className="oc-widget-css">
-                      <label className="oc-widget-css-label">🎨 Custom CSS</label>
-                      <textarea
-                        className="oc-widget-css-input"
-                        value={w.config?.custom_css || ''}
-                        onChange={e => handleConfigChange(w, { ...w.config, custom_css: e.target.value })}
-                        rows={3}
-                        placeholder={`/* style this widget in OBS */`}
-                        spellCheck={false}
-                      />
+                    <div className="oc-wcard-layout-section">
+                      <h4 className="oc-wcard-layout-title">📐 Position & Size</h4>
+                      <div className="oc-wcard-layout">
+                        <label>
+                          X <input type="number" value={Math.round(w.position_x)} onChange={e => handlePositionChange(w, 'position_x', +e.target.value)} />
+                        </label>
+                        <label>
+                          Y <input type="number" value={Math.round(w.position_y)} onChange={e => handlePositionChange(w, 'position_y', +e.target.value)} />
+                        </label>
+                        <label>
+                          W <input type="number" value={Math.round(w.width)} onChange={e => handlePositionChange(w, 'width', +e.target.value)} />
+                        </label>
+                        <label>
+                          H <input type="number" value={Math.round(w.height)} onChange={e => handlePositionChange(w, 'height', +e.target.value)} />
+                        </label>
+                        <label>
+                          Z <input type="number" value={w.z_index} onChange={e => handlePositionChange(w, 'z_index', +e.target.value)} />
+                        </label>
+                        <label>
+                          Anim
+                          <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
+                            <option value="fade">Fade</option>
+                            <option value="slide">Slide</option>
+                            <option value="scale">Scale</option>
+                            <option value="glow">Glow</option>
+                            <option value="none">None</option>
+                          </select>
+                        </label>
+                      </div>
                     </div>
 
                     {/* Widget-specific config */}

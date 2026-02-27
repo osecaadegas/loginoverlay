@@ -395,17 +395,17 @@ export default function SlotSubmissions() {
         <div className="ss-stat ss-stat--denied"><span className="ss-stat-num">{deniedCount}</span><span className="ss-stat-label">Denied</span></div>
       </div>
 
-      {/* Submissions list */}
+      {/* Submissions list — only pending shown */}
       {loading ? (
         <div className="ss-loading">Loading your submissions…</div>
-      ) : submissions.length === 0 ? (
+      ) : submissions.filter(s => s.status === 'pending').length === 0 ? (
         <div className="ss-empty">
           <span className="ss-empty-icon">📭</span>
-          <p>No submissions yet. Click "+ New Submission" to suggest a slot.</p>
+          <p>No pending submissions. Click "+ New Submission" to suggest a slot.</p>
         </div>
       ) : (
         <div className="ss-list">
-          {submissions.map(s => (
+          {submissions.filter(s => s.status === 'pending').map(s => (
             <div key={s.id} className={`ss-card ss-card--${s.status}`}>
               <div className="ss-card-left">
                 {s.image ? (

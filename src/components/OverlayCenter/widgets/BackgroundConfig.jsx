@@ -306,6 +306,17 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
             <ColorPicker label="Overlay Color" value={c.overlayColor || '#000000'} onChange={v => set('overlayColor', v)} />
           </div>
           <SliderField label="Overlay Opacity" value={c.overlayOpacity ?? 0} onChange={v => set('overlayOpacity', v)} min={0} max={100} suffix="%" />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
+          <textarea
+            className="oc-widget-css-input"
+            value={c.custom_css || ''}
+            onChange={e => set('custom_css', e.target.value)}
+            rows={4}
+            placeholder={`/* custom CSS for this widget */`}
+            spellCheck={false}
+          />
         </div>
       )}
 
