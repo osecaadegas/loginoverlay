@@ -2703,6 +2703,45 @@
   cursor: not-allowed;
 }
 
+/* Spotify connect card — replaces radio buttons */
+.nb-spotify-connect-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 16px;
+  border-radius: 12px;
+  border: 1px solid rgba(29, 185, 84, 0.2);
+  background: rgba(29, 185, 84, 0.04);
+  margin-bottom: 4px;
+}
+
+.nb-spotify-connect-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.nb-spotify-connect-icon {
+  font-size: 1.5rem;
+}
+
+.nb-spotify-connect-info div {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.nb-spotify-connect-info strong {
+  font-size: 0.88rem;
+  color: #f1f5f9;
+}
+
+.nb-spotify-connect-info span {
+  font-size: 0.72rem;
+  color: #94a3b8;
+}
+
 /* ── Radio row ── */
 .nb-radio-row {
   display: flex;

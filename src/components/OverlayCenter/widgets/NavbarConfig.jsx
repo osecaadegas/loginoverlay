@@ -271,52 +271,45 @@ export default function NavbarConfig({ config, onChange }) {
       {/* ═══════ MUSIC TAB ═══════ */}
       {activeTab === 'music' && (
         <div className="nb-section">
-          <h4 className="nb-subtitle">Music Source</h4>
-          <div className="nb-radio-row">
-            <label className="nb-radio">
-              <input type="radio" name="musicSrc" value="manual"
-                checked={c.musicSource !== 'spotify'} onChange={() => set('musicSource', 'manual')} />
-              <span>Manual</span>
-            </label>
-            <label className="nb-radio">
-              <input type="radio" name="musicSrc" value="spotify"
-                checked={c.musicSource === 'spotify'} onChange={() => set('musicSource', 'spotify')} />
-              <span>Spotify</span>
-            </label>
+          {/* Spotify connection — always visible at top */}
+          <div className="nb-spotify-section">
+            {c.spotify_access_token ? (
+              <div className="nb-spotify-connected">
+                <span className="nb-spotify-status">✅ Spotify Connected — Now Playing auto-updates</span>
+                <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => { disconnectSpotify(); set('musicSource', 'manual'); }}>Disconnect</button>
+              </div>
+            ) : (
+              <div className="nb-spotify-connect-card">
+                <div className="nb-spotify-connect-info">
+                  <span className="nb-spotify-connect-icon">🎵</span>
+                  <div>
+                    <strong>Spotify</strong>
+                    <span>Auto-display your current track on stream</span>
+                  </div>
+                </div>
+                <button className="nb-spotify-btn" onClick={() => { set('musicSource', 'spotify'); connectSpotify(); }} disabled={spotifyLoading}>
+                  {spotifyLoading ? 'Connecting...' : 'Connect Spotify'}
+                </button>
+              </div>
+            )}
+            {spotifyError && <p className="nb-error">{spotifyError}</p>}
           </div>
 
-          {c.musicSource === 'spotify' ? (
-            <div className="nb-spotify-section">
-              {c.spotify_access_token ? (
-                <div className="nb-spotify-connected">
-                  <span className="nb-spotify-status">✅ Spotify Connected</span>
-                  <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={disconnectSpotify}>Disconnect</button>
-                </div>
-              ) : (
-                <>
-                  <button className="nb-spotify-btn" onClick={connectSpotify} disabled={spotifyLoading}>
-                    {spotifyLoading ? 'Connecting...' : '🎵 Connect Spotify'}
-                  </button>
-                  {spotifyError && <p className="nb-error">{spotifyError}</p>}
-                  <p className="oc-config-hint">
-                    Requires VITE_SPOTIFY_CLIENT_ID env variable. Add your app's redirect URI as: {window.location.origin}/spotify-callback
-                  </p>
-                </>
-              )}
-            </div>
-          ) : (
-            <>
-              <h4 className="nb-subtitle">Manual Track Info</h4>
-              <label className="nb-field">
-                <span>Artist</span>
-                <input value={c.manualArtist || ''} onChange={e => set('manualArtist', e.target.value)} placeholder="Red Hot Chili Peppers" />
-              </label>
-              <label className="nb-field">
-                <span>Track</span>
-                <input value={c.manualTrack || ''} onChange={e => set('manualTrack', e.target.value)} placeholder="Dark Necessities" />
-              </label>
-            </>
-          )}
+          {/* Manual track — always visible (fallback when Spotify not playing) */}
+          <h4 className="nb-subtitle">{c.spotify_access_token ? 'Manual Fallback' : 'Manual Track Info'}</h4>
+          <p className="oc-config-hint" style={{ margin: '0 0 6px' }}>
+            {c.spotify_access_token
+              ? 'Shown when Spotify isn\'t playing anything.'
+              : 'Type the artist & track to show on your overlay.'}
+          </p>
+          <label className="nb-field">
+            <span>Artist</span>
+            <input value={c.manualArtist || ''} onChange={e => set('manualArtist', e.target.value)} placeholder="Red Hot Chili Peppers" />
+          </label>
+          <label className="nb-field">
+            <span>Track</span>
+            <input value={c.manualTrack || ''} onChange={e => set('manualTrack', e.target.value)} placeholder="Dark Necessities" />
+          </label>
         </div>
       )}
 
