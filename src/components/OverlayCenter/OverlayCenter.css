@@ -1266,7 +1266,7 @@
 }
 
 .wm-pos-preview {
-  width: 280px;
+  width: 420px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
@@ -1274,7 +1274,7 @@
 }
 
 .wm-pos-preview-canvas {
-  --preview-scale: 0.145;
+  --preview-scale: 0.219;
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
@@ -1348,57 +1348,60 @@
   -webkit-appearance: none;
   appearance: none;
   flex: 1;
-  height: 6px;
+  height: 4px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
+  border-radius: 3px;
   outline: none;
   cursor: pointer;
+  padding: 8px 0;
+  background-clip: content-box;
   transition: background 0.15s ease;
 }
 
 .wm-range:hover {
   background: rgba(255, 255, 255, 0.1);
+  background-clip: content-box;
 }
 
 /* Webkit thumb */
 .wm-range::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: linear-gradient(135deg, #7c3aed, #6366f1);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   cursor: grab;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 1px 8px rgba(124, 58, 237, 0.35);
   transition: all 0.15s ease;
 }
 
 .wm-range::-webkit-slider-thumb:hover {
-  transform: scale(1.15);
-  box-shadow: 0 3px 16px rgba(124, 58, 237, 0.5);
+  transform: scale(1.25);
+  box-shadow: 0 2px 12px rgba(124, 58, 237, 0.5);
 }
 
 .wm-range::-webkit-slider-thumb:active {
   cursor: grabbing;
-  transform: scale(1.2);
+  transform: scale(1.35);
 }
 
 /* Firefox thumb */
 .wm-range::-moz-range-thumb {
-  width: 18px;
-  height: 18px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: linear-gradient(135deg, #7c3aed, #6366f1);
-  border: 2px solid rgba(255, 255, 255, 0.25);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   cursor: grab;
-  box-shadow: 0 2px 10px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 1px 8px rgba(124, 58, 237, 0.35);
 }
 
 .wm-range::-moz-range-track {
-  height: 6px;
+  height: 4px;
   background: rgba(255, 255, 255, 0.06);
-  border-radius: 4px;
+  border-radius: 3px;
   border: none;
 }
 
