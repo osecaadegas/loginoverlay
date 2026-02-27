@@ -279,13 +279,14 @@ export async function fetchSlotAI(name) {
       body: JSON.stringify({ name }),
     });
     if (!res.ok) {
-      console.warn('[slotSearch] AI API returned', res.status);
-      return null;
+      const errBody = await res.json().catch(() => ({}));
+      console.warn('[slotSearch] AI API returned', res.status, errBody);
+      return { source: 'error', error: errBody.error || `Server error ${res.status}` };
     }
     return await res.json();
   } catch (e) {
     console.error('[slotSearch] fetchSlotAI error:', e);
-    return null;
+    return { source: 'error', error: 'Network error — check your connection' };
   }
 }
 

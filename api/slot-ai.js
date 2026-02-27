@@ -196,6 +196,228 @@ const KNOWN_SLOTS = {
     features: ['Free Spins', 'Multiplier', 'xWays', 'Buy Bonus'],
     twitch_safe: true,
   },
+  'gold party': {
+    name: 'Gold Party', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Gold Mining', release_year: 2023,
+    features: ['Free Spins', 'Multiplier', 'Tumble', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'sweet bonanza 1000': {
+    name: 'Sweet Bonanza 1000', provider: 'Pragmatic Play', rtp: 96.53, volatility: 'very_high',
+    max_win_multiplier: 25000, theme: 'Candy', release_year: 2024,
+    features: ['Free Spins', 'Multiplier', 'Tumble', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'gates of olympus 1000': {
+    name: 'Gates of Olympus 1000', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'very_high',
+    max_win_multiplier: 15000, theme: 'Greek Mythology', release_year: 2024,
+    features: ['Free Spins', 'Multiplier', 'Tumble', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'sugar rush 1000': {
+    name: 'Sugar Rush 1000', provider: 'Pragmatic Play', rtp: 96.53, volatility: 'very_high',
+    max_win_multiplier: 25000, theme: 'Candy', release_year: 2024,
+    features: ['Free Spins', 'Multiplier', 'Tumble', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'the dog house': {
+    name: 'The Dog House', provider: 'Pragmatic Play', rtp: 96.51, volatility: 'high',
+    max_win_multiplier: 6750, theme: 'Animals', release_year: 2019,
+    features: ['Free Spins', 'Multiplier', 'Sticky Wilds'],
+    twitch_safe: true,
+  },
+  'buffalo king megaways': {
+    name: 'Buffalo King Megaways', provider: 'Pragmatic Play', rtp: 96.52, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Animals', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'Megaways', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'big bass splash': {
+    name: 'Big Bass Splash', provider: 'Pragmatic Play', rtp: 96.71, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Fishing', release_year: 2022,
+    features: ['Free Spins', 'Multiplier', 'Scatter', 'Wild Symbols'],
+    twitch_safe: true,
+  },
+  'floating dragon': {
+    name: 'Floating Dragon', provider: 'Pragmatic Play', rtp: 96.71, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Asian', release_year: 2022,
+    features: ['Free Spins', 'Multiplier', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'the hand of midas': {
+    name: 'The Hand of Midas', provider: 'Pragmatic Play', rtp: 96.54, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Greek Mythology', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'Tumble', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'might of ra': {
+    name: 'Might of Ra', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Egyptian', release_year: 2023,
+    features: ['Free Spins', 'Multiplier', 'Expanding Wilds'],
+    twitch_safe: true,
+  },
+  'bonanza': {
+    name: 'Bonanza Megaways', provider: 'Big Time Gaming', rtp: 96.00, volatility: 'high',
+    max_win_multiplier: 10000, theme: 'Mining', release_year: 2016,
+    features: ['Free Spins', 'Multiplier', 'Megaways', 'Cascading Reels'],
+    twitch_safe: true,
+  },
+  'extra chilli': {
+    name: 'Extra Chilli Megaways', provider: 'Big Time Gaming', rtp: 96.15, volatility: 'high',
+    max_win_multiplier: 20000, theme: 'Food', release_year: 2018,
+    features: ['Free Spins', 'Multiplier', 'Megaways', 'Gamble Feature'],
+    twitch_safe: true,
+  },
+  'white rabbit': {
+    name: 'White Rabbit Megaways', provider: 'Big Time Gaming', rtp: 97.24, volatility: 'high',
+    max_win_multiplier: 13000, theme: 'Alice in Wonderland', release_year: 2017,
+    features: ['Free Spins', 'Megaways', 'Feature Drop', 'Extending Reels'],
+    twitch_safe: true,
+  },
+  'royal mint': {
+    name: 'Royal Mint Megaways', provider: 'Big Time Gaming', rtp: 96.42, volatility: 'high',
+    max_win_multiplier: 14400, theme: 'Heist', release_year: 2022,
+    features: ['Free Spins', 'Megaways', 'Multiplier'],
+    twitch_safe: true,
+  },
+  'kingmaker': {
+    name: 'Kingmaker Megaways', provider: 'Big Time Gaming', rtp: 96.65, volatility: 'high',
+    max_win_multiplier: 14000, theme: 'Medieval', release_year: 2020,
+    features: ['Free Spins', 'Megaways', 'Multiplier'],
+    twitch_safe: true,
+  },
+  'immortal romance': {
+    name: 'Immortal Romance', provider: 'Microgaming', rtp: 96.86, volatility: 'high',
+    max_win_multiplier: 12150, theme: 'Vampires', release_year: 2011,
+    features: ['Free Spins', 'Multiplier', 'Wild Desire'],
+    twitch_safe: true,
+  },
+  'starburst': {
+    name: 'Starburst', provider: 'NetEnt', rtp: 96.09, volatility: 'low',
+    max_win_multiplier: 500, theme: 'Space Gems', release_year: 2012,
+    features: ['Expanding Wilds', 'Re-spins', 'Both Ways Pay'],
+    twitch_safe: true,
+  },
+  'mega moolah': {
+    name: 'Mega Moolah', provider: 'Microgaming', rtp: 88.12, volatility: 'medium',
+    max_win_multiplier: null, theme: 'African Safari', release_year: 2006,
+    features: ['Free Spins', 'Progressive Jackpot', 'Multiplier'],
+    twitch_safe: true,
+  },
+  'rick and morty megaways': {
+    name: 'Rick and Morty Megaways', provider: 'Blueprint Gaming', rtp: 96.01, volatility: 'high',
+    max_win_multiplier: 50000, theme: 'Sci-Fi Cartoon', release_year: 2021,
+    features: ['Free Spins', 'Megaways', 'Multiplier', 'Random Features'],
+    twitch_safe: true,
+  },
+  'mystery museum': {
+    name: 'Mystery Museum', provider: 'Push Gaming', rtp: 96.65, volatility: 'high',
+    max_win_multiplier: 25000, theme: 'Museum', release_year: 2019,
+    features: ['Free Spins', 'Multiplier', 'Expanding Symbols'],
+    twitch_safe: true,
+  },
+  'stack em': {
+    name: "Stack 'Em", provider: 'Hacksaw Gaming', rtp: 96.29, volatility: 'very_high',
+    max_win_multiplier: 10000, theme: 'Puzzle', release_year: 2022,
+    features: ['Free Spins', 'Multiplier', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'itero': {
+    name: 'Itero', provider: 'Hacksaw Gaming', rtp: 96.22, volatility: 'very_high',
+    max_win_multiplier: 10000, theme: 'Abstract', release_year: 2023,
+    features: ['Free Spins', 'Multiplier', 'Re-spins', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'xways hoarder': {
+    name: 'xWays Hoarder xSplit', provider: 'Nolimit City', rtp: 96.05, volatility: 'very_high',
+    max_win_multiplier: 31050, theme: 'Heist', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'xWays', 'xSplit', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'el paso gunfight': {
+    name: 'El Paso Gunfight xNudge', provider: 'Nolimit City', rtp: 96.06, volatility: 'very_high',
+    max_win_multiplier: 44440, theme: 'Western', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'xNudge', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'misery mining': {
+    name: 'Misery Mining', provider: 'Nolimit City', rtp: 96.09, volatility: 'very_high',
+    max_win_multiplier: 30100, theme: 'Mining Horror', release_year: 2022,
+    features: ['Free Spins', 'Multiplier', 'xWays', 'Buy Bonus'],
+    twitch_safe: false, // dark imagery
+  },
+  'bushido ways': {
+    name: 'Bushido Ways xNudge', provider: 'Nolimit City', rtp: 96.06, volatility: 'very_high',
+    max_win_multiplier: 20230, theme: 'Samurai', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'xNudge', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'curse of the werewolf': {
+    name: 'Curse of the Werewolf Megaways', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 20000, theme: 'Horror', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'Megaways', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'piranha pays': {
+    name: 'Piranha Pays', provider: 'Play\'n GO', rtp: 96.20, volatility: 'high',
+    max_win_multiplier: 15000, theme: 'Ocean', release_year: 2023,
+    features: ['Cluster Pays', 'Free Spins', 'Multiplier'],
+    twitch_safe: true,
+  },
+  'fire joker': {
+    name: 'Fire Joker', provider: 'Play\'n GO', rtp: 96.15, volatility: 'high',
+    max_win_multiplier: 800, theme: 'Classic', release_year: 2016,
+    features: ['Re-spins', 'Multiplier', 'Wheel of Multipliers'],
+    twitch_safe: true,
+  },
+  'rise of merlin': {
+    name: 'Rise of Merlin', provider: 'Play\'n GO', rtp: 96.58, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Fantasy', release_year: 2019,
+    features: ['Free Spins', 'Expanding Symbols'],
+    twitch_safe: true,
+  },
+  'coin train': {
+    name: 'Coin Train', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Train', release_year: 2023,
+    features: ['Free Spins', 'Multiplier', 'Hold & Win'],
+    twitch_safe: true,
+  },
+  '5 lions megaways': {
+    name: '5 Lions Megaways', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Asian', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'Megaways', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'power of thor': {
+    name: 'Power of Thor Megaways', provider: 'Pragmatic Play', rtp: 96.55, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Norse Mythology', release_year: 2021,
+    features: ['Free Spins', 'Multiplier', 'Megaways', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'release the kraken': {
+    name: 'Release the Kraken', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Ocean Mythology', release_year: 2020,
+    features: ['Free Spins', 'Multiplier', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'drill that gold': {
+    name: 'Drill That Gold', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Mining', release_year: 2023,
+    features: ['Free Spins', 'Multiplier', 'Tumble', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'joker king': {
+    name: 'Joker King', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Classic', release_year: 2022,
+    features: ['Free Spins', 'Multiplier', 'Buy Bonus'],
+    twitch_safe: true,
+  },
+  'aztec king': {
+    name: 'Aztec King Megaways', provider: 'Pragmatic Play', rtp: 96.50, volatility: 'high',
+    max_win_multiplier: 5000, theme: 'Aztec', release_year: 2022,
+    features: ['Free Spins', 'Multiplier', 'Megaways', 'Buy Bonus'],
+    twitch_safe: true,
+  },
 };
 
 // ═══════════════════════════════════════════════
@@ -252,8 +474,18 @@ async function askGemini(apiKey, prompt) {
   const data = await response.json();
   let raw = data?.candidates?.[0]?.content?.parts?.[0]?.text || '';
   raw = raw.trim();
+  if (!raw) {
+    console.error('[slot-ai] Gemini returned empty response');
+    return null;
+  }
+  // Strip markdown code fences if present
   if (raw.startsWith('```')) raw = raw.replace(/^```(?:json)?\s*/, '').replace(/\s*```$/, '');
-  return JSON.parse(raw);
+  try {
+    return JSON.parse(raw);
+  } catch (e) {
+    console.error('[slot-ai] Gemini JSON parse failed:', e.message, 'Raw:', raw.substring(0, 200));
+    return null;
+  }
 }
 
 function normalizeVolatility(v) {
@@ -307,7 +539,10 @@ export default async function handler(req, res) {
     }
 
     // ── Step 2: Ask Gemini with strict accuracy prompt ──
+    console.log(`[slot-ai] DB miss for "${name}", asking Gemini...`);
     const prompt = `You are a slot game data expert. I need VERIFIED, REAL data for the online slot game "${name}".
+
+The game might also be known by a slightly different name — find the closest official match.
 
 Return ONLY a raw JSON object (no markdown, no backticks, no explanation):
 

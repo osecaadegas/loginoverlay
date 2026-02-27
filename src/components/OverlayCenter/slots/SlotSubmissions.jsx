@@ -63,9 +63,10 @@ export default function SlotSubmissions() {
     setAiLoading(true);
     try {
       const ai = await fetchSlotAI(slotName);
-      // Skip if API returned not_found or error
-      if (!ai || ai.source === 'not_found' || ai.error) {
-        flash('AI could not find this slot.', 'error');
+      // Skip if API returned not_found, error, or empty
+      if (!ai || ai.source === 'not_found' || ai.source === 'error') {
+        const reason = ai?.error || 'Slot not recognized';
+        flash(`AI could not find "${slotName}" — ${reason}`, 'error');
         return;
       }
       lastAiName.current = slotName.toLowerCase().trim();
@@ -301,7 +302,7 @@ export default function SlotSubmissions() {
             <div className="ss-field ss-field--required ss-field--wide ss-field--image">
               <label>Image URL *</label>
               <div className="ss-image-row">
-                <input name="image" value={form.image} onChange={handleChange} placeholder="https://… (auto-filled or paste)" required />
+                <input name="image" value={form.image} onChange={handleChange} placeholder="https://… (auto-filled or paste)" autoComplete="off" required />
                 <button
                   type="button"
                   className="ss-search-btn"
