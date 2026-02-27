@@ -655,39 +655,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       <option value="none">None</option>
                     </select>
                   </label>
-
-                  {/* Mini preview — all widgets, current highlighted */}
-                  <div className="wm-pos-preview" style={{ width: '100%', marginTop: 16 }}>
-                    <div className="wm-pos-preview-canvas">
-                      <div className="wm-pos-preview-scene">
-                        {widgets.filter(wd => wd.is_enabled).map(wd => {
-                          const wDef = getWidgetDef(wd.widget_type);
-                          const WComp = wDef?.component;
-                          const isCurrent = wd.id === w.id;
-                          return (
-                            <div
-                              key={wd.id}
-                              style={{
-                                position: 'absolute',
-                                left: wd.position_x,
-                                top: wd.position_y,
-                                width: wd.width,
-                                height: wd.height,
-                                overflow: 'hidden',
-                                zIndex: wd.z_index || 1,
-                                opacity: isCurrent ? 1 : 0.35,
-                                outline: isCurrent ? '3px solid rgba(139,92,246,0.7)' : 'none',
-                                borderRadius: isCurrent ? 4 : 0,
-                              }}
-                            >
-                              {WComp && <WComp config={wd.config} theme={theme} allWidgets={widgets} />}
-                            </div>
-                          );
-                        })}
-                      </div>
-                      <span className="wm-pos-preview-dims">{Math.round(w.position_x)},{Math.round(w.position_y)} — {Math.round(w.width)}×{Math.round(w.height)}</span>
-                    </div>
-                  </div>
                 </div>
 
                 {/* Widget Config Panel */}
