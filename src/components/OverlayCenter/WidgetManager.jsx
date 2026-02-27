@@ -270,45 +270,74 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       </details>
                     )}
 
-                    {/* Position & Sizing — clear labels */}
+                    {/* Position & Sizing — drag sliders + mini preview */}
                     <div className="wm-layout-panel">
                       <div className="wm-layout-heading">
                         <span className="wm-layout-icon">📐</span>
                         <span>Position &amp; Size</span>
                       </div>
-                      <p className="wm-layout-hint">Set where the widget appears on the overlay canvas (1920×1080).</p>
-                      <div className="wm-layout-grid">
-                        <label className="wm-layout-field">
-                          <span className="wm-layout-label">Left (X)</span>
-                          <input type="number" value={Math.round(w.position_x)} onChange={e => handlePositionChange(w, 'position_x', +e.target.value)} />
-                        </label>
-                        <label className="wm-layout-field">
-                          <span className="wm-layout-label">Top (Y)</span>
-                          <input type="number" value={Math.round(w.position_y)} onChange={e => handlePositionChange(w, 'position_y', +e.target.value)} />
-                        </label>
-                        <label className="wm-layout-field">
-                          <span className="wm-layout-label">Width</span>
-                          <input type="number" value={Math.round(w.width)} onChange={e => handlePositionChange(w, 'width', +e.target.value)} />
-                        </label>
-                        <label className="wm-layout-field">
-                          <span className="wm-layout-label">Height</span>
-                          <input type="number" value={Math.round(w.height)} onChange={e => handlePositionChange(w, 'height', +e.target.value)} />
-                        </label>
-                        <label className="wm-layout-field">
-                          <span className="wm-layout-label">Layer</span>
-                          <input type="number" value={w.z_index} onChange={e => handlePositionChange(w, 'z_index', +e.target.value)} title="Higher number = on top of other widgets" />
-                        </label>
-                        <label className="wm-layout-field">
-                          <span className="wm-layout-label">Animation</span>
-                          <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
-                            <option value="fade">Fade In</option>
-                            <option value="slide">Slide In</option>
-                            <option value="scale">Scale Up</option>
-                            <option value="glow">Glow</option>
-                            <option value="none">None</option>
-                          </select>
-                        </label>
+                      <p className="wm-layout-hint">Drag the sliders or type a number. The preview shows where the widget sits on your 1920×1080 canvas.</p>
+
+                      {/* Mini canvas preview */}
+                      <div className="wm-canvas-preview" title="Live preview of widget position">
+                        <div className="wm-canvas-area">
+                          <div
+                            className="wm-canvas-widget"
+                            style={{
+                              left: `${(Math.round(w.position_x) / 1920) * 100}%`,
+                              top: `${(Math.round(w.position_y) / 1080) * 100}%`,
+                              width: `${Math.max((Math.round(w.width) / 1920) * 100, 3)}%`,
+                              height: `${Math.max((Math.round(w.height) / 1080) * 100, 3)}%`,
+                            }}
+                          />
+                          <span className="wm-canvas-label">1920 × 1080</span>
+                        </div>
                       </div>
+
+                      {/* Slider fields */}
+                      <div className="wm-slider-grid">
+                        {[
+                          { label: 'Left (X)', field: 'position_x', min: 0, max: 1920, val: Math.round(w.position_x) },
+                          { label: 'Top (Y)', field: 'position_y', min: 0, max: 1080, val: Math.round(w.position_y) },
+                          { label: 'Width',    field: 'width',      min: 0, max: 1920, val: Math.round(w.width) },
+                          { label: 'Height',   field: 'height',     min: 0, max: 1080, val: Math.round(w.height) },
+                          { label: 'Layer (Z)', field: 'z_index',   min: 0, max: 100,  val: w.z_index },
+                        ].map(s => (
+                          <label key={s.field} className="wm-slider-field">
+                            <span className="wm-slider-label">{s.label}</span>
+                            <div className="wm-slider-row">
+                              <input
+                                type="range"
+                                className="wm-range"
+                                min={s.min}
+                                max={s.max}
+                                value={s.val}
+                                onChange={e => handlePositionChange(w, s.field, +e.target.value)}
+                              />
+                              <input
+                                type="number"
+                                className="wm-slider-num"
+                                min={s.min}
+                                max={s.max}
+                                value={s.val}
+                                onChange={e => handlePositionChange(w, s.field, +e.target.value)}
+                              />
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+
+                      {/* Animation — full-width dropdown */}
+                      <label className="wm-animation-field">
+                        <span className="wm-slider-label">✨ Animation</span>
+                        <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
+                          <option value="fade">Fade In</option>
+                          <option value="slide">Slide In</option>
+                          <option value="scale">Scale Up</option>
+                          <option value="glow">Glow</option>
+                          <option value="none">None</option>
+                        </select>
+                      </label>
                     </div>
 
                     {/* Widget Config Panel */}
