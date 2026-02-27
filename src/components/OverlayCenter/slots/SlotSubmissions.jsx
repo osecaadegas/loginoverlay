@@ -21,6 +21,9 @@ export default function SlotSubmissions() {
   const [submitting, setSubmitting] = useState(false);
   const [msg, setMsg] = useState({ text: '', type: '' });
   const [showForm, setShowForm] = useState(false);
+  const [imageResults, setImageResults] = useState([]);
+  const [imageSearching, setImageSearching] = useState(false);
+  const [imageSearchMsg, setImageSearchMsg] = useState('');
 
   const loadSubmissions = useCallback(async () => {
     if (!user) return;
@@ -45,9 +48,33 @@ export default function SlotSubmissions() {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const openGoogleImages = () => {
+  const searchImages = async () => {
     const q = `${form.name} ${form.provider} slot`.trim();
-    window.open(`https://www.google.com/search?q=${encodeURIComponent(q)}&tbm=isch`, '_blank');
+    if (!q || q === 'slot') return;
+    setImageSearching(true);
+    setImageSearchMsg('');
+    setImageResults([]);
+    try {
+      const res = await fetch(`/api/image-search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Search failed');
+      if (data.images.length === 0) {
+        setImageSearchMsg('No images found. Try a different name or provider.');
+      } else {
+        setImageResults(data.images);
+      }
+    } catch (err) {
+      console.error('[ImageSearch] error:', err);
+      setImageSearchMsg(err.message || 'Image search failed.');
+    } finally {
+      setImageSearching(false);
+    }
+  };
+
+  const pickImage = (url) => {
+    setForm(prev => ({ ...prev, image: url }));
+    setImageResults([]);
+    setImageSearchMsg('');
   };
 
   const handleSubmit = async (e) => {
@@ -114,19 +141,44 @@ export default function SlotSubmissions() {
               <input name="provider" value={form.provider} onChange={handleChange} placeholder="e.g. Pragmatic Play" required />
             </div>
             <div className="ss-field ss-field--required ss-field--wide ss-field--image">
-              <label>Image URL *</label>
+              <label>Image *</label>
               <div className="ss-image-row">
-                <input name="image" value={form.image} onChange={handleChange} placeholder="Paste an image URL" autoComplete="off" required />
+                <input name="image" value={form.image} onChange={handleChange} placeholder="Paste an image URL or search below" autoComplete="off" required />
                 <button
                   type="button"
-                  className="ss-google-btn"
-                  onClick={openGoogleImages}
-                  disabled={!form.name}
-                  title="Open Google Images to find a screenshot"
+                  className="ss-search-img-btn"
+                  onClick={searchImages}
+                  disabled={!form.name || imageSearching}
+                  title={form.name ? `Search images for "${form.name}"` : 'Enter a slot name first'}
                 >
-                  🌐 Google
+                  {imageSearching ? '⏳' : '🔍'} Search
                 </button>
               </div>
+              {/* Image search results grid */}
+              {(imageResults.length > 0 || imageSearchMsg || imageSearching) && (
+                <div className="ss-img-search-panel">
+                  {imageSearching && <div className="ss-img-search-loading">Searching images…</div>}
+                  {imageSearchMsg && <div className="ss-img-search-msg">{imageSearchMsg}</div>}
+                  {imageResults.length > 0 && (
+                    <>
+                      <p className="ss-img-search-hint">Click an image to use it:</p>
+                      <div className="ss-img-grid">
+                        {imageResults.map((img, i) => (
+                          <button
+                            key={i}
+                            type="button"
+                            className={`ss-img-thumb ${form.image === img.url ? 'ss-img-thumb--selected' : ''}`}
+                            onClick={() => pickImage(img.url)}
+                            title={img.title}
+                          >
+                            <img src={img.thumb} alt={img.title} loading="lazy" />
+                          </button>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              )}
             </div>
             {/* Image preview */}
             {form.image && (
