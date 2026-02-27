@@ -1,0 +1,511 @@
+/* ═══════════════════════════════════════════════
+   SlotSubmissions.css — Shared styles for
+   SlotSubmissions + SlotApprovals panels
+   ═══════════════════════════════════════════════ */
+
+/* ─── Page ─── */
+.ss-page {
+  padding: 0;
+}
+
+/* ─── Header ─── */
+.ss-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ss-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ss-subtitle {
+  font-size: 0.78rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+  margin: 2px 0 0;
+}
+
+.ss-add-btn {
+  padding: 8px 16px;
+  border: 1px solid rgba(147, 70, 255, 0.3);
+  border-radius: 8px;
+  background: rgba(147, 70, 255, 0.1);
+  color: #c084fc;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.ss-add-btn:hover {
+  background: rgba(147, 70, 255, 0.2);
+  border-color: rgba(147, 70, 255, 0.5);
+}
+
+/* ─── Flash ─── */
+.ss-flash {
+  padding: 10px 14px;
+  border-radius: 8px;
+  margin-bottom: 14px;
+  font-size: 0.82rem;
+  font-weight: 500;
+  animation: ssFadeIn 0.2s ease;
+}
+
+.ss-flash--success {
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.3);
+  color: #4ade80;
+}
+
+.ss-flash--error {
+  background: rgba(248, 113, 113, 0.1);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  color: #f87171;
+}
+
+@keyframes ssFadeIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─── Form ─── */
+.ss-form {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  animation: ssFadeIn 0.2s ease;
+}
+
+.ss-form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.ss-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.ss-field label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--theme-text-secondary, #a0a0b4);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.ss-field input,
+.ss-field select,
+.ss-field textarea {
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.ss-field input:focus,
+.ss-field select:focus,
+.ss-field textarea:focus {
+  border-color: rgba(147, 70, 255, 0.4);
+}
+
+.ss-field--wide {
+  grid-column: 1 / -1;
+}
+
+.ss-field--required label::after {
+  content: '';
+}
+
+.ss-form-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 12px;
+}
+
+.ss-submit-btn {
+  padding: 9px 20px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #9146FF, #7c3aed);
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ss-submit-btn:hover:not(:disabled) {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
+}
+
+.ss-submit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ─── Stats ─── */
+.ss-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.ss-stat {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  font-size: 0.78rem;
+}
+
+.ss-stat-num {
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.ss-stat-label {
+  color: var(--theme-text-secondary, #a0a0b4);
+}
+
+.ss-stat--pending .ss-stat-num { color: #fbbf24; }
+.ss-stat--approved .ss-stat-num { color: #4ade80; }
+.ss-stat--denied .ss-stat-num { color: #f87171; }
+
+/* ─── List ─── */
+.ss-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ss-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  transition: border-color 0.2s;
+}
+
+.ss-card:hover {
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.ss-card--approved { border-left: 3px solid #4ade80; }
+.ss-card--denied   { border-left: 3px solid #f87171; }
+.ss-card--pending  { border-left: 3px solid #fbbf24; }
+
+.ss-card-left {
+  flex-shrink: 0;
+}
+
+.ss-card-img {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  object-fit: cover;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.ss-card-img--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.ss-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ss-card-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  margin-bottom: 2px;
+}
+
+.ss-card-provider {
+  font-size: 0.75rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+}
+
+.ss-card-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+  font-size: 0.72rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+}
+
+.ss-card-meta span {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.ss-card-status {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 4px;
+  text-align: right;
+}
+
+.ss-badge {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.ss-badge--pending  { background: rgba(251, 191, 36, 0.15); color: #fbbf24; }
+.ss-badge--approved { background: rgba(74, 222, 128, 0.15); color: #4ade80; }
+.ss-badge--denied   { background: rgba(248, 113, 113, 0.15); color: #f87171; }
+
+.ss-card-note {
+  font-size: 0.7rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-style: italic;
+  max-width: 200px;
+}
+
+.ss-card-date {
+  font-size: 0.68rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+}
+
+/* ─── Empty / Loading ─── */
+.ss-empty, .ss-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px;
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.ss-empty-icon {
+  font-size: 2.2rem;
+  margin-bottom: 8px;
+  opacity: 0.5;
+}
+
+/* ═══════════════════════════════════════════════
+   SlotApprovals-specific styles
+   ═══════════════════════════════════════════════ */
+
+/* ─── Pending badge (header) ─── */
+.sa-pending-badge {
+  padding: 5px 12px;
+  border-radius: 20px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  background: rgba(251, 191, 36, 0.15);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+/* ─── Filter tabs ─── */
+.sa-filters {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.sa-filter-btn {
+  padding: 6px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-size: 0.78rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sa-filter-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.sa-filter-btn--active {
+  background: rgba(147, 70, 255, 0.15);
+  border-color: rgba(147, 70, 255, 0.3);
+  color: #c084fc;
+}
+
+/* ─── Detail toggle ─── */
+.sa-detail-toggle {
+  border: none;
+  background: none;
+  color: #60a5fa;
+  font-size: 0.72rem;
+  cursor: pointer;
+  padding: 2px 0;
+  margin-top: 4px;
+}
+
+.sa-detail-toggle:hover {
+  text-decoration: underline;
+}
+
+.sa-details {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  color: var(--theme-text-secondary, #a0a0b4);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sa-details p {
+  margin: 0;
+}
+
+/* ─── Approve / Deny actions ─── */
+.sa-actions {
+  display: flex;
+  gap: 6px;
+  margin-top: 6px;
+  flex-wrap: wrap;
+}
+
+.sa-approve-btn, .sa-deny-btn {
+  padding: 5px 12px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid transparent;
+}
+
+.sa-approve-btn {
+  background: rgba(74, 222, 128, 0.15);
+  color: #4ade80;
+  border-color: rgba(74, 222, 128, 0.3);
+}
+
+.sa-approve-btn:hover:not(:disabled) {
+  background: rgba(74, 222, 128, 0.25);
+}
+
+.sa-approve-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sa-deny-btn {
+  background: rgba(248, 113, 113, 0.15);
+  color: #f87171;
+  border-color: rgba(248, 113, 113, 0.3);
+}
+
+.sa-deny-btn:hover {
+  background: rgba(248, 113, 113, 0.25);
+}
+
+/* ─── Deny form ─── */
+.sa-deny-form {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sa-deny-input {
+  padding: 4px 8px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 5px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #e2e8f0;
+  font-size: 0.75rem;
+  width: 140px;
+  outline: none;
+}
+
+.sa-deny-input:focus {
+  border-color: rgba(248, 113, 113, 0.5);
+}
+
+.sa-deny-confirm {
+  padding: 4px 10px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 5px;
+  background: rgba(248, 113, 113, 0.2);
+  color: #f87171;
+  font-size: 0.72rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sa-deny-confirm:disabled {
+  opacity: 0.5;
+}
+
+.sa-deny-cancel {
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  background: transparent;
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-size: 0.72rem;
+  cursor: pointer;
+}
+
+.sa-deny-cancel:hover {
+  color: #fff;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 640px) {
+  .ss-card {
+    flex-direction: column;
+  }
+
+  .ss-card-status {
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .ss-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .sa-filters {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+  }
+}

@@ -7,12 +7,15 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useOverlay } from '../../hooks/useOverlay';
 import { useAdmin } from '../../hooks/useAdmin';
+import { usePremium } from '../../hooks/usePremium';
 import { getSharedPresets, saveSharedPreset, deleteSharedPreset } from '../../services/overlayService';
 import ThemeEditor from './ThemeEditor';
 import WidgetManager from './WidgetManager';
 import OverlayPreview from './OverlayPreview';
 import BonusHuntLibrary from './BonusHuntLibrary';
 import PresetLibrary from './PresetLibrary';
+import SlotSubmissions from './slots/SlotSubmissions';
+import SlotApprovals from './slots/SlotApprovals';
 import './OverlayCenter.css';
 
 // Register all built-in widgets
@@ -22,6 +25,7 @@ import { getAllWidgetDefs } from './widgets/widgetRegistry';
 export default function OverlayControlCenter() {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
+  const { isPremium } = usePremium();
   const navigate = useNavigate();
   const {
     instance, theme, widgets, overlayState, loading,
@@ -194,6 +198,8 @@ export default function OverlayControlCenter() {
               { key: 'library', icon: '📚', label: 'Library' },
               { key: 'presets', icon: '💾', label: 'Presets' },
               { key: 'preview', icon: '👁️', label: 'Preview' },
+              ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots' }] : []),
+              ...(isAdmin ? [{ key: 'approvals', icon: '🛡️', label: 'Approvals' }] : []),
             ].map(tab => (
               <button
                 key={tab.key}
@@ -274,6 +280,12 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'preview' && (
             <OverlayPreview widgets={widgets} theme={theme} />
+          )}
+          {activePanel === 'slots' && (isPremium || isAdmin) && (
+            <SlotSubmissions />
+          )}
+          {activePanel === 'approvals' && isAdmin && (
+            <SlotApprovals />
           )}
         </main>
       </div>
