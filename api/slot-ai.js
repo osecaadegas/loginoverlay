@@ -902,7 +902,7 @@ export default async function handler(req, res) {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) return res.status(500).json({ error: 'GEMINI_API_KEY not configured' });
 
-  const { name } = req.body || {};
+  const { name, provider: providerHint } = req.body || {};
   if (!name) return res.status(400).json({ error: 'Provide "name"' });
 
   try {
@@ -1014,7 +1014,16 @@ CRITICAL RULES:
         : providerGuess?.provider || providerGuess?.name || null;
 
       let providerHit = null;
-      const provName = resolveProvider(guessedProvider);
+      let provName = resolveProvider(guessedProvider);
+
+      // If Gemini couldn't identify the provider, use the user-provided hint
+      if ((!provName || provName === 'unknown') && providerHint) {
+        const hintResolved = resolveProvider(providerHint);
+        if (hintResolved && getProviderSite(hintResolved)) {
+          console.log(`[slot-ai] Gemini couldn't identify provider, using user hint: "${providerHint}" → "${hintResolved}"`);
+          provName = hintResolved;
+        }
+      }
 
       if (provName && getProviderSite(provName)) {
         console.log(`[slot-ai] Gemini guessed provider "${provName}" for "${name}", checking their site...`);

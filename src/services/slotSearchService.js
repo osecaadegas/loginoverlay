@@ -271,12 +271,14 @@ export async function scrapeSlotMetadata(url) {
 // fetchSlotAI — Call Gemini via our serverless endpoint for structured slot data
 // Returns { name, provider, rtp, volatility, max_win_multiplier, features, theme }
 // ────────────────────────────────────────────────
-export async function fetchSlotAI(name) {
+export async function fetchSlotAI(name, providerHint = '') {
   try {
+    const body = { name };
+    if (providerHint) body.provider = providerHint;
     const res = await fetch('/api/slot-ai', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) {
       const errBody = await res.json().catch(() => ({}));

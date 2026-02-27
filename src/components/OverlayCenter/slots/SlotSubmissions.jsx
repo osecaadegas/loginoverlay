@@ -62,7 +62,7 @@ export default function SlotSubmissions() {
     autoFillInFlight.current = true;
     setAiLoading(true);
     try {
-      const ai = await fetchSlotAI(slotName);
+      const ai = await fetchSlotAI(slotName, providerHint);
       // Skip if API returned not_found, error, or empty
       if (!ai || ai.source === 'not_found' || ai.source === 'error') {
         const reason = ai?.error || 'Slot not recognized';
