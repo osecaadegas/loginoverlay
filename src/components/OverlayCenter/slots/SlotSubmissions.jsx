@@ -26,7 +26,7 @@ export default function SlotSubmissions() {
   const [analyzingUrl, setAnalyzingUrl] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [imageSafety, setImageSafety] = useState(null); // { safe, reason, source }
-  const [dataSource, setDataSource] = useState(null);   // 'verified_database' | 'gemini_ai'
+  const [dataSource, setDataSource] = useState(null);   // 'slots_database' | 'gemini_ai' | 'google_ai' | 'provider_site' | etc.
   const searchAbort = useRef(null);
 
   const loadSubmissions = useCallback(async () => {
@@ -82,7 +82,6 @@ export default function SlotSubmissions() {
       setDataSource(ai.source || 'gemini_ai');
       const savedSources = ['gemini_ai_saved', 'google_ai_saved', 'provider_saved'];
       const srcLabel  = ai.source === 'slots_database' ? '✅ From your DB'
-                      : ai.source === 'verified_database' ? '✅ Verified'
                       : savedSources.includes(ai.source) ? '✅ AI → Saved to DB'
                       : ai.source === 'provider_site' ? '🏢 From Provider Site'
                       : ai.source === 'google_ai' ? '🌐 Found via Google'
@@ -342,9 +341,8 @@ export default function SlotSubmissions() {
                   </div>
                 )}
                 {dataSource && (
-                  <span className={`ss-source-badge ${['slots_database','verified_database','gemini_ai_saved','google_ai_saved','provider_saved','provider_site'].includes(dataSource) ? 'ss-source--verified' : 'ss-source--ai'}`}>
+                  <span className={`ss-source-badge ${['slots_database','gemini_ai_saved','google_ai_saved','provider_saved','provider_site'].includes(dataSource) ? 'ss-source--verified' : 'ss-source--ai'}`}>
                     {dataSource === 'slots_database' ? '✅ From Your DB'
-                     : dataSource === 'verified_database' ? '✅ Verified Data'
                      : ['gemini_ai_saved','google_ai_saved','provider_saved'].includes(dataSource) ? '✅ AI → Saved to DB'
                      : dataSource === 'provider_site' ? '🏢 From Provider Site'
                      : dataSource === 'google_ai' ? '🌐 Found via Google'
