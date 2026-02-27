@@ -1290,9 +1290,10 @@
   left: 0;
   width: 1920px;
   height: 1080px;
-  transform: scale(var(--preview-scale, 0.145));
+  transform: scale(var(--preview-scale, 0.219));
   transform-origin: top left;
   pointer-events: none;
+  isolation: isolate;
 }
 
 .wm-pos-preview-dims {
@@ -1348,19 +1349,22 @@
   -webkit-appearance: none;
   appearance: none;
   flex: 1;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
+  height: 20px;
+  background: transparent;
   outline: none;
   cursor: pointer;
-  padding: 8px 0;
-  background-clip: content-box;
+}
+
+/* Webkit track */
+.wm-range::-webkit-slider-runnable-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
   transition: background 0.15s ease;
 }
 
-.wm-range:hover {
-  background: rgba(255, 255, 255, 0.1);
-  background-clip: content-box;
+.wm-range:hover::-webkit-slider-runnable-track {
+  background: rgba(255, 255, 255, 0.14);
 }
 
 /* Webkit thumb */
@@ -1369,12 +1373,13 @@
   appearance: none;
   width: 14px;
   height: 14px;
+  margin-top: -5px;
   border-radius: 50%;
   background: linear-gradient(135deg, #7c3aed, #6366f1);
   border: 2px solid rgba(255, 255, 255, 0.3);
   cursor: grab;
   box-shadow: 0 1px 8px rgba(124, 58, 237, 0.35);
-  transition: all 0.15s ease;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .wm-range::-webkit-slider-thumb:hover {
@@ -1387,6 +1392,18 @@
   transform: scale(1.35);
 }
 
+/* Firefox track */
+.wm-range::-moz-range-track {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 3px;
+  border: none;
+}
+
+.wm-range:hover::-moz-range-track {
+  background: rgba(255, 255, 255, 0.14);
+}
+
 /* Firefox thumb */
 .wm-range::-moz-range-thumb {
   width: 14px;
@@ -1396,13 +1413,6 @@
   border: 2px solid rgba(255, 255, 255, 0.3);
   cursor: grab;
   box-shadow: 0 1px 8px rgba(124, 58, 237, 0.35);
-}
-
-.wm-range::-moz-range-track {
-  height: 4px;
-  background: rgba(255, 255, 255, 0.06);
-  border-radius: 3px;
-  border: none;
 }
 
 /* Number input next to slider */
