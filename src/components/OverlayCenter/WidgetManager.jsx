@@ -439,81 +439,68 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               })()}
             </span>
           </div>
-          <div
-            className="wm-live-canvas-wrap"
-            style={{
-              width: CANVAS_W * previewScale,
-              height: CANVAS_H * previewScale,
-            }}
-          >
+          <div className="wm-live-body">
             <div
-              className="wm-live-canvas"
+              className="wm-live-canvas-wrap"
               style={{
-                width: CANVAS_W,
-                height: CANVAS_H,
-                transform: `scale(${previewScale})`,
-                transformOrigin: 'top left',
+                width: CANVAS_W * previewScale,
+                height: CANVAS_H * previewScale,
               }}
-              onMouseDown={handleCanvasClick}
             >
-              {visibleWidgets.length === 0 && (
-                <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
-              )}
-              {visibleWidgets.map(w => (
-                <DraggableSlot
-                  key={w.id}
-                  widget={w}
-                  theme={theme}
-                  allWidgets={widgets}
-                  isSelected={w.id === selectedPreviewId}
-                  scale={previewScale}
-                  onSelect={handlePreviewSelect}
-                  onMove={handlePreviewMove}
-                  onResize={handlePreviewResize}
-                />
-              ))}
+              <div
+                className="wm-live-canvas"
+                style={{
+                  width: CANVAS_W,
+                  height: CANVAS_H,
+                  transform: `scale(${previewScale})`,
+                  transformOrigin: 'top left',
+                }}
+                onMouseDown={handleCanvasClick}
+              >
+                {visibleWidgets.length === 0 && (
+                  <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
+                )}
+                {visibleWidgets.map(w => (
+                  <DraggableSlot
+                    key={w.id}
+                    widget={w}
+                    theme={theme}
+                    allWidgets={widgets}
+                    isSelected={w.id === selectedPreviewId}
+                    scale={previewScale}
+                    onSelect={handlePreviewSelect}
+                    onMove={handlePreviewMove}
+                    onResize={handlePreviewResize}
+                  />
+                ))}
+              </div>
+            </div>
+            <div className="wm-tutorial">
+              <h4 className="wm-tutorial-title">📖 Quick Guide</h4>
+              <div className="wm-tutorial-steps">
+                <div className="wm-tutorial-step">
+                  <span className="wm-tutorial-num">1</span>
+                  <p><strong>Add widgets</strong> — click <strong>+ Add</strong> on any grey tile below.</p>
+                </div>
+                <div className="wm-tutorial-step">
+                  <span className="wm-tutorial-num">2</span>
+                  <p><strong>Move &amp; resize</strong> — drag on preview, corner handles to resize, arrow keys for 1px nudge (<strong>Shift</strong> = 10px).</p>
+                </div>
+                <div className="wm-tutorial-step">
+                  <span className="wm-tutorial-num">3</span>
+                  <p><strong>Customize</strong> — hit ⚙️ on any active tile to change colors, fonts &amp; sizes.</p>
+                </div>
+                <div className="wm-tutorial-step">
+                  <span className="wm-tutorial-num">4</span>
+                  <p><strong>Sync colors</strong> — set Navbar first, then 🔗 Sync Colors to apply everywhere.</p>
+                </div>
+                <div className="wm-tutorial-step">
+                  <span className="wm-tutorial-num">5</span>
+                  <p><strong>Toggle</strong> — click LIVE / OFF badge to show or hide a widget.</p>
+                </div>
+              </div>
             </div>
           </div>
-          <details className="wm-tutorial" open>
-            <summary className="wm-tutorial-toggle">📖 How to build your overlay</summary>
-            <div className="wm-tutorial-steps">
-              <div className="wm-tutorial-step">
-                <span className="wm-tutorial-num">1</span>
-                <div>
-                  <strong>Activate widgets</strong>
-                  <p>Scroll down — all available widgets are listed. Click <strong>+ Add</strong> on any grey tile to activate it. It will appear on the Live Preview above.</p>
-                </div>
-              </div>
-              <div className="wm-tutorial-step">
-                <span className="wm-tutorial-num">2</span>
-                <div>
-                  <strong>Position &amp; resize</strong>
-                  <p><strong>Drag</strong> any widget on the preview to move it. Use the <strong>corner handles</strong> to resize. Arrow keys nudge by 1px (hold <strong>Shift</strong> for 10px).</p>
-                </div>
-              </div>
-              <div className="wm-tutorial-step">
-                <span className="wm-tutorial-num">3</span>
-                <div>
-                  <strong>Change colors &amp; settings</strong>
-                  <p>Click the <strong>⚙️ gear</strong> button on any active tile to open its settings panel. Adjust colors, fonts, sizes — changes update live.</p>
-                </div>
-              </div>
-              <div className="wm-tutorial-step">
-                <span className="wm-tutorial-num">4</span>
-                <div>
-                  <strong>Sync colors instantly</strong>
-                  <p>Set up your <strong>Navbar</strong> colors first, then hit <strong>🔗 Sync Colors</strong> to copy them across all widgets at once.</p>
-                </div>
-              </div>
-              <div className="wm-tutorial-step">
-                <span className="wm-tutorial-num">5</span>
-                <div>
-                  <strong>Toggle on/off</strong>
-                  <p>Click the <strong>LIVE / OFF</strong> badge on any active tile to show or hide it without removing it.</p>
-                </div>
-              </div>
-            </div>
-          </details>
         </div>
       )}
 
