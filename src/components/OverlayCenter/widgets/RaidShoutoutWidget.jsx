@@ -156,7 +156,19 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     return () => unsubscribeShoutoutAlerts(channelRef.current);
   }, [userId, enqueueAlert]);
 
-  if (!currentAlert || phase === 'idle') return null;
+  if (!currentAlert || phase === 'idle') {
+    return (
+      <div className="rs-alert-wrapper rs-phase-visible" style={{ '--rs-radius': `${borderRadius}px` }}>
+        <div className="rs-alert-card rs-alert-card--clip-only">
+          <div className="rs-no-clip">
+            <div className="rs-no-clip-avatar-large">
+              <span>⚡</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Route video through our proxy (same-origin, no CORS, no play-button)
   const proxyVideoUrl = getProxiedVideoUrl(currentAlert);

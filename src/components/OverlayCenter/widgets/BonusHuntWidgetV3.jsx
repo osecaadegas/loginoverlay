@@ -104,14 +104,6 @@ export default function BonusHuntWidgetV3({ config, theme }) {
   const frontBonus = bonuses[displayIdx % bonuses.length] || bonuses[0];
   const backBonus = bonuses[nextIdx % bonuses.length] || bonuses[0];
 
-  if (!c.huntActive && bonuses.length === 0) {
-    return (
-      <div className="oc-widget-inner oc-bonushunt">
-        <p className="oc-widget-empty">No active bonus hunt</p>
-      </div>
-    );
-  }
-
   /* ─── Root CSS variables for theming ─── */
   const rootStyle = {
     fontFamily,

@@ -90,13 +90,15 @@ export default function ImageSlideshowWidget({ config, theme }) {
     };
   }, [imageKey, interval, fadeDuration]);
 
-  /* ─── Empty state ─── */
+  /* ─── Empty state (inline, still rendered) ─── */
   if (images.length === 0) {
     return (
       <div className="ov-slideshow-empty" style={{
         width: '100%', height: '100%',
         borderRadius: `${borderRadius}px`,
         border: `${borderWidth}px solid ${borderColor}`,
+        display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+        background: 'rgba(15,23,42,0.85)', color: '#94a3b8', gap: '6px', fontSize: '13px',
       }}>
         <span>🖼️</span>
         <span>No images — add URLs in the config panel</span>

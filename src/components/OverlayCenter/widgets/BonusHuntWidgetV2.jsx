@@ -103,14 +103,6 @@ export default function BonusHuntWidgetV2({ config, theme }) {
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
 
-  if (!c.huntActive && bonuses.length === 0) {
-    return (
-      <div className="oc-widget-inner oc-bonushunt">
-        <p className="oc-widget-empty">No active bonus hunt</p>
-      </div>
-    );
-  }
-
   const activeWin = currentBonus && currentBonus.opened ? (Number(currentBonus.payout) || 0) : 0;
   const activeMultiX = currentBonus && currentBonus.opened && Number(currentBonus.betSize) > 0
     ? activeWin / Number(currentBonus.betSize) : 0;
