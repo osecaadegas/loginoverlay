@@ -271,7 +271,7 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
 
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
   const [editingId, setEditingId] = useState(null);
-  const [showPreview, setShowPreview] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
   const [selectedPreviewId, setSelectedPreviewId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
