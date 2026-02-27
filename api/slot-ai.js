@@ -1,6 +1,6 @@
 // Vercel Serverless Function: /api/slot-ai
-// Pipeline: Supabase slots DB (8000+ real slots) → Hardcoded fallback → Gemini AI → result.
-// Also returns a Twitch safety rating for the slot's imagery.
+// Pipeline: Supabase DB (8000+) → Hardcoded → Gemini AI → Provider Website → Google fallback.
+// New slots found by AI are auto-saved to the DB. Missing RTP/max_win are enriched via Gemini.
 // Requires GEMINI_API_KEY + SUPABASE env vars in Vercel project settings.
 
 import { createClient } from '@supabase/supabase-js';
@@ -601,6 +601,203 @@ async function askGemini(apiKey, prompt) {
 }
 
 // ═══════════════════════════════════════════════
+// PROVIDER OFFICIAL WEBSITES — maps to game catalog URLs
+// Search here first for safety & accuracy before Google.
+// ═══════════════════════════════════════════════
+
+const PROVIDER_SITES = {
+  // { domain, searchUrl(slug), directUrl(slug), aliases }
+  'pragmatic play':  { domain: 'pragmaticplay.com',     search: s => `https://www.pragmaticplay.com/en/games/?game=${encodeURIComponent(s)}`, direct: s => `https://www.pragmaticplay.com/en/games/${s}/` },
+  'hacksaw gaming':  { domain: 'hacksawgaming.com',     search: s => `https://www.hacksawgaming.com/games`,                                   direct: s => `https://www.hacksawgaming.com/games/${s}` },
+  'nolimit city':    { domain: 'nolimitcity.com',       search: s => `https://www.nolimitcity.com/games/`,                                    direct: s => `https://www.nolimitcity.com/games/${s}` },
+  "play'n go":       { domain: 'playngo.com',           search: s => `https://www.playngo.com/games`,                                         direct: s => `https://www.playngo.com/games/${s}` },
+  'push gaming':     { domain: 'pushgaming.com',        search: s => `https://www.pushgaming.com/games`,                                      direct: s => `https://www.pushgaming.com/games/${s}` },
+  'big time gaming': { domain: 'bigtimegaming.com',     search: s => `https://www.bigtimegaming.com/games/`,                                  direct: s => `https://www.bigtimegaming.com/games/${s}/` },
+  'elk studios':     { domain: 'elkstudios.com',        search: s => `https://www.elkstudios.com/games/`,                                     direct: s => `https://www.elkstudios.com/game/${s}/` },
+  'relax gaming':    { domain: 'relaxgaming.com',       search: s => `https://www.relaxgaming.com/games`,                                     direct: s => `https://www.relaxgaming.com/games/${s}` },
+  'red tiger':       { domain: 'redtiger.com',          search: s => `https://www.redtiger.com/games`,                                        direct: s => `https://www.redtiger.com/games/${s}` },
+  'netent':          { domain: 'netent.com',            search: s => `https://www.netent.com/en/games/`,                                      direct: s => `https://www.netent.com/en/games/${s}/` },
+  'thunderkick':     { domain: 'thunderkick.com',       search: s => `https://www.thunderkick.com/games`,                                     direct: s => `https://www.thunderkick.com/games/${s}` },
+  'quickspin':       { domain: 'quickspin.com',         search: s => `https://www.quickspin.com/slots/`,                                      direct: s => `https://www.quickspin.com/slots/${s}/` },
+  'yggdrasil':       { domain: 'yggdrasilgaming.com',   search: s => `https://www.yggdrasilgaming.com/games`,                                 direct: s => `https://www.yggdrasilgaming.com/games/${s}` },
+  'blueprint gaming':{ domain: 'blueprintgaming.com',   search: s => `https://www.blueprintgaming.com/game-catalogue`,                        direct: s => `https://www.blueprintgaming.com/game/${s}` },
+  'kalamba games':   { domain: 'kalambagames.com',      search: s => `https://www.kalambagames.com/games`,                                    direct: s => `https://www.kalambagames.com/games/${s}` },
+  'avatarux':        { domain: 'avatarux.com',          search: s => `https://www.avatarux.com/games/`,                                       direct: s => `https://www.avatarux.com/games/${s}/` },
+  'fantasma games':  { domain: 'fantasmagames.com',     search: s => `https://fantasmagames.com/games`,                                       direct: s => `https://fantasmagames.com/games/${s}` },
+  'print studios':   { domain: 'printstudios.com',      search: s => `https://www.printstudios.com/games`,                                    direct: s => `https://www.printstudios.com/games/${s}` },
+  'wazdan':          { domain: 'wazdan.com',            search: s => `https://www.wazdan.com/en/games`,                                       direct: s => `https://www.wazdan.com/en/games/${s}` },
+  'spinomenal':      { domain: 'spinomenal.com',        search: s => `https://www.spinomenal.com/games`,                                      direct: s => `https://www.spinomenal.com/games/${s}` },
+  'habanero':        { domain: 'habanerosystems.com',   search: s => `https://www.habanerosystems.com/en/games`,                              direct: s => `https://www.habanerosystems.com/en/games/${s}` },
+  'endorphina':      { domain: 'endorphina.com',        search: s => `https://endorphina.com/games`,                                          direct: s => `https://endorphina.com/games/${s}` },
+  'booming games':   { domain: 'boominggames.com',      search: s => `https://www.boominggames.com/games`,                                    direct: s => `https://www.boominggames.com/games/${s}` },
+  'gameart':         { domain: 'gameart.net',           search: s => `https://www.gameart.net/slot-games.html`,                                direct: s => `https://www.gameart.net/slot-game/${s}.html` },
+  '3 oaks':          { domain: '3oaks.com',             search: s => `https://3oaks.com/games/`,                                              direct: s => `https://3oaks.com/games/${s}` },
+  'gamomat':         { domain: 'gamomat.com',           search: s => `https://www.gamomat.com/games`,                                         direct: s => `https://www.gamomat.com/games/${s}` },
+  'isoftbet':        { domain: 'isoftbet.com',          search: s => `https://www.isoftbet.com/games`,                                        direct: s => `https://www.isoftbet.com/game/${s}` },
+  'betsoft':         { domain: 'betsoft.com',           search: s => `https://www.betsoft.com/games`,                                          direct: s => `https://www.betsoft.com/game/${s}` },
+  'pgsoft':          { domain: 'pgsoft.com',            search: s => `https://www.pgsoft.com/games`,                                           direct: s => `https://www.pgsoft.com/games/${s}` },
+  'evolution':       { domain: 'evolution.com',          search: s => `https://www.evolution.com/games`,                                       direct: s => `https://www.evolution.com/games/${s}` },
+  'spribe':          { domain: 'spribe.co',             search: s => `https://spribe.co/games`,                                               direct: s => `https://spribe.co/games/${s}` },
+};
+
+// Aliases to normalize provider input
+const PROVIDER_ALIASES = {
+  'pragmatic': 'pragmatic play', 'ppgames': 'pragmatic play',
+  'hacksaw': 'hacksaw gaming',
+  'nolimit': 'nolimit city', 'nolimitcity': 'nolimit city',
+  'playngo': "play'n go", "play'n go": "play'n go",
+  'btg': 'big time gaming', 'bigtime': 'big time gaming',
+  'elk': 'elk studios',
+  'relax': 'relax gaming', 'rlx': 'relax gaming',
+  'blueprint': 'blueprint gaming',
+  'kalamba': 'kalamba games',
+  'avatarux': 'avatarux',
+  'fantasma': 'fantasma games',
+  'print': 'print studios',
+  'endorphina': 'endorphina',
+  'booming': 'booming games',
+  'isoftbet': 'isoftbet',
+  'betsoft': 'betsoft',
+  'pgsoft': 'pgsoft', 'pocketgames': 'pgsoft', 'pg soft': 'pgsoft',
+  'evolution': 'evolution',
+  'spribe': 'spribe',
+  'net ent': 'netent', 'net entertainment': 'netent',
+  'red tiger gaming': 'red tiger',
+  'yggdrasil gaming': 'yggdrasil',
+  'quickspin': 'quickspin',
+  'thunderkick': 'thunderkick',
+  'wazdan': 'wazdan',
+  'spinomenal': 'spinomenal',
+  'habanero': 'habanero',
+  'gamomat': 'gamomat',
+  'gameart': 'gameart',
+  '3oaks': '3 oaks', 'three oaks': '3 oaks',
+};
+
+function resolveProvider(provider) {
+  if (!provider) return null;
+  const low = provider.toLowerCase().trim();
+  return PROVIDER_ALIASES[low] || low;
+}
+
+function getProviderSite(provider) {
+  const key = resolveProvider(provider);
+  if (!key) return null;
+  return PROVIDER_SITES[key] || null;
+}
+
+function slugify(name) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+}
+
+// Helper: strip HTML to text
+function htmlToText(html) {
+  return html
+    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/**
+ * Search OFFICIAL provider website for a slot.
+ * Strategy: 1) direct URL  2) site-specific Google search
+ * Returns { text, url, fetchFailed } or null
+ */
+async function searchProviderSite(provider, slotName) {
+  const site = getProviderSite(provider);
+  if (!site) return { fetchFailed: false, found: false, text: null };
+
+  const slug = slugify(slotName);
+  const directUrl = site.direct(slug);
+  const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
+
+  // ── Attempt 1: direct game page URL ──
+  try {
+    console.log(`[slot-ai] Provider direct: ${directUrl}`);
+    const res = await fetch(directUrl, {
+      headers: { 'User-Agent': UA, 'Accept-Language': 'en-US,en;q=0.9' },
+      redirect: 'follow',
+      signal: AbortSignal.timeout(6000),
+    });
+    if (res.ok) {
+      const ct = res.headers.get('content-type') || '';
+      if (ct.includes('text/html')) {
+        const html = await res.text();
+        const text = htmlToText(html);
+        // Check if the page actually mentions the slot (not a generic 404/redirect)
+        const nameLow = slotName.toLowerCase();
+        const words = nameLow.split(/\s+/).filter(w => w.length > 2);
+        const textLow = text.toLowerCase();
+        const nameMatch = words.filter(w => textLow.includes(w)).length >= Math.max(1, words.length * 0.5);
+        if (nameMatch && text.length > 200) {
+          console.log(`[slot-ai] Found on provider site (direct): ${directUrl}`);
+          return { fetchFailed: false, found: true, text: text.substring(0, 4000), url: directUrl };
+        }
+      }
+    }
+  } catch (e) {
+    console.warn(`[slot-ai] Provider direct fetch failed: ${e.message}`);
+    // Will try site-search next
+  }
+
+  // ── Attempt 2: Google site-specific search (e.g. site:hacksawgaming.com "Hot Ross") ──
+  try {
+    const siteQuery = `site:${site.domain} "${slotName}"`;
+    console.log(`[slot-ai] Provider Google: ${siteQuery}`);
+    const googleUrl = `https://www.google.com/search?q=${encodeURIComponent(siteQuery)}`;
+    const gRes = await fetch(googleUrl, {
+      headers: { 'User-Agent': UA, 'Accept-Language': 'en-US,en;q=0.9' },
+      signal: AbortSignal.timeout(6000),
+    });
+    if (!gRes.ok) return { fetchFailed: true, found: false, text: null };
+
+    const gHtml = await gRes.text();
+    // Extract first result URL from the provider domain
+    const urlRx = /href="\/url\?q=(https?:\/\/[^&"]+)/g;
+    let m;
+    while ((m = urlRx.exec(gHtml)) !== null) {
+      const u = decodeURIComponent(m[1]);
+      if (u.includes(site.domain)) {
+        // Found a page on the provider's site — fetch it
+        try {
+          const pageRes = await fetch(u, {
+            headers: { 'User-Agent': UA },
+            redirect: 'follow',
+            signal: AbortSignal.timeout(6000),
+          });
+          if (pageRes.ok) {
+            const ct = pageRes.headers.get('content-type') || '';
+            if (ct.includes('text/html')) {
+              const text = htmlToText(await pageRes.text());
+              if (text.length > 200) {
+                console.log(`[slot-ai] Found on provider site (Google): ${u}`);
+                return { fetchFailed: false, found: true, text: text.substring(0, 4000), url: u };
+              }
+            }
+          }
+        } catch (_) { /* skip this URL */ }
+      }
+    }
+
+    // Google worked but no results on the provider domain → slot not on their site
+    const serpText = htmlToText(gHtml);
+    if (serpText.length > 100) {
+      // Check if SERP itself has some slot data from snippets
+      const nameLow = slotName.toLowerCase();
+      if (serpText.toLowerCase().includes(nameLow.split(' ')[0])) {
+        return { fetchFailed: false, found: false, serpText: serpText.substring(0, 2000), text: null };
+      }
+    }
+    return { fetchFailed: false, found: false, text: null };
+  } catch (e) {
+    console.warn(`[slot-ai] Provider site-search fetch failed: ${e.message}`);
+    return { fetchFailed: true, found: false, text: null };
+  }
+}
+
+// ═══════════════════════════════════════════════
 // GOOGLE-GROUNDED SEARCH — for brand-new slots Gemini doesn't know yet
 // Searches Google for the slot, scrapes top results, feeds to Gemini for parsing.
 // ═══════════════════════════════════════════════
@@ -875,19 +1072,79 @@ CRITICAL RULES:
 
     let parsed = await askGemini(apiKey, prompt);
 
-    // ── Step 4: If Gemini doesn't know it, Google for slot data and let Gemini parse the page ──
+    // ── Step 4: If Gemini doesn't know it, try official provider website ──
     if (!parsed) {
-      console.log(`[slot-ai] Gemini miss for "${name}", trying Google-grounded search...`);
-      const googleResult = await googleSlotSearch(apiKey, name);
-      if (googleResult) {
-        parsed = googleResult;
+      // First ask Gemini who makes this slot (quick, low-token call)
+      const providerGuess = await askGemini(apiKey, `What provider/studio made the online slot game "${name}"? Reply with ONLY the provider name, nothing else. If unsure, reply "unknown".`);
+      const guessedProvider = typeof providerGuess === 'string' ? providerGuess
+        : providerGuess?.provider || providerGuess?.name || null;
+
+      let providerHit = null;
+      const provName = resolveProvider(guessedProvider);
+
+      if (provName && getProviderSite(provName)) {
+        console.log(`[slot-ai] Gemini guessed provider "${provName}" for "${name}", checking their site...`);
+        const siteResult = await searchProviderSite(provName, name);
+
+        if (siteResult.found && siteResult.text) {
+          // Found on official site! Extract data with Gemini.
+          const extractPrompt = `I found this page on the official ${provName} website about the slot "${name}".
+
+[Page: ${siteResult.url}]:
+${siteResult.text}
+
+Extract the slot data. Return ONLY a raw JSON object (no markdown, no backticks):
+{
+  "name": "Official full name",
+  "provider": "${provName}",
+  "rtp": 96.50,
+  "volatility": "low" | "medium" | "high" | "very_high",
+  "max_win_multiplier": 5000,
+  "features": ["Free Spins", "Multiplier", ...],
+  "theme": "Theme/genre",
+  "release_year": 2024,
+  "twitch_safe": true
+}
+RULES:
+- Extract ONLY data clearly stated in the text above
+- rtp as a number, max_win_multiplier as a number in x
+- volatility exactly: "low", "medium", "high", or "very_high"
+- If a value is not clearly stated, use null
+- Return ONLY the JSON`;
+
+          providerHit = await askGemini(apiKey, extractPrompt);
+          if (providerHit) {
+            providerHit._providerSite = true;
+            parsed = providerHit;
+            console.log(`[slot-ai] ✅ Extracted from provider site: ${siteResult.url}`);
+          }
+        } else if (siteResult.fetchFailed) {
+          // Provider site blocked/timeout → fall back to Google
+          console.log(`[slot-ai] Provider site fetch failed for "${name}", falling back to Google...`);
+          const googleResult = await googleSlotSearch(apiKey, name);
+          if (googleResult) {
+            parsed = googleResult;
+          }
+        } else {
+          // Slot NOT FOUND on provider site → don't Google, it's not a real slot
+          console.log(`[slot-ai] "${name}" not found on ${provName} site — stopping search`);
+        }
       } else {
+        // Unknown provider → try Google as last resort
+        console.log(`[slot-ai] Unknown provider for "${name}", trying Google-grounded search...`);
+        const googleResult = await googleSlotSearch(apiKey, name);
+        if (googleResult) {
+          parsed = googleResult;
+        }
+      }
+
+      if (!parsed) {
         return res.status(200).json({ error: null, name, source: 'not_found' });
       }
     }
 
     const result = sanitize(parsed);
-    result.source = parsed._google ? 'google_ai' : 'gemini_ai';
+    result.source = parsed._providerSite ? 'provider_site' : (parsed._google ? 'google_ai' : 'gemini_ai');
 
     // Override twitch_safe for known-safe providers
     const provSafe = isProviderSafe(result.provider);
@@ -915,7 +1172,9 @@ CRITICAL RULES:
             console.warn('[slot-ai] DB insert skipped:', insErr.message);
           } else {
             console.log(`[slot-ai] ✅ Added "${result.name}" by ${result.provider} to slots DB`);
-            result.source = result.source === 'google_ai' ? 'google_ai_saved' : 'gemini_ai_saved';
+            result.source = result.source === 'google_ai' ? 'google_ai_saved'
+                         : result.source === 'provider_site' ? 'provider_saved'
+                         : 'gemini_ai_saved';
           }
         } catch (e) {
           console.error('[slot-ai] DB insert error:', e);
