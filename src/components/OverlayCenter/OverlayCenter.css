@@ -922,54 +922,126 @@
 }
 
 /* ═══════════════════════════════════════════
-   TILE GRID — compact widget toggles
+   SECTIONS — Active / Available headings
+   ═══════════════════════════════════════════ */
+.wm-section {
+  margin-bottom: 28px;
+}
+
+.wm-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  font-weight: 800;
+  margin: 0 0 14px;
+  color: var(--oc-text-muted);
+}
+
+.wm-section-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.wm-section-dot--active {
+  background: #4ade80;
+  box-shadow: 0 0 6px rgba(34, 197, 94, 0.4);
+}
+
+.wm-section-dot--inactive {
+  background: #64748b;
+}
+
+.wm-section-title--active {
+  color: #4ade80;
+}
+
+.wm-section-title--inactive {
+  color: #94a3b8;
+}
+
+.wm-section-count {
+  font-size: 0.62rem;
+  background: rgba(255, 255, 255, 0.06);
+  padding: 1px 8px;
+  border-radius: 10px;
+  font-weight: 700;
+  color: var(--oc-text-muted);
+}
+
+/* ═══════════════════════════════════════════
+   TILE GRID — full widget cards with desc
    ═══════════════════════════════════════════ */
 .wm-tile-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 12px;
 }
 
 .wm-tile {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 14px;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 16px 18px;
   border-radius: 14px;
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-card);
-  cursor: pointer;
   user-select: none;
-  transition: all 0.2s ease;
+  transition: all 0.22s ease;
   position: relative;
+  overflow: hidden;
 }
 
 .wm-tile:hover {
   border-color: var(--oc-border-hover);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transform: translateY(-2px);
 }
 
-.wm-tile--on {
-  border-color: rgba(34, 197, 94, 0.25);
+/* ── Active tile (green glow) ── */
+.wm-tile--active.wm-tile--on {
+  border-color: rgba(34, 197, 94, 0.3);
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.06), var(--oc-bg-card));
 }
 
-.wm-tile--on:hover {
-  border-color: rgba(34, 197, 94, 0.45);
+.wm-tile--active.wm-tile--on:hover {
+  border-color: rgba(34, 197, 94, 0.5);
+  box-shadow: 0 4px 20px rgba(34, 197, 94, 0.15), 0 0 0 1px rgba(34, 197, 94, 0.1);
 }
 
-.wm-tile--off {
-  opacity: 0.45;
+/* Active but paused (OFF) */
+.wm-tile--active.wm-tile--paused {
+  opacity: 0.55;
+  border-color: rgba(250, 204, 21, 0.2);
+  background: linear-gradient(135deg, rgba(250, 204, 21, 0.04), var(--oc-bg-card));
 }
 
-.wm-tile--off:hover {
+.wm-tile--active.wm-tile--paused:hover {
+  opacity: 0.75;
+  border-color: rgba(250, 204, 21, 0.35);
+}
+
+/* ── Inactive tile (greyed out, clickable to add) ── */
+.wm-tile--inactive {
+  opacity: 0.4;
+  cursor: pointer;
+}
+
+.wm-tile--inactive:hover {
   opacity: 0.7;
+  border-color: rgba(139, 92, 246, 0.35);
+  box-shadow: 0 4px 20px rgba(124, 58, 237, 0.12);
 }
 
 .wm-tile-icon {
-  font-size: 1.3rem;
+  font-size: 1.5rem;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -978,28 +1050,50 @@
   border: 1px solid rgba(139, 92, 246, 0.1);
 }
 
-.wm-tile-name {
-  font-weight: 700;
-  font-size: 0.82rem;
-  color: var(--oc-text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.wm-tile--active.wm-tile--on .wm-tile-icon {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: rgba(34, 197, 94, 0.2);
+}
+
+.wm-tile-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   flex: 1;
   min-width: 0;
+}
+
+.wm-tile-name {
+  font-weight: 700;
+  font-size: 0.84rem;
+  color: var(--oc-text-primary);
+}
+
+.wm-tile-desc {
+  font-size: 0.68rem;
+  color: var(--oc-text-muted);
+  line-height: 1.45;
 }
 
 .wm-tile-status {
   font-size: 0.5rem;
   font-weight: 800;
   letter-spacing: 0.8px;
-  padding: 2px 8px;
+  padding: 3px 10px;
   border-radius: 10px;
   text-transform: uppercase;
   flex-shrink: 0;
+  cursor: pointer;
   color: #94a3b8;
   background: rgba(100, 116, 139, 0.1);
   border: 1px solid rgba(100, 116, 139, 0.15);
+  transition: all 0.15s ease;
+  align-self: flex-start;
+  margin-top: 2px;
+}
+
+.wm-tile-status:hover {
+  background: rgba(100, 116, 139, 0.2);
 }
 
 .wm-tile-status--live {
@@ -1009,10 +1103,35 @@
   box-shadow: 0 0 6px rgba(34, 197, 94, 0.12);
 }
 
+.wm-tile-status--live:hover {
+  background: rgba(34, 197, 94, 0.2);
+}
+
+.wm-tile-add {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #a78bfa;
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.15);
+  padding: 4px 12px;
+  border-radius: 10px;
+  flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
+  transition: all 0.15s ease;
+}
+
+.wm-tile--inactive:hover .wm-tile-add {
+  background: rgba(139, 92, 246, 0.15);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
 .wm-tile-actions {
   display: flex;
   gap: 4px;
   flex-shrink: 0;
+  align-self: flex-start;
+  margin-top: 2px;
 }
 
 .wm-tile-btn {

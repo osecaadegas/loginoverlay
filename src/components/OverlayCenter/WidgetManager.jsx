@@ -271,7 +271,6 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
 
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
   const [editingId, setEditingId] = useState(null);
-  const [showAddMenu, setShowAddMenu] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
   const [selectedPreviewId, setSelectedPreviewId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
@@ -332,6 +331,11 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   }, [overlayToken]);
 
   const categories = getWidgetsByCategory();
+  const allDefs = useMemo(() => Object.values(categories).flat(), [categories]);
+
+  /* Derive which types the user has added */
+  const activeTypes = useMemo(() => new Set((widgets || []).map(w => w.widget_type)), [widgets]);
+  const inactiveDefs = useMemo(() => allDefs.filter(d => !activeTypes.has(d.type)), [allDefs, activeTypes]);
 
   const handleToggle = useCallback((widget) => {
     onSave({ ...widget, is_visible: !widget.is_visible });
@@ -348,7 +352,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const handleAdd = useCallback(async (type) => {
     const def = getWidgetDef(type);
     await onAdd(type, def?.defaults || {});
-    setShowAddMenu(false);
   }, [onAdd]);
 
   /* ── Sync ALL widgets from the navbar ── */
@@ -394,9 +397,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           </button>
           <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically">
             🔗 Sync Colors
-          </button>
-          <button className="wm-btn wm-btn--primary" onClick={() => setShowAddMenu(v => !v)}>
-            {showAddMenu ? '✕ Close' : '+ Add Widget'}
           </button>
         </div>
       </div>
@@ -459,66 +459,71 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         </div>
       )}
 
-      {/* ──── Quick Start Tip ──── */}
-      {widgets.length === 0 && !showAddMenu && (
-        <div className="wm-quickstart">
-          <div className="wm-quickstart-icon">🚀</div>
-          <div>
-            <strong>Getting started?</strong>
-            <p>Click <strong>+ Add Widget</strong> to place your first overlay element. Most streamers start with a <strong>Background</strong>, <strong>Navbar</strong>, and <strong>Bonus Hunt</strong>.</p>
+      {/* ──── Active Widgets Section ──── */}
+      {widgets.length > 0 && (
+        <div className="wm-section">
+          <h3 className="wm-section-title wm-section-title--active">
+            <span className="wm-section-dot wm-section-dot--active" />
+            Active Widgets
+            <span className="wm-section-count">{widgets.length}</span>
+          </h3>
+          <div className="wm-tile-grid">
+            {widgets.map(w => {
+              const def = getWidgetDef(w.widget_type);
+              const isVisible = w.is_visible;
+              return (
+                <div
+                  key={w.id}
+                  className={`wm-tile wm-tile--active ${isVisible ? 'wm-tile--on' : 'wm-tile--paused'}`}
+                >
+                  <span className="wm-tile-icon">{def?.icon || '📦'}</span>
+                  <div className="wm-tile-text">
+                    <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
+                    {def?.description && <span className="wm-tile-desc">{def.description}</span>}
+                  </div>
+                  <span
+                    className={`wm-tile-status ${isVisible ? 'wm-tile-status--live' : ''}`}
+                    onClick={() => handleToggle(w)}
+                    title={isVisible ? 'Click to hide' : 'Click to show'}
+                  >
+                    {isVisible ? 'LIVE' : 'OFF'}
+                  </span>
+                  <div className="wm-tile-actions">
+                    <button className="wm-tile-btn" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
+                    <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       )}
 
-      {/* ──── Add Widget Picker ──── */}
-      {showAddMenu && (
-        <div className="wm-picker">
-          <p className="wm-picker-hint">Choose a widget to add to your overlay. You can add multiples of the same type.</p>
-          {Object.entries(categories).map(([cat, defs]) => (
-            <div key={cat} className="wm-picker-group">
-              <h4 className="wm-picker-group-title">{cat}</h4>
-              <div className="wm-picker-grid">
-                {defs.map(def => (
-                  <button key={def.type} className="wm-picker-card" onClick={() => handleAdd(def.type)}>
-                    <span className="wm-picker-card-icon">{def.icon}</span>
-                    <div className="wm-picker-card-text">
-                      <span className="wm-picker-card-name">{def.label}</span>
-                      {def.description && <span className="wm-picker-card-desc">{def.description}</span>}
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* ──── Widget Tile Grid ──── */}
-      {widgets.length > 0 && (
-        <div className="wm-tile-grid">
-          {widgets.map(w => {
-            const def = getWidgetDef(w.widget_type);
-            const isVisible = w.is_visible;
-
-            return (
+      {/* ──── Available Widgets Section ──── */}
+      {inactiveDefs.length > 0 && (
+        <div className="wm-section">
+          <h3 className="wm-section-title wm-section-title--inactive">
+            <span className="wm-section-dot wm-section-dot--inactive" />
+            Available Widgets
+            <span className="wm-section-count">{inactiveDefs.length}</span>
+          </h3>
+          <div className="wm-tile-grid">
+            {inactiveDefs.map(def => (
               <div
-                key={w.id}
-                className={`wm-tile ${isVisible ? 'wm-tile--on' : 'wm-tile--off'}`}
-                onClick={() => handleToggle(w)}
-                title={isVisible ? 'Click to hide' : 'Click to show'}
+                key={def.type}
+                className="wm-tile wm-tile--inactive"
+                onClick={() => handleAdd(def.type)}
+                title="Click to add this widget"
               >
-                <span className="wm-tile-icon">{def?.icon || '📦'}</span>
-                <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
-                <span className={`wm-tile-status ${isVisible ? 'wm-tile-status--live' : ''}`}>
-                  {isVisible ? 'LIVE' : 'OFF'}
-                </span>
-                <div className="wm-tile-actions" onClick={e => e.stopPropagation()}>
-                  <button className="wm-tile-btn" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
-                  <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
+                <span className="wm-tile-icon">{def.icon}</span>
+                <div className="wm-tile-text">
+                  <span className="wm-tile-name">{def.label}</span>
+                  {def.description && <span className="wm-tile-desc">{def.description}</span>}
                 </div>
+                <span className="wm-tile-add">+ Add</span>
               </div>
-            );
-          })}
+            ))}
+          </div>
         </div>
       )}
 
