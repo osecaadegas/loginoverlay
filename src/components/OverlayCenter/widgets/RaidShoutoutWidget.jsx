@@ -2,8 +2,9 @@
  * RaidShoutoutWidget.jsx — OBS Overlay Widget
  *
  * Minimal raid shoutout: instantly autoplays the Twitch clip.
- * Strategy: try native <video> with direct .mp4 URL first (no play-button).
- * If the .mp4 fails to load, fall back to Twitch iframe embed.
+ * Uses our /api/clip-video proxy to serve the MP4 from our own domain,
+ * bypassing Twitch's iframe play-button and CORS restrictions.
+ * Falls back to Twitch iframe embed if the proxy fails.
  * Queues multiple alerts.
  */
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -26,22 +27,24 @@ function playAlertSound(soundUrl) {
 }
 
 /**
- * Derive the direct .mp4 URL from a Twitch clip thumbnail URL.
- * Twitch thumbnails look like:
- *   https://clips-media-assets2.twitch.tv/xxxxx-preview-480x272.jpg
- * The video is at:
- *   https://clips-media-assets2.twitch.tv/xxxxx.mp4
+ * Build a proxied video URL through our own API.
+ * The proxy fetches from Twitch CDN server-side (no CORS, no play-button gate).
+ *
+ * Priority: clip_video_url (pre-verified by API) → thumbnail derivation
  */
-function getClipVideoUrl(thumbnailUrl) {
-  if (!thumbnailUrl) return null;
-  try {
-    return thumbnailUrl.replace(/-preview-\d+x\d+\.jpg$/i, '.mp4');
-  } catch {
-    return null;
+function getProxiedVideoUrl(alert) {
+  // If the API already stored a verified direct .mp4 URL, proxy that
+  if (alert.clip_video_url) {
+    return `/api/clip-video?url=${encodeURIComponent(alert.clip_video_url)}`;
   }
+  // Otherwise derive from thumbnail and let the proxy do the conversion
+  if (alert.clip_thumbnail_url) {
+    return `/api/clip-video?thumbnail=${encodeURIComponent(alert.clip_thumbnail_url)}`;
+  }
+  return null;
 }
 
-/** Build Twitch iframe embed URL (fallback) */
+/** Build Twitch iframe embed URL (final fallback) */
 function buildIframeSrc(clipId, clipEmbedUrl) {
   const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
   if (clipId) {
@@ -155,12 +158,12 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
 
   if (!currentAlert || phase === 'idle') return null;
 
-  // Prefer pre-verified video URL from API, fall back to client-side derivation
-  const videoUrl = currentAlert.clip_video_url || getClipVideoUrl(currentAlert.clip_thumbnail_url);
+  // Route video through our proxy (same-origin, no CORS, no play-button)
+  const proxyVideoUrl = getProxiedVideoUrl(currentAlert);
   const hasClip = !!(currentAlert.clip_id || currentAlert.clip_embed_url);
   const iframeSrc = hasClip ? buildIframeSrc(currentAlert.clip_id, currentAlert.clip_embed_url) : null;
-  // Use native video if we have a URL and it hasn't errored; otherwise iframe
-  const useNativeVideo = videoUrl && !videoFailed;
+  // Use native video via proxy if available; otherwise iframe
+  const useNativeVideo = proxyVideoUrl && !videoFailed;
 
   const wrapperClass = [
     'rs-alert-wrapper',
@@ -179,7 +182,7 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
               key={currentAlert.id + '-video'}
               ref={videoRef}
               className="rs-clip-video"
-              src={videoUrl}
+              src={proxyVideoUrl}
               autoPlay
               muted
               playsInline
