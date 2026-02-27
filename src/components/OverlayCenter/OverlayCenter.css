@@ -4974,6 +4974,59 @@ body.wm-dragging .wm-resize-handle {
   flex-direction: column;
   gap: 4px;
 }
+
+/* ── Chat Style Toggle ── */
+.ov-chat-style-toggle {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ov-chat-style-btn {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: center;
+}
+.ov-chat-style-btn:hover {
+  background: rgba(255,255,255,0.08);
+  color: #e2e8f0;
+}
+.ov-chat-style-btn--active {
+  background: rgba(139,92,246,0.18);
+  border-color: rgba(139,92,246,0.5);
+  color: #c4b5fd;
+}
+
+/* ── Clean Mode Widget Styles ── */
+.ov-chat-widget--clean {
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+}
+.ov-chat-widget--clean .ov-chat-messages {
+  padding: 8px 0;
+}
+.ov-chat-widget--clean .ov-chat-msg {
+  gap: 0;
+}
+.ov-chat-widget--clean .ov-chat-msg-body {
+  display: inline;
+}
+.ov-chat-widget--clean .ov-chat-username {
+  font-size: inherit;
+}
+.ov-chat-widget--clean .ov-chat-text {
+  font-size: inherit;
+}
+.ov-chat-widget--clean .ov-chat-empty-hint {
+  opacity: 0.5;
+}
+
 .ov-chat-cfg-section {
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px;

@@ -230,22 +230,27 @@ export default function ChatWidget({ config, theme }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef(null);
   const maxMessages = c.maxMessages || 50;
+  const isClean = c.chatStyle === 'clean';
 
   /* Style config */
-  const bgColor = c.bgColor || 'rgba(15,23,42,0.95)';
+  const bgColor = c.bgColor || (isClean ? 'rgba(20,25,46,0.92)' : 'rgba(15,23,42,0.95)');
   const textColor = c.textColor || '#e2e8f0';
   const headerBg = c.headerBg || 'rgba(30,41,59,0.5)';
   const headerText = c.headerText || '#94a3b8';
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize || 13;
-  const msgSpacing = c.msgSpacing || 2;
-  const borderRadius = c.borderRadius || 12;
-  const borderWidth = c.borderWidth ?? 1;
-  const borderColor = c.borderColor || 'rgba(51,65,85,0.5)';
-  const showHeader = c.showHeader !== false;
-  const showLegend = c.showLegend !== false;
+  const fontSize = c.fontSize || (isClean ? 14 : 13);
+  const msgSpacing = c.msgSpacing || (isClean ? 4 : 2);
+  const borderRadius = c.borderRadius ?? (isClean ? 14 : 12);
+  const borderWidth = c.borderWidth ?? (isClean ? 2 : 1);
+  const borderColor = c.borderColor || (isClean ? 'rgba(80,90,140,0.35)' : 'rgba(51,65,85,0.5)');
+  const showHeader = isClean ? false : c.showHeader !== false;
+  const showLegend = isClean ? false : c.showLegend !== false;
+  const showBadges = isClean ? false : c.showBadges !== false;
   const width = c.width || 350;
   const height = c.height || 500;
+  const nameBold = c.nameBold ?? true;
+  const msgLineHeight = c.msgLineHeight ?? (isClean ? 1.55 : 1.45);
+  const msgPadH = c.msgPadH ?? (isClean ? 14 : 10);
 
   const handleMessage = useCallback((msg) => {
     setMessages(prev => {
@@ -300,7 +305,7 @@ export default function ChatWidget({ config, theme }) {
   };
 
   return (
-    <div className="ov-chat-widget" style={style}>
+    <div className={`ov-chat-widget${isClean ? ' ov-chat-widget--clean' : ''}`} style={style}>
       {showHeader && (
         <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
           <span className="ov-chat-header-title">Live Chat</span>
@@ -318,7 +323,7 @@ export default function ChatWidget({ config, theme }) {
         </div>
       )}
 
-      <div className="ov-chat-messages" ref={scrollRef}>
+      <div className="ov-chat-messages" ref={scrollRef} style={{ lineHeight: msgLineHeight }}>
         {messages.length === 0 && (
           <div className="ov-chat-empty-hint">
             💬 Waiting for messages...
@@ -398,13 +403,15 @@ export default function ChatWidget({ config, theme }) {
 
           /* ── Normal message ── */
           return (
-            <div key={msg.id} className="ov-chat-msg" style={{ padding: `${msgSpacing}px 10px` }}>
-              <span className="ov-chat-badge" style={{
-                background: plt.color + '33',
-                color: plt.color,
-              }}>{plt.icon}</span>
+            <div key={msg.id} className="ov-chat-msg" style={{ padding: `${msgSpacing}px ${msgPadH}px` }}>
+              {showBadges && (
+                <span className="ov-chat-badge" style={{
+                  background: plt.color + '33',
+                  color: plt.color,
+                }}>{plt.icon}</span>
+              )}
               <div className="ov-chat-msg-body">
-                <span className="ov-chat-username" style={{ color: nameColor }}>
+                <span className="ov-chat-username" style={{ color: nameColor, fontWeight: nameBold ? 700 : 500 }}>
                   {msg.username}
                 </span>
                 <span className="ov-chat-text">{msg.message}</span>

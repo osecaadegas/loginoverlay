@@ -40,10 +40,10 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
   // ─── Preset system ───
   const [presetName, setPresetName] = useState('');
   const PRESET_KEYS = [
-    'bgColor', 'textColor', 'headerBg', 'headerText', 'borderColor',
-    'fontFamily', 'fontSize', 'useNativeColors',
+    'chatStyle', 'bgColor', 'textColor', 'headerBg', 'headerText', 'borderColor',
+    'fontFamily', 'fontSize', 'useNativeColors', 'nameBold', 'msgLineHeight', 'msgPadH',
     'width', 'height', 'borderRadius', 'borderWidth', 'msgSpacing', 'maxMessages',
-    'showHeader', 'showLegend',
+    'showHeader', 'showLegend', 'showBadges',
     'brightness', 'contrast', 'saturation',
     'raidBgColor', 'raidBorderColor', 'raidTextColor', 'showRaidAvatar',
   ];
@@ -89,6 +89,27 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
       {/* ═══════ PLATFORMS TAB ═══════ */}
       {activeTab === 'platforms' && (
         <div className="nb-section">
+          <h4 className="nb-subtitle">Chat Style</h4>
+          <div className="ov-chat-style-toggle">
+            <button
+              className={`ov-chat-style-btn${(c.chatStyle || 'classic') === 'classic' ? ' ov-chat-style-btn--active' : ''}`}
+              onClick={() => set('chatStyle', 'classic')}
+            >
+              📺 Classic
+            </button>
+            <button
+              className={`ov-chat-style-btn${c.chatStyle === 'clean' ? ' ov-chat-style-btn--active' : ''}`}
+              onClick={() => set('chatStyle', 'clean')}
+            >
+              ✨ Clean
+            </button>
+          </div>
+          <p className="oc-config-hint" style={{ marginBottom: 12 }}>
+            {c.chatStyle === 'clean'
+              ? 'Clean mode: no badges, no header/legend — just names and messages. Pure OBS look.'
+              : 'Classic mode: header bar, platform badges, and legend shown.'}
+          </p>
+
           <h4 className="nb-subtitle">Platforms & Channels</h4>
           <p className="oc-config-hint" style={{ marginBottom: 8 }}>
             Enable platforms and provide channel credentials for each.
@@ -150,17 +171,29 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
           </div>
 
           <h4 className="nb-subtitle">Display</h4>
-          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
-            <input type="checkbox" checked={c.showHeader !== false} onChange={e => set('showHeader', e.target.checked)} />
-            <span>Show Header Bar</span>
-          </label>
-          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
-            <input type="checkbox" checked={c.showLegend !== false} onChange={e => set('showLegend', e.target.checked)} />
-            <span>Show Platform Legend</span>
-          </label>
+          {(c.chatStyle || 'classic') === 'classic' && (
+            <>
+              <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+                <input type="checkbox" checked={c.showHeader !== false} onChange={e => set('showHeader', e.target.checked)} />
+                <span>Show Header Bar</span>
+              </label>
+              <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+                <input type="checkbox" checked={c.showLegend !== false} onChange={e => set('showLegend', e.target.checked)} />
+                <span>Show Platform Legend</span>
+              </label>
+              <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+                <input type="checkbox" checked={c.showBadges !== false} onChange={e => set('showBadges', e.target.checked)} />
+                <span>Show Platform Badges</span>
+              </label>
+            </>
+          )}
           <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
             <input type="checkbox" checked={!!c.useNativeColors} onChange={e => set('useNativeColors', e.target.checked)} />
             <span>Use Native Username Colors</span>
+          </label>
+          <label className="ov-chat-cfg-platform-header" style={{ gap: 8 }}>
+            <input type="checkbox" checked={c.nameBold !== false} onChange={e => set('nameBold', e.target.checked)} />
+            <span>Bold Usernames</span>
           </label>
         </div>
       )}
@@ -238,8 +271,12 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
             onChange={v => set('borderWidth', v)} />
 
           <h4 className="nb-subtitle">Messages</h4>
-          <SliderField label="Msg Spacing" value={c.msgSpacing ?? 2} min={0} max={12} step={1} unit="px"
+          <SliderField label="Msg Spacing" value={c.msgSpacing ?? 2} min={0} max={16} step={1} unit="px"
             onChange={v => set('msgSpacing', v)} />
+          <SliderField label="Msg Padding" value={c.msgPadH ?? 10} min={4} max={30} step={1} unit="px"
+            onChange={v => set('msgPadH', v)} />
+          <SliderField label="Line Height" value={c.msgLineHeight ?? 1.45} min={1} max={2.5} step={0.05} unit=""
+            onChange={v => set('msgLineHeight', v)} />
           <SliderField label="Max Messages" value={c.maxMessages ?? 50} min={5} max={200} step={5} unit=""
             onChange={v => set('maxMessages', v)} />
         </div>
