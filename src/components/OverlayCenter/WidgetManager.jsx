@@ -202,15 +202,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     <span className="oc-wcard-label">{w.label || def?.label || w.widget_type}</span>
                   </div>
                   <div className="oc-wcard-actions">
-                    {overlayToken && (
-                      <button
-                        className="oc-btn oc-btn--sm"
-                        onClick={() => copyWidgetUrl(w.id)}
-                        title="Copy single-widget OBS URL"
-                      >
-                        {copiedId === w.id ? '✓' : '🔗'}
-                      </button>
-                    )}
                     <button
                       className={`oc-toggle ${w.is_visible ? 'oc-toggle--on' : ''}`}
                       onClick={() => handleToggle(w)}
@@ -227,6 +218,25 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
                 {isEditing && (
                   <div className="oc-wcard-body">
+                    {/* Single-widget OBS URL */}
+                    {overlayToken && (
+                      <div className="oc-widget-url">
+                        <label className="oc-widget-url-label">🔗 OBS Browser Source URL (this widget only)</label>
+                        <div className="oc-widget-url-row">
+                          <input
+                            readOnly
+                            className="oc-widget-url-input"
+                            value={`${window.location.origin}/overlay/${overlayToken}?widget=${w.id}`}
+                            onClick={() => copyWidgetUrl(w.id)}
+                            title="Click to copy"
+                          />
+                          <button className="oc-widget-url-copy" onClick={() => copyWidgetUrl(w.id)}>
+                            {copiedId === w.id ? '✓ Copied' : '📋 Copy'}
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Position / Size / Z-Index */}
                     <div className="oc-wcard-layout">
                       <label>

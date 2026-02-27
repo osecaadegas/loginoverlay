@@ -357,6 +357,63 @@
   border-top: 1px solid rgba(255,255,255,0.04);
 }
 
+/* ─── Per-widget OBS URL ─── */
+.oc-widget-url {
+  margin: 12px 0 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.oc-widget-url-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  letter-spacing: 0.3px;
+}
+
+.oc-widget-url-row {
+  display: flex;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.oc-widget-url-input {
+  flex: 1;
+  background: rgba(255,255,255,0.03);
+  border: none;
+  color: #94a3b8;
+  font-size: 0.72rem;
+  padding: 7px 10px;
+  outline: none;
+  cursor: pointer;
+  min-width: 0;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.oc-widget-url-input:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.oc-widget-url-copy {
+  background: rgba(147, 70, 255, 0.08);
+  border: none;
+  border-left: 1px solid rgba(255,255,255,0.08);
+  color: #a78bfa;
+  padding: 7px 12px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  transition: background 0.15s;
+  white-space: nowrap;
+}
+
+.oc-widget-url-copy:hover {
+  background: rgba(147, 70, 255, 0.2);
+  color: #c4b5fd;
+}
+
 .oc-wcard-layout {
   display: flex;
   flex-wrap: wrap;
