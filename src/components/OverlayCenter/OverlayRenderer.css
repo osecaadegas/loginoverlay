@@ -1644,80 +1644,20 @@
   position: relative;
   width: 420px;
   max-width: 95%;
-  background: var(--rs-bg, rgba(13, 13, 20, 0.95));
-  border-radius: var(--rs-radius, 16px);
-  border: 1px solid rgba(145, 70, 255, 0.2);
-  box-shadow:
-    0 0 40px rgba(145, 70, 255, 0.15),
-    0 20px 60px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: #000;
+  border-radius: var(--rs-radius, 12px);
   overflow: hidden;
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
 }
 
-/* ─── Header: RAID ALERT ─── */
-.rs-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 14px 18px;
-  background: linear-gradient(135deg, rgba(145, 70, 255, 0.18), rgba(145, 70, 255, 0.06));
-  border-bottom: 1px solid rgba(145, 70, 255, 0.15);
+/* Clip-only variant: no extra chrome */
+.rs-alert-card--clip-only {
+  background: transparent;
+  border: none;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
-.rs-raid-badge {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 800;
-  letter-spacing: 2.5px;
-  color: var(--rs-accent, #9146FF);
-  text-transform: uppercase;
-  text-shadow: 0 0 20px var(--rs-accent, #9146FF);
-}
-
-.rs-raid-icon {
-  width: 20px;
-  height: 20px;
-  color: var(--rs-accent, #9146FF);
-  animation: rs-bolt-flash 1.5s ease-in-out infinite;
-}
-
-@keyframes rs-bolt-flash {
-  0%, 100% { opacity: 1; }
-  50%      { opacity: 0.5; filter: drop-shadow(0 0 6px var(--rs-accent, #9146FF)); }
-}
-
-.rs-queue-badge {
-  display: flex;
-  align-items: center;
-  padding: 3px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.08);
-  font-size: 10px;
-  color: #94a3b8;
-  font-weight: 600;
-}
-
-/* ─── Expandable clip reveal area ─── */
-.rs-clip-reveal {
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.55s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.rs-clip-reveal--open {
-  max-height: 240px; /* 16:9 at 420px ≈ 236px */
-}
-
-.rs-clip-reveal--closing {
-  max-height: 0;
-  transition: max-height 0.5s cubic-bezier(0.4, 0, 0.8, 1);
-}
-
-/* ─── Clip container ─── */
+/* ─── Clip container (always visible, no expand/collapse) ─── */
 .rs-clip-container {
   position: relative;
   width: 100%;
@@ -1779,25 +1719,6 @@
   color: #fff;
   font-size: 32px;
   font-weight: 800;
-}
-
-/* ─── Footer ─── */
-.rs-footer {
-  padding: 14px 18px;
-  background: linear-gradient(180deg, transparent, rgba(145, 70, 255, 0.06));
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.rs-follow-cta {
-  text-align: center;
-  font-size: 14px;
-  color: var(--rs-subtext, #a0a0b4);
-}
-
-.rs-twitch-link {
-  color: var(--rs-accent, #9146FF);
-  font-weight: 700;
-  text-shadow: 0 0 12px var(--rs-accent, #9146FF);
 }
 
 /* ═══════════════════════════════════════════════════
