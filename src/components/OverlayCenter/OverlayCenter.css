@@ -1563,7 +1563,7 @@
 .wm-layout-panel {
   margin: 20px 0 0;
   padding: 22px 24px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.6), rgba(30, 41, 59, 0.4));
+  background: #0f172a;
   border-radius: 16px;
   border: 1px solid rgba(139, 92, 246, 0.12);
 }
@@ -1826,7 +1826,7 @@
 .wm-live-preview {
   margin-bottom: 28px;
   padding: 20px 24px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.7), rgba(30, 41, 59, 0.5));
+  background: #0f172a;
   border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: 18px;
   animation: wm-fadeIn 0.3s ease;
@@ -1928,7 +1928,7 @@
   max-width: 300px;
   padding: 18px 20px;
   border-radius: 14px;
-  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7));
+  background: #0f172a;
   border: 1px solid rgba(139, 92, 246, 0.18);
   animation: wm-fadeIn 0.4s ease;
   align-self: stretch;
