@@ -655,6 +655,53 @@ function getProviderSite(provider) {
 // Note: PROVIDER_SITES and PROVIDER_ALIASES are kept for canonical provider resolution.
 // The primary search now uses Gemini with native Google Search grounding.
 
+// ═══════════════════════════════════════════════
+// CONTENT SAFETY — Block inappropriate searches for Twitch/YouTube/Kick
+// ═══════════════════════════════════════════════
+
+// Terms that are NEVER real slot names — pure profanity / NSFW / slurs.
+// Real slots with edgy names (e.g. "Golden Shower", "Hot Ross") are NOT blocked
+// because they exist in the DB or Gemini will return them with twitch_safe flags.
+const BLOCKED_SEARCH_TERMS = [
+  // Sexual / pornographic
+  'porn', 'xxx', 'hentai', 'nsfw', 'nude', 'naked', 'nudes',
+  'boobs', 'tits', 'titties', 'pussy', 'vagina', 'penis', 'dick', 'cock',
+  'dildo', 'orgasm', 'blowjob', 'handjob', 'cumshot', 'creampie',
+  'milf', 'anal', 'bdsm', 'fetish', 'onlyfans', 'chaturbate',
+  'xvideos', 'xhamster', 'pornhub', 'brazzers', 'bangbros',
+  'sex', 'sexy', 'erotic', 'erotica', 'fap', 'masturbat',
+  // Racial slurs & hate speech (abbreviated to avoid spelling them out)
+  'nigger', 'nigga', 'faggot', 'fag', 'retard', 'kike', 'spic',
+  'chink', 'wetback', 'tranny', 'coon',
+  // Violence / shock
+  'gore', 'snuff', 'bestiality', 'zoophil', 'necrophil', 'pedophil',
+  'child porn', 'cp',
+  // Common troll inputs
+  'fuck', 'shit', 'asshole', 'bitch', 'cunt', 'whore', 'slut',
+];
+
+// Match whole-word or substring — returns the matched term or null
+function getBlockedTerm(input) {
+  if (!input || typeof input !== 'string') return null;
+  const low = input.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+  // Check if the entire input IS a blocked term (catches single-word trolls like "tits")
+  for (const term of BLOCKED_SEARCH_TERMS) {
+    if (low === term) return term;
+  }
+  // Check if any word in the input is a blocked term
+  const words = low.split(/\s+/);
+  for (const word of words) {
+    for (const term of BLOCKED_SEARCH_TERMS) {
+      if (word === term) return term;
+    }
+  }
+  // Check for multi-word blocked terms (e.g. "child porn")
+  for (const term of BLOCKED_SEARCH_TERMS) {
+    if (term.includes(' ') && low.includes(term)) return term;
+  }
+  return null;
+}
+
 function normalizeVolatility(v) {
   if (typeof v !== 'string') return null;
   const low = v.toLowerCase().replace(/[^a-z]/g, '');
@@ -696,6 +743,18 @@ export default async function handler(req, res) {
 
   const { name, provider: providerHint } = req.body || {};
   if (!name) return res.status(400).json({ error: 'Provide "name"' });
+
+  // ── Content Safety Gate ──
+  const blockedTerm = getBlockedTerm(name);
+  if (blockedTerm) {
+    console.warn(`[slot-ai] BLOCKED inappropriate search: "${name}" (matched: "${blockedTerm}")`);
+    return res.status(200).json({
+      error: null,
+      name,
+      source: 'blocked',
+      reason: 'Search term not appropriate for streaming platforms',
+    });
+  }
 
   try {
     // â”€â”€ Step 1: Query Supabase slots table (8000+ real slots) â”€â”€

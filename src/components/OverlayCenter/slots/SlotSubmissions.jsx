@@ -63,10 +63,20 @@ export default function SlotSubmissions() {
     setAiLoading(true);
     try {
       const ai = await fetchSlotAI(slotName, providerHint);
+      // Skip if blocked by content safety filter
+      if (ai?.source === 'blocked') {
+        flash('Search blocked — not appropriate for streaming platforms.', 'error');
+        return;
+      }
       // Skip if API returned not_found, error, or empty
       if (!ai || ai.source === 'not_found' || ai.source === 'error') {
         const reason = ai?.error || 'Slot not recognized';
         flash(`AI could not find "${slotName}" — ${reason}`, 'error');
+        return;
+      }
+      // Block slots with NSFW imagery (not safe for Twitch/YouTube/Kick)
+      if (ai.twitch_safe === false) {
+        flash(`⚠️ "${ai.name || slotName}" contains NSFW imagery — blocked for stream safety.`, 'error');
         return;
       }
       lastAiName.current = slotName.toLowerCase().trim();
@@ -80,13 +90,12 @@ export default function SlotSubmissions() {
         image:               ai.image             || prev.image,  // use DB image if available
       }));
       setDataSource(ai.source || 'gemini_ai');
-      const savedSources = ['gemini_ai_saved', 'google_ai_saved', 'provider_saved'];
+      const savedSources = ['gemini_ai_saved', 'google_ai_saved'];
       const srcLabel  = ai.source === 'slots_database' ? '✅ From your DB'
                       : savedSources.includes(ai.source) ? '✅ AI → Saved to DB'
-                      : ai.source === 'provider_site' ? '🏢 From Provider Site'
                       : ai.source === 'google_ai' ? '🌐 Found via Google'
                       : '🤖 AI';
-      const safeLabel = ai.twitch_safe === false ? ' ⚠️ Not Twitch-safe!' : ai.twitch_safe === true ? ' 🟢 Twitch-safe' : '';
+      const safeLabel = ai.twitch_safe === true ? ' 🟢 Stream-safe' : '';
       flash(`${srcLabel}: ${ai.name || slotName} by ${ai.provider || '?'}${safeLabel}`);
 
       // Also search for a safe image if we don't have one yet

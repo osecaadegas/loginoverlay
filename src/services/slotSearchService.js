@@ -268,10 +268,39 @@ export async function scrapeSlotMetadata(url) {
 // findSlotImage — Google Image scrape for slot cover art
 // ────────────────────────────────────────────────
 // ────────────────────────────────────────────────
+// Content safety — quick client-side pre-filter for streaming platforms
+// Blocks obviously inappropriate searches BEFORE they hit the API
+// ────────────────────────────────────────────────
+const BLOCKED_CLIENT_TERMS = [
+  'porn', 'xxx', 'hentai', 'nsfw', 'nude', 'naked', 'nudes',
+  'boobs', 'tits', 'titties', 'pussy', 'penis', 'dick', 'cock',
+  'dildo', 'orgasm', 'blowjob', 'cumshot', 'milf', 'anal', 'bdsm',
+  'xvideos', 'xhamster', 'pornhub', 'brazzers', 'onlyfans',
+  'nigger', 'nigga', 'faggot', 'retard', 'kike', 'spic', 'chink',
+  'fuck', 'shit', 'asshole', 'cunt', 'whore', 'slut',
+  'gore', 'snuff', 'bestiality', 'pedophil', 'child porn',
+];
+
+function isSearchBlocked(input) {
+  if (!input) return false;
+  const low = input.toLowerCase().replace(/[^a-z0-9\s]/g, ' ').trim();
+  const words = low.split(/\s+/);
+  for (const term of BLOCKED_CLIENT_TERMS) {
+    if (low === term || words.includes(term)) return true;
+    if (term.includes(' ') && low.includes(term)) return true;
+  }
+  return false;
+}
+
+// ────────────────────────────────────────────────
 // fetchSlotAI — Call Gemini via our serverless endpoint for structured slot data
 // Returns { name, provider, rtp, volatility, max_win_multiplier, features, theme }
 // ────────────────────────────────────────────────
 export async function fetchSlotAI(name, providerHint = '') {
+  // Client-side content safety check (fast, no network call)
+  if (isSearchBlocked(name)) {
+    return { source: 'blocked', reason: 'Search term not appropriate for streaming platforms' };
+  }
   try {
     const body = { name };
     if (providerHint) body.provider = providerHint;
