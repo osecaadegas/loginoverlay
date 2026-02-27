@@ -90,9 +90,7 @@
   height: 44px;
   border-radius: var(--oc-radius-sm);
   border: 1px solid var(--oc-border);
-  background: rgba(14, 16, 25, 0.95);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: #0c0e17;
   cursor: pointer;
   flex-direction: column;
   align-items: center;
@@ -136,9 +134,7 @@
   position: fixed;
   inset: 0;
   z-index: 999;
-  background: rgba(0, 0, 0, 0.65);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(0, 0, 0, 0.75);
   animation: oc-fadeIn 0.2s ease;
 }
 
@@ -152,9 +148,7 @@
    ═══════════════════════════════════════════════════ */
 .oc-sidebar {
   width: var(--oc-sidebar-width);
-  background: linear-gradient(180deg, rgba(14, 16, 25, 0.97) 0%, rgba(10, 12, 20, 0.99) 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
+  background: #0c0e17;
   border-right: 1px solid var(--oc-border);
   display: flex;
   flex-direction: column;
@@ -1182,7 +1176,7 @@
   width: 480px;
   max-width: 90vw;
   height: 100vh;
-  background: var(--oc-bg-card, #13151e);
+  background: #13151e;
   border-left: 1px solid rgba(139, 92, 246, 0.15);
   box-shadow: -8px 0 40px rgba(0, 0, 0, 0.5);
   z-index: 901;
