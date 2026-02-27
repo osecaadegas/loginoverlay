@@ -1253,42 +1253,68 @@
   line-height: 1.45;
 }
 
-/* ── Mini Canvas Preview ── */
-.wm-canvas-preview {
-  margin-bottom: 20px;
+/* ── Position & Size split layout ── */
+.wm-pos-split {
+  display: flex;
+  gap: 20px;
+  margin-top: 4px;
 }
 
-.wm-canvas-area {
+.wm-pos-sliders {
+  flex: 1;
+  min-width: 0;
+}
+
+.wm-pos-preview {
+  width: 280px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.wm-pos-preview-canvas {
+  --preview-scale: 0.145;
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  max-height: 120px;
-  background: rgba(0, 0, 0, 0.35);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(139, 92, 246, 0.25);
   border-radius: 10px;
   overflow: hidden;
 }
 
-.wm-canvas-widget {
+.wm-pos-preview-scene {
   position: absolute;
-  background: rgba(139, 92, 246, 0.35);
-  border: 2px solid rgba(167, 139, 250, 0.7);
-  border-radius: 4px;
-  transition: all 0.15s ease;
-  box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
-  min-width: 4px;
-  min-height: 4px;
+  top: 0;
+  left: 0;
+  width: 1920px;
+  height: 1080px;
+  transform: scale(var(--preview-scale, 0.145));
+  transform-origin: top left;
+  pointer-events: none;
 }
 
-.wm-canvas-label {
+.wm-pos-preview-dims {
   position: absolute;
-  bottom: 5px;
-  right: 8px;
+  bottom: 4px;
+  right: 6px;
   font-size: 0.55rem;
-  color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.25);
+  font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.3px;
   pointer-events: none;
+  z-index: 2;
+}
+
+@media (max-width: 900px) {
+  .wm-pos-split {
+    flex-direction: column;
+  }
+  .wm-pos-preview {
+    width: 100%;
+  }
 }
 
 /* ── Slider Grid ── */

@@ -499,6 +499,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           {widgets.map(w => {
             const def = getWidgetDef(w.widget_type);
             const ConfigPanel = def?.configPanel;
+            const WidgetComponent = def?.component;
             const isEditing = editingId === w.id;
             const isVisible = w.is_visible;
 
@@ -565,31 +566,17 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       </details>
                     )}
 
-                    {/* Position & Sizing — drag sliders + mini preview */}
+                    {/* Position & Sizing — sliders + live widget preview */}
                     <div className="wm-layout-panel">
                       <div className="wm-layout-heading">
                         <span className="wm-layout-icon">📐</span>
                         <span>Position &amp; Size</span>
                       </div>
-                      <p className="wm-layout-hint">Drag the sliders or type a number. The preview shows where the widget sits on your 1920×1080 canvas.</p>
+                      <p className="wm-layout-hint">Drag the sliders or type a number. The live preview on the right updates in real-time.</p>
 
-                      {/* Mini canvas preview */}
-                      <div className="wm-canvas-preview" title="Live preview of widget position">
-                        <div className="wm-canvas-area">
-                          <div
-                            className="wm-canvas-widget"
-                            style={{
-                              left: `${(Math.round(w.position_x) / 1920) * 100}%`,
-                              top: `${(Math.round(w.position_y) / 1080) * 100}%`,
-                              width: `${Math.max((Math.round(w.width) / 1920) * 100, 3)}%`,
-                              height: `${Math.max((Math.round(w.height) / 1080) * 100, 3)}%`,
-                            }}
-                          />
-                          <span className="wm-canvas-label">1920 × 1080</span>
-                        </div>
-                      </div>
-
-                      {/* Slider fields */}
+                      <div className="wm-pos-split">
+                      {/* Left: Slider fields */}
+                      <div className="wm-pos-sliders">
                       <div className="wm-slider-grid">
                         {[
                           { label: 'Left (X)', field: 'position_x', min: 0, max: 1920, val: Math.round(w.position_x) },
@@ -633,6 +620,30 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           <option value="none">None</option>
                         </select>
                       </label>
+                      </div>{/* end wm-pos-sliders */}
+
+                      {/* Right: Live mini widget preview */}
+                      <div className="wm-pos-preview">
+                        <div className="wm-pos-preview-canvas">
+                          <div className="wm-pos-preview-scene">
+                            <div
+                              style={{
+                                position: 'absolute',
+                                left: w.position_x,
+                                top: w.position_y,
+                                width: w.width,
+                                height: w.height,
+                                overflow: 'hidden',
+                                zIndex: w.z_index || 1,
+                              }}
+                            >
+                              {WidgetComponent && <WidgetComponent config={w.config} theme={theme} allWidgets={widgets} />}
+                            </div>
+                          </div>
+                          <span className="wm-pos-preview-dims">{Math.round(w.position_x)},{Math.round(w.position_y)} — {Math.round(w.width)}×{Math.round(w.height)}</span>
+                        </div>
+                      </div>
+                      </div>{/* end wm-pos-split */}
                     </div>
 
                     {/* Widget Config Panel */}
