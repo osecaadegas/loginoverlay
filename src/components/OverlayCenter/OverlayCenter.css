@@ -1916,15 +1916,89 @@
   text-align: center;
 }
 
-/* ── Live preview body — canvas + tutorial side by side ── */
+/* ── Live preview body — canvas + quick guide side by side ── */
 .wm-live-body {
   display: flex;
-  gap: 16px;
+  gap: 18px;
   align-items: flex-start;
 }
 
 .wm-live-body > .wm-live-canvas-wrap {
   flex-shrink: 0;
+}
+
+/* ── Quick Guide panel ── */
+.wm-quick-guide {
+  flex: 1;
+  min-width: 220px;
+  max-width: 300px;
+  padding: 18px 20px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85), rgba(30, 41, 59, 0.7));
+  border: 1px solid rgba(139, 92, 246, 0.18);
+  animation: wm-fadeIn 0.4s ease;
+  align-self: stretch;
+  overflow-y: auto;
+}
+
+.wm-qg-title {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: var(--oc-text-primary);
+  margin: 0 0 14px;
+  letter-spacing: 0.3px;
+}
+
+.wm-qg-list {
+  list-style: none;
+  counter-reset: qg;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.wm-qg-list li {
+  counter-increment: qg;
+  position: relative;
+  padding-left: 30px;
+  font-size: 0.76rem;
+  color: var(--oc-text-muted);
+  line-height: 1.55;
+}
+
+.wm-qg-list li::before {
+  content: counter(qg);
+  position: absolute;
+  left: 0;
+  top: 1px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.25), rgba(139, 92, 246, 0.25));
+  border: 1px solid rgba(139, 92, 246, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #a78bfa;
+}
+
+.wm-qg-list li strong {
+  color: var(--oc-text-primary);
+  font-weight: 700;
+}
+
+/* Hide quick guide on narrow screens — stack below */
+@media (max-width: 960px) {
+  .wm-live-body {
+    flex-direction: column;
+  }
+  .wm-quick-guide {
+    max-width: 100%;
+  }
 }
 
 /* ═══════════════════════════════════════════
