@@ -89,7 +89,7 @@ export default function OverlayControlCenter() {
       id: w.id,
       widget_type: w.widget_type,
       label: w.label,
-      config: w.config,
+      config: stripUserData(w.widget_type, w.config),
       is_visible: w.is_visible,
       position_x: w.position_x,
       position_y: w.position_y,
@@ -108,10 +108,10 @@ export default function OverlayControlCenter() {
     setPresetName('');
     setPresetMsg('Saved!');
     setTimeout(() => setPresetMsg(''), 2000);
-  }, [presetName, widgets, globalPresets, updateState]);
+  }, [presetName, widgets, globalPresets, updateState, stripUserData]);
 
-  /* ── User-data config keys to SKIP when loading presets (per widget type).
-     Only styling/layout/color keys get applied; user content stays individual. ── */
+  /* ── User-data config keys to SKIP in presets (per widget type).
+     Only styling/layout/color keys get saved & applied; user content stays individual. ── */
   const USER_DATA_KEYS = useMemo(() => ({
     stats:              ['totalBet', 'totalWin', 'highestWin', 'highestMulti', 'sessionProfit', 'currency'],
     bonus_hunt:         ['bonuses', 'huntActive', 'currency', 'startMoney', 'targetMoney', 'stopLoss', 'showStatistics', 'animatedTracker', 'bonusOpening'],
@@ -132,6 +132,16 @@ export default function OverlayControlCenter() {
     background:         ['imageUrl', 'videoUrl'],
     raid_shoutout:      ['soundUrl', 'showClip', 'showGame', 'showViewers'],
   }), []);
+
+  /** Strip user-data keys from a widget config, keeping only styling/layout */
+  const stripUserData = useCallback((widgetType, config) => {
+    const skip = new Set(USER_DATA_KEYS[widgetType] || []);
+    const clean = {};
+    for (const [key, value] of Object.entries(config || {})) {
+      if (!skip.has(key)) clean[key] = value;
+    }
+    return clean;
+  }, [USER_DATA_KEYS]);
 
   /** Merge preset config into existing config — keep user data, apply styling only */
   const mergePresetConfig = useCallback((widgetType, existingConfig, presetConfig) => {
