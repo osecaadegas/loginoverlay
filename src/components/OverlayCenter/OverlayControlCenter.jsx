@@ -82,34 +82,6 @@ export default function OverlayControlCenter() {
     }
   }, [isAdmin]);
 
-  const saveGlobalPreset = useCallback(async () => {
-    const name = presetName.trim();
-    if (!name || widgets.length === 0) return;
-    const snapshot = widgets.map(w => ({
-      id: w.id,
-      widget_type: w.widget_type,
-      label: w.label,
-      config: stripUserData(w.widget_type, w.config),
-      is_visible: w.is_visible,
-      position_x: w.position_x,
-      position_y: w.position_y,
-      width: w.width,
-      height: w.height,
-      z_index: w.z_index,
-      animation: w.animation,
-    }));
-    const entry = { name, snapshot, savedAt: Date.now() };
-    const existing = [...globalPresets];
-    const idx = existing.findIndex(p => p.name === name);
-    const updated = idx >= 0
-      ? existing.map((p, i) => i === idx ? entry : p)
-      : [...existing, entry];
-    await updateState({ globalPresets: updated });
-    setPresetName('');
-    setPresetMsg('Saved!');
-    setTimeout(() => setPresetMsg(''), 2000);
-  }, [presetName, widgets, globalPresets, updateState, stripUserData]);
-
   /* ── User-data config keys to SKIP in presets (per widget type).
      Only styling/layout/color keys get saved & applied; user content stays individual. ── */
   const USER_DATA_KEYS = useMemo(() => ({
@@ -152,6 +124,34 @@ export default function OverlayControlCenter() {
     }
     return merged;
   }, [USER_DATA_KEYS]);
+
+  const saveGlobalPreset = useCallback(async () => {
+    const name = presetName.trim();
+    if (!name || widgets.length === 0) return;
+    const snapshot = widgets.map(w => ({
+      id: w.id,
+      widget_type: w.widget_type,
+      label: w.label,
+      config: stripUserData(w.widget_type, w.config),
+      is_visible: w.is_visible,
+      position_x: w.position_x,
+      position_y: w.position_y,
+      width: w.width,
+      height: w.height,
+      z_index: w.z_index,
+      animation: w.animation,
+    }));
+    const entry = { name, snapshot, savedAt: Date.now() };
+    const existing = [...globalPresets];
+    const idx = existing.findIndex(p => p.name === name);
+    const updated = idx >= 0
+      ? existing.map((p, i) => i === idx ? entry : p)
+      : [...existing, entry];
+    await updateState({ globalPresets: updated });
+    setPresetName('');
+    setPresetMsg('Saved!');
+    setTimeout(() => setPresetMsg(''), 2000);
+  }, [presetName, widgets, globalPresets, updateState, stripUserData]);
 
   const loadGlobalPreset = useCallback(async (preset) => {
     if (!preset?.snapshot) return;
