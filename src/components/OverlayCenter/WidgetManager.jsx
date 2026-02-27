@@ -113,7 +113,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const [editingId, setEditingId] = useState(null);
   const [showAddMenu, setShowAddMenu] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [previewWidgetId, setPreviewWidgetId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const previewRef = useRef(null);
@@ -122,7 +121,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const CANVAS_W = theme?.canvas_width || 1920;
   const CANVAS_H = theme?.canvas_height || 1080;
 
-  /* Dynamic scale for live preview — account for sidebar (320px) */
+  /* Dynamic scale for live preview */
   useEffect(() => {
     if (!showPreview || !previewRef.current) return;
     function calcScale() {
@@ -136,27 +135,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   }, [showPreview, CANVAS_W]);
 
   const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
-
-  /* Auto-select first visible widget for preview sidebar when opening */
-  useEffect(() => {
-    if (showPreview && visibleWidgets.length > 0 && !previewWidgetId) {
-      setPreviewWidgetId(visibleWidgets[0].id);
-    }
-  }, [showPreview, visibleWidgets, previewWidgetId]);
-
-  /* Sync preview selection when editing a card */
-  useEffect(() => {
-    if (editingId && showPreview) {
-      setPreviewWidgetId(editingId);
-    }
-  }, [editingId, showPreview]);
-
-  const previewWidget = useMemo(() => widgets.find(w => w.id === previewWidgetId), [widgets, previewWidgetId]);
-
-  const handlePreviewPositionChange = useCallback((field, value) => {
-    if (!previewWidget) return;
-    onSave({ ...previewWidget, [field]: value });
-  }, [previewWidget, onSave]);
 
   const copyWidgetUrl = useCallback((widgetId) => {
     if (!overlayToken) return;
@@ -237,9 +215,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         </div>
       </div>
 
-      {/* ──── Live Overlay Preview — split: canvas + side panel ──── */}
+      {/* ──── Live Overlay Preview ──── */}
       {showPreview && (
-        <div className="wm-live-preview">
+        <div className="wm-live-preview" ref={previewRef}>
           <div className="wm-live-header">
             <span className="wm-live-title">
               <span className="wm-live-dot" />
@@ -247,127 +225,41 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
             </span>
             <span className="wm-live-dims">{CANVAS_W} × {CANVAS_H} &middot; {Math.round(previewScale * 100)}%</span>
           </div>
-
-          <div className="wm-live-split">
-            {/* ── Left: Canvas ── */}
-            <div className="wm-live-canvas-col" ref={previewRef}>
-              <div
-                className="wm-live-canvas-wrap"
-                style={{
-                  width: CANVAS_W * previewScale,
-                  height: CANVAS_H * previewScale,
-                }}
-              >
-                <div
-                  className="wm-live-canvas"
-                  style={{
-                    width: CANVAS_W,
-                    height: CANVAS_H,
-                    transform: `scale(${previewScale})`,
-                    transformOrigin: 'top left',
-                  }}
-                >
-                  {visibleWidgets.length === 0 && (
-                    <div className="wm-live-empty">No visible widgets</div>
-                  )}
-                  {visibleWidgets.map(w => (
-                    <LiveSlot
-                      key={w.id}
-                      widget={w}
-                      theme={theme}
-                      allWidgets={widgets}
-                      isHighlighted={w.id === previewWidgetId}
-                    />
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* ── Right: Side Panel ── */}
-            <div className="wm-live-sidebar">
-              {/* Widget selector */}
-              <div className="wm-side-section">
-                <span className="wm-side-label">Active Widget</span>
-                <select
-                  className="wm-side-select"
-                  value={previewWidgetId || ''}
-                  onChange={e => setPreviewWidgetId(e.target.value)}
-                >
-                  {visibleWidgets.length === 0 && <option value="">No visible widgets</option>}
-                  {visibleWidgets.map(w => {
-                    const d = getWidgetDef(w.widget_type);
-                    return <option key={w.id} value={w.id}>{d?.icon || '📦'} {w.label || d?.label || w.widget_type}</option>;
-                  })}
-                </select>
-              </div>
-
-              {previewWidget ? (
-                <>
-                  {/* Position sliders */}
-                  {[
-                    { label: 'Left (X)', field: 'position_x', min: 0, max: CANVAS_W, val: Math.round(previewWidget.position_x) },
-                    { label: 'Top (Y)', field: 'position_y', min: 0, max: CANVAS_H, val: Math.round(previewWidget.position_y) },
-                    { label: 'Width',    field: 'width',      min: 0, max: CANVAS_W, val: Math.round(previewWidget.width) },
-                    { label: 'Height',   field: 'height',     min: 0, max: CANVAS_H, val: Math.round(previewWidget.height) },
-                    { label: 'Layer (Z)', field: 'z_index',   min: 0, max: 100,      val: previewWidget.z_index },
-                  ].map(s => (
-                    <div key={s.field} className="wm-side-section">
-                      <div className="wm-side-slider-header">
-                        <span className="wm-side-label">{s.label}</span>
-                        <input
-                          type="number"
-                          className="wm-side-num"
-                          min={s.min}
-                          max={s.max}
-                          value={s.val}
-                          onChange={e => handlePreviewPositionChange(s.field, +e.target.value)}
-                        />
-                      </div>
-                      <input
-                        type="range"
-                        className="wm-range wm-side-range"
-                        min={s.min}
-                        max={s.max}
-                        value={s.val}
-                        onChange={e => handlePreviewPositionChange(s.field, +e.target.value)}
-                      />
-                    </div>
-                  ))}
-
-                  {/* Animation */}
-                  <div className="wm-side-section">
-                    <span className="wm-side-label">✨ Animation</span>
-                    <select
-                      className="wm-side-select"
-                      value={previewWidget.animation || 'fade'}
-                      onChange={e => handlePreviewPositionChange('animation', e.target.value)}
-                    >
-                      <option value="fade">Fade In</option>
-                      <option value="slide">Slide In</option>
-                      <option value="scale">Scale Up</option>
-                      <option value="glow">Glow</option>
-                      <option value="none">None</option>
-                    </select>
-                  </div>
-
-                  {/* Quick visibility toggle */}
-                  <div className="wm-side-section wm-side-toggle-row">
-                    <span className="wm-side-label">Visible</span>
-                    <button
-                      className={`wm-toggle ${previewWidget.is_visible ? 'wm-toggle--on' : ''}`}
-                      onClick={() => onSave({ ...previewWidget, is_visible: !previewWidget.is_visible })}
-                    >
-                      <span className="wm-toggle-thumb" />
-                    </button>
-                  </div>
-                </>
-              ) : (
-                <div className="wm-side-empty">
-                  <p>Toggle a widget ON to adjust its position here.</p>
-                </div>
+          <div
+            className="wm-live-canvas-wrap"
+            style={{
+              width: CANVAS_W * previewScale,
+              height: CANVAS_H * previewScale,
+            }}
+          >
+            <div
+              className="wm-live-canvas"
+              style={{
+                width: CANVAS_W,
+                height: CANVAS_H,
+                transform: `scale(${previewScale})`,
+                transformOrigin: 'top left',
+              }}
+            >
+              {visibleWidgets.length === 0 && (
+                <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
               )}
+              {visibleWidgets.map(w => (
+                <LiveSlot
+                  key={w.id}
+                  widget={w}
+                  theme={theme}
+                  allWidgets={widgets}
+                  isHighlighted={w.id === editingId}
+                />
+              ))}
             </div>
           </div>
+          <p className="wm-live-hint">
+            {editingId
+              ? '🟣 The highlighted widget is the one you\'re editing. Drag the sliders below to see it move in real-time.'
+              : 'Click a widget card below to start editing — it will be highlighted here.'}
+          </p>
         </div>
       )}
 

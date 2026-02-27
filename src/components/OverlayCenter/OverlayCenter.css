@@ -1496,18 +1496,6 @@
   letter-spacing: 0.5px;
 }
 
-/* ── Split layout: canvas + sidebar ── */
-.wm-live-split {
-  display: flex;
-  gap: 16px;
-  align-items: flex-start;
-}
-
-.wm-live-canvas-col {
-  flex: 1;
-  min-width: 0;
-}
-
 .wm-live-canvas-wrap {
   margin: 0 auto;
   border-radius: 10px;
@@ -1536,140 +1524,12 @@
   padding: 20px;
 }
 
-/* ── Sidebar ── */
-.wm-live-sidebar {
-  width: 280px;
-  flex-shrink: 0;
-  background: rgba(15, 23, 42, 0.6);
-  border: 1px solid var(--oc-border);
-  border-radius: 14px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  max-height: 500px;
-  overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(139, 92, 246, 0.2) transparent;
-}
-
-.wm-live-sidebar::-webkit-scrollbar {
-  width: 5px;
-}
-
-.wm-live-sidebar::-webkit-scrollbar-thumb {
-  background: rgba(139, 92, 246, 0.25);
-  border-radius: 10px;
-}
-
-.wm-side-section {
-  padding: 10px 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
-}
-
-.wm-side-section:last-child {
-  border-bottom: none;
-}
-
-.wm-side-label {
+.wm-live-hint {
   font-size: 0.7rem;
-  font-weight: 700;
   color: var(--oc-text-muted);
-  letter-spacing: 0.4px;
-  display: block;
-  margin-bottom: 6px;
-}
-
-.wm-side-slider-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 6px;
-}
-
-.wm-side-slider-header .wm-side-label {
-  margin-bottom: 0;
-}
-
-.wm-side-num {
-  width: 58px;
-  padding: 5px 6px;
-  border-radius: 8px;
-  border: 1px solid var(--oc-border);
-  background: var(--oc-bg-card);
-  color: var(--oc-text-primary);
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-align: center;
-  outline: none;
-  transition: border-color 0.15s ease;
-  -moz-appearance: textfield;
-}
-
-.wm-side-num::-webkit-inner-spin-button,
-.wm-side-num::-webkit-outer-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
-
-.wm-side-num:focus {
-  border-color: rgba(139, 92, 246, 0.5);
-  box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.1);
-}
-
-.wm-side-range {
-  width: 100%;
-}
-
-.wm-side-select {
-  width: 100%;
-  padding: 8px 12px;
-  border-radius: 10px;
-  border: 1px solid var(--oc-border);
-  background: var(--oc-bg-card);
-  color: var(--oc-text-primary);
-  font-size: 0.75rem;
-  font-weight: 600;
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.15s ease;
-}
-
-.wm-side-select:focus {
-  border-color: rgba(139, 92, 246, 0.45);
-}
-
-.wm-side-toggle-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.wm-side-toggle-row .wm-side-label {
-  margin-bottom: 0;
-}
-
-.wm-side-empty {
-  padding: 20px 0;
-  text-align: center;
-}
-
-.wm-side-empty p {
-  font-size: 0.72rem;
-  color: var(--oc-text-muted);
+  margin: 12px 0 0;
   line-height: 1.5;
-  margin: 0;
-}
-
-/* Responsive: stack on narrow panels */
-@media (max-width: 900px) {
-  .wm-live-split {
-    flex-direction: column;
-  }
-  .wm-live-sidebar {
-    width: 100%;
-    max-height: none;
-  }
+  text-align: center;
 }
 
 /* ── Live slot — actual widget with highlight ring ── */
