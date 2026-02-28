@@ -5140,6 +5140,85 @@ body.wm-resizing {
   opacity: 0.5;
 }
 
+/* ══════════════════════════════════════════════════════════════
+   MINIMAL MODE — Simple, modern, always readable
+   ══════════════════════════════════════════════════════════════ */
+.ov-chat-widget--minimal {
+  box-shadow: none;
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.ov-chat-widget--minimal .ov-chat-messages {
+  padding: 6px 0;
+  scrollbar-width: none;
+}
+.ov-chat-widget--minimal .ov-chat-messages::-webkit-scrollbar {
+  display: none;
+}
+/* Each message: clean inline with subtle bottom divider */
+.ov-chat-widget--minimal .ov-chat-msg {
+  gap: 0;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.12s ease;
+}
+.ov-chat-widget--minimal .ov-chat-msg:last-child {
+  border-bottom: none;
+}
+.ov-chat-widget--minimal .ov-chat-msg:hover {
+  background: rgba(255,255,255,0.04);
+}
+/* Body: inline flow, wrapping naturally */
+.ov-chat-widget--minimal .ov-chat-msg-body {
+  display: inline;
+  line-height: 1.5;
+}
+/* Username: no colon, spaced out, slightly smaller */
+.ov-chat-widget--minimal .ov-chat-username {
+  font-size: 0.92em;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  margin-right: 6px;
+}
+.ov-chat-widget--minimal .ov-chat-username::after {
+  content: none;
+}
+/* Message text: clean, readable, inherits font size */
+.ov-chat-widget--minimal .ov-chat-text {
+  font-size: 1em;
+  opacity: 0.92;
+  font-weight: 400;
+  letter-spacing: 0.005em;
+}
+/* Empty state */
+.ov-chat-widget--minimal .ov-chat-empty-hint {
+  opacity: 0.4;
+  font-size: 0.85em;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+/* Minimal raid: left-border accent, inline */
+.ov-chat-raid--minimal {
+  border-radius: 0 !important;
+  animation: none !important;
+}
+.ov-chat-raid--minimal::before {
+  display: none;
+}
+.ov-chat-raid--minimal .ov-chat-username::after {
+  content: none;
+}
+.ov-chat-raid-count {
+  display: inline-block;
+  font-size: 0.75em;
+  font-weight: 700;
+  color: #d8b4fe;
+  background: rgba(168,85,247,0.18);
+  padding: 1px 6px;
+  border-radius: 8px;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
 .ov-chat-cfg-section {
   border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px;

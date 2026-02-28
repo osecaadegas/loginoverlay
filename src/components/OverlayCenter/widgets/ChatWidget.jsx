@@ -231,26 +231,27 @@ export default function ChatWidget({ config, theme }) {
   const scrollRef = useRef(null);
   const maxMessages = c.maxMessages || 50;
   const isClean = c.chatStyle === 'clean';
+  const isMinimal = c.chatStyle === 'minimal';
 
   /* Style config */
-  const bgColor = c.bgColor || (isClean ? 'rgba(20,25,46,0.92)' : 'rgba(15,23,42,0.95)');
+  const bgColor = c.bgColor || (isMinimal ? 'rgba(10,10,18,0.85)' : isClean ? 'rgba(20,25,46,0.92)' : 'rgba(15,23,42,0.95)');
   const textColor = c.textColor || '#e2e8f0';
   const headerBg = c.headerBg || 'rgba(30,41,59,0.5)';
   const headerText = c.headerText || '#94a3b8';
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize || (isClean ? 14 : 13);
-  const msgSpacing = c.msgSpacing || (isClean ? 4 : 2);
-  const borderRadius = c.borderRadius ?? (isClean ? 14 : 12);
-  const borderWidth = c.borderWidth ?? (isClean ? 2 : 1);
-  const borderColor = c.borderColor || (isClean ? 'rgba(80,90,140,0.35)' : 'rgba(51,65,85,0.5)');
-  const showHeader = isClean ? false : c.showHeader !== false;
-  const showLegend = isClean ? false : c.showLegend !== false;
-  const showBadges = isClean ? false : c.showBadges !== false;
+  const fontSize = c.fontSize || (isMinimal ? 15 : isClean ? 14 : 13);
+  const msgSpacing = c.msgSpacing || (isMinimal ? 1 : isClean ? 4 : 2);
+  const borderRadius = c.borderRadius ?? (isMinimal ? 10 : isClean ? 14 : 12);
+  const borderWidth = c.borderWidth ?? (isMinimal ? 0 : isClean ? 2 : 1);
+  const borderColor = c.borderColor || (isMinimal ? 'transparent' : isClean ? 'rgba(80,90,140,0.35)' : 'rgba(51,65,85,0.5)');
+  const showHeader = isMinimal ? false : isClean ? false : c.showHeader !== false;
+  const showLegend = isMinimal ? false : isClean ? false : c.showLegend !== false;
+  const showBadges = isMinimal ? false : isClean ? false : c.showBadges !== false;
   const width = c.width || 350;
   const height = c.height || 500;
   const nameBold = c.nameBold ?? true;
-  const msgLineHeight = c.msgLineHeight ?? (isClean ? 1.55 : 1.45);
-  const msgPadH = c.msgPadH ?? (isClean ? 14 : 10);
+  const msgLineHeight = c.msgLineHeight ?? (isMinimal ? 1.5 : isClean ? 1.55 : 1.45);
+  const msgPadH = c.msgPadH ?? (isMinimal ? 12 : isClean ? 14 : 10);
 
   const handleMessage = useCallback((msg) => {
     setMessages(prev => {
@@ -293,7 +294,7 @@ export default function ChatWidget({ config, theme }) {
     width: '100%',
     height: '100%',
     background: bgColor,
-    border: `${borderWidth}px solid ${borderColor}`,
+    border: borderWidth ? `${borderWidth}px solid ${borderColor}` : 'none',
     borderRadius: `${borderRadius}px`,
     fontFamily,
     fontSize: `${fontSize}px`,
@@ -304,8 +305,10 @@ export default function ChatWidget({ config, theme }) {
     filter: filterStyle,
   };
 
+  const modeClass = isMinimal ? ' ov-chat-widget--minimal' : isClean ? ' ov-chat-widget--clean' : '';
+
   return (
-    <div className={`ov-chat-widget${isClean ? ' ov-chat-widget--clean' : ''}`} style={style}>
+    <div className={`ov-chat-widget${modeClass}`} style={style}>
       {showHeader && (
         <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
           <span className="ov-chat-header-title">Live Chat</span>
@@ -339,6 +342,31 @@ export default function ChatWidget({ config, theme }) {
             const raidBorder = c.raidBorderColor || '#a855f7';
             const raidText = c.raidTextColor || '#ffffff';
             const showAvatar = c.showRaidAvatar !== false;
+
+            /* Minimal raid: simple inline with subtle highlight */
+            if (isMinimal) {
+              return (
+                <div key={msg.id} className="ov-chat-msg ov-chat-raid ov-chat-raid--minimal" style={{
+                  padding: `${msgSpacing + 3}px ${msgPadH}px`,
+                  background: raidBg + '22',
+                  borderLeft: `3px solid ${raidBorder}`,
+                  margin: `${msgSpacing}px 0`,
+                }}>
+                  <div className="ov-chat-msg-body">
+                    <span className="ov-chat-username" style={{ color: raidText, fontWeight: 700 }}>
+                      {msg.username}
+                    </span>
+                    <span className="ov-chat-text" style={{ color: raidText, opacity: 0.85 }}>
+                      {msg.message}
+                    </span>
+                    {msg.raidViewers > 0 && (
+                      <span className="ov-chat-raid-count">{msg.raidViewers}</span>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
             return (
               <div key={msg.id} className="ov-chat-msg ov-chat-raid" style={{
                 padding: `${msgSpacing + 4}px 10px`,

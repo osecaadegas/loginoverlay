@@ -98,15 +98,15 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
               📺 Classic
             </button>
             <button
-              className={`ov-chat-style-btn${c.chatStyle === 'clean' ? ' ov-chat-style-btn--active' : ''}`}
-              onClick={() => set('chatStyle', 'clean')}
+              className={`ov-chat-style-btn${c.chatStyle === 'minimal' ? ' ov-chat-style-btn--active' : ''}`}
+              onClick={() => set('chatStyle', 'minimal')}
             >
-              ✨ Clean
+              ✦ Minimal
             </button>
           </div>
           <p className="oc-config-hint" style={{ marginBottom: 12 }}>
-            {c.chatStyle === 'clean'
-              ? 'Clean mode: no badges, no header/legend — just names and messages. Pure OBS look.'
+            {c.chatStyle === 'minimal'
+              ? 'Minimal mode: ultra-clean modern look — perfect readability at any size.'
               : 'Classic mode: header bar, platform badges, and legend shown.'}
           </p>
 

@@ -224,10 +224,13 @@ registerWidget({
   category: 'stream',
   component: ChatWidget,
   configPanel: ChatConfig,
-  styles: [{ id: 'v1', icon: '💬', label: 'Classic' }],
-  styleConfigKey: 'displayStyle',
+  styles: [
+    { id: 'classic', icon: '📺', label: 'Classic' },
+    { id: 'minimal', icon: '✦', label: 'Minimal' },
+  ],
+  styleConfigKey: 'chatStyle',
   defaults: {
-    chatStyle: 'clean',
+    chatStyle: 'classic',
     twitchEnabled: false,
     twitchChannel: '',
     youtubeEnabled: false,
