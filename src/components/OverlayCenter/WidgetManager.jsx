@@ -653,10 +653,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
                   <div className="wm-slider-grid">
                     {[
-                      { label: 'Left (X)', field: 'position_x', min: 0, max: 1920, val: Math.round(w.position_x) },
-                      { label: 'Top (Y)', field: 'position_y', min: 0, max: 1080, val: Math.round(w.position_y) },
-                      { label: 'Width',    field: 'width',      min: 0, max: 1920, val: Math.round(w.width) },
-                      { label: 'Height',   field: 'height',     min: 0, max: 1080, val: Math.round(w.height) },
+                      { label: 'Left (X)', field: 'position_x', min: -1920, max: 3840, val: Math.round(w.position_x) },
+                      { label: 'Top (Y)', field: 'position_y', min: -1080, max: 2160, val: Math.round(w.position_y) },
+                      { label: 'Width',    field: 'width',      min: 20, max: 3840, val: Math.round(w.width) },
+                      { label: 'Height',   field: 'height',     min: 20, max: 2160, val: Math.round(w.height) },
                       { label: 'Layer (Z)', field: 'z_index',   min: 0, max: 100,  val: w.z_index },
                     ].map(s => (
                       <label key={s.field} className="wm-slider-field">
