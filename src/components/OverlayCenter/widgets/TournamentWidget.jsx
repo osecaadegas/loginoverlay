@@ -18,26 +18,28 @@ export default function TournamentWidget({ config, theme }) {
   const matches = data.matches || [];
 
   /* ─── Layout mode ─── */
-  const layout = c.layout || 'grid'; // 'grid' | 'showcase' | 'vertical' | 'bracket'
+  const layout = c.layout || 'grid'; // 'grid' | 'showcase' | 'vertical' | 'bracket' | 'neon' | 'minimal'
+  const isNeonLayout = layout === 'neon';
+  const isMinimalLayout = layout === 'minimal';
 
   /* ─── Style config ─── */
   const showBg = c.showBg !== false;
-  const bgColor = showBg ? (c.bgColor || '#13151e') : 'transparent';
-  const cardBg = c.cardBg || '#1a1d2e';
-  const cardBorder = c.cardBorder || 'rgba(255,255,255,0.08)';
-  const cardRadius = c.cardRadius ?? 10;
+  const bgColor = showBg ? (c.bgColor || (isNeonLayout ? '#050510' : isMinimalLayout ? '#0a0a10' : '#13151e')) : 'transparent';
+  const cardBg = c.cardBg || (isNeonLayout ? 'rgba(0,255,200,0.04)' : isMinimalLayout ? 'rgba(255,255,255,0.03)' : '#1a1d2e');
+  const cardBorder = c.cardBorder || (isNeonLayout ? 'rgba(0,255,200,0.2)' : isMinimalLayout ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.08)');
+  const cardRadius = c.cardRadius ?? (isMinimalLayout ? 4 : 10);
   const cardBorderWidth = c.cardBorderWidth ?? 1;
-  const nameColor = c.nameColor || '#ffffff';
-  const nameSize = c.nameSize ?? 12;
-  const multiColor = c.multiColor || '#facc15';
+  const nameColor = c.nameColor || (isNeonLayout ? '#ccffee' : '#ffffff');
+  const nameSize = c.nameSize ?? (isMinimalLayout ? 11 : 12);
+  const multiColor = c.multiColor || (isNeonLayout ? '#00ffcc' : '#facc15');
   const multiSize = c.multiSize ?? 13;
-  const tabBg = c.tabBg || 'rgba(255,255,255,0.06)';
-  const tabActiveBg = c.tabActiveBg || 'rgba(255,255,255,0.15)';
+  const tabBg = c.tabBg || (isNeonLayout ? 'rgba(0,255,200,0.05)' : 'rgba(255,255,255,0.06)');
+  const tabActiveBg = c.tabActiveBg || (isNeonLayout ? 'rgba(0,255,200,0.15)' : 'rgba(255,255,255,0.15)');
   const tabColor = c.tabColor || '#94a3b8';
-  const tabActiveColor = c.tabActiveColor || '#ffffff';
-  const tabBorder = c.tabBorder || 'rgba(255,255,255,0.12)';
+  const tabActiveColor = c.tabActiveColor || (isNeonLayout ? '#00ffcc' : '#ffffff');
+  const tabBorder = c.tabBorder || (isNeonLayout ? 'rgba(0,255,200,0.15)' : 'rgba(255,255,255,0.12)');
   const eliminatedOpacity = c.eliminatedOpacity ?? 0.35;
-  const showSlotName = c.showSlotName !== false;
+  const showSlotName = isMinimalLayout ? false : c.showSlotName !== false;
   const slotNameColor = c.slotNameColor || '#ffffff';
   const slotNameSize = c.slotNameSize ?? 10;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
@@ -46,8 +48,8 @@ export default function TournamentWidget({ config, theme }) {
   const borderColor = showBg ? (c.borderColor || 'transparent') : 'transparent';
   const gap = c.cardGap ?? 6;
   const padding = c.containerPadding ?? 6;
-  const swordColor = c.swordColor || '#eab308';
-  const swordBg = c.swordBg || 'rgba(0,0,0,0.85)';
+  const swordColor = c.swordColor || (isNeonLayout ? '#00ffcc' : '#eab308');
+  const swordBg = c.swordBg || (isNeonLayout ? 'rgba(0,255,200,0.1)' : 'rgba(0,0,0,0.85)');
   const swordSize = c.swordSize ?? 20;
   const xIconColor = c.xIconColor || '#eab308';
   const xIconBg = c.xIconBg || 'rgba(0,0,0,0.7)';
@@ -624,12 +626,13 @@ export default function TournamentWidget({ config, theme }) {
   };
 
   return (
-    <div className="tw-root" style={{
+    <div className={`tw-root${isNeonLayout ? ' tw-root--neon' : isMinimalLayout ? ' tw-root--minimal' : ''}`} style={{
       width: '100%', height: '100%', fontFamily,
       background: bgColor, borderRadius: `${borderRadius}px`,
       border: `${borderWidth}px solid ${borderColor}`,
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
+      ...(isNeonLayout ? { boxShadow: `0 0 30px rgba(0,255,200,0.06), inset 0 0 40px rgba(0,255,200,0.02)` } : {}),
     }}>
       {/* Injected keyframes */}
       <style>{`
@@ -646,7 +649,7 @@ export default function TournamentWidget({ config, theme }) {
           display: 'flex', justifyContent: 'center', flexShrink: 0,
         }}>
           <div style={{
-            display: 'inline-flex', borderRadius: 6, overflow: 'hidden',
+            display: 'inline-flex', borderRadius: isMinimalLayout ? 4 : 6, overflow: 'hidden',
             background: tabBg, border: `1px solid ${tabBorder}`,
           }}>
             {phaseOrder.filter(p => phases.some(ph => ph.phase === p)).map(p => {
@@ -664,6 +667,7 @@ export default function TournamentWidget({ config, theme }) {
                     border: 'none', cursor: 'pointer',
                     transition: 'all 0.15s', whiteSpace: 'nowrap',
                     borderRadius: isActive ? 4 : 0,
+                    ...(isNeonLayout && isActive ? { textShadow: `0 0 8px rgba(0,255,200,0.5)` } : {}),
                   }}>
                   {phaseLabels[p] || p}
                 </button>
@@ -676,7 +680,8 @@ export default function TournamentWidget({ config, theme }) {
       {/* ── Layout-specific content ── */}
       {layout === 'bracket' ? renderBracket()
         : layout === 'showcase' ? renderShowcase()
-        : layout === 'vertical' ? renderVertical()
+        : (layout === 'vertical' || layout === 'minimal') ? renderVertical()
+        : (layout === 'neon' || layout === 'grid') ? renderGrid()
         : renderGrid()}
     </div>
   );

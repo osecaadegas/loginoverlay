@@ -230,28 +230,32 @@ export default function ChatWidget({ config, theme }) {
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef(null);
   const maxMessages = c.maxMessages || 50;
-  const isClean = c.chatStyle === 'clean';
-  const isMinimal = c.chatStyle === 'minimal';
+  const chatStyle = c.chatStyle || 'classic';
+  const isClean = chatStyle === 'clean';
+  const isMinimal = chatStyle === 'minimal';
+  const isBubble = chatStyle === 'bubble';
+  const isNeon = chatStyle === 'neon';
+  const isCompact = chatStyle === 'compact';
 
   /* Style config */
-  const bgColor = c.bgColor || (isMinimal ? 'rgba(10,10,18,0.85)' : isClean ? 'rgba(20,25,46,0.92)' : 'rgba(15,23,42,0.95)');
+  const bgColor = c.bgColor || (isMinimal ? 'rgba(10,10,18,0.85)' : isNeon ? 'rgba(5,5,16,0.95)' : isBubble ? 'rgba(15,18,30,0.9)' : isCompact ? 'rgba(12,15,25,0.92)' : isClean ? 'rgba(20,25,46,0.92)' : 'rgba(15,23,42,0.95)');
   const textColor = c.textColor || '#e2e8f0';
   const headerBg = c.headerBg || 'rgba(30,41,59,0.5)';
   const headerText = c.headerText || '#94a3b8';
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize || (isMinimal ? 15 : isClean ? 14 : 13);
-  const msgSpacing = c.msgSpacing || (isMinimal ? 1 : isClean ? 4 : 2);
-  const borderRadius = c.borderRadius ?? (isMinimal ? 10 : isClean ? 14 : 12);
-  const borderWidth = c.borderWidth ?? (isMinimal ? 0 : isClean ? 2 : 1);
-  const borderColor = c.borderColor || (isMinimal ? 'transparent' : isClean ? 'rgba(80,90,140,0.35)' : 'rgba(51,65,85,0.5)');
-  const showHeader = isMinimal ? false : isClean ? false : c.showHeader !== false;
-  const showLegend = isMinimal ? false : isClean ? false : c.showLegend !== false;
-  const showBadges = isMinimal ? false : isClean ? false : c.showBadges !== false;
+  const fontSize = c.fontSize || (isMinimal ? 15 : isCompact ? 11 : isClean ? 14 : 13);
+  const msgSpacing = c.msgSpacing || (isMinimal ? 1 : isBubble ? 6 : isCompact ? 1 : isClean ? 4 : 2);
+  const borderRadius = c.borderRadius ?? (isMinimal ? 10 : isNeon ? 12 : isClean ? 14 : 12);
+  const borderWidth = c.borderWidth ?? (isMinimal ? 0 : isNeon ? 1 : isClean ? 2 : 1);
+  const borderColor = c.borderColor || (isMinimal ? 'transparent' : isNeon ? 'rgba(99,102,241,0.4)' : isClean ? 'rgba(80,90,140,0.35)' : 'rgba(51,65,85,0.5)');
+  const showHeader = (isMinimal || isCompact) ? false : isClean ? false : c.showHeader !== false;
+  const showLegend = (isMinimal || isCompact) ? false : isClean ? false : c.showLegend !== false;
+  const showBadges = (isMinimal || isCompact) ? false : isClean ? false : c.showBadges !== false;
   const width = c.width || 350;
   const height = c.height || 500;
   const nameBold = c.nameBold ?? true;
-  const msgLineHeight = c.msgLineHeight ?? (isMinimal ? 1.5 : isClean ? 1.55 : 1.45);
-  const msgPadH = c.msgPadH ?? (isMinimal ? 12 : isClean ? 14 : 10);
+  const msgLineHeight = c.msgLineHeight ?? (isMinimal ? 1.5 : isCompact ? 1.3 : isClean ? 1.55 : 1.45);
+  const msgPadH = c.msgPadH ?? (isMinimal ? 12 : isCompact ? 6 : isClean ? 14 : 10);
 
   const handleMessage = useCallback((msg) => {
     setMessages(prev => {
@@ -303,9 +307,15 @@ export default function ChatWidget({ config, theme }) {
     flexDirection: 'column',
     overflow: 'hidden',
     filter: filterStyle,
+    ...(isNeon ? { boxShadow: `0 0 15px rgba(99,102,241,0.15), inset 0 0 30px rgba(99,102,241,0.05)` } : {}),
   };
 
-  const modeClass = isMinimal ? ' ov-chat-widget--minimal' : isClean ? ' ov-chat-widget--clean' : '';
+  const modeClass = isMinimal ? ' ov-chat-widget--minimal'
+    : isClean ? ' ov-chat-widget--clean'
+    : isBubble ? ' ov-chat-widget--bubble'
+    : isNeon ? ' ov-chat-widget--neon'
+    : isCompact ? ' ov-chat-widget--compact'
+    : '';
 
   return (
     <div className={`ov-chat-widget${modeClass}`} style={style}>
@@ -430,6 +440,57 @@ export default function ChatWidget({ config, theme }) {
           }
 
           /* ── Normal message ── */
+          if (isBubble) {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--bubble" style={{ padding: `${msgSpacing}px ${msgPadH}px` }}>
+                <div className="ov-chat-bubble-avatar" style={{ background: nameColor + '33', color: nameColor }}>
+                  {msg.username.charAt(0).toUpperCase()}
+                </div>
+                <div className="ov-chat-bubble-body">
+                  <span className="ov-chat-username" style={{ color: nameColor, fontWeight: 700, fontSize: '0.82em' }}>
+                    {msg.username}
+                  </span>
+                  <div className="ov-chat-bubble-content" style={{ background: 'rgba(255,255,255,0.06)', borderRadius: '12px 12px 12px 2px', padding: '6px 10px' }}>
+                    <span className="ov-chat-text">{msg.message}</span>
+                  </div>
+                </div>
+              </div>
+            );
+          }
+
+          if (isNeon) {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--neon" style={{
+                padding: `${msgSpacing + 2}px ${msgPadH}px`,
+                borderLeft: `2px solid ${nameColor}`,
+                margin: `${msgSpacing}px 6px`,
+                background: nameColor + '0a',
+              }}>
+                {showBadges && (
+                  <span className="ov-chat-badge" style={{ background: plt.color + '33', color: plt.color }}>{plt.icon}</span>
+                )}
+                <div className="ov-chat-msg-body">
+                  <span className="ov-chat-username" style={{
+                    color: nameColor, fontWeight: 700,
+                    textShadow: `0 0 8px ${nameColor}66`,
+                  }}>{msg.username}</span>
+                  <span className="ov-chat-text" style={{ textShadow: '0 0 4px rgba(255,255,255,0.1)' }}>{msg.message}</span>
+                </div>
+              </div>
+            );
+          }
+
+          if (isCompact) {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--compact" style={{ padding: `${msgSpacing}px ${msgPadH}px` }}>
+                <span className="ov-chat-username" style={{ color: nameColor, fontWeight: 600, fontSize: '0.9em' }}>
+                  {msg.username}:
+                </span>
+                <span className="ov-chat-text" style={{ marginLeft: '4px' }}>{msg.message}</span>
+              </div>
+            );
+          }
+
           return (
             <div key={msg.id} className="ov-chat-msg" style={{ padding: `${msgSpacing}px ${msgPadH}px` }}>
               {showBadges && (

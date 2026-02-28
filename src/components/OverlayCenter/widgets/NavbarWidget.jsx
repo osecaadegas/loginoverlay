@@ -134,100 +134,135 @@ export default function NavbarWidget({ config }) {
 
   /* ─── Style vars from config ─── */
   const isMetal = (c.displayStyle === 'metallic');
-  const accentColor = c.accentColor || (isMetal ? '#7c8dff' : '#f59e0b');
+  const isNeon = (c.displayStyle === 'neon');
+  const isGlass = (c.displayStyle === 'glass');
+  const isRetro = (c.displayStyle === 'retro');
+  const accentColor = c.accentColor || (isMetal ? '#7c8dff' : isNeon ? '#00ffcc' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : '#f59e0b');
   const accentColorRGB = hexToRgb(accentColor);
-  const bgColor = c.bgColor || (isMetal ? '#14162a' : '#111318');
-  const textColor = c.textColor || (isMetal ? '#d0d4e4' : '#f1f5f9');
-  const mutedColor = c.mutedColor || (isMetal ? '#5a6180' : '#94a3b8');
+  const bgColor = c.bgColor || (isMetal ? '#14162a' : isNeon ? '#050510' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : '#111318');
+  const textColor = c.textColor || (isMetal ? '#d0d4e4' : isNeon ? '#e0ffe8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : '#f1f5f9');
+  const mutedColor = c.mutedColor || (isMetal ? '#5a6180' : isNeon ? '#1a6655' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : '#94a3b8');
   const borderColor = c.borderColor || accentColor;
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const fontFamily = c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : "'Inter', sans-serif");
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
-  const borderWidth = c.borderWidth ?? (isMetal ? 1 : 3);
+  const borderWidth = c.borderWidth ?? (isMetal ? 1 : isNeon ? 2 : isGlass ? 1 : isRetro ? 3 : 3);
   const barHeight = c.barHeight ?? 64;
-  const borderRadius = c.borderRadius ?? (isMetal ? 16 : 999);
-  const fontSize = c.fontSize ?? 12;
-  const ctaColor = c.ctaColor || '#f43f5e';
+  const borderRadius = c.borderRadius ?? (isMetal ? 16 : isNeon ? 12 : isGlass ? 20 : isRetro ? 4 : 999);
+  const fontSize = c.fontSize ?? (isRetro ? 10 : 12);
+  const ctaColor = c.ctaColor || (isRetro ? '#ff4500' : '#f43f5e');
   const cryptoUpColor = c.cryptoUpColor || '#34d399';
   const cryptoDownColor = c.cryptoDownColor || '#f87171';
 
   const filterStr = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
 
   const barOuter = isMetal ? {
-    width: '100%',
-    maxWidth: c.maxWidth || 1200,
-    borderRadius,
+    width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
     background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(124,141,255,0.06)`,
-    filter: filterStr,
-    fontFamily,
-    overflow: 'visible',
+    filter: filterStr, fontFamily, overflow: 'visible',
     border: `1px solid rgba(255,255,255,0.08)`,
+  } : isNeon ? {
+    width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
+    background: `linear-gradient(135deg, ${accentColor}44, ${accentColor}11)`,
+    padding: `${borderWidth}px`,
+    boxShadow: `0 0 30px ${accentColor}33, 0 0 60px ${accentColor}11, inset 0 0 20px ${accentColor}08`,
+    filter: filterStr, fontFamily, overflow: 'visible',
+    border: `1px solid ${accentColor}55`,
+  } : isGlass ? {
+    width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
+    background: `linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))`,
+    padding: `${borderWidth}px`,
+    boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)`,
+    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+    filter: filterStr, fontFamily, overflow: 'visible',
+    border: `1px solid rgba(255,255,255,0.18)`,
+  } : isRetro ? {
+    width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
+    background: `${borderColor}`,
+    padding: `${borderWidth}px`,
+    boxShadow: `4px 4px 0 #000, 8px 8px 0 rgba(0,0,0,0.3)`,
+    filter: filterStr, fontFamily, overflow: 'visible',
+    border: `${borderWidth}px solid #000`,
+    imageRendering: 'pixelated',
   } : {
-    width: '100%',
-    maxWidth: c.maxWidth || 1200,
-    borderRadius,
+    width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
     background: `linear-gradient(to bottom, ${borderColor}e6, ${borderColor}cc)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 18px 40px rgba(0,0,0,0.8)`,
-    filter: filterStr,
-    fontFamily,
-    overflow: 'visible',
+    filter: filterStr, fontFamily, overflow: 'visible',
   };
 
   const barInner = isMetal ? {
-    display: 'flex',
-    alignItems: 'center',
-    height: barHeight,
+    display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(170deg, #1a1d32 0%, ${bgColor} 30%, #181b2f 60%, ${bgColor} 100%)`,
-    padding: '0 24px',
-    color: textColor,
-    fontSize,
-    gap: 0,
-    overflow: 'visible',
-    position: 'relative',
+    padding: '0 24px', color: textColor, fontSize, gap: 0,
+    overflow: 'visible', position: 'relative',
+  } : isNeon ? {
+    display: 'flex', alignItems: 'center', height: barHeight,
+    borderRadius: borderRadius - borderWidth,
+    background: `linear-gradient(170deg, ${bgColor} 0%, #0a0a22 50%, ${bgColor} 100%)`,
+    padding: '0 22px', color: textColor, fontSize, gap: 0,
+    overflow: 'visible', position: 'relative',
+  } : isGlass ? {
+    display: 'flex', alignItems: 'center', height: barHeight,
+    borderRadius: borderRadius - borderWidth,
+    background: `linear-gradient(135deg, rgba(15,23,42,0.7), rgba(15,23,42,0.5))`,
+    backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+    padding: '0 22px', color: textColor, fontSize, gap: 0,
+    overflow: 'visible', position: 'relative',
+  } : isRetro ? {
+    display: 'flex', alignItems: 'center', height: barHeight,
+    borderRadius: Math.max(borderRadius - borderWidth, 0),
+    background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
+    padding: '0 16px', color: textColor, fontSize, gap: 0,
+    overflow: 'visible', position: 'relative',
+    borderTop: '2px solid rgba(255,255,255,0.15)',
   } : {
-    display: 'flex',
-    alignItems: 'center',
-    height: barHeight,
+    display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
-    padding: '0 20px',
-    color: textColor,
-    fontSize,
-    gap: 0,
+    padding: '0 20px', color: textColor, fontSize, gap: 0,
     overflow: 'visible',
   };
 
   const sep = isMetal ? {
-    width: 1,
-    height: barHeight * 0.5,
+    width: 1, height: barHeight * 0.5,
     background: `linear-gradient(to bottom, transparent, rgba(124,141,255,0.25), transparent)`,
-    flexShrink: 0,
-    margin: '0 18px',
+    flexShrink: 0, margin: '0 18px',
+  } : isNeon ? {
+    width: 1, height: barHeight * 0.5,
+    background: `linear-gradient(to bottom, transparent, ${accentColor}55, transparent)`,
+    flexShrink: 0, margin: '0 14px',
+    boxShadow: `0 0 6px ${accentColor}33`,
+  } : isGlass ? {
+    width: 1, height: barHeight * 0.5,
+    background: `linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)`,
+    flexShrink: 0, margin: '0 16px',
+  } : isRetro ? {
+    width: 2, height: barHeight * 0.6,
+    background: `${accentColor}88`,
+    flexShrink: 0, margin: '0 10px',
   } : {
-    width: 1,
-    height: barHeight * 0.55,
+    width: 1, height: barHeight * 0.55,
     background: `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
-    flexShrink: 0,
-    margin: '0 16px',
+    flexShrink: 0, margin: '0 16px',
   };
 
   return (
     <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
       <div style={barOuter}>
         <div style={barInner}>
-          {/* Metallic shine overlay (CSS pseudo-element equivalent) */}
+          {/* Metallic shine overlay */}
           {isMetal && (
             <div style={{
               position: 'absolute', inset: 0,
               borderRadius: borderRadius - borderWidth,
               background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.015) 30%, rgba(255,255,255,0.04) 48%, rgba(255,255,255,0.015) 52%, transparent 70%)',
-              pointerEvents: 'none',
-              zIndex: 0,
+              pointerEvents: 'none', zIndex: 0,
             }} />
           )}
           {isMetal && (
@@ -236,8 +271,34 @@ export default function NavbarWidget({ config }) {
               height: barHeight * 0.45,
               borderRadius: `${borderRadius - borderWidth}px ${borderRadius - borderWidth}px 0 0`,
               background: 'linear-gradient(180deg, rgba(255,255,255,0.03), transparent)',
-              pointerEvents: 'none',
-              zIndex: 0,
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+          )}
+          {/* Neon glow line */}
+          {isNeon && (
+            <div style={{
+              position: 'absolute', bottom: 0, left: '10%', right: '10%', height: 2,
+              background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+              boxShadow: `0 0 12px ${accentColor}66, 0 0 24px ${accentColor}22`,
+              borderRadius: 1, pointerEvents: 'none', zIndex: 0,
+            }} />
+          )}
+          {/* Glass frost overlay */}
+          {isGlass && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              borderRadius: borderRadius - borderWidth,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(255,255,255,0.04) 100%)',
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+          )}
+          {/* Retro scanlines */}
+          {isRetro && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              borderRadius: Math.max(borderRadius - borderWidth, 0),
+              background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)',
+              pointerEvents: 'none', zIndex: 0,
             }} />
           )}
 
@@ -248,23 +309,23 @@ export default function NavbarWidget({ config }) {
                 position: 'relative',
                 width: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
                 height: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
-                borderRadius: isMetal ? '14px' : '50%',
+                borderRadius: (isMetal || isNeon || isGlass) ? '14px' : isRetro ? '4px' : '50%',
                 background: 'transparent',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
+                ...(isNeon ? { boxShadow: `0 0 10px ${accentColor}44` } : {}),
               }}>
                 {c.avatarUrl ? (
                   <img src={c.avatarUrl} alt="" style={{
                     width: '100%', height: '100%',
-                    borderRadius: isMetal ? '14px' : '50%',
+                    borderRadius: (isMetal || isNeon || isGlass) ? '14px' : isRetro ? '4px' : '50%',
                     objectFit: 'cover',
+                    ...(isRetro ? { imageRendering: 'pixelated' } : {}),
                   }} />
                 ) : (
                   <div style={{
                     width: '100%', height: '100%',
-                    borderRadius: isMetal ? '14px' : '50%',
+                    borderRadius: (isMetal || isNeon || isGlass) ? '14px' : isRetro ? '4px' : '50%',
                     background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: fontSize * 0.7, fontWeight: 600, letterSpacing: '0.12em',
@@ -279,17 +340,26 @@ export default function NavbarWidget({ config }) {
               <span style={{
                 backgroundImage: isMetal
                   ? 'linear-gradient(135deg, #d4d8e8, #8a90b0, #e0e4f0, #a0a8c4)'
+                  : isNeon
+                  ? `linear-gradient(to right, ${accentColor}, #00ff88, ${accentColor})`
+                  : isGlass
+                  ? `linear-gradient(to right, #e0eaff, #93c5fd, #e0eaff)`
+                  : isRetro
+                  ? `linear-gradient(to right, #ff6b2b, #ffcc00, #ff6b2b)`
                   : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #ec4899, #a855f7)`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                fontSize: fontSize * 1.2, fontWeight: isMetal ? 700 : 600,
-                letterSpacing: isMetal ? '0.22em' : '0.18em', textTransform: 'uppercase',
+                fontSize: fontSize * 1.2, fontWeight: (isMetal || isRetro) ? 700 : 600,
+                letterSpacing: isMetal ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
+                ...(isNeon ? { textShadow: `0 0 20px ${accentColor}44`, filter: `drop-shadow(0 0 6px ${accentColor}33)` } : {}),
               }}>
                 {c.streamerName || 'STREAMER'}
               </span>
               {c.motto && (
                 <span style={{
                   marginTop: 2, fontSize: fontSize * 0.82, fontWeight: 600,
-                  letterSpacing: isMetal ? '0.4em' : '0.35em', textTransform: 'uppercase', color: mutedColor,
+                  letterSpacing: (isMetal || isNeon) ? '0.4em' : isRetro ? '0.2em' : '0.35em',
+                  textTransform: 'uppercase', color: mutedColor,
+                  ...(isNeon ? { textShadow: `0 0 6px ${mutedColor}66` } : {}),
                 }}>
                   {c.motto}
                 </span>
@@ -325,6 +395,30 @@ export default function NavbarWidget({ config }) {
                   color: textColor,
                   fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.28em',
                   boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(124,141,255,0.08)',
+                  flexShrink: 0,
+                } : isNeon ? {
+                  borderRadius: 8, padding: '6px 20px',
+                  background: `${accentColor}11`,
+                  border: `1px solid ${accentColor}44`,
+                  color: accentColor,
+                  fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.28em',
+                  boxShadow: `0 0 12px ${accentColor}22, inset 0 0 8px ${accentColor}08`,
+                  textShadow: `0 0 8px ${accentColor}66`,
+                  flexShrink: 0,
+                } : isGlass ? {
+                  borderRadius: 14, padding: '6px 20px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  backdropFilter: 'blur(8px)',
+                  color: textColor,
+                  fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.25em',
+                  flexShrink: 0,
+                } : isRetro ? {
+                  borderRadius: 2, padding: '6px 14px',
+                  background: '#000',
+                  border: `2px solid ${accentColor}88`,
+                  color: accentColor,
+                  fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.15em',
                   flexShrink: 0,
                 } : {
                   borderRadius: 999, padding: '6px 20px',
@@ -374,7 +468,7 @@ export default function NavbarWidget({ config }) {
                   bgColor={bgColor}
                   cryptoUpColor={cryptoUpColor}
                   cryptoDownColor={cryptoDownColor}
-                  metallic={isMetal}
+                  metallic={isMetal || isNeon || isGlass || isRetro}
                 />
                 {c.showCTA && <div style={sep} />}
               </>
@@ -390,6 +484,37 @@ export default function NavbarWidget({ config }) {
                 fontSize: fontSize * 0.82, fontWeight: 700,
                 letterSpacing: '0.24em', textTransform: 'uppercase',
                 boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(244,63,94,0.1)',
+                flexShrink: 0,
+              } : isNeon ? {
+                display: 'flex', alignItems: 'center', gap: 8,
+                borderRadius: 6, padding: '7px 18px',
+                background: `${ctaColor}15`,
+                border: `1px solid ${ctaColor}55`,
+                color: ctaColor,
+                fontSize: fontSize * 0.82, fontWeight: 700,
+                letterSpacing: '0.24em', textTransform: 'uppercase',
+                boxShadow: `0 0 14px ${ctaColor}33`,
+                textShadow: `0 0 8px ${ctaColor}66`,
+                flexShrink: 0,
+              } : isGlass ? {
+                display: 'flex', alignItems: 'center', gap: 8,
+                borderRadius: 14, padding: '7px 18px',
+                background: `${ctaColor}22`,
+                border: `1px solid ${ctaColor}33`,
+                backdropFilter: 'blur(6px)',
+                color: '#fff',
+                fontSize: fontSize * 0.82, fontWeight: 600,
+                letterSpacing: '0.24em', textTransform: 'uppercase',
+                flexShrink: 0,
+              } : isRetro ? {
+                display: 'flex', alignItems: 'center', gap: 6,
+                borderRadius: 2, padding: '6px 14px',
+                background: ctaColor,
+                border: '2px solid #000',
+                boxShadow: '2px 2px 0 #000',
+                color: '#fff',
+                fontSize: fontSize * 0.82, fontWeight: 700,
+                letterSpacing: '0.12em', textTransform: 'uppercase',
                 flexShrink: 0,
               } : {
                 display: 'flex', alignItems: 'center', gap: 8,

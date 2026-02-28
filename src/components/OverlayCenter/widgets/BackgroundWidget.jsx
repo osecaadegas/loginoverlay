@@ -78,8 +78,11 @@ const TEXTURES = {
 export default function BackgroundWidget({ config, theme }) {
   const c = config || {};
 
+  const displayStyle = c.displayStyle || 'v1';
+  const isSpecialBg = ['aurora', 'matrix', 'starfield', 'waves', 'geometric'].includes(displayStyle);
+
   const textureType = c.textureType || 'gradient';
-  const bgMode = c.bgMode || 'texture';        // 'texture' | 'image' | 'video'
+  const bgMode = isSpecialBg ? 'special' : (c.bgMode || 'texture');  // 'texture' | 'image' | 'video' | 'special'
   const imageUrl = c.imageUrl || '';
   const videoUrl = c.videoUrl || '';
   const imageFit = c.imageFit || 'cover';
@@ -182,6 +185,51 @@ export default function BackgroundWidget({ config, theme }) {
           }}
           onError={e => { e.target.style.display = 'none'; }}
         />
+      )}
+
+      {/* ── Special animated backgrounds ── */}
+      {bgMode === 'special' && displayStyle === 'aurora' && (
+        <div className="oc-bg-layer oc-bg-aurora" style={{
+          ...mediaStyle,
+          background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#0a0020'}, ${c.color2 || '#1a0040'}, ${c.color3 || '#002020'})`,
+        }}>
+          <div className="oc-bg-aurora-band oc-bg-aurora-1" style={{ '--aurora-c1': c.color2 || '#00ff88', '--aurora-c2': c.color3 || '#6366f1' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-2" style={{ '--aurora-c1': c.color3 || '#a855f7', '--aurora-c2': c.color1 || '#06b6d4' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-3" style={{ '--aurora-c1': c.color1 || '#22d3ee', '--aurora-c2': c.color2 || '#00ff88' }} />
+        </div>
+      )}
+
+      {bgMode === 'special' && displayStyle === 'matrix' && (
+        <div className="oc-bg-layer oc-bg-matrix" style={{ ...mediaStyle, background: c.color1 || '#000800' }}>
+          <MatrixRain color={c.color2 || '#00ff41'} speed={c.animSpeed || 8} />
+        </div>
+      )}
+
+      {bgMode === 'special' && displayStyle === 'starfield' && (
+        <div className="oc-bg-layer oc-bg-starfield" style={{ ...mediaStyle, background: c.color1 || '#000005' }}>
+          <StarfieldCanvas color={c.color2 || '#ffffff'} speed={c.animSpeed || 8} />
+        </div>
+      )}
+
+      {bgMode === 'special' && displayStyle === 'waves' && (
+        <div className="oc-bg-layer oc-bg-waves" style={{
+          ...mediaStyle,
+          background: c.color1 || '#0a0a2e',
+        }}>
+          <div className="oc-bg-wave oc-bg-wave-1" style={{ '--wave-color': c.color2 || 'rgba(99,102,241,0.15)' }} />
+          <div className="oc-bg-wave oc-bg-wave-2" style={{ '--wave-color': c.color3 || 'rgba(168,85,247,0.1)' }} />
+          <div className="oc-bg-wave oc-bg-wave-3" style={{ '--wave-color': c.color2 || 'rgba(59,130,246,0.08)' }} />
+        </div>
+      )}
+
+      {bgMode === 'special' && displayStyle === 'geometric' && (
+        <div className="oc-bg-layer oc-bg-geometric" style={{
+          ...mediaStyle,
+          background: c.color1 || '#0a0a1a',
+        }}>
+          <div className="oc-bg-geo-grid" style={{ '--geo-color': c.color2 || 'rgba(99,102,241,0.12)' }} />
+          <div className="oc-bg-geo-shapes" style={{ '--geo-accent': c.color3 || 'rgba(168,85,247,0.15)' }} />
+        </div>
       )}
 
       {/* ── Color overlay ── */}
@@ -354,6 +402,94 @@ function GlimpseLayer({ type, color, speed }) {
   }
 
   return null;
+}
+
+/* ═══════════════════════════════════════════════
+   MATRIX RAIN – CSS-animated falling characters
+   ═══════════════════════════════════════════════ */
+function MatrixRain({ color, speed }) {
+  const columns = useMemo(() => {
+    const cols = [];
+    const count = 30;
+    for (let i = 0; i < count; i++) {
+      const rng = seededRandom(i * 73 + 17);
+      cols.push({
+        x: (i / count) * 100 + rng() * (100 / count),
+        delay: rng() * 10,
+        dur: (rng() * 6 + 3) * ((100 - speed * 5) / 50 + 0.5),
+        opacity: rng() * 0.6 + 0.2,
+        chars: Array.from({ length: Math.floor(rng() * 12 + 8) }, () =>
+          String.fromCharCode(0x30A0 + Math.floor(rng() * 96))
+        ).join('\n'),
+        fontSize: Math.floor(rng() * 6 + 10),
+      });
+    }
+    return cols;
+  }, [speed]);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {columns.map((col, i) => (
+        <div key={i} style={{
+          position: 'absolute',
+          left: `${col.x}%`,
+          top: '-20%',
+          color,
+          fontSize: col.fontSize,
+          fontFamily: "'Courier New', monospace",
+          whiteSpace: 'pre',
+          lineHeight: 1.2,
+          opacity: col.opacity,
+          animation: `oc-fx-matrix-fall ${col.dur}s ${col.delay}s linear infinite`,
+          textShadow: `0 0 8px ${color}`,
+        }}>
+          {col.chars}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════
+   STARFIELD CANVAS – CSS-animated flying stars
+   ═══════════════════════════════════════════════ */
+function StarfieldCanvas({ color, speed }) {
+  const stars = useMemo(() => {
+    const arr = [];
+    const count = 80;
+    for (let i = 0; i < count; i++) {
+      const rng = seededRandom(i * 53 + 99);
+      const layer = Math.floor(rng() * 3); // 0=far, 1=mid, 2=near
+      arr.push({
+        x: rng() * 100,
+        y: rng() * 100,
+        size: (layer + 1) * (rng() * 0.8 + 0.6),
+        opacity: 0.3 + layer * 0.25 + rng() * 0.2,
+        dur: (8 - layer * 2) * ((100 - speed * 5) / 50 + 0.5),
+        delay: rng() * 5,
+      });
+    }
+    return arr;
+  }, [speed]);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
+      {stars.map((s, i) => (
+        <span key={i} style={{
+          position: 'absolute',
+          left: `${s.x}%`,
+          top: `${s.y}%`,
+          width: s.size,
+          height: s.size,
+          borderRadius: '50%',
+          background: color,
+          opacity: s.opacity,
+          boxShadow: `0 0 ${s.size * 2}px ${color}`,
+          animation: `oc-fx-starfield ${s.dur}s ${s.delay}s linear infinite`,
+        }} />
+      ))}
+    </div>
+  );
 }
 
 /* ─── Seeded PRNG for deterministic particles ─── */

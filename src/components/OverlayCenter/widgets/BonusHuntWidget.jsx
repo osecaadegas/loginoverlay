@@ -12,37 +12,41 @@ export default function BonusHuntWidget({ config, theme }) {
   }
 
   const c = config || {};
+  const ds = c.displayStyle || 'v1';
+  const isNeonBH = ds === 'v4_neon';
+  const isHorizontalBH = ds === 'v5_horizontal';
+  const isCompactBH = ds === 'v6_compact';
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
 
   /* ─── Custom style vars ─── */
-  const headerColor = c.headerColor || '#1e3a8a';
-  const headerAccent = c.headerAccent || '#60a5fa';
-  const countCardColor = c.countCardColor || '#1e3a8a';
-  const currentBonusColor = c.currentBonusColor || '#166534';
-  const currentBonusAccent = c.currentBonusAccent || '#86efac';
-  const listCardColor = c.listCardColor || '#581c87';
-  const listCardAccent = c.listCardAccent || '#d8b4fe';
-  const summaryColor = c.summaryColor || '#1e3a8a';
-  const totalPayColor = c.totalPayColor || '#eab308';
+  const headerColor = c.headerColor || (isNeonBH ? '#050510' : '#1e3a8a');
+  const headerAccent = c.headerAccent || (isNeonBH ? '#00ffcc' : '#60a5fa');
+  const countCardColor = c.countCardColor || (isNeonBH ? '#080818' : '#1e3a8a');
+  const currentBonusColor = c.currentBonusColor || (isNeonBH ? '#001a10' : '#166534');
+  const currentBonusAccent = c.currentBonusAccent || (isNeonBH ? '#00ffcc' : '#86efac');
+  const listCardColor = c.listCardColor || (isNeonBH ? '#0a0520' : '#581c87');
+  const listCardAccent = c.listCardAccent || (isNeonBH ? '#bf77ff' : '#d8b4fe');
+  const summaryColor = c.summaryColor || (isNeonBH ? '#050510' : '#1e3a8a');
+  const totalPayColor = c.totalPayColor || (isNeonBH ? '#00ffcc' : '#eab308');
   const totalPayText = c.totalPayText || '#ffffff';
   const superBadgeColor = c.superBadgeColor || '#eab308';
   const extremeBadgeColor = c.extremeBadgeColor || '#ef4444';
   const textColor = c.textColor || '#ffffff';
-  const mutedTextColor = c.mutedTextColor || '#93c5fd';
+  const mutedTextColor = c.mutedTextColor || (isNeonBH ? '#44aa88' : '#93c5fd');
   const statValueColor = c.statValueColor || '#ffffff';
-  const cardOutlineColor = c.cardOutlineColor || 'transparent';
-  const cardOutlineWidth = c.cardOutlineWidth ?? 2;
+  const cardOutlineColor = c.cardOutlineColor || (isNeonBH ? 'rgba(0,255,200,0.15)' : 'transparent');
+  const cardOutlineWidth = c.cardOutlineWidth ?? (isNeonBH ? 1 : 2);
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize ?? 13;
-  const cardRadius = c.cardRadius ?? 16;
-  const cardGap = c.cardGap ?? 12;
+  const fontSize = c.fontSize ?? (isCompactBH ? 11 : 13);
+  const cardRadius = c.cardRadius ?? (isCompactBH ? 8 : 16);
+  const cardGap = c.cardGap ?? (isCompactBH ? 6 : 12);
   const widgetWidth = c.widgetWidth ?? 400;
-  const cardPadding = c.cardPadding ?? 14;
-  const slotImageHeight = c.slotImageHeight ?? 180;
-  const listMaxHeight = c.listMaxHeight ?? 400;
+  const cardPadding = c.cardPadding ?? (isCompactBH ? 8 : 14);
+  const slotImageHeight = c.slotImageHeight ?? (isCompactBH ? 120 : 180);
+  const listMaxHeight = c.listMaxHeight ?? (isCompactBH ? 250 : 400);
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -103,8 +107,13 @@ export default function BonusHuntWidget({ config, theme }) {
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
 
+  const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
+    : isHorizontalBH ? ' oc-bonushunt--horizontal'
+    : isCompactBH ? ' oc-bonushunt--compact'
+    : '';
+
   return (
-    <div className="oc-widget-inner oc-bonushunt" style={rootStyle}>
+    <div className={`oc-widget-inner oc-bonushunt${bhModeClass}`} style={rootStyle}>
 
       {/* ═══ Header Card ═══ */}
       <div className="bht-card bht-header">

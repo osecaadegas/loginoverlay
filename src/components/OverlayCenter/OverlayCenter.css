@@ -7284,3 +7284,325 @@ body.wm-resizing {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NEW WIDGET STYLES — Chat, RTP, Tournament, BonusHunt, Background
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Chat: Bubble Style ─── */
+.ov-chat-widget--bubble .ov-chat-msg--bubble {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.ov-chat-bubble-avatar {
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.ov-chat-bubble-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.ov-chat-bubble-content {
+  word-break: break-word;
+}
+
+/* ─── Chat: Neon Style ─── */
+.ov-chat-widget--neon {
+  border: 1px solid rgba(99,102,241,0.3) !important;
+}
+.ov-chat-widget--neon .ov-chat-msg--neon {
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+/* ─── Chat: Compact Style ─── */
+.ov-chat-widget--compact .ov-chat-msg--compact {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ov-chat-widget--compact .ov-chat-messages {
+  gap: 0;
+}
+
+/* ─── RTP Stats: Vertical ─── */
+.rtp-stats-bar--vertical .rtp-stats-inner {
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 6px;
+}
+.rtp-stats-bar--vertical .rtp-stats-left {
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 4px;
+  border-bottom: 1px solid var(--rtp-divider, rgba(255,255,255,0.1));
+}
+.rtp-stats-bar--vertical .rtp-stats-right {
+  flex-direction: column;
+  gap: 4px;
+  align-items: stretch;
+}
+.rtp-stats-bar--vertical .rtp-stats-item {
+  justify-content: center;
+}
+
+/* ─── RTP Stats: Neon ─── */
+.rtp-stats-bar--neon .rtp-stats-inner {
+  border: 1px solid var(--rtp-accent, #00ffcc) !important;
+  box-shadow: 0 0 15px color-mix(in srgb, var(--rtp-accent, #00ffcc) 20%, transparent),
+              inset 0 0 20px color-mix(in srgb, var(--rtp-accent, #00ffcc) 5%, transparent);
+}
+.rtp-stats-bar--neon .rtp-stats-slot-name {
+  text-shadow: 0 0 8px var(--rtp-accent, #00ffcc);
+}
+.rtp-stats-bar--neon .rtp-stats-value {
+  text-shadow: 0 0 6px rgba(255,255,255,0.2);
+}
+.rtp-stats-bar--neon .rtp-stats-icon {
+  filter: drop-shadow(0 0 4px var(--rtp-accent, #00ffcc));
+}
+
+/* ─── RTP Stats: Minimal ─── */
+.rtp-stats-bar--minimal .rtp-stats-inner {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.rtp-stats-bar--minimal .rtp-stats-divider {
+  display: none;
+}
+.rtp-stats-bar--minimal .rtp-stats-icon {
+  display: none;
+}
+.rtp-stats-bar--minimal .rtp-stats-spinner {
+  display: none;
+}
+.rtp-stats-bar--minimal .rtp-stats-provider {
+  font-size: 0.85em;
+  opacity: 0.6;
+}
+
+/* ─── RTP Stats: Glass ─── */
+.rtp-stats-bar--glass .rtp-stats-inner {
+  background: linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02)) !important;
+  border: 1px solid rgba(255,255,255,0.15) !important;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.15);
+}
+
+/* ─── Tournament: Neon ─── */
+.tw-root--neon {
+  box-shadow: 0 0 30px rgba(0,255,200,0.06), inset 0 0 40px rgba(0,255,200,0.02);
+}
+.tw-root--neon .tw-match-card {
+  box-shadow: 0 0 10px rgba(0,255,200,0.08);
+}
+.tw-root--neon .tw-player-name {
+  text-shadow: 0 0 8px rgba(0,255,200,0.3);
+}
+.tw-root--neon .tw-multi {
+  text-shadow: 0 0 6px rgba(0,255,200,0.4);
+}
+
+/* ─── Tournament: Minimal ─── */
+.tw-root--minimal .tw-match-card,
+.tw-root--minimal .tw-match-inner {
+  background: transparent;
+}
+.tw-root--minimal .tw-slot-name {
+  display: none;
+}
+.tw-root--minimal .tw-sword-icon {
+  border-width: 1px;
+  opacity: 0.7;
+}
+
+/* ─── Bonus Hunt: Neon ─── */
+.oc-bonushunt--neon .bht-card {
+  box-shadow: 0 0 12px rgba(0,255,200,0.06);
+}
+.oc-bonushunt--neon .bht-title {
+  text-shadow: 0 0 10px rgba(0,255,200,0.4);
+}
+.oc-bonushunt--neon .bht-stat-value {
+  text-shadow: 0 0 8px rgba(0,255,200,0.3);
+}
+.oc-bonushunt--neon .bht-total-pay {
+  box-shadow: 0 0 20px rgba(0,255,200,0.15);
+}
+
+/* ─── Bonus Hunt: Horizontal ─── */
+.oc-bonushunt--horizontal {
+  flex-direction: row !important;
+  flex-wrap: wrap;
+}
+.oc-bonushunt--horizontal .bht-card {
+  flex: 1 1 200px;
+  min-width: 180px;
+}
+.oc-bonushunt--horizontal .bht-list-card {
+  flex-basis: 100%;
+}
+.oc-bonushunt--horizontal .bht-bonus-list {
+  max-height: 200px;
+}
+
+/* ─── Bonus Hunt: Compact ─── */
+.oc-bonushunt--compact .bht-card {
+  padding: 8px !important;
+}
+.oc-bonushunt--compact .bht-header-stats {
+  gap: 6px;
+}
+.oc-bonushunt--compact .bht-stat-box {
+  padding: 4px 8px;
+}
+.oc-bonushunt--compact .bht-current-img {
+  max-height: 80px;
+}
+.oc-bonushunt--compact .bht-bonus-card {
+  min-width: 80px;
+}
+.oc-bonushunt--compact .bht-bonus-card-img {
+  height: 60px;
+}
+
+/* ─── Background: Aurora ─── */
+.oc-bg-aurora {
+  overflow: hidden;
+}
+.oc-bg-aurora-band {
+  position: absolute;
+  width: 200%;
+  height: 60%;
+  opacity: 0.4;
+  filter: blur(60px);
+  border-radius: 50%;
+}
+.oc-bg-aurora-1 {
+  top: -20%;
+  left: -30%;
+  background: linear-gradient(90deg, var(--aurora-c1, #00ff88), transparent, var(--aurora-c2, #6366f1));
+  animation: oc-aurora-drift1 12s ease-in-out infinite alternate;
+}
+.oc-bg-aurora-2 {
+  top: 10%;
+  left: -10%;
+  background: linear-gradient(90deg, var(--aurora-c1, #a855f7), transparent, var(--aurora-c2, #06b6d4));
+  animation: oc-aurora-drift2 15s ease-in-out infinite alternate;
+}
+.oc-bg-aurora-3 {
+  top: 30%;
+  left: -50%;
+  background: linear-gradient(90deg, var(--aurora-c1, #22d3ee), transparent, var(--aurora-c2, #00ff88));
+  animation: oc-aurora-drift3 18s ease-in-out infinite alternate;
+}
+@keyframes oc-aurora-drift1 {
+  0%   { transform: translateX(-10%) translateY(0) rotate(-5deg); }
+  100% { transform: translateX(20%) translateY(15%) rotate(5deg); }
+}
+@keyframes oc-aurora-drift2 {
+  0%   { transform: translateX(10%) translateY(0) rotate(3deg); }
+  100% { transform: translateX(-15%) translateY(-10%) rotate(-3deg); }
+}
+@keyframes oc-aurora-drift3 {
+  0%   { transform: translateX(-5%) translateY(5%) rotate(-2deg); }
+  100% { transform: translateX(25%) translateY(-5%) rotate(4deg); }
+}
+
+/* ─── Background: Matrix Rain ─── */
+@keyframes oc-fx-matrix-fall {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(120vh); opacity: 0; }
+}
+
+/* ─── Background: Starfield ─── */
+@keyframes oc-fx-starfield {
+  0%   { transform: scale(0.5); opacity: 0; }
+  20%  { transform: scale(1); opacity: 1; }
+  80%  { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.5) translateX(10px); opacity: 0; }
+}
+
+/* ─── Background: Waves ─── */
+.oc-bg-waves {
+  overflow: hidden;
+}
+.oc-bg-wave {
+  position: absolute;
+  width: 200%;
+  height: 200%;
+  border-radius: 40%;
+  opacity: 0.6;
+}
+.oc-bg-wave-1 {
+  background: var(--wave-color, rgba(99,102,241,0.15));
+  bottom: -60%;
+  left: -30%;
+  animation: oc-wave-move 8s ease-in-out infinite;
+}
+.oc-bg-wave-2 {
+  background: var(--wave-color, rgba(168,85,247,0.1));
+  bottom: -65%;
+  left: -20%;
+  animation: oc-wave-move 10s ease-in-out infinite reverse;
+}
+.oc-bg-wave-3 {
+  background: var(--wave-color, rgba(59,130,246,0.08));
+  bottom: -55%;
+  left: -40%;
+  animation: oc-wave-move 12s ease-in-out infinite;
+  animation-delay: -3s;
+}
+@keyframes oc-wave-move {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(10deg) translateY(-3%); }
+}
+
+/* ─── Background: Geometric ─── */
+.oc-bg-geometric {
+  overflow: hidden;
+}
+.oc-bg-geo-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--geo-color, rgba(99,102,241,0.12)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--geo-color, rgba(99,102,241,0.12)) 1px, transparent 1px);
+  background-size: 60px 60px;
+  animation: oc-geo-grid-pulse 6s ease-in-out infinite;
+}
+.oc-bg-geo-shapes {
+  position: absolute;
+  inset: 0;
+  background-image:
+    conic-gradient(from 45deg at 25% 35%, var(--geo-accent, rgba(168,85,247,0.15)) 0deg, transparent 60deg, transparent 360deg),
+    conic-gradient(from 135deg at 75% 65%, var(--geo-accent, rgba(168,85,247,0.15)) 0deg, transparent 60deg, transparent 360deg),
+    conic-gradient(from 225deg at 50% 80%, var(--geo-accent, rgba(168,85,247,0.1)) 0deg, transparent 45deg, transparent 360deg);
+  animation: oc-geo-shapes-rotate 20s linear infinite;
+}
+@keyframes oc-geo-grid-pulse {
+  0%, 100% { opacity: 0.6; }
+  50%      { opacity: 1; }
+}
+@keyframes oc-geo-shapes-rotate {
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}

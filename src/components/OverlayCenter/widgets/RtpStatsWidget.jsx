@@ -113,12 +113,17 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
   }, [slotName]);
 
   /* ── Style config ── */
-  const barBgFrom = c.barBgFrom || '#111827';
-  const barBgVia = c.barBgVia || '#1e3a5f';
-  const barBgTo = c.barBgTo || '#111827';
-  const borderColor = c.borderColor || '#1d4ed8';
-  const borderWidth = c.borderWidth ?? 1;
-  const borderRadius = c.borderRadius ?? 8;
+  const displayStyle = c.displayStyle || 'v1';
+  const isVertical = displayStyle === 'vertical';
+  const isNeon = displayStyle === 'neon';
+  const isMinimal = displayStyle === 'minimal';
+  const isGlassStyle = displayStyle === 'glass';
+  const barBgFrom = c.barBgFrom || (isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
+  const barBgVia = c.barBgVia || (isNeon ? '#0a0a2e' : isMinimal ? '#0a0a14' : isGlassStyle ? '#1e293b' : '#1e3a5f');
+  const barBgTo = c.barBgTo || (isNeon ? '#050510' : isMinimal ? '#0a0a14' : isGlassStyle ? '#0f172a' : '#111827');
+  const borderColor = c.borderColor || (isNeon ? '#00ffcc' : isMinimal ? 'rgba(255,255,255,0.08)' : isGlassStyle ? 'rgba(255,255,255,0.2)' : '#1d4ed8');
+  const borderWidth = c.borderWidth ?? (isMinimal ? 0 : isNeon ? 1 : isGlassStyle ? 1 : 1);
+  const borderRadius = c.borderRadius ?? (isMinimal ? 4 : isGlassStyle ? 16 : 8);
   const textColor = c.textColor || '#ffffff';
   const providerColor = c.providerColor || '#ffffff';
   const slotNameColor = c.slotNameColor || '#ffffff';
@@ -161,6 +166,12 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
     : (showDemoData ? demoProvider : '');
   const displayInfo = isLive ? slotInfo : (showDemoData ? demoInfo : null);
 
+  const styleClass = isVertical ? ' rtp-stats-bar--vertical'
+    : isNeon ? ' rtp-stats-bar--neon'
+    : isMinimal ? ' rtp-stats-bar--minimal'
+    : isGlassStyle ? ' rtp-stats-bar--glass'
+    : '';
+
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
@@ -188,10 +199,12 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
     '--rtp-px': `${paddingX}px`,
     '--rtp-py': `${paddingY}px`,
     '--rtp-provider-size': `${providerFontSize}px`,
+    ...(isNeon ? { '--rtp-accent': borderColor } : {}),
+    ...(isGlassStyle ? { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' } : {}),
   };
 
   return (
-    <div className="oc-widget-inner rtp-stats-bar" style={rootStyle}>
+    <div className={`oc-widget-inner rtp-stats-bar${styleClass}`} style={rootStyle}>
       <div className={`rtp-stats-inner ${!isLive && previewMode ? 'rtp-stats-inner--preview' : ''} ${showEmptyState ? 'rtp-stats-inner--empty' : ''}`}>
 
         {/* Preview badge */}

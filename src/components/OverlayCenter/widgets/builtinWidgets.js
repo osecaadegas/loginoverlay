@@ -42,6 +42,9 @@ registerWidget({
     { id: 'v1', icon: '📊', label: 'Classic' },
     { id: 'v2', icon: '🌙', label: 'Sleek Dark' },
     { id: 'v3', icon: '🃏', label: 'Flip Card' },
+    { id: 'v4_neon', icon: '💡', label: 'Neon' },
+    { id: 'v5_horizontal', icon: '↔️', label: 'Horizontal' },
+    { id: 'v6_compact', icon: '📐', label: 'Compact' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
@@ -94,6 +97,8 @@ registerWidget({
     { id: 'showcase', icon: '🖼️', label: 'Showcase' },
     { id: 'vertical', icon: '📋', label: 'Vertical' },
     { id: 'bracket',  icon: '📊', label: 'Bracket' },
+    { id: 'neon',     icon: '💡', label: 'Neon' },
+    { id: 'minimal',  icon: '✦', label: 'Minimal' },
   ],
   styleConfigKey: 'layout',
   defaults: {
@@ -182,6 +187,9 @@ registerWidget({
   styles: [
     { id: 'v1', icon: '📌', label: 'Classic' },
     { id: 'metallic', icon: '⚙️', label: 'Metallic' },
+    { id: 'neon', icon: '💡', label: 'Neon' },
+    { id: 'glass', icon: '🪟', label: 'Glass' },
+    { id: 'retro', icon: '📺', label: 'Retro' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
@@ -230,6 +238,9 @@ registerWidget({
   styles: [
     { id: 'classic', icon: '📺', label: 'Classic' },
     { id: 'minimal', icon: '✦', label: 'Minimal' },
+    { id: 'bubble', icon: '💬', label: 'Bubble' },
+    { id: 'neon', icon: '💡', label: 'Neon' },
+    { id: 'compact', icon: '📐', label: 'Compact' },
   ],
   styleConfigKey: 'chatStyle',
   defaults: {
@@ -450,7 +461,13 @@ registerWidget({
   category: 'stream',
   component: RtpStatsWidget,
   configPanel: RtpStatsConfig,
-  styles: [{ id: 'v1', icon: '📊', label: 'Classic' }],
+  styles: [
+    { id: 'v1', icon: '📊', label: 'Classic' },
+    { id: 'vertical', icon: '📋', label: 'Vertical' },
+    { id: 'neon', icon: '💡', label: 'Neon' },
+    { id: 'minimal', icon: '✦', label: 'Minimal' },
+    { id: 'glass', icon: '🪟', label: 'Glass' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     barBgFrom: '#111827',
@@ -495,7 +512,14 @@ registerWidget({
   category: 'general',
   component: BackgroundWidget,
   configPanel: BackgroundConfig,
-  styles: [{ id: 'v1', icon: '🎨', label: 'Classic' }],
+  styles: [
+    { id: 'v1', icon: '🎨', label: 'Classic' },
+    { id: 'aurora', icon: '🌌', label: 'Aurora' },
+    { id: 'matrix', icon: '💚', label: 'Matrix' },
+    { id: 'starfield', icon: '⭐', label: 'Starfield' },
+    { id: 'waves', icon: '🌊', label: 'Waves' },
+    { id: 'geometric', icon: '🔷', label: 'Geometric' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     bgMode: 'texture',
