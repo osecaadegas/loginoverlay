@@ -397,7 +397,7 @@ export default function TournamentWidget({ config, theme }) {
 
           return (
             <div key={idx} style={{
-              ...(isMinimalLayout ? {} : { flex: 1, minHeight: 0 }),
+              flex: 1, minHeight: 0,
               background: cardBg,
               border: `${cardBorderWidth}px solid ${isCurrentMatch ? swordColor : cardBorder}`,
               borderRadius: `${cardRadius}px`,
