@@ -2300,6 +2300,34 @@ body.wm-dragging .wm-resize-handle {
 .wm-resize-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
 .wm-resize-se { bottom: -5px; right: -5px; cursor: se-resize; }
 
+/* Edge resize handles — thin bars along each side */
+.wm-resize-edge {
+  position: absolute;
+  background: transparent;
+  pointer-events: auto;
+  z-index: 11;
+  border-radius: 1px;
+}
+.wm-resize-edge:hover {
+  background: rgba(139, 92, 246, 0.35);
+}
+.wm-resize-n {
+  top: -3px; left: 10px; right: 10px; height: 6px;
+  cursor: ns-resize;
+}
+.wm-resize-s {
+  bottom: -3px; left: 10px; right: 10px; height: 6px;
+  cursor: ns-resize;
+}
+.wm-resize-e {
+  right: -3px; top: 10px; bottom: 10px; width: 6px;
+  cursor: ew-resize;
+}
+.wm-resize-w {
+  left: -3px; top: 10px; bottom: 10px; width: 6px;
+  cursor: ew-resize;
+}
+
 /* Coords tooltip */
 .wm-slot-coords {
   position: absolute;

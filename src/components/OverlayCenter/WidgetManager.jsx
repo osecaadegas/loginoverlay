@@ -111,6 +111,16 @@ const DraggableSlot = memo(function DraggableSlot({
         curH = Math.max(20, origH - dy);
         curX = origPx + (origW - curW);
         curY = origPy + (origH - curH);
+      } else if (corner === 'n') {
+        curH = Math.max(20, origH - dy);
+        curY = origPy + (origH - curH);
+      } else if (corner === 's') {
+        curH = Math.max(20, origH + dy);
+      } else if (corner === 'e') {
+        curW = Math.max(20, origW + dx);
+      } else if (corner === 'w') {
+        curW = Math.max(20, origW - dx);
+        curX = origPx + (origW - curW);
       }
 
       curX = Math.round(curX); curY = Math.round(curY);
@@ -132,7 +142,8 @@ const DraggableSlot = memo(function DraggableSlot({
       onResize(widget.id, curX, curY, curW, curH);
     }
 
-    document.body.style.cursor = corner === 'se' ? 'nwse-resize' : corner === 'sw' ? 'nesw-resize' : corner === 'ne' ? 'nesw-resize' : 'nwse-resize';
+    const cursorMap = { se: 'nwse-resize', nw: 'nwse-resize', sw: 'nesw-resize', ne: 'nesw-resize', n: 'ns-resize', s: 'ns-resize', e: 'ew-resize', w: 'ew-resize' };
+    document.body.style.cursor = cursorMap[corner] || 'nwse-resize';
     document.addEventListener('mousemove', onMouseMove);
     document.addEventListener('mouseup', onMouseUp);
   }, [widget.id, widget.width, widget.height, widget.position_x, widget.position_y, scale, onSelect, onResize, blockSelect]);
@@ -178,6 +189,11 @@ const DraggableSlot = memo(function DraggableSlot({
           <div className="wm-resize-handle wm-resize-ne" onMouseDown={e => handleResizeDown(e, 'ne')} />
           <div className="wm-resize-handle wm-resize-sw" onMouseDown={e => handleResizeDown(e, 'sw')} />
           <div className="wm-resize-handle wm-resize-se" onMouseDown={e => handleResizeDown(e, 'se')} />
+          {/* Edge handles — resize one axis only */}
+          <div className="wm-resize-edge wm-resize-n" onMouseDown={e => handleResizeDown(e, 'n')} />
+          <div className="wm-resize-edge wm-resize-s" onMouseDown={e => handleResizeDown(e, 's')} />
+          <div className="wm-resize-edge wm-resize-e" onMouseDown={e => handleResizeDown(e, 'e')} />
+          <div className="wm-resize-edge wm-resize-w" onMouseDown={e => handleResizeDown(e, 'w')} />
           {def?.styles?.length > 1 && (
             <button
               className="wm-style-cycle-btn"
