@@ -39,11 +39,11 @@ export default function WheelOfNamesConfig({ config, onChange, allWidgets, mode 
 
   const spinWheel = () => {
     if (entries.length === 0) return;
-    setMulti({ spinning: true, winner: '' });
+    setMulti({ spinning: true, winner: '', _spinStart: Date.now() });
     setTimeout(() => {
       const winner = entries[Math.floor(Math.random() * entries.length)];
       setMulti({ spinning: false, winner });
-    }, 3200);
+    }, 3400);
   };
 
   const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;

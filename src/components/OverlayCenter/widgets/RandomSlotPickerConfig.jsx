@@ -58,7 +58,7 @@ export default function RandomSlotPickerConfig({ config, onChange, allWidgets, m
 
   const pickRandom = () => {
     if (slotPool.length === 0) return;
-    setMulti({ picking: true, pickedSlot: null });
+    setMulti({ picking: true, pickedSlot: null, _pickStart: Date.now() });
     setTimeout(() => {
       const picked = slotPool[Math.floor(Math.random() * slotPool.length)];
       setMulti({ picking: false, pickedSlot: picked });
