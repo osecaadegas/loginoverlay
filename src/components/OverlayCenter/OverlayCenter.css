@@ -416,6 +416,404 @@
 }
 
 /* ═══════════════════════════════════════════════════
+   SIDEBAR STYLE PICKER (bottom of sidebar)
+   ═══════════════════════════════════════════════════ */
+.oc-sidebar-style-picker {
+  display: flex;
+  gap: 6px;
+  padding: 8px 4px 0;
+}
+
+.oc-sidebar-style-btn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 8px;
+  border-radius: var(--oc-radius-sm);
+  border: 1px solid var(--oc-border);
+  background: var(--oc-bg-surface);
+  color: var(--oc-text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--oc-transition);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.oc-sidebar-style-btn:hover {
+  border-color: var(--oc-border-hover);
+  color: var(--oc-text-secondary);
+  background: var(--oc-bg-surface-hover);
+}
+
+.oc-sidebar-style-btn--active {
+  border-color: rgba(139, 92, 246, 0.4);
+  color: var(--oc-accent-light);
+  background: var(--oc-accent-glow);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.1);
+}
+
+.oc-sidebar-style-icon {
+  font-size: 0.85rem;
+}
+
+/* ═══════════════════════════════════════════════════
+   FLOATING SIDEBAR STYLE PALETTE BUTTON (🎨)
+   ═══════════════════════════════════════════════════ */
+.oc-sidebar-palette-btn {
+  position: absolute;
+  top: 18px;
+  right: -18px;
+  z-index: 12;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid rgba(139, 92, 246, 0.4);
+  background: #12141e;
+  color: #fff;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4), 0 0 16px rgba(139, 92, 246, 0.15);
+}
+
+.oc-sidebar-palette-btn:hover {
+  transform: scale(1.15) rotate(15deg);
+  border-color: var(--oc-accent-light);
+  box-shadow: 0 2px 16px rgba(0, 0, 0, 0.5), 0 0 24px rgba(139, 92, 246, 0.3);
+}
+
+/* ═══════════════════════════════════════════════════
+   QUICK ACTIONS BAR
+   ═══════════════════════════════════════════════════ */
+.oc-quick-actions {
+  display: flex;
+  gap: 4px;
+  padding: 4px 2px 10px;
+  border-bottom: 1px solid var(--oc-border);
+}
+
+.oc-quick-action-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: var(--oc-radius-sm);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--oc-text-muted);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all var(--oc-transition);
+}
+
+.oc-quick-action-btn:hover {
+  background: var(--oc-bg-surface-hover);
+  border-color: var(--oc-border);
+  color: var(--oc-text-primary);
+}
+
+.oc-quick-action-btn--active {
+  color: var(--oc-accent-light);
+  background: var(--oc-accent-glow);
+  border-color: rgba(139, 92, 246, 0.2);
+}
+
+.oc-quick-action-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════
+   METALLIC SIDEBAR STYLE
+   Brushed steel / chrome look with reflections
+   ═══════════════════════════════════════════════════ */
+.oc-sidebar--metallic {
+  --m-bg: linear-gradient(
+    175deg,
+    #1a1d2e 0%,
+    #14162a 20%,
+    #181b2f 40%,
+    #111425 60%,
+    #0e1020 80%,
+    #15182e 100%
+  );
+  --m-shine: linear-gradient(
+    110deg,
+    transparent 0%,
+    rgba(255, 255, 255, 0.02) 30%,
+    rgba(255, 255, 255, 0.06) 48%,
+    rgba(255, 255, 255, 0.03) 52%,
+    rgba(255, 255, 255, 0.01) 70%,
+    transparent 100%
+  );
+  --m-border: rgba(255, 255, 255, 0.09);
+  --m-border-shine: rgba(255, 255, 255, 0.14);
+  --m-text: #c8ccd8;
+  --m-text-active: #e8ecf4;
+  --m-accent: #7c8dff;
+  --m-accent-glow: rgba(124, 141, 255, 0.12);
+  --m-accent-shine: rgba(124, 141, 255, 0.22);
+  --m-surface: rgba(255, 255, 255, 0.035);
+  --m-surface-hover: rgba(255, 255, 255, 0.06);
+  --m-reflection: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.04) 0%,
+    transparent 50%
+  );
+
+  background: var(--m-bg) !important;
+  border-right: 1px solid var(--m-border) !important;
+  position: relative;
+}
+
+/* Brushed-metal shine overlay */
+.oc-sidebar--metallic::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--m-shine);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Top reflection highlight */
+.oc-sidebar--metallic::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: var(--m-reflection);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Push all children above the pseudo-elements */
+.oc-sidebar--metallic > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ─── Metallic Brand ─── */
+.oc-sidebar--metallic .oc-sidebar-brand {
+  border-bottom-color: var(--m-border);
+  padding-bottom: 16px;
+}
+
+.oc-sidebar--metallic .oc-sidebar-title {
+  background: linear-gradient(
+    135deg,
+    #d4d8e8 0%,
+    #9ea5c0 30%,
+    #e0e4f0 50%,
+    #a0a8c4 70%,
+    #c8cce0 100%
+  );
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: oc-metallic-title-shift 6s ease-in-out infinite;
+}
+
+@keyframes oc-metallic-title-shift {
+  0%, 100% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+}
+
+.oc-sidebar--metallic .oc-sidebar-icon {
+  filter: drop-shadow(0 0 8px rgba(124, 141, 255, 0.35))
+          brightness(1.1);
+}
+
+/* ─── Metallic Divider Label ─── */
+.oc-sidebar--metallic .oc-sidebar-divider-label {
+  color: #5a6180;
+  letter-spacing: 2px;
+  background: linear-gradient(90deg, rgba(124, 141, 255, 0.08), transparent);
+  padding: 8px 14px;
+  border-radius: 6px;
+  margin: 4px 0 2px;
+}
+
+/* ─── Metallic Nav Buttons ─── */
+.oc-sidebar--metallic .oc-sidebar-btn {
+  color: var(--m-text);
+  border-radius: 10px;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+  backdrop-filter: none;
+}
+
+.oc-sidebar--metallic .oc-sidebar-btn::before {
+  background: linear-gradient(180deg, var(--m-accent), #5b6ed6);
+  box-shadow: 0 0 10px rgba(124, 141, 255, 0.3);
+}
+
+.oc-sidebar--metallic .oc-sidebar-btn:hover {
+  background: var(--m-surface-hover);
+  border-color: var(--m-border-shine);
+  color: var(--m-text-active);
+  box-shadow: 
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.oc-sidebar--metallic .oc-sidebar-btn--active {
+  background: 
+    linear-gradient(135deg, rgba(124, 141, 255, 0.08), rgba(124, 141, 255, 0.03));
+  border-color: rgba(124, 141, 255, 0.2);
+  color: var(--m-accent);
+  font-weight: 600;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.15),
+    0 0 20px rgba(124, 141, 255, 0.08);
+}
+
+.oc-sidebar--metallic .oc-sidebar-btn--active .oc-sidebar-btn-desc {
+  color: rgba(124, 141, 255, 0.55);
+}
+
+.oc-sidebar--metallic .oc-sidebar-btn-icon {
+  filter: brightness(1.05) contrast(1.05);
+}
+
+.oc-sidebar--metallic .oc-sidebar-btn-desc {
+  color: #4a5170;
+}
+
+/* ─── Metallic Inputs / URL ─── */
+.oc-sidebar--metallic .oc-sidebar-resolution-select {
+  border-color: var(--m-border);
+  background: var(--m-surface);
+  color: var(--m-text);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15),
+              inset 0 -1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.oc-sidebar--metallic .oc-sidebar-resolution-select:focus {
+  border-color: rgba(124, 141, 255, 0.45);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15),
+              0 0 0 3px rgba(124, 141, 255, 0.08);
+}
+
+.oc-sidebar--metallic .oc-sidebar-url {
+  border-top-color: var(--m-border);
+}
+
+.oc-sidebar--metallic .oc-sidebar-url-box {
+  border-color: var(--m-border);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.15);
+}
+
+.oc-sidebar--metallic .oc-sidebar-url-input {
+  background: var(--m-surface);
+  color: var(--m-text);
+}
+
+.oc-sidebar--metallic .oc-sidebar-url-copy {
+  background: var(--m-accent-glow);
+  border-left-color: var(--m-border);
+  color: var(--m-accent);
+}
+
+.oc-sidebar--metallic .oc-sidebar-url-copy:hover {
+  background: var(--m-accent-shine);
+}
+
+.oc-sidebar--metallic .oc-sidebar-regen {
+  border-color: var(--m-border);
+  color: #5a6180;
+}
+
+.oc-sidebar--metallic .oc-sidebar-regen:hover {
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.06);
+}
+
+/* ─── Metallic Footer ─── */
+.oc-sidebar--metallic .oc-sidebar-footer {
+  border-top-color: var(--m-border);
+}
+
+.oc-sidebar--metallic .oc-sidebar-user {
+  color: #4a5170;
+}
+
+/* ─── Metallic Scrollbar ─── */
+.oc-sidebar--metallic::-webkit-scrollbar-thumb {
+  background: rgba(124, 141, 255, 0.2);
+}
+.oc-sidebar--metallic::-webkit-scrollbar-thumb:hover {
+  background: rgba(124, 141, 255, 0.4);
+}
+
+/* ─── Metallic Quick Actions ─── */
+.oc-sidebar--metallic .oc-quick-actions {
+  border-bottom-color: var(--m-border);
+}
+
+.oc-sidebar--metallic .oc-quick-action-btn {
+  color: #5a6180;
+}
+
+.oc-sidebar--metallic .oc-quick-action-btn:hover {
+  background: var(--m-surface-hover);
+  border-color: var(--m-border-shine);
+  color: var(--m-text-active);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.oc-sidebar--metallic .oc-quick-action-btn--active {
+  color: var(--m-accent);
+  background: var(--m-accent-glow);
+  border-color: rgba(124, 141, 255, 0.2);
+}
+
+/* ─── Metallic Style Picker ─── */
+.oc-sidebar--metallic .oc-sidebar-style-btn {
+  border-color: var(--m-border);
+  background: var(--m-surface);
+  color: #5a6180;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.oc-sidebar--metallic .oc-sidebar-style-btn:hover {
+  border-color: var(--m-border-shine);
+  color: var(--m-text);
+}
+
+.oc-sidebar--metallic .oc-sidebar-style-btn--active {
+  border-color: rgba(124, 141, 255, 0.35);
+  color: var(--m-accent);
+  background: var(--m-accent-glow);
+  box-shadow: 0 0 12px rgba(124, 141, 255, 0.08);
+}
+
+/* ─── Metallic Palette floating button ─── */
+.oc-sidebar--metallic + .oc-main .oc-sidebar-palette-btn,
+.oc-sidebar--metallic .oc-sidebar-palette-btn {
+  border-color: rgba(124, 141, 255, 0.35);
+  background: #181b2f;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.5), 0 0 16px rgba(124, 141, 255, 0.12);
+}
+
+/* ═══════════════════════════════════════════════════
    PANEL HELPERS — Empty states, welcome, loading
    ═══════════════════════════════════════════════════ */
 .oc-panel-loading {
@@ -2754,6 +3152,10 @@ body.wm-resizing {
   }
 
   .oc-sidebar-footer { display: none; }
+
+  .oc-sidebar-palette-btn { display: none; }
+
+  .oc-quick-actions { padding: 2px 0 8px; }
 
   .oc-main {
     padding: 20px 16px;

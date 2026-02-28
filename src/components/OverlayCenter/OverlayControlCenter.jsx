@@ -98,6 +98,34 @@ export default function OverlayControlCenter() {
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [sidebarStyle, setSidebarStyle] = useState(() => localStorage.getItem('oc-sidebar-style') || 'classic');
+
+  /* Persist sidebar style preference */
+  const changeSidebarStyle = useCallback((style) => {
+    setSidebarStyle(style);
+    localStorage.setItem('oc-sidebar-style', style);
+  }, []);
+
+  /* Cycle sidebar style (for palette button) */
+  const SIDEBAR_STYLES = useMemo(() => [
+    { id: 'classic', icon: '🔮', label: 'Classic' },
+    { id: 'metallic', icon: '⚙️', label: 'Metallic' },
+  ], []);
+
+  const cycleSidebarStyle = useCallback(() => {
+    const idx = SIDEBAR_STYLES.findIndex(s => s.id === sidebarStyle);
+    const next = SIDEBAR_STYLES[(idx + 1) % SIDEBAR_STYLES.length];
+    changeSidebarStyle(next.id);
+  }, [sidebarStyle, SIDEBAR_STYLES, changeSidebarStyle]);
+
+  /* Quick actions: toggle all widgets visibility */
+  const allVisible = useMemo(() => widgets.every(w => w.is_visible !== false), [widgets]);
+  const toggleAllWidgets = useCallback(async () => {
+    const newVis = !allVisible;
+    for (const w of widgets) {
+      await saveWidget({ ...w, is_visible: newVis });
+    }
+  }, [widgets, allVisible, saveWidget]);
 
   /* Auto-start tutorial for first-time users */
   useEffect(() => {
@@ -329,10 +357,55 @@ export default function OverlayControlCenter() {
 
       <div className="oc-layout">
         {/* ─── SIDEBAR NAV ─── */}
-        <aside className={`oc-sidebar${sidebarOpen ? ' oc-sidebar--open' : ''}`}>
+        <aside className={`oc-sidebar${sidebarOpen ? ' oc-sidebar--open' : ''}${sidebarStyle === 'metallic' ? ' oc-sidebar--metallic' : ''}`}>
+          {/* Floating palette button to cycle sidebar styles */}
+          <button
+            className="oc-sidebar-palette-btn"
+            title={`Sidebar style: ${sidebarStyle} — click to cycle`}
+            onClick={cycleSidebarStyle}
+          >
+            🎨
+          </button>
+
           <div className="oc-sidebar-brand">
             <span className="oc-sidebar-icon">🎛️</span>
             <h1 className="oc-sidebar-title">Overlay Center</h1>
+          </div>
+
+          {/* ── Quick Actions ── */}
+          <div className="oc-quick-actions">
+            <button
+              className={`oc-quick-action-btn${allVisible ? ' oc-quick-action-btn--active' : ''}`}
+              onClick={toggleAllWidgets}
+              title={allVisible ? 'Hide all widgets' : 'Show all widgets'}
+            >
+              <span>{allVisible ? '👁️' : '🚫'}</span>
+              <span className="oc-quick-action-label">{allVisible ? 'Visible' : 'Hidden'}</span>
+            </button>
+            <button
+              className={`oc-quick-action-btn${activePanel === 'widgets' ? ' oc-quick-action-btn--active' : ''}`}
+              onClick={() => { setActivePanel('widgets'); setSidebarOpen(false); }}
+              title="Go to Widgets"
+            >
+              <span>🧩</span>
+              <span className="oc-quick-action-label">Widgets</span>
+            </button>
+            <button
+              className={`oc-quick-action-btn${activePanel === 'presets' ? ' oc-quick-action-btn--active' : ''}`}
+              onClick={() => { setActivePanel('presets'); setSidebarOpen(false); }}
+              title="Go to Presets"
+            >
+              <span>💾</span>
+              <span className="oc-quick-action-label">Presets</span>
+            </button>
+            <button
+              className="oc-quick-action-btn"
+              onClick={() => { resetTutorial(); setShowTutorial(true); setSidebarOpen(false); setActivePanel('widgets'); }}
+              title="Start Tutorial"
+            >
+              <span>🎓</span>
+              <span className="oc-quick-action-label">Help</span>
+            </button>
           </div>
 
           <nav className="oc-sidebar-nav">
@@ -417,6 +490,20 @@ export default function OverlayControlCenter() {
           </div>
 
           <div className="oc-sidebar-footer">
+            {/* Sidebar Style Picker */}
+            <div className="oc-sidebar-style-picker">
+              {SIDEBAR_STYLES.map(s => (
+                <button
+                  key={s.id}
+                  className={`oc-sidebar-style-btn${sidebarStyle === s.id ? ' oc-sidebar-style-btn--active' : ''}`}
+                  onClick={() => changeSidebarStyle(s.id)}
+                  title={`Switch to ${s.label} style`}
+                >
+                  <span className="oc-sidebar-style-icon">{s.icon}</span>
+                  {s.label}
+                </button>
+              ))}
+            </div>
             <span className="oc-sidebar-user">{user.email}</span>
           </div>
         </aside>
