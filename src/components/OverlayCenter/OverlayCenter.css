@@ -7488,7 +7488,7 @@ body.wm-resizing {
   gap: 2px;
 }
 .bhh-stat-label {
-  font-size: 0.55em;
+  font-size: 0.72em;
   font-weight: 700;
   color: var(--bht-muted, #8baacf);
   text-transform: uppercase;
@@ -7500,32 +7500,26 @@ body.wm-resizing {
   color: var(--bht-stat-value, #fff);
 }
 
-/* scrollable list */
-.bhh-list-wrap {
+/* auto-scrolling carousel */
+.bhh-carousel-wrap {
   flex: 1;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
+  padding: 4px 0;
+}
+.bhh-carousel-track {
   display: flex;
   gap: 10px;
-  overflow-x: auto;
-  overflow-y: hidden;
-  padding: 4px 8px;
-  scroll-snap-type: x mandatory;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.15) transparent;
-  mask-image: linear-gradient(90deg, transparent 0%, black 2%, black 96%, transparent 100%);
-  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 2%, black 96%, transparent 100%);
+  will-change: transform;
+  animation: bhtc-slide calc(var(--bhtc-count, 5) * 4s) linear infinite;
+  height: 100%;
 }
-.bhh-list-wrap::-webkit-scrollbar {
-  height: 4px;
+.bhh-carousel-wrap:hover .bhh-carousel-track {
+  animation-play-state: paused;
 }
-.bhh-list-wrap::-webkit-scrollbar-track {
-  background: transparent;
-}
-.bhh-list-wrap::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.12);
-  border-radius: 4px;
-}
-.bhh-list-wrap > .bhtc-card {
-  scroll-snap-align: start;
+.bhh-carousel-track > .bhtc-card {
   flex: 0 0 130px;
 }
 
@@ -7649,7 +7643,7 @@ body.wm-resizing {
   align-items: center;
   justify-content: center;
   gap: 6px;
-  font-size: 0.65em;
+  font-size: 0.72em;
   font-weight: 700;
   color: var(--bht-total-pay-bg, #d4a017);
   text-transform: uppercase;
@@ -7725,7 +7719,7 @@ body.wm-resizing {
   min-height: 28px;
 }
 .bhtc-card-slot-name {
-  font-size: 0.65em;
+  font-size: 0.72em;
   font-weight: 700;
   color: var(--bht-text, #fff);
   white-space: nowrap;
@@ -7735,13 +7729,13 @@ body.wm-resizing {
   text-transform: uppercase;
 }
 .bhtc-card-bet {
-  font-size: 0.6em;
+  font-size: 0.75em;
   font-weight: 700;
   color: var(--bht-list-accent, #93c5fd);
   white-space: nowrap;
 }
 .bhtc-card-idx {
-  font-size: 0.55em;
+  font-size: 0.7em;
   color: rgba(255,255,255,0.4);
   font-weight: 600;
 }
@@ -7780,7 +7774,7 @@ body.wm-resizing {
   color: #4ade80;
 }
 .bhtc-card-multi {
-  font-size: 0.65em;
+  font-size: 0.75em;
   font-weight: 700;
   color: #fbbf24;
   background: rgba(0,0,0,0.4);

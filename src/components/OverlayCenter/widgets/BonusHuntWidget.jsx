@@ -260,37 +260,40 @@ export default function BonusHuntWidget({ config, theme }) {
           </div>
         </div>
 
-        {/* ── Right scrollable bonus list ── */}
-        <div className="bhh-list-wrap">
-          {bonuses.map((bonus, idx) => {
-            const payout = Number(bonus.payout) || 0;
-            const bet = Number(bonus.betSize) || 0;
-            const multi = bet > 0 ? payout / bet : 0;
-            return (
-              <div key={`hh-${bonus.id || idx}`}
-                className={`bhtc-card ${idx === currentIndex ? 'bhtc-card--active' : ''} ${bonus.opened ? 'bhtc-card--opened' : ''}`}>
-                <div className="bhtc-card-top-bar">
-                  <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
-                  <span className="bhtc-card-bet">{bet.toFixed(2)} {currency}</span>
-                  <span className="bhtc-card-idx">#{idx + 1}</span>
-                </div>
-                <div className="bhtc-card-img-wrap">
-                  {bonus.slot?.image ? (
-                    <img src={bonus.slot.image} alt={bonus.slotName} className="bhtc-card-img"
-                      onError={e => { e.target.style.display = 'none'; }} />
-                  ) : (
-                    <div className="bhtc-card-img-placeholder" />
+        {/* ── Right auto-scrolling carousel ── */}
+        <div className="bhh-carousel-wrap">
+          <div className="bhh-carousel-track" style={{ '--bhtc-count': bonuses.length }}>
+            {[...bonuses, ...bonuses].map((bonus, i) => {
+              const idx = i % bonuses.length;
+              const payout = Number(bonus.payout) || 0;
+              const bet = Number(bonus.betSize) || 0;
+              const multi = bet > 0 ? payout / bet : 0;
+              return (
+                <div key={`hh-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
+                  className={`bhtc-card ${idx === currentIndex ? 'bhtc-card--active' : ''} ${bonus.opened ? 'bhtc-card--opened' : ''}`}>
+                  <div className="bhtc-card-top-bar">
+                    <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
+                    <span className="bhtc-card-bet">{bet.toFixed(2)} {currency}</span>
+                    <span className="bhtc-card-idx">#{idx + 1}</span>
+                  </div>
+                  <div className="bhtc-card-img-wrap">
+                    {bonus.slot?.image ? (
+                      <img src={bonus.slot.image} alt={bonus.slotName} className="bhtc-card-img"
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div className="bhtc-card-img-placeholder" />
+                    )}
+                  </div>
+                  {bonus.opened && (
+                    <div className="bhtc-card-bottom-bar">
+                      <span className="bhtc-card-payout">{payout.toFixed(2)}</span>
+                      <span className="bhtc-card-multi">{multi.toFixed(1)}x</span>
+                    </div>
                   )}
                 </div>
-                {bonus.opened && (
-                  <div className="bhtc-card-bottom-bar">
-                    <span className="bhtc-card-payout">{payout.toFixed(2)}</span>
-                    <span className="bhtc-card-multi">{multi.toFixed(1)}x</span>
-                  </div>
-                )}
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
       </div>
     );
