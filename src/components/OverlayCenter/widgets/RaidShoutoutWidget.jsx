@@ -88,6 +88,16 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     setQueue(prev => [...prev, alert]);
   }, []);
 
+  // ── Callback ref: set muted as DOM property (React bug workaround) + instant play ──
+  const videoCallbackRef = useCallback((node) => {
+    videoRef.current = node;
+    if (node) {
+      node.muted = true;           // React doesn't set the DOM property reliably
+      node.playsInline = true;
+      node.play().catch(() => {});  // Instant play attempt on mount
+    }
+  }, []);
+
   // ── Process next alert ──
   useEffect(() => {
     if (phase !== 'idle' || queue.length === 0) return;
@@ -127,9 +137,10 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   // ── Force-play the <video> whenever it becomes available or phase changes ──
   useEffect(() => {
     if (videoRef.current && (phase === 'entering' || phase === 'playing')) {
+      videoRef.current.muted = true;  // Re-enforce muted DOM property
       videoRef.current.play().catch(() => {});
     }
-  }, [phase, videoFailed]);
+  }, [phase, videoFailed, currentAlert]);
 
   const handleVideoEnded = useCallback(() => {
     if (phase === 'playing') {
@@ -192,15 +203,17 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
           <div className="rs-clip-container">
             <video
               key={currentAlert.id + '-video'}
-              ref={videoRef}
+              ref={videoCallbackRef}
               className="rs-clip-video"
               src={proxyVideoUrl}
               autoPlay
               muted
               playsInline
+              crossOrigin="anonymous"
               onEnded={handleVideoEnded}
               onError={handleVideoError}
-              onCanPlay={() => { videoRef.current?.play().catch(() => {}); }}
+              onCanPlay={() => { if (videoRef.current) { videoRef.current.muted = true; videoRef.current.play().catch(() => {}); } }}
+              onLoadedData={() => { if (videoRef.current) { videoRef.current.muted = true; videoRef.current.play().catch(() => {}); } }}
               poster={currentAlert.clip_thumbnail_url}
             />
           </div>
