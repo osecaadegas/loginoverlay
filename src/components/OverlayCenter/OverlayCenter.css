@@ -7446,20 +7446,87 @@ body.wm-resizing {
   box-shadow: 0 0 20px rgba(0,255,200,0.15);
 }
 
-/* ─── Bonus Hunt: Horizontal ─── */
+/* ─── Bonus Hunt: Horizontal (v5) ─── */
 .oc-bonushunt--horizontal {
   flex-direction: row !important;
-  flex-wrap: wrap;
+  align-items: stretch;
+  overflow: hidden !important;
+  gap: 0 !important;
+  height: 100%;
 }
-.oc-bonushunt--horizontal .bht-card {
-  flex: 1 1 200px;
-  min-width: 180px;
+
+/* stats panel */
+.bhh-stats-panel {
+  flex: 0 0 200px;
+  background: var(--bht-header-bg, #0f1a3c);
+  border-radius: var(--bht-card-radius, 16px);
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 2;
+  box-shadow: 4px 0 16px rgba(0,0,0,0.3);
 }
-.oc-bonushunt--horizontal .bht-list-card {
-  flex-basis: 100%;
+.bhh-stats-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 4px;
 }
-.oc-bonushunt--horizontal .bht-bonus-list {
-  max-height: 200px;
+.bhh-stat-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  flex: 1;
+}
+.bhh-stat {
+  background: rgba(0,0,0,0.25);
+  border-radius: 8px;
+  padding: 6px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bhh-stat-label {
+  font-size: 0.55em;
+  font-weight: 700;
+  color: var(--bht-muted, #8baacf);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+}
+.bhh-stat-val {
+  font-size: 0.95em;
+  font-weight: 800;
+  color: var(--bht-stat-value, #fff);
+}
+
+/* scrollable list */
+.bhh-list-wrap {
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 8px;
+  scroll-snap-type: x mandatory;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.15) transparent;
+  mask-image: linear-gradient(90deg, transparent 0%, black 2%, black 96%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 2%, black 96%, transparent 100%);
+}
+.bhh-list-wrap::-webkit-scrollbar {
+  height: 4px;
+}
+.bhh-list-wrap::-webkit-scrollbar-track {
+  background: transparent;
+}
+.bhh-list-wrap::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.12);
+  border-radius: 4px;
+}
+.bhh-list-wrap > .bhtc-card {
+  scroll-snap-align: start;
+  flex: 0 0 130px;
 }
 
 /* ─── Bonus Hunt: Compact ─── */

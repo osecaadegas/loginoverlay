@@ -209,6 +209,93 @@ export default function BonusHuntWidget({ config, theme }) {
     );
   }
 
+  /* ─── Horizontal layout (v5_horizontal) ─── */
+  if (isHorizontalBH) {
+    const profit = stats.totalWin - startMoney;
+    return (
+      <div className="oc-widget-inner oc-bonushunt oc-bonushunt--horizontal" style={rootStyle}>
+        {/* ── Left stats panel ── */}
+        <div className="bhh-stats-panel">
+          <div className="bhh-stats-header">
+            <div className="bhtc-icon-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+              </svg>
+            </div>
+            <div>
+              <div className="bhtc-title">BONUS HUNT</div>
+              <div className="bhtc-hunt-id">Hunt {c.huntName || `#${bonuses.length}`}</div>
+            </div>
+          </div>
+
+          <div className="bhh-stat-grid">
+            <div className="bhh-stat">
+              <span className="bhh-stat-label">START</span>
+              <span className="bhh-stat-val">{currency}{startMoney.toFixed(2)}</span>
+            </div>
+            <div className="bhh-stat">
+              <span className="bhh-stat-label">BEx</span>
+              <span className="bhh-stat-val">{stats.breakEven.toFixed(2)}x</span>
+            </div>
+            <div className="bhh-stat">
+              <span className="bhh-stat-label">AVG</span>
+              <span className="bhh-stat-val">{stats.avgMulti.toFixed(2)}x</span>
+            </div>
+            <div className="bhh-stat">
+              <span className="bhh-stat-label">PROFIT</span>
+              <span className={`bhh-stat-val ${profit >= 0 ? 'bhtc-val--green' : 'bhtc-val--red'}`}>
+                {profit >= 0 ? '+' : ''}{currency}{profit.toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          <div className="bhtc-total-pay" style={{ marginTop: 'auto' }}>
+            <div className="bhtc-total-label">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              TOTAL PAYOUT
+            </div>
+            <div className="bhtc-total-value">{currency}{stats.totalWin.toFixed(2)}</div>
+          </div>
+        </div>
+
+        {/* ── Right scrollable bonus list ── */}
+        <div className="bhh-list-wrap">
+          {bonuses.map((bonus, idx) => {
+            const payout = Number(bonus.payout) || 0;
+            const bet = Number(bonus.betSize) || 0;
+            const multi = bet > 0 ? payout / bet : 0;
+            return (
+              <div key={`hh-${bonus.id || idx}`}
+                className={`bhtc-card ${idx === currentIndex ? 'bhtc-card--active' : ''} ${bonus.opened ? 'bhtc-card--opened' : ''}`}>
+                <div className="bhtc-card-top-bar">
+                  <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
+                  <span className="bhtc-card-bet">{bet.toFixed(2)} {currency}</span>
+                  <span className="bhtc-card-idx">#{idx + 1}</span>
+                </div>
+                <div className="bhtc-card-img-wrap">
+                  {bonus.slot?.image ? (
+                    <img src={bonus.slot.image} alt={bonus.slotName} className="bhtc-card-img"
+                      onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div className="bhtc-card-img-placeholder" />
+                  )}
+                </div>
+                {bonus.opened && (
+                  <div className="bhtc-card-bottom-bar">
+                    <span className="bhtc-card-payout">{payout.toFixed(2)}</span>
+                    <span className="bhtc-card-multi">{multi.toFixed(1)}x</span>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`oc-widget-inner oc-bonushunt${bhModeClass}`} style={rootStyle}>
 
