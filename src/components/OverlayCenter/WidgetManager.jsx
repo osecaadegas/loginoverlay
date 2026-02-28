@@ -12,25 +12,6 @@ const DraggableSlot = memo(function DraggableSlot({
   const Component = def?.component;
   const slotRef = useRef(null);
   const coordsRef = useRef(null);
-  const contentRef = useRef(null);
-  const [contentScale, setContentScale] = useState(1);
-
-  /* Measure natural content size and compute scale-to-fit */
-  useEffect(() => {
-    const el = contentRef.current;
-    if (!el) return;
-    // Use rAF to let the component render at natural size first
-    let raf = requestAnimationFrame(() => {
-      const natW = el.scrollWidth;
-      const natH = el.scrollHeight;
-      if (natW > 0 && natH > 0) {
-        const sx = widget.width / natW;
-        const sy = widget.height / natH;
-        setContentScale(Math.min(sx, sy, 1));
-      }
-    });
-    return () => cancelAnimationFrame(raf);
-  }, [widget.width, widget.height, widget.config, widget.widget_type]);
 
   /* Block native text selection during any drag */
   const blockSelect = useCallback((e) => e.preventDefault(), []);
@@ -171,14 +152,9 @@ const DraggableSlot = memo(function DraggableSlot({
         zIndex: isSelected ? 9999 : (widget.z_index || 1),
       }}
     >
-      {/* Widget content — scale-to-fit, never clips */}
+      {/* Widget content */}
       <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-        <div ref={contentRef} style={{
-          transformOrigin: 'top left',
-          transform: contentScale < 1 ? `scale(${contentScale})` : undefined,
-        }}>
-          <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
-        </div>
+        <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
       </div>
 
       {/* Transparent drag surface on top — catches ALL mouse events */}
