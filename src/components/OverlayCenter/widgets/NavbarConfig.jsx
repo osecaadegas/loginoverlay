@@ -156,6 +156,25 @@ export default function NavbarConfig({ config, onChange }) {
       {/* ═══════ CONTENT TAB ═══════ */}
       {activeTab === 'content' && (
         <div className="nb-section">
+          {/* Display Style Toggle */}
+          <h4 className="nb-subtitle">Display Style</h4>
+          <div className="nb-style-toggle">
+            <button
+              type="button"
+              className={`nb-style-btn${(!c.displayStyle || c.displayStyle === 'v1') ? ' nb-style-btn--active' : ''}`}
+              onClick={() => set('displayStyle', 'v1')}
+            >
+              📌 Classic
+            </button>
+            <button
+              type="button"
+              className={`nb-style-btn${c.displayStyle === 'metallic' ? ' nb-style-btn--active' : ''}`}
+              onClick={() => set('displayStyle', 'metallic')}
+            >
+              ⚙️ Metallic
+            </button>
+          </div>
+
           {/* Twitch sync */}
           {isTwitch && (
             <div className="oc-twitch-info" style={{ marginBottom: 12 }}>

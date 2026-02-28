@@ -179,7 +179,10 @@ registerWidget({
   category: 'stream',
   component: NavbarWidget,
   configPanel: NavbarConfig,
-  styles: [{ id: 'v1', icon: '📌', label: 'Classic' }],
+  styles: [
+    { id: 'v1', icon: '📌', label: 'Classic' },
+    { id: 'metallic', icon: '⚙️', label: 'Metallic' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     streamerName: '',

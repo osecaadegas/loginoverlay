@@ -133,19 +133,20 @@ export default function NavbarWidget({ config }) {
       : null;
 
   /* ─── Style vars from config ─── */
-  const accentColor = c.accentColor || '#f59e0b';
+  const isMetal = (c.displayStyle === 'metallic');
+  const accentColor = c.accentColor || (isMetal ? '#7c8dff' : '#f59e0b');
   const accentColorRGB = hexToRgb(accentColor);
-  const bgColor = c.bgColor || '#111318';
-  const textColor = c.textColor || '#f1f5f9';
-  const mutedColor = c.mutedColor || '#94a3b8';
+  const bgColor = c.bgColor || (isMetal ? '#14162a' : '#111318');
+  const textColor = c.textColor || (isMetal ? '#d0d4e4' : '#f1f5f9');
+  const mutedColor = c.mutedColor || (isMetal ? '#5a6180' : '#94a3b8');
   const borderColor = c.borderColor || accentColor;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
-  const borderWidth = c.borderWidth ?? 3;
+  const borderWidth = c.borderWidth ?? (isMetal ? 1 : 3);
   const barHeight = c.barHeight ?? 64;
-  const borderRadius = c.borderRadius ?? 999;
+  const borderRadius = c.borderRadius ?? (isMetal ? 16 : 999);
   const fontSize = c.fontSize ?? 12;
   const ctaColor = c.ctaColor || '#f43f5e';
   const cryptoUpColor = c.cryptoUpColor || '#34d399';
@@ -153,7 +154,18 @@ export default function NavbarWidget({ config }) {
 
   const filterStr = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
 
-  const barOuter = {
+  const barOuter = isMetal ? {
+    width: '100%',
+    maxWidth: c.maxWidth || 1200,
+    borderRadius,
+    background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
+    padding: `${borderWidth}px`,
+    boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(124,141,255,0.06)`,
+    filter: filterStr,
+    fontFamily,
+    overflow: 'visible',
+    border: `1px solid rgba(255,255,255,0.08)`,
+  } : {
     width: '100%',
     maxWidth: c.maxWidth || 1200,
     borderRadius,
@@ -165,7 +177,19 @@ export default function NavbarWidget({ config }) {
     overflow: 'visible',
   };
 
-  const barInner = {
+  const barInner = isMetal ? {
+    display: 'flex',
+    alignItems: 'center',
+    height: barHeight,
+    borderRadius: borderRadius - borderWidth,
+    background: `linear-gradient(170deg, #1a1d32 0%, ${bgColor} 30%, #181b2f 60%, ${bgColor} 100%)`,
+    padding: '0 24px',
+    color: textColor,
+    fontSize,
+    gap: 0,
+    overflow: 'visible',
+    position: 'relative',
+  } : {
     display: 'flex',
     alignItems: 'center',
     height: barHeight,
@@ -178,7 +202,13 @@ export default function NavbarWidget({ config }) {
     overflow: 'visible',
   };
 
-  const sep = {
+  const sep = isMetal ? {
+    width: 1,
+    height: barHeight * 0.5,
+    background: `linear-gradient(to bottom, transparent, rgba(124,141,255,0.25), transparent)`,
+    flexShrink: 0,
+    margin: '0 18px',
+  } : {
     width: 1,
     height: barHeight * 0.55,
     background: `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
@@ -190,32 +220,62 @@ export default function NavbarWidget({ config }) {
     <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
       <div style={barOuter}>
         <div style={barInner}>
+          {/* Metallic shine overlay (CSS pseudo-element equivalent) */}
+          {isMetal && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              borderRadius: borderRadius - borderWidth,
+              background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.015) 30%, rgba(255,255,255,0.04) 48%, rgba(255,255,255,0.015) 52%, transparent 70%)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }} />
+          )}
+          {isMetal && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: barHeight * 0.45,
+              borderRadius: `${borderRadius - borderWidth}px ${borderRadius - borderWidth}px 0 0`,
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.03), transparent)',
+              pointerEvents: 'none',
+              zIndex: 0,
+            }} />
+          )}
 
           {/* ─── Left: Avatar + Name + Motto ─── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, flexShrink: 0, position: 'relative', zIndex: 1 }}>
             {c.showAvatar !== false && (
               <div style={{
                 position: 'relative',
                 width: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
                 height: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
-                borderRadius: '50%',
-                background: `linear-gradient(135deg, ${accentColor}, ${accentColor}88)`,
-                boxShadow: `0 0 20px ${accentColor}cc`,
+                borderRadius: isMetal ? '14px' : '50%',
+                background: isMetal
+                  ? `linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03))`
+                  : `linear-gradient(135deg, ${accentColor}, ${accentColor}88)`,
+                boxShadow: isMetal
+                  ? `0 0 16px rgba(124,141,255,0.2), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.2)`
+                  : `0 0 20px ${accentColor}cc`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
+                border: isMetal ? '1px solid rgba(255,255,255,0.1)' : 'none',
               }}>
                 {c.avatarUrl ? (
                   <img src={c.avatarUrl} alt="" style={{
-                    width: '78%', height: '78%', borderRadius: '50%', objectFit: 'cover',
+                    width: '78%', height: '78%',
+                    borderRadius: isMetal ? '10px' : '50%',
+                    objectFit: 'cover',
                     border: `1px solid ${textColor}40`,
                   }} />
                 ) : (
                   <div style={{
-                    width: '78%', height: '78%', borderRadius: '50%',
+                    width: '78%', height: '78%',
+                    borderRadius: isMetal ? '10px' : '50%',
                     border: `1px solid ${textColor}40`,
-                    background: 'radial-gradient(circle at 30% 20%, #fff5, #000)',
+                    background: isMetal
+                      ? 'linear-gradient(135deg, #1a1d32, #0e1020)'
+                      : 'radial-gradient(circle at 30% 20%, #fff5, #000)',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: fontSize * 0.7, fontWeight: 600, letterSpacing: '0.12em',
                     textTransform: 'uppercase', color: textColor,
@@ -227,17 +287,19 @@ export default function NavbarWidget({ config }) {
             )}
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 }}>
               <span style={{
-                backgroundImage: c.nameGradient || `linear-gradient(to right, ${accentColor}, #ec4899, #a855f7)`,
+                backgroundImage: isMetal
+                  ? 'linear-gradient(135deg, #d4d8e8, #8a90b0, #e0e4f0, #a0a8c4)'
+                  : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #ec4899, #a855f7)`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                fontSize: fontSize * 1.2, fontWeight: 600,
-                letterSpacing: '0.18em', textTransform: 'uppercase',
+                fontSize: fontSize * 1.2, fontWeight: isMetal ? 700 : 600,
+                letterSpacing: isMetal ? '0.22em' : '0.18em', textTransform: 'uppercase',
               }}>
                 {c.streamerName || 'STREAMER'}
               </span>
               {c.motto && (
                 <span style={{
                   marginTop: 2, fontSize: fontSize * 0.82, fontWeight: 600,
-                  letterSpacing: '0.35em', textTransform: 'uppercase', color: mutedColor,
+                  letterSpacing: isMetal ? '0.4em' : '0.35em', textTransform: 'uppercase', color: mutedColor,
                 }}>
                   {c.motto}
                 </span>
@@ -252,20 +314,29 @@ export default function NavbarWidget({ config }) {
               <div style={{
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 height: barHeight, flexShrink: 0, padding: '2px 0',
+                position: 'relative', zIndex: 1,
               }}>
                 <img src={c.badgeImage} alt="" style={{
                   height: barHeight * 0.85 * ((c.badgeSize ?? 100) / 100), minWidth: barHeight * 1.2 * ((c.badgeSize ?? 100) / 100), objectFit: 'contain',
-                  filter: 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
+                  filter: isMetal ? 'drop-shadow(0 0 6px rgba(124,141,255,0.3)) brightness(1.05)' : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
                 }} />
               </div>
             </>
           )}
 
           {/* ─── Middle: Clock + Now Playing ─── */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, minWidth: 0 }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, minWidth: 0, position: 'relative', zIndex: 1 }}>
             {c.showClock !== false && (
               <>
-                <div style={{
+                <div style={isMetal ? {
+                  borderRadius: 10, padding: '6px 22px',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  color: textColor,
+                  fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.28em',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(124,141,255,0.08)',
+                  flexShrink: 0,
+                } : {
                   borderRadius: 999, padding: '6px 20px',
                   background: `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
                   color: textColor,
@@ -301,7 +372,7 @@ export default function NavbarWidget({ config }) {
           </div>
 
           {/* ─── Right: Crypto + CTA ─── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 16, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 16, flexShrink: 0, position: 'relative', zIndex: 1 }}>
             {c.showCrypto && activeCoins.length > 0 && (
               <>
                 <CryptoTicker
@@ -314,13 +385,24 @@ export default function NavbarWidget({ config }) {
                   bgColor={bgColor}
                   cryptoUpColor={cryptoUpColor}
                   cryptoDownColor={cryptoDownColor}
+                  metallic={isMetal}
                 />
                 {c.showCTA && <div style={sep} />}
               </>
             )}
 
             {c.showCTA && c.ctaText && (
-              <div style={{
+              <div style={isMetal ? {
+                display: 'flex', alignItems: 'center', gap: 8,
+                borderRadius: 10, padding: '7px 20px',
+                background: 'linear-gradient(135deg, rgba(244,63,94,0.15), rgba(244,63,94,0.05))',
+                border: '1px solid rgba(244,63,94,0.25)',
+                color: '#f87171',
+                fontSize: fontSize * 0.82, fontWeight: 700,
+                letterSpacing: '0.24em', textTransform: 'uppercase',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(244,63,94,0.1)',
+                flexShrink: 0,
+              } : {
                 display: 'flex', alignItems: 'center', gap: 8,
                 borderRadius: 999, padding: '6px 18px',
                 background: `linear-gradient(to bottom, ${ctaColor}, ${ctaColor}cc)`,
@@ -342,11 +424,20 @@ export default function NavbarWidget({ config }) {
 }
 
 /* ─── Single Crypto Coin pill ─── */
-function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownColor, style }) {
+function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownColor, metallic, style }) {
   const isUp = price.change >= 0;
   const changeColor = isUp ? cryptoUpColor : cryptoDownColor;
   return (
-    <div style={{
+    <div style={metallic ? {
+      display: 'flex', alignItems: 'center', gap: 8,
+      borderRadius: 10, padding: '6px 14px',
+      border: `1px solid ${changeColor}30`,
+      background: `linear-gradient(135deg, rgba(255,255,255,0.04), ${changeColor}08)`,
+      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px ${changeColor}18`,
+      fontSize: fontSize * 0.82,
+      flexShrink: 0,
+      ...style,
+    } : {
       display: 'flex', alignItems: 'center', gap: 8,
       borderRadius: 999, padding: '6px 14px',
       border: `1px solid ${changeColor}50`,
@@ -357,10 +448,13 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
       ...style,
     }}>
       <div style={{
-        width: 22, height: 22, borderRadius: '50%',
-        background: `linear-gradient(135deg, #6366f1, #a855f7, ${cryptoUpColor})`,
+        width: 22, height: 22, borderRadius: metallic ? '6px' : '50%',
+        background: metallic
+          ? `linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))`
+          : `linear-gradient(135deg, #6366f1, #a855f7, ${cryptoUpColor})`,
+        border: metallic ? '1px solid rgba(255,255,255,0.1)' : 'none',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: fontSize * 0.9, fontWeight: 900, color: '#fff',
+        fontSize: fontSize * 0.9, fontWeight: 900, color: metallic ? changeColor : '#fff',
       }}>
         {CRYPTO_SYMBOLS[coin] || coin[0].toUpperCase()}
       </div>
@@ -378,7 +472,7 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
 }
 
 /* ─── Crypto Ticker with display modes ─── */
-function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, cryptoUpColor, cryptoDownColor }) {
+function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, cryptoUpColor, cryptoDownColor, metallic }) {
   const safeIdx = index % coins.length;
   const coin = coins[safeIdx];
 
@@ -393,7 +487,8 @@ function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, c
         }}>
           <CryptoCoin coin={coin} price={prices[coin]}
             fontSize={fontSize} bgColor={bgColor}
-            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
+            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
+            metallic={metallic} />
         </div>
       </div>
     );
@@ -410,7 +505,8 @@ function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, c
         }}>
           <CryptoCoin coin={coin} price={prices[coin]}
             fontSize={fontSize} bgColor={bgColor}
-            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
+            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
+            metallic={metallic} />
         </div>
       </div>
     );
@@ -426,7 +522,8 @@ function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, c
         }}>
           <CryptoCoin coin={coin} price={prices[coin]}
             fontSize={fontSize} bgColor={bgColor}
-            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor} />
+            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
+            metallic={metallic} />
         </div>
       </div>
     );
