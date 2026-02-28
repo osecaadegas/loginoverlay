@@ -397,13 +397,13 @@ export default function TournamentWidget({ config, theme }) {
 
           return (
             <div key={idx} style={{
-              flex: 1, minHeight: 0,
+              ...(isMinimalLayout ? {} : { flex: 1, minHeight: 0 }),
               background: cardBg,
               border: `${cardBorderWidth}px solid ${isCurrentMatch ? swordColor : cardBorder}`,
               borderRadius: `${cardRadius}px`,
               overflow: 'hidden', position: 'relative',
-              padding: `${Math.max(padding, 4)}px 8px`,
-              display: 'flex', alignItems: 'center', gap: 6,
+              padding: isMinimalLayout ? '3px 6px' : `${Math.max(padding, 4)}px 8px`,
+              display: 'flex', alignItems: 'center', gap: isMinimalLayout ? 4 : 6,
             }}>
               {renderPlayerRow(match.player1, match, 'player1', hasWinner && !p1Won, 'left')}
 
@@ -436,163 +436,149 @@ export default function TournamentWidget({ config, theme }) {
     const tournamentNum = c.tournamentNumber || '';
     const prize = c.prize || '';
 
-    const bkHeaderBg = c.bkHeaderBg || 'rgba(20,24,40,0.95)';
-    const bkHeaderColor = c.bkHeaderColor || '#e2e8f0';
-    const bkAccent = c.bkAccent || '#6366f1';
-    const bkDividerColor = c.bkDividerColor || 'rgba(255,255,255,0.08)';
-    const bkFinalBg = c.bkFinalBg || 'rgba(59,130,246,0.12)';
-    const bkFinalBorder = c.bkFinalBorder || 'rgba(59,130,246,0.35)';
-    const bkRowBg = c.bkRowBg || 'rgba(255,255,255,0.02)';
+    /* Colors from shared config — auto-syncs with navbar */
+    const accent = c.bkAccent || multiColor;
+    const divider = cardBorder;
+    const subText = c.bkHeaderColor || '#94a3b8';
 
-    const renderBracketMatch = (match, mIdx, isFinal) => {
-      const p1 = players[match.player1] || `P${match.player1 + 1}`;
-      const p2 = players[match.player2] || `P${match.player2 + 1}`;
-      const s1 = slots[match.player1];
-      const s2 = slots[match.player2];
-      const m1 = calcMulti(match, 'player1');
-      const m2 = calcMulti(match, 'player2');
-      const hasWinner = match.winner !== null && match.winner !== undefined;
-      const p1Won = match.winner === match.player1;
-      const p2Won = match.winner === match.player2;
-
+    /* Helper: one player side in a bracket match row */
+    const renderBkPlayer = (playerIdx, matchData, playerKey, isEliminated, side) => {
+      const name = players[playerIdx] || `P${playerIdx + 1}`;
+      const slot = slots[playerIdx];
+      const multi = calcMulti(matchData, playerKey);
+      const isRight = side === 'right';
       return (
-        <div key={mIdx} className={`tw-bk-row${isFinal ? ' tw-bk-row--final' : ''}`} style={{
-          background: isFinal ? bkFinalBg : bkRowBg,
-          border: isFinal ? `1px solid ${bkFinalBorder}` : `1px solid ${bkDividerColor}`,
-          borderRadius: cardRadius,
-          padding: '8px 10px',
-          display: 'flex', alignItems: 'center', gap: 8,
-          opacity: 1,
+        <div style={{
+          flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0,
+          flexDirection: isRight ? 'row-reverse' : 'row',
+          opacity: isEliminated ? eliminatedOpacity : 1,
         }}>
-          {/* Left player */}
-          <div className="tw-bk-player tw-bk-player--left" style={{
-            flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0,
-            opacity: hasWinner && !p1Won ? eliminatedOpacity : 1,
+          <div style={{
+            width: 'clamp(32px, 18%, 64px)', aspectRatio: '1', flexShrink: 0,
+            borderRadius: Math.min(cardRadius, 6), overflow: 'hidden',
+            border: `1px solid ${divider}`,
           }}>
-            <div className="tw-bk-thumb" style={{ width: 'clamp(36px, 15%, 80px)', aspectRatio: '1 / 1', flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
-              {s1?.image ? (
-                <img src={s1.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.06)', borderRadius: 6 }} />
-              )}
-            </div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              {showSlotName && s1?.name && (
-                <div style={{
-                  fontSize: slotNameSize + 1, fontWeight: 700, color: slotNameColor,
-                  textTransform: 'uppercase', letterSpacing: '0.4px',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>{s1.name}</div>
-              )}
-              <div style={{ fontSize: nameSize - 1, color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {p1}
-              </div>
-            </div>
-          </div>
-
-          {/* Center: multipliers + X */}
-          <div className="tw-bk-center" style={{
-            display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
-          }}>
-            <span style={{ fontSize: multiSize, fontWeight: 700, color: parseFloat(m1) > 0 ? multiColor : '#64748b', fontFamily }}>
-              {m1}
-            </span>
-            {isFinal && prize ? (
-              <div className="tw-bk-prize" style={{
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
-              }}>
-                <span style={{ fontSize: 10, fontWeight: 700, color: bkAccent, letterSpacing: '0.5px' }}>✕</span>
-                <span style={{ fontSize: 11, fontWeight: 700, color: multiColor }}>{prize}</span>
-              </div>
+            {slot?.image ? (
+              <img src={slot.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
             ) : (
-              <span style={{
-                fontSize: 13, fontWeight: 700, color: bkAccent,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                width: 24, height: 24,
-              }}>✕</span>
+              <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.04)' }} />
             )}
-            <span style={{ fontSize: multiSize, fontWeight: 700, color: parseFloat(m2) > 0 ? multiColor : '#64748b', fontFamily }}>
-              {m2}
-            </span>
           </div>
-
-          {/* Right player */}
-          <div className="tw-bk-player tw-bk-player--right" style={{
-            flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0,
-            flexDirection: 'row-reverse', textAlign: 'right',
-            opacity: hasWinner && !p2Won ? eliminatedOpacity : 1,
-          }}>
-            <div className="tw-bk-thumb" style={{ width: 'clamp(36px, 15%, 80px)', aspectRatio: '1 / 1', flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
-              {s2?.image ? (
-                <img src={s2.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
-              ) : (
-                <div style={{ width: '100%', height: '100%', background: 'rgba(255,255,255,0.06)', borderRadius: 6 }} />
-              )}
-            </div>
-            <div style={{ minWidth: 0, flex: 1 }}>
-              {showSlotName && s2?.name && (
-                <div style={{
-                  fontSize: slotNameSize + 1, fontWeight: 700, color: slotNameColor,
-                  textTransform: 'uppercase', letterSpacing: '0.4px',
-                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>{s2.name}</div>
-              )}
-              <div style={{ fontSize: nameSize - 1, color: '#94a3b8', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {p2}
-              </div>
-            </div>
+          <div style={{ minWidth: 0, flex: 1, textAlign: isRight ? 'right' : 'left' }}>
+            {showSlotName && slot?.name && (
+              <div style={{
+                fontSize: Math.max(slotNameSize, 10), fontWeight: 700, color: slotNameColor,
+                textTransform: 'uppercase', letterSpacing: '0.3px',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>{slot.name}</div>
+            )}
+            <div style={{
+              fontSize: nameSize, fontWeight: 600, color: nameColor, fontFamily,
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>{name}</div>
+            <div style={{
+              fontSize: multiSize, fontWeight: 700, fontFamily,
+              color: parseFloat(multi) > 0 ? multiColor : '#64748b',
+            }}>{multi}x</div>
           </div>
         </div>
       );
     };
 
-    return (
-      <div className="tw-bk-wrap" style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-        {/* Header */}
-        <div className="tw-bk-header" style={{
-          background: bkHeaderBg, padding: '10px 14px',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          borderBottom: `1px solid ${bkDividerColor}`,
+    const renderBracketMatch = (match, mIdx, isFinal) => {
+      const hasWinner = match.winner !== null && match.winner !== undefined;
+      const p1Won = match.winner === match.player1;
+      const p2Won = match.winner === match.player2;
+      const isCurrentMatch = !hasWinner && isLivePhase;
+
+      return (
+        <div key={mIdx} style={{
+          background: isFinal ? `${accent}12` : cardBg,
+          border: `1px solid ${isFinal ? `${accent}40` : isCurrentMatch ? `${swordColor}55` : divider}`,
+          borderRadius: cardRadius,
+          padding: '8px 12px',
+          display: 'flex', alignItems: 'center', gap: 6,
+          position: 'relative',
+          transition: 'border-color 0.2s',
         }}>
-          <span style={{ fontSize: 13, fontWeight: 800, color: bkHeaderColor, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-            {title}{tournamentNum ? ` #${tournamentNum}` : ''}
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 12, fontWeight: 700, color: bkAccent }}>{completedMatches}/{totalMatches}</span>
+          {renderBkPlayer(match.player1, match, 'player1', hasWinner && !p1Won, 'left')}
+
+          {/* Center VS badge */}
+          <div style={{
+            flexShrink: 0, width: 28, height: 28,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            borderRadius: '50%',
+            background: isCurrentMatch ? `${swordColor}20` : 'rgba(255,255,255,0.04)',
+            border: `1px solid ${isCurrentMatch ? swordColor : divider}`,
+            fontSize: 11, fontWeight: 800,
+            color: isCurrentMatch ? swordColor : '#64748b',
+          }}>
+            {hasWinner ? '✕' : 'VS'}
+          </div>
+
+          {renderBkPlayer(match.player2, match, 'player2', hasWinner && !p2Won, 'right')}
+        </div>
+      );
+    };
+
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto', fontFamily }}>
+        {/* ── Header ── */}
+        <div style={{
+          padding: '10px 14px',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          borderBottom: `1px solid ${divider}`,
+          background: cardBg,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ width: 3, height: 18, borderRadius: 2, background: accent }} />
             <span style={{
-              fontSize: 11, fontWeight: 700, color: '#94a3b8',
-              background: 'rgba(255,255,255,0.06)', padding: '2px 8px', borderRadius: 4,
-            }}>{pct}%</span>
+              fontSize: 13, fontWeight: 800, color: nameColor, fontFamily,
+              textTransform: 'uppercase', letterSpacing: '0.5px',
+            }}>
+              {title}{tournamentNum ? ` #${tournamentNum}` : ''}
+            </span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontSize: 11, fontWeight: 700, color: accent }}>{completedMatches}/{totalMatches}</span>
+            <div style={{ width: 48, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+              <div style={{ width: `${pct}%`, height: '100%', borderRadius: 2, background: accent, transition: 'width 0.3s' }} />
+            </div>
           </div>
         </div>
 
-        {/* Stats bar */}
-        <div className="tw-bk-stats" style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20,
-          padding: '7px 14px', borderBottom: `1px solid ${bkDividerColor}`,
-          fontSize: 11, color: '#94a3b8', fontWeight: 600,
+        {/* ── Stats ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
+          padding: '6px 14px', borderBottom: `1px solid ${divider}`,
+          fontSize: 11, color: subText, fontWeight: 600, fontFamily,
         }}>
-          <span>⏱ Start</span>
-          <span>👥 Players &nbsp;<strong style={{ color: '#e2e8f0' }}>{playerCount}</strong></span>
-          <span>🏆 Best Of &nbsp;<strong style={{ color: '#e2e8f0' }}>{formatLabel}</strong></span>
+          <span>👥 <strong style={{ color: nameColor }}>{playerCount}</strong> Players</span>
+          <span>🏆 Best of <strong style={{ color: nameColor }}>{formatLabel}</strong></span>
+          {prize && <span>💰 <strong style={{ color: multiColor }}>{prize}</strong></span>}
         </div>
 
-        {/* Phases + Matches */}
-        <div style={{ padding: `${padding}px`, display: 'flex', flexDirection: 'column', gap: gap }}>
+        {/* ── Phase Sections ── */}
+        <div style={{ padding: `${padding}px`, display: 'flex', flexDirection: 'column', gap: gap + 2 }}>
           {allPhases.map((ph, pIdx) => {
             const isFinal = ph.phase === 'finals';
             const isFirst = pIdx === 0;
             return (
               <React.Fragment key={ph.phase}>
-                {/* Phase divider (skip for first phase — already implied by header) */}
                 {!isFirst && (
-                  <div className="tw-bk-divider" style={{
-                    textAlign: 'center', padding: '8px 0 4px',
-                    fontSize: 11, fontWeight: 700, color: '#94a3b8',
-                    textTransform: 'uppercase', letterSpacing: '1px',
-                    borderTop: `1px solid ${bkDividerColor}`,
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '6px 0 2px',
                   }}>
-                    {phaseLabels[ph.phase] || ph.phase}
+                    <div style={{ flex: 1, height: 1, background: isFinal ? accent : divider }} />
+                    <span style={{
+                      fontSize: 10, fontWeight: 700, letterSpacing: '1.2px',
+                      textTransform: 'uppercase', fontFamily,
+                      color: isFinal ? accent : subText,
+                    }}>
+                      {isFinal ? '🏆 ' : ''}{phaseLabels[ph.phase] || ph.phase}
+                    </span>
+                    <div style={{ flex: 1, height: 1, background: isFinal ? accent : divider }} />
                   </div>
                 )}
                 {ph.matches.map((match, mIdx) => renderBracketMatch(match, `${pIdx}-${mIdx}`, isFinal))}

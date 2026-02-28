@@ -284,9 +284,20 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
       return {
         ...c,
         bgColor: nb.bgColor || '#13151e',
-        cardBg: nb.bgColor || '#1a1d2e',
-        cardBorder: nb.accentColor || 'rgba(255,255,255,0.08)',
+        cardBg: nb.bgColor ? `${nb.bgColor}cc` : '#1a1d2e',
+        cardBorder: nb.accentColor ? `${nb.accentColor}30` : 'rgba(255,255,255,0.08)',
         nameColor: nb.textColor || '#ffffff',
+        multiColor: nb.accentColor || '#facc15',
+        swordColor: nb.accentColor || '#eab308',
+        slotNameColor: nb.textColor || '#ffffff',
+        tabBg: 'rgba(255,255,255,0.06)',
+        tabActiveBg: nb.accentColor ? `${nb.accentColor}25` : 'rgba(255,255,255,0.15)',
+        tabColor: nb.mutedColor || '#94a3b8',
+        tabActiveColor: nb.accentColor || '#ffffff',
+        tabBorder: nb.accentColor ? `${nb.accentColor}20` : 'rgba(255,255,255,0.12)',
+        bkAccent: nb.accentColor || '#6366f1',
+        bkHeaderColor: nb.mutedColor || '#94a3b8',
+        xIconColor: nb.accentColor || '#eab308',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
       };
     default:
