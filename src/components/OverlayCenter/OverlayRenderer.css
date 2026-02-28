@@ -1728,6 +1728,44 @@
   font-weight: 800;
 }
 
+/* ─── Shoutout avatar fallback (video proxy failed) ─── */
+.rs-no-clip--shoutout {
+  justify-content: center;
+  height: 100%;
+  padding: 32px 24px;
+  gap: 16px;
+  background: linear-gradient(135deg, rgba(145, 70, 255, 0.08), rgba(100, 65, 165, 0.12));
+}
+
+.rs-shoutout-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--rs-accent, #9146FF);
+  box-shadow: 0 0 40px rgba(145, 70, 255, 0.35);
+}
+
+.rs-shoutout-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.rs-shoutout-name {
+  font-size: 1.4em;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+
+.rs-shoutout-game {
+  font-size: 0.9em;
+  color: rgba(255,255,255,0.7);
+  font-style: italic;
+}
+
 /* ═══════════════════════════════════════════════════
    PHASE ANIMATIONS — Enter / Visible / Exit
    ═══════════════════════════════════════════════════ */

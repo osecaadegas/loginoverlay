@@ -4,14 +4,12 @@
  * Raid shoutout: autoplays a Twitch clip in OBS.
  *
  * Strategy (handles Twitch's mature-content gate):
- *  1. Primary: Proxied <video> via /api/clip-video — streams the raw .mp4
+ *  1. ONLY uses proxied <video> via /api/clip-video — streams the raw .mp4
  *     from our own domain, completely bypassing Twitch's content warning
- *     and iframe play-button gate. Uses muted + callback ref to satisfy
- *     OBS Chromium autoplay policy.
- *  2. Fallback: Twitch iframe embed if .mp4 proxy fails — works for
- *     channels without content warnings.
- *  3. Alert sound plays separately (never from the clip).
- *  4. Video/iframe destroyed on exit (clean lifecycle).
+ *     and iframe play-button gate.
+ *  2. Sound plays separately as an Audio() element.
+ *  3. NO iframe fallback (iframes show content warnings on mature channels).
+ *  4. If clip can't play, shows raider avatar instead.
  *
  * Queues multiple alerts.
  */
@@ -36,40 +34,17 @@ function playAlertSound(soundUrl) {
 
 /**
  * Build a proxied video URL through our own API.
- * The proxy fetches the .mp4 from Twitch CDN server-side — no CORS,
- * no content-warning gate, no play-button.
+ * Send BOTH url and thumbnail so the proxy can try multiple CDN patterns.
  */
 function getProxiedVideoUrl(alert) {
+  const params = [];
   if (alert.clip_video_url) {
-    return `/api/clip-video?url=${encodeURIComponent(alert.clip_video_url)}`;
+    params.push(`url=${encodeURIComponent(alert.clip_video_url)}`);
   }
   if (alert.clip_thumbnail_url) {
-    return `/api/clip-video?thumbnail=${encodeURIComponent(alert.clip_thumbnail_url)}`;
+    params.push(`thumbnail=${encodeURIComponent(alert.clip_thumbnail_url)}`);
   }
-  return null;
-}
-
-/**
- * Build Twitch iframe embed URL (fallback for when .mp4 proxy fails).
- * parent= must match current hostname.
- */
-function buildIframeSrc(clipId, clipEmbedUrl) {
-  const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-  if (clipId) {
-    return `https://clips.twitch.tv/embed?clip=${encodeURIComponent(clipId)}&parent=${host}&autoplay=true&muted=true`;
-  }
-  if (clipEmbedUrl) {
-    try {
-      const url = new URL(clipEmbedUrl);
-      url.searchParams.set('parent', host);
-      url.searchParams.set('autoplay', 'true');
-      url.searchParams.set('muted', 'true');
-      return url.toString();
-    } catch {
-      return `${clipEmbedUrl}&parent=${host}&autoplay=true&muted=true`;
-    }
-  }
-  return null;
+  return params.length > 0 ? `/api/clip-video?${params.join('&')}` : null;
 }
 
 /* ─── Main Widget ─── */
@@ -158,7 +133,7 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   }, [phase]);
 
   const handleVideoError = useCallback(() => {
-    console.warn('[RaidShoutout] Proxy .mp4 failed — falling back to iframe');
+    console.warn('[RaidShoutout] Proxy .mp4 failed — showing avatar fallback (no iframe)');
     setVideoFailed(true);
   }, []);
 
@@ -189,12 +164,9 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     );
   }
 
-  /* ── Resolve playback sources ── */
+  /* ── Resolve proxy video URL ── */
   const proxyVideoUrl = getProxiedVideoUrl(currentAlert);
-  const useNativeVideo = proxyVideoUrl && !videoFailed;
-  const iframeSrc = (!useNativeVideo && (currentAlert.clip_id || currentAlert.clip_embed_url))
-    ? buildIframeSrc(currentAlert.clip_id, currentAlert.clip_embed_url)
-    : null;
+  const canPlayVideo = proxyVideoUrl && !videoFailed;
 
   const wrapperClass = [
     'rs-alert-wrapper',
@@ -206,8 +178,8 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   return (
     <div className={wrapperClass} style={{ '--rs-radius': `${borderRadius}px`, width: '100%', height: '100%', overflow: 'hidden' }}>
       <div className="rs-alert-card rs-alert-card--clip-only">
-        {useNativeVideo ? (
-          /* ── Primary: Proxied <video> — bypasses content warning ── */
+        {canPlayVideo ? (
+          /* ── Proxied <video> — bypasses Twitch content warning entirely ── */
           <div className="rs-clip-container">
             <video
               key={currentAlert.id + '-video'}
@@ -224,27 +196,16 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
               poster={currentAlert.clip_thumbnail_url}
             />
           </div>
-        ) : iframeSrc ? (
-          /* ── Fallback: Twitch iframe embed ── */
-          <div className="rs-clip-container">
-            <iframe
-              key={currentAlert.id + '-iframe'}
-              src={iframeSrc}
-              className="rs-clip-iframe"
-              title={currentAlert.clip_title || 'Raid clip'}
-              allow="autoplay; encrypted-media; fullscreen"
-              allowFullScreen
-              frameBorder="0"
-            />
-          </div>
         ) : (
-          /* ── No clip — avatar fallback ── */
-          <div className="rs-no-clip">
-            <div className="rs-no-clip-avatar-large">
-              {currentAlert.raider_avatar_url ? (
-                <img src={currentAlert.raider_avatar_url} alt="" />
-              ) : (
-                <span>{(currentAlert.raider_display_name || '?')[0]}</span>
+          /* ── Fallback: raider info (NO iframe — avoids content gate) ── */
+          <div className="rs-no-clip rs-no-clip--shoutout">
+            {currentAlert.raider_avatar_url && (
+              <img className="rs-shoutout-avatar" src={currentAlert.raider_avatar_url} alt="" />
+            )}
+            <div className="rs-shoutout-info">
+              <span className="rs-shoutout-name">{currentAlert.raider_display_name || currentAlert.raider_username}</span>
+              {currentAlert.raider_game && (
+                <span className="rs-shoutout-game">Playing {currentAlert.raider_game}</span>
               )}
             </div>
           </div>

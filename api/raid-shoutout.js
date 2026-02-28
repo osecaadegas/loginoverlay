@@ -99,28 +99,55 @@ function pickRandomClip(clips, maxDuration = 60) {
 
 /**
  * Resolve the direct .mp4 video URL from a clip's thumbnail URL.
- * Server-side only — tries a HEAD request to verify the URL is valid.
- * Returns the verified URL or null.
+ * Server-side only — tries HEAD requests against multiple CDN URL patterns
+ * to maximise hit-rate (Twitch uses several CDN hostnames and URL shapes).
+ * Returns the first verified URL or null.
  */
 async function resolveClipVideoUrl(thumbnailUrl) {
   if (!thumbnailUrl) return null;
 
-  // Derive .mp4 from thumbnail: strip "-preview-{W}x{H}.jpg" suffix
-  const mp4Url = thumbnailUrl.replace(/-preview-\d+x\d+\.jpg$/i, '.mp4');
-  if (mp4Url === thumbnailUrl) return null; // regex didn't match
+  // Strip query params first
+  const clean = thumbnailUrl.split('?')[0];
 
-  try {
-    const headRes = await fetch(mp4Url, { method: 'HEAD', redirect: 'follow' });
-    if (headRes.ok) {
-      console.log('[RaidShoutout] Verified clip video URL:', mp4Url);
-      return mp4Url;
-    }
-    console.warn(`[RaidShoutout] Clip .mp4 HEAD returned ${headRes.status}:`, mp4Url);
-    return null;
-  } catch (err) {
-    console.warn('[RaidShoutout] Clip .mp4 HEAD failed:', err.message);
-    return null;
+  // Primary derivation: strip "-preview-WxH.jpg"
+  const primary = clean.replace(/-preview-\d+x\d+\.jpg$/i, '.mp4');
+  if (primary === clean) return null; // regex didn't match
+
+  // Build candidate list (different CDN hostnames)
+  const candidates = [primary];
+  if (primary.includes('clips-media-assets2')) {
+    candidates.push(primary.replace('clips-media-assets2', 'clips-media-assets'));
+  } else if (primary.includes('clips-media-assets.')) {
+    candidates.push(primary.replace('clips-media-assets.', 'clips-media-assets2.'));
   }
+  // Also try URL-decoded variant (AT-cm%7C → AT-cm|)
+  const decoded = decodeURIComponent(primary);
+  if (decoded !== primary) candidates.push(decoded);
+
+  for (const url of candidates) {
+    try {
+      const headRes = await fetch(url, {
+        method: 'HEAD',
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
+          'Referer': 'https://clips.twitch.tv/',
+        },
+      });
+      if (headRes.ok) {
+        console.log('[RaidShoutout] Verified clip video URL:', url);
+        return url;
+      }
+      console.warn(`[RaidShoutout] HEAD ${headRes.status}: ${url}`);
+    } catch (err) {
+      console.warn(`[RaidShoutout] HEAD failed for ${url}: ${err.message}`);
+    }
+  }
+
+  // Even if HEAD failed, return the primary URL so the proxy can try at runtime
+  // (the CDN might block HEAD but allow GET from a different IP)
+  console.log('[RaidShoutout] HEAD checks failed — returning primary URL for proxy to try:', primary);
+  return primary;
 }
 
 // ─── Main Handler ───
