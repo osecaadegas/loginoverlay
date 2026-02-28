@@ -341,17 +341,16 @@ export default function NavbarWidget({ config }) {
             )}
 
             {c.showNowPlaying !== false && displayNowPlaying && (
-              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 160, maxWidth: 300, overflow: 'hidden' }}>
-                <span style={{ fontSize: fontSize * 0.75, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: mutedColor }}>
-                  Now Playing
-                </span>
-                <span style={{ fontSize: fontSize * 0.9, fontWeight: 500, color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {displayNowPlaying.artist}
-                </span>
-                <span style={{ fontSize: fontSize * 1.05, fontWeight: 600, letterSpacing: '0.04em', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                  {displayNowPlaying.track}
-                </span>
-              </div>
+              <NowPlayingDisplay
+                data={displayNowPlaying}
+                musicDisplayStyle={c.musicDisplayStyle || 'text'}
+                fontSize={fontSize}
+                textColor={textColor}
+                mutedColor={mutedColor}
+                accentColor={accentColor}
+                isMetal={isMetal}
+                barHeight={barHeight}
+              />
             )}
 
             {c.showNowPlaying !== false && !displayNowPlaying && c.musicSource === 'spotify' && (
@@ -520,6 +519,184 @@ function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, c
   }
 
   return null;
+}
+
+/* ═══════════════════════════════════════════════════════
+   Now Playing — multiple display styles for navbar
+   ═══════════════════════════════════════════════════════ */
+function NowPlayingDisplay({ data, musicDisplayStyle, fontSize, textColor, mutedColor, accentColor, isMetal, barHeight }) {
+  switch (musicDisplayStyle) {
+    case 'pill':      return <NP_Pill data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} />;
+    case 'marquee':   return <NP_Marquee data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
+    case 'albumart':  return <NP_AlbumArt data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} />;
+    case 'equalizer': return <NP_Equalizer data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
+    case 'text':
+    default:          return <NP_Text data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} />;
+  }
+}
+
+/* Style 1: Text (original) */
+function NP_Text({ data, fontSize, textColor, mutedColor }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 160, maxWidth: 300, overflow: 'hidden' }}>
+      <span style={{ fontSize: fontSize * 0.75, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: mutedColor }}>
+        Now Playing
+      </span>
+      <span style={{ fontSize: fontSize * 0.9, fontWeight: 500, color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {data.artist}
+      </span>
+      <span style={{ fontSize: fontSize * 1.05, fontWeight: 600, letterSpacing: '0.04em', color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+        {data.track}
+      </span>
+    </div>
+  );
+}
+
+/* Style 2: Pill — compact with album art */
+function NP_Pill({ data, fontSize, textColor, mutedColor, accentColor, isMetal, barHeight }) {
+  const h = barHeight * 0.65;
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', gap: 8,
+      borderRadius: isMetal ? 10 : 999, padding: '4px 14px 4px 4px',
+      background: isMetal
+        ? 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))'
+        : `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
+      border: isMetal
+        ? '1px solid rgba(255,255,255,0.08)'
+        : `1px solid ${accentColor}33`,
+      boxShadow: isMetal
+        ? 'inset 0 1px 0 rgba(255,255,255,0.04)'
+        : `0 0 12px ${accentColor}22`,
+      maxWidth: 320, overflow: 'hidden',
+    }}>
+      {data.albumArt ? (
+        <img src={data.albumArt} alt="" style={{
+          width: h, height: h, borderRadius: isMetal ? 7 : h / 2,
+          objectFit: 'cover', flexShrink: 0,
+        }} />
+      ) : (
+        <div style={{
+          width: h, height: h, borderRadius: isMetal ? 7 : h / 2,
+          background: `${accentColor}33`, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: h * 0.5, flexShrink: 0,
+        }}>🎵</div>
+      )}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: fontSize * 0.95, fontWeight: 600, color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.track}
+        </div>
+        <div style={{ fontSize: fontSize * 0.75, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.artist}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Style 3: Marquee — scrolling ticker */
+function NP_Marquee({ data, fontSize, textColor, mutedColor, accentColor }) {
+  const text = `♫ ${data.track}  —  ${data.artist}  `;
+  return (
+    <div style={{ minWidth: 160, maxWidth: 320, overflow: 'hidden', position: 'relative' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2,
+      }}>
+        <span style={{
+          width: 6, height: 6, borderRadius: '50%',
+          background: data.isPlaying ? accentColor : '#666',
+          boxShadow: data.isPlaying ? `0 0 6px ${accentColor}` : 'none',
+          animation: data.isPlaying ? 'spotifyPulse 1.5s ease-in-out infinite' : 'none',
+          flexShrink: 0,
+        }} />
+        <span style={{ fontSize: fontSize * 0.7, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 600 }}>
+          Now Playing
+        </span>
+      </div>
+      <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
+        <span className="nb-marquee-scroll" style={{
+          display: 'inline-block', fontSize: fontSize * 1, fontWeight: 600, color: textColor,
+          animation: data.isPlaying ? 'nbMarquee 12s linear infinite' : 'none',
+          paddingRight: 60,
+        }}>
+          {text}{text}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+/* Style 4: Album Art — prominent art with info */
+function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, isMetal, barHeight }) {
+  const sz = barHeight * 0.72;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 340, overflow: 'hidden' }}>
+      {data.albumArt ? (
+        <div style={{
+          width: sz, height: sz, borderRadius: isMetal ? 10 : 8, overflow: 'hidden', flexShrink: 0,
+          boxShadow: `0 0 16px ${accentColor}33`,
+          border: `1px solid ${accentColor}44`,
+        }}>
+          <img src={data.albumArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      ) : (
+        <div style={{
+          width: sz, height: sz, borderRadius: isMetal ? 10 : 8, flexShrink: 0,
+          background: `${accentColor}22`, border: `1px solid ${accentColor}44`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: sz * 0.5,
+        }}>🎵</div>
+      )}
+      <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <div style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.track}
+        </div>
+        <div style={{ fontSize: fontSize * 0.8, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 1 }}>
+          {data.artist}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
+          {[0, 1, 2].map(i => (
+            <div key={i} style={{
+              width: 2.5, borderRadius: 1, background: accentColor,
+              animation: data.isPlaying ? `spotifyEq ${0.35 + i * 0.1}s ease-in-out infinite alternate` : 'none',
+              height: data.isPlaying ? undefined : 3,
+            }} />
+          ))}
+          <span style={{ fontSize: fontSize * 0.65, color: `${accentColor}cc`, marginLeft: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            {data.isPlaying ? 'Live' : 'Paused'}
+          </span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Style 5: Equalizer — animated bars + info */
+function NP_Equalizer({ data, fontSize, textColor, mutedColor, accentColor }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 160, maxWidth: 320, overflow: 'hidden' }}>
+      {/* Eq bars */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 28, flexShrink: 0 }}>
+        {[0, 1, 2, 3, 4].map(i => (
+          <div key={i} style={{
+            width: 3, borderRadius: 1.5,
+            background: `linear-gradient(to top, ${accentColor}, ${accentColor}66)`,
+            animation: data.isPlaying ? `spotifyEq ${0.3 + i * 0.12}s ease-in-out infinite alternate` : 'none',
+            animationDelay: `${i * 0.08}s`,
+            height: data.isPlaying ? undefined : 4,
+          }} />
+        ))}
+      </div>
+      {/* Info */}
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: fontSize * 1, fontWeight: 700, color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.track}
+        </div>
+        <div style={{ fontSize: fontSize * 0.78, color: accentColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.artist}
+        </div>
+      </div>
+    </div>
+  );
 }
 
 /* ─── Hex to RGB helper ─── */

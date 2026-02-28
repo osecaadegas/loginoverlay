@@ -7238,3 +7238,49 @@ body.wm-resizing {
   background: rgba(255, 68, 68, 0.2);
 }
 
+/* ── Navbar Music Display Style Picker ── */
+.nb-music-styles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.nb-music-style-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.03);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.nb-music-style-btn:hover {
+  border-color: rgba(139, 92, 246, 0.25);
+  background: rgba(139, 92, 246, 0.06);
+}
+.nb-music-style-btn--active {
+  border-color: rgba(139, 92, 246, 0.5);
+  background: rgba(139, 92, 246, 0.12);
+  box-shadow: 0 0 12px rgba(139, 92, 246, 0.1);
+}
+.nb-music-style-icon {
+  font-size: 18px;
+  line-height: 1;
+}
+.nb-music-style-label {
+  font-size: 10px;
+  font-weight: 500;
+  color: #94a3b8;
+}
+.nb-music-style-btn--active .nb-music-style-label {
+  color: #a78bfa;
+}
+
+/* Marquee scrolling animation */
+@keyframes nbMarquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}

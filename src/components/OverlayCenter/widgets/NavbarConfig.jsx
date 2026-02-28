@@ -314,8 +314,27 @@ export default function NavbarConfig({ config, onChange }) {
             {spotifyError && <p className="nb-error">{spotifyError}</p>}
           </div>
 
+          {/* Music display style picker */}
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Display Style</h4>
+          <div className="nb-music-styles">
+            {[
+              { id: 'text',      icon: '📝', label: 'Text' },
+              { id: 'pill',      icon: '💊', label: 'Pill' },
+              { id: 'marquee',   icon: '📜', label: 'Marquee' },
+              { id: 'albumart',  icon: '🖼️', label: 'Album Art' },
+              { id: 'equalizer', icon: '🎛️', label: 'Equalizer' },
+            ].map(s => (
+              <button key={s.id}
+                className={`nb-music-style-btn${(c.musicDisplayStyle || 'text') === s.id ? ' nb-music-style-btn--active' : ''}`}
+                onClick={() => set('musicDisplayStyle', s.id)}>
+                <span className="nb-music-style-icon">{s.icon}</span>
+                <span className="nb-music-style-label">{s.label}</span>
+              </button>
+            ))}
+          </div>
+
           {/* Manual track — always visible (fallback when Spotify not playing) */}
-          <h4 className="nb-subtitle">{c.spotify_access_token ? 'Manual Fallback' : 'Manual Track Info'}</h4>
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>{c.spotify_access_token ? 'Manual Fallback' : 'Manual Track Info'}</h4>
           <p className="oc-config-hint" style={{ margin: '0 0 6px' }}>
             {c.spotify_access_token
               ? 'Shown when Spotify isn\'t playing anything.'
