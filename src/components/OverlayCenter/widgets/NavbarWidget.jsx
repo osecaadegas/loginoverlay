@@ -249,33 +249,23 @@ export default function NavbarWidget({ config }) {
                 width: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
                 height: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
                 borderRadius: isMetal ? '14px' : '50%',
-                background: isMetal
-                  ? `linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.03))`
-                  : `linear-gradient(135deg, ${accentColor}, ${accentColor}88)`,
-                boxShadow: isMetal
-                  ? `0 0 16px rgba(124,141,255,0.2), inset 0 1px 0 rgba(255,255,255,0.08), inset 0 -1px 0 rgba(0,0,0,0.2)`
-                  : `0 0 20px ${accentColor}cc`,
+                background: 'transparent',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 flexShrink: 0,
-                border: isMetal ? '1px solid rgba(255,255,255,0.1)' : 'none',
               }}>
                 {c.avatarUrl ? (
                   <img src={c.avatarUrl} alt="" style={{
-                    width: '78%', height: '78%',
-                    borderRadius: isMetal ? '10px' : '50%',
+                    width: '100%', height: '100%',
+                    borderRadius: isMetal ? '14px' : '50%',
                     objectFit: 'cover',
-                    border: `1px solid ${textColor}40`,
                   }} />
                 ) : (
                   <div style={{
-                    width: '78%', height: '78%',
-                    borderRadius: isMetal ? '10px' : '50%',
-                    border: `1px solid ${textColor}40`,
-                    background: isMetal
-                      ? 'linear-gradient(135deg, #1a1d32, #0e1020)'
-                      : 'radial-gradient(circle at 30% 20%, #fff5, #000)',
+                    width: '100%', height: '100%',
+                    borderRadius: isMetal ? '14px' : '50%',
+                    background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: fontSize * 0.7, fontWeight: 600, letterSpacing: '0.12em',
                     textTransform: 'uppercase', color: textColor,
