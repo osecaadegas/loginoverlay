@@ -71,7 +71,12 @@ registerWidget({
   category: 'casino',
   component: CurrentSlotWidget,
   configPanel: CurrentSlotConfig,
-  styles: [{ id: 'v1', icon: '🎰', label: 'Classic' }],
+  styles: [
+    { id: 'v1', icon: '🎰', label: 'Classic' },
+    { id: 'v2', icon: '💡', label: 'Neon' },
+    { id: 'v3', icon: '✦', label: 'Minimal' },
+    { id: 'v4', icon: '📐', label: 'Compact Bar' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     slotName: '',
@@ -79,6 +84,7 @@ registerWidget({
     betSize: 0,
     imageUrl: '',
     rtp: '',
+    currency: '€',
   },
 });
 
@@ -333,6 +339,7 @@ registerWidget({
 
 // ─── 10. COIN FLIP ─────────────────────────────────────
 import CoinFlipWidget from './CoinFlipWidget';
+import CoinFlipConfig from './CoinFlipConfig';
 registerWidget({
   type: 'coinflip',
   label: 'Coin Flip',
@@ -340,18 +347,27 @@ registerWidget({
   description: 'Animated coin flip for viewer decisions',
   category: 'casino',
   component: CoinFlipWidget,
-  configPanel: null,
-  styles: [{ id: 'v1', icon: '🪙', label: 'Classic' }],
+  configPanel: CoinFlipConfig,
+  styles: [
+    { id: 'v1', icon: '🪙', label: 'Realistic 3D' },
+    { id: 'v2', icon: '💡', label: 'Neon Glow' },
+    { id: 'v3', icon: '✦', label: 'Minimal Flat' },
+    { id: 'v4', icon: '🏆', label: 'Metallic Casino' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     flipping: false,
-    result: 'heads',
-    label: '',
+    result: '',
+    headsLabel: 'HEADS',
+    tailsLabel: 'TAILS',
+    headsImage: '',
+    tailsImage: '',
   },
 });
 
 // ─── 11. SLOT MACHINE ──────────────────────────────────
 import SlotmachineWidget from './SlotmachineWidget';
+import SlotmachineConfig from './SlotmachineConfig';
 registerWidget({
   type: 'slotmachine',
   label: 'Slot Machine',
@@ -359,18 +375,26 @@ registerWidget({
   description: 'Fun animated slot reels for your overlay',
   category: 'casino',
   component: SlotmachineWidget,
-  configPanel: null,
-  styles: [{ id: 'v1', icon: '🎰', label: 'Classic' }],
+  configPanel: SlotmachineConfig,
+  styles: [
+    { id: 'v1', icon: '🎰', label: 'Realistic 3D' },
+    { id: 'v2', icon: '💡', label: 'Neon Arcade' },
+    { id: 'v3', icon: '✦', label: 'Minimal Clean' },
+    { id: 'v4', icon: '🏆', label: 'Vegas Golden' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     spinning: false,
-    reels: ['🍒', '🍒', '🍒'],
-    label: '',
+    results: [],
+    symbols: ['🍒', '🍋', '🍊', '🍇', '⭐', '💎', '7️⃣', '🔔'],
+    reelCount: 3,
+    lastWin: false,
   },
 });
 
 // ─── 12. RANDOM SLOT PICKER ────────────────────────────
 import RandomSlotPickerWidget from './RandomSlotPickerWidget';
+import RandomSlotPickerConfig from './RandomSlotPickerConfig';
 registerWidget({
   type: 'random_slot_picker',
   label: 'Random Slot Picker',
@@ -378,17 +402,24 @@ registerWidget({
   description: 'Randomly pick which slot to play next',
   category: 'casino',
   component: RandomSlotPickerWidget,
-  configPanel: null,
-  styles: [{ id: 'v1', icon: '🎲', label: 'Classic' }],
+  configPanel: RandomSlotPickerConfig,
+  styles: [
+    { id: 'v1', icon: '🎲', label: 'Classic Card' },
+    { id: 'v2', icon: '💡', label: 'Neon' },
+    { id: 'v3', icon: '✦', label: 'Minimal' },
+    { id: 'v4', icon: '🖼️', label: 'Showcase' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     picking: false,
-    selectedSlot: null,
+    pickedSlot: null,
+    slotPool: [],
   },
 });
 
 // ─── 13. WHEEL OF NAMES ────────────────────────────────
 import WheelOfNamesWidget from './WheelOfNamesWidget';
+import WheelOfNamesConfig from './WheelOfNamesConfig';
 registerWidget({
   type: 'wheel_of_names',
   label: 'Wheel of Names',
@@ -396,8 +427,13 @@ registerWidget({
   description: 'Spin a wheel with viewer names or prizes',
   category: 'casino',
   component: WheelOfNamesWidget,
-  configPanel: null,
-  styles: [{ id: 'v1', icon: '🎡', label: 'Classic' }],
+  configPanel: WheelOfNamesConfig,
+  styles: [
+    { id: 'v1', icon: '🎡', label: 'Classic' },
+    { id: 'v2', icon: '💡', label: 'Neon Glow' },
+    { id: 'v3', icon: '✦', label: 'Minimal' },
+    { id: 'v4', icon: '🎨', label: 'Pastel Flat' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     entries: [],
