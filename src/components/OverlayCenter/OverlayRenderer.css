@@ -736,10 +736,10 @@
 .bht2-active-top {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
 }
 .bht2-active-img {
-  width: 64px; height: 64px;
+  width: 72px; height: 72px;
   border-radius: 14px;
   object-fit: cover;
   border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.4));
@@ -751,7 +751,21 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+}
+.bht2-active-name {
+  font-size: 1.05em;
+  font-weight: 700;
+  color: var(--bht2-header-accent, #38bdf8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bht2-active-num {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--bht2-muted, #64748b);
+  flex-shrink: 0;
 }
 .bht2-active-mini-stats {
   display: grid;
@@ -762,25 +776,25 @@
   border-radius: calc(var(--bht2-card-radius, 24px) - 12px);
   background: var(--bht2-header-bg, rgba(2,6,23,0.8));
   border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.3));
-  padding: 4px 8px;
+  padding: 5px 8px;
 }
 .bht2-mini-label {
   display: block;
-  font-size: 0.72em;
-  letter-spacing: 0.12em;
+  font-size: 0.75em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--bht2-muted, #64748b);
 }
 .bht2-mini-value {
   display: block;
-  font-size: 0.88em;
+  font-size: 0.95em;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);
-  margin-top: 2px;
+  margin-top: 1px;
 }
 .bht2-active-img-placeholder {
-  width: 64px; height: 64px;
+  width: 72px; height: 72px;
   border-radius: 14px;
   background: var(--bht2-header-bg, rgba(15,23,42,0.7));
   border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.25));
@@ -927,7 +941,7 @@
 .bht2-slot-name-col { min-width: 0; }
 .bht2-slot-name {
   display: block;
-  font-size: 0.88em;
+  font-size: 0.95em;
   font-weight: 700;
   color: var(--bht2-stat-value, #f1f5f9);
   white-space: nowrap;
@@ -935,12 +949,14 @@
   text-overflow: ellipsis;
 }
 .bht2-slot-bet {
-  font-size: 0.78em;
-  color: var(--bht2-muted, #64748b);
+  font-size: 0.82em;
+  font-weight: 600;
+  color: var(--bht2-muted, #94a3b8);
 }
 .bht2-slot-num {
-  font-size: 0.75em;
-  color: var(--bht2-muted, #475569);
+  font-size: 0.78em;
+  font-weight: 600;
+  color: var(--bht2-muted, #64748b);
   flex-shrink: 0;
 }
 .bht2-slot-bottom-row {
@@ -958,7 +974,7 @@
   color: var(--bht2-muted, #475569);
 }
 .bht2-slot-stat-val {
-  font-size: 0.85em;
+  font-size: 0.9em;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   color: var(--bht2-stat-value, #e0f2fe);

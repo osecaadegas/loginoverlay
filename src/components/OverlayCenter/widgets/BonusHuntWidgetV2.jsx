@@ -191,10 +191,14 @@ export default function BonusHuntWidgetV2({ config, theme }) {
             )}
             <div className="bht2-active-info">
               <div className="bht2-active-header">
-                <div className="bht2-label-sm bht2-accent-sky" style={{ fontWeight: 700 }}>{currentBonus.slotName}</div>
-                <div className="bht2-label-xs">#{currentIndex + 1}</div>
+                <div className="bht2-active-name">{currentBonus.slotName}</div>
+                <div className="bht2-active-num">#{currentIndex + 1}</div>
               </div>
               <div className="bht2-active-mini-stats">
+                <div className="bht2-mini-tile">
+                  <span className="bht2-mini-label">Bet</span>
+                  <span className="bht2-mini-value">{fmt(Number(currentBonus.betSize) || 0)}</span>
+                </div>
                 <div className="bht2-mini-tile">
                   <span className="bht2-mini-label">Win</span>
                   <span className="bht2-mini-value">{currentBonus.opened ? fmt(activeWin) : '—'}</span>
@@ -203,27 +207,7 @@ export default function BonusHuntWidgetV2({ config, theme }) {
                   <span className="bht2-mini-label">Multi</span>
                   <span className="bht2-mini-value bht2-accent-green">{fmtX(activeMultiX)}</span>
                 </div>
-                <div className="bht2-mini-tile">
-                  <span className="bht2-mini-label">Bet</span>
-                  <span className="bht2-mini-value">{fmt(Number(currentBonus.betSize) || 0)}</span>
-                </div>
               </div>
-            </div>
-          </div>
-
-          {/* Detail stat boxes — BET / WIN / START */}
-          <div className="bht2-detail-row">
-            <div className="bht2-detail-box">
-              <span className="bht2-detail-label">Bet</span>
-              <span className="bht2-detail-value">{(Number(currentBonus.betSize) || 0)}</span>
-            </div>
-            <div className="bht2-detail-box">
-              <span className="bht2-detail-label">Win</span>
-              <span className="bht2-detail-value">{currentBonus.opened ? (Number(currentBonus.payout) || 0) : '—'}</span>
-            </div>
-            <div className="bht2-detail-box">
-              <span className="bht2-detail-label">Start</span>
-              <span className="bht2-detail-value">{startMoney}</span>
             </div>
           </div>
         </section>
@@ -275,21 +259,14 @@ export default function BonusHuntWidgetV2({ config, theme }) {
                       <div className="bht2-slot-top-row">
                         <div className="bht2-slot-name-col">
                           <span className="bht2-slot-name">{bonus.slotName || bonus.slot?.name}</span>
-                          <span className="bht2-slot-bet">{fmt(Number(bonus.betSize) || 0)}</span>
                         </div>
                         <span className="bht2-slot-num">#{idx + 1}</span>
                       </div>
                       <div className="bht2-slot-bottom-row">
-                        <div className="bht2-slot-stat-col">
-                          <span className="bht2-slot-stat-label">{isOpened ? 'Win' : 'Locked'}</span>
-                          <span className="bht2-slot-stat-val">{isOpened ? fmt(Number(bonus.payout) || 0) : '—'}</span>
-                        </div>
-                        <div className="bht2-slot-stat-col bht2-slot-stat-col--right">
-                          <span className="bht2-slot-stat-label">Multi</span>
-                          <span className={`bht2-slot-stat-val ${multiX >= 100 ? 'bht2-accent-green' : multiX >= 50 ? 'bht2-accent-amber' : ''}`}>
-                            {fmtX(multiX)}
-                          </span>
-                        </div>
+                        <span className="bht2-slot-bet">{fmt(Number(bonus.betSize) || 0)}</span>
+                        <span className={`bht2-slot-stat-val ${multiX >= 100 ? 'bht2-accent-green' : multiX >= 50 ? 'bht2-accent-amber' : ''}`}>
+                          {isOpened ? fmtX(multiX) : '—'}
+                        </span>
                       </div>
                     </div>
                   </div>
