@@ -2239,7 +2239,8 @@ body.wm-dragging * {
   -moz-user-select: none !important;
   cursor: grabbing !important;
 }
-body.wm-dragging .wm-resize-handle {
+body.wm-dragging .wm-resize-handle,
+body.wm-dragging .wm-resize-edge {
   cursor: inherit !important;
 }
 

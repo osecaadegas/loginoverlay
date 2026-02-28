@@ -28,7 +28,7 @@ const DraggableSlot = memo(function DraggableSlot({
 
   /* ── Drag to move — update DOM directly, save on mouseup ── */
   const handleMouseDown = useCallback((e) => {
-    if (e.target.closest('.wm-resize-handle')) return;
+    if (e.target.closest('.wm-resize-handle') || e.target.closest('.wm-resize-edge')) return;
     e.preventDefault();
     e.stopPropagation();
     onSelect(widget.id);
