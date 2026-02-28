@@ -174,6 +174,7 @@ export default function OverlayControlCenter() {
     rtp_stats:          ['previewMode'],
     background:         ['imageUrl', 'videoUrl'],
     raid_shoutout:      ['soundUrl', 'showClip', 'showGame', 'showViewers'],
+    spotify_now_playing: ['spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at', 'manualArtist', 'manualTrack', 'manualAlbumArt'],
   }), []);
 
   /** Strip user-data keys from a widget config, keeping only styling/layout */

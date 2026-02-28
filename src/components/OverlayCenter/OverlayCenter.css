@@ -7171,3 +7171,70 @@ body.wm-resizing {
   }
 }
 
+/* ═══════════════════════════════════════════════════
+   Spotify Widget — animations & config buttons
+   ═══════════════════════════════════════════════════ */
+
+/* Pulse indicator */
+@keyframes spotifyPulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50%      { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Equalizer bars */
+@keyframes spotifyEq {
+  0%   { height: 4px; }
+  100% { height: 18px; }
+}
+
+/* Vinyl spin */
+@keyframes spotifyVinylSpin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* Wave bars */
+@keyframes spotifyWave {
+  0%   { height: 12%; }
+  100% { height: 70%; }
+}
+
+/* Config: Spotify connect/disconnect buttons */
+.nb-spotify-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.nb-spotify-btn--connect {
+  background: linear-gradient(135deg, #1DB954, #1aa34a);
+  color: #fff;
+  border-color: #1DB954;
+}
+.nb-spotify-btn--connect:hover {
+  background: linear-gradient(135deg, #1ed760, #1DB954);
+  box-shadow: 0 0 16px rgba(29, 185, 84, 0.35);
+}
+.nb-spotify-btn--connect:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.nb-spotify-btn--disconnect {
+  background: rgba(255, 68, 68, 0.1);
+  color: #ff6666;
+  border-color: rgba(255, 68, 68, 0.25);
+  font-size: 11px;
+  padding: 5px 12px;
+}
+.nb-spotify-btn--disconnect:hover {
+  background: rgba(255, 68, 68, 0.2);
+}
+

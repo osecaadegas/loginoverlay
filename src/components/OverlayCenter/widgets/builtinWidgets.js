@@ -552,3 +552,31 @@ registerWidget({
     soundUrl: '',
   },
 });
+
+// ─── 19. SPOTIFY NOW PLAYING ───────────────────────────
+import SpotifyWidget from './SpotifyWidget';
+import SpotifyConfig from './SpotifyConfig';
+registerWidget({
+  type: 'spotify_now_playing',
+  label: 'Spotify Now Playing',
+  icon: '🎵',
+  description: 'Show the currently playing Spotify track on stream',
+  category: 'stream',
+  component: SpotifyWidget,
+  configPanel: SpotifyConfig,
+  styles: [
+    { id: 'album_card',   icon: '🖼️', label: 'Album Card' },
+    { id: 'mini_player',  icon: '▶️',  label: 'Mini Player' },
+    { id: 'vinyl',        icon: '💿', label: 'Vinyl' },
+    { id: 'glass',        icon: '🪟', label: 'Glass' },
+    { id: 'wave',         icon: '🌊', label: 'Wave' },
+    { id: 'neon',         icon: '💡', label: 'Neon' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    accentColor: '#1DB954',
+    manualArtist: '',
+    manualTrack: '',
+    manualAlbumArt: '',
+  },
+});
