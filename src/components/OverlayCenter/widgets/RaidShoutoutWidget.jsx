@@ -1,10 +1,16 @@
 /**
  * RaidShoutoutWidget.jsx — OBS Overlay Widget
  *
- * Minimal raid shoutout: instantly autoplays the Twitch clip.
- * Uses our /api/clip-video proxy to serve the MP4 from our own domain,
- * bypassing Twitch's iframe play-button and CORS restrictions.
- * Falls back to Twitch iframe embed if the proxy fails.
+ * Raid shoutout: autoplays a Twitch clip via iframe embed.
+ * OBS uses Chromium which blocks <video> autoplay but reliably
+ * autoplays muted iframes with allow="autoplay".
+ *
+ * Strategy:
+ *  1. Primary: Twitch iframe embed (muted, autoplay) — works in OBS
+ *  2. Fallback: avatar display if no clip available
+ *  3. Alert sound plays separately (not from the clip)
+ *  4. Iframe destroyed after phase exits (clean lifecycle)
+ *
  * Queues multiple alerts.
  */
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
@@ -16,7 +22,7 @@ import {
   getPendingAlerts,
 } from '../../../services/shoutoutService';
 
-/* ─── Sound Effect ─── */
+/* ─── Sound Effect (plays separately from clip — OBS best practice) ─── */
 function playAlertSound(soundUrl) {
   if (!soundUrl) return;
   try {
@@ -27,38 +33,29 @@ function playAlertSound(soundUrl) {
 }
 
 /**
- * Build a proxied video URL through our own API.
- * The proxy fetches from Twitch CDN server-side (no CORS, no play-button gate).
- *
- * Priority: clip_video_url (pre-verified by API) → thumbnail derivation
+ * Build the Twitch clip iframe embed URL.
+ * parent= must match the page's hostname for Twitch to allow embedding.
  */
-function getProxiedVideoUrl(alert) {
-  // If the API already stored a verified direct .mp4 URL, proxy that
-  if (alert.clip_video_url) {
-    return `/api/clip-video?url=${encodeURIComponent(alert.clip_video_url)}`;
-  }
-  // Otherwise derive from thumbnail and let the proxy do the conversion
-  if (alert.clip_thumbnail_url) {
-    return `/api/clip-video?thumbnail=${encodeURIComponent(alert.clip_thumbnail_url)}`;
-  }
-  return null;
-}
-
-/** Build Twitch iframe embed URL (final fallback) */
 function buildIframeSrc(clipId, clipEmbedUrl) {
   const host = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+  // Support multiple parents for dev + prod
+  const parents = [host];
+  if (host !== 'localhost') parents.push('localhost');
+
   if (clipId) {
-    return `https://clips.twitch.tv/embed?clip=${encodeURIComponent(clipId)}&parent=${host}&autoplay=true&muted=true`;
+    const parentParams = parents.map(p => `&parent=${p}`).join('');
+    return `https://clips.twitch.tv/embed?clip=${encodeURIComponent(clipId)}${parentParams}&autoplay=true&muted=true`;
   }
   if (clipEmbedUrl) {
     try {
       const url = new URL(clipEmbedUrl);
-      url.searchParams.set('parent', host);
+      parents.forEach(p => url.searchParams.append('parent', p));
       url.searchParams.set('autoplay', 'true');
       url.searchParams.set('muted', 'true');
       return url.toString();
     } catch {
-      return `${clipEmbedUrl}&parent=${host}&autoplay=true&muted=true`;
+      const parentParams = parents.map(p => `&parent=${p}`).join('');
+      return `${clipEmbedUrl}${parentParams}&autoplay=true&muted=true`;
     }
   }
   return null;
@@ -70,10 +67,8 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   const [queue, setQueue] = useState([]);
   const [currentAlert, setCurrentAlert] = useState(null);
   const [phase, setPhase] = useState('idle');           // idle → entering → playing → exiting → idle
-  const [videoFailed, setVideoFailed] = useState(false); // true = .mp4 failed, use iframe
   const channelRef = useRef(null);
   const dismissTimerRef = useRef(null);
-  const videoRef = useRef(null);
 
   const MAX_DURATION = c.alertDuration ?? 30;
   const soundUrl = c.soundUrl ?? '';
@@ -88,23 +83,12 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     setQueue(prev => [...prev, alert]);
   }, []);
 
-  // ── Callback ref: set muted as DOM property (React bug workaround) + instant play ──
-  const videoCallbackRef = useCallback((node) => {
-    videoRef.current = node;
-    if (node) {
-      node.muted = true;           // React doesn't set the DOM property reliably
-      node.playsInline = true;
-      node.play().catch(() => {});  // Instant play attempt on mount
-    }
-  }, []);
-
   // ── Process next alert ──
   useEffect(() => {
     if (phase !== 'idle' || queue.length === 0) return;
     const next = queue[0];
     setQueue(prev => prev.slice(1));
     setCurrentAlert(next);
-    setVideoFailed(false);
     setPhase('entering');
     markAlertShown(next.id);
     playAlertSound(soundUrl);
@@ -124,7 +108,7 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
       case 'exiting':
         timer = setTimeout(() => {
           if (currentAlert) markAlertDismissed(currentAlert.id);
-          setCurrentAlert(null);
+          setCurrentAlert(null);   // Destroys iframe (clean lifecycle)
           setPhase('idle');
         }, 500);
         break;
@@ -133,27 +117,6 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     }
     return () => clearTimeout(timer);
   }, [phase, MAX_DURATION, currentAlert]);
-
-  // ── Force-play the <video> whenever it becomes available or phase changes ──
-  useEffect(() => {
-    if (videoRef.current && (phase === 'entering' || phase === 'playing')) {
-      videoRef.current.muted = true;  // Re-enforce muted DOM property
-      videoRef.current.play().catch(() => {});
-    }
-  }, [phase, videoFailed, currentAlert]);
-
-  const handleVideoEnded = useCallback(() => {
-    if (phase === 'playing') {
-      clearTimeout(dismissTimerRef.current);
-      setPhase('exiting');
-    }
-  }, [phase]);
-
-  // If the .mp4 fails (404, CORS, etc.), switch to iframe fallback
-  const handleVideoError = useCallback(() => {
-    console.warn('[RaidShoutout] Direct .mp4 failed, falling back to iframe');
-    setVideoFailed(true);
-  }, []);
 
   // ── Subscribe to realtime ──
   useEffect(() => {
@@ -181,12 +144,8 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     );
   }
 
-  // Route video through our proxy (same-origin, no CORS, no play-button)
-  const proxyVideoUrl = getProxiedVideoUrl(currentAlert);
-  const hasClip = !!(currentAlert.clip_id || currentAlert.clip_embed_url);
-  const iframeSrc = hasClip ? buildIframeSrc(currentAlert.clip_id, currentAlert.clip_embed_url) : null;
-  // Use native video via proxy if available; otherwise iframe
-  const useNativeVideo = proxyVideoUrl && !videoFailed;
+  // Build iframe src — primary playback method for OBS
+  const iframeSrc = buildIframeSrc(currentAlert.clip_id, currentAlert.clip_embed_url);
 
   const wrapperClass = [
     'rs-alert-wrapper',
@@ -198,40 +157,23 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   return (
     <div className={wrapperClass} style={{ '--rs-radius': `${borderRadius}px`, width: '100%', height: '100%', overflow: 'hidden' }}>
       <div className="rs-alert-card rs-alert-card--clip-only">
-        {useNativeVideo ? (
-          /* ── Native <video> — no play button, instant autoplay ── */
-          <div className="rs-clip-container">
-            <video
-              key={currentAlert.id + '-video'}
-              ref={videoCallbackRef}
-              className="rs-clip-video"
-              src={proxyVideoUrl}
-              autoPlay
-              muted
-              playsInline
-              crossOrigin="anonymous"
-              onEnded={handleVideoEnded}
-              onError={handleVideoError}
-              onCanPlay={() => { if (videoRef.current) { videoRef.current.muted = true; videoRef.current.play().catch(() => {}); } }}
-              onLoadedData={() => { if (videoRef.current) { videoRef.current.muted = true; videoRef.current.play().catch(() => {}); } }}
-              poster={currentAlert.clip_thumbnail_url}
-            />
-          </div>
-        ) : iframeSrc ? (
-          /* ── Iframe fallback ── */
+        {iframeSrc ? (
+          /* ── Twitch iframe embed — muted autoplay, OBS-compatible ── */
           <div className="rs-clip-container">
             <iframe
               key={currentAlert.id + '-iframe'}
               src={iframeSrc}
               className="rs-clip-iframe"
               title={currentAlert.clip_title || 'Raid clip'}
-              allowFullScreen
               allow="autoplay; encrypted-media; fullscreen"
+              allowFullScreen
+              muted
+              frameBorder="0"
               referrerPolicy="no-referrer-when-downgrade"
             />
           </div>
         ) : (
-          /* ── No clip at all — avatar fallback ── */
+          /* ── No clip available — avatar fallback ── */
           <div className="rs-no-clip">
             <div className="rs-no-clip-avatar-large">
               {currentAlert.raider_avatar_url ? (
