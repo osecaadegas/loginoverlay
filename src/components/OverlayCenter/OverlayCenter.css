@@ -7482,6 +7482,245 @@ body.wm-resizing {
   height: 60px;
 }
 
+/* ─── Bonus Hunt: Carousel (v7) ─── */
+.oc-bonushunt--carousel {
+  flex-direction: row !important;
+  align-items: stretch;
+  overflow: hidden !important;
+  gap: 0 !important;
+  height: 100%;
+}
+
+/* ── Left stats panel ── */
+.bhtc-stats-panel {
+  flex: 0 0 220px;
+  background: linear-gradient(160deg, #0f1a3c 0%, #0a1230 100%);
+  border-radius: var(--bht-card-radius, 16px);
+  padding: 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 2;
+  box-shadow: 4px 0 20px rgba(0,0,0,0.35);
+}
+.bhtc-stats-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bhtc-icon-circle {
+  width: 34px; height: 34px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+}
+.bhtc-title {
+  font-size: 0.95em;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: 0.5px;
+}
+.bhtc-hunt-id {
+  font-size: 0.7em;
+  color: #7aa0d4;
+}
+
+/* stat rows */
+.bhtc-stat-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+.bhtc-stat-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72em;
+}
+.bhtc-stat-row--sep {
+  height: 1px;
+  background: rgba(255,255,255,0.08);
+  margin: 2px 0;
+}
+.bhtc-stat-row-icon {
+  width: 18px;
+  text-align: center;
+  color: #60a5fa;
+  font-size: 0.85em;
+  flex-shrink: 0;
+}
+.bhtc-stat-row-label {
+  flex: 1;
+  color: #8baacf;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.bhtc-stat-row-value {
+  font-weight: 700;
+  color: #fff;
+  font-size: 1.1em;
+}
+.bhtc-val--green { color: #4ade80; }
+.bhtc-val--red { color: #f87171; }
+
+/* total payout */
+.bhtc-total-pay {
+  background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.08));
+  border: 1px solid rgba(234,179,8,0.25);
+  border-radius: 10px;
+  padding: 10px;
+  text-align: center;
+}
+.bhtc-total-label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.65em;
+  font-weight: 700;
+  color: #d4a017;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+.bhtc-total-value {
+  font-size: 1.6em;
+  font-weight: 800;
+  color: #fff;
+  text-shadow: 0 0 12px rgba(234,179,8,0.3);
+}
+
+/* ── Right carousel ── */
+.bhtc-carousel-wrap {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
+  -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
+  padding: 4px 0;
+}
+.bhtc-carousel-track {
+  display: flex;
+  gap: 10px;
+  will-change: transform;
+  animation: bhtc-slide calc(var(--bhtc-count, 5) * 4s) linear infinite;
+  height: 100%;
+}
+@keyframes bhtc-slide {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.bhtc-carousel-wrap:hover .bhtc-carousel-track {
+  animation-play-state: paused;
+}
+
+/* ── Carousel cards ── */
+.bhtc-card {
+  flex: 0 0 140px;
+  border-radius: 10px;
+  overflow: hidden;
+  background: rgba(10,15,35,0.85);
+  border: 1px solid rgba(255,255,255,0.08);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.bhtc-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+}
+.bhtc-card--active {
+  border-color: #facc15;
+  box-shadow: 0 0 12px rgba(250,204,21,0.3);
+}
+.bhtc-card--opened {
+  opacity: 0.7;
+}
+.bhtc-card--opened .bhtc-card-img-wrap {
+  filter: saturate(0.5);
+}
+
+/* card top bar */
+.bhtc-card-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 5px 8px;
+  background: rgba(0,0,0,0.45);
+  gap: 4px;
+  min-height: 28px;
+}
+.bhtc-card-slot-name {
+  font-size: 0.65em;
+  font-weight: 700;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex: 1;
+  text-transform: uppercase;
+}
+.bhtc-card-bet {
+  font-size: 0.6em;
+  font-weight: 700;
+  color: #93c5fd;
+  white-space: nowrap;
+}
+.bhtc-card-idx {
+  font-size: 0.55em;
+  color: rgba(255,255,255,0.4);
+  font-weight: 600;
+}
+
+/* card image */
+.bhtc-card-img-wrap {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 70px;
+}
+.bhtc-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bhtc-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1f3a, #0e1225);
+}
+
+/* card bottom bar (payout) */
+.bhtc-card-bottom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 4px 8px;
+  background: rgba(0,0,0,0.55);
+  min-height: 24px;
+}
+.bhtc-card-payout {
+  font-size: 0.7em;
+  font-weight: 700;
+  color: #4ade80;
+}
+.bhtc-card-multi {
+  font-size: 0.65em;
+  font-weight: 700;
+  color: #fbbf24;
+  background: rgba(0,0,0,0.4);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
 /* ─── Background: Aurora ─── */
 .oc-bg-aurora {
   overflow: hidden;

@@ -16,6 +16,7 @@ export default function BonusHuntWidget({ config, theme }) {
   const isNeonBH = ds === 'v4_neon';
   const isHorizontalBH = ds === 'v5_horizontal';
   const isCompactBH = ds === 'v6_compact';
+  const isCarousel = ds === 'v7_carousel';
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
@@ -110,7 +111,103 @@ export default function BonusHuntWidget({ config, theme }) {
   const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
     : isHorizontalBH ? ' oc-bonushunt--horizontal'
     : isCompactBH ? ' oc-bonushunt--compact'
+    : isCarousel ? ' oc-bonushunt--carousel'
     : '';
+
+  /* ─── Carousel layout (v7_carousel) ─── */
+  if (isCarousel) {
+    const profit = stats.totalWin - startMoney;
+    return (
+      <div className="oc-widget-inner oc-bonushunt oc-bonushunt--carousel" style={rootStyle}>
+        {/* ── Left stats panel ── */}
+        <div className="bhtc-stats-panel">
+          <div className="bhtc-stats-header">
+            <div className="bhtc-icon-circle">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+              </svg>
+            </div>
+            <div>
+              <div className="bhtc-title">BONUS HUNT</div>
+              <div className="bhtc-hunt-id">Hunt {c.huntName || `#${bonuses.length}`}</div>
+            </div>
+          </div>
+
+          <div className="bhtc-stat-rows">
+            <div className="bhtc-stat-row">
+              <span className="bhtc-stat-row-icon">▶</span>
+              <span className="bhtc-stat-row-label">START</span>
+              <span className="bhtc-stat-row-value">{currency}{startMoney.toFixed(2)}</span>
+            </div>
+            <div className="bhtc-stat-row">
+              <span className="bhtc-stat-row-icon">⇋</span>
+              <span className="bhtc-stat-row-label">BREAK EVEN</span>
+              <span className="bhtc-stat-row-value">{stats.breakEven.toFixed(2)}x</span>
+            </div>
+            <div className="bhtc-stat-row bhtc-stat-row--sep" />
+            <div className="bhtc-stat-row">
+              <span className="bhtc-stat-row-icon">⌀</span>
+              <span className="bhtc-stat-row-label">AVERAGE</span>
+              <span className="bhtc-stat-row-value">{stats.avgMulti.toFixed(2)}x</span>
+            </div>
+            <div className="bhtc-stat-row">
+              <span className="bhtc-stat-row-icon">{profit >= 0 ? '▲' : '▼'}</span>
+              <span className="bhtc-stat-row-label">PROFIT{profit < 0 ? '' : 's'}</span>
+              <span className={`bhtc-stat-row-value ${profit >= 0 ? 'bhtc-val--green' : 'bhtc-val--red'}`}>
+                {profit >= 0 ? '' : '-'}{currency}{Math.abs(profit).toFixed(2)}
+              </span>
+            </div>
+          </div>
+
+          <div className="bhtc-total-pay">
+            <div className="bhtc-total-label">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              TOTAL PAYOUT
+            </div>
+            <div className="bhtc-total-value">{currency}{stats.totalWin.toFixed(2)}</div>
+          </div>
+        </div>
+
+        {/* ── Right carousel ── */}
+        <div className="bhtc-carousel-wrap">
+          <div className="bhtc-carousel-track" style={{ '--bhtc-count': bonuses.length }}>
+            {[...bonuses, ...bonuses].map((bonus, i) => {
+              const idx = i % bonuses.length;
+              const payout = Number(bonus.payout) || 0;
+              const bet = Number(bonus.betSize) || 0;
+              const multi = bet > 0 ? payout / bet : 0;
+              return (
+                <div key={`car-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
+                  className={`bhtc-card ${idx === currentIndex ? 'bhtc-card--active' : ''} ${bonus.opened ? 'bhtc-card--opened' : ''}`}>
+                  <div className="bhtc-card-top-bar">
+                    <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
+                    <span className="bhtc-card-bet">{(bet).toFixed(2)} {currency}</span>
+                    <span className="bhtc-card-idx">#{idx + 1}</span>
+                  </div>
+                  <div className="bhtc-card-img-wrap">
+                    {bonus.slot?.image ? (
+                      <img src={bonus.slot.image} alt={bonus.slotName} className="bhtc-card-img"
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div className="bhtc-card-img-placeholder" />
+                    )}
+                  </div>
+                  {bonus.opened && (
+                    <div className="bhtc-card-bottom-bar">
+                      <span className="bhtc-card-payout">{payout.toFixed(2)}</span>
+                      <span className="bhtc-card-multi">{multi.toFixed(1)}x</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className={`oc-widget-inner oc-bonushunt${bhModeClass}`} style={rootStyle}>

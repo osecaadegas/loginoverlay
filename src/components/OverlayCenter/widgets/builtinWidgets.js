@@ -45,6 +45,7 @@ registerWidget({
     { id: 'v4_neon', icon: '💡', label: 'Neon' },
     { id: 'v5_horizontal', icon: '↔️', label: 'Horizontal' },
     { id: 'v6_compact', icon: '📐', label: 'Compact' },
+    { id: 'v7_carousel', icon: '🎠', label: 'Carousel' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
