@@ -164,6 +164,9 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden',
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
       : undefined,

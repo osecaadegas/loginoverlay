@@ -4,7 +4,7 @@ export default function GiveawayWidget({ config, theme }) {
   const c = config || {};
 
   return (
-    <div className="oc-widget-inner oc-giveaway">
+    <div className="oc-widget-inner oc-giveaway" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
       <h3 className="oc-widget-title">🎁 {c.title || 'Giveaway'}</h3>
       {c.prize && <div className="oc-give-prize">{c.prize}</div>}
       {c.isActive && c.keyword && (

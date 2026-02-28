@@ -5,7 +5,7 @@ export default function RecentWinsWidget({ config }) {
   const wins = c.wins || [];
 
   return (
-    <div className="overlay-recent-wins">
+    <div className="overlay-recent-wins" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
       <div className="overlay-recent-wins-title">Recent Wins</div>
       {wins.length === 0 && <div className="overlay-recent-wins-empty">No wins yet</div>}
       {wins.slice(0, c.maxDisplay || 5).map((w, i) => (

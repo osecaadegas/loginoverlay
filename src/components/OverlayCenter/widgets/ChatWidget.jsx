@@ -290,8 +290,8 @@ export default function ChatWidget({ config, theme }) {
     : undefined;
 
   const style = {
-    width: `${width}px`,
-    height: `${height}px`,
+    width: '100%',
+    height: '100%',
     background: bgColor,
     border: `${borderWidth}px solid ${borderColor}`,
     borderRadius: `${borderRadius}px`,

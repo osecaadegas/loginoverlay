@@ -7,7 +7,7 @@ export default function StatsWidget({ config, theme }) {
   const profitColor = profit >= 0 ? (theme?.accent_color || '#00e1ff') : '#ff6b6b';
 
   return (
-    <div className="oc-widget-inner oc-stats">
+    <div className="oc-widget-inner oc-stats" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
       <h3 className="oc-widget-title">📊 Session Stats</h3>
       <div className="oc-stats-grid">
         <div className="oc-stat">

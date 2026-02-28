@@ -5,7 +5,7 @@ export default function CurrentSlotWidget({ config, theme }) {
   const currency = c.currency || '€';
 
   return (
-    <div className={`oc-widget-inner oc-currentslot ${!c.slotName ? 'oc-currentslot--empty' : ''}`}>
+    <div className={`oc-widget-inner oc-currentslot ${!c.slotName ? 'oc-currentslot--empty' : ''}`} style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
       {!c.slotName && <span className="oc-widget-empty">No slot selected</span>}
       {c.imageUrl && (
         <div className="oc-cs-img">

@@ -12,7 +12,7 @@ export default function SessionStatsWidget({ config }) {
   ];
 
   return (
-    <div className="overlay-session-stats">
+    <div className="overlay-session-stats" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
       {stats.map(s => (
         <div key={s.label} className="overlay-session-stat">
           <div className="overlay-session-stat-label">{s.label}</div>

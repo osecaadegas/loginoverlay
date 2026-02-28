@@ -108,7 +108,9 @@ export default function BonusHuntWidgetV3({ config, theme }) {
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
-    maxWidth: `${widgetWidth}px`,
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden auto',
     '--bht3-header-bg': headerColor,
     '--bht3-header-accent': headerAccent,
     '--bht3-summary-bg': summaryColor,

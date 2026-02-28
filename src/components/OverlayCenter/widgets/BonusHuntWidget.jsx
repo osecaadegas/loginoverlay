@@ -51,7 +51,9 @@ export default function BonusHuntWidget({ config, theme }) {
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
-    maxWidth: `${widgetWidth}px`,
+    width: '100%',
+    height: '100%',
+    overflow: 'hidden auto',
     gap: `${cardGap}px`,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`

@@ -158,7 +158,7 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
 
   if (!currentAlert || phase === 'idle') {
     return (
-      <div className="rs-alert-wrapper rs-phase-visible" style={{ '--rs-radius': `${borderRadius}px` }}>
+      <div className="rs-alert-wrapper rs-phase-visible" style={{ '--rs-radius': `${borderRadius}px`, width: '100%', height: '100%', overflow: 'hidden' }}>
         <div className="rs-alert-card rs-alert-card--clip-only">
           <div className="rs-no-clip">
             <div className="rs-no-clip-avatar-large">
@@ -185,7 +185,7 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
   ].filter(Boolean).join(' ');
 
   return (
-    <div className={wrapperClass} style={{ '--rs-radius': `${borderRadius}px` }}>
+    <div className={wrapperClass} style={{ '--rs-radius': `${borderRadius}px`, width: '100%', height: '100%', overflow: 'hidden' }}>
       <div className="rs-alert-card rs-alert-card--clip-only">
         {useNativeVideo ? (
           /* ── Native <video> — no play button, instant autoplay ── */
