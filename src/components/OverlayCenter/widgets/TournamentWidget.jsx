@@ -218,9 +218,9 @@ export default function TournamentWidget({ config, theme }) {
         opacity: op, flex: 1, minWidth: 0,
         flexDirection: isRight ? 'row-reverse' : 'row',
       }}>
-        {/* Slot thumbnail */}
+        {/* Slot thumbnail — responsive: scales with widget size */}
         <div className="tw-slot-thumb" style={{
-          position: 'relative', width: 60, height: 60, flexShrink: 0,
+          position: 'relative', width: 'clamp(40px, 20%, 100px)', aspectRatio: '1 / 1', flexShrink: 0,
           overflow: 'hidden', borderRadius: 6,
         }}>
           {slot?.image ? (
@@ -469,7 +469,7 @@ export default function TournamentWidget({ config, theme }) {
             flex: 1, display: 'flex', alignItems: 'center', gap: 8, minWidth: 0,
             opacity: hasWinner && !p1Won ? eliminatedOpacity : 1,
           }}>
-            <div className="tw-bk-thumb" style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
+            <div className="tw-bk-thumb" style={{ width: 'clamp(36px, 15%, 80px)', aspectRatio: '1 / 1', flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
               {s1?.image ? (
                 <img src={s1.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               ) : (
@@ -522,7 +522,7 @@ export default function TournamentWidget({ config, theme }) {
             flexDirection: 'row-reverse', textAlign: 'right',
             opacity: hasWinner && !p2Won ? eliminatedOpacity : 1,
           }}>
-            <div className="tw-bk-thumb" style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
+            <div className="tw-bk-thumb" style={{ width: 'clamp(36px, 15%, 80px)', aspectRatio: '1 / 1', flexShrink: 0, borderRadius: 6, overflow: 'hidden' }}>
               {s2?.image ? (
                 <img src={s2.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
               ) : (
