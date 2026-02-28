@@ -88,6 +88,7 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
     'fxParticles', 'fxParticleColor', 'fxParticleCount', 'fxParticleSpeed', 'fxParticleSize',
     'fxFog', 'fxFogColor',
     'fxGlimpse', 'fxGlimpseColor', 'fxGlimpseSpeed',
+    'displayStyle',
   ];
 
   const savePreset = () => {

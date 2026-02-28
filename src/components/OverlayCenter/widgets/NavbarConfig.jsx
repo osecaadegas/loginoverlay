@@ -107,6 +107,7 @@ export default function NavbarConfig({ config, onChange }) {
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
     'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
     'avatarSize', 'badgeSize',
+    'displayStyle', 'musicDisplayStyle',
   ];
 
   const savePreset = () => {

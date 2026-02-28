@@ -7494,7 +7494,7 @@ body.wm-resizing {
 /* ── Left stats panel ── */
 .bhtc-stats-panel {
   flex: 0 0 220px;
-  background: linear-gradient(160deg, #0f1a3c 0%, #0a1230 100%);
+  background: var(--bht-header-bg, linear-gradient(160deg, #0f1a3c 0%, #0a1230 100%));
   border-radius: var(--bht-card-radius, 16px);
   padding: 16px 14px;
   display: flex;
@@ -7510,7 +7510,7 @@ body.wm-resizing {
 }
 .bhtc-icon-circle {
   width: 34px; height: 34px;
-  background: linear-gradient(135deg, #22c55e, #16a34a);
+  background: var(--bht-header-accent, linear-gradient(135deg, #22c55e, #16a34a));
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -7521,12 +7521,12 @@ body.wm-resizing {
 .bhtc-title {
   font-size: 0.95em;
   font-weight: 800;
-  color: #fff;
+  color: var(--bht-text, #fff);
   letter-spacing: 0.5px;
 }
 .bhtc-hunt-id {
   font-size: 0.7em;
-  color: #7aa0d4;
+  color: var(--bht-muted, #7aa0d4);
 }
 
 /* stat rows */
@@ -7550,20 +7550,20 @@ body.wm-resizing {
 .bhtc-stat-row-icon {
   width: 18px;
   text-align: center;
-  color: #60a5fa;
+  color: var(--bht-header-accent, #60a5fa);
   font-size: 0.85em;
   flex-shrink: 0;
 }
 .bhtc-stat-row-label {
   flex: 1;
-  color: #8baacf;
+  color: var(--bht-muted, #8baacf);
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.3px;
 }
 .bhtc-stat-row-value {
   font-weight: 700;
-  color: #fff;
+  color: var(--bht-stat-value, #fff);
   font-size: 1.1em;
 }
 .bhtc-val--green { color: #4ade80; }
@@ -7571,8 +7571,8 @@ body.wm-resizing {
 
 /* total payout */
 .bhtc-total-pay {
-  background: linear-gradient(135deg, rgba(234,179,8,0.15), rgba(234,179,8,0.08));
-  border: 1px solid rgba(234,179,8,0.25);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 15%, transparent), color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 8%, transparent));
+  border: 1px solid color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 25%, transparent);
   border-radius: 10px;
   padding: 10px;
   text-align: center;
@@ -7584,7 +7584,7 @@ body.wm-resizing {
   gap: 6px;
   font-size: 0.65em;
   font-weight: 700;
-  color: #d4a017;
+  color: var(--bht-total-pay-bg, #d4a017);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   margin-bottom: 4px;
@@ -7592,8 +7592,8 @@ body.wm-resizing {
 .bhtc-total-value {
   font-size: 1.6em;
   font-weight: 800;
-  color: #fff;
-  text-shadow: 0 0 12px rgba(234,179,8,0.3);
+  color: var(--bht-total-pay-text, #fff);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
 }
 
 /* ── Right carousel ── */
@@ -7625,8 +7625,8 @@ body.wm-resizing {
   flex: 0 0 140px;
   border-radius: 10px;
   overflow: hidden;
-  background: rgba(10,15,35,0.85);
-  border: 1px solid rgba(255,255,255,0.08);
+  background: color-mix(in srgb, var(--bht-list-bg, #0a0f23) 85%, transparent);
+  border: 1px solid var(--bht-card-outline, rgba(255,255,255,0.08));
   display: flex;
   flex-direction: column;
   position: relative;
@@ -7660,7 +7660,7 @@ body.wm-resizing {
 .bhtc-card-slot-name {
   font-size: 0.65em;
   font-weight: 700;
-  color: #fff;
+  color: var(--bht-text, #fff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -7670,7 +7670,7 @@ body.wm-resizing {
 .bhtc-card-bet {
   font-size: 0.6em;
   font-weight: 700;
-  color: #93c5fd;
+  color: var(--bht-list-accent, #93c5fd);
   white-space: nowrap;
 }
 .bhtc-card-idx {

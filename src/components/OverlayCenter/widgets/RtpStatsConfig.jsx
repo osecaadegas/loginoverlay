@@ -74,6 +74,7 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
     'fontFamily', 'fontSize', 'providerFontSize', 'paddingX', 'paddingY',
     'showSpinner', 'showProvider', 'showRtp', 'showPotential', 'showVolatility',
     'brightness', 'contrast', 'saturation',
+    'displayStyle',
   ];
 
   const savePreset = () => {
