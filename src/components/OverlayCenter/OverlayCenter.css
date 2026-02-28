@@ -2243,6 +2243,11 @@ body.wm-dragging .wm-resize-handle,
 body.wm-dragging .wm-resize-edge {
   cursor: inherit !important;
 }
+body.wm-resizing {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+}
 
 .wm-live-slot {
   overflow: visible;

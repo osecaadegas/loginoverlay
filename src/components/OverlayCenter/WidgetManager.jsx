@@ -16,13 +16,13 @@ const DraggableSlot = memo(function DraggableSlot({
   /* Block native text selection during any drag */
   const blockSelect = useCallback((e) => e.preventDefault(), []);
 
-  function startDrag() {
-    document.body.classList.add('wm-dragging');
+  function startDrag(mode) {
+    document.body.classList.add(mode === 'resize' ? 'wm-resizing' : 'wm-dragging');
     document.addEventListener('selectstart', blockSelect);
     window.getSelection()?.removeAllRanges();
   }
   function endDrag() {
-    document.body.classList.remove('wm-dragging');
+    document.body.classList.remove('wm-dragging', 'wm-resizing');
     document.removeEventListener('selectstart', blockSelect);
   }
 
@@ -42,7 +42,7 @@ const DraggableSlot = memo(function DraggableSlot({
     const origPy = widget.position_y;
     let curX = origPx, curY = origPy;
 
-    startDrag();
+    startDrag('move');
 
     function onMouseMove(ev) {
       ev.preventDefault();
@@ -87,7 +87,7 @@ const DraggableSlot = memo(function DraggableSlot({
     const origPy = widget.position_y;
     let curX = origPx, curY = origPy, curW = origW, curH = origH;
 
-    startDrag();
+    startDrag('resize');
 
     function onMouseMove(ev) {
       ev.preventDefault();
@@ -673,8 +673,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           <input
                             type="number"
                             className="wm-slider-num"
-                            min={s.min}
-                            max={s.max}
                             value={s.val}
                             onChange={e => handlePositionChange(w, s.field, +e.target.value)}
                           />
