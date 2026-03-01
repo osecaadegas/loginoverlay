@@ -27,8 +27,8 @@ export default function CoinFlipConfig({ config, onChange, allWidgets, mode }) {
 
   const flipCoin = () => {
     const result = Math.random() < 0.5 ? 'heads' : 'tails';
-    /* Set result immediately so widget builds animation to correct face */
-    setMulti({ flipping: true, result, _flipStart: Date.now() });
+    /* Set result immediately; save previous result for smooth animation start angle */
+    setMulti({ flipping: true, result, _prevResult: c.result || 'heads', _flipStart: Date.now() });
     setTimeout(() => setMulti({ flipping: false }), 2400);
   };
 

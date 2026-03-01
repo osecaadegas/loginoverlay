@@ -236,21 +236,23 @@ export default function ChatWidget({ config, theme }) {
   const isBubble = chatStyle === 'bubble';
   const isNeon = chatStyle === 'neon';
   const isCompact = chatStyle === 'compact';
+  const isStream = chatStyle === 'stream';
+  const isFloating = chatStyle === 'floating';
 
   /* Style config */
-  const bgColor = c.bgColor || (isMinimal ? 'rgba(10,10,18,0.85)' : isNeon ? 'rgba(5,5,16,0.95)' : isBubble ? 'rgba(15,18,30,0.9)' : isCompact ? 'rgba(12,15,25,0.92)' : isClean ? 'rgba(20,25,46,0.92)' : 'rgba(15,23,42,0.95)');
+  const bgColor = c.bgColor || (isMinimal ? 'rgba(10,10,18,0.85)' : isNeon ? 'rgba(5,5,16,0.95)' : isBubble ? 'rgba(15,18,30,0.9)' : isCompact ? 'rgba(12,15,25,0.92)' : isClean ? 'rgba(20,25,46,0.92)' : isStream ? 'rgba(10,14,28,0.88)' : isFloating ? 'transparent' : 'rgba(15,23,42,0.95)');
   const textColor = c.textColor || '#e2e8f0';
   const headerBg = c.headerBg || 'rgba(30,41,59,0.5)';
   const headerText = c.headerText || '#94a3b8';
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize || (isMinimal ? 15 : isCompact ? 11 : isClean ? 14 : 13);
-  const msgSpacing = c.msgSpacing || (isMinimal ? 1 : isBubble ? 6 : isCompact ? 1 : isClean ? 4 : 2);
-  const borderRadius = c.borderRadius ?? (isMinimal ? 10 : isNeon ? 12 : isClean ? 14 : 12);
-  const borderWidth = c.borderWidth ?? (isMinimal ? 0 : isNeon ? 1 : isClean ? 2 : 1);
-  const borderColor = c.borderColor || (isMinimal ? 'transparent' : isNeon ? 'rgba(99,102,241,0.4)' : isClean ? 'rgba(80,90,140,0.35)' : 'rgba(51,65,85,0.5)');
-  const showHeader = (isMinimal || isCompact) ? false : isClean ? false : c.showHeader !== false;
-  const showLegend = (isMinimal || isCompact) ? false : isClean ? false : c.showLegend !== false;
-  const showBadges = (isMinimal || isCompact) ? false : isClean ? false : c.showBadges !== false;
+  const fontSize = c.fontSize || (isMinimal ? 15 : isCompact ? 11 : isClean ? 14 : isStream ? 14 : isFloating ? 13 : 13);
+  const msgSpacing = c.msgSpacing || (isMinimal ? 1 : isBubble ? 6 : isCompact ? 1 : isClean ? 4 : isStream ? 1 : isFloating ? 6 : 2);
+  const borderRadius = c.borderRadius ?? (isMinimal ? 10 : isNeon ? 12 : isClean ? 14 : isFloating ? 0 : isStream ? 8 : 12);
+  const borderWidth = c.borderWidth ?? (isMinimal ? 0 : isNeon ? 1 : isClean ? 2 : isFloating ? 0 : isStream ? 0 : 1);
+  const borderColor = c.borderColor || (isMinimal ? 'transparent' : isNeon ? 'rgba(99,102,241,0.4)' : isClean ? 'rgba(80,90,140,0.35)' : isFloating ? 'transparent' : isStream ? 'transparent' : 'rgba(51,65,85,0.5)');
+  const showHeader = (isMinimal || isCompact || isStream || isFloating) ? false : isClean ? false : c.showHeader !== false;
+  const showLegend = (isMinimal || isCompact || isStream || isFloating) ? false : isClean ? false : c.showLegend !== false;
+  const showBadges = (isMinimal || isCompact || isStream || isFloating) ? false : isClean ? false : c.showBadges !== false;
   const width = c.width || 350;
   const height = c.height || 500;
   const nameBold = c.nameBold ?? true;
@@ -315,10 +317,13 @@ export default function ChatWidget({ config, theme }) {
     : isBubble ? ' ov-chat-widget--bubble'
     : isNeon ? ' ov-chat-widget--neon'
     : isCompact ? ' ov-chat-widget--compact'
+    : isStream ? ' ov-chat-widget--stream'
+    : isFloating ? ' ov-chat-widget--floating'
     : '';
 
   return (
     <div className={`ov-chat-widget${modeClass}`} style={style}>
+      {isFloating && <style>{`@keyframes ov-float-in{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}`}</style>}
       {showHeader && (
         <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
           <span className="ov-chat-header-title">Live Chat</span>
@@ -372,6 +377,46 @@ export default function ChatWidget({ config, theme }) {
                     {msg.raidViewers > 0 && (
                       <span className="ov-chat-raid-count">{msg.raidViewers}</span>
                     )}
+                  </div>
+                </div>
+              );
+            }
+
+            /* Stream raid: inline with highlight */
+            if (isStream) {
+              return (
+                <div key={msg.id} className="ov-chat-msg ov-chat-raid" style={{
+                  padding: `${msgSpacing + 1}px ${msgPadH}px`,
+                  background: raidBg + '22',
+                  borderLeft: `3px solid ${raidBorder}`,
+                  display: 'flex', alignItems: 'baseline', gap: 4,
+                }}>
+                  <span style={{ color: '#d8b4fe', fontWeight: 700 }}>⚔️ {msg.username}</span>
+                  <span className="ov-chat-text" style={{ color: raidText }}>{msg.message}</span>
+                  {msg.raidViewers > 0 && <span style={{ color: '#c4b5fd', fontSize: '0.8em' }}>👥 {msg.raidViewers}</span>}
+                </div>
+              );
+            }
+
+            /* Floating raid: pill bubble */
+            if (isFloating) {
+              return (
+                <div key={msg.id} className="ov-chat-msg ov-chat-raid" style={{
+                  padding: `${msgSpacing + 2}px 4px`,
+                  animation: 'ov-float-in 0.4s ease-out',
+                }}>
+                  <div style={{
+                    display: 'inline-flex', flexDirection: 'column',
+                    background: 'rgba(124,58,237,0.55)', borderRadius: 16,
+                    padding: '8px 14px', maxWidth: '90%', backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(168,85,247,0.5)',
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
+                      <span style={{ fontSize: '0.75em', fontWeight: 700, color: '#d8b4fe' }}>⚔️ RAID</span>
+                      <span style={{ fontWeight: 700, color: '#e9d5ff' }}>{msg.username}</span>
+                      {msg.raidViewers > 0 && <span style={{ fontSize: '0.8em', color: '#c4b5fd' }}>👥 {msg.raidViewers}</span>}
+                    </div>
+                    <span className="ov-chat-text" style={{ color: '#f5f3ff' }}>{msg.message}</span>
                   </div>
                 </div>
               );
@@ -487,6 +532,35 @@ export default function ChatWidget({ config, theme }) {
                   {msg.username}:
                 </span>
                 <span className="ov-chat-text" style={{ marginLeft: '4px' }}>{msg.message}</span>
+              </div>
+            );
+          }
+
+          /* Stream: clean Twitch-style colored names */
+          if (isStream) {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--stream" style={{ padding: `${msgSpacing}px ${msgPadH}px`, display: 'flex', alignItems: 'baseline', gap: 0 }}>
+                <span className="ov-chat-username" style={{ color: nameColor, fontWeight: 700, flexShrink: 0 }}>{msg.username}</span>
+                <span style={{ color: 'rgba(255,255,255,0.35)', margin: '0 5px', flexShrink: 0 }}>:</span>
+                <span className="ov-chat-text" style={{ wordBreak: 'break-word' }}>{msg.message}</span>
+              </div>
+            );
+          }
+
+          /* Floating: transparent bg with floating bubble pills */
+          if (isFloating) {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--floating" style={{
+                padding: `${msgSpacing + 1}px 4px`, animation: 'ov-float-in 0.4s ease-out',
+              }}>
+                <div style={{
+                  display: 'inline-flex', flexDirection: 'column', alignItems: 'flex-start',
+                  background: 'rgba(0,0,0,0.45)', borderRadius: 16, padding: '5px 12px',
+                  maxWidth: '88%', backdropFilter: 'blur(4px)',
+                }}>
+                  <span className="ov-chat-username" style={{ color: nameColor, fontWeight: 700, fontSize: '0.82em', lineHeight: 1.2 }}>{msg.username}</span>
+                  <span className="ov-chat-text" style={{ lineHeight: 1.35, wordBreak: 'break-word' }}>{msg.message}</span>
+                </div>
               </div>
             );
           }

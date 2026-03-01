@@ -39,7 +39,7 @@ export default function SlotmachineWidget({ config }) {
   /* ── Shared keyframes ── */
   const kf = `
     @keyframes sm-scroll{from{transform:translateY(0)}to{transform:translateY(-${scrollEnd}%)}}
-    @keyframes sm-blur{0%{filter:blur(0)}10%{filter:blur(3px)}65%{filter:blur(2.5px)}85%{filter:blur(1px)}95%{filter:blur(.3px)}100%{filter:blur(0)}}
+    @keyframes sm-blur{0%{filter:blur(0)}5%{filter:blur(3px)}25%{filter:blur(3px)}55%{filter:blur(1.5px)}80%{filter:blur(.4px)}100%{filter:blur(0)}}
     @keyframes sm-land{0%{transform:scale(1.08)}50%{transform:scale(.97)}100%{transform:scale(1)}}
     @keyframes sm-win-flash{0%,100%{box-shadow:0 0 8px ${accent}33}50%{box-shadow:0 0 28px ${accent}88,0 0 60px ${accent}33}}
     @keyframes sm-shine{0%{background-position:-200% center}100%{background-position:200% center}}
@@ -55,7 +55,7 @@ export default function SlotmachineWidget({ config }) {
           <div style={{
             display:'flex', flexDirection:'column', alignItems:'center',
             height:`${totalItems * 100}%`,
-            animation:`sm-scroll ${dur}s cubic-bezier(0.12,0,0.25,1) forwards, sm-blur ${dur}s ease-in-out forwards`,
+            animation:`sm-scroll ${dur}s cubic-bezier(0.33,1,0.68,1) forwards, sm-blur ${dur}s linear forwards`,
           }}>
             {strip.map((s, j) => (
               <div key={j} style={{ flex:'0 0 auto', height:`${(100/totalItems).toFixed(3)}%`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'inherit' }}>{s}</div>

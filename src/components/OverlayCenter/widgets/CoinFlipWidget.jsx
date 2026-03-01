@@ -18,23 +18,25 @@ export default function CoinFlipWidget({ config }) {
 
   /* ── Enhanced 3D keyframes with parabolic arc ── */
   const END = isHeads ? 3600 : 3780;
-  const r = (f) => Math.round(END * f);
+  /* Start animation from where the coin currently rests (previous result face) */
+  const prevAngle = (c._prevResult || 'heads') !== 'tails' ? 0 : 180;
+  const at = (f) => Math.round(prevAngle + (END - prevAngle) * f);
   /* Resting rotation so coin shows the correct face when stopped */
   const flipRest = isHeads ? 'rotateY(0deg)' : 'rotateY(180deg)';
 
   const kf3d = `
     @keyframes cf-3d-flip{
-      0%  {transform:rotateY(0deg) rotateX(0deg) translateY(0)}
-      6%  {transform:rotateY(${r(.06)}deg) rotateX(12deg) translateY(-35%)}
-      14% {transform:rotateY(${r(.14)}deg) rotateX(-8deg) translateY(-75%)}
-      24% {transform:rotateY(${r(.24)}deg) rotateX(10deg) translateY(-110%)}
-      38% {transform:rotateY(${r(.38)}deg) rotateX(-6deg) translateY(-130%)}
-      52% {transform:rotateY(${r(.52)}deg) rotateX(5deg) translateY(-115%)}
-      66% {transform:rotateY(${r(.66)}deg) rotateX(-4deg) translateY(-80%)}
-      78% {transform:rotateY(${r(.78)}deg) rotateX(3deg) translateY(-40%)}
-      88% {transform:rotateY(${r(.88)}deg) rotateX(-1.5deg) translateY(-10%)}
-      94% {transform:rotateY(${r(.94)}deg) rotateX(.5deg) translateY(4%)}
-      97% {transform:rotateY(${r(.97)}deg) rotateX(-.3deg) translateY(-2%)}
+      0%  {transform:rotateY(${prevAngle}deg) rotateX(0deg) translateY(0)}
+      6%  {transform:rotateY(${at(.06)}deg) rotateX(12deg) translateY(-35%)}
+      14% {transform:rotateY(${at(.14)}deg) rotateX(-8deg) translateY(-75%)}
+      24% {transform:rotateY(${at(.24)}deg) rotateX(10deg) translateY(-110%)}
+      38% {transform:rotateY(${at(.38)}deg) rotateX(-6deg) translateY(-130%)}
+      52% {transform:rotateY(${at(.52)}deg) rotateX(5deg) translateY(-115%)}
+      66% {transform:rotateY(${at(.66)}deg) rotateX(-4deg) translateY(-80%)}
+      78% {transform:rotateY(${at(.78)}deg) rotateX(3deg) translateY(-40%)}
+      88% {transform:rotateY(${at(.88)}deg) rotateX(-1.5deg) translateY(-10%)}
+      94% {transform:rotateY(${at(.94)}deg) rotateX(.5deg) translateY(4%)}
+      97% {transform:rotateY(${at(.97)}deg) rotateX(-.3deg) translateY(-2%)}
       100%{transform:rotateY(${END}deg) rotateX(0deg) translateY(0)}
     }
     @keyframes cf-shimmer{0%{background-position:-200% center}100%{background-position:200% center}}
@@ -51,7 +53,7 @@ export default function CoinFlipWidget({ config }) {
   };
 
   /* Shared style helpers */
-  const coinBox = { width:'55%', maxHeight:'72%', aspectRatio:'1', position:'relative', transformStyle:'preserve-3d', flexShrink:0, transform: c.result ? flipRest : 'none' };
+  const coinBox = { width:'55%', maxHeight:'72%', aspectRatio:'1', position:'relative', transformStyle:'preserve-3d', flexShrink:0, transform: flipping ? `rotateY(${prevAngle}deg)` : (c.result ? flipRest : 'none') };
   const face = (extra) => ({ position:'absolute', inset:0, borderRadius:'50%', backfaceVisibility:'hidden', display:'flex', alignItems:'center', justifyContent:'center', ...extra });
   const ani3d = flipping ? 'cf-3d-flip 2.2s cubic-bezier(.22,.68,.36,1) forwards' : (c.result ? 'cf-land 0.35s ease-out forwards' : 'none');
 

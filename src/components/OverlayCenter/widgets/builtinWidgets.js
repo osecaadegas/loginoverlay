@@ -169,7 +169,12 @@ registerWidget({
   category: 'casino',
   component: GiveawayWidget,
   configPanel: GiveawayConfig,
-  styles: [{ id: 'v1', icon: '🎁', label: 'Classic' }],
+  styles: [
+    { id: 'v1', icon: '🎁', label: 'Classic' },
+    { id: 'v2', icon: '📊', label: 'Compact' },
+    { id: 'v3', icon: '💡', label: 'Neon' },
+    { id: 'v4', icon: '✦', label: 'Minimal' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     title: '',
@@ -261,6 +266,8 @@ registerWidget({
     { id: 'bubble', icon: '💬', label: 'Bubble' },
     { id: 'neon', icon: '💡', label: 'Neon' },
     { id: 'compact', icon: '📐', label: 'Compact' },
+    { id: 'stream', icon: '🎮', label: 'Stream' },
+    { id: 'floating', icon: '☁️', label: 'Floating' },
   ],
   styleConfigKey: 'chatStyle',
   defaults: {
