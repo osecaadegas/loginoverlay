@@ -33,10 +33,17 @@ export default async function handler(req, res) {
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [{ price: selected.priceId, quantity: 1 }],
-      mode: 'payment',
+      mode: 'subscription',
       success_url: `${domain}/premium?success=true`,
       cancel_url: `${domain}/premium?canceled=true`,
       customer_email: userEmail,
+      subscription_data: {
+        metadata: {
+          userId,
+          months: String(selected.months),
+          type: 'overlay_premium',
+        },
+      },
       metadata: {
         userId,
         months: String(selected.months),

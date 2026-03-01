@@ -214,7 +214,7 @@ export default function PricingPage() {
         {/* Info footer */}
         <div className="pricing-footer">
           <p className="pricing-footer-text">
-            One-time payment — no auto-renewal. Extend anytime by purchasing again.
+            Auto-renewing subscription — cancel anytime from your Stripe portal.
           </p>
           <p className="pricing-footer-secure">
             <svg className="pricing-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
