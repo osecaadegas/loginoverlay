@@ -74,9 +74,7 @@ export default function Sidebar({ className = '', onClose }) {
   const active = (path) => location.pathname === path;
   const toggle = (key) => setOpenSection(openSection === key ? null : key);
 
-  const handleTwitchLogin = () => {
-    window.location.href = `${import.meta.env.VITE_SUPABASE_URL}/auth/v1/authorize?provider=twitch&redirect_to=${window.location.origin}`;
-  };
+  const handleLogin = () => navigate('/login');
 
   const handleLogout = async () => {
     await signOut();
@@ -168,9 +166,9 @@ export default function Sidebar({ className = '', onClose }) {
           </div>
         </div>
       ) : (
-        <button className="sb-twitch" onClick={handleTwitchLogin}>
-          <TwitchIcon />
-          <span>{t('login_with_twitch', 'Login with Twitch')}</span>
+        <button className="sb-twitch" onClick={handleLogin}>
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M12 12c2.7 0 5-2.3 5-5s-2.3-5-5-5-5 2.3-5 5 2.3 5 5 5zm0 2c-3.3 0-10 1.7-10 5v2h20v-2c0-3.3-6.7-5-10-5z"/></svg>
+          <span>{t('sign_in', 'Sign In')}</span>
         </button>
       )}
 

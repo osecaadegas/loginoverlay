@@ -80,6 +80,16 @@ export const AuthProvider = ({ children }) => {
     return { data, error };
   };
 
+  const signInWithDiscord = async () => {
+    const { data, error } = await supabase.auth.signInWithOAuth({
+      provider: 'discord',
+      options: {
+        redirectTo: `${window.location.origin}/`
+      }
+    });
+    return { data, error };
+  };
+
   const value = {
     user,
     loading,
@@ -88,6 +98,7 @@ export const AuthProvider = ({ children }) => {
     signOut,
     signInWithGoogle,
     signInWithTwitch,
+    signInWithDiscord,
   };
 
   return (

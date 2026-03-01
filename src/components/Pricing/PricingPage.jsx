@@ -73,7 +73,7 @@ export default function PricingPage() {
 
   const handleSubscribe = async (plan) => {
     if (!user) {
-      navigate('/');
+      navigate('/login');
       return;
     }
 

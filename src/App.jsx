@@ -39,6 +39,7 @@ import DeveloperPage from './components/DeveloperPage/DeveloperPage';
 import PricingPage from './components/Pricing/PricingPage';
 import PrivacyPolicy from './components/Legal/PrivacyPolicy';
 import TermsOfService from './components/Legal/TermsOfService';
+import LoginPage from './components/Login/LoginPage';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -651,6 +652,7 @@ function App() {
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/spotify-callback" element={<SpotifyCallback />} />
+                <Route path="/login" element={<LoginPage />} />
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
               </Routes>
