@@ -9,14 +9,8 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
-// Disable body parsing, need raw body for webhook verification
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const config = { api: { bodyParser: false } };
 
-// Helper to get raw body
 async function getRawBody(req) {
   const chunks = [];
   for await (const chunk of req) {
@@ -31,48 +25,71 @@ export default async function handler(req, res) {
   }
 
   let event;
-
   try {
     const rawBody = await getRawBody(req);
     const sig = req.headers['stripe-signature'];
-
-    // Verify the webhook signature
     event = stripe.webhooks.constructEvent(rawBody, sig, endpointSecret);
   } catch (err) {
     console.error('Webhook signature verification failed:', err.message);
     return res.status(400).json({ error: `Webhook Error: ${err.message}` });
   }
 
-  // Handle the event
   switch (event.type) {
     case 'checkout.session.completed': {
       const session = event.data.object;
-      
-      // Check if this is a season pass purchase
-      if (session.metadata?.type === 'season_pass_premium') {
-        const userId = session.metadata.userId;
-        const seasonId = parseInt(session.metadata.seasonId) || 1;
 
-        console.log(`Processing Season Pass Premium for user ${userId}`);
+      if (session.metadata?.type === 'overlay_premium') {
+        const userId = session.metadata.userId;
+        const months = parseInt(session.metadata.months) || 1;
+
+        console.log(`Granting premium role to ${userId} for ${months} month(s)`);
 
         try {
-          // Update user's season pass progress to has_premium = true
-          const { data, error } = await supabase
-            .from('season_pass_progress')
-            .upsert({
-              user_id: userId,
-              season_id: seasonId,
-              has_premium: true,
-              premium_purchased_at: new Date().toISOString(),
-              stripe_payment_id: session.payment_intent
-            }, {
-              onConflict: 'user_id,season_id'
-            });
+          /* Check if user already has an active premium role */
+          const { data: existing } = await supabase
+            .from('user_roles')
+            .select('id, access_expires_at')
+            .eq('user_id', userId)
+            .eq('role', 'premium')
+            .maybeSingle();
 
-          if (error) {
-            console.error('Error updating season pass progress:', error);
+          /* Calculate new expiry: extend from current expiry if still active, else from now */
+          const now = new Date();
+          let baseDate = now;
+          if (existing?.access_expires_at) {
+            const currentExpiry = new Date(existing.access_expires_at);
+            if (currentExpiry > now) baseDate = currentExpiry; // extend remaining time
+          }
+
+          const newExpiry = new Date(baseDate);
+          newExpiry.setMonth(newExpiry.getMonth() + months);
+
+          if (existing) {
+            /* Update existing role row */
+            const { error } = await supabase
+              .from('user_roles')
+              .update({
+                is_active: true,
+                access_expires_at: newExpiry.toISOString(),
+                updated_at: now.toISOString(),
+              })
+              .eq('id', existing.id);
+
+            if (error) console.error('Error updating premium role:', error);
+            else console.log(`✅ Premium extended for ${userId} until ${newExpiry.toISOString()}`);
           } else {
-            console.log(`✅ Season Pass Premium activated for user ${userId}`);
+            /* Insert new role row */
+            const { error } = await supabase
+              .from('user_roles')
+              .insert({
+                user_id: userId,
+                role: 'premium',
+                is_active: true,
+                access_expires_at: newExpiry.toISOString(),
+              });
+
+            if (error) console.error('Error inserting premium role:', error);
+            else console.log(`✅ Premium granted to ${userId} until ${newExpiry.toISOString()}`);
           }
         } catch (dbError) {
           console.error('Database error:', dbError);
@@ -81,20 +98,17 @@ export default async function handler(req, res) {
       break;
     }
 
-    case 'payment_intent.succeeded': {
+    case 'payment_intent.succeeded':
       console.log('Payment succeeded:', event.data.object.id);
       break;
-    }
 
-    case 'payment_intent.payment_failed': {
+    case 'payment_intent.payment_failed':
       console.log('Payment failed:', event.data.object.id);
       break;
-    }
 
     default:
       console.log(`Unhandled event type: ${event.type}`);
   }
 
-  // Return 200 to acknowledge receipt
   res.status(200).json({ received: true });
 }

@@ -36,6 +36,7 @@ import OverlayControlCenter from './components/OverlayCenter/OverlayControlCente
 import OverlayRenderer from './components/OverlayCenter/OverlayRenderer';
 import SpotifyCallback from './components/SpotifyCallback';
 import DeveloperPage from './components/DeveloperPage/DeveloperPage';
+import PricingPage from './components/Pricing/PricingPage';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -618,6 +619,7 @@ function App() {
                 <Route path="/streamelements" element={<StreamElementsPanel />} />
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/profile" element={<ProfilePage />} />
+                <Route path="/premium" element={<PricingPage />} />
 
                 
                 {/* WebMod Routes - For admins and slot_modders */}
