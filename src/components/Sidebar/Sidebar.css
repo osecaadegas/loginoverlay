@@ -300,6 +300,28 @@
 .sb-social--instagram { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
 .sb-social--discord   { background: linear-gradient(135deg, #5865F2, #4752C4); }
 
+/* Legal links */
+.sb-legal {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 10px;
+}
+.sb-legal-link {
+  color: #4b5563;
+  font-size: 0.68rem;
+  text-decoration: none;
+  transition: color 0.15s;
+}
+.sb-legal-link:hover {
+  color: #9ca3af;
+}
+.sb-legal-dot {
+  color: #374151;
+  font-size: 0.6rem;
+}
+
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .sb { width: 280px; }

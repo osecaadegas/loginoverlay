@@ -232,6 +232,11 @@ export default function Sidebar({ className = '', onClose }) {
             </a>
           ))}
         </div>
+        <div className="sb-legal">
+          <a href="/privacy" className="sb-legal-link">Privacy</a>
+          <span className="sb-legal-dot">·</span>
+          <a href="/terms" className="sb-legal-link">Terms</a>
+        </div>
       </div>
     </aside>
   );
