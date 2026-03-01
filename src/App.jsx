@@ -364,16 +364,6 @@ function AppContent({ isAdminOverlay = false }) {
 
   const handleMenuSelect = (menuId) => {
     console.log('Menu selected:', menuId);
-    if (menuId === 'slotMachine') {
-      console.log('SLOT MACHINE CLICKED - Current state:', showSlotMachine);
-      setShowSlotMachine(!showSlotMachine);
-      console.log('SLOT MACHINE NEW STATE:', !showSlotMachine);
-      return;
-    }
-    if (menuId === 'coinFlip') {
-      setShowCoinFlip(!showCoinFlip);
-      return;
-    }
     switch(menuId) {
       case 'customization':
         setShowCustomization(!showCustomization); // Toggle instead of just opening
@@ -410,12 +400,6 @@ function AppContent({ isAdminOverlay = false }) {
       {showTournament && <TournamentPanel onClose={() => setShowTournament(false)} />}
       {showGiveaway && <GiveawayPanel onClose={() => setShowGiveaway(false)} />}
       {showRandomSlot && <RandomSlotPicker onClose={() => setShowRandomSlot(false)} />}
-      
-      {/* Slot Machine Overlay */}
-      {showSlotMachine && <SlotMachineOverlay onClose={() => setShowSlotMachine(false)} />}
-      
-      {/* Coin Flip */}
-      {showCoinFlip && <CoinFlip onClose={() => setShowCoinFlip(false)} />}
       
       {/* Twitch Chat (only show if enabled in customization) */}
       {showTwitchChatWidget && <TwitchChat channel={localStorage.getItem('twitchChannel') || ''} position={chatSettings.position} width={chatSettings.width} height={chatSettings.height} />}

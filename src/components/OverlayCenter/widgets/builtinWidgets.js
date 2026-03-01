@@ -344,62 +344,7 @@ registerWidget({
   },
 });
 
-// ─── 10. COIN FLIP ─────────────────────────────────────
-import CoinFlipWidget from './CoinFlipWidget';
-import CoinFlipConfig from './CoinFlipConfig';
-registerWidget({
-  type: 'coinflip',
-  label: 'Coin Flip',
-  icon: '🪙',
-  description: 'Animated coin flip for viewer decisions',
-  category: 'casino',
-  component: CoinFlipWidget,
-  configPanel: CoinFlipConfig,
-  styles: [
-    { id: 'v1', icon: '🪙', label: 'Realistic 3D' },
-    { id: 'v2', icon: '💡', label: 'Neon Glow' },
-    { id: 'v3', icon: '✦', label: 'Minimal Flat' },
-    { id: 'v4', icon: '🏆', label: 'Metallic Casino' },
-  ],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    flipping: false,
-    result: '',
-    headsLabel: 'HEADS',
-    tailsLabel: 'TAILS',
-    headsImage: '',
-    tailsImage: '',
-  },
-});
-
-// ─── 11. SLOT MACHINE ──────────────────────────────────
-import SlotmachineWidget from './SlotmachineWidget';
-import SlotmachineConfig from './SlotmachineConfig';
-registerWidget({
-  type: 'slotmachine',
-  label: 'Slot Machine',
-  icon: '🎰',
-  description: 'Fun animated slot reels for your overlay',
-  category: 'casino',
-  component: SlotmachineWidget,
-  configPanel: SlotmachineConfig,
-  styles: [
-    { id: 'v1', icon: '🎰', label: 'Realistic 3D' },
-    { id: 'v2', icon: '💡', label: 'Neon Arcade' },
-    { id: 'v3', icon: '✦', label: 'Minimal Clean' },
-    { id: 'v4', icon: '🏆', label: 'Vegas Golden' },
-  ],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    spinning: false,
-    results: [],
-    symbols: ['🍒', '🍋', '🍊', '🍇', '⭐', '💎', '7️⃣', '🔔'],
-    reelCount: 3,
-    lastWin: false,
-  },
-});
-
-// ─── 12. RANDOM SLOT PICKER ────────────────────────────
+// ─── 10. RANDOM SLOT PICKER ────────────────────────────
 import RandomSlotPickerWidget from './RandomSlotPickerWidget';
 import RandomSlotPickerConfig from './RandomSlotPickerConfig';
 registerWidget({

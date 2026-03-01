@@ -313,8 +313,6 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         mutedColor: nb.mutedColor || '#94a3b8',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
       };
-    case 'coinflip':
-    case 'slotmachine':
     case 'wheel_of_names':
       return {
         ...c,

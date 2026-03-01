@@ -21,8 +21,6 @@ import BonusHuntConfig from './widgets/BonusHuntConfig';
 import TournamentConfig from './widgets/TournamentConfig';
 import CurrentSlotConfig from './widgets/CurrentSlotConfig';
 import WheelOfNamesConfig from './widgets/WheelOfNamesConfig';
-import CoinFlipConfig from './widgets/CoinFlipConfig';
-import SlotmachineConfig from './widgets/SlotmachineConfig';
 import RandomSlotPickerConfig from './widgets/RandomSlotPickerConfig';
 import './OverlayCenter.css';
 
@@ -116,36 +114,6 @@ function WheelOfNamesPanel({ widgets, saveWidget, addWidget, loading }) {
     </div>
   );
   return <div className="oc-panel-section"><WheelOfNamesConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
-}
-
-/* ── Inline wrapper: Coin Flip sidebar panel ── */
-function CoinFlipPanel({ widgets, saveWidget, addWidget, loading }) {
-  const widget = widgets.find(w => w.widget_type === 'coinflip');
-  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
-  if (loading) return <div className="oc-panel-loading">Loading…</div>;
-  if (!widget) return (
-    <div className="oc-empty-panel">
-      <h2>🪙 Coin Flip</h2>
-      <p>No Coin Flip widget found. Add one to get started.</p>
-      <button className="oc-btn-primary" onClick={() => addWidget('coinflip')}>+ Add Coin Flip Widget</button>
-    </div>
-  );
-  return <div className="oc-panel-section"><CoinFlipConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
-}
-
-/* ── Inline wrapper: Slot Machine sidebar panel ── */
-function SlotmachinePanel({ widgets, saveWidget, addWidget, loading }) {
-  const widget = widgets.find(w => w.widget_type === 'slotmachine');
-  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
-  if (loading) return <div className="oc-panel-loading">Loading…</div>;
-  if (!widget) return (
-    <div className="oc-empty-panel">
-      <h2>🎰 Slot Machine</h2>
-      <p>No Slot Machine widget found. Add one to get started.</p>
-      <button className="oc-btn-primary" onClick={() => addWidget('slotmachine')}>+ Add Slot Machine Widget</button>
-    </div>
-  );
-  return <div className="oc-panel-section"><SlotmachineConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
 }
 
 /* ── Inline wrapper: Random Slot Picker sidebar panel ── */
@@ -245,8 +213,6 @@ export default function OverlayControlCenter() {
     chat:               ['twitchEnabled', 'twitchChannel', 'youtubeEnabled', 'youtubeVideoId', 'youtubeApiKey', 'kickEnabled', 'kickChannelId', 'maxMessages'],
     session_stats:      ['wagered', 'won', 'profit', 'bestWin', 'bestMulti', 'slotsPlayed', 'currency'],
     recent_wins:        ['wins', 'currency'],
-    coinflip:           ['flipping', 'result', 'label'],
-    slotmachine:        ['spinning', 'reels', 'label'],
     random_slot_picker: ['picking', 'selectedSlot'],
     wheel_of_names:     ['entries', 'spinning', 'winner'],
     placeholder:        ['html'],
@@ -438,8 +404,6 @@ export default function OverlayControlCenter() {
               { key: 'tournament', icon: '🏆', label: 'Tournament', desc: 'Run slot battles' },
               { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
               { key: 'wheel_of_names', icon: '🎡', label: 'Wheel of Names', desc: 'Spin entries' },
-              { key: 'coinflip', icon: '🪙', label: 'Coin Flip', desc: 'Flip the coin' },
-              { key: 'slotmachine', icon: '🎰', label: 'Slot Machine', desc: 'Spin the reels' },
               { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
               { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
               { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
@@ -562,12 +526,6 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'wheel_of_names' && (
             <WheelOfNamesPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
-          )}
-          {activePanel === 'coinflip' && (
-            <CoinFlipPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
-          )}
-          {activePanel === 'slotmachine' && (
-            <SlotmachinePanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'random_slot_picker' && (
             <RandomSlotPickerPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
