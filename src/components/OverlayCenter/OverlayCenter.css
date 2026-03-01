@@ -7962,12 +7962,17 @@ body.wm-resizing {
   75% { transform: rotateX(0deg) rotateY(-1.5deg); }
 }
 
-/* card wrapper (positioned by inline transform) */
+/* card wrapper — absolutely centred; inline transform slides it into position */
 .bhv8-card-wrapper {
-  position: absolute;
+  /* position set inline */
   width: 180px;
   height: 260px;
   transform-style: preserve-3d;
+  /* ensure left/top centring for absolute cards */
+  left: 50%;
+  top: 50%;
+  margin-left: -90px;
+  margin-top: -130px;
 }
 
 /* actual card */

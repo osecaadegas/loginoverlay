@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 /**
- * V8 — Card Stack / Fan Carousel
- * Shows slot cards in a 3D fan layout with continuous animated movement.
- * Transparent background for OBS. Syncs with navbar theme via BH config keys.
+ * V8 — 3D Carousel
+ * Cards are keyed by bonus index so each DOM element persists and smoothly
+ * transitions between positions via CSS — no content teleportation.
+ * Render window [-3,+3] with ±3 invisible for seamless entry/exit.
  */
 export default function BonusHuntWidgetV8({ config, theme }) {
   const c = config || {};
@@ -64,31 +65,56 @@ export default function BonusHuntWidgetV8({ config, theme }) {
   /* current bonus (first not-opened) */
   const currentBonusIdx = bonuses.findIndex(b => !b.opened);
 
-  /* get bonus at offset from active */
-  const getCardAtOffset = (offset) => {
-    if (total === 0) return null;
-    const idx = ((activeIdx + offset) % total + total) % total;
-    return { bonus: bonuses[idx], idx };
-  };
+  /* ─── Circular offset: shortest distance around the ring ─── */
+  const getOffset = useCallback((idx) => {
+    if (total <= 1) return idx - activeIdx;
+    let off = idx - activeIdx;
+    const half = total / 2;
+    while (off > half) off -= total;
+    while (off < -half) off += total;
+    return off;
+  }, [activeIdx, total]);
 
-  /* ─── 3D card transforms ─── */
-  const positions = [-2, -1, 0, 1, 2];
+  /* ─── Visible cards: render [-3, +3] for smooth entry/exit ─── */
+  const visibleCards = useMemo(() => {
+    if (total === 0) return [];
+    return bonuses
+      .map((bonus, idx) => ({ bonus, idx, offset: getOffset(idx) }))
+      .filter(({ offset }) => Math.abs(offset) <= 3);
+  }, [bonuses, getOffset, total]);
 
-  const cardStyle = (pos) => {
-    const absPos = Math.abs(pos);
-    const scale = pos === 0 ? 1.05 : absPos === 1 ? 0.85 : 0.65;
-    const translateX = pos * 145;
-    const translateZ = pos === 0 ? 40 : absPos === 1 ? -40 : -110;
-    const rotateY = pos * -12;
-    const opacity = pos === 0 ? 1 : absPos === 1 ? 0.88 : 0.5;
-    const zIndex = 10 - absPos * 2;
+  /* ─── 3D carousel card transforms ─── */
+  const cardStyle = (offset) => {
+    const absOff = Math.abs(offset);
+
+    /* Staging positions — invisible entry/exit beyond visible range */
+    if (absOff > 2) {
+      return {
+        position: 'absolute',
+        transform: `translateX(${offset * 160}px) rotateY(${offset * -18}deg) translateZ(-140px) scale(0.35)`,
+        opacity: 0,
+        zIndex: 0,
+        transition: 'transform 0.85s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.85s cubic-bezier(0.33, 1, 0.68, 1), filter 0.85s ease',
+        pointerEvents: 'none',
+        willChange: 'transform, opacity',
+      };
+    }
+
+    const tx = offset * 155;
+    const tz = offset === 0 ? 60 : absOff === 1 ? -20 : -85;
+    const ry = offset * -18;
+    const scale = offset === 0 ? 1.05 : absOff === 1 ? 0.88 : 0.68;
+    const opacity = offset === 0 ? 1 : absOff === 1 ? 0.92 : 0.55;
+    const zIndex = 10 - absOff * 2;
 
     return {
-      transform: `translateX(${translateX}px) translateZ(${translateZ}px) rotateY(${rotateY}deg) scale(${scale})`,
+      position: 'absolute',
+      transform: `translateX(${tx}px) rotateY(${ry}deg) translateZ(${tz}px) scale(${scale})`,
       opacity,
       zIndex,
-      transition: 'all 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-      filter: absPos >= 2 ? 'blur(1.5px)' : 'none',
+      transition: 'transform 0.85s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.85s cubic-bezier(0.33, 1, 0.68, 1), filter 0.85s ease',
+      filter: absOff >= 2 ? 'blur(1.5px)' : 'none',
+      willChange: 'transform, opacity',
     };
   };
 
@@ -130,24 +156,21 @@ export default function BonusHuntWidgetV8({ config, theme }) {
       {/* subtle ambient light */}
       <div className="bhv8-glow" />
 
-      {/* ─── 3D card stack ─── */}
+      {/* ─── 3D carousel ─── */}
       <div className="bhv8-stage">
         <div className="bhv8-cards-perspective">
-          {positions.map(pos => {
-            const data = getCardAtOffset(pos);
-            if (!data) return null;
-            const { bonus, idx } = data;
+          {visibleCards.map(({ bonus, idx, offset }) => {
             const bet = Number(bonus.betSize) || 0;
             const payout = Number(bonus.payout) || 0;
             const multi = bet > 0 ? payout / bet : 0;
-            const isCenter = pos === 0;
+            const isCenter = offset === 0;
             const isCurrent = idx === currentBonusIdx;
             const slotName = bonus.slotName || bonus.slot?.name || 'Unknown';
             const provider = bonus.slot?.provider || bonus.provider || '';
             const image = bonus.slot?.image || '';
 
             return (
-              <div key={`pos-${pos}`} className="bhv8-card-wrapper" style={cardStyle(pos)}>
+              <div key={`card-${idx}`} className="bhv8-card-wrapper" style={cardStyle(offset)}>
                 <div className={`bhv8-card${isCenter ? ' bhv8-card--center' : ''}${isCurrent ? ' bhv8-card--current' : ''}${bonus.opened ? ' bhv8-card--opened' : ''}`}>
 
                   {/* slot image */}
