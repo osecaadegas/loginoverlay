@@ -619,7 +619,10 @@ registerWidget({
   category: 'casino',
   component: SingleSlotWidget,
   configPanel: SingleSlotConfig,
-  styles: [{ id: 'v1', icon: '🎰', label: 'Default' }],
+  styles: [
+    { id: 'v1', icon: '🎰', label: 'Default' },
+    { id: 'v2_card', icon: '🃏', label: 'Card' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     slotName: '',
@@ -628,7 +631,7 @@ registerWidget({
     rtp: '',
     currency: '€',
     accentColor: '#7c3aed',
-    bgColor: 'rgba(13, 13, 30, 0.95)',
+    bgColor: 'transparent',
     textColor: '#ffffff',
     mutedColor: '#94a3b8',
     fontFamily: "'Inter', sans-serif",

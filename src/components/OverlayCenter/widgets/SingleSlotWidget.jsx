@@ -2,15 +2,8 @@ import React from 'react';
 
 /**
  * SingleSlotWidget — OBS overlay widget
- * Displays a single slot with per-user stats like the screenshot:
- * ┌──────────────────────────────────────────────┐
- * │ [img]  SLOT NAME          AVERAGE    BEST X  │
- * │        PROVIDER             169X      169X   │
- * │        N/A               TOTAL BONUS BEST WIN│
- * │                              1        2867€  │
- * ├──────────────────────────────────────────────┤
- * │ LAST WINS  #4  BET 7€  PAY 671.3€  MULTI 96X│
- * └──────────────────────────────────────────────┘
+ * v1: Horizontal layout (image left, stats right, bottom bar)
+ * v2_card: Vertical card (image top, name overlay, stats grid below)
  */
 
 const hex2rgb = (h) => {
@@ -20,6 +13,7 @@ const hex2rgb = (h) => {
 
 export default function SingleSlotWidget({ config }) {
   const c = config || {};
+  const st = c.displayStyle || 'v1';
   const accent = c.accentColor || '#7c3aed';
   const bg = c.bgColor || 'transparent';
   const text = c.textColor || '#ffffff';
@@ -32,14 +26,11 @@ export default function SingleSlotWidget({ config }) {
   const img = c.imageUrl || '';
   const rtp = c.rtp || '';
 
-  // Stats from user records
   const averageMulti = c.averageMulti || 0;
   const bestMulti = c.bestMulti || 0;
   const totalBonuses = c.totalBonuses || 0;
   const bestWin = c.bestWin || 0;
 
-  // Last win info
-  const lastWins = c.lastWins || [];
   const lastWinIndex = c.lastWinIndex || 0;
   const lastBet = c.lastBet || 0;
   const lastPay = c.lastPay || 0;
@@ -50,6 +41,135 @@ export default function SingleSlotWidget({ config }) {
   if (!c.slotName) return (
     <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: font, color: muted, fontSize: 'clamp(10px,3cqi,16px)', containerType: 'inline-size' }}>
       No slot selected
+    </div>
+  );
+
+  /* ─── v2_card: Vertical card style ─── */
+  if (st === 'v2_card') return (
+    <div style={{
+      width: '100%', height: '100%',
+      fontFamily: font,
+      display: 'flex', flexDirection: 'column',
+      background: bg,
+      borderRadius: 'clamp(8px,3cqi,18px)',
+      overflow: 'hidden',
+      border: `1px solid rgba(${accentRgb}, 0.25)`,
+      containerType: 'size',
+      boxShadow: `0 8px 32px rgba(0,0,0,0.3), 0 0 0 1px rgba(${accentRgb}, 0.1)`,
+    }}>
+      {/* ─── Image section with name overlay ─── */}
+      <div style={{
+        position: 'relative',
+        flex: '0 0 55%',
+        minHeight: 0,
+        overflow: 'hidden',
+      }}>
+        {img ? (
+          <img src={img} alt={name} style={{
+            width: '100%', height: '100%',
+            objectFit: 'cover', display: 'block',
+          }} />
+        ) : (
+          <div style={{
+            width: '100%', height: '100%',
+            background: `linear-gradient(135deg, rgba(${accentRgb}, 0.2), rgba(${accentRgb}, 0.05))`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 'clamp(24px,12cqmin,60px)',
+          }}>🎰</div>
+        )}
+        {/* Gradient overlay for text readability */}
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.15) 50%, rgba(0,0,0,0.35) 100%)',
+          pointerEvents: 'none',
+        }} />
+        {/* RTP badge top-right */}
+        {rtp && (
+          <div style={{
+            position: 'absolute', top: 'clamp(4px,2cqmin,10px)', right: 'clamp(4px,2cqmin,10px)',
+            background: `rgba(${accentRgb}, 0.85)`,
+            color: '#fff', fontWeight: 800,
+            fontSize: 'clamp(7px,2.5cqmin,12px)',
+            padding: 'clamp(2px,0.6cqmin,4px) clamp(5px,1.5cqmin,10px)',
+            borderRadius: 'clamp(3px,1cqmin,8px)',
+            backdropFilter: 'blur(8px)',
+            letterSpacing: '0.03em',
+          }}>
+            {rtp}% RTP
+          </div>
+        )}
+        {/* Name + Provider bottom of image */}
+        <div style={{
+          position: 'absolute', bottom: 0, left: 0, right: 0,
+          padding: 'clamp(6px,2.5cqmin,14px)',
+          zIndex: 1,
+        }}>
+          <div style={{
+            fontSize: 'clamp(10px,4.5cqmin,24px)',
+            fontWeight: 900,
+            color: text,
+            textTransform: 'uppercase',
+            letterSpacing: '0.03em',
+            lineHeight: 1.1,
+            textShadow: '0 2px 12px rgba(0,0,0,0.8)',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{name}</div>
+          {provider && (
+            <div style={{
+              fontSize: 'clamp(6px,2.2cqmin,11px)',
+              fontWeight: 600,
+              color: accent,
+              textTransform: 'uppercase',
+              letterSpacing: '0.08em',
+              marginTop: 'clamp(1px,0.4cqmin,3px)',
+              textShadow: '0 1px 8px rgba(0,0,0,0.6)',
+            }}>{provider}</div>
+          )}
+        </div>
+      </div>
+
+      {/* ─── Stats grid ─── */}
+      <div style={{
+        flex: 1,
+        display: 'grid',
+        gridTemplateColumns: '1fr 1fr',
+        gap: 'clamp(2px,0.8cqmin,6px)',
+        padding: 'clamp(4px,1.5cqmin,10px)',
+        minHeight: 0,
+        background: `rgba(${accentRgb}, 0.03)`,
+      }}>
+        <CardStat label="AVERAGE" value={averageMulti ? `${averageMulti}X` : '—'} accent={accent} accentRgb={accentRgb} text={text} muted={muted} />
+        <CardStat label="BEST X" value={bestMulti ? `${bestMulti}X` : '—'} accent={accent} accentRgb={accentRgb} text={text} muted={muted} highlight />
+        <CardStat label="BONUSES" value={totalBonuses || '—'} accent={accent} accentRgb={accentRgb} text={text} muted={muted} />
+        <CardStat label="BEST WIN" value={bestWin ? `${bestWin}${currency}` : '—'} accent={accent} accentRgb={accentRgb} text={text} muted={muted} highlight />
+      </div>
+
+      {/* ─── Bottom last-win bar ─── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 'clamp(3px,1.2cqmin,8px)',
+        padding: 'clamp(3px,1.2cqmin,7px) clamp(4px,1.5cqmin,10px)',
+        background: `rgba(${accentRgb}, 0.1)`,
+        borderTop: `1px solid rgba(${accentRgb}, 0.2)`,
+        fontSize: 'clamp(6px,2cqmin,11px)',
+        fontWeight: 600,
+        flexShrink: 0,
+      }}>
+        <span style={{ color: accent, fontWeight: 800, letterSpacing: '0.03em' }}>LAST</span>
+        {lastBet > 0 ? (
+          <>
+            <span style={{ color: muted }}>BET</span>
+            <span style={{ color: text, fontWeight: 700 }}>{lastBet}{currency}</span>
+            <span style={{ color: muted }}>PAY</span>
+            <span style={{ color: accent, fontWeight: 800 }}>{lastPay}{currency}</span>
+            <span style={{ color: muted }}>{lastMulti}X</span>
+          </>
+        ) : (
+          <span style={{ color: muted, fontStyle: 'italic' }}>No wins yet</span>
+        )}
+      </div>
     </div>
   );
 
@@ -209,7 +329,7 @@ export default function SingleSlotWidget({ config }) {
   );
 }
 
-/* ── Small stat box component ── */
+/* ── Small stat box component (v1) ── */
 function StatBox({ label, value, accent, muted, text, highlight }) {
   return (
     <div style={{
@@ -233,6 +353,39 @@ function StatBox({ label, value, accent, muted, text, highlight }) {
         fontWeight: 800,
         color: highlight ? accent : text,
         marginTop: 'clamp(1px,0.3cqi,2px)',
+      }}>{value}</span>
+    </div>
+  );
+}
+
+/* ── Card stat box (v2_card) ── */
+function CardStat({ label, value, accent, accentRgb, text, muted, highlight }) {
+  return (
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 'clamp(2px,0.6cqmin,5px) clamp(3px,0.8cqmin,6px)',
+      background: highlight ? `rgba(${accentRgb}, 0.1)` : 'rgba(255,255,255,0.03)',
+      borderRadius: 'clamp(3px,1cqmin,8px)',
+      border: `1px solid rgba(${accentRgb}, ${highlight ? '0.25' : '0.08'})`,
+      minHeight: 0,
+    }}>
+      <span style={{
+        fontSize: 'clamp(5px,1.6cqmin,9px)',
+        fontWeight: 600,
+        color: muted,
+        textTransform: 'uppercase',
+        letterSpacing: '0.06em',
+        lineHeight: 1,
+      }}>{label}</span>
+      <span style={{
+        fontSize: 'clamp(8px,3.5cqmin,18px)',
+        fontWeight: 800,
+        color: highlight ? accent : text,
+        marginTop: 'clamp(1px,0.3cqmin,3px)',
+        lineHeight: 1.1,
       }}>{value}</span>
     </div>
   );
