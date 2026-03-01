@@ -21,7 +21,7 @@ const hex2rgb = (h) => {
 export default function SingleSlotWidget({ config }) {
   const c = config || {};
   const accent = c.accentColor || '#7c3aed';
-  const bg = c.bgColor || 'rgba(13, 13, 30, 0.95)';
+  const bg = c.bgColor || 'transparent';
   const text = c.textColor || '#ffffff';
   const muted = c.mutedColor || '#94a3b8';
   const font = c.fontFamily || "'Inter', sans-serif";
