@@ -25,7 +25,7 @@ export default function ProtectedAdminRoute({ children }) {
   }
 
   if (!isAdmin && !isPremium) {
-    return <Navigate to="/overlay" replace />;
+    return <Navigate to="/premium" replace />;
   }
 
   return children;
