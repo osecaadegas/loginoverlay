@@ -53,7 +53,8 @@ export default function CoinFlipWidget({ config }) {
   };
 
   /* Shared style helpers */
-  const coinBox = { width:'55%', maxHeight:'72%', aspectRatio:'1', position:'relative', transformStyle:'preserve-3d', flexShrink:0, transform: flipping ? `rotateY(${prevAngle}deg)` : (c.result ? flipRest : 'none') };
+  const coinWrap = { width:'55%', maxHeight:'72%', aspectRatio:'1', flexShrink:0 };
+  const coinBox = { width:'100%', height:'100%', position:'relative', transformStyle:'preserve-3d', transform: flipping ? `rotateY(${prevAngle}deg)` : (c.result ? flipRest : 'none') };
   const face = (extra) => ({ position:'absolute', inset:0, borderRadius:'50%', backfaceVisibility:'hidden', display:'flex', alignItems:'center', justifyContent:'center', ...extra });
   const ani3d = flipping ? 'cf-3d-flip 2.2s cubic-bezier(.22,.68,.36,1) forwards' : (c.result ? 'cf-land 0.35s ease-out forwards' : 'none');
 
@@ -62,7 +63,8 @@ export default function CoinFlipWidget({ config }) {
     return (
       <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'3%', fontFamily:font, perspective:'600px', background:'transparent', containerType:'inline-size' }}>
         <style>{kf3d}</style>
-        <div style={{ ...coinBox, animation:ani3d, filter:'drop-shadow(0 6px 16px rgba(0,0,0,0.35))' }}>
+        <div style={{ ...coinWrap, filter:'drop-shadow(0 6px 16px rgba(0,0,0,0.35))' }}>
+        <div style={{ ...coinBox, animation:ani3d }}>
           <div style={face({
             background:`radial-gradient(ellipse at 30% 30%, ${hColor}ee, ${hColor}88 50%, ${hColor}55)`,
             border:'3px solid rgba(255,255,255,0.2)',
@@ -75,6 +77,7 @@ export default function CoinFlipWidget({ config }) {
             boxShadow:`inset 0 -4px 8px rgba(0,0,0,0.3), inset 0 4px 8px rgba(255,255,255,0.2), 0 8px 24px ${tColor}33`,
           })}>{faceContent('tails')}</div>
           <div style={{ position:'absolute', inset:'-2px', borderRadius:'50%', border:'2px solid rgba(255,255,255,0.08)', background:'transparent', pointerEvents:'none' }} />
+        </div>
         </div>
         {!flipping && c.result && (
           <div style={{ fontSize:'clamp(10px,4cqi,20px)', fontWeight:800, color:isHeads?hColor:tColor, textTransform:'uppercase', textAlign:'center',
@@ -92,7 +95,8 @@ export default function CoinFlipWidget({ config }) {
     return (
       <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'3%', fontFamily:font, perspective:'600px', background:'transparent', containerType:'inline-size' }}>
         <style>{kf3d}</style>
-        <div style={{ ...coinBox, animation:ani3d, filter:`drop-shadow(0 0 20px ${glowColor}66)` }}>
+        <div style={{ ...coinWrap, filter:`drop-shadow(0 0 20px ${glowColor}66)` }}>
+        <div style={{ ...coinBox, animation:ani3d }}>
           <div style={face({
             background:'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
             border:`3px solid ${hColor}`, boxShadow:`0 0 30px ${hColor}44, inset 0 0 20px ${hColor}22`,
@@ -102,6 +106,7 @@ export default function CoinFlipWidget({ config }) {
             background:'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
             border:`3px solid ${tColor}`, boxShadow:`0 0 30px ${tColor}44, inset 0 0 20px ${tColor}22`,
           })}>{faceContent('tails')}</div>
+        </div>
         </div>
         {!flipping && c.result && (
           <div style={{ fontSize:'clamp(10px,4.5cqi,22px)', fontWeight:900, color:glowColor, textShadow:`0 0 16px ${glowColor}`, letterSpacing:'0.15em', textTransform:'uppercase' }}>
@@ -137,7 +142,8 @@ export default function CoinFlipWidget({ config }) {
   return (
     <div style={{ width:'100%', height:'100%', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:'3%', fontFamily:font, perspective:'600px', background:'transparent', containerType:'inline-size' }}>
       <style>{kf3d}</style>
-      <div style={{ ...coinBox, width:'52%', animation:ani3d, filter:'drop-shadow(0 8px 20px rgba(0,0,0,0.4))' }}>
+      <div style={{ ...coinWrap, width:'52%', filter:'drop-shadow(0 8px 20px rgba(0,0,0,0.4))' }}>
+      <div style={{ ...coinBox, animation:ani3d }}>
         <div style={face({
           background:`linear-gradient(145deg, #fde68a, ${hColor}, #92400e, ${hColor}, #fde68a)`, backgroundSize:'400% 400%',
           animation: !flipping ? 'cf-shimmer 3s linear infinite' : 'none',
@@ -151,6 +157,7 @@ export default function CoinFlipWidget({ config }) {
           border:'3px ridge rgba(255,255,255,0.3)',
           boxShadow:'inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,255,255,0.3), 0 10px 30px rgba(0,0,0,0.4)',
         })}>{faceContent('tails')}</div>
+      </div>
       </div>
       {!flipping && c.result && (
         <div style={{ fontSize:'clamp(10px,3.8cqi,18px)', fontWeight:800, textTransform:'uppercase',

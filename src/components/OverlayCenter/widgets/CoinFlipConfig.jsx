@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -11,6 +11,7 @@ const FONT_OPTIONS = [
 
 export default function CoinFlipConfig({ config, onChange, allWidgets, mode }) {
   const c = config || {};
+  const cfgRef = useRef(c); cfgRef.current = c;
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
 
@@ -29,7 +30,7 @@ export default function CoinFlipConfig({ config, onChange, allWidgets, mode }) {
     const result = Math.random() < 0.5 ? 'heads' : 'tails';
     /* Set result immediately; save previous result for smooth animation start angle */
     setMulti({ flipping: true, result, _prevResult: c.result || 'heads', _flipStart: Date.now() });
-    setTimeout(() => setMulti({ flipping: false }), 2400);
+    setTimeout(() => onChange({ ...cfgRef.current, flipping: false }), 2400);
   };
 
   const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;

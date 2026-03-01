@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -13,6 +13,7 @@ const DEFAULT_SYMBOLS = ['🍒', '🍋', '🍊', '🍇', '⭐', '💎', '7️⃣
 
 export default function SlotmachineConfig({ config, onChange, allWidgets, mode }) {
   const c = config || {};
+  const cfgRef = useRef(c); cfgRef.current = c;
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
   const [newSymbol, setNewSymbol] = useState('');
@@ -47,7 +48,7 @@ export default function SlotmachineConfig({ config, onChange, allWidgets, mode }
     setMulti({ spinning: true, results, lastWin: isWin, _spinStart: Date.now() });
     /* dur matches widget reelDur: 1.8 + (rc-1)*0.5, plus small buffer */
     const dur = 1800 + (rc - 1) * 500 + 400;
-    setTimeout(() => setMulti({ spinning: false }), dur);
+    setTimeout(() => onChange({ ...cfgRef.current, spinning: false }), dur);
   };
 
   const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
