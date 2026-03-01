@@ -75,7 +75,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
     return off;
   }, [activeIdx, total]);
 
-  /* ─── Visible cards: render [-3, +3] for smooth entry/exit ─── */
+  /* ─── Visible cards: 5 max visible [-2,+2] with ±3 as invisible staging ─── */
   const visibleCards = useMemo(() => {
     if (total === 0) return [];
     return bonuses
@@ -83,15 +83,16 @@ export default function BonusHuntWidgetV8({ config, theme }) {
       .filter(({ offset }) => Math.abs(offset) <= 3);
   }, [bonuses, getOffset, total]);
 
-  /* ─── 3D carousel card transforms ─── */
+  /* ─── 3D carousel card transforms — max 5 visible ─── */
   const cardStyle = (offset) => {
     const absOff = Math.abs(offset);
+    const sign = offset < 0 ? -1 : 1;
 
-    /* Staging positions — invisible entry/exit beyond visible range */
-    if (absOff > 2) {
+    /* ±3 = invisible staging slots (smooth entry/exit) */
+    if (absOff >= 3) {
       return {
         position: 'absolute',
-        transform: `translateX(${offset * 160}px) rotateY(${offset * -18}deg) translateZ(-140px) scale(0.35)`,
+        transform: `translateX(${sign * 260}px) rotateY(${sign * -22}deg) translateZ(-180px) scale(0.3)`,
         opacity: 0,
         zIndex: 0,
         transition: 'transform 0.85s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.85s cubic-bezier(0.33, 1, 0.68, 1), filter 0.85s ease',
@@ -100,12 +101,19 @@ export default function BonusHuntWidgetV8({ config, theme }) {
       };
     }
 
-    const tx = offset * 155;
-    const tz = offset === 0 ? 60 : absOff === 1 ? -20 : -85;
-    const ry = offset * -18;
-    const scale = offset === 0 ? 1.05 : absOff === 1 ? 0.88 : 0.68;
-    const opacity = offset === 0 ? 1 : absOff === 1 ? 0.92 : 0.55;
-    const zIndex = 10 - absOff * 2;
+    /* ±1 closer together, ±2 outermost visible — tighter arc */
+    const txMap  = [0, 118, 215];   /* 0 → center, ±1 → ±118px, ±2 → ±215px */
+    const tzMap  = [60, -10, -55];
+    const ryMap  = [0, -14, -24];
+    const scMap  = [1.05, 0.9, 0.75];
+    const opMap  = [1, 0.92, 0.7];
+
+    const tx    = txMap[absOff] * sign;
+    const tz    = tzMap[absOff];
+    const ry    = ryMap[absOff] * sign;
+    const scale = scMap[absOff];
+    const opacity = opMap[absOff];
+    const zIndex  = 10 - absOff * 3;
 
     return {
       position: 'absolute',
@@ -113,7 +121,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
       opacity,
       zIndex,
       transition: 'transform 0.85s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.85s cubic-bezier(0.33, 1, 0.68, 1), filter 0.85s ease',
-      filter: absOff >= 2 ? 'blur(1.5px)' : 'none',
+      filter: absOff === 2 ? 'blur(1px)' : 'none',
       willChange: 'transform, opacity',
     };
   };
