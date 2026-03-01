@@ -46,6 +46,7 @@ registerWidget({
     { id: 'v5_horizontal', icon: '↔️', label: 'Horizontal' },
     { id: 'v6_compact', icon: '📐', label: 'Compact' },
     { id: 'v7_carousel', icon: '🎠', label: 'Carousel' },
+    { id: 'v8_card_stack', icon: '🎴', label: 'Card Stack' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

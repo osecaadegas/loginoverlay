@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
 import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
+import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 
 export default function BonusHuntWidget({ config, theme }) {
   /* ─── Style switcher ─── */
@@ -9,6 +10,9 @@ export default function BonusHuntWidget({ config, theme }) {
   }
   if ((config || {}).displayStyle === 'v2') {
     return <BonusHuntWidgetV2 config={config} theme={theme} />;
+  }
+  if ((config || {}).displayStyle === 'v8_card_stack') {
+    return <BonusHuntWidgetV8 config={config} theme={theme} />;
   }
 
   const c = config || {};

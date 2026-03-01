@@ -114,6 +114,11 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             <option value="v1">Style 1 — Classic</option>
             <option value="v2">Style 2 — Sleek Dark</option>
             <option value="v3">Style 3 — Flip Card</option>
+            <option value="v4_neon">Style 4 — Neon</option>
+            <option value="v5_horizontal">Style 5 — Horizontal</option>
+            <option value="v6_compact">Style 6 — Compact</option>
+            <option value="v7_carousel">Style 7 — Carousel</option>
+            <option value="v8_card_stack">Style 8 — Card Stack</option>
           </select>
         </label>
         <label className="bh-check-row">

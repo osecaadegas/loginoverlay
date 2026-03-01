@@ -7906,3 +7906,325 @@ body.wm-resizing {
   0%   { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   BONUS HUNT V8 — Card Stack / Fan Carousel
+   ═══════════════════════════════════════════════════════════ */
+.bhv8-root {
+  position: relative;
+  user-select: none;
+}
+
+/* ambient glow behind cards */
+.bhv8-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* 3D stage */
+.bhv8-stage {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+  perspective: 900px;
+}
+.bhv8-cards-perspective {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  width: 100%;
+  height: 280px;
+}
+
+/* card wrapper (positioned by inline transform) */
+.bhv8-card-wrapper {
+  position: absolute;
+  width: 180px;
+  height: 260px;
+  transform-style: preserve-3d;
+}
+
+/* actual card */
+.bhv8-card {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #111827;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  transition: box-shadow 0.5s ease;
+}
+.bhv8-card--center {
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.6),
+    0 0 0 2px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.35);
+}
+.bhv8-card--current.bhv8-card--center {
+  box-shadow:
+    0 12px 40px rgba(0,0,0,0.6),
+    0 0 25px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.4),
+    0 0 0 2px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.6);
+}
+.bhv8-card--opened {
+  filter: saturate(0.55) brightness(0.75);
+}
+
+/* slot image */
+.bhv8-card-img-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+.bhv8-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bhv8-card-img-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 3em;
+  background: linear-gradient(160deg, #1a1f3a 0%, #0e1225 100%);
+  opacity: 0.5;
+}
+
+/* gradient overlay for readability */
+.bhv8-card-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    to top,
+    rgba(0,0,0,0.85) 0%,
+    rgba(0,0,0,0.25) 40%,
+    rgba(0,0,0,0.1) 60%,
+    rgba(0,0,0,0.55) 100%
+  );
+  pointer-events: none;
+}
+
+/* top badge row */
+.bhv8-card-badges {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  right: 10px;
+  z-index: 3;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.bhv8-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 20px;
+  font-size: 0.72em;
+  font-weight: 700;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.bhv8-badge--count {
+  background: rgba(0,0,0,0.45);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.15);
+}
+.bhv8-badge-icon {
+  font-size: 0.85em;
+}
+.bhv8-badge--bet {
+  background: rgba(var(--bhv8-accent-rgb, 124,58,237), 0.25);
+  color: #fff;
+  border: 1px solid rgba(var(--bhv8-accent-rgb, 124,58,237), 0.45);
+}
+
+/* super/extreme badge */
+.bhv8-card-super-badge {
+  position: absolute;
+  top: 42px;
+  right: 10px;
+  z-index: 3;
+  font-size: 1.3em;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.6));
+  animation: bhv8-badge-pulse 2s ease-in-out infinite;
+}
+@keyframes bhv8-badge-pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
+/* center text (slot name + provider) */
+.bhv8-card-info {
+  position: absolute;
+  bottom: 14px;
+  left: 0;
+  right: 0;
+  z-index: 3;
+  text-align: center;
+  padding: 0 12px;
+}
+.bhv8-card-name {
+  font-size: 1.15em;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  line-height: 1.15;
+  word-break: break-word;
+}
+.bhv8-card-provider {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: rgba(255,255,255,0.7);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-top: 3px;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.5);
+}
+
+/* result bar (for opened bonuses) */
+.bhv8-card-result {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 12px;
+  background: linear-gradient(90deg, rgba(34,197,94,0.35), rgba(34,197,94,0.15));
+  backdrop-filter: blur(6px);
+  border-top: 1px solid rgba(34,197,94,0.25);
+}
+.bhv8-card-payout {
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #4ade80;
+}
+.bhv8-card-multi {
+  font-size: 0.8em;
+  font-weight: 800;
+  color: #fbbf24;
+  background: rgba(0,0,0,0.4);
+  padding: 2px 8px;
+  border-radius: 6px;
+}
+
+/* current bonus glow ring */
+.bhv8-card-ring {
+  position: absolute;
+  inset: -3px;
+  z-index: 5;
+  border-radius: 20px;
+  border: 2px solid rgba(var(--bhv8-accent-rgb, 124,58,237), 0.6);
+  box-shadow:
+    0 0 15px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.4),
+    inset 0 0 15px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.1);
+  animation: bhv8-ring-pulse 2.5s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes bhv8-ring-pulse {
+  0%, 100% { opacity: 0.6; box-shadow: 0 0 12px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.3), inset 0 0 12px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.05); }
+  50% { opacity: 1; box-shadow: 0 0 25px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.5), inset 0 0 20px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.15); }
+}
+
+/* ── Bottom stats bar ── */
+.bhv8-stats-bar {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 20px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.08);
+  white-space: nowrap;
+}
+.bhv8-stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+.bhv8-stat-label {
+  font-size: 0.55em;
+  font-weight: 700;
+  color: rgba(255,255,255,0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.bhv8-stat-value {
+  font-size: 0.82em;
+  font-weight: 800;
+  color: #fff;
+}
+.bhv8-stat-divider {
+  width: 1px;
+  height: 24px;
+  background: rgba(255,255,255,0.1);
+}
+.bhv8-val--green { color: #4ade80 !important; }
+.bhv8-val--red { color: #f87171 !important; }
+
+/* ── Progress dots ── */
+.bhv8-dots {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  background: rgba(0,0,0,0.35);
+  backdrop-filter: blur(8px);
+  border-radius: 20px;
+}
+.bhv8-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  transition: all 0.4s ease;
+}
+.bhv8-dot--active {
+  width: 16px;
+  border-radius: 4px;
+  background: var(--bhv8-accent, #7c3aed);
+  box-shadow: 0 0 8px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.5);
+}
+.bhv8-dot--opened {
+  background: rgba(74,222,128,0.5);
+}
+.bhv8-dot--opened.bhv8-dot--active {
+  background: #4ade80;
+}
+.bhv8-dots-more {
+  font-size: 0.6em;
+  color: rgba(255,255,255,0.4);
+  font-weight: 600;
+  margin-left: 2px;
+}
