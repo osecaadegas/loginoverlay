@@ -193,7 +193,7 @@ export default function Sidebar({ className = '', onClose }) {
         {isAdmin && (
           <NavItem icon={ICONS.code} labelKey="nav_developer" label="Developer" path="/developer" />
         )}
-        {user && !isAdmin && (
+        {!isAdmin && (
           <NavItem icon={ICONS.premium} labelKey="nav_premium" label="Premium" path="/premium" />
         )}
         {(isAdmin || isPremium) && (
