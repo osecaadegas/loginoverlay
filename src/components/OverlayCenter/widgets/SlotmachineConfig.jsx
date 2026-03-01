@@ -41,13 +41,13 @@ export default function SlotmachineConfig({ config, onChange, allWidgets, mode }
   const spinReels = () => {
     if (symbols.length === 0) return;
     const rc = c.reelCount || 3;
-    setMulti({ spinning: true, results: [], _spinStart: Date.now() });
-    const dur = 1500 + (rc - 1) * 400 + 300;
-    setTimeout(() => {
-      const results = Array.from({ length: rc }, () => symbols[Math.floor(Math.random() * symbols.length)]);
-      const isWin = results.every(r => r === results[0]);
-      setMulti({ spinning: false, results, lastWin: isWin });
-    }, dur);
+    /* Pre-compute results so the reel strip scrolls to the correct final symbol */
+    const results = Array.from({ length: rc }, () => symbols[Math.floor(Math.random() * symbols.length)]);
+    const isWin = results.every(r => r === results[0]);
+    setMulti({ spinning: true, results, lastWin: isWin, _spinStart: Date.now() });
+    /* dur matches widget reelDur: 1.6 + (rc-1)*0.45, plus small buffer */
+    const dur = 1600 + (rc - 1) * 450 + 350;
+    setTimeout(() => setMulti({ spinning: false }), dur);
   };
 
   const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;

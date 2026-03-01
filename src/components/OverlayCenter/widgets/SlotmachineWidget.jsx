@@ -22,21 +22,25 @@ export default function SlotmachineWidget({ config }) {
     : Array.from({ length: reelCount }, (_, i) => results[i] || symbols[i % symbols.length]);
 
   /* ── Reel strip builder ── */
-  const STRIP_LEN = 10;
+  const STRIP_LEN = 12;
   const buildStrip = (result, idx) => {
     const strip = [];
     for (let j = 0; j < STRIP_LEN; j++) strip.push(symbols[(idx * 3 + j * 7 + 1) % symbols.length]);
     strip.push(result);
+    /* Extra duplicate so any easing overshoot still shows the correct symbol */
+    strip.push(result);
     return strip;
   };
-  const scrollEnd = ((STRIP_LEN / (STRIP_LEN + 1)) * 100).toFixed(3);
-  const reelDur = (i) => 1.5 + i * 0.4;
+  /* Scroll to the result item (index STRIP_LEN) out of STRIP_LEN+2 total items */
+  const totalItems = STRIP_LEN + 2;
+  const scrollEnd = ((STRIP_LEN / totalItems) * 100).toFixed(3);
+  const reelDur = (i) => 1.6 + i * 0.45;
 
   /* ── Shared keyframes ── */
   const kf = `
     @keyframes sm-scroll{from{transform:translateY(0)}to{transform:translateY(-${scrollEnd}%)}}
-    @keyframes sm-blur{0%{filter:blur(0)}8%{filter:blur(3px)}65%{filter:blur(2px)}88%{filter:blur(0)}100%{filter:blur(0)}}
-    @keyframes sm-land{0%{transform:scale(1.15)}40%{transform:scale(.92)}65%{transform:scale(1.04)}85%{transform:scale(.99)}100%{transform:scale(1)}}
+    @keyframes sm-blur{0%{filter:blur(0)}8%{filter:blur(3px)}60%{filter:blur(2px)}85%{filter:blur(.5px)}100%{filter:blur(0)}}
+    @keyframes sm-land{0%{transform:scale(1.08)}50%{transform:scale(.97)}100%{transform:scale(1)}}
     @keyframes sm-win-flash{0%,100%{box-shadow:0 0 8px ${accent}33}50%{box-shadow:0 0 28px ${accent}88,0 0 60px ${accent}33}}
     @keyframes sm-shine{0%{background-position:-200% center}100%{background-position:200% center}}
   `;
@@ -50,11 +54,11 @@ export default function SlotmachineWidget({ config }) {
         <div style={{ ...reelStyle, overflow:'hidden' }}>
           <div style={{
             display:'flex', flexDirection:'column', alignItems:'center',
-            height:`${(STRIP_LEN + 1) * 100}%`,
-            animation:`sm-scroll ${dur}s cubic-bezier(.1,.82,.25,1.03) forwards, sm-blur ${dur}s linear forwards`,
+            height:`${totalItems * 100}%`,
+            animation:`sm-scroll ${dur}s cubic-bezier(.05,.7,.1,1) forwards, sm-blur ${dur}s linear forwards`,
           }}>
             {strip.map((s, j) => (
-              <div key={j} style={{ flex:'0 0 auto', height:`${(100/(STRIP_LEN+1)).toFixed(3)}%`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'inherit' }}>{s}</div>
+              <div key={j} style={{ flex:'0 0 auto', height:`${(100/totalItems).toFixed(3)}%`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'inherit' }}>{s}</div>
             ))}
           </div>
         </div>
@@ -62,7 +66,7 @@ export default function SlotmachineWidget({ config }) {
     }
     return (
       <div style={{ ...reelStyle, display:'flex', alignItems:'center', justifyContent:'center',
-        animation: results.length > 0 ? `sm-land 0.4s ease-out ${idx*0.08}s both` : 'none' }}>
+        animation: results.length > 0 ? `sm-land 0.25s ease-out` : 'none' }}>
         {sym}
       </div>
     );
