@@ -3,6 +3,7 @@ import { getAllSlots } from '../../../utils/slotUtils';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../services/overlayService';
+import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -522,6 +523,8 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
         bonuses: bonusList,
       };
       await saveBonusHuntToHistory(userId, record);
+      // Auto-update per-user slot records
+      try { await updateSlotRecordsFromHunt(userId, bonusList, name); } catch (e) { console.warn('Slot records update failed:', e); }
       // Reset the hunt
       setBonusList([]);
       setStartMoney('');
@@ -1009,6 +1012,8 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
       };
 
       const saved = await saveBonusHuntToHistory(userId, record);
+      // Auto-update per-user slot records
+      try { await updateSlotRecordsFromHunt(userId, bonuses, saveName.trim()); } catch (e) { console.warn('Slot records update failed:', e); }
       setHistory(prev => [saved, ...prev]);
       setMessage('✅ Hunt saved to history!');
       setSaveName('');

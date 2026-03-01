@@ -22,6 +22,7 @@ import TournamentConfig from './widgets/TournamentConfig';
 import CurrentSlotConfig from './widgets/CurrentSlotConfig';
 import WheelOfNamesConfig from './widgets/WheelOfNamesConfig';
 import RandomSlotPickerConfig from './widgets/RandomSlotPickerConfig';
+import SingleSlotConfig from './widgets/SingleSlotConfig';
 import './OverlayCenter.css';
 
 // Register all built-in widgets
@@ -131,6 +132,21 @@ function RandomSlotPickerPanel({ widgets, saveWidget, addWidget, loading }) {
   return <div className="oc-panel-section"><RandomSlotPickerConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
 }
 
+/* ── Inline wrapper: Single Slot sidebar panel ── */
+function SingleSlotPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'single_slot');
+  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+  if (!widget) return (
+    <div className="oc-empty-panel">
+      <h2>🎰 Single Slot</h2>
+      <p>No Single Slot widget found. Add one to get started.</p>
+      <button className="oc-btn-primary" onClick={() => addWidget('single_slot')}>+ Add Single Slot Widget</button>
+    </div>
+  );
+  return <div className="oc-panel-section"><SingleSlotConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
+}
+
 export default function OverlayControlCenter() {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
@@ -221,6 +237,7 @@ export default function OverlayControlCenter() {
     background:         ['imageUrl', 'videoUrl'],
     raid_shoutout:      ['soundUrl', 'showClip', 'showGame', 'showViewers'],
     spotify_now_playing: ['spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at', 'manualArtist', 'manualTrack', 'manualAlbumArt'],
+    single_slot:        ['slotName', 'provider', 'imageUrl', 'rtp', 'slotId', 'averageMulti', 'bestMulti', 'totalBonuses', 'bestWin', 'lastBet', 'lastPay', 'lastMulti', 'lastWinIndex'],
   }), []);
 
   /** Strip user-data keys from a widget config, keeping only styling/layout */
@@ -405,6 +422,7 @@ export default function OverlayControlCenter() {
               { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
               { key: 'wheel_of_names', icon: '🎡', label: 'Wheel of Names', desc: 'Spin entries' },
               { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
+              { key: 'single_slot', icon: '🎰', label: 'Single Slot', desc: 'Slot stats & records' },
               { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
               { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
               ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
@@ -529,6 +547,9 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'random_slot_picker' && (
             <RandomSlotPickerPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
+          )}
+          {activePanel === 'single_slot' && (
+            <SingleSlotPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (
             <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />

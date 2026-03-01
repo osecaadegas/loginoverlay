@@ -606,3 +606,38 @@ registerWidget({
     manualAlbumArt: '',
   },
 });
+
+// ─── 20. SINGLE SLOT ──────────────────────────────────
+import SingleSlotWidget from './SingleSlotWidget';
+import SingleSlotConfig from './SingleSlotConfig';
+registerWidget({
+  type: 'single_slot',
+  label: 'Single Slot',
+  icon: '🎰',
+  description: 'Display a single slot with personal stats, records and last win info',
+  category: 'casino',
+  component: SingleSlotWidget,
+  configPanel: SingleSlotConfig,
+  styles: [{ id: 'v1', icon: '🎰', label: 'Default' }],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    slotName: '',
+    provider: '',
+    imageUrl: '',
+    rtp: '',
+    currency: '€',
+    accentColor: '#7c3aed',
+    bgColor: 'rgba(13, 13, 30, 0.95)',
+    textColor: '#ffffff',
+    mutedColor: '#94a3b8',
+    fontFamily: "'Inter', sans-serif",
+    averageMulti: 0,
+    bestMulti: 0,
+    totalBonuses: 0,
+    bestWin: 0,
+    lastBet: 0,
+    lastPay: 0,
+    lastMulti: 0,
+    lastWinIndex: 0,
+  },
+});
