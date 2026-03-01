@@ -40,6 +40,7 @@ import PricingPage from './components/Pricing/PricingPage';
 import PrivacyPolicy from './components/Legal/PrivacyPolicy';
 import TermsOfService from './components/Legal/TermsOfService';
 import LoginPage from './components/Login/LoginPage';
+import CookieConsent from './components/CookieConsent/CookieConsent';
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -657,6 +658,7 @@ function App() {
                 <Route path="/terms" element={<TermsOfService />} />
               </Routes>
             </LayoutWrapper>
+            <CookieConsent />
           </BrowserRouter>
         </LanguageProvider>
       </StreamElementsProvider>
