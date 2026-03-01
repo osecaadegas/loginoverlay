@@ -22,7 +22,7 @@ export default function SlotmachineWidget({ config }) {
     : Array.from({ length: reelCount }, (_, i) => results[i] || symbols[i % symbols.length]);
 
   /* ── Reel strip builder ── */
-  const STRIP_LEN = 12;
+  const STRIP_LEN = 18;
   const buildStrip = (result, idx) => {
     const strip = [];
     for (let j = 0; j < STRIP_LEN; j++) strip.push(symbols[(idx * 3 + j * 7 + 1) % symbols.length]);
@@ -34,12 +34,12 @@ export default function SlotmachineWidget({ config }) {
   /* Scroll to the result item (index STRIP_LEN) out of STRIP_LEN+2 total items */
   const totalItems = STRIP_LEN + 2;
   const scrollEnd = ((STRIP_LEN / totalItems) * 100).toFixed(3);
-  const reelDur = (i) => 1.6 + i * 0.45;
+  const reelDur = (i) => 1.8 + i * 0.5;
 
   /* ── Shared keyframes ── */
   const kf = `
     @keyframes sm-scroll{from{transform:translateY(0)}to{transform:translateY(-${scrollEnd}%)}}
-    @keyframes sm-blur{0%{filter:blur(0)}8%{filter:blur(3px)}60%{filter:blur(2px)}85%{filter:blur(.5px)}100%{filter:blur(0)}}
+    @keyframes sm-blur{0%{filter:blur(0)}10%{filter:blur(3px)}65%{filter:blur(2.5px)}85%{filter:blur(1px)}95%{filter:blur(.3px)}100%{filter:blur(0)}}
     @keyframes sm-land{0%{transform:scale(1.08)}50%{transform:scale(.97)}100%{transform:scale(1)}}
     @keyframes sm-win-flash{0%,100%{box-shadow:0 0 8px ${accent}33}50%{box-shadow:0 0 28px ${accent}88,0 0 60px ${accent}33}}
     @keyframes sm-shine{0%{background-position:-200% center}100%{background-position:200% center}}
@@ -55,7 +55,7 @@ export default function SlotmachineWidget({ config }) {
           <div style={{
             display:'flex', flexDirection:'column', alignItems:'center',
             height:`${totalItems * 100}%`,
-            animation:`sm-scroll ${dur}s cubic-bezier(.05,.7,.1,1) forwards, sm-blur ${dur}s linear forwards`,
+            animation:`sm-scroll ${dur}s cubic-bezier(0.12,0,0.25,1) forwards, sm-blur ${dur}s ease-in-out forwards`,
           }}>
             {strip.map((s, j) => (
               <div key={j} style={{ flex:'0 0 auto', height:`${(100/totalItems).toFixed(3)}%`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'inherit' }}>{s}</div>

@@ -45,8 +45,8 @@ export default function SlotmachineConfig({ config, onChange, allWidgets, mode }
     const results = Array.from({ length: rc }, () => symbols[Math.floor(Math.random() * symbols.length)]);
     const isWin = results.every(r => r === results[0]);
     setMulti({ spinning: true, results, lastWin: isWin, _spinStart: Date.now() });
-    /* dur matches widget reelDur: 1.6 + (rc-1)*0.45, plus small buffer */
-    const dur = 1600 + (rc - 1) * 450 + 350;
+    /* dur matches widget reelDur: 1.8 + (rc-1)*0.5, plus small buffer */
+    const dur = 1800 + (rc - 1) * 500 + 400;
     setTimeout(() => setMulti({ spinning: false }), dur);
   };
 

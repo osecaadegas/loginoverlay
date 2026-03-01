@@ -27,8 +27,9 @@ export default function CoinFlipConfig({ config, onChange, allWidgets, mode }) {
 
   const flipCoin = () => {
     const result = Math.random() < 0.5 ? 'heads' : 'tails';
-    setMulti({ flipping: true, result: '', _flipStart: Date.now() });
-    setTimeout(() => setMulti({ flipping: false, result }), 2400);
+    /* Set result immediately so widget builds animation to correct face */
+    setMulti({ flipping: true, result, _flipStart: Date.now() });
+    setTimeout(() => setMulti({ flipping: false }), 2400);
   };
 
   const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
