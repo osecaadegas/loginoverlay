@@ -13,9 +13,9 @@
 }
 
 .giveaway-panel {
-  width: 75%;
-  max-width: 700px;
-  max-height: 85vh;
+  width: 80%;
+  max-width: 860px;
+  max-height: 88vh;
   background: var(--theme-panel-bg);
   border-radius: 16px;
   border: 1px solid var(--theme-border);
@@ -32,14 +32,14 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.75rem 1.25rem;
+  padding: 1rem 1.5rem;
   background: rgba(0, 0, 0, 0.3);
   border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .giveaway-header h2 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1.3rem;
   color: var(--theme-text);
   font-weight: 700;
 }
@@ -66,12 +66,12 @@
 }
 
 .add-btn {
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 1rem;
   background: linear-gradient(90deg, var(--theme-primary), var(--theme-secondary));
   border: none;
   border-radius: 8px;
   color: var(--theme-text);
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -85,8 +85,8 @@
 }
 
 .remove-btn {
-  width: 24px;
-  height: 24px;
+  width: 28px;
+  height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -94,7 +94,7 @@
   border: 1px solid rgba(255, 0, 0, 0.3);
   border-radius: 6px;
   color: #ff6b6b;
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -108,10 +108,10 @@
 .giveaway-content {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem 1.25rem;
+  padding: 1.25rem 1.5rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 1.25rem;
 }
 
 .section {
@@ -119,20 +119,20 @@
 }
 
 .section h3 {
-  font-size: 0.85rem;
+  font-size: 1.05rem;
   color: #f3f4f6;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 0.6rem 0;
   font-weight: 700;
 }
 
 .title-input {
   width: 100%;
-  padding: 0.5rem 0.75rem;
+  padding: 0.65rem 0.85rem;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   color: #f3f4f6;
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 600;
 }
 
@@ -144,12 +144,12 @@
 
 .entry-input-group input {
   flex: 1;
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 0.85rem;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   color: #f3f4f6;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
 }
 
 .entry-actions {
@@ -160,13 +160,13 @@
 
 .action-btn {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.6rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.05);
   color: #9ca3af;
   border-radius: 8px;
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 600;
   transition: all 0.2s;
 }
@@ -192,30 +192,31 @@
 .entry-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  gap: 0.6rem;
+  padding: 0.6rem 0.85rem;
   background: rgba(0, 0, 0, 0.3);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
 }
 
 .entry-number {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(90deg, var(--theme-secondary), var(--theme-primary));
   border-radius: 50%;
-  font-size: 0.65rem;
+  font-size: 0.8rem;
   font-weight: 700;
   color: var(--theme-text);
+  flex-shrink: 0;
 }
 
 .entry-name {
   flex: 1;
   color: var(--theme-text);
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   font-weight: 600;
 }
 
@@ -248,14 +249,14 @@
 }
 
 .winner-text {
-  font-size: 0.9rem;
+  font-size: 1.05rem;
   color: #9ca3af;
   font-weight: 700;
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.4rem;
 }
 
 .winner-name {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: #f3f4f6;
   font-weight: 700;
 }
@@ -276,19 +277,19 @@
 }
 
 .no-winner-text {
-  font-size: 0.85rem;
+  font-size: 1rem;
   color: #9ca3af;
   font-weight: 600;
 }
 
 .draw-btn {
   width: 100%;
-  padding: 0.75rem;
+  padding: 0.85rem;
   background: linear-gradient(90deg, var(--theme-secondary), var(--theme-primary));
   border: none;
   border-radius: 12px;
   color: var(--theme-text);
-  font-size: 1rem;
+  font-size: 1.1rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
@@ -317,14 +318,14 @@
 
 .winner-action-btn {
   flex: 1;
-  padding: 0.5rem;
+  padding: 0.6rem;
   border: 1px solid rgba(255, 255, 255, 0.2);
   background: rgba(255, 255, 255, 0.05);
   color: var(--theme-text);
   border-radius: 8px;
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.8rem;
+  font-size: 0.95rem;
   transition: all 0.2s;
   font-family: var(--theme-font);
 }
@@ -348,14 +349,14 @@
 }
 
 .stat-value {
-  font-size: 1.5rem;
+  font-size: 1.6rem;
   color: var(--theme-primary);
   font-weight: 700;
   margin-bottom: 0.35rem;
 }
 
 .stat-label {
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   color: #9ca3af;
   font-weight: 600;
 }
@@ -395,12 +396,12 @@
 
 /* Toggle Wheel Button */
 .toggle-wheel-btn {
-  padding: 0.5rem 0.75rem;
+  padding: 0.6rem 1rem;
   background: linear-gradient(90deg, var(--theme-secondary), var(--theme-primary));
   border: none;
   border-radius: 8px;
   color: var(--theme-text);
-  font-size: 0.75rem;
+  font-size: 0.9rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.3s;
