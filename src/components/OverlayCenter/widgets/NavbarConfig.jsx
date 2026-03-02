@@ -31,7 +31,7 @@ const FONT_OPTIONS = [
 export default function NavbarConfig({ config, onChange }) {
   const c = config || {};
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState('content');
+  const [activeTab, setActiveTab] = useState('setup');
   const [spotifyLoading, setSpotifyLoading] = useState(false);
   const [spotifyError, setSpotifyError] = useState('');
 
@@ -135,10 +135,9 @@ export default function NavbarConfig({ config, onChange }) {
   };
 
   const tabs = [
-    { id: 'content', label: '📋 Content' },
-    { id: 'music', label: '🎵 Music' },
-    { id: 'style', label: '🎨 Style' },
-    { id: 'filters', label: '✨ Filters' },
+    { id: 'setup', label: '⚡ Setup' },
+    { id: 'layout', label: '📐 Layout' },
+    { id: 'colors', label: '🎨 Colors' },
     { id: 'presets', label: '💾 Presets' },
   ];
 
@@ -155,24 +154,20 @@ export default function NavbarConfig({ config, onChange }) {
         ))}
       </div>
 
-      {/* ═══════ CONTENT TAB ═══════ */}
-      {activeTab === 'content' && (
+      {/* ═══════ SETUP TAB — get your navbar working fast ═══════ */}
+      {activeTab === 'setup' && (
         <div className="nb-section">
           {/* Display Style Toggle */}
           <h4 className="nb-subtitle">Display Style</h4>
           <div className="nb-style-toggle">
-            <button
-              type="button"
+            <button type="button"
               className={`nb-style-btn${(!c.displayStyle || c.displayStyle === 'v1') ? ' nb-style-btn--active' : ''}`}
-              onClick={() => set('displayStyle', 'v1')}
-            >
+              onClick={() => set('displayStyle', 'v1')}>
               📌 Classic
             </button>
-            <button
-              type="button"
+            <button type="button"
               className={`nb-style-btn${c.displayStyle === 'metallic' ? ' nb-style-btn--active' : ''}`}
-              onClick={() => set('displayStyle', 'metallic')}
-            >
+              onClick={() => set('displayStyle', 'metallic')}>
               ⚙️ Metallic
             </button>
           </div>
@@ -255,9 +250,72 @@ export default function NavbarConfig({ config, onChange }) {
             </label>
           )}
 
+          {/* ─── Spotify (inline, no separate tab) ─── */}
+          {c.showNowPlaying && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>🎵 Music Source</h4>
+              <div className="nb-spotify-section">
+                {c.spotify_access_token ? (
+                  <div className="nb-spotify-connected">
+                    <span className="nb-spotify-status">✅ Spotify Connected</span>
+                    <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => { disconnectSpotify(); set('musicSource', 'manual'); }}>Disconnect</button>
+                  </div>
+                ) : (
+                  <div className="nb-spotify-connect-card">
+                    <div className="nb-spotify-connect-info">
+                      <span className="nb-spotify-connect-icon">🎵</span>
+                      <div>
+                        <strong>Spotify</strong>
+                        <span>Auto-display your current track</span>
+                      </div>
+                    </div>
+                    <button className="nb-spotify-btn" onClick={() => { set('musicSource', 'spotify'); connectSpotify(); }} disabled={spotifyLoading}>
+                      {spotifyLoading ? 'Connecting...' : 'Connect Spotify'}
+                    </button>
+                  </div>
+                )}
+                {spotifyError && <p className="nb-error">{spotifyError}</p>}
+              </div>
+
+              {/* Music display style */}
+              <h4 className="nb-subtitle" style={{ marginTop: 10 }}>Music Display</h4>
+              <div className="nb-music-styles">
+                {[
+                  { id: 'text',      icon: '📝', label: 'Text' },
+                  { id: 'pill',      icon: '💊', label: 'Pill' },
+                  { id: 'marquee',   icon: '📜', label: 'Marquee' },
+                  { id: 'albumart',  icon: '🖼️', label: 'Album Art' },
+                  { id: 'equalizer', icon: '🎛️', label: 'Equalizer' },
+                ].map(s => (
+                  <button key={s.id}
+                    className={`nb-music-style-btn${(c.musicDisplayStyle || 'text') === s.id ? ' nb-music-style-btn--active' : ''}`}
+                    onClick={() => set('musicDisplayStyle', s.id)}>
+                    <span className="nb-music-style-icon">{s.icon}</span>
+                    <span className="nb-music-style-label">{s.label}</span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Manual fallback */}
+              <h4 className="nb-subtitle" style={{ marginTop: 10 }}>{c.spotify_access_token ? 'Manual Fallback' : 'Manual Track'}</h4>
+              <p className="oc-config-hint" style={{ margin: '0 0 6px' }}>
+                {c.spotify_access_token ? 'Shown when Spotify isn\'t playing.' : 'Type the artist & track to display.'}
+              </p>
+              <label className="nb-field">
+                <span>Artist</span>
+                <input value={c.manualArtist || ''} onChange={e => set('manualArtist', e.target.value)} placeholder="Red Hot Chili Peppers" />
+              </label>
+              <label className="nb-field">
+                <span>Track</span>
+                <input value={c.manualTrack || ''} onChange={e => set('manualTrack', e.target.value)} placeholder="Dark Necessities" />
+              </label>
+            </>
+          )}
+
+          {/* ─── Crypto coins (inline) ─── */}
           {c.showCrypto && (
             <>
-              <h4 className="nb-subtitle">Transition Style</h4>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Crypto Transition</h4>
               <div className="nb-radio-row" style={{ flexWrap: 'wrap', gap: '8px 16px' }}>
                 {[
                   { value: 'horizontal', label: 'Slide Left' },
@@ -289,72 +347,39 @@ export default function NavbarConfig({ config, onChange }) {
         </div>
       )}
 
-      {/* ═══════ MUSIC TAB ═══════ */}
-      {activeTab === 'music' && (
+      {/* ═══════ LAYOUT TAB — sizing & typography ═══════ */}
+      {activeTab === 'layout' && (
         <div className="nb-section">
-          {/* Spotify connection — always visible at top */}
-          <div className="nb-spotify-section">
-            {c.spotify_access_token ? (
-              <div className="nb-spotify-connected">
-                <span className="nb-spotify-status">✅ Spotify Connected — Now Playing auto-updates</span>
-                <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => { disconnectSpotify(); set('musicSource', 'manual'); }}>Disconnect</button>
-              </div>
-            ) : (
-              <div className="nb-spotify-connect-card">
-                <div className="nb-spotify-connect-info">
-                  <span className="nb-spotify-connect-icon">🎵</span>
-                  <div>
-                    <strong>Spotify</strong>
-                    <span>Auto-display your current track on stream</span>
-                  </div>
-                </div>
-                <button className="nb-spotify-btn" onClick={() => { set('musicSource', 'spotify'); connectSpotify(); }} disabled={spotifyLoading}>
-                  {spotifyLoading ? 'Connecting...' : 'Connect Spotify'}
-                </button>
-              </div>
-            )}
-            {spotifyError && <p className="nb-error">{spotifyError}</p>}
-          </div>
+          <h4 className="nb-subtitle">Dimensions</h4>
+          <SliderField label="Bar Height" value={c.barHeight ?? 64} min={40} max={100} step={2} unit="px"
+            onChange={v => set('barHeight', v)} />
+          <SliderField label="Max Width" value={c.maxWidth ?? 1200} min={600} max={3840} step={10} unit="px"
+            onChange={v => set('maxWidth', v)} />
+          <SliderField label="Border Width" value={c.borderWidth ?? 3} min={0} max={8} step={1} unit="px"
+            onChange={v => set('borderWidth', v)} />
+          <SliderField label="Border Radius" value={c.borderRadius ?? 999} min={0} max={999} step={1} unit="px"
+            onChange={v => set('borderRadius', v)} />
 
-          {/* Music display style picker */}
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Display Style</h4>
-          <div className="nb-music-styles">
-            {[
-              { id: 'text',      icon: '📝', label: 'Text' },
-              { id: 'pill',      icon: '💊', label: 'Pill' },
-              { id: 'marquee',   icon: '📜', label: 'Marquee' },
-              { id: 'albumart',  icon: '🖼️', label: 'Album Art' },
-              { id: 'equalizer', icon: '🎛️', label: 'Equalizer' },
-            ].map(s => (
-              <button key={s.id}
-                className={`nb-music-style-btn${(c.musicDisplayStyle || 'text') === s.id ? ' nb-music-style-btn--active' : ''}`}
-                onClick={() => set('musicDisplayStyle', s.id)}>
-                <span className="nb-music-style-icon">{s.icon}</span>
-                <span className="nb-music-style-label">{s.label}</span>
-              </button>
-            ))}
-          </div>
+          <h4 className="nb-subtitle">Element Sizes</h4>
+          <SliderField label="Avatar Size" value={c.avatarSize ?? 100} min={50} max={200} step={5} unit="%"
+            onChange={v => set('avatarSize', v)} />
+          <SliderField label="Badge Size" value={c.badgeSize ?? 100} min={50} max={200} step={5} unit="%"
+            onChange={v => set('badgeSize', v)} />
 
-          {/* Manual track — always visible (fallback when Spotify not playing) */}
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>{c.spotify_access_token ? 'Manual Fallback' : 'Manual Track Info'}</h4>
-          <p className="oc-config-hint" style={{ margin: '0 0 6px' }}>
-            {c.spotify_access_token
-              ? 'Shown when Spotify isn\'t playing anything.'
-              : 'Type the artist & track to show on your overlay.'}
-          </p>
+          <h4 className="nb-subtitle">Typography</h4>
           <label className="nb-field">
-            <span>Artist</span>
-            <input value={c.manualArtist || ''} onChange={e => set('manualArtist', e.target.value)} placeholder="Red Hot Chili Peppers" />
+            <span>Font</span>
+            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+            </select>
           </label>
-          <label className="nb-field">
-            <span>Track</span>
-            <input value={c.manualTrack || ''} onChange={e => set('manualTrack', e.target.value)} placeholder="Dark Necessities" />
-          </label>
+          <SliderField label="Font Size" value={c.fontSize ?? 12} min={8} max={20} step={1} unit="px"
+            onChange={v => set('fontSize', v)} />
         </div>
       )}
 
-      {/* ═══════ STYLE TAB ═══════ */}
-      {activeTab === 'style' && (
+      {/* ═══════ COLORS TAB — colors, filters, custom CSS ═══════ */}
+      {activeTab === 'colors' && (
         <div className="nb-section">
           <h4 className="nb-subtitle">Colors</h4>
           <div className="nb-color-grid">
@@ -367,31 +392,22 @@ export default function NavbarConfig({ config, onChange }) {
             <ColorPicker label="Crypto Down" value={c.cryptoDownColor || '#f87171'} onChange={v => set('cryptoDownColor', v)} />
           </div>
 
-          <h4 className="nb-subtitle">Typography</h4>
-          <label className="nb-field">
-            <span>Font</span>
-            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-          </label>
-          <SliderField label="Font Size" value={c.fontSize ?? 12} min={8} max={20} step={1} unit="px"
-            onChange={v => set('fontSize', v)} />
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Filters</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Adjust the overall look of the navbar in OBS.
+          </p>
+          <SliderField label="Brightness" value={c.brightness ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('brightness', v)} />
+          <SliderField label="Contrast" value={c.contrast ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('contrast', v)} />
+          <SliderField label="Saturation" value={c.saturation ?? 100} min={0} max={200} step={1} unit="%"
+            onChange={v => set('saturation', v)} />
+          <button className="oc-btn oc-btn--sm" style={{ marginTop: 8 }}
+            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
+            Reset Filters
+          </button>
 
-          <h4 className="nb-subtitle">Dimensions</h4>
-          <SliderField label="Bar Height" value={c.barHeight ?? 64} min={40} max={100} step={2} unit="px"
-            onChange={v => set('barHeight', v)} />
-          <SliderField label="Border Width" value={c.borderWidth ?? 3} min={0} max={8} step={1} unit="px"
-            onChange={v => set('borderWidth', v)} />
-          <SliderField label="Border Radius" value={c.borderRadius ?? 999} min={0} max={999} step={1} unit="px"
-            onChange={v => set('borderRadius', v)} />
-          <SliderField label="Max Width" value={c.maxWidth ?? 1200} min={600} max={3840} step={10} unit="px"
-            onChange={v => set('maxWidth', v)} />
-          <SliderField label="Avatar Size" value={c.avatarSize ?? 100} min={50} max={200} step={5} unit="%"
-            onChange={v => set('avatarSize', v)} />
-          <SliderField label="Badge Size" value={c.badgeSize ?? 100} min={50} max={200} step={5} unit="%"
-            onChange={v => set('badgeSize', v)} />
-
-          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Custom CSS</h4>
           <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
           <textarea
             className="oc-widget-css-input"
@@ -401,27 +417,6 @@ export default function NavbarConfig({ config, onChange }) {
             placeholder={`/* custom CSS for this widget */`}
             spellCheck={false}
           />
-        </div>
-      )}
-
-      {/* ═══════ FILTERS TAB ═══════ */}
-      {activeTab === 'filters' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Image Filters</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 12 }}>
-            Adjust the overall look of the entire navbar on the OBS overlay.
-          </p>
-          <SliderField label="Brightness" value={c.brightness ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('brightness', v)} />
-          <SliderField label="Contrast" value={c.contrast ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('contrast', v)} />
-          <SliderField label="Saturation" value={c.saturation ?? 100} min={0} max={200} step={1} unit="%"
-            onChange={v => set('saturation', v)} />
-
-          <button className="oc-btn oc-btn--sm" style={{ marginTop: 12 }}
-            onClick={() => setMulti({ brightness: 100, contrast: 100, saturation: 100 })}>
-            Reset Filters
-          </button>
         </div>
       )}
 
