@@ -23,6 +23,7 @@ import CurrentSlotConfig from './widgets/CurrentSlotConfig';
 import WheelOfNamesConfig from './widgets/WheelOfNamesConfig';
 import RandomSlotPickerConfig from './widgets/RandomSlotPickerConfig';
 import SingleSlotConfig from './widgets/SingleSlotConfig';
+import ProfileSection from './ProfileSection';
 import './OverlayCenter.css';
 
 // Register all built-in widgets
@@ -412,6 +413,19 @@ export default function OverlayControlCenter() {
               </div>
             </button>
 
+            <div className="oc-sidebar-divider-label">Account</div>
+
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'profile' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('profile'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">👤</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Profile</span>
+                <span className="oc-sidebar-btn-desc">Identity & connected accounts</span>
+              </div>
+            </button>
+
             <div className="oc-sidebar-divider-label">Stream Overlay</div>
 
             {/* Panel tabs */}
@@ -579,6 +593,9 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'approvals' && isAdmin && (
             <SlotApprovals />
+          )}
+          {activePanel === 'profile' && (
+            <ProfileSection widgets={widgets} saveWidget={saveWidget} />
           )}
         </main>
       </div>
