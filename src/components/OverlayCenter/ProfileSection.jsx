@@ -36,34 +36,38 @@ const SYNC_MAP = {
 };
 
 const S = {
-  wrap: { display: 'flex', flexDirection: 'column', gap: 20, maxWidth: 620 },
-  card: {
-    background: 'rgba(255,255,255,0.03)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 14,
-    padding: 20,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 14,
+  page: { display: 'flex', flexDirection: 'column', gap: 20, width: '100%', maxWidth: '100%' },
+  /* top identity strip */
+  identity: {
+    display: 'flex', alignItems: 'center', gap: 20, padding: '18px 22px',
+    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14,
   },
-  cardTitle: { fontSize: '0.95rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, marginBottom: 2 },
-  cardDesc: { fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.5, marginTop: -8 },
-  label: { display: 'block', fontSize: '0.75rem', color: '#94a3b8', fontWeight: 600, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.04em' },
-  input: { width: '100%', padding: '9px 12px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: '0.84rem', boxSizing: 'border-box' },
-  row: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 },
-  avatar: { width: 72, height: 72, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(124,58,237,0.4)' },
-  avatarPlaceholder: { width: 72, height: 72, borderRadius: '50%', background: 'rgba(124,58,237,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, border: '3px solid rgba(124,58,237,0.3)' },
-  btn: { padding: '9px 16px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, transition: 'all 0.15s' },
-  btnPrimary: { background: '#7c3aed', color: '#fff' },
-  btnSecondary: { background: 'rgba(255,255,255,0.06)', color: '#fff' },
-  btnSync: { background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', color: '#fff', width: '100%', padding: '12px 16px', fontSize: '0.88rem' },
-  connected: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)', borderRadius: 10 },
-  notConnected: { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 10 },
-  dot: (on) => ({ width: 8, height: 8, borderRadius: '50%', background: on ? '#22c55e' : '#64748b', flexShrink: 0 }),
-  platformName: { fontSize: '0.84rem', fontWeight: 600, color: '#fff', flex: 1 },
-  platformUser: { fontSize: '0.78rem', color: '#7c3aed', fontWeight: 600 },
-  syncResult: { fontSize: '0.8rem', padding: '10px 14px', borderRadius: 10, textAlign: 'center', fontWeight: 600 },
-  section: { marginBottom: 0 },
+  avatar: { width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(124,58,237,0.4)', flexShrink: 0 },
+  avatarPlaceholder: { width: 64, height: 64, borderRadius: '50%', background: 'rgba(124,58,237,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '3px solid rgba(124,58,237,0.3)', flexShrink: 0 },
+  identityFields: { display: 'flex', flex: 1, gap: 12, flexWrap: 'wrap', minWidth: 0 },
+  /* grid for middle section */
+  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
+  /* cards used in the grid */
+  card: {
+    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12,
+  },
+  cardTitle: { fontSize: '0.88rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: 0 },
+  /* form elements */
+  label: { display: 'block', fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' },
+  input: { width: '100%', padding: '8px 11px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: '0.82rem', boxSizing: 'border-box' },
+  row2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
+  /* platform compact row */
+  platRow: { display: 'flex', alignItems: 'center', gap: 10 },
+  dot: (on) => ({ width: 7, height: 7, borderRadius: '50%', background: on ? '#22c55e' : '#333', flexShrink: 0 }),
+  /* buttons */
+  btn: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, transition: 'all 0.15s' },
+  btnSync: { background: 'linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)', color: '#fff', width: '100%', padding: '12px 16px', fontSize: '0.88rem', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700 },
+  syncBar: {
+    display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
+    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14,
+  },
+  syncResult: { fontSize: '0.8rem', padding: '8px 14px', borderRadius: 10, textAlign: 'center', fontWeight: 600 },
 };
 
 export default function ProfileSection({ widgets, saveWidget }) {
@@ -233,272 +237,170 @@ export default function ProfileSection({ widgets, saveWidget }) {
   };
 
   const authProvider = user?.app_metadata?.provider || 'email';
+  const providerBadge = authProvider === 'twitch' ? '🟣 Twitch' : authProvider === 'google' ? '🔵 Google' : authProvider === 'discord' ? '🟣 Discord' : '📧 Email';
 
   return (
-    <div style={S.wrap}>
-      {/* ──── Header ──── */}
-      <div>
-        <h2 style={{ color: '#fff', fontSize: '1.3rem', fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 10 }}>
-          👤 Streamer Profile
-        </h2>
-        <p style={{ color: '#94a3b8', fontSize: '0.84rem', marginTop: 6, lineHeight: 1.5 }}>
-          Set up your identity once — sync it to all your widgets instantly.
-        </p>
-      </div>
-
-      {/* ──── Identity Card ──── */}
-      <div style={S.card}>
-        <div style={S.cardTitle}>🪪 Identity</div>
-        <p style={S.cardDesc}>Your display name and avatar shown across all widgets.</p>
-
-        <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
-          {/* Avatar */}
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-            {profile.avatarUrl ? (
-              <img src={profile.avatarUrl} alt="Avatar" style={S.avatar} />
-            ) : (
-              <div style={S.avatarPlaceholder}>👤</div>
-            )}
-            <span style={{ fontSize: '0.7rem', color: '#64748b', textAlign: 'center' }}>
-              {authProvider === 'twitch' && '🟣 via Twitch'}
-              {authProvider === 'google' && '🔵 via Google'}
-              {authProvider === 'discord' && '🟣 via Discord'}
-              {authProvider === 'email' && '📧 Email login'}
-            </span>
-          </div>
-
-          {/* Name + Motto */}
-          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
-            <div>
-              <label style={S.label}>Display Name</label>
-              <input style={S.input} value={profile.streamerName} onChange={e => set('streamerName', e.target.value)}
-                placeholder="Your streamer name" />
-            </div>
-            <div>
-              <label style={S.label}>Motto / Tagline</label>
-              <input style={S.input} value={profile.motto} onChange={e => set('motto', e.target.value)}
-                placeholder="Your catchphrase or tagline" />
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <label style={S.label}>Avatar URL</label>
-          <input style={S.input} value={profile.avatarUrl} onChange={e => set('avatarUrl', e.target.value)}
-            placeholder="https://..." />
-          <span style={{ fontSize: '0.72rem', color: '#64748b', marginTop: 3, display: 'block' }}>
-            Auto-filled from your login — or paste a custom URL
-          </span>
-        </div>
-      </div>
-
-      {/* ──── Connected Accounts ──── */}
-      <div style={S.card}>
-        <div style={S.cardTitle}>🔗 Connected Accounts</div>
-        <p style={S.cardDesc}>
-          Link your streaming platforms and Spotify. These sync to Chat, Giveaway, Navbar, and Spotify widgets.
-        </p>
-
-        {/* Twitch */}
-        <div style={profile.twitchUsername ? S.connected : S.notConnected}>
-          <div style={S.dot(!!profile.twitchUsername)} />
-          <span style={S.platformName}>🟣 Twitch</span>
-          {profile.twitchUsername ? (
-            <span style={S.platformUser}>{profile.twitchUsername}</span>
-          ) : (
-            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Not connected</span>
-          )}
-        </div>
-        <div>
-          <label style={S.label}>Twitch Username</label>
-          <input style={S.input} value={profile.twitchUsername} onChange={e => set('twitchUsername', e.target.value)}
-            placeholder="your_twitch_name" />
-        </div>
-
-        {/* Kick */}
-        <div style={profile.kickChannel ? S.connected : S.notConnected}>
-          <div style={S.dot(!!profile.kickChannel)} />
-          <span style={S.platformName}>🟢 Kick</span>
-          {profile.kickChannel ? (
-            <span style={S.platformUser}>{profile.kickChannel}</span>
-          ) : (
-            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Not connected</span>
-          )}
-        </div>
-        <div>
-          <label style={S.label}>Kick Channel ID / Slug</label>
-          <input style={S.input} value={profile.kickChannel} onChange={e => set('kickChannel', e.target.value)}
-            placeholder="your_kick_channel" />
-        </div>
-
-        {/* YouTube */}
-        <div style={profile.youtubeChannel ? S.connected : S.notConnected}>
-          <div style={S.dot(!!profile.youtubeChannel)} />
-          <span style={S.platformName}>🔴 YouTube</span>
-          {profile.youtubeChannel ? (
-            <span style={S.platformUser}>{profile.youtubeChannel}</span>
-          ) : (
-            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Not connected</span>
-          )}
-        </div>
-        <div style={S.row}>
-          <div>
-            <label style={S.label}>YouTube Video / Live ID</label>
-            <input style={S.input} value={profile.youtubeChannel} onChange={e => set('youtubeChannel', e.target.value)}
-              placeholder="dQw4w9WgXcQ" />
-          </div>
-          <div>
-            <label style={S.label}>YouTube API Key</label>
-            <input style={S.input} type="password" value={profile.youtubeApiKey} onChange={e => set('youtubeApiKey', e.target.value)}
-              placeholder="AIza..." />
-          </div>
-        </div>
-
-        {/* Discord */}
-        <div style={profile.discordTag ? S.connected : S.notConnected}>
-          <div style={S.dot(!!profile.discordTag)} />
-          <span style={S.platformName}>🔵 Discord</span>
-          {profile.discordTag ? (
-            <span style={S.platformUser}>{profile.discordTag}</span>
-          ) : (
-            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Not connected</span>
-          )}
-        </div>
-        <div>
-          <label style={S.label}>Discord Tag</label>
-          <input style={S.input} value={profile.discordTag} onChange={e => set('discordTag', e.target.value)}
-            placeholder="username#0000 or username" />
-        </div>
-
-        {/* Spotify */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14, marginTop: 4 }} />
-        <div style={profile.spotify_access_token ? S.connected : S.notConnected}>
-          <div style={S.dot(!!profile.spotify_access_token)} />
-          <span style={S.platformName}>🟢 Spotify</span>
-          {profile.spotify_access_token ? (
-            <span style={{ ...S.platformUser, color: '#1DB954' }}>Connected</span>
-          ) : (
-            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Not connected</span>
-          )}
-        </div>
-        <p style={{ fontSize: '0.76rem', color: '#94a3b8', lineHeight: 1.5, margin: '-6px 0 0' }}>
-          Connect your Spotify account to show your currently playing track on the Navbar and Spotify widgets.
-          Click Sync to push your tokens to all music-enabled widgets.
-        </p>
-        {!profile.spotify_access_token ? (
-          <button
-            style={{
-              ...S.btn,
-              background: '#1DB954',
-              color: '#fff',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-              justifyContent: 'center',
-              opacity: spotifyLoading ? 0.6 : 1,
-            }}
-            onClick={connectSpotify}
-            disabled={spotifyLoading}
-          >
-            {spotifyLoading ? '⏳ Connecting…' : '🎵 Connect Spotify'}
-          </button>
+    <div style={S.page}>
+      {/* ──── Row 1: Identity strip ──── */}
+      <div style={S.identity}>
+        {profile.avatarUrl ? (
+          <img src={profile.avatarUrl} alt="Avatar" style={S.avatar} />
         ) : (
-          <button
-            style={{
-              ...S.btn,
-              ...S.btnSecondary,
-              color: '#f87171',
-              borderColor: 'rgba(248,113,113,0.2)',
-            }}
-            onClick={disconnectSpotify}
-          >
-            Disconnect Spotify
-          </button>
+          <div style={S.avatarPlaceholder}>👤</div>
         )}
-        {spotifyError && (
-          <p style={{ fontSize: '0.76rem', color: '#f87171', margin: '-6px 0 0' }}>{spotifyError}</p>
-        )}
+        <div style={S.identityFields}>
+          <div style={{ flex: 1, minWidth: 150 }}>
+            <label style={S.label}>Display Name</label>
+            <input style={S.input} value={profile.streamerName} onChange={e => set('streamerName', e.target.value)} placeholder="Your streamer name" />
+          </div>
+          <div style={{ flex: 1, minWidth: 150 }}>
+            <label style={S.label}>Motto / Tagline</label>
+            <input style={S.input} value={profile.motto} onChange={e => set('motto', e.target.value)} placeholder="Your catchphrase" />
+          </div>
+          <div style={{ flex: 2, minWidth: 200 }}>
+            <label style={S.label}>Avatar URL</label>
+            <input style={S.input} value={profile.avatarUrl} onChange={e => set('avatarUrl', e.target.value)} placeholder="https://..." />
+          </div>
+        </div>
+        <span style={{ fontSize: '0.7rem', color: '#64748b', whiteSpace: 'nowrap', flexShrink: 0 }}>{providerBadge}</span>
       </div>
 
-      {/* ──── Preferences ──── */}
-      <div style={S.card}>
-        <div style={S.cardTitle}>⚙️ Preferences</div>
-        <p style={S.cardDesc}>Default settings applied when syncing.</p>
+      {/* ──── Row 2: Two-column grid ──── */}
+      <div style={S.grid}>
+        {/* LEFT — Platforms */}
+        <div style={S.card}>
+          <h3 style={S.cardTitle}>🔗 Platforms</h3>
 
-        <div style={S.row}>
           <div>
-            <label style={S.label}>Default Currency</label>
-            <select style={{ ...S.input, cursor: 'pointer' }} value={profile.currency} onChange={e => set('currency', e.target.value)}>
-              <option value="€">€ Euro</option>
-              <option value="$">$ Dollar</option>
-              <option value="£">£ Pound</option>
-              <option value="R$">R$ Real</option>
-              <option value="kr">kr Krone</option>
-              <option value="¥">¥ Yen / Yuan</option>
-              <option value="₹">₹ Rupee</option>
-              <option value="₺">₺ Lira</option>
-            </select>
+            <div style={S.platRow}>
+              <div style={S.dot(!!profile.twitchUsername)} />
+              <label style={{ ...S.label, margin: 0, flex: 1 }}>Twitch</label>
+            </div>
+            <input style={{ ...S.input, marginTop: 4 }} value={profile.twitchUsername} onChange={e => set('twitchUsername', e.target.value)} placeholder="your_twitch_name" />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'flex-end' }}>
-            <div style={{ fontSize: '0.78rem', color: '#94a3b8', lineHeight: 1.5 }}>
-              <strong style={{ color: '#fff' }}>{connectedPlatforms.length}</strong> platform{connectedPlatforms.length !== 1 ? 's' : ''} connected
+
+          <div>
+            <div style={S.platRow}>
+              <div style={S.dot(!!profile.kickChannel)} />
+              <label style={{ ...S.label, margin: 0, flex: 1 }}>Kick</label>
+            </div>
+            <input style={{ ...S.input, marginTop: 4 }} value={profile.kickChannel} onChange={e => set('kickChannel', e.target.value)} placeholder="your_kick_channel" />
+          </div>
+
+          <div>
+            <div style={S.platRow}>
+              <div style={S.dot(!!profile.youtubeChannel)} />
+              <label style={{ ...S.label, margin: 0, flex: 1 }}>YouTube</label>
+            </div>
+            <div style={{ ...S.row2, marginTop: 4 }}>
+              <input style={S.input} value={profile.youtubeChannel} onChange={e => set('youtubeChannel', e.target.value)} placeholder="Video / Live ID" />
+              <input style={S.input} type="password" value={profile.youtubeApiKey} onChange={e => set('youtubeApiKey', e.target.value)} placeholder="API Key" />
+            </div>
+          </div>
+
+          <div>
+            <div style={S.platRow}>
+              <div style={S.dot(!!profile.discordTag)} />
+              <label style={{ ...S.label, margin: 0, flex: 1 }}>Discord</label>
+            </div>
+            <input style={{ ...S.input, marginTop: 4 }} value={profile.discordTag} onChange={e => set('discordTag', e.target.value)} placeholder="username#0000" />
+          </div>
+        </div>
+
+        {/* RIGHT — Spotify + Preferences */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Spotify card */}
+          <div style={S.card}>
+            <h3 style={S.cardTitle}>🎵 Spotify</h3>
+            <div style={S.platRow}>
+              <div style={S.dot(!!profile.spotify_access_token)} />
+              <span style={{ fontSize: '0.82rem', color: profile.spotify_access_token ? '#1DB954' : '#64748b', fontWeight: 600, flex: 1 }}>
+                {profile.spotify_access_token ? 'Connected' : 'Not connected'}
+              </span>
+              {profile.spotify_access_token ? (
+                <button style={{ ...S.btn, background: 'rgba(248,113,113,0.1)', color: '#f87171', fontSize: '0.76rem', padding: '6px 12px' }} onClick={disconnectSpotify}>
+                  Disconnect
+                </button>
+              ) : (
+                <button
+                  style={{ ...S.btn, background: '#1DB954', color: '#fff', opacity: spotifyLoading ? 0.6 : 1 }}
+                  onClick={connectSpotify}
+                  disabled={spotifyLoading}
+                >
+                  {spotifyLoading ? '⏳ Connecting…' : 'Connect'}
+                </button>
+              )}
+            </div>
+            {spotifyError && <p style={{ fontSize: '0.74rem', color: '#f87171', margin: 0 }}>{spotifyError}</p>}
+            <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
+              Shows your currently playing track on Navbar &amp; Spotify widgets. Click Sync below to push tokens.
+            </p>
+          </div>
+
+          {/* Preferences card */}
+          <div style={S.card}>
+            <h3 style={S.cardTitle}>⚙️ Preferences</h3>
+            <div>
+              <label style={S.label}>Default Currency</label>
+              <select style={{ ...S.input, cursor: 'pointer' }} value={profile.currency} onChange={e => set('currency', e.target.value)}>
+                <option value="€">€ Euro</option>
+                <option value="$">$ Dollar</option>
+                <option value="£">£ Pound</option>
+                <option value="R$">R$ Real</option>
+                <option value="kr">kr Krone</option>
+                <option value="¥">¥ Yen / Yuan</option>
+                <option value="₹">₹ Rupee</option>
+                <option value="₺">₺ Lira</option>
+              </select>
+            </div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              {connectedPlatforms.map(p => (
+                <span key={p.name} style={{ fontSize: '0.72rem', padding: '3px 10px', borderRadius: 6, background: `${p.color}18`, color: p.color, fontWeight: 600 }}>
+                  {p.name}
+                </span>
+              ))}
+              {connectedPlatforms.length === 0 && (
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>No platforms connected yet</span>
+              )}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ──── Sync Overview ──── */}
-      <div style={S.card}>
-        <div style={S.cardTitle}>📡 Widget Sync</div>
-        <p style={S.cardDesc}>
-          Push your profile data to all compatible widgets. This updates the Navbar, Chat, and Giveaway widget configs.
-        </p>
-
-        {/* Show which widgets will be updated */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).map(w => {
-            const map = SYNC_MAP[w.widget_type];
-            const fields = Object.entries(map)
-              .filter(([pk]) => profile[pk])
-              .map(([, ck]) => ck);
-            return (
-              <div key={w.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', padding: '6px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
-                <span style={{ fontSize: '0.9rem' }}>
-                  {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : '🎁'}
-                </span>
-                <span style={{ color: '#fff', fontWeight: 600, flex: 1, textTransform: 'capitalize' }}>{w.widget_type.replace('_', ' ')}</span>
-                <span style={{ color: '#64748b', fontSize: '0.72rem' }}>
-                  {fields.length > 0 ? fields.join(', ') : 'no matching data'}
-                </span>
-              </div>
-            );
-          })}
-          {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
-            <div style={{ color: '#64748b', fontSize: '0.82rem', textAlign: 'center', padding: 12 }}>
-              Add a Navbar, Chat, or Giveaway widget to enable sync
-            </div>
-          )}
+      {/* ──── Row 3: Sync bar ──── */}
+      <div style={S.syncBar}>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#fff' }}>📡 Widget Sync</span>
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).map(w => (
+              <span key={w.id} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', textTransform: 'capitalize' }}>
+                {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : '🎁'} {w.widget_type.replace('_', ' ')}
+              </span>
+            ))}
+            {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
+              <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Add widgets to enable sync</span>
+            )}
+          </div>
         </div>
-
         <button
-          style={{ ...S.btn, ...S.btnSync, opacity: saving ? 0.6 : 1 }}
+          style={{ ...S.btnSync, width: 'auto', padding: '10px 28px', opacity: saving ? 0.6 : 1 }}
           onClick={handleSyncAll}
           disabled={saving}
         >
-          {saving ? '⏳ Syncing...' : '📡 Sync Profile to All Widgets'}
+          {saving ? '⏳ Syncing...' : '📡 Sync All'}
         </button>
-
-        {syncMsg && (
-          <div style={{
-            ...S.syncResult,
-            background: syncMsg.startsWith('✅') ? 'rgba(34,197,94,0.08)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)',
-            color: syncMsg.startsWith('✅') ? '#4ade80' : syncMsg.startsWith('❌') ? '#f87171' : '#fbbf24',
-            border: `1px solid ${syncMsg.startsWith('✅') ? 'rgba(34,197,94,0.2)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
-          }}>
-            {syncMsg}
-          </div>
-        )}
       </div>
+
+      {syncMsg && (
+        <div style={{
+          ...S.syncResult,
+          background: syncMsg.startsWith('✅') ? 'rgba(34,197,94,0.08)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.08)' : 'rgba(245,158,11,0.08)',
+          color: syncMsg.startsWith('✅') ? '#4ade80' : syncMsg.startsWith('❌') ? '#f87171' : '#fbbf24',
+          border: `1px solid ${syncMsg.startsWith('✅') ? 'rgba(34,197,94,0.2)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.2)' : 'rgba(245,158,11,0.2)'}`,
+        }}>
+          {syncMsg}
+        </div>
+      )}
     </div>
   );
 }
