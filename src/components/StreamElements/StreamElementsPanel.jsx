@@ -316,12 +316,12 @@ export default function StreamElementsPanel() {
         <div className="mb-16">
           <h3 className="text-2xl font-bold text-white mb-6">Available Redemptions</h3>
           {redemptionItems.length === 0 ? (
-            <div className="bg-[#161a22] border border-white/10 rounded-2xl p-14 text-center">
+            <div className="bg-[#13161d] border border-white/10 rounded-xl p-14 text-center">
               <div className="text-5xl mb-3">🎁</div>
               <p className="text-gray-500">No redemption items available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
               {redemptionItems.map(item => {
                 const canAfford = isConnected && points >= item.point_cost;
                 const isRedeeming = redeeming === item.id;
@@ -333,69 +333,64 @@ export default function StreamElementsPanel() {
                 return (
                   <div 
                     key={item.id} 
-                    className={`group relative flex flex-col bg-[#161a22] rounded-2xl overflow-hidden transition-all duration-200 ${
-                      dimmed
-                        ? 'opacity-50' 
-                        : 'hover:-translate-y-1 hover:shadow-xl hover:shadow-purple-500/15'
+                    className={`group flex flex-col bg-[#13161d] border border-white/[0.06] rounded-xl overflow-hidden transition-all duration-200 ${
+                      dimmed ? 'opacity-45' : 'hover:border-purple-500/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-900/20'
                     }`}
-                    style={{ border: '1px solid rgba(255,255,255,0.08)' }}
                   >
-                    {/* Image */}
-                    <div className="relative w-full" style={{ paddingBottom: '56%' }}>
+                    {/* Image — fixed height, centered on dark bg */}
+                    <div className="relative h-32 bg-black/40 flex items-center justify-center overflow-hidden">
                       <img 
                         src={imageUrl} 
                         alt={item.name} 
-                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                        className="max-w-full max-h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300" 
                       />
-                      {/* Point badge overlaid on image */}
-                      <div className="absolute top-2.5 right-2.5 bg-black/70 backdrop-blur-sm text-purple-400 text-xs font-bold px-2.5 py-1 rounded-lg" style={{ border: '1px solid rgba(168,85,247,0.4)' }}>
-                        {item.point_cost.toLocaleString()} pts
-                      </div>
                       {isDisabled && (
-                        <div className="absolute top-2.5 left-2.5 bg-yellow-500/90 text-black text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md">
-                          Coming Soon
-                        </div>
+                        <div className="absolute top-1.5 left-1.5 bg-yellow-500 text-black text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">SOON</div>
                       )}
                       {!isDisabled && isOutOfStock && (
-                        <div className="absolute top-2.5 left-2.5 bg-red-500/90 text-white text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-md">
-                          Sold Out
-                        </div>
+                        <div className="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">SOLD OUT</div>
                       )}
                     </div>
 
-                    {/* Content */}
-                    <div className="flex flex-col flex-1 p-4 gap-2">
-                      <h4 className="text-sm font-semibold text-white leading-snug line-clamp-1">{item.name}</h4>
-                      <p className="text-gray-500 text-xs leading-relaxed line-clamp-2 flex-1">{item.description}</p>
+                    {/* Body */}
+                    <div className="flex flex-col flex-1 px-3 pt-2.5 pb-3 gap-1.5">
+                      {/* Name + Points */}
+                      <div className="flex items-start justify-between gap-1.5">
+                        <h4 className="text-[13px] font-bold text-white leading-tight line-clamp-1 flex-1">{item.name}</h4>
+                        <span className="flex-shrink-0 text-[11px] font-bold text-purple-400 bg-purple-500/15 px-1.5 py-0.5 rounded border border-purple-500/25 whitespace-nowrap">
+                          {item.point_cost >= 1000 ? `${(item.point_cost / 1000).toFixed(item.point_cost % 1000 === 0 ? 0 : 1)}k` : item.point_cost}
+                        </span>
+                      </div>
                       
+                      {/* Description */}
+                      <p className="text-[11px] text-gray-500 leading-snug line-clamp-2">{item.description}</p>
+                      
+                      {/* Reward detail */}
                       {(item.reward_details || item.reward_value?.details) && (
-                        <div className="flex items-start gap-1.5 bg-purple-500/10 rounded-lg px-2.5 py-1.5" style={{ border: '1px solid rgba(168,85,247,0.2)' }}>
-                          <span className="text-sm leading-none mt-0.5">🎁</span>
-                          <span className="text-[11px] text-purple-300 leading-snug line-clamp-2">
-                            {item.reward_details || item.reward_value?.details}
-                          </span>
+                        <div className="text-[11px] text-purple-300/70 leading-snug line-clamp-1 mt-auto">
+                          🎁 {item.reward_details || item.reward_value?.details}
                         </div>
                       )}
 
-                      {/* Footer: stock + button */}
-                      <div className="flex items-center gap-2 pt-1">
-                        {item.available_units !== null && !isDisabled && (
-                          <span className="text-gray-500 text-[11px]">
-                            <strong className="text-gray-300">{item.available_units}</strong> left
-                          </span>
-                        )}
-                        <button
-                          onClick={() => handleRedeem(item)}
-                          disabled={!isConnected || isDisabled || !canAfford || isRedeeming || loading || isOutOfStock}
-                          className={`ml-auto font-semibold py-1.5 px-4 rounded-lg text-xs transition-all duration-200 ${
-                            !isConnected || isDisabled || !canAfford || isOutOfStock
-                              ? 'bg-white/5 text-gray-500 cursor-not-allowed'
-                              : 'bg-purple-600 hover:bg-purple-500 text-white active:scale-95'
-                          }`}
-                        >
-                          {!isConnected ? '🔒 Connect' : isDisabled ? 'Soon' : isOutOfStock ? 'Sold Out' : isRedeeming ? '...' : canAfford ? '✨ Redeem' : '💰 Need More'}
-                        </button>
-                      </div>
+                      {/* Stock */}
+                      {item.available_units !== null && !isDisabled && (
+                        <div className="text-[10px] text-gray-600">
+                          Stock: <span className="text-gray-400 font-medium">{item.available_units}</span>
+                        </div>
+                      )}
+
+                      {/* Button */}
+                      <button
+                        onClick={() => handleRedeem(item)}
+                        disabled={!isConnected || isDisabled || !canAfford || isRedeeming || loading || isOutOfStock}
+                        className={`w-full mt-1 py-1.5 rounded-lg text-[11px] font-bold transition-all duration-150 ${
+                          !isConnected || isDisabled || !canAfford || isOutOfStock
+                            ? 'bg-white/[0.04] text-gray-600 cursor-not-allowed border border-white/[0.06]'
+                            : 'bg-purple-600 hover:bg-purple-500 text-white active:scale-[0.97]'
+                        }`}
+                      >
+                        {!isConnected ? '🔒 Connect' : isDisabled ? 'Soon' : isOutOfStock ? 'Sold Out' : isRedeeming ? '...' : canAfford ? '✨ Redeem' : '💰 Need More'}
+                      </button>
                     </div>
                   </div>
                 );
