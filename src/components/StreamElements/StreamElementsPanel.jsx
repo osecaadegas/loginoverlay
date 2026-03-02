@@ -337,12 +337,12 @@ export default function StreamElementsPanel() {
                       dimmed ? 'opacity-45' : 'hover:border-purple-500/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-900/20'
                     }`}
                   >
-                    {/* Image — fixed height, centered on dark bg */}
-                    <div className="relative h-28 bg-black/30 flex items-center justify-center overflow-hidden">
+                    {/* Image — aspect-ratio box, fully visible */}
+                    <div className="relative w-full bg-black/30 flex items-center justify-center overflow-hidden" style={{ aspectRatio: '16/10' }}>
                       <img 
                         src={imageUrl} 
                         alt={item.name} 
-                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" 
+                        className="max-w-[90%] max-h-[90%] object-contain group-hover:scale-110 transition-transform duration-300" 
                       />
                       {isDisabled && (
                         <div className="absolute top-1.5 left-1.5 bg-yellow-500 text-black text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">SOON</div>
