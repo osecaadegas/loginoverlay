@@ -23,6 +23,10 @@ import CurrentSlotConfig from './widgets/CurrentSlotConfig';
 import WheelOfNamesConfig from './widgets/WheelOfNamesConfig';
 import RandomSlotPickerConfig from './widgets/RandomSlotPickerConfig';
 import SingleSlotConfig from './widgets/SingleSlotConfig';
+import CoinFlipConfig from './widgets/CoinFlipConfig';
+import PointSlotConfig from './widgets/PointSlotConfig';
+import SaltyWordsConfig from './widgets/SaltyWordsConfig';
+import PredictionsConfig from './widgets/PredictionsConfig';
 import ProfileSection from './ProfileSection';
 import './OverlayCenter.css';
 
@@ -148,6 +152,66 @@ function SingleSlotPanel({ widgets, saveWidget, addWidget, loading }) {
   return <div className="oc-panel-section"><SingleSlotConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
 }
 
+/* ── Inline wrapper: Coin Flip sidebar panel ── */
+function CoinFlipPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'coin_flip');
+  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+  if (!widget) return (
+    <div className="oc-empty-panel">
+      <h2>🪙 Coin Flip</h2>
+      <p>No Coin Flip widget found. Add one to get started.</p>
+      <button className="oc-btn-primary" onClick={() => addWidget('coin_flip')}>+ Add Coin Flip Widget</button>
+    </div>
+  );
+  return <div className="oc-panel-section"><CoinFlipConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
+}
+
+/* ── Inline wrapper: Point Slot sidebar panel ── */
+function PointSlotPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'point_slot');
+  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+  if (!widget) return (
+    <div className="oc-empty-panel">
+      <h2>🎰 Point Slot</h2>
+      <p>No Point Slot widget found. Add one to get started.</p>
+      <button className="oc-btn-primary" onClick={() => addWidget('point_slot')}>+ Add Point Slot Widget</button>
+    </div>
+  );
+  return <div className="oc-panel-section"><PointSlotConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
+}
+
+/* ── Inline wrapper: Salty Words sidebar panel ── */
+function SaltyWordsPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'salty_words');
+  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+  if (!widget) return (
+    <div className="oc-empty-panel">
+      <h2>🧂 Salty Words</h2>
+      <p>No Salty Words widget found. Add one to get started.</p>
+      <button className="oc-btn-primary" onClick={() => addWidget('salty_words')}>+ Add Salty Words Widget</button>
+    </div>
+  );
+  return <div className="oc-panel-section"><SaltyWordsConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
+}
+
+/* ── Inline wrapper: Predictions sidebar panel ── */
+function PredictionsPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'predictions');
+  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+  if (!widget) return (
+    <div className="oc-empty-panel">
+      <h2>🔮 Predictions</h2>
+      <p>No Predictions widget found. Add one to get started.</p>
+      <button className="oc-btn-primary" onClick={() => addWidget('predictions')}>+ Add Predictions Widget</button>
+    </div>
+  );
+  return <div className="oc-panel-section"><PredictionsConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
+}
+
 export default function OverlayControlCenter() {
   const { user } = useAuth();
   const { isAdmin } = useAdmin();
@@ -159,7 +223,8 @@ export default function OverlayControlCenter() {
     updateState, regenToken,
   } = useOverlay();
 
-  const [activePanel, setActivePanel] = useState('widgets'); // widgets | preview
+  const [activePanel, setActivePanel] = useState('widgets');
+  const [communityOpen, setCommunityOpen] = useState(false); // widgets | preview
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -455,6 +520,38 @@ export default function OverlayControlCenter() {
               </button>
             ))}
 
+            {/* ─── Community Games dropdown ─── */}
+            <div className="oc-sidebar-divider-label">Community</div>
+            <button
+              className={`oc-sidebar-btn ${communityOpen ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => setCommunityOpen(o => !o)}
+            >
+              <span className="oc-sidebar-btn-icon">🎮</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Community Games</span>
+                <span className="oc-sidebar-btn-desc">Interactive viewer games</span>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: communityOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+            </button>
+            {communityOpen && [
+              { key: 'coin_flip', icon: '🪙', label: 'Coin Flip', desc: 'Heads or tails betting' },
+              { key: 'point_slot', icon: '🎰', label: 'Point Slot', desc: 'Slot machine with points' },
+              { key: 'salty_words', icon: '🧂', label: 'Salty Words', desc: 'Word betting game' },
+              { key: 'predictions', icon: '🔮', label: 'Predictions', desc: 'Two-outcome bets' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                className={`oc-sidebar-btn oc-sidebar-btn--sub ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
+                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
+              >
+                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
+                <div className="oc-sidebar-btn-text">
+                  <span className="oc-sidebar-btn-label">{tab.label}</span>
+                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
+                </div>
+              </button>
+            ))}
+
             {/* Tutorial button */}
             <button
               className="oc-sidebar-btn"
@@ -593,6 +690,18 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'approvals' && isAdmin && (
             <SlotApprovals />
+          )}
+          {activePanel === 'coin_flip' && (
+            <CoinFlipPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
+          )}
+          {activePanel === 'point_slot' && (
+            <PointSlotPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
+          )}
+          {activePanel === 'salty_words' && (
+            <SaltyWordsPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
+          )}
+          {activePanel === 'predictions' && (
+            <PredictionsPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'profile' && (
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />

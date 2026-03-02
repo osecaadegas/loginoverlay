@@ -34,6 +34,22 @@ const SYNC_MAP = {
     spotify_refresh_token: 'spotify_refresh_token',
     spotify_expires_at: 'spotify_expires_at',
   },
+  coin_flip: {
+    seChannelId: 'seChannelId',
+    seJwtToken: 'seJwtToken',
+  },
+  point_slot: {
+    seChannelId: 'seChannelId',
+    seJwtToken: 'seJwtToken',
+  },
+  salty_words: {
+    seChannelId: 'seChannelId',
+    seJwtToken: 'seJwtToken',
+  },
+  predictions: {
+    seChannelId: 'seChannelId',
+    seJwtToken: 'seJwtToken',
+  },
 };
 
 const S = {
@@ -87,10 +103,13 @@ export default function ProfileSection({ widgets, saveWidget }) {
     youtubeApiKey: '',
     discordTag: '',
     currency: '€',
+    seChannelId: '',
+    seJwtToken: '',
     spotify_access_token: '',
     spotify_refresh_token: '',
     spotify_expires_at: null,
   });
+  const [seTestMsg, setSeTestMsg] = useState('');
   const [spotifyLoading, setSpotifyLoading] = useState(false);
   const [spotifyError, setSpotifyError] = useState('');
 
@@ -102,6 +121,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
     const chat = (widgets || []).find(w => w.widget_type === 'chat')?.config || {};
     const ga = (widgets || []).find(w => w.widget_type === 'giveaway')?.config || {};
     const sp = (widgets || []).find(w => w.widget_type === 'spotify_now_playing')?.config || {};
+    const communityW = (widgets || []).find(w => ['coin_flip','point_slot','salty_words','predictions'].includes(w.widget_type))?.config || {};
 
     /* Pick Spotify tokens from whichever widget has them */
     const spotToken = nb.spotify_access_token || sp.spotify_access_token || '';
@@ -118,6 +138,8 @@ export default function ProfileSection({ widgets, saveWidget }) {
       youtubeApiKey: chat.youtubeApiKey || prev.youtubeApiKey || '',
       discordTag: prev.discordTag || '',
       currency: nb.currency || chat.currency || prev.currency || '€',
+      seChannelId: communityW?.seChannelId || import.meta.env.VITE_SE_CHANNEL_ID || prev.seChannelId || '',
+      seJwtToken: communityW?.seJwtToken || import.meta.env.VITE_SE_JWT_TOKEN || prev.seJwtToken || '',
       spotify_access_token: spotToken,
       spotify_refresh_token: spotRefresh,
       spotify_expires_at: spotExpires,
@@ -134,6 +156,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
     if (profile.youtubeChannel) list.push({ name: 'YouTube', user: profile.youtubeChannel, color: '#ff0000' });
     if (profile.discordTag) list.push({ name: 'Discord', user: profile.discordTag, color: '#5865f2' });
     if (profile.spotify_access_token) list.push({ name: 'Spotify', user: 'Connected', color: '#1DB954' });
+    if (profile.seChannelId && profile.seJwtToken) list.push({ name: 'StreamElements', user: 'Connected', color: '#f59e0b' });
     return list;
   }, [profile]);
 
@@ -397,6 +420,55 @@ export default function ProfileSection({ widgets, saveWidget }) {
             {spotifyError && <p style={{ fontSize: '0.74rem', color: '#f87171', margin: 0 }}>{spotifyError}</p>}
             <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
               Connecting here auto-syncs to your Navbar &amp; Spotify widgets.
+            </p>
+          </div>
+
+          {/* StreamElements card */}
+          <div style={S.card}>
+            <h3 style={S.cardTitle}>🎮 StreamElements</h3>
+            <div style={S.platRow}>
+              <div style={S.dot(!!(profile.seChannelId && profile.seJwtToken))} />
+              <span style={{ fontSize: '0.82rem', color: (profile.seChannelId && profile.seJwtToken) ? '#f59e0b' : '#64748b', fontWeight: 600, flex: 1 }}>
+                {(profile.seChannelId && profile.seJwtToken) ? 'Connected' : 'Not connected'}
+              </span>
+              {(profile.seChannelId && profile.seJwtToken) && (
+                <button style={{ ...S.btn, background: 'rgba(248,113,113,0.1)', color: '#f87171', fontSize: '0.76rem', padding: '6px 12px' }}
+                  onClick={() => { set('seChannelId', ''); set('seJwtToken', ''); setSeTestMsg(''); }}>
+                  Clear
+                </button>
+              )}
+            </div>
+            <div>
+              <label style={S.label}>Channel ID</label>
+              <input style={S.input} value={profile.seChannelId} onChange={e => set('seChannelId', e.target.value)} placeholder="Your SE Channel ID" />
+            </div>
+            <div>
+              <label style={S.label}>JWT Token</label>
+              <input style={S.input} type="password" value={profile.seJwtToken} onChange={e => set('seJwtToken', e.target.value)} placeholder="Your SE JWT Token" />
+            </div>
+            {(profile.seChannelId && profile.seJwtToken) && (
+              <button style={{ ...S.btn, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '0.76rem', padding: '6px 12px' }}
+                onClick={async () => {
+                  setSeTestMsg('⏳ Testing...');
+                  try {
+                    const res = await fetch(`https://api.streamelements.com/kappa/v2/channels/${profile.seChannelId}`, {
+                      headers: { Authorization: `Bearer ${profile.seJwtToken}`, Accept: 'application/json' },
+                    });
+                    if (res.ok) {
+                      const data = await res.json();
+                      setSeTestMsg(`✅ Connected to ${data.displayName || data.username || 'channel'}`);
+                    } else {
+                      setSeTestMsg(`❌ Error ${res.status} — check your credentials`);
+                    }
+                  } catch { setSeTestMsg('❌ Connection failed'); }
+                  setTimeout(() => setSeTestMsg(''), 5000);
+                }}>
+                🔍 Test Connection
+              </button>
+            )}
+            {seTestMsg && <p style={{ fontSize: '0.74rem', color: seTestMsg.startsWith('✅') ? '#4ade80' : seTestMsg.startsWith('❌') ? '#f87171' : '#f59e0b', margin: 0, fontWeight: 600 }}>{seTestMsg}</p>}
+            <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
+              Find these in your <a href="https://streamelements.com/dashboard/account/channels" target="_blank" rel="noreferrer" style={{ color: '#f59e0b' }}>SE Dashboard</a> → Account → Channels. Syncs to Community Games.
             </p>
           </div>
 

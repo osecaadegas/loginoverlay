@@ -607,6 +607,138 @@ registerWidget({
   },
 });
 
+// ─── 21. COIN FLIP ─────────────────────────────────────
+import CoinFlipWidget from './CoinFlipWidget';
+import CoinFlipConfig from './CoinFlipConfig';
+registerWidget({
+  type: 'coin_flip',
+  label: 'Coin Flip',
+  icon: '🪙',
+  description: 'Viewers bet points on heads or tails',
+  category: 'community',
+  component: CoinFlipWidget,
+  configPanel: CoinFlipConfig,
+  styles: [
+    { id: 'v1', icon: '🪙', label: 'Realistic 3D' },
+    { id: 'v2', icon: '💡', label: 'Neon Glow' },
+    { id: 'v3', icon: '✦', label: 'Minimal' },
+    { id: 'v4', icon: '⚙️', label: 'Metallic' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    title: 'Coin Flip!',
+    gameStatus: 'idle',
+    result: null,
+    flipping: false,
+    betsHeads: 0,
+    betsTails: 0,
+    minBet: 10,
+    maxBet: 10000,
+    headsLabel: 'HEADS',
+    tailsLabel: 'TAILS',
+    headsColor: '#f59e0b',
+    tailsColor: '#3b82f6',
+    accentColor: '#f59e0b',
+    textColor: '#ffffff',
+    fontFamily: "'Inter', sans-serif",
+  },
+});
+
+// ─── 22. POINT SLOT ────────────────────────────────────
+import SlotmachineWidget from './SlotmachineWidget';
+import PointSlotConfig from './PointSlotConfig';
+registerWidget({
+  type: 'point_slot',
+  label: 'Point Slot',
+  icon: '🎰',
+  description: 'Viewers spend points to spin a slot machine',
+  category: 'community',
+  component: SlotmachineWidget,
+  configPanel: PointSlotConfig,
+  styles: [
+    { id: 'v1', icon: '🎰', label: 'Classic' },
+    { id: 'v2', icon: '💡', label: 'Neon' },
+    { id: 'v3', icon: '✦', label: 'Minimal' },
+    { id: 'v4', icon: '⚙️', label: 'Metallic' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    title: 'Point Slot',
+    gameStatus: 'idle',
+    symbols: ['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'],
+    reelCount: 3,
+    results: [],
+    spinning: false,
+    lastWin: false,
+    betAmount: 100,
+    winMultiplier: 10,
+    accentColor: '#f59e0b',
+    machineColor: '#dc2626',
+    reelBg: '#1a1a2e',
+    textColor: '#ffffff',
+    fontFamily: "'Inter', sans-serif",
+  },
+});
+
+// ─── 23. SALTY WORDS ───────────────────────────────────
+import SaltyWordsWidget from './SaltyWordsWidget';
+import SaltyWordsConfig from './SaltyWordsConfig';
+registerWidget({
+  type: 'salty_words',
+  label: 'Salty Words',
+  icon: '🧂',
+  description: 'Viewers bet on which word the streamer will pick',
+  category: 'community',
+  component: SaltyWordsWidget,
+  configPanel: SaltyWordsConfig,
+  styles: [
+    { id: 'v1', icon: '🧂', label: 'Classic' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    title: 'Salty Words',
+    gameStatus: 'idle',
+    words: [],
+    selectedWord: null,
+    accentColor: '#f59e0b',
+    textColor: '#ffffff',
+    cardBg: '#1e293b',
+    fontFamily: "'Inter', sans-serif",
+  },
+});
+
+// ─── 24. PREDICTIONS ───────────────────────────────────
+import PredictionsWidget from './PredictionsWidget';
+import PredictionsConfig from './PredictionsConfig';
+registerWidget({
+  type: 'predictions',
+  label: 'Predictions',
+  icon: '🔮',
+  description: 'Viewers bet on two outcomes like Twitch predictions',
+  category: 'community',
+  component: PredictionsWidget,
+  configPanel: PredictionsConfig,
+  styles: [
+    { id: 'v1', icon: '🔮', label: 'Classic' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    question: '',
+    optionA: '',
+    optionB: '',
+    gameStatus: 'idle',
+    winner: null,
+    betsA: 0,
+    betsB: 0,
+    timerSeconds: 60,
+    accentColor: '#7c3aed',
+    colorA: '#3b82f6',
+    colorB: '#ef4444',
+    textColor: '#ffffff',
+    fontFamily: "'Inter', sans-serif",
+  },
+});
+
 // ─── 20. SINGLE SLOT ──────────────────────────────────
 import SingleSlotWidget from './SingleSlotWidget';
 import SingleSlotConfig from './SingleSlotConfig';
