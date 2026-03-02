@@ -311,23 +311,22 @@ export default function NavbarWidget({ config }) {
                 position: 'relative',
                 width: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
                 height: barHeight * 0.72 * ((c.avatarSize ?? 100) / 100),
-                borderRadius: (isMetal || isNeon || isGlass) ? '14px' : isRetro ? '4px' : '50%',
+                borderRadius: '50%',
                 background: 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 flexShrink: 0,
-                ...(isNeon ? { boxShadow: `0 0 10px ${accentColor}44` } : {}),
               }}>
                 {c.avatarUrl ? (
                   <img src={c.avatarUrl} alt="" style={{
                     width: '100%', height: '100%',
-                    borderRadius: (isMetal || isNeon || isGlass) ? '14px' : isRetro ? '4px' : '50%',
+                    borderRadius: '50%',
                     objectFit: 'cover',
-                    ...(isRetro ? { imageRendering: 'pixelated' } : {}),
+                    background: 'transparent',
                   }} />
                 ) : (
                   <div style={{
                     width: '100%', height: '100%',
-                    borderRadius: (isMetal || isNeon || isGlass) ? '14px' : isRetro ? '4px' : '50%',
+                    borderRadius: '50%',
                     background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: fontSize * 0.7, fontWeight: 600, letterSpacing: '0.12em',
