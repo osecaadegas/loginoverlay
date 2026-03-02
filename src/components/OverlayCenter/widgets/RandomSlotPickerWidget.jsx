@@ -31,15 +31,15 @@ export default function RandomSlotPickerWidget({ config }) {
       <style>{kf}</style>
       {slot ? (
         <>
-          <div style={{ width:'75%', maxHeight:'60%', aspectRatio:'16/10', borderRadius:'clamp(6px,2.5cqi,14px)', overflow:'hidden',
-            border:`2px solid ${accent}`, boxShadow:`0 4px 20px ${accent}33`, flexShrink:0,
-            animation:picking?'rsp-pulse 0.4s ease-in-out infinite':'none' }}>
+          <div style={{ width:'60%', maxHeight:'75%', aspectRatio:'3/4', borderRadius:'clamp(8px,3cqi,16px)', overflow:'hidden',
+            border:`2px solid ${accent}`, boxShadow:`0 6px 24px ${accent}33`, flexShrink:0,
+            animation:picking?'rsp-pulse 0.4s ease-in-out infinite':'none', position:'relative' }}>
             {slot.image ? <img src={slot.image} alt={slot.name} style={{ width:'100%', height:'100%', objectFit:'cover', display:'block' }} />
               : <div style={{ width:'100%', height:'100%', background:'rgba(255,255,255,0.04)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'clamp(18px,8cqi,42px)' }}>🎰</div>}
-          </div>
-          <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:'clamp(10px,4.5cqi,22px)', fontWeight:800, color:text }}>{slot.name}</div>
-            {slot.provider && <div style={{ fontSize:'clamp(8px,3cqi,14px)', color:muted, marginTop:'1%' }}>{slot.provider}</div>}
+            <div style={{ position:'absolute', bottom:0, left:0, right:0, padding:'8% 5% 5%', background:'linear-gradient(transparent, rgba(0,0,0,0.85))', textAlign:'center' }}>
+              <div style={{ fontSize:'clamp(10px,4cqi,20px)', fontWeight:800, color:'#fff', textShadow:'0 2px 8px rgba(0,0,0,0.7)' }}>{slot.name}</div>
+              {slot.provider && <div style={{ fontSize:'clamp(7px,2.5cqi,12px)', color:'rgba(255,255,255,0.65)', marginTop:'1%' }}>{slot.provider}</div>}
+            </div>
           </div>
         </>
       ) : emptyState}
@@ -88,7 +88,7 @@ export default function RandomSlotPickerWidget({ config }) {
       <style>{kf}</style>
       {slot ? (
         <>
-          <div style={{ width:'85%', maxHeight:'65%', aspectRatio:'16/9', borderRadius:'clamp(8px,3cqi,16px)', overflow:'hidden', flexShrink:0,
+          <div style={{ width:'65%', maxHeight:'80%', aspectRatio:'3/4', borderRadius:'clamp(8px,3cqi,16px)', overflow:'hidden', flexShrink:0,
             border:'3px solid rgba(255,255,255,0.1)', position:'relative',
             boxShadow:`0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px ${accent}22`,
             animation:picking?'rsp-pulse 0.4s ease-in-out infinite':'none' }}>

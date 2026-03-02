@@ -47,6 +47,7 @@ registerWidget({
     { id: 'v6_compact', icon: '📐', label: 'Compact' },
     { id: 'v7_carousel', icon: '🎠', label: 'Carousel' },
     { id: 'v8_card_stack', icon: '🎴', label: 'Card Stack' },
+    { id: 'v9_hunt_board', icon: '🎯', label: 'Hunt Board' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
