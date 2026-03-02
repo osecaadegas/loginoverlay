@@ -213,7 +213,6 @@ registerWidget({
   styles: [
     { id: 'v1', icon: '📌', label: 'Classic' },
     { id: 'metallic', icon: '⚙️', label: 'Metallic' },
-    { id: 'neon', icon: '💡', label: 'Neon' },
     { id: 'glass', icon: '🪟', label: 'Glass' },
     { id: 'retro', icon: '📺', label: 'Retro' },
   ],
@@ -262,13 +261,13 @@ registerWidget({
   component: ChatWidget,
   configPanel: ChatConfig,
   styles: [
-    { id: 'classic', icon: '📺', label: 'Classic' },
-    { id: 'minimal', icon: '✦', label: 'Minimal' },
-    { id: 'bubble', icon: '💬', label: 'Bubble' },
-    { id: 'neon', icon: '💡', label: 'Neon' },
-    { id: 'compact', icon: '📐', label: 'Compact' },
-    { id: 'stream', icon: '🎮', label: 'Stream' },
-    { id: 'floating', icon: '☁️', label: 'Floating' },
+    { id: 'classic',    icon: '📺', label: 'Classic' },
+    { id: 'floating',   icon: '☁️', label: 'Floating' },
+    { id: 'bubble',     icon: '💬', label: 'Bubble' },
+    { id: 'ticker',     icon: '📰', label: 'Ticker' },
+    { id: 'stack',      icon: '📚', label: 'Stack' },
+    { id: 'typewriter', icon: '⌨️', label: 'Terminal' },
+    { id: 'sidebar',    icon: '📌', label: 'Sidebar' },
   ],
   styleConfigKey: 'chatStyle',
   defaults: {

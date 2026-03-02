@@ -245,7 +245,7 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
         <div className="nb-section">
           <h4 className="nb-subtitle">Chat Platforms</h4>
           <p className="oc-config-hint" style={{ marginBottom: 10, fontSize: 11 }}>
-            Connect to your stream chat so the giveaway can track entries.
+            Channel names are managed in your <b>Profile</b>. Click <b>Sync All</b> there to update.
           </p>
 
           {/* Twitch */}
@@ -253,18 +253,16 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
             background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.2)',
             borderRadius: 8, padding: 10, marginBottom: 8,
           }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: c.twitchEnabled ? 8 : 0 }}>
-              <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} />
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#a855f7' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.twitchChannel ? '#a855f7' : '#333' }} />
               <span style={{ fontWeight: 600, fontSize: 13 }}>Twitch</span>
-              {chatStatus.twitch && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginLeft: 'auto' }}>● Connected</span>}
-            </label>
-            {c.twitchEnabled && (
-              <label className="nb-field" style={{ margin: 0 }}>
-                <span>Channel Name</span>
-                <input value={c.twitchChannel || ''} onChange={e => set('twitchChannel', e.target.value)} placeholder="e.g. osecaadegas" />
-              </label>
-            )}
+              {c.twitchChannel ? (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{c.twitchChannel}</span>
+              ) : (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
+              )}
+              {chatStatus.twitch && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginLeft: 4 }}>● Live</span>}
+            </div>
           </div>
 
           {/* Kick */}
@@ -272,23 +270,21 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
             background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)',
             borderRadius: 8, padding: 10, marginBottom: 8,
           }}>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', marginBottom: c.kickEnabled ? 8 : 0 }}>
-              <input type="checkbox" checked={!!c.kickEnabled} onChange={e => set('kickEnabled', e.target.checked)} />
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.kickChannelId ? '#22c55e' : '#333' }} />
               <span style={{ fontWeight: 600, fontSize: 13 }}>Kick</span>
-              {chatStatus.kick && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginLeft: 'auto' }}>● Connected</span>}
-            </label>
-            {c.kickEnabled && (
-              <label className="nb-field" style={{ margin: 0 }}>
-                <span>Chatroom ID</span>
-                <input value={c.kickChannelId || ''} onChange={e => set('kickChannelId', e.target.value)} placeholder="Kick chatroom ID (number)" />
-              </label>
-            )}
+              {c.kickChannelId ? (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#22c55e', fontWeight: 600 }}>{c.kickChannelId}</span>
+              ) : (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
+              )}
+              {chatStatus.kick && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginLeft: 4 }}>● Live</span>}
+            </div>
           </div>
 
-          {!c.twitchEnabled && !c.kickEnabled && (
+          {!c.twitchChannel && !c.kickChannelId && (
             <p className="oc-config-hint" style={{ fontSize: 11, color: '#f59e0b' }}>
-              ⚠️ Enable at least one platform to track chat entries.
+              ⚠️ No platforms configured — go to Profile and add your channels, then Sync.
             </p>
           )}
         </div>

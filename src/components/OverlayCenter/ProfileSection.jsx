@@ -23,6 +23,7 @@ const SYNC_MAP = {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
     youtubeChannel: 'youtubeVideoId',
+    youtubeApiKey: 'youtubeApiKey',
   },
   giveaway: {
     twitchUsername: 'twitchChannel',
@@ -225,6 +226,38 @@ export default function ProfileSection({ widgets, saveWidget }) {
           updates.musicSource = 'spotify';
           updates.showNowPlaying = true;
           changed = true;
+        }
+
+        /* Auto-enable platforms on chat/giveaway when channel names are set */
+        if (widget.widget_type === 'chat' || widget.widget_type === 'giveaway') {
+          if (profile.twitchUsername && !widget.config?.twitchEnabled) {
+            updates.twitchEnabled = true;
+            changed = true;
+          }
+          if (!profile.twitchUsername && widget.config?.twitchEnabled) {
+            updates.twitchEnabled = false;
+            changed = true;
+          }
+        }
+        if (widget.widget_type === 'chat' || widget.widget_type === 'giveaway') {
+          if (profile.kickChannel && !widget.config?.kickEnabled) {
+            updates.kickEnabled = true;
+            changed = true;
+          }
+          if (!profile.kickChannel && widget.config?.kickEnabled) {
+            updates.kickEnabled = false;
+            changed = true;
+          }
+        }
+        if (widget.widget_type === 'chat') {
+          if (profile.youtubeChannel && !widget.config?.youtubeEnabled) {
+            updates.youtubeEnabled = true;
+            changed = true;
+          }
+          if (!profile.youtubeChannel && widget.config?.youtubeEnabled) {
+            updates.youtubeEnabled = false;
+            changed = true;
+          }
         }
 
         if (changed) {

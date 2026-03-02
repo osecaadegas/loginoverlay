@@ -1405,7 +1405,7 @@
   height: var(--bht3-flip-height, 220px);
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-  animation: bht3-spin var(--bht3-spin-duration, 8s) linear infinite;
+  animation: bht3-spin var(--bht3-spin-duration, 8s) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
 .bht3-flip-face {
@@ -1420,6 +1420,7 @@
 /* ── FRONT face ── */
 .bht3-flip-front {
   background: #0f172a;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
 .bht3-flip-img {
@@ -1456,16 +1457,19 @@
   bottom: 0;
   left: 0;
   right: 0;
-  padding: 14px 16px;
+  padding: 16px 18px;
   z-index: 2;
 }
 
 .bht3-flip-slot-name {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.6);
-  margin-bottom: 2px;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  margin-bottom: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .bht3-flip-bet {
@@ -1523,15 +1527,16 @@
 /* ── BACK face ── */
 .bht3-flip-back {
   transform: rotateY(180deg);
-  background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
-  border: 1px solid rgba(99, 102, 241, 0.2);
+  background: linear-gradient(145deg, #1e293b 0%, #0f172a 60%, #131c2e 100%);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 0 30px rgba(99,102,241,0.04);
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .bht3-flip-back-content {
-  padding: 20px 24px;
+  padding: 22px 26px;
   width: 100%;
   text-align: center;
 }
@@ -1563,13 +1568,14 @@
 }
 
 .bht3-flip-back-stat {
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 10px;
-  padding: 8px 10px;
+  padding: 10px 10px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 3px;
+  transition: background 0.3s ease;
 }
 
 .bht3-flip-back-stat-label {
@@ -1933,66 +1939,66 @@
   50% { box-shadow: 0 0 20px rgba(168,85,247,0.6), 0 0 40px rgba(168,85,247,0.2); }
 }
 
-/* ── Clean Mode ── */
-.ov-chat-widget--clean {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-.ov-chat-widget--clean .ov-chat-messages { padding: 8px 0; }
-.ov-chat-widget--clean .ov-chat-msg { gap: 0; }
-.ov-chat-widget--clean .ov-chat-msg-body { display: inline; }
-.ov-chat-widget--clean .ov-chat-username { font-size: inherit; }
-.ov-chat-widget--clean .ov-chat-text { font-size: inherit; }
-.ov-chat-widget--clean .ov-chat-empty-hint { opacity: 0.5; }
+/* ── Classic Mode (default) ── */
+.ov-chat-widget--classic .ov-chat-messages { padding: 6px 0; }
+.ov-chat-widget--classic .ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
 
-/* ── Minimal Mode ── */
-.ov-chat-widget--minimal {
-  box-shadow: none;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+/* ── Floating Mode — transparent bg, pill bubbles ── */
+.ov-chat-widget--floating { background: transparent !important; border: none !important; }
+.ov-chat-widget--floating .ov-chat-messages {
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
 }
-.ov-chat-widget--minimal .ov-chat-messages {
-  padding: 6px 0;
-  scrollbar-width: none;
+.ov-chat-widget--floating .ov-chat-msg { gap: 0; }
+.ov-chat-widget--floating .ov-chat-msg:hover { background: none; }
+.ov-chat-widget--floating .ov-chat-username::after { content: none; }
+
+/* ── Bubble Mode — social media speech bubbles ── */
+.ov-chat-widget--bubble .ov-chat-messages { padding: 6px 0; }
+.ov-chat-widget--bubble .ov-chat-msg {
+  gap: 8px; align-items: flex-start;
 }
-.ov-chat-widget--minimal .ov-chat-messages::-webkit-scrollbar {
-  display: none;
+.ov-chat-widget--bubble .ov-chat-msg:hover { background: rgba(255,255,255,0.02); }
+.ov-chat-widget--bubble .ov-chat-username::after { content: none; }
+
+/* ── Ticker Mode — horizontal scroll bar ── */
+.ov-chat-widget--ticker {
+  overflow: hidden !important;
 }
-.ov-chat-widget--minimal .ov-chat-msg {
-  gap: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  transition: background 0.12s ease;
+
+/* ── Stack Mode — fading message pile, transparent ── */
+.ov-chat-widget--stack { background: transparent !important; border: none !important; }
+.ov-chat-widget--stack .ov-chat-messages {
+  display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
 }
-.ov-chat-widget--minimal .ov-chat-msg:last-child { border-bottom: none; }
-.ov-chat-widget--minimal .ov-chat-msg:hover { background: rgba(255,255,255,0.04); }
-.ov-chat-widget--minimal .ov-chat-msg-body {
-  display: inline;
-  line-height: 1.5;
+.ov-chat-widget--stack .ov-chat-msg {
+  display: flex; align-items: baseline; gap: 0;
 }
-.ov-chat-widget--minimal .ov-chat-username {
-  font-size: 0.92em;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  margin-right: 6px;
+.ov-chat-widget--stack .ov-chat-msg:hover { background: none; }
+.ov-chat-widget--stack .ov-chat-username::after { content: none; }
+
+/* ── Typewriter Mode — terminal / hacker look ── */
+.ov-chat-widget--typewriter {
+  border: 1px solid rgba(74,222,128,0.15) !important;
+  box-shadow: 0 0 20px rgba(74,222,128,0.06), inset 0 0 40px rgba(0,20,0,0.3);
 }
-.ov-chat-widget--minimal .ov-chat-username::after { content: none; }
-.ov-chat-widget--minimal .ov-chat-text {
-  font-size: 1em;
-  opacity: 0.92;
-  font-weight: 400;
-  letter-spacing: 0.005em;
+.ov-chat-widget--typewriter .ov-chat-messages { padding: 8px 0; }
+.ov-chat-widget--typewriter .ov-chat-msg {
+  display: flex; align-items: baseline; gap: 0;
+  border-bottom: 1px solid rgba(74,222,128,0.05);
 }
-.ov-chat-widget--minimal .ov-chat-empty-hint {
-  opacity: 0.4;
-  font-size: 0.85em;
-  font-weight: 500;
-  letter-spacing: 0.02em;
+.ov-chat-widget--typewriter .ov-chat-msg:last-child { border-bottom: none; }
+.ov-chat-widget--typewriter .ov-chat-msg:hover { background: rgba(74,222,128,0.04); }
+.ov-chat-widget--typewriter .ov-chat-username::after { content: none; }
+
+/* ── Sidebar Mode — color-coded left border strip ── */
+.ov-chat-widget--sidebar .ov-chat-messages { padding: 4px 0; }
+.ov-chat-widget--sidebar .ov-chat-msg {
+  gap: 0; transition: background 0.12s;
 }
-.ov-chat-raid--minimal {
-  border-radius: 0 !important;
-  animation: none !important;
-}
-.ov-chat-raid--minimal::before { display: none; }
-.ov-chat-raid--minimal .ov-chat-username::after { content: none; }
+.ov-chat-widget--sidebar .ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
+.ov-chat-widget--sidebar .ov-chat-username::after { content: none; }
+
+/* ── Shared raid styling ── */
 .ov-chat-raid-count {
   display: inline-block;
   font-size: 0.75em;

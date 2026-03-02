@@ -89,86 +89,56 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
       {/* ═══════ PLATFORMS TAB ═══════ */}
       {activeTab === 'platforms' && (
         <div className="nb-section">
-          <h4 className="nb-subtitle">Chat Style</h4>
-          <div className="ov-chat-style-toggle">
-            <button
-              className={`ov-chat-style-btn${(c.chatStyle || 'classic') === 'classic' ? ' ov-chat-style-btn--active' : ''}`}
-              onClick={() => set('chatStyle', 'classic')}
-            >
-              📺 Classic
-            </button>
-            <button
-              className={`ov-chat-style-btn${c.chatStyle === 'minimal' ? ' ov-chat-style-btn--active' : ''}`}
-              onClick={() => set('chatStyle', 'minimal')}
-            >
-              ✦ Minimal
-            </button>
-          </div>
-          <p className="oc-config-hint" style={{ marginBottom: 12 }}>
-            {c.chatStyle === 'minimal'
-              ? 'Minimal mode: ultra-clean modern look — perfect readability at any size.'
-              : 'Classic mode: header bar, platform badges, and legend shown.'}
-          </p>
 
           <h4 className="nb-subtitle">Platforms & Channels</h4>
           <p className="oc-config-hint" style={{ marginBottom: 8 }}>
-            Enable platforms and provide channel credentials for each.
+            Channel names are managed in your <b>Profile</b>. Click <b>Sync All</b> there to update.
           </p>
 
           {/* Twitch */}
           <div className="ov-chat-cfg-platform">
             <label className="ov-chat-cfg-platform-header">
-              <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} />
-              <span className="ov-chat-cfg-platform-dot" style={{ background: '#a855f7' }} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: c.twitchChannel ? '#a855f7' : '#333' }} />
               <span>Twitch</span>
+              {c.twitchChannel ? (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{c.twitchChannel}</span>
+              ) : (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
+              )}
             </label>
-            {c.twitchEnabled && (
-              <div className="ov-chat-cfg-platform-fields">
-                <label className="nb-field">
-                  <span>Channel Name</span>
-                  <input value={c.twitchChannel || ''} onChange={e => set('twitchChannel', e.target.value)} placeholder="e.g. xQc" />
-                </label>
-              </div>
-            )}
           </div>
 
           {/* YouTube */}
           <div className="ov-chat-cfg-platform">
             <label className="ov-chat-cfg-platform-header">
-              <input type="checkbox" checked={!!c.youtubeEnabled} onChange={e => set('youtubeEnabled', e.target.checked)} />
-              <span className="ov-chat-cfg-platform-dot" style={{ background: '#ef4444' }} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: c.youtubeVideoId ? '#ef4444' : '#333' }} />
               <span>YouTube</span>
+              {c.youtubeVideoId ? (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#ef4444', fontWeight: 600 }}>{c.youtubeVideoId}</span>
+              ) : (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
+              )}
             </label>
-            {c.youtubeEnabled && (
-              <div className="ov-chat-cfg-platform-fields">
-                <label className="nb-field">
-                  <span>Video ID</span>
-                  <input value={c.youtubeVideoId || ''} onChange={e => set('youtubeVideoId', e.target.value)} placeholder="Live stream video ID" />
-                </label>
-                <label className="nb-field">
-                  <span>API Key</span>
-                  <input type="password" value={c.youtubeApiKey || ''} onChange={e => set('youtubeApiKey', e.target.value)} placeholder="YouTube Data API key" />
-                </label>
-              </div>
-            )}
           </div>
 
           {/* Kick */}
           <div className="ov-chat-cfg-platform">
             <label className="ov-chat-cfg-platform-header">
-              <input type="checkbox" checked={!!c.kickEnabled} onChange={e => set('kickEnabled', e.target.checked)} />
-              <span className="ov-chat-cfg-platform-dot" style={{ background: '#22c55e' }} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: c.kickChannelId ? '#22c55e' : '#333' }} />
               <span>Kick</span>
+              {c.kickChannelId ? (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#22c55e', fontWeight: 600 }}>{c.kickChannelId}</span>
+              ) : (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
+              )}
             </label>
-            {c.kickEnabled && (
-              <div className="ov-chat-cfg-platform-fields">
-                <label className="nb-field">
-                  <span>Chatroom ID</span>
-                  <input value={c.kickChannelId || ''} onChange={e => set('kickChannelId', e.target.value)} placeholder="Kick chatroom ID (number)" />
-                </label>
-              </div>
-            )}
           </div>
+
+          {!c.twitchChannel && !c.kickChannelId && !c.youtubeVideoId && (
+            <p className="oc-config-hint" style={{ fontSize: 11, color: '#f59e0b', marginTop: 4 }}>
+              ⚠️ No platforms configured — go to Profile and add your channels, then Sync.
+            </p>
+          )}
 
           <h4 className="nb-subtitle">Display</h4>
           {(c.chatStyle || 'classic') === 'classic' && (

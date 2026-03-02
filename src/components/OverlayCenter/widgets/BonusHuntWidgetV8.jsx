@@ -92,7 +92,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
     if (absOff >= 3) {
       return {
         position: 'absolute',
-        transform: `translateX(${sign * 260}px) rotateY(${sign * -22}deg) translateZ(-180px) scale(0.3)`,
+        transform: `translateX(${sign * 290}px) rotateY(${sign * -22}deg) translateZ(-200px) scale(0.3)`,
         opacity: 0,
         zIndex: 0,
         transition: 'transform 0.85s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.85s cubic-bezier(0.33, 1, 0.68, 1), filter 0.85s ease',
@@ -102,7 +102,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
     }
 
     /* ±1 closer together, ±2 outermost visible — tighter arc */
-    const txMap  = [0, 118, 215];   /* 0 → center, ±1 → ±118px, ±2 → ±215px */
+    const txMap  = [0, 130, 235];   /* 0 → center, ±1 → ±130px, ±2 → ±235px */
     const tzMap  = [60, -10, -55];
     const ryMap  = [0, -14, -24];
     const scMap  = [1.05, 0.9, 0.75];
@@ -217,6 +217,14 @@ export default function BonusHuntWidgetV8({ config, theme }) {
                     <div className="bhv8-card-result">
                       <span className="bhv8-card-payout">⭐ {currency}{payout.toFixed(2)}</span>
                       <span className="bhv8-card-multi">{multi.toFixed(1)}x</span>
+                    </div>
+                  )}
+
+                  {/* slot name + provider */}
+                  {!bonus.opened && (
+                    <div className="bhv8-card-info">
+                      <div className="bhv8-card-name">{slotName}</div>
+                      {provider && <div className="bhv8-card-provider">{provider}</div>}
                     </div>
                   )}
 

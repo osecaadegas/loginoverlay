@@ -5195,96 +5195,30 @@ body.wm-resizing {
   color: #c4b5fd;
 }
 
-/* ── Clean Mode Widget Styles ── */
-.ov-chat-widget--clean {
-  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-}
-.ov-chat-widget--clean .ov-chat-messages {
-  padding: 8px 0;
-}
-.ov-chat-widget--clean .ov-chat-msg {
-  gap: 0;
-}
-.ov-chat-widget--clean .ov-chat-msg-body {
-  display: inline;
-}
-.ov-chat-widget--clean .ov-chat-username {
-  font-size: inherit;
-}
-.ov-chat-widget--clean .ov-chat-text {
-  font-size: inherit;
-}
-.ov-chat-widget--clean .ov-chat-empty-hint {
-  opacity: 0.5;
-}
-
-/* ══════════════════════════════════════════════════════════════
-   MINIMAL MODE — Simple, modern, always readable
-   ══════════════════════════════════════════════════════════════ */
-.ov-chat-widget--minimal {
-  box-shadow: none;
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-.ov-chat-widget--minimal .ov-chat-messages {
-  padding: 6px 0;
-  scrollbar-width: none;
-}
-.ov-chat-widget--minimal .ov-chat-messages::-webkit-scrollbar {
-  display: none;
-}
-/* Each message: clean inline with subtle bottom divider */
-.ov-chat-widget--minimal .ov-chat-msg {
-  gap: 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-  transition: background 0.12s ease;
-}
-.ov-chat-widget--minimal .ov-chat-msg:last-child {
-  border-bottom: none;
-}
-.ov-chat-widget--minimal .ov-chat-msg:hover {
-  background: rgba(255,255,255,0.04);
-}
-/* Body: inline flow, wrapping naturally */
-.ov-chat-widget--minimal .ov-chat-msg-body {
-  display: inline;
-  line-height: 1.5;
-}
-/* Username: no colon, spaced out, slightly smaller */
-.ov-chat-widget--minimal .ov-chat-username {
-  font-size: 0.92em;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  margin-right: 6px;
-}
-.ov-chat-widget--minimal .ov-chat-username::after {
-  content: none;
-}
-/* Message text: clean, readable, inherits font size */
-.ov-chat-widget--minimal .ov-chat-text {
-  font-size: 1em;
-  opacity: 0.92;
-  font-weight: 400;
-  letter-spacing: 0.005em;
-}
-/* Empty state */
-.ov-chat-widget--minimal .ov-chat-empty-hint {
-  opacity: 0.4;
-  font-size: 0.85em;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-/* Minimal raid: left-border accent, inline */
-.ov-chat-raid--minimal {
-  border-radius: 0 !important;
-  animation: none !important;
-}
-.ov-chat-raid--minimal::before {
-  display: none;
-}
-.ov-chat-raid--minimal .ov-chat-username::after {
-  content: none;
-}
+/* ── Chat Mode Styles (preview) ── */
+.ov-chat-widget--classic .ov-chat-messages { padding: 6px 0; }
+.ov-chat-widget--floating { background: transparent !important; border: none !important; }
+.ov-chat-widget--floating .ov-chat-messages { display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0; }
+.ov-chat-widget--floating .ov-chat-msg { gap: 0; }
+.ov-chat-widget--floating .ov-chat-msg:hover { background: none; }
+.ov-chat-widget--floating .ov-chat-username::after { content: none; }
+.ov-chat-widget--bubble .ov-chat-messages { padding: 6px 0; }
+.ov-chat-widget--bubble .ov-chat-msg { gap: 8px; align-items: flex-start; }
+.ov-chat-widget--bubble .ov-chat-username::after { content: none; }
+.ov-chat-widget--ticker { overflow: hidden !important; }
+.ov-chat-widget--stack { background: transparent !important; border: none !important; }
+.ov-chat-widget--stack .ov-chat-messages { display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0; }
+.ov-chat-widget--stack .ov-chat-msg { display: flex; align-items: baseline; gap: 0; }
+.ov-chat-widget--stack .ov-chat-msg:hover { background: none; }
+.ov-chat-widget--stack .ov-chat-username::after { content: none; }
+.ov-chat-widget--typewriter { border: 1px solid rgba(74,222,128,0.15) !important; box-shadow: 0 0 20px rgba(74,222,128,0.06); }
+.ov-chat-widget--typewriter .ov-chat-messages { padding: 8px 0; }
+.ov-chat-widget--typewriter .ov-chat-msg { display: flex; align-items: baseline; gap: 0; border-bottom: 1px solid rgba(74,222,128,0.05); }
+.ov-chat-widget--typewriter .ov-chat-msg:last-child { border-bottom: none; }
+.ov-chat-widget--typewriter .ov-chat-username::after { content: none; }
+.ov-chat-widget--sidebar .ov-chat-messages { padding: 4px 0; }
+.ov-chat-widget--sidebar .ov-chat-msg { gap: 0; }
+.ov-chat-widget--sidebar .ov-chat-username::after { content: none; }
 .ov-chat-raid-count {
   display: inline-block;
   font-size: 0.75em;
@@ -7369,26 +7303,7 @@ body.wm-resizing {
   word-break: break-word;
 }
 
-/* ─── Chat: Neon Style ─── */
-.ov-chat-widget--neon {
-  border: 1px solid rgba(99,102,241,0.3) !important;
-}
-.ov-chat-widget--neon .ov-chat-msg--neon {
-  border-radius: 4px;
-  transition: background 0.2s;
-}
-
-/* ─── Chat: Compact Style ─── */
-.ov-chat-widget--compact .ov-chat-msg--compact {
-  display: flex;
-  align-items: baseline;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.ov-chat-widget--compact .ov-chat-messages {
-  gap: 0;
-}
+/* ─── Chat: (legacy styles removed — see new styles above) ─── */
 
 /* ─── RTP Stats: Vertical ─── */
 .rtp-stats-bar--vertical .rtp-stats-inner {
@@ -8019,14 +7934,14 @@ body.wm-resizing {
 /* card wrapper — absolutely centred; inline transform slides it into position */
 .bhv8-card-wrapper {
   /* position set inline */
-  width: 180px;
-  height: 260px;
+  width: 200px;
+  height: 290px;
   transform-style: preserve-3d;
   /* ensure left/top centring for absolute cards */
   left: 50%;
   top: 50%;
-  margin-left: -90px;
-  margin-top: -130px;
+  margin-left: -100px;
+  margin-top: -145px;
 }
 
 /* actual card */
@@ -8039,7 +7954,7 @@ body.wm-resizing {
   background: var(--bhv8-card-bg, rgba(15,23,42,0.6));
   box-shadow: 0 8px 32px rgba(0,0,0,0.45);
   transition: box-shadow 0.7s ease, transform 0.7s ease;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
 }
 .bhv8-card--center {
   box-shadow:
@@ -8060,7 +7975,7 @@ body.wm-resizing {
     0 0 0 2px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.5);
 }
 .bhv8-card--opened {
-  filter: saturate(0.5) brightness(0.7);
+  filter: saturate(0.65) brightness(0.75);
 }
 
 /* slot image */
@@ -8093,10 +8008,10 @@ body.wm-resizing {
   z-index: 1;
   background: linear-gradient(
     to top,
-    rgba(0,0,0,0.82) 0%,
-    rgba(0,0,0,0.2) 40%,
-    rgba(0,0,0,0.05) 60%,
-    rgba(0,0,0,0.45) 100%
+    rgba(0,0,0,0.88) 0%,
+    rgba(0,0,0,0.35) 35%,
+    rgba(0,0,0,0.05) 55%,
+    rgba(0,0,0,0.4) 100%
   );
   pointer-events: none;
 }
@@ -8155,31 +8070,36 @@ body.wm-resizing {
 /* center text (slot name + provider) */
 .bhv8-card-info {
   position: absolute;
-  bottom: 14px;
+  bottom: 12px;
   left: 0;
   right: 0;
   z-index: 3;
   text-align: center;
-  padding: 0 12px;
+  padding: 0 14px;
 }
 .bhv8-card-name {
-  font-size: 1.2em;
+  font-size: 0.88em;
   font-weight: 900;
   color: var(--bhv8-text, #fff);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   text-shadow: 0 2px 12px rgba(0,0,0,0.8), 0 0 20px rgba(0,0,0,0.4);
   line-height: 1.15;
-  word-break: break-word;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .bhv8-card-provider {
-  font-size: 0.68em;
+  font-size: 0.62em;
   font-weight: 600;
   color: var(--bhv8-muted, rgba(255,255,255,0.65));
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  margin-top: 3px;
+  margin-top: 2px;
   text-shadow: 0 1px 8px rgba(0,0,0,0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 /* result bar (for opened bonuses) */
