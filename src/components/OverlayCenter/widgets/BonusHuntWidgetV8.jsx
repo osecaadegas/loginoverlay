@@ -138,6 +138,8 @@ export default function BonusHuntWidgetV8({ config, theme }) {
     overflow: 'visible',
     background: 'transparent',
     position: 'relative',
+    padding: '8px 0',
+    boxSizing: 'border-box',
     color: textColor,
     '--bhv8-accent': accentColor,
     '--bhv8-accent-rgb': accentRgb,
@@ -231,7 +233,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
 
       {/* ─── Bottom stats bar ─── */}
       {showStats && (
-        <div className="bhv8-stats-bar" style={{ position: 'relative', bottom: 'auto', left: 'auto', transform: 'none' }}>
+        <div className="bhv8-stats-bar">
           <div className="bhv8-stat">
             <span className="bhv8-stat-label">BONUSES</span>
             <span className="bhv8-stat-value">{stats.openedCount}/{total}</span>
