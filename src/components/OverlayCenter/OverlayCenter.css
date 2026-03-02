@@ -8229,14 +8229,13 @@ body.wm-resizing {
 
 /* ── Bottom stats bar ── */
 .bhv8-stats-bar {
-  position: absolute;
-  bottom: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: relative;
   z-index: 10;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 14px;
+  margin: 10px auto 8px;
   padding: 8px 22px;
   background: rgba(0,0,0,0.5);
   backdrop-filter: blur(14px);
@@ -8244,6 +8243,8 @@ body.wm-resizing {
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.06);
   white-space: nowrap;
+  width: fit-content;
+  flex-shrink: 0;
 }
 .bhv8-stat {
   display: flex;
@@ -8271,45 +8272,5 @@ body.wm-resizing {
 .bhv8-val--green { color: #4ade80 !important; }
 .bhv8-val--red { color: #f87171 !important; }
 
-/* ── Progress dots ── */
-.bhv8-dots {
-  position: absolute;
-  top: 8px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  background: rgba(0,0,0,0.3);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-}
-.bhv8-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.18);
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-.bhv8-dot--active {
-  width: 18px;
-  border-radius: 4px;
-  background: var(--bhv8-accent, #7c3aed);
-  box-shadow: 0 0 10px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.5);
-}
-.bhv8-dot--opened {
-  background: rgba(74,222,128,0.45);
-}
-.bhv8-dot--opened.bhv8-dot--active {
-  background: #4ade80;
-  box-shadow: 0 0 10px rgba(74,222,128,0.4);
-}
-.bhv8-dots-more {
-  font-size: 0.6em;
-  color: rgba(255,255,255,0.35);
-  font-weight: 600;
-  margin-left: 2px;
-}
+/* ── Progress dots (hidden — removed from card stack) ── */
 

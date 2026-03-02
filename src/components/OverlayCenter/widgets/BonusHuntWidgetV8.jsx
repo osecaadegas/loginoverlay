@@ -135,7 +135,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    overflow: 'hidden',
+    overflow: 'visible',
     background: 'transparent',
     position: 'relative',
     color: textColor,
@@ -231,7 +231,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
 
       {/* ─── Bottom stats bar ─── */}
       {showStats && (
-        <div className="bhv8-stats-bar">
+        <div className="bhv8-stats-bar" style={{ position: 'relative', bottom: 'auto', left: 'auto', transform: 'none' }}>
           <div className="bhv8-stat">
             <span className="bhv8-stat-label">BONUSES</span>
             <span className="bhv8-stat-value">{stats.openedCount}/{total}</span>
@@ -261,13 +261,7 @@ export default function BonusHuntWidgetV8({ config, theme }) {
         </div>
       )}
 
-      {/* progress dots */}
-      <div className="bhv8-dots">
-        {bonuses.slice(0, Math.min(total, 20)).map((b, i) => (
-          <div key={i} className={`bhv8-dot ${i === activeIdx ? 'bhv8-dot--active' : ''} ${b.opened ? 'bhv8-dot--opened' : ''}`} />
-        ))}
-        {total > 20 && <span className="bhv8-dots-more">+{total - 20}</span>}
-      </div>
+
     </div>
   );
 }
