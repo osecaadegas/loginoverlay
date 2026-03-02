@@ -448,11 +448,7 @@ export default function NavbarWidget({ config }) {
               />
             )}
 
-            {c.showNowPlaying !== false && !displayNowPlaying && c.musicSource === 'spotify' && (
-              <div style={{ fontSize: fontSize * 0.82, color: mutedColor, fontStyle: 'italic' }}>
-                No track playing
-              </div>
-            )}
+
           </div>
 
           {/* ─── Right: Crypto + CTA ─── */}
@@ -591,60 +587,27 @@ function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, c
   const safeIdx = index % coins.length;
   const coin = coins[safeIdx];
 
-  // Horizontal = slide left/right
-  if (mode === 'horizontal') {
-    return (
-      <div style={{ position: 'relative' }}>
-        <div style={{
-          transform: `translateX(${fading ? '-8px' : '0'})`,
-          opacity: fading ? 0 : 1,
-          transition: 'all 0.35s ease',
-        }}>
-          <CryptoCoin coin={coin} price={prices[coin]}
-            fontSize={fontSize} bgColor={bgColor}
-            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
-            metallic={metallic} />
-        </div>
-      </div>
-    );
-  }
+  /* Fixed-width wrapper prevents layout shift when coins cycle */
+  const tickerStyle = { position: 'relative', minWidth: 160, overflow: 'hidden' };
 
-  // Carousel = slide up/down vertically
-  if (mode === 'carousel') {
-    return (
-      <div style={{ position: 'relative' }}>
-        <div style={{
-          transform: `translateY(${fading ? '-12px' : '0'})`,
-          opacity: fading ? 0 : 1,
-          transition: 'all 0.35s ease',
-        }}>
-          <CryptoCoin coin={coin} price={prices[coin]}
-            fontSize={fontSize} bgColor={bgColor}
-            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
-            metallic={metallic} />
-        </div>
-      </div>
-    );
-  }
+  const animStyle = mode === 'horizontal'
+    ? { transform: `translateX(${fading ? '-8px' : '0'})`, opacity: fading ? 0 : 1, transition: 'all 0.35s ease' }
+    : mode === 'carousel'
+    ? { transform: `translateY(${fading ? '-12px' : '0'})`, opacity: fading ? 0 : 1, transition: 'all 0.35s ease' }
+    : mode === 'fade'
+    ? { opacity: fading ? 0 : 1, transition: 'opacity 0.4s ease' }
+    : {};
 
-  // Fade = crossfade in place
-  if (mode === 'fade') {
-    return (
-      <div style={{ position: 'relative' }}>
-        <div style={{
-          opacity: fading ? 0 : 1,
-          transition: 'opacity 0.4s ease',
-        }}>
-          <CryptoCoin coin={coin} price={prices[coin]}
-            fontSize={fontSize} bgColor={bgColor}
-            cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
-            metallic={metallic} />
-        </div>
+  return (
+    <div style={tickerStyle}>
+      <div style={animStyle}>
+        <CryptoCoin coin={coin} price={prices[coin]}
+          fontSize={fontSize} bgColor={bgColor}
+          cryptoUpColor={cryptoUpColor} cryptoDownColor={cryptoDownColor}
+          metallic={metallic} />
       </div>
-    );
-  }
-
-  return null;
+    </div>
+  );
 }
 
 /* ═══════════════════════════════════════════════════════
