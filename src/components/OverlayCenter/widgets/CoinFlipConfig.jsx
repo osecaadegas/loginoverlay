@@ -503,7 +503,7 @@ export default function CoinFlipConfig({ config, onChange }) {
             </span>
           </div>
 
-          {/* Platform status */}
+          {/* Platform status (synced from Profile) */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
             {/* Twitch */}
             <div style={{
@@ -513,17 +513,12 @@ export default function CoinFlipConfig({ config, onChange }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.twitchChannel ? '#a855f7' : '#333' }} />
                 <span style={{ fontWeight: 600 }}>Twitch</span>
+                {c.twitchChannel && <span style={{ fontSize: 10, color: '#a855f7', marginLeft: 4 }}>{c.twitchChannel}</span>}
                 <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
                   <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} style={{ accentColor: '#a855f7' }} />
                   On
                 </label>
               </div>
-              <input value={c.twitchChannel || ''} onChange={e => set('twitchChannel', e.target.value)}
-                placeholder="Twitch channel name" style={{
-                  width: '100%', marginTop: 6, padding: '5px 8px', fontSize: 11, borderRadius: 4,
-                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#e2e8f0', outline: 'none',
-                }} />
               {chatStatus2.twitch && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginTop: 4, display: 'block' }}>● Connected</span>}
             </div>
 
@@ -535,19 +530,19 @@ export default function CoinFlipConfig({ config, onChange }) {
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
                 <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.kickChannelId ? '#22c55e' : '#333' }} />
                 <span style={{ fontWeight: 600 }}>Kick</span>
+                {c.kickChannelId && <span style={{ fontSize: 10, color: '#22c55e', marginLeft: 4 }}>{c.kickChannelId}</span>}
                 <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
                   <input type="checkbox" checked={!!c.kickEnabled} onChange={e => set('kickEnabled', e.target.checked)} style={{ accentColor: '#22c55e' }} />
                   On
                 </label>
               </div>
-              <input value={c.kickChannelId || ''} onChange={e => set('kickChannelId', e.target.value)}
-                placeholder="Kick chatroom ID" style={{
-                  width: '100%', marginTop: 6, padding: '5px 8px', fontSize: 11, borderRadius: 4,
-                  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                  color: '#e2e8f0', outline: 'none',
-                }} />
               {chatStatus2.kick && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginTop: 4, display: 'block' }}>● Connected</span>}
             </div>
+
+            {/* Profile link */}
+            <p style={{ fontSize: 10, color: '#64748b', margin: '4px 0 0', lineHeight: 1.4 }}>
+              🔗 Twitch &amp; Kick channels are managed in <b style={{ color: '#a78bfa' }}>Profile</b>. Click <b style={{ color: '#a78bfa' }}>Sync All</b> to update.
+            </p>
           </div>
 
           {/* Live bets display */}
@@ -597,7 +592,7 @@ export default function CoinFlipConfig({ config, onChange }) {
 
           {!c.twitchChannel && !c.kickChannelId && chatBettingEnabled && (
             <p style={{ fontSize: 11, color: '#f59e0b', margin: '8px 0 0' }}>
-              ⚠️ No platforms configured — add your Twitch channel or Kick chatroom ID above.
+              ⚠️ No platforms configured — set your Twitch/Kick channels in <b style={{ color: '#e2e8f0' }}>Profile</b> and click <b style={{ color: '#e2e8f0' }}>Sync All</b>.
             </p>
           )}
         </div>

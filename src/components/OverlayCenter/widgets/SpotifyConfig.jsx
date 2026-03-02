@@ -27,20 +27,21 @@ export default function SpotifyConfig({ config, onChange }) {
       {/* ─── Content Tab ─── */}
       {activeTab === 'content' && (
         <div className="nb-section">
-          <h4 className="nb-subtitle">Spotify Connection</h4>
-
-          {isConnected ? (
-            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <span style={{ fontSize: 12, color: '#1DB954' }}>✓ Connected</span>
-              <span style={{ fontSize: 11, color: '#64748b' }}>Managed in Profile</span>
-            </div>
-          ) : (
-            <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
-              <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-                🎵 Connect Spotify in the <b style={{ color: '#e2e8f0' }}>Profile</b> section, then click <b style={{ color: '#e2e8f0' }}>Sync</b> to push tokens here.
-              </p>
-            </div>
-          )}
+          {/* Spotify connection status — managed in Profile */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
+            borderRadius: 8, marginBottom: 4,
+            background: isConnected ? 'rgba(29,185,84,0.06)' : 'rgba(255,255,255,0.03)',
+            border: `1px solid ${isConnected ? 'rgba(29,185,84,0.2)' : 'rgba(255,255,255,0.08)'}`,
+          }}>
+            <span style={{ width: 7, height: 7, borderRadius: '50%', background: isConnected ? '#1DB954' : '#333', flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 600, color: isConnected ? '#1DB954' : '#94a3b8', flex: 1 }}>
+              {isConnected ? 'Spotify Connected' : 'Spotify Not Connected'}
+            </span>
+            <span style={{ fontSize: 10, color: '#64748b' }}>
+              Managed in <b style={{ color: '#a78bfa' }}>Profile</b>
+            </span>
+          </div>
 
           <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Manual Fallback</h4>
           <p style={{ fontSize: 11, color: '#888', marginBottom: 8 }}>

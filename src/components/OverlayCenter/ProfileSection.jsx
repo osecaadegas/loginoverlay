@@ -35,6 +35,8 @@ const SYNC_MAP = {
     spotify_expires_at: 'spotify_expires_at',
   },
   coin_flip: {
+    twitchUsername: 'twitchChannel',
+    kickChannel: 'kickChannelId',
     seChannelId: 'seChannelId',
     seJwtToken: 'seJwtToken',
   },
@@ -47,6 +49,12 @@ const SYNC_MAP = {
     seJwtToken: 'seJwtToken',
   },
   predictions: {
+    seChannelId: 'seChannelId',
+    seJwtToken: 'seJwtToken',
+  },
+  point_wheel: {
+    twitchUsername: 'twitchChannel',
+    kickChannel: 'kickChannelId',
     seChannelId: 'seChannelId',
     seJwtToken: 'seJwtToken',
   },
@@ -252,7 +260,8 @@ export default function ProfileSection({ widgets, saveWidget }) {
         }
 
         /* Auto-enable platforms on chat/giveaway when channel names are set */
-        if (widget.widget_type === 'chat' || widget.widget_type === 'giveaway') {
+        const autoEnableTypes = ['chat', 'giveaway', 'coin_flip', 'point_wheel'];
+        if (autoEnableTypes.includes(widget.widget_type)) {
           if (profile.twitchUsername && !widget.config?.twitchEnabled) {
             updates.twitchEnabled = true;
             changed = true;
@@ -262,7 +271,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             changed = true;
           }
         }
-        if (widget.widget_type === 'chat' || widget.widget_type === 'giveaway') {
+        if (autoEnableTypes.includes(widget.widget_type)) {
           if (profile.kickChannel && !widget.config?.kickEnabled) {
             updates.kickEnabled = true;
             changed = true;
