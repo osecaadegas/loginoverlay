@@ -1,7 +1,7 @@
 /**
  * PointWheelWidget.jsx — OBS overlay widget for the Point Wheel community game.
  * Renders two overlapping spinning wheels (outer = high multipliers, inner = low multipliers).
- * Combined multiplier awards points to all active participants.
+ * Combined multiplier awards points to all participants who joined.
  * 4 display styles: Casino Gold, Neon Cyber, Minimal, Metallic Chrome.
  */
 import React, { useMemo } from 'react';
@@ -52,12 +52,11 @@ function PointWheelWidget({ config }) {
   const innerAngle = c._innerAngle || 0;
   const result = c._wheelResult;
 
-  /* ── Chat bet participants ── */
-  const chatBets = c._chatBets || {};
-  const betEntries = Object.entries(chatBets);
-  const hasBets = betEntries.length > 0;
-  const showBets = c.chatBettingEnabled && hasBets;
-  const totalBetPool = betEntries.reduce((s, [, b]) => s + (b.amount || 0), 0);
+  /* ── Participants ── */
+  const participants = c._participants || c._chatBets || {};
+  const participantCount = Object.keys(participants).length;
+  const hasParticipants = participantCount > 0;
+  const showBets = c.chatBettingEnabled && hasParticipants;
 
   /* ── Build conic gradients for wheel faces ── */
   const buildConic = (segs) => {
@@ -160,9 +159,10 @@ function PointWheelWidget({ config }) {
     ? 'transform 5.6s cubic-bezier(0.12, 0.68, 0.06, 1.0)'
     : 'none';
 
-  /* ── Bets info bar ── */
+  /* ── Participants info bar ── */
   const BetsBar = () => {
     if (!showBets) return null;
+    const basePts = c.basePayout || 100;
     return (
       <div style={{
         width: '88%', maxWidth: 400,
@@ -173,8 +173,8 @@ function PointWheelWidget({ config }) {
         color: 'rgba(255,255,255,0.7)', flexShrink: 0,
         border: '1px solid rgba(255,255,255,0.06)',
       }}>
-        <span style={{ fontWeight: 700 }}>🎰 {betEntries.length} player{betEntries.length !== 1 ? 's' : ''}</span>
-        <span>{totalBetPool.toLocaleString()} pts in pool</span>
+        <span style={{ fontWeight: 700 }}>🎰 {participantCount} joined</span>
+        <span>{basePts.toLocaleString()} pts per 1x</span>
       </div>
     );
   };

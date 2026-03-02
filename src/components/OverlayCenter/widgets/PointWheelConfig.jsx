@@ -1,7 +1,7 @@
 /**
  * PointWheelConfig.jsx — Streamer control panel for the Point Wheel community game.
- * Open entries → viewers join via !wheel [amount] → spin both wheels → combined multiplier.
- * 70% chance of no payout. Integrates StreamElements points for real payouts.
+ * Streamer sets a point amount → viewers join via !wheel → spin → random outcome pays all participants.
+ * Integrates StreamElements points for real payouts.
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStreamElements } from '../../../context/StreamElementsContext';
@@ -81,51 +81,45 @@ export default function PointWheelConfig({ config, onChange }) {
   };
 
   const status = c.gameStatus || 'idle';
-  const chatBets = c._chatBets || {};
-  const betEntries = Object.entries(chatBets);
-  const totalPlayers = betEntries.length;
-  const totalPool = betEntries.reduce((s, [, b]) => s + (b.amount || 0), 0);
+  const participants = c._participants || {};
+  const participantList = Object.keys(participants);
+  const totalPlayers = participantList.length;
   const history = c.spinHistory || [];
   const noPayout = c.noPayoutChance ?? 70; // percentage
   const pointPayoutsEnabled = !!c.pointPayoutsEnabled && seConnected;
-  const basePayout = c.basePayout || 100; // base points per 1x multiplier
+  const basePayout = c.basePayout || 100; // points each participant wins per 1x
 
-  /* ── Refs for chat bet accumulation ── */
-  const chatBetsRef = useRef(chatBets);
-  const pendingBetsRef = useRef({});
-  useEffect(() => { chatBetsRef.current = chatBets; }, [chatBets]);
+  /* ── Refs for chat participant accumulation ── */
+  const participantsRef = useRef(participants);
+  const pendingJoinsRef = useRef({});
+  useEffect(() => { participantsRef.current = participants; }, [participants]);
 
-  /* Flush pending chat bets every 1.5s */
+  /* Flush pending joins every 1.5s */
   useEffect(() => {
     const timer = setInterval(() => {
-      const pending = pendingBetsRef.current;
+      const pending = pendingJoinsRef.current;
       if (Object.keys(pending).length > 0) {
-        const merged = { ...chatBetsRef.current, ...pending };
-        pendingBetsRef.current = {};
-        onChange({ ...config, _chatBets: merged });
+        const merged = { ...participantsRef.current, ...pending };
+        pendingJoinsRef.current = {};
+        onChange({ ...config, _participants: merged });
       }
     }, 1500);
     return () => clearInterval(timer);
   });
 
-  /* ── Chat message handler — !wheel [amount] or !spin [amount] ── */
-  const minBet = c.minBet || 10;
-  const maxBet = c.maxBet || 10000;
+  /* ── Chat message handler — !wheel or !spin (no amount needed) ── */
   const chatBettingEnabled = !!c.chatBettingEnabled;
   const gameStatus = c.gameStatus || 'idle';
 
   const handleChatMessage = useCallback((msg) => {
     if (!chatBettingEnabled || gameStatus !== 'open') return;
     const text = (msg.message || '').trim().toLowerCase();
-    const match = text.match(/^!(wheel|spin)\s*(\d*)$/);
-    if (!match) return;
-    let amount = parseInt(match[2]) || minBet;
-    amount = Math.max(minBet, Math.min(maxBet, amount));
+    if (!/^!(wheel|spin)/.test(text)) return;
     const user = msg.username;
     if (!user) return;
-    if (chatBetsRef.current[user] || pendingBetsRef.current[user]) return;
-    pendingBetsRef.current[user] = { amount, time: Date.now() };
-  }, [chatBettingEnabled, gameStatus, minBet, maxBet]);
+    if (participantsRef.current[user] || pendingJoinsRef.current[user]) return;
+    pendingJoinsRef.current[user] = { time: Date.now() };
+  }, [chatBettingEnabled, gameStatus]);
 
   /* ── Connect chat platforms when entries are open ── */
   const chatActive = chatBettingEnabled && status === 'open';
@@ -187,19 +181,18 @@ export default function PointWheelConfig({ config, onChange }) {
 
   /* ── Process SE payouts ── */
   const processPayouts = async (totalMulti) => {
-    const bets = chatBetsRef.current;
-    const entries = Object.entries(bets);
-    if (entries.length === 0 || !pointPayoutsEnabled) return;
+    const joined = participantsRef.current;
+    const usernames = Object.keys(joined);
+    if (usernames.length === 0 || !pointPayoutsEnabled) return;
 
     setPayoutProcessing(true);
     const winners = [];
-    const losers = [];
     const errors = [];
 
     if (totalMulti > 0) {
-      /* Everyone wins! Give each participant bet * totalMulti */
-      const promises = entries.map(async ([username, bet]) => {
-        const payout = Math.floor(bet.amount * totalMulti);
+      /* Everyone wins! Give each participant basePayout × totalMulti */
+      const payout = Math.floor(basePayout * totalMulti);
+      const promises = usernames.map(async (username) => {
         const res = await modifyViewerPoints(username, payout);
         if (res.success) {
           winners.push({ name: username, amount: payout, balance: res.newBalance });
@@ -208,20 +201,10 @@ export default function PointWheelConfig({ config, onChange }) {
         }
       });
       await Promise.allSettled(promises);
-    } else {
-      /* No win — deduct bet amount from all participants */
-      const promises = entries.map(async ([username, bet]) => {
-        const res = await modifyViewerPoints(username, -bet.amount);
-        if (res.success) {
-          losers.push({ name: username, amount: bet.amount, balance: res.newBalance });
-        } else {
-          errors.push({ name: username, error: res.error });
-        }
-      });
-      await Promise.allSettled(promises);
     }
+    /* No win = no loss — viewers don't risk anything */
 
-    setPayoutResult({ winners, losers, errors, totalMulti });
+    setPayoutResult({ winners, losers: [], errors, totalMulti });
     setPayoutProcessing(false);
   };
 
@@ -230,13 +213,13 @@ export default function PointWheelConfig({ config, onChange }) {
     setPayoutResult(null);
     setMulti({
       gameStatus: 'open',
-      _chatBets: {},
+      _participants: {},
       _spinning: false,
       _wheelResult: null,
     });
   };
 
-  const cancelEntry = () => setMulti({ gameStatus: 'idle', _chatBets: {} });
+  const cancelEntry = () => setMulti({ gameStatus: 'idle', _participants: {} });
 
   const spinWheel = () => {
     const result = computeSpinResult();
@@ -257,14 +240,13 @@ export default function PointWheelConfig({ config, onChange }) {
     setTimeout(async () => {
       const payout = result.totalMulti > 0 ? Math.floor(basePayout * result.totalMulti) : 0;
       const wheelResult = { ...result, payout };
-      const allBets = chatBetsRef.current;
+      const allParticipants = participantsRef.current;
       const newEntry = {
         outerMulti: result.outerMulti,
         innerMulti: result.innerMulti,
         totalMulti: result.totalMulti,
         payout,
-        players: Object.keys(allBets).length,
-        pool: Object.values(allBets).reduce((s, b) => s + (b.amount || 0), 0),
+        players: Object.keys(allParticipants).length,
         time: new Date().toLocaleTimeString(),
       };
 
@@ -275,7 +257,7 @@ export default function PointWheelConfig({ config, onChange }) {
         spinHistory: [newEntry, ...history].slice(0, 50),
       });
 
-      if (pointPayoutsEnabled && Object.keys(allBets).length > 0) {
+      if (pointPayoutsEnabled && Object.keys(allParticipants).length > 0) {
         await processPayouts(result.totalMulti);
       }
     }, 6000);
@@ -286,19 +268,17 @@ export default function PointWheelConfig({ config, onChange }) {
     setMulti({
       gameStatus: 'idle',
       _spinning: false,
-      _chatBets: {},
+      _participants: {},
       _wheelResult: null,
     });
   };
 
-  /* ── Quick-add manual entry (for testing / manual entries) ── */
+  /* ── Quick-add manual entry (for testing) ── */
   const [manualUser, setManualUser] = useState('');
-  const [manualAmount, setManualAmount] = useState(minBet);
   const addManualEntry = () => {
     if (!manualUser.trim()) return;
-    const amt = Math.max(minBet, Math.min(maxBet, manualAmount || minBet));
     setMulti({
-      _chatBets: { ...chatBets, [manualUser.trim()]: { amount: amt, time: Date.now() } },
+      _participants: { ...participants, [manualUser.trim()]: { time: Date.now() } },
     });
     setManualUser('');
   };
@@ -338,16 +318,10 @@ export default function PointWheelConfig({ config, onChange }) {
               </span>
             </div>
             {(status === 'open' || status === 'result' || status === 'spinning') && (
-              <>
-                <div className="cg-config__status-row">
-                  <span>👥 Players</span>
-                  <span style={{ fontWeight: 700, color: '#22c55e' }}>{totalPlayers}</span>
-                </div>
-                <div className="cg-config__status-row">
-                  <span>💰 Total Pool</span>
-                  <span style={{ fontWeight: 700, color: '#f59e0b' }}>{totalPool.toLocaleString()} pts</span>
-                </div>
-              </>
+              <div className="cg-config__status-row">
+                <span>👥 Joined</span>
+                <span style={{ fontWeight: 700, color: '#22c55e' }}>{totalPlayers}</span>
+              </div>
             )}
             {status === 'result' && c._wheelResult && (
               <>
@@ -424,7 +398,7 @@ export default function PointWheelConfig({ config, onChange }) {
                 fontWeight: 700, fontSize: 12, marginBottom: 6,
                 color: payoutResult.totalMulti > 0 ? '#22c55e' : '#ef4444',
               }}>
-                {payoutResult.totalMulti > 0 ? '💰 Payouts Complete' : '💸 Bets Collected (No Win)'}
+                {payoutResult.totalMulti > 0 ? '💰 Payouts Complete' : '🎡 No Win — No Points Lost'}
               </div>
               {payoutResult.winners.length > 0 && (
                 <div style={{ marginBottom: 4 }}>
@@ -491,12 +465,6 @@ export default function PointWheelConfig({ config, onChange }) {
                     background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
                     color: '#e2e8f0', outline: 'none',
                   }} />
-                <input type="number" value={manualAmount} onChange={e => setManualAmount(parseInt(e.target.value) || minBet)}
-                  style={{
-                    width: 70, padding: '5px 8px', fontSize: 11, borderRadius: 4,
-                    background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                    color: '#e2e8f0', outline: 'none',
-                  }} />
                 <button onClick={addManualEntry} style={{
                   padding: '5px 10px', fontSize: 11, borderRadius: 4, cursor: 'pointer',
                   background: '#2563eb', color: '#fff', border: 'none', fontWeight: 600,
@@ -511,14 +479,13 @@ export default function PointWheelConfig({ config, onChange }) {
               <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 6 }}>
                 👥 Participants ({totalPlayers})
               </div>
-              {betEntries.map(([user, b]) => (
+              {participantList.map(user => (
                 <div key={user} style={{
-                  display: 'flex', justifyContent: 'space-between', padding: '2px 6px',
+                  padding: '2px 6px',
                   fontSize: 10, color: '#94a3b8', borderLeft: '2px solid #7c3aed',
                   marginBottom: 1, background: 'rgba(124,58,237,0.04)',
                 }}>
-                  <span>{user}</span>
-                  <span style={{ color: '#a78bfa' }}>{(b.amount || 0).toLocaleString()} pts</span>
+                  {user}
                 </div>
               ))}
             </div>
@@ -541,20 +508,13 @@ export default function PointWheelConfig({ config, onChange }) {
               </div>
             </label>
             <label className="cg-config__field">
-              <span>Base Payout (pts per 1x)</span>
+              <span>Points per Win (per 1x)</span>
               <input type="number" value={basePayout}
                 onChange={e => set('basePayout', parseInt(e.target.value) || 100)} />
             </label>
-            <label className="cg-config__field">
-              <span>Min Entry</span>
-              <input type="number" value={minBet}
-                onChange={e => set('minBet', parseInt(e.target.value) || 10)} />
-            </label>
-            <label className="cg-config__field">
-              <span>Max Entry</span>
-              <input type="number" value={maxBet}
-                onChange={e => set('maxBet', parseInt(e.target.value) || 10000)} />
-            </label>
+            <p style={{ fontSize: 10, color: '#64748b', margin: '2px 0 0', lineHeight: 1.4 }}>
+              Each participant gets <b style={{ color: '#f59e0b' }}>points × multiplier</b> on a win. No loss on 0x.
+            </p>
           </div>
         </div>
       )}
@@ -564,8 +524,8 @@ export default function PointWheelConfig({ config, onChange }) {
         <div className="cg-config__section">
           <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#e2e8f0', fontWeight: 700 }}>Chat Entry</h4>
           <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Viewers type <b style={{ color: '#a78bfa' }}>!wheel</b> or <b style={{ color: '#a78bfa' }}>!spin</b> in chat to enter.
-            Optionally add an amount: <b style={{ color: '#f59e0b' }}>!wheel 500</b>
+            Viewers type <b style={{ color: '#a78bfa' }}>!wheel</b> or <b style={{ color: '#a78bfa' }}>!spin</b> in chat to join.
+            No bet needed — the streamer sets the points.
           </p>
 
           {/* Chat betting toggle */}
@@ -601,7 +561,7 @@ export default function PointWheelConfig({ config, onChange }) {
               </span>
               <span style={{ fontSize: 10, color: '#64748b' }}>
                 {seConnected
-                  ? 'Win: bet × multiplier awarded. Lose: bet deducted.'
+                  ? 'Win: points × multiplier awarded to all participants. No risk for viewers.'
                   : '⚠️ Connect StreamElements in Profile first'}
               </span>
             </div>
@@ -715,7 +675,7 @@ export default function PointWheelConfig({ config, onChange }) {
                   <div style={{ display: 'flex', gap: 8, fontSize: 10, color: '#64748b' }}>
                     <span>Outer {h.outerMulti}x × Inner {h.innerMulti}x</span>
                     {h.players > 0 && <span>• {h.players} players</span>}
-                    {h.pool > 0 && <span>• {h.pool.toLocaleString()} pts</span>}
+                    {h.payout > 0 && <span>• {h.payout.toLocaleString()} pts each</span>}
                   </div>
                 </div>
               ))}
