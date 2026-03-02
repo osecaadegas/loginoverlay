@@ -314,87 +314,83 @@ export default function StreamElementsPanel() {
 
         {/* Available Redemptions */}
         <div className="mb-16">
-          <h3 className="text-3xl md:text-4xl font-bold text-white mb-8">Available Redemptions</h3>
+          <h3 className="text-2xl font-bold text-white mb-5">Available Redemptions</h3>
           {redemptionItems.length === 0 ? (
-            <div className="relative bg-black/40 backdrop-blur-xl border border-purple-500/30 rounded-3xl p-16 text-center shadow-2xl shadow-purple-500/10">
-              <div className="text-6xl mb-4">🎁</div>
-              <p className="text-gray-400 text-lg">No redemption items available</p>
+            <div className="bg-white/5 border border-white/10 rounded-xl p-12 text-center">
+              <div className="text-4xl mb-3">🎁</div>
+              <p className="text-gray-500 text-sm">No redemption items available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-5">
+            <div className="flex flex-col gap-2.5">
               {redemptionItems.map(item => {
                 const canAfford = isConnected && points >= item.point_cost;
                 const isRedeeming = redeeming === item.id;
                 const isOutOfStock = item.available_units !== null && item.available_units <= 0;
                 const isDisabled = !item.is_active;
                 const imageUrl = item.image_url || 'https://images.unsplash.com/photo-1607083206869-4c7672e72a8a?w=400&h=300&fit=crop';
+                const dimmed = isDisabled || !canAfford || isOutOfStock || !isConnected;
                 
                 return (
                   <div 
                     key={item.id} 
-                    className={`group relative bg-black/40 backdrop-blur-xl border rounded-3xl overflow-hidden transition-all duration-300 ${
-                      isDisabled || !canAfford || isOutOfStock || !isConnected 
-                        ? 'border-gray-700/30 opacity-60' 
-                        : 'border-purple-500/20 hover:border-purple-500/60 hover:scale-[1.02] hover:shadow-2xl hover:shadow-purple-500/25'
+                    className={`group flex items-stretch bg-[#12151c] border rounded-xl overflow-hidden transition-all duration-200 ${
+                      dimmed
+                        ? 'border-white/5 opacity-50' 
+                        : 'border-white/10 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/10'
                     }`}
                   >
-                    {/* Image */}
-                    <div className="relative aspect-video overflow-hidden">
-                      <img src={imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                      
+                    {/* Image - fixed square thumbnail */}
+                    <div className="relative w-28 min-w-[7rem] flex-shrink-0 overflow-hidden">
+                      <img src={imageUrl} alt={item.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
                       {isDisabled && (
-                        <div className="absolute top-4 right-4 bg-yellow-500 text-black font-black text-xs px-3 py-1 rounded-lg transform rotate-3 shadow-xl">
-                          COMING SOON
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <span className="text-yellow-400 text-[10px] font-bold uppercase tracking-wider">Soon</span>
                         </div>
                       )}
-                      
                       {!isDisabled && isOutOfStock && (
-                        <div className="absolute top-4 right-4 bg-red-500 text-white font-black text-xs px-3 py-1 rounded-lg shadow-xl">
-                          OUT OF STOCK
+                        <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                          <span className="text-red-400 text-[10px] font-bold uppercase tracking-wider">Sold Out</span>
                         </div>
                       )}
                     </div>
-                    
-                    <div className="p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="text-base font-bold text-white group-hover:text-purple-400 transition-colors flex-1 line-clamp-1">{item.name}</h4>
-                        <div className="bg-gradient-to-br from-purple-500/30 to-blue-500/20 border border-purple-500/50 rounded-xl px-3 py-1.5 ml-2">
-                          <div className="text-sm font-black text-purple-400 whitespace-nowrap">
+
+                    {/* Content */}
+                    <div className="flex-1 flex items-center gap-3 px-4 py-3 min-w-0">
+                      {/* Info */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-0.5">
+                          <h4 className="text-sm font-semibold text-white truncate">{item.name}</h4>
+                          <span className="flex-shrink-0 bg-purple-500/20 text-purple-400 text-[11px] font-bold px-2 py-0.5 rounded-md border border-purple-500/30">
                             {item.point_cost.toLocaleString()}
-                          </div>
+                          </span>
                         </div>
+                        <p className="text-gray-500 text-xs truncate">{item.description}</p>
+                        {(item.reward_details || item.reward_value?.details) && (
+                          <p className="text-purple-400/80 text-[11px] mt-0.5 truncate">
+                            🎁 {item.reward_details || item.reward_value?.details}
+                          </p>
+                        )}
                       </div>
-                      
-                      <p className="text-gray-400 text-xs mb-3 line-clamp-2">{item.description}</p>
-                      
-                      {(item.reward_details || item.reward_value?.details) && (
-                        <div className="bg-purple-500/10 border border-purple-500/30 rounded-lg px-3 py-2 mb-3">
-                          <div className="flex items-start gap-1.5">
-                            <span className="text-base">🎁</span>
-                            <span className="text-xs text-purple-300 font-medium line-clamp-2">
-                              {item.reward_details || item.reward_value?.details}
-                            </span>
-                          </div>
+
+                      {/* Stock */}
+                      {item.available_units !== null && !isDisabled && (
+                        <div className="flex-shrink-0 text-center">
+                          <div className="text-white text-sm font-bold leading-none">{item.available_units}</div>
+                          <div className="text-gray-600 text-[10px] uppercase tracking-wide">left</div>
                         </div>
                       )}
-                      
-                      {item.available_units !== null && !isDisabled && (
-                        <p className="text-gray-400 text-xs mb-3">
-                          Stock: <strong className="text-white">{item.available_units}</strong>
-                        </p>
-                      )}
-                      
+
+                      {/* Action */}
                       <button
                         onClick={() => handleRedeem(item)}
                         disabled={!isConnected || isDisabled || !canAfford || isRedeeming || loading || isOutOfStock}
-                        className={`w-full font-bold py-3 px-4 rounded-xl text-sm transition-all duration-300 ${
+                        className={`flex-shrink-0 font-semibold py-2 px-5 rounded-lg text-xs transition-all duration-200 ${
                           !isConnected || isDisabled || !canAfford || isOutOfStock
-                            ? 'bg-gray-700/50 border border-gray-600 text-gray-300 cursor-not-allowed'
-                            : 'bg-gradient-to-r from-purple-500 to-blue-500 hover:from-purple-600 hover:to-blue-600 text-white shadow-lg shadow-purple-500/40 hover:shadow-xl hover:shadow-purple-500/60 hover:scale-105'
+                            ? 'bg-white/5 text-gray-500 cursor-not-allowed'
+                            : 'bg-purple-500 hover:bg-purple-400 text-white shadow-md shadow-purple-500/30 hover:shadow-purple-500/50 active:scale-95'
                         }`}
                       >
-                        {!isConnected ? '🔒 Connect' : isDisabled ? 'Soon' : isOutOfStock ? 'Sold Out' : isRedeeming ? '⏳...' : canAfford ? '✨ Redeem' : '💰 Need More'}
+                        {!isConnected ? '🔒' : isDisabled ? 'Soon' : isOutOfStock ? '—' : isRedeeming ? '...' : canAfford ? 'Redeem' : 'Need More'}
                       </button>
                     </div>
                   </div>
