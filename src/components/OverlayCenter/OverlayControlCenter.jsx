@@ -19,6 +19,7 @@ import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
 import './OverlayCenter.css';
+import './OverlayRenderer.css';
 
 // Register all built-in widgets
 import './widgets/builtinWidgets';
