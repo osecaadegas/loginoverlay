@@ -808,3 +808,40 @@ registerWidget({
     lastWinIndex: 0,
   },
 });
+
+// ─── 26. BONUS BUYS ───────────────────────────────────
+import BonusBuysWidget from './BonusBuysWidget';
+import BonusBuysConfig from './BonusBuysConfig';
+registerWidget({
+  type: 'bonus_buys',
+  label: 'Bonus Buys',
+  icon: '🛒',
+  description: 'Track bonus buy sessions with profit/loss and multiplier stats',
+  category: 'casino',
+  component: BonusBuysWidget,
+  configPanel: BonusBuysConfig,
+  styles: [
+    { id: 'v1', icon: '🛒', label: 'Dark Blue' },
+    { id: 'v2_neon', icon: '💡', label: 'Neon' },
+    { id: 'v3_minimal', icon: '✦', label: 'Minimal' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    slotName: '',
+    provider: '',
+    imageUrl: '',
+    slotId: '',
+    rtp: '',
+    currency: '$',
+    betCost: 0,
+    plannedBonuses: 5,
+    bonuses: [],
+    startMoney: 0,
+    sessionNumber: 1,
+    accentColor: '#3b82f6',
+    bgColor: '#0a0e1a',
+    textColor: '#ffffff',
+    mutedColor: '#64748b',
+    fontFamily: "'Inter', sans-serif",
+  },
+});

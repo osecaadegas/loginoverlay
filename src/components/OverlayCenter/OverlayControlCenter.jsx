@@ -28,6 +28,7 @@ import PointSlotConfig from './widgets/PointSlotConfig';
 import SaltyWordsConfig from './widgets/SaltyWordsConfig';
 import PredictionsConfig from './widgets/PredictionsConfig';
 import PointWheelConfig from './widgets/PointWheelConfig';
+import BonusBuysConfig from './widgets/BonusBuysConfig';
 import ProfileSection from './ProfileSection';
 import './OverlayCenter.css';
 
@@ -151,6 +152,21 @@ function SingleSlotPanel({ widgets, saveWidget, addWidget, loading }) {
     </div>
   );
   return <div className="oc-panel-section"><SingleSlotConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
+}
+
+/* ── Inline wrapper: Bonus Buys sidebar panel ── */
+function BonusBuysPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'bonus_buys');
+  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+  if (!widget) return (
+    <div className="oc-empty-panel">
+      <h2>🛒 Bonus Buys</h2>
+      <p>No Bonus Buys widget found. Add one to get started.</p>
+      <button className="oc-btn-primary" onClick={() => addWidget('bonus_buys')}>+ Add Bonus Buys Widget</button>
+    </div>
+  );
+  return <div className="oc-panel-section"><BonusBuysConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
 }
 
 /* ── Inline wrapper: Coin Flip sidebar panel ── */
@@ -320,6 +336,7 @@ export default function OverlayControlCenter() {
     raid_shoutout:      ['soundUrl', 'showClip', 'showGame', 'showViewers'],
     spotify_now_playing: ['spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at', 'manualArtist', 'manualTrack', 'manualAlbumArt'],
     single_slot:        ['slotName', 'provider', 'imageUrl', 'rtp', 'slotId', 'currency', 'averageMulti', 'bestMulti', 'totalBonuses', 'bestWin', 'lastBet', 'lastPay', 'lastMulti', 'lastWinIndex'],
+    bonus_buys:         ['slotName', 'provider', 'imageUrl', 'bonuses', 'startMoney', 'betCost', 'plannedBonuses', 'sessionNumber'],
   }), []);
 
   /** Strip user-data keys from a widget config, keeping only styling/layout */
@@ -518,6 +535,7 @@ export default function OverlayControlCenter() {
               { key: 'wheel_of_names', icon: '🎡', label: 'Wheel of Names', desc: 'Spin entries' },
               { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
               { key: 'single_slot', icon: '🎰', label: 'Single Slot', desc: 'Slot stats & records' },
+              { key: 'bonus_buys', icon: '🛒', label: 'Bonus Buys', desc: 'Track bonus buy sessions' },
               { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
               { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
               ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
@@ -678,6 +696,9 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'single_slot' && (
             <SingleSlotPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
+          )}
+          {activePanel === 'bonus_buys' && (
+            <BonusBuysPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (
             <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />
