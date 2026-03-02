@@ -321,7 +321,7 @@ export default function StreamElementsPanel() {
               <p className="text-gray-500">No redemption items available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
               {redemptionItems.map(item => {
                 const canAfford = isConnected && points >= item.point_cost;
                 const isRedeeming = redeeming === item.id;
@@ -338,11 +338,11 @@ export default function StreamElementsPanel() {
                     }`}
                   >
                     {/* Image — fixed height, centered on dark bg */}
-                    <div className="relative h-32 bg-black/40 flex items-center justify-center overflow-hidden">
+                    <div className="relative h-28 bg-black/30 flex items-center justify-center overflow-hidden">
                       <img 
                         src={imageUrl} 
                         alt={item.name} 
-                        className="max-w-full max-h-full object-contain p-2 group-hover:scale-110 transition-transform duration-300" 
+                        className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300" 
                       />
                       {isDisabled && (
                         <div className="absolute top-1.5 left-1.5 bg-yellow-500 text-black text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded">SOON</div>
