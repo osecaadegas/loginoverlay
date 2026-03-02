@@ -154,6 +154,8 @@ export default function NavbarWidget({ config }) {
   const ctaColor = c.ctaColor || (isRetro ? '#ff4500' : '#f43f5e');
   const cryptoUpColor = c.cryptoUpColor || '#34d399';
   const cryptoDownColor = c.cryptoDownColor || '#f87171';
+  const bgColorRGB = hexToRgb(bgColor);
+  const ctaColorRGB = hexToRgb(ctaColor);
 
   const filterStr = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
 
@@ -161,7 +163,7 @@ export default function NavbarWidget({ config }) {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
     background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
     padding: `${borderWidth}px`,
-    boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(124,141,255,0.06)`,
+    boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(${accentColorRGB},0.06)`,
     filter: filterStr, fontFamily, overflow: 'visible',
     border: `1px solid rgba(255,255,255,0.08)`,
   } : isNeon ? {
@@ -198,19 +200,19 @@ export default function NavbarWidget({ config }) {
   const barInner = isMetal ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
-    background: `linear-gradient(170deg, #1a1d32 0%, ${bgColor} 30%, #181b2f 60%, ${bgColor} 100%)`,
+    background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
     padding: '0 24px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
   } : isNeon ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
-    background: `linear-gradient(170deg, ${bgColor} 0%, #0a0a22 50%, ${bgColor} 100%)`,
+    background: `linear-gradient(170deg, ${bgColor} 0%, rgba(${accentColorRGB},0.04) 50%, ${bgColor} 100%)`,
     padding: '0 22px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
-    background: `linear-gradient(135deg, rgba(15,23,42,0.7), rgba(15,23,42,0.5))`,
+    background: `linear-gradient(135deg, rgba(${bgColorRGB},0.7), rgba(${bgColorRGB},0.5))`,
     backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
     padding: '0 22px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
@@ -231,7 +233,7 @@ export default function NavbarWidget({ config }) {
 
   const sep = isMetal ? {
     width: 1, height: barHeight * 0.5,
-    background: `linear-gradient(to bottom, transparent, rgba(124,141,255,0.25), transparent)`,
+    background: `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
     flexShrink: 0, margin: '0 18px',
   } : isNeon ? {
     width: 1, height: barHeight * 0.5,
@@ -339,13 +341,13 @@ export default function NavbarWidget({ config }) {
             <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', lineHeight: 1.1 }}>
               <span style={{
                 backgroundImage: isMetal
-                  ? 'linear-gradient(135deg, #d4d8e8, #8a90b0, #e0e4f0, #a0a8c4)'
+                  ? `linear-gradient(135deg, ${textColor}, ${mutedColor}, ${textColor}, ${mutedColor})`
                   : isNeon
-                  ? `linear-gradient(to right, ${accentColor}, #00ff88, ${accentColor})`
+                  ? `linear-gradient(to right, ${accentColor}, ${accentColor}88, ${accentColor})`
                   : isGlass
-                  ? `linear-gradient(to right, #e0eaff, #93c5fd, #e0eaff)`
+                  ? `linear-gradient(to right, ${textColor}, ${accentColor}, ${textColor})`
                   : isRetro
-                  ? `linear-gradient(to right, #ff6b2b, #ffcc00, #ff6b2b)`
+                  ? `linear-gradient(to right, ${accentColor}, ${ctaColor}, ${accentColor})`
                   : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #ec4899, #a855f7)`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 fontSize: fontSize * 1.2, fontWeight: (isMetal || isRetro) ? 700 : 600,
@@ -378,7 +380,7 @@ export default function NavbarWidget({ config }) {
               }}>
                 <img src={c.badgeImage} alt="" style={{
                   height: barHeight * 0.85 * ((c.badgeSize ?? 100) / 100), minWidth: barHeight * 1.2 * ((c.badgeSize ?? 100) / 100), objectFit: 'contain',
-                  filter: isMetal ? 'drop-shadow(0 0 6px rgba(124,141,255,0.3)) brightness(1.05)' : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
+                  filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)` : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
                 }} />
               </div>
             </>
@@ -394,7 +396,7 @@ export default function NavbarWidget({ config }) {
                   border: '1px solid rgba(255,255,255,0.08)',
                   color: textColor,
                   fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.28em',
-                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(124,141,255,0.08)',
+                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
                   flexShrink: 0,
                 } : isNeon ? {
                   borderRadius: 8, padding: '6px 20px',
@@ -478,12 +480,12 @@ export default function NavbarWidget({ config }) {
               <div style={isMetal ? {
                 display: 'flex', alignItems: 'center', gap: 8,
                 borderRadius: 10, padding: '7px 20px',
-                background: 'linear-gradient(135deg, rgba(244,63,94,0.15), rgba(244,63,94,0.05))',
-                border: '1px solid rgba(244,63,94,0.25)',
-                color: '#f87171',
+                background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
+                border: `1px solid rgba(${ctaColorRGB},0.25)`,
+                color: ctaColor,
                 fontSize: fontSize * 0.82, fontWeight: 700,
                 letterSpacing: '0.24em', textTransform: 'uppercase',
-                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(244,63,94,0.1)',
+                boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(${ctaColorRGB},0.1)`,
                 flexShrink: 0,
               } : isNeon ? {
                 display: 'flex', alignItems: 'center', gap: 8,
