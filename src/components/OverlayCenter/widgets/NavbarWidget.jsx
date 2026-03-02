@@ -204,14 +204,14 @@ export default function NavbarWidget({ config, widgetId }) {
     background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(${accentColorRGB},0.06)`,
-    fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'hidden',
     border: `1px solid rgba(255,255,255,0.08)`,
   } : isNeon ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
     background: `linear-gradient(135deg, ${accentColor}44, ${accentColor}11)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 0 30px ${accentColor}33, 0 0 60px ${accentColor}11, inset 0 0 20px ${accentColor}08`,
-    fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'hidden',
     border: `1px solid ${accentColor}55`,
   } : isGlass ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
@@ -219,14 +219,14 @@ export default function NavbarWidget({ config, widgetId }) {
     padding: `${borderWidth}px`,
     boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)`,
     backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-    fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'hidden',
     border: `1px solid rgba(255,255,255,0.18)`,
   } : isRetro ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
     background: `${borderColor}`,
     padding: `${borderWidth}px`,
     boxShadow: `4px 4px 0 #000, 8px 8px 0 rgba(0,0,0,0.3)`,
-    fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'hidden',
     border: `${borderWidth}px solid #000`,
     imageRendering: 'pixelated',
   } : {
@@ -234,7 +234,7 @@ export default function NavbarWidget({ config, widgetId }) {
     background: `linear-gradient(to bottom, ${borderColor}e6, ${borderColor}cc)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 18px 40px rgba(0,0,0,0.8)`,
-    fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'hidden',
   };
 
   const barInner = isMetal ? {
