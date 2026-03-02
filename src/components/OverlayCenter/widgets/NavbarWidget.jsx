@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { fetchNowPlaying, refreshSpotifyToken } from '../../../utils/spotifyAuth';
+import { supabase } from '../../../config/supabaseClient';
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {
@@ -55,7 +56,7 @@ function useClock() {
 }
 
 /* ─── Main Navbar Widget (OBS Render) ─── */
-export default function NavbarWidget({ config }) {
+export default function NavbarWidget({ config, widgetId }) {
   const c = config || {};
   const time = useClock();
   const [cryptoPrices, setCryptoPrices] = useState({});
@@ -113,6 +114,16 @@ export default function NavbarWidget({ config }) {
           spotifyTokenRef.current = fresh.access_token;
           spotifyRefreshRef.current = fresh.refresh_token;
           spotifyExpiresRef.current = fresh.expires_at;
+          // Persist refreshed tokens to DB so OBS reloads keep working
+          if (widgetId) {
+            supabase.from('overlay_widgets').select('config').eq('id', widgetId).single()
+              .then(({ data }) => {
+                if (data) {
+                  const updated = { ...data.config, spotify_access_token: fresh.access_token, spotify_refresh_token: fresh.refresh_token, spotify_expires_at: fresh.expires_at };
+                  supabase.from('overlay_widgets').update({ config: updated, updated_at: new Date().toISOString() }).eq('id', widgetId).then(() => {});
+                }
+              });
+          }
         } catch { /* token refresh failed */ }
       }
       if (!token) return;

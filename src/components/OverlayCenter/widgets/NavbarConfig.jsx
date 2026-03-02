@@ -74,6 +74,7 @@ export default function NavbarConfig({ config, onChange }) {
         spotify_refresh_token: tokens.refresh_token,
         spotify_expires_at: tokens.expires_at,
         musicSource: 'spotify',
+        showNowPlaying: true,
       });
     } catch (err) {
       setSpotifyError(err.message);

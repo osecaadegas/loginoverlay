@@ -60,7 +60,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   return (
     <div id={slotId} className={`or-widget-slot ${animClass}`} style={style}>
       {customCSS && <style>{`#${slotId} { ${customCSS} }`}</style>}
-      <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+      <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} />
     </div>
   );
 });
