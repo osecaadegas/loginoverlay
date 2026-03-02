@@ -5,7 +5,6 @@ import useDraggable from '../../hooks/useDraggable';
 const TwitchChat = ({ channel, position = 'bottom-right', width = 350, height = 500 }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [chatChannel, setChatChannel] = useState(() => localStorage.getItem('twitchChannel') || channel || '');
-  const [isEditing, setIsEditing] = useState(false);
   const draggableRef = useDraggable(isVisible, 'twitchchat');
 
   useEffect(() => {
@@ -16,6 +15,11 @@ const TwitchChat = ({ channel, position = 'bottom-right', width = 350, height = 
     window.addEventListener('streamerNameChanged', handleStreamerNameChange);
     return () => window.removeEventListener('streamerNameChanged', handleStreamerNameChange);
   }, []);
+
+  /* Sync when channel prop changes (e.g. Profile sync wrote to localStorage) */
+  useEffect(() => {
+    if (channel) setChatChannel(channel);
+  }, [channel]);
 
   const positionStyles = {
     'top-left': { top: '6rem', left: '2rem' },
@@ -51,28 +55,10 @@ const TwitchChat = ({ channel, position = 'bottom-right', width = 350, height = 
       <div className="twitch-chat-header">
         <div className="drag-handle-icon drag-handle">⋮⋮</div>
         <span className="twitch-chat-title">
-          {isEditing ? (
-            <input
-              type="text"
-              value={chatChannel}
-              onChange={(e) => {
-                const newChannel = e.target.value;
-                setChatChannel(newChannel);
-                localStorage.setItem('twitchChannel', newChannel);
-                localStorage.setItem('streamerName', newChannel);
-                window.dispatchEvent(new CustomEvent('streamerNameChanged', { detail: { name: newChannel } }));
-              }}
-              onBlur={() => setIsEditing(false)}
-              onKeyPress={(e) => e.key === 'Enter' && setIsEditing(false)}
-              placeholder="Enter Twitch channel"
-              autoFocus
-              className="channel-input"
-            />
-          ) : (
-            <span onClick={() => setIsEditing(true)} style={{ cursor: 'pointer' }}>
-              {chatChannel || 'Click to set channel'}
-            </span>
-          )}
+          <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: chatChannel ? '#22c55e' : '#666', flexShrink: 0 }} />
+            {chatChannel || <span style={{ color: '#94a3b8', fontSize: 11 }}>Set channel in Profile</span>}
+          </span>
         </span>
         <button className="chat-close-btn" onClick={() => setIsVisible(false)}>
           ✕
@@ -89,7 +75,7 @@ const TwitchChat = ({ channel, position = 'bottom-right', width = 350, height = 
       ) : (
         <div className="chat-placeholder">
           <div className="placeholder-icon">💬</div>
-          <div className="placeholder-text">Click above to set Twitch channel</div>
+          <div className="placeholder-text">Set your Twitch channel in Profile, then Sync All</div>
         </div>
       )}
     </div>

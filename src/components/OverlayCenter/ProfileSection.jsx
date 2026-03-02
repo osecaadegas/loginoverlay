@@ -329,6 +329,12 @@ export default function ProfileSection({ widgets, saveWidget }) {
   const handleSyncAll = async () => {
     await syncToWidgets();
     await saveProfileToDb();
+    /* Keep localStorage in sync for standalone components (TwitchChat embed) */
+    if (profile.twitchUsername) {
+      localStorage.setItem('twitchChannel', profile.twitchUsername);
+      localStorage.setItem('streamerName', profile.streamerName || profile.twitchUsername);
+      window.dispatchEvent(new CustomEvent('streamerNameChanged', { detail: { name: profile.twitchUsername } }));
+    }
   };
 
   const authProvider = user?.app_metadata?.provider || 'email';
