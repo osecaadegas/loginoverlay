@@ -6,6 +6,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../config/supabaseClient';
+import { startSpotifyAuth } from '../../utils/spotifyAuth';
 
 /* ── Which config keys to push to each widget type ── */
 const SYNC_MAP = {
@@ -14,6 +15,9 @@ const SYNC_MAP = {
     motto: 'motto',
     twitchUsername: 'twitchUsername',
     avatarUrl: 'avatarUrl',
+    spotify_access_token: 'spotify_access_token',
+    spotify_refresh_token: 'spotify_refresh_token',
+    spotify_expires_at: 'spotify_expires_at',
   },
   chat: {
     twitchUsername: 'twitchChannel',
@@ -23,6 +27,11 @@ const SYNC_MAP = {
   giveaway: {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
+  },
+  spotify_now_playing: {
+    spotify_access_token: 'spotify_access_token',
+    spotify_refresh_token: 'spotify_refresh_token',
+    spotify_expires_at: 'spotify_expires_at',
   },
 };
 
@@ -73,7 +82,12 @@ export default function ProfileSection({ widgets, saveWidget }) {
     youtubeApiKey: '',
     discordTag: '',
     currency: '€',
+    spotify_access_token: '',
+    spotify_refresh_token: '',
+    spotify_expires_at: null,
   });
+  const [spotifyLoading, setSpotifyLoading] = useState(false);
+  const [spotifyError, setSpotifyError] = useState('');
 
   /* ── Load profile from existing widget configs + user metadata ── */
   useEffect(() => {
@@ -82,6 +96,12 @@ export default function ProfileSection({ widgets, saveWidget }) {
     const nb = (widgets || []).find(w => w.widget_type === 'navbar')?.config || {};
     const chat = (widgets || []).find(w => w.widget_type === 'chat')?.config || {};
     const ga = (widgets || []).find(w => w.widget_type === 'giveaway')?.config || {};
+    const sp = (widgets || []).find(w => w.widget_type === 'spotify_now_playing')?.config || {};
+
+    /* Pick Spotify tokens from whichever widget has them */
+    const spotToken = nb.spotify_access_token || sp.spotify_access_token || '';
+    const spotRefresh = nb.spotify_refresh_token || sp.spotify_refresh_token || '';
+    const spotExpires = nb.spotify_expires_at || sp.spotify_expires_at || null;
 
     setProfile(prev => ({
       streamerName: nb.streamerName || meta.full_name || meta.preferred_username || prev.streamerName || '',
@@ -93,6 +113,9 @@ export default function ProfileSection({ widgets, saveWidget }) {
       youtubeApiKey: chat.youtubeApiKey || prev.youtubeApiKey || '',
       discordTag: prev.discordTag || '',
       currency: nb.currency || chat.currency || prev.currency || '€',
+      spotify_access_token: spotToken,
+      spotify_refresh_token: spotRefresh,
+      spotify_expires_at: spotExpires,
     }));
   }, [user, widgets]);
 
@@ -105,8 +128,41 @@ export default function ProfileSection({ widgets, saveWidget }) {
     if (profile.kickChannel) list.push({ name: 'Kick', user: profile.kickChannel, color: '#53fc18' });
     if (profile.youtubeChannel) list.push({ name: 'YouTube', user: profile.youtubeChannel, color: '#ff0000' });
     if (profile.discordTag) list.push({ name: 'Discord', user: profile.discordTag, color: '#5865f2' });
+    if (profile.spotify_access_token) list.push({ name: 'Spotify', user: 'Connected', color: '#1DB954' });
     return list;
   }, [profile]);
+
+  /* ── Connect Spotify via PKCE popup ── */
+  const connectSpotify = async () => {
+    setSpotifyLoading(true);
+    setSpotifyError('');
+    try {
+      const tokens = await startSpotifyAuth();
+      set('spotify_access_token', tokens.access_token);
+      set('spotify_refresh_token', tokens.refresh_token);
+      set('spotify_expires_at', tokens.expires_at);
+      /* Update state atomically */
+      setProfile(prev => ({
+        ...prev,
+        spotify_access_token: tokens.access_token,
+        spotify_refresh_token: tokens.refresh_token,
+        spotify_expires_at: tokens.expires_at,
+      }));
+    } catch (err) {
+      setSpotifyError(err.message || 'Spotify connection failed');
+    } finally {
+      setSpotifyLoading(false);
+    }
+  };
+
+  const disconnectSpotify = () => {
+    setProfile(prev => ({
+      ...prev,
+      spotify_access_token: '',
+      spotify_refresh_token: '',
+      spotify_expires_at: null,
+    }));
+  };
 
   /* ── Sync profile → all widgets ── */
   const syncToWidgets = useCallback(async () => {
@@ -128,6 +184,13 @@ export default function ProfileSection({ widgets, saveWidget }) {
             updates[configKey] = val;
             changed = true;
           }
+        }
+
+        /* When syncing Spotify tokens to navbar, also enable Spotify as music source */
+        if (widget.widget_type === 'navbar' && profile.spotify_access_token && updates.spotify_access_token) {
+          updates.musicSource = 'spotify';
+          updates.showNowPlaying = true;
+          changed = true;
         }
 
         if (changed) {
@@ -233,7 +296,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
       <div style={S.card}>
         <div style={S.cardTitle}>🔗 Connected Accounts</div>
         <p style={S.cardDesc}>
-          Link your streaming platforms. These sync to Chat, Giveaway, and Navbar widgets.
+          Link your streaming platforms and Spotify. These sync to Chat, Giveaway, Navbar, and Spotify widgets.
         </p>
 
         {/* Twitch */}
@@ -306,6 +369,55 @@ export default function ProfileSection({ widgets, saveWidget }) {
           <input style={S.input} value={profile.discordTag} onChange={e => set('discordTag', e.target.value)}
             placeholder="username#0000 or username" />
         </div>
+
+        {/* Spotify */}
+        <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 14, marginTop: 4 }} />
+        <div style={profile.spotify_access_token ? S.connected : S.notConnected}>
+          <div style={S.dot(!!profile.spotify_access_token)} />
+          <span style={S.platformName}>🟢 Spotify</span>
+          {profile.spotify_access_token ? (
+            <span style={{ ...S.platformUser, color: '#1DB954' }}>Connected</span>
+          ) : (
+            <span style={{ fontSize: '0.78rem', color: '#64748b' }}>Not connected</span>
+          )}
+        </div>
+        <p style={{ fontSize: '0.76rem', color: '#94a3b8', lineHeight: 1.5, margin: '-6px 0 0' }}>
+          Connect your Spotify account to show your currently playing track on the Navbar and Spotify widgets.
+          Click Sync to push your tokens to all music-enabled widgets.
+        </p>
+        {!profile.spotify_access_token ? (
+          <button
+            style={{
+              ...S.btn,
+              background: '#1DB954',
+              color: '#fff',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              justifyContent: 'center',
+              opacity: spotifyLoading ? 0.6 : 1,
+            }}
+            onClick={connectSpotify}
+            disabled={spotifyLoading}
+          >
+            {spotifyLoading ? '⏳ Connecting…' : '🎵 Connect Spotify'}
+          </button>
+        ) : (
+          <button
+            style={{
+              ...S.btn,
+              ...S.btnSecondary,
+              color: '#f87171',
+              borderColor: 'rgba(248,113,113,0.2)',
+            }}
+            onClick={disconnectSpotify}
+          >
+            Disconnect Spotify
+          </button>
+        )}
+        {spotifyError && (
+          <p style={{ fontSize: '0.76rem', color: '#f87171', margin: '-6px 0 0' }}>{spotifyError}</p>
+        )}
       </div>
 
       {/* ──── Preferences ──── */}
@@ -352,7 +464,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             return (
               <div key={w.id} style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.8rem', padding: '6px 10px', background: 'rgba(255,255,255,0.02)', borderRadius: 8, border: '1px solid rgba(255,255,255,0.05)' }}>
                 <span style={{ fontSize: '0.9rem' }}>
-                  {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : '🎁'}
+                  {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : '🎁'}
                 </span>
                 <span style={{ color: '#fff', fontWeight: 600, flex: 1, textTransform: 'capitalize' }}>{w.widget_type.replace('_', ' ')}</span>
                 <span style={{ color: '#64748b', fontSize: '0.72rem' }}>
