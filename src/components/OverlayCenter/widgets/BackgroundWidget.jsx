@@ -1,4 +1,5 @@
 import React, { useMemo, useRef, useEffect } from 'react';
+import './BackgroundWidget.css';
 
 /* ─── Texture CSS generators ─── */
 const TEXTURES = {
