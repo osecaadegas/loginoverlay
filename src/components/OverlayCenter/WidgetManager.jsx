@@ -344,6 +344,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const previewRef = useRef(null);
   const [previewScale, setPreviewScale] = useState(0.35);
 
+  /* ── Drag-to-reorder z-index state ── */
+  const [dragId, setDragId] = useState(null);
+  const [dragOverId, setDragOverId] = useState(null);
+
   const CANVAS_W = theme?.canvas_width || 1920;
   const CANVAS_H = theme?.canvas_height || 1080;
 
@@ -452,6 +456,65 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     const def = getWidgetDef(type);
     await onAdd(type, def?.defaults || {});
   }, [onAdd]);
+
+  /* ── Sorted active widgets by z_index (lowest first → highest last = on top in OBS) ── */
+  const sortedWidgets = useMemo(() =>
+    [...(widgets || [])].sort((a, b) => (a.z_index || 1) - (b.z_index || 1)),
+    [widgets]
+  );
+
+  /* ── Drag-to-reorder handlers ── */
+  const handleDragStart = useCallback((e, widgetId) => {
+    setDragId(widgetId);
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', widgetId);
+    // Make ghost slightly transparent
+    if (e.currentTarget) {
+      requestAnimationFrame(() => e.currentTarget.style.opacity = '0.4');
+    }
+  }, []);
+
+  const handleDragEnd = useCallback((e) => {
+    e.currentTarget.style.opacity = '1';
+    setDragId(null);
+    setDragOverId(null);
+  }, []);
+
+  const handleDragOver = useCallback((e, widgetId) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    if (widgetId !== dragOverId) setDragOverId(widgetId);
+  }, [dragOverId]);
+
+  const handleDrop = useCallback((e, dropTargetId) => {
+    e.preventDefault();
+    const fromId = dragId;
+    if (!fromId || fromId === dropTargetId) {
+      setDragId(null);
+      setDragOverId(null);
+      return;
+    }
+
+    // Reorder the sorted list
+    const ordered = [...sortedWidgets];
+    const fromIdx = ordered.findIndex(w => w.id === fromId);
+    const toIdx = ordered.findIndex(w => w.id === dropTargetId);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    const [moved] = ordered.splice(fromIdx, 1);
+    ordered.splice(toIdx, 0, moved);
+
+    // Assign z_index: position+1 (1-based, left=bottom, right=top)
+    ordered.forEach((w, i) => {
+      const newZ = i + 1;
+      if (w.z_index !== newZ) {
+        onSave({ ...w, z_index: newZ });
+      }
+    });
+
+    setDragId(null);
+    setDragOverId(null);
+  }, [dragId, sortedWidgets, onSave]);
 
   /* ── Sync ALL widgets from the navbar ── */
   const syncAllFromNavbar = useCallback(async () => {
@@ -583,16 +646,24 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
             <span className="wm-section-dot wm-section-dot--active" />
             Active Widgets
             <span className="wm-section-count">{widgets.length}</span>
+            <span className="wm-layer-hint">← back · front →</span>
           </h3>
           <div className="wm-tile-grid">
-            {widgets.map(w => {
+            {sortedWidgets.map((w, idx) => {
               const def = getWidgetDef(w.widget_type);
               const isVisible = w.is_visible;
+              const isDragOver = dragOverId === w.id && dragId !== w.id;
               return (
                 <div
                   key={w.id}
-                  className={`wm-tile wm-tile--active ${isVisible ? 'wm-tile--on' : 'wm-tile--paused'}`}
+                  className={`wm-tile wm-tile--active ${isVisible ? 'wm-tile--on' : 'wm-tile--paused'}${isDragOver ? ' wm-tile--drag-over' : ''}${dragId === w.id ? ' wm-tile--dragging' : ''}`}
+                  draggable
+                  onDragStart={(e) => handleDragStart(e, w.id)}
+                  onDragEnd={handleDragEnd}
+                  onDragOver={(e) => handleDragOver(e, w.id)}
+                  onDrop={(e) => handleDrop(e, w.id)}
                 >
+                  <span className="wm-tile-layer-badge" title={`Layer ${idx + 1}`}>{idx + 1}</span>
                   <span className="wm-tile-icon">{def?.icon || '📦'}</span>
                   <div className="wm-tile-text">
                     <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>

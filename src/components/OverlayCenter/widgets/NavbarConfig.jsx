@@ -287,6 +287,9 @@ export default function NavbarConfig({ config, onChange }) {
                   { id: 'marquee',   icon: '📜', label: 'Marquee' },
                   { id: 'albumart',  icon: '🖼️', label: 'Album Art' },
                   { id: 'equalizer', icon: '🎛️', label: 'Equalizer' },
+                  { id: 'vinyl',     icon: '💿', label: 'Vinyl' },
+                  { id: 'minimal',   icon: '✦', label: 'Minimal' },
+                  { id: 'wave',      icon: '〰️', label: 'Wave' },
                 ].map(s => (
                   <button key={s.id}
                     className={`nb-music-style-btn${(c.musicDisplayStyle || 'text') === s.id ? ' nb-music-style-btn--active' : ''}`}

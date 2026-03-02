@@ -659,6 +659,9 @@ function NowPlayingDisplay({ data, musicDisplayStyle, fontSize, textColor, muted
     case 'marquee':   return <NP_Marquee data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
     case 'albumart':  return <NP_AlbumArt data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} isMetal={isMetal} barHeight={barHeight} />;
     case 'equalizer': return <NP_Equalizer data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
+    case 'vinyl':     return <NP_Vinyl data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} />;
+    case 'minimal':   return <NP_Minimal data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} />;
+    case 'wave':      return <NP_Wave data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} accentColor={accentColor} barHeight={barHeight} />;
     case 'text':
     default:          return <NP_Text data={data} fontSize={fontSize} textColor={textColor} mutedColor={mutedColor} />;
   }
@@ -681,22 +684,12 @@ function NP_Text({ data, fontSize, textColor, mutedColor }) {
   );
 }
 
-/* Style 2: Pill — compact with album art */
+/* Style 2: Pill — compact with album art, transparent */
 function NP_Pill({ data, fontSize, textColor, mutedColor, accentColor, isMetal, barHeight }) {
   const h = barHeight * 0.65;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
-      borderRadius: isMetal ? 10 : 999, padding: '4px 14px 4px 4px',
-      background: isMetal
-        ? 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))'
-        : `linear-gradient(135deg, ${accentColor}22, ${accentColor}08)`,
-      border: isMetal
-        ? '1px solid rgba(255,255,255,0.08)'
-        : `1px solid ${accentColor}33`,
-      boxShadow: isMetal
-        ? 'inset 0 1px 0 rgba(255,255,255,0.04)'
-        : `0 0 12px ${accentColor}22`,
       maxWidth: 320, overflow: 'hidden',
     }}>
       {data.albumArt ? (
@@ -821,6 +814,96 @@ function NP_Equalizer({ data, fontSize, textColor, mutedColor, accentColor }) {
           {data.track}
         </div>
         <div style={{ fontSize: fontSize * 0.78, color: accentColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.artist}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Style 6: Vinyl — spinning record disc, no background */
+function NP_Vinyl({ data, fontSize, textColor, mutedColor, accentColor, barHeight }) {
+  const sz = barHeight * 0.72;
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 340, overflow: 'hidden' }}>
+      {/* Spinning disc */}
+      <div style={{
+        width: sz, height: sz, borderRadius: '50%', flexShrink: 0,
+        background: data.albumArt
+          ? `url(${data.albumArt}) center/cover`
+          : `radial-gradient(circle at 50% 50%, ${accentColor}44 0%, #111 40%, #222 60%, ${accentColor}22 100%)`,
+        border: `2px solid ${accentColor}66`,
+        boxShadow: `0 0 10px ${accentColor}33`,
+        animation: data.isPlaying ? 'nbVinylSpin 3s linear infinite' : 'none',
+        position: 'relative',
+      }}>
+        {/* Center hole */}
+        <div style={{
+          position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)',
+          width: sz * 0.22, height: sz * 0.22, borderRadius: '50%',
+          background: '#111', border: `1.5px solid ${accentColor}55`,
+        }} />
+      </div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.track}
+        </div>
+        <div style={{ fontSize: fontSize * 0.8, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: 1 }}>
+          {data.artist}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* Style 7: Minimal — just an icon + single line, no background */
+function NP_Minimal({ data, fontSize, textColor, mutedColor, accentColor }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 8, maxWidth: 320, overflow: 'hidden' }}>
+      <span style={{
+        fontSize: fontSize * 1.1, color: accentColor, flexShrink: 0,
+        animation: data.isPlaying ? 'spotifyPulse 1.8s ease-in-out infinite' : 'none',
+      }}>♫</span>
+      <span style={{
+        fontSize: fontSize * 0.95, fontWeight: 600, color: textColor,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>
+        {data.track}
+      </span>
+      <span style={{ fontSize: fontSize * 0.75, color: mutedColor, flexShrink: 0 }}>—</span>
+      <span style={{
+        fontSize: fontSize * 0.8, color: mutedColor,
+        whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+      }}>
+        {data.artist}
+      </span>
+    </div>
+  );
+}
+
+/* Style 8: Wave — sound wave animation + info, no background */
+function NP_Wave({ data, fontSize, textColor, mutedColor, accentColor, barHeight }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, maxWidth: 320, overflow: 'hidden' }}>
+      {/* Wave bars */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 1.5, height: 26, flexShrink: 0 }}>
+        {[0, 1, 2, 3, 4, 5, 6].map(i => (
+          <div key={i} style={{
+            width: 2.5, borderRadius: 2,
+            background: accentColor,
+            opacity: 0.5 + (i % 3) * 0.2,
+            animation: data.isPlaying
+              ? `nbWaveBar ${0.4 + i * 0.08}s ease-in-out ${i * 0.05}s infinite alternate`
+              : 'none',
+            height: data.isPlaying ? undefined : 3,
+          }} />
+        ))}
+      </div>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <div style={{ fontSize: fontSize * 1, fontWeight: 600, color: textColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          {data.track}
+        </div>
+        <div style={{ fontSize: fontSize * 0.78, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {data.artist}
         </div>
       </div>
