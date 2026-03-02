@@ -3,6 +3,7 @@
  * Add words, open/close betting, select the winning word.
  */
 import React, { useState } from 'react';
+import TabBar from './shared/TabBar';
 
 export default function SaltyWordsConfig({ config, onChange }) {
   const c = config || {};
@@ -68,15 +69,7 @@ export default function SaltyWordsConfig({ config, onChange }) {
 
   return (
     <div className="cg-config">
-      <div className="cg-config__tabs">
-        {tabs.map(t => (
-          <button key={t.id}
-            className={`cg-config__tab ${tab === t.id ? 'cg-config__tab--active' : ''}`}
-            onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TabBar tabs={tabs} active={tab} onChange={setTab} variant="cg" />
 
       {/* ═══ GAME TAB ═══ */}
       {tab === 'game' && (

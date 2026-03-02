@@ -11,6 +11,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { triggerShoutout, triggerTestShoutout, getShoutoutHistory } from '../../../services/shoutoutService';
 import { supabase } from '../../../config/supabaseClient';
+import TabBar from './shared/TabBar';
 
 /* ─── Constants ─── */
 const ENTER_ANIMATIONS = [
@@ -138,17 +139,7 @@ export default function RaidShoutoutConfig({ config, onChange, allWidgets }) {
   return (
     <div className="bh-config">
       {/* Tab nav */}
-      <div className="nb-tabs" style={{ marginTop: 4 }}>
-        {tabs.map(t => (
-          <button
-            key={t.id}
-            className={`nb-tab ${activeTab === t.id ? 'nb-tab--active' : ''}`}
-            onClick={() => setActiveTab(t.id)}
-          >
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 4 }} />
 
       {/* ═══════ TRIGGER TAB ═══════ */}
       {activeTab === 'trigger' && (

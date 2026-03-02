@@ -5,7 +5,7 @@
  */
 import React from 'react';
 
-export default function SaltyWordsWidget({ config }) {
+function SaltyWordsWidget({ config }) {
   const c = config || {};
   const words = c.words || [];
   const status = c.gameStatus || 'idle'; // idle | open | reveal | result
@@ -68,3 +68,5 @@ export default function SaltyWordsWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(SaltyWordsWidget);

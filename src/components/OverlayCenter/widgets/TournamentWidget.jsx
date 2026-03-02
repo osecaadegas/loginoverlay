@@ -8,7 +8,7 @@ import React, { useState, useMemo } from 'react';
  *   vertical  → matches stacked top-to-bottom, horizontal rows
  *   bracket   → clean list — all phases, section headers, horizontal match rows
  */
-export default function TournamentWidget({ config, theme }) {
+function TournamentWidget({ config, theme }) {
   const c = config || {};
   const data = c.data || {};
   const phase = data.phase || 'quarterfinals';
@@ -672,3 +672,5 @@ export default function TournamentWidget({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(TournamentWidget);

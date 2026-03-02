@@ -4,7 +4,7 @@ import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
 
-export default function BonusHuntWidget({ config, theme }) {
+function BonusHuntWidget({ config, theme }) {
   /* ─── Style switcher ─── */
   if ((config || {}).displayStyle === 'v3') {
     return <BonusHuntWidgetV3 config={config} theme={theme} />;
@@ -484,3 +484,5 @@ export default function BonusHuntWidget({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(BonusHuntWidget);

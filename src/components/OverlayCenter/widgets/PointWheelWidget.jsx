@@ -34,7 +34,7 @@ const DEFAULT_INNER = [
   { multi: 1, label: '1x', color: '#059669' },
 ];
 
-export default function PointWheelWidget({ config }) {
+function PointWheelWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const font = c.fontFamily || "'Inter', sans-serif";
@@ -685,3 +685,5 @@ export default function PointWheelWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(PointWheelWidget);

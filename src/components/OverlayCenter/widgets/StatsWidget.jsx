@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function StatsWidget({ config, theme }) {
+function StatsWidget({ config, theme }) {
   const c = config || {};
   const currency = c.currency || '€';
   const profit = (c.totalWin || 0) - (c.totalBet || 0);
@@ -36,3 +36,5 @@ export default function StatsWidget({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(StatsWidget);

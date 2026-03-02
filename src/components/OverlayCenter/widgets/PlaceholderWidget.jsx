@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function PlaceholderWidget({ config }) {
+function PlaceholderWidget({ config }) {
   const c = config || {};
   return (
     <div className="oc-widget-inner oc-placeholder" style={{ width: '100%', height: '100%', overflow: 'hidden' }}>
@@ -12,3 +12,5 @@ export default function PlaceholderWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(PlaceholderWidget);

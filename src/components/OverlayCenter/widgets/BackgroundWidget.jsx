@@ -75,7 +75,7 @@ const TEXTURES = {
   }),
 };
 
-export default function BackgroundWidget({ config, theme }) {
+function BackgroundWidget({ config, theme }) {
   const c = config || {};
 
   const displayStyle = c.displayStyle || 'v1';
@@ -500,3 +500,5 @@ function seededRandom(seed) {
     return s / 233280;
   };
 }
+
+export default React.memo(BackgroundWidget);

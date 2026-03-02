@@ -25,7 +25,7 @@ const fmtMulti = (v) => {
   return `${n.toFixed(2)}x`;
 };
 
-export default function BonusBuysWidget({ config }) {
+function BonusBuysWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const accent = c.accentColor || '#3b82f6';
@@ -315,3 +315,5 @@ export default function BonusBuysWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(BonusBuysWidget);

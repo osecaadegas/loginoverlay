@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import ColorPicker from './shared/ColorPicker';
+import TabBar from './shared/TabBar';
 
 const AVAILABLE_CRYPTOS = [
   { id: 'btc', label: 'Bitcoin (BTC)' },
@@ -116,15 +118,7 @@ export default function NavbarConfig({ config, onChange }) {
   return (
     <div className="nb-config">
       {/* Tab nav */}
-      <div className="nb-tabs">
-        {tabs.map(t => (
-          <button key={t.id}
-            className={`nb-tab ${activeTab === t.id ? 'nb-tab--active' : ''}`}
-            onClick={() => setActiveTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} />
 
       {/* ═══════ SETUP TAB — get your navbar working fast ═══════ */}
       {activeTab === 'setup' && (
@@ -447,18 +441,6 @@ export default function NavbarConfig({ config, onChange }) {
 }
 
 /* ─── Reusable sub-components ─── */
-function ColorPicker({ label, value, onChange }) {
-  return (
-    <div className="nb-color-field">
-      <input type="color" value={value} onChange={e => onChange(e.target.value)} />
-      <div className="nb-color-info">
-        <span className="nb-color-label">{label}</span>
-        <code className="nb-color-hex">{value}</code>
-      </div>
-    </div>
-  );
-}
-
 function SliderField({ label, value, min, max, step, unit, onChange }) {
   return (
     <div className="nb-slider-field">

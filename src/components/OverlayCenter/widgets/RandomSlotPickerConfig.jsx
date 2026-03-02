@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getAllProviders, getSlotsByProviders } from '../../../utils/slotUtils';
+import TabBar from './shared/TabBar';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -110,12 +111,7 @@ export default function RandomSlotPickerConfig({ config, onChange, allWidgets, m
   return (
     <div className="nb-config">
       {tabs.length > 1 && (
-        <div className="nb-tabs">
-          {tabs.map(t => (
-            <button key={t.id} className={`nb-tab${activeTab === t.id ? ' nb-tab--active' : ''}`}
-              onClick={() => setActiveTab(t.id)}>{t.label}</button>
-          ))}
-        </div>
+        <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} />
       )}
 
       {activeTab === 'content' && (

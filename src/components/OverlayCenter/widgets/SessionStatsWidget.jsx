@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function SessionStatsWidget({ config }) {
+function SessionStatsWidget({ config }) {
   const c = config || {};
   const bg = c.bgColor || '#13151e';
   const cardBg = c.cardBg || 'rgba(255,255,255,0.04)';
@@ -44,3 +44,5 @@ export default function SessionStatsWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(SessionStatsWidget);

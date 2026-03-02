@@ -238,6 +238,8 @@ export default function ProfileSection({ widgets, saveWidget }) {
     let synced = 0;
 
     try {
+      const savePromises = [];
+
       for (const widget of widgets) {
         const map = SYNC_MAP[widget.widget_type];
         if (!map) continue;
@@ -293,10 +295,12 @@ export default function ProfileSection({ widgets, saveWidget }) {
         }
 
         if (changed) {
-          await saveWidget({ ...widget, config: { ...widget.config, ...updates } });
+          savePromises.push(saveWidget({ ...widget, config: { ...widget.config, ...updates } }));
           synced++;
         }
       }
+
+      await Promise.all(savePromises);
 
       setSyncMsg(synced > 0
         ? `✅ Synced to ${synced} widget${synced > 1 ? 's' : ''}`

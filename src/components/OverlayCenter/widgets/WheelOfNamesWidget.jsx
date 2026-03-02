@@ -2,7 +2,7 @@ import React from 'react';
 
 const COLORS = ['#ef4444','#f59e0b','#22c55e','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#f97316'];
 
-export default function WheelOfNamesWidget({ config }) {
+function WheelOfNamesWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const accent = c.accentColor || '#f59e0b';
@@ -94,3 +94,5 @@ export default function WheelOfNamesWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(WheelOfNamesWidget);

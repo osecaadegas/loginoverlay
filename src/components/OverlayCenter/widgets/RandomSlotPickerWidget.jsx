@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function RandomSlotPickerWidget({ config }) {
+function RandomSlotPickerWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const accent = c.accentColor || '#f59e0b';
@@ -112,3 +112,5 @@ export default function RandomSlotPickerWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(RandomSlotPickerWidget);

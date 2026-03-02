@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function CoinFlipWidget({ config }) {
+function CoinFlipWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const hColor  = c.headsColor  || '#f59e0b';
@@ -304,3 +304,5 @@ export default function CoinFlipWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(CoinFlipWidget);

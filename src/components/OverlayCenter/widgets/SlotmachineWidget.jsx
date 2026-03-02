@@ -2,7 +2,7 @@ import React from 'react';
 
 const DEFAULT_SYM = ['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'];
 
-export default function SlotmachineWidget({ config }) {
+function SlotmachineWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const accent    = c.accentColor  || '#f59e0b';
@@ -197,3 +197,5 @@ export default function SlotmachineWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(SlotmachineWidget);

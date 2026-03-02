@@ -12,7 +12,7 @@ const SPOTIFY_GREEN = '#1DB954';
 /* ═══════════════════════════════════════════════════════
    Spotify Now Playing Widget — 6 embedded styles
    ═══════════════════════════════════════════════════════ */
-export default function SpotifyWidget({ config, widgetId }) {
+function SpotifyWidget({ config, widgetId }) {
   const c = config || {};
   const [nowPlaying, setNowPlaying] = useState(null);
   const tokenRef  = useRef(c.spotify_access_token);
@@ -502,3 +502,5 @@ function NeonStyle({ data, c }) {
     </div>
   );
 }
+
+export default React.memo(SpotifyWidget);

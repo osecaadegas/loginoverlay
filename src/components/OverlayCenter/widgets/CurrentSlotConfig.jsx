@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import TabBar from './shared/TabBar';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -63,12 +64,7 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets, mode }
   return (
     <div className="nb-config">
       {tabs.length > 1 && (
-        <div className="nb-tabs">
-          {tabs.map(t => (
-            <button key={t.id} className={`nb-tab${activeTab === t.id ? ' nb-tab--active' : ''}`}
-              onClick={() => setActiveTab(t.id)}>{t.label}</button>
-          ))}
-        </div>
+        <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} />
       )}
 
       {activeTab === 'content' && (

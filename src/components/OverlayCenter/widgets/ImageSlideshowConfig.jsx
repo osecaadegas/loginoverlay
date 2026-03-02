@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import TabBar from './shared/TabBar';
 
 const FONT_OPTIONS = [
   "'Inter', sans-serif",
@@ -75,15 +76,7 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
     <div className="bh-config">
 
       {/* Tab nav */}
-      <div className="nb-tabs" style={{ marginTop: 4 }}>
-        {tabs.map(t => (
-          <button key={t.id}
-            className={`nb-tab ${activeTab === t.id ? 'nb-tab--active' : ''}`}
-            onClick={() => setActiveTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 4 }} />
 
       {/* ═══════ IMAGES TAB ═══════ */}
       {activeTab === 'images' && (

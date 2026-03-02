@@ -10,7 +10,7 @@ import React, { useEffect, useState, useRef } from 'react';
  *   • After the transition finishes we swap src's on the now-hidden layer
  *     with `transition: none` so there is never a visual glitch.
  */
-export default function ImageSlideshowWidget({ config, theme }) {
+function ImageSlideshowWidget({ config, theme }) {
   const c = config || {};
   const images = (c.images || []).filter(url => url && url.trim());
   const interval = (c.interval || 5) * 1000;
@@ -237,3 +237,5 @@ export default function ImageSlideshowWidget({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(ImageSlideshowWidget);

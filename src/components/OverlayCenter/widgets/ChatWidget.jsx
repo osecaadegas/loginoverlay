@@ -1,4 +1,6 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import useTwitchChat from '../../../hooks/useTwitchChat';
+import useKickChat from '../../../hooks/useKickChat';
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -6,81 +8,6 @@ const PLATFORM_META = {
   youtube: { label: 'YouTube', icon: 'Y', color: '#ef4444' },
   kick:    { label: 'Kick',    icon: 'K', color: '#22c55e' },
 };
-
-/* ─── Twitch IRC (anonymous/read-only) ─── */
-function useTwitchChat(channel, onMessage) {
-  const wsRef = useRef(null);
-  const reconnectTimer = useRef(null);
-
-  const connect = useCallback(() => {
-    if (!channel) return;
-    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
-      ws.send('NICK justinfan' + Math.floor(Math.random() * 99999));
-      ws.send('JOIN #' + channel.toLowerCase().trim());
-    };
-
-    ws.onmessage = (evt) => {
-      const lines = evt.data.split('\r\n');
-      for (const line of lines) {
-        if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
-
-        /* ── Raid USERNOTICE ── */
-        if (line.includes('USERNOTICE') && line.includes('msg-id=raid')) {
-          const tagStr = line.match(/@([^ ]+)/)?.[1] || '';
-          const tags = Object.fromEntries(tagStr.split(';').map(t => { const [k, ...v] = t.split('='); return [k, v.join('=')]; }));
-          const raider = tags['msg-param-displayName'] || tags['display-name'] || tags['login'] || 'Someone';
-          const viewerCount = parseInt(tags['msg-param-viewerCount'] || '0', 10);
-          // Twitch sends profile image URL in raid USERNOTICEs (may be URL-encoded)
-          let avatar = (tags['msg-param-profileImageURL'] || '').replace(/%s/g, '');
-          // Fallback: if no profile image tag, leave empty
-          if (avatar && !avatar.startsWith('http')) avatar = '';
-
-          onMessage({
-            id: tags['id'] || 'raid-' + Date.now(),
-            platform: 'twitch',
-            username: raider,
-            message: `is raiding with ${viewerCount} viewer${viewerCount !== 1 ? 's' : ''}!`,
-            color: tags['color'] || '#a855f7',
-            timestamp: Date.now(),
-            isRaid: true,
-            raidViewers: viewerCount,
-            raidAvatar: avatar || '',
-          });
-          continue;
-        }
-
-        /* ── Normal PRIVMSG ── */
-        const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
-        if (!m) continue;
-        const tags = Object.fromEntries(m[1].split(';').map(t => t.split('=')));
-        onMessage({
-          id: tags['id'] || Date.now().toString() + Math.random(),
-          platform: 'twitch',
-          username: tags['display-name'] || m[2],
-          message: m[3],
-          color: tags['color'] || '',
-          timestamp: Date.now(),
-        });
-      }
-    };
-
-    ws.onclose = () => {
-      reconnectTimer.current = setTimeout(connect, 3000);
-    };
-  }, [channel, onMessage]);
-
-  useEffect(() => {
-    connect();
-    return () => {
-      clearTimeout(reconnectTimer.current);
-      if (wsRef.current) wsRef.current.close();
-    };
-  }, [connect]);
-}
 
 /* ─── YouTube live chat polling ─── */
 function useYoutubeChat(videoId, apiKey, onMessage) {
@@ -129,103 +56,10 @@ function useYoutubeChat(videoId, apiKey, onMessage) {
   }, [videoId, apiKey, onMessage]);
 }
 
-/* ─── Kick chat via Pusher WebSocket (direct, no StreamElements) ─── */
-const KICK_PUSHER_KEY = '32cbd69e4b950bf97679';
-const KICK_PUSHER_CLUSTER = 'us2';
 
-function useKickChat(chatroomId, onMessage) {
-  const wsRef = useRef(null);
-  const reconnectTimer = useRef(null);
-  const pingInterval = useRef(null);
-
-  const connect = useCallback(() => {
-    if (!chatroomId) return;
-
-    // Clean up any previous connection
-    if (wsRef.current) { try { wsRef.current.close(); } catch {} }
-    if (pingInterval.current) clearInterval(pingInterval.current);
-
-    const wsUrl = `wss://ws-${KICK_PUSHER_CLUSTER}.pusher.com/app/${KICK_PUSHER_KEY}?protocol=7&client=js&version=8.4.0-rc2&flash=false`;
-    const ws = new WebSocket(wsUrl);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      // Start keepalive ping every 2 minutes
-      pingInterval.current = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(JSON.stringify({ event: 'pusher:ping', data: {} }));
-        }
-      }, 120000);
-    };
-
-    ws.onmessage = (evt) => {
-      try {
-        const parsed = JSON.parse(evt.data);
-
-        // Step 1: Wait for Pusher handshake, THEN subscribe
-        if (parsed.event === 'pusher:connection_established') {
-          // Subscribe to v2 chatroom channel
-          ws.send(JSON.stringify({
-            event: 'pusher:subscribe',
-            data: { auth: '', channel: `chatrooms.${chatroomId}.v2` }
-          }));
-          // Also subscribe to legacy channel
-          ws.send(JSON.stringify({
-            event: 'pusher:subscribe',
-            data: { auth: '', channel: `chatroom_${chatroomId}` }
-          }));
-          return;
-        }
-
-        // Handle chat messages
-        if (parsed.event === 'App\\Events\\ChatMessageEvent') {
-          const msg = JSON.parse(parsed.data);
-          const sender = msg.sender || {};
-          // Generate color from username hash (Kick has no user colors like Twitch)
-          const color = generateKickColor(sender.username || '');
-          onMessage({
-            id: `kick-${msg.id || Date.now()}`,
-            platform: 'kick',
-            username: sender.username || 'Unknown',
-            message: msg.content || '',
-            color,
-            timestamp: Date.now(),
-          });
-        }
-      } catch { /* not all frames are relevant JSON */ }
-    };
-
-    ws.onerror = () => { /* will trigger onclose */ };
-
-    ws.onclose = () => {
-      wsRef.current = null;
-      if (pingInterval.current) { clearInterval(pingInterval.current); pingInterval.current = null; }
-      reconnectTimer.current = setTimeout(connect, 5000);
-    };
-  }, [chatroomId, onMessage]);
-
-  useEffect(() => {
-    connect();
-    return () => {
-      clearTimeout(reconnectTimer.current);
-      if (pingInterval.current) clearInterval(pingInterval.current);
-      if (wsRef.current) wsRef.current.close();
-    };
-  }, [connect]);
-}
-
-/* Generate a deterministic hue-based color for Kick users */
-function generateKickColor(username) {
-  let hash = 0;
-  for (let i = 0; i < username.length; i++) {
-    hash = username.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const hue = Math.abs(hash) % 360;
-  return `hsl(${hue}, 70%, 60%)`;
-}
 
 /* ─── Main Widget ─── */
-export default function ChatWidget({ config, theme }) {
+function ChatWidget({ config, theme }) {
   const c = config || {};
   const [messages, setMessages] = useState([]);
   const scrollRef = useRef(null);
@@ -273,7 +107,7 @@ export default function ChatWidget({ config, theme }) {
   }, [maxMessages]);
 
   /* Connect to enabled platforms */
-  useTwitchChat(c.twitchEnabled ? c.twitchChannel : '', handleMessage);
+  useTwitchChat(c.twitchEnabled ? c.twitchChannel : '', handleMessage, { parseRaids: true });
   useYoutubeChat(
     c.youtubeEnabled ? c.youtubeVideoId : '',
     c.youtubeEnabled ? c.youtubeApiKey : '',
@@ -648,3 +482,4 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
   );
 }
 
+export default React.memo(ChatWidget);

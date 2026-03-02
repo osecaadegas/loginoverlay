@@ -13,7 +13,7 @@ import React, { useMemo, useState, useEffect, useRef } from 'react';
  *
  * Uses plain CSS classes (bht3-*) in OverlayRenderer.css — no styled-components.
  */
-export default function BonusHuntWidgetV3({ config, theme }) {
+function BonusHuntWidgetV3({ config, theme }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
@@ -217,3 +217,5 @@ export default function BonusHuntWidgetV3({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(BonusHuntWidgetV3);

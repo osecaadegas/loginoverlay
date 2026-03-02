@@ -6,84 +6,9 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStreamElements } from '../../../context/StreamElementsContext';
-
-/* ─── Twitch IRC (anonymous / read-only) ─── */
-function useTwitchChat(channel, onMessage) {
-  const wsRef = useRef(null);
-  const reconnectTimer = useRef(null);
-  const connect = useCallback(() => {
-    if (!channel) return;
-    const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-    wsRef.current = ws;
-    ws.onopen = () => {
-      ws.send('CAP REQ :twitch.tv/tags twitch.tv/commands');
-      ws.send('NICK justinfan' + Math.floor(Math.random() * 99999));
-      ws.send('JOIN #' + channel.toLowerCase().trim());
-    };
-    ws.onmessage = (evt) => {
-      const lines = evt.data.split('\r\n');
-      for (const line of lines) {
-        if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
-        const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
-        if (!m) continue;
-        const tags = Object.fromEntries(m[1].split(';').map(t => t.split('=')));
-        onMessage({ username: tags['display-name'] || m[2], message: m[3] });
-      }
-    };
-    ws.onclose = () => { reconnectTimer.current = setTimeout(connect, 3000); };
-  }, [channel, onMessage]);
-  useEffect(() => {
-    connect();
-    return () => { clearTimeout(reconnectTimer.current); if (wsRef.current) wsRef.current.close(); };
-  }, [connect]);
-}
-
-/* ─── Kick chat via Pusher WebSocket ─── */
-function useKickChat(chatroomId, onMessage) {
-  const wsRef = useRef(null);
-  const reconnectTimer = useRef(null);
-  const pingInterval = useRef(null);
-  const connect = useCallback(() => {
-    if (!chatroomId) return;
-    if (wsRef.current) { try { wsRef.current.close(); } catch {} }
-    if (pingInterval.current) clearInterval(pingInterval.current);
-    const ws = new WebSocket(`wss://ws-us2.pusher.com/app/32cbd69e4b950bf97679?protocol=7&client=js&version=8.4.0-rc2&flash=false`);
-    wsRef.current = ws;
-    ws.onopen = () => {
-      pingInterval.current = setInterval(() => {
-        if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ event: 'pusher:ping', data: {} }));
-      }, 120000);
-    };
-    ws.onmessage = (evt) => {
-      try {
-        const parsed = JSON.parse(evt.data);
-        if (parsed.event === 'pusher:connection_established') {
-          ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { auth: '', channel: `chatrooms.${chatroomId}.v2` } }));
-          ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { auth: '', channel: `chatroom_${chatroomId}` } }));
-          return;
-        }
-        if (parsed.event === 'App\\Events\\ChatMessageEvent') {
-          const msg = JSON.parse(parsed.data);
-          onMessage({ username: msg.sender?.username || 'Unknown', message: msg.content || '' });
-        }
-      } catch {}
-    };
-    ws.onerror = () => {};
-    ws.onclose = () => {
-      wsRef.current = null;
-      if (pingInterval.current) { clearInterval(pingInterval.current); pingInterval.current = null; }
-      reconnectTimer.current = setTimeout(connect, 5000);
-    };
-  }, [chatroomId, onMessage]);
-  useEffect(() => {
-    connect();
-    return () => {
-      clearTimeout(reconnectTimer.current);
-      if (pingInterval.current) clearInterval(pingInterval.current);
-      if (wsRef.current) wsRef.current.close();
-    };
-  }, [connect]);
-}
+import useTwitchChat from '../../../hooks/useTwitchChat';
+import useKickChat from '../../../hooks/useKickChat';
+import TabBar from './shared/TabBar';
 
 export default function CoinFlipConfig({ config, onChange }) {
   const c = config || {};
@@ -298,15 +223,7 @@ export default function CoinFlipConfig({ config, onChange }) {
 
   return (
     <div className="cg-config">
-      <div className="cg-config__tabs">
-        {tabs.map(t => (
-          <button key={t.id}
-            className={`cg-config__tab ${tab === t.id ? 'cg-config__tab--active' : ''}`}
-            onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TabBar tabs={tabs} active={tab} onChange={setTab} variant="cg" />
 
       {/* ═══ GAME TAB ═══ */}
       {tab === 'game' && (

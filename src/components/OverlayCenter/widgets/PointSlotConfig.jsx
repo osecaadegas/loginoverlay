@@ -3,6 +3,7 @@
  * Configure symbols, spin the reels, set bet amounts, view results.
  */
 import React, { useState } from 'react';
+import TabBar from './shared/TabBar';
 
 const DEFAULT_SYM = ['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'];
 
@@ -74,15 +75,7 @@ export default function PointSlotConfig({ config, onChange }) {
 
   return (
     <div className="cg-config">
-      <div className="cg-config__tabs">
-        {tabs.map(t => (
-          <button key={t.id}
-            className={`cg-config__tab ${tab === t.id ? 'cg-config__tab--active' : ''}`}
-            onClick={() => setTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TabBar tabs={tabs} active={tab} onChange={setTab} variant="cg" />
 
       {/* ═══ GAME TAB ═══ */}
       {tab === 'game' && (

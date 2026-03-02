@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function RecentWinsWidget({ config }) {
+function RecentWinsWidget({ config }) {
   const c = config || {};
   const wins = c.wins || [];
   const bg = c.bgColor || '#13151e';
@@ -50,3 +50,5 @@ export default function RecentWinsWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(RecentWinsWidget);

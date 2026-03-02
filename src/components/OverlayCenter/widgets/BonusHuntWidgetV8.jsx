@@ -6,7 +6,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
  * transitions between positions via CSS — no content teleportation.
  * Render window [-3,+3] with ±3 invisible for seamless entry/exit.
  */
-export default function BonusHuntWidgetV8({ config, theme }) {
+function BonusHuntWidgetV8({ config, theme }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
@@ -273,3 +273,5 @@ export default function BonusHuntWidgetV8({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(BonusHuntWidgetV8);

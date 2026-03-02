@@ -4,7 +4,7 @@ import React, { useMemo } from 'react';
  * BonusHuntWidgetV2 — Style 2: Sleek dark slate design matching reference layout.
  * Reads from the same config shape as V1.
  */
-export default function BonusHuntWidgetV2({ config, theme }) {
+function BonusHuntWidgetV2({ config, theme }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
@@ -314,3 +314,5 @@ export default function BonusHuntWidgetV2({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(BonusHuntWidgetV2);

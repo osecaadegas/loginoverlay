@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect } from 'react';
 
-export default function PredictionsWidget({ config }) {
+function PredictionsWidget({ config }) {
   const c = config || {};
   const question = c.question || 'Who will win?';
   const optionA = c.optionA || 'Option A';
@@ -89,3 +89,5 @@ export default function PredictionsWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(PredictionsWidget);

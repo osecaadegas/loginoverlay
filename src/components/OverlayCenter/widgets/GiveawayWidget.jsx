@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function GiveawayWidget({ config }) {
+function GiveawayWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const bgColor = c.bgColor || '#0a0f1e';
@@ -205,3 +205,5 @@ export default function GiveawayWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(GiveawayWidget);

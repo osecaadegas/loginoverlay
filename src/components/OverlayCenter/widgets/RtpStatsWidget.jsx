@@ -63,7 +63,7 @@ function fmtMultiplier(m) {
 }
 
 /* ─── Main widget ─── */
-export default function RtpStatsWidget({ config, theme, allWidgets }) {
+function RtpStatsWidget({ config, theme, allWidgets }) {
   const c = config || {};
 
   /* ── Find bonus hunt widget ── */
@@ -267,3 +267,5 @@ export default function RtpStatsWidget({ config, theme, allWidgets }) {
     </div>
   );
 }
+
+export default React.memo(RtpStatsWidget);

@@ -6,7 +6,7 @@ import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
  * centre (same depth-perspective as V8 card stack), and a stats bar at the
  * bottom.  Looks like a broadcast overlay "hunt board".
  */
-export default function BonusHuntWidgetV9({ config, theme }) {
+function BonusHuntWidgetV9({ config, theme }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
@@ -282,3 +282,5 @@ export default function BonusHuntWidgetV9({ config, theme }) {
     </div>
   );
 }
+
+export default React.memo(BonusHuntWidgetV9);

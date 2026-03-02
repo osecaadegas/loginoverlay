@@ -3,7 +3,7 @@ import React from 'react';
 /* ───────────── helpers ───────────── */
 const hex2rgb = (h) => { const m = h?.replace('#','').match(/.{2}/g); return m ? m.map(x=>parseInt(x,16)).join(',') : '255,255,255'; };
 
-export default function CurrentSlotWidget({ config }) {
+function CurrentSlotWidget({ config }) {
   const c  = config || {};
   const st = c.displayStyle || 'v1';
   const accent = c.accentColor || '#f59e0b';
@@ -72,3 +72,5 @@ export default function CurrentSlotWidget({ config }) {
     </div>
   );
 }
+
+export default React.memo(CurrentSlotWidget);

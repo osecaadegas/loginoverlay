@@ -1,9 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getAllSlots } from '../../../utils/slotUtils';
+import ColorPicker from './shared/ColorPicker';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../services/overlayService';
 import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
+import TabBar from './shared/TabBar';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -128,15 +130,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
       </div>}
 
       {/* Tab nav */}
-      <div className="nb-tabs" style={{ marginTop: 8 }}>
-        {tabs.map(t => (
-          <button key={t.id}
-            className={`nb-tab ${activeTab === t.id ? 'nb-tab--active' : ''}`}
-            onClick={() => setActiveTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 8 }} />
 
       {/* ═══════ CONTENT TAB ═══════ */}
       {activeTab === 'content' && (
@@ -1243,16 +1237,6 @@ function BonusHuntHistoryTab({ config, onChange, userId, currency }) {
 }
 
 /* ─── Sub-components ─── */
-function ColorPicker({ label, value, onChange }) {
-  return (
-    <label className="nb-color-field">
-      <input type="color" value={value} onChange={e => onChange(e.target.value)} />
-      <span className="nb-color-label">{label}</span>
-      <span className="nb-color-hex">{value}</span>
-    </label>
-  );
-}
-
 function SliderField({ label, value, min, max, step, unit, onChange }) {
   return (
     <div className="nb-slider-field">

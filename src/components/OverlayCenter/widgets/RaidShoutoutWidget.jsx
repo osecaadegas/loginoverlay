@@ -48,7 +48,7 @@ function getProxiedVideoUrl(alert) {
 }
 
 /* ─── Main Widget ─── */
-export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
+function RaidShoutoutWidget({ config, theme, allWidgets }) {
   const c = config || {};
   const [queue, setQueue] = useState([]);
   const [currentAlert, setCurrentAlert] = useState(null);
@@ -214,3 +214,5 @@ export default function RaidShoutoutWidget({ config, theme, allWidgets }) {
     </div>
   );
 }
+
+export default React.memo(RaidShoutoutWidget);

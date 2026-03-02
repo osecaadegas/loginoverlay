@@ -11,7 +11,7 @@ const hex2rgb = (h) => {
   return m ? m.map(x => parseInt(x, 16)).join(',') : '255,255,255';
 };
 
-export default function SingleSlotWidget({ config }) {
+function SingleSlotWidget({ config }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const accent = c.accentColor || '#7c3aed';
@@ -390,3 +390,5 @@ function CardStat({ label, value, accent, accentRgb, text, muted, highlight }) {
     </div>
   );
 }
+
+export default React.memo(SingleSlotWidget);

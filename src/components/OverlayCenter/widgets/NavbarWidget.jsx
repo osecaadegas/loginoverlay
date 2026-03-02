@@ -56,7 +56,7 @@ function useClock() {
 }
 
 /* ─── Main Navbar Widget (OBS Render) ─── */
-export default function NavbarWidget({ config, widgetId }) {
+function NavbarWidget({ config, widgetId }) {
   const c = config || {};
   const time = useClock();
   const [cryptoPrices, setCryptoPrices] = useState({});
@@ -866,3 +866,5 @@ function hexToRgb(hex) {
   const b = parseInt(hex.slice(5, 7), 16);
   return `${r},${g},${b}`;
 }
+
+export default React.memo(NavbarWidget);
