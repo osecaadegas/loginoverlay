@@ -5012,12 +5012,10 @@ body.wm-resizing {
 .ov-chat-messages {
   flex: 1;
   overflow-y: auto;
-  scrollbar-width: thin;
-  scrollbar-color: rgb(51 65 85) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.ov-chat-messages::-webkit-scrollbar { width: 4px; }
-.ov-chat-messages::-webkit-scrollbar-track { background: transparent; }
-.ov-chat-messages::-webkit-scrollbar-thumb { background: rgb(51 65 85); border-radius: 2px; }
+.ov-chat-messages::-webkit-scrollbar { display: none; }
 
 .ov-chat-empty {
   display: flex;
