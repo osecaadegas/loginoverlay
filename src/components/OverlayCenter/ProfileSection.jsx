@@ -555,6 +555,75 @@ export default function ProfileSection({ widgets, saveWidget }) {
           {syncMsg}
         </div>
       )}
+
+      {/* ──── OBS Setup Guide ──── */}
+      <div style={{
+        background: 'rgba(124,58,237,0.06)',
+        border: '1px solid rgba(124,58,237,0.2)',
+        borderRadius: 14,
+        padding: '20px 22px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+      }}>
+        <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#a78bfa', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          🖥️ OBS Browser Source Setup
+        </h3>
+        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+          If your overlay looks blurry or low-resolution in OBS, check these settings:
+        </p>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 10,
+            padding: '14px 16px',
+          }}>
+            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>📋 Browser Source Properties</h4>
+            <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Right-click your browser source → <strong style={{ color: '#e2e8f0' }}>Properties</strong></li>
+              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Set <strong style={{ color: '#a78bfa' }}>Width: 1920</strong> and <strong style={{ color: '#a78bfa' }}>Height: 1080</strong></li>
+              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Make sure <strong style={{ color: '#e2e8f0' }}>"Custom CSS"</strong> doesn't override sizes</li>
+            </ol>
+          </div>
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 10,
+            padding: '14px 16px',
+          }}>
+            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>⚙️ OBS Video Settings</h4>
+            <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Go to <strong style={{ color: '#e2e8f0' }}>Settings → Video</strong></li>
+              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}><strong style={{ color: '#a78bfa' }}>Base (Canvas) Resolution</strong> → 1920×1080</li>
+              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}><strong style={{ color: '#a78bfa' }}>Output (Scaled) Resolution</strong> → 1920×1080</li>
+            </ol>
+          </div>
+          <div style={{
+            background: 'rgba(250,204,21,0.06)',
+            border: '1px solid rgba(250,204,21,0.15)',
+            borderRadius: 10,
+            padding: '12px 16px',
+          }}>
+            <p style={{ fontSize: '0.75rem', color: '#fbbf24', margin: 0, lineHeight: 1.5 }}>
+              ⚠️ If your browser source is set to a smaller size (e.g. 800×600) while your canvas is 1920×1080, OBS will scale the content down then stretch it back up — causing blurriness.
+            </p>
+          </div>
+          <div style={{
+            background: 'rgba(34,197,94,0.06)',
+            border: '1px solid rgba(34,197,94,0.15)',
+            borderRadius: 10,
+            padding: '14px 16px',
+          }}>
+            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#4ade80', margin: '0 0 6px 0' }}>✅ Quick Checklist</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>☑️ Browser Source → <strong style={{ color: '#e2e8f0' }}>1920 × 1080</strong></span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>☑️ OBS Base Canvas → <strong style={{ color: '#e2e8f0' }}>1920 × 1080</strong></span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>☑️ OBS Output Resolution → <strong style={{ color: '#e2e8f0' }}>1920 × 1080</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
