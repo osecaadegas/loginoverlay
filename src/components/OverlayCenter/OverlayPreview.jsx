@@ -16,6 +16,11 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets }) {
   const Component = def?.component;
   if (!Component) return null;
 
+  const cfg = widget.config || {};
+  const ss = cfg.shadowSize ?? 0;
+  const si = cfg.shadowIntensity ?? 0;
+  const hasShadow = ss > 0 && si > 0;
+
   return (
     <div style={{
       position: 'absolute',
@@ -24,6 +29,8 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets }) {
       width: widget.width,
       height: widget.height,
       zIndex: widget.z_index || 1,
+      overflow: 'visible',
+      ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
     }}>
       <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
     </div>

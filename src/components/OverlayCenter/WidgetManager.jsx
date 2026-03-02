@@ -765,6 +765,49 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       mode="widget" />
                   </div>
                 )}
+
+                {/* ── Shadow Controls (all widgets) ── */}
+                <div className="wm-layout-panel">
+                  <div className="wm-layout-heading">
+                    <span className="wm-layout-icon">🌑</span>
+                    <span>Shadow</span>
+                  </div>
+                  <p className="wm-layout-hint">Add a drop shadow that follows the widget's visual outline.</p>
+                  <div className="wm-slider-grid">
+                    {[
+                      { label: 'Size',      field: 'shadowSize',      min: 0, max: 100, val: w.config?.shadowSize ?? 0 },
+                      { label: 'Intensity', field: 'shadowIntensity', min: 0, max: 100, val: w.config?.shadowIntensity ?? 0 },
+                    ].map(s => (
+                      <label key={s.field} className="wm-slider-field">
+                        <span className="wm-slider-label">{s.label}</span>
+                        <div className="wm-slider-row">
+                          <input
+                            type="range"
+                            className="wm-range"
+                            min={s.min}
+                            max={s.max}
+                            value={s.val}
+                            onChange={e => {
+                              const latest = widgets.find(x => x.id === w.id) || w;
+                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
+                            }}
+                          />
+                          <input
+                            type="number"
+                            className="wm-slider-num"
+                            min={s.min}
+                            max={s.max}
+                            value={s.val}
+                            onChange={e => {
+                              const latest = widgets.find(x => x.id === w.id) || w;
+                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
+                            }}
+                          />
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
           </>

@@ -35,6 +35,15 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const animClass = widget.is_visible ? `or-anim-in--${widget.animation || 'fade'}` : `or-anim-out--${widget.animation || 'fade'}`;
   const customCSS = widget.config?.custom_css || '';
 
+  /* ─── Configurable shadow via drop-shadow (follows visual outline) ─── */
+  const cfg = widget.config || {};
+  const ss = cfg.shadowSize ?? 0;
+  const si = cfg.shadowIntensity ?? 0;
+  const hasShadow = ss > 0 && si > 0;
+  const shadowFilter = hasShadow
+    ? `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))`
+    : undefined;
+
   const style = {
     position: 'absolute',
     left: widget.position_x,
@@ -44,7 +53,8 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     zIndex: widget.z_index || 1,
     animationDuration: `${(animSpeed || 1) * 0.35}s`,
     willChange: 'transform, opacity',
-    overflow: 'hidden',
+    overflow: 'visible',
+    filter: shadowFilter,
   };
 
   return (

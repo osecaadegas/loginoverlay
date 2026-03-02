@@ -104,6 +104,7 @@ export default function NavbarConfig({ config, onChange }) {
     'cryptoUpColor', 'cryptoDownColor', 'fontFamily', 'fontSize',
     'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
     'brightness', 'contrast', 'saturation',
+    'shadowSize', 'shadowIntensity',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
     'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
     'avatarSize', 'badgeSize',

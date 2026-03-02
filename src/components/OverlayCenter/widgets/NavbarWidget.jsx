@@ -164,14 +164,14 @@ export default function NavbarWidget({ config }) {
     background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(${accentColorRGB},0.06)`,
-    filter: filterStr, fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'visible',
     border: `1px solid rgba(255,255,255,0.08)`,
   } : isNeon ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
     background: `linear-gradient(135deg, ${accentColor}44, ${accentColor}11)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 0 30px ${accentColor}33, 0 0 60px ${accentColor}11, inset 0 0 20px ${accentColor}08`,
-    filter: filterStr, fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'visible',
     border: `1px solid ${accentColor}55`,
   } : isGlass ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
@@ -179,14 +179,14 @@ export default function NavbarWidget({ config }) {
     padding: `${borderWidth}px`,
     boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)`,
     backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-    filter: filterStr, fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'visible',
     border: `1px solid rgba(255,255,255,0.18)`,
   } : isRetro ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
     background: `${borderColor}`,
     padding: `${borderWidth}px`,
     boxShadow: `4px 4px 0 #000, 8px 8px 0 rgba(0,0,0,0.3)`,
-    filter: filterStr, fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'visible',
     border: `${borderWidth}px solid #000`,
     imageRendering: 'pixelated',
   } : {
@@ -194,7 +194,7 @@ export default function NavbarWidget({ config }) {
     background: `linear-gradient(to bottom, ${borderColor}e6, ${borderColor}cc)`,
     padding: `${borderWidth}px`,
     boxShadow: `0 18px 40px rgba(0,0,0,0.8)`,
-    filter: filterStr, fontFamily, overflow: 'visible',
+    fontFamily, overflow: 'visible',
   };
 
   const barInner = isMetal ? {
@@ -202,33 +202,33 @@ export default function NavbarWidget({ config }) {
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
     padding: '0 24px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', position: 'relative',
+    overflow: 'visible', position: 'relative', filter: filterStr,
   } : isNeon ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(170deg, ${bgColor} 0%, rgba(${accentColorRGB},0.04) 50%, ${bgColor} 100%)`,
     padding: '0 22px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', position: 'relative',
+    overflow: 'visible', position: 'relative', filter: filterStr,
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.7), rgba(${bgColorRGB},0.5))`,
     backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
     padding: '0 22px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', position: 'relative',
+    overflow: 'visible', position: 'relative', filter: filterStr,
   } : isRetro ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: Math.max(borderRadius - borderWidth, 0),
     background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
     padding: '0 16px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', position: 'relative',
+    overflow: 'visible', position: 'relative', filter: filterStr,
     borderTop: '2px solid rgba(255,255,255,0.15)',
   } : {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
     padding: '0 20px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible',
+    overflow: 'visible', filter: filterStr,
   };
 
   const sep = isMetal ? {
