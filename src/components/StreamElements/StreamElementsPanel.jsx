@@ -321,7 +321,7 @@ export default function StreamElementsPanel() {
               <p className="text-gray-500">No redemption items available</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-5">
               {redemptionItems.map(item => {
                 const canAfford = isConnected && points >= item.point_cost;
                 const isRedeeming = redeeming === item.id;
@@ -333,7 +333,7 @@ export default function StreamElementsPanel() {
                 return (
                   <div 
                     key={item.id} 
-                    className={`group flex flex-col bg-[#13161d] border border-white/[0.06] rounded-xl overflow-hidden transition-all duration-200 ${
+                    className={`group flex flex-col bg-[#1a1e27] border border-[#2a2f3a] rounded-xl overflow-hidden transition-all duration-200 ${
                       dimmed ? 'opacity-45' : 'hover:border-purple-500/40 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-purple-900/20'
                     }`}
                   >
