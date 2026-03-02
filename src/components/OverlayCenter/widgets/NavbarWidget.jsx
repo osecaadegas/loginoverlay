@@ -100,41 +100,70 @@ export default function NavbarWidget({ config, widgetId }) {
   }, [cryptoMode, activeCoins.length]);
 
   // Spotify "Now Playing" polling
+  // Poll whenever musicSource is spotify and we have tokens — showNowPlaying only gates the UI display
   useEffect(() => {
-    if (c.musicSource !== 'spotify' || !c.showNowPlaying) return;
+    if (c.musicSource !== 'spotify') return;
     if (!spotifyTokenRef.current) return;
 
-    const poll = async () => {
-      let token = spotifyTokenRef.current;
-      // Auto-refresh if expired
-      if (spotifyExpiresRef.current && Date.now() > spotifyExpiresRef.current - 60000) {
-        try {
-          const fresh = await refreshSpotifyToken(spotifyRefreshRef.current);
-          token = fresh.access_token;
-          spotifyTokenRef.current = fresh.access_token;
-          spotifyRefreshRef.current = fresh.refresh_token;
-          spotifyExpiresRef.current = fresh.expires_at;
-          // Persist refreshed tokens to DB so OBS reloads keep working
-          if (widgetId) {
-            supabase.from('overlay_widgets').select('config').eq('id', widgetId).single()
-              .then(({ data }) => {
-                if (data) {
-                  const updated = { ...data.config, spotify_access_token: fresh.access_token, spotify_refresh_token: fresh.refresh_token, spotify_expires_at: fresh.expires_at };
-                  supabase.from('overlay_widgets').update({ config: updated, updated_at: new Date().toISOString() }).eq('id', widgetId).then(() => {});
-                }
-              });
+    let stopped = false;
+
+    const persistTokens = (fresh) => {
+      if (!widgetId) return;
+      supabase.from('overlay_widgets').select('config').eq('id', widgetId).single()
+        .then(({ data }) => {
+          if (data) {
+            const updated = { ...data.config, spotify_access_token: fresh.access_token, spotify_refresh_token: fresh.refresh_token, spotify_expires_at: fresh.expires_at };
+            supabase.from('overlay_widgets').update({ config: updated, updated_at: new Date().toISOString() }).eq('id', widgetId);
           }
-        } catch { /* token refresh failed */ }
+        });
+    };
+
+    const doRefresh = async () => {
+      if (!spotifyRefreshRef.current) return false;
+      try {
+        const fresh = await refreshSpotifyToken(spotifyRefreshRef.current);
+        spotifyTokenRef.current = fresh.access_token;
+        spotifyRefreshRef.current = fresh.refresh_token;
+        spotifyExpiresRef.current = fresh.expires_at;
+        persistTokens(fresh);
+        return true;
+      } catch {
+        return false;
       }
+    };
+
+    const poll = async () => {
+      if (stopped) return;
+      let token = spotifyTokenRef.current;
       if (!token) return;
-      const np = await fetchNowPlaying(token);
-      setNowPlaying(np);
+
+      // Proactive refresh if token is about to expire (within 60s)
+      if (spotifyExpiresRef.current && Date.now() > spotifyExpiresRef.current - 60000) {
+        const ok = await doRefresh();
+        if (ok) token = spotifyTokenRef.current;
+      }
+
+      try {
+        const np = await fetchNowPlaying(token);
+        if (!stopped) setNowPlaying(np);
+      } catch (err) {
+        // 401 = token actually expired → force refresh and retry once
+        if (err.status === 401) {
+          const ok = await doRefresh();
+          if (ok && !stopped) {
+            try {
+              const np = await fetchNowPlaying(spotifyTokenRef.current);
+              if (!stopped) setNowPlaying(np);
+            } catch { /* still failed after refresh, give up this cycle */ }
+          }
+        }
+      }
     };
 
     poll();
     const id = setInterval(poll, 10000);
-    return () => clearInterval(id);
-  }, [c.musicSource, c.showNowPlaying, c.spotify_access_token]);
+    return () => { stopped = true; clearInterval(id); };
+  }, [c.musicSource, c.spotify_access_token, widgetId]);
 
   // Manual "Now Playing"
   const displayNowPlaying = c.musicSource === 'spotify' && nowPlaying

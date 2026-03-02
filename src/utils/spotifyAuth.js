@@ -166,13 +166,19 @@ export async function refreshSpotifyToken(refreshToken) {
 
 /**
  * Fetch currently playing track. Returns { artist, track, isPlaying, albumArt } or null.
+ * Throws on 401 so callers can trigger a token refresh.
  */
 export async function fetchNowPlaying(accessToken) {
   const res = await fetch('https://api.spotify.com/v1/me/player/currently-playing', {
     headers: { Authorization: `Bearer ${accessToken}` },
   });
 
-  if (res.status === 204 || res.status === 401) return null;
+  if (res.status === 204) return null;          // nothing playing
+  if (res.status === 401) {
+    const err = new Error('Spotify token expired');
+    err.status = 401;
+    throw err;
+  }
   if (!res.ok) return null;
 
   const data = await res.json();
