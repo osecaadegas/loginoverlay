@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { SpeedInsights } from '@vercel/speed-insights/react';
 import './App.css';
@@ -8,7 +8,6 @@ import { LanguageProvider } from './contexts/LanguageContext';
 import StreamElementsPanel from './components/StreamElements/StreamElementsPanel';
 import PointsManager from './components/PointsManager/PointsManager';
 import LandingPage from './components/LandingPage/LandingPage';
-import AdminPanel from './components/AdminPanel/AdminPanel';
 import Sidebar from './components/Sidebar/Sidebar';
 import OffersPage from './components/OffersPage/OffersPage';
 import AboutPage from './components/AboutPage/AboutPage';
@@ -18,10 +17,6 @@ import GiveawaysPage from './components/GiveawaysPage/GiveawaysPage';
 import { checkUserAccess } from './utils/adminUtils';
 import GiveawayPanel from './components/GiveawayPanel/GiveawayPanel';
 import TwitchChat from './components/TwitchChat/TwitchChat';
-import BlackjackPremium from './components/Blackjack/BlackjackPremium';
-import Mines from './components/Mines/Mines';
-import TheLife from './components/TheLife/TheLifeNew';
-import TheLifeJournal from './components/TheLife/pages/TheLifeJournal';
 import SlotManagerPage from './components/SlotManager/SlotManagerPage';
 import GiveawayPage from './components/GiveawayPanel/GiveawayPage';
 import { useStreamElements } from './context/StreamElementsContext';
@@ -30,10 +25,7 @@ import VoucherManager from './components/VoucherManager/VoucherManager';
 import VoucherRedeemPage from './components/VoucherRedeemPage/VoucherRedeemPage';
 import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
 import ProfilePage from './components/ProfilePage/ProfilePage';
-import DailyWheelPage from './components/DailyWheel/DailyWheelPage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
-import OverlayControlCenter from './components/OverlayCenter/OverlayControlCenter';
-import OverlayRenderer from './components/OverlayCenter/OverlayRenderer';
 import SpotifyCallback from './components/SpotifyCallback';
 import DeveloperPage from './components/DeveloperPage/DeveloperPage';
 import PricingPage from './components/Pricing/PricingPage';
@@ -41,6 +33,16 @@ import PrivacyPolicy from './components/Legal/PrivacyPolicy';
 import TermsOfService from './components/Legal/TermsOfService';
 import LoginPage from './components/Login/LoginPage';
 import CookieConsent from './components/CookieConsent/CookieConsent';
+
+/* ── Lazy-loaded heavy routes (code-split) ── */
+const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'));
+const BlackjackPremium = lazy(() => import('./components/Blackjack/BlackjackPremium'));
+const Mines = lazy(() => import('./components/Mines/Mines'));
+const TheLife = lazy(() => import('./components/TheLife/TheLifeNew'));
+const TheLifeJournal = lazy(() => import('./components/TheLife/pages/TheLifeJournal'));
+const DailyWheelPage = lazy(() => import('./components/DailyWheel/DailyWheelPage'));
+const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
+const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -604,6 +606,7 @@ function App() {
         <LanguageProvider>
           <BrowserRouter>
             <LayoutWrapper>
+              <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#94a3b8' }}>Loading...</div>}>
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/offers" element={<OffersPage />} />
@@ -657,6 +660,7 @@ function App() {
                 <Route path="/privacy" element={<PrivacyPolicy />} />
                 <Route path="/terms" element={<TermsOfService />} />
               </Routes>
+              </Suspense>
             </LayoutWrapper>
             <CookieConsent />
           </BrowserRouter>
