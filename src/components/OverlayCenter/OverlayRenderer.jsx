@@ -25,7 +25,7 @@ import './OverlayRenderer.css';
 import './widgets/builtinWidgets';
 
 // ─── Single widget wrapper with animation + scale-to-fit ───
-const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets }) {
+const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
 
@@ -34,6 +34,9 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const slotId = `ow-${widget.id}`;
   const animClass = widget.is_visible ? `or-anim-in--${widget.animation || 'fade'}` : `or-anim-out--${widget.animation || 'fade'}`;
   const customCSS = widget.config?.custom_css || '';
+
+  /* ─── Background widgets always fill the entire canvas ─── */
+  const isBg = widget.widget_type === 'background';
 
   /* ─── Configurable shadow via drop-shadow (follows visual outline) ─── */
   const cfg = widget.config || {};
@@ -46,10 +49,10 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
 
   const style = {
     position: 'absolute',
-    left: widget.position_x,
-    top: widget.position_y,
-    width: widget.width,
-    height: widget.height,
+    left: isBg ? 0 : widget.position_x,
+    top: isBg ? 0 : widget.position_y,
+    width: isBg ? canvasWidth : widget.width,
+    height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(animSpeed || 1) * 0.35}s`,
     willChange: 'transform, opacity',
@@ -208,6 +211,8 @@ export default function OverlayRenderer() {
           theme={theme}
           animSpeed={theme?.animation_speed}
           allWidgets={widgets}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
         />
       ))}
     </div>

@@ -11,11 +11,12 @@ import './widgets/builtinWidgets';
 const DEFAULT_W = 1920;
 const DEFAULT_H = 1080;
 
-const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets }) {
+const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   if (!Component) return null;
 
+  const isBg = widget.widget_type === 'background';
   const cfg = widget.config || {};
   const ss = cfg.shadowSize ?? 0;
   const si = cfg.shadowIntensity ?? 0;
@@ -24,10 +25,10 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets }) {
   return (
     <div style={{
       position: 'absolute',
-      left: widget.position_x,
-      top: widget.position_y,
-      width: widget.width,
-      height: widget.height,
+      left: isBg ? 0 : widget.position_x,
+      top: isBg ? 0 : widget.position_y,
+      width: isBg ? canvasWidth : widget.width,
+      height: isBg ? canvasHeight : widget.height,
       zIndex: widget.z_index || 1,
       overflow: 'visible',
       ...(hasShadow ? { filter: `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))` } : {}),
@@ -84,7 +85,7 @@ export default function OverlayPreview({ widgets, theme }) {
           position: 'relative',
         }}>
           {visibleWidgets.map(w => (
-            <PreviewSlot key={w.id} widget={w} theme={theme} allWidgets={widgets} />
+            <PreviewSlot key={w.id} widget={w} theme={theme} allWidgets={widgets} canvasWidth={CANVAS_W} canvasHeight={CANVAS_H} />
           ))}
           {visibleWidgets.length === 0 && (
             <div style={{
