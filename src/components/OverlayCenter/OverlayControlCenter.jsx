@@ -27,6 +27,7 @@ import CoinFlipConfig from './widgets/CoinFlipConfig';
 import PointSlotConfig from './widgets/PointSlotConfig';
 import SaltyWordsConfig from './widgets/SaltyWordsConfig';
 import PredictionsConfig from './widgets/PredictionsConfig';
+import PointWheelConfig from './widgets/PointWheelConfig';
 import ProfileSection from './ProfileSection';
 import './OverlayCenter.css';
 
@@ -210,6 +211,21 @@ function PredictionsPanel({ widgets, saveWidget, addWidget, loading }) {
     </div>
   );
   return <div className="oc-panel-section"><PredictionsConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
+}
+
+/* ── Inline wrapper: Point Wheel sidebar panel ── */
+function PointWheelPanel({ widgets, saveWidget, addWidget, loading }) {
+  const widget = widgets.find(w => w.widget_type === 'point_wheel');
+  const handleChange = (newConfig) => { if (widget) saveWidget({ ...widget, config: newConfig }); };
+  if (loading) return <div className="oc-panel-loading">Loading…</div>;
+  if (!widget) return (
+    <div className="oc-empty-panel">
+      <h2>🎡 Point Wheel</h2>
+      <p>No Point Wheel widget found. Add one to get started.</p>
+      <button className="oc-btn-primary" onClick={() => addWidget('point_wheel')}>+ Add Point Wheel Widget</button>
+    </div>
+  );
+  return <div className="oc-panel-section"><PointWheelConfig config={widget.config} onChange={handleChange} allWidgets={widgets} mode="sidebar" /></div>;
 }
 
 export default function OverlayControlCenter() {
@@ -538,6 +554,7 @@ export default function OverlayControlCenter() {
               { key: 'point_slot', icon: '🎰', label: 'Point Slot', desc: 'Slot machine with points' },
               { key: 'salty_words', icon: '🧂', label: 'Salty Words', desc: 'Word betting game' },
               { key: 'predictions', icon: '🔮', label: 'Predictions', desc: 'Two-outcome bets' },
+              { key: 'point_wheel', icon: '🎡', label: 'Point Wheel', desc: 'Multiplier wheel game' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -702,6 +719,9 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'predictions' && (
             <PredictionsPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
+          )}
+          {activePanel === 'point_wheel' && (
+            <PointWheelPanel widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'profile' && (
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />

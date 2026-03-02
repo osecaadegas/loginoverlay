@@ -740,6 +740,37 @@ registerWidget({
   },
 });
 
+// ─── 25. POINT WHEEL ───────────────────────────────────
+import PointWheelWidget from './PointWheelWidget';
+import PointWheelConfig from './PointWheelConfig';
+registerWidget({
+  type: 'point_wheel',
+  label: 'Point Wheel',
+  icon: '🎡',
+  description: 'Dual spinning wheels with combined multipliers — 70% no-payout chance',
+  category: 'community',
+  component: PointWheelWidget,
+  configPanel: PointWheelConfig,
+  styles: [
+    { id: 'v1', icon: '🏆', label: 'Casino Gold' },
+    { id: 'v2', icon: '💜', label: 'Neon Cyber' },
+    { id: 'v3', icon: '⚪', label: 'Minimal' },
+    { id: 'v4', icon: '🔩', label: 'Metallic' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    title: 'Point Wheel',
+    gameStatus: 'idle',
+    noPayoutChance: 70,
+    basePayout: 100,
+    minBet: 10,
+    maxBet: 10000,
+    accentColor: '#f59e0b',
+    textColor: '#ffffff',
+    fontFamily: "'Inter', sans-serif",
+  },
+});
+
 // ─── 20. SINGLE SLOT ──────────────────────────────────
 import SingleSlotWidget from './SingleSlotWidget';
 import SingleSlotConfig from './SingleSlotConfig';
