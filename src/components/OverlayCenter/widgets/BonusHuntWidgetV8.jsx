@@ -212,12 +212,6 @@ export default function BonusHuntWidgetV8({ config, theme }) {
                     </div>
                   )}
 
-                  {/* slot name + provider */}
-                  <div className="bhv8-card-info">
-                    <div className="bhv8-card-name">{slotName}</div>
-                    {provider && <div className="bhv8-card-provider">{provider}</div>}
-                  </div>
-
                   {/* opened result bar */}
                   {bonus.opened && (
                     <div className="bhv8-card-result">

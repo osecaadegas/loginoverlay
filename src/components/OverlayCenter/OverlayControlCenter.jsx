@@ -237,7 +237,7 @@ export default function OverlayControlCenter() {
     background:         ['imageUrl', 'videoUrl'],
     raid_shoutout:      ['soundUrl', 'showClip', 'showGame', 'showViewers'],
     spotify_now_playing: ['spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at', 'manualArtist', 'manualTrack', 'manualAlbumArt'],
-    single_slot:        ['slotName', 'provider', 'imageUrl', 'rtp', 'slotId', 'averageMulti', 'bestMulti', 'totalBonuses', 'bestWin', 'lastBet', 'lastPay', 'lastMulti', 'lastWinIndex'],
+    single_slot:        ['slotName', 'provider', 'imageUrl', 'rtp', 'slotId', 'currency', 'averageMulti', 'bestMulti', 'totalBonuses', 'bestWin', 'lastBet', 'lastPay', 'lastMulti', 'lastWinIndex'],
   }), []);
 
   /** Strip user-data keys from a widget config, keeping only styling/layout */
