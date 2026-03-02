@@ -102,8 +102,8 @@ export default function BonusHuntWidgetV3({ config, theme }) {
 
   /* ─── Pick data for front / back ─── */
   const frontBonus = bonuses[displayIdx % bonuses.length] || bonuses[0];
-  /* Back shows SAME slot so the name is visible when flipped */
-  const backBonus = frontBonus;
+  /* Back shows the NEXT slot — user sees slot name + stats when card flips */
+  const backBonus = bonuses[nextIdx % bonuses.length] || bonuses[0];
 
   /* ─── Root CSS variables for theming ─── */
   const rootStyle = {
