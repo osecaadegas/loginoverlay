@@ -73,7 +73,7 @@ const STEPS = [
   {
     target: null,
     title: '8. Connect Profiles 🔌',
-    body: 'Open the Navbar widget\'s settings to link your Spotify (Now Playing), Twitch, or Kick accounts. Other widgets can also have connection fields.',
+    body: 'Open the Profile section to connect Spotify, Twitch, or Kick. Tokens are automatically pushed to the Navbar and Spotify widgets when you connect.',
     position: 'center',
     page: 'widgets',
   },

@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { startSpotifyAuth } from '../../../utils/spotifyAuth';
 
 export default function SpotifyConfig({ config, onChange }) {
   const c = config || {};
   const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
   const [activeTab, setActiveTab] = useState('content');
-  const [spotifyLoading, setSpotifyLoading] = useState(false);
-  const [spotifyError, setSpotifyError] = useState('');
 
   const TABS = [
     { id: 'content', label: '🎵 Content' },
@@ -15,31 +11,6 @@ export default function SpotifyConfig({ config, onChange }) {
   ];
 
   const isConnected = !!c.spotify_access_token;
-
-  const connectSpotify = async () => {
-    setSpotifyLoading(true);
-    setSpotifyError('');
-    try {
-      const tokens = await startSpotifyAuth();
-      setMulti({
-        spotify_access_token:  tokens.access_token,
-        spotify_refresh_token: tokens.refresh_token,
-        spotify_expires_at:    tokens.expires_at,
-      });
-    } catch (err) {
-      setSpotifyError(err.message);
-    } finally {
-      setSpotifyLoading(false);
-    }
-  };
-
-  const disconnectSpotify = () => {
-    setMulti({
-      spotify_access_token:  null,
-      spotify_refresh_token: null,
-      spotify_expires_at:    null,
-    });
-  };
 
   return (
     <div className="nb-config">
@@ -58,23 +29,17 @@ export default function SpotifyConfig({ config, onChange }) {
         <div className="nb-section">
           <h4 className="nb-subtitle">Spotify Connection</h4>
 
-          {!isConnected ? (
-            <button className="nb-spotify-btn nb-spotify-btn--connect"
-              onClick={connectSpotify} disabled={spotifyLoading}>
-              {spotifyLoading ? '⏳ Connecting…' : '🟢 Connect Spotify'}
-            </button>
-          ) : (
+          {isConnected ? (
             <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
               <span style={{ fontSize: 12, color: '#1DB954' }}>✓ Connected</span>
-              <button className="nb-spotify-btn nb-spotify-btn--disconnect"
-                onClick={disconnectSpotify}>
-                Disconnect
-              </button>
+              <span style={{ fontSize: 11, color: '#64748b' }}>Managed in Profile</span>
             </div>
-          )}
-
-          {spotifyError && (
-            <p style={{ fontSize: 11, color: '#ff4444', marginTop: 6 }}>{spotifyError}</p>
+          ) : (
+            <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.04)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
+              <p style={{ fontSize: 12, color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+                🎵 Connect Spotify in the <b style={{ color: '#e2e8f0' }}>Profile</b> section, then click <b style={{ color: '#e2e8f0' }}>Sync</b> to push tokens here.
+              </p>
+            </div>
           )}
 
           <h4 className="nb-subtitle" style={{ marginTop: 16 }}>Manual Fallback</h4>

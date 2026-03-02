@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { startSpotifyAuth } from '../../../utils/spotifyAuth';
 
 const AVAILABLE_CRYPTOS = [
   { id: 'btc', label: 'Bitcoin (BTC)' },
@@ -32,8 +31,6 @@ export default function NavbarConfig({ config, onChange }) {
   const c = config || {};
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('setup');
-  const [spotifyLoading, setSpotifyLoading] = useState(false);
-  const [spotifyError, setSpotifyError] = useState('');
 
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
@@ -64,33 +61,7 @@ export default function NavbarConfig({ config, onChange }) {
     });
   };
 
-  const connectSpotify = async () => {
-    setSpotifyLoading(true);
-    setSpotifyError('');
-    try {
-      const tokens = await startSpotifyAuth();
-      setMulti({
-        spotify_access_token: tokens.access_token,
-        spotify_refresh_token: tokens.refresh_token,
-        spotify_expires_at: tokens.expires_at,
-        musicSource: 'spotify',
-        showNowPlaying: true,
-      });
-    } catch (err) {
-      setSpotifyError(err.message);
-    } finally {
-      setSpotifyLoading(false);
-    }
-  };
 
-  const disconnectSpotify = () => {
-    setMulti({
-      spotify_access_token: null,
-      spotify_refresh_token: null,
-      spotify_expires_at: null,
-      musicSource: 'manual',
-    });
-  };
 
   const toggleCrypto = (id) => {
     const current = c.cryptoCoins || [];
@@ -251,7 +222,7 @@ export default function NavbarConfig({ config, onChange }) {
             </label>
           )}
 
-          {/* ─── Spotify (inline, no separate tab) ─── */}
+          {/* ─── Spotify status (connect via Profile) ─── */}
           {c.showNowPlaying && (
             <>
               <h4 className="nb-subtitle" style={{ marginTop: 14 }}>🎵 Music Source</h4>
@@ -259,7 +230,7 @@ export default function NavbarConfig({ config, onChange }) {
                 {c.spotify_access_token ? (
                   <div className="nb-spotify-connected">
                     <span className="nb-spotify-status">✅ Spotify Connected</span>
-                    <button className="oc-btn oc-btn--sm oc-btn--danger" onClick={() => { disconnectSpotify(); set('musicSource', 'manual'); }}>Disconnect</button>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>Managed in Profile</span>
                   </div>
                 ) : (
                   <div className="nb-spotify-connect-card">
@@ -267,15 +238,11 @@ export default function NavbarConfig({ config, onChange }) {
                       <span className="nb-spotify-connect-icon">🎵</span>
                       <div>
                         <strong>Spotify</strong>
-                        <span>Auto-display your current track</span>
+                        <span style={{ fontSize: 11, color: '#94a3b8' }}>Connect via <b>Profile</b> section, then click <b>Sync</b></span>
                       </div>
                     </div>
-                    <button className="nb-spotify-btn" onClick={() => { set('musicSource', 'spotify'); connectSpotify(); }} disabled={spotifyLoading}>
-                      {spotifyLoading ? 'Connecting...' : 'Connect Spotify'}
-                    </button>
                   </div>
                 )}
-                {spotifyError && <p className="nb-error">{spotifyError}</p>}
               </div>
 
               {/* Music display style */}

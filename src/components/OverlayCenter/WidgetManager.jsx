@@ -629,7 +629,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               <li><strong>Sync colors</strong> — set Navbar first, then 🔗 Sync Colors to apply everywhere.</li>
               <li><strong>Toggle</strong> — click LIVE / OFF badge to show or hide a widget.</li>
               <li><strong>Background &amp; effects</strong> — add the Background widget and open its settings for gradients, images, particles &amp; blur.</li>
-              <li><strong>Connect profiles</strong> — open Navbar settings to link your Spotify, Twitch, or Kick accounts.</li>
+              <li><strong>Connect profiles</strong> — open the Profile section to link your Spotify, Twitch, or Kick accounts; tokens sync to widgets automatically.</li>
               <li><strong>Bonus Hunt &amp; Tournament</strong> — use the sidebar pages to fill in session data; widgets update in real-time.</li>
               <li><strong>Full overlay in OBS</strong> — copy the OBS URL from the sidebar and add it as a Browser Source.</li>
               <li><strong>Single widget in OBS</strong> — open ⚙️ settings, expand "OBS Browser Source URL", and copy the link.</li>

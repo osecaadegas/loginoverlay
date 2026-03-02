@@ -136,6 +136,23 @@ export default function ProfileSection({ widgets, saveWidget }) {
     return list;
   }, [profile]);
 
+  /* ── Push Spotify tokens to all relevant widgets immediately ── */
+  const pushSpotifyTokens = useCallback(async (tokens) => {
+    if (!widgets || !saveWidget) return;
+    const tokenPayload = {
+      spotify_access_token: tokens.access_token,
+      spotify_refresh_token: tokens.refresh_token,
+      spotify_expires_at: tokens.expires_at,
+    };
+    for (const w of widgets) {
+      if (w.widget_type === 'navbar') {
+        await saveWidget({ ...w, config: { ...w.config, ...tokenPayload, musicSource: 'spotify', showNowPlaying: true } });
+      } else if (w.widget_type === 'spotify_now_playing') {
+        await saveWidget({ ...w, config: { ...w.config, ...tokenPayload } });
+      }
+    }
+  }, [widgets, saveWidget]);
+
   /* ── Connect Spotify via PKCE popup ── */
   const connectSpotify = async () => {
     setSpotifyLoading(true);
@@ -152,6 +169,8 @@ export default function ProfileSection({ widgets, saveWidget }) {
         spotify_refresh_token: tokens.refresh_token,
         spotify_expires_at: tokens.expires_at,
       }));
+      /* Auto-push tokens to navbar & Spotify widgets */
+      await pushSpotifyTokens(tokens);
     } catch (err) {
       setSpotifyError(err.message || 'Spotify connection failed');
     } finally {
@@ -159,13 +178,24 @@ export default function ProfileSection({ widgets, saveWidget }) {
     }
   };
 
-  const disconnectSpotify = () => {
+  const disconnectSpotify = async () => {
     setProfile(prev => ({
       ...prev,
       spotify_access_token: '',
       spotify_refresh_token: '',
       spotify_expires_at: null,
     }));
+    /* Clear tokens from all widgets too */
+    if (widgets && saveWidget) {
+      const clearPayload = { spotify_access_token: null, spotify_refresh_token: null, spotify_expires_at: null };
+      for (const w of widgets) {
+        if (w.widget_type === 'navbar') {
+          await saveWidget({ ...w, config: { ...w.config, ...clearPayload, musicSource: 'manual' } });
+        } else if (w.widget_type === 'spotify_now_playing') {
+          await saveWidget({ ...w, config: { ...w.config, ...clearPayload } });
+        }
+      }
+    }
   };
 
   /* ── Sync profile → all widgets ── */
@@ -333,7 +363,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             </div>
             {spotifyError && <p style={{ fontSize: '0.74rem', color: '#f87171', margin: 0 }}>{spotifyError}</p>}
             <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
-              Shows your currently playing track on Navbar &amp; Spotify widgets. Click Sync below to push tokens.
+              Connecting here auto-syncs to your Navbar &amp; Spotify widgets.
             </p>
           </div>
 
