@@ -2,8 +2,10 @@
  * CoinFlipConfig.jsx — Streamer control panel for the Coin Flip community game.
  * Start/stop bets, flip the coin, view participants, customize appearance.
  * Supports chat betting via !head / !tails (Twitch + Kick).
+ * Integrates StreamElements points for real point deductions & payouts.
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useStreamElements } from '../../../context/StreamElementsContext';
 
 /* ─── Twitch IRC (anonymous / read-only) ─── */
 function useTwitchChat(channel, onMessage) {
@@ -88,6 +90,44 @@ export default function CoinFlipConfig({ config, onChange }) {
   const set = (k, v) => onChange({ ...c, [k]: v });
   const setMulti = (obj) => onChange({ ...c, ...obj });
   const [tab, setTab] = useState('game');
+  const [payoutProcessing, setPayoutProcessing] = useState(false);
+  const [payoutResult, setPayoutResult] = useState(null); // { winners:[], losers:[], errors:[] }
+
+  /* ── StreamElements integration ── */
+  let seCtx = null;
+  try { seCtx = useStreamElements(); } catch { /* not inside provider — graceful fallback */ }
+  const seAccount = seCtx?.seAccount;
+  const seConnected = !!seAccount?.se_channel_id && !!seAccount?.se_jwt_token;
+
+  /** Modify any viewer's points using the streamer's SE credentials */
+  const modifyViewerPoints = async (username, amount) => {
+    if (!seConnected) return { success: false, error: 'SE not connected' };
+    try {
+      const res = await fetch(
+        `https://api.streamelements.com/kappa/v2/points/${seAccount.se_channel_id}/${username}/${amount}`,
+        { method: 'PUT', headers: { 'Authorization': `Bearer ${seAccount.se_jwt_token}`, 'Accept': 'application/json' } }
+      );
+      if (!res.ok) throw new Error(`SE API ${res.status}`);
+      const data = await res.json();
+      return { success: true, newBalance: data.newAmount ?? data.points };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  };
+
+  /** Check a viewer's current point balance */
+  const getViewerPoints = async (username) => {
+    if (!seConnected) return null;
+    try {
+      const res = await fetch(
+        `https://api.streamelements.com/kappa/v2/points/${seAccount.se_channel_id}/${username}`,
+        { headers: { 'Authorization': `Bearer ${seAccount.se_jwt_token}`, 'Accept': 'application/json' } }
+      );
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.points ?? 0;
+    } catch { return null; }
+  };
 
   const status = c.gameStatus || 'idle';
   const chatBets = c._chatBets || {};
@@ -97,6 +137,7 @@ export default function CoinFlipConfig({ config, onChange }) {
   const betsTails = tailsBettors.reduce((s, [, b]) => s + b.amount, 0);
   const totalPool = betsHeads + betsTails;
   const history = c.flipHistory || [];
+  const pointPayoutsEnabled = !!c.pointPayoutsEnabled && seConnected;
 
   /* ── Refs for chat bet accumulation ── */
   const chatBetsRef = useRef(chatBets);
@@ -154,11 +195,51 @@ export default function CoinFlipConfig({ config, onChange }) {
     });
   }, [chatActive, c.twitchEnabled, c.twitchChannel, c.kickEnabled, c.kickChannelId]);
 
+  /* ── Process SE payouts after flip ── */
+  const processPayouts = async (result) => {
+    const bets = chatBetsRef.current;
+    const entries = Object.entries(bets);
+    if (entries.length === 0 || !pointPayoutsEnabled) return;
+
+    setPayoutProcessing(true);
+    const winners = [];
+    const losers = [];
+    const errors = [];
+
+    /* Process all bets concurrently — losers get deducted, winners get awarded */
+    const promises = entries.map(async ([username, bet]) => {
+      if (bet.side === result) {
+        // Winner: award +bet.amount (net profit — they keep their original + win same)
+        const res = await modifyViewerPoints(username, bet.amount);
+        if (res.success) {
+          winners.push({ name: username, amount: bet.amount, balance: res.newBalance });
+        } else {
+          errors.push({ name: username, error: res.error, side: 'win' });
+        }
+      } else {
+        // Loser: deduct -bet.amount
+        const res = await modifyViewerPoints(username, -bet.amount);
+        if (res.success) {
+          losers.push({ name: username, amount: bet.amount, balance: res.newBalance });
+        } else {
+          errors.push({ name: username, error: res.error, side: 'lose' });
+        }
+      }
+    });
+
+    await Promise.allSettled(promises);
+    setPayoutResult({ winners, losers, errors });
+    setPayoutProcessing(false);
+  };
+
   /* ── Game actions ── */
-  const openBets = () => setMulti({
-    gameStatus: 'open', result: null, _chatBets: {}, flipping: false,
-    lastWinner: '', lastWinAmount: 0, _prevResult: c.result || 'heads',
-  });
+  const openBets = () => {
+    setPayoutResult(null);
+    setMulti({
+      gameStatus: 'open', result: null, _chatBets: {}, flipping: false,
+      lastWinner: '', lastWinAmount: 0, _prevResult: c.result || 'heads',
+    });
+  };
   const closeBets = () => setMulti({ gameStatus: 'idle', _chatBets: {} });
 
   const flipCoin = () => {
@@ -177,19 +258,18 @@ export default function CoinFlipConfig({ config, onChange }) {
       _flipStart: Date.now(),
       _prevResult: c.result || 'heads',
     });
-    // After animation, reveal result
-    setTimeout(() => {
-      const winners = Object.entries(chatBetsRef.current)
+    // After animation, reveal result & process payouts
+    setTimeout(async () => {
+      const allBets = chatBetsRef.current;
+      const winnersList = Object.entries(allBets)
         .filter(([, b]) => b.side === result)
         .map(([name, b]) => ({ name, amount: b.amount }));
-      const losers = Object.entries(chatBetsRef.current)
-        .filter(([, b]) => b.side !== result);
       const newEntry = {
         result,
         time: new Date().toLocaleTimeString(),
         pool: totalPool,
-        winners: winners.length,
-        totalBettors: Object.keys(chatBetsRef.current).length,
+        winners: winnersList.length,
+        totalBettors: Object.keys(allBets).length,
       };
       setMulti({
         result,
@@ -197,12 +277,17 @@ export default function CoinFlipConfig({ config, onChange }) {
         gameStatus: 'result',
         flipHistory: [newEntry, ...history].slice(0, 30),
       });
+      // Process SE point payouts if enabled
+      if (pointPayoutsEnabled && Object.keys(allBets).length > 0) {
+        await processPayouts(result);
+      }
     }, 2800);
   };
 
-  const resetGame = () => setMulti({
-    gameStatus: 'idle', result: null, flipping: false, _chatBets: {},
-  });
+  const resetGame = () => {
+    setPayoutResult(null);
+    setMulti({ gameStatus: 'idle', result: null, flipping: false, _chatBets: {} });
+  };
 
   const tabs = [
     { id: 'game', label: '🎮 Game' },
@@ -281,6 +366,60 @@ export default function CoinFlipConfig({ config, onChange }) {
             )}
           </div>
 
+          {/* Payout processing indicator */}
+          {payoutProcessing && (
+            <div style={{
+              padding: '10px 12px', borderRadius: 8, marginBottom: 8,
+              background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)',
+              fontSize: 12, color: '#facc15', fontWeight: 600, textAlign: 'center',
+            }}>
+              ⏳ Processing SE point payouts...
+            </div>
+          )}
+
+          {/* Payout results */}
+          {payoutResult && !payoutProcessing && (
+            <div style={{
+              padding: '10px 12px', borderRadius: 8, marginBottom: 8,
+              background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)',
+              fontSize: 11, color: '#94a3b8',
+            }}>
+              <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 12, marginBottom: 6 }}>💰 Payouts Complete</div>
+              {payoutResult.winners.length > 0 && (
+                <div style={{ marginBottom: 4 }}>
+                  <span style={{ color: '#22c55e', fontWeight: 600 }}>Winners ({payoutResult.winners.length}):</span>
+                  {payoutResult.winners.slice(0, 10).map(w => (
+                    <div key={w.name} style={{ paddingLeft: 8 }}>
+                      {w.name}: <span style={{ color: '#22c55e' }}>+{w.amount.toLocaleString()}</span>
+                      {w.balance != null && <span style={{ color: '#64748b' }}> (bal: {w.balance.toLocaleString()})</span>}
+                    </div>
+                  ))}
+                  {payoutResult.winners.length > 10 && <div style={{ paddingLeft: 8, color: '#64748b' }}>...and {payoutResult.winners.length - 10} more</div>}
+                </div>
+              )}
+              {payoutResult.losers.length > 0 && (
+                <div style={{ marginBottom: 4 }}>
+                  <span style={{ color: '#f87171', fontWeight: 600 }}>Losers ({payoutResult.losers.length}):</span>
+                  {payoutResult.losers.slice(0, 10).map(l => (
+                    <div key={l.name} style={{ paddingLeft: 8 }}>
+                      {l.name}: <span style={{ color: '#f87171' }}>-{l.amount.toLocaleString()}</span>
+                      {l.balance != null && <span style={{ color: '#64748b' }}> (bal: {l.balance.toLocaleString()})</span>}
+                    </div>
+                  ))}
+                  {payoutResult.losers.length > 10 && <div style={{ paddingLeft: 8, color: '#64748b' }}>...and {payoutResult.losers.length - 10} more</div>}
+                </div>
+              )}
+              {payoutResult.errors.length > 0 && (
+                <div>
+                  <span style={{ color: '#f59e0b', fontWeight: 600 }}>⚠️ Errors ({payoutResult.errors.length}):</span>
+                  {payoutResult.errors.map((e, i) => (
+                    <div key={i} style={{ paddingLeft: 8, color: '#f59e0b' }}>{e.name}: {e.error}</div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
           <label className="cg-config__field">
             <span>Min Bet</span>
             <input type="number" value={c.minBet || 10} onChange={e => set('minBet', parseInt(e.target.value) || 10)} />
@@ -309,12 +448,12 @@ export default function CoinFlipConfig({ config, onChange }) {
             Optionally add an amount: <b style={{ color: '#a78bfa' }}>!head 500</b>
           </p>
 
-          {/* Enable toggle */}
+          {/* Chat betting toggle */}
           <label style={{
             display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
             background: chatBettingEnabled ? 'rgba(34,197,94,0.08)' : 'rgba(255,255,255,0.03)',
             border: `1px solid ${chatBettingEnabled ? 'rgba(34,197,94,0.3)' : 'rgba(255,255,255,0.06)'}`,
-            borderRadius: 8, cursor: 'pointer', marginBottom: 12, transition: 'all 0.2s',
+            borderRadius: 8, cursor: 'pointer', marginBottom: 8, transition: 'all 0.2s',
           }}>
             <input type="checkbox" checked={chatBettingEnabled}
               onChange={e => set('chatBettingEnabled', e.target.checked)}
@@ -324,6 +463,45 @@ export default function CoinFlipConfig({ config, onChange }) {
               {chatBettingEnabled ? '● Chat Betting Enabled' : '○ Chat Betting Disabled'}
             </span>
           </label>
+
+          {/* SE Point payouts toggle */}
+          <label style={{
+            display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+            background: c.pointPayoutsEnabled ? 'rgba(168,85,247,0.08)' : 'rgba(255,255,255,0.03)',
+            border: `1px solid ${c.pointPayoutsEnabled ? 'rgba(168,85,247,0.3)' : 'rgba(255,255,255,0.06)'}`,
+            borderRadius: 8, cursor: 'pointer', marginBottom: 12, transition: 'all 0.2s',
+            opacity: seConnected ? 1 : 0.5,
+          }}>
+            <input type="checkbox" checked={!!c.pointPayoutsEnabled}
+              onChange={e => set('pointPayoutsEnabled', e.target.checked)}
+              disabled={!seConnected}
+              style={{ accentColor: '#a855f7' }}
+            />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+              <span style={{ fontWeight: 600, fontSize: 13, color: c.pointPayoutsEnabled && seConnected ? '#a855f7' : '#94a3b8' }}>
+                {c.pointPayoutsEnabled && seConnected ? '● SE Point Payouts On' : '○ SE Point Payouts Off'}
+              </span>
+              <span style={{ fontSize: 10, color: '#64748b' }}>
+                {seConnected
+                  ? 'Losers lose their bet, winners gain +bet amount'
+                  : '⚠️ Connect StreamElements in Profile first'}
+              </span>
+            </div>
+          </label>
+
+          {/* SE connection status pill */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
+            borderRadius: 6, marginBottom: 12, fontSize: 11,
+            background: seConnected ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+            border: `1px solid ${seConnected ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}`,
+            color: seConnected ? '#22c55e' : '#f87171',
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: seConnected ? '#22c55e' : '#ef4444' }} />
+            <span style={{ fontWeight: 600 }}>
+              StreamElements {seConnected ? `● Connected (${seAccount.se_username || seAccount.se_channel_id})` : '○ Not connected'}
+            </span>
+          </div>
 
           {/* Platform status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
