@@ -25,10 +25,19 @@
   font-family: var(--ov-font, 'Inter', sans-serif);
   color: var(--ov-text, #ffffff);
   transform-origin: top left;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+
+  /* ── Text rendering polish (stream → mobile readability) ── */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  -webkit-text-size-adjust: 100%;
+
+  /* ── GPU compositing – backface-hidden gives sharper layer compositing ── */
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+
+  /* ── Subtle text shadow so letters survive video compression ── */
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.18);
 }
 
 /* ─── Texture overlay ─── */
@@ -72,6 +81,9 @@
   position: absolute;
   will-change: transform, opacity;
   transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  text-rendering: geometricPrecision;
 }
 
 /* ─── Widget base glass card ─── */

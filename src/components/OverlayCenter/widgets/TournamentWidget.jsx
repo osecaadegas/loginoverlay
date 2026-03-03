@@ -510,7 +510,7 @@ function TournamentWidget({ config, theme }) {
             borderRadius: '50%',
             background: isCurrentMatch ? `${swordColor}20` : 'rgba(255,255,255,0.04)',
             border: `1px solid ${isCurrentMatch ? swordColor : divider}`,
-            fontSize: 11, fontWeight: 800,
+            fontSize: 13, fontWeight: 800,
             color: isCurrentMatch ? swordColor : '#64748b',
           }}>
             {hasWinner ? '✕' : 'VS'}
@@ -540,7 +540,7 @@ function TournamentWidget({ config, theme }) {
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ fontSize: 11, fontWeight: 700, color: accent }}>{completedMatches}/{totalMatches}</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: accent }}>{completedMatches}/{totalMatches}</span>
             <div style={{ width: 48, height: 4, borderRadius: 2, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
               <div style={{ width: `${pct}%`, height: '100%', borderRadius: 2, background: accent, transition: 'width 0.3s' }} />
             </div>
@@ -551,7 +551,7 @@ function TournamentWidget({ config, theme }) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16,
           padding: '6px 14px', borderBottom: `1px solid ${divider}`,
-          fontSize: 11, color: subText, fontWeight: 600, fontFamily,
+          fontSize: 13, color: subText, fontWeight: 600, fontFamily,
         }}>
           <span>👥 <strong style={{ color: nameColor }}>{playerCount}</strong> Players</span>
           <span>🏆 Best of <strong style={{ color: nameColor }}>{formatLabel}</strong></span>
@@ -572,7 +572,7 @@ function TournamentWidget({ config, theme }) {
                   }}>
                     <div style={{ flex: 1, height: 1, background: isFinal ? accent : divider }} />
                     <span style={{
-                      fontSize: 10, fontWeight: 700, letterSpacing: '1.2px',
+                      fontSize: 12, fontWeight: 700, letterSpacing: '1.2px',
                       textTransform: 'uppercase', fontFamily,
                       color: isFinal ? accent : subText,
                     }}>
@@ -646,7 +646,7 @@ function TournamentWidget({ config, theme }) {
                   onClick={() => setDisplayPhase(p)}
                   style={{
                     padding: '5px 14px',
-                    fontSize: 11, fontWeight: 700, fontFamily,
+                    fontSize: 13, fontWeight: 700, fontFamily,
                     textTransform: 'uppercase', letterSpacing: '0.6px',
                     background: isActive ? tabActiveBg : 'transparent',
                     color: isActive ? tabActiveColor : tabColor,

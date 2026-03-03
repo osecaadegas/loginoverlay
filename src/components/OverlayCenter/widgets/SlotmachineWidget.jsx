@@ -83,7 +83,7 @@ function SlotmachineWidget({ config }) {
         border:'3px solid rgba(255,255,255,0.1)', gap:'3%', padding:'4% 3%',
         boxShadow:'0 8px 40px rgba(0,0,0,0.5), inset 0 2px 0 rgba(255,255,255,0.2)',
       }}>
-        <div style={{ fontSize:'clamp(7px,2.5cqi,13px)', fontWeight:900, color:'rgba(255,255,255,0.6)', letterSpacing:'0.2em', textTransform:'uppercase' }}>SLOT MACHINE</div>
+        <div style={{ fontSize:'clamp(9px,3cqi,15px)', fontWeight:900, color:'rgba(255,255,255,0.6)', letterSpacing:'0.2em', textTransform:'uppercase' }}>SLOT MACHINE</div>
         <div style={{
           display:'flex', gap:'2%', padding:'3%', background:'rgba(0,0,0,0.6)',
           borderRadius:'clamp(6px,2cqi,12px)', border:'2px inset rgba(255,255,255,0.1)',
@@ -120,7 +120,7 @@ function SlotmachineWidget({ config }) {
         gap:'4%', padding:'4%',
         animation: isWin && !spinning ? 'sm-win-flash 1s ease-in-out infinite' : 'none',
       }}>
-        <div style={{ fontSize:'clamp(7px,2.5cqi,12px)', fontWeight:800, color:accent, letterSpacing:'0.25em', textShadow:`0 0 8px ${accent}` }}>★ CASINO ★</div>
+        <div style={{ fontSize:'clamp(9px,3cqi,14px)', fontWeight:800, color:accent, letterSpacing:'0.25em', textShadow:`0 0 8px ${accent}` }}>★ CASINO ★</div>
         <div style={{ display:'flex', gap:'3%', width:'90%', height:'55%' }}>
           {reels.map((sym, i) => (
             <Reel key={i} sym={sym} idx={i} reelStyle={{
@@ -166,7 +166,7 @@ function SlotmachineWidget({ config }) {
         gap:'3%', padding:'4% 3%',
       }}>
         <div style={{
-          fontSize:'clamp(7px,2.8cqi,14px)', fontWeight:900, letterSpacing:'0.15em',
+          fontSize:'clamp(9px,3.2cqi,16px)', fontWeight:900, letterSpacing:'0.15em',
           background:'linear-gradient(90deg, #f59e0b, #fde68a, #f59e0b)', backgroundSize:'200%',
           WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
           animation:'sm-shine 3s linear infinite',

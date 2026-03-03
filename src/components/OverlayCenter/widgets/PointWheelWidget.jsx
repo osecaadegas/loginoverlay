@@ -134,7 +134,7 @@ function PointWheelWidget({ config }) {
                 top: `${50 - radiusPct}%`,
                 left: '50%',
                 transform: 'translate(-50%, -50%)',
-                fontSize: fontSize || (s.multi >= 10 ? 'clamp(5px, 1.8cqi, 10px)' : 'clamp(6px, 2.2cqi, 12px)'),
+                fontSize: fontSize || (s.multi >= 10 ? 'clamp(7px, 1.8cqi, 12px)' : 'clamp(8px, 2.2cqi, 14px)'),
                 fontWeight: 900,
                 fontFamily: font,
                 color: s.multi === 0 ? 'rgba(255,255,255,0.3)' : '#fff',
@@ -169,7 +169,7 @@ function PointWheelWidget({ config }) {
         background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)',
         borderRadius: 8, padding: '5px 14px',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        fontFamily: font, fontSize: 'clamp(7px, 2cqi, 11px)',
+        fontFamily: font, fontSize: 'clamp(9px, 2.5cqi, 14px)',
         color: 'rgba(255,255,255,0.7)', flexShrink: 0,
         border: '1px solid rgba(255,255,255,0.06)',
       }}>
@@ -203,7 +203,7 @@ function PointWheelWidget({ config }) {
           <span style={{ fontSize: 'clamp(9px, 3cqi, 18px)', fontWeight: 800, color: accent }}>
             {outerMulti}x
           </span>
-          <span style={{ fontSize: 'clamp(7px, 1.8cqi, 12px)', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>×</span>
+          <span style={{ fontSize: 'clamp(9px, 2cqi, 14px)', color: 'rgba(255,255,255,0.35)', fontWeight: 600 }}>×</span>
           <span style={{ fontSize: 'clamp(9px, 3cqi, 18px)', fontWeight: 800, color: '#06b6d4' }}>
             {innerMulti}x
           </span>
@@ -219,7 +219,7 @@ function PointWheelWidget({ config }) {
         </div>
         {/* Payout info */}
         {isWin && result.payout > 0 && (
-          <div style={{ fontSize: 'clamp(6px, 1.8cqi, 11px)', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
+          <div style={{ fontSize: 'clamp(8px, 2.2cqi, 14px)', color: 'rgba(255,255,255,0.45)', fontWeight: 600 }}>
             +{result.payout.toLocaleString()} pts each
           </div>
         )}
@@ -486,7 +486,7 @@ function PointWheelWidget({ config }) {
                   position: 'absolute',
                   top: `${50 - radiusPct}%`, left: '50%',
                   transform: 'translate(-50%, -50%)',
-                  fontSize: s.multi >= 10 ? 'clamp(5px, 1.8cqi, 10px)' : 'clamp(6px, 2.2cqi, 12px)',
+                  fontSize: s.multi >= 10 ? 'clamp(7px, 1.8cqi, 12px)' : 'clamp(8px, 2.2cqi, 14px)',
                   fontWeight: 800, fontFamily: font,
                   color: s.multi === 0 ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.7)',
                   whiteSpace: 'nowrap',
