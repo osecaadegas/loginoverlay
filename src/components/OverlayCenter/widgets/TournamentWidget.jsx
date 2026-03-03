@@ -18,13 +18,14 @@ function TournamentWidget({ config, theme }) {
   const matches = data.matches || [];
 
   /* ─── Layout mode ─── */
-  const layout = c.layout || 'grid'; // 'grid' | 'showcase' | 'vertical' | 'bracket' | 'neon' | 'minimal'
+  const layout = c.layout || 'grid'; // 'grid' | 'showcase' | 'vertical' | 'bracket' | 'neon' | 'minimal' | 'arena'
   const isNeonLayout = layout === 'neon';
   const isMinimalLayout = layout === 'minimal';
+  const isArenaLayout = layout === 'arena';
 
   /* ─── Style config ─── */
   const showBg = c.showBg !== false;
-  const bgColor = showBg ? (c.bgColor || (isNeonLayout ? '#050510' : isMinimalLayout ? '#0a0a10' : '#13151e')) : 'transparent';
+  const bgColor = showBg ? (c.bgColor || (isArenaLayout ? '#1a1040' : isNeonLayout ? '#050510' : isMinimalLayout ? '#0a0a10' : '#13151e')) : 'transparent';
   const cardBg = c.cardBg || (isNeonLayout ? 'rgba(0,255,200,0.04)' : isMinimalLayout ? 'rgba(255,255,255,0.03)' : '#1a1d2e');
   const cardBorder = c.cardBorder || (isNeonLayout ? 'rgba(0,255,200,0.2)' : isMinimalLayout ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.08)');
   const cardRadius = c.cardRadius ?? (isMinimalLayout ? 4 : 10);
@@ -591,6 +592,230 @@ function TournamentWidget({ config, theme }) {
   };
 
   /* ═══════════════════════════════════════════════════════════════
+     ARENA — Battle Arena style: large match rows, VS badge, WINNER
+     ═══════════════════════════════════════════════════════════════ */
+  const renderArena = () => {
+    const allMatches = phases.flatMap(p => p.matches);
+    const totalBets = allMatches.reduce((s, m) => {
+      const d = m.data || {};
+      return s + (parseFloat(d.player1?.bet) || 0) + (parseFloat(d.player2?.bet) || 0);
+    }, 0);
+    const totalPayout = allMatches.reduce((s, m) => {
+      const d = m.data || {};
+      const p1p = data.format === 'bo3'
+        ? (parseFloat(d.player1?.payout1)||0) + (parseFloat(d.player1?.payout2)||0) + (parseFloat(d.player1?.payout3)||0)
+        : (parseFloat(d.player1?.payout)||0);
+      const p2p = data.format === 'bo3'
+        ? (parseFloat(d.player2?.payout1)||0) + (parseFloat(d.player2?.payout2)||0) + (parseFloat(d.player2?.payout3)||0)
+        : (parseFloat(d.player2?.payout)||0);
+      return s + p1p + p2p;
+    }, 0);
+
+    const arenaAccent = c.arenaAccent || '#eab308';
+    const arenaWinColor = c.arenaWinColor || '#22c55e';
+    const arenaLoseOpacity = c.arenaLoseOpacity ?? 0.55;
+    const arenaBg = showBg ? (c.arenaBg || '#1a1040') : 'transparent';
+    const arenaCardBg = c.arenaCardBg || '#1e1550';
+    const arenaCurrency = c.arenaCurrency || '$';
+
+    const renderArenaFighter = (pIdx, matchData, playerKey, isWinner, isLoser) => {
+      const name = players[pIdx] || `Fighter ${pIdx + 1}`;
+      const slot = slots[pIdx];
+      const md = matchData?.data?.[playerKey] || {};
+      const bet = parseFloat(md.bet) || 0;
+      const payout = data.format === 'bo3'
+        ? (parseFloat(md.payout1)||0) + (parseFloat(md.payout2)||0) + (parseFloat(md.payout3)||0)
+        : (parseFloat(md.payout)||0);
+
+      return (
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
+          borderRadius: 10, overflow: 'hidden', position: 'relative',
+          border: isWinner ? `2px solid ${arenaWinColor}` : '2px solid rgba(255,255,255,0.08)',
+          boxShadow: isWinner ? `0 0 20px ${arenaWinColor}40, inset 0 0 30px ${arenaWinColor}10` : 'none',
+          opacity: isLoser ? arenaLoseOpacity : 1,
+          background: arenaCardBg,
+          transition: 'all 0.3s ease',
+        }}>
+          {/* Winner badge */}
+          {isWinner && (
+            <div style={{
+              position: 'absolute', top: 8, left: playerKey === 'player1' ? 'auto' : 8, right: playerKey === 'player1' ? 8 : 'auto',
+              background: arenaWinColor, color: '#fff', fontWeight: 800,
+              fontSize: 11, padding: '3px 10px', borderRadius: 4,
+              textTransform: 'uppercase', letterSpacing: '0.8px', zIndex: 3,
+              boxShadow: `0 2px 8px ${arenaWinColor}60`,
+            }}>WINNER</div>
+          )}
+          {/* Trophy for winner */}
+          {isWinner && (
+            <div style={{
+              position: 'absolute', top: 6, left: playerKey === 'player1' ? 8 : 'auto', right: playerKey === 'player1' ? 'auto' : 8,
+              fontSize: 18, zIndex: 3,
+            }}>🏆</div>
+          )}
+
+          {/* Fighter name header */}
+          <div style={{
+            padding: '10px 12px 6px', fontSize: 15, fontWeight: 700, fontStyle: 'italic',
+            color: '#fff', fontFamily, letterSpacing: '0.3px',
+            textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.4), transparent)',
+            position: 'relative', zIndex: 2,
+          }}>{name}</div>
+
+          {/* Fighter image */}
+          <div style={{
+            flex: 1, minHeight: 80, position: 'relative', overflow: 'hidden',
+          }}>
+            {slot?.image ? (
+              <img src={slot.image} alt={name} style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                objectFit: 'cover', display: 'block',
+              }} />
+            ) : (
+              <div style={{
+                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                background: 'rgba(255,255,255,0.03)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: 32, color: 'rgba(255,255,255,0.1)',
+              }}>⚔</div>
+            )}
+            {/* Gradient overlay for readability */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: '40%',
+              background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+              pointerEvents: 'none',
+            }} />
+          </div>
+
+          {/* Bet / Payout footer */}
+          <div style={{
+            display: 'flex', borderTop: `1px solid rgba(255,255,255,0.1)`,
+            background: 'rgba(0,0,0,0.3)',
+          }}>
+            <div style={{
+              flex: 1, padding: '8px 6px', textAlign: 'center',
+              borderRight: '1px solid rgba(255,255,255,0.08)',
+            }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px' }}>BET</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: isWinner ? arenaWinColor : '#fff', fontFamily }}>{arenaCurrency}{bet.toLocaleString()}</div>
+            </div>
+            <div style={{ flex: 1, padding: '8px 6px', textAlign: 'center' }}>
+              <div style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px' }}>PAYOUT</div>
+              <div style={{ fontSize: 16, fontWeight: 800, color: isWinner ? arenaWinColor : '#fff', fontFamily }}>{arenaCurrency}{payout.toLocaleString()}</div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const renderArenaMatch = (match, idx) => {
+      const hasWinner = match.winner !== null && match.winner !== undefined;
+      const p1Won = match.winner === match.player1;
+      const p2Won = match.winner === match.player2;
+
+      return (
+        <div key={idx} style={{
+          display: 'flex', alignItems: 'stretch', gap: 0,
+          position: 'relative', minHeight: 120,
+        }}>
+          {/* Left fighter */}
+          <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
+            {renderArenaFighter(match.player1, match, 'player1', p1Won, hasWinner && !p1Won)}
+          </div>
+
+          {/* VS badge */}
+          <div style={{
+            position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
+            width: 42, height: 42, borderRadius: '50%', zIndex: 10,
+            background: `linear-gradient(135deg, ${arenaAccent}, ${arenaAccent}cc)`,
+            border: '3px solid rgba(0,0,0,0.5)',
+            boxShadow: `0 4px 16px rgba(0,0,0,0.5), 0 0 12px ${arenaAccent}40`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 14, fontWeight: 900, color: '#000', letterSpacing: '0.5px',
+          }}>VS</div>
+
+          {/* Right fighter */}
+          <div style={{ flex: 1, display: 'flex', minWidth: 0, marginLeft: 6 }}>
+            {renderArenaFighter(match.player2, match, 'player2', p2Won, hasWinner && !p2Won)}
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        overflow: 'auto', fontFamily,
+      }}>
+        {/* Arena Header */}
+        <div style={{
+          textAlign: 'center', padding: '16px 12px 8px',
+          flexShrink: 0,
+        }}>
+          <div style={{
+            fontSize: 26, fontWeight: 900, color: arenaAccent,
+            textTransform: 'uppercase', letterSpacing: '3px',
+            textShadow: `0 0 20px ${arenaAccent}60, 0 2px 10px rgba(0,0,0,0.8)`,
+            fontFamily,
+          }}>
+            ⚔ {c.title || 'BATTLE ARENA'} ⚔
+          </div>
+          <div style={{
+            fontSize: 11, fontWeight: 600, color: '#94a3b8',
+            textTransform: 'uppercase', letterSpacing: '2px', marginTop: 4,
+          }}>LIVE BETTING MATCHES</div>
+          {/* Match dots */}
+          {allMatches.length > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', gap: 6, marginTop: 8 }}>
+              {allMatches.map((m, i) => {
+                const done = m.winner !== null && m.winner !== undefined;
+                return (
+                  <div key={i} style={{
+                    width: 10, height: 10, borderRadius: '50%',
+                    background: done ? arenaWinColor : 'rgba(255,255,255,0.25)',
+                    boxShadow: done ? `0 0 6px ${arenaWinColor}80` : 'none',
+                    transition: 'all 0.3s',
+                  }} />
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Match rows */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          gap: 10, padding: `4px ${padding + 4}px ${padding}px`,
+          overflow: 'auto',
+        }}>
+          {allMatches.map((match, idx) => renderArenaMatch(match, idx))}
+        </div>
+
+        {/* Summary bar */}
+        <div style={{
+          display: 'flex', borderTop: '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(0,0,0,0.3)', flexShrink: 0,
+        }}>
+          <div style={{ flex: 1, padding: '10px 8px', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px' }}>TOTAL BETS</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: arenaAccent, fontFamily }}>{arenaCurrency}{totalBets.toLocaleString()}</div>
+          </div>
+          <div style={{ flex: 1, padding: '10px 8px', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.08)' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px' }}>TOTAL PAYOUT</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: arenaAccent, fontFamily }}>{arenaCurrency}{totalPayout.toLocaleString()}</div>
+          </div>
+          <div style={{ flex: 1, padding: '10px 8px', textAlign: 'center' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.8px' }}>MATCHES</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: '#fff', fontFamily }}>{allMatches.length}</div>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
      GRID — classic 2-column layout
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
@@ -628,8 +853,8 @@ function TournamentWidget({ config, theme }) {
         }
       `}</style>
 
-      {/* ── Phase Tabs (hidden in bracket layout) ── */}
-      {layout !== 'bracket' && (
+      {/* ── Phase Tabs (hidden in bracket & arena layout) ── */}
+      {layout !== 'bracket' && layout !== 'arena' && (
         <div className="tw-tabs" style={{
           padding: `${padding}px ${padding}px 0`,
           display: 'flex', justifyContent: 'center', flexShrink: 0,
@@ -664,7 +889,8 @@ function TournamentWidget({ config, theme }) {
       )}
 
       {/* ── Layout-specific content ── */}
-      {layout === 'bracket' ? renderBracket()
+      {layout === 'arena' ? renderArena()
+        : layout === 'bracket' ? renderBracket()
         : layout === 'showcase' ? renderShowcase()
         : (layout === 'vertical' || layout === 'minimal') ? renderVertical()
         : (layout === 'neon' || layout === 'grid') ? renderGrid()

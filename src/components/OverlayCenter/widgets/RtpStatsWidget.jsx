@@ -200,7 +200,6 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
     '--rtp-py': `${paddingY}px`,
     '--rtp-provider-size': `${providerFontSize}px`,
     ...(isNeon ? { '--rtp-accent': borderColor } : {}),
-    ...(isGlassStyle ? { backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)' } : {}),
   };
 
   return (

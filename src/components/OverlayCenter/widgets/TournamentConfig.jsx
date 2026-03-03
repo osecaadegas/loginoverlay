@@ -195,6 +195,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     'xIconColor', 'xIconBg',
     'bkHeaderBg', 'bkHeaderColor', 'bkAccent', 'bkDividerColor',
     'bkFinalBg', 'bkFinalBorder', 'bkRowBg', 'tournamentNumber',
+    'arenaAccent', 'arenaWinColor', 'arenaCardBg', 'arenaCurrency', 'arenaLoseOpacity',
   ];
 
   /* ─── Built-in presets ─── */
@@ -260,6 +261,28 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         bkFinalBg: 'rgba(59,130,246,0.12)',
         bkFinalBorder: 'rgba(59,130,246,0.35)',
         bkRowBg: 'rgba(255,255,255,0.02)',
+      },
+    },
+    {
+      name: '⚔️ Battle Arena',
+      builtin: true,
+      values: {
+        layout: 'arena',
+        showBg: true,
+        bgColor: '#1a1040',
+        cardRadius: 10,
+        nameSize: 15,
+        multiSize: 16,
+        showSlotName: false,
+        containerPadding: 8,
+        cardGap: 10,
+        eliminatedOpacity: 0.55,
+        borderRadius: 14,
+        borderWidth: 0,
+        arenaAccent: '#eab308',
+        arenaWinColor: '#22c55e',
+        arenaCardBg: '#1e1550',
+        arenaCurrency: '$',
       },
     },
   ];
@@ -550,6 +573,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               { id: 'showcase', icon: '🖼️', label: 'Showcase' },
               { id: 'vertical', icon: '📋', label: 'Vertical' },
               { id: 'bracket',  icon: '📊', label: 'Bracket' },
+              { id: 'arena',    icon: '⚔️', label: 'Arena' },
             ].map(m => (
               <button key={m.id}
                 className={`oc-bg-mode-btn ${(c.layout || 'grid') === m.id ? 'oc-bg-mode-btn--active' : ''}`}
@@ -566,6 +590,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               ? 'All matches stacked vertically — compact horizontal rows.'
               : (c.layout || 'grid') === 'bracket'
               ? 'All phases listed with section headers — clean OBS list style.'
+              : (c.layout || 'grid') === 'arena'
+              ? 'Battle Arena — VS cards with BET/PAYOUT, winner highlights.'
               : 'Classic 2-column grid — fits all matches at once.'}
           </p>
 
@@ -600,6 +626,23 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 <ColorPicker label="Final BG" value={c.bkFinalBg || 'rgba(59,130,246,0.12)'} onChange={v => set('bkFinalBg', v)} />
                 <ColorPicker label="Final Border" value={c.bkFinalBorder || 'rgba(59,130,246,0.35)'} onChange={v => set('bkFinalBorder', v)} />
               </div>
+            </>
+          )}
+
+          {/* ── Arena-specific colors ── */}
+          {(c.layout || 'grid') === 'arena' && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Arena Colors</h4>
+              <div className="nb-color-grid">
+                <ColorPicker label="Accent" value={c.arenaAccent || '#eab308'} onChange={v => set('arenaAccent', v)} />
+                <ColorPicker label="Winner" value={c.arenaWinColor || '#22c55e'} onChange={v => set('arenaWinColor', v)} />
+                <ColorPicker label="Card BG" value={c.arenaCardBg || '#1e1550'} onChange={v => set('arenaCardBg', v)} />
+              </div>
+              <label className="nb-field" style={{ marginTop: 6 }}>
+                <span>Currency Symbol</span>
+                <input value={c.arenaCurrency || '$'} onChange={e => set('arenaCurrency', e.target.value)} style={{ width: 50 }} />
+              </label>
+              <SliderField label="Loser Opacity" value={Math.round((c.arenaLoseOpacity ?? 0.55) * 100)} onChange={v => set('arenaLoseOpacity', v / 100)} min={20} max={100} suffix="%" />
             </>
           )}
 

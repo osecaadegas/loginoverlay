@@ -271,10 +271,9 @@ function NavbarWidget({ config, widgetId }) {
     border: `1px solid rgba(255,255,255,0.08)`,
   } : isGlass ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
-    background: `linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.05))`,
+    background: `linear-gradient(135deg, rgba(30,30,60,0.82), rgba(20,20,50,0.88))`,
     padding: `${borderWidth}px`,
-    boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)`,
-    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
+    boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12)`,
     fontFamily, overflow: 'hidden',
     border: `1px solid rgba(255,255,255,0.18)`,
   } : isRetro ? {
@@ -303,8 +302,7 @@ function NavbarWidget({ config, widgetId }) {
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
-    background: `linear-gradient(135deg, rgba(${bgColorRGB},0.7), rgba(${bgColorRGB},0.5))`,
-    backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+    background: `linear-gradient(135deg, rgba(${bgColorRGB},0.92), rgba(${bgColorRGB},0.85))`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),

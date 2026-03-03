@@ -322,8 +322,7 @@ function GlassCard({ data, c }) {
       {/* Glass overlay */}
       <div style={{
         position: 'absolute', inset: 0, zIndex: 1,
-        background: 'rgba(255,255,255,0.06)',
-        backdropFilter: 'blur(16px)',
+        background: 'rgba(20,20,50,0.85)',
         border: '1px solid rgba(255,255,255,0.12)',
         borderRadius: 18,
       }} />
