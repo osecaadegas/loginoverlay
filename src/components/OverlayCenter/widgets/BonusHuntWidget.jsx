@@ -69,7 +69,7 @@ function BonusHuntWidget({ config, theme }) {
     fontSize: `${fontSize}px`,
     width: '100%',
     height: '100%',
-    overflow: 'hidden auto',
+    overflow: isCompactBH ? 'hidden' : 'hidden auto',
     gap: `${cardGap}px`,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
@@ -153,13 +153,13 @@ function BonusHuntWidget({ config, theme }) {
             <div className="bhtc-stat-row">
               <span className="bhtc-stat-row-icon">⇋</span>
               <span className="bhtc-stat-row-label">BREAK EVEN</span>
-              <span className="bhtc-stat-row-value">{stats.breakEven.toFixed(2)}x</span>
+              <span className="bhtc-stat-row-value" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>{stats.breakEven.toFixed(2)}x</span>
             </div>
             <div className="bhtc-stat-row bhtc-stat-row--sep" />
             <div className="bhtc-stat-row">
               <span className="bhtc-stat-row-icon">⌀</span>
               <span className="bhtc-stat-row-label">AVERAGE</span>
-              <span className="bhtc-stat-row-value">{stats.avgMulti.toFixed(2)}x</span>
+              <span className="bhtc-stat-row-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(2)}x</span>
             </div>
             <div className="bhtc-stat-row">
               <span className="bhtc-stat-row-icon">{profit >= 0 ? '▲' : '▼'}</span>
@@ -246,11 +246,11 @@ function BonusHuntWidget({ config, theme }) {
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">BEx</span>
-              <span className="bhh-stat-val">{stats.breakEven.toFixed(2)}x</span>
+              <span className="bhh-stat-val" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>{stats.breakEven.toFixed(2)}x</span>
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">AVG</span>
-              <span className="bhh-stat-val">{stats.avgMulti.toFixed(2)}x</span>
+              <span className="bhh-stat-val" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(2)}x</span>
             </div>
             <div className="bhh-stat">
               <span className="bhh-stat-label">PROFIT</span>
@@ -347,7 +347,7 @@ function BonusHuntWidget({ config, theme }) {
               </svg>
               Start BEx
             </div>
-            <div className="bht-stat-value">{stats.breakEven.toFixed(2)}x</div>
+            <div className="bht-stat-value" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>{stats.breakEven.toFixed(2)}x</div>
           </div>
         </div>
       </div>
@@ -461,7 +461,7 @@ function BonusHuntWidget({ config, theme }) {
                 </svg>
                 avgX
               </div>
-              <div className="bht-stat-value">{stats.avgMulti.toFixed(2)}x</div>
+              <div className="bht-stat-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(2)}x</div>
             </div>
             <div className="bht-stat-box">
               <div className="bht-stat-label">
@@ -470,7 +470,7 @@ function BonusHuntWidget({ config, theme }) {
                 </svg>
                 BE x
               </div>
-              <div className="bht-stat-value">{stats.liveBE.toFixed(2)}x</div>
+              <div className="bht-stat-value" style={{ color: stats.liveBE >= 100 ? '#4ade80' : '#f87171' }}>{stats.liveBE.toFixed(2)}x</div>
             </div>
           </div>
           <div className="bht-total-pay">
