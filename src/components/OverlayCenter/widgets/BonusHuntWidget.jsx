@@ -428,29 +428,57 @@ function BonusHuntWidget({ config, theme }) {
             )}
             <div className="bht-current-info">
               <div className="bht-current-name">{currentBonus.slotName}</div>
-              <div className="bht-current-bet">{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)} BET</div>
+              {!isCompactBH && (
+                <div className="bht-current-bet">{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)} BET</div>
+              )}
+              {/* Compact: stats sit beside the image */}
+              {isCompactBH && (
+                <div className="bht-current-stats">
+                  <div className="bht-current-stat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span>{currency}0.00</span>
+                  </div>
+                  <div className="bht-current-stat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                    </svg>
+                    <span>0x</span>
+                  </div>
+                  <div className="bht-current-stat">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
+                    </svg>
+                    <span>{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-          <div className="bht-current-stats">
-            <div className="bht-current-stat">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span>{currency}0.00</span>
+          {/* Non-compact: stats below the image row */}
+          {!isCompactBH && (
+            <div className="bht-current-stats">
+              <div className="bht-current-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{currency}0.00</span>
+              </div>
+              <div className="bht-current-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+                </svg>
+                <span>0x</span>
+              </div>
+              <div className="bht-current-stat">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
+                </svg>
+                <span>{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
+              </div>
             </div>
-            <div className="bht-current-stat">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-              </svg>
-              <span>0x</span>
-            </div>
-            <div className="bht-current-stat">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
-              </svg>
-              <span>{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
-            </div>
-          </div>
+          )}
         </div>
       )}
 
