@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 
 /**
  * BonusHuntWidgetV3 — Style 3: Flip Card
@@ -40,6 +40,7 @@ function BonusHuntWidgetV3({ config, theme }) {
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
+  const bonusOpening = c.bonusOpening === true;
 
   /* ─── Derived stats ─── */
   const stats = useMemo(() => {
@@ -60,6 +61,8 @@ function BonusHuntWidgetV3({ config, theme }) {
 
   /* ─── Current bonus (first unopened) ─── */
   const currentBonus = bonuses.find(b => !b.opened);
+  const currentBonusIdx = bonuses.findIndex(b => !b.opened);
+  const huntComplete = bonusOpening && currentBonusIdx === -1 && bonuses.length > 0;
 
   /* ─── Cycling card index ─── */
   const [displayIdx, setDisplayIdx] = useState(0);
@@ -67,8 +70,20 @@ function BonusHuntWidgetV3({ config, theme }) {
   const backRef = useRef(false);
   const animRef = useRef(null);
 
+  /* When bonusOpening is ON → lock displayIdx to the current bonus.
+     When hunt is complete → let the normal spinning resume.
+     The CSS animation is paused via animation-play-state in the JSX. */
   useEffect(() => {
-    if (bonuses.length <= 1) return;
+    if (bonusOpening && currentBonusIdx >= 0) {
+      setDisplayIdx(currentBonusIdx);
+      setNextIdx(currentBonusIdx);
+    }
+  }, [bonusOpening, currentBonusIdx]);
+
+  /* Normal spin cycling — only when NOT in bonusOpening mode (or hunt complete) */
+  useEffect(() => {
+    if ((bonusOpening && !huntComplete) || bonuses.length <= 1) return;
+
     const dur = spinDuration * 1000;
     const startTime = performance.now();
     backRef.current = false;
@@ -91,7 +106,7 @@ function BonusHuntWidgetV3({ config, theme }) {
 
     animRef.current = requestAnimationFrame(tick);
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
-  }, [bonuses.length, spinDuration]);
+  }, [bonuses.length, spinDuration, bonusOpening, huntComplete]);
 
   /* ─── Format helpers ─── */
   const fmt = n => Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -130,6 +145,9 @@ function BonusHuntWidgetV3({ config, theme }) {
       : undefined,
   };
 
+  /* Whether to pause the CSS flip animation */
+  const pauseFlip = bonusOpening && !huntComplete;
+
   return (
     <div className="oc-widget-inner oc-bonushunt bht3-root" style={rootStyle}>
 
@@ -137,7 +155,7 @@ function BonusHuntWidgetV3({ config, theme }) {
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
           <div className="bht3-flip-container">
-            <div className="bht3-flip-inner">
+            <div className="bht3-flip-inner" style={pauseFlip ? { animationPlayState: 'paused', transform: 'rotateY(0deg)' } : undefined}>
               {/* FRONT — Slot Image */}
               <div className="bht3-flip-face bht3-flip-front">
                 {frontBonus.isSuperBonus && <div className="bht3-flip-super-badge">⭐ SUPER</div>}

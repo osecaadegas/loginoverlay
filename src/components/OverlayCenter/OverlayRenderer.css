@@ -1406,6 +1406,7 @@
   width: 100%;
   overflow: visible;
   transform-style: preserve-3d;
+  padding-top: 12px;
 }
 
 .bht3-flip-container {
@@ -1413,6 +1414,7 @@
   width: 100%;
   overflow: visible;
   transform-style: preserve-3d;
+  padding-top: 6px;
 }
 
 .bht3-flip-inner {
