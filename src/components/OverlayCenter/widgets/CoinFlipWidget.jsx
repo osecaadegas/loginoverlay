@@ -175,9 +175,14 @@ function CoinFlipWidget({ config }) {
   };
   const coinOuter = { width: '50%', maxHeight: showBets ? '55%' : '65%', aspectRatio: '1', flexShrink: 0 };
   const coinBody  = { width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d', animation: anim3d };
+  /* clipPath instead of overflow:hidden — overflow:hidden flattens the 3D context
+     in Chromium/OBS and breaks backfaceVisibility */
+  const FACE_Z = HALF + 1; // 1px outside edge ring to prevent z-fighting
   const face = (extra) => ({
-    position: 'absolute', inset: 0, borderRadius: '50%', backfaceVisibility: 'hidden',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', ...extra,
+    position: 'absolute', inset: 0, borderRadius: '50%',
+    backfaceVisibility: 'hidden', WebkitBackfaceVisibility: 'hidden',
+    clipPath: 'circle(50% at 50% 50%)',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', ...extra,
   });
 
   /* ═══════════════════════════════════════════════════
@@ -195,13 +200,13 @@ function CoinFlipWidget({ config }) {
               background: `radial-gradient(ellipse at 30% 30%, ${hColor}ee, ${hColor}99 45%, ${hColor}66)`,
               border: '4px solid rgba(255,255,255,0.15)',
               boxShadow: 'inset 0 -5px 10px rgba(0,0,0,0.35), inset 0 5px 10px rgba(255,255,255,0.25)',
-              transform: `translateZ(${HALF}px)`,
+              transform: `translateZ(${FACE_Z}px)`,
             })}>{faceContent('heads')}</div>
             <div style={face({
               background: `radial-gradient(ellipse at 30% 30%, ${tColor}ee, ${tColor}99 45%, ${tColor}66)`,
               border: '4px solid rgba(255,255,255,0.15)',
               boxShadow: 'inset 0 -5px 10px rgba(0,0,0,0.35), inset 0 5px 10px rgba(255,255,255,0.25)',
-              transform: `rotateY(180deg) translateZ(${HALF}px)`,
+              transform: `rotateY(180deg) translateZ(${FACE_Z}px)`,
             })}>{faceContent('tails')}</div>
           </div>
         </div>
@@ -227,12 +232,12 @@ function CoinFlipWidget({ config }) {
             <div style={face({
               background: 'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
               border: `3px solid ${hColor}`, boxShadow: `0 0 30px ${hColor}44, inset 0 0 20px ${hColor}22`,
-              transform: `translateZ(${HALF}px)`,
+              transform: `translateZ(${FACE_Z}px)`,
             })}>{faceContent('heads')}</div>
             <div style={face({
               background: 'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
               border: `3px solid ${tColor}`, boxShadow: `0 0 30px ${tColor}44, inset 0 0 20px ${tColor}22`,
-              transform: `rotateY(180deg) translateZ(${HALF}px)`,
+              transform: `rotateY(180deg) translateZ(${FACE_Z}px)`,
             })}>{faceContent('tails')}</div>
           </div>
         </div>
@@ -286,7 +291,7 @@ function CoinFlipWidget({ config }) {
             animation: !flipping ? 'cf-shimmer 3s linear infinite' : 'none',
             border: '4px ridge rgba(255,255,255,0.25)',
             boxShadow: 'inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,255,255,0.3)',
-            transform: `translateZ(${HALF}px)`,
+            transform: `translateZ(${FACE_Z}px)`,
           })}>{faceContent('heads')}</div>
           <div style={face({
             background: `linear-gradient(145deg, #bfdbfe, ${tColor}, #1e3a5f, ${tColor}, #bfdbfe)`,
@@ -294,7 +299,7 @@ function CoinFlipWidget({ config }) {
             animation: !flipping ? 'cf-shimmer 3s linear infinite' : 'none',
             border: '4px ridge rgba(255,255,255,0.25)',
             boxShadow: 'inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,255,255,0.3)',
-            transform: `rotateY(180deg) translateZ(${HALF}px)`,
+            transform: `rotateY(180deg) translateZ(${FACE_Z}px)`,
           })}>{faceContent('tails')}</div>
         </div>
       </div>
