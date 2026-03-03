@@ -115,10 +115,13 @@ function NavbarWidget({ config, widgetId }) {
 
   // Socials cycling — one at a time with fade
   const activeSocials = [
-    c.socialTwitter && { icon: '\u{1D54F}', handle: c.socialTwitter },
-    c.socialInstagram && { icon: '\uD83D\uDCF7', handle: c.socialInstagram },
-    c.socialKick && { icon: '\uD83D\uDFE2', handle: c.socialKick },
-    c.socialTiktok && { icon: '\u266A', handle: c.socialTiktok },
+    c.socialTwitter   && { logo: '/socials/twitter.png',   handle: c.socialTwitter },
+    c.socialInstagram && { logo: '/socials/instagram.png', handle: c.socialInstagram },
+    c.socialKick      && { logo: null, kickIcon: true,     handle: c.socialKick },
+    c.socialTiktok    && { logo: '/socials/tik-tok.png',   handle: c.socialTiktok },
+    c.socialYoutube   && { logo: '/socials/youtube.png',   handle: c.socialYoutube },
+    c.socialFacebook  && { logo: '/socials/facebook.png',  handle: c.socialFacebook },
+    c.socialTelegram  && { logo: '/socials/telegram.png',  handle: c.socialTelegram },
   ].filter(Boolean);
   useEffect(() => {
     if (!c.showSocials || activeSocials.length <= 1) return;
@@ -518,45 +521,34 @@ function NavbarWidget({ config, widgetId }) {
         if (!c.showSocials || !activeSocials.length) return null;
         const safeIdx = socialIndex % activeSocials.length;
         const current = activeSocials[safeIdx];
-        const pillStyle = isMetal ? {
-          display: 'flex', alignItems: 'center', gap: 5,
-          borderRadius: 8, padding: '4px 10px',
-          background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-          border: '1px solid rgba(255,255,255,0.08)',
-          fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-          letterSpacing: '0.06em',
-        } : isGlass ? {
-          display: 'flex', alignItems: 'center', gap: 5,
-          borderRadius: 10, padding: '4px 10px',
-          background: 'rgba(255,255,255,0.08)',
-          border: '1px solid rgba(255,255,255,0.12)',
-          fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-          letterSpacing: '0.06em',
-        } : isRetro ? {
-          display: 'flex', alignItems: 'center', gap: 4,
-          borderRadius: 2, padding: '3px 8px',
-          background: '#000',
-          border: `1px solid ${accentColor}66`,
-          fontSize: fontSize * 0.78, color: accentColor, fontWeight: 700,
-          letterSpacing: '0.04em',
-        } : {
-          display: 'flex', alignItems: 'center', gap: 5,
-          borderRadius: 999, padding: '4px 10px',
-          background: `${accentColor}18`,
-          border: `1px solid ${accentColor}30`,
-          fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-          letterSpacing: '0.06em',
-        };
+        const logoSize = barHeight * 0.38;
         return (
           <div style={{ position: 'relative', minWidth: 100, overflow: 'hidden', flexShrink: 0 }}>
             <div style={{
+              display: 'flex', alignItems: 'center', gap: 10,
               opacity: socialFading ? 0 : 1,
               transition: 'opacity 0.4s ease',
             }}>
-              <div style={pillStyle}>
-                <span style={{ fontSize: fontSize * 0.85 }}>{current.icon}</span>
-                <span>{current.handle}</span>
-              </div>
+              {current.logo ? (
+                <img src={current.logo} alt="" style={{
+                  width: logoSize, height: logoSize,
+                  objectFit: 'contain', flexShrink: 0,
+                  filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.15))',
+                }} />
+              ) : (
+                <span style={{
+                  width: logoSize, height: logoSize,
+                  borderRadius: '50%', background: '#53fc18',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: logoSize * 0.55, fontWeight: 900, color: '#000',
+                  flexShrink: 0,
+                }}>K</span>
+              )}
+              <span style={{
+                fontSize: fontSize * 1.1, fontWeight: 700,
+                color: textColor, letterSpacing: '0.04em',
+                whiteSpace: 'nowrap',
+              }}>{current.handle}</span>
             </div>
           </div>
         );

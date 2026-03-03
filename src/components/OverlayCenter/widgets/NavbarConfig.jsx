@@ -149,7 +149,7 @@ export default function NavbarConfig({ config, onChange }) {
     'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
     'avatarSize', 'badgeSize',
     'displayStyle', 'musicDisplayStyle',
-    'socialTwitter', 'socialInstagram', 'socialKick', 'socialTiktok',
+    'socialTwitter', 'socialInstagram', 'socialKick', 'socialTiktok', 'socialYoutube', 'socialFacebook', 'socialTelegram',
     'startBalance', 'balanceCurrency',
     'casinoName', 'casinoLogoUrl',
     'sectionLayout',
@@ -318,6 +318,18 @@ export default function NavbarConfig({ config, onChange }) {
               <label className="nb-field">
                 <span>TikTok</span>
                 <input value={c.socialTiktok || ''} onChange={e => set('socialTiktok', e.target.value)} placeholder="@username" />
+              </label>
+              <label className="nb-field">
+                <span>YouTube</span>
+                <input value={c.socialYoutube || ''} onChange={e => set('socialYoutube', e.target.value)} placeholder="@channel" />
+              </label>
+              <label className="nb-field">
+                <span>Facebook</span>
+                <input value={c.socialFacebook || ''} onChange={e => set('socialFacebook', e.target.value)} placeholder="@page" />
+              </label>
+              <label className="nb-field">
+                <span>Telegram</span>
+                <input value={c.socialTelegram || ''} onChange={e => set('socialTelegram', e.target.value)} placeholder="@group" />
               </label>
             </>
           )}
