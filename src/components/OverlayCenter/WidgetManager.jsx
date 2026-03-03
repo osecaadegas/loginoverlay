@@ -330,6 +330,15 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         textColor: nb.textColor || '#ffffff',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
       };
+    case 'bonus_buys':
+      return {
+        ...c,
+        bgColor:     nb.bgColor     || '#0a0e1a',
+        accentColor: nb.accentColor || '#3b82f6',
+        textColor:   nb.textColor   || '#ffffff',
+        mutedColor:  nb.mutedColor  || '#64748b',
+        fontFamily:  nb.fontFamily  || "'Inter', sans-serif",
+      };
     default:
       return null; // widget has no sync mapping
   }

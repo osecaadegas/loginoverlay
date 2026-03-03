@@ -153,7 +153,7 @@ function BonusBuysWidget({ config }) {
       {/* ─── SLOT IMAGE ─── */}
       <div style={{
         position: 'relative',
-        flex: '0 0 clamp(50px, 38cqi, 220px)',
+        flex: '0 0 clamp(80px, 55cqi, 320px)',
         minHeight: 0, overflow: 'hidden',
       }}>
         {img ? (
