@@ -164,15 +164,17 @@ function BonusHuntWidgetV9({ config, theme }) {
     <div className="bhv9-root" style={{ fontFamily, color: textColor, ...rootVars }}>
       <div className="bhv9-container">
 
-        {/* ─── Top: slot-name strip ─── */}
+        {/* ─── Top: slot-name marquee strip ─── */}
         <div className="bhv9-strip">
-          <div className="bhv9-strip-scroll">
-            {bonuses.map((b, i) => {
+          <div className="bhv9-strip-scroll" style={{ '--bhv9-pill-count': total }}>
+            {[...bonuses, ...bonuses].map((b, i) => {
+              const idx = i % total;
               const bet = Number(b.betSize) || 0;
-              const isActive = i === activeIdx;
+              const isActive = idx === activeIdx;
               return (
-                <button key={i} className={`bhv9-strip-pill${isActive ? ' bhv9-strip-pill--active' : ''}${b.opened ? ' bhv9-strip-pill--opened' : ''}`}
-                  onClick={() => setActiveIdx(i)}>
+                <button key={`${idx}-${i >= total ? 'c' : 'o'}`}
+                  className={`bhv9-strip-pill${isActive ? ' bhv9-strip-pill--active' : ''}${b.opened ? ' bhv9-strip-pill--opened' : ''}`}
+                  onClick={() => setActiveIdx(idx)}>
                   <span className="bhv9-strip-name">{b.slotName || b.slot?.name || '?'}</span>
                   <span className="bhv9-strip-bet">{currency}{bet.toFixed(bet >= 10 ? 1 : 2)}</span>
                 </button>
@@ -230,12 +232,6 @@ function BonusHuntWidgetV9({ config, theme }) {
                         <span className="bhv9-card-multi">{multi.toFixed(1)}x</span>
                       </div>
                     )}
-
-                    {/* name + provider */}
-                    <div className="bhv9-card-info">
-                      <div className="bhv9-card-name">{slotName}</div>
-                      {provider && <div className="bhv9-card-provider">{provider}</div>}
-                    </div>
 
                     {/* current glow ring */}
                     {isCurrent && isCenter && <div className="bhv9-card-ring" />}
