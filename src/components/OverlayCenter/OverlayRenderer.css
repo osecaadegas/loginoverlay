@@ -844,61 +844,64 @@
   font-size: 0.65em;
 }
 .oc-bonushunt--compact .bht-current {
-  padding: 5px 8px !important;
+  padding: 4px 6px !important;
 }
 .oc-bonushunt--compact .bht-current-top {
   margin-bottom: 0;
-  gap: 10px;
+  gap: 8px;
   align-items: stretch;
 }
 .oc-bonushunt--compact .bht-current-img {
   width: 120px;
   max-height: none;
   height: 100%;
-  min-height: 64px;
+  min-height: 54px;
   object-fit: cover;
-  border-radius: 8px;
+  border-radius: 6px;
   flex-shrink: 0;
 }
 .oc-bonushunt--compact .bht-current-info {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 .oc-bonushunt--compact .bht-current-name {
-  font-size: 1.15em;
+  font-size: 1.05em;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.1;
 }
 .oc-bonushunt--compact .bht-current-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  gap: 3px;
   flex: 1;
   align-content: center;
 }
 .oc-bonushunt--compact .bht-current-stat {
-  padding: 4px 6px;
-  font-size: 0.95em;
+  padding: 2px 5px;
+  font-size: 0.9em;
   justify-content: center;
-  gap: 1px;
+  gap: 0px;
 }
 .oc-bonushunt--compact .bht-current-stat:last-child {
   grid-column: 1 / -1;
 }
 .oc-bonushunt--compact .bht-current-stat-label {
-  font-size: 0.65em;
+  font-size: 0.6em;
   font-weight: 700;
   letter-spacing: 0.6px;
   opacity: 0.7;
+  line-height: 1;
   color: var(--bht-current-accent, #86efac);
 }
 .oc-bonushunt--compact .bht-current-stat span:last-child {
-  font-size: 1.05em;
+  font-size: 1em;
   font-weight: 800;
+  line-height: 1.2;
 }
 .oc-bonushunt--compact .bht-list-card {
   flex: 1 1 0;
