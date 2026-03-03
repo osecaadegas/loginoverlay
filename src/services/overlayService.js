@@ -132,11 +132,13 @@ export async function createWidget(userId, widgetType, config = {}) {
       z_index: 1,
       config,
       animation: 'fade',
-      exit_animation: 'fade',
     })
     .select()
     .single();
-  if (error) throw error;
+  if (error) {
+    console.error('[overlayService] createWidget failed:', error);
+    throw error;
+  }
   return data;
 }
 

@@ -72,10 +72,18 @@ export function useOverlay() {
   }, [user]);
 
   const addWidget = useCallback(async (widgetType, config) => {
-    if (!user) return;
-    const w = await createWidget(user.id, widgetType, config);
-    setWidgets(prev => [...prev, w]);
-    return w;
+    if (!user) {
+      console.warn('[useOverlay] addWidget called but no user session');
+      return;
+    }
+    try {
+      const w = await createWidget(user.id, widgetType, config);
+      setWidgets(prev => [...prev, w]);
+      return w;
+    } catch (err) {
+      console.error('[useOverlay] addWidget error:', err);
+      throw err;
+    }
   }, [user]);
 
   const saveWidget = useCallback(async (widget) => {

@@ -463,7 +463,12 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
   const handleAdd = useCallback(async (type) => {
     const def = getWidgetDef(type);
-    await onAdd(type, def?.defaults || {});
+    try {
+      await onAdd(type, def?.defaults || {});
+    } catch (err) {
+      console.error('[WidgetManager] Failed to add widget:', type, err);
+      alert(`Failed to add widget: ${err?.message || 'Unknown error'}`);
+    }
   }, [onAdd]);
 
   /* ── Sorted active widgets by z_index (lowest first → highest last = on top in OBS) ── */
