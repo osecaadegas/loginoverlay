@@ -255,7 +255,12 @@ function NavbarWidget({ config, widgetId }) {
   const bgColorRGB = hexToRgb(bgColor);
   const ctaColorRGB = hexToRgb(ctaColor);
 
-  const filterStr = `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
+  // Only apply CSS filter when values differ from defaults — filter forces rasterisation
+  // which degrades image sharpness and sub-pixel text rendering
+  const needsFilter = brightness !== 100 || contrast !== 100 || saturation !== 100;
+  const filterStr = needsFilter
+    ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
+    : 'none';
 
   const barOuter = isMetal ? {
     width: '100%', maxWidth: c.maxWidth || 1200, borderRadius,
@@ -293,45 +298,49 @@ function NavbarWidget({ config, widgetId }) {
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', position: 'relative', filter: filterStr,
+    overflow: 'visible', position: 'relative',
+    ...(needsFilter && { filter: filterStr }),
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.7), rgba(${bgColorRGB},0.5))`,
     backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
     padding: '0 10px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', position: 'relative', filter: filterStr,
+    overflow: 'visible', position: 'relative',
+    ...(needsFilter && { filter: filterStr }),
   } : isRetro ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: Math.max(borderRadius - borderWidth, 0),
     background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
     padding: '0 8px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', position: 'relative', filter: filterStr,
+    overflow: 'visible', position: 'relative',
+    ...(needsFilter && { filter: filterStr }),
     borderTop: '2px solid rgba(255,255,255,0.15)',
   } : {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
-    overflow: 'visible', filter: filterStr,
+    overflow: 'visible',
+    ...(needsFilter && { filter: filterStr }),
   };
 
   const sep = isMetal ? {
     width: 1, height: barHeight * 0.5,
     background: `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
-    flexShrink: 0, margin: '0 6px',
+    flexShrink: 0, margin: '0 3px',
   } : isGlass ? {
     width: 1, height: barHeight * 0.5,
     background: `linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)`,
-    flexShrink: 0, margin: '0 6px',
+    flexShrink: 0, margin: '0 3px',
   } : isRetro ? {
     width: 2, height: barHeight * 0.6,
     background: `${accentColor}88`,
-    flexShrink: 0, margin: '0 4px',
+    flexShrink: 0, margin: '0 2px',
   } : {
     width: 1, height: barHeight * 0.55,
     background: `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
-    flexShrink: 0, margin: '0 6px',
+    flexShrink: 0, margin: '0 3px',
   };
 
   /* ─── Dynamic section layout ─── */
@@ -359,6 +368,8 @@ function NavbarWidget({ config, widgetId }) {
                     borderRadius: '50%',
                     objectFit: 'cover',
                     background: 'transparent',
+                    imageRendering: 'auto',
+                    backfaceVisibility: 'hidden',
                   }} />
                 ) : (
                   <div style={{
@@ -544,31 +555,35 @@ function NavbarWidget({ config, widgetId }) {
         if (!c.showSocials || !activeSocials.length) return null;
         const safeIdx = socialIndex % activeSocials.length;
         const current = activeSocials[safeIdx];
-        const logoSize = barHeight * 0.38;
+        const logoSize = barHeight * 0.52;
         return (
-          <div style={{ position: 'relative', minWidth: 100, overflow: 'hidden', flexShrink: 0 }}>
+          <div style={{ position: 'relative', minWidth: 110, overflow: 'hidden', flexShrink: 0 }}>
             <div style={{
               display: 'flex', alignItems: 'center', gap: 10,
               opacity: socialFading ? 0 : 1,
               transition: 'opacity 0.4s ease',
+              willChange: 'opacity',
+              backfaceVisibility: 'hidden',
             }}>
               {current.logo ? (
                 <img src={current.logo} alt="" style={{
                   width: logoSize, height: logoSize,
                   objectFit: 'contain', flexShrink: 0,
                   filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.15))',
+                  imageRendering: 'auto',
+                  backfaceVisibility: 'hidden',
                 }} />
               ) : (
                 <span style={{
                   width: logoSize, height: logoSize,
                   borderRadius: '50%', background: '#53fc18',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: logoSize * 0.55, fontWeight: 900, color: '#000',
+                  fontSize: logoSize * 0.5, fontWeight: 900, color: '#000',
                   flexShrink: 0,
                 }}>K</span>
               )}
               <span style={{
-                fontSize: fontSize * 1.1, fontWeight: 700,
+                fontSize: fontSize * 1.2, fontWeight: 700,
                 color: textColor, letterSpacing: '0.04em',
                 whiteSpace: 'nowrap',
               }}>{current.handle}</span>
@@ -680,17 +695,17 @@ function NavbarWidget({ config, widgetId }) {
           )}
 
           {/* ─── Left Zone ─── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, flexShrink: 0, position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingRight: 10, flexShrink: 0, position: 'relative', zIndex: 1 }}>
             {renderZone('left')}
           </div>
 
           {/* ─── Center Zone ─── */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, minWidth: 0, position: 'relative', zIndex: 1 }}>
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, minWidth: 0, position: 'relative', zIndex: 1 }}>
             {renderZone('center')}
           </div>
 
           {/* ─── Right Zone ─── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 16, flexShrink: 0, position: 'relative', zIndex: 1 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, paddingLeft: 10, flexShrink: 0, position: 'relative', zIndex: 1 }}>
             {renderZone('right')}
           </div>
 
@@ -705,21 +720,24 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
   const isUp = price.change >= 0;
   const changeColor = isUp ? cryptoUpColor : cryptoDownColor;
   const logoUrl = CRYPTO_LOGOS[coin];
+  const logoSize = 30;
   return (
     <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
-      fontSize: fontSize * 0.82,
+      fontSize: fontSize * 0.95,
       flexShrink: 0,
       ...style,
     }}>
       {/* Coin logo */}
       {logoUrl ? (
         <img src={logoUrl} alt={coin} style={{
-          width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
+          width: logoSize, height: logoSize, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
+          imageRendering: 'auto',
+          backfaceVisibility: 'hidden',
         }} />
       ) : (
         <div style={{
-          width: 22, height: 22, borderRadius: '50%',
+          width: logoSize, height: logoSize, borderRadius: '50%',
           background: `linear-gradient(135deg, #6366f1, #a855f7)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: fontSize * 0.9, fontWeight: 900, color: '#fff',
@@ -727,14 +745,14 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
           {CRYPTO_SYMBOLS[coin] || coin[0].toUpperCase()}
         </div>
       )}
-      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-        <span style={{ fontWeight: 600, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 4 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
+        <span style={{ fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 4, letterSpacing: '0.04em' }}>
           {coin.toUpperCase()}
-          <span style={{ color: changeColor, fontSize: fontSize * 0.7 }}>{isUp ? '▲' : '▼'}</span>
+          <span style={{ color: changeColor, fontSize: fontSize * 0.8 }}>{isUp ? '▲' : '▼'}</span>
         </span>
-        <span style={{ fontSize: fontSize * 0.75, color: changeColor, opacity: 0.9 }}>
+        <span style={{ fontSize: fontSize * 0.82, color: changeColor, opacity: 0.95 }}>
           ${price.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-          <span>{isUp ? '+' : ''}{price.change?.toFixed(2)}%</span>
+          <span style={{ fontWeight: 600 }}>{isUp ? '+' : ''}{price.change?.toFixed(2)}%</span>
         </span>
       </div>
     </div>
@@ -747,14 +765,15 @@ function CryptoTicker({ coins, prices, mode, index, fading, fontSize, bgColor, c
   const coin = coins[safeIdx];
 
   /* Fixed-width wrapper prevents layout shift when coins cycle */
-  const tickerStyle = { position: 'relative', minWidth: 160, overflow: 'hidden' };
+  const tickerStyle = { position: 'relative', minWidth: 180, overflow: 'hidden' };
 
+  /* Use translate3d for GPU-accelerated compositing — prevents blur during transitions */
   const animStyle = mode === 'horizontal'
-    ? { transform: `translateX(${fading ? '-8px' : '0'})`, opacity: fading ? 0 : 1, transition: 'all 0.35s ease' }
+    ? { transform: fading ? 'translate3d(-8px,0,0)' : 'translate3d(0,0,0)', opacity: fading ? 0 : 1, transition: 'transform 0.35s ease, opacity 0.35s ease', willChange: 'transform, opacity', backfaceVisibility: 'hidden' }
     : mode === 'carousel'
-    ? { transform: `translateY(${fading ? '-12px' : '0'})`, opacity: fading ? 0 : 1, transition: 'all 0.35s ease' }
+    ? { transform: fading ? 'translate3d(0,-12px,0)' : 'translate3d(0,0,0)', opacity: fading ? 0 : 1, transition: 'transform 0.35s ease, opacity 0.35s ease', willChange: 'transform, opacity', backfaceVisibility: 'hidden' }
     : mode === 'fade'
-    ? { opacity: fading ? 0 : 1, transition: 'opacity 0.4s ease' }
+    ? { opacity: fading ? 0 : 1, transition: 'opacity 0.4s ease', willChange: 'opacity', backfaceVisibility: 'hidden' }
     : {};
 
   return (
