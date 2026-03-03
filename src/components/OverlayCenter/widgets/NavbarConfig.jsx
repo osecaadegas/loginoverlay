@@ -334,20 +334,22 @@ export default function NavbarConfig({ config, onChange }) {
             </>
           )}
 
-          {/* ─── Start Balance ─── */}
+          {/* ─── Start ─── */}
           {c.showStartBalance && (
             <>
-              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Start Balance</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
-                <label className="nb-field">
-                  <span>Balance</span>
-                  <input type="number" min="0" step="0.01" value={c.startBalance || ''} onChange={e => set('startBalance', e.target.value)} placeholder="1000" />
-                </label>
-                <label className="nb-field">
-                  <span>Currency</span>
-                  <input value={c.balanceCurrency || '$'} onChange={e => set('balanceCurrency', e.target.value)} placeholder="$" style={{ width: 50 }} />
-                </label>
-              </div>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Start</h4>
+              <label className="nb-field">
+                <span>Value</span>
+                <input type="number" min="0" step="0.01" value={c.startBalance || ''} onChange={e => set('startBalance', e.target.value)} placeholder="1000" />
+              </label>
+              <label className="nb-field">
+                <span>Currency</span>
+                <select value={c.balanceCurrency || '€'} onChange={e => set('balanceCurrency', e.target.value)}>
+                  <option value="€">€ EUR</option>
+                  <option value="zł">zł PLN</option>
+                  <option value="$">$ USD</option>
+                </select>
+              </label>
             </>
           )}
 

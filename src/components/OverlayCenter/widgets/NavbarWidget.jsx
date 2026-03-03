@@ -557,41 +557,15 @@ function NavbarWidget({ config, widgetId }) {
       case 'balance': {
         if (!c.showStartBalance || !c.startBalance) return null;
         return (
-          <div style={isMetal ? {
-            display: 'flex', alignItems: 'center', gap: 6,
-            borderRadius: 10, padding: '6px 16px',
-            background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-            border: '1px solid rgba(255,255,255,0.08)',
-            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px rgba(${accentColorRGB},0.06)`,
-            fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
-            letterSpacing: '0.1em', flexShrink: 0,
-          } : isGlass ? {
-            display: 'flex', alignItems: 'center', gap: 6,
-            borderRadius: 14, padding: '6px 16px',
-            background: 'rgba(255,255,255,0.08)',
-            border: '1px solid rgba(255,255,255,0.15)',
-            backdropFilter: 'blur(6px)',
-            fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
-            letterSpacing: '0.1em', flexShrink: 0,
-          } : isRetro ? {
-            display: 'flex', alignItems: 'center', gap: 5,
-            borderRadius: 2, padding: '5px 12px',
-            background: '#000',
-            border: `2px solid ${accentColor}88`,
-            fontSize: fontSize * 0.85, fontWeight: 700, color: accentColor,
-            letterSpacing: '0.08em', flexShrink: 0,
-          } : {
-            display: 'flex', alignItems: 'center', gap: 6,
-            borderRadius: 999, padding: '6px 16px',
-            background: `${accentColor}18`,
-            border: `1px solid ${accentColor}30`,
-            fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            fontSize: fontSize * 1.1, fontWeight: 700, color: textColor,
             letterSpacing: '0.1em', flexShrink: 0,
           }}>
-            <span style={{ fontSize: fontSize * 0.7, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-              Balance
+            <span style={{ fontSize: fontSize * 0.85, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+              START
             </span>
-            <span style={{ fontWeight: 700, color: accentColor }}>
+            <span style={{ fontWeight: 800, color: accentColor }}>
               {c.balanceCurrency || '€'}{Number(c.startBalance).toLocaleString()}
             </span>
           </div>
