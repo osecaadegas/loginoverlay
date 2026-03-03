@@ -14,9 +14,12 @@
  * Config sets `result` **immediately** when the flip starts so the widget
  * always knows which face to target.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+import useTwitchChat from '../../../hooks/useTwitchChat';
+import useKickChat from '../../../hooks/useKickChat';
+import { supabase } from '../../../config/supabaseClient';
 
-function CoinFlipWidget({ config }) {
+function CoinFlipWidget({ config, widgetId }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const hColor = c.headsColor || '#f59e0b';
@@ -39,6 +42,64 @@ function CoinFlipWidget({ config }) {
   const tailsTotal = tailsBettors.reduce((s, [, b]) => s + b.amount, 0);
   const showBets = c.chatBettingEnabled && (headsBettors.length > 0 || tailsBettors.length > 0);
   const status = c.gameStatus || 'idle';
+
+  /* ─── Chat listener: detect !head / !tails bets ─── */
+  const chatBetsRef = useRef(chatBets);
+  const pendingBetsRef = useRef({});
+  useEffect(() => { chatBetsRef.current = chatBets; }, [chatBets]);
+
+  // Flush pending bets to Supabase every 1.5s
+  useEffect(() => {
+    if (!widgetId) return;
+    const timer = setInterval(async () => {
+      const pending = pendingBetsRef.current;
+      if (Object.keys(pending).length === 0) return;
+      const batch = { ...pending };
+      pendingBetsRef.current = {};
+      try {
+        const { data } = await supabase
+          .from('overlay_widgets')
+          .select('config')
+          .eq('id', widgetId)
+          .single();
+        if (!data) return;
+        const current = data.config?._chatBets || {};
+        const merged = { ...current, ...batch };
+        if (Object.keys(merged).length === Object.keys(current).length) return;
+        await supabase
+          .from('overlay_widgets')
+          .update({ config: { ...data.config, _chatBets: merged }, updated_at: new Date().toISOString() })
+          .eq('id', widgetId);
+      } catch (err) {
+        console.error('[CoinFlipWidget] flush bets failed:', err);
+        pendingBetsRef.current = { ...batch, ...pendingBetsRef.current };
+      }
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [widgetId]);
+
+  const minBet = c.minBet || 10;
+  const maxBet = c.maxBet || 10000;
+  const chatBettingEnabled = !!c.chatBettingEnabled;
+
+  const handleChatMessage = useCallback((msg) => {
+    if (!chatBettingEnabled || status !== 'open') return;
+    const txt = (msg.message || '').trim().toLowerCase();
+    const match = txt.match(/^!(heads?|tails?)\s*(\d*)$/);
+    if (!match) return;
+    const side = match[1].startsWith('head') ? 'heads' : 'tails';
+    let amount = parseInt(match[2]) || minBet;
+    amount = Math.max(minBet, Math.min(maxBet, amount));
+    const user = msg.username;
+    if (!user) return;
+    if (chatBetsRef.current[user] || pendingBetsRef.current[user]) return;
+    pendingBetsRef.current[user] = { side, amount, time: Date.now() };
+  }, [chatBettingEnabled, status, minBet, maxBet]);
+
+  const listenTwitch = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!c.twitchChannel;
+  const listenKick   = chatBettingEnabled && status === 'open' && !!c.kickEnabled   && !!c.kickChannelId;
+  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
+  useKickChat(listenKick ? c.kickChannelId : '', handleChatMessage);
 
   /* ═══ 3D COIN GEOMETRY ═══ */
   const DEPTH = 8;           // coin thickness in px

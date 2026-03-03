@@ -4,7 +4,10 @@
  * Combined multiplier awards points to all participants who joined.
  * 4 display styles: Casino Gold, Neon Cyber, Minimal, Metallic Chrome.
  */
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+import useTwitchChat from '../../../hooks/useTwitchChat';
+import useKickChat from '../../../hooks/useKickChat';
+import { supabase } from '../../../config/supabaseClient';
 
 /* ── Default outer wheel segments (12) ── */
 const DEFAULT_OUTER = [
@@ -34,7 +37,7 @@ const DEFAULT_INNER = [
   { multi: 1, label: '1x', color: '#059669' },
 ];
 
-function PointWheelWidget({ config }) {
+function PointWheelWidget({ config, widgetId }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const font = c.fontFamily || "'Inter', sans-serif";
@@ -57,6 +60,58 @@ function PointWheelWidget({ config }) {
   const participantCount = Object.keys(participants).length;
   const hasParticipants = participantCount > 0;
   const showBets = c.chatBettingEnabled && hasParticipants;
+
+  /* ─── Chat listener: detect !wheel / !spin joins ─── */
+  const participantsRef = useRef(participants);
+  const pendingJoinsRef = useRef({});
+  useEffect(() => { participantsRef.current = participants; }, [participants]);
+
+  // Flush pending joins to Supabase every 1.5s
+  useEffect(() => {
+    if (!widgetId) return;
+    const timer = setInterval(async () => {
+      const pending = pendingJoinsRef.current;
+      if (Object.keys(pending).length === 0) return;
+      const batch = { ...pending };
+      pendingJoinsRef.current = {};
+      try {
+        const { data } = await supabase
+          .from('overlay_widgets')
+          .select('config')
+          .eq('id', widgetId)
+          .single();
+        if (!data) return;
+        const current = data.config?._participants || data.config?._chatBets || {};
+        const merged = { ...current, ...batch };
+        if (Object.keys(merged).length === Object.keys(current).length) return;
+        await supabase
+          .from('overlay_widgets')
+          .update({ config: { ...data.config, _participants: merged }, updated_at: new Date().toISOString() })
+          .eq('id', widgetId);
+      } catch (err) {
+        console.error('[PointWheelWidget] flush joins failed:', err);
+        pendingJoinsRef.current = { ...batch, ...pendingJoinsRef.current };
+      }
+    }, 1500);
+    return () => clearInterval(timer);
+  }, [widgetId]);
+
+  const chatBettingEnabled = !!c.chatBettingEnabled;
+
+  const handleChatMessage = useCallback((msg) => {
+    if (!chatBettingEnabled || status !== 'open') return;
+    const txt = (msg.message || '').trim().toLowerCase();
+    if (!/^!(wheel|spin)/.test(txt)) return;
+    const user = msg.username;
+    if (!user) return;
+    if (participantsRef.current[user] || pendingJoinsRef.current[user]) return;
+    pendingJoinsRef.current[user] = { time: Date.now() };
+  }, [chatBettingEnabled, status]);
+
+  const listenTwitch = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!c.twitchChannel;
+  const listenKick   = chatBettingEnabled && status === 'open' && !!c.kickEnabled   && !!c.kickChannelId;
+  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
+  useKickChat(listenKick ? c.kickChannelId : '', handleChatMessage);
 
   /* ── Build conic gradients for wheel faces ── */
   const buildConic = (segs) => {
