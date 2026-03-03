@@ -70,18 +70,61 @@ const STEPS = [
     position: 'center',
     page: 'widgets',
   },
+  /* ── Profile page ── */
   {
-    target: null,
-    title: '8. Connect Profiles 🔌',
-    body: 'Open the Profile section to connect Spotify, Twitch, or Kick. Tokens are automatically pushed to the Navbar and Spotify widgets when you connect.',
-    position: 'center',
-    page: 'widgets',
+    target: '[data-tour="profile-identity"]',
+    title: '8. Your Identity 🪪',
+    body: 'Set your display name, motto, and avatar URL. This info is synced to your Navbar and other widgets so viewers always see your branding.',
+    position: 'bottom',
+    page: 'profile',
+  },
+  {
+    target: '[data-tour="profile-platforms"]',
+    title: '9. Connect Platforms 🔗',
+    body: 'Enter your Twitch, Kick, YouTube, and Discord usernames. The green dot shows which platforms are connected. These are pushed to your overlay widgets.',
+    position: 'right',
+    page: 'profile',
+  },
+  {
+    target: '[data-tour="profile-spotify"]',
+    title: '10. Spotify 🎵',
+    body: 'Click "Connect" to link your Spotify account. Once connected, your Navbar and Spotify Now Playing widgets auto-update with the song you\'re listening to.',
+    position: 'left',
+    page: 'profile',
+  },
+  {
+    target: '[data-tour="profile-streamelements"]',
+    title: '11. StreamElements 🎮',
+    body: 'Paste your StreamElements Channel ID and JWT Token, then hit "Test Connection" to verify. This powers the Community Games widget with live viewer data.',
+    position: 'left',
+    page: 'profile',
+  },
+  {
+    target: '[data-tour="profile-preferences"]',
+    title: '12. Preferences ⚙️',
+    body: 'Pick your default currency — it\'s used across Bonus Hunt, Tournament, and any widget that shows money values.',
+    position: 'left',
+    page: 'profile',
+  },
+  {
+    target: '[data-tour="profile-sync"]',
+    title: '13. Sync to Widgets 📡',
+    body: 'After filling in your profile, hit "Sync All" to push every field (name, avatar, platforms, tokens) into all matching widgets at once. No need to update them one by one.',
+    position: 'top',
+    page: 'profile',
+  },
+  {
+    target: '[data-tour="profile-obs-guide"]',
+    title: '14. OBS Setup Guide 🖥️',
+    body: 'Scroll down for a quick checklist to make your overlay pixel-perfect in OBS — browser source dimensions, canvas resolution, and common fixes for blurry overlays.',
+    position: 'top',
+    page: 'profile',
   },
 
   /* ── Bonus Hunt page ── */
   {
     target: '[data-tour="bonus-hunt-page"]',
-    title: '9. Bonus Hunt 🎯',
+    title: '15. Bonus Hunt 🎯',
     body: 'This is where you run your bonus hunts! Add bonuses with name, bet, and slot info. Start the hunt, open bonuses, record results — the overlay widget updates in real-time for your viewers.',
     position: 'float-top',
     page: 'bonus_hunt',
@@ -90,7 +133,7 @@ const STEPS = [
   /* ── Tournament page ── */
   {
     target: '[data-tour="tournament-page"]',
-    title: '10. Tournament 🏆',
+    title: '16. Tournament 🏆',
     body: 'Set up slot battles and tournaments here. Add players, assign slots, track scores, and run brackets. The Tournament widget on your overlay shows the leaderboard live.',
     position: 'float-top',
     page: 'tournament',
@@ -99,7 +142,7 @@ const STEPS = [
   /* ── Library page ── */
   {
     target: '[data-tour="library-page"]',
-    title: '11. Library 📚',
+    title: '17. Library 📚',
     body: 'Every bonus hunt you finish is saved here automatically. Browse your past hunts, view detailed stats and results, and see your full history.',
     position: 'bottom',
     page: 'library',
@@ -108,14 +151,14 @@ const STEPS = [
   /* ── Presets page ── */
   {
     target: '[data-tour="presets-page"]',
-    title: '12. Presets — Save Layouts 💾',
+    title: '18. Presets — Save Layouts 💾',
     body: 'Save your current widget layout as a preset. Give it a name and click Save — it captures all widget positions, sizes, colors, and styles.',
     position: 'float-top',
     page: 'presets',
   },
   {
     target: '[data-tour="presets-shared"]',
-    title: '13. Presets — Load & Share',
+    title: '19. Presets — Load & Share',
     body: 'Load any saved preset to instantly restore a layout. Admins can share presets so all users can pick from ready-made layouts in the Shared section.',
     position: 'float-top',
     page: 'presets',
@@ -124,7 +167,7 @@ const STEPS = [
   /* ── Submit Slots page ── */
   {
     target: '[data-tour="slots-page"]',
-    title: '14. Submit Slots 🎰',
+    title: '20. Submit Slots 🎰',
     body: 'Add new slot games to the database. Fill in the name, provider, RTP, volatility, and max win — then use the 🔍 Search button to find an image. An admin will review your submission.',
     position: 'bottom',
     page: 'slots',
@@ -133,14 +176,14 @@ const STEPS = [
   /* ── OBS setup ── */
   {
     target: '[data-tour="obs-url"]',
-    title: '15. OBS — Full Overlay',
+    title: '21. OBS — Full Overlay',
     body: 'Copy this URL and add it as a Browser Source in OBS (width: 1920, height: 1080). This loads your entire overlay with all widgets in one source.',
     position: 'right',
     page: 'widgets',
   },
   {
     target: null,
-    title: '16. OBS — Single Widget',
+    title: '22. OBS — Single Widget',
     body: 'Want just one widget in OBS? Open its settings ⚙️ → expand "OBS Browser Source URL" → copy the link. Add it as a separate Browser Source.',
     position: 'center',
     page: 'widgets',
@@ -306,6 +349,7 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
   /* Category label for current step */
   const pageLabels = {
     widgets: 'Widgets',
+    profile: 'Profile',
     bonus_hunt: 'Bonus Hunt',
     tournament: 'Tournament',
     library: 'Library',

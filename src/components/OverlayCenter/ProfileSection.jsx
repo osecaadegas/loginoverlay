@@ -347,7 +347,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
   return (
     <div style={S.page}>
       {/* ──── Row 1: Identity strip ──── */}
-      <div style={S.identity}>
+      <div style={S.identity} data-tour="profile-identity">
         {profile.avatarUrl ? (
           <img src={profile.avatarUrl} alt="Avatar" style={S.avatar} />
         ) : (
@@ -373,7 +373,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
       {/* ──── Row 2: Two-column grid ──── */}
       <div style={S.grid}>
         {/* LEFT — Platforms */}
-        <div style={S.card}>
+        <div style={S.card} data-tour="profile-platforms">
           <h3 style={S.cardTitle}>🔗 Platforms</h3>
 
           <div>
@@ -415,7 +415,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
         {/* RIGHT — Spotify + Preferences */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* Spotify card */}
-          <div style={S.card}>
+          <div style={S.card} data-tour="profile-spotify">
             <h3 style={S.cardTitle}>🎵 Spotify</h3>
             <div style={S.platRow}>
               <div style={S.dot(!!profile.spotify_access_token)} />
@@ -443,7 +443,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
           </div>
 
           {/* StreamElements card */}
-          <div style={S.card}>
+          <div style={S.card} data-tour="profile-streamelements">
             <h3 style={S.cardTitle}>🎮 StreamElements</h3>
             <div style={S.platRow}>
               <div style={S.dot(!!(profile.seChannelId && profile.seJwtToken))} />
@@ -492,7 +492,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
           </div>
 
           {/* Preferences card */}
-          <div style={S.card}>
+          <div style={S.card} data-tour="profile-preferences">
             <h3 style={S.cardTitle}>⚙️ Preferences</h3>
             <div>
               <label style={S.label}>Default Currency</label>
@@ -522,7 +522,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
       </div>
 
       {/* ──── Row 3: Sync bar ──── */}
-      <div style={S.syncBar}>
+      <div style={S.syncBar} data-tour="profile-sync">
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
           <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#fff' }}>📡 Widget Sync</span>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
@@ -557,7 +557,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
       )}
 
       {/* ──── OBS Setup Guide ──── */}
-      <div style={{
+      <div data-tour="profile-obs-guide" style={{
         background: 'rgba(124,58,237,0.06)',
         border: '1px solid rgba(124,58,237,0.2)',
         borderRadius: 14,
