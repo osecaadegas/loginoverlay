@@ -468,6 +468,8 @@ export default function NavbarConfig({ config, onChange }) {
             onChange={v => set('avatarSize', v)} />
           <SliderField label="Badge Size" value={c.badgeSize ?? 100} min={50} max={200} step={5} unit="%"
             onChange={v => set('badgeSize', v)} />
+          <SliderField label="Casino Image Size" value={c.casinoImageSize ?? 100} min={30} max={300} step={5} unit="%"
+            onChange={v => set('casinoImageSize', v)} />
 
           <h4 className="nb-subtitle">Typography</h4>
           <label className="nb-field">

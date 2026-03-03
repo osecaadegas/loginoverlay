@@ -612,7 +612,8 @@ function NavbarWidget({ config, widgetId }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
             {c.casinoLogoUrl && (
               <img src={c.casinoLogoUrl} alt="" style={{
-                height: barHeight * 0.55, maxWidth: barHeight * 1.8,
+                height: barHeight * 0.55 * ((c.casinoImageSize ?? 100) / 100),
+                maxWidth: barHeight * 1.8 * ((c.casinoImageSize ?? 100) / 100),
                 objectFit: 'contain', borderRadius: isMetal ? 6 : isRetro ? 2 : 8,
                 filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))` : 'none',
               }} />
