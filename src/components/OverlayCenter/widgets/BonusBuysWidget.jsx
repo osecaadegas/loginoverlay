@@ -71,20 +71,50 @@ function BonusBuysWidget({ config }) {
     rows.push({ idx: i + 1, cost: betCost, win, multi, ok });
   }
 
-  /* Auto-scroll when more than 10 rows */
+  /* Auto-scroll when more than 10 rows:
+     Slowly scroll up, when last row reaches top snap back to top, repeat */
   const scrollRef = useRef(null);
   const scrollPos = useRef(0);
+  const paused = useRef(false);
   useEffect(() => {
     if (rows.length <= 10) return;
     const el = scrollRef.current;
     if (!el) return;
     let raf;
+    const SLOW_SPEED = 0.15;          // px per frame (~9 px/s at 60 fps)
+    const PAUSE_AT_TOP = 2000;        // ms to hold at top before scrolling
+    const PAUSE_AT_BOTTOM = 1500;     // ms to hold at bottom before snapping
+
+    scrollPos.current = 0;
+    el.scrollTop = 0;
+    paused.current = false;
+
     const step = () => {
-      scrollPos.current += 0.5;
-      if (scrollPos.current >= el.scrollHeight - el.clientHeight) scrollPos.current = 0;
-      el.scrollTop = scrollPos.current;
+      if (paused.current) { raf = requestAnimationFrame(step); return; }
+      const maxScroll = el.scrollHeight - el.clientHeight;
+      if (maxScroll <= 0) { raf = requestAnimationFrame(step); return; }
+
+      scrollPos.current += SLOW_SPEED;
+      if (scrollPos.current >= maxScroll) {
+        scrollPos.current = maxScroll;
+        el.scrollTop = scrollPos.current;
+        // Pause at bottom, then snap to top
+        paused.current = true;
+        setTimeout(() => {
+          scrollPos.current = 0;
+          el.scrollTop = 0;
+          // Pause at top before scrolling again
+          setTimeout(() => { paused.current = false; }, PAUSE_AT_TOP);
+        }, PAUSE_AT_BOTTOM);
+      } else {
+        el.scrollTop = scrollPos.current;
+      }
       raf = requestAnimationFrame(step);
     };
+
+    // Initial pause at top
+    paused.current = true;
+    setTimeout(() => { paused.current = false; }, PAUSE_AT_TOP);
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [rows.length]);
