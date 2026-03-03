@@ -160,15 +160,16 @@ function BonusHuntWidgetV9({ config, theme }) {
     <div className="bhv9-root" style={{ fontFamily, color: textColor, ...rootVars }}>
       <div className="bhv9-container">
 
-        {/* ─── Top: all-bonus pill strip ─── */}
+        {/* ─── Top: single-row marquee strip ─── */}
         <div className="bhv9-strip">
-          <div className="bhv9-strip-scroll">
-            {bonuses.map((b, idx) => {
+          <div className="bhv9-strip-scroll" style={{ '--bhv9-pill-count': total }}>
+            {[...bonuses, ...bonuses].map((b, i) => {
+              const idx = i % total;
               const bet = Number(b.betSize) || 0;
               const isActive = idx === activeIdx;
               const image = b.slot?.image || '';
               return (
-                <button key={idx}
+                <button key={`${idx}-${i >= total ? 'c' : 'o'}`}
                   className={`bhv9-strip-pill${isActive ? ' bhv9-strip-pill--active' : ''}${b.opened ? ' bhv9-strip-pill--opened' : ''}`}
                   onClick={() => setActiveIdx(idx)}>
                   {image && <img src={image} alt="" className="bhv9-strip-thumb" onError={e => { e.target.style.display = 'none'; }} />}

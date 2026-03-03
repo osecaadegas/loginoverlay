@@ -3269,15 +3269,24 @@
   overflow: hidden;
 }
 
-/* ── Top: slot-name pill strip (wrap layout — shows ALL bonuses) ── */
+/* ── Top: single-row marquee pill strip ── */
 .bhv9-strip {
-  display: flex; align-items: flex-start; gap: 6px;
+  display: flex; align-items: center; gap: 6px;
   padding: 6px 10px;
   border-bottom: 1px solid rgba(255,255,255,0.06);
-  flex-shrink: 0;
+  overflow: hidden; flex-shrink: 0;
 }
 .bhv9-strip-scroll {
-  display: flex; flex-wrap: wrap; gap: 4px; flex: 1;
+  display: flex; gap: 5px; flex: 1;
+  overflow: hidden;
+  scrollbar-width: none; -ms-overflow-style: none;
+  animation: bhv9-marquee calc(var(--bhv9-pill-count, 5) * 4s) linear infinite;
+}
+.bhv9-strip:hover .bhv9-strip-scroll { animation-play-state: paused; }
+.bhv9-strip-scroll::-webkit-scrollbar { display: none; }
+@keyframes bhv9-marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
 }
 .bhv9-strip-pill {
   flex-shrink: 0; display: flex; align-items: center; gap: 4px;
