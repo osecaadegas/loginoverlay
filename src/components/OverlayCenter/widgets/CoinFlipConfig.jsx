@@ -188,6 +188,7 @@ export default function CoinFlipConfig({ config, onChange }) {
       flipping: true,
       _flipStart: Date.now(),
       _prevResult: c.result || 'heads',
+      result,
     });
     // After animation, reveal result & process payouts
     setTimeout(async () => {
@@ -233,7 +234,7 @@ export default function CoinFlipConfig({ config, onChange }) {
     }
     setMulti({
       gameStatus: 'flipping', flipping: true, _flipStart: Date.now(),
-      _prevResult: c.result || 'heads', _chatBets: {},
+      _prevResult: c.result || 'heads', _chatBets: {}, result,
     });
     setTimeout(() => {
       const newEntry = {
