@@ -57,6 +57,7 @@ function BonusHuntWidgetV9({ config, theme }) {
 
   /* current bonus (first not-opened) */
   const currentBonusIdx = bonuses.findIndex(b => !b.opened);
+  const huntComplete = bonusOpening && currentBonusIdx === -1 && total > 0;
 
   const advance = useCallback(() => {
     if (total <= 0) return;
@@ -65,7 +66,8 @@ function BonusHuntWidgetV9({ config, theme }) {
 
   /* When bonusOpening is ON → lock to the current bonus, stop cycling.
      The 3D transition still fires because activeIdx changes when
-     currentBonusIdx advances (user fills payout → next card slides in). */
+     currentBonusIdx advances (user fills payout → next card slides in).
+     When hunt is complete (all opened) → resume spinning the results. */
   useEffect(() => {
     if (bonusOpening && currentBonusIdx >= 0) {
       setActiveIdx(currentBonusIdx);
@@ -73,11 +75,12 @@ function BonusHuntWidgetV9({ config, theme }) {
   }, [bonusOpening, currentBonusIdx]);
 
   useEffect(() => {
-    /* No auto-cycle when bonusOpening is active or ≤1 card */
-    if (bonusOpening || total <= 1) return;
+    /* No auto-cycle when bonusOpening is active with unopened bonuses, or ≤1 card.
+       Resume cycling when hunt is complete so results keep spinning. */
+    if ((bonusOpening && !huntComplete) || total <= 1) return;
     timerRef.current = setInterval(advance, autoSpeed);
     return () => clearInterval(timerRef.current);
-  }, [total, autoSpeed, advance, bonusOpening]);
+  }, [total, autoSpeed, advance, bonusOpening, huntComplete]);
 
   /* ─── Circular offset ─── */
   const getOffset = useCallback((idx) => {
