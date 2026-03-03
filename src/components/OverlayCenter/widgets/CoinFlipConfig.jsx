@@ -18,6 +18,12 @@ export default function CoinFlipConfig({ config, onChange }) {
   const [payoutProcessing, setPayoutProcessing] = useState(false);
   const [payoutResult, setPayoutResult] = useState(null); // { winners:[], losers:[], errors:[] }
 
+  /* ── Points manager state ── */
+  const [pmUser, setPmUser] = useState('');
+  const [pmAmount, setPmAmount] = useState('');
+  const [pmBusy, setPmBusy] = useState(false);
+  const [pmMsg, setPmMsg] = useState(null); // { type: 'ok'|'err', text }
+
   /* ── StreamElements integration ── */
   let seCtx = null;
   try { seCtx = useStreamElements(); } catch { /* not inside provider — graceful fallback */ }
@@ -214,9 +220,68 @@ export default function CoinFlipConfig({ config, onChange }) {
     setMulti({ gameStatus: 'idle', result: null, flipping: false, _chatBets: {} });
   };
 
+  /* ── Streamer Quick Flip (no bets, just animation) ── */
+  const streamerFlip = () => {
+    if (status === 'flipping') return;
+    let result;
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const arr = new Uint32Array(1);
+      crypto.getRandomValues(arr);
+      result = arr[0] % 2 === 0 ? 'heads' : 'tails';
+    } else {
+      result = Math.random() < 0.5 ? 'heads' : 'tails';
+    }
+    setMulti({
+      gameStatus: 'flipping', flipping: true, _flipStart: Date.now(),
+      _prevResult: c.result || 'heads', _chatBets: {},
+    });
+    setTimeout(() => {
+      const newEntry = {
+        result, time: new Date().toLocaleTimeString(),
+        pool: 0, winners: 0, totalBettors: 0, streamerFlip: true,
+      };
+      setMulti({
+        result, flipping: false, gameStatus: 'result',
+        flipHistory: [newEntry, ...history].slice(0, 30),
+      });
+    }, 2800);
+  };
+
+  /* ── Points Manager helpers ── */
+  const clearPmMsg = () => setTimeout(() => setPmMsg(null), 5000);
+
+  const givePointsToUser = async (username, amount) => {
+    if (!username || !amount) return;
+    setPmBusy(true);
+    const res = await modifyViewerPoints(username.trim().toLowerCase(), amount);
+    if (res.success) {
+      setPmMsg({ type: 'ok', text: `✅ ${amount > 0 ? '+' : ''}${amount.toLocaleString()} pts → ${username} (bal: ${res.newBalance?.toLocaleString()})` });
+    } else {
+      setPmMsg({ type: 'err', text: `❌ ${username}: ${res.error}` });
+    }
+    setPmBusy(false);
+    clearPmMsg();
+  };
+
+  const givePointsToAll = async (amount) => {
+    const bets = chatBetsRef.current;
+    const users = Object.keys(bets);
+    if (users.length === 0) { setPmMsg({ type: 'err', text: '⚠️ No bettors in current round' }); clearPmMsg(); return; }
+    setPmBusy(true);
+    let ok = 0; let fail = 0;
+    await Promise.allSettled(users.map(async (u) => {
+      const res = await modifyViewerPoints(u, amount);
+      if (res.success) ok++; else fail++;
+    }));
+    setPmMsg({ type: ok > 0 ? 'ok' : 'err', text: `${ok > 0 ? '✅' : '❌'} ${ok}/${users.length} users received ${amount > 0 ? '+' : ''}${amount.toLocaleString()} pts${fail ? ` (${fail} failed)` : ''}` });
+    setPmBusy(false);
+    clearPmMsg();
+  };
+
   const tabs = [
     { id: 'game', label: '🎮 Game' },
     { id: 'chat', label: '💬 Chat' },
+    { id: 'points', label: '💰 Points' },
     { id: 'style', label: '🎨 Style' },
     { id: 'history', label: '📜 History' },
   ];
@@ -282,6 +347,21 @@ export default function CoinFlipConfig({ config, onChange }) {
               </button>
             )}
           </div>
+
+          {/* Streamer Quick Flip — solo flip, no bets */}
+          {status === 'idle' && (
+            <button
+              className="cg-config__btn"
+              style={{
+                width: '100%', padding: '10px 0', marginBottom: 4,
+                background: 'rgba(168,85,247,0.12)', color: '#c084fc',
+                border: '1px solid rgba(168,85,247,0.25)', fontWeight: 700,
+              }}
+              onClick={streamerFlip}
+            >
+              🎲 Streamer Quick Flip
+            </button>
+          )}
 
           {/* Payout processing indicator */}
           {payoutProcessing && (
@@ -510,6 +590,154 @@ export default function CoinFlipConfig({ config, onChange }) {
           {!c.twitchChannel && !c.kickChannelId && chatBettingEnabled && (
             <p style={{ fontSize: 11, color: '#f59e0b', margin: '8px 0 0' }}>
               ⚠️ No platforms configured — set your Twitch/Kick channels in <b style={{ color: '#e2e8f0' }}>Profile</b> and click <b style={{ color: '#e2e8f0' }}>Sync All</b>.
+            </p>
+          )}
+        </div>
+      )}
+
+      {/* ═══ POINTS TAB ═══ */}
+      {tab === 'points' && (
+        <div className="cg-config__section">
+          <h4 style={{ margin: '0 0 4px', fontSize: 13, color: '#e2e8f0', fontWeight: 700 }}>Points Manager</h4>
+          <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 12px', lineHeight: 1.5 }}>
+            Give or take StreamElements points from a specific viewer or all current bettors.
+          </p>
+
+          {/* SE connection status */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6, padding: '6px 10px',
+            borderRadius: 6, marginBottom: 12, fontSize: 11,
+            background: seConnected ? 'rgba(34,197,94,0.06)' : 'rgba(239,68,68,0.06)',
+            border: `1px solid ${seConnected ? 'rgba(34,197,94,0.15)' : 'rgba(239,68,68,0.15)'}`,
+            color: seConnected ? '#22c55e' : '#f87171',
+          }}>
+            <span style={{ width: 6, height: 6, borderRadius: '50%', background: seConnected ? '#22c55e' : '#ef4444' }} />
+            <span style={{ fontWeight: 600 }}>
+              StreamElements {seConnected ? '● Connected' : '○ Not connected — go to Profile → StreamElements'}
+            </span>
+          </div>
+
+          {/* Single user section */}
+          <div style={{
+            background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: 10, padding: '12px 14px', marginBottom: 10,
+            display: 'flex', flexDirection: 'column', gap: 8,
+          }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: '#e2e8f0' }}>👤 Single User</span>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <input
+                style={{ flex: 2, fontSize: 12 }}
+                value={pmUser}
+                onChange={e => setPmUser(e.target.value)}
+                placeholder="Username"
+              />
+              <input
+                style={{ flex: 1, fontSize: 12 }}
+                type="number"
+                value={pmAmount}
+                onChange={e => setPmAmount(e.target.value)}
+                placeholder="Amount"
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 6 }}>
+              <button
+                className="cg-config__btn cg-config__btn--primary"
+                style={{ flex: 1, padding: '8px 0' }}
+                disabled={!seConnected || pmBusy || !pmUser || !pmAmount}
+                onClick={() => givePointsToUser(pmUser, Math.abs(parseInt(pmAmount) || 0))}
+              >
+                ➕ Give
+              </button>
+              <button
+                className="cg-config__btn"
+                style={{
+                  flex: 1, padding: '8px 0',
+                  background: 'rgba(239,68,68,0.12)', color: '#f87171',
+                  border: '1px solid rgba(239,68,68,0.25)',
+                }}
+                disabled={!seConnected || pmBusy || !pmUser || !pmAmount}
+                onClick={() => givePointsToUser(pmUser, -Math.abs(parseInt(pmAmount) || 0))}
+              >
+                ➖ Take
+              </button>
+            </div>
+          </div>
+
+          {/* All bettors section */}
+          <div style={{
+            background: 'rgba(168,85,247,0.04)', border: '1px solid rgba(168,85,247,0.15)',
+            borderRadius: 10, padding: '12px 14px', marginBottom: 10,
+            display: 'flex', flexDirection: 'column', gap: 8,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#c084fc' }}>👥 All Current Bettors</span>
+              <span style={{ fontSize: 10, color: '#94a3b8' }}>{Object.keys(chatBets).length} users</span>
+            </div>
+            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+              <input
+                style={{ flex: 1, fontSize: 12 }}
+                type="number"
+                value={pmAmount}
+                onChange={e => setPmAmount(e.target.value)}
+                placeholder="Amount for all"
+              />
+              <button
+                className="cg-config__btn cg-config__btn--primary"
+                style={{ padding: '8px 14px' }}
+                disabled={!seConnected || pmBusy || !pmAmount || Object.keys(chatBets).length === 0}
+                onClick={() => givePointsToAll(Math.abs(parseInt(pmAmount) || 0))}
+              >
+                ➕ Give All
+              </button>
+              <button
+                className="cg-config__btn"
+                style={{
+                  padding: '8px 14px',
+                  background: 'rgba(239,68,68,0.12)', color: '#f87171',
+                  border: '1px solid rgba(239,68,68,0.25)',
+                }}
+                disabled={!seConnected || pmBusy || !pmAmount || Object.keys(chatBets).length === 0}
+                onClick={() => givePointsToAll(-Math.abs(parseInt(pmAmount) || 0))}
+              >
+                ➖ Take All
+              </button>
+            </div>
+            {Object.keys(chatBets).length > 0 && (
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                {Object.entries(chatBets).map(([user, b]) => (
+                  <span key={user} style={{
+                    fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 600,
+                    background: b.side === 'heads' ? 'rgba(250,204,21,0.08)' : 'rgba(96,165,250,0.08)',
+                    color: b.side === 'heads' ? '#facc15' : '#60a5fa',
+                    border: `1px solid ${b.side === 'heads' ? 'rgba(250,204,21,0.2)' : 'rgba(96,165,250,0.2)'}`,
+                  }}>
+                    {user} ({b.amount})
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Processing & result */}
+          {pmBusy && (
+            <div style={{ fontSize: 12, color: '#facc15', fontWeight: 600, textAlign: 'center', padding: 6 }}>
+              ⏳ Processing...
+            </div>
+          )}
+          {pmMsg && (
+            <div style={{
+              fontSize: 11, fontWeight: 600, padding: '8px 10px', borderRadius: 6,
+              background: pmMsg.type === 'ok' ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+              border: `1px solid ${pmMsg.type === 'ok' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
+              color: pmMsg.type === 'ok' ? '#4ade80' : '#f87171',
+            }}>
+              {pmMsg.text}
+            </div>
+          )}
+
+          {!seConnected && (
+            <p style={{ fontSize: 11, color: '#f59e0b', margin: '8px 0 0', lineHeight: 1.5 }}>
+              ⚠️ Connect StreamElements in <b style={{ color: '#e2e8f0' }}>Profile</b> → StreamElements, then click <b style={{ color: '#e2e8f0' }}>Sync All</b> to enable points management.
             </p>
           )}
         </div>
