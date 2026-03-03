@@ -60,7 +60,22 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
         /* ── Normal PRIVMSG ── */
         const m = line.match(/@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.+)/);
         if (!m) continue;
-        const tags = Object.fromEntries(m[1].split(';').map(t => t.split('=')));
+        const tags = Object.fromEntries(
+          m[1].split(';').map(t => { const [k, ...v] = t.split('='); return [k, v.join('=')]; })
+        );
+
+        /* Parse Twitch badges string e.g. "broadcaster/1,subscriber/12,premium/1" */
+        const badgeStr = tags['badges'] || '';
+        const badgeEntries = badgeStr ? badgeStr.split(',').map(b => { const [n, v] = b.split('/'); return [n, v]; }) : [];
+        const badgeMap = Object.fromEntries(badgeEntries);
+
+        const isMod = tags['mod'] === '1' || 'moderator' in badgeMap;
+        const isSub = tags['subscriber'] === '1' || 'subscriber' in badgeMap;
+        const isVip = 'vip' in badgeMap;
+        const isBroadcaster = 'broadcaster' in badgeMap;
+        const isFirstMsg = tags['first-msg'] === '1';
+        const subMonths = parseInt(tags['badge-info']?.split('subscriber/')?.[1] || badgeMap['subscriber'] || '0', 10);
+
         onMessage({
           id: tags['id'] || Date.now().toString() + Math.random(),
           platform: 'twitch',
@@ -68,6 +83,14 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
           message: m[3],
           color: tags['color'] || '',
           timestamp: Date.now(),
+          /* Twitch badges */
+          badges: badgeMap,
+          isMod,
+          isSub,
+          isVip,
+          isBroadcaster,
+          isFirstMsg,
+          subMonths,
         });
       }
     };

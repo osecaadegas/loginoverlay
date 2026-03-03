@@ -9,6 +9,25 @@ const PLATFORM_META = {
   kick:    { label: 'Kick',    icon: 'K', color: '#22c55e' },
 };
 
+/* ─── Twitch badge pills (Cards style) ─── */
+const BADGE_DEFS = [
+  { key: 'isBroadcaster', label: 'HOST',  bg: '#dc2626', icon: '🏠' },
+  { key: 'isMod',         label: 'MOD',   bg: '#16a34a', icon: '⚔' },
+  { key: 'isVip',         label: 'VIP',   bg: '#7c3aed', icon: '💎' },
+  { key: 'isSub',         label: 'SUB',   bg: '#ca8a04', icon: '⭐' },
+  { key: 'isFirstMsg',    label: 'NEW',   bg: '#0ea5e9', icon: '✨' },
+];
+
+function TwitchBadges({ msg }) {
+  return BADGE_DEFS
+    .filter(b => msg[b.key])
+    .map(b => (
+      <span key={b.key} className="ov-cards-badge" style={{ background: b.bg }}>
+        <span className="ov-cards-badge-icon">{b.icon}</span> {b.label}
+      </span>
+    ));
+}
+
 /* ─── YouTube live chat polling ─── */
 function useYoutubeChat(videoId, apiKey, onMessage) {
   const chatIdRef = useRef(null);
@@ -90,11 +109,12 @@ function ChatWidget({ config, theme }) {
     stack: 'transparent',
     typewriter: 'rgba(0,8,0,0.92)',
     sidebar: 'rgba(10,12,20,0.9)',
+    cards: 'rgba(18,10,35,0.95)',
   };
   const bgColor = c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic;
 
   /* Which features each style shows */
-  const showHeader = (chatStyle === 'classic') ? (c.showHeader !== false) : false;
+  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards') ? (c.showHeader !== false) : false;
   const showLegend = (chatStyle === 'classic') ? (c.showLegend !== false) : false;
   const showBadges = (chatStyle === 'classic') ? (c.showBadges !== false) : false;
 
@@ -162,7 +182,19 @@ function ChatWidget({ config, theme }) {
         @keyframes ov-cursor-blink{0%,50%{opacity:1}51%,100%{opacity:0}}
       `}</style>
 
-      {showHeader && (
+      {showHeader && chatStyle === 'cards' && (
+        <div className="ov-cards-header">
+          <div className="ov-cards-header-left">
+            <span className="ov-cards-live-dot" />
+            <span className="ov-cards-header-label">CHAT</span>
+          </div>
+          <span className="ov-cards-header-channel">
+            {c.twitchChannel ? c.twitchChannel.toUpperCase() : 'CHANNEL'}
+          </span>
+        </div>
+      )}
+
+      {showHeader && chatStyle !== 'cards' && (
         <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
           <span className="ov-chat-header-title">Live Chat</span>
           <div className="ov-chat-header-badges">
@@ -308,6 +340,30 @@ function ChatWidget({ config, theme }) {
             );
           }
 
+          /* ── Style: Cards — dark card per message with Twitch badge pills ── */
+          if (chatStyle === 'cards') {
+            const nameClr = c.useNativeColors && msg.color ? msg.color : plt.color;
+            const isRaider = !!msg.isRaidParticipant;
+            return (
+              <div key={msg.id} className="ov-cards-msg" style={{
+                animation: 'ov-cards-slide-in 0.3s ease-out',
+              }}>
+                <div className="ov-cards-msg-header">
+                  <span className="ov-cards-username" style={{ color: nameClr }}>@{msg.username}</span>
+                  <div className="ov-cards-badges">
+                    <TwitchBadges msg={msg} />
+                    {isRaider && (
+                      <span className="ov-cards-badge" style={{ background: '#7c3aed' }}>
+                        <span className="ov-cards-badge-icon">⚔️</span> RAID
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="ov-cards-msg-text">{msg.message}</div>
+              </div>
+            );
+          }
+
           /* ── Default: Classic ── */
           return (
             <div key={msg.id} className="ov-chat-msg" style={{ padding: `${msgSpacing}px ${msgPadH}px` }}>
@@ -348,6 +404,30 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
   const raidBorder = c.raidBorderColor || '#a855f7';
   const raidText = c.raidTextColor || '#ffffff';
   const showAvatar = c.showRaidAvatar !== false;
+
+  /* ── Cards style raid ── */
+  if (chatStyle === 'cards') {
+    return (
+      <div className="ov-cards-msg ov-cards-msg--raid" style={{
+        animation: 'ov-cards-slide-in 0.35s ease-out',
+      }}>
+        <div className="ov-cards-msg-header">
+          <span className="ov-cards-username" style={{ color: '#d8b4fe' }}>@{msg.username}</span>
+          <div className="ov-cards-badges">
+            <span className="ov-cards-badge" style={{ background: '#7c3aed' }}>
+              <span className="ov-cards-badge-icon">⚔️</span> RAID
+            </span>
+            {msg.raidViewers > 0 && (
+              <span className="ov-cards-badge" style={{ background: 'rgba(124,58,237,0.5)' }}>
+                👥 {msg.raidViewers}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="ov-cards-msg-text" style={{ color: '#f5f3ff' }}>{msg.message}</div>
+      </div>
+    );
+  }
 
   if (chatStyle === 'floating' || chatStyle === 'stack') {
     return (

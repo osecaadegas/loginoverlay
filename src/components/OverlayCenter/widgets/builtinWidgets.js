@@ -268,6 +268,7 @@ registerWidget({
     { id: 'stack',      icon: '📚', label: 'Stack' },
     { id: 'typewriter', icon: '⌨️', label: 'Terminal' },
     { id: 'sidebar',    icon: '📌', label: 'Sidebar' },
+    { id: 'cards',      icon: '🃏', label: 'Cards' },
   ],
   styleConfigKey: 'chatStyle',
   defaults: {
