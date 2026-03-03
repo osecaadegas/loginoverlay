@@ -42,7 +42,8 @@ function BonusBuysWidget({ config }) {
   const name = c.slotName || 'No Slot Selected';
   const provider = c.provider || '';
   const img = c.imageUrl || '';
-  const betCost = Number(c.betCost) || 0;
+  const betCost = Number(c.bonusCost) || Number(c.betCost) || 0;
+  const betValue = Number(c.betValue) || 0;
   const plannedBonuses = Number(c.plannedBonuses) || 5;
   const bonuses = c.bonuses || [];
   const startMoney = Number(c.startMoney) || 0;

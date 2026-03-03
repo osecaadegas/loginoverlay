@@ -81,7 +81,7 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
   };
 
   const currency = c.currency || '$';
-  const betCost = Number(c.betCost) || 0;
+  const betCost = Number(c.bonusCost) || Number(c.betCost) || 0;
   const bonuses = c.bonuses || [];
   const plannedBonuses = Number(c.plannedBonuses) || 5;
 
@@ -175,17 +175,32 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
               <div>
-                <label style={{ ...S.label, fontSize: '0.72rem' }}>Bet / Cost ({currency})</label>
+                <label style={{ ...S.label, fontSize: '0.72rem' }}>Bet Value ({currency})</label>
                 <input
                   style={S.input}
                   type="number"
                   min="0"
                   step="0.01"
-                  value={c.betCost || ''}
-                  onChange={e => set('betCost', e.target.value)}
+                  value={c.betValue || ''}
+                  onChange={e => set('betValue', e.target.value)}
+                  placeholder="5"
+                />
+              </div>
+              <div>
+                <label style={{ ...S.label, fontSize: '0.72rem' }}>Bonus Cost ({currency})</label>
+                <input
+                  style={S.input}
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={c.bonusCost || c.betCost || ''}
+                  onChange={e => set('bonusCost', e.target.value)}
                   placeholder="300"
                 />
               </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
               <div>
                 <label style={{ ...S.label, fontSize: '0.72rem' }}>Planned Bonuses</label>
                 <input
