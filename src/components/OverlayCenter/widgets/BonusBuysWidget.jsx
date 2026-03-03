@@ -57,9 +57,9 @@ function BonusBuysWidget({ config }) {
   const totalWin = filled.reduce((s, b) => s + (Number(b.win) || 0), 0);
   const profitLoss = totalWin - totalCost;
   const avgMulti = filled.length > 0
-    ? filled.reduce((s, b) => s + (betCost > 0 ? (Number(b.win) || 0) / betCost : 0), 0) / filled.length
+    ? filled.reduce((s, b) => s + (betValue > 0 ? (Number(b.win) || 0) / betValue : 0), 0) / filled.length
     : 0;
-  const overallMulti = totalCost > 0 ? totalWin / totalCost : 0;
+  const overallMulti = betValue > 0 && filled.length > 0 ? totalWin / (filled.length * betValue) : 0;
 
   /* Build rows */
   const rows = [];
@@ -67,7 +67,7 @@ function BonusBuysWidget({ config }) {
     const b = bonuses[i];
     const ok = b && b.win !== undefined && b.win !== null && b.win !== '';
     const win = ok ? Number(b.win) || 0 : null;
-    const multi = ok && betCost > 0 ? win / betCost : null;
+    const multi = ok && betValue > 0 ? win / betValue : null;
     rows.push({ idx: i + 1, cost: betCost, win, multi, ok });
   }
 

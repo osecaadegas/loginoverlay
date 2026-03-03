@@ -82,6 +82,7 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
 
   const currency = c.currency || '$';
   const betCost = Number(c.bonusCost) || Number(c.betCost) || 0;
+  const betValue = Number(c.betValue) || 0;
   const bonuses = c.bonuses || [];
   const plannedBonuses = Number(c.plannedBonuses) || 5;
 
@@ -91,7 +92,7 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
   const totalWin = filledBonuses.reduce((sum, b) => sum + (Number(b.win) || 0), 0);
   const profitLoss = totalWin - totalCost;
   const avgMulti = filledBonuses.length > 0
-    ? filledBonuses.reduce((sum, b) => sum + (betCost > 0 ? (Number(b.win) || 0) / betCost : 0), 0) / filledBonuses.length
+    ? filledBonuses.reduce((sum, b) => sum + (betValue > 0 ? (Number(b.win) || 0) / betValue : 0), 0) / filledBonuses.length
     : 0;
 
   const handleAddBonus = () => {
@@ -100,7 +101,7 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
     const newBonuses = [...bonuses, { id: Date.now(), win }];
     set('bonuses', newBonuses);
     setWinInput('');
-    setMessage(`✅ Bonus #${newBonuses.length} added — ${betCost > 0 ? (win / betCost).toFixed(2) : '0.00'}x`);
+    setMessage(`✅ Bonus #${newBonuses.length} added — ${betValue > 0 ? (win / betValue).toFixed(2) : '0.00'}x`);
     setTimeout(() => setMessage(''), 3000);
   };
 
@@ -296,9 +297,9 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
                     Add
                   </button>
                 </div>
-                {winInput !== '' && betCost > 0 && (
+                {winInput !== '' && betValue > 0 && (
                   <div style={{ fontSize: '0.75rem', color: '#a0a0b4', marginTop: 4 }}>
-                    Multi: {(Number(winInput) / betCost).toFixed(2)}x
+                    Multi: {(Number(winInput) / betValue).toFixed(2)}x
                     {Number(winInput) >= betCost ? ' ✅' : ' ❌'}
                     &nbsp;| Profit: {(Number(winInput) - betCost).toFixed(2)}{currency}
                   </div>
@@ -330,7 +331,7 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 280, overflowY: 'auto' }}>
                     {bonuses.map((b, i) => {
                       const win = Number(b.win) || 0;
-                      const multi = betCost > 0 ? win / betCost : 0;
+                      const multi = betValue > 0 ? win / betValue : 0;
                       const isProfit = win >= betCost;
                       return (
                         <div key={b.id || i} style={{
