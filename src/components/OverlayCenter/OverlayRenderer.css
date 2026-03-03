@@ -797,7 +797,7 @@
   animation-play-state: paused;
 }
 .bhh-carousel-track > .bhtc-card {
-  flex: 0 0 130px;
+  flex: 0 0 170px;
 }
 
 /* ─── Bonus Hunt: Compact ─── */
@@ -1148,7 +1148,7 @@
   animation-play-state: paused;
 }
 .bhtc-card {
-  flex: 0 0 140px;
+  flex: 0 0 180px;
   border-radius: 10px;
   overflow: hidden;
   background: color-mix(in srgb, var(--bht-list-bg, #0a0f23) 85%, transparent);
@@ -1206,7 +1206,7 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  min-height: 70px;
+  min-height: 90px;
 }
 .bhtc-card-img {
   width: 100%;
@@ -3555,7 +3555,7 @@
   animation-play-state: paused;
 }
 .bhh-carousel-track > .bhtc-card {
-  flex: 0 0 130px;
+  flex: 0 0 170px;
 }
 
 /* ── V7: Carousel layout ── */
@@ -3690,7 +3690,7 @@
 
 /* ── Shared carousel cards (v5 + v7) ── */
 .bhtc-card {
-  flex: 0 0 140px;
+  flex: 0 0 180px;
   border-radius: 10px;
   overflow: hidden;
   background: color-mix(in srgb, var(--bht-list-bg, #0a0f23) 85%, transparent);
@@ -3744,7 +3744,7 @@
   flex: 1;
   overflow: hidden;
   position: relative;
-  min-height: 70px;
+  min-height: 90px;
 }
 .bhtc-card-img {
   width: 100%;
