@@ -313,18 +313,60 @@ function BonusHuntWidget({ config, theme }) {
   return (
     <div className={`oc-widget-inner oc-bonushunt${bhModeClass}`} style={rootStyle}>
 
+      {/* ═══ COMPACT: Merged Header + Count Card ═══ */}
+      {isCompactBH ? (
+        <div className="bht-card bht-header bht-compact-merged">
+          <div className="bht-compact-top-row">
+            {/* Streamer avatar */}
+            {c.avatarUrl ? (
+              <img src={c.avatarUrl} alt="" className="bht-compact-avatar"
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div className="bht-icon-circle">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+                </svg>
+              </div>
+            )}
+            <div className="bht-compact-title-block">
+              <div className="bht-title">{huntTitle}</div>
+              {c.huntNumber && <span className="bht-compact-hunt-num">#{c.huntNumber}</span>}
+            </div>
+          </div>
+          <div className="bht-compact-info-row">
+            <div className="bht-compact-info-pill">
+              <span className="bht-compact-info-label">TOTAL</span>
+              <strong>{bonuses.length}</strong>
+            </div>
+            <div className="bht-compact-info-pill bht-compact-info-pill--super">
+              <span className="bht-compact-info-label">SUPER</span>
+              <strong>{stats.superCount}</strong>
+            </div>
+            <div className="bht-compact-info-pill bht-compact-info-pill--extreme">
+              <span className="bht-compact-info-label">EXTREME</span>
+              <strong>{bonuses.filter(b => b.isExtreme).length}</strong>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <>
       {/* ═══ Header Card ═══ */}
       <div className="bht-card bht-header">
         <div className="bht-header-top">
           <div className="bht-header-left">
+            {c.avatarUrl ? (
+              <img src={c.avatarUrl} alt="" className="bht-compact-avatar"
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
             <div className="bht-icon-circle">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
               </svg>
             </div>
+            )}
             <div>
               <div className="bht-title">{huntTitle}</div>
-              <div className="bht-subtitle">{c.huntName || ''}</div>
+              <div className="bht-subtitle">{c.huntNumber ? `#${c.huntNumber}` : c.huntName || ''}</div>
             </div>
           </div>
           <span className="bht-badge">#{bonuses.length}</span>
@@ -372,6 +414,8 @@ function BonusHuntWidget({ config, theme }) {
           </div>
         </div>
       </div>
+        </>
+      )}
 
       {/* ═══ Current Bonus Card ═══ */}
       {currentBonus && (

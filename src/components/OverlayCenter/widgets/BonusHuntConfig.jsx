@@ -27,6 +27,14 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
   // Auth for history
   const { user } = useAuth();
 
+  // Auto-fill streamer avatar from Twitch
+  const twitchAvatar = user?.user_metadata?.avatar_url || '';
+  useEffect(() => {
+    if (twitchAvatar && !c.avatarUrl) {
+      set('avatarUrl', twitchAvatar);
+    }
+  }, [twitchAvatar]);
+
   // Find navbar widget config for sync
   const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
 
@@ -299,6 +307,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   const [startMoney, setStartMoney] = useState(c.startMoney || '');
   const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
   const [stopLoss, setStopLoss] = useState(c.stopLoss || '');
+  const [huntNumber, setHuntNumber] = useState(c.huntNumber || '');
   const [betSize, setBetSize] = useState('');
   const [slotSearch, setSlotSearch] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -343,12 +352,13 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       startMoney: Number(startMoney) || 0,
       targetMoney: Number(targetMoney) || 0,
       stopLoss: Number(stopLoss) || 0,
+      huntNumber: huntNumber,
       showStatistics, animatedTracker, bonusOpening,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
       ...extras,
     });
-  }, [config, onChange, startMoney, targetMoney, stopLoss, showStatistics, animatedTracker, bonusOpening, bonusList]);
+  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, showStatistics, animatedTracker, bonusOpening, bonusList]);
 
   const handleAddBonus = () => {
     const betNum = Number(betSize);
@@ -529,6 +539,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       setStartMoney('');
       setTargetMoney('');
       setStopLoss('');
+      setHuntNumber('');
       setBonusOpening(false);
       setSaveHuntName('');
       setShowSaveConfirm(false);
@@ -564,6 +575,13 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       <div className="bh-panel-section">
         <h4 className="bh-panel-label">Hunt Settings</h4>
         <div className="bh-settings-grid">
+          <label className="bh-input-group">
+            <span>Hunt # (number)</span>
+            <input type="text" value={huntNumber}
+              placeholder="e.g. 42"
+              onChange={e => setHuntNumber(e.target.value)}
+              onBlur={() => save()} />
+          </label>
           <label className="bh-input-group">
             <span>Start ({currency})</span>
             <input type="number" value={startMoney}

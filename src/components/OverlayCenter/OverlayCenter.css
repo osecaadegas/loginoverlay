@@ -7547,6 +7547,79 @@ body.wm-resizing {
   font-size: 1.1em;
 }
 
+/* ── Compact: merged header + count card ── */
+.bht-compact-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 2px solid var(--bht-header-accent, #60a5fa);
+}
+.oc-bonushunt--compact .bht-compact-avatar {
+  width: 28px; height: 28px;
+}
+.bht-compact-merged {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.bht-compact-top-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.bht-compact-title-block {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  flex: 1;
+  min-width: 0;
+}
+.bht-compact-title-block .bht-title {
+  font-size: 0.9em;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.bht-compact-hunt-num {
+  font-size: 0.8em;
+  font-weight: 700;
+  color: var(--bht-header-accent, #60a5fa);
+  white-space: nowrap;
+}
+.bht-compact-info-row {
+  display: flex;
+  gap: 4px;
+}
+.bht-compact-info-pill {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  background: rgba(0,0,0,0.25);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 0.7em;
+  color: var(--bht-text, #fff);
+}
+.bht-compact-info-pill strong {
+  font-weight: 800;
+  font-size: 1.1em;
+}
+.bht-compact-info-pill--super {
+  background: var(--bht-super-badge, #eab308);
+  color: #fff;
+}
+.bht-compact-info-pill--extreme {
+  background: var(--bht-extreme-badge, #ef4444);
+  color: #fff;
+}
+.bht-compact-info-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
 /* ─── Bonus Hunt: Carousel (v7) ─── */
 .oc-bonushunt--carousel {
   flex-direction: row !important;
