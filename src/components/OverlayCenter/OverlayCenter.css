@@ -2259,8 +2259,8 @@
 }
 
 @keyframes gt-fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .gt-tooltip-header {
@@ -2366,30 +2366,35 @@
   transform: translateY(-1px);
 }
 
-.gt-dots {
-  display: flex;
-  gap: 4px;
+.gt-progress {
   flex: 1;
-  justify-content: center;
-  flex-wrap: wrap;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
 }
 
-.gt-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.12);
-  transition: all 0.2s ease;
+.gt-progress-bar {
+  width: 100%;
+  height: 4px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
 }
 
-.gt-dot--active {
-  background: #a78bfa;
-  box-shadow: 0 0 4px rgba(139, 92, 246, 0.4);
-  transform: scale(1.3);
+.gt-progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #7c3aed, #a78bfa);
+  transition: width 0.35s ease;
 }
 
-.gt-dot--done {
-  background: rgba(139, 92, 246, 0.35);
+.gt-progress-label {
+  font-size: 0.58rem;
+  color: #64748b;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 /* ── Live slot — OBS-style drag & resize ── */

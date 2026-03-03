@@ -221,6 +221,10 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     }
   }, [active, step]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  const TOOLTIP_W = 360; // matches CSS .gt-tooltip width
+  const TOOLTIP_H_EST = 200; // rough max height
+  const EDGE_PAD = 16; // min distance from viewport edge
+
   /* Position the tooltip relative to the target element */
   const positionTooltip = useCallback(() => {
     if (!current || waitingForPage) return;
@@ -238,7 +242,6 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
 
     const el = document.querySelector(sel);
     if (!el) {
-      // Element not found — center the tooltip
       setSpotlightStyle(null);
       setTooltipStyle({
         position: 'fixed',
@@ -251,6 +254,8 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
 
     const rect = el.getBoundingClientRect();
     const pad = 8;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
 
     // Spotlight
     setSpotlightStyle({
@@ -264,32 +269,55 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     // Scroll into view
     el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    // Tooltip position
+    // Tooltip position with viewport clamping
     const pos = current.position || 'bottom';
     const gap = 14;
     let style = { position: 'fixed' };
 
-    if (pos === 'bottom') {
-      style.top = rect.bottom + gap;
-      style.left = rect.left + rect.width / 2;
-      style.transform = 'translateX(-50%)';
-    } else if (pos === 'top') {
-      style.bottom = window.innerHeight - rect.top + gap;
-      style.left = rect.left + rect.width / 2;
-      style.transform = 'translateX(-50%)';
-    } else if (pos === 'left') {
-      style.top = rect.top + rect.height / 2;
-      style.right = window.innerWidth - rect.left + gap;
-      style.transform = 'translateY(-50%)';
-    } else if (pos === 'right') {
-      style.top = rect.top + rect.height / 2;
-      style.left = rect.right + gap;
-      style.transform = 'translateY(-50%)';
-    } else if (pos === 'float-top') {
-      // Fixed near top-left of the content area — doesn't block scrolling
+    if (pos === 'float-top') {
       style.top = 80;
       style.right = 40;
       style.transform = 'none';
+    } else if (pos === 'bottom') {
+      let top = rect.bottom + gap;
+      let left = rect.left + rect.width / 2 - TOOLTIP_W / 2;
+      // flip to top if tooltip would overflow bottom
+      if (top + TOOLTIP_H_EST > vh - EDGE_PAD) {
+        top = Math.max(EDGE_PAD, rect.top - gap - TOOLTIP_H_EST);
+      }
+      left = Math.max(EDGE_PAD, Math.min(left, vw - TOOLTIP_W - EDGE_PAD));
+      style.top = top;
+      style.left = left;
+    } else if (pos === 'top') {
+      let top = rect.top - gap - TOOLTIP_H_EST;
+      let left = rect.left + rect.width / 2 - TOOLTIP_W / 2;
+      // flip to bottom if tooltip would overflow top
+      if (top < EDGE_PAD) {
+        top = rect.bottom + gap;
+      }
+      left = Math.max(EDGE_PAD, Math.min(left, vw - TOOLTIP_W - EDGE_PAD));
+      style.top = top;
+      style.left = left;
+    } else if (pos === 'left') {
+      let top = rect.top + rect.height / 2 - TOOLTIP_H_EST / 2;
+      let left = rect.left - gap - TOOLTIP_W;
+      // flip to right if it overflows left
+      if (left < EDGE_PAD) {
+        left = rect.right + gap;
+      }
+      top = Math.max(EDGE_PAD, Math.min(top, vh - TOOLTIP_H_EST - EDGE_PAD));
+      style.top = top;
+      style.left = left;
+    } else if (pos === 'right') {
+      let top = rect.top + rect.height / 2 - TOOLTIP_H_EST / 2;
+      let left = rect.right + gap;
+      // flip to left if it overflows right
+      if (left + TOOLTIP_W > vw - EDGE_PAD) {
+        left = Math.max(EDGE_PAD, rect.left - gap - TOOLTIP_W);
+      }
+      top = Math.max(EDGE_PAD, Math.min(top, vh - TOOLTIP_H_EST - EDGE_PAD));
+      style.top = top;
+      style.left = left;
     }
 
     setTooltipStyle(style);
@@ -383,10 +411,10 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
           >
             ← Back
           </button>
-          <div className="gt-dots">
-            {STEPS.map((_, i) => (
-              <span key={i} className={`gt-dot ${i === step ? 'gt-dot--active' : ''} ${i < step ? 'gt-dot--done' : ''}`} />
-            ))}
+          <div className="gt-progress">
+            <div className="gt-progress-bar">
+              <div className="gt-progress-fill" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+            </div>
           </div>
           <button className="gt-btn gt-btn--primary" onClick={handleNext}>
             {isLast ? 'Finish ✓' : 'Next →'}
