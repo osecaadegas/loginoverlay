@@ -75,6 +75,8 @@ function NavbarWidget({ config, widgetId }) {
   const [nowPlaying, setNowPlaying] = useState(null);
   const [cryptoIndex, setCryptoIndex] = useState(0);
   const [cryptoFading, setCryptoFading] = useState(false);
+  const [socialIndex, setSocialIndex] = useState(0);
+  const [socialFading, setSocialFading] = useState(false);
   const spotifyTokenRef = useRef(c.spotify_access_token);
   const spotifyRefreshRef = useRef(c.spotify_refresh_token);
   const spotifyExpiresRef = useRef(c.spotify_expires_at);
@@ -110,6 +112,25 @@ function NavbarWidget({ config, widgetId }) {
     }, interval);
     return () => clearInterval(id);
   }, [cryptoMode, activeCoins.length]);
+
+  // Socials cycling — one at a time with fade
+  const activeSocials = [
+    c.socialTwitter && { icon: '\u{1D54F}', handle: c.socialTwitter },
+    c.socialInstagram && { icon: '\uD83D\uDCF7', handle: c.socialInstagram },
+    c.socialKick && { icon: '\uD83D\uDFE2', handle: c.socialKick },
+    c.socialTiktok && { icon: '\u266A', handle: c.socialTiktok },
+  ].filter(Boolean);
+  useEffect(() => {
+    if (!c.showSocials || activeSocials.length <= 1) return;
+    const id = setInterval(() => {
+      setSocialFading(true);
+      setTimeout(() => {
+        setSocialIndex(prev => (prev + 1) % activeSocials.length);
+        setSocialFading(false);
+      }, 400);
+    }, 3500);
+    return () => clearInterval(id);
+  }, [c.showSocials, activeSocials.length]);
 
   // Spotify "Now Playing" polling
   // Poll whenever musicSource is spotify and we have tokens — showNowPlaying only gates the UI display
@@ -494,50 +515,49 @@ function NavbarWidget({ config, widgetId }) {
       }
 
       case 'socials': {
-        if (!c.showSocials) return null;
-        const socials = [
-          c.socialTwitter && { icon: '\u{1D54F}', handle: c.socialTwitter },
-          c.socialInstagram && { icon: '\uD83D\uDCF7', handle: c.socialInstagram },
-          c.socialKick && { icon: '\uD83D\uDFE2', handle: c.socialKick },
-          c.socialTiktok && { icon: '\u266A', handle: c.socialTiktok },
-        ].filter(Boolean);
-        if (!socials.length) return null;
+        if (!c.showSocials || !activeSocials.length) return null;
+        const safeIdx = socialIndex % activeSocials.length;
+        const current = activeSocials[safeIdx];
+        const pillStyle = isMetal ? {
+          display: 'flex', alignItems: 'center', gap: 5,
+          borderRadius: 8, padding: '4px 10px',
+          background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+          border: '1px solid rgba(255,255,255,0.08)',
+          fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+          letterSpacing: '0.06em',
+        } : isGlass ? {
+          display: 'flex', alignItems: 'center', gap: 5,
+          borderRadius: 10, padding: '4px 10px',
+          background: 'rgba(255,255,255,0.08)',
+          border: '1px solid rgba(255,255,255,0.12)',
+          fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+          letterSpacing: '0.06em',
+        } : isRetro ? {
+          display: 'flex', alignItems: 'center', gap: 4,
+          borderRadius: 2, padding: '3px 8px',
+          background: '#000',
+          border: `1px solid ${accentColor}66`,
+          fontSize: fontSize * 0.78, color: accentColor, fontWeight: 700,
+          letterSpacing: '0.04em',
+        } : {
+          display: 'flex', alignItems: 'center', gap: 5,
+          borderRadius: 999, padding: '4px 10px',
+          background: `${accentColor}18`,
+          border: `1px solid ${accentColor}30`,
+          fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+          letterSpacing: '0.06em',
+        };
         return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
-            {socials.map((s, i) => (
-              <div key={i} style={isMetal ? {
-                display: 'flex', alignItems: 'center', gap: 5,
-                borderRadius: 8, padding: '4px 10px',
-                background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                border: '1px solid rgba(255,255,255,0.08)',
-                fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-                letterSpacing: '0.06em',
-              } : isGlass ? {
-                display: 'flex', alignItems: 'center', gap: 5,
-                borderRadius: 10, padding: '4px 10px',
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-                letterSpacing: '0.06em',
-              } : isRetro ? {
-                display: 'flex', alignItems: 'center', gap: 4,
-                borderRadius: 2, padding: '3px 8px',
-                background: '#000',
-                border: `1px solid ${accentColor}66`,
-                fontSize: fontSize * 0.78, color: accentColor, fontWeight: 700,
-                letterSpacing: '0.04em',
-              } : {
-                display: 'flex', alignItems: 'center', gap: 5,
-                borderRadius: 999, padding: '4px 10px',
-                background: `${accentColor}18`,
-                border: `1px solid ${accentColor}30`,
-                fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-                letterSpacing: '0.06em',
-              }}>
-                <span style={{ fontSize: fontSize * 0.85 }}>{s.icon}</span>
-                <span>{s.handle}</span>
+          <div style={{ position: 'relative', minWidth: 100, overflow: 'hidden', flexShrink: 0 }}>
+            <div style={{
+              opacity: socialFading ? 0 : 1,
+              transition: 'opacity 0.4s ease',
+            }}>
+              <div style={pillStyle}>
+                <span style={{ fontSize: fontSize * 0.85 }}>{current.icon}</span>
+                <span>{current.handle}</span>
               </div>
-            ))}
+            </div>
           </div>
         );
       }
