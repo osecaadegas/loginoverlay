@@ -193,53 +193,71 @@ function BonusBuysWidget({ config }) {
         <span>🎰 <span style={{ color: cardText }}>{filled.length}/{plannedBonuses}</span></span>
       </div>
 
-      {/* ─── SLOT IMAGE ─── */}
+      {/* ─── SLOT IMAGE + STATS (horizontal compact) ─── */}
       <div style={{
-        position: 'relative',
-        flex: '0 0 clamp(180px, 110cqi, 600px)',
-        minHeight: 0, overflow: 'hidden',
+        display: 'flex', alignItems: 'stretch',
+        borderBottom: cardBorder, flexShrink: 0,
+        background: `rgba(${accentRgb}, 0.05)`,
+        overflow: 'hidden',
       }}>
-        {img ? (
-          <img src={img} alt={name} style={{
-            width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-          }} />
-        ) : (
-          <div style={{
-            width: '100%', height: '100%',
-            background: `linear-gradient(135deg, rgba(${accentRgb}, 0.25), rgba(${accentRgb}, 0.05))`,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 'clamp(24px, 14cqi, 60px)',
-          }}>🛒</div>
-        )}
-        {/* Gradient */}
+        {/* Image — left side, square */}
         <div style={{
-          position: 'absolute', inset: 0, pointerEvents: 'none',
-          background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.05) 55%, rgba(0,0,0,0.2) 100%)',
-        }} />
-        {/* Name + provider hidden for cleaner OBS look */}
-      </div>
+          flex: '0 0 clamp(70px, 32cqi, 160px)',
+          minHeight: 'clamp(70px, 32cqi, 160px)',
+          overflow: 'hidden', position: 'relative',
+        }}>
+          {img ? (
+            <img src={img} alt={name} style={{
+              width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+            }} />
+          ) : (
+            <div style={{
+              width: '100%', height: '100%',
+              background: `linear-gradient(135deg, rgba(${accentRgb}, 0.25), rgba(${accentRgb}, 0.05))`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 'clamp(20px, 10cqi, 48px)',
+            }}>🛒</div>
+          )}
+        </div>
 
-      {/* ─── SUMMARY STATS ─── */}
-      <div style={{
-        padding: `${padY} ${pad}`,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        gap: 'clamp(4px, 2cqi, 12px)',
-        background: `rgba(${accentRgb}, 0.07)`,
-        borderTop: cardBorder, borderBottom: cardBorder, flexShrink: 0,
-      }}>
-        {[
-          { icon: '💰', label: fmtShort(totalCost, currency), color: lossColor },
-          { icon: '📊', label: fmtMulti(overallMulti), color: accent },
-          { icon: '🏆', label: fmtShort(totalWin, currency), color: totalWin > 0 ? winColor : cardMuted },
-        ].map((s, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 'clamp(3px, 1.5cqi, 8px)',
-            fontSize: 'clamp(13px, 5.5cqi, 22px)', fontWeight: 800,
+        {/* Name + 3 stats — right side */}
+        <div style={{
+          flex: 1, minWidth: 0, padding: `clamp(6px, 2.5cqi, 14px) ${pad}`,
+          display: 'flex', flexDirection: 'column', justifyContent: 'center',
+          gap: 'clamp(4px, 2cqi, 10px)',
+        }}>
+          {/* Slot name */}
+          <div style={{
+            fontWeight: 800, fontSize: 'clamp(13px, 5.5cqi, 22px)',
+            color: cardText, whiteSpace: 'nowrap', overflow: 'hidden',
+            textOverflow: 'ellipsis',
+          }}>{name}</div>
+
+          {/* Stats grid — 3 columns */}
+          <div style={{
+            display: 'grid', gridTemplateColumns: '1fr 1fr 1fr',
+            gap: 'clamp(4px, 2cqi, 10px)',
           }}>
-            <span style={{ fontSize: 'clamp(11px, 4cqi, 18px)' }}>{s.icon}</span>
-            <span style={{ color: s.color }}>{s.label}</span>
+            {[
+              { icon: '💰', label: fmtShort(totalCost, currency), color: lossColor },
+              { icon: '📊', label: fmtMulti(overallMulti), color: accent },
+              { icon: '🏆', label: fmtShort(totalWin, currency), color: totalWin > 0 ? winColor : cardMuted },
+            ].map((s, i) => (
+              <div key={i} style={{
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                gap: 'clamp(1px, 0.5cqi, 4px)',
+                padding: 'clamp(3px, 1.5cqi, 8px)',
+                borderRadius: 'clamp(4px, 1.5cqi, 8px)',
+                background: `rgba(${accentRgb}, 0.08)`,
+              }}>
+                <span style={{ fontSize: 'clamp(10px, 3.5cqi, 16px)' }}>{s.icon}</span>
+                <span style={{
+                  fontWeight: 800, fontSize: 'clamp(12px, 5cqi, 20px)', color: s.color,
+                }}>{s.label}</span>
+              </div>
+            ))}
           </div>
-        ))}
+        </div>
       </div>
 
       {/* ─── BONUS ROWS ─── */}
