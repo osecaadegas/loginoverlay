@@ -14,6 +14,22 @@ const CRYPTO_SYMBOLS = {
   doge: 'Ð', dot: '●', avax: 'A', matic: 'M', ltc: 'Ł', link: '⬡',
 };
 
+/* Real coin logos from CoinGecko CDN (32px thumbnails) */
+const CRYPTO_LOGOS = {
+  btc: 'https://assets.coingecko.com/coins/images/1/small/bitcoin.png',
+  eth: 'https://assets.coingecko.com/coins/images/279/small/ethereum.png',
+  sol: 'https://assets.coingecko.com/coins/images/4128/small/solana.png',
+  bnb: 'https://assets.coingecko.com/coins/images/825/small/bnb-icon2_2x.png',
+  xrp: 'https://assets.coingecko.com/coins/images/44/small/xrp-symbol-white-128.png',
+  ada: 'https://assets.coingecko.com/coins/images/975/small/cardano.png',
+  doge: 'https://assets.coingecko.com/coins/images/5/small/dogecoin.png',
+  dot: 'https://assets.coingecko.com/coins/images/12171/small/polkadot.png',
+  avax: 'https://assets.coingecko.com/coins/images/12559/small/Avalanche_Circle_RedWhite_Trans.png',
+  matic: 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
+  ltc: 'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
+  link: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
+};
+
 const DEFAULT_SECTION_LAYOUT = [
   { id: 'identity', zone: 'left' },
   { id: 'badge', zone: 'left' },
@@ -681,6 +697,7 @@ function NavbarWidget({ config, widgetId }) {
 function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownColor, metallic, style }) {
   const isUp = price.change >= 0;
   const changeColor = isUp ? cryptoUpColor : cryptoDownColor;
+  const logoUrl = CRYPTO_LOGOS[coin];
   return (
     <div style={metallic ? {
       display: 'flex', alignItems: 'center', gap: 8,
@@ -701,20 +718,25 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
       flexShrink: 0,
       ...style,
     }}>
-      <div style={{
-        width: 22, height: 22, borderRadius: metallic ? '6px' : '50%',
-        background: metallic
-          ? `linear-gradient(135deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02))`
-          : `linear-gradient(135deg, #6366f1, #a855f7, ${cryptoUpColor})`,
-        border: metallic ? '1px solid rgba(255,255,255,0.1)' : 'none',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        fontSize: fontSize * 0.9, fontWeight: 900, color: metallic ? changeColor : '#fff',
-      }}>
-        {CRYPTO_SYMBOLS[coin] || coin[0].toUpperCase()}
-      </div>
+      {/* Coin logo */}
+      {logoUrl ? (
+        <img src={logoUrl} alt={coin} style={{
+          width: 22, height: 22, borderRadius: '50%', objectFit: 'cover', flexShrink: 0,
+        }} />
+      ) : (
+        <div style={{
+          width: 22, height: 22, borderRadius: '50%',
+          background: `linear-gradient(135deg, #6366f1, #a855f7)`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: fontSize * 0.9, fontWeight: 900, color: '#fff',
+        }}>
+          {CRYPTO_SYMBOLS[coin] || coin[0].toUpperCase()}
+        </div>
+      )}
       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.1 }}>
-        <span style={{ fontWeight: 600, color: changeColor }}>
-          {coin.toUpperCase()} {isUp ? '↑' : '↓'}
+        <span style={{ fontWeight: 600, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 4 }}>
+          {coin.toUpperCase()}
+          <span style={{ color: changeColor, fontSize: fontSize * 0.7 }}>{isUp ? '▲' : '▼'}</span>
         </span>
         <span style={{ fontSize: fontSize * 0.75, color: changeColor, opacity: 0.9 }}>
           ${price.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
