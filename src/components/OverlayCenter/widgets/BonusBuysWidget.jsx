@@ -153,7 +153,7 @@ function BonusBuysWidget({ config }) {
       {/* ─── SLOT IMAGE ─── */}
       <div style={{
         position: 'relative',
-        flex: '0 0 clamp(130px, 85cqi, 480px)',
+        flex: '0 0 clamp(180px, 110cqi, 600px)',
         minHeight: 0, overflow: 'hidden',
       }}>
         {img ? (
@@ -173,23 +173,7 @@ function BonusBuysWidget({ config }) {
           position: 'absolute', inset: 0, pointerEvents: 'none',
           background: 'linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.05) 55%, rgba(0,0,0,0.2) 100%)',
         }} />
-        {/* Name + provider */}
-        <div style={{
-          position: 'absolute', bottom: pad, left: pad, right: pad,
-        }}>
-          <div style={{
-            fontWeight: 800, fontSize: 'clamp(16px, 8cqi, 36px)',
-            color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.8)',
-            lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-          }}>{name}</div>
-          {provider && (
-            <div style={{
-              fontSize: 'clamp(11px, 4.5cqi, 18px)', color: 'rgba(255,255,255,0.7)',
-              marginTop: 'clamp(2px, 1cqi, 6px)', textTransform: 'uppercase',
-              fontWeight: 600, letterSpacing: '0.04em',
-            }}>{provider}</div>
-          )}
-        </div>
+        {/* Name + provider hidden for cleaner OBS look */}
       </div>
 
       {/* ─── SUMMARY STATS ─── */}
@@ -268,7 +252,7 @@ function BonusBuysWidget({ config }) {
       }}>
         <div>
           <div style={{
-            fontSize: 'clamp(10px, 4cqi, 15px)', color: cardMuted,
+            fontSize: 'clamp(14px, 4cqi, 15px)', color: cardMuted,
             fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}>Average</div>
           <div style={{
@@ -279,7 +263,7 @@ function BonusBuysWidget({ config }) {
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{
-            fontSize: 'clamp(10px, 4cqi, 15px)', color: cardMuted,
+            fontSize: 'clamp(14px, 4cqi, 15px)', color: cardMuted,
             fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}>Profit / Loss</div>
           <div style={{
