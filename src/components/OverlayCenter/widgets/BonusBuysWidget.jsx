@@ -89,8 +89,8 @@ function BonusBuysWidget({ config }) {
   const cardText = isMinimal ? '#1e293b' : text;
   const cardMuted = isMinimal ? '#94a3b8' : muted;
   const cardBorder = isMinimal
-    ? '1px solid #e2e8f0'
-    : isNeon ? `1px solid rgba(${accentRgb}, 0.6)` : `1px solid rgba(${accentRgb}, 0.25)`;
+    ? '2px solid #e2e8f0'
+    : isNeon ? `2px solid rgba(${accentRgb}, 0.6)` : `2px solid rgba(${accentRgb}, 0.3)`;
   const cardShadow = isNeon
     ? `0 0 24px rgba(${accentRgb}, 0.35), 0 8px 32px rgba(0,0,0,0.5)`
     : isMinimal ? '0 2px 8px rgba(0,0,0,0.08)' : `0 8px 32px rgba(0,0,0,0.5)`;
@@ -102,16 +102,16 @@ function BonusBuysWidget({ config }) {
   const lossColor = '#ef4444';
 
   /* ── Spacing / font helpers (all cqi-based) ── */
-  const pad = 'clamp(6px, 3cqi, 16px)';
-  const padY = 'clamp(5px, 2cqi, 12px)';
+  const pad = 'clamp(8px, 4cqi, 22px)';
+  const padY = 'clamp(6px, 3cqi, 16px)';
 
   return (
     <div style={{
       width: '100%', height: '100%', fontFamily: font,
       display: 'flex', flexDirection: 'column',
       background: cardBg, borderRadius: 'clamp(6px, 2.5cqi, 16px)',
-      overflow: 'hidden', border: cardBorder, boxShadow: cardShadow,
-      containerType: 'inline-size', color: cardText,
+      overflow: 'hidden', border: cardBorder,
+      boxShadow: cardShadow, containerType: 'inline-size', color: cardText,
     }}>
 
       {/* ─── HEADER ─── */}
@@ -123,14 +123,14 @@ function BonusBuysWidget({ config }) {
         gap: 'clamp(4px, 2cqi, 10px)',
       }}>
         <span style={{
-          fontWeight: 900, fontSize: 'clamp(11px, 5cqi, 22px)',
+          fontWeight: 900, fontSize: 'clamp(15px, 7cqi, 30px)',
           letterSpacing: '0.08em', textTransform: 'uppercase', color: accent,
           whiteSpace: 'nowrap',
         }}>
           BONUS BUYS
         </span>
         <span style={{
-          fontWeight: 700, fontSize: 'clamp(10px, 4cqi, 18px)',
+          fontWeight: 700, fontSize: 'clamp(14px, 6cqi, 26px)',
           color: accent, opacity: 0.8, flexShrink: 0,
         }}>
           #{sessionNumber}
@@ -139,9 +139,9 @@ function BonusBuysWidget({ config }) {
 
       {/* ─── START / BONUSES COUNT ─── */}
       <div style={{
-        padding: `clamp(3px, 1.5cqi, 8px) ${pad}`,
+        padding: `clamp(5px, 2.5cqi, 12px) ${pad}`,
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        fontSize: 'clamp(9px, 4cqi, 14px)',
+        fontSize: 'clamp(12px, 5cqi, 18px)',
         fontWeight: 700, color: cardMuted,
         background: `rgba(${accentRgb}, 0.04)`,
         borderBottom: cardBorder, flexShrink: 0,
@@ -153,7 +153,7 @@ function BonusBuysWidget({ config }) {
       {/* ─── SLOT IMAGE ─── */}
       <div style={{
         position: 'relative',
-        flex: '0 0 clamp(80px, 55cqi, 320px)',
+        flex: '0 0 clamp(130px, 85cqi, 480px)',
         minHeight: 0, overflow: 'hidden',
       }}>
         {img ? (
@@ -178,14 +178,14 @@ function BonusBuysWidget({ config }) {
           position: 'absolute', bottom: pad, left: pad, right: pad,
         }}>
           <div style={{
-            fontWeight: 800, fontSize: 'clamp(12px, 6cqi, 28px)',
+            fontWeight: 800, fontSize: 'clamp(16px, 8cqi, 36px)',
             color: '#fff', textShadow: '0 2px 10px rgba(0,0,0,0.8)',
             lineHeight: 1.15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           }}>{name}</div>
           {provider && (
             <div style={{
-              fontSize: 'clamp(9px, 3.5cqi, 14px)', color: 'rgba(255,255,255,0.65)',
-              marginTop: 'clamp(1px, 0.5cqi, 4px)', textTransform: 'uppercase',
+              fontSize: 'clamp(11px, 4.5cqi, 18px)', color: 'rgba(255,255,255,0.7)',
+              marginTop: 'clamp(2px, 1cqi, 6px)', textTransform: 'uppercase',
               fontWeight: 600, letterSpacing: '0.04em',
             }}>{provider}</div>
           )}
@@ -207,10 +207,10 @@ function BonusBuysWidget({ config }) {
           { icon: '✕', label: profitLoss >= 0 ? 'WIN' : 'LOSE', color: profitColor },
         ].map((s, i) => (
           <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 'clamp(2px, 1cqi, 6px)',
-            fontSize: 'clamp(9px, 3.8cqi, 16px)', fontWeight: 800,
+            display: 'flex', alignItems: 'center', gap: 'clamp(3px, 1.5cqi, 8px)',
+            fontSize: 'clamp(13px, 5.5cqi, 22px)', fontWeight: 800,
           }}>
-            <span style={{ fontSize: 'clamp(8px, 3cqi, 14px)' }}>{s.icon}</span>
+            <span style={{ fontSize: 'clamp(11px, 4cqi, 18px)' }}>{s.icon}</span>
             <span style={{ color: s.color }}>{s.label}</span>
           </div>
         ))}
@@ -226,17 +226,17 @@ function BonusBuysWidget({ config }) {
             <div key={i} style={{
               display: 'grid', gridTemplateColumns: 'auto 1fr 1fr auto',
               alignItems: 'center',
-              gap: 'clamp(4px, 2cqi, 10px)',
-              padding: `clamp(3px, 1.5cqi, 8px) ${pad}`,
-              fontSize: 'clamp(9px, 3.8cqi, 15px)',
-              borderBottom: `1px solid ${isMinimal ? '#e2e8f0' : `rgba(${accentRgb}, 0.1)`}`,
+              gap: 'clamp(6px, 3cqi, 14px)',
+              padding: `clamp(6px, 3cqi, 14px) ${pad}`,
+              fontSize: 'clamp(13px, 5.5cqi, 22px)',
+              borderBottom: `2px solid ${isMinimal ? '#e2e8f0' : `rgba(${accentRgb}, 0.15)`}`,
               background: i % 2 === 0 ? 'transparent' : rowStripe,
               opacity: row.ok ? 1 : 0.35,
             }}>
               {/* # */}
               <span style={{
                 fontWeight: 900, color: accent,
-                minWidth: 'clamp(16px, 6cqi, 30px)', textAlign: 'center',
+                minWidth: 'clamp(22px, 8cqi, 40px)', textAlign: 'center',
               }}>
                 #{row.idx}
               </span>
@@ -251,7 +251,7 @@ function BonusBuysWidget({ config }) {
               {/* Multi */}
               <span style={{
                 fontWeight: 800, color: row.ok ? accent : cardMuted,
-                minWidth: 'clamp(30px, 10cqi, 55px)', textAlign: 'right',
+                minWidth: 'clamp(40px, 14cqi, 70px)', textAlign: 'right',
               }}>
                 {row.ok ? fmtMulti(row.multi) : '—'}
               </span>
@@ -268,22 +268,22 @@ function BonusBuysWidget({ config }) {
       }}>
         <div>
           <div style={{
-            fontSize: 'clamp(8px, 3cqi, 11px)', color: cardMuted,
+            fontSize: 'clamp(10px, 4cqi, 15px)', color: cardMuted,
             fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}>Average</div>
           <div style={{
-            fontWeight: 900, fontSize: 'clamp(12px, 5.5cqi, 22px)', color: accent,
+            fontWeight: 900, fontSize: 'clamp(18px, 8cqi, 32px)', color: accent,
           }}>
             {fmtMulti(avgMulti)}
           </div>
         </div>
         <div style={{ textAlign: 'right' }}>
           <div style={{
-            fontSize: 'clamp(8px, 3cqi, 11px)', color: cardMuted,
+            fontSize: 'clamp(10px, 4cqi, 15px)', color: cardMuted,
             fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em',
           }}>Profit / Loss</div>
           <div style={{
-            fontWeight: 900, fontSize: 'clamp(12px, 5.5cqi, 22px)', color: profitColor,
+            fontWeight: 900, fontSize: 'clamp(18px, 8cqi, 32px)', color: profitColor,
           }}>
             {profitLoss >= 0 ? '+' : ''}{fmt(profitLoss, currency)}
           </div>
