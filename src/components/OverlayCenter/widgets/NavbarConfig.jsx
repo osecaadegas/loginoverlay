@@ -80,9 +80,13 @@ export default function NavbarConfig({ config, onChange }) {
     'brightness', 'contrast', 'saturation',
     'shadowSize', 'shadowIntensity',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
+    'showSocials', 'showStartBalance', 'showCasino',
     'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
     'avatarSize', 'badgeSize',
     'displayStyle', 'musicDisplayStyle',
+    'socialTwitter', 'socialInstagram', 'socialKick', 'socialTiktok',
+    'startBalance', 'balanceCurrency',
+    'casinoName', 'casinoLogoUrl',
   ];
 
   const savePreset = () => {
@@ -208,12 +212,80 @@ export default function NavbarConfig({ config, onChange }) {
             <input type="checkbox" checked={!!c.showCTA} onChange={e => set('showCTA', e.target.checked)} />
             <span>Show CTA Badge</span>
           </label>
+          <label className="nb-toggle-row">
+            <input type="checkbox" checked={!!c.showSocials} onChange={e => set('showSocials', e.target.checked)} />
+            <span>Show Socials</span>
+          </label>
+          <label className="nb-toggle-row">
+            <input type="checkbox" checked={!!c.showStartBalance} onChange={e => set('showStartBalance', e.target.checked)} />
+            <span>Show Start Balance</span>
+          </label>
+          <label className="nb-toggle-row">
+            <input type="checkbox" checked={!!c.showCasino} onChange={e => set('showCasino', e.target.checked)} />
+            <span>Show Casino</span>
+          </label>
 
           {c.showCTA && (
             <label className="nb-field" style={{ marginTop: 6 }}>
               <span>CTA Text</span>
               <input value={c.ctaText || ''} onChange={e => set('ctaText', e.target.value)} placeholder="Be Gamble Aware!" />
             </label>
+          )}
+
+          {/* ─── Socials ─── */}
+          {c.showSocials && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>@ Socials</h4>
+              <p className="oc-config-hint" style={{ margin: '0 0 6px' }}>Add your social handles — they'll show on the navbar.</p>
+              <label className="nb-field">
+                <span>Twitter / X</span>
+                <input value={c.socialTwitter || ''} onChange={e => set('socialTwitter', e.target.value)} placeholder="@username" />
+              </label>
+              <label className="nb-field">
+                <span>Instagram</span>
+                <input value={c.socialInstagram || ''} onChange={e => set('socialInstagram', e.target.value)} placeholder="@username" />
+              </label>
+              <label className="nb-field">
+                <span>Kick</span>
+                <input value={c.socialKick || ''} onChange={e => set('socialKick', e.target.value)} placeholder="@username" />
+              </label>
+              <label className="nb-field">
+                <span>TikTok</span>
+                <input value={c.socialTiktok || ''} onChange={e => set('socialTiktok', e.target.value)} placeholder="@username" />
+              </label>
+            </>
+          )}
+
+          {/* ─── Start Balance ─── */}
+          {c.showStartBalance && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Start Balance</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr auto', gap: 8 }}>
+                <label className="nb-field">
+                  <span>Balance</span>
+                  <input type="number" min="0" step="0.01" value={c.startBalance || ''} onChange={e => set('startBalance', e.target.value)} placeholder="1000" />
+                </label>
+                <label className="nb-field">
+                  <span>Currency</span>
+                  <input value={c.balanceCurrency || '$'} onChange={e => set('balanceCurrency', e.target.value)} placeholder="$" style={{ width: 50 }} />
+                </label>
+              </div>
+            </>
+          )}
+
+          {/* ─── Casino ─── */}
+          {c.showCasino && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Casino</h4>
+              <label className="nb-field">
+                <span>Casino Name</span>
+                <input value={c.casinoName || ''} onChange={e => set('casinoName', e.target.value)} placeholder="Stake" />
+              </label>
+              <label className="nb-field">
+                <span>Casino Logo URL</span>
+                <input value={c.casinoLogoUrl || ''} onChange={e => set('casinoLogoUrl', e.target.value)} placeholder="https://..." />
+              </label>
+            </>
           )}
 
           {/* ─── Spotify status (connect via Profile) ─── */}

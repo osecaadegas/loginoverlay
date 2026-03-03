@@ -514,6 +514,133 @@ function NavbarWidget({ config, widgetId }) {
                 <span>{c.ctaText}</span>
               </div>
             )}
+
+            {/* ─── Socials ─── */}
+            {c.showSocials && (() => {
+              const socials = [
+                c.socialTwitter && { icon: '𝕏', handle: c.socialTwitter },
+                c.socialInstagram && { icon: '📷', handle: c.socialInstagram },
+                c.socialKick && { icon: '🟢', handle: c.socialKick },
+                c.socialTiktok && { icon: '♪', handle: c.socialTiktok },
+              ].filter(Boolean);
+              if (!socials.length) return null;
+              return (
+                <>
+                  <div style={sep} />
+                  <div style={{
+                    display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
+                  }}>
+                    {socials.map((s, i) => (
+                      <div key={i} style={isMetal ? {
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        borderRadius: 8, padding: '4px 10px',
+                        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+                        letterSpacing: '0.06em',
+                      } : isGlass ? {
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        borderRadius: 10, padding: '4px 10px',
+                        background: 'rgba(255,255,255,0.08)',
+                        border: '1px solid rgba(255,255,255,0.12)',
+                        fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+                        letterSpacing: '0.06em',
+                      } : isRetro ? {
+                        display: 'flex', alignItems: 'center', gap: 4,
+                        borderRadius: 2, padding: '3px 8px',
+                        background: '#000',
+                        border: `1px solid ${accentColor}66`,
+                        fontSize: fontSize * 0.78, color: accentColor, fontWeight: 700,
+                        letterSpacing: '0.04em',
+                      } : {
+                        display: 'flex', alignItems: 'center', gap: 5,
+                        borderRadius: 999, padding: '4px 10px',
+                        background: `${accentColor}18`,
+                        border: `1px solid ${accentColor}30`,
+                        fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+                        letterSpacing: '0.06em',
+                      }}>
+                        <span style={{ fontSize: fontSize * 0.85 }}>{s.icon}</span>
+                        <span>{s.handle}</span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              );
+            })()}
+
+            {/* ─── Start Balance ─── */}
+            {c.showStartBalance && c.startBalance && (
+              <>
+                <div style={sep} />
+                <div style={isMetal ? {
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  borderRadius: 10, padding: '6px 16px',
+                  background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+                  border: '1px solid rgba(255,255,255,0.08)',
+                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px rgba(${accentColorRGB},0.06)`,
+                  fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
+                  letterSpacing: '0.1em', flexShrink: 0,
+                } : isGlass ? {
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  borderRadius: 14, padding: '6px 16px',
+                  background: 'rgba(255,255,255,0.08)',
+                  border: '1px solid rgba(255,255,255,0.15)',
+                  backdropFilter: 'blur(6px)',
+                  fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
+                  letterSpacing: '0.1em', flexShrink: 0,
+                } : isRetro ? {
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  borderRadius: 2, padding: '5px 12px',
+                  background: '#000',
+                  border: `2px solid ${accentColor}88`,
+                  fontSize: fontSize * 0.85, fontWeight: 700, color: accentColor,
+                  letterSpacing: '0.08em', flexShrink: 0,
+                } : {
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  borderRadius: 999, padding: '6px 16px',
+                  background: `${accentColor}18`,
+                  border: `1px solid ${accentColor}30`,
+                  fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
+                  letterSpacing: '0.1em', flexShrink: 0,
+                }}>
+                  <span style={{ fontSize: fontSize * 0.7, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+                    Balance
+                  </span>
+                  <span style={{ fontWeight: 700, color: accentColor }}>
+                    {c.balanceCurrency || '€'}{Number(c.startBalance).toLocaleString()}
+                  </span>
+                </div>
+              </>
+            )}
+
+            {/* ─── Casino ─── */}
+            {c.showCasino && (c.casinoName || c.casinoLogoUrl) && (
+              <>
+                <div style={sep} />
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
+                }}>
+                  {c.casinoLogoUrl && (
+                    <img src={c.casinoLogoUrl} alt="" style={{
+                      height: barHeight * 0.55, maxWidth: barHeight * 1.8,
+                      objectFit: 'contain', borderRadius: isMetal ? 6 : isRetro ? 2 : 8,
+                      filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))` : 'none',
+                    }} />
+                  )}
+                  {c.casinoName && (
+                    <span style={{
+                      fontSize: fontSize * 0.9, fontWeight: 700,
+                      letterSpacing: '0.15em', textTransform: 'uppercase',
+                      color: accentColor,
+                      textShadow: isMetal ? `0 0 10px rgba(${accentColorRGB},0.3)` : isRetro ? `0 0 8px ${accentColor}` : 'none',
+                    }}>
+                      {c.casinoName}
+                    </span>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
         </div>
