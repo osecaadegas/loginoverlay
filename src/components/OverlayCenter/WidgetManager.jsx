@@ -165,7 +165,7 @@ const DraggableSlot = memo(function DraggableSlot({
     >
       {/* Widget content */}
       <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-        <Component config={widget.config} theme={theme} allWidgets={allWidgets} />
+        <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} />
       </div>
 
       {/* Transparent drag surface on top — catches ALL mouse events */}

@@ -1,6 +1,9 @@
-import React from 'react';
+import React, { useRef, useEffect, useCallback } from 'react';
+import useTwitchChat from '../../../hooks/useTwitchChat';
+import useKickChat from '../../../hooks/useKickChat';
+import { supabase } from '../../../config/supabaseClient';
 
-function GiveawayWidget({ config }) {
+function GiveawayWidget({ config, widgetId }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const bgColor = c.bgColor || '#0a0f1e';
@@ -14,12 +17,73 @@ function GiveawayWidget({ config }) {
   const count = participants.length;
   const winner = c.winner || '';
   const isActive = !!c.isActive;
-  const keyword = c.keyword || '';
+  const keyword = (c.keyword || '').toLowerCase().trim();
   const title = c.title || 'Giveaway';
   const prize = c.prize || '';
   const isDone = !!winner;
   const statusLabel = isDone ? 'FIM' : isActive ? 'LIVE' : 'OFF';
   const statusColor = isDone ? '#64748b' : isActive ? '#22c55e' : '#64748b';
+
+  /* ─── Chat listener: detect keyword → add participants ─── */
+  const participantsRef = useRef(new Set(participants));
+  const pendingRef = useRef([]);
+  const configRef = useRef(c);
+  configRef.current = c;
+
+  // Keep the Set in sync when config changes (e.g. admin clears entries)
+  useEffect(() => {
+    participantsRef.current = new Set(c.participants || []);
+  }, [c.participants]);
+
+  // Flush pending participants to Supabase every 2s
+  useEffect(() => {
+    if (!widgetId) return;
+    const timer = setInterval(async () => {
+      if (pendingRef.current.length === 0) return;
+      const batch = [...pendingRef.current];
+      pendingRef.current = [];
+      try {
+        // Read latest config from DB to avoid overwriting concurrent changes
+        const { data } = await supabase
+          .from('overlay_widgets')
+          .select('config')
+          .eq('id', widgetId)
+          .single();
+        if (!data) return;
+        const current = data.config?.participants || [];
+        const merged = [...new Set([...current, ...batch])];
+        if (merged.length === current.length) return; // nothing new
+        await supabase
+          .from('overlay_widgets')
+          .update({ config: { ...data.config, participants: merged }, updated_at: new Date().toISOString() })
+          .eq('id', widgetId);
+      } catch (err) {
+        console.error('[GiveawayWidget] flush participants failed:', err);
+        // Put them back for next flush
+        pendingRef.current = [...batch, ...pendingRef.current];
+      }
+    }, 2000);
+    return () => clearInterval(timer);
+  }, [widgetId]);
+
+  // Chat message handler
+  const handleMessage = useCallback((msg) => {
+    if (!keyword) return;
+    const text = (msg.message || '').trim().toLowerCase();
+    if (text === `!${keyword}` || text.startsWith(`!${keyword} `)) {
+      const name = msg.username;
+      if (name && !participantsRef.current.has(name)) {
+        participantsRef.current.add(name);
+        pendingRef.current.push(name);
+      }
+    }
+  }, [keyword]);
+
+  // Connect to chat platforms when giveaway is active
+  const listenTwitch = isActive && !isDone && !!c.twitchEnabled && !!c.twitchChannel;
+  const listenKick   = isActive && !isDone && !!c.kickEnabled   && !!c.kickChannelId;
+  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleMessage);
+  useKickChat(listenKick ? c.kickChannelId : '', handleMessage);
 
   const kf = `
     @keyframes ga-pulse{0%,100%{opacity:.85}50%{opacity:1}}
