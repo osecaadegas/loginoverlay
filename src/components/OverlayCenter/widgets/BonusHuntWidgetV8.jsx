@@ -25,6 +25,7 @@ function BonusHuntWidgetV8({ config, theme }) {
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const autoSpeed = Number(c.v8AutoSpeed) || 4000;
   const showStats = c.v8ShowStats !== false;
+  const bonusOpening = c.bonusOpening === true;
 
   /* hex to rgb */
   const hex2rgb = (hex) => {
@@ -51,19 +52,29 @@ function BonusHuntWidgetV8({ config, theme }) {
   const timerRef = useRef(null);
   const total = bonuses.length;
 
+  /* current bonus (first not-opened) */
+  const currentBonusIdx = bonuses.findIndex(b => !b.opened);
+
   const advance = useCallback(() => {
     if (total <= 0) return;
     setActiveIdx(prev => (prev + 1) % total);
   }, [total]);
 
+  /* When bonusOpening is ON → lock to the current bonus, stop cycling.
+     The 3D transition still fires because activeIdx changes when
+     currentBonusIdx advances (user fills payout → next card slides in). */
   useEffect(() => {
-    if (total <= 1) return;
+    if (bonusOpening && currentBonusIdx >= 0) {
+      setActiveIdx(currentBonusIdx);
+    }
+  }, [bonusOpening, currentBonusIdx]);
+
+  useEffect(() => {
+    /* No auto-cycle when bonusOpening is active or ≤1 card */
+    if (bonusOpening || total <= 1) return;
     timerRef.current = setInterval(advance, autoSpeed);
     return () => clearInterval(timerRef.current);
-  }, [total, autoSpeed, advance]);
-
-  /* current bonus (first not-opened) */
-  const currentBonusIdx = bonuses.findIndex(b => !b.opened);
+  }, [total, autoSpeed, advance, bonusOpening]);
 
   /* ─── Circular offset: shortest distance around the ring ─── */
   const getOffset = useCallback((idx) => {
