@@ -37,6 +37,24 @@
   --oc-sidebar-width: 290px;
 }
 
+/* ─── Global dark dropdown / option styling ─── */
+.oc-page select,
+.oc-page option,
+.oc-page optgroup {
+  background-color: #12141f;
+  color: #f1f5f9;
+}
+
+.oc-page optgroup {
+  font-weight: 700;
+  color: #a78bfa;
+}
+
+.oc-page option:checked {
+  background-color: #7c3aed;
+  color: #ffffff;
+}
+
 /* ─── Page ─── */
 .oc-page {
   min-height: 100vh;
