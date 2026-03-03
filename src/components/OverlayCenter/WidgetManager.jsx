@@ -803,13 +803,74 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   </div>
 
                   <label className="wm-animation-field">
-                    <span className="wm-slider-label">✨ Animation</span>
+                    <span className="wm-slider-label">🎬 Entrance Animation</span>
                     <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
-                      <option value="fade">Fade In</option>
-                      <option value="slide">Slide In</option>
-                      <option value="scale">Scale Up</option>
-                      <option value="glow">Glow</option>
-                      <option value="none">None</option>
+                      <optgroup label="Fade">
+                        <option value="fade">Fade In</option>
+                      </optgroup>
+                      <optgroup label="Slide">
+                        <option value="slide-up">Slide In from Bottom</option>
+                        <option value="slide-down">Slide In from Top</option>
+                        <option value="slide-left">Slide In from Right</option>
+                        <option value="slide-right">Slide In from Left</option>
+                      </optgroup>
+                      <optgroup label="Swipe">
+                        <option value="swipe-up">Swipe Up</option>
+                        <option value="swipe-down">Swipe Down</option>
+                        <option value="swipe-left">Swipe Left</option>
+                        <option value="swipe-right">Swipe Right</option>
+                      </optgroup>
+                      <optgroup label="Scale">
+                        <option value="scale">Scale Up</option>
+                        <option value="scale-down">Scale Down</option>
+                      </optgroup>
+                      <optgroup label="Flip">
+                        <option value="flip-x">Flip Horizontal</option>
+                        <option value="flip-y">Flip Vertical</option>
+                      </optgroup>
+                      <optgroup label="Other">
+                        <option value="bounce">Bounce In</option>
+                        <option value="glow">Glow</option>
+                        <option value="blur">Blur In</option>
+                        <option value="rotate">Rotate In</option>
+                        <option value="none">None</option>
+                      </optgroup>
+                    </select>
+                  </label>
+
+                  <label className="wm-animation-field">
+                    <span className="wm-slider-label">🎬 Exit Animation</span>
+                    <select value={w.exit_animation || 'fade'} onChange={e => handlePositionChange(w, 'exit_animation', e.target.value)}>
+                      <optgroup label="Fade">
+                        <option value="fade">Fade Out</option>
+                      </optgroup>
+                      <optgroup label="Slide">
+                        <option value="slide-up">Slide Out to Top</option>
+                        <option value="slide-down">Slide Out to Bottom</option>
+                        <option value="slide-left">Slide Out to Left</option>
+                        <option value="slide-right">Slide Out to Right</option>
+                      </optgroup>
+                      <optgroup label="Swipe">
+                        <option value="swipe-up">Swipe Up</option>
+                        <option value="swipe-down">Swipe Down</option>
+                        <option value="swipe-left">Swipe Left</option>
+                        <option value="swipe-right">Swipe Right</option>
+                      </optgroup>
+                      <optgroup label="Scale">
+                        <option value="scale">Scale Down</option>
+                        <option value="scale-up">Scale Up</option>
+                      </optgroup>
+                      <optgroup label="Flip">
+                        <option value="flip-x">Flip Horizontal</option>
+                        <option value="flip-y">Flip Vertical</option>
+                      </optgroup>
+                      <optgroup label="Other">
+                        <option value="bounce">Bounce Out</option>
+                        <option value="glow">Glow</option>
+                        <option value="blur">Blur Out</option>
+                        <option value="rotate">Rotate Out</option>
+                        <option value="none">None</option>
+                      </optgroup>
                     </select>
                   </label>
                 </div>

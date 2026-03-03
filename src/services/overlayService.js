@@ -132,6 +132,7 @@ export async function createWidget(userId, widgetType, config = {}) {
       z_index: 1,
       config,
       animation: 'fade',
+      exit_animation: 'fade',
     })
     .select()
     .single();

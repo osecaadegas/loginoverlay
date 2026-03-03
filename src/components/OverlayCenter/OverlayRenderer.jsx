@@ -25,14 +25,20 @@ import './OverlayRenderer.css';
 import './widgets/builtinWidgets';
 
 // ─── Single widget wrapper with animation + scale-to-fit ───
-const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight }) {
+const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
 
   if (!Component) return null;
 
   const slotId = `ow-${widget.id}`;
-  const animClass = widget.is_visible ? `or-anim-in--${widget.animation || 'fade'}` : `or-anim-out--${widget.animation || 'fade'}`;
+  /* Backwards-compat: old 'slide' → 'slide-up' */
+  const normalise = (v) => v === 'slide' ? 'slide-up' : (v || 'fade');
+  const enterAnim = normalise(widget.animation);
+  const exitAnim  = normalise(widget.exit_animation);
+  const animClass = exiting
+    ? `or-anim-out--${exitAnim}`
+    : `or-anim-in--${enterAnim}`;
   const customCSS = widget.config?.custom_css || '';
 
   /* ─── Background widgets always fill the entire canvas ─── */
@@ -160,11 +166,51 @@ export default function OverlayRenderer() {
   const customCSS = theme?.custom_css || '';
 
   // ── Only render visible widgets (optionally filtered to a single widget) ──
+  // Keep recently-hidden widgets in DOM so their exit animation can play.
+  const exitingRef = useRef(new Map()); // widgetId → { widget, timer }
+  const prevVisibleIds = useRef(new Set());
+  const [exitTick, setExitTick] = useState(0);
+
   const visibleWidgets = useMemo(() => {
     const visible = widgets.filter(w => w.is_visible);
     if (singleWidgetId) return visible.filter(w => w.id === singleWidgetId);
     return visible;
   }, [widgets, singleWidgetId]);
+
+  // Detect newly-hidden widgets and keep them for exit animation
+  useEffect(() => {
+    const currentIds = new Set(visibleWidgets.map(w => w.id));
+    const animDuration = ((theme?.animation_speed || 1) * 0.35 + 0.15) * 1000;
+
+    for (const id of prevVisibleIds.current) {
+      if (!currentIds.has(id)) {
+        const w = widgets.find(x => x.id === id);
+        if (w && (w.exit_animation || w.animation) !== 'none') {
+          if (exitingRef.current.has(id)) clearTimeout(exitingRef.current.get(id).timer);
+          const timer = setTimeout(() => {
+            exitingRef.current.delete(id);
+            setExitTick(t => t + 1);
+          }, animDuration);
+          exitingRef.current.set(id, { widget: w, timer });
+          setExitTick(t => t + 1);
+        }
+      }
+    }
+
+    for (const id of currentIds) {
+      if (exitingRef.current.has(id)) {
+        clearTimeout(exitingRef.current.get(id).timer);
+        exitingRef.current.delete(id);
+      }
+    }
+
+    prevVisibleIds.current = currentIds;
+  }, [visibleWidgets, widgets, theme?.animation_speed]);
+
+  const exitingWidgets = useMemo(() => {
+    void exitTick;
+    return Array.from(exitingRef.current.values()).map(e => e.widget);
+  }, [exitTick]);
 
   // ── Viewport-fit scaling ──
   // The canvas is always authored at a fixed resolution (e.g. 1920×1080).
@@ -213,6 +259,21 @@ export default function OverlayRenderer() {
           allWidgets={widgets}
           canvasWidth={canvasWidth}
           canvasHeight={canvasHeight}
+          exiting={false}
+        />
+      ))}
+
+      {/* Widgets playing exit animation — removed from visibleWidgets but kept briefly */}
+      {exitingWidgets.map(w => (
+        <WidgetSlot
+          key={`exit-${w.id}`}
+          widget={w}
+          theme={theme}
+          animSpeed={theme?.animation_speed}
+          allWidgets={widgets}
+          canvasWidth={canvasWidth}
+          canvasHeight={canvasHeight}
+          exiting={true}
         />
       ))}
     </div>

@@ -109,77 +109,218 @@
 }
 
 /* ─── Entrance Animations ─── */
-.or-anim-in--fade {
-  animation: or-fadeIn var(--ov-anim-speed, 0.4s) ease-out both;
-}
+.or-anim-in--fade   { animation: or-fadeIn var(--ov-anim-speed, 0.4s) ease-out both; }
 
-.or-anim-in--slide {
-  animation: or-slideIn var(--ov-anim-speed, 0.4s) ease-out both;
-}
+/* Slide In (from each direction) */
+.or-anim-in--slide,
+.or-anim-in--slide-up    { animation: or-slideInUp    var(--ov-anim-speed, 0.4s) ease-out both; }
+.or-anim-in--slide-down  { animation: or-slideInDown  var(--ov-anim-speed, 0.4s) ease-out both; }
+.or-anim-in--slide-left  { animation: or-slideInLeft  var(--ov-anim-speed, 0.4s) ease-out both; }
+.or-anim-in--slide-right { animation: or-slideInRight var(--ov-anim-speed, 0.4s) ease-out both; }
 
-.or-anim-in--scale {
-  animation: or-scaleIn var(--ov-anim-speed, 0.4s) ease-out both;
-}
+/* Swipe In (faster, no fade — pure directional wipe) */
+.or-anim-in--swipe-up    { animation: or-swipeInUp    var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
+.or-anim-in--swipe-down  { animation: or-swipeInDown  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
+.or-anim-in--swipe-left  { animation: or-swipeInLeft  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
+.or-anim-in--swipe-right { animation: or-swipeInRight var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
 
-.or-anim-in--glow {
-  animation: or-glowIn var(--ov-anim-speed, 0.4s) ease-out both;
-}
+/* Scale */
+.or-anim-in--scale       { animation: or-scaleIn     var(--ov-anim-speed, 0.4s) ease-out both; }
+.or-anim-in--scale-down  { animation: or-scaleDownIn var(--ov-anim-speed, 0.4s) ease-out both; }
 
+/* Flip */
+.or-anim-in--flip-x { animation: or-flipXIn var(--ov-anim-speed, 0.5s) ease-out both; }
+.or-anim-in--flip-y { animation: or-flipYIn var(--ov-anim-speed, 0.5s) ease-out both; }
+
+/* Bounce */
+.or-anim-in--bounce { animation: or-bounceIn var(--ov-anim-speed, 0.6s) cubic-bezier(0.34,1.56,0.64,1) both; }
+
+/* Glow */
+.or-anim-in--glow   { animation: or-glowIn var(--ov-anim-speed, 0.4s) ease-out both; }
+
+/* Blur */
+.or-anim-in--blur   { animation: or-blurIn var(--ov-anim-speed, 0.4s) ease-out both; }
+
+/* Rotate */
+.or-anim-in--rotate { animation: or-rotateIn var(--ov-anim-speed, 0.5s) ease-out both; }
+
+/* ─── Entrance Keyframes ─── */
 @keyframes or-fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
 }
-
-@keyframes or-slideIn {
-  from { opacity: 0; transform: translateY(30px); }
+@keyframes or-slideInUp {
+  from { opacity: 0; transform: translateY(60px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
+@keyframes or-slideInDown {
+  from { opacity: 0; transform: translateY(-60px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes or-slideInLeft {
+  from { opacity: 0; transform: translateX(60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes or-slideInRight {
+  from { opacity: 0; transform: translateX(-60px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes or-swipeInUp {
+  from { transform: translateY(100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes or-swipeInDown {
+  from { transform: translateY(-100%); }
+  to   { transform: translateY(0); }
+}
+@keyframes or-swipeInLeft {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes or-swipeInRight {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
 @keyframes or-scaleIn {
-  from { opacity: 0; transform: scale(0.85); }
+  from { opacity: 0; transform: scale(0.6); }
   to   { opacity: 1; transform: scale(1); }
 }
-
+@keyframes or-scaleDownIn {
+  from { opacity: 0; transform: scale(1.4); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes or-flipXIn {
+  from { opacity: 0; transform: perspective(600px) rotateY(90deg); }
+  to   { opacity: 1; transform: perspective(600px) rotateY(0); }
+}
+@keyframes or-flipYIn {
+  from { opacity: 0; transform: perspective(600px) rotateX(90deg); }
+  to   { opacity: 1; transform: perspective(600px) rotateX(0); }
+}
+@keyframes or-bounceIn {
+  0%   { opacity: 0; transform: scale(0.3); }
+  50%  { opacity: 1; transform: scale(1.08); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
 @keyframes or-glowIn {
   0%   { opacity: 0; filter: brightness(2) blur(4px); }
   100% { opacity: 1; filter: brightness(1) blur(0); }
 }
-
-/* Exit Animations */
-.or-anim-out--fade {
-  animation: or-fadeOut var(--ov-anim-speed, 0.4s) ease-in both;
+@keyframes or-blurIn {
+  from { opacity: 0; filter: blur(16px); }
+  to   { opacity: 1; filter: blur(0); }
+}
+@keyframes or-rotateIn {
+  from { opacity: 0; transform: rotate(-15deg) scale(0.8); }
+  to   { opacity: 1; transform: rotate(0) scale(1); }
 }
 
-.or-anim-out--slide {
-  animation: or-slideOut var(--ov-anim-speed, 0.4s) ease-in both;
-}
+/* ─── Exit Animations ─── */
+.or-anim-out--fade   { animation: or-fadeOut var(--ov-anim-speed, 0.4s) ease-in both; }
 
-.or-anim-out--scale {
-  animation: or-scaleOut var(--ov-anim-speed, 0.4s) ease-in both;
-}
+/* Slide Out (to each direction) */
+.or-anim-out--slide,
+.or-anim-out--slide-up    { animation: or-slideOutUp    var(--ov-anim-speed, 0.4s) ease-in both; }
+.or-anim-out--slide-down  { animation: or-slideOutDown  var(--ov-anim-speed, 0.4s) ease-in both; }
+.or-anim-out--slide-left  { animation: or-slideOutLeft  var(--ov-anim-speed, 0.4s) ease-in both; }
+.or-anim-out--slide-right { animation: or-slideOutRight var(--ov-anim-speed, 0.4s) ease-in both; }
 
-.or-anim-out--glow {
-  animation: or-glowOut var(--ov-anim-speed, 0.4s) ease-in both;
-}
+/* Swipe Out */
+.or-anim-out--swipe-up    { animation: or-swipeOutUp    var(--ov-anim-speed, 0.35s) cubic-bezier(0.55,0,1,0.45) both; }
+.or-anim-out--swipe-down  { animation: or-swipeOutDown  var(--ov-anim-speed, 0.35s) cubic-bezier(0.55,0,1,0.45) both; }
+.or-anim-out--swipe-left  { animation: or-swipeOutLeft  var(--ov-anim-speed, 0.35s) cubic-bezier(0.55,0,1,0.45) both; }
+.or-anim-out--swipe-right { animation: or-swipeOutRight var(--ov-anim-speed, 0.35s) cubic-bezier(0.55,0,1,0.45) both; }
 
+/* Scale Out */
+.or-anim-out--scale      { animation: or-scaleOut    var(--ov-anim-speed, 0.4s) ease-in both; }
+.or-anim-out--scale-up   { animation: or-scaleUpOut  var(--ov-anim-speed, 0.4s) ease-in both; }
+
+/* Flip Out */
+.or-anim-out--flip-x { animation: or-flipXOut var(--ov-anim-speed, 0.5s) ease-in both; }
+.or-anim-out--flip-y { animation: or-flipYOut var(--ov-anim-speed, 0.5s) ease-in both; }
+
+/* Bounce Out */
+.or-anim-out--bounce { animation: or-bounceOut var(--ov-anim-speed, 0.5s) ease-in both; }
+
+/* Glow Out */
+.or-anim-out--glow   { animation: or-glowOut var(--ov-anim-speed, 0.4s) ease-in both; }
+
+/* Blur Out */
+.or-anim-out--blur   { animation: or-blurOut var(--ov-anim-speed, 0.4s) ease-in both; }
+
+/* Rotate Out */
+.or-anim-out--rotate { animation: or-rotateOut var(--ov-anim-speed, 0.5s) ease-in both; }
+
+/* ─── Exit Keyframes ─── */
 @keyframes or-fadeOut {
   from { opacity: 1; }
   to   { opacity: 0; }
 }
-
-@keyframes or-slideOut {
+@keyframes or-slideOutUp {
   from { opacity: 1; transform: translateY(0); }
-  to   { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 0; transform: translateY(-60px); }
 }
-
+@keyframes or-slideOutDown {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(60px); }
+}
+@keyframes or-slideOutLeft {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-60px); }
+}
+@keyframes or-slideOutRight {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(60px); }
+}
+@keyframes or-swipeOutUp {
+  from { transform: translateY(0); }
+  to   { transform: translateY(-100%); }
+}
+@keyframes or-swipeOutDown {
+  from { transform: translateY(0); }
+  to   { transform: translateY(100%); }
+}
+@keyframes or-swipeOutLeft {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-100%); }
+}
+@keyframes or-swipeOutRight {
+  from { transform: translateX(0); }
+  to   { transform: translateX(100%); }
+}
 @keyframes or-scaleOut {
   from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.85); }
+  to   { opacity: 0; transform: scale(0.6); }
 }
-
+@keyframes or-scaleUpOut {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(1.4); }
+}
+@keyframes or-flipXOut {
+  from { opacity: 1; transform: perspective(600px) rotateY(0); }
+  to   { opacity: 0; transform: perspective(600px) rotateY(90deg); }
+}
+@keyframes or-flipYOut {
+  from { opacity: 1; transform: perspective(600px) rotateX(0); }
+  to   { opacity: 0; transform: perspective(600px) rotateX(90deg); }
+}
+@keyframes or-bounceOut {
+  0%   { opacity: 1; transform: scale(1); }
+  30%  { transform: scale(1.08); }
+  100% { opacity: 0; transform: scale(0.3); }
+}
 @keyframes or-glowOut {
   0%   { opacity: 1; filter: brightness(1) blur(0); }
   100% { opacity: 0; filter: brightness(2) blur(4px); }
+}
+@keyframes or-blurOut {
+  from { opacity: 1; filter: blur(0); }
+  to   { opacity: 0; filter: blur(16px); }
+}
+@keyframes or-rotateOut {
+  from { opacity: 1; transform: rotate(0) scale(1); }
+  to   { opacity: 0; transform: rotate(15deg) scale(0.8); }
 }
 
 /* ─── Widget Typography ─── */
