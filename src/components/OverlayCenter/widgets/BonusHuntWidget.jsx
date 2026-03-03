@@ -30,6 +30,9 @@ function BonusHuntWidget({ config, theme }) {
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
 
+  /* ─── Dynamic title based on bonusOpening toggle ─── */
+  const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
+
   /* ─── Custom style vars ─── */
   const headerColor = c.headerColor || (isNeonBH ? '#050510' : '#1e3a8a');
   const headerAccent = c.headerAccent || (isNeonBH ? '#00ffcc' : '#60a5fa');
@@ -136,7 +139,7 @@ function BonusHuntWidget({ config, theme }) {
               </svg>
             </div>
             <div>
-              <div className="bhtc-title">BONUS HUNT</div>
+              <div className="bhtc-title">{huntTitle}</div>
               <div className="bhtc-hunt-id">Hunt {c.huntName || `#${bonuses.length}`}</div>
             </div>
           </div>
@@ -231,7 +234,7 @@ function BonusHuntWidget({ config, theme }) {
               </svg>
             </div>
             <div>
-              <div className="bhtc-title">BONUS HUNT</div>
+              <div className="bhtc-title">{huntTitle}</div>
               <div className="bhtc-hunt-id">Hunt {c.huntName || `#${bonuses.length}`}</div>
             </div>
           </div>
@@ -320,7 +323,7 @@ function BonusHuntWidget({ config, theme }) {
               </svg>
             </div>
             <div>
-              <div className="bht-title">BONUS OPENING</div>
+              <div className="bht-title">{huntTitle}</div>
               <div className="bht-subtitle">{c.huntName || ''}</div>
             </div>
           </div>

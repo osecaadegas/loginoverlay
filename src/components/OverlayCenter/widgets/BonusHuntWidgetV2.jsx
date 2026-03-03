@@ -28,6 +28,9 @@ function BonusHuntWidgetV2({ config, theme }) {
   const mutedTextColor = c.mutedTextColor || '#64748b';
   const statValueColor = c.statValueColor || '#f1f5f9';
   const cardOutlineColor = c.cardOutlineColor || 'rgba(51,65,85,0.7)';
+
+  /* ─── Dynamic title based on bonusOpening toggle ─── */
+  const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
   const cardOutlineWidth = c.cardOutlineWidth ?? 1;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const fontSize = c.fontSize ?? 13;
@@ -125,7 +128,7 @@ function BonusHuntWidgetV2({ config, theme }) {
               </div>
             </div>
             <div>
-              <div className="bht2-label-sm" style={{ fontWeight: 700, letterSpacing: '0.18em' }}>BONUS OPENING</div>
+              <div className="bht2-label-sm" style={{ fontWeight: 700, letterSpacing: '0.18em' }}>{huntTitle}</div>
               <div className="bht2-label-xs">Session Tracker</div>
             </div>
           </div>
