@@ -71,50 +71,44 @@ function BonusBuysWidget({ config }) {
     rows.push({ idx: i + 1, cost: betCost, win, multi, ok });
   }
 
-  /* Auto-scroll when more than 10 rows:
-     Slowly scroll up, when last row reaches top snap back to top, repeat */
+  /* Carousel auto-scroll: slow up, then smooth fast scroll back down, loop */
   const scrollRef = useRef(null);
-  const scrollPos = useRef(0);
-  const paused = useRef(false);
+  const scrollState = useRef({ pos: 0, dir: 1 }); // dir: 1 = down (slow), -1 = up (fast rewind)
   useEffect(() => {
     if (rows.length <= 10) return;
     const el = scrollRef.current;
     if (!el) return;
     let raf;
-    const SLOW_SPEED = 0.15;          // px per frame (~9 px/s at 60 fps)
-    const PAUSE_AT_TOP = 2000;        // ms to hold at top before scrolling
-    const PAUSE_AT_BOTTOM = 1500;     // ms to hold at bottom before snapping
+    const SLOW_SPEED = 0.15;   // px/frame going down (~9 px/s)
+    const FAST_SPEED = 1.5;    // px/frame rewinding back up (~90 px/s = ~10x faster)
 
-    scrollPos.current = 0;
+    scrollState.current = { pos: 0, dir: 1 };
     el.scrollTop = 0;
-    paused.current = false;
 
     const step = () => {
-      if (paused.current) { raf = requestAnimationFrame(step); return; }
+      const st = scrollState.current;
       const maxScroll = el.scrollHeight - el.clientHeight;
       if (maxScroll <= 0) { raf = requestAnimationFrame(step); return; }
 
-      scrollPos.current += SLOW_SPEED;
-      if (scrollPos.current >= maxScroll) {
-        scrollPos.current = maxScroll;
-        el.scrollTop = scrollPos.current;
-        // Pause at bottom, then snap to top
-        paused.current = true;
-        setTimeout(() => {
-          scrollPos.current = 0;
-          el.scrollTop = 0;
-          // Pause at top before scrolling again
-          setTimeout(() => { paused.current = false; }, PAUSE_AT_TOP);
-        }, PAUSE_AT_BOTTOM);
+      if (st.dir === 1) {
+        // Scrolling down slowly
+        st.pos += SLOW_SPEED;
+        if (st.pos >= maxScroll) {
+          st.pos = maxScroll;
+          st.dir = -1; // reverse
+        }
       } else {
-        el.scrollTop = scrollPos.current;
+        // Scrolling back up fast
+        st.pos -= FAST_SPEED;
+        if (st.pos <= 0) {
+          st.pos = 0;
+          st.dir = 1; // forward again
+        }
       }
+      el.scrollTop = st.pos;
       raf = requestAnimationFrame(step);
     };
 
-    // Initial pause at top
-    paused.current = true;
-    setTimeout(() => { paused.current = false; }, PAUSE_AT_TOP);
     raf = requestAnimationFrame(step);
     return () => cancelAnimationFrame(raf);
   }, [rows.length]);
