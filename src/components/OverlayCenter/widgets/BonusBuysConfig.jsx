@@ -125,20 +125,23 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
   };
 
   const S = configStyles('#3b82f6');
+  const singlePage = mode === 'sidebar';
 
   return (
     <div style={{ padding: 2 }}>
-      {/* Tab navigation */}
-      <div style={S.tabs}>
-        {tabs.map(t => (
-          <button key={t.id} style={S.tab(activeTab === t.id)} onClick={() => setActiveTab(t.id)}>
-            {t.label}
-          </button>
-        ))}
-      </div>
+      {/* Tab navigation — hidden when sidebar merges everything into one page */}
+      {!singlePage && (
+        <div style={S.tabs}>
+          {tabs.map(t => (
+            <button key={t.id} style={S.tab(activeTab === t.id)} onClick={() => setActiveTab(t.id)}>
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
 
-      {/* ─── Setup Tab ─── */}
-      {activeTab === 'slot' && (
+      {/* ─── Setup ─── */}
+      {(singlePage || activeTab === 'slot') && (
         <div>
           {/* Slot search */}
           <div style={S.section}>
@@ -164,40 +167,6 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
                 ))}
               </div>
             )}
-          </div>
-
-          {/* Current selection */}
-          {c.slotName && (
-            <div style={{ ...S.section, padding: 10, background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                {c.imageUrl && <img src={c.imageUrl} alt="" style={{ width: 40, height: 40, borderRadius: 8, objectFit: 'cover' }} />}
-                <div>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 700, color: '#fff' }}>{c.slotName}</div>
-                  {c.provider && <div style={{ fontSize: '0.72rem', color: '#3b82f6' }}>{c.provider}</div>}
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div style={S.section}>
-            <label style={S.label}>Manual Slot Name</label>
-            <input style={S.input} value={c.slotName || ''} onChange={e => set('slotName', e.target.value)} />
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-            <div style={S.section}>
-              <label style={S.label}>Provider</label>
-              <input style={S.input} value={c.provider || ''} onChange={e => set('provider', e.target.value)} />
-            </div>
-            <div style={S.section}>
-              <label style={S.label}>Currency</label>
-              <input style={S.input} value={c.currency || '$'} onChange={e => set('currency', e.target.value)} />
-            </div>
-          </div>
-
-          <div style={S.section}>
-            <label style={S.label}>Image URL</label>
-            <input style={S.input} value={c.imageUrl || ''} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." />
           </div>
 
           {/* Session settings */}
@@ -260,8 +229,8 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
         </div>
       )}
 
-      {/* ─── Bonuses Tab ─── */}
-      {activeTab === 'bonuses' && (
+      {/* ─── Bonuses ─── */}
+      {(singlePage || activeTab === 'bonuses') && (
         <div>
           {!c.slotName ? (
             <div style={{ color: '#a0a0b4', fontSize: '0.82rem', textAlign: 'center', padding: 20 }}>
