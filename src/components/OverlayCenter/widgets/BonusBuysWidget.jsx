@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 
 /**
  * BonusBuysWidget — OBS overlay for tracking bonus buy sessions.
@@ -70,6 +70,24 @@ function BonusBuysWidget({ config }) {
     const multi = ok && betValue > 0 ? win / betValue : null;
     rows.push({ idx: i + 1, cost: betCost, win, multi, ok });
   }
+
+  /* Auto-scroll when more than 10 rows */
+  const scrollRef = useRef(null);
+  const scrollPos = useRef(0);
+  useEffect(() => {
+    if (rows.length <= 10) return;
+    const el = scrollRef.current;
+    if (!el) return;
+    let raf;
+    const step = () => {
+      scrollPos.current += 0.5;
+      if (scrollPos.current >= el.scrollHeight - el.clientHeight) scrollPos.current = 0;
+      el.scrollTop = scrollPos.current;
+      raf = requestAnimationFrame(step);
+    };
+    raf = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(raf);
+  }, [rows.length]);
 
   /* Empty state */
   if (!c.slotName) return (
@@ -189,7 +207,6 @@ function BonusBuysWidget({ config }) {
           { icon: '💰', label: fmtShort(totalCost, currency), color: lossColor },
           { icon: '📊', label: fmtMulti(overallMulti), color: accent },
           { icon: '🏆', label: fmtShort(totalWin, currency), color: totalWin > 0 ? winColor : cardMuted },
-          { icon: '✕', label: profitLoss >= 0 ? 'WIN' : 'LOSE', color: profitColor },
         ].map((s, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'center', gap: 'clamp(3px, 1.5cqi, 8px)',
@@ -202,7 +219,11 @@ function BonusBuysWidget({ config }) {
       </div>
 
       {/* ─── BONUS ROWS ─── */}
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden' }}>
+      <style>{`.bb-rows-scroll::-webkit-scrollbar{display:none}`}</style>
+      <div ref={scrollRef} style={{
+        flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'hidden',
+        scrollbarWidth: 'none', msOverflowStyle: 'none',
+      }} className="bb-rows-scroll">
         {rows.map((row, i) => {
           const rowColor = row.ok
             ? (row.win >= row.cost ? winColor : lossColor)
