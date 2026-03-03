@@ -481,39 +481,71 @@ export default function NavbarConfig({ config, onChange }) {
 
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Arrange Sections</h4>
           <p className="oc-config-hint" style={{ marginBottom: 8 }}>
-            Move sections between Left, Center and Right zones. Reorder with arrows.
+            Drag sections between Left, Center and Right. Use arrows to reorder.
           </p>
           {['left', 'center', 'right'].map(zone => {
             const zoneSections = sectionLayout.filter(s => s.zone === zone);
             return (
-              <div key={zone} style={{ marginBottom: 10 }}>
-                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#64748b', marginBottom: 4 }}>
-                  {zone === 'left' ? '← Left' : zone === 'center' ? '◆ Center' : '→ Right'}
+              <div key={zone} style={{
+                marginBottom: 12, padding: '8px 10px', borderRadius: 8,
+                background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
+              }}>
+                <div style={{
+                  fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
+                  color: zone === 'left' ? '#60a5fa' : zone === 'center' ? '#a78bfa' : '#34d399',
+                  marginBottom: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.06)',
+                }}>
+                  {zone === 'left' ? '← Left Zone' : zone === 'center' ? '◆ Center Zone' : '→ Right Zone'}
                 </div>
                 {zoneSections.length === 0 && (
-                  <div style={{ fontSize: 11, color: '#475569', fontStyle: 'italic', padding: '4px 0' }}>Empty</div>
+                  <div style={{ fontSize: 11, color: '#475569', fontStyle: 'italic', padding: '6px 0' }}>No sections — drop one here</div>
                 )}
                 {zoneSections.map(s => (
-                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0' }}>
-                    <span style={{ flex: 1, fontSize: 12, color: '#e2e8f0' }}>{SECTION_LABELS[s.id] || s.id}</span>
-                    <div style={{ display: 'flex', gap: 2 }}>
-                      {['left', 'center', 'right'].map(z => (
+                  <div key={s.id} style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '5px 6px', marginBottom: 3,
+                    borderRadius: 6, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                  }}>
+                    <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>
+                      {SECTION_LABELS[s.id] || s.id}
+                    </span>
+                    <div style={{ display: 'flex', gap: 3 }}>
+                      {[
+                        { z: 'left', label: 'L', color: '#60a5fa' },
+                        { z: 'center', label: 'C', color: '#a78bfa' },
+                        { z: 'right', label: 'R', color: '#34d399' },
+                      ].map(({ z, label, color }) => (
                         <button key={z} type="button"
                           onClick={() => setSectionZone(s.id, z)}
+                          title={`Move to ${z}`}
                           style={{
-                            width: 22, height: 20, fontSize: 9, fontWeight: 700,
-                            borderRadius: 4, border: 'none', cursor: 'pointer',
-                            background: s.zone === z ? '#3b82f6' : '#1e293b',
-                            color: s.zone === z ? '#fff' : '#94a3b8',
+                            width: 26, height: 24, fontSize: 10, fontWeight: 800,
+                            borderRadius: 5,
+                            border: s.zone === z ? `2px solid ${color}` : '1px solid rgba(255,255,255,0.12)',
+                            cursor: 'pointer',
+                            background: s.zone === z ? `${color}22` : 'rgba(255,255,255,0.04)',
+                            color: s.zone === z ? color : '#94a3b8',
+                            transition: 'all 0.15s ease',
                           }}>
-                          {z[0].toUpperCase()}
+                          {label}
                         </button>
                       ))}
                     </div>
-                    <button type="button" onClick={() => moveSectionUp(s.id)}
-                      style={{ width: 20, height: 20, fontSize: 11, borderRadius: 4, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#94a3b8' }}>↑</button>
-                    <button type="button" onClick={() => moveSectionDown(s.id)}
-                      style={{ width: 20, height: 20, fontSize: 11, borderRadius: 4, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#94a3b8' }}>↓</button>
+                    <div style={{ display: 'flex', gap: 3, marginLeft: 2 }}>
+                      <button type="button" onClick={() => moveSectionUp(s.id)} title="Move up"
+                        style={{
+                          width: 26, height: 24, fontSize: 13, fontWeight: 700,
+                          borderRadius: 5, border: '1px solid rgba(255,255,255,0.15)',
+                          cursor: 'pointer', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>▲</button>
+                      <button type="button" onClick={() => moveSectionDown(s.id)} title="Move down"
+                        style={{
+                          width: 26, height: 24, fontSize: 13, fontWeight: 700,
+                          borderRadius: 5, border: '1px solid rgba(255,255,255,0.15)',
+                          cursor: 'pointer', background: 'rgba(255,255,255,0.06)', color: '#e2e8f0',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>▼</button>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -521,7 +553,7 @@ export default function NavbarConfig({ config, onChange }) {
           })}
           <button type="button" className="oc-btn oc-btn--sm" style={{ marginTop: 4 }}
             onClick={() => setLayout(DEFAULT_SECTION_LAYOUT)}>
-            Reset Layout
+            ↺ Reset Layout
           </button>
         </div>
       )}
