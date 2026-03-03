@@ -18,6 +18,30 @@ const AVAILABLE_CRYPTOS = [
   { id: 'link', label: 'Chainlink (LINK)' },
 ];
 
+const DEFAULT_SECTION_LAYOUT = [
+  { id: 'identity', zone: 'left' },
+  { id: 'badge', zone: 'left' },
+  { id: 'clock', zone: 'center' },
+  { id: 'nowPlaying', zone: 'center' },
+  { id: 'crypto', zone: 'right' },
+  { id: 'cta', zone: 'right' },
+  { id: 'socials', zone: 'right' },
+  { id: 'balance', zone: 'right' },
+  { id: 'casino', zone: 'right' },
+];
+
+const SECTION_LABELS = {
+  identity: '👤 Identity',
+  badge: '🏅 Badge',
+  clock: '🕐 Clock',
+  nowPlaying: '🎵 Now Playing',
+  crypto: '📈 Crypto',
+  cta: '📢 CTA',
+  socials: '@ Socials',
+  balance: '💰 Balance',
+  casino: '🎰 Casino',
+};
+
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
   { value: "'Poppins', sans-serif", label: 'Poppins' },
@@ -65,6 +89,47 @@ export default function NavbarConfig({ config, onChange }) {
 
 
 
+  // ─── Section layout helpers ───
+  const sectionLayout = c.sectionLayout || DEFAULT_SECTION_LAYOUT;
+  const setLayout = (newLayout) => set('sectionLayout', newLayout);
+
+  const setSectionZone = (sectionId, newZone) => {
+    const updated = sectionLayout.map(s => s.id === sectionId ? { ...s, zone: newZone } : s);
+    setLayout(updated);
+  };
+
+  const moveSectionUp = (sectionId) => {
+    const idx = sectionLayout.findIndex(s => s.id === sectionId);
+    if (idx <= 0) return;
+    const item = sectionLayout[idx];
+    // Find previous item in same zone
+    let prevIdx = -1;
+    for (let i = idx - 1; i >= 0; i--) {
+      if (sectionLayout[i].zone === item.zone) { prevIdx = i; break; }
+    }
+    if (prevIdx === -1) return;
+    const updated = [...sectionLayout];
+    updated.splice(idx, 1);
+    updated.splice(prevIdx, 0, item);
+    setLayout(updated);
+  };
+
+  const moveSectionDown = (sectionId) => {
+    const idx = sectionLayout.findIndex(s => s.id === sectionId);
+    if (idx === -1 || idx >= sectionLayout.length - 1) return;
+    const item = sectionLayout[idx];
+    // Find next item in same zone
+    let nextIdx = -1;
+    for (let i = idx + 1; i < sectionLayout.length; i++) {
+      if (sectionLayout[i].zone === item.zone) { nextIdx = i; break; }
+    }
+    if (nextIdx === -1) return;
+    const updated = [...sectionLayout];
+    updated.splice(idx, 1);
+    updated.splice(nextIdx, 0, item);
+    setLayout(updated);
+  };
+
   const toggleCrypto = (id) => {
     const current = c.cryptoCoins || [];
     const next = current.includes(id) ? current.filter(x => x !== id) : [...current, id];
@@ -87,6 +152,7 @@ export default function NavbarConfig({ config, onChange }) {
     'socialTwitter', 'socialInstagram', 'socialKick', 'socialTiktok',
     'startBalance', 'balanceCurrency',
     'casinoName', 'casinoLogoUrl',
+    'sectionLayout',
   ];
 
   const savePreset = () => {
@@ -412,6 +478,51 @@ export default function NavbarConfig({ config, onChange }) {
           </label>
           <SliderField label="Font Size" value={c.fontSize ?? 12} min={8} max={20} step={1} unit="px"
             onChange={v => set('fontSize', v)} />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Arrange Sections</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 8 }}>
+            Move sections between Left, Center and Right zones. Reorder with arrows.
+          </p>
+          {['left', 'center', 'right'].map(zone => {
+            const zoneSections = sectionLayout.filter(s => s.zone === zone);
+            return (
+              <div key={zone} style={{ marginBottom: 10 }}>
+                <div style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.15em', textTransform: 'uppercase', color: '#64748b', marginBottom: 4 }}>
+                  {zone === 'left' ? '← Left' : zone === 'center' ? '◆ Center' : '→ Right'}
+                </div>
+                {zoneSections.length === 0 && (
+                  <div style={{ fontSize: 11, color: '#475569', fontStyle: 'italic', padding: '4px 0' }}>Empty</div>
+                )}
+                {zoneSections.map(s => (
+                  <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '3px 0' }}>
+                    <span style={{ flex: 1, fontSize: 12, color: '#e2e8f0' }}>{SECTION_LABELS[s.id] || s.id}</span>
+                    <div style={{ display: 'flex', gap: 2 }}>
+                      {['left', 'center', 'right'].map(z => (
+                        <button key={z} type="button"
+                          onClick={() => setSectionZone(s.id, z)}
+                          style={{
+                            width: 22, height: 20, fontSize: 9, fontWeight: 700,
+                            borderRadius: 4, border: 'none', cursor: 'pointer',
+                            background: s.zone === z ? '#3b82f6' : '#1e293b',
+                            color: s.zone === z ? '#fff' : '#94a3b8',
+                          }}>
+                          {z[0].toUpperCase()}
+                        </button>
+                      ))}
+                    </div>
+                    <button type="button" onClick={() => moveSectionUp(s.id)}
+                      style={{ width: 20, height: 20, fontSize: 11, borderRadius: 4, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#94a3b8' }}>↑</button>
+                    <button type="button" onClick={() => moveSectionDown(s.id)}
+                      style={{ width: 20, height: 20, fontSize: 11, borderRadius: 4, border: 'none', cursor: 'pointer', background: '#1e293b', color: '#94a3b8' }}>↓</button>
+                  </div>
+                ))}
+              </div>
+            );
+          })}
+          <button type="button" className="oc-btn oc-btn--sm" style={{ marginTop: 4 }}
+            onClick={() => setLayout(DEFAULT_SECTION_LAYOUT)}>
+            Reset Layout
+          </button>
         </div>
       )}
 

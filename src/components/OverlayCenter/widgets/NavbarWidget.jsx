@@ -14,6 +14,18 @@ const CRYPTO_SYMBOLS = {
   doge: 'Ð', dot: '●', avax: 'A', matic: 'M', ltc: 'Ł', link: '⬡',
 };
 
+const DEFAULT_SECTION_LAYOUT = [
+  { id: 'identity', zone: 'left' },
+  { id: 'badge', zone: 'left' },
+  { id: 'clock', zone: 'center' },
+  { id: 'nowPlaying', zone: 'center' },
+  { id: 'crypto', zone: 'right' },
+  { id: 'cta', zone: 'right' },
+  { id: 'socials', zone: 'right' },
+  { id: 'balance', zone: 'right' },
+  { id: 'casino', zone: 'right' },
+];
+
 async function fetchCryptoPrices(coins) {
   if (!coins || coins.length === 0) return {};
   const ids = coins.map(c => CRYPTO_IDS[c]).filter(Boolean).join(',');
@@ -275,49 +287,15 @@ function NavbarWidget({ config, widgetId }) {
     flexShrink: 0, margin: '0 16px',
   };
 
-  return (
-    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
-      <div style={barOuter}>
-        <div style={barInner}>
-          {/* Metallic shine overlay */}
-          {isMetal && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              borderRadius: borderRadius - borderWidth,
-              background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.015) 30%, rgba(255,255,255,0.04) 48%, rgba(255,255,255,0.015) 52%, transparent 70%)',
-              pointerEvents: 'none', zIndex: 0,
-            }} />
-          )}
-          {isMetal && (
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0,
-              height: barHeight * 0.45,
-              borderRadius: `${borderRadius - borderWidth}px ${borderRadius - borderWidth}px 0 0`,
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.03), transparent)',
-              pointerEvents: 'none', zIndex: 0,
-            }} />
-          )}
-          {/* Glass frost overlay */}
-          {isGlass && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              borderRadius: borderRadius - borderWidth,
-              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(255,255,255,0.04) 100%)',
-              pointerEvents: 'none', zIndex: 0,
-            }} />
-          )}
-          {/* Retro scanlines */}
-          {isRetro && (
-            <div style={{
-              position: 'absolute', inset: 0,
-              borderRadius: Math.max(borderRadius - borderWidth, 0),
-              background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)',
-              pointerEvents: 'none', zIndex: 0,
-            }} />
-          )}
+  /* ─── Dynamic section layout ─── */
+  const layout = c.sectionLayout || DEFAULT_SECTION_LAYOUT;
+  const getZoneSections = (zone) => layout.filter(s => s.zone === zone);
 
-          {/* ─── Left: Avatar + Name + Motto ─── */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, flexShrink: 0, position: 'relative', zIndex: 1 }}>
+  const renderSection = (sectionId) => {
+    switch (sectionId) {
+      case 'identity':
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexShrink: 0 }}>
             {c.showAvatar !== false && (
               <div style={{
                 position: 'relative',
@@ -375,272 +353,335 @@ function NavbarWidget({ config, widgetId }) {
               )}
             </div>
           </div>
+        );
 
-          {/* ─── Badge Image (after name/motto) ─── */}
-          {c.badgeImage && (
-            <>
-              <div style={sep} />
-              <div style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                height: barHeight, flexShrink: 0, padding: '2px 0',
-                position: 'relative', zIndex: 1,
+      case 'badge': {
+        if (!c.badgeImage) return null;
+        return (
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            height: barHeight, flexShrink: 0, padding: '2px 0',
+          }}>
+            <img src={c.badgeImage} alt="" style={{
+              height: barHeight * 0.85 * ((c.badgeSize ?? 100) / 100),
+              minWidth: barHeight * 1.2 * ((c.badgeSize ?? 100) / 100),
+              objectFit: 'contain',
+              filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)` : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
+            }} />
+          </div>
+        );
+      }
+
+      case 'clock': {
+        if (c.showClock === false) return null;
+        return (
+          <div style={isMetal ? {
+            borderRadius: 10, padding: '6px 22px',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+            border: '1px solid rgba(255,255,255,0.08)',
+            color: textColor,
+            fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.28em',
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
+            flexShrink: 0,
+          } : isGlass ? {
+            borderRadius: 14, padding: '6px 20px',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(8px)',
+            color: textColor,
+            fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.25em',
+            flexShrink: 0,
+          } : isRetro ? {
+            borderRadius: 2, padding: '6px 14px',
+            background: '#000',
+            border: `2px solid ${accentColor}88`,
+            color: accentColor,
+            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.15em',
+            flexShrink: 0,
+          } : {
+            borderRadius: 999, padding: '6px 20px',
+            background: `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
+            color: textColor,
+            fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.25em',
+            boxShadow: `0 0 18px ${accentColor}e6`,
+            flexShrink: 0,
+          }}>
+            {time || '--:--:--'}
+          </div>
+        );
+      }
+
+      case 'nowPlaying': {
+        if (c.showNowPlaying === false || !displayNowPlaying) return null;
+        return (
+          <NowPlayingDisplay
+            data={displayNowPlaying}
+            musicDisplayStyle={c.musicDisplayStyle || 'text'}
+            fontSize={fontSize}
+            textColor={textColor}
+            mutedColor={mutedColor}
+            accentColor={accentColor}
+            isMetal={isMetal}
+            barHeight={barHeight}
+          />
+        );
+      }
+
+      case 'crypto': {
+        if (!c.showCrypto || activeCoins.length === 0) return null;
+        return (
+          <CryptoTicker
+            coins={activeCoins}
+            prices={cryptoPrices}
+            mode={cryptoMode}
+            index={cryptoIndex}
+            fading={cryptoFading}
+            fontSize={fontSize}
+            bgColor={bgColor}
+            cryptoUpColor={cryptoUpColor}
+            cryptoDownColor={cryptoDownColor}
+            metallic={isMetal || isGlass || isRetro}
+          />
+        );
+      }
+
+      case 'cta': {
+        if (!c.showCTA || !c.ctaText) return null;
+        return (
+          <div style={isMetal ? {
+            display: 'flex', alignItems: 'center', gap: 8,
+            borderRadius: 10, padding: '7px 20px',
+            background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
+            border: `1px solid rgba(${ctaColorRGB},0.25)`,
+            color: ctaColor,
+            fontSize: fontSize * 0.82, fontWeight: 700,
+            letterSpacing: '0.24em', textTransform: 'uppercase',
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(${ctaColorRGB},0.1)`,
+            flexShrink: 0,
+          } : isGlass ? {
+            display: 'flex', alignItems: 'center', gap: 8,
+            borderRadius: 14, padding: '7px 18px',
+            background: `${ctaColor}22`,
+            border: `1px solid ${ctaColor}33`,
+            backdropFilter: 'blur(6px)',
+            color: '#fff',
+            fontSize: fontSize * 0.82, fontWeight: 600,
+            letterSpacing: '0.24em', textTransform: 'uppercase',
+            flexShrink: 0,
+          } : isRetro ? {
+            display: 'flex', alignItems: 'center', gap: 6,
+            borderRadius: 2, padding: '6px 14px',
+            background: ctaColor,
+            border: '2px solid #000',
+            boxShadow: '2px 2px 0 #000',
+            color: '#fff',
+            fontSize: fontSize * 0.82, fontWeight: 700,
+            letterSpacing: '0.12em', textTransform: 'uppercase',
+            flexShrink: 0,
+          } : {
+            display: 'flex', alignItems: 'center', gap: 8,
+            borderRadius: 999, padding: '6px 18px',
+            background: `linear-gradient(to bottom, ${ctaColor}, ${ctaColor}cc)`,
+            color: '#fff',
+            fontSize: fontSize * 0.82, fontWeight: 600,
+            letterSpacing: '0.24em', textTransform: 'uppercase',
+            boxShadow: `0 0 24px ${ctaColor}d9`,
+            flexShrink: 0,
+          }}>
+            <span>{c.ctaText}</span>
+          </div>
+        );
+      }
+
+      case 'socials': {
+        if (!c.showSocials) return null;
+        const socials = [
+          c.socialTwitter && { icon: '\u{1D54F}', handle: c.socialTwitter },
+          c.socialInstagram && { icon: '\uD83D\uDCF7', handle: c.socialInstagram },
+          c.socialKick && { icon: '\uD83D\uDFE2', handle: c.socialKick },
+          c.socialTiktok && { icon: '\u266A', handle: c.socialTiktok },
+        ].filter(Boolean);
+        if (!socials.length) return null;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0 }}>
+            {socials.map((s, i) => (
+              <div key={i} style={isMetal ? {
+                display: 'flex', alignItems: 'center', gap: 5,
+                borderRadius: 8, padding: '4px 10px',
+                background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+                border: '1px solid rgba(255,255,255,0.08)',
+                fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+                letterSpacing: '0.06em',
+              } : isGlass ? {
+                display: 'flex', alignItems: 'center', gap: 5,
+                borderRadius: 10, padding: '4px 10px',
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+                letterSpacing: '0.06em',
+              } : isRetro ? {
+                display: 'flex', alignItems: 'center', gap: 4,
+                borderRadius: 2, padding: '3px 8px',
+                background: '#000',
+                border: `1px solid ${accentColor}66`,
+                fontSize: fontSize * 0.78, color: accentColor, fontWeight: 700,
+                letterSpacing: '0.04em',
+              } : {
+                display: 'flex', alignItems: 'center', gap: 5,
+                borderRadius: 999, padding: '4px 10px',
+                background: `${accentColor}18`,
+                border: `1px solid ${accentColor}30`,
+                fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
+                letterSpacing: '0.06em',
               }}>
-                <img src={c.badgeImage} alt="" style={{
-                  height: barHeight * 0.85 * ((c.badgeSize ?? 100) / 100), minWidth: barHeight * 1.2 * ((c.badgeSize ?? 100) / 100), objectFit: 'contain',
-                  filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.3)) brightness(1.05)` : 'drop-shadow(0 0 8px rgba(255,255,255,0.3))',
-                }} />
+                <span style={{ fontSize: fontSize * 0.85 }}>{s.icon}</span>
+                <span>{s.handle}</span>
               </div>
-            </>
+            ))}
+          </div>
+        );
+      }
+
+      case 'balance': {
+        if (!c.showStartBalance || !c.startBalance) return null;
+        return (
+          <div style={isMetal ? {
+            display: 'flex', alignItems: 'center', gap: 6,
+            borderRadius: 10, padding: '6px 16px',
+            background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
+            border: '1px solid rgba(255,255,255,0.08)',
+            boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px rgba(${accentColorRGB},0.06)`,
+            fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
+            letterSpacing: '0.1em', flexShrink: 0,
+          } : isGlass ? {
+            display: 'flex', alignItems: 'center', gap: 6,
+            borderRadius: 14, padding: '6px 16px',
+            background: 'rgba(255,255,255,0.08)',
+            border: '1px solid rgba(255,255,255,0.15)',
+            backdropFilter: 'blur(6px)',
+            fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
+            letterSpacing: '0.1em', flexShrink: 0,
+          } : isRetro ? {
+            display: 'flex', alignItems: 'center', gap: 5,
+            borderRadius: 2, padding: '5px 12px',
+            background: '#000',
+            border: `2px solid ${accentColor}88`,
+            fontSize: fontSize * 0.85, fontWeight: 700, color: accentColor,
+            letterSpacing: '0.08em', flexShrink: 0,
+          } : {
+            display: 'flex', alignItems: 'center', gap: 6,
+            borderRadius: 999, padding: '6px 16px',
+            background: `${accentColor}18`,
+            border: `1px solid ${accentColor}30`,
+            fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
+            letterSpacing: '0.1em', flexShrink: 0,
+          }}>
+            <span style={{ fontSize: fontSize * 0.7, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+              Balance
+            </span>
+            <span style={{ fontWeight: 700, color: accentColor }}>
+              {c.balanceCurrency || '€'}{Number(c.startBalance).toLocaleString()}
+            </span>
+          </div>
+        );
+      }
+
+      case 'casino': {
+        if (!c.showCasino || (!c.casinoName && !c.casinoLogoUrl)) return null;
+        return (
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            {c.casinoLogoUrl && (
+              <img src={c.casinoLogoUrl} alt="" style={{
+                height: barHeight * 0.55, maxWidth: barHeight * 1.8,
+                objectFit: 'contain', borderRadius: isMetal ? 6 : isRetro ? 2 : 8,
+                filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))` : 'none',
+              }} />
+            )}
+            {c.casinoName && (
+              <span style={{
+                fontSize: fontSize * 0.9, fontWeight: 700,
+                letterSpacing: '0.15em', textTransform: 'uppercase',
+                color: accentColor,
+                textShadow: isMetal ? `0 0 10px rgba(${accentColorRGB},0.3)` : isRetro ? `0 0 8px ${accentColor}` : 'none',
+              }}>
+                {c.casinoName}
+              </span>
+            )}
+          </div>
+        );
+      }
+
+      default:
+        return null;
+    }
+  };
+
+  const renderZone = (zone) => {
+    const sections = getZoneSections(zone)
+      .map(s => ({ id: s.id, el: renderSection(s.id) }))
+      .filter(s => s.el);
+    return sections.flatMap((s, i) =>
+      i === 0
+        ? [<React.Fragment key={s.id}>{s.el}</React.Fragment>]
+        : [<div key={`sep-${s.id}`} style={sep} />, <React.Fragment key={s.id}>{s.el}</React.Fragment>]
+    );
+  };
+
+
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
+      <div style={barOuter}>
+        <div style={barInner}>
+          {/* Metallic shine overlay */}
+          {isMetal && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              borderRadius: borderRadius - borderWidth,
+              background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.015) 30%, rgba(255,255,255,0.04) 48%, rgba(255,255,255,0.015) 52%, transparent 70%)',
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+          )}
+          {isMetal && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              height: barHeight * 0.45,
+              borderRadius: `${borderRadius - borderWidth}px ${borderRadius - borderWidth}px 0 0`,
+              background: 'linear-gradient(180deg, rgba(255,255,255,0.03), transparent)',
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+          )}
+          {/* Glass frost overlay */}
+          {isGlass && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              borderRadius: borderRadius - borderWidth,
+              background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(255,255,255,0.04) 100%)',
+              pointerEvents: 'none', zIndex: 0,
+            }} />
+          )}
+          {/* Retro scanlines */}
+          {isRetro && (
+            <div style={{
+              position: 'absolute', inset: 0,
+              borderRadius: Math.max(borderRadius - borderWidth, 0),
+              background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)',
+              pointerEvents: 'none', zIndex: 0,
+            }} />
           )}
 
-          {/* ─── Middle: Clock + Now Playing ─── */}
-          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, minWidth: 0, position: 'relative', zIndex: 1 }}>
-            {c.showClock !== false && (
-              <>
-                <div style={isMetal ? {
-                  borderRadius: 10, padding: '6px 22px',
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  color: textColor,
-                  fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.28em',
-                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
-                  flexShrink: 0,
-                } : isGlass ? {
-                  borderRadius: 14, padding: '6px 20px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  backdropFilter: 'blur(8px)',
-                  color: textColor,
-                  fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.25em',
-                  flexShrink: 0,
-                } : isRetro ? {
-                  borderRadius: 2, padding: '6px 14px',
-                  background: '#000',
-                  border: `2px solid ${accentColor}88`,
-                  color: accentColor,
-                  fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.15em',
-                  flexShrink: 0,
-                } : {
-                  borderRadius: 999, padding: '6px 20px',
-                  background: `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
-                  color: textColor,
-                  fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.25em',
-                  boxShadow: `0 0 18px ${accentColor}e6`,
-                  flexShrink: 0,
-                }}>
-                  {time || '--:--:--'}
-                </div>
-                <div style={sep} />
-              </>
-            )}
-
-            {c.showNowPlaying !== false && displayNowPlaying && (
-              <NowPlayingDisplay
-                data={displayNowPlaying}
-                musicDisplayStyle={c.musicDisplayStyle || 'text'}
-                fontSize={fontSize}
-                textColor={textColor}
-                mutedColor={mutedColor}
-                accentColor={accentColor}
-                isMetal={isMetal}
-                barHeight={barHeight}
-              />
-            )}
-
-
+          {/* ─── Left Zone ─── */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingRight: 16, flexShrink: 0, position: 'relative', zIndex: 1 }}>
+            {renderZone('left')}
           </div>
 
-          {/* ─── Right: Crypto + CTA ─── */}
+          {/* ─── Center Zone ─── */}
+          <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 16, minWidth: 0, position: 'relative', zIndex: 1 }}>
+            {renderZone('center')}
+          </div>
+
+          {/* ─── Right Zone ─── */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12, paddingLeft: 16, flexShrink: 0, position: 'relative', zIndex: 1 }}>
-            {c.showCrypto && activeCoins.length > 0 && (
-              <>
-                <CryptoTicker
-                  coins={activeCoins}
-                  prices={cryptoPrices}
-                  mode={cryptoMode}
-                  index={cryptoIndex}
-                  fading={cryptoFading}
-                  fontSize={fontSize}
-                  bgColor={bgColor}
-                  cryptoUpColor={cryptoUpColor}
-                  cryptoDownColor={cryptoDownColor}
-                  metallic={isMetal || isGlass || isRetro}
-                />
-                {c.showCTA && <div style={sep} />}
-              </>
-            )}
-
-            {c.showCTA && c.ctaText && (
-              <div style={isMetal ? {
-                display: 'flex', alignItems: 'center', gap: 8,
-                borderRadius: 10, padding: '7px 20px',
-                background: `linear-gradient(135deg, rgba(${ctaColorRGB},0.15), rgba(${ctaColorRGB},0.05))`,
-                border: `1px solid rgba(${ctaColorRGB},0.25)`,
-                color: ctaColor,
-                fontSize: fontSize * 0.82, fontWeight: 700,
-                letterSpacing: '0.24em', textTransform: 'uppercase',
-                boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 16px rgba(${ctaColorRGB},0.1)`,
-                flexShrink: 0,
-              } : isGlass ? {
-                display: 'flex', alignItems: 'center', gap: 8,
-                borderRadius: 14, padding: '7px 18px',
-                background: `${ctaColor}22`,
-                border: `1px solid ${ctaColor}33`,
-                backdropFilter: 'blur(6px)',
-                color: '#fff',
-                fontSize: fontSize * 0.82, fontWeight: 600,
-                letterSpacing: '0.24em', textTransform: 'uppercase',
-                flexShrink: 0,
-              } : isRetro ? {
-                display: 'flex', alignItems: 'center', gap: 6,
-                borderRadius: 2, padding: '6px 14px',
-                background: ctaColor,
-                border: '2px solid #000',
-                boxShadow: '2px 2px 0 #000',
-                color: '#fff',
-                fontSize: fontSize * 0.82, fontWeight: 700,
-                letterSpacing: '0.12em', textTransform: 'uppercase',
-                flexShrink: 0,
-              } : {
-                display: 'flex', alignItems: 'center', gap: 8,
-                borderRadius: 999, padding: '6px 18px',
-                background: `linear-gradient(to bottom, ${ctaColor}, ${ctaColor}cc)`,
-                color: '#fff',
-                fontSize: fontSize * 0.82, fontWeight: 600,
-                letterSpacing: '0.24em', textTransform: 'uppercase',
-                boxShadow: `0 0 24px ${ctaColor}d9`,
-                flexShrink: 0,
-              }}>
-                <span>{c.ctaText}</span>
-              </div>
-            )}
-
-            {/* ─── Socials ─── */}
-            {c.showSocials && (() => {
-              const socials = [
-                c.socialTwitter && { icon: '𝕏', handle: c.socialTwitter },
-                c.socialInstagram && { icon: '📷', handle: c.socialInstagram },
-                c.socialKick && { icon: '🟢', handle: c.socialKick },
-                c.socialTiktok && { icon: '♪', handle: c.socialTiktok },
-              ].filter(Boolean);
-              if (!socials.length) return null;
-              return (
-                <>
-                  <div style={sep} />
-                  <div style={{
-                    display: 'flex', alignItems: 'center', gap: 10, flexShrink: 0,
-                  }}>
-                    {socials.map((s, i) => (
-                      <div key={i} style={isMetal ? {
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        borderRadius: 8, padding: '4px 10px',
-                        background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-                        letterSpacing: '0.06em',
-                      } : isGlass ? {
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        borderRadius: 10, padding: '4px 10px',
-                        background: 'rgba(255,255,255,0.08)',
-                        border: '1px solid rgba(255,255,255,0.12)',
-                        fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-                        letterSpacing: '0.06em',
-                      } : isRetro ? {
-                        display: 'flex', alignItems: 'center', gap: 4,
-                        borderRadius: 2, padding: '3px 8px',
-                        background: '#000',
-                        border: `1px solid ${accentColor}66`,
-                        fontSize: fontSize * 0.78, color: accentColor, fontWeight: 700,
-                        letterSpacing: '0.04em',
-                      } : {
-                        display: 'flex', alignItems: 'center', gap: 5,
-                        borderRadius: 999, padding: '4px 10px',
-                        background: `${accentColor}18`,
-                        border: `1px solid ${accentColor}30`,
-                        fontSize: fontSize * 0.78, color: textColor, fontWeight: 600,
-                        letterSpacing: '0.06em',
-                      }}>
-                        <span style={{ fontSize: fontSize * 0.85 }}>{s.icon}</span>
-                        <span>{s.handle}</span>
-                      </div>
-                    ))}
-                  </div>
-                </>
-              );
-            })()}
-
-            {/* ─── Start Balance ─── */}
-            {c.showStartBalance && c.startBalance && (
-              <>
-                <div style={sep} />
-                <div style={isMetal ? {
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  borderRadius: 10, padding: '6px 16px',
-                  background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
-                  border: '1px solid rgba(255,255,255,0.08)',
-                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px rgba(${accentColorRGB},0.06)`,
-                  fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
-                  letterSpacing: '0.1em', flexShrink: 0,
-                } : isGlass ? {
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  borderRadius: 14, padding: '6px 16px',
-                  background: 'rgba(255,255,255,0.08)',
-                  border: '1px solid rgba(255,255,255,0.15)',
-                  backdropFilter: 'blur(6px)',
-                  fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
-                  letterSpacing: '0.1em', flexShrink: 0,
-                } : isRetro ? {
-                  display: 'flex', alignItems: 'center', gap: 5,
-                  borderRadius: 2, padding: '5px 12px',
-                  background: '#000',
-                  border: `2px solid ${accentColor}88`,
-                  fontSize: fontSize * 0.85, fontWeight: 700, color: accentColor,
-                  letterSpacing: '0.08em', flexShrink: 0,
-                } : {
-                  display: 'flex', alignItems: 'center', gap: 6,
-                  borderRadius: 999, padding: '6px 16px',
-                  background: `${accentColor}18`,
-                  border: `1px solid ${accentColor}30`,
-                  fontSize: fontSize * 0.85, fontWeight: 600, color: textColor,
-                  letterSpacing: '0.1em', flexShrink: 0,
-                }}>
-                  <span style={{ fontSize: fontSize * 0.7, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
-                    Balance
-                  </span>
-                  <span style={{ fontWeight: 700, color: accentColor }}>
-                    {c.balanceCurrency || '€'}{Number(c.startBalance).toLocaleString()}
-                  </span>
-                </div>
-              </>
-            )}
-
-            {/* ─── Casino ─── */}
-            {c.showCasino && (c.casinoName || c.casinoLogoUrl) && (
-              <>
-                <div style={sep} />
-                <div style={{
-                  display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
-                }}>
-                  {c.casinoLogoUrl && (
-                    <img src={c.casinoLogoUrl} alt="" style={{
-                      height: barHeight * 0.55, maxWidth: barHeight * 1.8,
-                      objectFit: 'contain', borderRadius: isMetal ? 6 : isRetro ? 2 : 8,
-                      filter: isMetal ? `drop-shadow(0 0 6px rgba(${accentColorRGB},0.2))` : 'none',
-                    }} />
-                  )}
-                  {c.casinoName && (
-                    <span style={{
-                      fontSize: fontSize * 0.9, fontWeight: 700,
-                      letterSpacing: '0.15em', textTransform: 'uppercase',
-                      color: accentColor,
-                      textShadow: isMetal ? `0 0 10px rgba(${accentColorRGB},0.3)` : isRetro ? `0 0 8px ${accentColor}` : 'none',
-                    }}>
-                      {c.casinoName}
-                    </span>
-                  )}
-                </div>
-              </>
-            )}
+            {renderZone('right')}
           </div>
 
         </div>
