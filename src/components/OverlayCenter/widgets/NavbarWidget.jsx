@@ -269,46 +269,46 @@ function NavbarWidget({ config, widgetId }) {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
-    padding: '0 24px', color: textColor, fontSize, gap: 0,
+    padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative', filter: filterStr,
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.7), rgba(${bgColorRGB},0.5))`,
     backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-    padding: '0 22px', color: textColor, fontSize, gap: 0,
+    padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative', filter: filterStr,
   } : isRetro ? {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: Math.max(borderRadius - borderWidth, 0),
     background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
-    padding: '0 16px', color: textColor, fontSize, gap: 0,
+    padding: '0 8px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative', filter: filterStr,
     borderTop: '2px solid rgba(255,255,255,0.15)',
   } : {
     display: 'flex', alignItems: 'center', height: barHeight,
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
-    padding: '0 20px', color: textColor, fontSize, gap: 0,
+    padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', filter: filterStr,
   };
 
   const sep = isMetal ? {
     width: 1, height: barHeight * 0.5,
     background: `linear-gradient(to bottom, transparent, rgba(${accentColorRGB},0.25), transparent)`,
-    flexShrink: 0, margin: '0 18px',
+    flexShrink: 0, margin: '0 6px',
   } : isGlass ? {
     width: 1, height: barHeight * 0.5,
     background: `linear-gradient(to bottom, transparent, rgba(255,255,255,0.2), transparent)`,
-    flexShrink: 0, margin: '0 16px',
+    flexShrink: 0, margin: '0 6px',
   } : isRetro ? {
     width: 2, height: barHeight * 0.6,
     background: `${accentColor}88`,
-    flexShrink: 0, margin: '0 10px',
+    flexShrink: 0, margin: '0 4px',
   } : {
     width: 1, height: barHeight * 0.55,
     background: `linear-gradient(to bottom, transparent, ${mutedColor}70, transparent)`,
-    flexShrink: 0, margin: '0 16px',
+    flexShrink: 0, margin: '0 6px',
   };
 
   /* ─── Dynamic section layout ─── */
