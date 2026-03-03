@@ -3,21 +3,6 @@ import { useAuth } from '../../../context/AuthContext';
 import ColorPicker from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 
-const AVAILABLE_CRYPTOS = [
-  { id: 'btc', label: 'Bitcoin (BTC)' },
-  { id: 'eth', label: 'Ethereum (ETH)' },
-  { id: 'sol', label: 'Solana (SOL)' },
-  { id: 'bnb', label: 'BNB' },
-  { id: 'xrp', label: 'XRP' },
-  { id: 'ada', label: 'Cardano (ADA)' },
-  { id: 'doge', label: 'Dogecoin (DOGE)' },
-  { id: 'dot', label: 'Polkadot (DOT)' },
-  { id: 'avax', label: 'Avalanche (AVAX)' },
-  { id: 'matic', label: 'Polygon (MATIC)' },
-  { id: 'ltc', label: 'Litecoin (LTC)' },
-  { id: 'link', label: 'Chainlink (LINK)' },
-];
-
 const DEFAULT_SECTION_LAYOUT = [
   { id: 'identity', zone: 'left' },
   { id: 'badge', zone: 'left' },
@@ -130,12 +115,6 @@ export default function NavbarConfig({ config, onChange }) {
     setLayout(updated);
   };
 
-  const toggleCrypto = (id) => {
-    const current = c.cryptoCoins || [];
-    const next = current.includes(id) ? current.filter(x => x !== id) : [...current, id];
-    set('cryptoCoins', next);
-  };
-
   // ─── Preset system ───
   const [presetName, setPresetName] = useState('');
   const PRESET_KEYS = [
@@ -146,7 +125,7 @@ export default function NavbarConfig({ config, onChange }) {
     'shadowSize', 'shadowIntensity',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
     'showSocials', 'showStartBalance', 'showCasino',
-    'cryptoCoins', 'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
+    'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
     'avatarSize', 'badgeSize',
     'displayStyle', 'musicDisplayStyle',
     'socialTwitter', 'socialInstagram', 'socialKick', 'socialTiktok', 'socialYoutube', 'socialFacebook', 'socialTelegram',
@@ -448,17 +427,9 @@ export default function NavbarConfig({ config, onChange }) {
                 ))}
               </div>
 
-              <h4 className="nb-subtitle">Crypto Coins</h4>
-              <div className="nb-crypto-grid">
-                {AVAILABLE_CRYPTOS.map(coin => (
-                  <label key={coin.id} className="nb-crypto-chip">
-                    <input type="checkbox"
-                      checked={(c.cryptoCoins || []).includes(coin.id)}
-                      onChange={() => toggleCrypto(coin.id)} />
-                    <span>{coin.label}</span>
-                  </label>
-                ))}
-              </div>
+              <p className="nb-muted" style={{ fontSize: 12, marginTop: 8 }}>
+                All top 15 cryptocurrencies cycle automatically.
+              </p>
             </>
           )}
         </div>

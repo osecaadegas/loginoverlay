@@ -7,7 +7,11 @@ const CRYPTO_IDS = {
   btc: 'bitcoin', eth: 'ethereum', sol: 'solana', bnb: 'binancecoin',
   xrp: 'ripple', ada: 'cardano', doge: 'dogecoin', dot: 'polkadot',
   avax: 'avalanche-2', matic: 'matic-network', ltc: 'litecoin', link: 'chainlink',
+  ton: 'the-open-network', shib: 'shiba-inu', trx: 'tron',
 };
+
+/* All coins that auto-cycle when crypto is enabled */
+const ALL_CRYPTO_COINS = Object.keys(CRYPTO_IDS);
 
 const CRYPTO_SYMBOLS = {
   btc: '₿', eth: 'Ξ', sol: 'S', bnb: 'B', xrp: 'X', ada: 'A',
@@ -28,6 +32,9 @@ const CRYPTO_LOGOS = {
   matic: 'https://assets.coingecko.com/coins/images/4713/small/polygon.png',
   ltc: 'https://assets.coingecko.com/coins/images/2/small/litecoin.png',
   link: 'https://assets.coingecko.com/coins/images/877/small/chainlink-new-logo.png',
+  ton: 'https://assets.coingecko.com/coins/images/17980/small/ton_symbol.png',
+  shib: 'https://assets.coingecko.com/coins/images/11939/small/shiba.png',
+  trx: 'https://assets.coingecko.com/coins/images/1094/small/tron-logo.png',
 };
 
 const DEFAULT_SECTION_LAYOUT = [
@@ -104,18 +111,18 @@ function NavbarWidget({ config, widgetId }) {
     spotifyExpiresRef.current = c.spotify_expires_at;
   }, [c.spotify_access_token, c.spotify_refresh_token, c.spotify_expires_at]);
 
-  // Crypto price polling
+  // Crypto price polling — always fetch all coins
   useEffect(() => {
-    if (!c.showCrypto || !c.cryptoCoins?.length) return;
-    const poll = () => fetchCryptoPrices(c.cryptoCoins).then(setCryptoPrices);
+    if (!c.showCrypto) return;
+    const poll = () => fetchCryptoPrices(ALL_CRYPTO_COINS).then(setCryptoPrices);
     poll();
     const id = setInterval(poll, 60000);
     return () => clearInterval(id);
-  }, [c.showCrypto, c.cryptoCoins?.join(',')]);
+  }, [c.showCrypto]);
 
   // Crypto cycling — all modes show one coin at a time
   const cryptoMode = c.cryptoDisplayMode || 'horizontal';
-  const activeCoins = (c.cryptoCoins || []).filter(coin => cryptoPrices[coin]);
+  const activeCoins = ALL_CRYPTO_COINS.filter(coin => cryptoPrices[coin]);
   useEffect(() => {
     if (activeCoins.length <= 1) return;
     const interval = cryptoMode === 'fade' ? 4000 : 3500;
@@ -693,27 +700,14 @@ function NavbarWidget({ config, widgetId }) {
   );
 }
 
-/* ─── Single Crypto Coin pill ─── */
+/* ─── Single Crypto Coin — plain text, no card ─── */
 function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownColor, metallic, style }) {
   const isUp = price.change >= 0;
   const changeColor = isUp ? cryptoUpColor : cryptoDownColor;
   const logoUrl = CRYPTO_LOGOS[coin];
   return (
-    <div style={metallic ? {
+    <div style={{
       display: 'flex', alignItems: 'center', gap: 8,
-      borderRadius: 10, padding: '6px 14px',
-      border: `1px solid ${changeColor}30`,
-      background: `linear-gradient(135deg, rgba(255,255,255,0.04), ${changeColor}08)`,
-      boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), 0 0 12px ${changeColor}18`,
-      fontSize: fontSize * 0.82,
-      flexShrink: 0,
-      ...style,
-    } : {
-      display: 'flex', alignItems: 'center', gap: 8,
-      borderRadius: 999, padding: '6px 14px',
-      border: `1px solid ${changeColor}50`,
-      background: `linear-gradient(to right, ${bgColor}b3, ${changeColor}15)`,
-      boxShadow: `0 0 14px ${changeColor}50`,
       fontSize: fontSize * 0.82,
       flexShrink: 0,
       ...style,
