@@ -128,8 +128,7 @@ function BonusHuntWidgetV2({ config, theme }) {
               </div>
             </div>
             <div>
-              <div className="bht2-label-sm" style={{ fontWeight: 700, letterSpacing: '0.18em' }}>{huntTitle}</div>
-              <div className="bht2-label-xs">Session Tracker</div>
+              <div className="bht2-label-sm" style={{ fontWeight: 700, letterSpacing: '0.18em', fontSize: '1.2em' }}>{huntTitle}</div>
             </div>
           </div>
           <span className="bht2-tag-muted">#{bonuses.length > 0 ? bonuses.length : '—'}</span>
