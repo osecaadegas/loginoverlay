@@ -261,13 +261,6 @@ function BonusHuntWidgetV9({ config, theme }) {
                 <span className="bhv9-stat-icon">🏆</span>
                 <span className="bhv9-stat-val">{stats.maxMulti.toFixed(0)}X</span>
               </div>
-              <div className="bhv9-stat-divider" />
-              <div className="bhv9-stat">
-                <span className="bhv9-stat-icon">{stats.profit >= 0 ? '✅' : '❌'}</span>
-                <span className={`bhv9-stat-val ${stats.profit >= 0 ? 'bhv9-val--green' : 'bhv9-val--red'}`}>
-                  {stats.profit >= 0 ? 'WIN' : 'LOSE'}
-                </span>
-              </div>
             </div>
 
             {/* Current bonus highlight */}
