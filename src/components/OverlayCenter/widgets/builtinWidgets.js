@@ -265,7 +265,6 @@ registerWidget({
     { id: 'classic',    icon: '📺', label: 'Classic' },
     { id: 'floating',   icon: '☁️', label: 'Floating' },
     { id: 'bubble',     icon: '💬', label: 'Bubble' },
-    { id: 'ticker',     icon: '📰', label: 'Ticker' },
     { id: 'stack',      icon: '📚', label: 'Stack' },
     { id: 'typewriter', icon: '⌨️', label: 'Terminal' },
     { id: 'sidebar',    icon: '📌', label: 'Sidebar' },

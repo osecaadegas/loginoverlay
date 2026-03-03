@@ -87,7 +87,6 @@ function ChatWidget({ config, theme }) {
     classic: 'rgba(15,23,42,0.95)',
     floating: 'transparent',
     bubble: 'rgba(15,18,30,0.9)',
-    ticker: 'transparent',
     stack: 'transparent',
     typewriter: 'rgba(0,8,0,0.92)',
     sidebar: 'rgba(10,12,20,0.9)',
@@ -134,45 +133,6 @@ function ChatWidget({ config, theme }) {
   const filterStyle = (brightness !== 100 || contrast !== 100 || saturation !== 100)
     ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
     : undefined;
-
-  /* ── Ticker: horizontal scroll — show only latest ~8 messages ── */
-  if (chatStyle === 'ticker') {
-    const tickerMsgs = messages.slice(-12);
-    return (
-      <div className="ov-chat-widget ov-chat-widget--ticker" style={{
-        width: '100%', height: '100%', background: bgColor,
-        fontFamily, fontSize: `${fontSize}px`, color: textColor,
-        display: 'flex', alignItems: 'center', overflow: 'hidden',
-        filter: filterStyle, borderRadius: `${borderRadius}px`,
-        border: borderWidth ? `${borderWidth}px solid ${borderColor}` : 'none',
-      }}>
-        <style>{`
-          @keyframes ov-ticker-scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-        `}</style>
-        <div style={{
-          display: 'flex', alignItems: 'center', gap: 32, whiteSpace: 'nowrap',
-          animation: tickerMsgs.length > 0 ? 'ov-ticker-scroll 20s linear infinite' : 'none',
-          paddingLeft: '100%',
-        }}>
-          {[...tickerMsgs, ...tickerMsgs].map((msg, i) => {
-            const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
-            const nameColor = c.useNativeColors && msg.color ? msg.color : plt.color;
-            return (
-              <span key={`${msg.id}-${i}`} style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}>
-                <span style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: plt.color, flexShrink: 0,
-                }} />
-                <span style={{ color: nameColor, fontWeight: 700 }}>{msg.username}</span>
-                <span style={{ color: textColor, opacity: 0.7 }}>{msg.message}</span>
-                <span style={{ color: 'rgba(255,255,255,0.15)', margin: '0 8px' }}>•</span>
-              </span>
-            );
-          })}
-        </div>
-      </div>
-    );
-  }
 
   /* ── Base wrapper style ── */
   const isTransparent = chatStyle === 'floating' || chatStyle === 'stack';
