@@ -852,7 +852,7 @@
   align-items: stretch;
 }
 .oc-bonushunt--compact .bht-current-img {
-  width: 96px;
+  width: 110px;
   max-height: none;
   height: 100%;
   min-height: 72px;
@@ -867,7 +867,7 @@
   gap: 4px;
 }
 .oc-bonushunt--compact .bht-current-name {
-  font-size: 1.05em;
+  font-size: 1.15em;
   font-weight: 700;
   white-space: nowrap;
   overflow: hidden;
@@ -875,26 +875,29 @@
 }
 .oc-bonushunt--compact .bht-current-stats {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 4px;
   flex: 1;
   align-content: center;
 }
 .oc-bonushunt--compact .bht-current-stat {
-  padding: 5px 4px;
-  font-size: 0.85em;
+  padding: 5px 6px;
+  font-size: 0.95em;
   justify-content: center;
-  gap: 2px;
+  gap: 1px;
+}
+.oc-bonushunt--compact .bht-current-stat:last-child {
+  grid-column: 1 / -1;
 }
 .oc-bonushunt--compact .bht-current-stat-label {
-  font-size: 0.7em;
+  font-size: 0.65em;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   opacity: 0.7;
   color: var(--bht-current-accent, #86efac);
 }
 .oc-bonushunt--compact .bht-current-stat span:last-child {
-  font-size: 1em;
+  font-size: 1.05em;
   font-weight: 800;
 }
 .oc-bonushunt--compact .bht-list-card {
