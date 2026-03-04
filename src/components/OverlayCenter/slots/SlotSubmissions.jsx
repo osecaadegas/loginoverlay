@@ -88,18 +88,19 @@ const DropdownFilter = memo(({ label, options, selected, onChange }) => {
 });
 
 /* ═══════════════════════════════════════════════════════════════════
-   SUBMIT NEW SLOT PANEL (slide-in)
+   SUBMIT NEW SLOT DROPDOWN (inline, expands below toolbar)
    ═══════════════════════════════════════════════════════════════════ */
-const SubmitPanel = memo(({ providers, onClose, onSubmitted }) => {
+const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
   const { user } = useAuth();
   const [form, setForm] = useState({});
   const [saving, setSaving] = useState(false);
-  const [tab, setTab] = useState('basic');
   const [imageResults, setImageResults] = useState([]);
   const [imageSearching, setImageSearching] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const nameRef = useRef(null);
+  const wrapRef = useRef(null);
 
-  useEffect(() => { setTimeout(() => nameRef.current?.focus(), 100); }, []);
+  useEffect(() => { setTimeout(() => { setExpanded(true); nameRef.current?.focus(); }, 30); }, []);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
@@ -149,117 +150,111 @@ const SubmitPanel = memo(({ providers, onClose, onSubmitted }) => {
     if (e.key === 'Escape') onClose();
   };
 
-  const tabs = [
-    { id: 'basic', label: 'Basic' },
-    { id: 'stats', label: 'Stats' },
-    { id: 'features', label: 'Features' },
-  ];
+  const featCount = (Array.isArray(form.features) ? form.features : []).length;
 
   return (
-    <>
-      <div className="sm-overlay" onClick={onClose} />
-      <div className="sm-editor" onKeyDown={onKey}>
-        <div className="sm-editor-head">
-          <h3>Submit New Slot</h3>
-          <button className="sm-btn-close" onClick={onClose}>
-            <svg width="14" height="14" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
-          </button>
-        </div>
+    <div
+      ref={wrapRef}
+      className="ss-submit-dropdown"
+      style={{
+        maxHeight: expanded ? (wrapRef.current?.scrollHeight || 1000) + 'px' : '0px',
+        opacity: expanded ? 1 : 0,
+        overflow: 'hidden',
+        transition: 'max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease',
+        background: 'rgba(255,255,255,0.025)',
+        borderRadius: 10,
+        border: '1px solid rgba(255,255,255,0.06)',
+        marginBottom: 8,
+      }}
+      onKeyDown={onKey}
+    >
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px 6px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        <span style={{ fontWeight: 600, fontSize: '0.85rem', opacity: 0.9 }}>Submit New Slot</span>
+        <button className="sm-btn-close" onClick={onClose} style={{ width: 24, height: 24, padding: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
+        </button>
+      </div>
 
-        <div className="sm-tabs">
-          {tabs.map(t => (
-            <button key={t.id} className={tab === t.id ? 'active' : ''} onClick={() => setTab(t.id)}>{t.label}</button>
-          ))}
-        </div>
-
-        <div className="sm-editor-body">
-          {tab === 'basic' && (
-            <>
-              {form.image && (
-                <div className="sm-img-preview">
-                  <img src={form.image || DEFAULT_SLOT_IMAGE} alt="" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
-                </div>
-              )}
-              <label className="sm-field">
-                <span>Name <em>*</em></span>
-                <input ref={nameRef} value={form.name || ''} onChange={e => set('name', e.target.value)} placeholder="Sweet Bonanza" />
-              </label>
-              <label className="sm-field">
-                <span>Provider <em>*</em></span>
-                <input list="ss-prov-list" value={form.provider || ''} onChange={e => set('provider', e.target.value)} placeholder="Pragmatic Play" />
-                <datalist id="ss-prov-list">{providers.map(p => <option key={p} value={p} />)}</datalist>
-              </label>
-              <label className="sm-field">
-                <span>Image URL <em>*</em></span>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  <input style={{ flex: 1 }} value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="https://…" />
-                  <button type="button" className="sm-btn-sm" onClick={searchImages} disabled={!form.name || imageSearching}>
-                    {imageSearching ? '⏳' : '🔍'}
-                  </button>
-                </div>
-              </label>
-              {imageResults.length > 0 && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
-                  {imageResults.slice(0, 8).map((img, i) => (
-                    <button key={i} type="button" onClick={() => { set('image', img.url); setImageResults([]); }}
-                      style={{ border: form.image === img.url ? '2px solid #a855f7' : '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: 2, background: 'transparent', cursor: 'pointer', width: 60, height: 60, overflow: 'hidden' }}>
-                      <img src={img.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }} />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-
-          {tab === 'stats' && (
-            <>
-              <div className="sm-form-row">
-                <label className="sm-field half">
-                  <span>RTP (%)</span>
-                  <input type="number" value={form.rtp || ''} onChange={e => set('rtp', e.target.value || null)} placeholder="96.50" step="0.01" min="80" max="100" />
-                </label>
-                <label className="sm-field half">
-                  <span>Volatility</span>
-                  <select value={form.volatility || ''} onChange={e => set('volatility', e.target.value || null)}>
-                    <option value="">Select…</option>
-                    {VOLATILITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                  </select>
-                </label>
-              </div>
-              <div className="sm-form-row">
-                <label className="sm-field half">
-                  <span>Max Win (x)</span>
-                  <input type="number" value={form.max_win_multiplier || ''} onChange={e => set('max_win_multiplier', e.target.value || null)} placeholder="10000" />
-                </label>
-                <label className="sm-field half">
-                  <span>Reels</span>
-                  <input value={form.reels || ''} onChange={e => set('reels', e.target.value || null)} placeholder="5x3" />
-                </label>
-              </div>
-            </>
-          )}
-
-          {tab === 'features' && (
-            <div className="sm-feature-grid">
-              {FEATURE_OPTIONS.map(feat => {
-                const active = (Array.isArray(form.features) ? form.features : []).includes(feat);
-                return <button key={feat} className={`sm-feat-tag ${active ? 'on' : ''}`} onClick={() => toggleFeat(feat)}>{feat}</button>;
-              })}
-            </div>
-          )}
-        </div>
-
-        <div className="sm-editor-foot">
-          <div className="sm-foot-right" style={{ marginLeft: 'auto' }}>
-            <button className="sm-btn-ghost" onClick={onClose}>Cancel</button>
-            <button className="sm-btn-primary" onClick={save} disabled={saving}>
-              {saving ? 'Submitting…' : '📤 Submit for Approval'}
-              <kbd>⌘↵</kbd>
+      {/* Form grid */}
+      <div style={{ padding: '10px 14px 6px', display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px 12px', alignItems: 'start' }}>
+        {/* Name */}
+        <label className="sm-field">
+          <span>Name <em>*</em></span>
+          <input ref={nameRef} value={form.name || ''} onChange={e => set('name', e.target.value)} placeholder="Sweet Bonanza" />
+        </label>
+        {/* Provider */}
+        <label className="sm-field">
+          <span>Provider <em>*</em></span>
+          <input list="ss-prov-list" value={form.provider || ''} onChange={e => set('provider', e.target.value)} placeholder="Pragmatic Play" />
+          <datalist id="ss-prov-list">{providers.map(p => <option key={p} value={p} />)}</datalist>
+        </label>
+        {/* RTP */}
+        <label className="sm-field">
+          <span>RTP (%)</span>
+          <input type="number" value={form.rtp || ''} onChange={e => set('rtp', e.target.value || null)} placeholder="96.50" step="0.01" min="80" max="100" />
+        </label>
+        {/* Volatility */}
+        <label className="sm-field">
+          <span>Volatility</span>
+          <select value={form.volatility || ''} onChange={e => set('volatility', e.target.value || null)}>
+            <option value="">Select…</option>
+            {VOLATILITY_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+          </select>
+        </label>
+        {/* Max Win */}
+        <label className="sm-field">
+          <span>Max Win (x)</span>
+          <input type="number" value={form.max_win_multiplier || ''} onChange={e => set('max_win_multiplier', e.target.value || null)} placeholder="10000" />
+        </label>
+        {/* Image URL — spans full width */}
+        <label className="sm-field" style={{ gridColumn: '1 / -1' }}>
+          <span>Image URL <em>*</em></span>
+          <div style={{ display: 'flex', gap: 6 }}>
+            <input style={{ flex: 1 }} value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="https://…" />
+            <button type="button" className="sm-btn-sm" onClick={searchImages} disabled={!form.name || imageSearching}>
+              {imageSearching ? '⏳' : '🔍'}
             </button>
           </div>
-        </div>
+        </label>
       </div>
-    </>
+
+      {/* Image results + preview row */}
+      {(imageResults.length > 0 || form.image) && (
+        <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+          {form.image && (
+            <img src={form.image} alt="" style={{ width: 48, height: 48, borderRadius: 6, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+          )}
+          {imageResults.slice(0, 8).map((img, i) => (
+            <button key={i} type="button" onClick={() => { set('image', img.url); setImageResults([]); }}
+              style={{ border: form.image === img.url ? '2px solid #a855f7' : '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: 2, background: 'transparent', cursor: 'pointer', width: 48, height: 48, overflow: 'hidden', flexShrink: 0 }}>
+              <img src={img.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }} />
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Features (collapsible) */}
+      <details style={{ padding: '0 14px 8px' }}>
+        <summary style={{ fontSize: '0.75rem', cursor: 'pointer', opacity: 0.6, userSelect: 'none', marginBottom: 6 }}>
+          Features {featCount > 0 && <span style={{ background: '#a855f7', color: '#fff', borderRadius: 8, padding: '1px 6px', fontSize: '0.65rem', marginLeft: 4 }}>{featCount}</span>}
+        </summary>
+        <div className="sm-feature-grid" style={{ paddingTop: 2 }}>
+          {FEATURE_OPTIONS.map(feat => {
+            const active = (Array.isArray(form.features) ? form.features : []).includes(feat);
+            return <button key={feat} className={`sm-feat-tag ${active ? 'on' : ''}`} onClick={() => toggleFeat(feat)}>{feat}</button>;
+          })}
+        </div>
+      </details>
+
+      {/* Footer */}
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '6px 14px 10px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <button className="sm-btn-ghost" onClick={onClose}>Cancel</button>
+        <button className="sm-btn-primary" onClick={save} disabled={saving}>
+          {saving ? 'Submitting…' : '📤 Submit for Approval'}
+        </button>
+      </div>
+    </div>
   );
 });
 
@@ -447,9 +442,20 @@ export default function SlotSubmissions() {
         <div className="sm-toolbar-right">
           <span className="sm-count">{totalCount.toLocaleString()} slots</span>
           <button className="sm-btn-ghost" onClick={() => setShowMySubmissions(true)}>My Submissions</button>
-          <button className="sm-btn-primary" onClick={() => setShowSubmit(true)}>+ Submit Slot</button>
+          <button className={`sm-btn-primary${showSubmit ? ' active' : ''}`} onClick={() => setShowSubmit(s => !s)}>
+            {showSubmit ? '✕ Close' : '+ Submit Slot'}
+          </button>
         </div>
       </div>
+
+      {/* ── Submit Slot Dropdown ── */}
+      {showSubmit && (
+        <SubmitDropdown
+          providers={providers}
+          onClose={() => setShowSubmit(false)}
+          onSubmitted={() => { notify('Slot submitted for approval! 🎉'); setShowSubmit(false); }}
+        />
+      )}
 
       {/* ── Table ── */}
       <div className="sm-table-wrap">
@@ -513,13 +519,6 @@ export default function SlotSubmissions() {
       )}
 
       {/* ── Panels ── */}
-      {showSubmit && (
-        <SubmitPanel
-          providers={providers}
-          onClose={() => setShowSubmit(false)}
-          onSubmitted={() => notify('Slot submitted for approval! 🎉')}
-        />
-      )}
       {showMySubmissions && <MySubmissionsPanel onClose={() => setShowMySubmissions(false)} />}
 
       {/* ── Shortcuts hint ── */}
