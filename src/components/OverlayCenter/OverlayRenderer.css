@@ -839,11 +839,11 @@
 .oc-bonushunt--compact .bht-badge-extreme { padding: 3px 8px; font-size: 0.65em; }
 
 /* ── Current bonus card ── */
-.oc-bonushunt--compact .bht-current { padding: 4px 6px !important; }
-.oc-bonushunt--compact .bht-current-top { margin-bottom: 0; gap: 8px; align-items: center; }
+.oc-bonushunt--compact .bht-current { padding: 3px 6px !important; }
+.oc-bonushunt--compact .bht-current-top { margin-bottom: 0; gap: 6px; align-items: center; }
 .oc-bonushunt--compact .bht-current-img {
-  width: 70px; height: 50px;
-  object-fit: cover; border-radius: 6px; flex-shrink: 0;
+  width: 55px; height: 40px;
+  object-fit: cover; border-radius: 5px; flex-shrink: 0;
 }
 .oc-bonushunt--compact .bht-current-info {
   flex: 1; display: flex; flex-direction: column; gap: 2px;
@@ -853,13 +853,13 @@
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;
 }
 .oc-bonushunt--compact .bht-current-stats {
-  display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+  display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2px;
   flex: 1; align-content: center;
 }
 .oc-bonushunt--compact .bht-current-stat {
-  padding: 2px 5px; font-size: 0.9em; justify-content: center; gap: 0;
+  padding: 1px 4px; font-size: 0.85em; justify-content: center; gap: 0;
 }
-.oc-bonushunt--compact .bht-current-stat:last-child { grid-column: 1 / -1; }
+/* all 3 stats in one row, no span needed */
 .oc-bonushunt--compact .bht-current-stat-label {
   font-size: 0.6em; font-weight: 700; letter-spacing: 0.6px;
   opacity: 0.7; line-height: 1; color: var(--bht-current-accent, #86efac);
@@ -868,10 +868,10 @@
   font-size: 1em; font-weight: 800; line-height: 1.2;
 }
 
-/* ── List card: fills remaining space, min 430px for 3 cards ── */
+/* ── List card: fills remaining space ── */
 .oc-bonushunt--compact .bht-list-card {
   flex: 1 1 0 !important;
-  min-height: 430px;
+  min-height: 0;
   overflow: hidden;
 }
 .oc-bonushunt--compact .bht-bonus-list {
@@ -905,20 +905,20 @@
 
 /* ── Compact bonus cards ── */
 .oc-bonushunt--compact .bht-bonus-card {
-  min-width: 80px; min-height: 105px;
+  min-width: 80px; min-height: 80px;
   display: flex; flex-direction: column;
   flex-shrink: 0;
 }
 .oc-bonushunt--compact .bht-bonus-card-img {
-  height: 105px; flex-shrink: 0;
+  height: 80px; flex-shrink: 0;
 }
 /* Hide the old gradient overlay — compact uses the info bar instead */
 .oc-bonushunt--compact .bht-bonus-card-overlay { display: none; }
 
 /* ── Compact info bar (below each card image) ── */
 .bht-compact-info-bar {
-  display: flex; align-items: center; gap: 8px;
-  padding: 7px 10px; background: #000; min-height: 32px;
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; background: #000; min-height: 24px;
   border-top: 2px solid rgba(255,255,255,0.08);
 }
 .bht-compact-info-name {
@@ -944,10 +944,10 @@
 }
 
 /* ── Summary card ── */
-.oc-bonushunt--compact .bht-summary { padding: 6px 8px !important; flex-shrink: 0; }
-.oc-bonushunt--compact .bht-summary-stats { gap: 6px; margin-bottom: 6px; }
-.oc-bonushunt--compact .bht-total-pay { padding: 8px; }
-.oc-bonushunt--compact .bht-total-pay-value { font-size: 1.1em; }
+.oc-bonushunt--compact .bht-summary { padding: 4px 6px !important; flex-shrink: 0; }
+.oc-bonushunt--compact .bht-summary-stats { gap: 4px; margin-bottom: 3px; }
+.oc-bonushunt--compact .bht-total-pay { padding: 4px 6px; }
+.oc-bonushunt--compact .bht-total-pay-value { font-size: 1em; }
 
 /* ── Merged header + count card ── */
 .bht-compact-avatar {
@@ -956,7 +956,7 @@
   border: 2px solid var(--bht-header-accent, #60a5fa);
 }
 .oc-bonushunt--compact .bht-compact-avatar { width: 28px; height: 28px; }
-.bht-compact-merged { display: flex; flex-direction: column; gap: 6px; }
+.bht-compact-merged { display: flex; flex-direction: column; gap: 4px; }
 .bht-compact-top-row { display: flex; align-items: center; gap: 8px; }
 .bht-compact-title-block {
   display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0;
@@ -978,7 +978,7 @@
 .bht-compact-info-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 
 /* ── Progress bar ── */
-.bht-compact-progress-section { margin: 4px 0; }
+.bht-compact-progress-section { margin: 2px 0; }
 .bht-compact-progress-label {
   display: flex; justify-content: space-between; align-items: center;
   font-size: 0.65em; font-weight: 700; color: var(--bht-muted, #94a3b8);
