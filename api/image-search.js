@@ -54,9 +54,12 @@ export default async function handler(req, res) {
     const data = await response.json();
 
     if (!response.ok) {
-      console.error('[image-search] Google API error:', data);
+      console.error('[image-search] Google API error:', JSON.stringify(data));
       return res.status(response.status).json({
         error: data.error?.message || 'Google API error',
+        code: data.error?.code,
+        details: data.error?.errors || [],
+        debug: { hasKey: !!apiKey, hasCx: !!cx, query, keyPrefix: apiKey?.slice(0, 8) + '…' },
       });
     }
 
