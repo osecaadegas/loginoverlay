@@ -193,7 +193,7 @@ function BonusHuntWidgetV8({ config, theme }) {
 
             return (
               <div key={`card-${idx}`} className="bhv8-card-wrapper" style={cardStyle(offset)}>
-                <div className={`bhv8-card${isCenter ? ' bhv8-card--center' : ''}${isCurrent ? ' bhv8-card--current' : ''}${bonus.opened ? ' bhv8-card--opened' : ''}`}>
+                <div className={`bhv8-card${isCenter ? ' bhv8-card--center' : ''}${isCurrent ? ' bhv8-card--current' : ''}${bonus.opened ? ' bhv8-card--opened' : ''}${bonus.isSuperBonus ? ' bhv8-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bhv8-card--extreme' : ''}`}>
 
                   {/* slot image */}
                   <div className="bhv8-card-img-bg">
@@ -217,21 +217,6 @@ function BonusHuntWidgetV8({ config, theme }) {
                       BET {bet.toFixed(1)}{currency}
                     </span>
                   </div>
-
-                  {/* super badge */}
-                  {bonus.isSuperBonus && (
-                    <div className="bhv8-card-super-badge"
-                      style={{ color: superBadgeColor }}>
-                      ⭐ SUPER {payout > 0 ? `${currency}${payout.toFixed(0)}` : ''}
-                    </div>
-                  )}
-                  {/* extreme badge */}
-                  {(bonus.isExtremeBonus || bonus.isExtreme) && (
-                    <div className="bhv8-card-extreme-badge"
-                      style={{ color: extremeBadgeColor }}>
-                      🔥 EXTREME {payout > 0 ? `${currency}${payout.toFixed(0)}` : ''}
-                    </div>
-                  )}
 
                   {/* opened result bar */}
                   {bonus.opened && (
