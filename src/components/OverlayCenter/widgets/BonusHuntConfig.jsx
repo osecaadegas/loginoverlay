@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { getAllSlots, DEFAULT_SLOT_IMAGE } from '../../../utils/slotUtils';
+import { getAllSlots, DEFAULT_SLOT_IMAGE, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import { getMySubmissions, submitSlot } from '../../../services/pendingSlotService';
 import ColorPicker from './shared/ColorPicker';
 import { supabase } from '../../../config/supabaseClient';
@@ -439,7 +439,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   }, [userId]);
 
   const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
-    ? slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase()))
+    ? sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase())))
     : [];
 
   const save = useCallback((list = bonusList, extras = {}) => {

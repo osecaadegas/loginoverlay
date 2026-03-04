@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { getAllSlots } from '../../../utils/slotUtils';
+import { getAllSlots, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import ColorPickerBase from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 import {
@@ -113,7 +113,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   const [showSlotSuggestions, setShowSlotSuggestions] = useState({});
   const filteredSlots = useCallback((term) => {
     if (!term || term.length < 1) return [];
-    return slots.filter(s => s?.name?.toLowerCase().includes(term.toLowerCase())).slice(0, 5);
+    return sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(term.toLowerCase()))).slice(0, 5);
   }, [slots]);
 
   const handleSlotSearchSetup = (idx, pNum, val) => {

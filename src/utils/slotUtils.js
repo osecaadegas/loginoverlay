@@ -109,6 +109,46 @@ export async function getRandomSlots(count = 10, providers = null) {
 }
 
 /**
+ * Provider priority order for slot suggestions.
+ * Lower index = higher priority. Providers not in this list sort alphabetically after.
+ */
+const PROVIDER_PRIORITY = [
+  'pragmatic play',
+  'hacksaw',
+  'nolimit city',
+  'relax gaming',
+  'push gaming',
+  'bgaming',
+];
+
+/**
+ * Sort an array of slots by provider priority, then alphabetically by name.
+ * Slots whose provider matches a priority entry (case-insensitive, includes partial)
+ * come first in the defined order; the rest follow sorted by name.
+ * @param {Array} slotList - Array of slot objects with `provider` and `name`
+ * @returns {Array} New sorted array
+ */
+export function sortSlotsByProviderPriority(slotList) {
+  if (!slotList || slotList.length === 0) return slotList;
+
+  const getPriority = (provider) => {
+    if (!provider) return PROVIDER_PRIORITY.length;
+    const p = provider.toLowerCase();
+    for (let i = 0; i < PROVIDER_PRIORITY.length; i++) {
+      if (p.includes(PROVIDER_PRIORITY[i]) || PROVIDER_PRIORITY[i].includes(p)) return i;
+    }
+    return PROVIDER_PRIORITY.length;
+  };
+
+  return [...slotList].sort((a, b) => {
+    const pa = getPriority(a.provider);
+    const pb = getPriority(b.provider);
+    if (pa !== pb) return pa - pb;
+    return (a.name || '').localeCompare(b.name || '');
+  });
+}
+
+/**
  * Search slots by name
  * @param {string} searchTerm - Search term to match against slot names
  * @returns {Promise<Array>} Array of matching slots
@@ -116,7 +156,8 @@ export async function getRandomSlots(count = 10, providers = null) {
 export async function searchSlotsByName(searchTerm) {
   const slots = await getAllSlots();
   const term = searchTerm.toLowerCase();
-  return slots.filter(slot => slot.name.toLowerCase().includes(term));
+  const filtered = slots.filter(slot => slot.name.toLowerCase().includes(term));
+  return sortSlotsByProviderPriority(filtered);
 }
 
 /**
