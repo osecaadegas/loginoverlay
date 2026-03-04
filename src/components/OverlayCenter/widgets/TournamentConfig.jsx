@@ -93,8 +93,11 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   ]);
 
   const updateSetupMatch = (idx, field, value) => {
-    const next = setupMatches.map((m, i) => i === idx ? { ...m, [field]: value } : m);
-    setSetupMatches(next);
+    setSetupMatches(prev => prev.map((m, i) => i === idx ? { ...m, [field]: value } : m));
+  };
+
+  const updateSetupMatchMulti = (idx, fields) => {
+    setSetupMatches(prev => prev.map((m, i) => i === idx ? { ...m, ...fields } : m));
   };
 
   const addSetupMatch = () => {
@@ -119,9 +122,11 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   };
 
   const handleSlotSelectSetup = (idx, pNum, slot) => {
-    updateSetupMatch(idx, `slot${pNum}Name`, slot.name);
-    updateSetupMatch(idx, `slot${pNum}Search`, slot.name);
-    updateSetupMatch(idx, `slot${pNum}Image`, slot.image);
+    updateSetupMatchMulti(idx, {
+      [`slot${pNum}Name`]: slot.name,
+      [`slot${pNum}Search`]: slot.name,
+      [`slot${pNum}Image`]: slot.image || slot.image_url || null,
+    });
     setShowSlotSuggestions(prev => ({ ...prev, [`${idx}_${pNum}`]: false }));
   };
 
@@ -401,21 +406,28 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>
                   {/* Player 1 + slot */}
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <input type="text" value={sm.player1} placeholder="Player 1"
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Player 1</span>
+                    <input type="text" value={sm.player1} placeholder="Name..."
                       onChange={e => updateSetupMatch(idx, 'player1', e.target.value)}
                       disabled={tournamentStarted}
-                      style={{ width: '100%' }} />
-                    <div className="tm-slot-wrapper-inline" style={{ position: 'relative' }}>
-                      <input type="text" value={sm.slot1Search || sm.slot1Name || ''} placeholder="🔍 Slot P1..."
-                        onChange={e => handleSlotSearchSetup(idx, 1, e.target.value)}
-                        onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_1`]: (sm.slot1Search || '').length > 0 }))}
-                        disabled={tournamentStarted}
-                        style={{ width: '100%', fontSize: 11 }} />
+                      className="tm-setup-input" />
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {sm.slot1Image && (
+                          <img src={sm.slot1Image} alt="" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
+                        )}
+                        <input type="text" value={sm.slot1Search || sm.slot1Name || ''} placeholder="🎰 Search slot..."
+                          onChange={e => handleSlotSearchSetup(idx, 1, e.target.value)}
+                          onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_1`]: (sm.slot1Search || '').length > 0 }))}
+                          onBlur={() => setTimeout(() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_1`]: false })), 200)}
+                          disabled={tournamentStarted}
+                          className="tm-setup-input tm-setup-input-slot" />
+                      </div>
                       {showSlotSuggestions[`${idx}_1`] && filteredSlots(sm.slot1Search).length > 0 && (
                         <div className="tm-slot-suggestions">
                           {filteredSlots(sm.slot1Search).map(slot => (
-                            <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelectSetup(idx, 1, slot)}>
+                            <div key={slot.id} className="tm-slot-suggestion" onMouseDown={(e) => { e.preventDefault(); handleSlotSelectSetup(idx, 1, slot); }}>
                               {slot.image && <img src={slot.image} alt={slot.name} />}
                               <span>{slot.name}</span>
                             </div>
@@ -424,23 +436,32 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                       )}
                     </div>
                   </div>
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#475569', alignSelf: 'center', marginTop: -18 }}>VS</span>
+
+                  <span style={{ fontSize: 11, fontWeight: 800, color: '#334155', alignSelf: 'center', paddingTop: 14 }}>VS</span>
+
                   {/* Player 2 + slot */}
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-                    <input type="text" value={sm.player2} placeholder="Player 2"
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Player 2</span>
+                    <input type="text" value={sm.player2} placeholder="Name..."
                       onChange={e => updateSetupMatch(idx, 'player2', e.target.value)}
                       disabled={tournamentStarted}
-                      style={{ width: '100%' }} />
-                    <div className="tm-slot-wrapper-inline" style={{ position: 'relative' }}>
-                      <input type="text" value={sm.slot2Search || sm.slot2Name || ''} placeholder="🔍 Slot P2..."
-                        onChange={e => handleSlotSearchSetup(idx, 2, e.target.value)}
-                        onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_2`]: (sm.slot2Search || '').length > 0 }))}
-                        disabled={tournamentStarted}
-                        style={{ width: '100%', fontSize: 11 }} />
+                      className="tm-setup-input" />
+                    <div style={{ position: 'relative' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        {sm.slot2Image && (
+                          <img src={sm.slot2Image} alt="" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
+                        )}
+                        <input type="text" value={sm.slot2Search || sm.slot2Name || ''} placeholder="🎰 Search slot..."
+                          onChange={e => handleSlotSearchSetup(idx, 2, e.target.value)}
+                          onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_2`]: (sm.slot2Search || '').length > 0 }))}
+                          onBlur={() => setTimeout(() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_2`]: false })), 200)}
+                          disabled={tournamentStarted}
+                          className="tm-setup-input tm-setup-input-slot" />
+                      </div>
                       {showSlotSuggestions[`${idx}_2`] && filteredSlots(sm.slot2Search).length > 0 && (
                         <div className="tm-slot-suggestions">
                           {filteredSlots(sm.slot2Search).map(slot => (
-                            <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelectSetup(idx, 2, slot)}>
+                            <div key={slot.id} className="tm-slot-suggestion" onMouseDown={(e) => { e.preventDefault(); handleSlotSelectSetup(idx, 2, slot); }}>
                               {slot.image && <img src={slot.image} alt={slot.name} />}
                               <span>{slot.name}</span>
                             </div>

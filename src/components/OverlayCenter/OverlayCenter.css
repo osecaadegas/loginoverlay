@@ -3745,14 +3745,15 @@ body.wm-resizing {
   top: 100%;
   left: 0;
   right: 0;
-  z-index: 50;
+  z-index: 999;
   background: #1a1d2e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(147, 70, 255, 0.2);
   border-radius: 8px;
   margin-top: 2px;
-  max-height: 160px;
+  max-height: 180px;
+  min-width: 200px;
   overflow-y: auto;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(0,0,0,0.2);
 }
 
 .tm-slot-suggestion {
@@ -5860,6 +5861,36 @@ body.wm-resizing {
   display: flex;
   align-items: center;
   gap: 4px;
+}
+
+/* ── Setup match inputs ── */
+.tm-setup-input {
+  width: 100%;
+  background: rgba(15,23,42,0.6);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: #e2e8f0;
+  font-size: 0.8rem;
+  font-weight: 600;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.tm-setup-input:focus {
+  border-color: rgba(147,70,255,0.5);
+}
+.tm-setup-input::placeholder {
+  color: #475569;
+  font-weight: 500;
+}
+.tm-setup-input-slot {
+  font-size: 0.72rem;
+  font-weight: 500;
+  padding: 4px 6px;
+}
+.tm-setup-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .tm-slot-input-inline {
