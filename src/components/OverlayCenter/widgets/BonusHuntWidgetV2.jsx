@@ -168,7 +168,13 @@ function BonusHuntWidgetV2({ config, theme }) {
           </div>
           <div className="bht2-label-xs">Opened {stats.openedCount}/{bonuses.length}</div>
         </div>
-        <div className="bht2-badges">
+
+        {/* Progress bar */}
+        <div className="bht2-progress-track" style={{ marginBottom: 8 }}>
+          <div className="bht2-progress-fill" style={{ width: `${progressPct}%` }} />
+        </div>
+
+        <div className="bht2-badges" style={{ marginBottom: 0 }}>
           <span className="bht2-badge bht2-badge--super">
             <span className="bht2-badge-dot bht2-badge-dot--super" />
             Super <strong>{stats.superCount}</strong>
