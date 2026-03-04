@@ -118,7 +118,8 @@ function BonusHuntWidget({ config, theme }) {
   /* ─── Find current bonus (first not-opened) ─── */
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
-  const isOpening = currentIndex >= 0;
+  /* Stop carousel only when actively in opening phase AND there's a bonus to open */
+  const isOpening = !!c.bonusOpening && currentIndex >= 0;
 
   /* ─── Compact: measure list viewport for centring ─── */
   const listRef = useRef(null);
