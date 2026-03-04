@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from 'react';
+import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
 import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
@@ -118,20 +118,22 @@ function BonusHuntWidget({ config, theme }) {
   /* ─── Find current bonus (first not-opened) ─── */
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
+  const isOpening = currentIndex >= 0;
 
-  /* ─── Compact: measure actual list viewport height ─── */
+  /* ─── Compact: measure list viewport for centring ─── */
   const listRef = useRef(null);
-  const [listH, setListH] = useState(355);
+  const [listH, setListH] = useState(0);
   useEffect(() => {
-    const el = listRef.current;
-    if (!isCompactBH || !el) return;
-    const ro = new ResizeObserver(() => {
-      const h = el.clientHeight;
-      if (h > 0) setListH(h);
-    });
-    ro.observe(el);
+    if (!isCompactBH) return;
+    const measure = () => {
+      const el = listRef.current;
+      if (el && el.clientHeight > 0) setListH(el.clientHeight);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (listRef.current) ro.observe(listRef.current);
     return () => ro.disconnect();
-  }, [isCompactBH, bonuses.length]);
+  }, [isCompactBH]);
 
   const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
     : isHorizontalBH ? ' oc-bonushunt--horizontal'
@@ -506,24 +508,19 @@ function BonusHuntWidget({ config, theme }) {
         <div className="bht-card bht-list-card">
           <div className="bht-bonus-list" ref={isCompactBH ? listRef : undefined}>
             {isCompactBH ? (
-              /* Compact: scroll when idle, centre on current when opening */
+              /* ─── Compact list ─── */
               (() => {
-                const isOpening = currentIndex >= 0;
-                const cH = 137, cGap = 8, cStep = cH + cGap;
-                const offset = isOpening
-                  ? (listH / 2) - (currentIndex * cStep) - (cH / 2)
-                  : 0;
-
-                const renderCard = (bonus, idx, keyPrefix = '') => {
+                /* Shared card renderer */
+                const renderCompactCard = (bonus, idx, key) => {
                   const payout = Number(bonus.payout) || 0;
                   const bet = Number(bonus.betSize) || 0;
                   const multi = bet > 0 ? payout / bet : 0;
                   return (
-                    <div key={`${bonus.id || idx}${keyPrefix}`}
-                      className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
+                    <div key={key}
+                      className={`bht-bonus-card${idx === currentIndex ? ' bht-bonus-card--active' : ''}${bonus.opened ? ' bht-bonus-card--opened' : ''}${bonus.isSuperBonus ? ' bht-bonus-card--super' : ''}`}>
                       {bonus.slot?.image ? (
                         <img src={bonus.slot.image} alt={bonus.slotName}
-                          className={`bht-bonus-card-img ${bonus.isSuperBonus ? 'bht-bonus-card-img--super' : ''}`}
+                          className={`bht-bonus-card-img${bonus.isSuperBonus ? ' bht-bonus-card-img--super' : ''}`}
                           onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
                       ) : (
                         <div className="bht-bonus-card-img" style={{ background: 'linear-gradient(135deg, #1a1f3a, #0e1225)' }} />
@@ -542,19 +539,26 @@ function BonusHuntWidget({ config, theme }) {
                 };
 
                 if (isOpening) {
-                  /* Opening active → stop & centre on current bonus */
+                  /* Opening active → static track centred on current bonus */
+                  const cardH = 137, gap = 8, step = cardH + gap;
+                  const viewH = listH || 300;
+                  const offset = (viewH / 2) - (currentIndex * step) - (cardH / 2);
                   return (
-                    <div className="bht-bonus-list-track bht-compact-static-track"
+                    <div className="bht-compact-track bht-compact-track--static"
                       style={{ transform: `translateY(${offset}px)` }}>
-                      {bonuses.map((b, i) => renderCard(b, i))}
+                      {bonuses.map((b, i) => renderCompactCard(b, i, b.id || i))}
                     </div>
                   );
                 }
-                /* Idle → auto-scroll carousel */
+
+                /* Idle → auto-scrolling carousel (duplicate list for seamless loop) */
                 return (
-                  <div className="bht-bonus-list-track bht-compact-carousel-track"
-                    style={{ '--bht-item-count': bonuses.length }}>
-                    {[...bonuses, ...bonuses].map((b, i) => renderCard(b, i % bonuses.length, i >= bonuses.length ? '-c' : ''))}
+                  <div className="bht-compact-track bht-compact-track--scroll"
+                    style={{ '--bht-compact-count': bonuses.length }}>
+                    {[...bonuses, ...bonuses].map((b, i) => {
+                      const idx = i % bonuses.length;
+                      return renderCompactCard(b, idx, `${b.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`);
+                    })}
                   </div>
                 );
               })()

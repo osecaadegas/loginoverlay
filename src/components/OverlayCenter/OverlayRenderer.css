@@ -801,111 +801,76 @@
 }
 
 /* ─── Bonus Hunt: Compact ─── */
+/* ═══════════════════════════════════════════════════════════════════
+   COMPACT STYLE (v6_compact) — full rewrite
+   Root is a flex column that fills the widget slot. Fixed-size cards
+   (header, current, summary) use flex-shrink:0. The list card fills
+   all remaining space with flex:1. Two list modes:
+     - Idle: auto-scroll carousel (duplicated list, CSS animation)
+     - Opening: static track centred on active bonus (transform)
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Root ── */
 .oc-bonushunt--compact {
   overflow: hidden !important;
   height: 100%;
 }
+
+/* ── All cards: tight padding, don't shrink ── */
 .oc-bonushunt--compact .bht-card {
   padding: 8px !important;
   flex-shrink: 0;
 }
-.oc-bonushunt--compact .bht-header-top {
-  margin-bottom: 6px;
-}
-.oc-bonushunt--compact .bht-header-stats {
-  gap: 6px;
-}
-.oc-bonushunt--compact .bht-stat-box {
-  padding: 4px 8px;
-}
-.oc-bonushunt--compact .bht-stat-value {
-  font-size: 1em;
-}
-.oc-bonushunt--compact .bht-icon-circle {
-  width: 28px; height: 28px;
-}
-.oc-bonushunt--compact .bht-icon-circle svg {
-  width: 14px; height: 14px;
-}
-.oc-bonushunt--compact .bht-title {
-  font-size: 0.85em;
-}
-.oc-bonushunt--compact .bht-count-card {
-  padding: 6px 8px !important;
-}
-.oc-bonushunt--compact .bht-count-header {
-  margin-bottom: 4px;
-}
-.oc-bonushunt--compact .bht-count-badges {
-  gap: 4px;
-}
+
+/* ── Header overrides ── */
+.oc-bonushunt--compact .bht-header-top { margin-bottom: 6px; }
+.oc-bonushunt--compact .bht-header-stats { gap: 6px; }
+.oc-bonushunt--compact .bht-stat-box { padding: 4px 8px; }
+.oc-bonushunt--compact .bht-stat-value { font-size: 1em; }
+.oc-bonushunt--compact .bht-icon-circle { width: 28px; height: 28px; }
+.oc-bonushunt--compact .bht-icon-circle svg { width: 14px; height: 14px; }
+.oc-bonushunt--compact .bht-title { font-size: 0.85em; }
+
+/* ── Count card overrides ── */
+.oc-bonushunt--compact .bht-count-card { padding: 6px 8px !important; }
+.oc-bonushunt--compact .bht-count-header { margin-bottom: 4px; }
+.oc-bonushunt--compact .bht-count-badges { gap: 4px; }
 .oc-bonushunt--compact .bht-badge-super,
-.oc-bonushunt--compact .bht-badge-extreme {
-  padding: 3px 8px;
-  font-size: 0.65em;
-}
-.oc-bonushunt--compact .bht-current {
-  padding: 4px 6px !important;
-}
-.oc-bonushunt--compact .bht-current-top {
-  margin-bottom: 0;
-  gap: 8px;
-  align-items: stretch;
-}
+.oc-bonushunt--compact .bht-badge-extreme { padding: 3px 8px; font-size: 0.65em; }
+
+/* ── Current bonus card ── */
+.oc-bonushunt--compact .bht-current { padding: 4px 6px !important; }
+.oc-bonushunt--compact .bht-current-top { margin-bottom: 0; gap: 8px; align-items: stretch; }
 .oc-bonushunt--compact .bht-current-img {
-  width: 120px;
-  max-height: none;
-  height: 100%;
-  min-height: 54px;
-  object-fit: cover;
-  border-radius: 6px;
-  flex-shrink: 0;
+  width: 120px; max-height: none; height: 100%; min-height: 54px;
+  object-fit: cover; border-radius: 6px; flex-shrink: 0;
 }
 .oc-bonushunt--compact .bht-current-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  flex: 1; display: flex; flex-direction: column; gap: 2px;
 }
 .oc-bonushunt--compact .bht-current-name {
-  font-size: 1.05em;
-  font-weight: 700;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.1;
+  font-size: 1.05em; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.1;
 }
 .oc-bonushunt--compact .bht-current-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 3px;
-  flex: 1;
-  align-content: center;
+  display: grid; grid-template-columns: 1fr 1fr; gap: 3px;
+  flex: 1; align-content: center;
 }
 .oc-bonushunt--compact .bht-current-stat {
-  padding: 2px 5px;
-  font-size: 0.9em;
-  justify-content: center;
-  gap: 0px;
+  padding: 2px 5px; font-size: 0.9em; justify-content: center; gap: 0;
 }
-.oc-bonushunt--compact .bht-current-stat:last-child {
-  grid-column: 1 / -1;
-}
+.oc-bonushunt--compact .bht-current-stat:last-child { grid-column: 1 / -1; }
 .oc-bonushunt--compact .bht-current-stat-label {
-  font-size: 0.6em;
-  font-weight: 700;
-  letter-spacing: 0.6px;
-  opacity: 0.7;
-  line-height: 1;
-  color: var(--bht-current-accent, #86efac);
+  font-size: 0.6em; font-weight: 700; letter-spacing: 0.6px;
+  opacity: 0.7; line-height: 1; color: var(--bht-current-accent, #86efac);
 }
 .oc-bonushunt--compact .bht-current-stat span:last-child {
-  font-size: 1em;
-  font-weight: 800;
-  line-height: 1.2;
+  font-size: 1em; font-weight: 800; line-height: 1.2;
 }
+
+/* ── List card: fills remaining space ── */
 .oc-bonushunt--compact .bht-list-card {
-  flex: 1 1 0;
+  flex: 1 1 0 !important;
   min-height: 0;
   overflow: hidden;
 }
@@ -914,197 +879,116 @@
   overflow: hidden;
   position: relative;
 }
-/* Static centred track — no auto-scroll, smooth slide on index change */
-.bht-compact-static-track {
-  animation: none !important;
-  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-  gap: 8px;
-}
-.bht-compact-static-track > * {
-  margin-bottom: 0 !important;
-}
-/* Compact carousel — auto-scroll when no bonus is being opened */
-.bht-compact-carousel-track {
-  gap: 8px;
-  animation: bht-carousel-scroll calc(var(--bht-item-count, 5) * 8s) linear infinite !important;
-}
-.bht-compact-carousel-track > * {
-  margin-bottom: 0 !important;
-}
-.oc-bonushunt--compact .bht-bonus-card {
-  min-width: 80px;
-  min-height: 105px;
+
+/* ── Compact track base (shared by both modes) ── */
+.bht-compact-track {
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  will-change: transform;
 }
-.oc-bonushunt--compact .bht-bonus-card-img {
-  height: 105px;
+
+/* ── Static mode: no animation, smooth slide to active card ── */
+.bht-compact-track--static {
+  animation: none !important;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Scroll mode: infinite CSS carousel ── */
+@keyframes bht-compact-scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.bht-compact-track--scroll {
+  animation: bht-compact-scroll calc(var(--bht-compact-count, 5) * 6s) linear infinite;
+}
+
+/* ── Compact bonus cards ── */
+.oc-bonushunt--compact .bht-bonus-card {
+  min-width: 80px; min-height: 105px;
+  display: flex; flex-direction: column;
   flex-shrink: 0;
 }
-/* Hide the old overlay in compact — we use the new info bar instead */
-.oc-bonushunt--compact .bht-bonus-card-overlay {
-  display: none;
+.oc-bonushunt--compact .bht-bonus-card-img {
+  height: 105px; flex-shrink: 0;
 }
-/* ── Compact single-row info bar ── */
+/* Hide the old gradient overlay — compact uses the info bar instead */
+.oc-bonushunt--compact .bht-bonus-card-overlay { display: none; }
+
+/* ── Compact info bar (below each card image) ── */
 .bht-compact-info-bar {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  background: #000;
-  min-height: 32px;
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 10px; background: #000; min-height: 32px;
   border-top: 2px solid rgba(255,255,255,0.08);
 }
 .bht-compact-info-name {
-  font-size: 0.82em;
-  font-weight: 700;
-  color: var(--bht-text, #fff);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
-  text-transform: uppercase;
+  font-size: 0.82em; font-weight: 700; color: var(--bht-text, #fff);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  flex: 1; text-transform: uppercase;
 }
 .bht-compact-info-bet {
-  font-size: 0.8em;
-  font-weight: 700;
-  color: var(--bht-list-accent, #93c5fd);
+  font-size: 0.8em; font-weight: 700; color: var(--bht-list-accent, #93c5fd);
   white-space: nowrap;
 }
 .bht-compact-info-payout {
-  font-size: 0.8em;
-  font-weight: 700;
-  color: #4ade80;
-  white-space: nowrap;
+  font-size: 0.8em; font-weight: 700; color: #4ade80; white-space: nowrap;
 }
 .bht-compact-info-multi {
-  font-size: 0.78em;
-  font-weight: 700;
-  color: #fbbf24;
-  background: rgba(255,255,255,0.08);
-  padding: 1px 6px;
-  border-radius: 4px;
-  white-space: nowrap;
+  font-size: 0.78em; font-weight: 700; color: #fbbf24;
+  background: rgba(255,255,255,0.08); padding: 1px 6px;
+  border-radius: 4px; white-space: nowrap;
 }
 .bht-compact-info-idx {
-  font-size: 0.72em;
-  font-weight: 600;
-  color: rgba(255,255,255,0.4);
-  margin-left: auto;
-  white-space: nowrap;
-}
-.oc-bonushunt--compact .bht-summary {
-  padding: 6px 8px !important;
-  flex-shrink: 0;
-}
-.oc-bonushunt--compact .bht-summary-stats {
-  gap: 6px;
-  margin-bottom: 6px;
-}
-.oc-bonushunt--compact .bht-total-pay {
-  padding: 8px;
-}
-.oc-bonushunt--compact .bht-total-pay-value {
-  font-size: 1.1em;
+  font-size: 0.72em; font-weight: 600; color: rgba(255,255,255,0.4);
+  margin-left: auto; white-space: nowrap;
 }
 
-/* ── Compact: merged header + count card ── */
+/* ── Summary card ── */
+.oc-bonushunt--compact .bht-summary { padding: 6px 8px !important; flex-shrink: 0; }
+.oc-bonushunt--compact .bht-summary-stats { gap: 6px; margin-bottom: 6px; }
+.oc-bonushunt--compact .bht-total-pay { padding: 8px; }
+.oc-bonushunt--compact .bht-total-pay-value { font-size: 1.1em; }
+
+/* ── Merged header + count card ── */
 .bht-compact-avatar {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  flex-shrink: 0;
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
   border: 2px solid var(--bht-header-accent, #60a5fa);
 }
-.oc-bonushunt--compact .bht-compact-avatar {
-  width: 28px; height: 28px;
-}
-.bht-compact-merged {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.bht-compact-top-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+.oc-bonushunt--compact .bht-compact-avatar { width: 28px; height: 28px; }
+.bht-compact-merged { display: flex; flex-direction: column; gap: 6px; }
+.bht-compact-top-row { display: flex; align-items: center; gap: 8px; }
 .bht-compact-title-block {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  flex: 1;
-  min-width: 0;
+  display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0;
 }
-.bht-compact-title-block .bht-title {
-  font-size: 0.9em;
-  font-weight: 700;
-  white-space: nowrap;
-}
+.bht-compact-title-block .bht-title { font-size: 0.9em; font-weight: 700; white-space: nowrap; }
 .bht-compact-hunt-num {
-  font-size: 0.8em;
-  font-weight: 700;
-  color: var(--bht-header-accent, #60a5fa);
-  white-space: nowrap;
+  font-size: 0.8em; font-weight: 700;
+  color: var(--bht-header-accent, #60a5fa); white-space: nowrap;
 }
-.bht-compact-info-row {
-  display: flex;
-  gap: 4px;
-}
+.bht-compact-info-row { display: flex; gap: 4px; }
 .bht-compact-info-pill {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  background: rgba(0,0,0,0.25);
-  border-radius: 6px;
-  padding: 3px 6px;
-  font-size: 0.7em;
-  color: var(--bht-text, #fff);
+  flex: 1; display: flex; align-items: center; justify-content: center;
+  gap: 4px; background: rgba(0,0,0,0.25); border-radius: 6px;
+  padding: 3px 6px; font-size: 0.7em; color: var(--bht-text, #fff);
 }
-.bht-compact-info-pill strong {
-  font-weight: 800;
-  font-size: 1.1em;
-}
-.bht-compact-info-pill--super {
-  background: var(--bht-super-badge, #eab308);
-  color: #fff;
-}
-.bht-compact-info-pill--extreme {
-  background: var(--bht-extreme-badge, #ef4444);
-  color: #fff;
-}
-.bht-compact-info-label {
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-}
+.bht-compact-info-pill strong { font-weight: 800; font-size: 1.1em; }
+.bht-compact-info-pill--super { background: var(--bht-super-badge, #eab308); color: #fff; }
+.bht-compact-info-pill--extreme { background: var(--bht-extreme-badge, #ef4444); color: #fff; }
+.bht-compact-info-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 
-/* ── Compact: Progress bar ── */
-.bht-compact-progress-section {
-  margin: 4px 0;
-}
+/* ── Progress bar ── */
+.bht-compact-progress-section { margin: 4px 0; }
 .bht-compact-progress-label {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.65em;
-  font-weight: 700;
-  color: var(--bht-muted, #94a3b8);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
-  margin-bottom: 3px;
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: 0.65em; font-weight: 700; color: var(--bht-muted, #94a3b8);
+  text-transform: uppercase; letter-spacing: 0.3px; margin-bottom: 3px;
 }
 .bht-compact-progress-track {
-  height: 5px;
-  border-radius: 999px;
-  background: rgba(0,0,0,0.35);
-  overflow: hidden;
+  height: 5px; border-radius: 999px; background: rgba(0,0,0,0.35); overflow: hidden;
 }
 .bht-compact-progress-fill {
-  height: 100%;
-  border-radius: 999px;
+  height: 100%; border-radius: 999px;
   background: var(--bht-header-accent, #60a5fa);
   background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.2));
   transition: width 0.5s ease;
