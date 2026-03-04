@@ -621,14 +621,15 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                           <span className="tm-match-inline-pname">{currentMatch.player1}</span>
                           <div className="tm-match-inline-inputs">
                             {inputFields.map(f => (
-                              <NumInput
-                                key={`p1-${rIdx}-${f.key}`}
-                                value={round.player1[f.key]}
-                                prefix={f.prefix}
-                                placeholder="0"
-                                onChange={v => handleRoundInput(rIdx, 'player1', f.key, v)}
-                                style={{ flex: 1 }}
-                              />
+                              <div key={`p1-${rIdx}-${f.key}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{f.label}</span>
+                                <NumInput
+                                  value={round.player1[f.key]}
+                                  prefix={f.prefix}
+                                  placeholder="0"
+                                  onChange={v => handleRoundInput(rIdx, 'player1', f.key, v)}
+                                />
+                              </div>
                             ))}
                           </div>
                           {/* Result display */}
@@ -652,14 +653,15 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                           <span className="tm-match-inline-pname">{currentMatch.player2}</span>
                           <div className="tm-match-inline-inputs">
                             {inputFields.map(f => (
-                              <NumInput
-                                key={`p2-${rIdx}-${f.key}`}
-                                value={round.player2[f.key]}
-                                prefix={f.prefix}
-                                placeholder="0"
-                                onChange={v => handleRoundInput(rIdx, 'player2', f.key, v)}
-                                style={{ flex: 1 }}
-                              />
+                              <div key={`p2-${rIdx}-${f.key}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{f.label}</span>
+                                <NumInput
+                                  value={round.player2[f.key]}
+                                  prefix={f.prefix}
+                                  placeholder="0"
+                                  onChange={v => handleRoundInput(rIdx, 'player2', f.key, v)}
+                                />
+                              </div>
                             ))}
                           </div>
                           {/* Result display */}
