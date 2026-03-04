@@ -953,6 +953,278 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
         </div>
       )}
 
+      {/* Floating stats FAB */}
+      <FloatingStatsFab
+        bonusList={bonusList}
+        startMoney={startMoney}
+        targetMoney={targetMoney}
+        currency={currency}
+      />
+
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════
+   FLOATING STATS FAB — draggable, bottom-right default
+   ═══════════════════════════════════════════════════════ */
+function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
+  const [open, setOpen] = useState(false);
+  const [useFixed, setUseFixed] = useState({ right: 24, bottom: 24 }); // tracks right/bottom
+  const dragging = useRef(false);
+  const didDrag = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const startPos = useRef({ x: 0, y: 0 });
+  const fabRef = useRef(null);
+
+  /* Convert right/bottom to left/top for dragging, then back */
+  const handleMouseDown = useCallback((e) => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    dragging.current = true;
+    didDrag.current = false;
+    const rect = fabRef.current.getBoundingClientRect();
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    startPos.current = { x: rect.left, y: rect.top };
+    document.body.style.userSelect = 'none';
+
+    const onMove = (ev) => {
+      if (!dragging.current) return;
+      const dx = ev.clientX - dragStart.current.x;
+      const dy = ev.clientY - dragStart.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      const newLeft = startPos.current.x + dx;
+      const newTop = startPos.current.y + dy;
+      const newRight = window.innerWidth - newLeft - 56;
+      const newBottom = window.innerHeight - newTop - 56;
+      setUseFixed({
+        right: Math.max(0, newRight),
+        bottom: Math.max(0, newBottom),
+      });
+    };
+    const onUp = () => {
+      dragging.current = false;
+      document.body.style.userSelect = '';
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+    };
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  }, []);
+
+  /* Touch support */
+  const handleTouchStart = useCallback((e) => {
+    const t = e.touches[0];
+    dragging.current = true;
+    didDrag.current = false;
+    const rect = fabRef.current.getBoundingClientRect();
+    dragStart.current = { x: t.clientX, y: t.clientY };
+    startPos.current = { x: rect.left, y: rect.top };
+
+    const onTouchMove = (ev) => {
+      if (!dragging.current) return;
+      const touch = ev.touches[0];
+      const dx = touch.clientX - dragStart.current.x;
+      const dy = touch.clientY - dragStart.current.y;
+      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
+      const newLeft = startPos.current.x + dx;
+      const newTop = startPos.current.y + dy;
+      setUseFixed({
+        right: Math.max(0, window.innerWidth - newLeft - 56),
+        bottom: Math.max(0, window.innerHeight - newTop - 56),
+      });
+    };
+    const onTouchEnd = () => {
+      dragging.current = false;
+      document.removeEventListener('touchmove', onTouchMove);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+    document.addEventListener('touchmove', onTouchMove, { passive: false });
+    document.addEventListener('touchend', onTouchEnd);
+  }, []);
+
+  /* Compute stats */
+  const total = bonusList.length;
+  const opened = bonusList.filter(b => b.opened);
+  const openedCount = opened.length;
+  const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+  const totalPayout = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+  const start = Number(startMoney) || 0;
+  const target = Number(targetMoney) || 0;
+  const profit = totalPayout - start;
+  const avgMulti = openedCount > 0
+    ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / openedCount
+    : 0;
+  let bestMulti = 0, bestSlot = '';
+  opened.forEach(b => {
+    const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
+    if (m > bestMulti) { bestMulti = m; bestSlot = b.slotName || b.slot?.name || ''; }
+  });
+  let worstMulti = Infinity, worstSlot = '';
+  opened.forEach(b => {
+    const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
+    if (m < worstMulti) { worstMulti = m; worstSlot = b.slotName || b.slot?.name || ''; }
+  });
+  if (!isFinite(worstMulti)) worstMulti = 0;
+
+  const progressPct = target > 0 ? Math.min(100, (totalPayout / target) * 100) : 0;
+  const neededToBreakEven = Math.max(0, start - totalPayout);
+  const remainingBonuses = total - openedCount;
+  const avgNeeded = remainingBonuses > 0 && neededToBreakEven > 0
+    ? neededToBreakEven / remainingBonuses
+    : 0;
+
+  const fmtV = (v) => `${currency}${v.toFixed(2)}`;
+
+  return (
+    <>
+      {/* FAB button */}
+      <div
+        ref={fabRef}
+        onMouseDown={handleMouseDown}
+        onTouchStart={handleTouchStart}
+        onClick={() => { if (!didDrag.current) setOpen(o => !o); }}
+        style={{
+          position: 'fixed',
+          right: useFixed.right,
+          bottom: useFixed.bottom,
+          width: 52, height: 52, borderRadius: '50%',
+          background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
+          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: 22, cursor: 'grab', zIndex: 99999,
+          boxShadow: '0 4px 20px rgba(124,58,237,0.5), 0 2px 8px rgba(0,0,0,0.3)',
+          border: '2px solid rgba(255,255,255,0.15)',
+          transition: dragging.current ? 'none' : 'box-shadow 0.2s',
+          userSelect: 'none', WebkitUserSelect: 'none',
+          touchAction: 'none',
+        }}
+        title="Hunt Stats"
+      >
+        📊
+      </div>
+
+      {/* Stats panel */}
+      {open && (
+        <div style={{
+          position: 'fixed',
+          right: useFixed.right,
+          bottom: useFixed.bottom + 62,
+          width: 300, maxHeight: '70vh', overflowY: 'auto',
+          background: 'linear-gradient(135deg, #1a1040 0%, #0f0a2a 100%)',
+          borderRadius: 16,
+          border: '1px solid rgba(124,58,237,0.35)',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(124,58,237,0.15)',
+          zIndex: 99998,
+          padding: '16px 18px',
+          color: '#e2e8f0',
+          fontFamily: "'Inter', sans-serif",
+          fontSize: 13,
+        }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: 18 }}>📊</span>
+              <span style={{ fontWeight: 700, fontSize: 15, color: '#fff' }}>Hunt Stats</span>
+            </div>
+            <button onClick={() => setOpen(false)} style={{
+              background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 8,
+              color: '#94a3b8', cursor: 'pointer', padding: '4px 8px', fontSize: 13, fontWeight: 600,
+            }}>✕</button>
+          </div>
+
+          {total === 0 ? (
+            <div style={{ textAlign: 'center', color: '#64748b', padding: '20px 0' }}>
+              No bonuses added yet
+            </div>
+          ) : (
+            <>
+              {/* Progress bar */}
+              {target > 0 && (
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#94a3b8', marginBottom: 4 }}>
+                    <span>Progress to Target</span>
+                    <span>{progressPct.toFixed(1)}%</span>
+                  </div>
+                  <div style={{ height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.08)', overflow: 'hidden' }}>
+                    <div style={{
+                      height: '100%', borderRadius: 3, width: `${progressPct}%`,
+                      background: progressPct >= 100 ? '#22c55e' : 'linear-gradient(90deg, #7c3aed, #a78bfa)',
+                      transition: 'width 0.3s ease',
+                    }} />
+                  </div>
+                </div>
+              )}
+
+              {/* Stats grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+                <StatCard label="Total Bonuses" value={total} />
+                <StatCard label="Opened" value={`${openedCount} / ${total}`} />
+                <StatCard label="Start Money" value={fmtV(start)} />
+                <StatCard label="Total Bet" value={fmtV(totalBet)} />
+                <StatCard label="Total Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
+                <StatCard label="Profit / Loss" value={fmtV(profit)} color={profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#94a3b8'} />
+                <StatCard label="Avg Multiplier" value={`${avgMulti.toFixed(2)}x`} />
+                {target > 0 && <StatCard label="Target" value={fmtV(target)} />}
+              </div>
+
+              {/* Best & Worst */}
+              {openedCount > 0 && (
+                <div style={{ marginTop: 10, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  <div style={{
+                    background: 'rgba(34,197,94,0.08)', borderRadius: 10, padding: '8px 12px',
+                    border: '1px solid rgba(34,197,94,0.2)',
+                  }}>
+                    <div style={{ fontSize: 10, color: '#4ade80', fontWeight: 600, marginBottom: 2 }}>🏆 BEST</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, fontSize: 12, color: '#fff', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{bestSlot}</span>
+                      <span style={{ fontWeight: 800, color: '#4ade80' }}>{bestMulti.toFixed(1)}x</span>
+                    </div>
+                  </div>
+                  <div style={{
+                    background: 'rgba(248,113,113,0.08)', borderRadius: 10, padding: '8px 12px',
+                    border: '1px solid rgba(248,113,113,0.2)',
+                  }}>
+                    <div style={{ fontSize: 10, color: '#f87171', fontWeight: 600, marginBottom: 2 }}>💀 WORST</div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontWeight: 600, fontSize: 12, color: '#fff', maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{worstSlot}</span>
+                      <span style={{ fontWeight: 800, color: '#f87171' }}>{worstMulti.toFixed(1)}x</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Break-even tracker */}
+              {openedCount > 0 && neededToBreakEven > 0 && remainingBonuses > 0 && (
+                <div style={{
+                  marginTop: 10, background: 'rgba(250,204,21,0.06)', borderRadius: 10,
+                  padding: '8px 12px', border: '1px solid rgba(250,204,21,0.15)',
+                }}>
+                  <div style={{ fontSize: 10, color: '#fbbf24', fontWeight: 600, marginBottom: 4 }}>⚡ BREAK-EVEN TRACKER</div>
+                  <div style={{ fontSize: 12, color: '#e2e8f0' }}>
+                    Need <strong style={{ color: '#fbbf24' }}>{fmtV(neededToBreakEven)}</strong> more from <strong>{remainingBonuses}</strong> bonus{remainingBonuses !== 1 ? 'es' : ''}
+                  </div>
+                  <div style={{ fontSize: 11, color: '#94a3b8', marginTop: 2 }}>
+                    Avg needed per bonus: <strong>{fmtV(avgNeeded)}</strong>
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      )}
+    </>
+  );
+}
+
+/* Tiny stat card for the panel */
+function StatCard({ label, value, color }) {
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.04)', borderRadius: 10, padding: '8px 10px',
+      border: '1px solid rgba(255,255,255,0.06)',
+    }}>
+      <div style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, marginBottom: 2 }}>{label}</div>
+      <div style={{ fontSize: 14, fontWeight: 700, color: color || '#fff' }}>{value}</div>
     </div>
   );
 }
