@@ -75,6 +75,7 @@ export default function OverlayControlCenter() {
   const [communityOpen, setCommunityOpen] = useState(false);
   const [streamerToolsOpen, setStreamerToolsOpen] = useState(false);
   const [communityToolsOpen, setCommunityToolsOpen] = useState(false);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
   const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot'];
@@ -85,6 +86,11 @@ export default function OverlayControlCenter() {
   const communityToolsKeys = ['wheel_of_names', 'random_slot_picker'];
   const isCommunityToolActive = communityToolsKeys.includes(activePanel);
   useEffect(() => { if (isCommunityToolActive) setCommunityToolsOpen(true); }, [isCommunityToolActive]);
+
+  /* Auto-expand Collections when one of its children is active */
+  const collectionsKeys = ['library', 'presets', 'slots', 'approvals'];
+  const isCollectionActive = collectionsKeys.includes(activePanel);
+  useEffect(() => { if (isCollectionActive) setCollectionsOpen(true); }, [isCollectionActive]);
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -159,7 +165,7 @@ export default function OverlayControlCenter() {
           </div>
 
           <nav className="oc-sidebar-nav">
-            {/* Home — redirects to Partners/Offers page */}
+            {/* ─── Home ─── */}
             <button
               className="oc-sidebar-btn"
               onClick={() => { navigate('/offers'); setSidebarOpen(false); }}
@@ -171,8 +177,7 @@ export default function OverlayControlCenter() {
               </div>
             </button>
 
-            <div className="oc-sidebar-divider-label">Account</div>
-
+            {/* ─── Profile ─── */}
             <button
               className={`oc-sidebar-btn ${activePanel === 'profile' ? 'oc-sidebar-btn--active' : ''}`}
               onClick={() => { setActivePanel('profile'); setSidebarOpen(false); }}
@@ -184,7 +189,7 @@ export default function OverlayControlCenter() {
               </div>
             </button>
 
-            {/* Tutorial button — right under Profile */}
+            {/* ─── Tutorial ─── */}
             <button
               className="oc-sidebar-btn"
               onClick={() => { resetTutorial(); setShowTutorial(true); setSidebarOpen(false); setActivePanel('widgets'); }}
@@ -196,28 +201,19 @@ export default function OverlayControlCenter() {
               </div>
             </button>
 
-            <div className="oc-sidebar-divider-label">Stream Overlay</div>
+            <div className="oc-sidebar-divider-label">Overlay</div>
 
-            {/* Panel tabs */}
-            {[
-              { key: 'widgets', icon: '🧩', label: 'Widgets', desc: 'Add & configure overlays' },
-              { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
-              { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
-              ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
-              ...(isAdmin ? [{ key: 'approvals', icon: '🛡️', label: 'Approvals', desc: 'Review submissions' }] : []),
-            ].map(tab => (
-              <button
-                key={tab.key}
-                className={`oc-sidebar-btn ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
-                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
-              >
-                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
-                <div className="oc-sidebar-btn-text">
-                  <span className="oc-sidebar-btn-label">{tab.label}</span>
-                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
-                </div>
-              </button>
-            ))}
+            {/* ─── Widgets (flat) ─── */}
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'widgets' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('widgets'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">🧩</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Widgets</span>
+                <span className="oc-sidebar-btn-desc">Add & configure overlays</span>
+              </div>
+            </button>
 
             {/* ─── Streamer Tools dropdown ─── */}
             <button
@@ -281,7 +277,6 @@ export default function OverlayControlCenter() {
             ))}
 
             {/* ─── Community Games dropdown ─── */}
-            <div className="oc-sidebar-divider-label">Community</div>
             <button
               className={`oc-sidebar-btn ${communityOpen ? 'oc-sidebar-btn--active' : ''}`}
               onClick={() => setCommunityOpen(o => !o)}
@@ -299,6 +294,38 @@ export default function OverlayControlCenter() {
               { key: 'salty_words', icon: '🧂', label: 'Salty Words', desc: 'Word betting game' },
               { key: 'predictions', icon: '🔮', label: 'Predictions', desc: 'Two-outcome bets' },
               { key: 'point_wheel', icon: '🎡', label: 'Point Wheel', desc: 'Multiplier wheel game' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                className={`oc-sidebar-btn oc-sidebar-btn--sub ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
+                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
+              >
+                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
+                <div className="oc-sidebar-btn-text">
+                  <span className="oc-sidebar-btn-label">{tab.label}</span>
+                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
+                </div>
+              </button>
+            ))}
+
+            {/* ─── Collections dropdown ─── */}
+            <div className="oc-sidebar-divider-label">Management</div>
+            <button
+              className={`oc-sidebar-btn ${collectionsOpen || isCollectionActive ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => setCollectionsOpen(o => !o)}
+            >
+              <span className="oc-sidebar-btn-icon">📦</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Collections</span>
+                <span className="oc-sidebar-btn-desc">Library, presets & slots</span>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: collectionsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+            </button>
+            {collectionsOpen && [
+              { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
+              { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
+              ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
+              ...(isAdmin ? [{ key: 'approvals', icon: '🛡️', label: 'Approvals', desc: 'Review submissions' }] : []),
             ].map(tab => (
               <button
                 key={tab.key}
