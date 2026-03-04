@@ -667,7 +667,7 @@ registerWidget({
   defaults: {
     title: 'Point Slot',
     gameStatus: 'idle',
-    symbols: ['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'],
+    symbols: ['/slot/cherries.png','/slot/lemon.png','/slot/grapes.png','/slot/bar.png','/slot/diamond.png','/slot/seven.png'],
     reelCount: 3,
     results: [],
     spinning: false,

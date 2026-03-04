@@ -5,7 +5,7 @@
 import React, { useState } from 'react';
 import TabBar from './shared/TabBar';
 
-const DEFAULT_SYM = ['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'];
+const DEFAULT_SYM = ['/slot/cherries.png','/slot/lemon.png','/slot/grapes.png','/slot/bar.png','/slot/diamond.png','/slot/seven.png'];
 
 export default function PointSlotConfig({ config, onChange }) {
   const c = config || {};
@@ -95,7 +95,13 @@ export default function PointSlotConfig({ config, onChange }) {
             {c.results && c.results.length > 0 && (
               <div className="cg-config__status-row">
                 <span>Last Result</span>
-                <span style={{ fontSize: '1.2rem' }}>{c.results.join(' ')}</span>
+                <span style={{ fontSize: '1.2rem', display: 'flex', gap: 4, alignItems: 'center' }}>
+                  {c.results.map((r, ri) => (
+                    typeof r === 'string' && (r.startsWith('/') || r.startsWith('http'))
+                      ? <img key={ri} src={r} alt="" style={{ width: 24, height: 24, objectFit: 'contain' }} />
+                      : <span key={ri}>{r}</span>
+                  ))}
+                </span>
               </div>
             )}
           </div>
@@ -150,7 +156,10 @@ export default function PointSlotConfig({ config, onChange }) {
           <div className="cg-config__symbol-grid">
             {symbols.map((s, i) => (
               <div key={i} className="cg-config__symbol-chip">
-                <span style={{ fontSize: '1.3rem' }}>{s}</span>
+                {typeof s === 'string' && (s.startsWith('/') || s.startsWith('http'))
+                  ? <img src={s} alt="" style={{ width: 28, height: 28, objectFit: 'contain' }} />
+                  : <span style={{ fontSize: '1.3rem' }}>{s}</span>
+                }
                 {symbols.length > 3 && (
                   <button className="cg-config__symbol-remove" onClick={() => removeSymbol(i)}>✕</button>
                 )}
@@ -204,7 +213,13 @@ export default function PointSlotConfig({ config, onChange }) {
             <div className="cg-config__history">
               {history.map((h, i) => (
                 <div key={i} className="cg-config__history-row">
-                  <span style={{ fontSize: '1.1rem' }}>{h.results?.join(' ')}</span>
+                  <span style={{ fontSize: '1.1rem', display: 'flex', gap: 4, alignItems: 'center' }}>
+                    {h.results?.map((r, ri) => (
+                      typeof r === 'string' && (r.startsWith('/') || r.startsWith('http'))
+                        ? <img key={ri} src={r} alt="" style={{ width: 22, height: 22, objectFit: 'contain' }} />
+                        : <span key={ri}>{r}</span>
+                    ))}
+                  </span>
                   <span className={h.win ? 'cg-config__history-win' : 'cg-config__history-loss'}>
                     {h.win ? '🏆 WIN' : '❌'}
                   </span>

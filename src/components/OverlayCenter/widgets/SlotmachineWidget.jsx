@@ -1,6 +1,14 @@
 import React from 'react';
 
-const DEFAULT_SYM = ['🍒','🍋','🍊','🍇','⭐','💎','7️⃣','🔔'];
+const DEFAULT_SYM = ['/slot/cherries.png','/slot/lemon.png','/slot/grapes.png','/slot/bar.png','/slot/diamond.png','/slot/seven.png'];
+
+/* Render a symbol — image path or emoji fallback */
+const SymbolIcon = ({ sym, style }) => {
+  if (typeof sym === 'string' && (sym.startsWith('/') || sym.startsWith('http'))) {
+    return <img src={sym} alt="" draggable={false} style={{ width: '72%', height: '72%', objectFit: 'contain', ...style }} />;
+  }
+  return <span style={style}>{sym}</span>;
+};
 
 function SlotmachineWidget({ config }) {
   const c = config || {};
@@ -26,13 +34,12 @@ function SlotmachineWidget({ config }) {
   const buildStrip = (result, idx) => {
     const strip = [];
     for (let j = 0; j < STRIP_LEN; j++) strip.push(symbols[(idx * 3 + j * 7 + 1) % symbols.length]);
-    strip.push(result);
-    /* Extra duplicate so any easing overshoot still shows the correct symbol */
+    /* The final visible item IS the result — no extra copy after */
     strip.push(result);
     return strip;
   };
-  /* Scroll to the result item (index STRIP_LEN) out of STRIP_LEN+2 total items */
-  const totalItems = STRIP_LEN + 2;
+  /* Scroll to the last item (index STRIP_LEN) — this is the result */
+  const totalItems = STRIP_LEN + 1;
   const scrollEnd = ((STRIP_LEN / totalItems) * 100).toFixed(3);
   const reelDur = (i) => 1.8 + i * 0.5;
 
@@ -58,7 +65,9 @@ function SlotmachineWidget({ config }) {
             animation:`sm-scroll ${dur}s cubic-bezier(0.33,1,0.68,1) forwards, sm-blur ${dur}s linear forwards`,
           }}>
             {strip.map((s, j) => (
-              <div key={j} style={{ flex:'0 0 auto', height:`${(100/totalItems).toFixed(3)}%`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'inherit' }}>{s}</div>
+              <div key={j} style={{ flex:'0 0 auto', height:`${(100/totalItems).toFixed(3)}%`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'inherit' }}>
+                <SymbolIcon sym={s} />
+              </div>
             ))}
           </div>
         </div>
@@ -67,7 +76,7 @@ function SlotmachineWidget({ config }) {
     return (
       <div style={{ ...reelStyle, display:'flex', alignItems:'center', justifyContent:'center',
         animation: results.length > 0 ? `sm-land 0.25s ease-out` : 'none' }}>
-        {sym}
+        <SymbolIcon sym={sym} />
       </div>
     );
   };
