@@ -548,71 +548,71 @@
 .oc-obs-url-bar {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 14px;
-  background: var(--oc-bg-surface);
+  gap: 8px;
+  padding: 6px 6px 6px 12px;
+  background: rgba(255, 255, 255, 0.03);
   border: 1px solid var(--oc-border);
-  border-radius: var(--oc-radius);
+  border-radius: 999px;
   margin-bottom: 10px;
-  flex-wrap: wrap;
 }
 .oc-obs-url-label {
-  font-size: 0.72rem;
+  font-size: 0.65rem;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   color: var(--oc-text-muted);
-  font-weight: 700;
+  font-weight: 600;
   white-space: nowrap;
+  opacity: 0.7;
 }
 .oc-obs-url-row {
   display: flex;
   flex: 1;
   min-width: 0;
-  border: 1px solid var(--oc-border);
-  border-radius: var(--oc-radius-sm);
+  align-items: center;
+  background: var(--oc-bg);
+  border-radius: 999px;
   overflow: hidden;
-  transition: border-color var(--oc-transition);
+  border: 1px solid transparent;
+  transition: border-color 0.2s;
 }
 .oc-obs-url-row:hover {
   border-color: var(--oc-border-hover);
 }
 .oc-obs-url-input {
   flex: 1;
-  background: var(--oc-bg);
+  background: transparent;
   border: none;
   color: var(--oc-text-secondary);
-  font-size: 0.75rem;
-  padding: 8px 10px;
+  font-size: 0.72rem;
+  padding: 5px 10px;
   outline: none;
   cursor: pointer;
   min-width: 0;
+  font-family: monospace;
 }
-.oc-obs-url-copy {
-  background: var(--oc-accent-glow);
-  border: none;
-  border-left: 1px solid var(--oc-border);
-  color: var(--oc-accent-light);
-  padding: 8px 12px;
-  cursor: pointer;
-  font-size: 0.85rem;
-  transition: all var(--oc-transition);
-}
-.oc-obs-url-copy:hover {
-  background: var(--oc-accent-glow-strong);
-}
+.oc-obs-url-copy,
 .oc-obs-url-regen {
   background: transparent;
   border: none;
-  border-left: 1px solid var(--oc-border);
   color: var(--oc-text-muted);
-  padding: 8px 10px;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  font-size: 0.85rem;
-  transition: all var(--oc-transition);
+  font-size: 0.8rem;
+  border-radius: 50%;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+.oc-obs-url-copy:hover {
+  background: var(--oc-accent-glow);
+  color: var(--oc-accent-light);
 }
 .oc-obs-url-regen:hover {
-  color: var(--oc-danger);
   background: var(--oc-danger-glow);
+  color: var(--oc-danger);
 }
 
 .oc-sidebar-user {
