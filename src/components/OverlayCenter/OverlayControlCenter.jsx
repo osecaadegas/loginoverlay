@@ -72,7 +72,13 @@ export default function OverlayControlCenter() {
   } = useOverlay();
 
   const [activePanel, setActivePanel] = useState('widgets');
-  const [communityOpen, setCommunityOpen] = useState(false); // widgets | preview
+  const [communityOpen, setCommunityOpen] = useState(false);
+  const [streamerToolsOpen, setStreamerToolsOpen] = useState(false);
+
+  /* Auto-expand Streamer Tools when one of its children is active */
+  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot'];
+  const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
+  useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -177,13 +183,8 @@ export default function OverlayControlCenter() {
             {/* Panel tabs */}
             {[
               { key: 'widgets', icon: '🧩', label: 'Widgets', desc: 'Add & configure overlays' },
-              { key: 'bonus_hunt', icon: '🎯', label: 'Bonus Hunt', desc: 'Manage hunt sessions' },
-              { key: 'tournament', icon: '🏆', label: 'Tournament', desc: 'Run slot battles' },
-              { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
               { key: 'wheel_of_names', icon: '🎡', label: 'Wheel of Names', desc: 'Spin entries' },
               { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
-              { key: 'single_slot', icon: '🎰', label: 'Single Slot', desc: 'Slot stats & records' },
-              { key: 'bonus_buys', icon: '🛒', label: 'Bonus Buys', desc: 'Track bonus buy sessions' },
               { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
               { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
               ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
@@ -192,6 +193,38 @@ export default function OverlayControlCenter() {
               <button
                 key={tab.key}
                 className={`oc-sidebar-btn ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
+                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
+              >
+                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
+                <div className="oc-sidebar-btn-text">
+                  <span className="oc-sidebar-btn-label">{tab.label}</span>
+                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
+                </div>
+              </button>
+            ))}
+
+            {/* ─── Streamer Tools dropdown ─── */}
+            <button
+              className={`oc-sidebar-btn ${streamerToolsOpen || isStreamerToolActive ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => setStreamerToolsOpen(o => !o)}
+            >
+              <span className="oc-sidebar-btn-icon">🛠️</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Streamer Tools</span>
+                <span className="oc-sidebar-btn-desc">Hunt, battles & tracking</span>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: streamerToolsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+            </button>
+            {streamerToolsOpen && [
+              { key: 'bonus_hunt', icon: '🎯', label: 'Bonus Hunt', desc: 'Manage hunt sessions' },
+              { key: 'tournament', icon: '🏆', label: 'Tournament', desc: 'Run slot battles' },
+              { key: 'bonus_buys', icon: '🛒', label: 'Bonus Buys', desc: 'Track bonus buy sessions' },
+              { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
+              { key: 'single_slot', icon: '🎰', label: 'Single Slot', desc: 'Slot stats & records' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                className={`oc-sidebar-btn oc-sidebar-btn--sub ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
                 onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
               >
                 <span className="oc-sidebar-btn-icon">{tab.icon}</span>
