@@ -223,6 +223,9 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         borderColor: nb.accentColor || 'rgba(51,65,85,0.5)',
         gradientColor: nb.bgColor || 'rgba(15,23,42,0.8)',
         captionColor: nb.textColor || '#e2e8f0',
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'rtp_stats':
       return {
@@ -236,12 +239,18 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         slotNameColor: nb.textColor || '#ffffff',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
         fontSize: nb.fontSize ?? 14,
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'background':
       return {
         ...c,
         color1: nb.bgColor || '#0f172a',
         color2: nb.accentColor || '#1e3a5f',
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'chat':
       return {
@@ -253,6 +262,9 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         borderColor: nb.accentColor || '#f59e0b',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
         fontSize: nb.fontSize ?? 13,
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'bonus_hunt':
       return {
@@ -299,6 +311,9 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         bkHeaderColor: nb.mutedColor || '#94a3b8',
         xIconColor: nb.accentColor || '#eab308',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'session_stats':
     case 'recent_wins':
@@ -312,6 +327,9 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         textColor: nb.textColor || '#ffffff',
         mutedColor: nb.mutedColor || '#94a3b8',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'wheel_of_names':
       return {
@@ -321,6 +339,9 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         textColor: nb.textColor || '#ffffff',
         mutedColor: nb.mutedColor || '#94a3b8',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'giveaway':
       return {
@@ -329,6 +350,9 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         accentColor: nb.accentColor || '#9346ff',
         textColor: nb.textColor || '#ffffff',
         fontFamily: nb.fontFamily || "'Inter', sans-serif",
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     case 'bonus_buys':
       return {
@@ -338,6 +362,9 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
         textColor:   nb.textColor   || '#ffffff',
         mutedColor:  nb.mutedColor  || '#64748b',
         fontFamily:  nb.fontFamily  || "'Inter', sans-serif",
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     default:
       return null; // widget has no sync mapping
