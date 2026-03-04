@@ -3528,6 +3528,40 @@ body.wm-resizing {
   height: 14px;
 }
 
+/* Sort controls */
+.bh-sort-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+.bh-sort-label {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+.bh-sort-btn {
+  padding: 4px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(30, 41, 59, 0.5);
+  color: #94a3b8;
+  font-size: 0.72rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.bh-sort-btn:hover {
+  background: rgba(147, 70, 255, 0.15);
+  border-color: rgba(147, 70, 255, 0.3);
+  color: #c4b5fd;
+}
+.bh-sort-btn--active {
+  background: rgba(147, 70, 255, 0.25);
+  border-color: #9346ff;
+  color: #e0d4ff;
+}
+
 /* Bonus list */
 .bh-list {
   display: flex;

@@ -25,10 +25,26 @@ function BonusHuntWidget({ config, theme }) {
   const isHorizontalBH = ds === 'v5_horizontal';
   const isCompactBH = ds === 'v6_compact';
   const isCarousel = ds === 'v7_carousel';
-  const bonuses = c.bonuses || [];
+  const bonusesRaw = c.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
+
+  /* ─── Sort bonuses based on config.sortBy ─── */
+  const bonuses = useMemo(() => {
+    const sb = c.sortBy;
+    if (!sb || sb === 'default') return bonusesRaw;
+    return [...bonusesRaw].sort((a, b) => {
+      if (sb === 'bet') return (b.betSize || 0) - (a.betSize || 0);
+      if (sb === 'provider') {
+        const pa = (a.slot?.provider || '').toLowerCase();
+        const pb = (b.slot?.provider || '').toLowerCase();
+        if (pa !== pb) return pa.localeCompare(pb);
+        return (a.slotName || '').localeCompare(b.slotName || '');
+      }
+      return 0;
+    });
+  }, [bonusesRaw, c.sortBy]);
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
