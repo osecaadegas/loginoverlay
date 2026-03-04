@@ -128,6 +128,91 @@ function TournamentWidget({ config, theme }) {
     const ms = large ? Math.max(multiSize, 18) : multiSize;
     const sns = large ? Math.max(slotNameSize, 13) : slotNameSize;
 
+    /* ── Neon layout: image fills card, name stripe top, bet/payout stripe bottom ── */
+    if (isNeonLayout) {
+      const md = matchData?.data || {};
+      const pd = md[playerKey] || {};
+      const bet = parseFloat(pd.bet) || 0;
+      const payout = parseFloat(pd.payout) || 0;
+      const currency = c.arenaCurrency || '€';
+
+      return (
+        <div className="tw-player-col" style={{
+          display: 'flex', flexDirection: 'column',
+          opacity: op, flex: 1, minWidth: 0, overflow: 'hidden',
+          position: 'relative',
+        }}>
+          {/* Full-bleed slot image */}
+          <div style={{
+            position: 'relative', width: '100%', flex: 1, minHeight: 0,
+            overflow: 'hidden',
+          }}>
+            {slot?.image ? (
+              <img src={slot.image} alt="" style={{
+                position: 'absolute', top: 0, left: 0,
+                width: '100%', height: '100%',
+                objectFit: 'cover', display: 'block',
+              }} />
+            ) : (
+              <div style={{
+                position: 'absolute', top: 0, left: 0,
+                width: '100%', height: '100%', background: 'rgba(0,0,0,0.3)',
+              }} />
+            )}
+
+            {/* Name stripe — top */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0,
+              background: 'rgba(0,0,0,0.75)',
+              padding: '3px 6px',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              zIndex: 2,
+            }}>
+              <span style={{
+                fontSize: `${ns}px`, fontWeight: 700,
+                color: nameColor, fontFamily, lineHeight: 1.1,
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                textTransform: 'uppercase', letterSpacing: '0.3px',
+              }}>{name}</span>
+            </div>
+
+            {/* Bet / Payout stripe — bottom */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0,
+              background: 'rgba(0,0,0,0.75)',
+              padding: '3px 6px',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              zIndex: 2,
+            }}>
+              <span style={{
+                fontSize: Math.max(ns - 2, 9), fontWeight: 600,
+                color: '#94a3b8', fontFamily, lineHeight: 1.1,
+              }}>{bet > 0 ? `${currency}${bet.toFixed(2)}` : `${currency}0.00`}</span>
+              <span style={{
+                fontSize: Math.max(ns - 2, 9), fontWeight: 700,
+                color: payout > 0 ? multiColor : '#64748b', fontFamily, lineHeight: 1.1,
+              }}>{payout > 0 ? `${currency}${payout.toFixed(2)}` : `${currency}0.00`}</span>
+            </div>
+
+            {/* Eliminated X */}
+            {isEliminated && (
+              <div className="tw-eliminated-icon" style={{
+                position: 'absolute', inset: 0,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3,
+              }}>
+                <div style={{
+                  width: 30, height: 30, borderRadius: '50%',
+                  background: xIconBg, border: `2px solid ${xIconColor}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 15, color: xIconColor, fontWeight: 700,
+                }}>✕</div>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="tw-player-col" style={{
         display: 'flex', flexDirection: 'column', alignItems: 'center',
@@ -313,11 +398,11 @@ function TournamentWidget({ config, theme }) {
         border: `${cardBorderWidth}px solid ${cardBorder}`,
         borderRadius: `${cardRadius}px`,
         overflow: 'hidden', position: 'relative',
-        padding: `2px ${gap > 4 ? 3 : 2}px`,
+        padding: isNeonLayout ? 0 : `2px ${gap > 4 ? 3 : 2}px`,
         display: 'flex', flexDirection: 'column', minHeight: 0,
       }}>
         <div className="tw-match-inner" style={{
-          display: 'flex', gap: 4, flex: 1, minHeight: 0,
+          display: 'flex', gap: isNeonLayout ? 2 : 4, flex: 1, minHeight: 0,
         }}>
           {renderPlayerCol(match.player1, match, 'player1', hasWinner && !p1Won)}
           {renderPlayerCol(match.player2, match, 'player2', hasWinner && !p2Won)}
