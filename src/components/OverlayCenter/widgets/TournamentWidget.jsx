@@ -820,7 +820,7 @@ function TournamentWidget({ config, theme }) {
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
     const matchCount = currentMatches.length;
-    const cols = matchCount === 1 ? 1 : 2;
+    const cols = isNeonLayout ? 1 : matchCount === 1 ? 1 : 2;
     const rows = Math.ceil(matchCount / cols);
 
     return (
