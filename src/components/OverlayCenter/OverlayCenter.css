@@ -3279,12 +3279,21 @@ body.wm-resizing {
   color: #eab308;
   cursor: pointer;
   white-space: nowrap;
+  font-weight: 600;
 }
 
 .bh-super-check input[type="checkbox"] {
   accent-color: #eab308;
   width: 14px;
   height: 14px;
+}
+
+.bh-extreme-check {
+  color: #ef4444;
+}
+
+.bh-extreme-check input[type="checkbox"] {
+  accent-color: #ef4444;
 }
 
 .bh-add-btn {
@@ -3367,6 +3376,11 @@ body.wm-resizing {
 .bh-list-item--super {
   border-color: rgba(234, 179, 8, 0.2);
   background: rgba(234, 179, 8, 0.03);
+}
+
+.bh-list-item--extreme {
+  border-color: rgba(239, 68, 68, 0.25);
+  background: rgba(239, 68, 68, 0.04);
 }
 
 .bh-list-item--opened {
@@ -3466,7 +3480,26 @@ body.wm-resizing {
 /* ─── Super badge inline ─── */
 .bh-list-super-badge {
   margin-left: 4px;
-  font-size: 0.7rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #eab308;
+  background: rgba(234, 179, 8, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
+}
+
+.bh-list-extreme-badge {
+  margin-left: 4px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.15);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.04em;
+  vertical-align: middle;
 }
 
 /* ─── Icon buttons (copy, edit) ─── */

@@ -312,6 +312,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   const [slotSearch, setSlotSearch] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isSuperBonus, setIsSuperBonus] = useState(false);
+  const [isExtremeBonus, setIsExtremeBonus] = useState(false);
   const [showStatistics, setShowStatistics] = useState(c.showStatistics ?? true);
   const [animatedTracker, setAnimatedTracker] = useState(c.animatedTracker ?? true);
   const [bonusList, setBonusList] = useState(c.bonuses || []);
@@ -369,6 +370,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       slotName: selectedSlot.name,
       betSize: betNum,
       isSuperBonus,
+      isExtremeBonus,
       opened: false,
       result: 0,
       payout: 0,
@@ -380,6 +382,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
     setSlotSearch('');
     setBetSize('');
     setIsSuperBonus(false);
+    setIsExtremeBonus(false);
   };
 
   const handleOpenBonus = (bonusId, result) => {
@@ -464,6 +467,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
         provider: bonus.slot?.provider || '',
         bet_value: bonus.betSize || 0,
         is_super: bonus.isSuperBonus || false,
+        is_extreme: bonus.isExtremeBonus || false,
       }));
 
       const startValue = Number(startMoney) || 0;
@@ -659,7 +663,11 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
             placeholder={`Bet (${currency})`} step="0.1" />
           <label className="bh-super-check">
             <input type="checkbox" checked={isSuperBonus} onChange={e => setIsSuperBonus(e.target.checked)} />
-            <span>⭐</span>
+            <span>Super</span>
+          </label>
+          <label className="bh-super-check bh-extreme-check">
+            <input type="checkbox" checked={isExtremeBonus} onChange={e => setIsExtremeBonus(e.target.checked)} />
+            <span>Extreme</span>
           </label>
           <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
             + Add
@@ -801,7 +809,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
           {bonusList.length === 0 ? (
             <p className="bh-list-empty">No bonuses added yet</p>
           ) : bonusList.map((bonus, i) => (
-            <div key={bonus.id} className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''}`}>
+            <div key={bonus.id} className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''} ${bonus.isExtremeBonus ? 'bh-list-item--extreme' : ''}`}>
 
               {/* Drag handle + number */}
               <span className="bh-list-grip">⠿</span>
@@ -833,7 +841,8 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
                   <div className="bh-list-info">
                     <span className="bh-list-name">
                       {bonus.slotName || bonus.slot?.name}
-                      {bonus.isSuperBonus && <span className="bh-list-super-badge">⭐</span>}
+                      {bonus.isSuperBonus && <span className="bh-list-super-badge">SUPER</span>}
+                      {bonus.isExtremeBonus && <span className="bh-list-extreme-badge">EXTREME</span>}
                     </span>
                     {bonus.slot?.provider && <span className="bh-list-provider">{bonus.slot.provider}</span>}
                   </div>
