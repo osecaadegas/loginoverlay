@@ -715,42 +715,43 @@ function TournamentWidget({ config, theme }) {
             }}>🏆</div>
           )}
 
-          {/* Fighter image — full card cover */}
+          {/* Player name — black stripe at top */}
           <div style={{
-            flex: 1, minHeight: 70, position: 'relative', overflow: 'hidden',
+            background: 'rgba(0,0,0,0.88)', padding: '4px 10px',
+            fontSize: 12, fontWeight: 700, fontStyle: 'italic',
+            color: '#fff', fontFamily, letterSpacing: '0.3px',
+            textShadow: '0 1px 4px rgba(0,0,0,0.8)',
+            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            flexShrink: 0, zIndex: 2,
+          }}>{name}</div>
+
+          {/* Fighter image — shows full image, no cropping */}
+          <div style={{
+            flex: 1, position: 'relative', overflow: 'hidden',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'rgba(0,0,0,0.15)',
           }}>
             {slotImage ? (
               <img src={slotImage} alt={name} style={{
-                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                width: '100%', height: '100%',
                 objectFit: 'cover', display: 'block',
               }} />
             ) : (
               <div style={{
-                position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+                width: '100%', height: '100%',
                 background: 'rgba(255,255,255,0.03)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 fontSize: 32, color: 'rgba(255,255,255,0.1)',
               }}>⚔</div>
             )}
 
-            {/* Player name — black stripe over image */}
-            <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0,
-              background: 'rgba(0,0,0,0.82)', padding: '5px 10px',
-              fontSize: 13, fontWeight: 700, fontStyle: 'italic',
-              color: '#fff', fontFamily, letterSpacing: '0.3px',
-              textShadow: '0 1px 4px rgba(0,0,0,0.8)',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              zIndex: 2,
-            }}>{name}</div>
-
-            {/* Result — black stripe, shorter height */}
+            {/* Result overlay — on the image */}
             {result !== null && (
               <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                background: 'rgba(0,0,0,0.85)', padding: '4px 8px',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                zIndex: 2,
+                position: 'absolute', top: '50%', left: '50%',
+                transform: 'translate(-50%, -50%)',
+                background: 'rgba(0,0,0,0.75)', padding: '3px 12px',
+                borderRadius: 6, zIndex: 2,
               }}>
                 <span style={{
                   fontSize: 14, fontWeight: 800,
@@ -760,30 +761,35 @@ function TournamentWidget({ config, theme }) {
             )}
           </div>
 
-          {/* Bottom row — values only (bet/cost + end/payout), no labels */}
-          {vals && (vals.val1 !== null || vals.val2 !== null) && (
-            <div style={{
-              display: 'flex', background: '#000',
-              borderTop: '2px solid rgba(255,255,255,0.08)',
-              minHeight: 26,
-            }}>
-              {vals.val1 !== null && (
-                <div style={{
-                  flex: 1, padding: '4px 6px', textAlign: 'center',
-                  fontSize: 12, fontWeight: 700,
-                  color: 'var(--bht-list-accent, #93c5fd)', fontFamily,
-                }}>{currency}{vals.val1.toFixed(2)}</div>
-              )}
-              {vals.val2 !== null && (
-                <div style={{
-                  flex: 1, padding: '4px 6px', textAlign: 'center',
-                  borderLeft: vals.val1 !== null ? '1px solid rgba(255,255,255,0.1)' : 'none',
-                  fontSize: 12, fontWeight: 700,
-                  color: '#4ade80', fontFamily,
-                }}>{currency}{vals.val2.toFixed(2)}</div>
-              )}
-            </div>
-          )}
+          {/* Bottom bar — bet/cost + end/payout values */}
+          <div style={{
+            display: 'flex', background: '#000',
+            borderTop: '2px solid rgba(255,255,255,0.08)',
+            minHeight: 22, flexShrink: 0,
+          }}>
+            {vals && vals.val1 !== null ? (
+              <div style={{
+                flex: 1, padding: '3px 4px', textAlign: 'center',
+                fontSize: 11, fontWeight: 700,
+                color: '#93c5fd', fontFamily,
+              }}>{currency}{vals.val1.toFixed(2)}</div>
+            ) : (
+              <div style={{ flex: 1, padding: '3px 4px', textAlign: 'center',
+                fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
+            )}
+            {vals && vals.val2 !== null ? (
+              <div style={{
+                flex: 1, padding: '3px 4px', textAlign: 'center',
+                borderLeft: '1px solid rgba(255,255,255,0.1)',
+                fontSize: 11, fontWeight: 700,
+                color: '#4ade80', fontFamily,
+              }}>{currency}{vals.val2.toFixed(2)}</div>
+            ) : (
+              <div style={{ flex: 1, padding: '3px 4px', textAlign: 'center',
+                borderLeft: '1px solid rgba(255,255,255,0.1)',
+                fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
+            )}
+          </div>
         </div>
       );
     };
@@ -797,7 +803,7 @@ function TournamentWidget({ config, theme }) {
       return (
         <div key={idx} style={{
           display: 'flex', alignItems: 'stretch', gap: 0,
-          position: 'relative', minHeight: 100,
+          position: 'relative', minHeight: 160,
           borderRadius: `${cardRadius}px`,
           border: isCurrentMatch ? `2px solid ${arenaAccent}88` : '2px solid transparent',
           ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
@@ -818,7 +824,7 @@ function TournamentWidget({ config, theme }) {
             ...(isCurrentMatch ? { animation: 'tw-vs-spin 3s linear infinite' } : {}),
           }}>VS</div>
 
-          <div style={{ flex: 1, display: 'flex', minWidth: 0, marginLeft: 6 }}>
+          <div style={{ flex: 1, display: 'flex', minWidth: 0, marginLeft: 4 }}>
             {renderArenaFighter(match, 'player2', p2Won, hasWinner && !p2Won)}
           </div>
         </div>
@@ -833,7 +839,7 @@ function TournamentWidget({ config, theme }) {
         {/* Match rows — reduced vertical gap */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column',
-          gap: 4, padding: `4px ${padding + 4}px ${padding}px`,
+          gap: 2, padding: `2px ${padding + 2}px ${padding}px`,
           overflow: 'auto',
         }}>
           {matches.map((match, idx) => renderArenaMatch(match, idx))}
