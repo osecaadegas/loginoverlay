@@ -908,27 +908,52 @@
   flex: 1 1 0;
   min-height: 0;
   overflow: hidden;
+  max-height: 365px;
 }
 .oc-bonushunt--compact .bht-bonus-list {
-  max-height: 100%;
-  height: 100%;
+  max-height: 355px;
+  height: 355px;
+  overflow: hidden;
 }
 .oc-bonushunt--compact .bht-bonus-card {
   min-width: 80px;
-  min-height: 70px;
+  min-height: 105px;
 }
 .oc-bonushunt--compact .bht-bonus-card-img {
-  height: 60px;
+  height: 105px;
 }
 .oc-bonushunt--compact .bht-bonus-card-overlay {
+  padding: 0;
+  background: none;
+}
+.oc-bonushunt--compact .bht-bonus-card-top {
+  padding: 4px 8px;
+}
+.oc-bonushunt--compact .bht-bonus-card-bottom {
+  background: rgba(0, 0, 0, 0.92);
   padding: 6px 8px;
+  backdrop-filter: blur(4px);
 }
 .oc-bonushunt--compact .bht-bonus-card-name {
-  font-size: 0.9em;
+  font-size: 0.85em;
+  font-weight: 700;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+}
+.oc-bonushunt--compact .bht-bonus-card-num {
+  font-size: 0.75em;
+  background: rgba(255,255,255,0.12);
+  padding: 1px 6px;
+  border-radius: 4px;
 }
 .oc-bonushunt--compact .bht-bonus-card-bet-badge {
-  font-size: 0.85em;
+  font-size: 0.8em;
   padding: 2px 6px;
+}
+.oc-bonushunt--compact .bht-bonus-card-payout-val {
+  font-size: 0.9em;
+}
+.oc-bonushunt--compact .bht-bonus-card-payout-x {
+  font-size: 0.75em;
 }
 .oc-bonushunt--compact .bht-summary {
   padding: 6px 8px !important;
