@@ -1018,6 +1018,35 @@
   letter-spacing: 0.3px;
 }
 
+/* ── Compact: Progress bar ── */
+.bht-compact-progress-section {
+  margin: 4px 0;
+}
+.bht-compact-progress-label {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.65em;
+  font-weight: 700;
+  color: var(--bht-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 3px;
+}
+.bht-compact-progress-track {
+  height: 5px;
+  border-radius: 999px;
+  background: rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.bht-compact-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: var(--bht-header-accent, #60a5fa);
+  background-image: linear-gradient(to right, transparent, rgba(255,255,255,0.2));
+  transition: width 0.5s ease;
+}
+
 /* ─── Bonus Hunt: Carousel (v7) ─── */
 .oc-bonushunt--carousel {
   flex-direction: row !important;

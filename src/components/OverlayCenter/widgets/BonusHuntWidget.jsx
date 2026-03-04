@@ -333,6 +333,17 @@ function BonusHuntWidget({ config, theme }) {
               {c.huntNumber && <span className="bht-compact-hunt-num">#{c.huntNumber}</span>}
             </div>
           </div>
+          {/* Opened count + progress bar */}
+          <div className="bht-compact-progress-section">
+            <div className="bht-compact-progress-label">
+              <span>Opened</span>
+              <span>{stats.openedCount}/{bonuses.length}</span>
+            </div>
+            <div className="bht-compact-progress-track">
+              <div className="bht-compact-progress-fill" style={{ width: `${bonuses.length > 0 ? (stats.openedCount / bonuses.length) * 100 : 0}%` }} />
+            </div>
+          </div>
+
           <div className="bht-compact-info-row">
             <div className="bht-compact-info-pill">
               <span className="bht-compact-info-label">TOTAL</span>
