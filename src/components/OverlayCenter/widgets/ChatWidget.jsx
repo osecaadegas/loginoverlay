@@ -169,6 +169,16 @@ function ChatWidget({ config, theme }) {
     flexDirection: 'column',
     overflow: 'hidden',
     filter: filterStyle,
+    /* Cards CSS vars — synced from config */
+    '--chat-card-bg': c.cardBg || 'rgba(20,15,40,0.85)',
+    '--chat-card-border': c.cardBorder || borderColor || 'rgba(100,70,180,0.2)',
+    '--chat-card-hover-bg': c.cardHoverBg || 'rgba(30,22,55,0.95)',
+    '--chat-card-hover-border': c.cardHoverBorder || 'rgba(120,80,200,0.3)',
+    '--chat-card-text': c.cardTextColor || textColor || '#e2e8f0',
+    '--chat-header-bg': c.headerBg || 'rgba(20,15,40,0.95)',
+    '--chat-header-border': c.headerBorder || borderColor || 'rgba(100,70,180,0.15)',
+    '--chat-header-label': c.headerText || '#fff',
+    '--chat-header-channel': c.headerChannelColor || '#d1d5db',
   };
 
   const modeClass = ` ov-chat-widget--${chatStyle}`;

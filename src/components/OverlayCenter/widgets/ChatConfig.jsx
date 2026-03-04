@@ -36,6 +36,14 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
       borderColor: nb.accentColor || '#f59e0b',
       fontFamily: nb.fontFamily || "'Inter', sans-serif",
       fontSize: nb.fontSize ?? 13,
+      /* Cards-specific colors synced from navbar */
+      cardBg: nb.bgColor ? nb.bgColor + 'e6' : 'rgba(20,15,40,0.9)',
+      cardBorder: nb.accentColor ? nb.accentColor + '33' : 'rgba(100,70,180,0.2)',
+      cardHoverBg: nb.bgColor ? nb.bgColor + 'f2' : 'rgba(30,22,55,0.95)',
+      cardHoverBorder: nb.accentColor ? nb.accentColor + '55' : 'rgba(120,80,200,0.3)',
+      cardTextColor: nb.textColor || '#e2e8f0',
+      headerBorder: nb.accentColor ? nb.accentColor + '26' : 'rgba(100,70,180,0.15)',
+      headerChannelColor: nb.mutedColor || '#d1d5db',
     });
   };
 
@@ -48,6 +56,8 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
     'showHeader', 'showLegend', 'showBadges',
     'brightness', 'contrast', 'saturation',
     'raidBgColor', 'raidBorderColor', 'raidTextColor', 'showRaidAvatar',
+    'cardBg', 'cardBorder', 'cardHoverBg', 'cardHoverBorder', 'cardTextColor',
+    'headerBorder', 'headerChannelColor',
   ];
 
   const savePreset = () => {
