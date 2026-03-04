@@ -3191,20 +3191,64 @@
   letter-spacing: 0.3px;
 }
 
-/* super/extreme badge */
+/* ─── SUPER badge: yellow glow + vibration ─── */
 .bhv8-card-super-badge {
   position: absolute;
   top: 42px;
   right: 10px;
   z-index: 3;
-  font-size: 1.1em;
-  font-weight: 700;
-  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.7));
-  animation: bhv8-badge-pulse 2s ease-in-out infinite;
+  font-size: 0.85em;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 8px rgba(234, 179, 8, 0.9),
+    0 0 18px rgba(234, 179, 8, 0.6),
+    0 0 36px rgba(234, 179, 8, 0.3);
+  filter: drop-shadow(0 2px 8px rgba(234, 179, 8, 0.5));
+  animation: bhv8-super-vibrate 0.3s linear infinite;
 }
-@keyframes bhv8-badge-pulse {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.12); }
+@keyframes bhv8-super-vibrate {
+  0%   { transform: translate(0, 0); }
+  20%  { transform: translate(-0.5px, 0.5px); }
+  40%  { transform: translate(0.5px, -0.5px); }
+  60%  { transform: translate(-0.3px, -0.3px); }
+  80%  { transform: translate(0.3px, 0.3px); }
+  100% { transform: translate(0, 0); }
+}
+
+/* ─── EXTREME badge: red strong glow + trill/jump ─── */
+.bhv8-card-extreme-badge {
+  position: absolute;
+  top: 42px;
+  right: 10px;
+  z-index: 3;
+  font-size: 0.85em;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-shadow:
+    0 0 10px rgba(239, 68, 68, 1),
+    0 0 24px rgba(239, 68, 68, 0.8),
+    0 0 48px rgba(239, 68, 68, 0.5),
+    0 0 72px rgba(239, 68, 68, 0.25);
+  filter: drop-shadow(0 2px 12px rgba(239, 68, 68, 0.7));
+  animation: bhv8-extreme-trill 0.15s linear infinite, bhv8-extreme-jump 1.2s ease-in-out infinite;
+}
+@keyframes bhv8-extreme-trill {
+  0%   { transform: translate(0, 0) rotate(0deg); }
+  25%  { transform: translate(-1px, 0.5px) rotate(-1deg); }
+  50%  { transform: translate(1px, -0.5px) rotate(1deg); }
+  75%  { transform: translate(-0.5px, -0.5px) rotate(-0.5deg); }
+  100% { transform: translate(0, 0) rotate(0deg); }
+}
+@keyframes bhv8-extreme-jump {
+  0%, 100% { top: 42px; }
+  40%      { top: 42px; }
+  50%      { top: 34px; }
+  60%      { top: 42px; }
+  70%      { top: 38px; }
+  80%      { top: 42px; }
 }
 
 /* center text (slot name + provider) */

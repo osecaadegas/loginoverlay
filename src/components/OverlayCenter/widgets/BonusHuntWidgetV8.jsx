@@ -218,11 +218,18 @@ function BonusHuntWidgetV8({ config, theme }) {
                     </span>
                   </div>
 
-                  {/* super/extreme badge */}
-                  {(bonus.isSuperBonus || bonus.isExtreme) && (
+                  {/* super badge */}
+                  {bonus.isSuperBonus && (
                     <div className="bhv8-card-super-badge"
-                      style={{ color: bonus.isExtreme ? extremeBadgeColor : superBadgeColor }}>
-                      {bonus.isExtreme ? '🔥' : '⭐'} {payout > 0 ? `${currency}${payout.toFixed(0)}` : ''}
+                      style={{ color: superBadgeColor }}>
+                      ⭐ SUPER {payout > 0 ? `${currency}${payout.toFixed(0)}` : ''}
+                    </div>
+                  )}
+                  {/* extreme badge */}
+                  {(bonus.isExtremeBonus || bonus.isExtreme) && (
+                    <div className="bhv8-card-extreme-badge"
+                      style={{ color: extremeBadgeColor }}>
+                      🔥 EXTREME {payout > 0 ? `${currency}${payout.toFixed(0)}` : ''}
                     </div>
                   )}
 
