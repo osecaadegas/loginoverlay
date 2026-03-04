@@ -207,13 +207,15 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
           <span>Max Win (x)</span>
           <input type="number" value={form.max_win_multiplier || ''} onChange={e => set('max_win_multiplier', e.target.value || null)} placeholder="10000" />
         </label>
-        {/* Image URL — spans full width */}
-        <label className="sm-field" style={{ gridColumn: '1 / -1' }}>
-          <span>Image URL <em>*</em></span>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <input style={{ flex: 1 }} value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="https://…" />
-            <button type="button" className="sm-btn-sm" onClick={searchImages} disabled={!form.name || imageSearching}>
-              {imageSearching ? '⏳' : '🔍'}
+        {/* Image URL — fits in grid like other fields */}
+        <label className="sm-field" style={{ gridColumn: 'span 2', minWidth: 0 }}>
+          <span>Image <em>*</em></span>
+          <div style={{ display: 'flex', gap: 4 }}>
+            <input style={{ flex: 1, fontSize: '0.72rem', padding: '5px 8px' }} value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="Paste URL or search →" />
+            <button type="button" className="sm-btn-sm" onClick={searchImages} disabled={!form.name || imageSearching}
+              title={form.name ? `Search Google Images for "${form.name}"` : 'Enter a slot name first'}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.7rem', whiteSpace: 'nowrap', padding: '4px 8px' }}>
+              {imageSearching ? '⏳' : '🔍'} <span style={{ opacity: 0.8 }}>Search Image</span>
             </button>
           </div>
         </label>
