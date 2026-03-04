@@ -544,6 +544,77 @@
   border-top: 1px solid var(--oc-border);
 }
 
+/* ── OBS URL bar (widgets page, above live preview) ── */
+.oc-obs-url-bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--oc-bg-surface);
+  border: 1px solid var(--oc-border);
+  border-radius: var(--oc-radius);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.oc-obs-url-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--oc-text-muted);
+  font-weight: 700;
+  white-space: nowrap;
+}
+.oc-obs-url-row {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  border: 1px solid var(--oc-border);
+  border-radius: var(--oc-radius-sm);
+  overflow: hidden;
+  transition: border-color var(--oc-transition);
+}
+.oc-obs-url-row:hover {
+  border-color: var(--oc-border-hover);
+}
+.oc-obs-url-input {
+  flex: 1;
+  background: var(--oc-bg);
+  border: none;
+  color: var(--oc-text-secondary);
+  font-size: 0.75rem;
+  padding: 8px 10px;
+  outline: none;
+  cursor: pointer;
+  min-width: 0;
+}
+.oc-obs-url-copy {
+  background: var(--oc-accent-glow);
+  border: none;
+  border-left: 1px solid var(--oc-border);
+  color: var(--oc-accent-light);
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--oc-transition);
+}
+.oc-obs-url-copy:hover {
+  background: var(--oc-accent-glow-strong);
+}
+.oc-obs-url-regen {
+  background: transparent;
+  border: none;
+  border-left: 1px solid var(--oc-border);
+  color: var(--oc-text-muted);
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all var(--oc-transition);
+}
+.oc-obs-url-regen:hover {
+  color: var(--oc-danger);
+  background: var(--oc-danger-glow);
+}
+
 .oc-sidebar-user {
   font-size: 0.72rem;
   color: var(--oc-text-muted);

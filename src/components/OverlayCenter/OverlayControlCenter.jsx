@@ -159,11 +159,6 @@ export default function OverlayControlCenter() {
       <div className="oc-layout">
         {/* ─── SIDEBAR NAV ─── */}
         <aside className={`oc-sidebar${sidebarOpen ? ' oc-sidebar--open' : ''}`}>
-          <div className="oc-sidebar-brand">
-            <span className="oc-sidebar-icon">🎛️</span>
-            <h1 className="oc-sidebar-title">Overlay Center</h1>
-          </div>
-
           <nav className="oc-sidebar-nav">
             {/* ─── Home ─── */}
             <button
@@ -358,20 +353,6 @@ export default function OverlayControlCenter() {
             </select>
           </div>
 
-          {/* OBS URL */}
-          <div className="oc-sidebar-url" data-tour="obs-url">
-            <label className="oc-sidebar-url-label">OBS Browser Source URL</label>
-            <div className="oc-sidebar-url-box">
-              <input readOnly value={overlayUrl} className="oc-sidebar-url-input" onClick={copyUrl} title="Click to copy" />
-              <button className="oc-sidebar-url-copy" onClick={copyUrl}>
-                {copyMsg || '📋'}
-              </button>
-            </div>
-            <button className="oc-sidebar-regen" onClick={regenToken} title="Generate new URL (invalidates old one)">
-              🔄 Regenerate URL
-            </button>
-          </div>
-
           <div className="oc-sidebar-footer">
             <span className="oc-sidebar-user">{user.email}</span>
           </div>
@@ -406,6 +387,17 @@ export default function OverlayControlCenter() {
                     <span>Copy the OBS URL from the sidebar and add it as a Browser Source</span>
                   </div>
                 </div>
+              </div>
+            </div>
+          )}
+
+          {activePanel === 'widgets' && (
+            <div className="oc-obs-url-bar" data-tour="obs-url">
+              <label className="oc-obs-url-label">OBS Browser Source URL</label>
+              <div className="oc-obs-url-row">
+                <input readOnly value={overlayUrl} className="oc-obs-url-input" onClick={copyUrl} title="Click to copy" />
+                <button className="oc-obs-url-copy" onClick={copyUrl}>{copyMsg || '📋'}</button>
+                <button className="oc-obs-url-regen" onClick={regenToken} title="Generate new URL (invalidates old one)">🔄</button>
               </div>
             </div>
           )}
