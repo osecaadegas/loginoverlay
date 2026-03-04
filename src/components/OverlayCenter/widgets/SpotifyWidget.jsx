@@ -249,7 +249,7 @@ function VinylSpin({ data, c }) {
         width: sz, aspectRatio: '1', borderRadius: '50%', position: 'relative',
         background: `conic-gradient(from 0deg, #111 0%, #222 10%, #111 20%, #1a1a1a 30%, #111 40%, #222 50%, #111 60%, #1a1a1a 70%, #111 80%, #222 90%, #111 100%)`,
         boxShadow: '0 4px 30px rgba(0,0,0,0.6), inset 0 0 40px rgba(0,0,0,0.4)',
-        animation: data.isPlaying ? 'spotifyVinylSpin 3s linear infinite' : 'none',
+        animation: data.isPlaying ? 'spotifyVinylSpin 3s linear infinite' : 'spotifyVinylSpin 8s linear infinite',
       }}>
         {/* Grooves */}
         {[30, 38, 46, 54, 62, 70].map(p => (
