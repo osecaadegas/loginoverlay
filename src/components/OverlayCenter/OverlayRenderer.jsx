@@ -20,6 +20,7 @@ import {
 } from '../../services/overlayService';
 import { getWidgetDef } from './widgets/widgetRegistry';
 import './OverlayRenderer.css';
+import './OverlayCenter.css';
 
 // Register built-in widgets
 import './widgets/builtinWidgets';
