@@ -223,14 +223,14 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
 
       {/* Image results + preview row */}
       {(imageResults.length > 0 || form.image) && (
-        <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
+        <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {form.image && (
-            <img src={form.image} alt="" style={{ width: 48, height: 48, borderRadius: 6, objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+            <img src={form.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(168,85,247,0.4)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
           )}
           {imageResults.slice(0, 8).map((img, i) => (
             <button key={i} type="button" onClick={() => { set('image', img.url); setImageResults([]); }}
-              style={{ border: form.image === img.url ? '2px solid #a855f7' : '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: 2, background: 'transparent', cursor: 'pointer', width: 48, height: 48, overflow: 'hidden', flexShrink: 0 }}>
-              <img src={img.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 4 }} />
+              style={{ border: form.image === img.url ? '2px solid #a855f7' : '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 2, background: 'transparent', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
+              <img src={img.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
             </button>
           ))}
         </div>
