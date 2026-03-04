@@ -74,11 +74,17 @@ export default function OverlayControlCenter() {
   const [activePanel, setActivePanel] = useState('widgets');
   const [communityOpen, setCommunityOpen] = useState(false);
   const [streamerToolsOpen, setStreamerToolsOpen] = useState(false);
+  const [communityToolsOpen, setCommunityToolsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
   const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot'];
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
+
+  /* Auto-expand Community Tools when one of its children is active */
+  const communityToolsKeys = ['wheel_of_names', 'random_slot_picker'];
+  const isCommunityToolActive = communityToolsKeys.includes(activePanel);
+  useEffect(() => { if (isCommunityToolActive) setCommunityToolsOpen(true); }, [isCommunityToolActive]);
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -178,13 +184,23 @@ export default function OverlayControlCenter() {
               </div>
             </button>
 
+            {/* Tutorial button — right under Profile */}
+            <button
+              className="oc-sidebar-btn"
+              onClick={() => { resetTutorial(); setShowTutorial(true); setSidebarOpen(false); setActivePanel('widgets'); }}
+            >
+              <span className="oc-sidebar-btn-icon">🎓</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Tutorial</span>
+                <span className="oc-sidebar-btn-desc">Guided walkthrough</span>
+              </div>
+            </button>
+
             <div className="oc-sidebar-divider-label">Stream Overlay</div>
 
             {/* Panel tabs */}
             {[
               { key: 'widgets', icon: '🧩', label: 'Widgets', desc: 'Add & configure overlays' },
-              { key: 'wheel_of_names', icon: '🎡', label: 'Wheel of Names', desc: 'Spin entries' },
-              { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
               { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
               { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
               ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
@@ -235,6 +251,35 @@ export default function OverlayControlCenter() {
               </button>
             ))}
 
+            {/* ─── Community Tools dropdown ─── */}
+            <button
+              className={`oc-sidebar-btn ${communityToolsOpen || isCommunityToolActive ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => setCommunityToolsOpen(o => !o)}
+            >
+              <span className="oc-sidebar-btn-icon">🧰</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Community Tools</span>
+                <span className="oc-sidebar-btn-desc">Wheels & pickers</span>
+              </div>
+              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: communityToolsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
+            </button>
+            {communityToolsOpen && [
+              { key: 'wheel_of_names', icon: '🎡', label: 'Wheel of Names', desc: 'Spin entries' },
+              { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                className={`oc-sidebar-btn oc-sidebar-btn--sub ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
+                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
+              >
+                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
+                <div className="oc-sidebar-btn-text">
+                  <span className="oc-sidebar-btn-label">{tab.label}</span>
+                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
+                </div>
+              </button>
+            ))}
+
             {/* ─── Community Games dropdown ─── */}
             <div className="oc-sidebar-divider-label">Community</div>
             <button
@@ -268,17 +313,6 @@ export default function OverlayControlCenter() {
               </button>
             ))}
 
-            {/* Tutorial button */}
-            <button
-              className="oc-sidebar-btn"
-              onClick={() => { resetTutorial(); setShowTutorial(true); setSidebarOpen(false); setActivePanel('widgets'); }}
-            >
-              <span className="oc-sidebar-btn-icon">🎓</span>
-              <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Tutorial</span>
-                <span className="oc-sidebar-btn-desc">Guided walkthrough</span>
-              </div>
-            </button>
           </nav>
 
           {/* ─── Resolution Selector ─── */}
