@@ -540,10 +540,9 @@ function BonusHuntWidget({ config, theme }) {
                 };
 
                 if (isOpening) {
-                  /* Opening active → static track centred on current bonus */
+                  /* Opening active → pin current bonus at the top of the list */
                   const cardH = 96, gap = 6, step = cardH + gap;
-                  const viewH = listH || 300;
-                  const offset = (viewH / 2) - (currentIndex * step) - (cardH / 2);
+                  const offset = -(currentIndex * step);
                   return (
                     <div key="compact-static" className="bht-compact-track bht-compact-track--static"
                       style={{ transform: `translateY(${offset}px)` }}>
