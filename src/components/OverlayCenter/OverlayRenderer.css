@@ -818,32 +818,32 @@
 
 /* ── All cards: tight padding, don't shrink ── */
 .oc-bonushunt--compact .bht-card {
-  padding: 8px !important;
+  padding: 4px 6px !important;
   flex-shrink: 0;
 }
 
 /* ── Header overrides ── */
-.oc-bonushunt--compact .bht-header-top { margin-bottom: 6px; }
-.oc-bonushunt--compact .bht-header-stats { gap: 6px; }
-.oc-bonushunt--compact .bht-stat-box { padding: 4px 8px; }
-.oc-bonushunt--compact .bht-stat-value { font-size: 1em; }
+.oc-bonushunt--compact .bht-header-top { margin-bottom: 3px; }
+.oc-bonushunt--compact .bht-header-stats { gap: 4px; }
+.oc-bonushunt--compact .bht-stat-box { padding: 2px 6px; }
+.oc-bonushunt--compact .bht-stat-value { font-size: 0.95em; }
 .oc-bonushunt--compact .bht-icon-circle { width: 28px; height: 28px; }
 .oc-bonushunt--compact .bht-icon-circle svg { width: 14px; height: 14px; }
 .oc-bonushunt--compact .bht-title { font-size: 0.85em; }
 
 /* ── Count card overrides ── */
-.oc-bonushunt--compact .bht-count-card { padding: 6px 8px !important; }
-.oc-bonushunt--compact .bht-count-header { margin-bottom: 4px; }
-.oc-bonushunt--compact .bht-count-badges { gap: 4px; }
+.oc-bonushunt--compact .bht-count-card { padding: 3px 6px !important; }
+.oc-bonushunt--compact .bht-count-header { margin-bottom: 2px; }
+.oc-bonushunt--compact .bht-count-badges { gap: 3px; }
 .oc-bonushunt--compact .bht-badge-super,
-.oc-bonushunt--compact .bht-badge-extreme { padding: 3px 8px; font-size: 0.65em; }
+.oc-bonushunt--compact .bht-badge-extreme { padding: 2px 6px; font-size: 0.6em; }
 
 /* ── Current bonus card ── */
-.oc-bonushunt--compact .bht-current { padding: 3px 6px !important; }
-.oc-bonushunt--compact .bht-current-top { margin-bottom: 0; gap: 6px; align-items: center; }
+.oc-bonushunt--compact .bht-current { padding: 2px 4px !important; }
+.oc-bonushunt--compact .bht-current-top { margin-bottom: 0; gap: 4px; align-items: center; }
 .oc-bonushunt--compact .bht-current-img {
-  width: 55px; height: 40px;
-  object-fit: cover; border-radius: 5px; flex-shrink: 0;
+  width: 45px; height: 34px;
+  object-fit: cover; border-radius: 4px; flex-shrink: 0;
 }
 .oc-bonushunt--compact .bht-current-info {
   flex: 1; display: flex; flex-direction: column; gap: 2px;
@@ -944,10 +944,15 @@
 }
 
 /* ── Summary card ── */
-.oc-bonushunt--compact .bht-summary { padding: 4px 6px !important; flex-shrink: 0; }
-.oc-bonushunt--compact .bht-summary-stats { gap: 4px; margin-bottom: 3px; }
-.oc-bonushunt--compact .bht-total-pay { padding: 4px 6px; }
-.oc-bonushunt--compact .bht-total-pay-value { font-size: 1em; }
+.oc-bonushunt--compact .bht-summary { padding: 3px 4px !important; flex-shrink: 0; }
+.oc-bonushunt--compact .bht-summary-stats { gap: 4px; margin-bottom: 2px; }
+.oc-bonushunt--compact .bht-summary .bht-stat-box { padding: 1px 4px; }
+.oc-bonushunt--compact .bht-summary .bht-stat-label { font-size: 0.6em; }
+.oc-bonushunt--compact .bht-summary .bht-stat-label svg { width: 10px; height: 10px; }
+.oc-bonushunt--compact .bht-total-pay { padding: 3px 6px; }
+.oc-bonushunt--compact .bht-total-pay-left { font-size: 0.7em; gap: 4px; }
+.oc-bonushunt--compact .bht-total-pay-left svg { width: 12px; height: 12px; }
+.oc-bonushunt--compact .bht-total-pay-value { font-size: 0.9em; }
 
 /* ── Merged header + count card ── */
 .bht-compact-avatar {
@@ -956,7 +961,7 @@
   border: 2px solid var(--bht-header-accent, #60a5fa);
 }
 .oc-bonushunt--compact .bht-compact-avatar { width: 28px; height: 28px; }
-.bht-compact-merged { display: flex; flex-direction: column; gap: 4px; }
+.bht-compact-merged { display: flex; flex-direction: column; gap: 2px; }
 .bht-compact-top-row { display: flex; align-items: center; gap: 8px; }
 .bht-compact-title-block {
   display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0;
@@ -978,7 +983,7 @@
 .bht-compact-info-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 
 /* ── Progress bar ── */
-.bht-compact-progress-section { margin: 2px 0; }
+.bht-compact-progress-section { margin: 1px 0; }
 .bht-compact-progress-label {
   display: flex; justify-content: space-between; align-items: center;
   font-size: 0.65em; font-weight: 700; color: var(--bht-muted, #94a3b8);

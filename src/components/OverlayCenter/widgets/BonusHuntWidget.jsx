@@ -54,9 +54,9 @@ function BonusHuntWidget({ config, theme }) {
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const fontSize = c.fontSize ?? (isCompactBH ? 11 : 13);
   const cardRadius = c.cardRadius ?? (isCompactBH ? 8 : 16);
-  const cardGap = c.cardGap ?? (isCompactBH ? 6 : 12);
+  const cardGap = c.cardGap ?? (isCompactBH ? 3 : 12);
   const widgetWidth = c.widgetWidth ?? 400;
-  const cardPadding = c.cardPadding ?? (isCompactBH ? 8 : 14);
+  const cardPadding = c.cardPadding ?? (isCompactBH ? 4 : 14);
   const slotImageHeight = c.slotImageHeight ?? (isCompactBH ? 120 : 180);
   const listMaxHeight = c.listMaxHeight ?? (isCompactBH ? 250 : 400);
   const brightness = c.brightness ?? 100;
