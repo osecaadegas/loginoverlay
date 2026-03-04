@@ -46,7 +46,7 @@ export default async function handler(req, res) {
     url.searchParams.set('cx', cx);
     url.searchParams.set('q', query);
     url.searchParams.set('searchType', 'image');
-    url.searchParams.set('num', '12');
+    url.searchParams.set('num', '10');
     url.searchParams.set('start', String(start));
     url.searchParams.set('safe', 'active');
 
