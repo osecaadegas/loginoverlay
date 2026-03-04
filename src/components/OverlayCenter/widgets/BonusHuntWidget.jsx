@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useState, useEffect } from 'react';
 import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
 import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
@@ -118,6 +118,20 @@ function BonusHuntWidget({ config, theme }) {
   /* ─── Find current bonus (first not-opened) ─── */
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
+
+  /* ─── Compact: measure actual list viewport height ─── */
+  const listRef = useRef(null);
+  const [listH, setListH] = useState(355);
+  useEffect(() => {
+    const el = listRef.current;
+    if (!isCompactBH || !el) return;
+    const ro = new ResizeObserver(() => {
+      const h = el.clientHeight;
+      if (h > 0) setListH(h);
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [isCompactBH, bonuses.length]);
 
   const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
     : isHorizontalBH ? ' oc-bonushunt--horizontal'
@@ -355,7 +369,7 @@ function BonusHuntWidget({ config, theme }) {
             </div>
             <div className="bht-compact-info-pill bht-compact-info-pill--extreme">
               <span className="bht-compact-info-label">EXTREME</span>
-              <strong>{bonuses.filter(b => b.isExtreme).length}</strong>
+              <strong>{bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length}</strong>
             </div>
           </div>
         </div>
@@ -421,7 +435,7 @@ function BonusHuntWidget({ config, theme }) {
             <span>SUPER</span> <strong>{stats.superCount}</strong>
           </div>
           <div className="bht-badge-extreme">
-            <span>EXTREME</span> <strong>{bonuses.filter(b => b.isExtreme).length}</strong>
+            <span>EXTREME</span> <strong>{bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length}</strong>
           </div>
         </div>
       </div>
@@ -490,13 +504,13 @@ function BonusHuntWidget({ config, theme }) {
       {/* ═══ Vertical Bonus List ═══ */}
       {bonuses.length > 0 && (
         <div className="bht-card bht-list-card">
-          <div className="bht-bonus-list">
+          <div className="bht-bonus-list" ref={isCompactBH ? listRef : undefined}>
             {isCompactBH ? (
               /* Compact: 3-card view centred on current opening slot */
               (() => {
                 const cH = 137, cGap = 8, cStep = cH + cGap;
                 const safeIdx = currentIndex >= 0 ? currentIndex : 0;
-                const offset = (355 / 2) - (safeIdx * cStep) - (cH / 2);
+                const offset = (listH / 2) - (safeIdx * cStep) - (cH / 2);
                 return (
                   <div className="bht-bonus-list-track bht-compact-static-track"
                     style={{ transform: `translateY(${offset}px)` }}>
