@@ -2126,6 +2126,23 @@
   -webkit-user-select: none;
 }
 
+/* ── Mirror the OBS renderer (.or-canvas) reset so widgets look identical ── */
+.wm-live-canvas *,
+.wm-live-canvas *::before,
+.wm-live-canvas *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+.wm-live-canvas {
+  font-family: var(--ov-font, 'Inter', sans-serif);
+  color: var(--ov-text, #ffffff);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: geometricPrecision;
+  text-shadow: 0 0 1px rgba(0, 0, 0, 0.18);
+}
+
 .wm-live-empty {
   position: absolute;
   inset: 0;

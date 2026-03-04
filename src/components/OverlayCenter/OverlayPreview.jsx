@@ -77,7 +77,7 @@ export default function OverlayPreview({ widgets, theme }) {
         position: 'relative',
         background: '#0f0f1a',
       }}>
-        <div style={{
+        <div className="wm-live-canvas" style={{
           width: CANVAS_W,
           height: CANVAS_H,
           transform: `scale(${scale})`,
