@@ -491,38 +491,78 @@ function BonusHuntWidget({ config, theme }) {
       {bonuses.length > 0 && (
         <div className="bht-card bht-list-card">
           <div className="bht-bonus-list">
-            <div className="bht-bonus-list-track" style={{ '--bht-item-count': bonuses.length }}>
-              {[...bonuses, ...bonuses].map((bonus, i) => {
-                const idx = i % bonuses.length;
+            {isCompactBH ? (
+              /* Compact: 3-card view centred on current opening slot */
+              (() => {
+                const cH = 137, cGap = 8, cStep = cH + cGap;
+                const safeIdx = currentIndex >= 0 ? currentIndex : 0;
+                const offset = (355 / 2) - (safeIdx * cStep) - (cH / 2);
                 return (
-                  <div key={`${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                    className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
-                    {bonus.slot?.image && (
-                      <img src={bonus.slot.image} alt={bonus.slotName}
-                        className={`bht-bonus-card-img ${bonus.isSuperBonus ? 'bht-bonus-card-img--super' : ''}`}
-                        onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
-                    )}
-                    <div className="bht-bonus-card-overlay">
-                      <div className="bht-bonus-card-top">
-                        <span className="bht-bonus-card-bet-badge">{currency}{(Number(bonus.betSize) || 0).toFixed(2)}</span>
-                      </div>
-                      <div className="bht-bonus-card-bottom">
-                        <div className="bht-bonus-card-info">
-                          <div className="bht-bonus-card-name">{bonus.slotName || bonus.slot?.name}</div>
-                          {bonus.opened && (
-                            <div className="bht-bonus-card-payout">
-                              <span className="bht-bonus-card-payout-val">{currency}{(Number(bonus.payout) || 0).toFixed(2)}</span>
-                              <span className="bht-bonus-card-payout-x">{((Number(bonus.payout) || 0) / (Number(bonus.betSize) || 1)).toFixed(1)}x</span>
-                            </div>
+                  <div className="bht-bonus-list-track bht-compact-static-track"
+                    style={{ transform: `translateY(${offset}px)` }}>
+                    {bonuses.map((bonus, idx) => {
+                      const payout = Number(bonus.payout) || 0;
+                      const bet = Number(bonus.betSize) || 0;
+                      const multi = bet > 0 ? payout / bet : 0;
+                      return (
+                        <div key={bonus.id || idx}
+                          className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
+                          {bonus.slot?.image ? (
+                            <img src={bonus.slot.image} alt={bonus.slotName}
+                              className={`bht-bonus-card-img ${bonus.isSuperBonus ? 'bht-bonus-card-img--super' : ''}`}
+                              onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
+                          ) : (
+                            <div className="bht-bonus-card-img" style={{ background: 'linear-gradient(135deg, #1a1f3a, #0e1225)' }} />
                           )}
+                          <div className="bht-compact-info-bar">
+                            <span className="bht-compact-info-name">{bonus.slotName || bonus.slot?.name}</span>
+                            <span className="bht-compact-info-bet">{currency}{bet.toFixed(2)}</span>
+                            {bonus.opened && <>
+                              <span className="bht-compact-info-payout">{currency}{payout.toFixed(2)}</span>
+                              <span className="bht-compact-info-multi">{multi.toFixed(1)}x</span>
+                            </>}
+                            <span className="bht-compact-info-idx">#{idx + 1}</span>
+                          </div>
                         </div>
-                        <span className="bht-bonus-card-num">#{idx + 1}</span>
-                      </div>
-                    </div>
+                      );
+                    })}
                   </div>
                 );
-              })}
-            </div>
+              })()
+            ) : (
+              <div className="bht-bonus-list-track" style={{ '--bht-item-count': bonuses.length }}>
+                {[...bonuses, ...bonuses].map((bonus, i) => {
+                  const idx = i % bonuses.length;
+                  return (
+                    <div key={`${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
+                      className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
+                      {bonus.slot?.image && (
+                        <img src={bonus.slot.image} alt={bonus.slotName}
+                          className={`bht-bonus-card-img ${bonus.isSuperBonus ? 'bht-bonus-card-img--super' : ''}`}
+                          onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
+                      )}
+                      <div className="bht-bonus-card-overlay">
+                        <div className="bht-bonus-card-top">
+                          <span className="bht-bonus-card-bet-badge">{currency}{(Number(bonus.betSize) || 0).toFixed(2)}</span>
+                        </div>
+                        <div className="bht-bonus-card-bottom">
+                          <div className="bht-bonus-card-info">
+                            <div className="bht-bonus-card-name">{bonus.slotName || bonus.slot?.name}</div>
+                            {bonus.opened && (
+                              <div className="bht-bonus-card-payout">
+                                <span className="bht-bonus-card-payout-val">{currency}{(Number(bonus.payout) || 0).toFixed(2)}</span>
+                                <span className="bht-bonus-card-payout-x">{((Number(bonus.payout) || 0) / (Number(bonus.betSize) || 1)).toFixed(1)}x</span>
+                              </div>
+                            )}
+                          </div>
+                          <span className="bht-bonus-card-num">#{idx + 1}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
       )}
