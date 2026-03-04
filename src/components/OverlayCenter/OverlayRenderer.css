@@ -868,10 +868,10 @@
   font-size: 1em; font-weight: 800; line-height: 1.2;
 }
 
-/* ── List card: fills remaining space ── */
+/* ── List card: fills remaining space, min 430px for 3 cards ── */
 .oc-bonushunt--compact .bht-list-card {
   flex: 1 1 0 !important;
-  min-height: 0;
+  min-height: 430px;
   overflow: hidden;
 }
 .oc-bonushunt--compact .bht-bonus-list {

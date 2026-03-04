@@ -545,7 +545,7 @@ function BonusHuntWidget({ config, theme }) {
                   const viewH = listH || 300;
                   const offset = (viewH / 2) - (currentIndex * step) - (cardH / 2);
                   return (
-                    <div className="bht-compact-track bht-compact-track--static"
+                    <div key="compact-static" className="bht-compact-track bht-compact-track--static"
                       style={{ transform: `translateY(${offset}px)` }}>
                       {bonuses.map((b, i) => renderCompactCard(b, i, b.id || i))}
                     </div>
@@ -554,7 +554,7 @@ function BonusHuntWidget({ config, theme }) {
 
                 /* Idle → auto-scrolling carousel (duplicate list for seamless loop) */
                 return (
-                  <div className="bht-compact-track bht-compact-track--scroll"
+                  <div key="compact-scroll" className="bht-compact-track bht-compact-track--scroll"
                     style={{ '--bht-compact-count': bonuses.length }}>
                     {[...bonuses, ...bonuses].map((b, i) => {
                       const idx = i % bonuses.length;
