@@ -1074,6 +1074,8 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
     ? neededToBreakEven / remainingBonuses
     : 0;
 
+  const currentBE = totalBet > 0 ? start / totalBet : 0;
+
   const fmtV = (v) => `${currency}${v.toFixed(2)}`;
 
   return (
@@ -1164,7 +1166,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
                 <StatCard label="Total Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
                 <StatCard label="Profit / Loss" value={fmtV(profit)} color={profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#94a3b8'} />
                 <StatCard label="Avg Multiplier" value={`${avgMulti.toFixed(2)}x`} />
-                {target > 0 && <StatCard label="Target" value={fmtV(target)} />}
+                <StatCard label="Current BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
               </div>
 
               {/* Best & Worst */}
