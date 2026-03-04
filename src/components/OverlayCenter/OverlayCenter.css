@@ -5680,13 +5680,13 @@ body.wm-resizing {
 
 /* ── Preview mode ── */
 .rtp-stats-inner--preview {
-  opacity: 0.85;
+  opacity: 1;
   position: relative;
 }
 
 /* ── Empty state (activated but no live data) ── */
 .rtp-stats-inner--empty {
-  opacity: 0.5;
+  opacity: 1;
 }
 
 .rtp-stats-preview-badge {
@@ -7317,7 +7317,6 @@ body.wm-resizing {
 
 /* ─── RTP Stats: Minimal ─── */
 .rtp-stats-bar--minimal .rtp-stats-inner {
-  background: transparent !important;
   border: none !important;
   box-shadow: none !important;
 }
