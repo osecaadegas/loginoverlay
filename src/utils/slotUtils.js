@@ -117,6 +117,7 @@ const PROVIDER_PRIORITY = [
   'hacksaw',
   'nolimit city',
   'relax gaming',
+  'play\'n go',
   'push gaming',
   'bgaming',
 ];
