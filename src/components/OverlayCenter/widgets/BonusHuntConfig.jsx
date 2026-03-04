@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { getAllSlots } from '../../../utils/slotUtils';
+import { getMySubmissions } from '../../../services/pendingSlotService';
 import ColorPicker from './shared/ColorPicker';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
@@ -340,8 +341,36 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   const [gtbMessage, setGtbMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
-    getAllSlots().then(d => setSlots(d || [])).catch(() => setSlots([]));
-  }, []);
+    const loadSlots = async () => {
+      try {
+        const [allSlots, myPending] = await Promise.all([
+          getAllSlots(),
+          userId ? getMySubmissions(userId) : Promise.resolve([]),
+        ]);
+        const liveSlots = allSlots || [];
+        // Add user's pending slots (not yet approved) so they can use them
+        const pendingAsSlots = (myPending || [])
+          .filter(p => p.status === 'pending')
+          .map(p => ({
+            id: `pending_${p.id}`,
+            name: p.name,
+            provider: p.provider,
+            image: p.image,
+            rtp: p.rtp,
+            volatility: p.volatility,
+            max_win_multiplier: p.max_win_multiplier,
+            _isPending: true,
+          }));
+        // Merge, avoiding duplicates by name
+        const liveNames = new Set(liveSlots.map(s => s.name?.toLowerCase()));
+        const unique = pendingAsSlots.filter(p => !liveNames.has(p.name?.toLowerCase()));
+        setSlots([...liveSlots, ...unique]);
+      } catch {
+        setSlots([]);
+      }
+    };
+    loadSlots();
+  }, [userId]);
 
   const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
     ? slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase()))
@@ -641,7 +670,10 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
                       onError={e => { e.target.src = 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'; }}
                     />
                     <div className="bh-suggestion-info">
-                      <span className="bh-suggestion-name">{slot.name}</span>
+                      <span className="bh-suggestion-name">
+                        {slot.name}
+                        {slot._isPending && <span className="bh-pending-badge">Pending</span>}
+                      </span>
                       {slot.provider && <span className="bh-suggestion-provider">{slot.provider}</span>}
                     </div>
                   </div>

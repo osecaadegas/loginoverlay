@@ -599,6 +599,13 @@
   color: var(--theme-text-secondary, #a0a0b4);
 }
 
+.ss-card-submitter {
+  font-size: 0.72rem;
+  color: #a78bfa;
+  font-weight: 600;
+  margin-top: 2px;
+}
+
 .ss-card-meta {
   display: flex;
   gap: 8px;

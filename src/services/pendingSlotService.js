@@ -35,7 +35,7 @@ export async function getMySubmissions(userId) {
   return data || [];
 }
 
-/* ─── Get all pending slots (admin) ─── */
+/* ─── Get all pending slots (admin) — includes submitter username ─── */
 export async function getPendingSlots() {
   const { data, error } = await supabase
     .from('pending_slots')
@@ -43,7 +43,24 @@ export async function getPendingSlots() {
     .order('submitted_at', { ascending: false });
 
   if (error) throw error;
-  return data || [];
+
+  // Fetch SE usernames for all unique submitters
+  const submitterIds = [...new Set((data || []).map(s => s.submitted_by).filter(Boolean))];
+  let usernameMap = {};
+  if (submitterIds.length > 0) {
+    const { data: connections } = await supabase
+      .from('streamelements_connections')
+      .select('user_id, se_username')
+      .in('user_id', submitterIds);
+    if (connections) {
+      connections.forEach(c => { usernameMap[c.user_id] = c.se_username; });
+    }
+  }
+
+  return (data || []).map(s => ({
+    ...s,
+    se_username: usernameMap[s.submitted_by] || null,
+  }));
 }
 
 /* ─── Approve a slot (admin) — copies to real slots table ─── */
