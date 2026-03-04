@@ -1,17 +1,11 @@
 /**
  * /api/image-search.js — Vercel Serverless Function
  *
- * Searches Google Custom Search API for images.
+ * Searches for images using DuckDuckGo (free, no API key needed).
  * Used by the Slot Submission form to let users pick a slot image.
  *
- * GET /api/image-search?q=Gates+of+Olympus+slot&start=1
- *
- * Env vars required:
- *   GOOGLE_API_KEY           — Google Cloud Console → Credentials → API Key
- *   GOOGLE_SEARCH_ENGINE_ID  — programmablesearchengine.google.com → Search Engine ID
+ * GET /api/image-search?q=Gates+of+Olympus+slot
  */
-
-const GOOGLE_API = 'https://www.googleapis.com/customsearch/v1';
 
 export default async function handler(req, res) {
   // CORS
@@ -24,59 +18,59 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const apiKey = process.env.GOOGLE_API_KEY;
-  const cx = process.env.GOOGLE_SEARCH_ENGINE_ID;
-
-  if (!apiKey || !cx) {
-    return res.status(500).json({
-      error: 'Missing GOOGLE_API_KEY or GOOGLE_SEARCH_ENGINE_ID environment variables.',
-    });
-  }
-
   const query = (req.query.q || '').trim();
   if (!query) {
     return res.status(400).json({ error: 'Missing query parameter "q".' });
   }
 
-  const start = parseInt(req.query.start, 10) || 1;
-
   try {
-    const url = new URL(GOOGLE_API);
-    url.searchParams.set('key', apiKey);
-    url.searchParams.set('cx', cx);
-    url.searchParams.set('q', query);
-    url.searchParams.set('searchType', 'image');
-    url.searchParams.set('num', '10');
-    url.searchParams.set('start', String(start));
-    url.searchParams.set('safe', 'active');
-
-    const response = await fetch(url.toString());
-    const data = await response.json();
-
-    if (!response.ok) {
-      console.error('[image-search] Google API error:', JSON.stringify(data));
-      return res.status(response.status).json({
-        error: data.error?.message || 'Google API error',
-        code: data.error?.code,
-        details: data.error?.errors || [],
-        debug: { hasKey: !!apiKey, hasCx: !!cx, query, keyPrefix: apiKey?.slice(0, 8) + '…', cxValue: cx },
+    // Step 1: Get a vqd token from DuckDuckGo
+    const tokenRes = await fetch(`https://duckduckgo.com/?q=${encodeURIComponent(query)}&iax=images&ia=images`, {
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+    });
+    const tokenHtml = await tokenRes.text();
+    const vqdMatch = tokenHtml.match(/vqd=["']?([^"'&]+)/);
+    
+    if (!vqdMatch) {
+      // Fallback: try the API token endpoint
+      const tokenRes2 = await fetch(`https://duckduckgo.com/?q=${encodeURIComponent(query)}`, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36' },
       });
+      const text2 = await tokenRes2.text();
+      const vqd2 = text2.match(/vqd=["']?([^"'&]+)/);
+      if (!vqd2) {
+        console.error('[image-search] Could not extract vqd token');
+        return res.status(502).json({ error: 'Could not initialize image search.' });
+      }
+      var vqd = vqd2[1];
+    } else {
+      var vqd = vqdMatch[1];
     }
 
-    const images = (data.items || []).map((item) => ({
-      url: item.link,
-      thumb: item.image?.thumbnailLink || item.link,
-      title: item.title || '',
-      width: item.image?.width,
-      height: item.image?.height,
-    }));
+    // Step 2: Fetch image results
+    const imgUrl = `https://duckduckgo.com/i.js?l=us-en&o=json&q=${encodeURIComponent(query)}&vqd=${vqd}&f=,,,,,&p=1`;
+    const imgRes = await fetch(imgUrl, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Referer': 'https://duckduckgo.com/',
+      },
+    });
+    const imgData = await imgRes.json();
 
-    const totalResults = parseInt(data.searchInformation?.totalResults || '0', 10);
+    const results = (imgData.results || []).slice(0, 12);
+    
+    const images = results.map((item) => ({
+      url: item.image,
+      thumb: item.thumbnail,
+      title: item.title || '',
+      width: item.width,
+      height: item.height,
+    }));
 
     return res.status(200).json({
       images,
-      totalResults,
-      startIndex: start,
+      totalResults: images.length,
+      startIndex: 1,
       query,
     });
   } catch (err) {
