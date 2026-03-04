@@ -506,40 +506,55 @@ function BonusHuntWidget({ config, theme }) {
         <div className="bht-card bht-list-card">
           <div className="bht-bonus-list" ref={isCompactBH ? listRef : undefined}>
             {isCompactBH ? (
-              /* Compact: 3-card view centred on current opening slot */
+              /* Compact: scroll when idle, centre on current when opening */
               (() => {
+                const isOpening = currentIndex >= 0;
                 const cH = 137, cGap = 8, cStep = cH + cGap;
-                const safeIdx = currentIndex >= 0 ? currentIndex : 0;
-                const offset = (listH / 2) - (safeIdx * cStep) - (cH / 2);
+                const offset = isOpening
+                  ? (listH / 2) - (currentIndex * cStep) - (cH / 2)
+                  : 0;
+
+                const renderCard = (bonus, idx, keyPrefix = '') => {
+                  const payout = Number(bonus.payout) || 0;
+                  const bet = Number(bonus.betSize) || 0;
+                  const multi = bet > 0 ? payout / bet : 0;
+                  return (
+                    <div key={`${bonus.id || idx}${keyPrefix}`}
+                      className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
+                      {bonus.slot?.image ? (
+                        <img src={bonus.slot.image} alt={bonus.slotName}
+                          className={`bht-bonus-card-img ${bonus.isSuperBonus ? 'bht-bonus-card-img--super' : ''}`}
+                          onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
+                      ) : (
+                        <div className="bht-bonus-card-img" style={{ background: 'linear-gradient(135deg, #1a1f3a, #0e1225)' }} />
+                      )}
+                      <div className="bht-compact-info-bar">
+                        <span className="bht-compact-info-name">{bonus.slotName || bonus.slot?.name}</span>
+                        <span className="bht-compact-info-bet">{currency}{bet.toFixed(2)}</span>
+                        {bonus.opened && <>
+                          <span className="bht-compact-info-payout">{currency}{payout.toFixed(2)}</span>
+                          <span className="bht-compact-info-multi">{multi.toFixed(1)}x</span>
+                        </>}
+                        <span className="bht-compact-info-idx">#{idx + 1}</span>
+                      </div>
+                    </div>
+                  );
+                };
+
+                if (isOpening) {
+                  /* Opening active → stop & centre on current bonus */
+                  return (
+                    <div className="bht-bonus-list-track bht-compact-static-track"
+                      style={{ transform: `translateY(${offset}px)` }}>
+                      {bonuses.map((b, i) => renderCard(b, i))}
+                    </div>
+                  );
+                }
+                /* Idle → auto-scroll carousel */
                 return (
-                  <div className="bht-bonus-list-track bht-compact-static-track"
-                    style={{ transform: `translateY(${offset}px)` }}>
-                    {bonuses.map((bonus, idx) => {
-                      const payout = Number(bonus.payout) || 0;
-                      const bet = Number(bonus.betSize) || 0;
-                      const multi = bet > 0 ? payout / bet : 0;
-                      return (
-                        <div key={bonus.id || idx}
-                          className={`bht-bonus-card ${idx === currentIndex ? 'bht-bonus-card--active' : ''} ${bonus.opened ? 'bht-bonus-card--opened' : ''} ${bonus.isSuperBonus ? 'bht-bonus-card--super' : ''}`}>
-                          {bonus.slot?.image ? (
-                            <img src={bonus.slot.image} alt={bonus.slotName}
-                              className={`bht-bonus-card-img ${bonus.isSuperBonus ? 'bht-bonus-card-img--super' : ''}`}
-                              onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
-                          ) : (
-                            <div className="bht-bonus-card-img" style={{ background: 'linear-gradient(135deg, #1a1f3a, #0e1225)' }} />
-                          )}
-                          <div className="bht-compact-info-bar">
-                            <span className="bht-compact-info-name">{bonus.slotName || bonus.slot?.name}</span>
-                            <span className="bht-compact-info-bet">{currency}{bet.toFixed(2)}</span>
-                            {bonus.opened && <>
-                              <span className="bht-compact-info-payout">{currency}{payout.toFixed(2)}</span>
-                              <span className="bht-compact-info-multi">{multi.toFixed(1)}x</span>
-                            </>}
-                            <span className="bht-compact-info-idx">#{idx + 1}</span>
-                          </div>
-                        </div>
-                      );
-                    })}
+                  <div className="bht-bonus-list-track bht-compact-carousel-track"
+                    style={{ '--bht-item-count': bonuses.length }}>
+                    {[...bonuses, ...bonuses].map((b, i) => renderCard(b, i % bonuses.length, i >= bonuses.length ? '-c' : ''))}
                   </div>
                 );
               })()

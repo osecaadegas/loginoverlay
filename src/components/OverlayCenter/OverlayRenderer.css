@@ -923,6 +923,13 @@
 .bht-compact-static-track > * {
   margin-bottom: 0 !important;
 }
+/* Compact carousel — auto-scroll when no bonus is being opened */
+.bht-compact-carousel-track {
+  gap: 8px;
+}
+.bht-compact-carousel-track > * {
+  margin-bottom: 0 !important;
+}
 .oc-bonushunt--compact .bht-bonus-card {
   min-width: 80px;
   min-height: 105px;
