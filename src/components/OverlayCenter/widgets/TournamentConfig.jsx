@@ -89,7 +89,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   /* ─── Setup state (before starting) ─── */
   const [tournamentType, setTournamentType] = useState(c.tournamentType || 'bonus');
   const [setupMatches, setSetupMatches] = useState(c.setupMatches || [
-    { player1: '', player2: '', slotName: '', slotSearch: '' },
+    { player1: '', player2: '', slot1Name: '', slot1Search: '', slot1Image: null, slot2Name: '', slot2Search: '', slot2Image: null },
   ]);
 
   const updateSetupMatch = (idx, field, value) => {
@@ -98,7 +98,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   };
 
   const addSetupMatch = () => {
-    setSetupMatches(prev => [...prev, { player1: '', player2: '', slotName: '', slotSearch: '' }]);
+    setSetupMatches(prev => [...prev, { player1: '', player2: '', slot1Name: '', slot1Search: '', slot1Image: null, slot2Name: '', slot2Search: '', slot2Image: null }]);
   };
 
   const removeSetupMatch = (idx) => {
@@ -113,16 +113,16 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     return slots.filter(s => s?.name?.toLowerCase().includes(term.toLowerCase())).slice(0, 5);
   }, [slots]);
 
-  const handleSlotSearchSetup = (idx, val) => {
-    updateSetupMatch(idx, 'slotSearch', val);
-    setShowSlotSuggestions(prev => ({ ...prev, [idx]: val.length > 0 }));
+  const handleSlotSearchSetup = (idx, pNum, val) => {
+    updateSetupMatch(idx, `slot${pNum}Search`, val);
+    setShowSlotSuggestions(prev => ({ ...prev, [`${idx}_${pNum}`]: val.length > 0 }));
   };
 
-  const handleSlotSelectSetup = (idx, slot) => {
-    updateSetupMatch(idx, 'slotName', slot.name);
-    updateSetupMatch(idx, 'slotSearch', slot.name);
-    updateSetupMatch(idx, 'slotImage', slot.image);
-    setShowSlotSuggestions(prev => ({ ...prev, [idx]: false }));
+  const handleSlotSelectSetup = (idx, pNum, slot) => {
+    updateSetupMatch(idx, `slot${pNum}Name`, slot.name);
+    updateSetupMatch(idx, `slot${pNum}Search`, slot.name);
+    updateSetupMatch(idx, `slot${pNum}Image`, slot.image);
+    setShowSlotSuggestions(prev => ({ ...prev, [`${idx}_${pNum}`]: false }));
   };
 
   /* ─── Start tournament — creates matches using the engine ─── */
@@ -134,11 +134,11 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       const match = createMatch({
         player1: m.player1,
         player2: m.player2,
-        slotName: m.slotName || m.slotSearch || '',
+        slot1: { name: m.slot1Name || m.slot1Search || '', image: m.slot1Image || null },
+        slot2: { name: m.slot2Name || m.slot2Search || '', image: m.slot2Image || null },
         type: tournamentType,
         config: tournamentType === 'bonus_bo3' ? { drawRule: 'no_point' } : {},
       });
-      match.slotImage = m.slotImage || null;
       return match;
     });
 
@@ -399,34 +399,56 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                     }}>✕</button>
                   )}
                 </div>
-                <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
-                  <input type="text" value={sm.player1} placeholder="Player 1"
-                    onChange={e => updateSetupMatch(idx, 'player1', e.target.value)}
-                    disabled={tournamentStarted}
-                    style={{ flex: 1, minWidth: 0 }} />
-                  <span style={{ fontSize: 12, fontWeight: 800, color: '#475569', alignSelf: 'center' }}>VS</span>
-                  <input type="text" value={sm.player2} placeholder="Player 2"
-                    onChange={e => updateSetupMatch(idx, 'player2', e.target.value)}
-                    disabled={tournamentStarted}
-                    style={{ flex: 1, minWidth: 0 }} />
-                </div>
-                {/* Slot search */}
-                <div className="tm-slot-wrapper-inline" style={{ position: 'relative' }}>
-                  <input type="text" value={sm.slotSearch || sm.slotName || ''} placeholder="🔍 Search slot..."
-                    onChange={e => handleSlotSearchSetup(idx, e.target.value)}
-                    onFocus={() => setShowSlotSuggestions(p => ({ ...p, [idx]: (sm.slotSearch || '').length > 0 }))}
-                    disabled={tournamentStarted}
-                    style={{ width: '100%' }} />
-                  {showSlotSuggestions[idx] && filteredSlots(sm.slotSearch).length > 0 && (
-                    <div className="tm-slot-suggestions">
-                      {filteredSlots(sm.slotSearch).map(slot => (
-                        <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelectSetup(idx, slot)}>
-                          {slot.image && <img src={slot.image} alt={slot.name} />}
-                          <span>{slot.name}</span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  {/* Player 1 + slot */}
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <input type="text" value={sm.player1} placeholder="Player 1"
+                      onChange={e => updateSetupMatch(idx, 'player1', e.target.value)}
+                      disabled={tournamentStarted}
+                      style={{ width: '100%' }} />
+                    <div className="tm-slot-wrapper-inline" style={{ position: 'relative' }}>
+                      <input type="text" value={sm.slot1Search || sm.slot1Name || ''} placeholder="🔍 Slot P1..."
+                        onChange={e => handleSlotSearchSetup(idx, 1, e.target.value)}
+                        onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_1`]: (sm.slot1Search || '').length > 0 }))}
+                        disabled={tournamentStarted}
+                        style={{ width: '100%', fontSize: 11 }} />
+                      {showSlotSuggestions[`${idx}_1`] && filteredSlots(sm.slot1Search).length > 0 && (
+                        <div className="tm-slot-suggestions">
+                          {filteredSlots(sm.slot1Search).map(slot => (
+                            <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelectSetup(idx, 1, slot)}>
+                              {slot.image && <img src={slot.image} alt={slot.name} />}
+                              <span>{slot.name}</span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      )}
                     </div>
-                  )}
+                  </div>
+                  <span style={{ fontSize: 12, fontWeight: 800, color: '#475569', alignSelf: 'center', marginTop: -18 }}>VS</span>
+                  {/* Player 2 + slot */}
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+                    <input type="text" value={sm.player2} placeholder="Player 2"
+                      onChange={e => updateSetupMatch(idx, 'player2', e.target.value)}
+                      disabled={tournamentStarted}
+                      style={{ width: '100%' }} />
+                    <div className="tm-slot-wrapper-inline" style={{ position: 'relative' }}>
+                      <input type="text" value={sm.slot2Search || sm.slot2Name || ''} placeholder="🔍 Slot P2..."
+                        onChange={e => handleSlotSearchSetup(idx, 2, e.target.value)}
+                        onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_2`]: (sm.slot2Search || '').length > 0 }))}
+                        disabled={tournamentStarted}
+                        style={{ width: '100%', fontSize: 11 }} />
+                      {showSlotSuggestions[`${idx}_2`] && filteredSlots(sm.slot2Search).length > 0 && (
+                        <div className="tm-slot-suggestions">
+                          {filteredSlots(sm.slot2Search).map(slot => (
+                            <div key={slot.id} className="tm-slot-suggestion" onClick={() => handleSlotSelectSetup(idx, 2, slot)}>
+                              {slot.image && <img src={slot.image} alt={slot.name} />}
+                              <span>{slot.name}</span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -532,8 +554,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 <div className="tm-match-inline">
                   <div className="tm-match-inline-header">
                     <span>⚔️ <strong>{currentMatch.player1}</strong> vs <strong>{currentMatch.player2}</strong></span>
-                    {currentMatch.slotName && (
-                      <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 6 }}>🎰 {currentMatch.slotName}</span>
+                    {(currentMatch.slot1?.name || currentMatch.slot2?.name) && (
+                      <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 6 }}>🎰 {currentMatch.slot1?.name}{currentMatch.slot1?.name && currentMatch.slot2?.name ? ' / ' : ''}{currentMatch.slot2?.name}</span>
                     )}
                   </div>
 

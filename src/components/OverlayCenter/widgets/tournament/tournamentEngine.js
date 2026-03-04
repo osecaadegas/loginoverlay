@@ -18,7 +18,7 @@
      id:        string,          unique match id
      player1:   string,          player A name
      player2:   string,          player B name
-     slotName:  string,          the slot being played
+     slot1:   { name, image },   slot for player 1
      type:      'spins' | 'bonus' | 'bonus_bo3',
      status:    'pending' | 'in_progress' | 'completed',
      winner:    null | 'player1' | 'player2' | 'draw',
@@ -63,7 +63,7 @@ export const genId = () => `m_${Date.now()}_${++_idCounter}`;
 /* ════════════════════════════════════════════════════════
    CREATE MATCH
    ════════════════════════════════════════════════════════ */
-export function createMatch({ player1, player2, slotName, type, config = {} }) {
+export function createMatch({ player1, player2, slot1, slot2, type, config = {} }) {
   const roundCount = type === 'bonus_bo3' ? 3 : 1;
   const rounds = Array.from({ length: roundCount }, (_, i) => createEmptyRound(i + 1, type));
 
@@ -71,7 +71,8 @@ export function createMatch({ player1, player2, slotName, type, config = {} }) {
     id: genId(),
     player1,
     player2,
-    slotName: slotName || '',
+    slot1: slot1 || { name: '', image: null },
+    slot2: slot2 || { name: '', image: null },
     type,
     status: MATCH_STATUS.PENDING,
     winner: null,

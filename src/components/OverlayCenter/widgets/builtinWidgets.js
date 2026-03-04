@@ -116,7 +116,7 @@ registerWidget({
     prize: '',
     active: false,
     tournamentType: 'bonus',
-    setupMatches: [{ player1: '', player2: '', slotName: '', slotSearch: '' }],
+    setupMatches: [{ player1: '', player2: '', slot1Name: '', slot1Search: '', slot1Image: null, slot2Name: '', slot2Search: '', slot2Image: null }],
     data: null,
     currency: '€',
     showBg: false,

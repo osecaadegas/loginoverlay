@@ -127,8 +127,9 @@ function TournamentWidget({ config, theme }) {
      ═══════════════════════════════════════════════════════════════ */
   const renderPlayerCol = (match, playerKey, isEliminated, large = false) => {
     const name = match[playerKey] || 'Player';
-    const slotImage = match.slotImage || null;
-    const slotName = match.slotName || '';
+    const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+    const slotImage = pSlot?.image || null;
+    const slotName = pSlot?.name || '';
     const result = getPlayerResult(match, playerKey);
     const op = isEliminated ? eliminatedOpacity : 1;
     const ns = large ? Math.max(nameSize, 16) : nameSize;
@@ -289,8 +290,9 @@ function TournamentWidget({ config, theme }) {
      ═══════════════════════════════════════════════════════════════ */
   const renderPlayerRow = (match, playerKey, isEliminated, side = 'left') => {
     const name = match[playerKey] || 'Player';
-    const slotImage = match.slotImage || null;
-    const slotName = match.slotName || '';
+    const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+    const slotImage = pSlot?.image || null;
+    const slotName = pSlot?.name || '';
     const result = getPlayerResult(match, playerKey);
     const op = isEliminated ? eliminatedOpacity : 1;
     const isRight = side === 'right';
@@ -523,8 +525,9 @@ function TournamentWidget({ config, theme }) {
     /* One player side in a bracket row */
     const renderBkPlayer = (match, playerKey, isEliminated, side) => {
       const name = match[playerKey] || 'Player';
-      const slotImage = match.slotImage || null;
-      const slotName = match.slotName || '';
+      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const slotImage = pSlot?.image || null;
+      const slotName = pSlot?.name || '';
       const result = getPlayerResult(match, playerKey);
       const isRight = side === 'right';
 
@@ -663,7 +666,8 @@ function TournamentWidget({ config, theme }) {
 
     const renderArenaFighter = (match, playerKey, isWinner, isLoser) => {
       const name = match[playerKey] || 'Fighter';
-      const slotImage = match.slotImage || null;
+      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const slotImage = pSlot?.image || null;
       const result = getPlayerResult(match, playerKey);
 
       return (

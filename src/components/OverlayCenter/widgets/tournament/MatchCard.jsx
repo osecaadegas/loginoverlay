@@ -140,15 +140,17 @@ export default function MatchCard({
           {isComplete ? '✕' : '⚔️'}
         </div>
 
-        {/* Slot name */}
-        {showSlotName && match.slotName && (
+        {/* Slot name(s) */}
+        {showSlotName && (match.slot1?.name || match.slot2?.name) && (
           <div style={{
             fontSize: compact ? 8 : 10, fontWeight: 600,
             color: '#94a3b8', textAlign: 'center',
             maxWidth: 80, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             textTransform: 'uppercase', letterSpacing: '0.3px',
           }}>
-            {match.slotName}
+            {match.slot1?.name === match.slot2?.name
+              ? match.slot1?.name
+              : [match.slot1?.name, match.slot2?.name].filter(Boolean).join(' / ')}
           </div>
         )}
 
