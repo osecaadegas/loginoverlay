@@ -59,7 +59,7 @@ export default async function handler(req, res) {
         error: data.error?.message || 'Google API error',
         code: data.error?.code,
         details: data.error?.errors || [],
-        debug: { hasKey: !!apiKey, hasCx: !!cx, query, keyPrefix: apiKey?.slice(0, 8) + '…' },
+        debug: { hasKey: !!apiKey, hasCx: !!cx, query, keyPrefix: apiKey?.slice(0, 8) + '…', cxValue: cx },
       });
     }
 
