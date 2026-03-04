@@ -926,6 +926,7 @@
 /* Compact carousel — auto-scroll when no bonus is being opened */
 .bht-compact-carousel-track {
   gap: 8px;
+  animation: bht-carousel-scroll calc(var(--bht-item-count, 5) * 8s) linear infinite !important;
 }
 .bht-compact-carousel-track > * {
   margin-bottom: 0 !important;
