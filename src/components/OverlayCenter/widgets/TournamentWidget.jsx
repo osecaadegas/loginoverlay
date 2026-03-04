@@ -395,11 +395,12 @@ function TournamentWidget({ config, theme }) {
     return (
       <div key={idx} className="tw-match-card" style={{
         background: cardBg,
-        border: `${cardBorderWidth}px solid ${cardBorder}`,
+        border: `${cardBorderWidth}px solid ${isCurrentMatch ? swordColor : cardBorder}`,
         borderRadius: `${cardRadius}px`,
         overflow: 'hidden', position: 'relative',
         padding: isNeonLayout ? 0 : `2px ${gap > 4 ? 3 : 2}px`,
         display: 'flex', flexDirection: 'column', minHeight: 0,
+        ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
       }}>
         <div className="tw-match-inner" style={{
           display: 'flex', gap: isNeonLayout ? 2 : 4, flex: 1, minHeight: 0,
@@ -448,11 +449,12 @@ function TournamentWidget({ config, theme }) {
         {/* Single match card, fills remaining space */}
         <div style={{
           flex: 1, minHeight: 0, background: cardBg,
-          border: `${cardBorderWidth}px solid ${cardBorder}`,
+          border: `${cardBorderWidth}px solid ${isCurrentMatch ? swordColor : cardBorder}`,
           borderRadius: `${cardRadius}px`,
           overflow: 'hidden', position: 'relative',
           padding: `${Math.max(padding, 6)}px`,
           display: 'flex', flexDirection: 'column',
+          ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
         }}>
           <div className="tw-match-inner" style={{
             display: 'flex', gap: 8, flex: 1, minHeight: 0,
@@ -490,6 +492,7 @@ function TournamentWidget({ config, theme }) {
               overflow: 'hidden', position: 'relative',
               padding: isMinimalLayout ? '3px 6px' : `${Math.max(padding, 4)}px 8px`,
               display: 'flex', alignItems: 'center', gap: isMinimalLayout ? 4 : 6,
+              ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
             }}>
               {renderPlayerRow(match.player1, match, 'player1', hasWinner && !p1Won, 'left')}
 
@@ -586,6 +589,7 @@ function TournamentWidget({ config, theme }) {
           display: 'flex', alignItems: 'center', gap: 6,
           position: 'relative',
           transition: 'border-color 0.2s',
+          ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
         }}>
           {renderBkPlayer(match.player1, match, 'player1', hasWinner && !p1Won, 'left')}
 
@@ -799,11 +803,15 @@ function TournamentWidget({ config, theme }) {
       const hasWinner = match.winner !== null && match.winner !== undefined;
       const p1Won = match.winner === match.player1;
       const p2Won = match.winner === match.player2;
+      const isCurrentMatch = isLivePhase && idx === currentMatchIdx && !hasWinner;
 
       return (
         <div key={idx} style={{
           display: 'flex', alignItems: 'stretch', gap: 0,
           position: 'relative', minHeight: 120,
+          borderRadius: `${cardRadius}px`,
+          border: isCurrentMatch ? `2px solid ${arenaAccent}88` : '2px solid transparent',
+          ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
         }}>
           {/* Left fighter */}
           <div style={{ flex: 1, display: 'flex', minWidth: 0 }}>
@@ -935,6 +943,10 @@ function TournamentWidget({ config, theme }) {
         @keyframes tw-sword-swing {
           0%, 100% { transform: translate(-50%, -50%) rotate(-20deg); }
           50% { transform: translate(-50%, -50%) rotate(20deg); }
+        }
+        @keyframes tw-current-glow {
+          0%, 100% { box-shadow: 0 0 8px ${swordColor}55, 0 0 20px ${swordColor}22; }
+          50%      { box-shadow: 0 0 14px ${swordColor}88, 0 0 32px ${swordColor}33; }
         }
       `}</style>
 
