@@ -541,7 +541,7 @@ function BonusHuntWidget({ config, theme }) {
 
                 if (isOpening) {
                   /* Opening active → static track centred on current bonus */
-                  const cardH = 110, gap = 8, step = cardH + gap;
+                  const cardH = 96, gap = 6, step = cardH + gap;
                   const viewH = listH || 300;
                   const offset = (viewH / 2) - (currentIndex * step) - (cardH / 2);
                   return (

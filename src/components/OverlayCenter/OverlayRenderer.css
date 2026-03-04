@@ -884,7 +884,7 @@
 .bht-compact-track {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   will-change: transform;
 }
 
@@ -905,29 +905,29 @@
 
 /* ── Compact bonus cards ── */
 .oc-bonushunt--compact .bht-bonus-card {
-  min-width: 80px; min-height: 80px;
+  min-width: 80px; min-height: 70px;
   display: flex; flex-direction: column;
   flex-shrink: 0;
 }
 .oc-bonushunt--compact .bht-bonus-card-img {
-  height: 80px; flex-shrink: 0;
+  height: 70px; flex-shrink: 0;
 }
 /* Hide the old gradient overlay — compact uses the info bar instead */
 .oc-bonushunt--compact .bht-bonus-card-overlay { display: none; }
 
 /* ── Compact info bar (below each card image) ── */
 .bht-compact-info-bar {
-  display: flex; align-items: center; gap: 6px;
-  padding: 4px 8px; background: #000; min-height: 24px;
-  border-top: 2px solid rgba(255,255,255,0.08);
+  display: flex; align-items: center; gap: 5px;
+  padding: 3px 6px; background: #000; min-height: 20px;
+  border-top: 1px solid rgba(255,255,255,0.08);
 }
 .bht-compact-info-name {
-  font-size: 0.82em; font-weight: 700; color: var(--bht-text, #fff);
+  font-size: 0.75em; font-weight: 700; color: var(--bht-text, #fff);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   flex: 1; text-transform: uppercase;
 }
 .bht-compact-info-bet {
-  font-size: 0.8em; font-weight: 700; color: var(--bht-list-accent, #93c5fd);
+  font-size: 0.72em; font-weight: 700; color: var(--bht-list-accent, #93c5fd);
   white-space: nowrap;
 }
 .bht-compact-info-payout {
