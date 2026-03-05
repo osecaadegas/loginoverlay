@@ -3168,9 +3168,8 @@ body.wm-resizing {
 /* Search container */
 .bh-search-container {
   position: relative;
-  flex: 1 1 0;
+  flex: 2 1 0;
   min-width: 0;
-  max-width: 180px;
 }
 
 .bh-search-input {
@@ -3470,29 +3469,49 @@ body.wm-resizing {
   border-color: rgba(147, 70, 255, 0.4);
 }
 
-.bh-super-check {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  font-size: 0.7rem;
-  color: #eab308;
-  cursor: pointer;
-  white-space: nowrap;
+.bh-super-btn,
+.bh-extreme-btn {
+  padding: 4px 8px;
+  border-radius: 5px;
+  font-size: 0.68rem;
   font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  border: 1px solid;
+  background: transparent;
 }
 
-.bh-super-check input[type="checkbox"] {
-  accent-color: #eab308;
-  width: 13px;
-  height: 13px;
+.bh-super-btn {
+  color: #a08a2e;
+  border-color: rgba(234, 179, 8, 0.25);
+}
+.bh-super-btn:hover:not(:disabled) {
+  background: rgba(234, 179, 8, 0.1);
+}
+.bh-super-btn.active {
+  background: rgba(234, 179, 8, 0.25);
+  border-color: #eab308;
+  color: #fde047;
 }
 
-.bh-extreme-check {
-  color: #ef4444;
+.bh-extreme-btn {
+  color: #a63e3e;
+  border-color: rgba(239, 68, 68, 0.25);
+}
+.bh-extreme-btn:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.1);
+}
+.bh-extreme-btn.active {
+  background: rgba(239, 68, 68, 0.25);
+  border-color: #ef4444;
+  color: #fca5a5;
 }
 
-.bh-extreme-check input[type="checkbox"] {
-  accent-color: #ef4444;
+.bh-super-btn:disabled,
+.bh-extreme-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .bh-add-btn {

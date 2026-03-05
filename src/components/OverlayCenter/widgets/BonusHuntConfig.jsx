@@ -826,14 +826,20 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
             onChange={e => setBetSize(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
             placeholder={`Bet (${currency})`} step="0.1" />
-          <label className="bh-super-check" title="Super Bonus">
-            <input type="checkbox" checked={isSuperBonus} onChange={e => setIsSuperBonus(e.target.checked)} />
-            <span>S</span>
-          </label>
-          <label className="bh-super-check bh-extreme-check" title="Extreme Bonus">
-            <input type="checkbox" checked={isExtremeBonus} onChange={e => setIsExtremeBonus(e.target.checked)} />
-            <span>E</span>
-          </label>
+          <button
+            type="button"
+            className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
+            title="Super Bonus"
+            disabled={!betSize}
+            onClick={() => { setIsSuperBonus(p => !p); if (!isSuperBonus) setIsExtremeBonus(false); }}
+          >Super</button>
+          <button
+            type="button"
+            className={`bh-extreme-btn${isExtremeBonus ? ' active' : ''}`}
+            title="Extreme Bonus"
+            disabled={!betSize}
+            onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
+          >Extreme</button>
           <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
             + Add
           </button>
