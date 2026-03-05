@@ -315,6 +315,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [animatedTracker, setAnimatedTracker] = useState(c.animatedTracker ?? true);
   const [bonusList, setBonusList] = useState(c.bonuses || []);
   const [sortBy, setSortBy] = useState(c.sortBy || 'default');
+  const [sortDir, setSortDir] = useState(c.sortDir || 'asc');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [slots, setSlots] = useState([]);
   const [bonusOpening, setBonusOpening] = useState(c.bonusOpening ?? false);
@@ -507,12 +508,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       stopLoss: Number(stopLoss) || 0,
       huntNumber: huntNumber,
       showStatistics, animatedTracker, bonusOpening,
-      sortBy,
+      sortBy, sortDir,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
       ...extras,
     });
-  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, showStatistics, animatedTracker, bonusOpening, sortBy, bonusList]);
+  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, showStatistics, animatedTracker, bonusOpening, sortBy, sortDir, bonusList]);
 
   const handleAddBonus = () => {
     const betNum = Number(betSize);
@@ -904,15 +905,30 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         {bonusList.length > 1 && (
           <div className="bh-sort-controls">
             <span className="bh-sort-label">Sort by:</span>
-            {['default', 'bet', 'provider'].map(opt => (
-              <button
-                key={opt}
-                className={`bh-sort-btn${sortBy === opt ? ' bh-sort-btn--active' : ''}`}
-                onClick={() => { setSortBy(opt); save(bonusList, { sortBy: opt }); }}
-              >
-                {opt === 'default' ? '📋 Order Added' : opt === 'bet' ? '💰 Bet' : '🏢 Provider'}
-              </button>
-            ))}
+            {['default', 'bet', 'provider', 'type'].map(opt => {
+              const labels = { default: '📋 Order Added', bet: '💰 Bet', provider: '🏢 Provider', type: '⭐ Type' };
+              const isActive = sortBy === opt;
+              const showArrow = isActive && opt !== 'default';
+              return (
+                <button
+                  key={opt}
+                  className={`bh-sort-btn${isActive ? ' bh-sort-btn--active' : ''}`}
+                  onClick={() => {
+                    if (isActive && opt !== 'default') {
+                      const newDir = sortDir === 'asc' ? 'desc' : 'asc';
+                      setSortDir(newDir);
+                      save(bonusList, { sortBy: opt, sortDir: newDir });
+                    } else {
+                      setSortBy(opt);
+                      setSortDir('asc');
+                      save(bonusList, { sortBy: opt, sortDir: 'asc' });
+                    }
+                  }}
+                >
+                  {labels[opt]}{showArrow ? (sortDir === 'asc' ? ' ▲' : ' ▼') : ''}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -920,12 +936,17 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           {bonusList.length === 0 ? (
             <p className="bh-list-empty">No bonuses added yet</p>
           ) : [...bonusList].sort((a, b) => {
-            if (sortBy === 'bet') return (a.betSize || 0) - (b.betSize || 0);
+            const dir = sortDir === 'desc' ? -1 : 1;
+            if (sortBy === 'bet') return ((a.betSize || 0) - (b.betSize || 0)) * dir;
             if (sortBy === 'provider') {
               const pa = (a.slot?.provider || '').toLowerCase();
               const pb = (b.slot?.provider || '').toLowerCase();
-              if (pa !== pb) return pa.localeCompare(pb);
-              return (a.slotName || '').localeCompare(b.slotName || '');
+              if (pa !== pb) return pa.localeCompare(pb) * dir;
+              return (a.slotName || '').localeCompare(b.slotName || '') * dir;
+            }
+            if (sortBy === 'type') {
+              const rank = (x) => x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
+              return (rank(b) - rank(a)) * dir;
             }
             return 0; // default = insertion order
           }).map((bonus, i) => (
