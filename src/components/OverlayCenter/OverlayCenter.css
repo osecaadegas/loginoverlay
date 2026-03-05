@@ -3365,8 +3365,8 @@ body.wm-resizing {
   margin-bottom: 8px;
 }
 .bh-submit-preview {
-  width: 64px;
-  height: 64px;
+  width: 100px;
+  height: 100px;
   border-radius: 8px;
   object-fit: cover;
   border: 2px solid rgba(168, 85, 247, 0.4);
@@ -3377,8 +3377,8 @@ body.wm-resizing {
   padding: 2px;
   background: transparent;
   cursor: pointer;
-  width: 64px;
-  height: 64px;
+  width: 100px;
+  height: 100px;
   overflow: hidden;
   flex-shrink: 0;
   transition: border-color 0.2s;
