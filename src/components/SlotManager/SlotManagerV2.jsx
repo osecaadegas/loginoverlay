@@ -110,15 +110,31 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
   const [form, setForm] = useState(slot || {});
   const [saving, setSaving] = useState(false);
   const [tab, setTab] = useState('basic');
+  const [imgResults, setImgResults] = useState([]);
+  const [imgSearching, setImgSearching] = useState(false);
   const nameRef = useRef(null);
 
   useEffect(() => {
     setForm(slot || {});
     setTab('basic');
+    setImgResults([]);
     if (isNew) setTimeout(() => nameRef.current?.focus(), 100);
   }, [slot, isNew]);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
+
+  const searchImages = async () => {
+    const q = `${form.name || ''} ${form.provider || ''} slot stake`.trim();
+    if (!q || q === 'slot stake') return;
+    setImgSearching(true);
+    setImgResults([]);
+    try {
+      const res = await fetch(`/api/image-search?q=${encodeURIComponent(q)}`);
+      const data = await res.json();
+      if (res.ok && data.images?.length) setImgResults(data.images);
+    } catch { /* noop */ }
+    setImgSearching(false);
+  };
 
   const save = async () => {
     if (!form.name || !form.provider || !form.image) return alert('Name, Provider, and Image URL are required.');
@@ -185,8 +201,24 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
               </label>
               <label className="sm-field">
                 <span>Image URL <em>*</em></span>
-                <input value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="https://…" />
+                <div className="sm-img-search-row">
+                  <input value={form.image || ''} onChange={e => set('image', e.target.value)} placeholder="https://… or search →" />
+                  <button type="button" className="sm-img-search-btn" onClick={searchImages} disabled={(!form.name && !form.provider) || imgSearching}>
+                    {imgSearching ? '⏳' : '🔍'}
+                  </button>
+                </div>
               </label>
+              {imgResults.length > 0 && (
+                <div className="sm-img-results">
+                  {imgResults.slice(0, 8).map((img, i) => (
+                    <button key={i} type="button"
+                      className={`sm-img-result-btn${form.image === img.url ? ' selected' : ''}`}
+                      onClick={() => { set('image', img.url); setImgResults([]); }}>
+                      <img src={img.thumb} alt="" />
+                    </button>
+                  ))}
+                </div>
+              )}
               <label className="sm-field">
                 <span>Status</span>
                 <select value={form.status || 'live'} onChange={e => set('status', e.target.value)}>
