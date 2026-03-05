@@ -765,7 +765,30 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </button>
         </div>
 
-        {/* Inline Submit Slot Form (below bet row) */}
+        {/* Row 3: Add + Super + Extreme */}
+        <div className="bh-add-row">
+          <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
+            + Add
+          </button>
+          <button
+            type="button"
+            className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
+            title="Super Bonus (double-click to add)"
+            disabled={!betSize}
+            onClick={() => { setIsSuperBonus(p => !p); if (!isSuperBonus) setIsExtremeBonus(false); }}
+            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsSuperBonus(true); setIsExtremeBonus(false); setTimeout(() => handleAddBonus(), 0); }}
+          >Super</button>
+          <button
+            type="button"
+            className={`bh-extreme-btn${isExtremeBonus ? ' active' : ''}`}
+            title="Extreme Bonus (double-click to add)"
+            disabled={!betSize}
+            onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
+            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
+          >Extreme</button>
+        </div>
+
+        {/* Row 4: Submit Slot Form */}
         {showSubmitSlot && (
           <div className="bh-submit-dropdown">
             <div className="bh-submit-grid">
@@ -811,7 +834,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 </div>
               </label>
             </div>
-            {/* Image results + preview */}
             {(submitImageResults.length > 0 || submitForm.image) && (
               <div className="bh-submit-images">
                 {submitForm.image && (
@@ -825,7 +847,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 ))}
               </div>
             )}
-            {/* Submit actions */}
             <div className="bh-submit-actions">
               <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); }}>Cancel</button>
               <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
@@ -834,29 +855,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             </div>
           </div>
         )}
-
-        {/* Row 3: Add + Super + Extreme */}
-        <div className="bh-add-row">
-          <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
-            + Add
-          </button>
-          <button
-            type="button"
-            className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
-            title="Super Bonus (double-click to add)"
-            disabled={!betSize}
-            onClick={() => { setIsSuperBonus(p => !p); if (!isSuperBonus) setIsExtremeBonus(false); }}
-            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsSuperBonus(true); setIsExtremeBonus(false); setTimeout(() => handleAddBonus(), 0); }}
-          >Super</button>
-          <button
-            type="button"
-            className={`bh-extreme-btn${isExtremeBonus ? ' active' : ''}`}
-            title="Extreme Bonus (double-click to add)"
-            disabled={!betSize}
-            onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
-            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
-          >Extreme</button>
-        </div>
       </div>
 
       {/* ─── Send to GTB ─── */}
