@@ -1017,9 +1017,17 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     <span className="bh-list-field-label">Payment {!bonusOpening && '🔒'}</span>
                     {bonusOpening ? (
                       <input className="bh-list-payout-input" type="number"
+                        data-payout-idx={i}
                         value={bonus.payout || ''}
                         placeholder="0"
                         onChange={e => handlePayoutChange(bonus.id, e.target.value)}
+                        onKeyDown={e => {
+                          if (e.key === 'Enter') {
+                            e.preventDefault();
+                            const next = document.querySelector(`[data-payout-idx="${i + 1}"]`);
+                            if (next) next.focus();
+                          }
+                        }}
                         step="0.01" />
                     ) : (
                       <span className="bh-list-field-value bh-list-field-locked">Locked</span>
