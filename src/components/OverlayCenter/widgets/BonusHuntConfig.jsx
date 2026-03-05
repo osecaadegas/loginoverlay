@@ -1140,22 +1140,18 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
 
   return (
     <div style={{
-      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
-      background: 'linear-gradient(135deg, #1a1040 0%, #0f0a2a 100%)',
-      borderBottom: '1px solid rgba(124,58,237,0.3)',
-      boxShadow: '0 2px 16px rgba(0,0,0,0.5)',
-      padding: '6px 16px',
-      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-      flexWrap: 'wrap',
+      position: 'fixed', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 99999,
+      background: 'rgba(15, 10, 35, 0.65)',
+      backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
+      border: '1px solid rgba(124,58,237,0.25)',
+      borderRadius: 999,
+      boxShadow: '0 4px 24px rgba(0,0,0,0.4), 0 0 12px rgba(124,58,237,0.1)',
+      padding: '6px 20px',
+      display: 'flex', alignItems: 'center', gap: 14,
       fontFamily: "'Inter', sans-serif",
       color: '#e2e8f0',
+      whiteSpace: 'nowrap',
     }}>
-      {/* Title */}
-      <span style={{ fontWeight: 700, fontSize: 13, color: '#a78bfa', marginRight: 4, whiteSpace: 'nowrap' }}>📊 Hunt Stats</span>
-
-      {/* Divider */}
-      <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.3)' }} />
-
       <StatChip label="Bonuses" value={`${openedCount} / ${total}`} />
       <StatChip label="Start" value={fmtV(start)} />
       <StatChip label="Total Bet" value={fmtV(totalBet)} />
