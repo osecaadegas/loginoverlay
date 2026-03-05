@@ -322,12 +322,23 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [editBet, setEditBet] = useState('');
   const searchRef = useRef(null);
 
-  // Submit slot state
-  const [showSubmitSlot, setShowSubmitSlot] = useState(false);
-  const [submitForm, setSubmitForm] = useState({});
+  // Submit slot state — restore from localStorage cache
+  const [showSubmitSlot, setShowSubmitSlot] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('bh_submitOpen')) || false; } catch { return false; }
+  });
+  const [submitForm, setSubmitForm] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('bh_submitForm')) || {}; } catch { return {}; }
+  });
   const [submitSaving, setSubmitSaving] = useState(false);
-  const [submitImageResults, setSubmitImageResults] = useState([]);
+  const [submitImageResults, setSubmitImageResults] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('bh_submitImages')) || []; } catch { return []; }
+  });
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
+
+  // Persist submit slot state to localStorage
+  useEffect(() => { localStorage.setItem('bh_submitForm', JSON.stringify(submitForm)); }, [submitForm]);
+  useEffect(() => { localStorage.setItem('bh_submitOpen', JSON.stringify(showSubmitSlot)); }, [showSubmitSlot]);
+  useEffect(() => { localStorage.setItem('bh_submitImages', JSON.stringify(submitImageResults)); }, [submitImageResults]);
 
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
 
