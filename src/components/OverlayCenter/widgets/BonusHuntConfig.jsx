@@ -334,6 +334,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     try { return JSON.parse(localStorage.getItem('bh_submitImages')) || []; } catch { return []; }
   });
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
+  const [imageShowCount, setImageShowCount] = useState(10);
+  const [prettyImage, setPrettyImage] = useState(false);
 
   // Persist submit slot state to localStorage
   useEffect(() => { localStorage.setItem('bh_submitForm', JSON.stringify(submitForm)); }, [submitForm]);
@@ -349,6 +351,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     if (!q || q === 'slot') return;
     setSubmitImageSearching(true);
     setSubmitImageResults([]);
+    setImageShowCount(10);
     try {
       const res = await fetch(`/api/image-search?q=${encodeURIComponent(q)}`);
       const data = await res.json();
@@ -904,7 +907,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 </div>
               </label>
             </div>
-            {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0) && (
+            {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0) && (<>
               <div className="bh-submit-images">
                 {submitForm.image && (
                   <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
@@ -918,16 +921,28 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     <span className="bh-demoslot-badge">{imgUrl.includes('slotark') ? 'SlotArk' : 'DemoSlot'}</span>
                   </button>
                 ))}
-                {submitImageResults.slice(0, 10).map((img, i) => (
+                {submitImageResults.slice(0, imageShowCount).map((img, i) => (
                   <button key={i} type="button" className={`bh-submit-img-btn${submitForm.image === img.url ? ' selected' : ''}`}
                     onClick={() => setField('image', img.url)}>
                     <img src={img.url} alt="" />
                   </button>
                 ))}
+                {submitImageResults.length > imageShowCount && (
+                  <button type="button" className="bh-show-more-btn"
+                    onClick={() => setImageShowCount(c => c + 10)}>
+                    Show more
+                  </button>
+                )}
               </div>
-            )}
+              <div className="bh-image-toolbar">
+                <button type="button" className={`bh-pretty-toggle${prettyImage ? ' active' : ''}`}
+                  onClick={() => setPrettyImage(p => !p)}>
+                  {prettyImage ? '✨ Pretty Image: ON' : '✨ Pretty Image: OFF'}
+                </button>
+              </div>
+            </>)}
             <div className="bh-submit-actions">
-              <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setScrapedImages([]); slotInfoFetchRef.current = ''; }}>Cancel</button>
+              <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setScrapedImages([]); slotInfoFetchRef.current = ''; setImageShowCount(10); setPrettyImage(false); }}>Cancel</button>
               <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
                 {submitSaving ? 'Submitting…' : '📤 Submit for Approval'}
               </button>

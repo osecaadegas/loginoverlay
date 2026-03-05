@@ -48,7 +48,7 @@ export default async function handler(req, res) {
     const mRegex = /class="iusc"[^>]*m="([^"]+)"/g;
     let match;
 
-    while ((match = mRegex.exec(html)) !== null && images.length < 12) {
+    while ((match = mRegex.exec(html)) !== null && images.length < 30) {
       try {
         // Bing HTML-encodes the JSON in the m attribute
         const decoded = match[1]
@@ -74,7 +74,7 @@ export default async function handler(req, res) {
     if (images.length === 0) {
       const imgRegex = /mediaurl=([^&"]+)/gi;
       let imgMatch;
-      while ((imgMatch = imgRegex.exec(html)) !== null && images.length < 12) {
+      while ((imgMatch = imgRegex.exec(html)) !== null && images.length < 30) {
         try {
           const imgUrl = decodeURIComponent(imgMatch[1]);
           if (imgUrl.startsWith('http')) {

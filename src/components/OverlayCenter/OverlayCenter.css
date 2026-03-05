@@ -3453,6 +3453,57 @@ body.wm-resizing {
   white-space: nowrap;
 }
 
+.bh-show-more-btn {
+  flex-shrink: 0;
+  width: 60px;
+  height: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #94a3b8;
+  font-size: 0.62rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  text-align: center;
+  line-height: 1.3;
+  padding: 4px;
+}
+.bh-show-more-btn:hover {
+  background: rgba(168, 85, 247, 0.1);
+  border-color: rgba(168, 85, 247, 0.35);
+  color: #c4b5fd;
+}
+
+.bh-image-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 4px;
+}
+.bh-pretty-toggle {
+  font-size: 0.62rem;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+.bh-pretty-toggle:hover {
+  border-color: rgba(168, 85, 247, 0.3);
+  color: #94a3b8;
+}
+.bh-pretty-toggle.active {
+  background: rgba(168, 85, 247, 0.15);
+  border-color: rgba(168, 85, 247, 0.4);
+  color: #c4b5fd;
+}
+
 .bh-submit-actions {
   display: flex;
   justify-content: flex-start;
