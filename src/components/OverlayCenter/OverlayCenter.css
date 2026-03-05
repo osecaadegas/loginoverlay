@@ -3950,6 +3950,10 @@ body.wm-resizing {
 .bh-list-edit-bet {
   max-width: 70px;
 }
+.bh-list-edit-type {
+  max-width: 90px;
+  cursor: pointer;
+}
 .bh-list-edit-save,
 .bh-list-edit-cancel {
   padding: 3px 8px;

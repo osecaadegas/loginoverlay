@@ -321,6 +321,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
   const [editBet, setEditBet] = useState('');
+  const [editBonusType, setEditBonusType] = useState('none');
   const searchRef = useRef(null);
 
   // Submit slot state — restore from localStorage cache
@@ -560,11 +561,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     setEditingId(bonus.id);
     setEditName(bonus.slotName || bonus.slot?.name || '');
     setEditBet(String(bonus.betSize || ''));
+    setEditBonusType(bonus.isExtremeBonus ? 'extreme' : bonus.isSuperBonus ? 'super' : 'none');
   };
 
   const handleSaveEdit = (bonusId) => {
     const updated = bonusList.map(b =>
-      b.id === bonusId ? { ...b, slotName: editName, betSize: Number(editBet) || b.betSize } : b
+      b.id === bonusId ? { ...b, slotName: editName, betSize: Number(editBet) || b.betSize, isSuperBonus: editBonusType === 'super', isExtremeBonus: editBonusType === 'extreme' } : b
     );
     setBonusList(updated);
     save(updated);
@@ -951,6 +953,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     onChange={e => setEditBet(e.target.value)}
                     onKeyDown={e => { if (e.key === 'Enter') handleSaveEdit(bonus.id); if (e.key === 'Escape') handleCancelEdit(); }}
                     placeholder="Bet" />
+                  <select className="bh-list-edit-input bh-list-edit-type" value={editBonusType}
+                    onChange={e => setEditBonusType(e.target.value)}>
+                    <option value="none">Normal</option>
+                    <option value="super">Super</option>
+                    <option value="extreme">Extreme</option>
+                  </select>
                   <button className="bh-list-edit-save" onClick={() => handleSaveEdit(bonus.id)}>✓</button>
                   <button className="bh-list-edit-cancel" onClick={handleCancelEdit}>✕</button>
                 </div>
