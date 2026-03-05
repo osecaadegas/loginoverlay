@@ -347,7 +347,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const searchSlotImages = async (nameOverride, providerOverride) => {
     const n = nameOverride || submitForm.name || '';
     const p = providerOverride || submitForm.provider || '';
-    const q = `${n} ${p} slot stake`.trim();
+    const q = `${n} ${p} slot${prettyImage ? '' : ' stake'}`.trim();
     if (!q || q === 'slot') return;
     setSubmitImageSearching(true);
     setSubmitImageResults([]);
@@ -366,12 +366,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     const n = (submitForm.name || '').trim();
     const p = (submitForm.provider || '').trim();
     if (!n || !p || !showSubmitSlot) return;
-    const key = `${n}|${p}`;
+    const key = `${n}|${p}|${prettyImage}`;
     if (key === autoFetchRef.current) return;
     autoFetchRef.current = key;
     const timer = setTimeout(() => searchSlotImages(n, p), 400);
     return () => clearTimeout(timer);
-  }, [submitForm.name, submitForm.provider, showSubmitSlot]);
+  }, [submitForm.name, submitForm.provider, showSubmitSlot, prettyImage]);
 
   // Auto-fetch slot info from demoslot.com when name is filled
   const slotInfoFetchRef = useRef('');
