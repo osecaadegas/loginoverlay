@@ -5,46 +5,55 @@ import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
 
 function BonusHuntWidget({ config, theme }) {
+  const c = config || {};
+
+  /* ─── Sort bonuses (shared across ALL display styles) ─── */
+  const sortedConfig = useMemo(() => {
+    const raw = c.bonuses || [];
+    const sb = c.sortBy;
+    const sd = c.sortDir || 'asc';
+    if (!sb || sb === 'default') return c;
+    const dir = sd === 'desc' ? -1 : 1;
+    const sorted = [...raw].sort((a, b) => {
+      if (sb === 'bet') return ((a.betSize || 0) - (b.betSize || 0)) * dir;
+      if (sb === 'provider') {
+        const pa = (a.slot?.provider || '').toLowerCase();
+        const pb = (b.slot?.provider || '').toLowerCase();
+        if (pa !== pb) return pa.localeCompare(pb) * dir;
+        return (a.slotName || '').localeCompare(b.slotName || '') * dir;
+      }
+      if (sb === 'type') {
+        const rank = (x) => x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
+        return (rank(b) - rank(a)) * dir;
+      }
+      return 0;
+    });
+    return { ...c, bonuses: sorted };
+  }, [c]);
+
   /* ─── Style switcher ─── */
-  if ((config || {}).displayStyle === 'v3') {
-    return <BonusHuntWidgetV3 config={config} theme={theme} />;
+  if (c.displayStyle === 'v3') {
+    return <BonusHuntWidgetV3 config={sortedConfig} theme={theme} />;
   }
-  if ((config || {}).displayStyle === 'v2') {
-    return <BonusHuntWidgetV2 config={config} theme={theme} />;
+  if (c.displayStyle === 'v2') {
+    return <BonusHuntWidgetV2 config={sortedConfig} theme={theme} />;
   }
-  if ((config || {}).displayStyle === 'v8_card_stack') {
-    return <BonusHuntWidgetV8 config={config} theme={theme} />;
+  if (c.displayStyle === 'v8_card_stack') {
+    return <BonusHuntWidgetV8 config={sortedConfig} theme={theme} />;
   }
-  if ((config || {}).displayStyle === 'v9_hunt_board') {
-    return <BonusHuntWidgetV9 config={config} theme={theme} />;
+  if (c.displayStyle === 'v9_hunt_board') {
+    return <BonusHuntWidgetV9 config={sortedConfig} theme={theme} />;
   }
 
-  const c = config || {};
   const ds = c.displayStyle || 'v1';
   const isNeonBH = ds === 'v4_neon';
   const isHorizontalBH = ds === 'v5_horizontal';
   const isCompactBH = ds === 'v6_compact';
   const isCarousel = ds === 'v7_carousel';
-  const bonusesRaw = c.bonuses || [];
+  const bonuses = sortedConfig.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
-
-  /* ─── Sort bonuses based on config.sortBy ─── */
-  const bonuses = useMemo(() => {
-    const sb = c.sortBy;
-    if (!sb || sb === 'default') return bonusesRaw;
-    return [...bonusesRaw].sort((a, b) => {
-      if (sb === 'bet') return (a.betSize || 0) - (b.betSize || 0);
-      if (sb === 'provider') {
-        const pa = (a.slot?.provider || '').toLowerCase();
-        const pb = (b.slot?.provider || '').toLowerCase();
-        if (pa !== pb) return pa.localeCompare(pb);
-        return (a.slotName || '').localeCompare(b.slotName || '');
-      }
-      return 0;
-    });
-  }, [bonusesRaw, c.sortBy]);
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
