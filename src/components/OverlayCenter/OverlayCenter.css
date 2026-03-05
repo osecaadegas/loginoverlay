@@ -3289,6 +3289,15 @@ body.wm-resizing {
   color: #475569;
 }
 
+.bh-suggestion-empty.bh-suggestion-submit {
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.bh-suggestion-empty.bh-suggestion-submit:hover {
+  color: #a855f7;
+}
+
 /* ─── Submit Slot Button & Dropdown ─── */
 .bh-submit-slot-btn {
   font-size: 0.72rem;

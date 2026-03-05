@@ -737,8 +737,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </div>
                   ))
                 ) : (
-                  <div className="bh-suggestion-empty">
-                    {slots.length === 0 ? 'Loading slots...' : `No slots found for "${slotSearch}"`}
+                  <div className="bh-suggestion-empty bh-suggestion-submit"
+                    onMouseDown={e => e.preventDefault()}
+                    onClick={() => {
+                      setField('name', slotSearch.trim());
+                      setShowSubmitSlot(true);
+                      setShowSuggestions(false);
+                    }}>
+                    {slots.length === 0 ? 'Loading slots...' : <>Not found — <strong>click to submit "{slotSearch}"</strong></>}
                   </div>
                 )}
               </div>
