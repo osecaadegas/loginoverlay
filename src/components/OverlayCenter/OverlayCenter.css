@@ -3144,6 +3144,11 @@ body.wm-resizing {
   max-width: 60px;
 }
 
+.bh-input-group.bh-input-md {
+  flex: 0 0 90px;
+  max-width: 90px;
+}
+
 .bh-input-group span {
   font-size: 0.68rem;
   color: #64748b;
@@ -3168,7 +3173,7 @@ body.wm-resizing {
 /* Search container */
 .bh-search-container {
   position: relative;
-  flex: 2 1 0;
+  flex: 1 1 0;
   min-width: 0;
 }
 

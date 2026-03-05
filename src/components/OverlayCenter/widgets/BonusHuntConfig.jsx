@@ -683,14 +683,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               onChange={e => setHuntNumber(e.target.value)}
               onBlur={() => save()} />
           </label>
-          <label className="bh-input-group">
+          <label className="bh-input-group bh-input-md">
             <span>Start ({currency})</span>
             <input type="number" value={startMoney}
               placeholder="0"
               onChange={e => setStartMoney(e.target.value)}
               onBlur={() => save()} />
           </label>
-          <label className="bh-input-group">
+          <label className="bh-input-group bh-input-md">
             <span>Stop Loss ({currency})</span>
             <input type="number" value={stopLoss}
               placeholder="0"
@@ -787,7 +787,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </div>
         )}
 
-        {/* Search + Bet + Add – compact single row */}
+        {/* Row 1: Search + Bet */}
         <div className="bh-add-row">
           <div className="bh-search-container" ref={searchRef}>
             <input
@@ -836,19 +836,25 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             onChange={e => setBetSize(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
             placeholder={`Bet (${currency})`} step="0.1" />
+        </div>
+
+        {/* Row 2: Super + Extreme + Add */}
+        <div className="bh-add-row">
           <button
             type="button"
             className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
-            title="Super Bonus"
+            title="Super Bonus (double-click to add)"
             disabled={!betSize}
             onClick={() => { setIsSuperBonus(p => !p); if (!isSuperBonus) setIsExtremeBonus(false); }}
+            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsSuperBonus(true); setIsExtremeBonus(false); setTimeout(() => handleAddBonus(), 0); }}
           >Super</button>
           <button
             type="button"
             className={`bh-extreme-btn${isExtremeBonus ? ' active' : ''}`}
-            title="Extreme Bonus"
+            title="Extreme Bonus (double-click to add)"
             disabled={!betSize}
             onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
+            onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
           >Extreme</button>
           <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
             + Add
