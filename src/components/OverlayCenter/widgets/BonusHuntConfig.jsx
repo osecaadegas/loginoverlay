@@ -1145,7 +1145,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
       borderBottom: '1px solid rgba(124,58,237,0.3)',
       boxShadow: '0 2px 16px rgba(0,0,0,0.5)',
       padding: '6px 16px',
-      display: 'flex', alignItems: 'center', gap: 12,
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
       flexWrap: 'wrap',
       fontFamily: "'Inter', sans-serif",
       color: '#e2e8f0',
