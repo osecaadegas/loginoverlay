@@ -1162,6 +1162,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
       <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
       <StatChip label="Target" value={fmtV(profit)} color={profitColor} />
       <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} />
+      <StatChip label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
 
       {openedCount > 0 && (
         <>
