@@ -675,11 +675,11 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       {/* ─── Hunt Settings ─── */}
       <div className="bh-panel-section">
         <h4 className="bh-panel-label">Hunt Settings</h4>
-        <div className="bh-settings-grid">
+        <div className="bh-settings-row">
           <label className="bh-input-group">
-            <span>Hunt # (number)</span>
+            <span>Hunt #</span>
             <input type="text" value={huntNumber}
-              placeholder="e.g. 42"
+              placeholder="42"
               onChange={e => setHuntNumber(e.target.value)}
               onBlur={() => save()} />
           </label>
@@ -688,13 +688,6 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
             <input type="number" value={startMoney}
               placeholder="0"
               onChange={e => setStartMoney(e.target.value)}
-              onBlur={() => save()} />
-          </label>
-          <label className="bh-input-group">
-            <span>Target ({currency})</span>
-            <input type="number" value={targetMoney}
-              placeholder="0"
-              onChange={e => setTargetMoney(e.target.value)}
               onBlur={() => save()} />
           </label>
           <label className="bh-input-group">
@@ -750,10 +743,10 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
                 <span>Max Win (x)</span>
                 <input type="number" value={submitForm.max_win_multiplier || ''} onChange={e => setField('max_win_multiplier', e.target.value || null)} placeholder="10000" />
               </label>
-              <label className="bh-submit-field" style={{ gridColumn: '1 / -1' }}>
+              <label className="bh-submit-field">
                 <span>Image <em>*</em></span>
                 <div style={{ display: 'flex', gap: 4 }}>
-                  <input style={{ flex: 1, fontSize: '0.72rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="Paste URL or search →" />
+                  <input style={{ flex: 1, fontSize: '0.68rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="URL or search →" />
                   <button type="button" className="bh-submit-search-btn" onClick={searchSlotImages} disabled={!submitForm.name || submitImageSearching}>
                     {submitImageSearching ? '⏳' : '🔍'} Search
                   </button>
