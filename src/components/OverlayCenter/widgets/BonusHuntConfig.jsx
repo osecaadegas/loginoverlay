@@ -332,6 +332,8 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   const [submitSaving, setSubmitSaving] = useState(false);
   const [submitImageResults, setSubmitImageResults] = useState([]);
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
+  const [submitImageUploading, setSubmitImageUploading] = useState(false);
+  const submitFileRef = useRef(null);
 
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
 
@@ -346,6 +348,29 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       if (res.ok && data.images?.length) setSubmitImageResults(data.images);
     } catch { /* noop */ }
     setSubmitImageSearching(false);
+  };
+
+  const uploadSlotImage = async (file) => {
+    if (!file) return;
+    const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    if (!allowed.includes(file.type)) return alert('Only PNG, JPG, WEBP or GIF allowed.');
+    if (file.size > 2 * 1024 * 1024) return alert('Max 2 MB.');
+    setSubmitImageUploading(true);
+    try {
+      const ext = file.name.split('.').pop();
+      const name = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
+      const path = `slot-submissions/${name}`;
+      const { error } = await supabase.storage.from('images').upload(path, file);
+      if (error) throw error;
+      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(path);
+      setField('image', publicUrl);
+      setSubmitImageResults([]);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      alert('Image upload failed.');
+    } finally {
+      setSubmitImageUploading(false);
+    }
   };
 
   const handleSlotSubmit = async () => {
@@ -748,7 +773,11 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
                 <div style={{ display: 'flex', gap: 4 }}>
                   <input style={{ flex: 1, fontSize: '0.68rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="URL or search →" />
                   <button type="button" className="bh-submit-search-btn" onClick={searchSlotImages} disabled={!submitForm.name || submitImageSearching}>
-                    {submitImageSearching ? '⏳' : '🔍'} Search
+                    {submitImageSearching ? '⏳' : '🔍'}
+                  </button>
+                  <input type="file" accept="image/*" ref={submitFileRef} style={{ display: 'none' }} onChange={e => { uploadSlotImage(e.target.files[0]); e.target.value = ''; }} />
+                  <button type="button" className="bh-submit-search-btn" onClick={() => submitFileRef.current?.click()} disabled={submitImageUploading}>
+                    {submitImageUploading ? '⏳' : '📁'}
                   </button>
                 </div>
               </label>
