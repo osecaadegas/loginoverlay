@@ -698,8 +698,60 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Add Bonus ─── */}
       <div className="bh-panel-section">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <h4 className="bh-panel-label" style={{ margin: 0 }}>Add Bonus</h4>
+        <h4 className="bh-panel-label" style={{ margin: '0 0 4px 0' }}>Add Bonus</h4>
+
+        {/* Row 1: Search */}
+        <div className="bh-add-row">
+          <div className="bh-search-container bh-search-half" ref={searchRef}>
+            <input
+              type="text"
+              className="bh-search-input"
+              value={selectedSlot ? selectedSlot.name : slotSearch}
+              onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); }}
+              onFocus={() => setShowSuggestions(true)}
+              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
+              placeholder={`Search ${slots.length} slots...`}
+            />
+
+            {showSuggestions && slotSearch.trim().length > 0 && (
+              <div className="bh-suggestions-dropdown">
+                {filteredSlots.length > 0 ? (
+                  filteredSlots.slice(0, 8).map(slot => (
+                    <div key={slot.id} className="bh-suggestion-item"
+                      onMouseDown={e => e.preventDefault()}
+                      onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); }}>
+                      <img
+                        src={slot.image || 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'}
+                        alt={slot.name}
+                        className="bh-suggestion-img"
+                        onError={e => { e.target.src = 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'; }}
+                      />
+                      <div className="bh-suggestion-info">
+                        <span className="bh-suggestion-name">
+                          {slot.name}
+                          {slot._isPending && <span className="bh-pending-badge">Pending</span>}
+                        </span>
+                        {slot.provider && <span className="bh-suggestion-provider">{slot.provider}</span>}
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div className="bh-suggestion-empty">
+                    {slots.length === 0 ? 'Loading slots...' : `No slots found for "${slotSearch}"`}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Row 2: Bet + Submit Slot */}
+        <div className="bh-add-row">
+          <input type="number" className="bh-bet-field" value={betSize}
+            onChange={e => setBetSize(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
+            placeholder={`Bet (${currency})`} step="0.1" />
           <button
             className={`bh-submit-slot-btn${showSubmitSlot ? ' active' : ''}`}
             onClick={() => {
@@ -713,7 +765,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </button>
         </div>
 
-        {/* Inline Submit Slot Form */}
+        {/* Inline Submit Slot Form (below bet row) */}
         {showSubmitSlot && (
           <div className="bh-submit-dropdown">
             <div className="bh-submit-grid">
@@ -783,58 +835,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </div>
         )}
 
-        {/* Row 1: Search only */}
+        {/* Row 3: Add + Super + Extreme */}
         <div className="bh-add-row">
-          <div className="bh-search-container bh-search-half" ref={searchRef}>
-            <input
-              type="text"
-              className="bh-search-input"
-              value={selectedSlot ? selectedSlot.name : slotSearch}
-              onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); }}
-              onFocus={() => setShowSuggestions(true)}
-              onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
-              placeholder={`Search ${slots.length} slots...`}
-            />
-
-            {showSuggestions && slotSearch.trim().length > 0 && (
-              <div className="bh-suggestions-dropdown">
-                {filteredSlots.length > 0 ? (
-                  filteredSlots.slice(0, 8).map(slot => (
-                    <div key={slot.id} className="bh-suggestion-item"
-                      onMouseDown={e => e.preventDefault()}
-                      onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); }}>
-                      <img
-                        src={slot.image || 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'}
-                        alt={slot.name}
-                        className="bh-suggestion-img"
-                        onError={e => { e.target.src = 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'; }}
-                      />
-                      <div className="bh-suggestion-info">
-                        <span className="bh-suggestion-name">
-                          {slot.name}
-                          {slot._isPending && <span className="bh-pending-badge">Pending</span>}
-                        </span>
-                        {slot.provider && <span className="bh-suggestion-provider">{slot.provider}</span>}
-                      </div>
-                    </div>
-                  ))
-                ) : (
-                  <div className="bh-suggestion-empty">
-                    {slots.length === 0 ? 'Loading slots...' : `No slots found for "${slotSearch}"`}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Row 2: Bet + Add + Super + Extreme */}
-        <div className="bh-add-row">
-          <input type="number" className="bh-bet-field" value={betSize}
-            onChange={e => setBetSize(e.target.value)}
-            onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
-            placeholder={`Bet (${currency})`} step="0.1" />
           <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
             + Add
           </button>
