@@ -29,7 +29,7 @@ function stripTags(html) {
  * The table rows look like: <td>Provider</td><td><a ...>Hacksaw Gaming</a></td>
  * Or inline text like: ProviderHacksaw GamingReels5...
  */
-function parseSpecTable(html) {
+function parseSpecTable(html, slug) {
   const info = {};
 
   // Try to extract from the structured spec table (td pairs)
@@ -62,9 +62,22 @@ function parseSpecTable(html) {
     if (maxMatch) info.max_win_multiplier = parseFloat(maxMatch[1].replace(/,/g, ''));
   }
 
-  // Extract main slot image
-  const imgMatch = html.match(/<img[^>]*src="(https:\/\/www\.demoslot\.com\/wp-content\/uploads\/[^"]*\.(webp|png|jpg|jpeg))"[^>]*>/i);
-  if (imgMatch) info.image = imgMatch[1];
+  // Extract main slot image — prioritise images whose filename contains the slug
+  const allImgs = [];
+  const imgRegex = /<img[^>]*src="(https:\/\/www\.demoslot\.com\/wp-content\/uploads\/[^"]*\.(webp|png|jpg|jpeg))"[^>]*>/gi;
+  let imgM;
+  while ((imgM = imgRegex.exec(html)) !== null) allImgs.push(imgM[1]);
+
+  // 1st: image whose filename contains the slug (e.g. big-bass-raceday-repeat-slot-1.webp)
+  const slugMatch = allImgs.find(u => u.toLowerCase().includes(slug));
+  if (slugMatch) {
+    info.image = slugMatch;
+  } else if (allImgs.length > 0) {
+    // 2nd: skip common ad/brand images, pick the first remaining one
+    const skip = /mostbet|casinia|casino|bonus|banner|logo|welcome|ad-/i;
+    const clean = allImgs.find(u => !skip.test(u.split('/').pop()));
+    info.image = clean || allImgs[0];
+  }
 
   return info;
 }
@@ -134,7 +147,7 @@ export default async function handler(req, res) {
       return res.status(404).json({ error: 'Slot not found on demoslot.com', name });
     }
 
-    const info = parseSpecTable(html);
+    const info = parseSpecTable(html, slug);
     info.source = finalUrl;
 
     // Map volatility to our format
