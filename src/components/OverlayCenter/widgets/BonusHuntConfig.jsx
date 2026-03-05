@@ -912,15 +912,18 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 {submitForm.image && (
                   <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                 )}
-                {scrapedImages.map((imgUrl, i) => (
+                {scrapedImages.map((imgUrl, i) => {
+                  const src = imgUrl.includes('slotslaunch') ? 'SlotsLaunch' : imgUrl.includes('slotark') ? 'SlotArk' : 'DemoSlot';
+                  return (
                   <button key={`scraped-${i}`} type="button"
                     className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === imgUrl ? ' selected' : ''}`}
                     onClick={() => setField('image', imgUrl)}
-                    title={imgUrl.includes('slotark') ? 'Image from SlotArk' : 'Image from DemoSlot'}>
+                    title={`Image from ${src}`}>
                     <img src={imgUrl} alt="" />
-                    <span className="bh-demoslot-badge">{imgUrl.includes('slotark') ? 'SlotArk' : 'DemoSlot'}</span>
+                    <span className="bh-demoslot-badge">{src}</span>
                   </button>
-                ))}
+                  );
+                })}
                 {submitImageResults.slice(0, imageShowCount).map((img, i) => (
                   <button key={i} type="button" className={`bh-submit-img-btn${submitForm.image === img.url ? ' selected' : ''}`}
                     onClick={() => setField('image', img.url)}>

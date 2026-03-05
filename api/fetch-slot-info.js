@@ -123,6 +123,22 @@ function parseSlotArk(html, slug) {
   return info;
 }
 
+/* ── slotslaunch.com parser ── */
+
+function parseSlotsLaunch(html, slug) {
+  const info = {};
+
+  // Provider — e.g. <a href="/pragmatic-play">Pragmatic Play</a> in GAME INFORMATION section
+  const provMatch = html.match(/PROVIDER[\s\S]*?<a[^>]*href="\/([^"]+)"[^>]*>([\s\S]*?)<\/a>/i);
+  if (provMatch) info.provider = stripTags(provMatch[2]);
+
+  // Image — https://assets.slotslaunch.com/{id}/{slug}.jpg
+  const imgMatch = html.match(/<img[^>]*src="(https:\/\/assets\.slotslaunch\.com\/\d+\/[^"]+\.(jpg|webp|png|jpeg))"[^>]*>/i);
+  if (imgMatch) info.image = imgMatch[1];
+
+  return info;
+}
+
 /* ── fetch helpers per source ── */
 
 async function fetchDemoSlot(slug, name) {
@@ -166,6 +182,19 @@ async function fetchSlotArk(slug, name) {
   return null;
 }
 
+async function fetchSlotsLaunch(slug, name) {
+  // Bing site-search (URL requires provider slug we don't know)
+  const searchHtml = await safeFetch(`https://www.bing.com/search?q=site:slotslaunch.com+${encodeURIComponent(name)}+slot`);
+  if (searchHtml) {
+    const link = searchHtml.match(/href="(https:\/\/slotslaunch\.com\/[^"]+\/[^"]+)"/);
+    if (link) {
+      const html = await safeFetch(link[1]);
+      if (html) return { html, url: link[1] };
+    }
+  }
+  return null;
+}
+
 /* ── main handler ── */
 
 export default async function handler(req, res) {
@@ -181,29 +210,31 @@ export default async function handler(req, res) {
   try {
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-    // Fetch both sources in parallel
-    const [demoResult, arkResult] = await Promise.all([
+    // Fetch all sources in parallel
+    const [demoResult, arkResult, launchResult] = await Promise.all([
       fetchDemoSlot(slug, name),
       fetchSlotArk(slug, name),
+      fetchSlotsLaunch(slug, name),
     ]);
 
     const demoInfo = demoResult ? parseDemoSlot(demoResult.html, slug) : {};
     const arkInfo = arkResult ? parseSlotArk(arkResult.html, slug) : {};
+    const launchInfo = launchResult ? parseSlotsLaunch(launchResult.html, slug) : {};
 
-    if (!demoResult && !arkResult) {
+    if (!demoResult && !arkResult && !launchResult) {
       return res.status(404).json({ error: 'Slot not found', name });
     }
 
-    // Merge: prefer demoslot data, fill gaps from slotark
+    // Merge: prefer demoslot data, fill gaps from slotark, then slotslaunch
     const info = {
-      provider: demoInfo.provider || arkInfo.provider || null,
+      provider: demoInfo.provider || arkInfo.provider || launchInfo.provider || null,
       rtp: demoInfo.rtp || arkInfo.rtp || null,
       volatility: mapVolatility(demoInfo.volatility || arkInfo.volatility),
       max_win_multiplier: demoInfo.max_win_multiplier || arkInfo.max_win_multiplier || null,
-      image: demoInfo.image || arkInfo.image || null,
-      // Keep all images so the frontend can show both
-      images: [demoInfo.image, arkInfo.image].filter(Boolean),
-      sources: [demoResult?.url, arkResult?.url].filter(Boolean),
+      image: demoInfo.image || arkInfo.image || launchInfo.image || null,
+      // Keep all images so the frontend can show all sources
+      images: [demoInfo.image, arkInfo.image, launchInfo.image].filter(Boolean),
+      sources: [demoResult?.url, arkResult?.url, launchResult?.url].filter(Boolean),
     };
 
     return res.status(200).json({ ok: true, info });
