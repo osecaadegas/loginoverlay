@@ -557,7 +557,7 @@ function BonusHuntWidget({ config, theme }) {
 
                 if (isOpening) {
                   /* Opening active → pin current bonus at the top of the list */
-                  const cardH = 96, gap = 6, step = cardH + gap;
+                  const cardH = 111, gap = 6, step = cardH + gap;
                   const offset = -(currentIndex * step);
                   return (
                     <div key="compact-static" className="bht-compact-track bht-compact-track--static"

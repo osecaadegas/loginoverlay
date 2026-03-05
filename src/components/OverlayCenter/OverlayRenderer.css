@@ -905,12 +905,12 @@
 
 /* ── Compact bonus cards ── */
 .oc-bonushunt--compact .bht-bonus-card {
-  min-width: 80px; min-height: 70px;
+  min-width: 80px; min-height: 85px;
   display: flex; flex-direction: column;
   flex-shrink: 0;
 }
 .oc-bonushunt--compact .bht-bonus-card-img {
-  height: 70px; flex-shrink: 0;
+  height: 85px; flex-shrink: 0;
 }
 /* Hide the old gradient overlay — compact uses the info bar instead */
 .oc-bonushunt--compact .bht-bonus-card-overlay { display: none; }
