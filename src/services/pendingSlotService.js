@@ -117,3 +117,21 @@ export async function denySlot(pendingId, adminId, note = '') {
 
   if (error) throw error;
 }
+
+/* ─── Update a pending slot (admin edit before approve/deny) ─── */
+export async function updatePendingSlot(pendingId, fields) {
+  const allowed = {};
+  if (fields.name != null) allowed.name = fields.name;
+  if (fields.provider != null) allowed.provider = fields.provider;
+  if (fields.image != null) allowed.image = fields.image;
+  if (fields.rtp != null) allowed.rtp = fields.rtp;
+  if (fields.volatility != null) allowed.volatility = fields.volatility;
+  if (fields.max_win_multiplier != null) allowed.max_win_multiplier = fields.max_win_multiplier;
+
+  const { error } = await supabase
+    .from('pending_slots')
+    .update(allowed)
+    .eq('id', pendingId);
+
+  if (error) throw error;
+}

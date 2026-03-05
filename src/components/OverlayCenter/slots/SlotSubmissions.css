@@ -840,6 +840,96 @@
   color: #fff;
 }
 
+/* ─── Admin Edit Form ─── */
+.sa-edit-btn {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  background: rgba(168, 85, 247, 0.12);
+  color: #c4b5fd;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sa-edit-btn:hover {
+  background: rgba(168, 85, 247, 0.25);
+  border-color: #a855f7;
+}
+.sa-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+.sa-edit-row {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+}
+.sa-edit-row label {
+  font-size: 0.7rem;
+  color: #94a3b8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.sa-edit-row input,
+.sa-edit-row select {
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(15, 23, 42, 0.7);
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  width: 100%;
+}
+.sa-edit-row input:focus,
+.sa-edit-row select:focus {
+  border-color: rgba(168, 85, 247, 0.5);
+  outline: none;
+}
+.sa-edit-row-group {
+  display: flex;
+  gap: 10px;
+}
+.sa-edit-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+.sa-edit-save {
+  padding: 6px 16px;
+  border-radius: 8px;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.15);
+  color: #4ade80;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sa-edit-save:hover:not(:disabled) {
+  background: rgba(34, 197, 94, 0.3);
+}
+.sa-edit-save:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.sa-edit-cancel {
+  padding: 6px 14px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: transparent;
+  color: #94a3b8;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.sa-edit-cancel:hover {
+  color: #fff;
+}
+
 /* ─── Responsive ─── */
 @media (max-width: 640px) {
   .ss-card {

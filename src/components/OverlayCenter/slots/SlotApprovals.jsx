@@ -4,7 +4,7 @@
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../../../context/AuthContext';
-import { getPendingSlots, approveSlot, denySlot } from '../../../services/pendingSlotService';
+import { getPendingSlots, approveSlot, denySlot, updatePendingSlot } from '../../../services/pendingSlotService';
 import './SlotSubmissions.css';
 
 export default function SlotApprovals() {
@@ -16,6 +16,8 @@ export default function SlotApprovals() {
   const [denyNoteId, setDenyNoteId] = useState(null);
   const [denyNote, setDenyNote] = useState('');
   const [msg, setMsg] = useState({ text: '', type: '' });
+  const [editingId, setEditingId] = useState(null);
+  const [editForm, setEditForm] = useState({});
 
   const load = useCallback(async () => {
     try {
@@ -60,6 +62,39 @@ export default function SlotApprovals() {
     } catch (err) {
       console.error('[SlotApprovals] deny error:', err);
       flash(`Deny failed: ${err.message}`, 'error');
+    } finally {
+      setActionLoading(null);
+    }
+  };
+
+  const startEdit = (s) => {
+    setEditingId(s.id);
+    setEditForm({
+      name: s.name || '',
+      provider: s.provider || '',
+      image: s.image || '',
+      rtp: s.rtp ?? '',
+      volatility: s.volatility || '',
+      max_win_multiplier: s.max_win_multiplier ?? '',
+    });
+  };
+
+  const handleSaveEdit = async (id) => {
+    setActionLoading(id);
+    try {
+      await updatePendingSlot(id, {
+        name: editForm.name,
+        provider: editForm.provider,
+        image: editForm.image,
+        rtp: editForm.rtp ? parseFloat(editForm.rtp) : null,
+        volatility: editForm.volatility || null,
+        max_win_multiplier: editForm.max_win_multiplier ? parseFloat(editForm.max_win_multiplier) : null,
+      });
+      flash('Slot updated!');
+      setEditingId(null);
+      load();
+    } catch (err) {
+      flash(`Edit failed: ${err.message}`, 'error');
     } finally {
       setActionLoading(null);
     }
@@ -115,23 +150,74 @@ export default function SlotApprovals() {
           {filtered.map(s => (
             <div key={s.id} className={`ss-card ss-card--${s.status}`}>
               <div className="ss-card-left">
-                {s.image ? (
+                {editingId === s.id ? (
+                  editForm.image ? (
+                    <img src={editForm.image} alt="" className="ss-card-img" />
+                  ) : (
+                    <div className="ss-card-img ss-card-img--placeholder">🎰</div>
+                  )
+                ) : s.image ? (
                   <img src={s.image} alt={s.name} className="ss-card-img" />
                 ) : (
                   <div className="ss-card-img ss-card-img--placeholder">🎰</div>
                 )}
               </div>
               <div className="ss-card-body">
-                <div className="ss-card-name">{s.name}</div>
-                <div className="ss-card-provider">{s.provider}</div>
-                {s.se_username && (
-                  <div className="ss-card-submitter">👤 {s.se_username}</div>
+                {editingId === s.id ? (
+                  <div className="sa-edit-form">
+                    <div className="sa-edit-row">
+                      <label>Name</label>
+                      <input value={editForm.name} onChange={e => setEditForm(f => ({ ...f, name: e.target.value }))} />
+                    </div>
+                    <div className="sa-edit-row">
+                      <label>Provider</label>
+                      <input value={editForm.provider} onChange={e => setEditForm(f => ({ ...f, provider: e.target.value }))} />
+                    </div>
+                    <div className="sa-edit-row">
+                      <label>Image URL</label>
+                      <input value={editForm.image} onChange={e => setEditForm(f => ({ ...f, image: e.target.value }))} />
+                    </div>
+                    <div className="sa-edit-row-group">
+                      <div className="sa-edit-row">
+                        <label>RTP</label>
+                        <input type="number" step="0.01" value={editForm.rtp} onChange={e => setEditForm(f => ({ ...f, rtp: e.target.value }))} />
+                      </div>
+                      <div className="sa-edit-row">
+                        <label>Volatility</label>
+                        <select value={editForm.volatility} onChange={e => setEditForm(f => ({ ...f, volatility: e.target.value }))}>
+                          <option value="">—</option>
+                          <option value="low">Low</option>
+                          <option value="medium">Medium</option>
+                          <option value="high">High</option>
+                          <option value="very_high">Very High</option>
+                        </select>
+                      </div>
+                      <div className="sa-edit-row">
+                        <label>Max Win (x)</label>
+                        <input type="number" value={editForm.max_win_multiplier} onChange={e => setEditForm(f => ({ ...f, max_win_multiplier: e.target.value }))} />
+                      </div>
+                    </div>
+                    <div className="sa-edit-actions">
+                      <button className="sa-edit-save" disabled={actionLoading === s.id} onClick={() => handleSaveEdit(s.id)}>
+                        {actionLoading === s.id ? '⏳' : '💾'} Save
+                      </button>
+                      <button className="sa-edit-cancel" onClick={() => setEditingId(null)}>Cancel</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="ss-card-name">{s.name}</div>
+                    <div className="ss-card-provider">{s.provider}</div>
+                    {s.se_username && (
+                      <div className="ss-card-submitter">👤 {s.se_username}</div>
+                    )}
+                    <div className="ss-card-meta">
+                      <span>RTP: {s.rtp}%</span>
+                      <span>Vol: {s.volatility}</span>
+                      <span>Max: {s.max_win_multiplier}x</span>
+                    </div>
+                  </>
                 )}
-                <div className="ss-card-meta">
-                  <span>RTP: {s.rtp}%</span>
-                  <span>Vol: {s.volatility}</span>
-                  <span>Max: {s.max_win_multiplier}x</span>
-                </div>
               </div>
               <div className="ss-card-status">
                 <span className={`ss-badge ss-badge--${s.status}`}>
@@ -142,6 +228,12 @@ export default function SlotApprovals() {
                 {/* Admin actions */}
                 {s.status === 'pending' && (
                   <div className="sa-actions">
+                    <button
+                      className="sa-edit-btn"
+                      onClick={() => editingId === s.id ? setEditingId(null) : startEdit(s)}
+                    >
+                      {editingId === s.id ? '✕ Close Edit' : '✏️ Edit'}
+                    </button>
                     <button
                       className="sa-approve-btn"
                       disabled={actionLoading === s.id}
