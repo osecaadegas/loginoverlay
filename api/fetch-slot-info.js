@@ -74,18 +74,26 @@ function parseDemoSlot(html, slug) {
     if (x) info.max_win_multiplier = parseFloat(x[1].replace(/,/g, ''));
   }
 
-  // Image — prioritise filename containing the slug
+  // Image — 1) WordPress featured image (wp-post-image class), 2) slug match, 3) first safe image
+  // The wp-post-image is the main slot thumbnail, most reliable source
+  const wpPostMatch = html.match(/<img[^>]*class="[^"]*wp-post-image[^"]*"[^>]*src="([^"]+\.(webp|png|jpg|jpeg))"[^>]*>/i)
+    || html.match(/<img[^>]*src="([^"]+\.(webp|png|jpg|jpeg))"[^>]*class="[^"]*wp-post-image[^"]*"[^>]*>/i);
+
   const allImgs = [];
-  const imgRe = /<img[^>]*src="(https:\/\/www\.demoslot\.com\/wp-content\/uploads\/[^"]*\.(webp|png|jpg|jpeg))"[^>]*>/gi;
+  const imgRe = /<img[^>]*src="(https:\/\/[^"]*demoslot\.com\/wp-content\/uploads\/[^"]*\.(webp|png|jpg|jpeg))"[^>]*>/gi;
   let imgM;
   while ((imgM = imgRe.exec(html)) !== null) allImgs.push(imgM[1]);
 
-  const slugImg = allImgs.find(u => u.toLowerCase().includes(slug));
-  if (slugImg) {
-    info.image = slugImg;
-  } else if (allImgs.length > 0) {
-    const skip = /mostbet|casinia|casino|bonus|banner|logo|welcome|ad-/i;
-    info.image = allImgs.find(u => !skip.test(u.split('/').pop())) || allImgs[0];
+  if (wpPostMatch) {
+    info.image = wpPostMatch[1];
+  } else {
+    const slugImg = allImgs.find(u => u.toLowerCase().includes(slug));
+    if (slugImg) {
+      info.image = slugImg;
+    } else if (allImgs.length > 0) {
+      const skip = /mostbet|casinia|casino|bonus|banner|logo|welcome|ad-/i;
+      info.image = allImgs.find(u => !skip.test(u.split('/').pop())) || allImgs[0];
+    }
   }
 
   return info;
