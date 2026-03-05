@@ -143,7 +143,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 
       {/* ═══════ CONTENT TAB ═══════ */}
       {activeTab === 'content' && (
-        <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} currency={c.currency || '€'} />
+        <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} userAvatar={user?.user_metadata?.avatar_url} currency={c.currency || '€'} />
       )}
 
       {/* ═══════ HISTORY TAB ═══════ */}
@@ -303,7 +303,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 }
 
 /* ─── Inline Dropdown Panel (replaces old modal) ─── */
-function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
+function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelCurrency }) {
   const c = config || {};
   const [startMoney, setStartMoney] = useState(c.startMoney || '');
   const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
@@ -332,8 +332,6 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   const [submitSaving, setSubmitSaving] = useState(false);
   const [submitImageResults, setSubmitImageResults] = useState([]);
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
-  const [submitImageUploading, setSubmitImageUploading] = useState(false);
-  const submitFileRef = useRef(null);
 
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
 
@@ -348,29 +346,6 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       if (res.ok && data.images?.length) setSubmitImageResults(data.images);
     } catch { /* noop */ }
     setSubmitImageSearching(false);
-  };
-
-  const uploadSlotImage = async (file) => {
-    if (!file) return;
-    const allowed = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
-    if (!allowed.includes(file.type)) return alert('Only PNG, JPG, WEBP or GIF allowed.');
-    if (file.size > 2 * 1024 * 1024) return alert('Max 2 MB.');
-    setSubmitImageUploading(true);
-    try {
-      const ext = file.name.split('.').pop();
-      const name = `${Date.now()}-${Math.random().toString(36).substring(2, 8)}.${ext}`;
-      const path = `slot-submissions/${name}`;
-      const { error } = await supabase.storage.from('images').upload(path, file);
-      if (error) throw error;
-      const { data: { publicUrl } } = supabase.storage.from('images').getPublicUrl(path);
-      setField('image', publicUrl);
-      setSubmitImageResults([]);
-    } catch (err) {
-      console.error('Upload failed:', err);
-      alert('Image upload failed.');
-    } finally {
-      setSubmitImageUploading(false);
-    }
   };
 
   const handleSlotSubmit = async () => {
@@ -775,10 +750,11 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
                   <button type="button" className="bh-submit-search-btn" onClick={searchSlotImages} disabled={!submitForm.name || submitImageSearching}>
                     {submitImageSearching ? '⏳' : '🔍'}
                   </button>
-                  <input type="file" accept="image/*" ref={submitFileRef} style={{ display: 'none' }} onChange={e => { uploadSlotImage(e.target.files[0]); e.target.value = ''; }} />
-                  <button type="button" className="bh-submit-search-btn" onClick={() => submitFileRef.current?.click()} disabled={submitImageUploading}>
-                    {submitImageUploading ? '⏳' : '📁'}
-                  </button>
+                  {userAvatar && (
+                    <button type="button" className="bh-submit-search-btn" title="Use my stream logo" onClick={() => { setField('image', userAvatar); setSubmitImageResults([]); }}>
+                      📷
+                    </button>
+                  )}
                 </div>
               </label>
             </div>
