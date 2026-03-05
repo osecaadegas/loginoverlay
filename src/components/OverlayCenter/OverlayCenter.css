@@ -3128,29 +3128,29 @@ body.wm-resizing {
 /* Settings grid */
 .bh-settings-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+  gap: 5px;
 }
 
 .bh-input-group {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
 }
 
 .bh-input-group span {
-  font-size: 0.72rem;
+  font-size: 0.68rem;
   color: #64748b;
   font-weight: 500;
 }
 
 .bh-input-group input {
-  padding: 6px 8px;
-  border-radius: 6px;
+  padding: 5px 7px;
+  border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: #e2e8f0;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   width: 100%;
 }
 
@@ -3162,16 +3162,18 @@ body.wm-resizing {
 /* Search container */
 .bh-search-container {
   position: relative;
+  flex: 1;
+  min-width: 0;
 }
 
 .bh-search-input {
   width: 100%;
-  padding: 8px 10px;
-  border-radius: 6px;
+  padding: 5px 8px;
+  border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: #e2e8f0;
-  font-size: 0.82rem;
+  font-size: 0.78rem;
 }
 
 .bh-search-input:focus {
@@ -3181,6 +3183,13 @@ body.wm-resizing {
 
 .bh-search-input::placeholder {
   color: #475569;
+}
+
+/* Combined add row */
+.bh-add-row {
+  display: flex;
+  gap: 5px;
+  align-items: center;
 }
 
 /* Suggestions dropdown */
@@ -3202,8 +3211,8 @@ body.wm-resizing {
 .bh-suggestion-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 7px 10px;
+  gap: 8px;
+  padding: 5px 8px;
   cursor: pointer;
   transition: background 0.1s;
 }
@@ -3213,9 +3222,9 @@ body.wm-resizing {
 }
 
 .bh-suggestion-img {
-  width: 36px;
-  height: 36px;
-  border-radius: 5px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
   object-fit: cover;
   flex-shrink: 0;
 }
@@ -3289,9 +3298,9 @@ body.wm-resizing {
 .bh-submit-dropdown {
   background: rgba(15, 15, 20, 0.7);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
+  border-radius: 8px;
+  padding: 8px 10px;
+  margin-bottom: 6px;
   animation: bh-submit-slide 0.25s ease;
 }
 @keyframes bh-submit-slide {
@@ -3301,9 +3310,9 @@ body.wm-resizing {
 
 .bh-submit-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-  gap: 6px 10px;
-  margin-bottom: 8px;
+  grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+  gap: 4px 8px;
+  margin-bottom: 6px;
 }
 
 .bh-submit-field {
@@ -3326,9 +3335,9 @@ body.wm-resizing {
 .bh-submit-field select {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 5px 8px;
-  font-size: 0.78rem;
+  border-radius: 5px;
+  padding: 4px 7px;
+  font-size: 0.75rem;
   color: #e2e8f0;
   outline: none;
   transition: border-color 0.2s;
@@ -3360,25 +3369,25 @@ body.wm-resizing {
 .bh-submit-images {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .bh-submit-preview {
-  width: 100px;
-  height: 100px;
-  border-radius: 8px;
+  width: 72px;
+  height: 72px;
+  border-radius: 6px;
   object-fit: cover;
   border: 2px solid rgba(168, 85, 247, 0.4);
 }
 .bh-submit-img-btn {
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  border-radius: 6px;
   padding: 2px;
   background: transparent;
   cursor: pointer;
-  width: 100px;
-  height: 100px;
+  width: 72px;
+  height: 72px;
   overflow: hidden;
   flex-shrink: 0;
   transition: border-color 0.2s;
@@ -3404,9 +3413,9 @@ body.wm-resizing {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .bh-submit-cancel {
-  font-size: 0.75rem;
-  padding: 5px 12px;
-  border-radius: 6px;
+  font-size: 0.72rem;
+  padding: 4px 10px;
+  border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: transparent;
   color: #94a3b8;
@@ -3418,10 +3427,10 @@ body.wm-resizing {
   color: #e2e8f0;
 }
 .bh-submit-save {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  padding: 5px 14px;
-  border-radius: 6px;
+  padding: 4px 12px;
+  border-radius: 5px;
   border: none;
   background: linear-gradient(135deg, #a855f7, #7c3aed);
   color: #fff;
@@ -3437,22 +3446,16 @@ body.wm-resizing {
   cursor: not-allowed;
 }
 
-/* Add controls row */
-.bh-add-controls {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
+/* Bet field + controls */
 .bh-bet-field {
-  flex: 1;
-  padding: 7px 10px;
-  border-radius: 6px;
+  width: 72px;
+  flex-shrink: 0;
+  padding: 5px 7px;
+  border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: #e2e8f0;
-  font-size: 0.82rem;
-  max-width: 100px;
+  font-size: 0.78rem;
 }
 
 .bh-bet-field:focus {
@@ -3463,18 +3466,18 @@ body.wm-resizing {
 .bh-super-check {
   display: flex;
   align-items: center;
-  gap: 4px;
-  font-size: 0.78rem;
+  gap: 3px;
+  font-size: 0.7rem;
   color: #eab308;
   cursor: pointer;
   white-space: nowrap;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .bh-super-check input[type="checkbox"] {
   accent-color: #eab308;
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
 }
 
 .bh-extreme-check {
@@ -3486,12 +3489,12 @@ body.wm-resizing {
 }
 
 .bh-add-btn {
-  padding: 7px 14px;
-  border-radius: 6px;
+  padding: 5px 10px;
+  border-radius: 5px;
   border: none;
   background: rgba(147, 70, 255, 0.2);
   color: #a78bfa;
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
