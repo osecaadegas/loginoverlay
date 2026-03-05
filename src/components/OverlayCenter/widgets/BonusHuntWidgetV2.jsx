@@ -120,13 +120,18 @@ function BonusHuntWidgetV2({ config, theme }) {
       <section className="bht2-card bht2-header">
         <div className="bht2-header-top">
           <div className="bht2-header-left">
-            <div className="bht2-icon">
-              <div className="bht2-icon-inner">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M21 12a9 9 0 1 1-3.68-7.21" /><polyline points="21 3 21 9 15 9" />
-                </svg>
+            {c.avatarUrl ? (
+              <img src={c.avatarUrl} alt="" className="bht2-streamer-logo"
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div className="bht2-icon">
+                <div className="bht2-icon-inner">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a9 9 0 1 1-3.68-7.21" /><polyline points="21 3 21 9 15 9" />
+                  </svg>
+                </div>
               </div>
-            </div>
+            )}
             <div>
               <div className="bht2-label-sm" style={{ fontWeight: 700, letterSpacing: '0.18em', fontSize: '1.2em' }}>{huntTitle}</div>
             </div>

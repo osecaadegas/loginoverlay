@@ -1279,6 +1279,14 @@
   justify-content: center;
   color: #020617;
 }
+.bht2-streamer-logo {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bht2-header-accent, #38bdf8);
+  flex-shrink: 0;
+}
 .bht2-label-sm {
   font-size: 0.78em;
   letter-spacing: 0.14em;
@@ -1382,7 +1390,7 @@
 .bht2-badge-dot--super  { background: var(--bht2-super-badge, #fcd34d); }
 .bht2-badge-dot--extreme { background: var(--bht2-extreme-badge, #fda4af); }
 .bht2-progress-track {
-  height: 6px;
+  height: 10px;
   border-radius: 999px;
   background: var(--bht2-header-bg, rgba(15,23,42,0.9));
   overflow: hidden;
@@ -1399,15 +1407,17 @@
 .bht2-active {
   background: var(--bht2-current-bg, rgba(2,6,23,0.85));
   border-color: var(--bht2-current-accent, rgba(56,189,248,0.35));
+  padding: 6px 8px;
 }
 .bht2-active-top {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
+  padding: 2px;
 }
 .bht2-active-img {
-  width: 72px; height: 72px;
-  border-radius: 14px;
+  width: 88px; height: 88px;
+  border-radius: 12px;
   object-fit: cover;
   border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.4));
   background: var(--bht2-header-bg, rgba(15,23,42,0.7));
@@ -1461,8 +1471,8 @@
   margin-top: 1px;
 }
 .bht2-active-img-placeholder {
-  width: 72px; height: 72px;
-  border-radius: 14px;
+  width: 88px; height: 88px;
+  border-radius: 12px;
   background: var(--bht2-header-bg, rgba(15,23,42,0.7));
   border: 1px solid var(--bht2-current-accent, rgba(56,189,248,0.25));
   flex-shrink: 0;
