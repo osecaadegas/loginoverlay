@@ -336,7 +336,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
 
   const searchSlotImages = async () => {
-    const q = `${submitForm.name || ''} ${submitForm.provider || ''} slot`.trim();
+    const q = `${submitForm.name || ''} ${submitForm.provider || ''} slot stake`.trim();
     if (!q || q === 'slot') return;
     setSubmitImageSearching(true);
     setSubmitImageResults([]);
