@@ -3399,20 +3399,21 @@ body.wm-resizing {
   margin-bottom: 6px;
 }
 .bh-submit-preview {
-  width: 72px;
-  height: 72px;
+  width: 120px;
+  height: 120px;
   border-radius: 6px;
-  object-fit: cover;
+  object-fit: contain;
   border: 2px solid rgba(168, 85, 247, 0.4);
+  background: rgba(0, 0, 0, 0.3);
 }
 .bh-submit-img-btn {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
   padding: 2px;
-  background: transparent;
+  background: rgba(0, 0, 0, 0.2);
   cursor: pointer;
-  width: 72px;
-  height: 72px;
+  width: 120px;
+  height: 120px;
   overflow: hidden;
   flex-shrink: 0;
   transition: border-color 0.2s;
@@ -3426,7 +3427,7 @@ body.wm-resizing {
 .bh-submit-img-btn img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 6px;
 }
 

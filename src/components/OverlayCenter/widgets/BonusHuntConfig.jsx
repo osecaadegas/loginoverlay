@@ -331,8 +331,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
 
-  const searchSlotImages = async () => {
-    const q = `${submitForm.name || ''} ${submitForm.provider || ''} slot stake`.trim();
+  const searchSlotImages = async (nameOverride, providerOverride) => {
+    const n = nameOverride || submitForm.name || '';
+    const p = providerOverride || submitForm.provider || '';
+    const q = `${n} ${p} slot stake`.trim();
     if (!q || q === 'slot') return;
     setSubmitImageSearching(true);
     setSubmitImageResults([]);
@@ -343,6 +345,19 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     } catch { /* noop */ }
     setSubmitImageSearching(false);
   };
+
+  // Auto-fetch images when name + provider are both filled
+  const autoFetchRef = useRef('');
+  useEffect(() => {
+    const n = (submitForm.name || '').trim();
+    const p = (submitForm.provider || '').trim();
+    if (!n || !p || !showSubmitSlot) return;
+    const key = `${n}|${p}`;
+    if (key === autoFetchRef.current) return;
+    autoFetchRef.current = key;
+    const timer = setTimeout(() => searchSlotImages(n, p), 400);
+    return () => clearTimeout(timer);
+  }, [submitForm.name, submitForm.provider, showSubmitSlot]);
 
   const handleSlotSubmit = async () => {
     if (!submitForm.name?.trim() || !submitForm.provider?.trim() || !submitForm.image?.trim()) {
@@ -845,10 +860,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 {submitForm.image && (
                   <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                 )}
-                {submitImageResults.slice(0, 6).map((img, i) => (
+                {submitImageResults.slice(0, 10).map((img, i) => (
                   <button key={i} type="button" className={`bh-submit-img-btn${submitForm.image === img.url ? ' selected' : ''}`}
-                    onClick={() => { setField('image', img.url); setSubmitImageResults([]); }}>
-                    <img src={img.thumb} alt="" />
+                    onClick={() => setField('image', img.url)}>
+                    <img src={img.url} alt="" />
                   </button>
                 ))}
               </div>
