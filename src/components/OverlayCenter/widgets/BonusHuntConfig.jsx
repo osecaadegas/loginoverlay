@@ -462,15 +462,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [saveHuntMsg, setSaveHuntMsg] = useState('');
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
 
-  // GTB Transfer state
-  const [showGtbModal, setShowGtbModal] = useState(false);
-  const [gtbPassword, setGtbPassword] = useState('');
-  const [gtbSessionTitle, setGtbSessionTitle] = useState('');
-  const [gtbCasinoBrand, setGtbCasinoBrand] = useState('');
-  const [gtbCasinoImage, setGtbCasinoImage] = useState('');
-  const [gtbTransferring, setGtbTransferring] = useState(false);
-  const [gtbMessage, setGtbMessage] = useState({ type: '', text: '' });
-
   useEffect(() => {
     const loadSlots = async () => {
       try {
@@ -592,75 +583,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   };
 
   // SHA-256 hash helper (must match admin panel)
-  const hashPassword = async (password) => {
-    const encoder = new TextEncoder();
-    const data = encoder.encode(password);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-  };
-
-  // Transfer bonuses to GTB
-  const handleTransferToGtb = async () => {
-    if (!gtbPassword.trim()) {
-      setGtbMessage({ type: 'error', text: 'Please enter the transfer password.' });
-      return;
-    }
-    if (!gtbSessionTitle.trim()) {
-      setGtbMessage({ type: 'error', text: 'Please enter a session title.' });
-      return;
-    }
-    if (bonusList.length === 0) {
-      setGtbMessage({ type: 'error', text: 'No bonuses to transfer.' });
-      return;
-    }
-
-    setGtbTransferring(true);
-    setGtbMessage({ type: '', text: '' });
-
-    try {
-      const hash = await hashPassword(gtbPassword.trim());
-
-      // Map bonus list to GTB slot format
-      const slotsPayload = bonusList.map(bonus => ({
-        slot_name: bonus.slotName || bonus.slot?.name || 'Unknown',
-        slot_image_url: bonus.slot?.image || '',
-        provider: bonus.slot?.provider || '',
-        bet_value: bonus.betSize || 0,
-        is_super: bonus.isSuperBonus || false,
-        is_extreme: bonus.isExtremeBonus || false,
-      }));
-
-      const startValue = Number(startMoney) || 0;
-
-      const { data, error } = await supabase.rpc('verify_gtb_transfer_password', {
-        p_password_hash: hash,
-        p_session_title: gtbSessionTitle.trim(),
-        p_start_value: startValue,
-        p_casino_brand: gtbCasinoBrand.trim(),
-        p_casino_image_url: gtbCasinoImage.trim(),
-        p_slots: slotsPayload,
-      });
-
-      if (error) throw error;
-
-      setGtbMessage({ type: 'success', text: `✅ Transferred ${bonusList.length} bonuses to GTB session! Session ID: ${data}` });
-      setGtbPassword('');
-      // Close modal after a brief delay
-      setTimeout(() => {
-        setShowGtbModal(false);
-        setGtbMessage({ type: '', text: '' });
-        setGtbSessionTitle('');
-        setGtbCasinoBrand('');
-        setGtbCasinoImage('');
-      }, 2500);
-    } catch (err) {
-      setGtbMessage({ type: 'error', text: err.message || 'Transfer failed. Check your password.' });
-    } finally {
-      setGtbTransferring(false);
-    }
-  };
-
   // Save hunt to library & start new
   const handleSaveAndClose = async () => {
     if (!userId) { setSaveHuntMsg('⚠️ Not logged in'); return; }
@@ -954,102 +876,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </div>
         )}
       </div>
-
-      {/* ─── Send to GTB ─── */}
-      {bonusList.length > 0 && (
-        <div className="bh-panel-section">
-          <div className="bh-gtb-action-bar">
-            <div className="bh-gtb-action-info">
-              <span className="bh-gtb-action-icon">📤</span>
-              <div className="bh-gtb-action-text">
-                <span className="bh-gtb-action-title">Send to Guess the Balance</span>
-                <span className="bh-gtb-action-desc">Transfer {bonusList.length} bonus{bonusList.length !== 1 ? 'es' : ''} to a new GTB session</span>
-              </div>
-            </div>
-            <button
-              className="bh-gtb-send-btn"
-              onClick={() => { setShowGtbModal(prev => !prev); setGtbMessage({ type: '', text: '' }); }}
-            >
-              {showGtbModal ? 'Close ✕' : 'Send to GTB →'}
-            </button>
-          </div>
-
-          {/* Inline dropdown form */}
-          {showGtbModal && (
-            <div className="bh-gtb-dropdown">
-              <p className="bh-gtb-dropdown-info">
-                Creates a new GTB session with <strong>{bonusList.length}</strong> bonus{bonusList.length !== 1 ? 'es' : ''}. Requires an admin transfer password.
-              </p>
-
-              <div className="bh-gtb-form-group">
-                <label>Session Title *</label>
-                <input
-                  type="text"
-                  value={gtbSessionTitle}
-                  onChange={e => setGtbSessionTitle(e.target.value)}
-                  placeholder="e.g. Bonus Hunt #42"
-                  className="bh-gtb-input"
-                />
-              </div>
-
-              <div className="bh-gtb-form-group">
-                <label>Casino Brand</label>
-                <input
-                  type="text"
-                  value={gtbCasinoBrand}
-                  onChange={e => setGtbCasinoBrand(e.target.value)}
-                  placeholder="e.g. Stake, Duelbits..."
-                  className="bh-gtb-input"
-                />
-              </div>
-
-              <div className="bh-gtb-form-group">
-                <label>Casino Logo URL</label>
-                <input
-                  type="text"
-                  value={gtbCasinoImage}
-                  onChange={e => setGtbCasinoImage(e.target.value)}
-                  placeholder="https://..."
-                  className="bh-gtb-input"
-                />
-              </div>
-
-              <div className="bh-gtb-form-group">
-                <label>Transfer Password *</label>
-                <input
-                  type="password"
-                  value={gtbPassword}
-                  onChange={e => setGtbPassword(e.target.value)}
-                  onKeyDown={e => { if (e.key === 'Enter') handleTransferToGtb(); }}
-                  placeholder="Enter admin transfer password"
-                  className="bh-gtb-input bh-gtb-input--password"
-                  autoComplete="off"
-                />
-              </div>
-
-              {gtbMessage.text && (
-                <div className={`bh-gtb-message bh-gtb-message--${gtbMessage.type}`}>
-                  {gtbMessage.text}
-                </div>
-              )}
-
-              <div className="bh-gtb-dropdown-summary">
-                <span>🎰 {bonusList.length} bonuses</span>
-                <span>💰 Start: {currency}{Number(startMoney) || 0}</span>
-                <span>📊 Total bet: {currency}{bonusList.reduce((s, b) => s + (b.betSize || 0), 0).toFixed(2)}</span>
-              </div>
-
-              <button
-                className="bh-gtb-confirm"
-                onClick={handleTransferToGtb}
-                disabled={gtbTransferring || !gtbPassword.trim() || !gtbSessionTitle.trim()}
-              >
-                {gtbTransferring ? '⏳ Transferring...' : '📤 Transfer to GTB'}
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* ─── Bonus List ─── */}
       <div className="bh-panel-section">

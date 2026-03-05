@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { getBonusHuntHistory, deleteBonusHuntHistory } from '../../services/overlayService';
+import { supabase } from '../../config/supabaseClient';
 
 export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
   const { user } = useAuth();
@@ -17,12 +18,63 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
 
+  const hashPassword = async (password) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(password);
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+  };
+
+  const handleTransferToGtb = async (hunt) => {
+    if (!gtbPassword.trim()) { setGtbMessage({ type: 'error', text: 'Please enter the transfer password.' }); return; }
+    if (!gtbSessionTitle.trim()) { setGtbMessage({ type: 'error', text: 'Please enter a session title.' }); return; }
+    const bonuses = hunt.bonuses || [];
+    if (bonuses.length === 0) { setGtbMessage({ type: 'error', text: 'No bonuses to transfer.' }); return; }
+    setGtbTransferring(true);
+    setGtbMessage({ type: '', text: '' });
+    try {
+      const hash = await hashPassword(gtbPassword.trim());
+      const slotsPayload = bonuses.map(b => ({
+        slot_name: b.slotName || b.slot?.name || 'Unknown',
+        slot_image_url: b.slot?.image || '',
+        provider: b.slot?.provider || '',
+        bet_value: b.betSize || 0,
+        is_super: b.isSuperBonus || false,
+        is_extreme: b.isExtremeBonus || false,
+      }));
+      const { data, error } = await supabase.rpc('verify_gtb_transfer_password', {
+        p_password_hash: hash,
+        p_session_title: gtbSessionTitle.trim(),
+        p_start_value: Number(hunt.start_money) || 0,
+        p_casino_brand: gtbCasinoBrand.trim(),
+        p_casino_image_url: gtbCasinoImage.trim(),
+        p_slots: slotsPayload,
+      });
+      if (error) throw error;
+      setGtbMessage({ type: 'success', text: `\u2705 Transferred ${bonuses.length} bonuses to GTB!` });
+      setGtbPassword('');
+      setTimeout(() => { setGtbHuntId(null); setGtbMessage({ type: '', text: '' }); setGtbSessionTitle(''); setGtbCasinoBrand(''); setGtbCasinoImage(''); }, 2500);
+    } catch (err) {
+      setGtbMessage({ type: 'error', text: err.message || 'Transfer failed. Check your password.' });
+    } finally { setGtbTransferring(false); }
+  };
+
   // UI state
   const [searchQuery, setSearchQuery] = useState('');
   const [sortBy, setSortBy] = useState('date-desc');   // date-desc | date-asc | profit-desc | profit-asc | bonuses-desc
   const [expandedId, setExpandedId] = useState(null);
   const [confirmDelete, setConfirmDelete] = useState(null);
   const [viewMode, setViewMode] = useState('grid');      // grid | list
+
+  // GTB Transfer state
+  const [gtbHuntId, setGtbHuntId] = useState(null);
+  const [gtbPassword, setGtbPassword] = useState('');
+  const [gtbSessionTitle, setGtbSessionTitle] = useState('');
+  const [gtbCasinoBrand, setGtbCasinoBrand] = useState('');
+  const [gtbCasinoImage, setGtbCasinoImage] = useState('');
+  const [gtbTransferring, setGtbTransferring] = useState(false);
+  const [gtbMessage, setGtbMessage] = useState({ type: '', text: '' });
 
   // ── Load hunts ──
   const loadHunts = useCallback(async () => {
@@ -478,6 +530,14 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
                             💾 Download JSON
                           </button>
 
+                          <button
+                            className="bhl-download-btn"
+                            onClick={() => { setGtbHuntId(gtbHuntId === hunt.id ? null : hunt.id); setGtbMessage({ type: '', text: '' }); setGtbSessionTitle(hunt.hunt_name || ''); }}
+                            title="Send to Guess the Balance"
+                          >
+                            {gtbHuntId === hunt.id ? '✕ Close GTB' : '📤 Send to GTB'}
+                          </button>
+
                           {confirmDelete === hunt.id ? (
                             <div className="bhl-confirm-row">
                               <span className="bhl-confirm-text">Delete this hunt?</span>
@@ -497,6 +557,32 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
                             </button>
                           )}
                         </div>
+
+                        {/* GTB inline form */}
+                        {gtbHuntId === hunt.id && (
+                          <div className="bh-gtb-dropdown" style={{ marginTop: 8 }}>
+                            <div className="bh-gtb-form-group">
+                              <label>Session Title *</label>
+                              <input type="text" value={gtbSessionTitle} onChange={e => setGtbSessionTitle(e.target.value)} placeholder="e.g. Bonus Hunt #42" className="bh-gtb-input" />
+                            </div>
+                            <div className="bh-gtb-form-group">
+                              <label>Casino Brand</label>
+                              <input type="text" value={gtbCasinoBrand} onChange={e => setGtbCasinoBrand(e.target.value)} placeholder="e.g. Stake, Duelbits..." className="bh-gtb-input" />
+                            </div>
+                            <div className="bh-gtb-form-group">
+                              <label>Casino Logo URL</label>
+                              <input type="text" value={gtbCasinoImage} onChange={e => setGtbCasinoImage(e.target.value)} placeholder="https://..." className="bh-gtb-input" />
+                            </div>
+                            <div className="bh-gtb-form-group">
+                              <label>Transfer Password *</label>
+                              <input type="password" value={gtbPassword} onChange={e => setGtbPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleTransferToGtb(hunt); }} placeholder="Enter admin transfer password" className="bh-gtb-input bh-gtb-input--password" autoComplete="off" />
+                            </div>
+                            {gtbMessage.text && <div className={`bh-gtb-message bh-gtb-message--${gtbMessage.type}`}>{gtbMessage.text}</div>}
+                            <button className="bh-gtb-confirm" onClick={() => handleTransferToGtb(hunt)} disabled={gtbTransferring || !gtbPassword.trim() || !gtbSessionTitle.trim()}>
+                              {gtbTransferring ? '⏳ Transferring...' : `📤 Transfer ${(hunt.bonuses || []).length} bonuses to GTB`}
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
