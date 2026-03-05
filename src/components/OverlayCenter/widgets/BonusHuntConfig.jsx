@@ -1160,22 +1160,14 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
       <StatChip label="Start" value={fmtV(start)} />
       <StatChip label="Total Bet" value={fmtV(totalBet)} />
       <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
-      <StatChip label="P/L" value={fmtV(profit)} color={profitColor} />
+      <StatChip label="Target" value={fmtV(profit)} color={profitColor} />
       <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} />
-      <StatChip label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
 
       {openedCount > 0 && (
         <>
           <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.3)' }} />
           <StatChip label="🏆 Best" value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + '…' : bestSlot} ${bestMulti.toFixed(1)}x`} color="#4ade80" />
           <StatChip label="💀 Worst" value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + '…' : worstSlot} ${worstMulti.toFixed(1)}x`} color="#f87171" />
-        </>
-      )}
-
-      {openedCount > 0 && neededToBreakEven > 0 && remainingBonuses > 0 && (
-        <>
-          <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.3)' }} />
-          <StatChip label="⚡ Break-even" value={`${fmtV(neededToBreakEven)} from ${remainingBonuses} · avg ${fmtV(avgNeeded)}/ea`} color="#fbbf24" />
         </>
       )}
     </div>
