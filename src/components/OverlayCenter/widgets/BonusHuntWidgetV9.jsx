@@ -209,6 +209,13 @@ function BonusHuntWidgetV9({ config, theme }) {
                     </div>
                     <div className="bhv9-card-overlay" />
 
+                    {/* extreme mystery cover */}
+                    {(bonus.isExtremeBonus || bonus.isExtreme) && !bonus.opened && (
+                      <div className="bhv9-extreme-cover">
+                        <span className="bhv9-extreme-cover-icon">🔥</span>
+                      </div>
+                    )}
+
                     {/* top badges */}
                     <div className="bhv9-card-badges">
                       <span className="bhv9-badge bhv9-badge--idx">#{idx + 1}</span>

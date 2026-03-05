@@ -208,6 +208,13 @@ function BonusHuntWidgetV8({ config, theme }) {
                   {/* gradient overlay */}
                   <div className="bhv8-card-overlay" />
 
+                  {/* extreme mystery cover */}
+                  {(bonus.isExtremeBonus || bonus.isExtreme) && !bonus.opened && (
+                    <div className="bhv8-extreme-cover">
+                      <span className="bhv8-extreme-cover-icon">🔥</span>
+                    </div>
+                  )}
+
                   {/* top badges */}
                   <div className="bhv8-card-badges">
                     <span className="bhv8-badge bhv8-badge--count">
