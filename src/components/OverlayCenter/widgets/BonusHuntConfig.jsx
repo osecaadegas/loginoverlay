@@ -117,19 +117,20 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
       {mode !== 'widget' && <div className="bh-quick-row">
         <label className="oc-config-field">
           <span>Currency</span>
-          <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} style={{ width: 60 }} />
-        </label>
-        <label className="oc-config-field" style={{ flex: 1 }}>
-          <span>Display Style</span>
-          <select value={c.displayStyle || 'v1'} onChange={e => set('displayStyle', e.target.value)}>
-            <option value="v1">Style 1 — Classic</option>
-            <option value="v2">Style 2 — Sleek Dark</option>
-            <option value="v3">Style 3 — Flip Card</option>
-            <option value="v4_neon">Style 4 — Neon</option>
-            <option value="v5_horizontal">Style 5 — Horizontal</option>
-            <option value="v6_compact">Style 6 — Compact</option>
-            <option value="v7_carousel">Style 7 — Carousel</option>
-            <option value="v8_card_stack">Style 8 — Card Stack</option>
+          <select value={c.currency || '€'} onChange={e => set('currency', e.target.value)} style={{ width: 80 }}>
+            <option value="€">€ EUR</option>
+            <option value="$">$ USD</option>
+            <option value="£">£ GBP</option>
+            <option value="R$">R$ BRL</option>
+            <option value="kr">kr SEK/NOK</option>
+            <option value="¥">¥ JPY/CNY</option>
+            <option value="₹">₹ INR</option>
+            <option value="₿">₿ BTC</option>
+            <option value="C$">C$ CAD</option>
+            <option value="A$">A$ AUD</option>
+            <option value="CHF">CHF</option>
+            <option value="PLN">PLN</option>
+            <option value="TRY">₺ TRY</option>
           </select>
         </label>
       </div>}
