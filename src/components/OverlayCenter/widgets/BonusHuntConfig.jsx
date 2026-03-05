@@ -999,7 +999,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
           {bonusList.length === 0 ? (
             <p className="bh-list-empty">No bonuses added yet</p>
           ) : [...bonusList].sort((a, b) => {
-            if (sortBy === 'bet') return (b.betSize || 0) - (a.betSize || 0);
+            if (sortBy === 'bet') return (a.betSize || 0) - (b.betSize || 0);
             if (sortBy === 'provider') {
               const pa = (a.slot?.provider || '').toLowerCase();
               const pb = (b.slot?.provider || '').toLowerCase();

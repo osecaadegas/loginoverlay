@@ -35,7 +35,7 @@ function BonusHuntWidget({ config, theme }) {
     const sb = c.sortBy;
     if (!sb || sb === 'default') return bonusesRaw;
     return [...bonusesRaw].sort((a, b) => {
-      if (sb === 'bet') return (b.betSize || 0) - (a.betSize || 0);
+      if (sb === 'bet') return (a.betSize || 0) - (b.betSize || 0);
       if (sb === 'provider') {
         const pa = (a.slot?.provider || '').toLowerCase();
         const pb = (b.slot?.provider || '').toLowerCase();
