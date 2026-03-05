@@ -676,7 +676,7 @@ function BonusHuntPanel({ config, onChange, userId, currency: panelCurrency }) {
       <div className="bh-panel-section">
         <h4 className="bh-panel-label">Hunt Settings</h4>
         <div className="bh-settings-row">
-          <label className="bh-input-group">
+          <label className="bh-input-group bh-input-sm">
             <span>Hunt #</span>
             <input type="text" value={huntNumber}
               placeholder="42"

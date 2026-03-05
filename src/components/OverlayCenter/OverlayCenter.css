@@ -3139,6 +3139,11 @@ body.wm-resizing {
   min-width: 0;
 }
 
+.bh-input-group.bh-input-sm {
+  flex: 0 0 60px;
+  max-width: 60px;
+}
+
 .bh-input-group span {
   font-size: 0.68rem;
   color: #64748b;
