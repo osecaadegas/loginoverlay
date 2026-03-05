@@ -373,7 +373,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   // Auto-fetch slot info from demoslot.com when name is filled
   const slotInfoFetchRef = useRef('');
   const [slotInfoLoading, setSlotInfoLoading] = useState(false);
-  const [demoSlotImage, setDemoSlotImage] = useState('');
+  const [scrapedImages, setScrapedImages] = useState([]); // images from demoslot + slotark
   useEffect(() => {
     const n = (submitForm.name || '').trim();
     if (!n || n.length < 3 || !showSubmitSlot) return;
@@ -386,7 +386,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         if (res.ok) {
           const { info } = await res.json();
           if (info) {
-            if (info.image) setDemoSlotImage(info.image);
+            // Store all scraped images (demoslot + slotark)
+            setScrapedImages(info.images || (info.image ? [info.image] : []));
             setSubmitForm(prev => ({
               ...prev,
               ...(info.provider && !prev.provider ? { provider: info.provider } : {}),
@@ -396,12 +397,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               ...(info.image && !prev.image ? { image: info.image } : {}),
             }));
           } else {
-            setDemoSlotImage('');
+            setScrapedImages([]);
           }
         } else {
-          setDemoSlotImage('');
+          setScrapedImages([]);
         }
-      } catch { setDemoSlotImage(''); }
+      } catch { setScrapedImages([]); }
       setSlotInfoLoading(false);
     }, 600);
     return () => clearTimeout(timer);
@@ -903,18 +904,20 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 </div>
               </label>
             </div>
-            {(submitImageResults.length > 0 || submitForm.image || demoSlotImage) && (
+            {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0) && (
               <div className="bh-submit-images">
                 {submitForm.image && (
                   <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                 )}
-                {demoSlotImage && (
-                  <button type="button" className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === demoSlotImage ? ' selected' : ''}`}
-                    onClick={() => setField('image', demoSlotImage)} title="Image from DemoSlot.com">
-                    <img src={demoSlotImage} alt="" />
-                    <span className="bh-demoslot-badge">DemoSlot</span>
+                {scrapedImages.map((imgUrl, i) => (
+                  <button key={`scraped-${i}`} type="button"
+                    className={`bh-submit-img-btn bh-demoslot-img${submitForm.image === imgUrl ? ' selected' : ''}`}
+                    onClick={() => setField('image', imgUrl)}
+                    title={imgUrl.includes('slotark') ? 'Image from SlotArk' : 'Image from DemoSlot'}>
+                    <img src={imgUrl} alt="" />
+                    <span className="bh-demoslot-badge">{imgUrl.includes('slotark') ? 'SlotArk' : 'DemoSlot'}</span>
                   </button>
-                )}
+                ))}
                 {submitImageResults.slice(0, 10).map((img, i) => (
                   <button key={i} type="button" className={`bh-submit-img-btn${submitForm.image === img.url ? ' selected' : ''}`}
                     onClick={() => setField('image', img.url)}>
@@ -924,7 +927,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               </div>
             )}
             <div className="bh-submit-actions">
-              <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setDemoSlotImage(''); slotInfoFetchRef.current = ''; }}>Cancel</button>
+              <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setScrapedImages([]); slotInfoFetchRef.current = ''; }}>Cancel</button>
               <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
                 {submitSaving ? 'Submitting…' : '📤 Submit for Approval'}
               </button>
