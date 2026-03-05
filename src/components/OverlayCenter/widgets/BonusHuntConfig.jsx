@@ -1114,6 +1114,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         bonusList={bonusList}
         startMoney={startMoney}
         targetMoney={targetMoney}
+        stopLoss={stopLoss}
         currency={currency}
       />
 
@@ -1124,7 +1125,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 /* ═══════════════════════════════════════════════════════
    FLOATING STATS FAB — draggable, bottom-right default
    ═══════════════════════════════════════════════════════ */
-function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
+function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, currency }) {
   /* Compute stats */
   const total = bonusList.length;
   const opened = bonusList.filter(b => b.opened);
@@ -1132,7 +1133,9 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
   const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
   const totalPayout = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
   const start = Number(startMoney) || 0;
-  const profit = totalPayout - start;
+  const sl = Number(stopLoss) || 0;
+  const target = sl > 0 ? start - sl : start;
+  const profit = totalPayout - target;
   const avgMulti = openedCount > 0
     ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / openedCount
     : 0;
@@ -1177,7 +1180,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
       <StatChip label="Start" value={fmtV(start)} />
       <StatChip label="Total Bet" value={fmtV(totalBet)} />
       <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
-      <StatChip label="Target" value={fmtV(profit)} color={profitColor} />
+      <StatChip label="Target" value={fmtV(target)} color="#c084fc" />
       <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} />
       <StatChip label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
 
