@@ -1232,34 +1232,42 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
         📊
       </div>
 
-      {/* Stats bottom bar */}
+      {/* Stats floating panel — anchored to FAB position */}
       {open && (
         <div style={{
           position: 'fixed',
-          left: 0, right: 0, bottom: 0,
+          right: useFixed.right - 110,
+          bottom: useFixed.bottom + 62,
+          width: 360,
           background: 'linear-gradient(135deg, #1a1040 0%, #0f0a2a 100%)',
-          borderTop: '1px solid rgba(124,58,237,0.35)',
-          boxShadow: '0 -4px 30px rgba(0,0,0,0.5), 0 0 15px rgba(124,58,237,0.1)',
+          borderRadius: 14,
+          border: '1px solid rgba(124,58,237,0.35)',
+          boxShadow: '0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(124,58,237,0.15)',
           zIndex: 99998,
-          padding: '8px 16px',
+          padding: '12px 14px',
           color: '#e2e8f0',
           fontFamily: "'Inter', sans-serif",
           fontSize: 12,
         }}>
-          {/* Close button */}
-          <button onClick={() => setOpen(false)} style={{
-            position: 'absolute', top: 6, right: 12,
-            background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 6,
-            color: '#94a3b8', cursor: 'pointer', padding: '2px 8px', fontSize: 13, fontWeight: 600,
-          }}>✕</button>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <span style={{ fontSize: 15 }}>📊</span>
+              <span style={{ fontWeight: 700, fontSize: 13, color: '#fff' }}>Hunt Stats</span>
+            </div>
+            <button onClick={() => setOpen(false)} style={{
+              background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 6,
+              color: '#94a3b8', cursor: 'pointer', padding: '2px 8px', fontSize: 12, fontWeight: 600,
+            }}>✕</button>
+          </div>
 
           {total === 0 ? (
-            <div style={{ textAlign: 'center', color: '#64748b', padding: '8px 0' }}>
+            <div style={{ textAlign: 'center', color: '#64748b', padding: '12px 0' }}>
               No bonuses added yet
             </div>
-          ) : (
-            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 6 }}>
-              {/* Main stats row */}
+          ) : (<>
+            {/* 4×3 grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
               <MiniStat label="Bonuses" value={`${openedCount}/${total}`} />
               <MiniStat label="Start" value={fmtV(start)} />
               <MiniStat label="Bet" value={fmtV(totalBet)} />
@@ -1267,17 +1275,40 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
               <MiniStat label="P/L" value={fmtV(profit)} color={profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#94a3b8'} />
               <MiniStat label="Avg x" value={`${avgMulti.toFixed(2)}x`} />
               <MiniStat label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
-              {openedCount > 0 && (
-                <>
-                  <MiniStat label="🏆 Best" value={`${bestSlot.slice(0, 12)}${bestSlot.length > 12 ? '…' : ''} ${bestMulti.toFixed(1)}x`} color="#4ade80" />
-                  <MiniStat label="💀 Worst" value={`${worstSlot.slice(0, 12)}${worstSlot.length > 12 ? '…' : ''} ${worstMulti.toFixed(1)}x`} color="#f87171" />
-                </>
-              )}
-              {openedCount > 0 && neededToBreakEven > 0 && remainingBonuses > 0 && (
-                <MiniStat label="⚡ Need" value={`${fmtV(neededToBreakEven)} from ${remainingBonuses}`} color="#fbbf24" />
-              )}
+              {openedCount > 0 ? (
+                <MiniStat label="🏆 Best" value={`${bestMulti.toFixed(1)}x`} color="#4ade80" />
+              ) : <div />}
             </div>
-          )}
+
+            {/* Best / Worst / Break-even row */}
+            {openedCount > 0 && (
+              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
+                <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', borderRadius: 8, padding: '5px 8px', border: '1px solid rgba(34,197,94,0.2)' }}>
+                  <div style={{ fontSize: 9, color: '#4ade80', fontWeight: 600 }}>🏆 BEST</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                    <span style={{ fontWeight: 600, fontSize: 11, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{bestSlot}</span>
+                    <span style={{ fontWeight: 800, fontSize: 12, color: '#4ade80' }}>{bestMulti.toFixed(1)}x</span>
+                  </div>
+                </div>
+                <div style={{ flex: 1, background: 'rgba(248,113,113,0.08)', borderRadius: 8, padding: '5px 8px', border: '1px solid rgba(248,113,113,0.2)' }}>
+                  <div style={{ fontSize: 9, color: '#f87171', fontWeight: 600 }}>💀 WORST</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
+                    <span style={{ fontWeight: 600, fontSize: 11, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{worstSlot}</span>
+                    <span style={{ fontWeight: 800, fontSize: 12, color: '#f87171' }}>{worstMulti.toFixed(1)}x</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {openedCount > 0 && neededToBreakEven > 0 && remainingBonuses > 0 && (
+              <div style={{ marginTop: 6, background: 'rgba(250,204,21,0.06)', borderRadius: 8, padding: '5px 8px', border: '1px solid rgba(250,204,21,0.15)' }}>
+                <div style={{ fontSize: 9, color: '#fbbf24', fontWeight: 600 }}>⚡ BREAK-EVEN</div>
+                <div style={{ fontSize: 11, color: '#e2e8f0', marginTop: 2 }}>
+                  Need <strong style={{ color: '#fbbf24' }}>{fmtV(neededToBreakEven)}</strong> from {remainingBonuses} bonus{remainingBonuses !== 1 ? 'es' : ''} · avg <strong>{fmtV(avgNeeded)}</strong>/ea
+                </div>
+              </div>
+            )}
+          </>)}
         </div>
       )}
     </>
