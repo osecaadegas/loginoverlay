@@ -1104,80 +1104,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
    FLOATING STATS FAB — draggable, bottom-right default
    ═══════════════════════════════════════════════════════ */
 function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
-  const [open, setOpen] = useState(false);
-  const [useFixed, setUseFixed] = useState({ right: 24, bottom: 24 }); // tracks right/bottom
-  const dragging = useRef(false);
-  const didDrag = useRef(false);
-  const dragStart = useRef({ x: 0, y: 0 });
-  const startPos = useRef({ x: 0, y: 0 });
-  const fabRef = useRef(null);
-
-  /* Convert right/bottom to left/top for dragging, then back */
-  const handleMouseDown = useCallback((e) => {
-    if (e.button !== 0) return;
-    e.preventDefault();
-    dragging.current = true;
-    didDrag.current = false;
-    const rect = fabRef.current.getBoundingClientRect();
-    dragStart.current = { x: e.clientX, y: e.clientY };
-    startPos.current = { x: rect.left, y: rect.top };
-    document.body.style.userSelect = 'none';
-
-    const onMove = (ev) => {
-      if (!dragging.current) return;
-      const dx = ev.clientX - dragStart.current.x;
-      const dy = ev.clientY - dragStart.current.y;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-      const newLeft = startPos.current.x + dx;
-      const newTop = startPos.current.y + dy;
-      const newRight = window.innerWidth - newLeft - 56;
-      const newBottom = window.innerHeight - newTop - 56;
-      setUseFixed({
-        right: Math.max(0, newRight),
-        bottom: Math.max(0, newBottom),
-      });
-    };
-    const onUp = () => {
-      dragging.current = false;
-      document.body.style.userSelect = '';
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-    };
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
-  }, []);
-
-  /* Touch support */
-  const handleTouchStart = useCallback((e) => {
-    const t = e.touches[0];
-    dragging.current = true;
-    didDrag.current = false;
-    const rect = fabRef.current.getBoundingClientRect();
-    dragStart.current = { x: t.clientX, y: t.clientY };
-    startPos.current = { x: rect.left, y: rect.top };
-
-    const onTouchMove = (ev) => {
-      if (!dragging.current) return;
-      const touch = ev.touches[0];
-      const dx = touch.clientX - dragStart.current.x;
-      const dy = touch.clientY - dragStart.current.y;
-      if (Math.abs(dx) > 3 || Math.abs(dy) > 3) didDrag.current = true;
-      const newLeft = startPos.current.x + dx;
-      const newTop = startPos.current.y + dy;
-      setUseFixed({
-        right: Math.max(0, window.innerWidth - newLeft - 56),
-        bottom: Math.max(0, window.innerHeight - newTop - 56),
-      });
-    };
-    const onTouchEnd = () => {
-      dragging.current = false;
-      document.removeEventListener('touchmove', onTouchMove);
-      document.removeEventListener('touchend', onTouchEnd);
-    };
-    document.addEventListener('touchmove', onTouchMove, { passive: false });
-    document.addEventListener('touchend', onTouchEnd);
-  }, []);
-
   /* Compute stats */
   const total = bonusList.length;
   const opened = bonusList.filter(b => b.opened);
@@ -1185,7 +1111,6 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
   const totalBet = bonusList.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
   const totalPayout = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
   const start = Number(startMoney) || 0;
-  const target = Number(targetMoney) || 0;
   const profit = totalPayout - start;
   const avgMulti = openedCount > 0
     ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / openedCount
@@ -1202,137 +1127,67 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, currency }) {
   });
   if (!isFinite(worstMulti)) worstMulti = 0;
 
-  const progressPct = target > 0 ? Math.min(100, (totalPayout / target) * 100) : 0;
+  const currentBE = totalBet > 0 ? start / totalBet : 0;
   const neededToBreakEven = Math.max(0, start - totalPayout);
   const remainingBonuses = total - openedCount;
-  const avgNeeded = remainingBonuses > 0 && neededToBreakEven > 0
-    ? neededToBreakEven / remainingBonuses
-    : 0;
-
-  const currentBE = totalBet > 0 ? start / totalBet : 0;
+  const avgNeeded = remainingBonuses > 0 && neededToBreakEven > 0 ? neededToBreakEven / remainingBonuses : 0;
 
   const fmtV = (v) => `${currency}${v.toFixed(2)}`;
 
+  if (total === 0) return null;
+
+  const profitColor = profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#cbd5e1';
+
   return (
-    <>
-      {/* FAB button */}
-      <div
-        ref={fabRef}
-        onMouseDown={handleMouseDown}
-        onTouchStart={handleTouchStart}
-        onClick={() => { if (!didDrag.current) setOpen(o => !o); }}
-        style={{
-          position: 'fixed',
-          right: useFixed.right,
-          bottom: useFixed.bottom,
-          width: 52, height: 52, borderRadius: '50%',
-          background: 'linear-gradient(135deg, #7c3aed, #6d28d9)',
-          color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 22, cursor: 'grab', zIndex: 99999,
-          boxShadow: '0 4px 20px rgba(124,58,237,0.5), 0 2px 8px rgba(0,0,0,0.3)',
-          border: '2px solid rgba(255,255,255,0.15)',
-          transition: dragging.current ? 'none' : 'box-shadow 0.2s',
-          userSelect: 'none', WebkitUserSelect: 'none',
-          touchAction: 'none',
-        }}
-        title="Hunt Stats"
-      >
-        📊
-      </div>
+    <div style={{
+      position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
+      background: 'linear-gradient(135deg, #1a1040 0%, #0f0a2a 100%)',
+      borderBottom: '1px solid rgba(124,58,237,0.3)',
+      boxShadow: '0 2px 16px rgba(0,0,0,0.5)',
+      padding: '6px 16px',
+      display: 'flex', alignItems: 'center', gap: 12,
+      flexWrap: 'wrap',
+      fontFamily: "'Inter', sans-serif",
+      color: '#e2e8f0',
+    }}>
+      {/* Title */}
+      <span style={{ fontWeight: 700, fontSize: 13, color: '#a78bfa', marginRight: 4, whiteSpace: 'nowrap' }}>📊 Hunt Stats</span>
 
-      {/* Stats floating panel — anchored to FAB position */}
-      {open && (
-        <div style={{
-          position: 'fixed',
-          right: useFixed.right - 110,
-          bottom: useFixed.bottom + 62,
-          width: 360,
-          background: 'linear-gradient(135deg, #1a1040 0%, #0f0a2a 100%)',
-          borderRadius: 14,
-          border: '1px solid rgba(124,58,237,0.35)',
-          boxShadow: '0 8px 40px rgba(0,0,0,0.5), 0 0 20px rgba(124,58,237,0.15)',
-          zIndex: 99998,
-          padding: '12px 14px',
-          color: '#e2e8f0',
-          fontFamily: "'Inter', sans-serif",
-          fontSize: 12,
-        }}>
-          {/* Header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <span style={{ fontSize: 15 }}>📊</span>
-              <span style={{ fontWeight: 700, fontSize: 13, color: '#fff' }}>Hunt Stats</span>
-            </div>
-            <button onClick={() => setOpen(false)} style={{
-              background: 'rgba(255,255,255,0.08)', border: 'none', borderRadius: 6,
-              color: '#94a3b8', cursor: 'pointer', padding: '2px 8px', fontSize: 12, fontWeight: 600,
-            }}>✕</button>
-          </div>
+      {/* Divider */}
+      <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.3)' }} />
 
-          {total === 0 ? (
-            <div style={{ textAlign: 'center', color: '#64748b', padding: '12px 0' }}>
-              No bonuses added yet
-            </div>
-          ) : (<>
-            {/* 4×3 grid */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6 }}>
-              <MiniStat label="Bonuses" value={`${openedCount}/${total}`} />
-              <MiniStat label="Start" value={fmtV(start)} />
-              <MiniStat label="Bet" value={fmtV(totalBet)} />
-              <MiniStat label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
-              <MiniStat label="P/L" value={fmtV(profit)} color={profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#94a3b8'} />
-              <MiniStat label="Avg x" value={`${avgMulti.toFixed(2)}x`} />
-              <MiniStat label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
-              {openedCount > 0 ? (
-                <MiniStat label="🏆 Best" value={`${bestMulti.toFixed(1)}x`} color="#4ade80" />
-              ) : <div />}
-            </div>
+      <StatChip label="Bonuses" value={`${openedCount} / ${total}`} />
+      <StatChip label="Start" value={fmtV(start)} />
+      <StatChip label="Total Bet" value={fmtV(totalBet)} />
+      <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
+      <StatChip label="P/L" value={fmtV(profit)} color={profitColor} />
+      <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} />
+      <StatChip label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
 
-            {/* Best / Worst / Break-even row */}
-            {openedCount > 0 && (
-              <div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
-                <div style={{ flex: 1, background: 'rgba(34,197,94,0.08)', borderRadius: 8, padding: '5px 8px', border: '1px solid rgba(34,197,94,0.2)' }}>
-                  <div style={{ fontSize: 9, color: '#4ade80', fontWeight: 600 }}>🏆 BEST</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
-                    <span style={{ fontWeight: 600, fontSize: 11, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{bestSlot}</span>
-                    <span style={{ fontWeight: 800, fontSize: 12, color: '#4ade80' }}>{bestMulti.toFixed(1)}x</span>
-                  </div>
-                </div>
-                <div style={{ flex: 1, background: 'rgba(248,113,113,0.08)', borderRadius: 8, padding: '5px 8px', border: '1px solid rgba(248,113,113,0.2)' }}>
-                  <div style={{ fontSize: 9, color: '#f87171', fontWeight: 600 }}>💀 WORST</div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 2 }}>
-                    <span style={{ fontWeight: 600, fontSize: 11, color: '#fff', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '65%' }}>{worstSlot}</span>
-                    <span style={{ fontWeight: 800, fontSize: 12, color: '#f87171' }}>{worstMulti.toFixed(1)}x</span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {openedCount > 0 && neededToBreakEven > 0 && remainingBonuses > 0 && (
-              <div style={{ marginTop: 6, background: 'rgba(250,204,21,0.06)', borderRadius: 8, padding: '5px 8px', border: '1px solid rgba(250,204,21,0.15)' }}>
-                <div style={{ fontSize: 9, color: '#fbbf24', fontWeight: 600 }}>⚡ BREAK-EVEN</div>
-                <div style={{ fontSize: 11, color: '#e2e8f0', marginTop: 2 }}>
-                  Need <strong style={{ color: '#fbbf24' }}>{fmtV(neededToBreakEven)}</strong> from {remainingBonuses} bonus{remainingBonuses !== 1 ? 'es' : ''} · avg <strong>{fmtV(avgNeeded)}</strong>/ea
-                </div>
-              </div>
-            )}
-          </>)}
-        </div>
+      {openedCount > 0 && (
+        <>
+          <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.3)' }} />
+          <StatChip label="🏆 Best" value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + '…' : bestSlot} ${bestMulti.toFixed(1)}x`} color="#4ade80" />
+          <StatChip label="💀 Worst" value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + '…' : worstSlot} ${worstMulti.toFixed(1)}x`} color="#f87171" />
+        </>
       )}
-    </>
+
+      {openedCount > 0 && neededToBreakEven > 0 && remainingBonuses > 0 && (
+        <>
+          <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.3)' }} />
+          <StatChip label="⚡ Break-even" value={`${fmtV(neededToBreakEven)} from ${remainingBonuses} · avg ${fmtV(avgNeeded)}/ea`} color="#fbbf24" />
+        </>
+      )}
+    </div>
   );
 }
 
-/* Compact inline stat for the bottom bar */
-function MiniStat({ label, value, color }) {
+/* Compact stat chip for the top bar */
+function StatChip({ label, value, color }) {
   return (
-    <div style={{
-      display: 'inline-flex', flexDirection: 'column', alignItems: 'center',
-      background: 'rgba(255,255,255,0.04)', borderRadius: 6, padding: '4px 8px',
-      border: '1px solid rgba(255,255,255,0.06)', minWidth: 60,
-    }}>
-      <span style={{ fontSize: 9, color: '#94a3b8', fontWeight: 500, whiteSpace: 'nowrap' }}>{label}</span>
-      <span style={{ fontSize: 12, fontWeight: 700, color: color || '#fff', whiteSpace: 'nowrap' }}>{value}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', whiteSpace: 'nowrap' }}>
+      <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, lineHeight: 1.2 }}>{label}</span>
+      <span style={{ fontSize: 13, fontWeight: 700, color: color || '#fff', lineHeight: 1.3 }}>{value}</span>
     </div>
   );
 }
