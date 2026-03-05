@@ -370,6 +370,37 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     return () => clearTimeout(timer);
   }, [submitForm.name, submitForm.provider, showSubmitSlot]);
 
+  // Auto-fetch slot info from demoslot.com when name is filled
+  const slotInfoFetchRef = useRef('');
+  const [slotInfoLoading, setSlotInfoLoading] = useState(false);
+  useEffect(() => {
+    const n = (submitForm.name || '').trim();
+    if (!n || n.length < 3 || !showSubmitSlot) return;
+    if (n === slotInfoFetchRef.current) return;
+    slotInfoFetchRef.current = n;
+    const timer = setTimeout(async () => {
+      setSlotInfoLoading(true);
+      try {
+        const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(n)}`);
+        if (res.ok) {
+          const { info } = await res.json();
+          if (info) {
+            setSubmitForm(prev => ({
+              ...prev,
+              ...(info.provider && !prev.provider ? { provider: info.provider } : {}),
+              ...(info.rtp && !prev.rtp ? { rtp: String(info.rtp) } : {}),
+              ...(info.volatility && !prev.volatility ? { volatility: info.volatility } : {}),
+              ...(info.max_win_multiplier && !prev.max_win_multiplier ? { max_win_multiplier: String(info.max_win_multiplier) } : {}),
+              ...(info.image && !prev.image ? { image: info.image } : {}),
+            }));
+          }
+        }
+      } catch { /* noop */ }
+      setSlotInfoLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [submitForm.name, showSubmitSlot]);
+
   const handleSlotSubmit = async () => {
     if (!submitForm.name?.trim() || !submitForm.provider?.trim() || !submitForm.image?.trim()) {
       return alert('Name, Provider, and Image URL are required.');
@@ -825,7 +856,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           <div className="bh-submit-dropdown">
             <div className="bh-submit-grid">
               <label className="bh-submit-field">
-                <span>Name <em>*</em></span>
+                <span>Name <em>*</em>{slotInfoLoading && ' ⏳'}</span>
                 <input value={submitForm.name || ''} onChange={e => setField('name', e.target.value)} placeholder="Sweet Bonanza" />
               </label>
               <label className="bh-submit-field">
