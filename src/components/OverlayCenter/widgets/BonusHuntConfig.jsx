@@ -115,9 +115,9 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
     <div className="bh-config">
       {/* Top quick toggles — only in sidebar or full mode */}
       {mode !== 'widget' && <div className="bh-quick-row">
-        <label className="oc-config-field" style={{ flex: 1 }}>
+        <label className="oc-config-field">
           <span>Currency</span>
-          <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} />
+          <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} style={{ width: 60 }} />
         </label>
         <label className="oc-config-field" style={{ flex: 1 }}>
           <span>Display Style</span>
@@ -131,10 +131,6 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             <option value="v7_carousel">Style 7 — Carousel</option>
             <option value="v8_card_stack">Style 8 — Card Stack</option>
           </select>
-        </label>
-        <label className="bh-check-row">
-          <input type="checkbox" checked={!!c.huntActive} onChange={e => set('huntActive', e.target.checked)} />
-          <span>Hunt Active</span>
         </label>
       </div>}
 
@@ -787,9 +783,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </div>
         )}
 
-        {/* Row 1: Search + Bet */}
+        {/* Row 1: Search only */}
         <div className="bh-add-row">
-          <div className="bh-search-container" ref={searchRef}>
+          <div className="bh-search-container bh-search-half" ref={searchRef}>
             <input
               type="text"
               className="bh-search-input"
@@ -831,15 +827,17 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               </div>
             )}
           </div>
+        </div>
 
+        {/* Row 2: Bet + Add + Super + Extreme */}
+        <div className="bh-add-row">
           <input type="number" className="bh-bet-field" value={betSize}
             onChange={e => setBetSize(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
             placeholder={`Bet (${currency})`} step="0.1" />
-        </div>
-
-        {/* Row 2: Super + Extreme + Add */}
-        <div className="bh-add-row">
+          <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
+            + Add
+          </button>
           <button
             type="button"
             className={`bh-super-btn${isSuperBonus ? ' active' : ''}`}
@@ -856,9 +854,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             onClick={() => { setIsExtremeBonus(p => !p); if (!isExtremeBonus) setIsSuperBonus(false); }}
             onDoubleClick={() => { if (!betSize || !selectedSlot) return; setIsExtremeBonus(true); setIsSuperBonus(false); setTimeout(() => handleAddBonus(), 0); }}
           >Extreme</button>
-          <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
-            + Add
-          </button>
         </div>
       </div>
 

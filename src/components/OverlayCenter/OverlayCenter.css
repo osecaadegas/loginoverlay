@@ -3065,8 +3065,8 @@ body.wm-resizing {
 
 .bh-quick-row {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: flex-end;
+  gap: 8px;
 }
 
 .bh-check-row {
@@ -3175,6 +3175,11 @@ body.wm-resizing {
   position: relative;
   flex: 1 1 0;
   min-width: 0;
+}
+
+.bh-search-container.bh-search-half {
+  flex: 0 1 50%;
+  max-width: 50%;
 }
 
 .bh-search-input {
