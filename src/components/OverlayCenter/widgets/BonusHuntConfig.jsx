@@ -706,7 +706,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           <h4 className="bh-panel-label" style={{ margin: 0 }}>Add Bonus</h4>
           <button
             className={`bh-submit-slot-btn${showSubmitSlot ? ' active' : ''}`}
-            onClick={() => setShowSubmitSlot(p => !p)}
+            onClick={() => {
+              if (!showSubmitSlot && slotSearch.trim() && !selectedSlot) {
+                setField('name', slotSearch.trim());
+              }
+              setShowSubmitSlot(p => !p);
+            }}
           >
             {showSubmitSlot ? '✕ Close' : '+ Submit Slot'}
           </button>
@@ -848,20 +853,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           <button className="bh-add-btn" onClick={handleAddBonus} disabled={!selectedSlot || !betSize}>
             + Add
           </button>
-        </div>
-
-        {/* Options row */}
-        <div className="bh-options-row">
-          <label className="bh-option">
-            <input type="checkbox" checked={showStatistics}
-              onChange={e => { setShowStatistics(e.target.checked); save(bonusList, { showStatistics: e.target.checked }); }} />
-            <span>Statistics</span>
-          </label>
-          <label className="bh-option">
-            <input type="checkbox" checked={animatedTracker}
-              onChange={e => { setAnimatedTracker(e.target.checked); save(bonusList, { animatedTracker: e.target.checked }); }} />
-            <span>Animated</span>
-          </label>
         </div>
       </div>
 
