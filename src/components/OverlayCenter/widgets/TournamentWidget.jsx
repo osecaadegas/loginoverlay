@@ -323,7 +323,7 @@ function TournamentWidget({ config, theme }) {
         <div className="tw-slot-thumb" style={{
           position: 'relative', flexShrink: 0, overflow: 'hidden',
           ...(minimal
-            ? { width: 'clamp(60px, 38%, 160px)', borderRadius: 0 }
+            ? { width: 'clamp(56px, 38%, 160px)', borderRadius: 0 }
             : { width: 'clamp(40px, 20%, 100px)', aspectRatio: '1 / 1', borderRadius: 6 }),
         }}>
           {slotImage ? (
@@ -365,12 +365,12 @@ function TournamentWidget({ config, theme }) {
             maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis',
             lineHeight: 1.2,
             ...(minimal
-              ? { fontSize: 'clamp(11px, 2.4vw, 18px)', whiteSpace: 'nowrap' }
+              ? { fontSize: 'clamp(11px, 2.4vw, 20px)', whiteSpace: 'nowrap' }
               : { fontSize: nameSize + 2, whiteSpace: 'nowrap' }),
           }}>{name}</span>
           {showSlotName && slotName && (
             <span style={{
-              fontSize: minimal ? 'clamp(9px, 1.8vw, 14px)' : slotNameSize,
+              fontSize: minimal ? 'clamp(9px, 1.8vw, 15px)' : slotNameSize,
               color: slotNameColor, fontFamily,
               opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               maxWidth: '100%', textTransform: 'uppercase', letterSpacing: '0.3px',
@@ -381,7 +381,7 @@ function TournamentWidget({ config, theme }) {
             fontWeight: 700, fontFamily,
             color: valColor(result), lineHeight: 1.2,
             ...(minimal
-              ? { fontSize: 'clamp(11px, 2.2vw, 17px)' }
+              ? { fontSize: 'clamp(11px, 2.2vw, 18px)' }
               : { fontSize: resultSize }),
           }}>{fmtResult(result)}</span>
         </div>
