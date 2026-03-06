@@ -1160,7 +1160,7 @@ function TournamentWidget({ config, theme }) {
       return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
     };
 
-    /* ── 3D Glass Player Card ── */
+    /* ── Player Card — image fills card, name stripe top, stats bottom ── */
     const renderEsCard = (match, playerKey, large = false) => {
       const name = match[playerKey] || 'TBD';
       const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
@@ -1171,37 +1171,40 @@ function TournamentWidget({ config, theme }) {
       const isLoser = hasWinner && !isWinner;
       const vals = getVals(match, playerKey);
 
-      const cardW = large ? '100%' : '100%';
-      const imgH = large ? 'clamp(40px, 14vh, 100px)' : 'clamp(24px, 9vh, 55px)';
       const nameFs = large ? 'clamp(10px, 1.8vw, 16px)' : 'clamp(8px, 1.4vw, 13px)';
       const statFs = large ? 'clamp(10px, 1.4vw, 14px)' : 'clamp(7px, 1vw, 10px)';
       const labelFs = large ? 'clamp(7px, 0.9vw, 10px)' : 'clamp(6px, 0.7vw, 8px)';
-
-      /* Glow color based on state */
-      const glowColor = isWinner ? esGold : isLoser ? 'transparent' : esCyan;
       const borderGlow = isWinner ? esGold : esBorder;
 
       return (
         <div style={{
-          width: cardW, display: 'flex', flexDirection: 'column',
-          background: esCardBg,
-          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          width: '100%', height: '100%', position: 'relative',
+          display: 'flex', flexDirection: 'column',
           border: `1px solid ${borderGlow}`,
           borderRadius: large ? 14 : 8,
           overflow: 'hidden',
-          transform: isLoser
-            ? 'perspective(600px) rotateX(12deg) scale(0.92)'
-            : isWinner
-              ? 'perspective(600px) rotateY(0deg) scale(1.03)'
-              : 'perspective(600px) rotateY(0deg)',
           opacity: isLoser ? 0.4 : 1,
-          transition: 'transform 0.8s cubic-bezier(0.23,1,0.32,1), opacity 0.6s, box-shadow 0.6s, border-color 0.4s',
+          transition: 'opacity 0.6s, box-shadow 0.6s, border-color 0.4s',
           boxShadow: isWinner
-            ? `0 0 24px ${esGold}50, 0 0 60px ${esGold}18, inset 0 0 20px ${esGold}08`
+            ? `0 0 24px ${esGold}50, 0 0 60px ${esGold}18`
             : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${esCyan}10`,
-          position: 'relative',
         }}>
-          {/* Winner crown badge */}
+          {/* Full-bleed image */}
+          {slotImage ? (
+            <img src={slotImage} alt={name} style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', display: 'block',
+            }} />
+          ) : (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: `linear-gradient(135deg, ${esBg}, rgba(0,229,255,0.05))`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: large ? 28 : 16, color: 'rgba(255,255,255,0.06)',
+            }}>⚔</div>
+          )}
+
+          {/* Winner crown */}
           {isWinner && (
             <div style={{
               position: 'absolute', top: 4, right: 4, zIndex: 5,
@@ -1209,48 +1212,12 @@ function TournamentWidget({ config, theme }) {
             }}>🏆</div>
           )}
 
-          {/* Player image */}
+          {/* Name stripe — top */}
           <div style={{
-            width: '100%', height: imgH, position: 'relative',
-            overflow: 'hidden', flexShrink: 0,
-          }}>
-            {slotImage ? (
-              <img src={slotImage} alt={name} style={{
-                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-              }} />
-            ) : (
-              <div style={{
-                width: '100%', height: '100%',
-                background: `linear-gradient(135deg, ${esBg}, rgba(0,229,255,0.05))`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: large ? 28 : 16, color: 'rgba(255,255,255,0.06)',
-              }}>⚔</div>
-            )}
-
-            {/* Result overlay on image */}
-            {result !== null && (
-              <div style={{
-                position: 'absolute', bottom: 0, left: 0, right: 0,
-                background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
-                padding: large ? '8px 6px 4px' : '4px 4px 2px',
-                textAlign: 'center',
-              }}>
-                <span style={{
-                  fontSize: large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(10px, 1.6vw, 16px)',
-                  fontWeight: 900, fontFamily: esFont,
-                  color: valColor(result),
-                  textShadow: `0 0 10px ${valColor(result)}60`,
-                }}>{fmtResult(result)}</span>
-              </div>
-            )}
-          </div>
-
-          {/* Player name */}
-          <div style={{
-            padding: large ? '6px 8px 3px' : '3px 5px 1px',
+            position: 'relative', zIndex: 2,
+            padding: large ? '5px 8px' : '2px 5px',
+            background: 'rgba(0,0,0,0.75)',
             textAlign: 'center',
-            background: 'rgba(0,0,0,0.4)',
-            borderBottom: `1px solid ${esBorder}`,
           }}>
             <div style={{
               fontSize: nameFs, fontWeight: 800, fontFamily: esFont,
@@ -1260,13 +1227,33 @@ function TournamentWidget({ config, theme }) {
             }}>{name}</div>
           </div>
 
-          {/* Stats: Cost + Payment */}
+          {/* Spacer — lets image show through */}
+          <div style={{ flex: 1 }} />
+
+          {/* Result overlay (if any) */}
+          {result !== null && (
+            <div style={{
+              position: 'relative', zIndex: 2,
+              textAlign: 'center', padding: '2px 0',
+              background: 'rgba(0,0,0,0.6)',
+            }}>
+              <span style={{
+                fontSize: large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(10px, 1.6vw, 16px)',
+                fontWeight: 900, fontFamily: esFont,
+                color: valColor(result),
+                textShadow: `0 0 10px ${valColor(result)}60`,
+              }}>{fmtResult(result)}</span>
+            </div>
+          )}
+
+          {/* Stats bar — bottom */}
           <div style={{
-            display: 'flex', background: 'rgba(0,0,0,0.5)',
+            position: 'relative', zIndex: 2,
+            display: 'flex', background: 'rgba(0,0,0,0.75)',
           }}>
             <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
               <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#475569',
+                fontSize: labelFs, fontWeight: 600, color: '#94a3b8',
                 textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
               }}>Cost</div>
               <div style={{
@@ -1276,7 +1263,7 @@ function TournamentWidget({ config, theme }) {
             <div style={{ width: 1, background: esBorder }} />
             <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
               <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#475569',
+                fontSize: labelFs, fontWeight: 600, color: '#94a3b8',
                 textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
               }}>Payment</div>
               <div style={{
@@ -1323,24 +1310,6 @@ function TournamentWidget({ config, theme }) {
           backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
           transition: 'border-color 0.3s',
         }}>
-          {/* Match number label */}
-          <div style={{
-            position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)',
-            fontSize: 'clamp(6px, 0.7vw, 9px)', fontWeight: 700, fontFamily: esFont,
-            color: '#475569', textTransform: 'uppercase', letterSpacing: '1px', zIndex: 2,
-          }}>Match {globalIdx + 1}</div>
-
-          {/* Status badge */}
-          {hasWinner && (
-            <div style={{
-              position: 'absolute', bottom: 3, left: '50%', transform: 'translateX(-50%)',
-              fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 700, fontFamily: esFont,
-              color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px',
-              background: 'rgba(34,197,94,0.12)', padding: '1px 6px', borderRadius: 3,
-              border: '1px solid rgba(34,197,94,0.25)', zIndex: 2,
-            }}>Done</div>
-          )}
-
           <div style={{ flex: 1, minWidth: 0 }}>
             {renderEsCard(match, 'player1', false)}
           </div>
