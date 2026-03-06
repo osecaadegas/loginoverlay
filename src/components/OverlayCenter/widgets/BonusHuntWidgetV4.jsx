@@ -92,11 +92,6 @@ function BonusHuntWidgetV4({ config, theme }) {
     <div className="oc-widget-inner bht4-root" style={rootStyle}>
       {/* CRT scanline overlay */}
       <div className="bht4-scanlines" aria-hidden="true" />
-      {/* Corner decorations */}
-      <div className="bht4-corner bht4-corner--tl" aria-hidden="true" />
-      <div className="bht4-corner bht4-corner--tr" aria-hidden="true" />
-      <div className="bht4-corner bht4-corner--bl" aria-hidden="true" />
-      <div className="bht4-corner bht4-corner--br" aria-hidden="true" />
 
       {/* ═══ HEADER — Glitch title + live indicator ═══ */}
       <header className="bht4-header">

@@ -846,7 +846,7 @@
   display: flex;
   flex-direction: column;
   color: var(--v4-text, #e8e8f8);
-  background: #06060e;
+  background: transparent;
   scrollbar-width: thin;
   scrollbar-color: rgba(0,255,204,0.15) transparent;
 }
@@ -868,19 +868,7 @@
   100% { background-position: 0 4px; }
 }
 
-/* ── Corner decorations ── */
-.bht4-corner {
-  position: absolute; width: 18px; height: 18px; z-index: 6;
-  pointer-events: none;
-}
-.bht4-corner--tl { top: 4px; left: 4px; border-top: 2px solid var(--v4-neon1); border-left: 2px solid var(--v4-neon1); }
-.bht4-corner--tr { top: 4px; right: 4px; border-top: 2px solid var(--v4-neon1); border-right: 2px solid var(--v4-neon1); }
-.bht4-corner--bl { bottom: 4px; left: 4px; border-bottom: 2px solid var(--v4-neon2); border-left: 2px solid var(--v4-neon2); }
-.bht4-corner--br { bottom: 4px; right: 4px; border-bottom: 2px solid var(--v4-neon2); border-right: 2px solid var(--v4-neon2); }
-.bht4-corner--tl,
-.bht4-corner--tr { box-shadow: 0 0 6px rgba(0,255,204,0.25); }
-.bht4-corner--bl,
-.bht4-corner--br { box-shadow: 0 0 6px rgba(123,97,255,0.25); }
+/* (corner decorations removed) */
 
 /* ═══ HEADER — Glitch title ═══ */
 .bht4-header {
@@ -1200,7 +1188,7 @@
 /* Stream cards — full-bleed image */
 .bht4-stream-card {
   flex: 0 0 auto;
-  width: 130px; height: 100px;
+  width: 130px; height: 140px;
   position: relative; overflow: hidden;
   border: 1px solid rgba(255,255,255,0.04);
   clip-path: polygon(6% 0%, 100% 0%, 94% 100%, 0% 100%);
@@ -1268,7 +1256,7 @@
 /* ═══ POWER METER — Compact neon total payout ═══ */
 .bht4-power {
   position: relative; z-index: 2;
-  padding: 4px 14px 6px;
+  padding: 4px 14px 0;
 }
 .bht4-power-label {
   font-size: 0.5em; font-weight: 700; letter-spacing: 0.14em;
