@@ -43,6 +43,8 @@ function TournamentWidget({ config, theme }) {
   /* ─── Shatter effect: detect newly completed matches ─── */
   const [shatterInfo, setShatterInfo] = React.useState(null);
   const prevWinnersRef = React.useRef('');
+  /* Keep the just-finished match index visible during shatter animation */
+  const [shatterMatchIdx, setShatterMatchIdx] = React.useState(null);
 
   const winnersKey = allMatches.map(m => m.winner || '-').join('|');
   React.useLayoutEffect(() => {
@@ -57,6 +59,7 @@ function TournamentWidget({ config, theme }) {
         if (!m) continue;
         const loserKey = m.winner === 'player1' ? 'player2' : 'player1';
         const loserSlot = loserKey === 'player1' ? m.slot1 : m.slot2;
+        setShatterMatchIdx(i);
         setShatterInfo(old => old ? old : {
           imageUrl: loserSlot?.image || null,
           side: loserKey === 'player1' ? 'left' : 'right',
@@ -524,10 +527,18 @@ function TournamentWidget({ config, theme }) {
     const esBorder = c.esBorder || 'rgba(0,229,255,0.18)';
     const esFont   = fontFamily;
 
-    const currentMatch = matches[currentMatchIdx] || matches[0];
+    /* While the shatter animation plays, keep the just-finished match
+       in the Now Playing slot so the loser card visually shatters first,
+       THEN the winner slides to the done list. */
+    const isShatterHolding = shatterMatchIdx != null && shatterInfo;
+    const currentMatch = isShatterHolding
+      ? (allMatches[shatterMatchIdx] || matches[currentMatchIdx] || matches[0])
+      : (matches[currentMatchIdx] || matches[0]);
     const otherMatches = matches.filter((_, i) => i !== currentMatchIdx);
     const queuedMatches = otherMatches.filter(m => m.winner == null);
-    const doneMatches = otherMatches.filter(m => m.winner != null);
+    const doneMatches = isShatterHolding
+      ? otherMatches.filter(m => m.winner != null && m !== allMatches[shatterMatchIdx])
+      : otherMatches.filter(m => m.winner != null);
 
     /* Get cost/payment for a player */
     const getVals = (match, pKey) => {
@@ -740,17 +751,17 @@ function TournamentWidget({ config, theme }) {
 
     return (
       <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
+        display: 'flex', flexDirection: 'column',
         overflow: 'hidden', fontFamily: esFont,
         background: 'transparent', perspective: '1200px',
       }}>
         {/* ── Queued matches (single column, top) ── */}
         {queuedMatches.length > 0 && (
           <div style={{
-            flex: 1, display: 'flex', flexDirection: 'column',
+            flexShrink: 0, display: 'flex', flexDirection: 'column',
             gap: 'clamp(3px, 0.5vw, 8px)',
             padding: 'clamp(3px, 0.5vw, 8px)',
-            minHeight: 0, overflow: 'hidden',
+            overflow: 'hidden',
           }}>
             {queuedMatches.map((m, i) => renderEsOverviewMatch(m, i))}
           </div>
@@ -821,7 +832,7 @@ function TournamentWidget({ config, theme }) {
                   imageUrl={shatterInfo.imageUrl}
                   side={shatterInfo.side}
                   accentColor={esCyan}
-                  onComplete={() => setShatterInfo(null)}
+                  onComplete={() => { setShatterInfo(null); setShatterMatchIdx(null); }}
                 />
               )}
             </div>
