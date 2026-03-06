@@ -7,6 +7,7 @@ import {
   getTypeLabel,
   MATCH_STATUS,
 } from './tournament/tournamentEngine';
+import ShatterEffect from './tournament/ShatterEffect';
 
 /**
  * TournamentWidget — OBS overlay display for the unified tournament engine.
@@ -41,6 +42,32 @@ function TournamentWidget({ config, theme }) {
     const idx = matches.indexOf(target);
     return idx >= 0 ? idx : 0;
   })();
+
+  /* ─── Shatter effect: detect newly completed matches ─── */
+  const [shatterInfo, setShatterInfo] = React.useState(null);
+  const prevWinnersRef = React.useRef('');
+
+  const winnersKey = allMatches.map(m => m.winner || '-').join('|');
+  React.useLayoutEffect(() => {
+    const prev = prevWinnersRef.current;
+    prevWinnersRef.current = winnersKey;
+    if (!prev) return; // first render — skip
+    const prevArr = prev.split('|');
+    const currArr = winnersKey.split('|');
+    for (let i = 0; i < currArr.length; i++) {
+      if (currArr[i] !== '-' && prevArr[i] === '-') {
+        const m = allMatches[i];
+        if (!m) continue;
+        const loserKey = m.winner === 'player1' ? 'player2' : 'player1';
+        const loserSlot = loserKey === 'player1' ? m.slot1 : m.slot2;
+        setShatterInfo(old => old ? old : {
+          imageUrl: loserSlot?.image || null,
+          side: loserKey === 'player1' ? 'left' : 'right',
+        });
+        break;
+      }
+    }
+  }, [winnersKey]); // eslint-disable-line react-hooks/exhaustive-deps
 
   /* ─── Layout mode ─── */
   const layout = c.layout || 'grid';
@@ -1454,6 +1481,16 @@ function TournamentWidget({ config, theme }) {
               }}>
                 {renderEsCard(currentMatch, 'player2', true)}
               </div>
+
+              {/* Shatter overlay */}
+              {layout === 'esports' && shatterInfo && (
+                <ShatterEffect
+                  imageUrl={shatterInfo.imageUrl}
+                  side={shatterInfo.side}
+                  accentColor={esCyan}
+                  onComplete={() => setShatterInfo(null)}
+                />
+              )}
             </div>
           </div>
         )}
