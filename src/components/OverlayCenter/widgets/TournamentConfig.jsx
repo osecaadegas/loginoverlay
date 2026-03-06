@@ -268,6 +268,32 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     setBkShowSuggestions(prev => ({ ...prev, [idx]: false }));
   };
 
+  /* ─── Fill random players for testing ─── */
+  const RANDOM_NAMES = [
+    'xNightmare', 'LuckyDraw', 'SlotKing', 'BonusBeast', 'SpinMaster',
+    'CasinoWolf', 'JackpotJoe', 'ReelQueen', 'BigWinBob', 'MegaMulti',
+    'WildCard', 'ScatterGod', 'FreeSpin77', 'MaxBetMike', 'TurboSpin',
+    'GoldRush', 'DiamondDan', 'CherryPop', 'ThunderWin', 'RoyalFlush',
+  ];
+
+  const fillRandomPlayers = () => {
+    const shuffled = [...RANDOM_NAMES].sort(() => Math.random() - 0.5);
+    const randomSlots = slots.length > 0
+      ? [...slots].sort(() => Math.random() - 0.5)
+      : [];
+    const filled = localBracketPlayers.map((p, i) => ({
+      ...p,
+      name: shuffled[i % shuffled.length],
+      slot: randomSlots[i]
+        ? { name: randomSlots[i].name, image: randomSlots[i].image || randomSlots[i].image_url || null }
+        : p.slot,
+    }));
+    setLocalBracketPlayers(filled);
+    const newSearches = {};
+    filled.forEach((p, i) => { if (p.slot?.name) newSearches[i] = p.slot.name; });
+    setBkSlotSearches(newSearches);
+  };
+
   /* ─── Start bracket tournament ─── */
   const canStartBracket = localBracketPlayers.every(p => p.name.trim().length > 0);
 
@@ -454,7 +480,10 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
 
               {/* ── Players card ── */}
               <div className="bk-card">
-                <h4 className="bk-card-title">👥 Players</h4>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <h4 className="bk-card-title" style={{ margin: 0 }}>👥 Players</h4>
+                  <button className="bk-fill-btn" onClick={fillRandomPlayers}>🎲 Fill Random</button>
+                </div>
                 <div className="bk-players-scroll">
                   {localBracketPlayers.map((player, idx) => (
                     <div key={idx} className="bk-player-row">
