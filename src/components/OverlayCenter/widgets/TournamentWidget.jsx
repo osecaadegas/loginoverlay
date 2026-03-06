@@ -1083,9 +1083,9 @@ function TournamentWidget({ config, theme }) {
       </div>
     );
 
-    /* ── Build grid row template (3fr for active, 1fr per upcoming) ── */
+    /* ── Build grid row template — all rows equal, thin bar for label ── */
     const rowParts = [];
-    if (currentMatch) rowParts.push('3fr');
+    if (currentMatch) rowParts.push('auto', '1fr');
     upcomingMatches.forEach(() => rowParts.push('1fr'));
 
     return (
@@ -1097,31 +1097,25 @@ function TournamentWidget({ config, theme }) {
         padding: '0.8vw',
         gap: '0.6vw',
       }}>
-        {/* ── Current Match — highlighted wrapper ── */}
+        {/* ── PLAYING NOW thin bar ── */}
         {currentMatch && (
           <div style={{
-            display: 'flex', flexDirection: 'column',
-            minHeight: 0, gap: '0.4vw',
-            borderRadius: '0.6vw',
-            padding: '0.5vw',
-            border: `2px solid ${ftAccent}50`,
-            background: `linear-gradient(180deg, rgba(234,179,8,0.06), ${ftBg})`,
-            boxShadow: `0 0 24px ${ftAccent}10, inset 0 1px 0 ${ftAccent}20`,
+            padding: '0.15vh 0.6vw', borderRadius: '0.3vw',
+            background: `linear-gradient(90deg, ${ftAccent}, #ca8a04)`,
+            textAlign: 'center',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
-            <div style={{ flex: 1, minHeight: 0 }}>
-              {renderMatchRow(currentMatch, true)}
-            </div>
-            <div style={{
-              padding: '0.3vh 0.8vw', borderRadius: '0.3vw',
-              background: `linear-gradient(90deg, ${ftAccent}, #ca8a04)`,
-              textAlign: 'center', flexShrink: 0,
-            }}>
-              <span style={{
-                fontSize: '1.4vw', fontWeight: 900,
-                color: '#000', textTransform: 'uppercase', letterSpacing: '2px',
-                fontFamily: ftFont,
-              }}>▶ PLAYING NOW</span>
-            </div>
+            <span style={{
+              fontSize: '1vw', fontWeight: 900,
+              color: '#000', textTransform: 'uppercase', letterSpacing: '2px',
+              fontFamily: ftFont,
+            }}>▶ PLAYING NOW</span>
+          </div>
+        )}
+        {/* ── Current Match — same compact size as upcoming ── */}
+        {currentMatch && (
+          <div style={{ minHeight: 0 }}>
+            {renderMatchRow(currentMatch, false)}
           </div>
         )}
 
