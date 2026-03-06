@@ -1014,7 +1014,7 @@ function TournamentWidget({ config, theme }) {
     return (
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',
-        overflow: 'auto', fontFamily: ftFont,
+        overflow: 'hidden', fontFamily: ftFont,
         background: ftBg,
         padding: '1vw',
         gap: '1vw',
@@ -1022,15 +1022,13 @@ function TournamentWidget({ config, theme }) {
         {/* ── Current Match (large) ── */}
         {currentMatch && (
           <div style={{
-            display: 'flex', flexDirection: 'column',
-            gap: '0.6vh',
-            flexShrink: 0,
+            flex: 3, display: 'flex', flexDirection: 'column',
+            gap: '0.6vh', minHeight: 0,
           }}>
             {/* Player cards */}
             <div style={{
-              display: 'flex', alignItems: 'stretch',
-              gap: '1vw',
-              height: '42vh',
+              flex: 1, display: 'flex', alignItems: 'stretch',
+              gap: '1vw', minHeight: 0,
             }}>
               {renderFtPlayer(currentMatch, 'player1', true)}
               {renderFtVs(true)}
@@ -1041,7 +1039,7 @@ function TournamentWidget({ config, theme }) {
             <div style={{
               padding: '0.5vh 1vw', borderRadius: 4,
               background: `linear-gradient(135deg, ${ftAccent}, #ca8a04)`,
-              textAlign: 'center',
+              textAlign: 'center', flexShrink: 0,
             }}>
               <span style={{
                 fontSize: '1.8vw', fontWeight: 900,
@@ -1055,10 +1053,8 @@ function TournamentWidget({ config, theme }) {
         {/* ── Upcoming matches ── */}
         {upcomingMatches.length > 0 && upcomingMatches.map((m, i) => (
           <div key={i} style={{
-            display: 'flex', alignItems: 'stretch',
-            gap: '0.5vw',
-            height: '24vh',
-            flexShrink: 0,
+            flex: 1, display: 'flex', alignItems: 'stretch',
+            gap: '0.5vw', minHeight: 0,
           }}>
             {renderFtPlayer(m, 'player1', false)}
             {renderFtVs(false)}
