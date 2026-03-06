@@ -7965,9 +7965,9 @@ body.wm-resizing {
   padding: 2px 6px; min-width: 26px; text-align: center;
   flex-shrink: 0;
 }
-.bk-player-fields { flex: 1; display: flex; gap: 4px; align-items: center; }
+.bk-player-fields { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .bk-player-fields .bk-input { padding: 4px 6px; font-size: 11px; }
-.bk-player-fields .bk-slot-wrap { flex: 1; }
+.bk-player-fields .bk-slot-wrap { width: 100%; }
 
 /* ─── Slot search ─── */
 .bk-slot-wrap { position: relative; }
