@@ -1,6 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
 import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
 import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
+import BonusHuntWidgetV4 from './BonusHuntWidgetV4';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
 
@@ -81,6 +82,9 @@ function BonusHuntWidget({ config, theme }) {
   }
   if (c.displayStyle === 'v2') {
     return <BonusHuntWidgetV2 config={sortedConfig} theme={theme} />;
+  }
+  if (c.displayStyle === 'v4_neon') {
+    return <BonusHuntWidgetV4 config={sortedConfig} theme={theme} />;
   }
   if (c.displayStyle === 'v8_card_stack') {
     return <BonusHuntWidgetV8 config={sortedConfig} theme={theme} />;
