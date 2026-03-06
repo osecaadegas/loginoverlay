@@ -301,6 +301,9 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   /* Bracket slot search state */
   const [bkSlotSearches, setBkSlotSearches] = useState({});
   const [bkShowSuggestions, setBkShowSuggestions] = useState({});
+  const [editingMatchSlots, setEditingMatchSlots] = useState(false);
+  const [matchSlotSearch, setMatchSlotSearch] = useState({ player1: '', player2: '' });
+  const [matchSlotSuggest, setMatchSlotSuggest] = useState({ player1: false, player2: false });
 
   const updateBracketPlayer = (idx, field, value) => {
     setLocalBracketPlayers(prev => prev.map((p, i) => i === idx ? { ...p, [field]: value } : p));
@@ -395,15 +398,39 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   /* ─── Bracket match editing ─── */
   const currentBracketMatch = bracketData[bracketActiveRound]?.matches[bracketActiveMatch] || null;
 
+  /* Helper: find next non-completed match after the current one */
+  const findNextMatch = (bracket, curRound, curMatch) => {
+    for (let r = curRound; r < bracket.length; r++) {
+      const startM = r === curRound ? curMatch + 1 : 0;
+      for (let m = startM; m < bracket[r].matches.length; m++) {
+        const mt = bracket[r].matches[m];
+        if (mt.status !== MATCH_STATUS.COMPLETED && mt.winner == null && mt.player1 && mt.player2) {
+          return { round: r, match: m };
+        }
+      }
+    }
+    return null;
+  };
+
   const handleBracketRoundInput = (roundIdx, playerKey, field, value) => {
     if (!currentBracketMatch) return;
     const { bracket: newBracket, matchCompleted } = updateBracketMatch(
       bracketData, bracketActiveRound, bracketActiveMatch, roundIdx, playerKey, { [field]: value }, localBracketPlayers
     );
+    let nextRound = bracketActiveRound;
+    let nextMatch = bracketActiveMatch;
+
+    if (matchCompleted) {
+      const next = findNextMatch(newBracket, bracketActiveRound, bracketActiveMatch);
+      if (next) { nextRound = next.round; nextMatch = next.match; }
+    }
+
     const flatMatches = newBracket.flatMap(r => r.matches);
-    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
+    const activeFlat = flatMatches.indexOf(newBracket[nextRound]?.matches[nextMatch]);
     const updates = {
       bracketData: newBracket,
+      bracketActiveRound: nextRound,
+      bracketActiveMatch: nextMatch,
       data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
     };
     if (matchCompleted && getChampion(newBracket)) {
@@ -424,10 +451,20 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     if (newWinner) {
       newBracket = propagateWinner(newBracket, bracketActiveRound, bracketActiveMatch, localBracketPlayers);
     }
+
+    let nextRound = bracketActiveRound;
+    let nextMatch = bracketActiveMatch;
+    if (newWinner) {
+      const next = findNextMatch(newBracket, bracketActiveRound, bracketActiveMatch);
+      if (next) { nextRound = next.round; nextMatch = next.match; }
+    }
+
     const flatMatches = newBracket.flatMap(r => r.matches);
-    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
+    const activeFlat = flatMatches.indexOf(newBracket[nextRound]?.matches[nextMatch]);
     const updates = {
       bracketData: newBracket,
+      bracketActiveRound: nextRound,
+      bracketActiveMatch: nextMatch,
       data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
     };
     if (newWinner && getChampion(newBracket)) {
@@ -448,6 +485,26 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       bracketData: newBracket,
       data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
     });
+  };
+
+  const handleMatchSlotChange = (playerKey, slot) => {
+    const slotKey = playerKey === 'player1' ? 'slot1' : 'slot2';
+    let newBracket = bracketData.map(r => ({
+      ...r,
+      matches: r.matches.map(m => ({ ...m, rounds: m.rounds.map(rd => ({ ...rd })) })),
+    }));
+    newBracket[bracketActiveRound].matches[bracketActiveMatch] = {
+      ...newBracket[bracketActiveRound].matches[bracketActiveMatch],
+      [slotKey]: { name: slot.name, image: slot.image || slot.image_url || null },
+    };
+    const flatMatches = newBracket.flatMap(r => r.matches);
+    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
+    setMulti({
+      bracketData: newBracket,
+      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
+    });
+    setMatchSlotSearch(prev => ({ ...prev, [playerKey]: slot.name }));
+    setMatchSlotSuggest(prev => ({ ...prev, [playerKey]: false }));
   };
 
   const bracketStats = getBracketStats(bracketData);
@@ -674,15 +731,70 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                       <h4 className="bk-mp-title">
                         {bracketData[bracketActiveRound]?.label} — Match {bracketActiveMatch + 1}/{bracketData[bracketActiveRound]?.matches.length}
                       </h4>
-                      <div className="bk-mp-status">
-                        {currentBracketMatch.status === MATCH_STATUS.COMPLETED
-                          ? <span className="bk-badge bk-badge--done">Completed</span>
-                          : currentBracketMatch.status === MATCH_STATUS.IN_PROGRESS
-                            ? <span className="bk-badge bk-badge--live">In Progress</span>
-                            : <span className="bk-badge bk-badge--pending">Pending</span>
-                        }
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                        <button
+                          className={`bk-badge ${editingMatchSlots ? 'bk-badge--live' : ''}`}
+                          style={{ cursor: 'pointer', border: 'none', fontSize: 10, padding: '2px 8px' }}
+                          onClick={() => {
+                            setEditingMatchSlots(prev => !prev);
+                            if (!editingMatchSlots) {
+                              setMatchSlotSearch({
+                                player1: currentBracketMatch.slot1?.name || '',
+                                player2: currentBracketMatch.slot2?.name || '',
+                              });
+                            }
+                          }}>
+                          ✏️ Slots
+                        </button>
+                        <div className="bk-mp-status">
+                          {currentBracketMatch.status === MATCH_STATUS.COMPLETED
+                            ? <span className="bk-badge bk-badge--done">Completed</span>
+                            : currentBracketMatch.status === MATCH_STATUS.IN_PROGRESS
+                              ? <span className="bk-badge bk-badge--live">In Progress</span>
+                              : <span className="bk-badge bk-badge--pending">Pending</span>
+                          }
+                        </div>
                       </div>
                     </div>
+
+                    {/* Inline slot editor */}
+                    {editingMatchSlots && (
+                      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+                        {['player1', 'player2'].map(pk => {
+                          const slotKey = pk === 'player1' ? 'slot1' : 'slot2';
+                          return (
+                            <div key={pk} style={{ flex: 1, position: 'relative' }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: '#64748b', marginBottom: 2 }}>
+                                {currentBracketMatch[pk]} slot
+                              </div>
+                              <input
+                                type="text"
+                                value={matchSlotSearch[pk]}
+                                onChange={e => {
+                                  setMatchSlotSearch(prev => ({ ...prev, [pk]: e.target.value }));
+                                  setMatchSlotSuggest(prev => ({ ...prev, [pk]: e.target.value.length > 0 }));
+                                }}
+                                onFocus={() => { if (matchSlotSearch[pk]?.length > 0) setMatchSlotSuggest(p => ({ ...p, [pk]: true })); }}
+                                placeholder="Search slot..."
+                                style={{ width: '100%', fontSize: 11 }}
+                              />
+                              {matchSlotSuggest[pk] && filteredSlots(matchSlotSearch[pk] || '').length > 0 && (
+                                <div className="bk-slot-dropdown" style={{ maxHeight: 120 }}>
+                                  {filteredSlots(matchSlotSearch[pk] || '').map(slot => (
+                                    <button key={slot.id || slot.name}
+                                      className="bk-slot-option"
+                                      onMouseDown={() => handleMatchSlotChange(pk, slot)}>
+                                      {slot.image && <img src={slot.image || slot.image_url} alt="" className="bk-slot-option-img" />}
+                                      <span>{slot.name}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {/* Player names banner */}
                     <div className="bk-mp-players">

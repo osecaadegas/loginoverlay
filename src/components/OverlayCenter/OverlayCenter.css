@@ -8180,6 +8180,10 @@ body.wm-resizing {
   text-transform: uppercase; letter-spacing: 0.3px;
 }
 .bk-mp-input-wrap { display: flex; align-items: center; gap: 0; }
+.bk-mp-input-wrap input[type="number"] {
+  max-width: 90px; height: 34px; font-size: 14px;
+  text-align: center; padding: 4px 6px;
+}
 .bk-mp-input-prefix {
   font-size: 11px; color: #475569; font-weight: 700; padding-right: 2px;
 }
