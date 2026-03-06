@@ -113,6 +113,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     'bkHeaderBg', 'bkHeaderColor', 'bkAccent', 'bkDividerColor',
     'bkFinalBg', 'bkFinalBorder', 'bkRowBg', 'tournamentNumber',
     'arenaAccent', 'arenaWinColor', 'arenaCardBg', 'arenaCurrency', 'arenaLoseOpacity',
+    'ftAccent', 'ftCyan', 'ftBg', 'ftCardBg', 'ftBorder',
   ];
 
   /* ─── Built-in presets ─── */
@@ -200,6 +201,29 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         arenaWinColor: '#22c55e',
         arenaCardBg: '#1e1550',
         arenaCurrency: '$',
+      },
+    },
+    {
+      name: '🚀 Futuristic Masters',
+      builtin: true,
+      values: {
+        layout: 'futuristic',
+        showBg: true,
+        bgColor: '#0a1628',
+        borderRadius: 12,
+        borderWidth: 2,
+        borderColor: 'rgba(0,212,255,0.2)',
+        nameSize: 14,
+        multiSize: 16,
+        showSlotName: true,
+        containerPadding: 8,
+        cardGap: 6,
+        eliminatedOpacity: 0.4,
+        ftAccent: '#eab308',
+        ftCyan: '#00d4ff',
+        ftBg: '#0a1628',
+        ftCardBg: '#0f1f3a',
+        ftBorder: 'rgba(0,212,255,0.25)',
       },
     },
   ];
@@ -763,6 +787,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               { id: 'vertical', icon: '📋', label: 'Vertical' },
               { id: 'bracket',  icon: '📊', label: 'Bracket' },
               { id: 'arena',    icon: '⚔️', label: 'Arena' },
+              { id: 'futuristic', icon: '🚀', label: 'Futuristic' },
             ].map(m => (
               <button key={m.id}
                 className={`oc-bg-mode-btn ${(c.layout || 'grid') === m.id ? 'oc-bg-mode-btn--active' : ''}`}
@@ -781,6 +806,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               ? 'All matches listed with section headers — clean OBS list style.'
               : (c.layout || 'grid') === 'arena'
               ? 'Battle Arena — VS cards with profit display, winner highlights.'
+              : (c.layout || 'grid') === 'futuristic'
+              ? 'Sci-fi split — large current match + upcoming cards with mini bracket.'
               : 'Classic 2-column grid — fits all matches at once.'}
           </p>
 
@@ -832,6 +859,20 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 <input value={c.arenaCurrency || '€'} onChange={e => set('arenaCurrency', e.target.value)} style={{ width: 50 }} />
               </label>
               <SliderField label="Loser Opacity" value={Math.round((c.arenaLoseOpacity ?? 0.55) * 100)} onChange={v => set('arenaLoseOpacity', v / 100)} min={20} max={100} suffix="%" />
+            </>
+          )}
+
+          {/* ── Futuristic-specific colors ── */}
+          {(c.layout || 'grid') === 'futuristic' && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Futuristic Colors</h4>
+              <div className="nb-color-grid">
+                <ColorPicker label="Accent" value={c.ftAccent || '#eab308'} onChange={v => set('ftAccent', v)} />
+                <ColorPicker label="Cyan" value={c.ftCyan || '#00d4ff'} onChange={v => set('ftCyan', v)} />
+                <ColorPicker label="Background" value={c.ftBg || '#0a1628'} onChange={v => set('ftBg', v)} />
+                <ColorPicker label="Card BG" value={c.ftCardBg || '#0f1f3a'} onChange={v => set('ftCardBg', v)} />
+                <ColorPicker label="Border" value={c.ftBorder || 'rgba(0,212,255,0.25)'} onChange={v => set('ftBorder', v)} />
+              </div>
             </>
           )}
 

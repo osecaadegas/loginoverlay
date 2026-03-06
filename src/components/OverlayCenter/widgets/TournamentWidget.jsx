@@ -885,6 +885,483 @@ function TournamentWidget({ config, theme }) {
   };
 
   /* ═══════════════════════════════════════════════════════════════
+     FUTURISTIC — Sci-fi split layout: current match + upcoming
+     ═══════════════════════════════════════════════════════════════ */
+  const renderFuturistic = () => {
+    const ftAccent = c.ftAccent || '#eab308';
+    const ftCyan   = c.ftCyan   || '#00d4ff';
+    const ftBg     = c.ftBg     || '#0a1628';
+    const ftCardBg = c.ftCardBg || '#0f1f3a';
+    const ftBorder = c.ftBorder || 'rgba(0,212,255,0.25)';
+    const ftFont   = fontFamily;
+
+    const title = c.title || tData.title || 'TOURNAMENT';
+    const tournamentNum = c.tournamentNumber || '';
+    const prize = c.prize || tData.prize || '';
+    const bracketRounds = c.bracketData || [];
+    const playerCount = c.bracketPlayerCount || matches.length * 2 || 8;
+    const typeLabel = matches[0] ? getTypeLabel(matches[0].type) : '';
+
+    const currentMatch = matches[currentMatchIdx] || matches[0];
+    const upcomingMatches = matches.filter((m, i) => i !== currentMatchIdx && m.winner == null);
+    const completedCount = matches.filter(m => m.winner != null).length;
+
+    /* ── Helper: player card (large or small) ── */
+    const renderFtPlayer = (match, playerKey, large = false) => {
+      const name = match[playerKey] || 'TBD';
+      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const slotImage = pSlot?.image || null;
+      const slotName = pSlot?.name || '';
+      const result = getPlayerResult(match, playerKey);
+      const hasWinner = match.winner != null;
+      const isWinner = match.winner === playerKey;
+      const isElim = hasWinner && !isWinner;
+
+      /* Get cost/payment values */
+      const round = match?.rounds?.[0];
+      const rd = round?.[playerKey];
+      let costVal = null, payVal = null;
+      if (rd) {
+        if (match.type === 'spins') {
+          const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+          costVal = isNaN(s) ? null : s;
+          payVal = isNaN(e) ? null : e;
+        } else {
+          const cost = parseFloat(rd.bonusCost), pay = parseFloat(rd.bonusPayout);
+          costVal = isNaN(cost) ? null : cost;
+          payVal = isNaN(pay) ? null : pay;
+        }
+      }
+
+      const imgSize = large ? 'clamp(80px, 45%, 200px)' : 'clamp(36px, 35%, 80px)';
+      const nameFs = large ? 'clamp(16px, 3vw, 28px)' : 'clamp(10px, 1.8vw, 16px)';
+      const scoreFs = large ? 'clamp(22px, 4vw, 42px)' : 'clamp(14px, 2.2vw, 24px)';
+      const statFs = large ? 'clamp(10px, 1.4vw, 15px)' : 'clamp(8px, 1.2vw, 12px)';
+      const labelFs = large ? 'clamp(8px, 1vw, 11px)' : 'clamp(7px, 0.9vw, 9px)';
+
+      return (
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
+          background: ftCardBg,
+          border: `2px solid ${isWinner ? ftAccent : ftBorder}`,
+          borderRadius: large ? 12 : 8,
+          overflow: 'hidden', position: 'relative',
+          opacity: isElim ? 0.45 : 1,
+          ...(isWinner ? { boxShadow: `0 0 20px ${ftAccent}30, inset 0 0 20px ${ftAccent}08` } : {}),
+        }}>
+          {/* Player label header */}
+          <div style={{
+            padding: large ? '4px 10px' : '2px 6px',
+            background: 'rgba(0,0,0,0.5)',
+            borderBottom: `1px solid ${ftBorder}`,
+            textAlign: 'center',
+          }}>
+            <span style={{
+              fontSize: labelFs, fontWeight: 700, fontFamily: ftFont,
+              color: ftCyan, textTransform: 'uppercase', letterSpacing: '1.5px',
+            }}>{playerKey === 'player1' ? 'Player A' : 'Player B'}</span>
+          </div>
+
+          {/* Image + Score overlay */}
+          <div style={{
+            flex: 1, position: 'relative', display: 'flex',
+            alignItems: 'center', justifyContent: 'center',
+            minHeight: large ? 80 : 36,
+            background: 'rgba(0,0,0,0.2)',
+          }}>
+            {/* Score badge */}
+            {result !== null && (
+              <div style={{
+                position: 'absolute', top: large ? 6 : 3,
+                left: large ? 8 : 4, zIndex: 3,
+                background: 'rgba(0,0,0,0.8)',
+                border: `2px solid ${ftAccent}`,
+                borderRadius: 6, padding: large ? '4px 10px' : '2px 6px',
+              }}>
+                <span style={{
+                  fontSize: scoreFs, fontWeight: 900, fontFamily: ftFont,
+                  color: valColor(result),
+                }}>{typeof result === 'number' ? result.toFixed(0) : '—'}</span>
+              </div>
+            )}
+
+            {/* Slot image */}
+            {slotImage ? (
+              <img src={slotImage} alt={name} style={{
+                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+              }} />
+            ) : (
+              <div style={{
+                width: '100%', height: '100%', minHeight: large ? 80 : 36,
+                background: `linear-gradient(135deg, ${ftCardBg}, rgba(0,212,255,0.05))`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: large ? 32 : 18, color: 'rgba(255,255,255,0.08)',
+              }}>⚔</div>
+            )}
+
+            {/* Slot name badge */}
+            {slotName && (
+              <div style={{
+                position: 'absolute', top: large ? 6 : 3,
+                right: large ? 8 : 4, zIndex: 3,
+                background: 'rgba(0,0,0,0.75)',
+                borderRadius: 4, padding: large ? '2px 8px' : '1px 5px',
+              }}>
+                <span style={{
+                  fontSize: labelFs, fontWeight: 600, fontFamily: ftFont,
+                  color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px',
+                }}>{slotName}</span>
+              </div>
+            )}
+
+            {/* Winner crown */}
+            {isWinner && (
+              <div style={{
+                position: 'absolute', bottom: large ? 6 : 3,
+                right: large ? 8 : 4, fontSize: large ? 22 : 14, zIndex: 3,
+              }}>🏆</div>
+            )}
+          </div>
+
+          {/* Player name */}
+          <div style={{
+            padding: large ? '6px 10px 4px' : '3px 6px 2px',
+            textAlign: 'center',
+            background: 'rgba(0,0,0,0.6)',
+          }}>
+            <div style={{
+              fontSize: nameFs, fontWeight: 800, fontFamily: ftFont,
+              color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>{name}</div>
+          </div>
+
+          {/* Cost / Payment stats */}
+          <div style={{
+            display: 'flex', borderTop: `1px solid ${ftBorder}`,
+            background: 'rgba(0,0,0,0.5)',
+          }}>
+            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 4px' : '2px 3px' }}>
+              <div style={{ fontSize: labelFs, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Cost</div>
+              <div style={{ fontSize: statFs, fontWeight: 700, color: ftCyan, fontFamily: ftFont }}>
+                {costVal !== null ? `${currency}${costVal.toFixed(0)}` : '—'}
+              </div>
+            </div>
+            <div style={{ width: 1, background: ftBorder }} />
+            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 4px' : '2px 3px' }}>
+              <div style={{ fontSize: labelFs, color: '#64748b', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Payment</div>
+              <div style={{ fontSize: statFs, fontWeight: 700, color: '#4ade80', fontFamily: ftFont }}>
+                {payVal !== null ? `${currency}${payVal.toFixed(0)}` : '—'}
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    /* ── Mini bracket tree ── */
+    const renderMiniBracket = () => {
+      if (!bracketRounds.length) return null;
+      return (
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 6,
+          fontSize: 'clamp(7px, 0.9vw, 10px)', fontFamily: ftFont,
+          color: '#94a3b8', flexShrink: 0,
+        }}>
+          {bracketRounds.map((round, ri) => (
+            <React.Fragment key={ri}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2, alignItems: 'center' }}>
+                <span style={{
+                  fontSize: 'clamp(6px, 0.7vw, 8px)',
+                  fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px',
+                  color: ri === (c.bracketActiveRound ?? 0) ? ftAccent : '#64748b',
+                }}>{round.label || `R${ri + 1}`}</span>
+                {round.matches.map((m, mi) => {
+                  const done = m.winner != null;
+                  const active = ri === (c.bracketActiveRound ?? 0) && mi === (c.bracketActiveMatch ?? 0);
+                  return (
+                    <div key={mi} style={{
+                      width: 'clamp(30px, 5vw, 60px)', height: 'clamp(8px, 1.2vh, 14px)',
+                      borderRadius: 2, display: 'flex', alignItems: 'center', gap: 1,
+                      background: done ? 'rgba(34,197,94,0.2)' : active ? `${ftAccent}30` : 'rgba(255,255,255,0.05)',
+                      border: `1px solid ${active ? ftAccent : done ? 'rgba(34,197,94,0.4)' : 'rgba(255,255,255,0.08)'}`,
+                      overflow: 'hidden',
+                    }}>
+                      <div style={{
+                        flex: 1, height: '100%',
+                        background: done ? 'rgba(34,197,94,0.25)' : 'transparent',
+                        borderRight: '1px solid rgba(255,255,255,0.06)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <span style={{
+                          fontSize: 'clamp(5px, 0.6vw, 7px)', fontWeight: 700,
+                          color: done && m.winner === 'player1' ? ftAccent : '#64748b',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>{m.player1 ? m.player1.slice(0, 3).toUpperCase() : ''}</span>
+                      </div>
+                      <div style={{
+                        flex: 1, height: '100%',
+                        background: done ? 'rgba(34,197,94,0.25)' : 'transparent',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      }}>
+                        <span style={{
+                          fontSize: 'clamp(5px, 0.6vw, 7px)', fontWeight: 700,
+                          color: done && m.winner === 'player2' ? ftAccent : '#64748b',
+                          overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+                        }}>{m.player2 ? m.player2.slice(0, 3).toUpperCase() : ''}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+              {ri < bracketRounds.length - 1 && (
+                <div style={{
+                  width: 'clamp(6px, 1vw, 14px)', height: 1,
+                  background: 'rgba(255,255,255,0.15)',
+                }} />
+              )}
+            </React.Fragment>
+          ))}
+        </div>
+      );
+    };
+
+    /* ── VS Badge ── */
+    const renderFtVs = (large = false) => {
+      const sz = large ? 'clamp(32px, 5vw, 56px)' : 'clamp(20px, 3vw, 34px)';
+      return (
+        <div style={{
+          width: sz, height: sz,
+          borderRadius: '50%', flexShrink: 0,
+          background: `linear-gradient(135deg, ${ftAccent}, ${ftAccent}cc)`,
+          border: '3px solid rgba(0,0,0,0.5)',
+          boxShadow: `0 4px 16px rgba(0,0,0,0.5), 0 0 12px ${ftAccent}40`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: large ? 'clamp(14px, 2.2vw, 24px)' : 'clamp(10px, 1.5vw, 16px)',
+          fontWeight: 900, color: '#000', letterSpacing: '0.5px',
+          fontFamily: ftFont, alignSelf: 'center',
+        }}>VS</div>
+      );
+    };
+
+    /* ── Match status badge ── */
+    const renderStatusBadge = (match, idx) => {
+      const isPlaying = idx === currentMatchIdx && match.winner == null;
+      const isDone = match.winner != null;
+
+      if (isPlaying) {
+        return (
+          <div style={{
+            padding: '4px 14px', borderRadius: 4,
+            background: `linear-gradient(135deg, ${ftAccent}, #ca8a04)`,
+            textAlign: 'center',
+          }}>
+            <span style={{
+              fontSize: 'clamp(10px, 1.6vw, 16px)', fontWeight: 900,
+              color: '#000', textTransform: 'uppercase', letterSpacing: '2px',
+              fontFamily: ftFont,
+            }}>PLAYING NOW</span>
+          </div>
+        );
+      }
+      if (isDone) {
+        return (
+          <div style={{
+            padding: '2px 10px', borderRadius: 4,
+            background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)',
+            textAlign: 'center',
+          }}>
+            <span style={{
+              fontSize: 'clamp(8px, 1.2vw, 12px)', fontWeight: 700,
+              color: '#4ade80', textTransform: 'uppercase', letterSpacing: '1px',
+              fontFamily: ftFont,
+            }}>COMPLETED</span>
+          </div>
+        );
+      }
+      return (
+        <div style={{
+          padding: '2px 10px', borderRadius: 4,
+          background: `${ftCyan}15`, border: `1px solid ${ftCyan}30`,
+          textAlign: 'center',
+        }}>
+          <span style={{
+            fontSize: 'clamp(8px, 1.2vw, 12px)', fontWeight: 700,
+            color: ftCyan, textTransform: 'uppercase', letterSpacing: '1px',
+            fontFamily: ftFont,
+          }}>UPCOMING</span>
+        </div>
+      );
+    };
+
+    return (
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', fontFamily: ftFont,
+        background: ftBg,
+      }}>
+        {/* ── Header ── */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: 'clamp(6px, 1.2vh, 14px) clamp(8px, 1.5vw, 18px)',
+          borderBottom: `2px solid ${ftBorder}`,
+          background: 'rgba(0,0,0,0.4)',
+          flexShrink: 0,
+        }}>
+          {/* Left: icon + title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 'clamp(6px, 1vw, 12px)', minWidth: 0, flex: 1 }}>
+            <div style={{
+              width: 'clamp(24px, 3.5vw, 44px)', height: 'clamp(24px, 3.5vw, 44px)',
+              borderRadius: '50%', flexShrink: 0,
+              border: `2px solid ${ftCyan}`,
+              background: `radial-gradient(circle, ${ftCyan}20, transparent)`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 'clamp(12px, 1.8vw, 22px)',
+            }}>⚔</div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{
+                fontSize: 'clamp(11px, 2.2vw, 22px)', fontWeight: 900,
+                color: '#fff', textTransform: 'uppercase', letterSpacing: '1px',
+                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              }}>{title}{tournamentNum ? ` #${tournamentNum}` : ''}</div>
+              <div style={{
+                fontSize: 'clamp(7px, 1vw, 11px)', fontWeight: 600,
+                color: '#64748b', textTransform: 'uppercase', letterSpacing: '1.5px',
+              }}>{playerCount}-Player Single-Elimination{typeLabel ? ` • ${typeLabel}` : ''}</div>
+            </div>
+          </div>
+
+          {/* Right: mini bracket */}
+          {renderMiniBracket()}
+        </div>
+
+        {/* ── Match counter ── */}
+        <div style={{
+          display: 'flex', justifyContent: 'center', padding: 'clamp(3px, 0.6vh, 8px)',
+          background: 'rgba(0,0,0,0.3)', borderBottom: `1px solid ${ftBorder}`,
+          flexShrink: 0,
+        }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.5)', border: `1px solid ${ftBorder}`,
+            borderRadius: 4, padding: '2px 16px',
+          }}>
+            <span style={{
+              fontSize: 'clamp(9px, 1.3vw, 14px)', fontWeight: 700,
+              color: ftCyan, fontFamily: ftFont, letterSpacing: '1px',
+            }}>{completedCount + 1}</span>
+            <span style={{
+              fontSize: 'clamp(9px, 1.3vw, 14px)', fontWeight: 600,
+              color: '#64748b', fontFamily: ftFont, letterSpacing: '0.5px',
+            }}> MATCH {matches.length}</span>
+          </div>
+        </div>
+
+        {/* ── Main content: current match + upcoming ── */}
+        <div style={{
+          flex: 1, display: 'flex', gap: 'clamp(4px, 0.8vw, 12px)',
+          padding: 'clamp(4px, 0.8vw, 12px)',
+          overflow: 'hidden', minHeight: 0,
+        }}>
+          {/* ── LEFT: Current Match (large) ── */}
+          {currentMatch && (
+            <div style={{
+              flex: 3, display: 'flex', flexDirection: 'column',
+              gap: 'clamp(3px, 0.5vh, 8px)', minWidth: 0, minHeight: 0,
+              overflow: 'hidden',
+            }}>
+              {/* "CURRENT MATCH" header bar */}
+              <div style={{
+                background: `linear-gradient(90deg, ${ftAccent}25, transparent)`,
+                borderLeft: `3px solid ${ftAccent}`,
+                borderRadius: '0 6px 6px 0',
+                padding: 'clamp(2px, 0.5vh, 6px) clamp(6px, 1vw, 14px)',
+                textAlign: 'center', flexShrink: 0,
+              }}>
+                <span style={{
+                  fontSize: 'clamp(9px, 1.4vw, 15px)', fontWeight: 800,
+                  color: ftAccent, textTransform: 'uppercase', letterSpacing: '2px',
+                  fontFamily: ftFont,
+                }}>⚡ Current Match</span>
+              </div>
+
+              {/* Player cards */}
+              <div style={{
+                flex: 1, display: 'flex', alignItems: 'stretch',
+                gap: 'clamp(4px, 0.8vw, 10px)', minHeight: 0,
+              }}>
+                {renderFtPlayer(currentMatch, 'player1', true)}
+                {renderFtVs(true)}
+                {renderFtPlayer(currentMatch, 'player2', true)}
+              </div>
+
+              {/* Status badge */}
+              <div style={{ flexShrink: 0 }}>
+                {renderStatusBadge(currentMatch, currentMatchIdx)}
+              </div>
+            </div>
+          )}
+
+          {/* ── RIGHT: Upcoming matches (smaller) ── */}
+          {upcomingMatches.length > 0 && (
+            <div style={{
+              flex: 2, display: 'flex', flexDirection: 'column',
+              gap: 'clamp(3px, 0.5vh, 8px)', minWidth: 0, minHeight: 0,
+              overflow: 'auto',
+            }}>
+              {upcomingMatches.map((m, i) => {
+                const globalIdx = matches.indexOf(m);
+                return (
+                  <div key={i} style={{
+                    flex: 1, display: 'flex', flexDirection: 'column',
+                    gap: 'clamp(2px, 0.3vh, 4px)', minHeight: 0,
+                    background: 'rgba(0,0,0,0.2)',
+                    border: `1px solid ${ftBorder}`,
+                    borderRadius: 8, padding: 'clamp(3px, 0.5vh, 6px)',
+                  }}>
+                    {/* Match header with player labels */}
+                    <div style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      flexShrink: 0,
+                    }}>
+                      <span style={{
+                        fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 700,
+                        color: ftCyan, textTransform: 'uppercase', letterSpacing: '0.5px',
+                      }}>{m.player1 || 'TBD'}</span>
+                      <span style={{
+                        fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 700,
+                        color: '#64748b', textTransform: 'uppercase',
+                      }}>Match {globalIdx + 1}</span>
+                      <span style={{
+                        fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 700,
+                        color: ftCyan, textTransform: 'uppercase', letterSpacing: '0.5px',
+                      }}>{m.player2 || 'TBD'}</span>
+                    </div>
+
+                    {/* Cards row */}
+                    <div style={{
+                      flex: 1, display: 'flex', alignItems: 'stretch',
+                      gap: 'clamp(2px, 0.4vw, 6px)', minHeight: 0,
+                    }}>
+                      {renderFtPlayer(m, 'player1', false)}
+                      {renderFtVs(false)}
+                      {renderFtPlayer(m, 'player2', false)}
+                    </div>
+
+                    {/* Status */}
+                    <div style={{ flexShrink: 0 }}>
+                      {renderStatusBadge(m, globalIdx)}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
      GRID — 2-column card grid (or 1 col for neon / single match)
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
@@ -934,7 +1411,8 @@ function TournamentWidget({ config, theme }) {
       `}</style>
 
       {/* ── Layout-specific content ── */}
-      {layout === 'arena' ? renderArena()
+      {layout === 'futuristic' ? renderFuturistic()
+        : layout === 'arena' ? renderArena()
         : layout === 'bracket' ? renderBracket()
         : layout === 'showcase' ? renderShowcase()
         : (layout === 'vertical' || layout === 'minimal') ? renderVertical()
