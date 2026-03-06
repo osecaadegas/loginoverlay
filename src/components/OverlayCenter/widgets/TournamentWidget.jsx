@@ -1393,11 +1393,10 @@ function TournamentWidget({ config, theme }) {
         overflow: 'hidden', fontFamily: esFont,
         background: 'transparent', perspective: '1200px',
       }}>
-        {/* ── Queued matches (grid, top) ── */}
+        {/* ── Queued matches (single column, top) ── */}
         {queuedMatches.length > 0 && (
           <div style={{
-            flex: 1, display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
+            flex: 1, display: 'flex', flexDirection: 'column',
             gap: 'clamp(3px, 0.5vw, 8px)',
             padding: 'clamp(3px, 0.5vw, 8px)',
             minHeight: 0, overflow: 'hidden',
