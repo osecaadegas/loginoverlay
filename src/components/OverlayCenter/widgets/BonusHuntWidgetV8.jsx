@@ -210,7 +210,7 @@ function BonusHuntWidgetV8({ config, theme }) {
 
                   {/* extreme mystery cover */}
                   {(bonus.isExtremeBonus || bonus.isExtreme) && !bonus.opened && (
-                    <div className={`bhv8-extreme-cover${isCenter && isCurrent ? ' bhv8-extreme-cover--reveal' : ''}`} />
+                    <div className={`bhv8-extreme-cover${bonusOpening && isCenter && isCurrent ? ' bhv8-extreme-cover--reveal' : ''}`} />
                   )}
 
                   {/* top badges */}
