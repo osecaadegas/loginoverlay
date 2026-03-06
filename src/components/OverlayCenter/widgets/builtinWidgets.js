@@ -110,6 +110,7 @@ registerWidget({
     { id: 'minimal',  icon: '✦', label: 'Minimal' },
     { id: 'arena',    icon: '⚔', label: 'Arena' },
     { id: 'futuristic', icon: '🚀', label: 'Futuristic' },
+    { id: 'esports', icon: '🎮', label: 'Esports' },
   ],
   styleConfigKey: 'layout',
   defaults: {

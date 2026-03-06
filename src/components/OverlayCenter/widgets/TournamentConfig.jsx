@@ -114,6 +114,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     'bkFinalBg', 'bkFinalBorder', 'bkRowBg', 'tournamentNumber',
     'arenaAccent', 'arenaWinColor', 'arenaCardBg', 'arenaCurrency', 'arenaLoseOpacity',
     'ftAccent', 'ftCyan', 'ftBg', 'ftCardBg', 'ftBorder',
+    'esCyan', 'esPurple', 'esGold', 'esBg', 'esCardBg', 'esBorder',
   ];
 
   /* ─── Built-in presets ─── */
@@ -224,6 +225,30 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         ftBg: '#0a1628',
         ftCardBg: '#0f1f3a',
         ftBorder: 'rgba(0,212,255,0.25)',
+      },
+    },
+    {
+      name: '🎮 Cyberpunk Esports',
+      builtin: true,
+      values: {
+        layout: 'esports',
+        showBg: true,
+        bgColor: '#030712',
+        borderRadius: 12,
+        borderWidth: 1,
+        borderColor: 'rgba(0,229,255,0.15)',
+        nameSize: 14,
+        multiSize: 16,
+        showSlotName: false,
+        containerPadding: 6,
+        cardGap: 6,
+        eliminatedOpacity: 0.35,
+        esCyan: '#00e5ff',
+        esPurple: '#a855f7',
+        esGold: '#fbbf24',
+        esBg: '#030712',
+        esCardBg: 'rgba(15,23,42,0.75)',
+        esBorder: 'rgba(0,229,255,0.18)',
       },
     },
   ];
@@ -788,6 +813,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               { id: 'bracket',  icon: '📊', label: 'Bracket' },
               { id: 'arena',    icon: '⚔️', label: 'Arena' },
               { id: 'futuristic', icon: '🚀', label: 'Futuristic' },
+              { id: 'esports', icon: '🎮', label: 'Esports' },
             ].map(m => (
               <button key={m.id}
                 className={`oc-bg-mode-btn ${(c.layout || 'grid') === m.id ? 'oc-bg-mode-btn--active' : ''}`}
@@ -808,6 +834,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               ? 'Battle Arena — VS cards with profit display, winner highlights.'
               : (c.layout || 'grid') === 'futuristic'
               ? 'Sci-fi split — large current match + upcoming cards with mini bracket.'
+              : (c.layout || 'grid') === 'esports'
+              ? 'Cyberpunk 3D glass panels — bracket grid + dramatic current match.'
               : 'Classic 2-column grid — fits all matches at once.'}
           </p>
 
@@ -872,6 +900,21 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 <ColorPicker label="Background" value={c.ftBg || '#0a1628'} onChange={v => set('ftBg', v)} />
                 <ColorPicker label="Card BG" value={c.ftCardBg || '#0f1f3a'} onChange={v => set('ftCardBg', v)} />
                 <ColorPicker label="Border" value={c.ftBorder || 'rgba(0,212,255,0.25)'} onChange={v => set('ftBorder', v)} />
+              </div>
+            </>
+          )}
+
+          {/* ── Esports-specific colors ── */}
+          {(c.layout || 'grid') === 'esports' && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Esports Colors</h4>
+              <div className="nb-color-grid">
+                <ColorPicker label="Cyan" value={c.esCyan || '#00e5ff'} onChange={v => set('esCyan', v)} />
+                <ColorPicker label="Purple" value={c.esPurple || '#a855f7'} onChange={v => set('esPurple', v)} />
+                <ColorPicker label="Gold" value={c.esGold || '#fbbf24'} onChange={v => set('esGold', v)} />
+                <ColorPicker label="Background" value={c.esBg || '#030712'} onChange={v => set('esBg', v)} />
+                <ColorPicker label="Card BG" value={c.esCardBg || 'rgba(15,23,42,0.75)'} onChange={v => set('esCardBg', v)} />
+                <ColorPicker label="Border" value={c.esBorder || 'rgba(0,229,255,0.18)'} onChange={v => set('esBorder', v)} />
               </div>
             </>
           )}

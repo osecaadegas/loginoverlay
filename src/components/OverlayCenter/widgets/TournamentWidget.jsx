@@ -1362,6 +1362,327 @@ function TournamentWidget({ config, theme }) {
   };
 
   /* ═══════════════════════════════════════════════════════════════
+     ESPORTS — Cyberpunk 3D glass panels, bracket grid + current match
+     ═══════════════════════════════════════════════════════════════ */
+  const renderEsports = () => {
+    const esCyan   = c.esCyan   || '#00e5ff';
+    const esPurple = c.esPurple || '#a855f7';
+    const esGold   = c.esGold   || '#fbbf24';
+    const esBg     = c.esBg     || '#030712';
+    const esCardBg = c.esCardBg || 'rgba(15,23,42,0.75)';
+    const esBorder = c.esBorder || 'rgba(0,229,255,0.18)';
+    const esFont   = fontFamily;
+
+    const currentMatch = matches[currentMatchIdx] || matches[0];
+    const overviewMatches = matches.filter((_, i) => i !== currentMatchIdx);
+
+    /* Get cost/payment for a player */
+    const getVals = (match, pKey) => {
+      const rd = match?.rounds?.[0]?.[pKey];
+      if (!rd) return { cost: null, pay: null };
+      if (match.type === 'spins') {
+        const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+        return { cost: isNaN(s) ? null : s, pay: isNaN(e) ? null : e };
+      }
+      const cost = parseFloat(rd.bonusCost), pay = parseFloat(rd.bonusPayout);
+      return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
+    };
+
+    /* ── 3D Glass Player Card ── */
+    const renderEsCard = (match, playerKey, large = false) => {
+      const name = match[playerKey] || 'TBD';
+      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const slotImage = pSlot?.image || null;
+      const result = getPlayerResult(match, playerKey);
+      const hasWinner = match.winner != null;
+      const isWinner = match.winner === playerKey;
+      const isLoser = hasWinner && !isWinner;
+      const vals = getVals(match, playerKey);
+
+      const cardW = large ? '100%' : '100%';
+      const imgH = large ? 'clamp(60px, 22vh, 160px)' : 'clamp(30px, 12vh, 70px)';
+      const nameFs = large ? 'clamp(13px, 2.5vw, 22px)' : 'clamp(8px, 1.4vw, 13px)';
+      const statFs = large ? 'clamp(10px, 1.4vw, 14px)' : 'clamp(7px, 1vw, 10px)';
+      const labelFs = large ? 'clamp(7px, 0.9vw, 10px)' : 'clamp(6px, 0.7vw, 8px)';
+
+      /* Glow color based on state */
+      const glowColor = isWinner ? esGold : isLoser ? 'transparent' : esCyan;
+      const borderGlow = isWinner ? esGold : esBorder;
+
+      return (
+        <div style={{
+          width: cardW, display: 'flex', flexDirection: 'column',
+          background: esCardBg,
+          backdropFilter: 'blur(12px)', WebkitBackdropFilter: 'blur(12px)',
+          border: `1px solid ${borderGlow}`,
+          borderRadius: large ? 14 : 8,
+          overflow: 'hidden',
+          transform: isLoser
+            ? 'perspective(600px) rotateX(12deg) scale(0.92)'
+            : isWinner
+              ? 'perspective(600px) rotateY(0deg) scale(1.03)'
+              : 'perspective(600px) rotateY(0deg)',
+          opacity: isLoser ? 0.4 : 1,
+          transition: 'transform 0.8s cubic-bezier(0.23,1,0.32,1), opacity 0.6s, box-shadow 0.6s, border-color 0.4s',
+          boxShadow: isWinner
+            ? `0 0 24px ${esGold}50, 0 0 60px ${esGold}18, inset 0 0 20px ${esGold}08`
+            : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${esCyan}10`,
+          position: 'relative',
+        }}>
+          {/* Winner crown badge */}
+          {isWinner && (
+            <div style={{
+              position: 'absolute', top: 4, right: 4, zIndex: 5,
+              fontSize: large ? 20 : 14,
+            }}>🏆</div>
+          )}
+
+          {/* Player image */}
+          <div style={{
+            width: '100%', height: imgH, position: 'relative',
+            overflow: 'hidden', flexShrink: 0,
+          }}>
+            {slotImage ? (
+              <img src={slotImage} alt={name} style={{
+                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+              }} />
+            ) : (
+              <div style={{
+                width: '100%', height: '100%',
+                background: `linear-gradient(135deg, ${esBg}, rgba(0,229,255,0.05))`,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: large ? 28 : 16, color: 'rgba(255,255,255,0.06)',
+              }}>⚔</div>
+            )}
+
+            {/* Result overlay on image */}
+            {result !== null && (
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                background: 'linear-gradient(transparent, rgba(0,0,0,0.85))',
+                padding: large ? '8px 6px 4px' : '4px 4px 2px',
+                textAlign: 'center',
+              }}>
+                <span style={{
+                  fontSize: large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(10px, 1.6vw, 16px)',
+                  fontWeight: 900, fontFamily: esFont,
+                  color: valColor(result),
+                  textShadow: `0 0 10px ${valColor(result)}60`,
+                }}>{fmtResult(result)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Player name */}
+          <div style={{
+            padding: large ? '6px 8px 3px' : '3px 5px 1px',
+            textAlign: 'center',
+            background: 'rgba(0,0,0,0.4)',
+            borderBottom: `1px solid ${esBorder}`,
+          }}>
+            <div style={{
+              fontSize: nameFs, fontWeight: 800, fontFamily: esFont,
+              color: '#fff', textTransform: 'uppercase', letterSpacing: '0.8px',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              textShadow: `0 0 8px ${esCyan}30`,
+            }}>{name}</div>
+          </div>
+
+          {/* Stats: Cost + Payment */}
+          <div style={{
+            display: 'flex', background: 'rgba(0,0,0,0.5)',
+          }}>
+            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
+              <div style={{
+                fontSize: labelFs, fontWeight: 600, color: '#475569',
+                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
+              }}>Cost</div>
+              <div style={{
+                fontSize: statFs, fontWeight: 700, color: esCyan, fontFamily: esFont,
+              }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
+            </div>
+            <div style={{ width: 1, background: esBorder }} />
+            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
+              <div style={{
+                fontSize: labelFs, fontWeight: 600, color: '#475569',
+                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
+              }}>Payment</div>
+              <div style={{
+                fontSize: statFs, fontWeight: 700, color: '#4ade80', fontFamily: esFont,
+              }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    /* ── VS badge ── */
+    const renderEsVs = (large = false) => {
+      const sz = large ? 'clamp(30px, 4.5vw, 52px)' : 'clamp(18px, 2.5vw, 30px)';
+      const isCurrent = large;
+      return (
+        <div style={{
+          width: sz, height: sz, borderRadius: '50%', flexShrink: 0,
+          background: `linear-gradient(135deg, ${esPurple}, ${esCyan})`,
+          border: '2px solid rgba(0,0,0,0.4)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          fontSize: large ? 'clamp(12px, 1.8vw, 20px)' : 'clamp(8px, 1.2vw, 13px)',
+          fontWeight: 900, color: '#fff', fontFamily: esFont,
+          boxShadow: `0 0 16px ${esPurple}40, 0 0 8px ${esCyan}30`,
+          alignSelf: 'center',
+          ...(isCurrent ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
+        }}>VS</div>
+      );
+    };
+
+    /* ── Overview match (small, in grid) ── */
+    const renderEsOverviewMatch = (match, idx) => {
+      const hasWinner = match.winner != null;
+      const globalIdx = matches.indexOf(match);
+      const isCurrent = globalIdx === currentMatchIdx;
+
+      return (
+        <div key={idx} style={{
+          display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 8px)',
+          background: 'rgba(0,0,0,0.3)',
+          border: `1px solid ${isCurrent ? esCyan : esBorder}`,
+          borderRadius: 10, padding: 'clamp(4px, 0.6vw, 8px)',
+          position: 'relative', overflow: 'hidden',
+          backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+          transition: 'border-color 0.3s',
+        }}>
+          {/* Match number label */}
+          <div style={{
+            position: 'absolute', top: 3, left: '50%', transform: 'translateX(-50%)',
+            fontSize: 'clamp(6px, 0.7vw, 9px)', fontWeight: 700, fontFamily: esFont,
+            color: '#475569', textTransform: 'uppercase', letterSpacing: '1px', zIndex: 2,
+          }}>Match {globalIdx + 1}</div>
+
+          {/* Status badge */}
+          {hasWinner && (
+            <div style={{
+              position: 'absolute', bottom: 3, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 700, fontFamily: esFont,
+              color: '#22c55e', textTransform: 'uppercase', letterSpacing: '0.5px',
+              background: 'rgba(34,197,94,0.12)', padding: '1px 6px', borderRadius: 3,
+              border: '1px solid rgba(34,197,94,0.25)', zIndex: 2,
+            }}>Done</div>
+          )}
+
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {renderEsCard(match, 'player1', false)}
+          </div>
+          {renderEsVs(false)}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {renderEsCard(match, 'player2', false)}
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', fontFamily: esFont,
+        background: esBg, perspective: '1200px',
+      }}>
+        {/* ── Bracket overview grid (2 cols) ── */}
+        <div style={{
+          flex: 1, display: 'grid',
+          gridTemplateColumns: 'repeat(2, 1fr)',
+          gap: 'clamp(3px, 0.5vw, 8px)',
+          padding: 'clamp(3px, 0.5vw, 8px)',
+          minHeight: 0, overflow: 'hidden',
+        }}>
+          {overviewMatches.map((m, i) => renderEsOverviewMatch(m, i))}
+        </div>
+
+        {/* ── Energy divider line ── */}
+        <div style={{
+          height: 2, flexShrink: 0, position: 'relative',
+          background: `linear-gradient(90deg, transparent, ${esCyan}60, ${esPurple}60, transparent)`,
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: '30%', height: '100%',
+            background: `linear-gradient(90deg, transparent, ${esCyan}, transparent)`,
+            animation: 'es-energy-line 2.5s linear infinite',
+          }} />
+        </div>
+
+        {/* ── Current match (large, bottom) ── */}
+        {currentMatch && (
+          <div style={{
+            flexShrink: 0, padding: 'clamp(4px, 0.8vw, 12px)',
+            position: 'relative',
+          }}>
+            {/* Pulsing bg glow */}
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 0,
+              background: `radial-gradient(ellipse at center, ${esPurple}12, transparent 70%)`,
+              animation: 'es-bg-pulse 3s ease-in-out infinite',
+            }} />
+
+            {/* "NOW PLAYING" header */}
+            <div style={{
+              textAlign: 'center', marginBottom: 'clamp(2px, 0.4vh, 6px)',
+              position: 'relative', zIndex: 1,
+            }}>
+              <span style={{
+                fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 800,
+                color: esGold, textTransform: 'uppercase', letterSpacing: '3px',
+                fontFamily: esFont,
+                textShadow: `0 0 12px ${esGold}50`,
+                animation: 'es-text-glow 2s ease-in-out infinite',
+              }}>⚡ Now Playing ⚡</span>
+            </div>
+
+            {/* Match cards */}
+            <div style={{
+              display: 'flex', alignItems: 'stretch',
+              gap: 'clamp(6px, 1vw, 16px)',
+              position: 'relative', zIndex: 1,
+            }}>
+              <div style={{
+                flex: 1, minWidth: 0,
+                animation: 'es-card-enter-left 0.8s cubic-bezier(0.23,1,0.32,1)',
+              }}>
+                {renderEsCard(currentMatch, 'player1', true)}
+              </div>
+
+              {/* Center: VS + energy connection */}
+              <div style={{
+                display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 4,
+                position: 'relative',
+              }}>
+                {/* Energy line top */}
+                <div style={{
+                  width: 2, flex: 1, minHeight: 4,
+                  background: `linear-gradient(to bottom, transparent, ${esPurple}80)`,
+                }} />
+                {renderEsVs(true)}
+                {/* Energy line bottom */}
+                <div style={{
+                  width: 2, flex: 1, minHeight: 4,
+                  background: `linear-gradient(to top, transparent, ${esCyan}80)`,
+                }} />
+              </div>
+
+              <div style={{
+                flex: 1, minWidth: 0,
+                animation: 'es-card-enter-right 0.8s cubic-bezier(0.23,1,0.32,1)',
+              }}>
+                {renderEsCard(currentMatch, 'player2', true)}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
      GRID — 2-column card grid (or 1 col for neon / single match)
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
@@ -1408,10 +1729,35 @@ function TournamentWidget({ config, theme }) {
           0%   { transform: translate(-50%, -50%) rotate(0deg); }
           100% { transform: translate(-50%, -50%) rotate(360deg); }
         }
+        @keyframes es-vs-pulse {
+          0%, 100% { transform: scale(1); box-shadow: 0 0 16px rgba(168,85,247,0.4); }
+          50%      { transform: scale(1.12); box-shadow: 0 0 28px rgba(168,85,247,0.6), 0 0 12px rgba(0,229,255,0.4); }
+        }
+        @keyframes es-energy-line {
+          0%   { left: -30%; }
+          100% { left: 100%; }
+        }
+        @keyframes es-bg-pulse {
+          0%, 100% { opacity: 0.4; }
+          50%      { opacity: 0.8; }
+        }
+        @keyframes es-text-glow {
+          0%, 100% { text-shadow: 0 0 12px rgba(251,191,36,0.3); }
+          50%      { text-shadow: 0 0 20px rgba(251,191,36,0.6), 0 0 40px rgba(251,191,36,0.2); }
+        }
+        @keyframes es-card-enter-left {
+          0%   { opacity: 0; transform: translateX(-30px) perspective(600px) rotateY(8deg); }
+          100% { opacity: 1; transform: translateX(0) perspective(600px) rotateY(0deg); }
+        }
+        @keyframes es-card-enter-right {
+          0%   { opacity: 0; transform: translateX(30px) perspective(600px) rotateY(-8deg); }
+          100% { opacity: 1; transform: translateX(0) perspective(600px) rotateY(0deg); }
+        }
       `}</style>
 
       {/* ── Layout-specific content ── */}
-      {layout === 'futuristic' ? renderFuturistic()
+      {layout === 'esports' ? renderEsports()
+        : layout === 'futuristic' ? renderFuturistic()
         : layout === 'arena' ? renderArena()
         : layout === 'bracket' ? renderBracket()
         : layout === 'showcase' ? renderShowcase()
