@@ -1144,7 +1144,9 @@ function TournamentWidget({ config, theme }) {
     const esFont   = fontFamily;
 
     const currentMatch = matches[currentMatchIdx] || matches[0];
-    const overviewMatches = matches.filter((_, i) => i !== currentMatchIdx);
+    const otherMatches = matches.filter((_, i) => i !== currentMatchIdx);
+    const queuedMatches = otherMatches.filter(m => m.winner == null);
+    const doneMatches = otherMatches.filter(m => m.winner != null);
 
     /* Get cost/payment for a player */
     const getVals = (match, pKey) => {
@@ -1350,22 +1352,59 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
+    /* ── Done match (list row: name vs name + winner badge) ── */
+    const renderEsDoneRow = (match, idx) => {
+      const winner = match.winner;
+      const p1Won = winner === 'player1';
+      const p2Won = winner === 'player2';
+      const p1 = match.player1 || 'TBD';
+      const p2 = match.player2 || 'TBD';
+      const fs = 'clamp(8px, 1.2vw, 13px)';
+      return (
+        <div key={idx} style={{
+          display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 10px)',
+          padding: 'clamp(2px, 0.3vw, 5px) clamp(6px, 0.8vw, 12px)',
+          background: 'rgba(0,0,0,0.25)',
+          border: `1px solid ${esBorder}`,
+          borderRadius: 6,
+          backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+        }}>
+          <span style={{
+            flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 700, fontFamily: esFont,
+            color: p1Won ? esGold : 'rgba(255,255,255,0.4)',
+            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{p1Won ? '🏆 ' : ''}{p1}</span>
+          <span style={{
+            fontSize: 'clamp(6px, 0.8vw, 9px)', fontWeight: 800, color: '#475569',
+            fontFamily: esFont, flexShrink: 0,
+          }}>VS</span>
+          <span style={{
+            flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 700, fontFamily: esFont,
+            color: p2Won ? esGold : 'rgba(255,255,255,0.4)',
+            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          }}>{p2}{p2Won ? ' 🏆' : ''}</span>
+        </div>
+      );
+    };
+
     return (
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         overflow: 'hidden', fontFamily: esFont,
         background: 'transparent', perspective: '1200px',
       }}>
-        {/* ── Bracket overview grid (2 cols) ── */}
-        <div style={{
-          flex: 1, display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: 'clamp(3px, 0.5vw, 8px)',
-          padding: 'clamp(3px, 0.5vw, 8px)',
-          minHeight: 0, overflow: 'hidden',
-        }}>
-          {overviewMatches.map((m, i) => renderEsOverviewMatch(m, i))}
-        </div>
+        {/* ── Queued matches (grid, top) ── */}
+        {queuedMatches.length > 0 && (
+          <div style={{
+            flex: 1, display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: 'clamp(3px, 0.5vw, 8px)',
+            padding: 'clamp(3px, 0.5vw, 8px)',
+            minHeight: 0, overflow: 'hidden',
+          }}>
+            {queuedMatches.map((m, i) => renderEsOverviewMatch(m, i))}
+          </div>
+        )}
 
         {/* ── Energy divider line ── */}
         <div style={{
@@ -1380,7 +1419,7 @@ function TournamentWidget({ config, theme }) {
           }} />
         </div>
 
-        {/* ── Current match (large, bottom) ── */}
+        {/* ── Current match (Now Playing) ── */}
         {currentMatch && (
           <div style={{
             flexShrink: 0, padding: 'clamp(4px, 0.8vw, 12px)',
@@ -1426,13 +1465,11 @@ function TournamentWidget({ config, theme }) {
                 alignItems: 'center', justifyContent: 'center', gap: 4,
                 position: 'relative',
               }}>
-                {/* Energy line top */}
                 <div style={{
                   width: 2, flex: 1, minHeight: 4,
                   background: `linear-gradient(to bottom, transparent, ${esPurple}80)`,
                 }} />
                 {renderEsVs(true)}
-                {/* Energy line bottom */}
                 <div style={{
                   width: 2, flex: 1, minHeight: 4,
                   background: `linear-gradient(to top, transparent, ${esCyan}80)`,
@@ -1446,6 +1483,17 @@ function TournamentWidget({ config, theme }) {
                 {renderEsCard(currentMatch, 'player2', true)}
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ── Done matches (list, bottom) ── */}
+        {doneMatches.length > 0 && (
+          <div style={{
+            flexShrink: 0, display: 'flex', flexDirection: 'column',
+            gap: 'clamp(2px, 0.3vw, 4px)',
+            padding: 'clamp(3px, 0.5vw, 8px)',
+          }}>
+            {doneMatches.map((m, i) => renderEsDoneRow(m, i))}
           </div>
         )}
       </div>
