@@ -253,7 +253,8 @@ function BonusHuntWidget({ config, theme }) {
               const isSuper = bonus.isSuperBonus;
               return (
                 <div key={`car-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                  className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}`}>
+                  className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}${isOpening && idx !== currentIndex ? ' bhtc-card--dimmed' : ''}`}
+                  style={isOpening && idx === currentIndex ? { '--bhtc-current-bg': currentBonusColor, '--bhtc-current-accent': currentBonusAccent } : undefined}>
                   <div className="bhtc-card-top-bar">
                     <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
                     <span className="bhtc-card-bet">{(bet).toFixed(2)} {currency}</span>
@@ -364,7 +365,8 @@ function BonusHuntWidget({ config, theme }) {
               const isSuper = bonus.isSuperBonus;
               return (
                 <div key={`hh-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                  className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}`}>
+                  className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}${isOpening && idx !== currentIndex ? ' bhtc-card--dimmed' : ''}`}
+                  style={isOpening && idx === currentIndex ? { '--bhtc-current-bg': currentBonusColor, '--bhtc-current-accent': currentBonusAccent } : undefined}>
                   <div className="bhtc-card-top-bar">
                     <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
                     <span className="bhtc-card-bet">{bet.toFixed(2)} {currency}</span>
