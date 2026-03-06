@@ -171,16 +171,23 @@ function BonusHuntWidget({ config, theme }) {
   /* ─── Carousel layout (v7_carousel) ─── */
   if (isCarousel) {
     const profit = stats.totalWin - startMoney;
+    const carouselCardW = 180, carouselGap = 10;
+    const carouselStep = carouselCardW + carouselGap;
     return (
       <div className="oc-widget-inner oc-bonushunt oc-bonushunt--carousel" style={rootStyle}>
         {/* ── Left stats panel ── */}
         <div className="bhtc-stats-panel">
           <div className="bhtc-stats-header">
-            <div className="bhtc-icon-circle">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
-              </svg>
-            </div>
+            {c.avatarUrl ? (
+              <img src={c.avatarUrl} alt="" className="bhtc-avatar"
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div className="bhtc-icon-circle">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+                </svg>
+              </div>
+            )}
             <div>
               <div className="bhtc-title">{huntTitle}</div>
               <div className="bhtc-hunt-id">Hunt {c.huntName || `#${bonuses.length}`}</div>
@@ -195,22 +202,29 @@ function BonusHuntWidget({ config, theme }) {
             </div>
             <div className="bhtc-stat-row">
               <span className="bhtc-stat-row-icon">⇋</span>
-              <span className="bhtc-stat-row-label">BREAK EVEN</span>
+              <span className="bhtc-stat-row-label">BEx</span>
               <span className="bhtc-stat-row-value" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>{stats.breakEven.toFixed(2)}x</span>
             </div>
             <div className="bhtc-stat-row bhtc-stat-row--sep" />
             <div className="bhtc-stat-row">
               <span className="bhtc-stat-row-icon">⌀</span>
-              <span className="bhtc-stat-row-label">AVERAGE</span>
+              <span className="bhtc-stat-row-label">AVG</span>
               <span className="bhtc-stat-row-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(2)}x</span>
             </div>
             <div className="bhtc-stat-row">
               <span className="bhtc-stat-row-icon">{profit >= 0 ? '▲' : '▼'}</span>
-              <span className="bhtc-stat-row-label">PROFIT{profit < 0 ? '' : 's'}</span>
+              <span className="bhtc-stat-row-label">PROFIT</span>
               <span className={`bhtc-stat-row-value ${profit >= 0 ? 'bhtc-val--green' : 'bhtc-val--red'}`}>
                 {profit >= 0 ? '' : '-'}{currency}{Math.abs(profit).toFixed(2)}
               </span>
             </div>
+          </div>
+
+          {/* Bonuses / Super / Extreme counts */}
+          <div className="bhtc-badge-row">
+            <span className="bhtc-badge-pill">#{bonuses.length}</span>
+            <span className="bhtc-badge-pill bhtc-badge-pill--super">S {stats.superCount}</span>
+            <span className="bhtc-badge-pill bhtc-badge-pill--extreme">E {bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length}</span>
           </div>
 
           <div className="bhtc-total-pay">
@@ -226,15 +240,20 @@ function BonusHuntWidget({ config, theme }) {
 
         {/* ── Right carousel ── */}
         <div className="bhtc-carousel-wrap">
-          <div className="bhtc-carousel-track" style={{ '--bhtc-count': bonuses.length }}>
-            {[...bonuses, ...bonuses].map((bonus, i) => {
-              const idx = i % bonuses.length;
+          <div className={`bhtc-carousel-track${isOpening ? ' bhtc-carousel-track--opening' : ''}`}
+            style={isOpening
+              ? { transform: `translateX(${-(currentIndex * carouselStep)}px)` }
+              : { '--bhtc-count': bonuses.length }}>
+            {(isOpening ? bonuses : [...bonuses, ...bonuses]).map((bonus, i) => {
+              const idx = isOpening ? i : i % bonuses.length;
               const payout = Number(bonus.payout) || 0;
               const bet = Number(bonus.betSize) || 0;
               const multi = bet > 0 ? payout / bet : 0;
+              const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
+              const isSuper = bonus.isSuperBonus;
               return (
                 <div key={`car-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                  className={`bhtc-card ${idx === currentIndex ? 'bhtc-card--active' : ''} ${bonus.opened ? 'bhtc-card--opened' : ''}`}>
+                  className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}`}>
                   <div className="bhtc-card-top-bar">
                     <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
                     <span className="bhtc-card-bet">{(bet).toFixed(2)} {currency}</span>
@@ -247,6 +266,8 @@ function BonusHuntWidget({ config, theme }) {
                     ) : (
                       <div className="bhtc-card-img-placeholder" />
                     )}
+                    {isExtreme && <span className="bhtc-card-type-badge bhtc-card-type-badge--extreme">EXTREME</span>}
+                    {!isExtreme && isSuper && <span className="bhtc-card-type-badge bhtc-card-type-badge--super">SUPER</span>}
                   </div>
                   {bonus.opened && (
                     <div className="bhtc-card-bottom-bar">
@@ -266,16 +287,23 @@ function BonusHuntWidget({ config, theme }) {
   /* ─── Horizontal layout (v5_horizontal) ─── */
   if (isHorizontalBH) {
     const profit = stats.totalWin - startMoney;
+    const horizCardW = 170, horizGap = 10;
+    const horizStep = horizCardW + horizGap;
     return (
       <div className="oc-widget-inner oc-bonushunt oc-bonushunt--horizontal" style={rootStyle}>
         {/* ── Left stats panel ── */}
         <div className="bhh-stats-panel">
           <div className="bhh-stats-header">
-            <div className="bhtc-icon-circle">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
-              </svg>
-            </div>
+            {c.avatarUrl ? (
+              <img src={c.avatarUrl} alt="" className="bhtc-avatar"
+                onError={e => { e.target.style.display = 'none'; }} />
+            ) : (
+              <div className="bhtc-icon-circle">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10" /><path d="M12 8v8M8 12h8" />
+                </svg>
+              </div>
+            )}
             <div>
               <div className="bhtc-title">{huntTitle}</div>
               <div className="bhtc-hunt-id">Hunt {c.huntName || `#${bonuses.length}`}</div>
@@ -303,6 +331,13 @@ function BonusHuntWidget({ config, theme }) {
             </div>
           </div>
 
+          {/* Bonuses / Super / Extreme counts */}
+          <div className="bhtc-badge-row">
+            <span className="bhtc-badge-pill">#{bonuses.length}</span>
+            <span className="bhtc-badge-pill bhtc-badge-pill--super">S {stats.superCount}</span>
+            <span className="bhtc-badge-pill bhtc-badge-pill--extreme">E {bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length}</span>
+          </div>
+
           <div className="bhtc-total-pay" style={{ marginTop: 'auto' }}>
             <div className="bhtc-total-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -316,15 +351,20 @@ function BonusHuntWidget({ config, theme }) {
 
         {/* ── Right auto-scrolling carousel ── */}
         <div className="bhh-carousel-wrap">
-          <div className="bhh-carousel-track" style={{ '--bhtc-count': bonuses.length }}>
-            {[...bonuses, ...bonuses].map((bonus, i) => {
-              const idx = i % bonuses.length;
+          <div className={`bhh-carousel-track${isOpening ? ' bhh-carousel-track--opening' : ''}`}
+            style={isOpening
+              ? { transform: `translateX(${-(currentIndex * horizStep)}px)` }
+              : { '--bhtc-count': bonuses.length }}>
+            {(isOpening ? bonuses : [...bonuses, ...bonuses]).map((bonus, i) => {
+              const idx = isOpening ? i : i % bonuses.length;
               const payout = Number(bonus.payout) || 0;
               const bet = Number(bonus.betSize) || 0;
               const multi = bet > 0 ? payout / bet : 0;
+              const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
+              const isSuper = bonus.isSuperBonus;
               return (
                 <div key={`hh-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                  className={`bhtc-card ${idx === currentIndex ? 'bhtc-card--active' : ''} ${bonus.opened ? 'bhtc-card--opened' : ''}`}>
+                  className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}`}>
                   <div className="bhtc-card-top-bar">
                     <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
                     <span className="bhtc-card-bet">{bet.toFixed(2)} {currency}</span>
@@ -337,6 +377,8 @@ function BonusHuntWidget({ config, theme }) {
                     ) : (
                       <div className="bhtc-card-img-placeholder" />
                     )}
+                    {isExtreme && <span className="bhtc-card-type-badge bhtc-card-type-badge--extreme">EXTREME</span>}
+                    {!isExtreme && isSuper && <span className="bhtc-card-type-badge bhtc-card-type-badge--super">SUPER</span>}
                   </div>
                   {bonus.opened && (
                     <div className="bhtc-card-bottom-bar">

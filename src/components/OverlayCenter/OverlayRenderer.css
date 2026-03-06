@@ -1,4 +1,4 @@
-/* =========================================================
+﻿/* =========================================================
    OverlayRenderer.css — OBS Browser Source Styles
    Transparent bg, 1920×1080 canvas, GPU-accelerated.
    All styles scoped to .or-canvas to avoid leaking globally.
@@ -767,14 +767,14 @@
   gap: 2px;
 }
 .bhh-stat-label {
-  font-size: 0.72em;
+  font-size: 0.78em;
   font-weight: 700;
   color: var(--bht-muted, #8baacf);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 .bhh-stat-val {
-  font-size: 0.95em;
+  font-size: 1.05em;
   font-weight: 800;
   color: var(--bht-stat-value, #fff);
 }
@@ -1034,7 +1034,7 @@
   flex-shrink: 0;
 }
 .bhtc-title {
-  font-size: 0.95em;
+  font-size: 1.05em;
   font-weight: 800;
   color: var(--bht-text, #fff);
   letter-spacing: 0.5px;
@@ -1053,7 +1053,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72em;
+  font-size: 0.82em;
+  padding: 3px 0;
 }
 .bhtc-stat-row--sep {
   height: 1px;
@@ -1077,7 +1078,7 @@
 .bhtc-stat-row-value {
   font-weight: 700;
   color: var(--bht-stat-value, #fff);
-  font-size: 1.1em;
+  font-size: 1.2em;
 }
 .bhtc-val--green { color: #4ade80; }
 .bhtc-val--red { color: #f87171; }
@@ -1101,7 +1102,7 @@
   margin-bottom: 4px;
 }
 .bhtc-total-value {
-  font-size: 1.6em;
+  font-size: 1.8em;
   font-weight: 800;
   color: var(--bht-total-pay-text, #fff);
   text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
@@ -1153,6 +1154,69 @@
 .bhtc-card--opened .bhtc-card-img-wrap {
   filter: saturate(0.8) brightness(0.9);
 }
+
+/* ── Extreme card glow ── */
+.bhtc-card--extreme {
+  border-color: var(--bht-extreme-badge, #ef4444);
+  box-shadow: 0 0 10px rgba(239,68,68,0.35), inset 0 0 8px rgba(239,68,68,0.08);
+}
+/* ── Super card glow ── */
+.bhtc-card--super {
+  border-color: var(--bht-super-badge, #eab308);
+  box-shadow: 0 0 10px rgba(234,179,8,0.3), inset 0 0 8px rgba(234,179,8,0.06);
+}
+
+/* ── Type badge overlay on image ── */
+.bhtc-card-type-badge {
+  position: absolute; bottom: 4px; left: 4px;
+  font-size: 0.55em; font-weight: 800; text-transform: uppercase;
+  letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px;
+  color: #fff; pointer-events: none;
+}
+.bhtc-card-type-badge--extreme {
+  background: var(--bht-extreme-badge, #ef4444);
+  box-shadow: 0 0 8px rgba(239,68,68,0.5);
+}
+.bhtc-card-type-badge--super {
+  background: var(--bht-super-badge, #eab308);
+  box-shadow: 0 0 8px rgba(234,179,8,0.45);
+}
+
+/* ── Avatar in stats panel (carousel & horizontal) ── */
+.bhtc-avatar {
+  width: 38px; height: 38px; border-radius: 50%;
+  object-fit: cover; flex-shrink: 0;
+  border: 2px solid var(--bht-header-accent, #60a5fa);
+  box-shadow: 0 0 8px rgba(96,165,250,0.3);
+}
+
+/* ── Badge row (bonus / super / extreme counts) ── */
+.bhtc-badge-row {
+  display: flex; gap: 4px; flex-wrap: wrap;
+}
+.bhtc-badge-pill {
+  flex: 1; text-align: center;
+  font-size: 0.7em; font-weight: 700;
+  padding: 3px 6px; border-radius: 6px;
+  background: rgba(0,0,0,0.3);
+  color: var(--bht-text, #fff);
+}
+.bhtc-badge-pill--super {
+  background: var(--bht-super-badge, #eab308);
+  color: #fff;
+}
+.bhtc-badge-pill--extreme {
+  background: var(--bht-extreme-badge, #ef4444);
+  color: #fff;
+}
+
+/* ── Opening mode: stop animation, slide smoothly ── */
+.bhtc-carousel-track--opening,
+.bhh-carousel-track--opening {
+  animation: none !important;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
 .bhtc-card-top-bar {
   display: flex;
   align-items: center;
@@ -3586,14 +3650,14 @@
   gap: 2px;
 }
 .bhh-stat-label {
-  font-size: 0.72em;
+  font-size: 0.78em;
   font-weight: 700;
   color: var(--bht-muted, #8baacf);
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 .bhh-stat-val {
-  font-size: 0.95em;
+  font-size: 1.05em;
   font-weight: 800;
   color: var(--bht-stat-value, #fff);
 }
@@ -3654,7 +3718,7 @@
   flex-shrink: 0;
 }
 .bhtc-title {
-  font-size: 0.95em;
+  font-size: 1.05em;
   font-weight: 800;
   color: var(--bht-text, #fff);
   letter-spacing: 0.5px;
@@ -3673,7 +3737,8 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.72em;
+  font-size: 0.82em;
+  padding: 3px 0;
 }
 .bhtc-stat-row--sep {
   height: 1px;
@@ -3697,7 +3762,7 @@
 .bhtc-stat-row-value {
   font-weight: 700;
   color: var(--bht-stat-value, #fff);
-  font-size: 1.1em;
+  font-size: 1.2em;
 }
 .bhtc-val--green { color: #4ade80; }
 .bhtc-val--red { color: #f87171; }
@@ -3721,7 +3786,7 @@
   margin-bottom: 4px;
 }
 .bhtc-total-value {
-  font-size: 1.6em;
+  font-size: 1.8em;
   font-weight: 800;
   color: var(--bht-total-pay-text, #fff);
   text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
@@ -3771,6 +3836,17 @@
 }
 .bhtc-card--opened { opacity: 0.8; }
 .bhtc-card--opened .bhtc-card-img-wrap { filter: saturate(0.8) brightness(0.9); }
+
+/* Extreme / super card glow (2nd block) */
+.bhtc-card--extreme {
+  border-color: var(--bht-extreme-badge, #ef4444);
+  box-shadow: 0 0 10px rgba(239,68,68,0.35), inset 0 0 8px rgba(239,68,68,0.08);
+}
+.bhtc-card--super {
+  border-color: var(--bht-super-badge, #eab308);
+  box-shadow: 0 0 10px rgba(234,179,8,0.3), inset 0 0 8px rgba(234,179,8,0.06);
+}
+
 .bhtc-card-top-bar {
   display: flex;
   align-items: center;
