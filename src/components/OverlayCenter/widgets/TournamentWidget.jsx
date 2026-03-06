@@ -1336,7 +1336,7 @@ function TournamentWidget({ config, theme }) {
           position: 'relative', overflow: 'hidden',
           backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
           transition: 'border-color 0.3s',
-          minHeight: 'clamp(60px, 12vh, 110px)',
+          minHeight: 'clamp(90px, 18vh, 160px)',
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {renderEsCard(match, 'player1', false)}
@@ -1420,6 +1420,7 @@ function TournamentWidget({ config, theme }) {
           <div style={{
             flexShrink: 0, padding: 'clamp(4px, 0.8vw, 12px)',
             position: 'relative',
+            minHeight: 'clamp(90px, 18vh, 160px)',
           }}>
             {/* Pulsing bg glow */}
             <div style={{
