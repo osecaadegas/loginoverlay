@@ -8,7 +8,7 @@ import React, { useMemo } from 'react';
  * the current bonus, SVG circular progress arc, horizontal
  * auto-scrolling data stream, and a neon power-meter footer.
  *
- * NOTHING in common with any other BH style layout.
+ * Completely unique layout — no shared structure with other BH styles.
  */
 function BonusHuntWidgetV4({ config, theme }) {
   const c = config || {};
