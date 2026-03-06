@@ -922,23 +922,23 @@ function TournamentWidget({ config, theme }) {
         }
       }
 
-      const nameFs = large ? 'clamp(15px, 3vw, 28px)' : 'clamp(11px, 2vw, 16px)';
-      const statFs = large ? 'clamp(11px, 1.6vw, 16px)' : 'clamp(9px, 1.3vw, 13px)';
-      const labelFs = large ? 'clamp(9px, 1.2vw, 13px)' : 'clamp(8px, 1vw, 11px)';
+      const nameFs = large ? '3.2vw' : '2.2vw';
+      const statFs = large ? '1.8vw' : '1.4vw';
+      const labelFs = large ? '1.3vw' : '1.1vw';
 
       return (
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
           background: ftCardBg,
           border: `2px solid ${isWinner ? ftAccent : ftBorder}`,
-          borderRadius: large ? 10 : 6,
+          borderRadius: '1.2%',
           overflow: 'hidden',
           opacity: isElim ? 0.45 : 1,
           ...(isWinner ? { boxShadow: `0 0 16px ${ftAccent}30` } : {}),
         }}>
           {/* Player name header */}
           <div style={{
-            padding: large ? '4px 10px' : '3px 6px',
+            padding: '0.5vh 1vw',
             background: 'rgba(0,0,0,0.55)',
             borderBottom: `1px solid ${ftBorder}`,
             textAlign: 'center',
@@ -954,7 +954,6 @@ function TournamentWidget({ config, theme }) {
           <div style={{
             flex: 1, display: 'flex',
             alignItems: 'center', justifyContent: 'center',
-            minHeight: large ? 80 : 36,
             background: 'rgba(0,0,0,0.2)',
           }}>
             {slotImage ? (
@@ -963,10 +962,10 @@ function TournamentWidget({ config, theme }) {
               }} />
             ) : (
               <div style={{
-                width: '100%', height: '100%', minHeight: large ? 80 : 36,
+                width: '100%', height: '100%',
                 background: `linear-gradient(135deg, ${ftCardBg}, rgba(0,212,255,0.05))`,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: large ? 28 : 16, color: 'rgba(255,255,255,0.08)',
+                fontSize: '3vw', color: 'rgba(255,255,255,0.08)',
               }}>⚔</div>
             )}
           </div>
@@ -976,14 +975,14 @@ function TournamentWidget({ config, theme }) {
             display: 'flex', borderTop: `1px solid ${ftBorder}`,
             background: 'rgba(0,0,0,0.5)',
           }}>
-            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 4px' : '2px 3px' }}>
+            <div style={{ flex: 1, textAlign: 'center', padding: '0.4vh 0.5vw' }}>
               <div style={{ fontSize: labelFs, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Cost</div>
               <div style={{ fontSize: statFs, fontWeight: 700, color: ftCyan, fontFamily: ftFont }}>
                 {costVal !== null ? `${currency}${costVal.toFixed(0)}` : '—'}
               </div>
             </div>
             <div style={{ width: 1, background: ftBorder }} />
-            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 4px' : '2px 3px' }}>
+            <div style={{ flex: 1, textAlign: 'center', padding: '0.4vh 0.5vw' }}>
               <div style={{ fontSize: labelFs, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Payment</div>
               <div style={{ fontSize: statFs, fontWeight: 700, color: '#4ade80', fontFamily: ftFont }}>
                 {payVal !== null ? `${currency}${payVal.toFixed(0)}` : '—'}
@@ -996,7 +995,7 @@ function TournamentWidget({ config, theme }) {
 
     /* ── VS Badge ── */
     const renderFtVs = (large = false) => {
-      const sz = large ? 'clamp(30px, 5vw, 54px)' : 'clamp(20px, 3vw, 32px)';
+      const sz = large ? '5.5vw' : '3.5vw';
       return (
         <div style={{
           width: sz, height: sz,
@@ -1005,7 +1004,7 @@ function TournamentWidget({ config, theme }) {
           border: '2px solid rgba(0,0,0,0.5)',
           boxShadow: `0 4px 12px rgba(0,0,0,0.5), 0 0 10px ${ftAccent}40`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: large ? 'clamp(13px, 2.2vw, 24px)' : 'clamp(10px, 1.5vw, 16px)',
+          fontSize: large ? '2.4vw' : '1.6vw',
           fontWeight: 900, color: '#000', letterSpacing: '0.5px',
           fontFamily: ftFont, alignSelf: 'center',
         }}>VS</div>
@@ -1017,21 +1016,21 @@ function TournamentWidget({ config, theme }) {
         flex: 1, display: 'flex', flexDirection: 'column',
         overflow: 'auto', fontFamily: ftFont,
         background: ftBg,
-        padding: 'clamp(4px, 0.8vw, 10px)',
-        gap: 'clamp(4px, 0.8vw, 10px)',
+        padding: '1vw',
+        gap: '1vw',
       }}>
         {/* ── Current Match (large) ── */}
         {currentMatch && (
           <div style={{
             display: 'flex', flexDirection: 'column',
-            gap: 'clamp(3px, 0.5vh, 8px)',
+            gap: '0.6vh',
             flexShrink: 0,
           }}>
             {/* Player cards */}
             <div style={{
               display: 'flex', alignItems: 'stretch',
-              gap: 'clamp(4px, 0.8vw, 10px)',
-              height: 'clamp(120px, 42vh, 320px)',
+              gap: '1vw',
+              height: '42vh',
             }}>
               {renderFtPlayer(currentMatch, 'player1', true)}
               {renderFtVs(true)}
@@ -1040,12 +1039,12 @@ function TournamentWidget({ config, theme }) {
 
             {/* PLAYING NOW badge */}
             <div style={{
-              padding: '4px 12px', borderRadius: 4,
+              padding: '0.5vh 1vw', borderRadius: 4,
               background: `linear-gradient(135deg, ${ftAccent}, #ca8a04)`,
               textAlign: 'center',
             }}>
               <span style={{
-                fontSize: 'clamp(10px, 1.6vw, 17px)', fontWeight: 900,
+                fontSize: '1.8vw', fontWeight: 900,
                 color: '#000', textTransform: 'uppercase', letterSpacing: '2px',
                 fontFamily: ftFont,
               }}>PLAYING NOW</span>
@@ -1057,8 +1056,8 @@ function TournamentWidget({ config, theme }) {
         {upcomingMatches.length > 0 && upcomingMatches.map((m, i) => (
           <div key={i} style={{
             display: 'flex', alignItems: 'stretch',
-            gap: 'clamp(2px, 0.4vw, 6px)',
-            height: 'clamp(70px, 22vh, 160px)',
+            gap: '0.5vw',
+            height: '24vh',
             flexShrink: 0,
           }}>
             {renderFtPlayer(m, 'player1', false)}
