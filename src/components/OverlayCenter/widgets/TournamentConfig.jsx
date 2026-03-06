@@ -1,14 +1,10 @@
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { getAllSlots, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import ColorPickerBase from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 import {
   TOURNAMENT_TYPES,
   MATCH_STATUS,
-  createMatch,
-  createTournament,
-  updateRoundData,
-  updateTournamentMatch,
   setManualWinner,
   resetMatch,
   calcRoundResult,
@@ -16,8 +12,6 @@ import {
   getBoScoreboard,
   formatResult,
   getRoundInputFields,
-  getTypeLabel,
-  getTournamentStats,
 } from './tournament/tournamentEngine';
 import {
   generateBracket,
@@ -79,7 +73,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   const c = config || {};
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
-  const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'setup');
+  const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'bracket');
 
   /* ─── Slot data (for search) ─── */
   const [slots, setSlots] = useState([]);
@@ -87,115 +81,11 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     getAllSlots().then(d => setSlots(d || [])).catch(() => setSlots([]));
   }, []);
 
-  /* ─── Tournament state helpers ─── */
-  const tData = c.data || null;
-  const tournamentStarted = !!tData?.active;
-  const matches = tData?.matches || [];
-  const currentIdx = tData?.currentMatchIdx ?? 0;
-  const currentMatch = matches[currentIdx] || null;
-
-  /* ─── Setup state (before starting) ─── */
-  const [tournamentType, setTournamentType] = useState(c.tournamentType || 'bonus');
-  const [setupMatches, setSetupMatches] = useState(c.setupMatches || [
-    { player1: '', player2: '', slot1Name: '', slot1Search: '', slot1Image: null, slot2Name: '', slot2Search: '', slot2Image: null },
-  ]);
-
-  const updateSetupMatch = (idx, field, value) => {
-    setSetupMatches(prev => prev.map((m, i) => i === idx ? { ...m, [field]: value } : m));
-  };
-
-  const updateSetupMatchMulti = (idx, fields) => {
-    setSetupMatches(prev => prev.map((m, i) => i === idx ? { ...m, ...fields } : m));
-  };
-
-  const addSetupMatch = () => {
-    setSetupMatches(prev => [...prev, { player1: '', player2: '', slot1Name: '', slot1Search: '', slot1Image: null, slot2Name: '', slot2Search: '', slot2Image: null }]);
-  };
-
-  const removeSetupMatch = (idx) => {
-    if (setupMatches.length <= 1) return;
-    setSetupMatches(prev => prev.filter((_, i) => i !== idx));
-  };
-
-  /* ─── Slot search per setup match ─── */
-  const [showSlotSuggestions, setShowSlotSuggestions] = useState({});
+  /* ─── Slot search ─── */
   const filteredSlots = useCallback((term) => {
     if (!term || term.length < 1) return [];
     return sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(term.toLowerCase()))).slice(0, 5);
   }, [slots]);
-
-  const handleSlotSearchSetup = (idx, pNum, val) => {
-    updateSetupMatch(idx, `slot${pNum}Search`, val);
-    setShowSlotSuggestions(prev => ({ ...prev, [`${idx}_${pNum}`]: val.length > 0 }));
-  };
-
-  const handleSlotSelectSetup = (idx, pNum, slot) => {
-    updateSetupMatchMulti(idx, {
-      [`slot${pNum}Name`]: slot.name,
-      [`slot${pNum}Search`]: slot.name,
-      [`slot${pNum}Image`]: slot.image || slot.image_url || null,
-    });
-    setShowSlotSuggestions(prev => ({ ...prev, [`${idx}_${pNum}`]: false }));
-  };
-
-  /* ─── Start tournament — creates matches using the engine ─── */
-  const startTournament = () => {
-    const valid = setupMatches.every(m => m.player1 && m.player2);
-    if (!valid) { alert('Please fill in player names for all matches.'); return; }
-
-    const engineMatches = setupMatches.map(m => {
-      const match = createMatch({
-        player1: m.player1,
-        player2: m.player2,
-        slot1: { name: m.slot1Name || m.slot1Search || '', image: m.slot1Image || null },
-        slot2: { name: m.slot2Name || m.slot2Search || '', image: m.slot2Image || null },
-        type: tournamentType,
-        config: tournamentType === 'bonus_bo3' ? { drawRule: 'no_point' } : {},
-      });
-      return match;
-    });
-
-    const tournament = createTournament({
-      matches: engineMatches,
-      title: c.title || '',
-      prize: c.prize || '',
-    });
-
-    onChange({ ...c, active: true, tournamentType, setupMatches, data: tournament });
-  };
-
-  const resetTournament = () => {
-    onChange({ ...c, active: false, data: null });
-  };
-
-  /* ─── Match editing via engine ─── */
-  const goToMatch = (idx) => {
-    if (!tData) return;
-    onChange({ ...c, data: { ...tData, currentMatchIdx: idx } });
-  };
-
-  const handleRoundInput = (roundIdx, playerKey, field, value) => {
-    if (!currentMatch || !tData) return;
-    const updated = updateRoundData(currentMatch, roundIdx, playerKey, { [field]: value });
-    const newData = updateTournamentMatch(tData, currentIdx, updated);
-    onChange({ ...c, data: newData });
-  };
-
-  const handleManualWinner = (winner) => {
-    if (!currentMatch || !tData) return;
-    const current = currentMatch.winner;
-    const newWinner = current === winner ? null : winner;
-    const updated = setManualWinner(currentMatch, newWinner);
-    const newData = updateTournamentMatch(tData, currentIdx, updated);
-    onChange({ ...c, data: newData });
-  };
-
-  const handleResetMatch = () => {
-    if (!currentMatch || !tData) return;
-    const updated = resetMatch(currentMatch);
-    const newData = updateTournamentMatch(tData, currentIdx, updated);
-    onChange({ ...c, data: newData });
-  };
 
   /* ─── Navbar sync ─── */
   const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
@@ -328,9 +218,6 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   };
   const loadPreset = (preset) => setMulti(preset.values);
   const deletePreset = (name) => set('tournamentPresets', (c.tournamentPresets || []).filter(p => p.name !== name));
-
-  /* ─── Stats ─── */
-  const stats = useMemo(() => tData ? getTournamentStats(tData) : null, [tData]);
 
   /* ─── Bracket tournament state ─── */
   const bracketPhase = c.bracketPhase || 'setup'; // setup | active | completed
@@ -489,13 +376,11 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   const bracketChampion = getChampion(bracketData);
 
   const allTabs = [
-    { id: 'setup',   label: '⚙️ Setup' },
-    { id: 'matches', label: '🏆 Matches' },
     { id: 'bracket', label: '🏅 Bracket' },
     { id: 'style',   label: '🎨 Style' },
     { id: 'presets', label: '💾 Presets' },
   ];
-  const SIDEBAR_TABS = new Set(['setup', 'matches', 'bracket']);
+  const SIDEBAR_TABS = new Set(['bracket']);
   const WIDGET_TABS  = new Set(['style', 'presets']);
   const tabs = mode === 'sidebar' ? allTabs.filter(t => SIDEBAR_TABS.has(t.id))
              : mode === 'widget'  ? allTabs.filter(t => WIDGET_TABS.has(t.id))
@@ -508,386 +393,6 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
 
       {/* Tab nav */}
       <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 4 }} />
-
-      {/* ═══════ SETUP TAB ═══════ */}
-      {activeTab === 'setup' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Tournament Info</h4>
-          <label className="nb-field">
-            <span>Title</span>
-            <input value={c.title || ''} onChange={e => set('title', e.target.value)} placeholder="Tournament name" />
-          </label>
-          <label className="nb-field">
-            <span>Prize</span>
-            <input value={c.prize || ''} onChange={e => set('prize', e.target.value)} placeholder="€1,000" />
-          </label>
-          <label className="nb-field">
-            <span>Tournament #</span>
-            <input value={c.tournamentNumber || ''} onChange={e => set('tournamentNumber', e.target.value)} placeholder="249" style={{ maxWidth: 100 }} />
-          </label>
-
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Tournament Type</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6 }}>
-            Choose how matches are played. Type applies to all matches.
-          </p>
-          <div className="oc-bg-mode-grid">
-            {Object.values(TOURNAMENT_TYPES).map(t => (
-              <button key={t.id}
-                className={`oc-bg-mode-btn ${tournamentType === t.id ? 'oc-bg-mode-btn--active' : ''}`}
-                onClick={() => { if (!tournamentStarted) setTournamentType(t.id); }}
-                disabled={tournamentStarted}
-                style={{ opacity: tournamentStarted && tournamentType !== t.id ? 0.4 : 1 }}>
-                <span style={{ fontSize: 20 }}>{t.icon}</span>
-                <span>{t.label.replace(' Tournament', '')}</span>
-              </button>
-            ))}
-          </div>
-          <p className="oc-config-hint" style={{ fontSize: 11, marginTop: 4 }}>
-            {TOURNAMENT_TYPES[tournamentType]?.description || ''}
-          </p>
-
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Matches</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6 }}>
-            Add as many matches as you need. Each match is Player A vs Player B.
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {setupMatches.map((sm, idx) => (
-              <div key={idx} style={{
-                background: 'rgba(255,255,255,0.03)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 8, padding: '8px 10px',
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                    Match {idx + 1}
-                  </span>
-                  {setupMatches.length > 1 && !tournamentStarted && (
-                    <button onClick={() => removeSetupMatch(idx)} style={{
-                      background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)',
-                      color: '#ef4444', borderRadius: 4, padding: '2px 8px', fontSize: 11,
-                      cursor: 'pointer', fontWeight: 600,
-                    }}>✕</button>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: 6 }}>
-                  {/* Player 1 + slot */}
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Player 1</span>
-                    <input type="text" value={sm.player1} placeholder="Name..."
-                      onChange={e => updateSetupMatch(idx, 'player1', e.target.value)}
-                      disabled={tournamentStarted}
-                      className="tm-setup-input" />
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        {sm.slot1Image && (
-                          <img src={sm.slot1Image} alt="" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
-                        )}
-                        <input type="text" value={sm.slot1Search || sm.slot1Name || ''} placeholder="🎰 Search slot..."
-                          onChange={e => handleSlotSearchSetup(idx, 1, e.target.value)}
-                          onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_1`]: (sm.slot1Search || '').length > 0 }))}
-                          onBlur={() => setTimeout(() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_1`]: false })), 200)}
-                          disabled={tournamentStarted}
-                          className="tm-setup-input tm-setup-input-slot" />
-                      </div>
-                      {showSlotSuggestions[`${idx}_1`] && filteredSlots(sm.slot1Search).length > 0 && (
-                        <div className="tm-slot-suggestions">
-                          {filteredSlots(sm.slot1Search).map(slot => (
-                            <div key={slot.id} className="tm-slot-suggestion" onMouseDown={(e) => { e.preventDefault(); handleSlotSelectSetup(idx, 1, slot); }}>
-                              {slot.image && <img src={slot.image} alt={slot.name} />}
-                              <span>{slot.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <span style={{ fontSize: 11, fontWeight: 800, color: '#334155', alignSelf: 'center', paddingTop: 14 }}>VS</span>
-
-                  {/* Player 2 + slot */}
-                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
-                    <span style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.4px' }}>Player 2</span>
-                    <input type="text" value={sm.player2} placeholder="Name..."
-                      onChange={e => updateSetupMatch(idx, 'player2', e.target.value)}
-                      disabled={tournamentStarted}
-                      className="tm-setup-input" />
-                    <div style={{ position: 'relative' }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                        {sm.slot2Image && (
-                          <img src={sm.slot2Image} alt="" style={{ width: 22, height: 22, borderRadius: 4, objectFit: 'cover', flexShrink: 0 }} />
-                        )}
-                        <input type="text" value={sm.slot2Search || sm.slot2Name || ''} placeholder="🎰 Search slot..."
-                          onChange={e => handleSlotSearchSetup(idx, 2, e.target.value)}
-                          onFocus={() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_2`]: (sm.slot2Search || '').length > 0 }))}
-                          onBlur={() => setTimeout(() => setShowSlotSuggestions(p => ({ ...p, [`${idx}_2`]: false })), 200)}
-                          disabled={tournamentStarted}
-                          className="tm-setup-input tm-setup-input-slot" />
-                      </div>
-                      {showSlotSuggestions[`${idx}_2`] && filteredSlots(sm.slot2Search).length > 0 && (
-                        <div className="tm-slot-suggestions">
-                          {filteredSlots(sm.slot2Search).map(slot => (
-                            <div key={slot.id} className="tm-slot-suggestion" onMouseDown={(e) => { e.preventDefault(); handleSlotSelectSetup(idx, 2, slot); }}>
-                              {slot.image && <img src={slot.image} alt={slot.name} />}
-                              <span>{slot.name}</span>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {!tournamentStarted && (
-            <button className="nb-preset-load-btn" style={{ marginTop: 8, width: '100%', opacity: 0.8 }}
-              onClick={addSetupMatch}>
-              ➕ Add Match
-            </button>
-          )}
-
-          <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
-            {!tournamentStarted ? (
-              <button className="nb-preset-load-btn" style={{ flex: 1 }} onClick={startTournament}>
-                🚀 Start Tournament
-              </button>
-            ) : (
-              <button className="nb-preset-del-btn" style={{ flex: 1, padding: '10px 16px' }} onClick={resetTournament}>
-                🗑️ Reset Tournament
-              </button>
-            )}
-          </div>
-
-          {/* Active stats */}
-          {stats && tournamentStarted && (
-            <div style={{
-              marginTop: 10, padding: '8px 12px', borderRadius: 8,
-              background: 'rgba(255,255,255,0.03)',
-              border: '1px solid rgba(255,255,255,0.08)',
-              display: 'flex', justifyContent: 'center', gap: 16, fontSize: 12, fontWeight: 600, color: '#94a3b8',
-            }}>
-              <span>📊 {stats.completed}/{stats.total} done</span>
-              <span>🏆 {getTypeLabel(tournamentType)}</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* ═══════ MATCHES TAB ═══════ */}
-      {activeTab === 'matches' && (
-        <div className="nb-section">
-          {!tournamentStarted ? (
-            <p className="oc-config-hint">Start a tournament in the Setup tab first.</p>
-          ) : (() => {
-            const totalMatches = matches.length;
-            if (!currentMatch) return <p className="oc-config-hint">No matches available.</p>;
-
-            const inputFields = getRoundInputFields(currentMatch.type);
-            const isBo3 = currentMatch.type === 'bonus_bo3';
-            const scoreboard = isBo3 ? getBoScoreboard(currentMatch) : null;
-
-            return (
-              <>
-                <h4 className="nb-subtitle">
-                  {getTypeLabel(currentMatch.type)} — {totalMatches} match{totalMatches !== 1 ? 'es' : ''}
-                </h4>
-
-                {/* Match Navigator */}
-                <div style={{
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  gap: 12, margin: '8px 0 12px', padding: '8px 0',
-                }}>
-                  <button className="nb-preset-load-btn"
-                    style={{ padding: '6px 14px', opacity: currentIdx === 0 ? 0.4 : 1 }}
-                    disabled={currentIdx === 0}
-                    onClick={() => goToMatch(currentIdx - 1)}>
-                    ◀ Prev
-                  </button>
-                  <span style={{ fontWeight: 700, fontSize: 14, color: '#fff' }}>
-                    Match {currentIdx + 1} / {totalMatches}
-                  </span>
-                  <button className="nb-preset-load-btn"
-                    style={{ padding: '6px 14px', opacity: currentIdx >= totalMatches - 1 ? 0.4 : 1 }}
-                    disabled={currentIdx >= totalMatches - 1}
-                    onClick={() => goToMatch(currentIdx + 1)}>
-                    Next ▶
-                  </button>
-                </div>
-
-                {/* Match overview pills */}
-                <div style={{
-                  display: 'flex', gap: 4, flexWrap: 'wrap', marginBottom: 10, justifyContent: 'center',
-                }}>
-                  {matches.map((m, i) => {
-                    const isCurrent = i === currentIdx;
-                    const isDone = m.status === MATCH_STATUS.COMPLETED;
-                    return (
-                      <button key={i} onClick={() => goToMatch(i)} style={{
-                        padding: '3px 10px', borderRadius: 12, fontSize: 11, fontWeight: 600,
-                        border: isCurrent ? '2px solid #9346ff' : '1px solid rgba(255,255,255,0.15)',
-                        background: isDone ? 'rgba(34,197,94,0.2)' : isCurrent ? 'rgba(147,70,255,0.2)' : 'rgba(255,255,255,0.05)',
-                        color: isDone ? '#22c55e' : isCurrent ? '#c084fc' : '#94a3b8',
-                        cursor: 'pointer', transition: 'all 0.15s',
-                      }}>
-                        {isDone ? '✓' : ''} M{i + 1}
-                      </button>
-                    );
-                  })}
-                </div>
-
-                {/* Active match editing */}
-                <div className="tm-match-inline">
-                  <div className="tm-match-inline-header">
-                    <span>⚔️ <strong>{currentMatch.player1}</strong> vs <strong>{currentMatch.player2}</strong></span>
-                    {(currentMatch.slot1?.name || currentMatch.slot2?.name) && (
-                      <span style={{ fontSize: 11, color: '#94a3b8', marginLeft: 6 }}>🎰 {currentMatch.slot1?.name}{currentMatch.slot1?.name && currentMatch.slot2?.name ? ' / ' : ''}{currentMatch.slot2?.name}</span>
-                    )}
-                  </div>
-
-                  {/* Bo3 score indicator */}
-                  {isBo3 && scoreboard && (
-                    <div style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12,
-                      padding: '6px 0', margin: '4px 0 8px',
-                      background: 'rgba(255,255,255,0.03)', borderRadius: 6,
-                    }}>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: scoreboard.p1Wins >= 2 ? '#22c55e' : '#fff' }}>
-                        {scoreboard.p1Wins}
-                      </span>
-                      <span style={{ fontSize: 11, fontWeight: 700, color: '#64748b' }}>SCORE</span>
-                      <span style={{ fontSize: 18, fontWeight: 800, color: scoreboard.p2Wins >= 2 ? '#22c55e' : '#fff' }}>
-                        {scoreboard.p2Wins}
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Rounds */}
-                  {currentMatch.rounds.map((round, rIdx) => (
-                    <div key={rIdx} style={{
-                      background: 'rgba(255,255,255,0.02)',
-                      border: '1px solid rgba(255,255,255,0.06)',
-                      borderRadius: 8, padding: '8px 10px', marginBottom: 8,
-                    }}>
-                      {isBo3 && (
-                        <div style={{ fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 6, textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                          Round {round.roundNum}
-                          {round.winner && (
-                            <span style={{ marginLeft: 6, color: round.winner === 'draw' ? '#eab308' : '#22c55e' }}>
-                              {round.winner === 'draw' ? '🤝 Draw' : round.winner === 'player1' ? `👑 ${currentMatch.player1}` : `👑 ${currentMatch.player2}`}
-                            </span>
-                          )}
-                        </div>
-                      )}
-
-                      <div className="tm-match-inline-body">
-                        {/* Player 1 inputs */}
-                        <div className="tm-match-inline-player">
-                          <span className="tm-match-inline-pname">{currentMatch.player1}</span>
-                          <div className="tm-match-inline-inputs">
-                            {inputFields.map(f => (
-                              <div key={`p1-${rIdx}-${f.key}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{f.label}</span>
-                                <NumInput
-                                  value={round.player1[f.key]}
-                                  prefix={f.prefix}
-                                  placeholder="0"
-                                  onChange={v => handleRoundInput(rIdx, 'player1', f.key, v)}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                          {/* Result display */}
-                          {(() => {
-                            const r = calcRoundResult(round.player1, currentMatch.type);
-                            return r !== null ? (
-                              <div style={{
-                                fontSize: 12, fontWeight: 700, textAlign: 'center', marginTop: 2,
-                                color: r > 0 ? '#22c55e' : r < 0 ? '#ef4444' : '#eab308',
-                              }}>
-                                {formatResult(r, currency)}
-                              </div>
-                            ) : null;
-                          })()}
-                        </div>
-
-                        <span className="tm-vs-inline">VS</span>
-
-                        {/* Player 2 inputs */}
-                        <div className="tm-match-inline-player">
-                          <span className="tm-match-inline-pname">{currentMatch.player2}</span>
-                          <div className="tm-match-inline-inputs">
-                            {inputFields.map(f => (
-                              <div key={`p2-${rIdx}-${f.key}`} style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2 }}>
-                                <span style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.3px' }}>{f.label}</span>
-                                <NumInput
-                                  value={round.player2[f.key]}
-                                  prefix={f.prefix}
-                                  placeholder="0"
-                                  onChange={v => handleRoundInput(rIdx, 'player2', f.key, v)}
-                                />
-                              </div>
-                            ))}
-                          </div>
-                          {/* Result display */}
-                          {(() => {
-                            const r = calcRoundResult(round.player2, currentMatch.type);
-                            return r !== null ? (
-                              <div style={{
-                                fontSize: 12, fontWeight: 700, textAlign: 'center', marginTop: 2,
-                                color: r > 0 ? '#22c55e' : r < 0 ? '#ef4444' : '#eab308',
-                              }}>
-                                {formatResult(r, currency)}
-                              </div>
-                            ) : null;
-                          })()}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-
-                  {/* Winner / Manual override */}
-                  <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
-                    <button
-                      className={`tm-winner-inline ${currentMatch.winner === 'player1' ? 'tm-winner-active' : ''}`}
-                      onClick={() => handleManualWinner('player1')}
-                      style={{ flex: 1 }}>
-                      {currentMatch.winner === 'player1' ? '👑 ' : ''}{currentMatch.player1}
-                    </button>
-                    <button
-                      className={`tm-winner-inline ${currentMatch.winner === 'draw' ? 'tm-winner-active' : ''}`}
-                      onClick={() => handleManualWinner('draw')}
-                      style={{ padding: '6px 10px', fontSize: 11 }}>
-                      🤝
-                    </button>
-                    <button
-                      className={`tm-winner-inline ${currentMatch.winner === 'player2' ? 'tm-winner-active' : ''}`}
-                      onClick={() => handleManualWinner('player2')}
-                      style={{ flex: 1 }}>
-                      {currentMatch.winner === 'player2' ? '👑 ' : ''}{currentMatch.player2}
-                    </button>
-                  </div>
-
-                  {/* Reset match */}
-                  <button className="nb-preset-del-btn" style={{ marginTop: 6, width: '100%', padding: '6px 12px', fontSize: 11 }}
-                    onClick={handleResetMatch}>
-                    🔄 Reset Match
-                  </button>
-                </div>
-
-                {/* Auto-advance */}
-                {currentMatch.status === MATCH_STATUS.COMPLETED && currentIdx < totalMatches - 1 && (
-                  <button className="nb-preset-load-btn"
-                    style={{ marginTop: 8, width: '100%', padding: '8px 16px' }}
-                    onClick={() => goToMatch(currentIdx + 1)}>
-                    ✓ Match done — Go to Match {currentIdx + 2} →
-                  </button>
-                )}
-              </>
-            );
-          })()}
-        </div>
-      )}
 
       {/* ═══════ BRACKET TAB ═══════ */}
       {activeTab === 'bracket' && (
