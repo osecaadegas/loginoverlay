@@ -31,8 +31,10 @@ function TournamentWidget({ config, theme }) {
     (m.player1 && m.player1 !== 'TBD') || (m.player2 && m.player2 !== 'TBD')
   );
 
-  /* Remap currentMatchIdx from the flat array to the filtered array */
+  /* Prefer the first in-progress match; fall back to stored index */
   const currentMatchIdx = (() => {
+    const ipIdx = matches.findIndex(m => m.status === 'in_progress');
+    if (ipIdx >= 0) return ipIdx;
     const orig = tData.currentMatchIdx ?? 0;
     const target = allMatches[orig];
     if (!target) return 0;

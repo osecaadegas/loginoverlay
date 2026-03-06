@@ -401,9 +401,10 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       bracketData, bracketActiveRound, bracketActiveMatch, roundIdx, playerKey, { [field]: value }, localBracketPlayers
     );
     const flatMatches = newBracket.flatMap(r => r.matches);
+    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
     const updates = {
       bracketData: newBracket,
-      data: { ...c.data, matches: flatMatches },
+      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
     };
     if (matchCompleted && getChampion(newBracket)) {
       updates.bracketPhase = 'completed';
@@ -424,9 +425,10 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       newBracket = propagateWinner(newBracket, bracketActiveRound, bracketActiveMatch, localBracketPlayers);
     }
     const flatMatches = newBracket.flatMap(r => r.matches);
+    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
     const updates = {
       bracketData: newBracket,
-      data: { ...c.data, matches: flatMatches },
+      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
     };
     if (newWinner && getChampion(newBracket)) {
       updates.bracketPhase = 'completed';
@@ -441,9 +443,10 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     }));
     newBracket[bracketActiveRound].matches[bracketActiveMatch] = resetMatch(currentBracketMatch);
     const flatMatches = newBracket.flatMap(r => r.matches);
+    const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);
     setMulti({
       bracketData: newBracket,
-      data: { ...c.data, matches: flatMatches },
+      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
     });
   };
 
@@ -632,7 +635,10 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                             return (
                               <button key={mIdx}
                                 className={`bk-match-card ${isActive ? 'bk-match-card--active' : ''} ${isComplete ? 'bk-match-card--done' : ''}`}
-                                onClick={() => setMulti({ bracketActiveRound: rIdx, bracketActiveMatch: mIdx })}>
+                                onClick={() => {
+                                  const flatIdx = bracketData.slice(0, rIdx).reduce((s, r) => s + r.matches.length, 0) + mIdx;
+                                  setMulti({ bracketActiveRound: rIdx, bracketActiveMatch: mIdx, data: { ...c.data, currentMatchIdx: flatIdx } });
+                                }}>
                                 <div className={`bk-mc-player ${winner === 'player1' ? 'bk-mc-player--win' : ''} ${winner === 'player2' ? 'bk-mc-player--lose' : ''}`}>
                                   <span className="bk-mc-name">{match.player1 || 'TBD'}</span>
                                 </div>
