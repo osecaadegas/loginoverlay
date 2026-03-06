@@ -1170,8 +1170,8 @@ function TournamentWidget({ config, theme }) {
       const vals = getVals(match, playerKey);
 
       const cardW = large ? '100%' : '100%';
-      const imgH = large ? 'clamp(60px, 22vh, 160px)' : 'clamp(30px, 12vh, 70px)';
-      const nameFs = large ? 'clamp(13px, 2.5vw, 22px)' : 'clamp(8px, 1.4vw, 13px)';
+      const imgH = large ? 'clamp(40px, 14vh, 100px)' : 'clamp(24px, 9vh, 55px)';
+      const nameFs = large ? 'clamp(10px, 1.8vw, 16px)' : 'clamp(8px, 1.4vw, 13px)';
       const statFs = large ? 'clamp(10px, 1.4vw, 14px)' : 'clamp(7px, 1vw, 10px)';
       const labelFs = large ? 'clamp(7px, 0.9vw, 10px)' : 'clamp(6px, 0.7vw, 8px)';
 
@@ -1286,9 +1286,9 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
-    /* ── VS badge ── */
+    /* ── VS badge (compact) ── */
     const renderEsVs = (large = false) => {
-      const sz = large ? 'clamp(30px, 4.5vw, 52px)' : 'clamp(18px, 2.5vw, 30px)';
+      const sz = large ? 'clamp(22px, 3vw, 36px)' : 'clamp(14px, 1.8vw, 22px)';
       const isCurrent = large;
       return (
         <div style={{
@@ -1296,7 +1296,7 @@ function TournamentWidget({ config, theme }) {
           background: `linear-gradient(135deg, ${esPurple}, ${esCyan})`,
           border: '2px solid rgba(0,0,0,0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: large ? 'clamp(12px, 1.8vw, 20px)' : 'clamp(8px, 1.2vw, 13px)',
+          fontSize: large ? 'clamp(9px, 1.2vw, 14px)' : 'clamp(6px, 0.9vw, 10px)',
           fontWeight: 900, color: '#fff', fontFamily: esFont,
           boxShadow: `0 0 16px ${esPurple}40, 0 0 8px ${esCyan}30`,
           alignSelf: 'center',
@@ -1354,7 +1354,7 @@ function TournamentWidget({ config, theme }) {
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         overflow: 'hidden', fontFamily: esFont,
-        background: esBg, perspective: '1200px',
+        background: 'transparent', perspective: '1200px',
       }}>
         {/* ── Bracket overview grid (2 cols) ── */}
         <div style={{
