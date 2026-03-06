@@ -385,6 +385,19 @@
   background: var(--bht-header-bg, #1e3a8a);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
 }
+.bht-header-center {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+.bht-header-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--bht-header-accent, #60a5fa);
+  box-shadow: 0 0 8px rgba(96,165,250,0.3);
+}
 .bht-header-top {
   display: flex;
   align-items: center;
@@ -425,6 +438,9 @@
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+.bht-header-stats--3col {
+  grid-template-columns: 1fr 1fr 1fr;
+}
 .bht-stat-box {
   background: rgba(0,0,0,0.25);
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
@@ -445,66 +461,71 @@
   color: var(--bht-stat-value, #fff);
 }
 
-/* ── Bonuses count card ── */
-.bht-count-card {
-  background: var(--bht-count-bg, #1e3a8a);
-  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.1));
-}
-.bht-count-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 10px;
-}
-.bht-count-label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 0.75em;
-  color: var(--bht-muted, #93c5fd);
-}
-.bht-count-num {
-  font-size: 1.3em;
-  font-weight: 700;
-  color: var(--bht-text, #fff);
-}
-.bht-count-badges {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-}
-.bht-badge-super {
-  background: var(--bht-super-badge, #eab308);
-  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.18));
-  border-radius: calc(var(--bht-card-radius, 16px) - 4px);
-  padding: 6px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 0.75em;
-  font-weight: 700;
-  color: #fff;
-}
-.bht-badge-extreme {
-  background: var(--bht-extreme-badge, #ef4444);
-  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.18));
-  border-radius: calc(var(--bht-card-radius, 16px) - 4px);
-  padding: 6px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  font-size: 0.75em;
-  font-weight: 700;
-  color: #fff;
-}
-
 /* ── Current bonus card ── */
 .bht-current {
   background: var(--bht-current-bg, #166534);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.18));
 }
+.bht-current-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.bht-current-label {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--bht-muted, #93c5fd);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.bht-current-counter {
+  font-size: 0.85em;
+  font-weight: 800;
+  color: var(--bht-text, #fff);
+}
+.bht-current-img-card {
+  position: relative;
+  border-radius: calc(var(--bht-card-radius, 16px) - 4px);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.bht-current-img-full {
+  width: 100%;
+  height: var(--bht-slot-img-height, 180px);
+  object-fit: cover;
+  display: block;
+}
+.bht-current-img-placeholder {
+  width: 100%;
+  height: var(--bht-slot-img-height, 180px);
+  background: linear-gradient(135deg, #1a1f3a, #0e1225);
+}
+.bht-current-name-overlay {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 8px 10px;
+  font-size: 0.85em;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bht-current-best-badge {
+  position: absolute;
+  top: 6px; right: 6px;
+  font-size: 0.65em;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 6px;
+  background: var(--bht-current-accent, #22c55e);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(34,197,94,0.4);
+}
+/* Legacy current bonus (compact) */
 .bht-current-top {
   display: flex;
   align-items: center;
@@ -544,6 +565,17 @@
   color: var(--bht-current-accent, #86efac);
   font-size: 0.7em;
 }
+.bht-current-stat-label {
+  font-size: 0.8em;
+  font-weight: 600;
+  color: var(--bht-muted, #93c5fd);
+  text-transform: uppercase;
+}
+.bht-current-stat-value {
+  font-size: 1.1em;
+  font-weight: 800;
+  color: var(--bht-text, #fff);
+}
 .bht-current-stat span {
   font-size: 0.85em;
   font-weight: 700;
@@ -555,34 +587,175 @@
   background: var(--bht-list-bg, #581c87);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.2));
 }
-.bht-list-title {
-  font-size: 1em;
-  font-weight: 700;
-  color: var(--bht-text, #fff);
-  margin-bottom: 2px;
-}
-.bht-list-bet {
+.bht-list-section-title {
   font-size: 0.75em;
-  color: var(--bht-list-accent, #d8b4fe);
-  margin-bottom: 12px;
+  font-weight: 700;
+  color: var(--bht-muted, #93c5fd);
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 10px;
 }
-.bht-bonus-list {
+
+/* ── Horizontal thumbnail strip ── */
+.bht-thumb-strip {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 10px;
+  scrollbar-width: none;
+}
+.bht-thumb-strip::-webkit-scrollbar { display: none; }
+.bht-thumb-card {
+  flex: 0 0 75px;
+  height: 95px;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.3);
+  border: 2px solid transparent;
+}
+.bht-thumb-card--active {
+  border-color: var(--bht-current-accent, #facc15);
+  box-shadow: 0 0 8px rgba(250,204,21,0.3);
+}
+.bht-thumb-card--super {
+  border-color: var(--bht-super-badge, #eab308);
+  box-shadow: 0 0 10px rgba(234,179,8,0.3);
+}
+.bht-thumb-card--opened {
+  opacity: 0.6;
+}
+.bht-thumb-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bht-thumb-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1f3a, #0e1225);
+}
+.bht-thumb-bet {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  font-size: 0.65em;
+  font-weight: 700;
+  color: #fff;
+  background: rgba(0,0,0,0.65);
+  text-align: center;
+  padding: 2px 0;
+}
+
+/* ── Vertical list rows ── */
+.bht-list-rows {
   max-height: var(--bht-list-max-height, 400px);
   overflow: hidden;
   position: relative;
 }
-.bht-bonus-list-track {
+.bht-list-rows-track {
   display: flex;
   flex-direction: column;
   will-change: transform;
   animation: bht-carousel-scroll calc(var(--bht-item-count, 5) * 8s) linear infinite;
 }
-.bht-bonus-list-track > * {
-  margin-bottom: 10px;
-}
 @keyframes bht-carousel-scroll {
   0%   { transform: translateY(0); }
   100% { transform: translateY(-50%); }
+}
+.bht-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.bht-list-row--active {
+  background: rgba(255,255,255,0.06);
+}
+.bht-list-row--super {
+  background: rgba(234,179,8,0.08);
+}
+.bht-list-row--opened {
+  opacity: 0.6;
+}
+.bht-list-row-idx {
+  font-size: 0.7em;
+  font-weight: 800;
+  color: var(--bht-header-accent, #60a5fa);
+  min-width: 24px;
+  text-align: center;
+}
+.bht-list-row-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.3);
+}
+.bht-list-row-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bht-list-row-img-ph {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1f3a, #0e1225);
+}
+.bht-list-row-info {
+  flex: 1;
+  min-width: 0;
+}
+.bht-list-row-name {
+  font-size: 0.78em;
+  font-weight: 700;
+  color: var(--bht-text, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.bht-list-row-provider {
+  font-size: 0.6em;
+  color: var(--bht-muted, #93c5fd);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  display: block;
+}
+.bht-list-row-stats {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.bht-list-row-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 40px;
+}
+.bht-list-row-col-label {
+  font-size: 0.55em;
+  font-weight: 600;
+  color: var(--bht-muted, #93c5fd);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.bht-list-row-col-val {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--bht-text, #fff);
+}
+
+/* ── Legacy compact bonus cards ── */
+.bht-bonus-list {
+  max-height: var(--bht-list-max-height, 400px);
+  overflow: hidden;
+  position: relative;
 }
 .bht-bonus-card {
   position: relative;
@@ -622,95 +795,30 @@
   40%  { transform: translate(1px, 0); }
   50%  { transform: translate(0, 0); }
 }
-.bht-bonus-card-overlay {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.08) 40%, transparent 60%, rgba(0,0,0,0.15) 100%);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  padding: 10px 12px;
-}
-.bht-bonus-card-top {
-  display: flex;
-  justify-content: flex-start;
-}
-.bht-bonus-card-bet-badge {
-  font-size: 1.1em;
-  font-weight: 800;
-  color: var(--bht-list-accent, #d8b4fe);
-  background: rgba(0,0,0,0.55);
-  padding: 3px 10px;
-  border-radius: 8px;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-}
-.bht-bonus-card-bottom {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-}
-.bht-bonus-card-name {
-  font-size: 1.1em;
-  font-weight: 700;
-  color: var(--bht-text, #fff);
-}
-.bht-bonus-card-payout {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: 4px;
-}
-.bht-bonus-card-payout-val {
-  font-size: 1.05em;
-  font-weight: 700;
-  color: #4ade80;
-}
-.bht-bonus-card-payout-x {
-  font-size: 0.85em;
-  font-weight: 700;
-  color: var(--bht-current-accent, #86efac);
-  background: rgba(0,0,0,0.45);
-  padding: 1px 7px;
-  border-radius: 6px;
-}
-.bht-bonus-card-num {
-  font-size: 0.85em;
-  font-weight: 700;
-  color: var(--bht-text, #fff);
-}
 
-/* ── Summary card ── */
-.bht-summary {
+/* ── Total pay footer ── */
+.bht-footer {
   background: var(--bht-summary-bg, #1e3a8a);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
-}
-.bht-summary-stats {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.bht-total-pay {
-  background: var(--bht-total-pay-bg, #eab308);
-  background-image: linear-gradient(to right, transparent, rgba(0,0,0,0.15));
-  border-radius: calc(var(--bht-card-radius, 16px) - 4px);
-  padding: 12px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px;
 }
-.bht-total-pay-left {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 0.9em;
+.bht-footer-label {
+  font-size: 0.7em;
   font-weight: 700;
-  color: var(--bht-total-pay-text, #fff);
+  color: var(--bht-muted, #93c5fd);
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
-.bht-total-pay-value {
-  font-size: 1.4em;
-  font-weight: 700;
-  color: var(--bht-total-pay-text, #fff);
+.bht-footer-value {
+  font-size: 1.5em;
+  font-weight: 800;
+  color: var(--bht-total-pay-bg, #eab308);
+  text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
 }
 
 /* ─── Bonus Hunt: Neon ─── */
