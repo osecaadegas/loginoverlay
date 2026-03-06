@@ -309,25 +309,31 @@ function TournamentWidget({ config, theme }) {
     const result = getPlayerResult(match, playerKey);
     const op = isEliminated ? eliminatedOpacity : 1;
     const isRight = side === 'right';
+    const minimal = isMinimalLayout;
 
     return (
       <div className="tw-player-row" style={{
-        display: 'flex', alignItems: 'center', gap: 8,
+        display: 'flex',
+        alignItems: minimal ? 'stretch' : 'center',
+        gap: minimal ? 0 : 8,
         opacity: op, flex: 1, minWidth: 0,
         flexDirection: isRight ? 'row-reverse' : 'row',
       }}>
         {/* Slot thumbnail */}
         <div className="tw-slot-thumb" style={{
-          position: 'relative', width: 'clamp(40px, 20%, 100px)', aspectRatio: '1 / 1', flexShrink: 0,
-          overflow: 'hidden', borderRadius: 6,
+          position: 'relative', flexShrink: 0, overflow: 'hidden',
+          ...(minimal
+            ? { width: 'clamp(48px, 30%, 130px)', borderRadius: 0 }
+            : { width: 'clamp(40px, 20%, 100px)', aspectRatio: '1 / 1', borderRadius: 6 }),
         }}>
           {slotImage ? (
             <img src={slotImage} alt={slotName} style={{
               width: '100%', height: '100%',
-              objectFit: 'cover', display: 'block', borderRadius: 6,
+              objectFit: 'cover', display: 'block',
+              borderRadius: minimal ? 0 : 6,
             }} />
           ) : (
-            <div style={{ width: '100%', height: '100%', background: 'rgba(0,0,0,0.3)', borderRadius: 6 }} />
+            <div style={{ width: '100%', height: '100%', background: 'rgba(0,0,0,0.3)', borderRadius: minimal ? 0 : 6 }} />
           )}
           {isEliminated && (
             <div style={{
@@ -346,26 +352,37 @@ function TournamentWidget({ config, theme }) {
 
         {/* Name + result + slot name */}
         <div style={{
-          display: 'flex', flexDirection: 'column', gap: 1,
+          display: 'flex', flexDirection: 'column',
+          gap: minimal ? 0 : 1,
           minWidth: 0, flex: 1,
+          justifyContent: 'center',
           alignItems: isRight ? 'flex-end' : 'flex-start',
           textAlign: isRight ? 'right' : 'left',
+          ...(minimal ? { padding: '2px 6px' } : {}),
         }}>
           <span style={{
-            fontSize: nameSize + 2, fontWeight: 700, color: nameColor, fontFamily,
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            maxWidth: '100%',
+            fontWeight: 700, color: nameColor, fontFamily,
+            maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis',
+            lineHeight: 1.2,
+            ...(minimal
+              ? { fontSize: 'clamp(9px, 1.8vw, 15px)', whiteSpace: 'nowrap' }
+              : { fontSize: nameSize + 2, whiteSpace: 'nowrap' }),
           }}>{name}</span>
           {showSlotName && slotName && (
             <span style={{
-              fontSize: slotNameSize, color: slotNameColor, fontFamily,
+              fontSize: minimal ? 'clamp(8px, 1.4vw, 12px)' : slotNameSize,
+              color: slotNameColor, fontFamily,
               opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               maxWidth: '100%', textTransform: 'uppercase', letterSpacing: '0.3px',
+              lineHeight: 1.2,
             }}>{slotName}</span>
           )}
           <span style={{
-            fontSize: resultSize, fontWeight: 700, fontFamily,
-            color: valColor(result),
+            fontWeight: 700, fontFamily,
+            color: valColor(result), lineHeight: 1.2,
+            ...(minimal
+              ? { fontSize: 'clamp(9px, 1.6vw, 14px)' }
+              : { fontSize: resultSize }),
           }}>{fmtResult(result)}</span>
         </div>
       </div>
@@ -502,14 +519,20 @@ function TournamentWidget({ config, theme }) {
             border: `${cardBorderWidth}px solid ${isCurrentMatch ? swordColor : cardBorder}`,
             borderRadius: `${cardRadius}px`,
             overflow: 'hidden', position: 'relative',
-            padding: isMinimalLayout ? '3px 6px' : `${Math.max(padding, 4)}px 8px`,
-            display: 'flex', alignItems: 'center', gap: isMinimalLayout ? 4 : 6,
+            padding: isMinimalLayout ? 0 : `${Math.max(padding, 4)}px 8px`,
+            display: 'flex',
+            alignItems: isMinimalLayout ? 'stretch' : 'center',
+            gap: isMinimalLayout ? 0 : 6,
             ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
           }}>
             {renderPlayerRow(match, 'player1', hasWinner && !p1Won, 'left')}
 
             {/* Center sword */}
-            <div style={{ position: 'relative', width: swordSize + 20, height: swordSize + 20, flexShrink: 0 }}>
+            <div style={{
+              position: 'relative', flexShrink: 0,
+              width: swordSize + 20, height: swordSize + 20,
+              alignSelf: 'center',
+            }}>
               {renderSword(hasWinner, isCurrentMatch)}
             </div>
 
