@@ -24,8 +24,21 @@ import {
 function TournamentWidget({ config, theme }) {
   const c = config || {};
   const tData = c.data || {};
-  const matches = tData.matches || [];
-  const currentMatchIdx = tData.currentMatchIdx ?? 0;
+
+  /* Filter out future bracket matches where both players are still TBD */
+  const allMatches = tData.matches || [];
+  const matches = allMatches.filter(m =>
+    (m.player1 && m.player1 !== 'TBD') || (m.player2 && m.player2 !== 'TBD')
+  );
+
+  /* Remap currentMatchIdx from the flat array to the filtered array */
+  const currentMatchIdx = (() => {
+    const orig = tData.currentMatchIdx ?? 0;
+    const target = allMatches[orig];
+    if (!target) return 0;
+    const idx = matches.indexOf(target);
+    return idx >= 0 ? idx : 0;
+  })();
 
   /* ─── Layout mode ─── */
   const layout = c.layout || 'grid';
@@ -642,7 +655,7 @@ function TournamentWidget({ config, theme }) {
           padding: '6px 14px', borderBottom: `1px solid ${divider}`,
           fontSize: 13, color: subText, fontWeight: 600, fontFamily,
         }}>
-          <span>👥 <strong style={{ color: nameColor }}>{stats.total}</strong> Matches</span>
+          <span>👥 <strong style={{ color: nameColor }}>{matches.length}</strong> Matches</span>
           {typeLabel && <span>🏆 <strong style={{ color: nameColor }}>{typeLabel}</strong></span>}
           {prize && <span>💰 <strong style={{ color: accentColor }}>{prize}</strong></span>}
         </div>
