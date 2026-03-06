@@ -109,6 +109,7 @@ registerWidget({
     { id: 'neon',     icon: '💡', label: 'Neon' },
     { id: 'minimal',  icon: '✦', label: 'Minimal' },
     { id: 'arena',    icon: '⚔', label: 'Arena' },
+    { id: 'futuristic', icon: '🚀', label: 'Futuristic' },
   ],
   styleConfigKey: 'layout',
   defaults: {
