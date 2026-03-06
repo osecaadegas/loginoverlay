@@ -31,7 +31,51 @@ function BonusHuntWidget({ config, theme }) {
     return { ...c, bonuses: sorted };
   }, [c]);
 
-  /* ─── Style switcher ─── */
+  /* ─── Derived variables (must be before hooks that depend on them) ─── */
+  const ds = c.displayStyle || 'v1';
+  const isNeonBH = ds === 'v4_neon';
+  const isHorizontalBH = ds === 'v5_horizontal';
+  const isCompactBH = ds === 'v6_compact';
+  const isCarousel = ds === 'v7_carousel';
+  const bonuses = sortedConfig.bonuses || [];
+  const currency = c.currency || '€';
+  const startMoney = Number(c.startMoney) || 0;
+  const stopLoss = Number(c.stopLoss) || 0;
+
+  /* ─── Derived stats ─── */
+  const stats = useMemo(() => {
+    const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const openedBonuses = bonuses.filter(b => b.opened);
+    const totalBetOpened = openedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const totalWin = openedBonuses.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
+    const superCount = bonuses.filter(b => b.isSuperBonus).length;
+
+    const target = Math.max(startMoney - stopLoss, 0);
+    const breakEven = totalBetAll > 0 ? target / totalBetAll : 0;
+    const remaining = Math.max(target - totalWin, 0);
+    const liveBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
+    const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
+
+    return { totalBetAll, totalWin, superCount, breakEven, liveBE, avgMulti, openedCount: openedBonuses.length };
+  }, [bonuses, startMoney, stopLoss]);
+
+  /* ─── Compact: measure list viewport for centring ─── */
+  const listRef = useRef(null);
+  const [listH, setListH] = useState(0);
+  useEffect(() => {
+    if (!isCompactBH) return;
+    const measure = () => {
+      const el = listRef.current;
+      if (el && el.clientHeight > 0) setListH(el.clientHeight);
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (listRef.current) ro.observe(listRef.current);
+    return () => ro.disconnect();
+  }, [isCompactBH]);
+
+  /* ─── Style switcher (early returns AFTER all hooks) ─── */
   if (c.displayStyle === 'v3') {
     return <BonusHuntWidgetV3 config={sortedConfig} theme={theme} />;
   }
@@ -44,16 +88,6 @@ function BonusHuntWidget({ config, theme }) {
   if (c.displayStyle === 'v9_hunt_board') {
     return <BonusHuntWidgetV9 config={sortedConfig} theme={theme} />;
   }
-
-  const ds = c.displayStyle || 'v1';
-  const isNeonBH = ds === 'v4_neon';
-  const isHorizontalBH = ds === 'v5_horizontal';
-  const isCompactBH = ds === 'v6_compact';
-  const isCarousel = ds === 'v7_carousel';
-  const bonuses = sortedConfig.bonuses || [];
-  const currency = c.currency || '€';
-  const startMoney = Number(c.startMoney) || 0;
-  const stopLoss = Number(c.stopLoss) || 0;
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
@@ -122,44 +156,11 @@ function BonusHuntWidget({ config, theme }) {
     '--bht-list-max-height': `${listMaxHeight}px`,
   };
 
-  /* ─── Derived stats ─── */
-  const stats = useMemo(() => {
-    const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const openedBonuses = bonuses.filter(b => b.opened);
-    const totalBetOpened = openedBonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
-    const totalWin = openedBonuses.reduce((s, b) => s + (Number(b.payout) || 0), 0);
-    const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
-    const superCount = bonuses.filter(b => b.isSuperBonus).length;
-
-    const target = Math.max(startMoney - stopLoss, 0);
-    const breakEven = totalBetAll > 0 ? target / totalBetAll : 0;
-    const remaining = Math.max(target - totalWin, 0);
-    const liveBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
-    const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
-
-    return { totalBetAll, totalWin, superCount, breakEven, liveBE, avgMulti, openedCount: openedBonuses.length };
-  }, [bonuses, startMoney, stopLoss]);
-
   /* ─── Find current bonus (first not-opened) ─── */
   const currentBonus = bonuses.find(b => !b.opened);
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   /* Stop carousel only when actively in opening phase AND there's a bonus to open */
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
-
-  /* ─── Compact: measure list viewport for centring ─── */
-  const listRef = useRef(null);
-  const [listH, setListH] = useState(0);
-  useEffect(() => {
-    if (!isCompactBH) return;
-    const measure = () => {
-      const el = listRef.current;
-      if (el && el.clientHeight > 0) setListH(el.clientHeight);
-    };
-    measure();
-    const ro = new ResizeObserver(measure);
-    if (listRef.current) ro.observe(listRef.current);
-    return () => ro.disconnect();
-  }, [isCompactBH]);
 
   const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
     : isHorizontalBH ? ' oc-bonushunt--horizontal'
