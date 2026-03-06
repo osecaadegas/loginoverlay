@@ -898,67 +898,66 @@ function TournamentWidget({ config, theme }) {
     const currentMatch = matches[currentMatchIdx] || matches[0];
     const upcomingMatches = matches.filter((m, i) => i !== currentMatchIdx && m.winner == null);
 
-    /* ── Player card ── */
-    const renderFtPlayer = (match, playerKey, large = false) => {
+    /* ── Helper: extract cost/payment values ── */
+    const getStats = (match, playerKey) => {
+      const rd = match?.rounds?.[0]?.[playerKey];
+      if (!rd) return { cost: null, pay: null };
+      if (match.type === 'spins') {
+        const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+        return { cost: isNaN(s) ? null : s, pay: isNaN(e) ? null : e };
+      }
+      const cost = parseFloat(rd.bonusCost), pay = parseFloat(rd.bonusPayout);
+      return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
+    };
+
+    /* ── Large player card (current match) ── */
+    const renderFtPlayerLarge = (match, playerKey) => {
       const name = match[playerKey] || 'TBD';
       const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
       const slotImage = pSlot?.image || null;
       const hasWinner = match.winner != null;
       const isWinner = match.winner === playerKey;
       const isElim = hasWinner && !isWinner;
-
-      const round = match?.rounds?.[0];
-      const rd = round?.[playerKey];
-      let costVal = null, payVal = null;
-      if (rd) {
-        if (match.type === 'spins') {
-          const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
-          costVal = isNaN(s) ? null : s;
-          payVal = isNaN(e) ? null : e;
-        } else {
-          const cost = parseFloat(rd.bonusCost), pay = parseFloat(rd.bonusPayout);
-          costVal = isNaN(cost) ? null : cost;
-          payVal = isNaN(pay) ? null : pay;
-        }
-      }
-
-      const nameFs = large ? '3.2vw' : '2.2vw';
-      const statFs = large ? '1.8vw' : '1.4vw';
-      const labelFs = large ? '1.3vw' : '1.1vw';
+      const { cost, pay } = getStats(match, playerKey);
 
       return (
         <div style={{
-          flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0,
+          display: 'flex', flexDirection: 'column', minWidth: 0, minHeight: 0,
           background: ftCardBg,
           border: `2px solid ${isWinner ? ftAccent : ftBorder}`,
-          borderRadius: '1.2%',
+          borderRadius: '0.6vw',
           overflow: 'hidden',
           opacity: isElim ? 0.45 : 1,
-          ...(isWinner ? { boxShadow: `0 0 16px ${ftAccent}30` } : {}),
+          ...(isWinner ? { boxShadow: `0 0 20px ${ftAccent}40` } : {}),
         }}>
-          {/* Player name header */}
+          {/* Name — wraps cleanly up to 2 lines */}
           <div style={{
-            padding: '0.5vh 1vw',
-            background: 'rgba(0,0,0,0.55)',
+            padding: '0.4vh 0.6vw',
+            background: 'rgba(0,0,0,0.6)',
             borderBottom: `1px solid ${ftBorder}`,
             textAlign: 'center',
           }}>
             <div style={{
-              fontSize: nameFs, fontWeight: 800, fontFamily: ftFont,
-              color: '#fff', textTransform: 'uppercase', letterSpacing: '0.5px',
-              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+              fontSize: '2.4vw', fontWeight: 800, fontFamily: ftFont,
+              color: '#fff', textTransform: 'uppercase', letterSpacing: '0.3px',
+              lineHeight: 1.15,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
             }}>{name}</div>
           </div>
 
-          {/* Slot image — takes all available space */}
+          {/* Thumbnail — fills remaining space, cover-fit */}
           <div style={{
-            flex: 1, display: 'flex',
-            alignItems: 'center', justifyContent: 'center',
-            background: 'rgba(0,0,0,0.2)',
+            flex: 1, position: 'relative', overflow: 'hidden',
+            background: 'rgba(0,0,0,0.3)', minHeight: 0,
           }}>
             {slotImage ? (
-              <img src={slotImage} alt={name} style={{
-                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+              <img src={slotImage} alt="" style={{
+                width: '100%', height: '100%',
+                objectFit: 'cover', objectPosition: 'center',
+                display: 'block',
               }} />
             ) : (
               <div style={{
@@ -970,22 +969,22 @@ function TournamentWidget({ config, theme }) {
             )}
           </div>
 
-          {/* Cost / Payment stats */}
+          {/* Stats bar */}
           <div style={{
             display: 'flex', borderTop: `1px solid ${ftBorder}`,
-            background: 'rgba(0,0,0,0.5)',
+            background: 'rgba(0,0,0,0.55)',
           }}>
-            <div style={{ flex: 1, textAlign: 'center', padding: '0.4vh 0.5vw' }}>
-              <div style={{ fontSize: labelFs, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Cost</div>
-              <div style={{ fontSize: statFs, fontWeight: 700, color: ftCyan, fontFamily: ftFont }}>
-                {costVal !== null ? `${currency}${costVal.toFixed(0)}` : '—'}
+            <div style={{ flex: 1, textAlign: 'center', padding: '0.4vh 0.4vw' }}>
+              <div style={{ fontSize: '1vw', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Cost</div>
+              <div style={{ fontSize: '1.6vw', fontWeight: 700, color: ftCyan, fontFamily: ftFont }}>
+                {cost !== null ? `${currency}${cost.toFixed(0)}` : '—'}
               </div>
             </div>
             <div style={{ width: 1, background: ftBorder }} />
-            <div style={{ flex: 1, textAlign: 'center', padding: '0.4vh 0.5vw' }}>
-              <div style={{ fontSize: labelFs, color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Payment</div>
-              <div style={{ fontSize: statFs, fontWeight: 700, color: '#4ade80', fontFamily: ftFont }}>
-                {payVal !== null ? `${currency}${payVal.toFixed(0)}` : '—'}
+            <div style={{ flex: 1, textAlign: 'center', padding: '0.4vh 0.4vw' }}>
+              <div style={{ fontSize: '1vw', color: '#64748b', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: ftFont }}>Pay</div>
+              <div style={{ fontSize: '1.6vw', fontWeight: 700, color: '#4ade80', fontFamily: ftFont }}>
+                {pay !== null ? `${currency}${pay.toFixed(0)}` : '—'}
               </div>
             </div>
           </div>
@@ -993,72 +992,143 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
-    /* ── VS Badge ── */
-    const renderFtVs = (large = false) => {
-      const sz = large ? '5.5vw' : '3.5vw';
+    /* ── Compact player card (upcoming) — name overlaid on image ── */
+    const renderFtPlayerCompact = (match, playerKey) => {
+      const name = match[playerKey] || 'TBD';
+      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const slotImage = pSlot?.image || null;
+      const hasWinner = match.winner != null;
+      const isWinner = match.winner === playerKey;
+      const isElim = hasWinner && !isWinner;
+
       return (
         <div style={{
-          width: sz, height: sz,
-          borderRadius: '50%', flexShrink: 0,
-          background: `linear-gradient(135deg, ${ftAccent}, ${ftAccent}cc)`,
-          border: '2px solid rgba(0,0,0,0.5)',
-          boxShadow: `0 4px 12px rgba(0,0,0,0.5), 0 0 10px ${ftAccent}40`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: large ? '2.4vw' : '1.6vw',
-          fontWeight: 900, color: '#000', letterSpacing: '0.5px',
-          fontFamily: ftFont, alignSelf: 'center',
-        }}>VS</div>
+          position: 'relative', minWidth: 0, minHeight: 0,
+          borderRadius: '0.4vw', overflow: 'hidden',
+          border: `1px solid ${isWinner ? ftAccent : ftBorder}`,
+          background: ftCardBg,
+          opacity: isElim ? 0.45 : 1,
+          ...(isWinner ? { boxShadow: `0 0 14px ${ftAccent}30` } : {}),
+        }}>
+          {/* Full-bleed image */}
+          {slotImage ? (
+            <img src={slotImage} alt="" style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center',
+              display: 'block',
+            }} />
+          ) : (
+            <div style={{
+              width: '100%', height: '100%',
+              background: `linear-gradient(135deg, ${ftCardBg}, rgba(0,212,255,0.05))`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: '2vw', color: 'rgba(255,255,255,0.08)',
+            }}>⚔</div>
+          )}
+          {/* Name overlay at bottom */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            padding: '2vw 0.4vw 0.3vw',
+            background: 'linear-gradient(transparent, rgba(0,0,0,0.88))',
+            textAlign: 'center',
+          }}>
+            <div style={{
+              fontSize: '1.4vw', fontWeight: 800, fontFamily: ftFont,
+              color: '#fff', textTransform: 'uppercase',
+              lineHeight: 1.15,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }}>{name}</div>
+          </div>
+        </div>
       );
     };
 
+    /* ── VS Badge (auto-centered by grid) ── */
+    const renderFtVs = (large = false) => {
+      const sz = large ? '4.5vw' : '3vw';
+      return (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            width: sz, height: sz,
+            borderRadius: '50%', flexShrink: 0,
+            background: `linear-gradient(135deg, ${ftAccent}, #ca8a04)`,
+            border: '2px solid rgba(0,0,0,0.4)',
+            boxShadow: `0 2px 10px rgba(0,0,0,0.5), 0 0 12px ${ftAccent}30`,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: large ? '1.8vw' : '1.2vw',
+            fontWeight: 900, color: '#000', letterSpacing: '0.5px',
+            fontFamily: ftFont,
+          }}>VS</div>
+        </div>
+      );
+    };
+
+    /* ── Match row — CSS Grid: [player] [VS] [player] ── */
+    const renderMatchRow = (match, large = false) => (
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto 1fr',
+        gap: large ? '0.8vw' : '0.5vw',
+        alignItems: 'stretch',
+        height: '100%',
+      }}>
+        {large ? renderFtPlayerLarge(match, 'player1') : renderFtPlayerCompact(match, 'player1')}
+        {renderFtVs(large)}
+        {large ? renderFtPlayerLarge(match, 'player2') : renderFtPlayerCompact(match, 'player2')}
+      </div>
+    );
+
+    /* ── Build grid row template (3fr for active, 1fr per upcoming) ── */
+    const rowParts = [];
+    if (currentMatch) rowParts.push('3fr');
+    upcomingMatches.forEach(() => rowParts.push('1fr'));
+
     return (
       <div style={{
-        flex: 1, display: 'flex', flexDirection: 'column',
+        flex: 1, display: 'grid',
+        gridTemplateRows: rowParts.join(' ') || '1fr',
         overflow: 'hidden', fontFamily: ftFont,
         background: ftBg,
-        padding: '1vw',
-        gap: '1vw',
+        padding: '0.8vw',
+        gap: '0.6vw',
       }}>
-        {/* ── Current Match (large) ── */}
+        {/* ── Current Match — highlighted wrapper ── */}
         {currentMatch && (
           <div style={{
-            flex: 3, display: 'flex', flexDirection: 'column',
-            gap: '0.6vh', minHeight: 0,
+            display: 'flex', flexDirection: 'column',
+            minHeight: 0, gap: '0.4vw',
+            borderRadius: '0.6vw',
+            padding: '0.5vw',
+            border: `2px solid ${ftAccent}50`,
+            background: `linear-gradient(180deg, rgba(234,179,8,0.06), ${ftBg})`,
+            boxShadow: `0 0 24px ${ftAccent}10, inset 0 1px 0 ${ftAccent}20`,
           }}>
-            {/* Player cards */}
-            <div style={{
-              flex: 1, display: 'flex', alignItems: 'stretch',
-              gap: '1vw', minHeight: 0,
-            }}>
-              {renderFtPlayer(currentMatch, 'player1', true)}
-              {renderFtVs(true)}
-              {renderFtPlayer(currentMatch, 'player2', true)}
+            <div style={{ flex: 1, minHeight: 0 }}>
+              {renderMatchRow(currentMatch, true)}
             </div>
-
-            {/* PLAYING NOW badge */}
             <div style={{
-              padding: '0.5vh 1vw', borderRadius: 4,
-              background: `linear-gradient(135deg, ${ftAccent}, #ca8a04)`,
+              padding: '0.3vh 0.8vw', borderRadius: '0.3vw',
+              background: `linear-gradient(90deg, ${ftAccent}, #ca8a04)`,
               textAlign: 'center', flexShrink: 0,
             }}>
               <span style={{
-                fontSize: '1.8vw', fontWeight: 900,
+                fontSize: '1.4vw', fontWeight: 900,
                 color: '#000', textTransform: 'uppercase', letterSpacing: '2px',
                 fontFamily: ftFont,
-              }}>PLAYING NOW</span>
+              }}>▶ PLAYING NOW</span>
             </div>
           </div>
         )}
 
-        {/* ── Upcoming matches ── */}
-        {upcomingMatches.length > 0 && upcomingMatches.map((m, i) => (
-          <div key={i} style={{
-            flex: 1, display: 'flex', alignItems: 'stretch',
-            gap: '0.5vw', minHeight: 0,
-          }}>
-            {renderFtPlayer(m, 'player1', false)}
-            {renderFtVs(false)}
-            {renderFtPlayer(m, 'player2', false)}
+        {/* ── Upcoming matches — compact rows ── */}
+        {upcomingMatches.map((m, i) => (
+          <div key={i} style={{ minHeight: 0 }}>
+            {renderMatchRow(m, false)}
           </div>
         ))}
       </div>
