@@ -114,22 +114,7 @@ function BonusHuntWidgetV4({ config, theme }) {
         </div>
       </header>
 
-      {/* ═══ STATS HUD — Angled parallelogram panels ═══ */}
-      <section className="bht4-stats-hud">
-        {[
-          { label: 'START', value: fmt(startMoney), color: neon1 },
-          { label: 'B.EVEN', value: fmtX(stats.breakEven), color: stats.breakEven >= 1 ? '#4ade80' : '#f87171' },
-          { label: 'AVG X', value: fmtX(stats.avgMulti), color: stats.avgMulti >= 1 ? '#4ade80' : '#f87171' },
-          { label: 'PROFIT', value: (profit >= 0 ? '+' : '') + fmt(profit), color: profit >= 0 ? '#4ade80' : '#f87171' },
-        ].map((s, i) => (
-          <div key={i} className="bht4-stat-panel">
-            <span className="bht4-stat-panel-label">{s.label}</span>
-            <span className="bht4-stat-panel-value" style={{ color: s.color }}>{s.value}</span>
-          </div>
-        ))}
-      </section>
-
-      {/* ═══ CENTER: Circular progress + Target Lock current bonus ═══ */}
+      {/* ═══ CENTER: Ring + Target + Stats inline ═══ */}
       <section className="bht4-center">
         {/* SVG circular progress ring */}
         <div className="bht4-ring-wrap">
@@ -204,6 +189,21 @@ function BonusHuntWidgetV4({ config, theme }) {
             <span className="bht4-target-empty">ALL BONUSES OPENED</span>
           </div>
         )}
+
+        {/* Stats stacked vertically on the right */}
+        <div className="bht4-side-stats">
+          {[
+            { label: 'START', value: fmt(startMoney), color: neon1 },
+            { label: 'B.EVEN', value: fmtX(stats.breakEven), color: stats.breakEven >= 1 ? '#4ade80' : '#f87171' },
+            { label: 'AVG X', value: fmtX(stats.avgMulti), color: stats.avgMulti >= 1 ? '#4ade80' : '#f87171' },
+            { label: 'PROFIT', value: (profit >= 0 ? '+' : '') + fmt(profit), color: profit >= 0 ? '#4ade80' : '#f87171' },
+          ].map((s, i) => (
+            <div key={i} className="bht4-side-stat">
+              <span className="bht4-side-stat-label">{s.label}</span>
+              <span className="bht4-side-stat-value" style={{ color: s.color }}>{s.value}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Badge row */}
@@ -237,29 +237,30 @@ function BonusHuntWidgetV4({ config, theme }) {
                 return (
                   <div key={`v4s-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
                     className={`bht4-stream-card${isActive ? ' bht4-stream-card--active' : ''}${bonus.opened ? ' bht4-stream-card--opened' : ''}${isSuper ? ' bht4-stream-card--super' : ''}${isExtreme ? ' bht4-stream-card--extreme' : ''}`}>
-                    <div className="bht4-sc-top">
-                      <span className="bht4-sc-idx">#{idx + 1}</span>
-                      {isSuper && <span className="bht4-sc-badge" style={{ color: superBadgeColor }}>★</span>}
-                      {isExtreme && <span className="bht4-sc-badge" style={{ color: extremeBadgeColor }}>⚡</span>}
-                    </div>
-                    <div className="bht4-sc-img-wrap">
-                      {bonus.slot?.image ? (
-                        <img src={bonus.slot.image} alt="" className="bht4-sc-img"
-                          onError={e => { e.target.style.display = 'none'; }} />
-                      ) : (
-                        <div className="bht4-sc-img-ph" />
-                      )}
-                    </div>
-                    <div className="bht4-sc-info">
-                      <span className="bht4-sc-name">{bonus.slotName || bonus.slot?.name}</span>
-                      <span className="bht4-sc-bet">{currency}{bet.toFixed(2)}</span>
-                    </div>
-                    {bonus.opened && (
-                      <div className="bht4-sc-result">
-                        <span className="bht4-sc-multi">{multi.toFixed(1)}x</span>
-                        <span className="bht4-sc-win">{currency}{payout.toFixed(0)}</span>
-                      </div>
+                    {/* Full-bleed background image */}
+                    {bonus.slot?.image ? (
+                      <img src={bonus.slot.image} alt="" className="bht4-sc-bg-img"
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div className="bht4-sc-bg-ph" />
                     )}
+                    <div className="bht4-sc-overlay">
+                      <div className="bht4-sc-top">
+                        <span className="bht4-sc-idx">#{idx + 1}</span>
+                        {isSuper && <span className="bht4-sc-badge" style={{ color: superBadgeColor }}>★</span>}
+                        {isExtreme && <span className="bht4-sc-badge" style={{ color: extremeBadgeColor }}>⚡</span>}
+                      </div>
+                      <div className="bht4-sc-bottom">
+                        <span className="bht4-sc-name">{bonus.slotName || bonus.slot?.name}</span>
+                        <span className="bht4-sc-bet">{currency}{bet.toFixed(2)}</span>
+                        {bonus.opened && (
+                          <div className="bht4-sc-result">
+                            <span className="bht4-sc-multi">{multi.toFixed(1)}x</span>
+                            <span className="bht4-sc-win">{currency}{payout.toFixed(0)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
                   </div>
                 );
               })}

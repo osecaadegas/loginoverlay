@@ -895,6 +895,7 @@
   width: 30px; height: 30px; border-radius: 2px; object-fit: cover;
   border: 1px solid var(--v4-neon1);
   clip-path: polygon(10% 0%, 100% 0%, 90% 100%, 0% 100%);
+  background: transparent;
 }
 
 /* Glitch text effect */
@@ -959,41 +960,34 @@
   clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
 }
 
-/* ═══ STATS HUD — Angled parallelogram panels ═══ */
-.bht4-stats-hud {
+/* ═══ CENTER — Ring + Target Card + Side Stats ═══ */
+.bht4-center {
   position: relative; z-index: 2;
-  display: flex; gap: 6px;
+  display: flex; align-items: stretch; gap: 10px;
   padding: 8px 14px;
 }
-.bht4-stat-panel {
-  flex: 1;
+
+/* Side stats — stacked vertically on the right */
+.bht4-side-stats {
+  flex: 0 0 auto;
+  display: flex; flex-direction: column; gap: 3px;
+  justify-content: center;
+}
+.bht4-side-stat {
   display: flex; flex-direction: column; align-items: center;
-  padding: 6px 10px;
+  padding: 3px 10px;
   background: rgba(255,255,255,0.025);
   border: 1px solid rgba(0,255,204,0.08);
   clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
-  transition: background 0.3s ease, border-color 0.3s ease;
 }
-.bht4-stat-panel:hover {
-  background: rgba(0,255,204,0.05);
-  border-color: rgba(0,255,204,0.2);
-}
-.bht4-stat-panel-label {
-  font-size: 0.55em; font-weight: 700; letter-spacing: 0.14em;
+.bht4-side-stat-label {
+  font-size: 0.48em; font-weight: 700; letter-spacing: 0.12em;
   color: var(--v4-muted);
-  margin-bottom: 2px;
 }
-.bht4-stat-panel-value {
-  font-weight: 800; font-size: 0.95em;
-  text-shadow: 0 0 8px currentColor;
+.bht4-side-stat-value {
+  font-weight: 800; font-size: 0.78em;
+  text-shadow: 0 0 6px currentColor;
   font-variant-numeric: tabular-nums;
-}
-
-/* ═══ CENTER — Ring + Target Card side by side ═══ */
-.bht4-center {
-  position: relative; z-index: 2;
-  display: flex; align-items: center; gap: 14px;
-  padding: 10px 14px;
 }
 
 /* SVG circular progress ring */
@@ -1203,55 +1197,64 @@
   100% { transform: translateX(-50%); }
 }
 
-/* Stream cards */
+/* Stream cards — full-bleed image */
 .bht4-stream-card {
   flex: 0 0 auto;
-  width: 120px;
-  background: rgba(255,255,255,0.02);
+  width: 130px; height: 100px;
+  position: relative; overflow: hidden;
   border: 1px solid rgba(255,255,255,0.04);
   clip-path: polygon(6% 0%, 100% 0%, 94% 100%, 0% 100%);
-  padding: 6px 10px;
-  transition: border-color 0.3s, box-shadow 0.3s, background 0.3s;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 .bht4-stream-card--active {
   border-color: var(--v4-neon1);
-  background: rgba(0,255,204,0.05);
   box-shadow: 0 0 14px rgba(0,255,204,0.15), inset 0 0 10px rgba(0,255,204,0.04);
 }
 .bht4-stream-card--opened { opacity: 0.5; }
 .bht4-stream-card--super { border-color: rgba(234,179,8,0.25); }
 .bht4-stream-card--extreme { border-color: rgba(239,68,68,0.25); }
 
+/* Full-bleed background image */
+.bht4-sc-bg-img {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%; object-fit: cover;
+  display: block;
+}
+.bht4-sc-bg-ph {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0.03);
+}
+/* Overlay on top of image */
+.bht4-sc-overlay {
+  position: relative; z-index: 1;
+  display: flex; flex-direction: column; justify-content: space-between;
+  height: 100%; padding: 5px 8px;
+  background: linear-gradient(180deg, rgba(6,6,14,0.6) 0%, rgba(6,6,14,0.15) 40%, rgba(6,6,14,0.7) 100%);
+}
+
 .bht4-sc-top {
   display: flex; justify-content: space-between; align-items: center;
-  margin-bottom: 4px;
 }
 .bht4-sc-idx {
-  font-size: 0.5em; font-weight: 700; color: var(--v4-muted);
+  font-size: 0.5em; font-weight: 700; color: rgba(255,255,255,0.7);
   letter-spacing: 0.06em;
 }
 .bht4-sc-badge { font-size: 0.65em; }
-.bht4-sc-img-wrap {
-  width: 100%; height: 42px; overflow: hidden;
-  margin-bottom: 4px;
-  clip-path: polygon(4% 0%, 100% 0%, 96% 100%, 0% 100%);
-}
-.bht4-sc-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.bht4-sc-img-ph { width: 100%; height: 100%; background: rgba(255,255,255,0.03); }
-.bht4-sc-info { min-width: 0; }
+.bht4-sc-bottom { display: flex; flex-direction: column; gap: 1px; }
 .bht4-sc-name {
   font-size: 0.6em; font-weight: 600;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  display: block;
+  display: block; color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
 }
 .bht4-sc-bet {
-  font-size: 0.52em; color: var(--v4-muted);
+  font-size: 0.5em; color: rgba(255,255,255,0.6);
   display: block;
 }
 .bht4-sc-result {
   display: flex; justify-content: space-between;
-  margin-top: 3px; padding-top: 3px;
-  border-top: 1px solid rgba(0,255,204,0.06);
+  margin-top: 2px; padding-top: 2px;
+  border-top: 1px solid rgba(0,255,204,0.12);
 }
 .bht4-sc-multi {
   font-size: 0.58em; font-weight: 700;
@@ -1259,22 +1262,22 @@
   text-shadow: 0 0 4px rgba(0,255,204,0.3);
 }
 .bht4-sc-win {
-  font-size: 0.58em; font-weight: 600;
+  font-size: 0.58em; font-weight: 600; color: #fff;
 }
 
-/* ═══ POWER METER — Neon total payout ═══ */
+/* ═══ POWER METER — Compact neon total payout ═══ */
 .bht4-power {
   position: relative; z-index: 2;
-  padding: 8px 14px 10px;
+  padding: 4px 14px 6px;
 }
 .bht4-power-label {
-  font-size: 0.55em; font-weight: 700; letter-spacing: 0.14em;
+  font-size: 0.5em; font-weight: 700; letter-spacing: 0.14em;
   color: var(--v4-muted);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .bht4-power-bar {
   position: relative;
-  height: 32px;
+  height: 22px;
   background: rgba(255,255,255,0.02);
   border: 1px solid rgba(0,255,204,0.1);
   clip-path: polygon(1.5% 0%, 98.5% 0%, 100% 40%, 100% 100%, 0% 100%, 0% 40%);
@@ -1287,7 +1290,7 @@
     rgba(0,255,204,0.3)
   );
   border-right: 2px solid var(--v4-neon1);
-  box-shadow: 0 0 20px rgba(0,255,204,0.2);
+  box-shadow: 0 0 16px rgba(0,255,204,0.2);
   transition: width 0.8s cubic-bezier(0.22, 1, 0.36, 1);
   animation: bht4PowerPulse 2.5s ease-in-out infinite;
 }
@@ -1298,13 +1301,12 @@
 .bht4-power-text {
   position: absolute; inset: 0;
   display: flex; align-items: center; justify-content: flex-end;
-  padding-right: 12px;
-  font-weight: 900; font-size: 1.15em;
+  padding-right: 10px;
+  font-weight: 900; font-size: 0.9em;
   color: var(--v4-total-pay);
   text-shadow:
-    0 0 10px rgba(0,255,204,0.5),
-    0 0 24px rgba(0,255,204,0.2),
-    0 0 40px rgba(0,255,204,0.08);
+    0 0 8px rgba(0,255,204,0.5),
+    0 0 20px rgba(0,255,204,0.2);
   animation: bht4NeonBreath 3s ease-in-out infinite;
   letter-spacing: 0.04em;
   font-variant-numeric: tabular-nums;
