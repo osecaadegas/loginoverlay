@@ -774,7 +774,6 @@ function TournamentWidget({ config, theme }) {
           <div style={{
             flexShrink: 0, padding: 'clamp(4px, 0.8vw, 12px)',
             position: 'relative',
-            minHeight: 'clamp(90px, 18vh, 160px)',
           }}>
             {/* Pulsing bg glow */}
             <div style={{
@@ -797,44 +796,23 @@ function TournamentWidget({ config, theme }) {
               }}>⚡ Now Playing ⚡</span>
             </div>
 
-            {/* Match cards */}
+            {/* Match cards — same structure as overview matches */}
             <div style={{
               display: 'flex', alignItems: 'stretch',
-              gap: 'clamp(6px, 1vw, 16px)',
-              position: 'relative', zIndex: 1,
-              perspective: '800px',
+              gap: 'clamp(3px, 0.5vw, 8px)',
+              background: 'rgba(0,0,0,0.3)',
+              border: `1px solid ${esCyan}`,
+              borderRadius: 10, padding: 'clamp(4px, 0.6vw, 8px)',
+              position: 'relative', zIndex: 1, overflow: 'hidden',
+              backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+              minHeight: 'clamp(90px, 18vh, 160px)',
             }}>
-              <div style={{
-                flex: 1, minWidth: 0,
-                transform: 'rotateY(6deg)',
-                transformOrigin: 'right center',
-              }}>
-                {renderEsCard(currentMatch, 'player1', true)}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {renderEsCard(currentMatch, 'player1', false)}
               </div>
-
-              {/* Center: VS + energy connection */}
-              <div style={{
-                display: 'flex', flexDirection: 'column',
-                alignItems: 'center', justifyContent: 'center', gap: 4,
-                position: 'relative',
-              }}>
-                <div style={{
-                  width: 2, flex: 1, minHeight: 4,
-                  background: `linear-gradient(to bottom, transparent, ${esPurple}80)`,
-                }} />
-                {renderEsVs(true)}
-                <div style={{
-                  width: 2, flex: 1, minHeight: 4,
-                  background: `linear-gradient(to top, transparent, ${esCyan}80)`,
-                }} />
-              </div>
-
-              <div style={{
-                flex: 1, minWidth: 0,
-                transform: 'rotateY(-6deg)',
-                transformOrigin: 'left center',
-              }}>
-                {renderEsCard(currentMatch, 'player2', true)}
+              {renderEsVs(true)}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {renderEsCard(currentMatch, 'player2', false)}
               </div>
 
               {/* Shatter overlay */}
