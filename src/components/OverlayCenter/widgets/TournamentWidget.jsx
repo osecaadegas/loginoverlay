@@ -1309,6 +1309,7 @@ function TournamentWidget({ config, theme }) {
           position: 'relative', overflow: 'hidden',
           backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
           transition: 'border-color 0.3s',
+          minHeight: 'clamp(60px, 12vh, 110px)',
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {renderEsCard(match, 'player1', false)}
@@ -1419,10 +1420,12 @@ function TournamentWidget({ config, theme }) {
               display: 'flex', alignItems: 'stretch',
               gap: 'clamp(6px, 1vw, 16px)',
               position: 'relative', zIndex: 1,
+              perspective: '800px',
             }}>
               <div style={{
                 flex: 1, minWidth: 0,
-                animation: 'es-card-enter-left 0.8s cubic-bezier(0.23,1,0.32,1)',
+                transform: 'rotateY(6deg)',
+                transformOrigin: 'right center',
               }}>
                 {renderEsCard(currentMatch, 'player1', true)}
               </div>
@@ -1446,7 +1449,8 @@ function TournamentWidget({ config, theme }) {
 
               <div style={{
                 flex: 1, minWidth: 0,
-                animation: 'es-card-enter-right 0.8s cubic-bezier(0.23,1,0.32,1)',
+                transform: 'rotateY(-6deg)',
+                transformOrigin: 'left center',
               }}>
                 {renderEsCard(currentMatch, 'player2', true)}
               </div>
