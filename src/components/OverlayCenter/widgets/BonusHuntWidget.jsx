@@ -205,7 +205,7 @@ function BonusHuntWidget({ config, theme }) {
           <div className="bhtc-carousel-wrap">
             <div className={`bhtc-carousel-track${isOpening ? ' bhtc-carousel-track--opening' : ''}`}
               style={isOpening
-                ? { transform: `translateX(${-(currentIndex * carouselStep)}px)` }
+                ? { transform: `translateX(calc(50% - ${carouselCardW / 2}px - ${currentIndex * carouselStep}px))` }
                 : { '--bhtc-count': bonuses.length }}>
               {(isOpening ? bonuses : [...bonuses, ...bonuses]).map((bonus, i) => {
                 const idx = isOpening ? i : i % bonuses.length;
