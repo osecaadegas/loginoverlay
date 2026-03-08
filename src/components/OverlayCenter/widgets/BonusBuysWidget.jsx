@@ -75,7 +75,7 @@ function BonusBuysWidget({ config }) {
   const scrollRef = useRef(null);
   const scrollState = useRef({ pos: 0, dir: 1 }); // dir: 1 = down (slow), -1 = up (fast rewind)
   useEffect(() => {
-    if (rows.length <= 10) return;
+    if (rows.length <= 5) return;
     const el = scrollRef.current;
     if (!el) return;
     let raf;
@@ -189,7 +189,7 @@ function BonusBuysWidget({ config }) {
         background: `rgba(${accentRgb}, 0.04)`,
         borderBottom: cardBorder, flexShrink: 0,
       }}>
-        <span>💰 <span style={{ color: cardText }}>{fmt(startMoney, currency)}</span></span>
+        <span>START <span style={{ color: cardText }}>{fmt(startMoney, currency)}</span></span>
         <span>🎰 <span style={{ color: cardText }}>{filled.length}/{plannedBonuses}</span></span>
       </div>
 
@@ -219,28 +219,12 @@ function BonusBuysWidget({ config }) {
         {/* Name + provider hidden for cleaner OBS look */}
       </div>
 
-      {/* ─── SUMMARY STATS ─── */}
+      {/* ─── DIVIDER BAR ─── */}
       <div style={{
-        padding: `${padY} ${pad}`,
-        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-        gap: 'clamp(4px, 2cqi, 12px)',
-        background: `rgba(${accentRgb}, 0.07)`,
-        borderTop: cardBorder, borderBottom: cardBorder, flexShrink: 0,
-      }}>
-        {[
-          { icon: '💰', label: fmtShort(totalCost, currency), color: lossColor },
-          { icon: '📊', label: fmtMulti(overallMulti), color: accent },
-          { icon: '🏆', label: fmtShort(totalWin, currency), color: totalWin > 0 ? winColor : cardMuted },
-        ].map((s, i) => (
-          <div key={i} style={{
-            display: 'flex', alignItems: 'center', gap: 'clamp(3px, 1.5cqi, 8px)',
-            fontSize: 'clamp(13px, 5.5cqi, 22px)', fontWeight: 800,
-          }}>
-            <span style={{ fontSize: 'clamp(11px, 4cqi, 18px)' }}>{s.icon}</span>
-            <span style={{ color: s.color }}>{s.label}</span>
-          </div>
-        ))}
-      </div>
+        height: 'clamp(3px, 1cqi, 5px)',
+        background: `rgba(${accentRgb}, 0.15)`,
+        flexShrink: 0,
+      }} />
 
       {/* ─── BONUS ROWS ─── */}
       <style>{`.bb-rows-scroll::-webkit-scrollbar{display:none}`}</style>
