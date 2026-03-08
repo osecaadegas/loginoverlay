@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
+import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import { configStyles } from './shared/configStyles';
 
 const FONT_OPTIONS = [
@@ -103,6 +104,17 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
     setWinInput('');
     setMessage(`✅ Bonus #${newBonuses.length} added — ${betValue > 0 ? (win / betValue).toFixed(2) : '0.00'}x`);
     setTimeout(() => setMessage(''), 3000);
+
+    // Track slot record
+    if (user?.id && c.slotName) {
+      updateSlotRecordsFromHunt(user.id, [{
+        slotName: c.slotName,
+        slot: { name: c.slotName, provider: c.provider || '', image: c.imageUrl || '' },
+        betSize: betValue,
+        payout: win,
+        opened: true,
+      }], `Bonus Buy #${c.sessionNumber || 1}`);
+    }
   };
 
   const handleRemoveBonus = (index) => {

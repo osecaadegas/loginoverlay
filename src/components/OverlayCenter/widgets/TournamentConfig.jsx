@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { getAllSlots, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
+import { useAuth } from '../../../context/AuthContext';
+import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import ColorPickerBase from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 import {
@@ -70,6 +72,7 @@ function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = 
 }
 
 export default function TournamentConfig({ config, onChange, allWidgets, mode = 'full' }) {
+  const { user } = useAuth();
   const c = config || {};
   const set = (key, val) => onChange({ ...c, [key]: val });
   const setMulti = (obj) => onChange({ ...c, ...obj });
@@ -390,6 +393,39 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     if (matchCompleted && getChampion(newBracket)) {
       updates.bracketPhase = 'completed';
     }
+
+    // Track slot records when a match completes (bonus/bonus_bo3 only)
+    if (matchCompleted && user?.id) {
+      const match = newBracket[bracketActiveRound]?.matches[bracketActiveMatch];
+      if (match && match.type !== 'spins') {
+        const results = [];
+        for (const round of match.rounds) {
+          if (round.status !== 'completed') continue;
+          if (match.slot1?.name && round.player1?.bonusPayout != null) {
+            results.push({
+              slotName: match.slot1.name,
+              slot: { name: match.slot1.name, image: match.slot1.image },
+              betSize: Number(round.player1.bonusCost) || 0,
+              payout: Number(round.player1.bonusPayout) || 0,
+              opened: true,
+            });
+          }
+          if (match.slot2?.name && round.player2?.bonusPayout != null) {
+            results.push({
+              slotName: match.slot2.name,
+              slot: { name: match.slot2.name, image: match.slot2.image },
+              betSize: Number(round.player2.bonusCost) || 0,
+              payout: Number(round.player2.bonusPayout) || 0,
+              opened: true,
+            });
+          }
+        }
+        if (results.length > 0) {
+          updateSlotRecordsFromHunt(user.id, results, `Tournament: ${c.bracketName || 'Bracket'}`);
+        }
+      }
+    }
+
     setMulti(updates);
   };
 
