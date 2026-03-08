@@ -708,11 +708,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   onDrop={(e) => handleDrop(e, w.id)}
                 >
                   <span className="wm-tile-layer-badge" title={`Layer ${idx + 1}`}>{idx + 1}</span>
-                  <span className="wm-tile-icon">{def?.icon || '📦'}</span>
-                  <div className="wm-tile-text">
-                    <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
-                    {def?.description && <span className="wm-tile-desc">{def.description}</span>}
-                  </div>
                   <label
                     className={`wm-toggle ${isVisible ? 'wm-toggle--on' : ''}`}
                     onClick={() => handleToggle(w)}
@@ -721,6 +716,13 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     <span className="wm-toggle-slider" />
                     <span className="wm-toggle-label">{isVisible ? 'ON' : 'OFF'}</span>
                   </label>
+                  <div className="wm-tile-body">
+                    <span className="wm-tile-icon">{def?.icon || '📦'}</span>
+                    <div className="wm-tile-text">
+                      <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
+                      {def?.description && <span className="wm-tile-desc">{def.description}</span>}
+                    </div>
+                  </div>
                   <div className="wm-tile-actions">
                     <button className="wm-tile-btn" data-tour="tile-gear" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
                     <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>

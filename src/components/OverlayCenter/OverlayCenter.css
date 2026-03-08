@@ -1184,9 +1184,9 @@
 
 .wm-tile {
   display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px 18px;
+  flex-direction: column;
+  gap: 8px;
+  padding: 14px 14px 10px;
   border-radius: 14px;
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-card);
@@ -1194,6 +1194,12 @@
   transition: all 0.22s ease;
   position: relative;
   overflow: hidden;
+}
+
+.wm-tile-body {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
 .wm-tile:hover {
@@ -1319,6 +1325,9 @@
   font-size: 0.68rem;
   color: var(--oc-text-muted);
   line-height: 1.45;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .wm-tile-status {
@@ -1327,16 +1336,18 @@
 
 /* -- iOS-style toggle switch -- */
 .wm-toggle {
-  position: relative;
+  position: absolute;
+  top: 10px;
+  right: 10px;
   width: 36px; height: 20px;
   border-radius: 10px;
   background: rgba(100, 116, 139, 0.25);
   cursor: pointer;
   flex-shrink: 0;
-  align-self: center;
   transition: background 0.2s ease;
   display: flex;
   align-items: center;
+  z-index: 3;
 }
 .wm-toggle-slider {
   position: absolute;
@@ -1390,9 +1401,10 @@
 .wm-tile-actions {
   display: flex;
   gap: 4px;
-  flex-shrink: 0;
-  align-self: flex-start;
-  margin-top: 2px;
+  justify-content: flex-end;
+  margin-top: auto;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255,255,255,0.04);
 }
 
 .wm-tile-btn {
