@@ -1398,11 +1398,37 @@
 
 .wm-tile-actions {
   display: flex;
-  gap: 4px;
-  justify-content: flex-end;
+  align-items: center;
+  justify-content: space-between;
   margin-top: auto;
   padding-top: 4px;
   border-top: 1px solid rgba(255,255,255,0.04);
+}
+
+.wm-tile-arrows {
+  display: flex;
+  gap: 4px;
+}
+
+.wm-tile-actions-right {
+  display: flex;
+  gap: 4px;
+}
+
+.wm-tile-btn--arrow {
+  font-size: 0.6rem;
+  color: var(--oc-text-muted);
+}
+
+.wm-tile-btn--arrow:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+.wm-tile-btn--arrow:not(:disabled):hover {
+  background: rgba(139, 92, 246, 0.12);
+  border-color: rgba(139, 92, 246, 0.3);
+  color: #a78bfa;
 }
 
 .wm-tile-btn {

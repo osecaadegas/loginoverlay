@@ -559,6 +559,20 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     setDragOverId(null);
   }, [dragId, sortedWidgets, onSave]);
 
+  /* ── Arrow-based layer reorder ── */
+  const handleMoveLayer = useCallback((widgetId, direction) => {
+    const ordered = [...sortedWidgets];
+    const idx = ordered.findIndex(w => w.id === widgetId);
+    if (idx === -1) return;
+    const targetIdx = idx + direction;
+    if (targetIdx < 0 || targetIdx >= ordered.length) return;
+    [ordered[idx], ordered[targetIdx]] = [ordered[targetIdx], ordered[idx]];
+    ordered.forEach((w, i) => {
+      const newZ = i + 1;
+      if (w.z_index !== newZ) onSave({ ...w, z_index: newZ });
+    });
+  }, [sortedWidgets, onSave]);
+
   /* ── Sync ALL widgets from the navbar ── */
   const syncAllFromNavbar = useCallback(async () => {
     const navWidget = widgets.find(w => w.widget_type === 'navbar');
@@ -724,8 +738,14 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     </div>
                   </div>
                   <div className="wm-tile-actions">
-                    <button className="wm-tile-btn" data-tour="tile-gear" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
-                    <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
+                    <div className="wm-tile-arrows">
+                      <button className="wm-tile-btn wm-tile-btn--arrow" onClick={() => handleMoveLayer(w.id, -1)} disabled={idx === 0} title="Move back (lower layer)">◀</button>
+                      <button className="wm-tile-btn wm-tile-btn--arrow" onClick={() => handleMoveLayer(w.id, 1)} disabled={idx === sortedWidgets.length - 1} title="Move front (higher layer)">▶</button>
+                    </div>
+                    <div className="wm-tile-actions-right">
+                      <button className="wm-tile-btn" data-tour="tile-gear" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
+                      <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
+                    </div>
                   </div>
                 </div>
               );
