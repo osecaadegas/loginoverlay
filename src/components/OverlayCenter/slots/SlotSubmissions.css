@@ -114,7 +114,7 @@
   border: 1px solid rgba(96, 165, 250, 0.15);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.82rem;
   font-family: inherit;
   outline: none;
@@ -150,7 +150,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.82rem;
   font-family: inherit;
   outline: none;
@@ -168,7 +168,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 1rem;
   cursor: pointer;
   display: flex;
@@ -381,7 +381,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.82rem;
   font-family: inherit;
   outline: none;
@@ -452,7 +452,7 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.82rem;
   font-family: inherit;
   outline: none;
@@ -801,7 +801,7 @@
   border: 1px solid rgba(248, 113, 113, 0.3);
   border-radius: 5px;
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.75rem;
   width: 140px;
   outline: none;
@@ -881,7 +881,7 @@
   border-radius: 6px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(15, 23, 42, 0.7);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.82rem;
   width: 100%;
 }

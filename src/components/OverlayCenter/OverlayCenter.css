@@ -1,24 +1,24 @@
-﻿/* =====================================================
-   OverlayCenter.css — Admin Control Panel Styles
-   Bold modern dark UI — easy navigation, clear hierarchy
+/* =====================================================
+   OverlayCenter.css � Admin Control Panel Styles
+   Bold modern dark UI � easy navigation, clear hierarchy
    ===================================================== */
 
-/* ─── CSS Custom Properties ─── */
+/* --- CSS Custom Properties --- */
 :root {
-  --oc-bg-primary: #080a12;
-  --oc-bg-secondary: #0e1019;
+  --oc-bg-primary: var(--theme-background, #080a12);
+  --oc-bg-secondary: var(--theme-background, #0e1019);
   --oc-bg-surface: rgba(255, 255, 255, 0.04);
   --oc-bg-surface-hover: rgba(255, 255, 255, 0.07);
   --oc-bg-card: rgba(255, 255, 255, 0.035);
-  --oc-border: rgba(255, 255, 255, 0.08);
+  --oc-border: var(--theme-border, rgba(255, 255, 255, 0.08));
   --oc-border-hover: rgba(255, 255, 255, 0.15);
-  --oc-text-primary: #f1f5f9;
+  --oc-text-primary: var(--theme-text, #f1f5f9);
   --oc-text-secondary: #94a3b8;
   --oc-text-muted: #64748b;
-  --oc-accent: #8b5cf6;
-  --oc-accent-light: #a78bfa;
-  --oc-accent-glow: rgba(139, 92, 246, 0.15);
-  --oc-accent-glow-strong: rgba(139, 92, 246, 0.28);
+  --oc-accent: var(--theme-secondary, #8b5cf6);
+  --oc-accent-light: var(--theme-primary, #a78bfa);
+  --oc-accent-glow: rgba(var(--theme-secondary-rgb, 139, 92, 246), 0.15);
+  --oc-accent-glow-strong: rgba(var(--theme-secondary-rgb, 139, 92, 246), 0.28);
   --oc-accent-solid: #7c3aed;
   --oc-green: #22c55e;
   --oc-green-glow: rgba(34, 197, 94, 0.15);
@@ -37,12 +37,12 @@
   --oc-sidebar-width: 290px;
 }
 
-/* ─── Global dark dropdown / option styling ─── */
+/* --- Global dark dropdown / option styling --- */
 .oc-page select,
 .oc-page option,
 .oc-page optgroup {
   background-color: #12141f;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
 }
 
 .oc-page optgroup {
@@ -55,7 +55,7 @@
   color: #ffffff;
 }
 
-/* ─── Page ─── */
+/* --- Page --- */
 .oc-page {
   min-height: 100vh;
   background: var(--oc-bg-primary);
@@ -73,7 +73,7 @@
   overflow: hidden;
 }
 
-/* ─── Auth wall / Loading ─── */
+/* --- Auth wall / Loading --- */
 .oc-auth-wall, .oc-loading {
   display: flex;
   flex-direction: column;
@@ -98,7 +98,7 @@
   to { transform: rotate(360deg); }
 }
 
-/* ─── Mobile Hamburger ─── */
+/* --- Mobile Hamburger --- */
 .oc-hamburger {
   display: none;
   position: fixed;
@@ -109,7 +109,7 @@
   height: 44px;
   border-radius: var(--oc-radius-sm);
   border: 1px solid var(--oc-border);
-  background: #0e1019;
+  background: var(--theme-background, #0e1019);
   cursor: pointer;
   flex-direction: column;
   align-items: center;
@@ -162,12 +162,12 @@
   to { opacity: 1; }
 }
 
-/* ═══════════════════════════════════════════════════
-   SIDEBAR — Clear navigation with descriptions
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   SIDEBAR � Clear navigation with descriptions
+   --------------------------------------------------- */
 .oc-sidebar {
   width: var(--oc-sidebar-width);
-  background: linear-gradient(180deg, #0e1019 0%, #0a0c14 100%);
+  background: linear-gradient(180deg, var(--theme-background, #0e1019) 0%, #0a0c14 100%);
   border-right: 1px solid var(--oc-border);
   display: flex;
   flex-direction: column;
@@ -325,7 +325,7 @@
   color: rgba(167, 139, 250, 0.6);
 }
 
-/* ─── Sidebar Sub-Items (Community Games dropdown) ─── */
+/* --- Sidebar Sub-Items (Community Games dropdown) --- */
 .oc-sidebar-btn--sub {
   padding-left: 28px !important;
   position: relative;
@@ -350,14 +350,14 @@
   font-size: 0.62rem;
 }
 
-/* ─── Community Games Config Panel ─── */
+/* --- Community Games Config Panel --- */
 .cg-config { display: flex; flex-direction: column; gap: 12px; }
 .cg-config__tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; }
 .cg-config__tab {
   padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;
   background: transparent; color: #94a3b8; transition: all 0.15s;
 }
-.cg-config__tab:hover { background: rgba(255,255,255,0.04); color: #e2e8f0; }
+.cg-config__tab:hover { background: rgba(255,255,255,0.04); color: var(--theme-border, #e2e8f0); }
 .cg-config__tab--active { background: rgba(124,58,237,0.12); color: #a78bfa; }
 .cg-config__section { display: flex; flex-direction: column; gap: 10px; }
 .cg-config__field { display: flex; flex-direction: column; gap: 3px; }
@@ -441,7 +441,7 @@
   border-radius: 6px; color: #fff; font-size: 0.8rem;
 }
 
-/* ─── Resolution Selector ─── */
+/* --- Resolution Selector --- */
 .oc-sidebar-resolution {
   display: flex;
   flex-direction: column;
@@ -465,7 +465,7 @@
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
 }
 
-/* ─── OBS URL ─── */
+/* --- OBS URL --- */
 .oc-sidebar-url {
   margin-top: auto;
   display: flex;
@@ -544,7 +544,7 @@
   border-top: 1px solid var(--oc-border);
 }
 
-/* ── OBS URL bar (widgets page, above live preview) ── */
+/* -- OBS URL bar (widgets page, above live preview) -- */
 .oc-obs-url-bar {
   display: flex;
   align-items: center;
@@ -621,9 +621,9 @@
   word-break: break-all;
 }
 
-/* ═══════════════════════════════════════════════════
-   PANEL HELPERS — Empty states, welcome, loading
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   PANEL HELPERS � Empty states, welcome, loading
+   --------------------------------------------------- */
 .oc-panel-loading {
   display: flex;
   align-items: center;
@@ -664,7 +664,7 @@
   padding: 12px 28px;
   border: none;
   border-radius: var(--oc-radius-md);
-  background: linear-gradient(135deg, #7c3aed 0%, #8b5cf6 50%, #6366f1 100%);
+  background: linear-gradient(135deg, #7c3aed 0%, var(--theme-secondary, #8b5cf6) 50%, #6366f1 100%);
   color: #fff;
   font-weight: 600;
   font-size: 0.9rem;
@@ -682,9 +682,9 @@
   transform: translateY(0);
 }
 
-/* ═══════════════════════════════════════════════════
-   WELCOME CARD — onboarding for new users
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   WELCOME CARD � onboarding for new users
+   --------------------------------------------------- */
 .oc-welcome-card {
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
   border: 1px solid rgba(139, 92, 246, 0.2);
@@ -762,9 +762,9 @@
   line-height: 1.4;
 }
 
-/* ═══════════════════════════════════════════════════
+/* ---------------------------------------------------
    MAIN CONTENT AREA
-   ═══════════════════════════════════════════════════ */
+   --------------------------------------------------- */
 .oc-main {
   flex: 1;
   padding: 32px 40px;
@@ -789,7 +789,7 @@
   letter-spacing: -0.03em;
 }
 
-/* Panel subtitle — explains what this section does */
+/* Panel subtitle � explains what this section does */
 .oc-panel-subtitle {
   font-size: 0.82rem;
   color: var(--oc-text-muted);
@@ -798,9 +798,9 @@
   max-width: 480px;
 }
 
-/* ═══════════════════════════════════════════════════
+/* ---------------------------------------------------
    BUTTONS
-   ═══════════════════════════════════════════════════ */
+   --------------------------------------------------- */
 .oc-btn {
   display: inline-flex;
   align-items: center;
@@ -851,9 +851,9 @@
   border-color: rgba(239, 68, 68, 0.35);
 }
 
-/* ═══════════════════════════════════════════════════
+/* ---------------------------------------------------
    TOGGLE SWITCH
-   ═══════════════════════════════════════════════════ */
+   --------------------------------------------------- */
 .oc-toggle {
   width: 46px;
   height: 26px;
@@ -888,11 +888,11 @@
   transform: translateX(20px);
 }
 
-/* ═══════════════════════════════════════════════════
-   WIDGET MANAGER — visual uplift + drag‑slider layout
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   WIDGET MANAGER � visual uplift + drag-slider layout
+   --------------------------------------------------- */
 
-/* ─── Page Header ─── */
+/* --- Page Header --- */
 .wm-page-header {
   display: flex;
   align-items: flex-start;
@@ -910,7 +910,7 @@
   color: var(--oc-text-primary);
   margin: 0;
   letter-spacing: -0.4px;
-  background: linear-gradient(135deg, #e2e8f0, #a78bfa);
+  background: linear-gradient(135deg, var(--theme-border, #e2e8f0), #a78bfa);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -938,7 +938,7 @@
   animation: wm-fadeIn 0.3s ease;
 }
 
-/* ─── Buttons ─── */
+/* --- Buttons --- */
 .wm-btn {
   display: inline-flex;
   align-items: center;
@@ -973,12 +973,12 @@
 }
 
 .wm-btn--primary:hover {
-  background: linear-gradient(135deg, #8b5cf6, #818cf8);
+  background: linear-gradient(135deg, var(--theme-secondary, #8b5cf6), #818cf8);
   box-shadow: 0 6px 24px rgba(124, 58, 237, 0.4);
   transform: translateY(-1px);
 }
 
-/* ─── Quick-start card ─── */
+/* --- Quick-start card --- */
 .wm-quickstart {
   display: flex;
   align-items: flex-start;
@@ -1011,7 +1011,7 @@
   line-height: 1.6;
 }
 
-/* ─── Widget Picker (Add menu) ─── */
+/* --- Widget Picker (Add menu) --- */
 .wm-picker {
   margin-bottom: 28px;
   padding: 24px;
@@ -1114,16 +1114,16 @@
   line-height: 1.45;
 }
 
-/* ─── Widget List ─── */
+/* --- Widget List --- */
 .wm-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-/* ═══════════════════════════════════════════
-   SECTIONS — Active / Available headings
-   ═══════════════════════════════════════════ */
+/* -------------------------------------------
+   SECTIONS � Active / Available headings
+   ------------------------------------------- */
 .wm-section {
   margin-bottom: 28px;
 }
@@ -1173,9 +1173,9 @@
   color: var(--oc-text-muted);
 }
 
-/* ═══════════════════════════════════════════
-   TILE GRID — full widget cards with desc
-   ═══════════════════════════════════════════ */
+/* -------------------------------------------
+   TILE GRID � full widget cards with desc
+   ------------------------------------------- */
 .wm-tile-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1202,7 +1202,7 @@
   transform: translateY(-2px);
 }
 
-/* ── Active tile (green glow) ── */
+/* -- Active tile (green glow) -- */
 .wm-tile--active.wm-tile--on {
   border-color: rgba(34, 197, 94, 0.3);
   background: linear-gradient(135deg, rgba(34, 197, 94, 0.06), var(--oc-bg-card));
@@ -1225,7 +1225,7 @@
   border-color: rgba(250, 204, 21, 0.35);
 }
 
-/* ── Drag-to-reorder styles ── */
+/* -- Drag-to-reorder styles -- */
 .wm-tile--active {
   cursor: grab;
 }
@@ -1242,7 +1242,7 @@
   transform: translateY(-3px);
 }
 
-/* Layer badge — small number in top-left corner */
+/* Layer badge � small number in top-left corner */
 .wm-tile-layer-badge {
   position: absolute;
   top: 6px;
@@ -1271,7 +1271,7 @@
   letter-spacing: 0.02em;
 }
 
-/* ── Inactive tile (greyed out, clickable to add) ── */
+/* -- Inactive tile (greyed out, clickable to add) -- */
 .wm-tile--inactive {
   opacity: 0.4;
   cursor: pointer;
@@ -1322,10 +1322,10 @@
 }
 
 .wm-tile-status {
-  display: none; /* legacy — replaced by wm-toggle */
+  display: none; /* legacy � replaced by wm-toggle */
 }
 
-/* ── iOS-style toggle switch ── */
+/* -- iOS-style toggle switch -- */
 .wm-toggle {
   position: relative;
   width: 42px; height: 24px;
@@ -1420,9 +1420,9 @@
   border-color: rgba(239, 68, 68, 0.35);
 }
 
-/* ═══════════════════════════════════════════
-   SIDE PANEL — slide-in widget editor
-   ═══════════════════════════════════════════ */
+/* -------------------------------------------
+   SIDE PANEL � slide-in widget editor
+   ------------------------------------------- */
 .wm-sidepanel-backdrop {
   position: fixed;
   inset: 0;
@@ -1524,7 +1524,7 @@
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* ─── Widget Card (legacy, kept for potential reuse) ─── */
+/* --- Widget Card (legacy, kept for potential reuse) --- */
 .wm-card {
   border: 1px solid var(--oc-border);
   border-radius: 16px;
@@ -1742,7 +1742,7 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* OBS URL — collapsible */
+/* OBS URL � collapsible */
 .wm-obs-details {
   margin: 16px 0 0;
 }
@@ -1764,7 +1764,7 @@
 .wm-obs-summary::-webkit-details-marker { display: none; }
 
 .wm-obs-summary::before {
-  content: '▸';
+  content: '?';
   font-size: 0.65rem;
   transition: transform 0.2s ease;
   display: inline-block;
@@ -1826,11 +1826,11 @@
   background: var(--oc-accent-glow-strong);
 }
 
-/* ══ Position & Size — drag slider panel ══ */
+/* -- Position & Size � drag slider panel -- */
 .wm-layout-panel {
   margin: 20px 0 0;
   padding: 22px 24px;
-  background: #0f172a;
+  background: var(--theme-background, #0f172a);
   border-radius: 16px;
   border: 1px solid rgba(139, 92, 246, 0.12);
 }
@@ -1856,7 +1856,7 @@
   line-height: 1.45;
 }
 
-/* ── Position & Size layout (inside side panel) ── */
+/* -- Position & Size layout (inside side panel) -- */
 .wm-pos-split {
   display: flex;
   gap: 20px;
@@ -1920,7 +1920,7 @@
   }
 }
 
-/* ── Slider Grid ── */
+/* -- Slider Grid -- */
 .wm-slider-grid {
   display: flex;
   flex-direction: column;
@@ -1946,7 +1946,7 @@
   gap: 14px;
 }
 
-/* ── Range Slider — custom track + thumb ── */
+/* -- Range Slider � custom track + thumb -- */
 .wm-range {
   -webkit-appearance: none;
   appearance: none;
@@ -2044,7 +2044,7 @@
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
 }
 
-/* ── Animation dropdown ── */
+/* -- Animation dropdown -- */
 .wm-animation-field {
   display: flex;
   flex-direction: column;
@@ -2070,11 +2070,11 @@
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
 }
 
-/* ── Style Switcher (side panel) ── */
+/* -- Style Switcher (side panel) -- */
 .wm-style-switcher {
   margin-top: 20px;
   padding: 16px 20px;
-  background: #0f172a;
+  background: var(--theme-background, #0f172a);
   border-radius: 14px;
   border: 1px solid rgba(139, 92, 246, 0.12);
 }
@@ -2131,9 +2131,9 @@
   margin-top: 20px;
 }
 
-/* ═══════════════════════════════════════════
-   Live Preview — renders actual widget components
-   ═══════════════════════════════════════════ */
+/* -------------------------------------------
+   Live Preview � renders actual widget components
+   ------------------------------------------- */
 
 .wm-btn--preview-on {
   background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(99, 102, 241, 0.15));
@@ -2149,7 +2149,7 @@
 .wm-live-preview {
   margin-bottom: 28px;
   padding: 20px 24px;
-  background: #0f172a;
+  background: var(--theme-background, #0f172a);
   border: 1px solid rgba(139, 92, 246, 0.2);
   border-radius: 18px;
   animation: wm-fadeIn 0.3s ease;
@@ -2212,7 +2212,7 @@
   -webkit-user-select: none;
 }
 
-/* ── Mirror the OBS renderer (.or-canvas) reset so widgets look identical ── */
+/* -- Mirror the OBS renderer (.or-canvas) reset so widgets look identical -- */
 .wm-live-canvas *,
 .wm-live-canvas *::before,
 .wm-live-canvas *::after {
@@ -2250,7 +2250,7 @@
   text-align: center;
 }
 
-/* ── Live preview body — canvas + quick guide side by side ── */
+/* -- Live preview body � canvas + quick guide side by side -- */
 .wm-live-body {
   display: flex;
   gap: 18px;
@@ -2261,14 +2261,14 @@
   flex-shrink: 0;
 }
 
-/* ── Quick Guide panel ── */
+/* -- Quick Guide panel -- */
 .wm-quick-guide {
   flex: 1;
   min-width: 220px;
   max-width: 300px;
   padding: 18px 20px;
   border-radius: 14px;
-  background: #0f172a;
+  background: var(--theme-background, #0f172a);
   border: 1px solid rgba(139, 92, 246, 0.18);
   animation: wm-fadeIn 0.4s ease;
   align-self: stretch;
@@ -2325,7 +2325,7 @@
   font-weight: 700;
 }
 
-/* Hide quick guide on narrow screens — stack below */
+/* Hide quick guide on narrow screens � stack below */
 @media (max-width: 960px) {
   .wm-live-body {
     flex-direction: column;
@@ -2335,9 +2335,9 @@
   }
 }
 
-/* ═══════════════════════════════════════════
-   GUIDED TUTORIAL — spotlight + tooltip tour
-   ═══════════════════════════════════════════ */
+/* -------------------------------------------
+   GUIDED TUTORIAL � spotlight + tooltip tour
+   ------------------------------------------- */
 .gt-overlay {
   position: fixed;
   inset: 0;
@@ -2426,13 +2426,13 @@
 
 .gt-tooltip-skip:hover {
   background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .gt-tooltip-title {
   font-size: 0.95rem;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   margin: 0 0 6px;
 }
 
@@ -2467,7 +2467,7 @@
 
 .gt-btn--ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .gt-btn--ghost:disabled {
@@ -2482,7 +2482,7 @@
 }
 
 .gt-btn--primary:hover {
-  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  background: linear-gradient(135deg, var(--theme-secondary, #8b5cf6), #7c3aed);
   box-shadow: 0 4px 16px rgba(124, 58, 237, 0.4);
   transform: translateY(-1px);
 }
@@ -2518,7 +2518,7 @@
   letter-spacing: 0.3px;
 }
 
-/* ── Live slot — OBS-style drag & resize ── */
+/* -- Live slot � OBS-style drag & resize -- */
 
 /* Nuclear: when dragging, block ALL text selection site-wide */
 body.wm-dragging,
@@ -2595,7 +2595,7 @@ body.wm-resizing {
 .wm-resize-sw { bottom: -5px; left: -5px; cursor: sw-resize; }
 .wm-resize-se { bottom: -5px; right: -5px; cursor: se-resize; }
 
-/* Edge resize handles — thin bars along each side */
+/* Edge resize handles � thin bars along each side */
 .wm-resize-edge {
   position: absolute;
   background: transparent;
@@ -2675,7 +2675,7 @@ body.wm-resizing {
   font-weight: 600;
 }
 
-/* ─── Config Forms (widget-specific — legacy support) ─── */
+/* --- Config Forms (widget-specific � legacy support) --- */
 .oc-config-form {
   display: flex;
   flex-direction: column;
@@ -2730,7 +2730,7 @@ body.wm-resizing {
   margin: 4px 0 0;
 }
 
-/* ─── Twitch User Info (Navbar Config) ─── */
+/* --- Twitch User Info (Navbar Config) --- */
 .oc-twitch-info {
   display: flex;
   align-items: center;
@@ -2776,7 +2776,7 @@ body.wm-resizing {
   font-weight: 600;
 }
 
-/* ─── Theme Editor ─── */
+/* --- Theme Editor --- */
 .oc-theme-panel {
   max-width: 720px;
 }
@@ -2928,7 +2928,7 @@ body.wm-resizing {
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.08);
 }
 
-/* ─── Preview ─── */
+/* --- Preview --- */
 .oc-preview-panel { max-width: 100%; }
 
 .oc-preview-frame-wrap {
@@ -2956,7 +2956,7 @@ body.wm-resizing {
   margin-top: 14px;
 }
 
-/* ─── Empty state ─── */
+/* --- Empty state --- */
 .oc-empty {
   text-align: center;
   padding: 64px 24px;
@@ -2979,9 +2979,9 @@ body.wm-resizing {
   margin-right: auto;
 }
 
-/* ═══════════════════════════════════════════════════
-   RESPONSIVE — Mobile slide-out drawer
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   RESPONSIVE � Mobile slide-out drawer
+   --------------------------------------------------- */
 @media (max-width: 900px) {
   .oc-main {
     padding: 28px 24px;
@@ -3101,7 +3101,7 @@ body.wm-resizing {
 }
 
 /* Collapsible toggle button */
-/* Bonus Hunt panel — always visible, no dropdown */
+/* Bonus Hunt panel � always visible, no dropdown */
 .bh-panel {
   border: 1px solid rgba(147, 70, 255, 0.15);
   border-radius: 12px;
@@ -3140,7 +3140,7 @@ body.wm-resizing {
   font-weight: 600;
 }
 
-/* Settings row – Hunt # | Start | Stop Loss */
+/* Settings row � Hunt # | Start | Stop Loss */
 .bh-settings-row {
   display: flex;
   gap: 5px;
@@ -3175,7 +3175,7 @@ body.wm-resizing {
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
   width: 100%;
 }
@@ -3203,7 +3203,7 @@ body.wm-resizing {
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
 }
 
@@ -3270,7 +3270,7 @@ body.wm-resizing {
 .bh-suggestion-name {
   font-size: 0.82rem;
   font-weight: 500;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -3313,7 +3313,7 @@ body.wm-resizing {
   color: #a855f7;
 }
 
-/* ─── Submit Slot Button & Dropdown ─── */
+/* --- Submit Slot Button & Dropdown --- */
 .bh-submit-slot-btn {
   font-size: 0.72rem;
   font-weight: 600;
@@ -3378,7 +3378,7 @@ body.wm-resizing {
   border-radius: 5px;
   padding: 4px 7px;
   font-size: 0.75rem;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   outline: none;
   transition: border-color 0.2s;
 }
@@ -3538,7 +3538,7 @@ body.wm-resizing {
 }
 .bh-submit-cancel:hover {
   background: rgba(255, 255, 255, 0.05);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 .bh-submit-save {
   font-size: 0.72rem;
@@ -3568,7 +3568,7 @@ body.wm-resizing {
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
 }
 
@@ -3749,7 +3749,7 @@ body.wm-resizing {
   background: rgba(34, 197, 94, 0.03);
 }
 
-/* ─── Bonus Opening toggle ─── */
+/* --- Bonus Opening toggle --- */
 .bh-opening-toggle {
   display: flex;
   flex-direction: column;
@@ -3819,7 +3819,7 @@ body.wm-resizing {
   color: #475569;
 }
 
-/* ─── Grip handle ─── */
+/* --- Grip handle --- */
 .bh-list-grip {
   color: #334155;
   font-size: 0.8rem;
@@ -3828,7 +3828,7 @@ body.wm-resizing {
   line-height: 1;
 }
 
-/* ─── Provider label ─── */
+/* --- Provider label --- */
 .bh-list-provider {
   font-size: 0.65rem;
   color: #64748b;
@@ -3837,7 +3837,7 @@ body.wm-resizing {
   gap: 4px;
 }
 
-/* ─── Super badge inline ─── */
+/* --- Super badge inline --- */
 .bh-list-super-badge {
   margin-left: 4px;
   font-size: 0.6rem;
@@ -3862,7 +3862,7 @@ body.wm-resizing {
   vertical-align: middle;
 }
 
-/* ─── Icon buttons (copy, edit) ─── */
+/* --- Icon buttons (copy, edit) --- */
 .bh-list-icon-btn {
   display: flex;
   align-items: center;
@@ -3884,7 +3884,7 @@ body.wm-resizing {
   border-color: rgba(147, 70, 255, 0.3);
 }
 
-/* ─── Field columns (Bet, Payment, Mult) ─── */
+/* --- Field columns (Bet, Payment, Mult) --- */
 .bh-list-field {
   display: flex;
   flex-direction: column;
@@ -3907,7 +3907,7 @@ body.wm-resizing {
 .bh-list-field-value {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-variant-numeric: tabular-nums;
 }
 .bh-list-field-locked {
@@ -3920,14 +3920,14 @@ body.wm-resizing {
   font-weight: 700;
 }
 
-/* ─── Payout input ─── */
+/* --- Payout input --- */
 .bh-list-payout-input {
   width: 64px;
   padding: 3px 6px;
   border-radius: 4px;
   border: 1px solid rgba(147, 70, 255, 0.25);
   background: rgba(15, 23, 42, 0.8);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -3942,7 +3942,7 @@ body.wm-resizing {
   color: #334155;
 }
 
-/* ─── Inline edit row ─── */
+/* --- Inline edit row --- */
 .bh-list-edit-row {
   flex: 1;
   display: flex;
@@ -3955,7 +3955,7 @@ body.wm-resizing {
   border-radius: 4px;
   border: 1px solid rgba(147, 70, 255, 0.3);
   background: rgba(15, 23, 42, 0.8);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
 }
 .bh-list-edit-input:focus {
@@ -4021,7 +4021,7 @@ body.wm-resizing {
 .bh-list-name {
   font-size: 0.78rem;
   font-weight: 500;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4034,7 +4034,7 @@ body.wm-resizing {
 }
 
 .bh-list-actions {
-  display: none; /* legacy — replaced by inline fields */
+  display: none; /* legacy � replaced by inline fields */
 }
 
 .bh-list-result {
@@ -4045,7 +4045,7 @@ body.wm-resizing {
 }
 
 .bh-list-open {
-  display: none; /* legacy — replaced by payout input */
+  display: none; /* legacy � replaced by payout input */
 }
 
 .bh-list-remove {
@@ -4205,7 +4205,7 @@ body.wm-resizing {
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.8rem;
   margin-bottom: 6px;
 }
@@ -4248,7 +4248,7 @@ body.wm-resizing {
   padding: 6px 10px;
   cursor: pointer;
   font-size: 0.78rem;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   transition: background 0.1s;
 }
 
@@ -4368,7 +4368,7 @@ body.wm-resizing {
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
   min-width: 0;
 }
@@ -4463,9 +4463,9 @@ body.wm-resizing {
   margin-top: 12px;
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* --------------------------------------------------------------
    Navbar Config Panel
-   ══════════════════════════════════════════════════════════════ */
+   -------------------------------------------------------------- */
 
 .nb-config {
   display: flex;
@@ -4473,7 +4473,7 @@ body.wm-resizing {
   gap: 0;
 }
 
-/* ── Tabs ── */
+/* -- Tabs -- */
 .nb-tabs {
   display: flex;
   gap: 4px;
@@ -4497,7 +4497,7 @@ body.wm-resizing {
 }
 
 .nb-tab:hover {
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   background: rgba(255, 255, 255, 0.03);
 }
 
@@ -4506,7 +4506,7 @@ body.wm-resizing {
   border-bottom-color: #9346ff;
 }
 
-/* ── Section ── */
+/* -- Section -- */
 .nb-section {
   display: flex;
   flex-direction: column;
@@ -4523,7 +4523,7 @@ body.wm-resizing {
   padding: 0;
 }
 
-/* ── Navbar Style Toggle ── */
+/* -- Navbar Style Toggle -- */
 .nb-style-toggle {
   display: flex;
   gap: 6px;
@@ -4547,7 +4547,7 @@ body.wm-resizing {
 .nb-style-btn:hover {
   border-color: rgba(255, 255, 255, 0.15);
   background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .nb-style-btn--active {
@@ -4557,7 +4557,7 @@ body.wm-resizing {
   box-shadow: 0 0 12px rgba(139, 92, 246, 0.1);
 }
 
-/* ── Field (label + input) ── */
+/* -- Field (label + input) -- */
 .nb-field {
   display: flex;
   flex-direction: column;
@@ -4577,7 +4577,7 @@ body.wm-resizing {
   border-radius: 8px;
   padding: 8px 10px;
   font-size: 13px;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   outline: none;
   transition: border-color 0.15s;
 }
@@ -4596,7 +4596,7 @@ body.wm-resizing {
   padding-right: 28px;
 }
 
-/* ── Toggle rows (checkbox + label) ── */
+/* -- Toggle rows (checkbox + label) -- */
 .nb-toggle-row {
   display: flex;
   align-items: center;
@@ -4604,7 +4604,7 @@ body.wm-resizing {
   padding: 6px 0;
   cursor: pointer;
   font-size: 13px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .nb-toggle-row input[type="checkbox"] {
@@ -4614,7 +4614,7 @@ body.wm-resizing {
   cursor: pointer;
 }
 
-/* ── Crypto coin grid ── */
+/* -- Crypto coin grid -- */
 .nb-crypto-grid {
   display: flex;
   flex-wrap: wrap;
@@ -4646,7 +4646,7 @@ body.wm-resizing {
   accent-color: #9346ff;
 }
 
-/* ── Color picker grid ── */
+/* -- Color picker grid -- */
 .nb-color-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -4693,7 +4693,7 @@ body.wm-resizing {
 .nb-color-label {
   font-size: 11px;
   font-weight: 500;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4705,7 +4705,7 @@ body.wm-resizing {
   font-family: 'Fira Code', monospace;
 }
 
-/* ── Slider field ── */
+/* -- Slider field -- */
 .nb-slider-field {
   display: flex;
   align-items: center;
@@ -4750,7 +4750,7 @@ body.wm-resizing {
   text-align: right;
 }
 
-/* ── Spotify section ── */
+/* -- Spotify section -- */
 .nb-spotify-section {
   display: flex;
   flex-direction: column;
@@ -4796,7 +4796,7 @@ body.wm-resizing {
   cursor: not-allowed;
 }
 
-/* Spotify connect card — replaces radio buttons */
+/* Spotify connect card � replaces radio buttons */
 .nb-spotify-connect-card {
   display: flex;
   align-items: center;
@@ -4827,7 +4827,7 @@ body.wm-resizing {
 
 .nb-spotify-connect-info strong {
   font-size: 0.88rem;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
 }
 
 .nb-spotify-connect-info span {
@@ -4835,7 +4835,7 @@ body.wm-resizing {
   color: #94a3b8;
 }
 
-/* ── Radio row ── */
+/* -- Radio row -- */
 .nb-radio-row {
   display: flex;
   gap: 16px;
@@ -4847,7 +4847,7 @@ body.wm-resizing {
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   cursor: pointer;
 }
 
@@ -4857,14 +4857,14 @@ body.wm-resizing {
   height: 16px;
 }
 
-/* ── Error ── */
+/* -- Error -- */
 .nb-error {
   font-size: 12px;
   color: #f87171;
   margin: 0;
 }
 
-/* ── Presets ── */
+/* -- Presets -- */
 .nb-preset-save-row {
   display: flex;
   gap: 8px;
@@ -4878,7 +4878,7 @@ body.wm-resizing {
   border-radius: 8px;
   padding: 8px 12px;
   font-size: 13px;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   outline: none;
   transition: border-color 0.15s;
 }
@@ -4917,7 +4917,7 @@ body.wm-resizing {
   gap: 8px;
 }
 
-/* ── Preset Pill (unified for all widgets) ── */
+/* -- Preset Pill (unified for all widgets) -- */
 .nb-preset-pill {
   display: flex;
   align-items: center;
@@ -4951,7 +4951,7 @@ body.wm-resizing {
 .nb-preset-pill__name {
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5059,7 +5059,7 @@ body.wm-resizing {
 .nb-preset-name {
   font-size: 13px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5090,7 +5090,7 @@ body.wm-resizing {
   flex-shrink: 0;
 }
 
-/* ── Badge Image Selector ── */
+/* -- Badge Image Selector -- */
 .nb-badge-grid {
   display: flex;
   gap: 8px;
@@ -5121,7 +5121,7 @@ body.wm-resizing {
 .nb-badge-option--active {
   border-color: #9346ff;
   background: rgba(147, 70, 255, 0.1);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .nb-badge-preview {
@@ -5153,7 +5153,7 @@ body.wm-resizing {
   gap: 8px;
 }
 
-/* ─── GTB Action Bar (prominent section) ─── */
+/* --- GTB Action Bar (prominent section) --- */
 .bh-gtb-action-bar {
   display: flex;
   align-items: center;
@@ -5194,7 +5194,7 @@ body.wm-resizing {
 }
 
 .bh-gtb-send-btn {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #6366f1, var(--theme-secondary, #8b5cf6));
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -5233,7 +5233,7 @@ body.wm-resizing {
   margin: 0 0 12px 0;
 }
 .bh-gtb-dropdown-info strong {
-  color: #e5e7eb;
+  color: var(--theme-text, #e5e7eb);
 }
 
 .bh-gtb-form-group {
@@ -5250,10 +5250,10 @@ body.wm-resizing {
 .bh-gtb-input {
   width: 100%;
   padding: 9px 12px;
-  background: #0f172a;
+  background: var(--theme-background, #0f172a);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
-  color: #e5e7eb;
+  color: var(--theme-text, #e5e7eb);
   font-size: 13px;
   transition: border-color 0.2s;
   box-sizing: border-box;
@@ -5303,7 +5303,7 @@ body.wm-resizing {
 
 .bh-gtb-confirm {
   width: 100%;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #6366f1, var(--theme-secondary, #8b5cf6));
   border: none;
   color: #fff;
   padding: 10px 20px;
@@ -5322,7 +5322,7 @@ body.wm-resizing {
   cursor: not-allowed;
 }
 
-/* ═══════ SAVE HUNT TO LIBRARY ═══════ */
+/* ------- SAVE HUNT TO LIBRARY ------- */
 
 .bh-save-hunt-section {
   background: rgba(99, 102, 241, 0.06);
@@ -5346,7 +5346,7 @@ body.wm-resizing {
   display: block;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .bh-save-hunt-desc {
@@ -5372,7 +5372,7 @@ body.wm-resizing {
 .bh-save-hunt-btn:hover {
   background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
   border-color: rgba(99, 102, 241, 0.5);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .bh-save-hunt-form {
@@ -5433,10 +5433,10 @@ body.wm-resizing {
 
 .bh-save-hunt-cancel:hover {
   background: rgba(255, 255, 255, 0.08);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
-/* ═══════ BONUS HUNT HISTORY ═══════ */
+/* ------- BONUS HUNT HISTORY ------- */
 
 .bh-history-current-stats {
   display: flex;
@@ -5498,7 +5498,7 @@ body.wm-resizing {
 .bh-history-name {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5577,7 +5577,7 @@ body.wm-resizing {
   display: block;
   font-size: 0.82rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 .bh-history-val--profit { color: #86efac; }
 .bh-history-val--loss { color: #fca5a5; }
@@ -5647,9 +5647,9 @@ body.wm-resizing {
   font-weight: 600;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CHAT WIDGET — Multi-platform overlay chat
-   ═══════════════════════════════════════════════════════════ */
+/* -----------------------------------------------------------
+   CHAT WIDGET � Multi-platform overlay chat
+   ----------------------------------------------------------- */
 .ov-chat-widget {
   box-sizing: border-box;
 }
@@ -5762,7 +5762,7 @@ body.wm-resizing {
   border-radius: 50%;
 }
 
-/* ── Chat Raid Highlight ── */
+/* -- Chat Raid Highlight -- */
 .ov-chat-raid {
   position: relative;
   overflow: hidden;
@@ -5792,7 +5792,7 @@ body.wm-resizing {
   gap: 4px;
 }
 
-/* ── Chat Style Toggle ── */
+/* -- Chat Style Toggle -- */
 .ov-chat-style-toggle {
   display: flex;
   gap: 6px;
@@ -5813,7 +5813,7 @@ body.wm-resizing {
 }
 .ov-chat-style-btn:hover {
   background: rgba(255,255,255,0.08);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 .ov-chat-style-btn--active {
   background: rgba(139,92,246,0.18);
@@ -5821,7 +5821,7 @@ body.wm-resizing {
   color: #c4b5fd;
 }
 
-/* ── Chat Mode Styles (preview) ── */
+/* -- Chat Mode Styles (preview) -- */
 .ov-chat-widget--classic .ov-chat-messages { padding: 6px 0; }
 .ov-chat-widget--floating { background: transparent !important; border: none !important; }
 .ov-chat-widget--floating .ov-chat-messages { display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0; }
@@ -5896,7 +5896,7 @@ body.wm-resizing {
   cursor: pointer;
   font-size: 0.78rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 .ov-chat-cfg-platform-header input[type="checkbox"] {
   accent-color: #9346ff;
@@ -5917,9 +5917,9 @@ body.wm-resizing {
   border-top: 1px solid rgba(255,255,255,0.04);
 }
 
-/* ═══════════════════════════════════════════════════════════
+/* -----------------------------------------------------------
    IMAGE SLIDESHOW WIDGET
-   ═══════════════════════════════════════════════════════════ */
+   ----------------------------------------------------------- */
 .ov-slideshow-widget {
   box-sizing: border-box;
 }
@@ -6009,7 +6009,7 @@ body.wm-resizing {
   cursor: pointer;
   transition: background 0.15s;
 }
-.ov-slide-cfg-image-actions button:hover { background: rgba(255,255,255,0.12); color: #e2e8f0; }
+.ov-slide-cfg-image-actions button:hover { background: rgba(255,255,255,0.12); color: var(--theme-border, #e2e8f0); }
 .ov-slide-cfg-image-actions button:disabled { opacity: 0.3; cursor: not-allowed; }
 .ov-slide-cfg-remove:hover { background: rgba(239,68,68,0.2) !important; color: #f87171 !important; }
 .ov-slide-cfg-add-row {
@@ -6023,7 +6023,7 @@ body.wm-resizing {
   border-radius: 6px;
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
 }
 .ov-slide-cfg-add-input:focus {
@@ -6031,7 +6031,7 @@ body.wm-resizing {
   border-color: rgba(99,102,241,0.5);
 }
 .ov-slide-cfg-add-btn {
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  background: linear-gradient(135deg, #6366f1, var(--theme-secondary, #8b5cf6));
   border: none;
   color: #fff;
   padding: 7px 12px;
@@ -6048,9 +6048,9 @@ body.wm-resizing {
 .ov-slide-cfg-add-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 
-/* ═══════════════════════════════════════════════════════════
+/* -----------------------------------------------------------
    16. RTP STATS BAR WIDGET
-   ═══════════════════════════════════════════════════════════ */
+   ----------------------------------------------------------- */
 .rtp-stats-bar {
   width: 100%;
   height: 100%;
@@ -6077,7 +6077,7 @@ body.wm-resizing {
   min-height: 40px;
 }
 
-/* ── Left section (provider + slot name + stats) ── */
+/* -- Left section (provider + slot name + stats) -- */
 .rtp-stats-left {
   display: flex;
   align-items: center;
@@ -6129,7 +6129,7 @@ body.wm-resizing {
   max-width: 220px;
 }
 
-/* ── Right section (RTP / Potential / Volatility) ── */
+/* -- Right section (RTP / Potential / Volatility) -- */
 .rtp-stats-right {
   display: flex;
   align-items: center;
@@ -6165,13 +6165,13 @@ body.wm-resizing {
   letter-spacing: 0.3px;
 }
 
-/* ── Preview mode ── */
+/* -- Preview mode -- */
 .rtp-stats-inner--preview {
   opacity: 1;
   position: relative;
 }
 
-/* ── Empty state (activated but no live data) ── */
+/* -- Empty state (activated but no live data) -- */
 .rtp-stats-inner--empty {
   opacity: 1;
 }
@@ -6192,13 +6192,13 @@ body.wm-resizing {
 }
 
 
-/* ═══════════════════════════════════════════════════════════
+/* -----------------------------------------------------------
    17. BACKGROUND WIDGET
    Runtime styles (.oc-bg-*, keyframes, effects) moved to
    widgets/BackgroundWidget.css so they load in OBS too.
-   ═══════════════════════════════════════════════════════════ */
+   ----------------------------------------------------------- */
 
-/* ── Config: source mode buttons (admin only) ── */
+/* -- Config: source mode buttons (admin only) -- */
 .oc-bg-mode-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -6223,7 +6223,7 @@ body.wm-resizing {
 
 .oc-bg-mode-btn:hover {
   background: rgba(255,255,255,0.06);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .oc-bg-mode-btn--active {
@@ -6232,7 +6232,7 @@ body.wm-resizing {
   color: #a5b4fc;
 }
 
-/* ── Config: texture grid ── */
+/* -- Config: texture grid -- */
 .oc-bg-texture-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -6257,7 +6257,7 @@ body.wm-resizing {
 
 .oc-bg-texture-btn:hover {
   background: rgba(255,255,255,0.05);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .oc-bg-texture-btn--active {
@@ -6270,7 +6270,7 @@ body.wm-resizing {
 .oc-bg-texture-name { font-size: 0.68rem; font-weight: 600; }
 .oc-bg-texture-desc { font-size: 0.58rem; opacity: 0.55; line-height: 1.2; }
 
-/* ── Config: quick presets ── */
+/* -- Config: quick presets -- */
 .oc-bg-quick-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -6294,17 +6294,17 @@ body.wm-resizing {
 .oc-bg-quick-btn:hover {
   background: rgba(99,102,241,0.12);
   border-color: rgba(99,102,241,0.3);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
-/* ═══════ BACKGROUND ANIMATED EFFECTS ═══════
+/* ------- BACKGROUND ANIMATED EFFECTS -------
    Moved to widgets/BackgroundWidget.css for OBS compatibility.
-   ═══════════════════════════════════════════ */
+   ------------------------------------------- */
 
 /* (Orbs, Fireflies, Bokeh, Snow, Rain, Fog, Glimpse keyframes
    moved to widgets/BackgroundWidget.css) */
 
-/* ═══════ TOURNAMENT INLINE CONFIG ═══════ */
+/* ------- TOURNAMENT INLINE CONFIG ------- */
 
 .tm-players-inline {
   display: flex;
@@ -6336,7 +6336,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 6px;
   padding: 5px 8px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.75rem;
 }
 
@@ -6349,14 +6349,14 @@ body.wm-resizing {
   gap: 4px;
 }
 
-/* ── Setup match inputs ── */
+/* -- Setup match inputs -- */
 .tm-setup-input {
   width: 100%;
   background: rgba(15,23,42,0.6);
   border: 1px solid rgba(255,255,255,0.10);
   border-radius: 6px;
   padding: 6px 8px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.8rem;
   font-weight: 600;
   outline: none;
@@ -6385,7 +6385,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 6px;
   padding: 5px 8px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.72rem;
 }
 
@@ -6397,7 +6397,7 @@ body.wm-resizing {
   flex-shrink: 0;
 }
 
-/* ── Match cards (inline) ── */
+/* -- Match cards (inline) -- */
 
 .tm-match-inline {
   background: rgba(255,255,255,0.03);
@@ -6416,7 +6416,7 @@ body.wm-resizing {
 }
 
 .tm-match-inline-header strong {
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .tm-match-inline-body {
@@ -6435,7 +6435,7 @@ body.wm-resizing {
 .tm-match-inline-pname {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .tm-match-inline-inputs {
@@ -6459,7 +6459,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 5px;
   padding: 3px 6px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.72rem;
   width: 100%;
 }
@@ -6496,7 +6496,7 @@ body.wm-resizing {
   font-weight: 600;
 }
 
-/* ═══════ SIDEBAR RESOLUTION SELECTOR ═══════ */
+/* ------- SIDEBAR RESOLUTION SELECTOR ------- */
 
 .oc-sidebar-resolution {
   padding: 12px 16px;
@@ -6510,7 +6510,7 @@ body.wm-resizing {
   border-radius: 6px;
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.04);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.75rem;
   font-family: inherit;
   cursor: pointer;
@@ -6525,10 +6525,10 @@ body.wm-resizing {
 
 .oc-sidebar-resolution-select option {
   background: #1a1d2e;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
-/* ═══════ SIDEBAR GLOBAL PRESETS ═══════ */
+/* ------- SIDEBAR GLOBAL PRESETS ------- */
 
 .oc-sidebar-presets {
   padding: 12px 16px;
@@ -6555,7 +6555,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 6px;
   padding: 5px 8px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.72rem;
 }
 
@@ -6616,7 +6616,7 @@ body.wm-resizing {
 
 .oc-sidebar-preset-name {
   font-size: 0.72rem;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -6664,7 +6664,7 @@ body.wm-resizing {
   background: rgba(239,68,68,0.2);
 }
 
-/* ── Shared preset styles ── */
+/* -- Shared preset styles -- */
 
 .oc-sidebar-preset-section-label {
   display: block;
@@ -6695,7 +6695,7 @@ body.wm-resizing {
   background: rgba(56,189,248,0.3);
 }
 
-/* ═══════ PREVIEW DIMS ═══════ */
+/* ------- PREVIEW DIMS ------- */
 
 .oc-preview-dims {
   font-size: 0.72rem;
@@ -6703,9 +6703,9 @@ body.wm-resizing {
   font-weight: 500;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   BONUS HUNT LIBRARY — dedicated panel for hunt history
-   ═══════════════════════════════════════════════════════════ */
+/* -----------------------------------------------------------
+   BONUS HUNT LIBRARY � dedicated panel for hunt history
+   ----------------------------------------------------------- */
 
 .bhl-panel {
   padding: 0;
@@ -6718,7 +6718,7 @@ body.wm-resizing {
   line-height: 1.5;
 }
 
-/* ── Loading ── */
+/* -- Loading -- */
 .bhl-loading {
   display: flex;
   flex-direction: column;
@@ -6730,7 +6730,7 @@ body.wm-resizing {
   font-size: 0.82rem;
 }
 
-/* ── Stats bar ── */
+/* -- Stats bar -- */
 .bhl-stats-bar {
   display: flex;
   flex-wrap: wrap;
@@ -6758,7 +6758,7 @@ body.wm-resizing {
 .bhl-stat-value {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -6776,7 +6776,7 @@ body.wm-resizing {
 .bhl-val--profit { color: #86efac; }
 .bhl-val--loss   { color: #fca5a5; }
 
-/* ── Search / Sort / View controls ── */
+/* -- Search / Sort / View controls -- */
 .bhl-controls {
   display: flex;
   gap: 10px;
@@ -6811,7 +6811,7 @@ body.wm-resizing {
   flex: 1;
   background: transparent;
   border: none;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.78rem;
   padding: 8px 0;
   outline: none;
@@ -6832,14 +6832,14 @@ body.wm-resizing {
 }
 
 .bhl-search-clear:hover {
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .bhl-sort-select {
   background: rgba(255,255,255,0.04);
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.75rem;
   padding: 8px 10px;
   outline: none;
@@ -6848,7 +6848,7 @@ body.wm-resizing {
 
 .bhl-sort-select option {
   background: #1e293b;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .bhl-view-toggle {
@@ -6869,12 +6869,12 @@ body.wm-resizing {
 }
 
 .bhl-view-btn:hover {
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   background: rgba(255,255,255,0.06);
 }
 
 .bhl-view-btn--active {
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   background: rgba(99,102,241,0.2);
 }
 
@@ -6884,7 +6884,7 @@ body.wm-resizing {
   margin: -6px 0 10px;
 }
 
-/* ── Empty state ── */
+/* -- Empty state -- */
 .bhl-empty-state {
   display: flex;
   flex-direction: column;
@@ -6903,7 +6903,7 @@ body.wm-resizing {
 .bhl-empty-title {
   font-size: 1rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   margin: 0 0 6px;
 }
 
@@ -6915,7 +6915,7 @@ body.wm-resizing {
   margin: 0;
 }
 
-/* ── Hunt card grid ── */
+/* -- Hunt card grid -- */
 .bhl-hunt-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(460px, 1fr));
@@ -6926,7 +6926,7 @@ body.wm-resizing {
   grid-template-columns: 1fr;
 }
 
-/* ── Card ── */
+/* -- Card -- */
 .bhl-card {
   background: rgba(255,255,255,0.025);
   border: 1px solid rgba(255,255,255,0.06);
@@ -6971,7 +6971,7 @@ body.wm-resizing {
 .bhl-card-name {
   font-size: 0.85rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -7039,7 +7039,7 @@ body.wm-resizing {
   transform: rotate(180deg);
 }
 
-/* ── Card body (expanded) ── */
+/* -- Card body (expanded) -- */
 .bhl-card-body {
   padding: 0 14px 14px;
   border-top: 1px solid rgba(255,255,255,0.05);
@@ -7077,10 +7077,10 @@ body.wm-resizing {
   display: block;
   font-size: 0.8rem;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
-/* ── Bonus list section ── */
+/* -- Bonus list section -- */
 .bhl-bonus-section {
   margin-top: 12px;
 }
@@ -7131,7 +7131,7 @@ body.wm-resizing {
 
 .bhl-bonus-name {
   flex: 1;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
@@ -7183,7 +7183,7 @@ body.wm-resizing {
   flex-shrink: 0;
 }
 
-/* ── Card actions ── */
+/* -- Card actions -- */
 .bhl-card-actions {
   display: flex;
   gap: 8px;
@@ -7210,7 +7210,7 @@ body.wm-resizing {
 .bhl-download-btn:hover {
   background: rgba(99, 102, 241, 0.22);
   border-color: rgba(99, 102, 241, 0.4);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .bhl-confirm-row {
@@ -7225,7 +7225,7 @@ body.wm-resizing {
   font-weight: 600;
 }
 
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media (max-width: 768px) {
   .bhl-hunt-grid {
     grid-template-columns: 1fr;
@@ -7249,9 +7249,9 @@ body.wm-resizing {
   }
 }
 
-/* ════════════════════════════════════════════════════════════════
+/* ----------------------------------------------------------------
    PRESET LIBRARY PAGE
-   ════════════════════════════════════════════════════════════════ */
+   ---------------------------------------------------------------- */
 
 .pl-page {
   display: flex;
@@ -7262,7 +7262,7 @@ body.wm-resizing {
   font-family: 'Inter', sans-serif;
 }
 
-/* ── Header ── */
+/* -- Header -- */
 .pl-header {
   display: flex;
   flex-direction: column;
@@ -7276,7 +7276,7 @@ body.wm-resizing {
 .pl-header__title {
   font-size: 22px;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   margin: 0;
 }
 .pl-header__count {
@@ -7294,7 +7294,7 @@ body.wm-resizing {
   line-height: 1.5;
 }
 
-/* ── Save New Preset Bar ── */
+/* -- Save New Preset Bar -- */
 .pl-save-bar {
   display: flex;
   align-items: center;
@@ -7312,7 +7312,7 @@ body.wm-resizing {
   border-radius: 8px;
   padding: 9px 14px;
   font-size: 14px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   outline: none;
   transition: border-color 0.2s;
 }
@@ -7346,7 +7346,7 @@ body.wm-resizing {
   100% { opacity: 1; transform: translateX(0); }
 }
 
-/* ── Toolbar ── */
+/* -- Toolbar -- */
 .pl-toolbar {
   display: flex;
   align-items: center;
@@ -7377,7 +7377,7 @@ body.wm-resizing {
   background: transparent;
   border: none;
   outline: none;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   font-size: 13px;
   flex: 1;
   min-width: 0;
@@ -7405,7 +7405,7 @@ body.wm-resizing {
   white-space: nowrap;
 }
 .pl-toolbar__filter:hover {
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   background: rgba(255, 255, 255, 0.04);
 }
 .pl-toolbar__filter--active {
@@ -7430,14 +7430,14 @@ body.wm-resizing {
   border-color: #9346ff;
 }
 
-/* ── Grid ── */
+/* -- Grid -- */
 .pl-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 20px;
 }
 
-/* ── Card ── */
+/* -- Card -- */
 .pl-card {
   background: #12141f;
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -7518,7 +7518,7 @@ body.wm-resizing {
 .pl-card__name {
   font-size: 15px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   margin: 0;
   white-space: nowrap;
   overflow: hidden;
@@ -7595,7 +7595,7 @@ body.wm-resizing {
   background: rgba(239, 68, 68, 0.2);
 }
 
-/* ── Empty state ── */
+/* -- Empty state -- */
 .pl-empty {
   display: flex;
   flex-direction: column;
@@ -7611,7 +7611,7 @@ body.wm-resizing {
 .pl-empty__title {
   font-size: 18px;
   font-weight: 700;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   margin: 0 0 6px;
 }
 .pl-empty__text {
@@ -7621,7 +7621,7 @@ body.wm-resizing {
   max-width: 300px;
 }
 
-/* ── Responsive ── */
+/* -- Responsive -- */
 @media (max-width: 700px) {
   .pl-page {
     padding: 16px;
@@ -7638,9 +7638,9 @@ body.wm-resizing {
   }
 }
 
-/* ═══════════════════════════════════════════════════
-   Spotify Widget — animations & config buttons
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   Spotify Widget � animations & config buttons
+   --------------------------------------------------- */
 
 /* Pulse indicator */
 @keyframes spotifyPulse {
@@ -7719,7 +7719,7 @@ body.wm-resizing {
   background: rgba(255, 68, 68, 0.2);
 }
 
-/* ── Navbar Music Display Style Picker ── */
+/* -- Navbar Music Display Style Picker -- */
 .nb-music-styles {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -7766,11 +7766,11 @@ body.wm-resizing {
   100% { transform: translateX(-50%); }
 }
 
-/* ═══════════════════════════════════════════════════════════════
-   NEW WIDGET STYLES — Chat, RTP, Tournament, BonusHunt, Background
-   ═══════════════════════════════════════════════════════════════ */
+/* ---------------------------------------------------------------
+   NEW WIDGET STYLES � Chat, RTP, Tournament, BonusHunt, Background
+   --------------------------------------------------------------- */
 
-/* ─── Chat: Bubble Style ─── */
+/* --- Chat: Bubble Style --- */
 .ov-chat-widget--bubble .ov-chat-msg--bubble {
   display: flex;
   align-items: flex-start;
@@ -7798,9 +7798,9 @@ body.wm-resizing {
   word-break: break-word;
 }
 
-/* ─── Chat: (legacy styles removed — see new styles above) ─── */
+/* --- Chat: (legacy styles removed � see new styles above) --- */
 
-/* ─── RTP Stats: Vertical ─── */
+/* --- RTP Stats: Vertical --- */
 .rtp-stats-bar--vertical .rtp-stats-inner {
   flex-direction: column !important;
   align-items: stretch !important;
@@ -7822,7 +7822,7 @@ body.wm-resizing {
   justify-content: center;
 }
 
-/* ─── RTP Stats: Neon ─── */
+/* --- RTP Stats: Neon --- */
 .rtp-stats-bar--neon .rtp-stats-inner {
   border: 1px solid var(--rtp-accent, #00ffcc) !important;
   box-shadow: 0 0 15px color-mix(in srgb, var(--rtp-accent, #00ffcc) 20%, transparent),
@@ -7838,7 +7838,7 @@ body.wm-resizing {
   filter: drop-shadow(0 0 4px var(--rtp-accent, #00ffcc));
 }
 
-/* ─── RTP Stats: Minimal ─── */
+/* --- RTP Stats: Minimal --- */
 .rtp-stats-bar--minimal .rtp-stats-inner {
   border: none !important;
   box-shadow: none !important;
@@ -7857,14 +7857,14 @@ body.wm-resizing {
   opacity: 0.6;
 }
 
-/* ─── RTP Stats: Glass ─── */
+/* --- RTP Stats: Glass --- */
 .rtp-stats-bar--glass .rtp-stats-inner {
   background: linear-gradient(135deg, rgba(30,30,60,0.88), rgba(20,20,50,0.92)) !important;
   border: 1px solid rgba(255,255,255,0.15) !important;
   box-shadow: 0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 
-/* ─── Tournament: Neon ─── */
+/* --- Tournament: Neon --- */
 .tw-root--neon {
   box-shadow: 0 0 30px rgba(0,255,200,0.06), inset 0 0 40px rgba(0,255,200,0.02);
 }
@@ -7878,7 +7878,7 @@ body.wm-resizing {
   text-shadow: 0 0 6px rgba(0,255,200,0.4);
 }
 
-/* ─── Tournament: Minimal ─── */
+/* --- Tournament: Minimal --- */
 .tw-root--minimal .tw-match-card,
 .tw-root--minimal .tw-match-inner {
   background: transparent;
@@ -7891,23 +7891,23 @@ body.wm-resizing {
   opacity: 0.7;
 }
 
-/* ─── Bonus Hunt variant styles (neon, horizontal, compact, carousel)
-   moved to OverlayRenderer.css for OBS compatibility ─── */
+/* --- Bonus Hunt variant styles (neon, horizontal, compact, carousel)
+   moved to OverlayRenderer.css for OBS compatibility --- */
 
 /* (Aurora, Matrix, Starfield, Waves, Geometric styles
    moved to widgets/BackgroundWidget.css) */
 
 /* V8/V9 Bonus Hunt CSS moved to OverlayRenderer.css for OBS compatibility */
-/* (keeping comment for reference – styles are in OverlayRenderer.css) */
+/* (keeping comment for reference � styles are in OverlayRenderer.css) */
 
-/* ═══════════════════════════════════════════════════════
-   BRACKET TOURNAMENT (bk-*) – overlay center bracket tab
-   ═══════════════════════════════════════════════════════ */
+/* -------------------------------------------------------
+   BRACKET TOURNAMENT (bk-*) � overlay center bracket tab
+   ------------------------------------------------------- */
 
-/* ─── Tab shell ─── */
+/* --- Tab shell --- */
 .bk-tab { display: flex; flex-direction: column; gap: 0; }
 
-/* ─── Card base ─── */
+/* --- Card base --- */
 .bk-card {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.08);
@@ -7916,26 +7916,26 @@ body.wm-resizing {
   margin-bottom: 10px;
 }
 .bk-card-title {
-  font-size: 14px; font-weight: 800; color: #e2e8f0;
+  font-size: 14px; font-weight: 800; color: var(--theme-border, #e2e8f0);
   margin: 0 0 2px;
 }
 .bk-hint {
   font-size: 11px; color: #64748b; margin: 0 0 8px; line-height: 1.3;
 }
 
-/* ─── Fields ─── */
+/* --- Fields --- */
 .bk-field { display: flex; flex-direction: column; gap: 3px; margin-bottom: 8px; }
 .bk-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
 .bk-input {
   background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 6px; padding: 6px 8px; color: #e2e8f0;
+  border-radius: 6px; padding: 6px 8px; color: var(--theme-border, #e2e8f0);
   font-size: 12px; width: 100%; outline: none; transition: border-color 0.15s;
 }
 .bk-input:focus { border-color: rgba(139,92,246,0.5); }
 .bk-input--sm { max-width: 100px; }
 .bk-input--slot { flex: 1; font-size: 12px; }
 
-/* ─── Type selector ─── */
+/* --- Type selector --- */
 .bk-type-grid {
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 8px;
 }
@@ -7951,10 +7951,10 @@ body.wm-resizing {
   box-shadow: 0 0 12px rgba(139,92,246,0.15);
 }
 .bk-type-icon { font-size: 18px; }
-.bk-type-name { font-size: 11px; font-weight: 700; color: #e2e8f0; }
+.bk-type-name { font-size: 11px; font-weight: 700; color: var(--theme-border, #e2e8f0); }
 .bk-type-desc { font-size: 9px; color: #64748b; text-align: center; line-height: 1.2; }
 
-/* ─── Player count pills ─── */
+/* --- Player count pills --- */
 .bk-count-row { display: flex; gap: 6px; margin-bottom: 8px; }
 .bk-count-btn {
   flex: 1; padding: 6px 4px; border-radius: 6px; cursor: pointer;
@@ -7968,7 +7968,7 @@ body.wm-resizing {
   color: #c4b5fd;
 }
 
-/* ─── Player rows ─── */
+/* --- Player rows --- */
 .bk-players-scroll { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow-y: auto; padding-right: 4px; }
 .bk-player-row {
   display: flex; gap: 6px; align-items: center;
@@ -7976,7 +7976,7 @@ body.wm-resizing {
   border-radius: 6px; padding: 5px 8px;
 }
 .bk-player-seed {
-  font-size: 10px; font-weight: 800; color: #8b5cf6;
+  font-size: 10px; font-weight: 800; color: var(--theme-secondary, #8b5cf6);
   background: rgba(139,92,246,0.15); border-radius: 4px;
   padding: 2px 6px; min-width: 26px; text-align: center;
   flex-shrink: 0;
@@ -7985,7 +7985,7 @@ body.wm-resizing {
 .bk-player-fields .bk-input { padding: 4px 6px; font-size: 11px; }
 .bk-player-fields .bk-slot-wrap { width: 100%; }
 
-/* ─── Slot search ─── */
+/* --- Slot search --- */
 .bk-slot-wrap { position: relative; }
 .bk-slot-input-row { display: flex; align-items: center; gap: 6px; }
 .bk-slot-thumb { width: 22px; height: 22px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
@@ -7997,16 +7997,16 @@ body.wm-resizing {
 }
 .bk-slot-option {
   display: flex; align-items: center; gap: 8px; padding: 6px 10px;
-  cursor: pointer; width: 100%; font-size: 12px; color: #e2e8f0;
+  cursor: pointer; width: 100%; font-size: 12px; color: var(--theme-border, #e2e8f0);
   background: transparent; border: none; text-align: left;
 }
 .bk-slot-option:hover { background: rgba(139,92,246,0.15); }
 
-/* ─── Start button ─── */
+/* --- Start button --- */
 .bk-start-area { padding: 2px 0; }
 .bk-start-btn {
   width: 100%; padding: 10px 16px; border-radius: 8px; cursor: pointer;
-  background: linear-gradient(135deg, #8b5cf6, #6d28d9);
+  background: linear-gradient(135deg, var(--theme-secondary, #8b5cf6), #6d28d9);
   border: 1px solid rgba(139,92,246,0.5);
   color: #fff; font-size: 13px; font-weight: 800;
   letter-spacing: 0.5px; text-align: center;
@@ -8016,7 +8016,7 @@ body.wm-resizing {
 .bk-start-btn:hover { box-shadow: 0 6px 28px rgba(139,92,246,0.5); transform: translateY(-1px); }
 .bk-start-btn--disabled { opacity: 0.45; cursor: not-allowed; pointer-events: none; }
 
-/* ─── Fill Random button ─── */
+/* --- Fill Random button --- */
 .bk-fill-btn {
   background: rgba(234,179,8,0.12); border: 1px solid rgba(234,179,8,0.3);
   color: #eab308; border-radius: 6px; padding: 5px 12px;
@@ -8025,27 +8025,27 @@ body.wm-resizing {
 }
 .bk-fill-btn:hover { background: rgba(234,179,8,0.2); border-color: rgba(234,179,8,0.5); }
 
-/* ─── Active phase layout ─── */
+/* --- Active phase layout --- */
 .bk-active { display: flex; flex-direction: column; gap: 8px; }
 .bk-active-grid {
   display: grid; grid-template-columns: 1fr 1fr; gap: 8px; align-items: start;
 }
 @media (max-width: 900px) { .bk-active-grid { grid-template-columns: 1fr; } }
 
-/* ─── Collapsible style sections ─── */
+/* --- Collapsible style sections --- */
 .bk-details { border: 1px solid rgba(255,255,255,0.06); border-radius: 6px; margin-bottom: 4px; }
 .bk-details summary {
   cursor: pointer; font-size: 11px; font-weight: 700; color: #c4b5fd;
   padding: 6px 8px; list-style: none; user-select: none;
 }
 .bk-details summary::-webkit-details-marker { display: none; }
-.bk-details summary::before { content: '▸ '; font-size: 10px; }
-.bk-details[open] summary::before { content: '▾ '; }
+.bk-details summary::before { content: '? '; font-size: 10px; }
+.bk-details[open] summary::before { content: '? '; }
 .bk-details-body { padding: 4px 8px 8px; }
 
 /* Header */
 .bk-active-header { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
-.bk-active-title { font-size: 14px; font-weight: 800; color: #e2e8f0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-active-title { font-size: 14px; font-weight: 800; color: var(--theme-border, #e2e8f0); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .bk-active-meta { display: flex; gap: 4px; flex-wrap: wrap; }
 .bk-badge {
   font-size: 9px; font-weight: 700; padding: 1px 8px;
@@ -8064,7 +8064,7 @@ body.wm-resizing {
 }
 .bk-reset-btn:hover { background: rgba(239,68,68,0.2); }
 
-/* ─── Progress bar ─── */
+/* --- Progress bar --- */
 .bk-progress {
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06);
   border-radius: 6px; padding: 5px 10px;
@@ -8073,30 +8073,30 @@ body.wm-resizing {
 .bk-progress-track { background: rgba(255,255,255,0.08); border-radius: 6px; height: 6px; overflow: hidden; }
 .bk-progress-fill {
   height: 100%; border-radius: 6px;
-  background: linear-gradient(90deg, #8b5cf6, #c084fc, #e879f9);
+  background: linear-gradient(90deg, var(--theme-secondary, #8b5cf6), #c084fc, #e879f9);
   transition: width 0.4s ease;
 }
 
-/* ─── Champion banner ─── */
+/* --- Champion banner --- */
 .bk-champion {
-  background: linear-gradient(135deg, rgba(212,175,55,0.2), rgba(212,175,55,0.05));
-  border: 1px solid rgba(212,175,55,0.4);
+  background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.2), rgba(var(--theme-accent-rgb), 0.05));
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.4);
   border-radius: 8px; padding: 8px 12px; text-align: center;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   animation: bk-champion-glow 2s ease-in-out infinite alternate;
 }
 .bk-champion-trophy { font-size: 22px; }
-.bk-champion-name { font-size: 14px; font-weight: 900; color: #d4af37; }
+.bk-champion-name { font-size: 14px; font-weight: 900; color: var(--theme-accent, #d4af37); }
 .bk-champion-sub {
   font-size: 10px; font-weight: 700; color: #94a3b8;
   text-transform: uppercase; letter-spacing: 0.5px;
 }
 @keyframes bk-champion-glow {
-  from { box-shadow: 0 0 20px rgba(212,175,55,0.15); }
-  to   { box-shadow: 0 0 40px rgba(212,175,55,0.3), 0 0 80px rgba(212,175,55,0.1); }
+  from { box-shadow: 0 0 20px rgba(var(--theme-accent-rgb), 0.15); }
+  to   { box-shadow: 0 0 40px rgba(var(--theme-accent-rgb), 0.3), 0 0 80px rgba(var(--theme-accent-rgb), 0.1); }
 }
 
-/* ─── Bracket display (horizontal scroll) ─── */
+/* --- Bracket display (horizontal scroll) --- */
 .bk-bracket-card {
   background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06);
   border-radius: 8px; padding: 8px;
@@ -8105,7 +8105,7 @@ body.wm-resizing {
 .bk-bracket-rounds { display: flex; gap: 10px; min-width: max-content; }
 .bk-bracket-round { display: flex; flex-direction: column; min-width: 140px; }
 .bk-round-label {
-  font-size: 9px; font-weight: 700; color: #8b5cf6;
+  font-size: 9px; font-weight: 700; color: var(--theme-secondary, #8b5cf6);
   text-transform: uppercase; letter-spacing: 0.6px;
   text-align: center; padding-bottom: 4px; margin-bottom: 4px;
   border-bottom: 1px solid rgba(139,92,246,0.2);
@@ -8147,7 +8147,7 @@ body.wm-resizing {
   text-align: center; padding-top: 2px;
 }
 
-/* ─── Match control panel ─── */
+/* --- Match control panel --- */
 .bk-match-panel {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(139,92,246,0.3);
@@ -8157,7 +8157,7 @@ body.wm-resizing {
   display: flex; justify-content: space-between; align-items: center;
   margin-bottom: 6px;
 }
-.bk-mp-title { font-size: 11px; font-weight: 700; color: #e2e8f0; margin: 0; }
+.bk-mp-title { font-size: 11px; font-weight: 700; color: var(--theme-border, #e2e8f0); margin: 0; }
 .bk-mp-status { flex-shrink: 0; }
 
 /* Players banner */
@@ -8173,7 +8173,7 @@ body.wm-resizing {
 }
 .bk-mp-p--win { background: rgba(34,197,94,0.1); border: 1px solid rgba(34,197,94,0.25); }
 .bk-mp-slot-img { width: 24px; height: 24px; border-radius: 4px; object-fit: cover; flex-shrink: 0; }
-.bk-mp-p-name { font-size: 11px; font-weight: 700; color: #e2e8f0; }
+.bk-mp-p-name { font-size: 11px; font-weight: 700; color: var(--theme-border, #e2e8f0); }
 .bk-mp-p-slot { font-size: 9px; color: #64748b; }
 .bk-mp-vs {
   font-size: 9px; font-weight: 900; color: #475569;
@@ -8183,7 +8183,7 @@ body.wm-resizing {
 /* Bo3 Scoreboard */
 .bk-mp-scoreboard {
   display: flex; align-items: center; justify-content: center; gap: 8px;
-  padding: 4px 0; font-size: 18px; font-weight: 900; color: #e2e8f0;
+  padding: 4px 0; font-size: 18px; font-weight: 900; color: var(--theme-border, #e2e8f0);
 }
 .bk-score-win { color: #4ade80; }
 .bk-score-sep { font-size: 12px; color: #475569; font-weight: 700; }
@@ -8240,7 +8240,7 @@ body.wm-resizing {
 .bk-mp-winner-btn {
   flex: 1; padding: 6px 4px; border-radius: 6px; cursor: pointer;
   background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
-  color: #e2e8f0; font-size: 11px; font-weight: 700;
+  color: var(--theme-border, #e2e8f0); font-size: 11px; font-weight: 700;
   text-align: center; transition: all 0.15s;
 }
 .bk-mp-winner-btn:hover { background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.3); }
@@ -8259,7 +8259,7 @@ body.wm-resizing {
 }
 .bk-reset-match-btn:hover { background: rgba(239,68,68,0.12); }
 
-/* ─── Setup layout: two-column on wider screens ─── */
+/* --- Setup layout: two-column on wider screens --- */
 .bk-setup { display: flex; flex-direction: column; }
 @media (min-width: 700px) {
   .bk-setup { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }

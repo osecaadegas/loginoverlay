@@ -1,10 +1,10 @@
-﻿/* =========================================================
-   OverlayRenderer.css — OBS Browser Source Styles
-   Transparent bg, 1920×1080 canvas, GPU-accelerated.
+/* =========================================================
+   OverlayRenderer.css � OBS Browser Source Styles
+   Transparent bg, 1920�1080 canvas, GPU-accelerated.
    All styles scoped to .or-canvas to avoid leaking globally.
    ========================================================= */
 
-/* ─── Canvas ─── */
+/* --- Canvas --- */
 .or-canvas,
 .or-canvas *,
 .or-canvas *::before,
@@ -26,21 +26,21 @@
   color: var(--ov-text, #ffffff);
   transform-origin: top left;
 
-  /* ── Text rendering polish (stream → mobile readability) ── */
+  /* -- Text rendering polish (stream ? mobile readability) -- */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
   -webkit-text-size-adjust: 100%;
 
-  /* ── GPU compositing – backface-hidden gives sharper layer compositing ── */
+  /* -- GPU compositing � backface-hidden gives sharper layer compositing -- */
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 
-  /* ── Subtle text shadow so letters survive video compression ── */
+  /* -- Subtle text shadow so letters survive video compression -- */
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.18);
 }
 
-/* ─── Texture overlay ─── */
+/* --- Texture overlay --- */
 .or-texture {
   position: absolute;
   inset: 0;
@@ -76,7 +76,7 @@
   );
 }
 
-/* ─── Widget Slot ─── */
+/* --- Widget Slot --- */
 .or-widget-slot {
   position: absolute;
   will-change: transform, opacity;
@@ -86,7 +86,7 @@
   text-rendering: geometricPrecision;
 }
 
-/* ─── Widget base glass card ─── */
+/* --- Widget base glass card --- */
 .or-widget-inner {
   width: 100%;
   height: 100%;
@@ -108,7 +108,7 @@
   flex-direction: column;
 }
 
-/* ─── Entrance Animations ─── */
+/* --- Entrance Animations --- */
 .or-anim-in--fade   { animation: or-fadeIn var(--ov-anim-speed, 0.4s) ease-out both; }
 
 /* Slide In (from each direction) */
@@ -118,7 +118,7 @@
 .or-anim-in--slide-left  { animation: or-slideInLeft  var(--ov-anim-speed, 0.4s) ease-out both; }
 .or-anim-in--slide-right { animation: or-slideInRight var(--ov-anim-speed, 0.4s) ease-out both; }
 
-/* Swipe In (faster, no fade — pure directional wipe) */
+/* Swipe In (faster, no fade � pure directional wipe) */
 .or-anim-in--swipe-up    { animation: or-swipeInUp    var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
 .or-anim-in--swipe-down  { animation: or-swipeInDown  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
 .or-anim-in--swipe-left  { animation: or-swipeInLeft  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
@@ -144,7 +144,7 @@
 /* Rotate */
 .or-anim-in--rotate { animation: or-rotateIn var(--ov-anim-speed, 0.5s) ease-out both; }
 
-/* ─── Entrance Keyframes ─── */
+/* --- Entrance Keyframes --- */
 @keyframes or-fadeIn {
   from { opacity: 0; }
   to   { opacity: 1; }
@@ -216,7 +216,7 @@
   to   { opacity: 1; transform: rotate(0) scale(1); }
 }
 
-/* ─── Exit Animations ─── */
+/* --- Exit Animations --- */
 .or-anim-out--fade   { animation: or-fadeOut var(--ov-anim-speed, 0.4s) ease-in both; }
 
 /* Slide Out (to each direction) */
@@ -252,7 +252,7 @@
 /* Rotate Out */
 .or-anim-out--rotate { animation: or-rotateOut var(--ov-anim-speed, 0.5s) ease-in both; }
 
-/* ─── Exit Keyframes ─── */
+/* --- Exit Keyframes --- */
 @keyframes or-fadeOut {
   from { opacity: 1; }
   to   { opacity: 0; }
@@ -323,7 +323,7 @@
   to   { opacity: 0; transform: rotate(15deg) scale(0.8); }
 }
 
-/* ─── Widget Typography ─── */
+/* --- Widget Typography --- */
 .oc-widget-title, .or-widget-title {
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -333,7 +333,7 @@
   font-weight: 700;
 }
 
-/* ─── Stats Widget ─── */
+/* --- Stats Widget --- */
 .oc-stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
@@ -363,7 +363,7 @@
 
 .oc-stat--profit .oc-stat-value { color: #4ade80; }
 
-/* ─── Bonus Hunt Tracker Widget ─── */
+/* --- Bonus Hunt Tracker Widget --- */
 .oc-bonushunt {
   display: flex;
   flex-direction: column;
@@ -372,7 +372,7 @@
   overflow: hidden;
 }
 
-/* ── Card base ── */
+/* -- Card base -- */
 .bht-card {
   border-radius: var(--bht-card-radius, 16px);
   padding: var(--bht-card-padding, 14px);
@@ -380,7 +380,7 @@
   border: var(--bht-card-outline-width, 2px) solid var(--bht-card-outline, transparent);
 }
 
-/* ── Header card ── */
+/* -- Header card -- */
 .bht-header {
   background: var(--bht-header-bg, #1e3a8a);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
@@ -461,7 +461,7 @@
   color: var(--bht-stat-value, #fff);
 }
 
-/* ── Current bonus card ── */
+/* -- Current bonus card -- */
 .bht-current {
   background: var(--bht-current-bg, #166534);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.18));
@@ -582,7 +582,7 @@
   color: var(--bht-text, #fff);
 }
 
-/* ── Bonus list card ── */
+/* -- Bonus list card -- */
 .bht-list-card {
   background: var(--bht-list-bg, #581c87);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.2));
@@ -597,7 +597,7 @@
   margin-bottom: 10px;
 }
 
-/* ── Horizontal thumbnail strip ── */
+/* -- Horizontal thumbnail strip -- */
 .bht-thumb-strip {
   display: flex;
   gap: 8px;
@@ -649,7 +649,7 @@
   padding: 2px 0;
 }
 
-/* ── Vertical list rows ── */
+/* -- Vertical list rows -- */
 .bht-list-rows {
   max-height: var(--bht-list-max-height, 400px);
   overflow: hidden;
@@ -751,7 +751,7 @@
   color: var(--bht-text, #fff);
 }
 
-/* ── Legacy compact bonus cards ── */
+/* -- Legacy compact bonus cards -- */
 .bht-bonus-list {
   max-height: var(--bht-list-max-height, 400px);
   overflow: hidden;
@@ -796,7 +796,7 @@
   50%  { transform: translate(0, 0); }
 }
 
-/* ── Total pay footer ── */
+/* -- Total pay footer -- */
 .bht-footer {
   background: var(--bht-summary-bg, #1e3a8a);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
@@ -821,7 +821,7 @@
   text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
 }
 
-/* ─── Bonus Hunt: Neon (legacy — kept for backwards compat) ─── */
+/* --- Bonus Hunt: Neon (legacy � kept for backwards compat) --- */
 .oc-bonushunt--neon .bht-card {
   box-shadow: 0 0 12px rgba(0,255,200,0.06);
 }
@@ -835,12 +835,12 @@
   box-shadow: 0 0 20px rgba(0,255,200,0.15);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   Bonus Hunt V4 — Neon Command HUD
+/* -----------------------------------------------------------
+   Bonus Hunt V4 � Neon Command HUD
    Cyberpunk HUD: scanlines, glitch text, angled stat panels,
    rotating target-lock rings, SVG progress arc, horizontal
    data stream, neon power meter. 100% unique layout.
-   ═══════════════════════════════════════════════════════════ */
+   ----------------------------------------------------------- */
 .bht4-root {
   position: relative;
   display: flex;
@@ -851,7 +851,7 @@
   scrollbar-color: rgba(0,255,204,0.15) transparent;
 }
 
-/* ── CRT Scanlines ── */
+/* -- CRT Scanlines -- */
 .bht4-scanlines {
   position: absolute; inset: 0; z-index: 5;
   pointer-events: none;
@@ -870,7 +870,7 @@
 
 /* (corner decorations removed) */
 
-/* ═══ HEADER — Glitch title ═══ */
+/* --- HEADER � Glitch title --- */
 .bht4-header {
   position: relative; z-index: 2;
   display: flex; justify-content: space-between; align-items: center;
@@ -948,14 +948,14 @@
   clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
 }
 
-/* ═══ CENTER — Ring + Target Card + Side Stats ═══ */
+/* --- CENTER � Ring + Target Card + Side Stats --- */
 .bht4-center {
   position: relative; z-index: 2;
   display: flex; align-items: stretch; gap: 10px;
   padding: 8px 14px;
 }
 
-/* Side stats — stacked vertically on the right */
+/* Side stats � stacked vertically on the right */
 .bht4-side-stats {
   flex: 0 0 auto;
   display: flex; flex-direction: column; gap: 3px;
@@ -1147,7 +1147,7 @@
   text-shadow: 0 0 6px rgba(239,68,68,0.3);
 }
 
-/* ═══ DATA STREAM — Horizontal auto-scrolling card ribbon ═══ */
+/* --- DATA STREAM � Horizontal auto-scrolling card ribbon --- */
 .bht4-stream {
   position: relative; z-index: 2;
   padding: 6px 0;
@@ -1185,7 +1185,7 @@
   100% { transform: translateX(-50%); }
 }
 
-/* Stream cards — full-bleed image */
+/* Stream cards � full-bleed image */
 .bht4-stream-card {
   flex: 0 0 auto;
   width: 130px; height: 140px;
@@ -1253,7 +1253,7 @@
   font-size: 0.58em; font-weight: 600; color: #fff;
 }
 
-/* ═══ POWER METER — Compact neon total payout ═══ */
+/* --- POWER METER � Compact neon total payout --- */
 .bht4-power {
   position: relative; z-index: 2;
   padding: 4px 14px 0;
@@ -1304,7 +1304,7 @@
   50%      { text-shadow: 0 0 16px rgba(0,255,204,0.7), 0 0 36px rgba(0,255,204,0.3), 0 0 56px rgba(0,255,204,0.1); }
 }
 
-/* ─── Bonus Hunt: Horizontal (v5) ─── */
+/* --- Bonus Hunt: Horizontal (v5) --- */
 .oc-bonushunt--horizontal {
   flex-direction: row !important;
   align-items: stretch;
@@ -1377,29 +1377,29 @@
   flex: 0 0 170px;
 }
 
-/* ─── Bonus Hunt: Compact ─── */
-/* ═══════════════════════════════════════════════════════════════════
-   COMPACT STYLE (v6_compact) — full rewrite
+/* --- Bonus Hunt: Compact --- */
+/* -------------------------------------------------------------------
+   COMPACT STYLE (v6_compact) � full rewrite
    Root is a flex column that fills the widget slot. Fixed-size cards
    (header, current, summary) use flex-shrink:0. The list card fills
    all remaining space with flex:1. Two list modes:
      - Idle: auto-scroll carousel (duplicated list, CSS animation)
      - Opening: static track centred on active bonus (transform)
-   ═══════════════════════════════════════════════════════════════════ */
+   ------------------------------------------------------------------- */
 
-/* ── Root ── */
+/* -- Root -- */
 .oc-bonushunt--compact {
   overflow: hidden !important;
   height: 100%;
 }
 
-/* ── All cards: tight padding, don't shrink ── */
+/* -- All cards: tight padding, don't shrink -- */
 .oc-bonushunt--compact .bht-card {
   padding: 4px 6px !important;
   flex-shrink: 0;
 }
 
-/* ── Header overrides ── */
+/* -- Header overrides -- */
 .oc-bonushunt--compact .bht-header-top { margin-bottom: 3px; }
 .oc-bonushunt--compact .bht-header-stats { gap: 4px; }
 .oc-bonushunt--compact .bht-stat-box { padding: 2px 6px; }
@@ -1408,14 +1408,14 @@
 .oc-bonushunt--compact .bht-icon-circle svg { width: 14px; height: 14px; }
 .oc-bonushunt--compact .bht-title { font-size: 0.85em; }
 
-/* ── Count card overrides ── */
+/* -- Count card overrides -- */
 .oc-bonushunt--compact .bht-count-card { padding: 3px 6px !important; }
 .oc-bonushunt--compact .bht-count-header { margin-bottom: 2px; }
 .oc-bonushunt--compact .bht-count-badges { gap: 3px; }
 .oc-bonushunt--compact .bht-badge-super,
 .oc-bonushunt--compact .bht-badge-extreme { padding: 2px 6px; font-size: 0.6em; }
 
-/* ── Current bonus card ── */
+/* -- Current bonus card -- */
 .oc-bonushunt--compact .bht-current { padding: 2px 4px !important; }
 .oc-bonushunt--compact .bht-current-top { margin-bottom: 0; gap: 4px; align-items: center; }
 .oc-bonushunt--compact .bht-current-img {
@@ -1445,7 +1445,7 @@
   font-size: 1em; font-weight: 800; line-height: 1.2;
 }
 
-/* ── List card: fills remaining space ── */
+/* -- List card: fills remaining space -- */
 .oc-bonushunt--compact .bht-list-card {
   flex: 1 1 0 !important;
   min-height: 0;
@@ -1457,7 +1457,7 @@
   position: relative;
 }
 
-/* ── Compact track base (shared by both modes) ── */
+/* -- Compact track base (shared by both modes) -- */
 .bht-compact-track {
   display: flex;
   flex-direction: column;
@@ -1465,13 +1465,13 @@
   will-change: transform;
 }
 
-/* ── Static mode: no animation, smooth slide to active card ── */
+/* -- Static mode: no animation, smooth slide to active card -- */
 .bht-compact-track--static {
   animation: none !important;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Scroll mode: infinite CSS carousel ── */
+/* -- Scroll mode: infinite CSS carousel -- */
 @keyframes bht-compact-scroll {
   0%   { transform: translateY(0); }
   100% { transform: translateY(-50%); }
@@ -1480,7 +1480,7 @@
   animation: bht-compact-scroll calc(var(--bht-compact-count, 5) * 6s) linear infinite;
 }
 
-/* ── Compact bonus cards ── */
+/* -- Compact bonus cards -- */
 .oc-bonushunt--compact .bht-bonus-card {
   min-width: 80px; min-height: 85px;
   display: flex; flex-direction: column;
@@ -1489,10 +1489,10 @@
 .oc-bonushunt--compact .bht-bonus-card-img {
   height: 85px; flex-shrink: 0;
 }
-/* Hide the old gradient overlay — compact uses the info bar instead */
+/* Hide the old gradient overlay � compact uses the info bar instead */
 .oc-bonushunt--compact .bht-bonus-card-overlay { display: none; }
 
-/* ── Compact info bar (below each card image) ── */
+/* -- Compact info bar (below each card image) -- */
 .bht-compact-info-bar {
   display: flex; align-items: center; gap: 5px;
   padding: 3px 6px; background: #000; min-height: 20px;
@@ -1520,7 +1520,7 @@
   margin-left: auto; white-space: nowrap;
 }
 
-/* ── Summary card ── */
+/* -- Summary card -- */
 .oc-bonushunt--compact .bht-summary { padding: 3px 4px !important; flex-shrink: 0; }
 .oc-bonushunt--compact .bht-summary-stats { gap: 4px; margin-bottom: 2px; }
 .oc-bonushunt--compact .bht-summary .bht-stat-box { padding: 1px 4px; }
@@ -1531,7 +1531,7 @@
 .oc-bonushunt--compact .bht-total-pay-left svg { width: 12px; height: 12px; }
 .oc-bonushunt--compact .bht-total-pay-value { font-size: 0.9em; }
 
-/* ── Merged header + count card ── */
+/* -- Merged header + count card -- */
 .bht-compact-avatar {
   width: 36px; height: 36px; border-radius: 50%;
   object-fit: cover; flex-shrink: 0;
@@ -1559,7 +1559,7 @@
 .bht-compact-info-pill--extreme { background: var(--bht-extreme-badge, #ef4444); color: #fff; }
 .bht-compact-info-label { font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
 
-/* ── Progress bar ── */
+/* -- Progress bar -- */
 .bht-compact-progress-section { margin: 1px 0; }
 .bht-compact-progress-label {
   display: flex; justify-content: space-between; align-items: center;
@@ -1576,7 +1576,7 @@
   transition: width 0.5s ease;
 }
 
-/* ─── Bonus Hunt: Carousel (v7) — Stacked layout ─── */
+/* --- Bonus Hunt: Carousel (v7) � Stacked layout --- */
 .oc-bonushunt--carousel {
   flex-direction: column !important;
   overflow: hidden !important;
@@ -1706,7 +1706,7 @@
   filter: saturate(0.8) brightness(0.9);
 }
 
-/* ── Extreme card glow + blur effect ── */
+/* -- Extreme card glow + blur effect -- */
 .bhtc-card--extreme {
   border-color: var(--bht-extreme-badge, #ef4444);
   box-shadow: 0 0 16px rgba(239,68,68,0.45), 0 0 40px rgba(239,68,68,0.2), inset 0 0 12px rgba(239,68,68,0.1);
@@ -1726,13 +1726,13 @@
   -webkit-backdrop-filter: blur(0px);
   background: none;
 }
-/* ── Super card glow ── */
+/* -- Super card glow -- */
 .bhtc-card--super {
   border-color: var(--bht-super-badge, #eab308);
   box-shadow: 0 0 10px rgba(234,179,8,0.3), inset 0 0 8px rgba(234,179,8,0.06);
 }
 
-/* ── Type badge overlay on image ── */
+/* -- Type badge overlay on image -- */
 .bhtc-card-type-badge {
   position: absolute; bottom: 4px; left: 4px;
   font-size: 0.55em; font-weight: 800; text-transform: uppercase;
@@ -1748,14 +1748,14 @@
   box-shadow: 0 0 8px rgba(234,179,8,0.45);
 }
 
-/* ── Opening mode: stop animation, slide smoothly ── */
+/* -- Opening mode: stop animation, slide smoothly -- */
 .bhtc-carousel-track--opening,
 .bhh-carousel-track--opening {
   animation: none !important;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* ── Dim non-current cards during opening ── */
+/* -- Dim non-current cards during opening -- */
 .bhtc-card--dimmed {
   opacity: 0.35;
   filter: brightness(0.6) saturate(0.5);
@@ -1763,7 +1763,7 @@
   transition: opacity 0.4s, filter 0.4s, transform 0.4s;
 }
 
-/* ── Active card glow during opening (uses CSS vars set inline) ── */
+/* -- Active card glow during opening (uses CSS vars set inline) -- */
 .bhtc-card--active {
   border-color: var(--bhtc-current-accent, #facc15);
   box-shadow: 0 0 14px rgba(250,204,21,0.35);
@@ -1843,9 +1843,9 @@
   border-radius: 4px;
 }
 
-/* ══════════════════════════════════════════════════════════
-   Bonus Hunt Widget — Style 2 (Sleek Slate)
-   ══════════════════════════════════════════════════════════ */
+/* ----------------------------------------------------------
+   Bonus Hunt Widget � Style 2 (Sleek Slate)
+   ---------------------------------------------------------- */
 
 .bht2-root {
   display: flex;
@@ -1853,10 +1853,10 @@
   gap: var(--bht2-card-gap, 10px);
   font-family: var(--oc-font, 'Inter', system-ui, sans-serif);
   font-size: 13px;
-  color: var(--bht2-text, #e2e8f0);
+  color: var(--bht2-text, var(--theme-border, #e2e8f0));
 }
 
-/* ── Card base ── */
+/* -- Card base -- */
 .bht2-card {
   border-radius: var(--bht2-card-radius, 24px);
   border: var(--bht2-card-outline-width, 1px) solid var(--bht2-card-outline, rgba(51,65,85,0.7));
@@ -1864,12 +1864,12 @@
   padding: var(--bht2-card-padding, 12px) 14px;
 }
 
-/* ── Accent helpers ── */
+/* -- Accent helpers -- */
 .bht2-accent-sky   { color: var(--bht2-header-accent, #38bdf8) !important; }
 .bht2-accent-green { color: #34d399 !important; }
 .bht2-accent-amber { color: #fbbf24 !important; }
 
-/* ── Session Header ── */
+/* -- Session Header -- */
 .bht2-header-top {
   display: flex;
   align-items: center;
@@ -1951,10 +1951,10 @@
   font-size: 1.25em;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: var(--bht2-stat-value, #f1f5f9);
+  color: var(--bht2-stat-value, var(--theme-text, #f1f5f9));
 }
 
-/* ── Bonuses Summary ── */
+/* -- Bonuses Summary -- */
 .bht2-summary-section {
   background: var(--bht2-count-bg, rgba(2,6,23,0.85));
 }
@@ -2024,7 +2024,7 @@
   transition: width 0.5s ease;
 }
 
-/* ── Active Bonus ── */
+/* -- Active Bonus -- */
 .bht2-active {
   background: var(--bht2-current-bg, rgba(2,6,23,0.85));
   border-color: var(--bht2-current-accent, rgba(56,189,248,0.35));
@@ -2099,7 +2099,7 @@
   flex-shrink: 0;
 }
 
-/* ── Detail boxes (BET / WIN / START row) ── */
+/* -- Detail boxes (BET / WIN / START row) -- */
 .bht2-detail-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -2129,7 +2129,7 @@
   color: var(--bht2-stat-value, #e0f2fe);
 }
 
-/* ── Slot Carousel ── */
+/* -- Slot Carousel -- */
 .bht2-carousel {
   background: var(--bht2-list-bg, rgba(2,6,23,0.85));
 }
@@ -2241,7 +2241,7 @@
   display: block;
   font-size: 0.95em;
   font-weight: 700;
-  color: var(--bht2-stat-value, #f1f5f9);
+  color: var(--bht2-stat-value, var(--theme-text, #f1f5f9));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2278,7 +2278,7 @@
   color: var(--bht2-stat-value, #e0f2fe);
 }
 
-/* ── Footer Stats ── */
+/* -- Footer Stats -- */
 .bht2-footer {
   background: var(--bht2-summary-bg, rgba(2,6,23,0.85));
 }
@@ -2339,7 +2339,7 @@
   color: var(--bht2-total-pay-text, #e0f2fe);
 }
 
-/* ─── Current Slot Widget ─── */
+/* --- Current Slot Widget --- */
 .oc-cs-layout {
   display: flex;
   gap: 12px;
@@ -2384,7 +2384,7 @@
   font-weight: 700;
 }
 
-/* ─── Tournament Widget ─── */
+/* --- Tournament Widget --- */
 .oc-tour-header {
   display: flex;
   justify-content: space-between;
@@ -2430,7 +2430,7 @@
   color: #fff;
 }
 
-/* ─── Giveaway Widget ─── */
+/* --- Giveaway Widget --- */
 .oc-give-active {
   display: flex;
   flex-direction: column;
@@ -2483,12 +2483,12 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* ─── Placeholder Widget ─── */
+/* --- Placeholder Widget --- */
 .oc-placeholder-html * {
   max-width: 100%;
 }
 
-/* ─── Widget Empty State ─── */
+/* --- Widget Empty State --- */
 .oc-widget-empty {
   flex: 1;
   display: flex;
@@ -2498,7 +2498,7 @@
   font-size: 0.82rem;
 }
 
-/* ─── Error / Loading inside renderer ─── */
+/* --- Error / Loading inside renderer --- */
 .or-loading, .or-error {
   width: 100%;
   height: 100%;
@@ -2511,21 +2511,21 @@
 
 .or-error { color: #ef4444; }
 
-/* ─── Custom CSS container marker ─── */
+/* --- Custom CSS container marker --- */
 .or-custom-css { display: contents; }
 
 
-/* ═══════════════════════════════════════════════════════════════
-   STYLE 3 — FLIP CARD   (bht3-*)
-   ═══════════════════════════════════════════════════════════════ */
+/* ---------------------------------------------------------------
+   STYLE 3 � FLIP CARD   (bht3-*)
+   --------------------------------------------------------------- */
 
-/* ── Spin keyframe ── */
+/* -- Spin keyframe -- */
 @keyframes bht3-spin {
   from { transform: rotateY(0deg); }
   to   { transform: rotateY(360deg); }
 }
 
-/* ── Root — override .or-widget-inner & .oc-bonushunt glass styles ── */
+/* -- Root � override .or-widget-inner & .oc-bonushunt glass styles -- */
 .bht3-root {
   display: flex;
   flex-direction: column;
@@ -2542,16 +2542,16 @@
   transform-style: preserve-3d;
 }
 
-/* ── Card base ── */
+/* -- Card base -- */
 .bht3-card {
   border-radius: var(--bht3-card-radius, 16px);
   padding: 14px 16px;
   border: 1px solid var(--bht3-card-outline, rgba(99,102,241,0.3));
 }
 
-/* ── Header ── */
+/* -- Header -- */
 .bht3-header {
-  background: var(--bht3-header-bg, #0f172a);
+  background: var(--bht3-header-bg, var(--theme-background, #0f172a));
 }
 
 .bht3-header-row {
@@ -2581,7 +2581,7 @@
 .bht3-title {
   font-size: 0.85rem;
   font-weight: 800;
-  color: var(--bht3-text, #e2e8f0);
+  color: var(--bht3-text, var(--theme-border, #e2e8f0));
   letter-spacing: 0.05em;
 }
 
@@ -2604,7 +2604,7 @@
   gap: 8px;
 }
 
-/* ── Stat boxes (reused in header + summary) ── */
+/* -- Stat boxes (reused in header + summary) -- */
 .bht3-stat {
   flex: 1;
   background: rgba(255, 255, 255, 0.04);
@@ -2627,12 +2627,12 @@
 .bht3-stat-val {
   font-size: 0.82rem;
   font-weight: 800;
-  color: var(--bht3-stat-value, #f1f5f9);
+  color: var(--bht3-stat-value, var(--theme-text, #f1f5f9));
 }
 
-/* ── Current bonus ── */
+/* -- Current bonus -- */
 .bht3-current {
-  background: var(--bht3-header-bg, #0f172a);
+  background: var(--bht3-header-bg, var(--theme-background, #0f172a));
 }
 
 .bht3-current-label {
@@ -2665,7 +2665,7 @@
 .bht3-current-name {
   font-size: 0.88rem;
   font-weight: 800;
-  color: var(--bht3-text, #e2e8f0);
+  color: var(--bht3-text, var(--theme-border, #e2e8f0));
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2683,7 +2683,7 @@
   margin-top: 1px;
 }
 
-/* ── Flip area ── */
+/* -- Flip area -- */
 .bht3-flip-area {
   width: 100%;
   overflow: visible;
@@ -2717,9 +2717,9 @@
   overflow: hidden;
 }
 
-/* ── FRONT face ── */
+/* -- FRONT face -- */
 .bht3-flip-front {
-  background: #0f172a;
+  background: var(--theme-background, #0f172a);
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
@@ -2737,7 +2737,7 @@
   align-items: center;
   justify-content: center;
   font-size: 4rem;
-  background: linear-gradient(135deg, #1e293b, #0f172a);
+  background: linear-gradient(135deg, #1e293b, var(--theme-background, #0f172a));
 }
 
 .bht3-flip-gradient {
@@ -2797,7 +2797,7 @@
   margin-top: 4px;
 }
 
-/* ── Badges ── */
+/* -- Badges -- */
 .bht3-flip-super-badge,
 .bht3-flip-extreme-badge {
   position: absolute;
@@ -2824,10 +2824,10 @@
   top: 38px;
 }
 
-/* ── BACK face ── */
+/* -- BACK face -- */
 .bht3-flip-back {
   transform: rotateY(180deg);
-  background: linear-gradient(145deg, #1e293b 0%, #0f172a 60%, #131c2e 100%);
+  background: linear-gradient(145deg, #1e293b 0%, var(--theme-background, #0f172a) 60%, #131c2e 100%);
   border: 1px solid rgba(99, 102, 241, 0.25);
   box-shadow: 0 4px 24px rgba(0,0,0,0.4), inset 0 0 30px rgba(99,102,241,0.04);
   display: flex;
@@ -2848,7 +2848,7 @@
 .bht3-flip-back-name {
   font-size: 1rem;
   font-weight: 800;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   margin-bottom: 4px;
 }
 
@@ -2889,7 +2889,7 @@
 .bht3-flip-back-stat-val {
   font-size: 0.9rem;
   font-weight: 800;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
 }
 
 .bht3-flip-back-result {
@@ -2910,9 +2910,9 @@
   color: rgba(255, 255, 255, 0.3);
 }
 
-/* ── Summary ── */
+/* -- Summary -- */
 .bht3-summary {
-  background: var(--bht3-summary-bg, #0f172a);
+  background: var(--bht3-summary-bg, var(--theme-background, #0f172a));
 }
 
 .bht3-summary-row {
@@ -2942,10 +2942,10 @@
 }
 
 /* =========================================================
-   RAID SHOUTOUT WIDGET — Minimal Expand/Collapse Alert
+   RAID SHOUTOUT WIDGET � Minimal Expand/Collapse Alert
    ========================================================= */
 
-/* ─── Wrapper: full widget area, centered ─── */
+/* --- Wrapper: full widget area, centered --- */
 .rs-alert-wrapper {
   position: absolute;
   inset: 0;
@@ -2961,7 +2961,7 @@
   pointer-events: auto;
 }
 
-/* ─── Main card ─── */
+/* --- Main card --- */
 .rs-alert-card {
   position: relative;
   width: 100%;
@@ -2979,7 +2979,7 @@
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
-/* ─── Clip container (always visible, no expand/collapse) ─── */
+/* --- Clip container (always visible, no expand/collapse) --- */
 .rs-clip-container {
   position: relative;
   width: 100%;
@@ -3013,14 +3013,14 @@
   z-index: 1;
 }
 
-/* ─── No-clip fallback ─── */
+/* --- No-clip fallback --- */
 .rs-no-clip {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   padding: 24px 16px;
-  background: linear-gradient(180deg, rgba(145, 70, 255, 0.05), transparent);
+  background: linear-gradient(180deg, rgba(var(--theme-secondary-rgb), 0.05), transparent);
 }
 
 .rs-no-clip-avatar-large {
@@ -3029,7 +3029,7 @@
   border-radius: 50%;
   overflow: hidden;
   border: 3px solid var(--rs-accent, #9146FF);
-  box-shadow: 0 0 30px rgba(145, 70, 255, 0.3);
+  box-shadow: 0 0 30px rgba(var(--theme-secondary-rgb), 0.3);
 }
 
 .rs-no-clip-avatar-large img {
@@ -3050,13 +3050,13 @@
   font-weight: 800;
 }
 
-/* ─── Shoutout avatar fallback (video proxy failed) ─── */
+/* --- Shoutout avatar fallback (video proxy failed) --- */
 .rs-no-clip--shoutout {
   justify-content: center;
   height: 100%;
   padding: 32px 24px;
   gap: 16px;
-  background: linear-gradient(135deg, rgba(145, 70, 255, 0.08), rgba(100, 65, 165, 0.12));
+  background: linear-gradient(135deg, rgba(var(--theme-secondary-rgb), 0.08), rgba(100, 65, 165, 0.12));
 }
 
 .rs-shoutout-avatar {
@@ -3065,7 +3065,7 @@
   border-radius: 50%;
   object-fit: cover;
   border: 3px solid var(--rs-accent, #9146FF);
-  box-shadow: 0 0 40px rgba(145, 70, 255, 0.35);
+  box-shadow: 0 0 40px rgba(var(--theme-secondary-rgb), 0.35);
 }
 
 .rs-shoutout-info {
@@ -3088,9 +3088,9 @@
   font-style: italic;
 }
 
-/* ═══════════════════════════════════════════════════
-   PHASE ANIMATIONS — Enter / Visible / Exit
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   PHASE ANIMATIONS � Enter / Visible / Exit
+   --------------------------------------------------- */
 
 /* Entering: slide up from below */
 .rs-phase-enter {
@@ -3118,9 +3118,9 @@
   to   { opacity: 0; transform: translateY(60px) scale(0.96); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   CHAT WIDGET — OBS Overlay styles
-   ═══════════════════════════════════════════════════════════ */
+/* -----------------------------------------------------------
+   CHAT WIDGET � OBS Overlay styles
+   ----------------------------------------------------------- */
 .ov-chat-widget {
   box-sizing: border-box;
 }
@@ -3143,11 +3143,11 @@
   gap: 5px;
 }
 
-/* ═══════════════════════════════════════════════════
-   Community Games – OBS Overlay Styles
-   ═══════════════════════════════════════════════════ */
+/* ---------------------------------------------------
+   Community Games � OBS Overlay Styles
+   --------------------------------------------------- */
 
-/* ─── Salty Words Widget ─── */
+/* --- Salty Words Widget --- */
 .cg-salty { font-family: 'Inter', sans-serif; color: #fff; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
 .cg-salty__header { display: flex; align-items: center; gap: 10px; }
 .cg-salty__title { font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
@@ -3189,7 +3189,7 @@
 .cg-salty__pool span { color: #a78bfa; font-weight: 700; }
 .cg-salty__empty { text-align: center; color: #475569; font-size: 12px; padding: 20px 0; }
 
-/* ─── Predictions Widget ─── */
+/* --- Predictions Widget --- */
 .cg-predict { font-family: 'Inter', sans-serif; color: #fff; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
 .cg-predict__status {
   padding: 2px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
@@ -3334,11 +3334,11 @@
   50% { box-shadow: 0 0 20px rgba(168,85,247,0.6), 0 0 40px rgba(168,85,247,0.2); }
 }
 
-/* ── Classic Mode (default) ── */
+/* -- Classic Mode (default) -- */
 .ov-chat-widget--classic .ov-chat-messages { padding: 6px 0; }
 .ov-chat-widget--classic .ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
 
-/* ── Floating Mode — transparent bg, pill bubbles ── */
+/* -- Floating Mode � transparent bg, pill bubbles -- */
 .ov-chat-widget--floating { background: transparent !important; border: none !important; }
 .ov-chat-widget--floating .ov-chat-messages {
   display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
@@ -3347,7 +3347,7 @@
 .ov-chat-widget--floating .ov-chat-msg:hover { background: none; }
 .ov-chat-widget--floating .ov-chat-username::after { content: none; }
 
-/* ── Bubble Mode — social media speech bubbles ── */
+/* -- Bubble Mode � social media speech bubbles -- */
 .ov-chat-widget--bubble .ov-chat-messages { padding: 6px 0; }
 .ov-chat-widget--bubble .ov-chat-msg {
   gap: 8px; align-items: flex-start;
@@ -3355,12 +3355,12 @@
 .ov-chat-widget--bubble .ov-chat-msg:hover { background: rgba(255,255,255,0.02); }
 .ov-chat-widget--bubble .ov-chat-username::after { content: none; }
 
-/* ── Ticker Mode — horizontal scroll bar ── */
+/* -- Ticker Mode � horizontal scroll bar -- */
 .ov-chat-widget--ticker {
   overflow: hidden !important;
 }
 
-/* ── Stack Mode — fading message pile, transparent ── */
+/* -- Stack Mode � fading message pile, transparent -- */
 .ov-chat-widget--stack { background: transparent !important; border: none !important; }
 .ov-chat-widget--stack .ov-chat-messages {
   display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
@@ -3371,7 +3371,7 @@
 .ov-chat-widget--stack .ov-chat-msg:hover { background: none; }
 .ov-chat-widget--stack .ov-chat-username::after { content: none; }
 
-/* ── Typewriter Mode — terminal / hacker look ── */
+/* -- Typewriter Mode � terminal / hacker look -- */
 .ov-chat-widget--typewriter {
   border: 1px solid rgba(74,222,128,0.15) !important;
   box-shadow: 0 0 20px rgba(74,222,128,0.06), inset 0 0 40px rgba(0,20,0,0.3);
@@ -3385,7 +3385,7 @@
 .ov-chat-widget--typewriter .ov-chat-msg:hover { background: rgba(74,222,128,0.04); }
 .ov-chat-widget--typewriter .ov-chat-username::after { content: none; }
 
-/* ── Sidebar Mode — color-coded left border strip ── */
+/* -- Sidebar Mode � color-coded left border strip -- */
 .ov-chat-widget--sidebar .ov-chat-messages { padding: 4px 0; }
 .ov-chat-widget--sidebar .ov-chat-msg {
   gap: 0; transition: background 0.12s;
@@ -3393,16 +3393,16 @@
 .ov-chat-widget--sidebar .ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
 .ov-chat-widget--sidebar .ov-chat-username::after { content: none; }
 
-/* ══════════════════════════════════════════════════════
-   Cards Mode — dark card per message with Twitch badges
-   ══════════════════════════════════════════════════════ */
+/* ------------------------------------------------------
+   Cards Mode � dark card per message with Twitch badges
+   ------------------------------------------------------ */
 .ov-chat-widget--cards {
   background: rgba(18,10,35,0.95) !important;
   border: 2px solid rgba(120,60,200,0.35) !important;
   box-shadow: 0 0 30px rgba(120,60,200,0.15), inset 0 0 60px rgba(80,40,160,0.08);
 }
 
-/* ── Cards header ── */
+/* -- Cards header -- */
 .ov-cards-header {
   display: flex;
   align-items: center;
@@ -3441,7 +3441,7 @@
   letter-spacing: 0.04em;
 }
 
-/* ── Cards messages container ── */
+/* -- Cards messages container -- */
 .ov-chat-widget--cards .ov-chat-messages {
   padding: 8px 10px;
   display: flex;
@@ -3449,7 +3449,7 @@
   gap: 6px;
 }
 
-/* ── Individual card ── */
+/* -- Individual card -- */
 .ov-cards-msg {
   background: var(--chat-card-bg, rgba(20,15,40,0.85));
   border: 1px solid var(--chat-card-border, rgba(100,70,180,0.2));
@@ -3475,7 +3475,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ── Card header (username + badges) ── */
+/* -- Card header (username + badges) -- */
 .ov-cards-msg-header {
   display: flex;
   align-items: center;
@@ -3493,7 +3493,7 @@
   flex-wrap: wrap;
 }
 
-/* ── Badge pill ── */
+/* -- Badge pill -- */
 .ov-cards-badge {
   display: inline-flex;
   align-items: center;
@@ -3513,20 +3513,20 @@
   line-height: 1;
 }
 
-/* ── Card message text ── */
+/* -- Card message text -- */
 .ov-cards-msg-text {
   font-size: 0.95em;
-  color: var(--chat-card-text, #e2e8f0);
+  color: var(--chat-card-text, var(--theme-border, #e2e8f0));
   line-height: 1.5;
   word-break: break-word;
 }
 
-/* ── Cards empty state ── */
+/* -- Cards empty state -- */
 .ov-chat-widget--cards .ov-chat-empty-hint {
   color: rgba(200,180,255,0.5);
 }
 
-/* ── Shared raid styling ── */
+/* -- Shared raid styling -- */
 .ov-chat-raid-count {
   display: inline-block;
   font-size: 0.75em;
@@ -3539,9 +3539,9 @@
   vertical-align: middle;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   BONUS HUNT V8 — Card Stack / Fan Carousel (transparent BG)
-   ═══════════════════════════════════════════════════════════ */
+/* -----------------------------------------------------------
+   BONUS HUNT V8 � Card Stack / Fan Carousel (transparent BG)
+   ----------------------------------------------------------- */
 .bhv8-root {
   position: relative;
   user-select: none;
@@ -3596,7 +3596,7 @@
   75% { transform: rotateX(0deg) rotateY(-1.5deg); }
 }
 
-/* card wrapper — absolutely centred; inline transform slides it into position */
+/* card wrapper � absolutely centred; inline transform slides it into position */
 .bhv8-card-wrapper {
   /* position set inline */
   width: 200px;
@@ -3717,7 +3717,7 @@
   letter-spacing: 0.3px;
 }
 
-/* ─── SUPER card: yellow glow + vibration ─── */
+/* --- SUPER card: yellow glow + vibration --- */
 .bhv8-card--super {
   box-shadow:
     0 0 12px rgba(234, 179, 8, 0.5),
@@ -3736,7 +3736,7 @@
   100% { transform: translate(0, 0); }
 }
 
-/* ─── EXTREME card: intense red glow + trill + jump ─── */
+/* --- EXTREME card: intense red glow + trill + jump --- */
 .bhv8-card--extreme {
   box-shadow:
     0 0 16px rgba(239, 68, 68, 0.7),
@@ -3763,7 +3763,7 @@
   74%      { margin-top: 0; }
 }
 
-/* ─── EXTREME: soft dark blur cover (image still partially visible) ─── */
+/* --- EXTREME: soft dark blur cover (image still partially visible) --- */
 .bhv8-extreme-cover {
   position: absolute;
   inset: 0;
@@ -3865,7 +3865,7 @@
   50% { opacity: 1; box-shadow: 0 0 30px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.45), inset 0 0 18px rgba(var(--bhv8-accent-rgb, 124,58,237), 0.12); }
 }
 
-/* ── Bottom stats bar ── */
+/* -- Bottom stats bar -- */
 .bhv8-stats-bar {
   position: relative;
   z-index: 10;
@@ -3913,9 +3913,9 @@
 .bhv8-val--red { color: #f87171 !important; }
 
 
-/* ═══════════════════════════════════════════════════════════
-   BONUS HUNT V9 — Hunt Board (contained 3D carousel)
-   ═══════════════════════════════════════════════════════════ */
+/* -----------------------------------------------------------
+   BONUS HUNT V9 � Hunt Board (contained 3D carousel)
+   ----------------------------------------------------------- */
 .bhv9-root {
   width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
@@ -3933,7 +3933,7 @@
   overflow: hidden;
 }
 
-/* ── Top: single-row marquee pill strip ── */
+/* -- Top: single-row marquee pill strip -- */
 .bhv9-strip {
   display: flex; align-items: center; gap: 6px;
   padding: 6px 10px;
@@ -3978,7 +3978,7 @@
   color: var(--bhv9-muted, #94a3b8); padding: 0 6px;
 }
 
-/* ── Middle: 3D carousel stage ── */
+/* -- Middle: 3D carousel stage -- */
 .bhv9-stage {
   position: relative; z-index: 1;
   display: flex; align-items: center; justify-content: center;
@@ -4066,7 +4066,7 @@
 }
 @keyframes bhv9-badge-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.12); } }
 
-/* ─── EXTREME: soft dark blur cover V9 (image still partially visible) ─── */
+/* --- EXTREME: soft dark blur cover V9 (image still partially visible) --- */
 .bhv9-extreme-cover {
   position: absolute;
   inset: 0;
@@ -4130,7 +4130,7 @@
   50% { opacity: 1; box-shadow: 0 0 26px rgba(var(--bhv9-accent-rgb), 0.45); }
 }
 
-/* ── Bottom section ── */
+/* -- Bottom section -- */
 .bhv9-bottom {
   flex-shrink: 0; display: flex; flex-direction: column; gap: 6px;
   padding: 8px 12px; border-top: 1px solid rgba(255,255,255,0.06);
@@ -4162,12 +4162,12 @@
 .bhv9-current-multi { font-size: 0.72em; font-weight: 800; color: #fbbf24; }
 .bhv9-current-bet { font-size: 0.72em; font-weight: 700; color: var(--bhv9-muted, #94a3b8); }
 
-/* ═══════════════════════════════════════════════════════════
-   BONUS HUNT V5 — Horizontal + V7 — Carousel
+/* -----------------------------------------------------------
+   BONUS HUNT V5 � Horizontal + V7 � Carousel
    (shared bhtc-* card styles used by both layouts)
-   ═══════════════════════════════════════════════════════════ */
+   ----------------------------------------------------------- */
 
-/* ── V5: Horizontal layout ── */
+/* -- V5: Horizontal layout -- */
 .oc-bonushunt--horizontal {
   flex-direction: row !important;
   align-items: stretch;
@@ -4240,7 +4240,7 @@
   flex: 0 0 170px;
 }
 
-/* ── V7: Carousel layout (stacked, 2nd block) ── */
+/* -- V7: Carousel layout (stacked, 2nd block) -- */
 .oc-bonushunt--carousel {
   flex-direction: column !important;
   overflow: hidden !important;
@@ -4345,7 +4345,7 @@
   animation-play-state: paused;
 }
 
-/* ── Shared carousel cards (v5 + v7) ── */
+/* -- Shared carousel cards (v5 + v7) -- */
 .bhtc-card {
   flex: 0 0 180px;
   border-radius: 10px;

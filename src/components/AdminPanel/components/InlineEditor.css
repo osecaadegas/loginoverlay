@@ -35,7 +35,7 @@
 }
 
 .inline-editor-input:focus {
-  border-color: var(--admin-primary, #8b5cf6);
+  border-color: var(--admin-primary, var(--theme-secondary, #8b5cf6));
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 
@@ -125,7 +125,7 @@ select.inline-editor-input {
 
 .inline-editor-btn.save {
   color: white;
-  background: var(--admin-primary, #8b5cf6);
+  background: var(--admin-primary, var(--theme-secondary, #8b5cf6));
 }
 
 .inline-editor-btn.save:hover:not(:disabled) {

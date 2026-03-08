@@ -121,8 +121,8 @@
 }
 
 .form-section-v2.highlight {
-  border-color: rgba(212, 175, 55, 0.3);
-  background: rgba(212, 175, 55, 0.03);
+  border-color: rgba(var(--theme-accent-rgb), 0.3);
+  background: rgba(var(--theme-accent-rgb), 0.03);
 }
 
 .form-section-v2.warning {
@@ -576,8 +576,8 @@
 }
 
 .info-card-v2.highlight {
-  border-color: rgba(212, 175, 55, 0.3);
-  background: rgba(212, 175, 55, 0.05);
+  border-color: rgba(var(--theme-accent-rgb), 0.3);
+  background: rgba(var(--theme-accent-rgb), 0.05);
 }
 
 .info-card-v2.muted {
@@ -776,8 +776,8 @@
 }
 
 .quick-stat.highlight {
-  background: rgba(212, 175, 55, 0.15);
-  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(var(--theme-accent-rgb), 0.15);
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.25);
 }
 
 .quick-stat-icon {

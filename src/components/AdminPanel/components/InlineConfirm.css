@@ -78,7 +78,7 @@
 
 .inline-confirm-btn.inline-confirm-default {
   color: white;
-  background: var(--admin-primary, #8b5cf6);
+  background: var(--admin-primary, var(--theme-secondary, #8b5cf6));
 }
 
 .inline-confirm-btn.inline-confirm-default:hover {

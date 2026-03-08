@@ -16,6 +16,23 @@ function getFxAnimation(themeId) {
   return 'rgb-pulse';
 }
 
+/** Convert hex/rgb color to r,g,b string for use in rgba() */
+function colorToRGB(color) {
+  if (!color) return null;
+  // Handle hex
+  const hex = color.match(/^#([0-9a-f]{3,8})$/i);
+  if (hex) {
+    let h = hex[1];
+    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+    const n = parseInt(h.substring(0, 6), 16);
+    return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
+  }
+  // Handle rgb/rgba
+  const rgb = color.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
+  if (rgb) return `${rgb[1]}, ${rgb[2]}, ${rgb[3]}`;
+  return null;
+}
+
 /** Apply a theme's CSS variables to the document root */
 function applyThemeToDOM(themeId, theme) {
   if (!theme) return;
@@ -28,6 +45,16 @@ function applyThemeToDOM(themeId, theme) {
   root.style.setProperty('--theme-panel-bg', theme.colors.panelBg);
   root.style.setProperty('--theme-border', theme.colors.border);
   root.style.setProperty('--theme-font', theme.font);
+
+  // Set RGB component versions for rgba() usage
+  const primaryRGB = colorToRGB(theme.colors.primary);
+  const secondaryRGB = colorToRGB(theme.colors.secondary);
+  const accentRGB = colorToRGB(theme.colors.accent);
+  const textRGB = colorToRGB(theme.colors.text);
+  if (primaryRGB) root.style.setProperty('--theme-primary-rgb', primaryRGB);
+  if (secondaryRGB) root.style.setProperty('--theme-secondary-rgb', secondaryRGB);
+  if (accentRGB) root.style.setProperty('--theme-accent-rgb', accentRGB);
+  if (textRGB) root.style.setProperty('--theme-text-rgb', textRGB);
 
   // FX border animation
   const animation = getFxAnimation(themeId);

@@ -5,7 +5,7 @@
 .streams-page {
   width: 100%;
   min-height: 100vh;
-  background: #0d1117;
+  background: var(--theme-background, #0d1117);
   padding: 24px 16px 48px;
 }
 
@@ -114,7 +114,7 @@
   width: 4px;
   height: 22px;
   border-radius: 2px;
-  background: #9147ff;
+  background: var(--theme-secondary, #9147ff);
 }
 
 .streams-clips-title {
@@ -177,14 +177,14 @@
   border-radius: 14px;
   overflow: hidden;
   background: #161b22;
-  border: 2px solid rgba(145, 71, 255, 0.15);
+  border: 2px solid rgba(var(--theme-secondary-rgb), 0.15);
   scroll-snap-align: start;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
 
 .streams-clip-card:hover {
-  border-color: rgba(145, 71, 255, 0.5);
-  box-shadow: 0 6px 24px rgba(145, 71, 255, 0.25);
+  border-color: rgba(var(--theme-secondary-rgb), 0.5);
+  box-shadow: 0 6px 24px rgba(var(--theme-secondary-rgb), 0.25);
 }
 
 .streams-clip-thumb {

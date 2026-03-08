@@ -5,10 +5,10 @@
 /* ─── Page Shell ─── */
 .tp-page {
   min-height: 100vh;
-  background: #0a0d14;
+  background: var(--theme-background, #0a0d14);
   padding: 80px 20px 60px;
   font-family: 'Inter', sans-serif;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 .tp-container {
@@ -28,7 +28,7 @@
 .tp-title {
   font-size: 2rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   margin: 0 0 8px;
   display: flex;
   align-items: center;
@@ -36,7 +36,7 @@
 }
 .tp-title-icon {
   font-size: 1.6rem;
-  color: #d4af37;
+  color: var(--theme-accent, #d4af37);
 }
 .tp-header-meta {
   display: flex;
@@ -59,7 +59,7 @@
 }
 .tp-badge--type   { background: rgba(99,102,241,0.2); color: #a5b4fc; border: 1px solid rgba(99,102,241,0.3); }
 .tp-badge--players { background: rgba(14,165,233,0.15); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.25); }
-.tp-badge--champion { background: rgba(212,175,55,0.2); color: #fde68a; border: 1px solid rgba(212,175,55,0.4); }
+.tp-badge--champion { background: rgba(var(--theme-accent-rgb), 0.2); color: #fde68a; border: 1px solid rgba(var(--theme-accent-rgb), 0.4); }
 .tp-badge--done   { background: rgba(34,197,94,0.15); color: #86efac; border: 1px solid rgba(34,197,94,0.3); }
 .tp-badge--live   { background: rgba(239,68,68,0.15); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); animation: tp-pulse 2s infinite; }
 .tp-badge--pending { background: rgba(148,163,184,0.1); color: #94a3b8; border: 1px solid rgba(148,163,184,0.2); }
@@ -86,8 +86,8 @@
 }
 .tp-btn--sm { padding: 6px 14px; font-size: 0.8rem; }
 .tp-btn--start {
-  background: linear-gradient(135deg, #d4af37, #b8962e);
-  color: #0d1117;
+  background: linear-gradient(135deg, var(--theme-accent, #d4af37), #b8962e);
+  color: var(--theme-background, #0d1117);
   font-size: 1.1rem;
   padding: 14px 36px;
   border-radius: 10px;
@@ -110,7 +110,7 @@
 .tp-card-title {
   font-size: 1.15rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   margin: 0 0 20px;
 }
 
@@ -121,7 +121,7 @@
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.1);
   border-radius: 8px;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.875rem;
   font-family: inherit;
   outline: none;
@@ -192,7 +192,7 @@
 .tp-type-btn--active {
   border-color: #6366f1;
   background: rgba(99,102,241,0.12);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   box-shadow: 0 0 20px rgba(99,102,241,0.15);
 }
 .tp-type-icon { font-size: 1.5rem; }
@@ -218,7 +218,7 @@
 .tp-count-btn--active {
   border-color: #6366f1;
   background: rgba(99,102,241,0.12);
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
 }
 
 /* ─── Player entries ─── */
@@ -284,7 +284,7 @@
   padding: 8px 10px;
   background: none;
   border: none;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   font-size: 0.8rem;
   cursor: pointer;
   text-align: left;
@@ -410,7 +410,7 @@
 .tp-bm-name {
   font-size: 0.8rem;
   font-weight: 600;
-  color: #e2e8f0;
+  color: var(--theme-border, #e2e8f0);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -461,7 +461,7 @@
 .tp-mp-header h3 {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
   margin: 0;
 }
 .tp-mp-status { display: flex; gap: 6px; }
@@ -501,7 +501,7 @@
 .tp-mp-p-name {
   font-size: 1rem;
   font-weight: 700;
-  color: #f1f5f9;
+  color: var(--theme-text, #f1f5f9);
 }
 .tp-mp-p-slot {
   font-size: 0.75rem;
@@ -630,14 +630,14 @@
 .tp-champion-banner {
   text-align: center;
   padding: 48px 24px;
-  background: linear-gradient(135deg, rgba(212,175,55,0.08), rgba(99,102,241,0.08));
-  border: 1px solid rgba(212,175,55,0.25);
+  background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.08), rgba(99,102,241,0.08));
+  border: 1px solid rgba(var(--theme-accent-rgb), 0.25);
   border-radius: 16px;
   animation: tp-champion-glow 3s ease-in-out infinite;
 }
 @keyframes tp-champion-glow {
-  0%, 100% { box-shadow: 0 0 20px rgba(212,175,55,0.1); }
-  50% { box-shadow: 0 0 40px rgba(212,175,55,0.2); }
+  0%, 100% { box-shadow: 0 0 20px rgba(var(--theme-accent-rgb), 0.1); }
+  50% { box-shadow: 0 0 40px rgba(var(--theme-accent-rgb), 0.2); }
 }
 .tp-champion-trophy {
   font-size: 4rem;

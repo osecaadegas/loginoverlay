@@ -102,7 +102,7 @@
 
 .form-group input {
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--theme-border, #e2e8f0);
   border-radius: 10px;
   font-size: 1rem;
   transition: all 0.2s;
@@ -117,7 +117,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--theme-primary, #667eea);
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -147,7 +147,7 @@
 
 .auth-button {
   padding: 14px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary, #764ba2) 100%);
   color: white;
   border: none;
   border-radius: 10px;
@@ -182,7 +182,7 @@
 .auth-switch-button {
   background: none;
   border: none;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
   font-weight: 600;
   cursor: pointer;
   font-size: 0.9rem;
@@ -192,7 +192,7 @@
 }
 
 .auth-switch-button:hover:not(:disabled) {
-  color: #764ba2;
+  color: var(--theme-secondary, #764ba2);
 }
 
 .auth-switch-button:disabled {
@@ -215,7 +215,7 @@
 .auth-divider::after {
   content: '';
   flex: 1;
-  border-bottom: 1px solid #e2e8f0;
+  border-bottom: 1px solid var(--theme-border, #e2e8f0);
 }
 
 .auth-divider span {
@@ -234,7 +234,7 @@
   justify-content: center;
   gap: 12px;
   padding: 12px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid var(--theme-border, #e2e8f0);
   border-radius: 10px;
   background: white;
   color: #2d3748;
@@ -245,7 +245,7 @@
 }
 
 .oauth-button:hover:not(:disabled) {
-  border-color: #cbd5e0;
+  border-color: var(--theme-text, #cbd5e0);
   background: #f7fafc;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

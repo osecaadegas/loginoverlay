@@ -59,7 +59,7 @@
 
 .voucher-input:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: var(--theme-primary, #667eea);
   background: rgba(255, 255, 255, 0.15);
   box-shadow: 0 0 20px rgba(102, 126, 234, 0.3);
 }
@@ -70,7 +70,7 @@
 }
 
 .redeem-button {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary, #764ba2) 100%);
   color: white;
   border: none;
   padding: 1rem 2rem;
@@ -158,7 +158,7 @@
 .history-code {
   font-family: 'Courier New', monospace;
   font-weight: 700;
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
   font-size: 1.1rem;
   letter-spacing: 1px;
 }
@@ -264,7 +264,7 @@
 }
 
 .redemptions-table .table-cell.code {
-  color: #667eea;
+  color: var(--theme-primary, #667eea);
   font-family: 'Courier New', monospace;
   font-weight: 600;
   letter-spacing: 0.5px;

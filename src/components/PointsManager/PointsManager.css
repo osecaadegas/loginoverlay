@@ -23,7 +23,7 @@
   --pm-warning-bg: rgba(245, 158, 11, 0.1);
   --pm-danger: #ef4444;
   --pm-danger-bg: rgba(239, 68, 68, 0.1);
-  --pm-gold: #d4af37;
+  --pm-gold: var(--theme-accent, #d4af37);
 }
 
 /* Main Container */
@@ -549,7 +549,7 @@
   font-size: 0.875rem;
   font-weight: 600;
   color: var(--pm-gold);
-  background: rgba(212, 175, 55, 0.1);
+  background: rgba(var(--theme-accent-rgb), 0.1);
   padding: 4px 10px;
   border-radius: 6px;
 }
@@ -1077,7 +1077,7 @@
 }
 
 .pm-preview-cost {
-  background: rgba(212, 175, 55, 0.1);
+  background: rgba(var(--theme-accent-rgb), 0.1);
   color: var(--pm-gold);
   padding: 4px 10px;
   border-radius: 6px;

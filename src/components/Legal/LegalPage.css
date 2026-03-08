@@ -4,7 +4,7 @@
 
 .legal-page {
   min-height: 100vh;
-  background: #0d1117;
+  background: var(--theme-background, #0d1117);
   padding: 100px 20px 60px;
   color: #d1d5db;
 }
@@ -17,7 +17,7 @@
 .legal-title {
   font-size: 2.4rem;
   font-weight: 800;
-  color: #f3f4f6;
+  color: var(--theme-text, #f3f4f6);
   margin: 0 0 8px;
   letter-spacing: -0.02em;
 }
@@ -42,14 +42,14 @@
 .legal-section h2 {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #f3f4f6;
+  color: var(--theme-text, #f3f4f6);
   margin: 0 0 14px;
 }
 
 .legal-section h3 {
   font-size: 1.05rem;
   font-weight: 600;
-  color: #e5e7eb;
+  color: var(--theme-text, #e5e7eb);
   margin: 20px 0 10px;
 }
 

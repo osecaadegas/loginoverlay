@@ -45,7 +45,7 @@
 .action-bar-count {
   font-size: 1.125rem;
   font-weight: 600;
-  color: var(--admin-primary, #8b5cf6);
+  color: var(--admin-primary, var(--theme-secondary, #8b5cf6));
 }
 
 .action-bar-label {
@@ -129,13 +129,13 @@
 }
 
 .toolbar-btn-default.active {
-  color: var(--admin-primary, #8b5cf6);
+  color: var(--admin-primary, var(--theme-secondary, #8b5cf6));
   background: rgba(139, 92, 246, 0.1);
 }
 
 .toolbar-btn-primary {
   color: white;
-  background: var(--admin-primary, #8b5cf6);
+  background: var(--admin-primary, var(--theme-secondary, #8b5cf6));
 }
 
 .toolbar-btn-primary:hover:not(:disabled) {
@@ -191,7 +191,7 @@
 }
 
 .toolbar-search-input:focus {
-  border-color: var(--admin-primary, #8b5cf6);
+  border-color: var(--admin-primary, var(--theme-secondary, #8b5cf6));
   box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
 }
 
