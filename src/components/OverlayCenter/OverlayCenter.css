@@ -1328,8 +1328,8 @@
 /* -- iOS-style toggle switch -- */
 .wm-toggle {
   position: relative;
-  width: 42px; height: 24px;
-  border-radius: 12px;
+  width: 36px; height: 20px;
+  border-radius: 10px;
   background: rgba(100, 116, 139, 0.25);
   cursor: pointer;
   flex-shrink: 0;
@@ -1340,7 +1340,7 @@
 }
 .wm-toggle-slider {
   position: absolute;
-  width: 18px; height: 18px;
+  width: 14px; height: 14px;
   left: 3px; top: 3px;
   border-radius: 50%;
   background: #fff;
@@ -1351,7 +1351,7 @@
   position: absolute;
   width: 100%;
   text-align: center;
-  font-size: 0.42rem;
+  font-size: 0.38rem;
   font-weight: 800;
   letter-spacing: 0.5px;
   color: rgba(255,255,255,0.5);
@@ -1362,7 +1362,7 @@
   background: #34C759;
 }
 .wm-toggle--on .wm-toggle-slider {
-  left: 21px;
+  left: 19px;
 }
 .wm-toggle--on .wm-toggle-label {
   color: rgba(255,255,255,0.9);
