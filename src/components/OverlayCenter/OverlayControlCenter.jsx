@@ -91,7 +91,7 @@ export default function OverlayControlCenter() {
   useEffect(() => { if (isCommunityToolActive) setCommunityToolsOpen(true); }, [isCommunityToolActive]);
 
   /* Auto-expand Collections when one of its children is active */
-  const collectionsKeys = ['library', 'presets', 'slots', 'approvals'];
+  const collectionsKeys = ['library', 'presets', 'slots', 'approvals', 'theme'];
   const isCollectionActive = collectionsKeys.includes(activePanel);
   useEffect(() => { if (isCollectionActive) setCollectionsOpen(true); }, [isCollectionActive]);
   const [copyMsg, setCopyMsg] = useState('');
@@ -128,13 +128,7 @@ export default function OverlayControlCenter() {
     };
 
     try {
-      // Update navbar widget first
-      const navWidget = widgets.find(w => w.widget_type === 'navbar');
-      if (navWidget) {
-        await saveWidget({ ...navWidget, config: { ...navWidget.config, ...themeColors } });
-      }
-
-      // Sync all other widgets
+      // Sync all widgets (except navbar)
       for (const w of widgets) {
         if (w.widget_type === 'navbar') continue;
         const synced = buildSyncedConfig(w.widget_type, w.config, themeColors);
@@ -247,18 +241,6 @@ export default function OverlayControlCenter() {
               </div>
             </button>
 
-            {/* ─── Themes ─── */}
-            <button
-              className={`oc-sidebar-btn ${activePanel === 'theme' ? 'oc-sidebar-btn--active' : ''}`}
-              onClick={() => { setActivePanel('theme'); setSidebarOpen(false); }}
-            >
-              <span className="oc-sidebar-btn-icon">🎨</span>
-              <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Themes</span>
-                <span className="oc-sidebar-btn-desc">Change site appearance</span>
-              </div>
-            </button>
-
             {/* ─── Streamer Tools dropdown ─── */}
             <button
               className={`oc-sidebar-btn ${streamerToolsOpen || isStreamerToolActive ? 'oc-sidebar-btn--active' : ''}`}
@@ -366,6 +348,7 @@ export default function OverlayControlCenter() {
               <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: collectionsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
             </button>
             {collectionsOpen && [
+              { key: 'theme', icon: '🎨', label: 'Themes', desc: 'Change widget appearance' },
               { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
               { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
               ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
