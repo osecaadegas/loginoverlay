@@ -128,7 +128,13 @@ export default function OverlayControlCenter() {
     };
 
     try {
-      // Sync all widgets (except navbar)
+      // Update navbar widget
+      const navWidget = widgets.find(w => w.widget_type === 'navbar');
+      if (navWidget) {
+        await saveWidget({ ...navWidget, config: { ...navWidget.config, ...themeColors } });
+      }
+
+      // Sync all other widgets
       for (const w of widgets) {
         if (w.widget_type === 'navbar') continue;
         const synced = buildSyncedConfig(w.widget_type, w.config, themeColors);
