@@ -1322,35 +1322,50 @@
 }
 
 .wm-tile-status {
-  font-size: 0.5rem;
-  font-weight: 800;
-  letter-spacing: 0.8px;
-  padding: 3px 10px;
-  border-radius: 10px;
-  text-transform: uppercase;
-  flex-shrink: 0;
+  display: none; /* legacy — replaced by wm-toggle */
+}
+
+/* ── iOS-style toggle switch ── */
+.wm-toggle {
+  position: relative;
+  width: 42px; height: 24px;
+  border-radius: 12px;
+  background: rgba(100, 116, 139, 0.25);
   cursor: pointer;
-  color: #94a3b8;
-  background: rgba(100, 116, 139, 0.1);
-  border: 1px solid rgba(100, 116, 139, 0.15);
-  transition: all 0.15s ease;
-  align-self: flex-start;
-  margin-top: 2px;
+  flex-shrink: 0;
+  align-self: center;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
 }
-
-.wm-tile-status:hover {
-  background: rgba(100, 116, 139, 0.2);
+.wm-toggle-slider {
+  position: absolute;
+  width: 18px; height: 18px;
+  left: 3px; top: 3px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+  transition: left 0.2s ease;
 }
-
-.wm-tile-status--live {
-  color: #4ade80;
-  background: rgba(34, 197, 94, 0.1);
-  border-color: rgba(34, 197, 94, 0.25);
-  box-shadow: 0 0 6px rgba(34, 197, 94, 0.12);
+.wm-toggle-label {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  font-size: 0.42rem;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.5);
+  pointer-events: none;
+  user-select: none;
 }
-
-.wm-tile-status--live:hover {
-  background: rgba(34, 197, 94, 0.2);
+.wm-toggle--on {
+  background: #34C759;
+}
+.wm-toggle--on .wm-toggle-slider {
+  left: 21px;
+}
+.wm-toggle--on .wm-toggle-label {
+  color: rgba(255,255,255,0.9);
 }
 
 .wm-tile-add {

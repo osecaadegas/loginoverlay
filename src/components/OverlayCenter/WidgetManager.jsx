@@ -668,7 +668,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               <li><strong>Move &amp; resize</strong> — drag on preview, corner handles to resize, arrow keys for 1px nudge (<b>Shift</b> = 10px).</li>
               <li><strong>Customize</strong> — hit ⚙️ on any active tile to change colors, fonts &amp; sizes.</li>
               <li><strong>Sync colors</strong> — set Navbar first, then 🔗 Sync Colors to apply everywhere.</li>
-              <li><strong>Toggle</strong> — click LIVE / OFF badge to show or hide a widget.</li>
+              <li><strong>Toggle</strong> — click the ON / OFF switch to show or hide a widget.</li>
               <li><strong>Background &amp; effects</strong> — add the Background widget and open its settings for gradients, images, particles &amp; blur.</li>
               <li><strong>Connect profiles</strong> — open the Profile section to link your Spotify, Twitch, or Kick accounts; tokens sync to widgets automatically.</li>
               <li><strong>Bonus Hunt &amp; Tournament</strong> — use the sidebar pages to fill in session data; widgets update in real-time.</li>
@@ -710,13 +710,14 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
                     {def?.description && <span className="wm-tile-desc">{def.description}</span>}
                   </div>
-                  <span
-                    className={`wm-tile-status ${isVisible ? 'wm-tile-status--live' : ''}`}
+                  <label
+                    className={`wm-toggle ${isVisible ? 'wm-toggle--on' : ''}`}
                     onClick={() => handleToggle(w)}
-                    title={isVisible ? 'Click to hide' : 'Click to show'}
+                    title={isVisible ? 'Click to turn off' : 'Click to turn on'}
                   >
-                    {isVisible ? 'LIVE' : 'OFF'}
-                  </span>
+                    <span className="wm-toggle-slider" />
+                    <span className="wm-toggle-label">{isVisible ? 'ON' : 'OFF'}</span>
+                  </label>
                   <div className="wm-tile-actions">
                     <button className="wm-tile-btn" data-tour="tile-gear" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
                     <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
