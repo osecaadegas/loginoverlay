@@ -2568,7 +2568,7 @@ body.wm-resizing {
 /* Selection overlay with resize handles */
 .wm-slot-selection {
   position: absolute;
-  inset: -4px;
+  inset: 0;
   border: 2px dashed rgba(139, 92, 246, 0.6);
   border-radius: 4px;
   pointer-events: none;
