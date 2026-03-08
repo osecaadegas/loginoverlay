@@ -1194,6 +1194,7 @@
   transition: all 0.22s ease;
   position: relative;
   overflow: hidden;
+  min-height: 120px;
 }
 
 .wm-tile-body {
@@ -1325,9 +1326,6 @@
   font-size: 0.68rem;
   color: var(--oc-text-muted);
   line-height: 1.45;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .wm-tile-status {
