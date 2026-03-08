@@ -10,6 +10,7 @@ import { useAdmin } from '../../hooks/useAdmin';
 import { usePremium } from '../../hooks/usePremium';
 import usePresets from '../../hooks/usePresets';
 import ThemeEditor from './ThemeEditor';
+import ThemesPage from '../ThemesPage/ThemesPage';
 import WidgetManager from './WidgetManager';
 // OverlayPreview removed — live preview is now inside WidgetManager
 import GuidedTutorial, { isTutorialDone, resetTutorial } from './GuidedTutorial';
@@ -207,6 +208,18 @@ export default function OverlayControlCenter() {
               <div className="oc-sidebar-btn-text">
                 <span className="oc-sidebar-btn-label">Widgets</span>
                 <span className="oc-sidebar-btn-desc">Add & configure overlays</span>
+              </div>
+            </button>
+
+            {/* ─── Themes ─── */}
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'theme' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('theme'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">🎨</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Themes</span>
+                <span className="oc-sidebar-btn-desc">Change site appearance</span>
               </div>
             </button>
 
@@ -421,7 +434,7 @@ export default function OverlayControlCenter() {
             <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />
           )}
           {activePanel === 'theme' && (
-            <ThemeEditor theme={theme} onSave={saveTheme} />
+            <ThemesPage />
           )}
           {activePanel === 'presets' && (
             <PresetLibrary

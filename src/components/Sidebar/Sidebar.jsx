@@ -177,7 +177,6 @@ export default function Sidebar({ className = '', onClose }) {
       <nav className="sb-nav">
         <NavItem icon={ICONS.home} labelKey={T.NAV_HOME} label="Home" path="/" />
         <NavItem icon={ICONS.partners} labelKey="nav_partners" label="Partners" path="/offers" />
-        <NavItem icon={ICONS.themes} labelKey="nav_themes" label="Themes" path="/themes" />
         {user && <NavItem icon={ICONS.store} labelKey="nav_points_store" label="Points Store" path="/points" />}
 
         <Dropdown icon={ICONS.community} labelKey="nav_community" label="Community" sectionKey="community" links={communityLinks} />

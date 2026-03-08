@@ -34,7 +34,7 @@ import PrivacyPolicy from './components/Legal/PrivacyPolicy';
 import TermsOfService from './components/Legal/TermsOfService';
 import LoginPage from './components/Login/LoginPage';
 import CookieConsent from './components/CookieConsent/CookieConsent';
-import ThemesPage from './components/ThemesPage/ThemesPage';
+// ThemesPage is now rendered inside OverlayControlCenter
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
 const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'));
@@ -389,7 +389,6 @@ function App() {
                 <Route path="/streamelements" element={<StreamElementsPanel />} />
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/profile" element={<ProfilePage />} />
-                <Route path="/themes" element={<ThemesPage />} />
                 <Route path="/premium" element={<PricingPage />} />
 
                 
