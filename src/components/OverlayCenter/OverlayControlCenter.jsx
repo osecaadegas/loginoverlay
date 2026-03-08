@@ -12,6 +12,8 @@ import usePresets from '../../hooks/usePresets';
 import ThemeEditor from './ThemeEditor';
 import ThemesPage from '../ThemesPage/ThemesPage';
 import WidgetManager from './WidgetManager';
+import { buildSyncedConfig } from './WidgetManager';
+import { themeMap } from '../../data/appThemes';
 // OverlayPreview removed — live preview is now inside WidgetManager
 import GuidedTutorial, { isTutorialDone, resetTutorial } from './GuidedTutorial';
 import BonusHuntLibrary from './BonusHuntLibrary';
@@ -110,6 +112,40 @@ export default function OverlayControlCenter() {
     saveGlobalPreset, loadGlobalPreset, deleteGlobalPreset,
     sharePreset, unsharePreset,
   } = usePresets({ user, isAdmin, overlayState, updateState, widgets, saveWidget, addWidget });
+
+  /* ── Sync theme colors to all overlay widgets ── */
+  const syncThemeToWidgets = useCallback(async (themeId) => {
+    const t = themeMap[themeId];
+    if (!t || !widgets?.length) return;
+
+    const themeColors = {
+      accentColor: t.colors.accent,
+      bgColor: t.colors.background,
+      textColor: t.colors.text,
+      mutedColor: t.colors.secondary,
+      borderColor: t.colors.border,
+      fontFamily: t.font,
+    };
+
+    try {
+      // Update navbar widget first
+      const navWidget = widgets.find(w => w.widget_type === 'navbar');
+      if (navWidget) {
+        await saveWidget({ ...navWidget, config: { ...navWidget.config, ...themeColors } });
+      }
+
+      // Sync all other widgets
+      for (const w of widgets) {
+        if (w.widget_type === 'navbar') continue;
+        const synced = buildSyncedConfig(w.widget_type, w.config, themeColors);
+        if (synced) {
+          await saveWidget({ ...w, config: synced });
+        }
+      }
+    } catch (err) {
+      console.error('[ThemeSync] Failed to sync:', err);
+    }
+  }, [widgets, saveWidget]);
 
   const overlayUrl = useMemo(() => {
     if (!instance) return '';
@@ -434,7 +470,7 @@ export default function OverlayControlCenter() {
             <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />
           )}
           {activePanel === 'theme' && (
-            <ThemesPage />
+            <ThemesPage onApply={syncThemeToWidgets} />
           )}
           {activePanel === 'presets' && (
             <PresetLibrary

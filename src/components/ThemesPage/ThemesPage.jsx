@@ -41,8 +41,13 @@ function ThemeCard({ theme, isActive, onSelect }) {
   );
 }
 
-export default function ThemesPage() {
+export default function ThemesPage({ onApply }) {
   const { currentTheme, setTheme } = useTheme();
+
+  const handleSelect = (themeId) => {
+    setTheme(themeId);
+    if (onApply) onApply(themeId);
+  };
   const [category, setCategory] = useState('all');
   const [search, setSearch] = useState('');
 
@@ -134,7 +139,7 @@ export default function ThemesPage() {
               key={theme.id}
               theme={theme}
               isActive={theme.id === currentTheme}
-              onSelect={setTheme}
+              onSelect={handleSelect}
             />
           ))}
         </div>

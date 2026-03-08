@@ -214,7 +214,7 @@ const DraggableSlot = memo(function DraggableSlot({
 });
 
 /* ── Per-widget sync mapping from navbar config ── */
-function buildSyncedConfig(widgetType, currentConfig, nb) {
+export function buildSyncedConfig(widgetType, currentConfig, nb) {
   if (!nb) return null;
   const c = currentConfig || {};
   switch (widgetType) {
