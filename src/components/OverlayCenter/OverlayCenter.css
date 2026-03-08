@@ -6077,12 +6077,12 @@ body.wm-resizing {
   min-height: 40px;
 }
 
-/* ── Left section (provider + slot name) ── */
+/* ── Left section (provider + slot name + stats) ── */
 .rtp-stats-left {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex-shrink: 0;
+  flex: 1;
   min-width: 0;
 }
 
@@ -6147,6 +6147,7 @@ body.wm-resizing {
 .rtp-stats-item--rtp .rtp-stats-icon { color: var(--rtp-icon-rtp, #60a5fa); }
 .rtp-stats-item--potential .rtp-stats-icon { color: var(--rtp-icon-potential, #facc15); }
 .rtp-stats-item--volatility .rtp-stats-icon { color: var(--rtp-icon-volatility, #3b82f6); }
+.rtp-stats-item--bestwin .rtp-stats-icon { color: var(--rtp-icon-bestwin, #22c55e); }
 
 .rtp-stats-icon {
   font-size: 1.1em;

@@ -64,9 +64,9 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
   const PRESET_KEYS = [
     'barBgFrom', 'barBgVia', 'barBgTo', 'borderColor', 'borderWidth', 'borderRadius',
     'textColor', 'providerColor', 'slotNameColor', 'labelColor',
-    'rtpIconColor', 'potentialIconColor', 'volatilityIconColor', 'dividerColor', 'spinnerColor',
+    'rtpIconColor', 'potentialIconColor', 'volatilityIconColor', 'bestWinIconColor', 'dividerColor', 'spinnerColor',
     'fontFamily', 'fontSize', 'providerFontSize', 'paddingX', 'paddingY',
-    'showSpinner', 'showProvider', 'showRtp', 'showPotential', 'showVolatility',
+    'showSpinner', 'showProvider', 'showRtp', 'showPotential', 'showVolatility', 'showBestWin',
     'brightness', 'contrast', 'saturation',
     'displayStyle',
   ];
@@ -175,6 +175,11 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
             <input type="checkbox" checked={c.showVolatility !== false} onChange={e => set('showVolatility', e.target.checked)} />
             <span>Show Volatility</span>
           </label>
+
+          <label className="ov-chat-cfg-platform-header" style={{ marginBottom: 6 }}>
+            <input type="checkbox" checked={c.showBestWin !== false} onChange={e => set('showBestWin', e.target.checked)} />
+            <span>Show Best Win (Personal Record)</span>
+          </label>
         </div>
       )}
 
@@ -215,6 +220,7 @@ export default function RtpStatsConfig({ config, onChange, allWidgets }) {
             <ColorPicker label="RTP ⚡" value={c.rtpIconColor || '#60a5fa'} onChange={v => set('rtpIconColor', v)} />
             <ColorPicker label="Potential ⚡" value={c.potentialIconColor || '#facc15'} onChange={v => set('potentialIconColor', v)} />
             <ColorPicker label="Volatility ⚡" value={c.volatilityIconColor || '#3b82f6'} onChange={v => set('volatilityIconColor', v)} />
+            <ColorPicker label="Best Win 🏆" value={c.bestWinIconColor || '#22c55e'} onChange={v => set('bestWinIconColor', v)} />
             <ColorPicker label="Spinner" value={c.spinnerColor || '#60a5fa'} onChange={v => set('spinnerColor', v)} />
           </div>
 

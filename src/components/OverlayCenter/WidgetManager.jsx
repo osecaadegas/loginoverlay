@@ -3,10 +3,11 @@
  */
 import React, { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
+import { useAuth } from '../../context/AuthContext';
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
-  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle,
+  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle, userId,
 }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
@@ -165,7 +166,7 @@ const DraggableSlot = memo(function DraggableSlot({
     >
       {/* Widget content */}
       <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
-        <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} />
+        <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
       </div>
 
       {/* Transparent drag surface on top — catches ALL mouse events */}
@@ -372,6 +373,7 @@ function buildSyncedConfig(widgetType, currentConfig, nb) {
 }
 
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
+  const { user } = useAuth();
   const [editingId, setEditingId] = useState(null);
   const [showPreview, setShowPreview] = useState(true);
   const [selectedPreviewId, setSelectedPreviewId] = useState(null);
@@ -655,6 +657,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     onMove={handlePreviewMove}
                     onResize={handlePreviewResize}
                     onStyleCycle={handleStyleCycle}
+                    userId={user?.id}
                   />
                 ))}
               </div>

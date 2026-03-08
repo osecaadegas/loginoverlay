@@ -26,7 +26,7 @@ import './OverlayCenter.css';
 import './widgets/builtinWidgets';
 
 // ─── Single widget wrapper with animation + scale-to-fit ───
-const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting }) {
+const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidgets, canvasWidth, canvasHeight, exiting, userId }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
 
@@ -70,7 +70,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   return (
     <div id={slotId} className={`or-widget-slot ${animClass}`} style={style}>
       {customCSS && <style>{`#${slotId} { ${customCSS} }`}</style>}
-      <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} />
+      <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
     </div>
   );
 });
@@ -261,6 +261,7 @@ export default function OverlayRenderer() {
           canvasWidth={canvasWidth}
           canvasHeight={canvasHeight}
           exiting={false}
+          userId={userId}
         />
       ))}
 
@@ -275,6 +276,7 @@ export default function OverlayRenderer() {
           canvasWidth={canvasWidth}
           canvasHeight={canvasHeight}
           exiting={true}
+          userId={userId}
         />
       ))}
     </div>

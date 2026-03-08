@@ -63,7 +63,7 @@ function fmtMultiplier(m) {
 }
 
 /* ─── Main widget ─── */
-function RtpStatsWidget({ config, theme, allWidgets }) {
+function RtpStatsWidget({ config, theme, allWidgets, userId }) {
   const c = config || {};
 
   /* ── Find bonus hunt widget ── */
@@ -112,6 +112,33 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
     return () => { cancelled = true; };
   }, [slotName]);
 
+  /* ── Best win for this slot (from user_slot_records) ── */
+  const [bestWinData, setBestWinData] = useState(null);
+  const lastBestWinSlotRef = useRef('');
+
+  useEffect(() => {
+    if (!slotName || !userId || slotName === lastBestWinSlotRef.current) return;
+    lastBestWinSlotRef.current = slotName;
+    let cancelled = false;
+
+    async function fetchBestWin() {
+      try {
+        const { data } = await supabase
+          .from('user_slot_records')
+          .select('best_win, best_multiplier')
+          .eq('user_id', userId)
+          .eq('slot_name', slotName)
+          .maybeSingle();
+        if (!cancelled) setBestWinData(data || null);
+      } catch {
+        if (!cancelled) setBestWinData(null);
+      }
+    }
+
+    fetchBestWin();
+    return () => { cancelled = true; };
+  }, [slotName, userId]);
+
   /* ── Style config ── */
   const displayStyle = c.displayStyle || 'v1';
   const isVertical = displayStyle === 'vertical';
@@ -145,6 +172,8 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
   const showRtp = c.showRtp !== false;
   const showPotential = c.showPotential !== false;
   const showVolatility = c.showVolatility !== false;
+  const showBestWin = c.showBestWin !== false;
+  const bestWinIconColor = c.bestWinIconColor || '#22c55e';
   const spinnerColor = c.spinnerColor || '#60a5fa';
   const previewMode = c.previewMode === true;
 
@@ -155,6 +184,7 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
   const demoSlotName = 'SWEET BONANZA';
   const demoProvider = 'PRAGMATIC PLAY';
   const demoInfo = { rtp: 96.48, max_win_multiplier: 21175, volatility: 'high' };
+  const demoBestWin = { best_win: 8450, best_multiplier: 845 };
 
   /* ── When not live, show empty bar with dashes (widget stays visible in OBS) ── */
   const showDemoData = previewMode && !isLive;
@@ -165,6 +195,7 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
     ? (slotInfo?.provider || currentBonus?.slot?.provider || '')
     : (showDemoData ? demoProvider : '');
   const displayInfo = isLive ? slotInfo : (showDemoData ? demoInfo : null);
+  const displayBestWin = isLive ? bestWinData : (showDemoData ? demoBestWin : null);
 
   const styleClass = isVertical ? ' rtp-stats-bar--vertical'
     : isNeon ? ' rtp-stats-bar--neon'
@@ -199,6 +230,7 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
     '--rtp-px': `${paddingX}px`,
     '--rtp-py': `${paddingY}px`,
     '--rtp-provider-size': `${providerFontSize}px`,
+    '--rtp-icon-bestwin': bestWinIconColor,
     ...(isNeon ? { '--rtp-accent': borderColor } : {}),
   };
 
@@ -211,7 +243,7 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
           <span className="rtp-stats-preview-badge">PREVIEW</span>
         )}
 
-        {/* ═══ Left Section — Provider + Slot Name ═══ */}
+        {/* ═══ Left Section — Provider + Slot Name + Stats ═══ */}
         <div className="rtp-stats-left">
           {showProvider && displayProvider && (
             <>
@@ -228,18 +260,19 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
             )}
             <span className="rtp-stats-slot-name">{(displaySlotName || '').toUpperCase()}</span>
           </div>
-        </div>
 
-        {/* ═══ Right Section — RTP / Potential / Volatility ═══ */}
-        <div className="rtp-stats-right">
+          {/* Stats inline with left section */}
           {showRtp && (
-            <div className="rtp-stats-item rtp-stats-item--rtp">
-              <span className="rtp-stats-icon">⚡</span>
-              <span className="rtp-stats-value">
-                <span className="rtp-stats-label">RTP </span>
-                {displayInfo?.rtp ? `${displayInfo.rtp}%` : '—'}
-              </span>
-            </div>
+            <>
+              <div className="rtp-stats-divider" />
+              <div className="rtp-stats-item rtp-stats-item--rtp">
+                <span className="rtp-stats-icon">⚡</span>
+                <span className="rtp-stats-value">
+                  <span className="rtp-stats-label">RTP </span>
+                  {displayInfo?.rtp ? `${displayInfo.rtp}%` : '—'}
+                </span>
+              </div>
+            </>
           )}
 
           {showPotential && (
@@ -262,6 +295,24 @@ function RtpStatsWidget({ config, theme, allWidgets }) {
             </div>
           )}
         </div>
+
+        {/* ═══ Right Section — Best Win ═══ */}
+        {showBestWin && (
+          <div className="rtp-stats-right">
+            <div className="rtp-stats-item rtp-stats-item--bestwin">
+              <span className="rtp-stats-icon">🏆</span>
+              <span className="rtp-stats-value">
+                <span className="rtp-stats-label">BEST WIN </span>
+                {displayBestWin?.best_win
+                  ? `€${Number(displayBestWin.best_win).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : '—'}
+                {displayBestWin?.best_multiplier
+                  ? ` (${Number(displayBestWin.best_multiplier).toLocaleString()}x)`
+                  : ''}
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
