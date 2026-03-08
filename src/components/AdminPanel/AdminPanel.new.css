@@ -8,7 +8,7 @@
    =================== */
 :root {
   /* Color Palette */
-  --admin-bg-primary: var(--theme-background, #0a0e14);
+  --admin-bg-primary: #0a0e14;
   --admin-bg-secondary: #111827;
   --admin-bg-tertiary: #1f2937;
   --admin-bg-elevated: #252f3f;
@@ -32,7 +32,7 @@
   --admin-accent-success: #10b981;
   --admin-accent-warning: #f59e0b;
   --admin-accent-danger: #ef4444;
-  --admin-accent-purple: var(--theme-secondary, #8b5cf6);
+  --admin-accent-purple: #8b5cf6;
   --admin-accent-gold: #fbbf24;
   
   /* Spacing Scale (4px base) */
@@ -1415,10 +1415,10 @@
   width: 100%;
   height: 40px;
   padding: 0 36px;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 8px;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
   font-size: 14px;
   transition: all 0.15s ease;
 }
@@ -1453,7 +1453,7 @@
 
 .search-clear:hover {
   background: #1e293b;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
 }
 
 /* Filter Pills */
@@ -1480,13 +1480,13 @@
 
 .filter-pill:hover {
   border-color: #334155;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
 }
 
 .filter-pill.active {
   background: #1e293b;
   border-color: #334155;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
 }
 
 .pill-dot {
@@ -1501,7 +1501,7 @@
 
 /* Data Table */
 .data-table-wrapper {
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 12px;
   overflow: hidden;
@@ -1520,7 +1520,7 @@
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border-bottom: 1px solid #1e293b;
 }
 
@@ -1608,7 +1608,7 @@
   display: block;
   font-size: 14px;
   font-weight: 500;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -1725,7 +1725,7 @@
 .btn-row-action:hover {
   background: #1e293b;
   border-color: #334155;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
 }
 
 .btn-row-action svg {
@@ -1792,7 +1792,7 @@
 
 .pagination-btn:hover:not(:disabled) {
   background: #1e293b;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
 }
 
 .pagination-btn:disabled {
@@ -1818,7 +1818,7 @@
 
 .pagination-num:hover {
   background: #1e293b;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
 }
 
 .pagination-num.active {
@@ -1838,7 +1838,7 @@
   align-items: flex-start;
   gap: 16px;
   padding: 20px;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border-bottom: 1px solid #1e293b;
   margin: -20px -20px 20px -20px;
 }
@@ -1869,7 +1869,7 @@
   margin: 0 0 4px 0;
   font-size: 18px;
   font-weight: 600;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
 }
 
 .panel-user-email {
@@ -1927,7 +1927,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 12px;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 8px;
 }
@@ -1940,7 +1940,7 @@
   flex: 1;
   font-size: 14px;
   font-weight: 500;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
   text-transform: capitalize;
 }
 
@@ -1978,7 +1978,7 @@
   margin: 0;
   padding: 12px;
   text-align: center;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border-radius: 8px;
   border: 1px dashed #1e293b;
 }
@@ -1994,10 +1994,10 @@
   width: 100%;
   height: 40px;
   padding: 0 12px;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 8px;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
   font-size: 14px;
   cursor: pointer;
   transition: border-color 0.15s ease;
@@ -2010,7 +2010,7 @@
 
 .permissions-box {
   padding: 12px;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 8px;
 }
@@ -2051,10 +2051,10 @@
   flex: 1;
   height: 40px;
   padding: 0 12px;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   border: 1px solid #1e293b;
   border-radius: 8px;
-  color: var(--theme-text, #f1f5f9);
+  color: #f1f5f9;
   font-size: 14px;
 }
 

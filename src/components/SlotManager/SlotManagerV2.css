@@ -8,7 +8,7 @@
   display: flex;
   flex-direction: column;
   height: 100%;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
   color: #c9d1d9;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 13px;
@@ -44,7 +44,7 @@
   justify-content: space-between;
   gap: 8px;
   padding: 10px 16px;
-  border-bottom: 1px solid var(--theme-panel-bg, #21262d);
+  border-bottom: 1px solid #21262d;
   flex-shrink: 0;
   flex-wrap: wrap;
 }
@@ -233,7 +233,7 @@
   white-space: nowrap;
 }
 .slot-manager-v2 .sm-btn-ghost:hover {
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   border-color: #484f58;
 }
 .slot-manager-v2 .sm-btn-primary {
@@ -279,7 +279,7 @@
 }
 .slot-manager-v2 .sm-btn-sm {
   padding: 4px 10px;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   border: 1px solid #30363d;
   border-radius: 5px;
   color: #c9d1d9;
@@ -310,7 +310,7 @@
   border-radius: 4px;
 }
 .slot-manager-v2 .sm-btn-close:hover {
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   color: #c9d1d9;
 }
 .slot-manager-v2 .sm-btn-close-sm {
@@ -344,7 +344,7 @@
 .slot-manager-v2 .sm-table th {
   padding: 8px 10px;
   background: #161b22;
-  border-bottom: 1px solid var(--theme-panel-bg, #21262d);
+  border-bottom: 1px solid #21262d;
   font-size: 11px;
   font-weight: 600;
   text-transform: uppercase;
@@ -390,7 +390,7 @@
   background: #0c2d6b30;
 }
 .slot-manager-v2 .sm-row.odd {
-  background: var(--theme-background, #0d1117)08;
+  background: #0d111708;
 }
 .slot-manager-v2 .sm-row.odd:hover {
   background: #161b22;
@@ -398,7 +398,7 @@
 
 .slot-manager-v2 .sm-row td {
   padding: 6px 10px;
-  border-bottom: 1px solid var(--theme-panel-bg, #21262d)10;
+  border-bottom: 1px solid #21262d10;
   vertical-align: middle;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -415,7 +415,7 @@
   border-radius: 4px;
   object-fit: cover;
   display: block;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
 }
 .slot-manager-v2 .sm-td-name {
   font-weight: 500;
@@ -494,7 +494,7 @@
   transition: all .1s;
 }
 .slot-manager-v2 .sm-row-btn:hover {
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   color: #c9d1d9;
 }
 .slot-manager-v2 .sm-row-btn.danger:hover {
@@ -537,7 +537,7 @@
   justify-content: space-between;
   gap: 12px;
   padding: 8px 16px;
-  border-top: 1px solid var(--theme-panel-bg, #21262d);
+  border-top: 1px solid #21262d;
   flex-shrink: 0;
   font-size: 12px;
   color: #8b949e;
@@ -564,7 +564,7 @@
   font-size: 13px;
 }
 .slot-manager-v2 .sm-pag-controls button:hover:not(:disabled) {
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
 }
 .slot-manager-v2 .sm-pag-controls button:disabled {
   opacity: .3;
@@ -606,7 +606,7 @@
 }
 .slot-manager-v2 .sm-bulk select {
   padding: 4px 6px;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 4px;
   color: #c9d1d9;
@@ -632,7 +632,7 @@
   display: flex;
   flex-direction: column;
   background: #161b22;
-  border-left: 1px solid var(--theme-panel-bg, #21262d);
+  border-left: 1px solid #21262d;
   animation: smSlideLeft .2s ease;
 }
 @keyframes smSlideLeft {
@@ -649,7 +649,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--theme-panel-bg, #21262d);
+  border-bottom: 1px solid #21262d;
   flex-shrink: 0;
 }
 .slot-manager-v2 .sm-editor-head h3 {
@@ -667,7 +667,7 @@
 /* AI button */
 .slot-manager-v2 .sm-btn-ai {
   padding: 5px 10px;
-  background: linear-gradient(135deg, var(--theme-secondary, #8b5cf6), #6366f1);
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
   border: none;
   border-radius: 5px;
   color: #fff;
@@ -716,7 +716,7 @@
 /* Tabs */
 .slot-manager-v2 .sm-tabs {
   display: flex;
-  border-bottom: 1px solid var(--theme-panel-bg, #21262d);
+  border-bottom: 1px solid #21262d;
   flex-shrink: 0;
 }
 .slot-manager-v2 .sm-tabs button {
@@ -774,7 +774,7 @@
 .slot-manager-v2 .sm-field select,
 .slot-manager-v2 .sm-field textarea {
   padding: 7px 10px;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 6px;
   color: #c9d1d9;
@@ -821,7 +821,7 @@
   height: 120px;
   border-radius: 8px;
   object-fit: cover;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
 }
 
 /* Image search row + results */
@@ -836,7 +836,7 @@
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid #30363d;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   color: #c9d1d9;
   font-size: 0.8rem;
   cursor: pointer;
@@ -890,7 +890,7 @@
 }
 .slot-manager-v2 .sm-feat-tag {
   padding: 4px 10px;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   border: 1px solid #30363d;
   border-radius: 20px;
   color: #8b949e;
@@ -914,7 +914,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 12px 16px;
-  border-top: 1px solid var(--theme-panel-bg, #21262d);
+  border-top: 1px solid #21262d;
   flex-shrink: 0;
 }
 .slot-manager-v2 .sm-foot-right {
@@ -929,13 +929,13 @@
   display: flex;
   gap: 8px;
   padding: 10px 16px;
-  border-bottom: 1px solid var(--theme-panel-bg, #21262d);
+  border-bottom: 1px solid #21262d;
   flex-shrink: 0;
 }
 .slot-manager-v2 .sm-prov-toolbar input {
   flex: 1;
   padding: 6px 10px;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
   border: 1px solid #30363d;
   border-radius: 6px;
   color: #c9d1d9;
@@ -948,7 +948,7 @@
 
 .slot-manager-v2 .sm-prov-form {
   padding: 12px 16px;
-  border-bottom: 1px solid var(--theme-panel-bg, #21262d);
+  border-bottom: 1px solid #21262d;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -963,7 +963,7 @@
   height: 48px;
   border-radius: 6px;
   object-fit: contain;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
 }
 
 .slot-manager-v2 .sm-prov-grid {
@@ -976,8 +976,8 @@
   align-items: center;
   gap: 8px;
   padding: 10px;
-  background: var(--theme-background, #0d1117);
-  border: 1px solid var(--theme-panel-bg, #21262d);
+  background: #0d1117;
+  border: 1px solid #21262d;
   border-radius: 8px;
   cursor: pointer;
   transition: border-color .15s;
@@ -993,7 +993,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
@@ -1029,7 +1029,7 @@
   padding: 5px 16px;
   font-size: 11px;
   color: #484f58;
-  border-top: 1px solid var(--theme-panel-bg, #21262d);
+  border-top: 1px solid #21262d;
   flex-shrink: 0;
 }
 .slot-manager-v2 .sm-shortcuts kbd {
@@ -1039,7 +1039,7 @@
   min-width: 18px;
   height: 18px;
   padding: 0 4px;
-  background: var(--theme-panel-bg, #21262d);
+  background: #21262d;
   border: 1px solid #30363d;
   border-radius: 3px;
   font-family: inherit;

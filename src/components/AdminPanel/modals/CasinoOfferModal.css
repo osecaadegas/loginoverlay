@@ -1,4 +1,4 @@
-/* ===== Slide-in Side Panel ===== */
+﻿/* ===== Slide-in Side Panel ===== */
 
 .co-panel-backdrop {
   position: fixed;
@@ -108,7 +108,7 @@
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  color: var(--theme-secondary, #8b5cf6);
+  color: #8b5cf6;
   margin-bottom: 12px;
   padding-bottom: 6px;
   border-bottom: 1px solid rgba(139, 92, 246, 0.2);
@@ -149,7 +149,7 @@
 .co-field select:focus,
 .co-field textarea:focus {
   outline: none;
-  border-color: var(--theme-secondary, #8b5cf6);
+  border-color: #8b5cf6;
   box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
 }
 
@@ -271,7 +271,7 @@
 
 .co-provider-check {
   font-size: 10px;
-  color: var(--theme-secondary, #8b5cf6);
+  color: #8b5cf6;
 }
 
 /* ===== Deposit Methods ===== */
@@ -372,7 +372,7 @@
 }
 
 .co-toggle input:checked + .co-toggle-slider {
-  background: var(--theme-secondary, #8b5cf6);
+  background: #8b5cf6;
 }
 
 .co-toggle input:checked + .co-toggle-slider::after {
@@ -438,7 +438,7 @@
 }
 
 .co-btn-save {
-  background: var(--theme-secondary, #8b5cf6);
+  background: #8b5cf6;
   color: #fff;
 }
 

@@ -11,10 +11,10 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   overflow: hidden;
   font-family: 'Inter', sans-serif;
-  color: var(--theme-text, #f8fafc);
+  color: #f8fafc;
   padding: 32px 16px 64px;
 }
 
@@ -253,7 +253,7 @@
   height: 56px;
   border-radius: 50%;
   object-fit: contain;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   padding: 4px;
   pointer-events: none;
 }
@@ -280,7 +280,7 @@
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
   font-weight: 600;
   font-size: 20px;
-  color: var(--theme-text, #f8fafc);
+  color: #f8fafc;
   letter-spacing: 0.08em;
 }
 
@@ -405,7 +405,7 @@
 
 /* Win modal */
 .dw-modal-win {
-  background: linear-gradient(135deg, #1e293b 0%, var(--theme-background, #0f172a) 100%);
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border: 2px solid #eab308;
   box-shadow: 0 0 40px rgba(234, 179, 8, 0.25);
 }
@@ -419,7 +419,7 @@
 
 /* Lose modal */
 .dw-modal-lose {
-  background: linear-gradient(135deg, #1e293b 0%, var(--theme-background, #0f172a) 100%);
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   border: 2px solid #334155;
   box-shadow: 0 0 30px rgba(51, 65, 85, 0.2);
 }
@@ -455,7 +455,7 @@
 }
 .dw-modal-close:hover {
   background: rgba(255, 255, 255, 0.15);
-  color: var(--theme-text, #f8fafc);
+  color: #f8fafc;
 }
 
 .dw-modal-body {
@@ -582,7 +582,7 @@
   font-weight: 700;
   text-align: center;
   margin: 0 0 20px;
-  color: var(--theme-text, #f8fafc);
+  color: #f8fafc;
   letter-spacing: 0.02em;
 }
 
@@ -636,7 +636,7 @@
 }
 .dw-history-cell.prize {
   font-weight: 600;
-  color: var(--theme-text, #f8fafc);
+  color: #f8fafc;
 }
 .dw-history-cell.username {
   color: #94a3b8;
@@ -676,7 +676,7 @@
 .dw-page-btn {
   background: rgba(51, 65, 85, 0.5);
   border: 1px solid rgba(51, 65, 85, 0.8);
-  color: var(--theme-text, #f8fafc);
+  color: #f8fafc;
   width: 36px;
   height: 36px;
   border-radius: 8px;

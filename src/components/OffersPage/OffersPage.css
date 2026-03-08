@@ -1,6 +1,6 @@
 .offers-page {
   min-height: 100vh;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
   padding: 80px 20px 40px;
 }
 
@@ -112,7 +112,7 @@
 }
 
 .offer-list-card {
-  background: linear-gradient(135deg, var(--theme-panel-bg, #1a1d23) 0%, var(--theme-panel-bg, #21262d) 100%);
+  background: linear-gradient(135deg, #1a1d23 0%, #21262d 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 12px;
   transition: all 0.3s ease;
@@ -227,9 +227,9 @@
   align-items: center;
   gap: 20px;
   padding: 16px 24px;
-  border: 1px solid rgba(var(--theme-secondary-rgb), 0.3);
+  border: 1px solid rgba(145, 70, 255, 0.3);
   border-radius: 12px;
-  background: linear-gradient(135deg, var(--theme-panel-bg, #1a1d23) 0%, var(--theme-panel-bg, #21262d) 100%);
+  background: linear-gradient(135deg, #1a1d23 0%, #21262d 100%);
 }
 
 .back-header {
@@ -400,7 +400,7 @@
   height: 280px;
   overflow: hidden;
   border-radius: 0 0 12px 12px;
-  background: var(--theme-background, #0a0e14);
+  background: #0a0e14;
 }
 
 .casino-image {
@@ -420,14 +420,14 @@
 }
 
 .casino-name {
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
   font-size: 1.1rem;
   font-weight: 600;
   margin: 0;
 }
 
 .offer-title {
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
   font-size: 0.75rem;
   padding: 8px 12px 6px;
   line-height: 1.3;
@@ -470,7 +470,7 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  border: 1px solid var(--theme-border, #2a3142);
+  border: 1px solid #2a3142;
 }
 
 .stat-icon {
@@ -487,7 +487,7 @@
 }
 
 .stat-value {
-  color: var(--theme-accent, #d4af37) !important;
+  color: #d4af37 !important;
   font-weight: 600;
   font-size: 0.75rem;
   text-align: center;
@@ -514,17 +514,17 @@
 
 .info-btn {
   background: rgba(255, 255, 255, 0.05);
-  color: var(--theme-accent, #d4af37);
-  border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
+  color: #d4af37;
+  border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
 .info-btn:hover {
-  background: rgba(var(--theme-accent-rgb), 0.15);
-  border-color: rgba(var(--theme-accent-rgb), 0.5);
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.5);
 }
 
 .claim-btn {
-  background: var(--theme-accent, #d4af37);
+  background: #d4af37;
   color: #0f1318;
   font-weight: 600;
   text-decoration: none;
@@ -535,7 +535,7 @@
 
 .claim-btn:hover {
   background: #e5c158;
-  box-shadow: 0 2px 8px rgba(var(--theme-accent-rgb), 0.3);
+  box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
 }
 
 /* Back of card */
@@ -551,7 +551,7 @@
 .offer-details h4 {
   font-size: 1.1rem;
   margin-bottom: 12px;
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
   font-weight: 600;
   word-wrap: break-word;
   overflow-wrap: break-word;
@@ -581,8 +581,8 @@
   align-items: center;
   gap: 6px;
   padding: 8px;
-  background: rgba(var(--theme-accent-rgb), 0.1);
-  border: 1px solid rgba(var(--theme-accent-rgb), 0.2);
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.2);
   border-radius: 6px;
   transition: all 0.3s ease;
   min-width: 0;
@@ -590,18 +590,18 @@
 }
 
 .deposit-method-item:hover {
-  background: rgba(var(--theme-accent-rgb), 0.2);
-  border-color: rgba(var(--theme-accent-rgb), 0.4);
+  background: rgba(212, 175, 55, 0.2);
+  border-color: rgba(212, 175, 55, 0.4);
   transform: translateY(-2px);
 }
 
 .deposit-method-item .method-icon {
   font-size: 1.2rem;
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
 }
 
 .deposit-method-item .method-label {
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
   font-weight: 500;
   font-size: 0.75rem;
   white-space: nowrap;
@@ -614,9 +614,9 @@
   width: 100%;
   max-width: 100%;
   background: rgba(255, 255, 255, 0.05);
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
   margin-top: 16px;
-  border: 1px solid rgba(var(--theme-accent-rgb), 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.3);
   padding: 8px 20px;
   font-size: 0.75rem;
   border-radius: 4px;
@@ -626,8 +626,8 @@
 }
 
 .back-btn:hover {
-  background: rgba(var(--theme-accent-rgb), 0.15);
-  border-color: rgba(var(--theme-accent-rgb), 0.5);
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.5);
 }
 
 /* Scrollbar for details */
@@ -855,7 +855,7 @@
   position: relative;
   width: 100%;
   overflow: hidden;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
 }
 
 .op-card-media {
@@ -873,7 +873,7 @@ img.op-card-media {
 video.op-card-media {
   aspect-ratio: 16 / 9;
   object-fit: contain;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
 }
 
 .op-card-badge {
@@ -903,7 +903,7 @@ video.op-card-media {
 
 .op-card-badge.hot .op-badge-dot { background: #ef4444; }
 .op-card-badge.new .op-badge-dot { background: #22c55e; }
-.op-card-badge.exclusive .op-badge-dot { background: var(--theme-accent, #d4af37); }
+.op-card-badge.exclusive .op-badge-dot { background: #d4af37; }
 
 /* Title row */
 .op-card-title-row {
@@ -1004,8 +1004,8 @@ video.op-card-media {
   gap: 10px;
   margin: 0 16px;
   padding: 10px 14px;
-  background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.12) 0%, rgba(var(--theme-accent-rgb), 0.06) 100%);
-  border: 1px dashed rgba(var(--theme-accent-rgb), 0.45);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.12) 0%, rgba(212, 175, 55, 0.06) 100%);
+  border: 1px dashed rgba(212, 175, 55, 0.45);
   border-radius: 8px;
   position: relative;
   cursor: pointer;
@@ -1013,8 +1013,8 @@ video.op-card-media {
 }
 
 .op-card-promo:hover {
-  background: linear-gradient(135deg, rgba(var(--theme-accent-rgb), 0.2) 0%, rgba(var(--theme-accent-rgb), 0.1) 100%);
-  border-color: rgba(var(--theme-accent-rgb), 0.65);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.2) 0%, rgba(212, 175, 55, 0.1) 100%);
+  border-color: rgba(212, 175, 55, 0.65);
 }
 
 .op-card-promo-icon {
@@ -1023,14 +1023,14 @@ video.op-card-media {
   justify-content: center;
   width: 30px;
   height: 30px;
-  background: rgba(var(--theme-accent-rgb), 0.15);
+  background: rgba(212, 175, 55, 0.15);
   border-radius: 6px;
   flex-shrink: 0;
 }
 
 .op-card-promo-icon i {
   font-size: 0.85rem;
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
 }
 
 .op-card-promo-text {
@@ -1052,7 +1052,7 @@ video.op-card-media {
 .op-card-promo-value {
   font-size: 0.95rem;
   font-weight: 800;
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
   font-family: 'Courier New', monospace;
   letter-spacing: 2px;
 }
@@ -1245,7 +1245,7 @@ video.op-card-media {
 .op-back-info-value {
   font-size: 0.75rem;
   font-weight: 600;
-  color: var(--theme-text, #e5e7eb);
+  color: #e5e7eb;
 }
 
 .op-back-info-value.gold {
@@ -1577,7 +1577,7 @@ video.op-card-media {
 .modal-v2-detail .detail-value {
   font-size: 14px;
   font-weight: 500;
-  color: var(--theme-text, #e5e7eb);
+  color: #E5E7EB;
 }
 
 /* Tags - Deposit Methods */
@@ -1621,7 +1621,7 @@ video.op-card-media {
   border-radius: 6px;
   font-size: 11px;
   font-weight: 600;
-  color: var(--theme-text, #e5e7eb);
+  color: #E5E7EB;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   transition: all 0.15s ease;
@@ -1997,17 +1997,17 @@ video.op-card-media {
 /* Promo Code Display */
 .offer-promo-code {
   display: inline-block;
-  background: rgba(var(--theme-accent-rgb), 0.15);
-  color: var(--theme-accent, #d4af37);
+  background: rgba(212, 175, 55, 0.15);
+  color: #d4af37;
   font-weight: 700;
   font-family: 'Courier New', monospace;
   letter-spacing: 1.5px;
   padding: 2px 8px;
   border-radius: 4px;
-  border: 1px dashed rgba(var(--theme-accent-rgb), 0.5);
+  border: 1px dashed rgba(212, 175, 55, 0.5);
 }
 
 .highlight-item.promo {
-  color: var(--theme-accent, #d4af37);
+  color: #d4af37;
   font-weight: 600;
 }

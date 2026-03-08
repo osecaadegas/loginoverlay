@@ -27,7 +27,7 @@
   --theme-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --theme-border-animation: none;
 
-  /* RGB component versions for rgba() usage */
+  /* RGB component versions for rgba() usage in overlay widgets */
   --theme-primary-rgb: 0, 225, 255;
   --theme-secondary-rgb: 145, 71, 255;
   --theme-accent-rgb: 168, 85, 247;
@@ -90,7 +90,7 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  background: var(--theme-background, #0d1117);
+  background: #0d1117;
   /* Better text rendering on mobile */
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -118,12 +118,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--theme-secondary, #6441a5);
+  background: #6441a5;
   border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--theme-secondary, #7d5bbe);
+  background: #7d5bbe;
 }
 
 /* Drag handle cursor */

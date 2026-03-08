@@ -1,7 +1,7 @@
 .daily-wheel-page {
   min-height: 100vh;
   padding: 0;
-  background: var(--theme-background, #0f172a);
+  background: #0f172a;
   position: relative;
   z-index: 1;
   margin-left: 0;

@@ -18,7 +18,7 @@
 }
 
 .create-voucher-btn {
-  background: linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary, #764ba2) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   padding: 0.75rem 1.5rem;
@@ -77,7 +77,7 @@
 
 .form-group input:focus {
   outline: none;
-  border-color: var(--theme-primary, #667eea);
+  border-color: #667eea;
   background: rgba(255, 255, 255, 0.15);
 }
 
@@ -106,7 +106,7 @@
 }
 
 .submit-btn {
-  background: linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary, #764ba2) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   padding: 0.75rem 2rem;
@@ -152,7 +152,7 @@
 }
 
 .voucher-code-display {
-  background: linear-gradient(135deg, var(--theme-primary, #667eea) 0%, var(--theme-secondary, #764ba2) 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   font-size: 1.5rem;
   font-weight: 700;

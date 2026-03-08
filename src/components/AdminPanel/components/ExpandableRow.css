@@ -95,7 +95,7 @@
 }
 
 .list-item.selected {
-  border-color: var(--admin-primary, var(--theme-secondary, #8b5cf6));
+  border-color: var(--admin-primary, #8b5cf6);
   background: rgba(139, 92, 246, 0.05);
 }
 
@@ -259,7 +259,7 @@
 }
 
 .admin-card.selected {
-  border-color: var(--admin-primary, var(--theme-secondary, #8b5cf6));
+  border-color: var(--admin-primary, #8b5cf6);
 }
 
 .card-image {
@@ -335,7 +335,7 @@
   padding: 6px 12px;
   font-size: 0.8125rem;
   font-weight: 500;
-  color: var(--admin-primary, var(--theme-secondary, #8b5cf6));
+  color: var(--admin-primary, #8b5cf6);
   background: transparent;
   border: none;
   cursor: pointer;
