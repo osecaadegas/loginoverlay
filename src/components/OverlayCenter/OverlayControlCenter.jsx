@@ -86,7 +86,7 @@ export default function OverlayControlCenter() {
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
   /* Auto-expand Community Tools when one of its children is active */
-  const communityToolsKeys = ['wheel_of_names', 'random_slot_picker'];
+  const communityToolsKeys = ['random_slot_picker'];
   const isCommunityToolActive = communityToolsKeys.includes(activePanel);
   useEffect(() => { if (isCommunityToolActive) setCommunityToolsOpen(true); }, [isCommunityToolActive]);
 
@@ -292,7 +292,6 @@ export default function OverlayControlCenter() {
               <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: communityToolsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
             </button>
             {communityToolsOpen && [
-              { key: 'wheel_of_names', icon: '🎡', label: 'Wheel of Names', desc: 'Spin entries' },
               { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
             ].map(tab => (
               <button
@@ -322,10 +321,8 @@ export default function OverlayControlCenter() {
             </button>
             {communityOpen && [
               { key: 'coin_flip', icon: '🪙', label: 'Coin Flip', desc: 'Heads or tails betting' },
-              { key: 'point_slot', icon: '🎰', label: 'Point Slot', desc: 'Slot machine with points' },
               { key: 'salty_words', icon: '🧂', label: 'Salty Words', desc: 'Word betting game' },
               { key: 'predictions', icon: '🔮', label: 'Predictions', desc: 'Two-outcome bets' },
-              { key: 'point_wheel', icon: '🎡', label: 'Point Wheel', desc: 'Multiplier wheel game' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -452,7 +449,7 @@ export default function OverlayControlCenter() {
             />
           )}
           {/* Generic widget panels — resolved from registry */}
-          {['bonus_hunt','tournament','current_slot','wheel_of_names','random_slot_picker','single_slot','bonus_buys','coin_flip','point_slot','salty_words','predictions','point_wheel'].includes(activePanel) && (
+          {['bonus_hunt','tournament','current_slot','random_slot_picker','single_slot','bonus_buys','coin_flip','salty_words','predictions'].includes(activePanel) && (
             <WidgetPanel widgetType={activePanel} widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (

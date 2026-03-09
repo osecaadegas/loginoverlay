@@ -4,29 +4,6 @@
  */
 import { registerWidget } from './widgetRegistry';
 
-// ─── 1. STATS PANEL ────────────────────────────────────
-import StatsWidget from './StatsWidget';
-import StatsConfig from './StatsConfig';
-registerWidget({
-  type: 'stats',
-  label: 'Stats Panel',
-  icon: '📊',
-  description: 'Show total bet, wins, and profit live on stream',
-  category: 'casino',
-  component: StatsWidget,
-  configPanel: StatsConfig,
-  styles: [{ id: 'v1', icon: '📊', label: 'Classic' }],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    totalBet: 0,
-    totalWin: 0,
-    highestWin: 0,
-    highestMulti: 0,
-    sessionProfit: 0,
-    currency: '€',
-  },
-});
-
 // ─── 2. BONUS HUNT ─────────────────────────────────────
 import BonusHuntWidget from './BonusHuntWidget';
 import BonusHuntConfig from './BonusHuntConfig';
@@ -306,48 +283,6 @@ registerWidget({
   },
 });
 
-// ─── 8. SESSION STATS ──────────────────────────────────
-import SessionStatsWidget from './SessionStatsWidget';
-registerWidget({
-  type: 'session_stats',
-  label: 'Session Stats',
-  icon: '📈',
-  description: 'Auto-tracked session wagered, won, and best hit',
-  category: 'casino',
-  component: SessionStatsWidget,
-  configPanel: null,
-  styles: [{ id: 'v1', icon: '📈', label: 'Classic' }],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    wagered: 0,
-    won: 0,
-    profit: 0,
-    bestWin: 0,
-    bestMulti: 0,
-    slotsPlayed: 0,
-    currency: '€',
-  },
-});
-
-// ─── 9. RECENT WINS ────────────────────────────────────
-import RecentWinsWidget from './RecentWinsWidget';
-registerWidget({
-  type: 'recent_wins',
-  label: 'Recent Wins',
-  icon: '🏅',
-  description: 'Feed of your latest winning hits',
-  category: 'casino',
-  component: RecentWinsWidget,
-  configPanel: null,
-  styles: [{ id: 'v1', icon: '🏅', label: 'Classic' }],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    wins: [],
-    maxDisplay: 5,
-    currency: '€',
-  },
-});
-
 // ─── 10. RANDOM SLOT PICKER ────────────────────────────
 import RandomSlotPickerWidget from './RandomSlotPickerWidget';
 import RandomSlotPickerConfig from './RandomSlotPickerConfig';
@@ -371,46 +306,6 @@ registerWidget({
     pickedSlot: null,
     slotPool: [],
   },
-});
-
-// ─── 13. WHEEL OF NAMES ────────────────────────────────
-import WheelOfNamesWidget from './WheelOfNamesWidget';
-import WheelOfNamesConfig from './WheelOfNamesConfig';
-registerWidget({
-  type: 'wheel_of_names',
-  label: 'Wheel of Names',
-  icon: '🎡',
-  description: 'Spin a wheel with viewer names or prizes',
-  category: 'casino',
-  component: WheelOfNamesWidget,
-  configPanel: WheelOfNamesConfig,
-  styles: [
-    { id: 'v1', icon: '🎡', label: 'Classic' },
-    { id: 'v2', icon: '💡', label: 'Neon Glow' },
-    { id: 'v3', icon: '✦', label: 'Minimal' },
-    { id: 'v4', icon: '🎨', label: 'Pastel Flat' },
-  ],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    entries: [],
-    spinning: false,
-    winner: '',
-  },
-});
-
-// ─── 14. PLACEHOLDER (extensible) ──────────────────────
-import PlaceholderWidget from './PlaceholderWidget';
-registerWidget({
-  type: 'placeholder',
-  label: 'Custom Widget',
-  icon: '🧩',
-  description: 'Blank widget — add your own HTML content',
-  category: 'general',
-  component: PlaceholderWidget,
-  configPanel: null,
-  styles: [{ id: 'v1', icon: '🧩', label: 'Classic' }],
-  styleConfigKey: 'displayStyle',
-  defaults: { html: '<div style="color:#fff;">Custom content</div>' },
 });
 
 // ─── 15. IMAGE SLIDESHOW ────────────────────────────────
@@ -648,42 +543,6 @@ registerWidget({
   },
 });
 
-// ─── 22. POINT SLOT ────────────────────────────────────
-import SlotmachineWidget from './SlotmachineWidget';
-import PointSlotConfig from './PointSlotConfig';
-registerWidget({
-  type: 'point_slot',
-  label: 'Point Slot',
-  icon: '🎰',
-  description: 'Viewers spend points to spin a slot machine',
-  category: 'community',
-  component: SlotmachineWidget,
-  configPanel: PointSlotConfig,
-  styles: [
-    { id: 'v1', icon: '🎰', label: 'Classic' },
-    { id: 'v2', icon: '💡', label: 'Neon' },
-    { id: 'v3', icon: '✦', label: 'Minimal' },
-    { id: 'v4', icon: '⚙️', label: 'Metallic' },
-  ],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    title: 'Point Slot',
-    gameStatus: 'idle',
-    symbols: ['/slot/cherries.png','/slot/lemon.png','/slot/grapes.png','/slot/bar.png','/slot/diamond.png','/slot/seven.png'],
-    reelCount: 3,
-    results: [],
-    spinning: false,
-    lastWin: false,
-    betAmount: 100,
-    winMultiplier: 10,
-    accentColor: '#f59e0b',
-    machineColor: '#dc2626',
-    reelBg: '#1a1a2e',
-    textColor: '#ffffff',
-    fontFamily: "'Inter', sans-serif",
-  },
-});
-
 // ─── 23. SALTY WORDS ───────────────────────────────────
 import SaltyWordsWidget from './SaltyWordsWidget';
 import SaltyWordsConfig from './SaltyWordsConfig';
@@ -738,35 +597,6 @@ registerWidget({
     accentColor: '#7c3aed',
     colorA: '#3b82f6',
     colorB: '#ef4444',
-    textColor: '#ffffff',
-    fontFamily: "'Inter', sans-serif",
-  },
-});
-
-// ─── 25. POINT WHEEL ───────────────────────────────────
-import PointWheelWidget from './PointWheelWidget';
-import PointWheelConfig from './PointWheelConfig';
-registerWidget({
-  type: 'point_wheel',
-  label: 'Point Wheel',
-  icon: '🎡',
-  description: 'Dual spinning wheels — set points, viewers join, random outcome pays all participants',
-  category: 'community',
-  component: PointWheelWidget,
-  configPanel: PointWheelConfig,
-  styles: [
-    { id: 'v1', icon: '🏆', label: 'Casino Gold' },
-    { id: 'v2', icon: '💜', label: 'Neon Cyber' },
-    { id: 'v3', icon: '⚪', label: 'Minimal' },
-    { id: 'v4', icon: '🔩', label: 'Metallic' },
-  ],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    title: 'Point Wheel',
-    gameStatus: 'idle',
-    noPayoutChance: 70,
-    basePayout: 100,
-    accentColor: '#f59e0b',
     textColor: '#ffffff',
     fontFamily: "'Inter', sans-serif",
   },

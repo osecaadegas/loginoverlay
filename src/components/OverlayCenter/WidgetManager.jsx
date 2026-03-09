@@ -316,26 +316,12 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         ...(nb.contrast != null && { contrast: nb.contrast }),
         ...(nb.saturation != null && { saturation: nb.saturation }),
       };
-    case 'session_stats':
-    case 'recent_wins':
     case 'random_slot_picker':
       return {
         ...c,
         bgColor: nb.bgColor || '#13151e',
         cardBg: nb.bgColor ? `${nb.bgColor}cc` : 'rgba(255,255,255,0.04)',
         borderColor: nb.accentColor ? `${nb.accentColor}30` : 'rgba(255,255,255,0.08)',
-        accentColor: nb.accentColor || '#f59e0b',
-        textColor: nb.textColor || '#ffffff',
-        mutedColor: nb.mutedColor || '#94a3b8',
-        fontFamily: nb.fontFamily || "'Inter', sans-serif",
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
-      };
-    case 'wheel_of_names':
-      return {
-        ...c,
-        bgColor: nb.bgColor || '#13151e',
         accentColor: nb.accentColor || '#f59e0b',
         textColor: nb.textColor || '#ffffff',
         mutedColor: nb.mutedColor || '#94a3b8',
