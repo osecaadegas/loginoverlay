@@ -86,7 +86,7 @@ export default function OverlayControlCenter() {
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
   /* Auto-expand Community Tools when one of its children is active */
-  const communityToolsKeys = ['random_slot_picker'];
+  const communityToolsKeys = ['random_slot_picker', 'slot_requests'];
   const isCommunityToolActive = communityToolsKeys.includes(activePanel);
   useEffect(() => { if (isCommunityToolActive) setCommunityToolsOpen(true); }, [isCommunityToolActive]);
 
@@ -293,6 +293,7 @@ export default function OverlayControlCenter() {
             </button>
             {communityToolsOpen && [
               { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
+              { key: 'slot_requests', icon: '📋', label: 'Slot Requests', desc: 'Chat !sr queue' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -449,7 +450,7 @@ export default function OverlayControlCenter() {
             />
           )}
           {/* Generic widget panels — resolved from registry */}
-          {['bonus_hunt','tournament','current_slot','random_slot_picker','single_slot','bonus_buys','coin_flip','salty_words','predictions'].includes(activePanel) && (
+          {['bonus_hunt','tournament','current_slot','random_slot_picker','slot_requests','single_slot','bonus_buys','coin_flip','salty_words','predictions'].includes(activePanel) && (
             <WidgetPanel widgetType={activePanel} widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (

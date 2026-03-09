@@ -365,6 +365,20 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         ...(nb.contrast != null && { contrast: nb.contrast }),
         ...(nb.saturation != null && { saturation: nb.saturation }),
       };
+    case 'slot_requests':
+      return {
+        ...c,
+        bgColor:     nb.bgColor     || 'transparent',
+        accentColor: nb.accentColor || '#f59e0b',
+        textColor:   nb.textColor   || '#ffffff',
+        mutedColor:  nb.mutedColor  || '#94a3b8',
+        cardBg:      nb.bgColor ? `${nb.bgColor}0a` : 'rgba(255,255,255,0.04)',
+        borderColor: nb.borderColor || 'rgba(255,255,255,0.08)',
+        fontFamily:  nb.fontFamily  || "'Inter', sans-serif",
+        ...(nb.brightness != null && { brightness: nb.brightness }),
+        ...(nb.contrast != null && { contrast: nb.contrast }),
+        ...(nb.saturation != null && { saturation: nb.saturation }),
+      };
     default:
       return null; // widget has no sync mapping
   }

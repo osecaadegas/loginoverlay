@@ -602,6 +602,33 @@ registerWidget({
   },
 });
 
+// ─── 26. SLOT REQUESTS ────────────────────────────────
+import SlotRequestsWidget from './SlotRequestsWidget';
+import SlotRequestsConfig from './SlotRequestsConfig';
+registerWidget({
+  type: 'slot_requests',
+  label: 'Slot Requests',
+  icon: '📋',
+  description: 'Chat viewers request slots with !sr — displays queue with images',
+  category: 'stream',
+  component: SlotRequestsWidget,
+  configPanel: SlotRequestsConfig,
+  styles: [{ id: 'v1', icon: '📋', label: 'Classic' }],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    maxDisplay: 10,
+    showRequester: true,
+    showNumbers: true,
+    accentColor: '#f59e0b',
+    textColor: '#ffffff',
+    mutedColor: '#94a3b8',
+    bgColor: 'transparent',
+    cardBg: 'rgba(255,255,255,0.04)',
+    borderColor: 'rgba(255,255,255,0.08)',
+    fontFamily: "'Inter', sans-serif",
+  },
+});
+
 // ─── 20. SINGLE SLOT ──────────────────────────────────
 import SingleSlotWidget from './SingleSlotWidget';
 import SingleSlotConfig from './SingleSlotConfig';
