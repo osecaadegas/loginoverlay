@@ -834,21 +834,25 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   </details>
                 )}
 
-                {/* Position & Sizing */}
+                {/* Widget Config Panel */}
+                {ConfigPanel && (
+                  <div className="wm-config-panel">
+                    <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
+                      mode="widget" />
+                  </div>
+                )}
+
+                {/* ── Shadow Controls (all widgets) ── */}
                 <div className="wm-layout-panel">
                   <div className="wm-layout-heading">
-                    <span className="wm-layout-icon">📐</span>
-                    <span>Position &amp; Size</span>
+                    <span className="wm-layout-icon">🌑</span>
+                    <span>Shadow</span>
                   </div>
-                  <p className="wm-layout-hint">Drag the sliders or type a number. The live preview updates in real-time.</p>
-
+                  <p className="wm-layout-hint">Add a drop shadow that follows the widget's visual outline.</p>
                   <div className="wm-slider-grid">
                     {[
-                      { label: 'Left (X)', field: 'position_x', min: -1920, max: 3840, val: Math.round(w.position_x) },
-                      { label: 'Top (Y)', field: 'position_y', min: -1080, max: 2160, val: Math.round(w.position_y) },
-                      { label: 'Width',    field: 'width',      min: 20, max: 3840, val: Math.round(w.width) },
-                      { label: 'Height',   field: 'height',     min: 20, max: 2160, val: Math.round(w.height) },
-                      { label: 'Layer (Z)', field: 'z_index',   min: 0, max: 100,  val: w.z_index },
+                      { label: 'Size',      field: 'shadowSize',      min: 0, max: 100, val: w.config?.shadowSize ?? 0 },
+                      { label: 'Intensity', field: 'shadowIntensity', min: 0, max: 100, val: w.config?.shadowIntensity ?? 0 },
                     ].map(s => (
                       <label key={s.field} className="wm-slider-field">
                         <span className="wm-slider-label">{s.label}</span>
@@ -859,13 +863,21 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                             min={s.min}
                             max={s.max}
                             value={s.val}
-                            onChange={e => handlePositionChange(w, s.field, +e.target.value)}
+                            onChange={e => {
+                              const latest = widgets.find(x => x.id === w.id) || w;
+                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
+                            }}
                           />
                           <input
                             type="number"
                             className="wm-slider-num"
+                            min={s.min}
+                            max={s.max}
                             value={s.val}
-                            onChange={e => handlePositionChange(w, s.field, +e.target.value)}
+                            onChange={e => {
+                              const latest = widgets.find(x => x.id === w.id) || w;
+                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
+                            }}
                           />
                         </div>
                       </label>
@@ -943,81 +955,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       </optgroup>
                     </select>
                   </label>
-                </div>
-
-                {/* ── Generic Style Switcher (reads from widget registry) ── */}
-                {def?.styles?.length > 1 && (() => {
-                  const configKey = def.styleConfigKey || 'displayStyle';
-                  const currentVal = w.config?.[configKey] || def.styles[0].id;
-                  return (
-                    <div className="wm-style-switcher">
-                      <div className="wm-style-switcher-label">🎨 Display Style</div>
-                      <div className="wm-style-switcher-grid">
-                        {def.styles.map(s => (
-                          <button key={s.id}
-                            className={`wm-style-switcher-btn ${currentVal === s.id ? 'wm-style-switcher-btn--active' : ''}`}
-                            onClick={() => {
-                              const latest = widgets.find(x => x.id === w.id) || w;
-                              handleConfigChange(latest, { ...latest.config, [configKey]: s.id });
-                            }}>
-                            <span className="wm-style-switcher-icon">{s.icon}</span>
-                            <span>{s.label}</span>
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  );
-                })()}
-
-                {/* Widget Config Panel */}
-                {ConfigPanel && (
-                  <div className="wm-config-panel">
-                    <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
-                      mode="widget" />
-                  </div>
-                )}
-
-                {/* ── Shadow Controls (all widgets) ── */}
-                <div className="wm-layout-panel">
-                  <div className="wm-layout-heading">
-                    <span className="wm-layout-icon">🌑</span>
-                    <span>Shadow</span>
-                  </div>
-                  <p className="wm-layout-hint">Add a drop shadow that follows the widget's visual outline.</p>
-                  <div className="wm-slider-grid">
-                    {[
-                      { label: 'Size',      field: 'shadowSize',      min: 0, max: 100, val: w.config?.shadowSize ?? 0 },
-                      { label: 'Intensity', field: 'shadowIntensity', min: 0, max: 100, val: w.config?.shadowIntensity ?? 0 },
-                    ].map(s => (
-                      <label key={s.field} className="wm-slider-field">
-                        <span className="wm-slider-label">{s.label}</span>
-                        <div className="wm-slider-row">
-                          <input
-                            type="range"
-                            className="wm-range"
-                            min={s.min}
-                            max={s.max}
-                            value={s.val}
-                            onChange={e => {
-                              const latest = widgets.find(x => x.id === w.id) || w;
-                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
-                            }}
-                          />
-                          <input
-                            type="number"
-                            className="wm-slider-num"
-                            min={s.min}
-                            max={s.max}
-                            value={s.val}
-                            onChange={e => {
-                              const latest = widgets.find(x => x.id === w.id) || w;
-                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
-                            }}
-                          />
-                        </div>
-                      </label>
-                    ))}
-                  </div>
                 </div>
               </div>
             </div>
