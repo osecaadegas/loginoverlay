@@ -11,7 +11,7 @@
 
 const CLIENT_ID = import.meta.env.VITE_SPOTIFY_CLIENT_ID || '';
 const REDIRECT_URI = `${window.location.origin}/spotify-callback`;
-const SCOPES = 'user-read-currently-playing user-read-playback-state';
+const SCOPES = 'user-read-currently-playing user-read-playback-state user-modify-playback-state';
 
 /* ─── PKCE helpers ─── */
 function generateRandomString(length) {

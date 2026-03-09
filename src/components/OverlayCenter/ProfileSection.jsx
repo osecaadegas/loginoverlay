@@ -203,6 +203,16 @@ export default function ProfileSection({ widgets, saveWidget }) {
       }));
       /* Auto-push tokens to navbar & Spotify widgets */
       await pushSpotifyTokens(tokens);
+      /* Persist tokens to spotify_tokens table for API song requests */
+      if (user) {
+        await supabase.from('spotify_tokens').upsert({
+          user_id: user.id,
+          access_token: tokens.access_token,
+          refresh_token: tokens.refresh_token,
+          expires_at: tokens.expires_at,
+          updated_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+      }
     } catch (err) {
       setSpotifyError(err.message || 'Spotify connection failed');
     } finally {
@@ -227,6 +237,10 @@ export default function ProfileSection({ widgets, saveWidget }) {
           await saveWidget({ ...w, config: { ...w.config, ...clearPayload } });
         }
       }
+    }
+    /* Remove from spotify_tokens table */
+    if (user) {
+      await supabase.from('spotify_tokens').delete().eq('user_id', user.id);
     }
   };
 
@@ -440,6 +454,33 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
               Connecting here auto-syncs to your Navbar &amp; Spotify widgets.
             </p>
+            {/* Song Request command helper */}
+            {profile.spotify_access_token && user && (
+              <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(29,185,52,0.08)', borderRadius: 10, border: '1px solid rgba(29,185,52,0.2)' }}>
+                <p style={{ fontSize: '0.74rem', color: '#1DB954', fontWeight: 700, margin: '0 0 6px' }}>🎶 Chat Song Requests</p>
+                <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: '0 0 6px', lineHeight: 1.4 }}>
+                  Add this as a StreamElements custom command so viewers can queue songs:
+                </p>
+                <code
+                  style={{
+                    display: 'block', fontSize: '0.65rem', color: '#e2e8f0', background: 'rgba(0,0,0,0.3)',
+                    padding: '8px 10px', borderRadius: 6, wordBreak: 'break-all', cursor: 'pointer',
+                    lineHeight: 1.5, border: '1px solid rgba(255,255,255,0.06)',
+                  }}
+                  title="Click to copy"
+                  onClick={(e) => {
+                    navigator.clipboard.writeText(e.currentTarget.textContent);
+                    e.currentTarget.style.borderColor = '#1DB954';
+                    setTimeout(() => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }, 1500);
+                  }}
+                >
+                  {`\${customapi.${window.location.origin}/api/spotify/song-request?song=\${querystring}&user_id=${user.id}}`}
+                </code>
+                <p style={{ fontSize: '0.65rem', color: '#64748b', margin: '6px 0 0', lineHeight: 1.4 }}>
+                  Command name: <strong style={{ color: '#e2e8f0' }}>!song</strong> · Click above to copy · Viewers type: <strong style={{ color: '#e2e8f0' }}>!song Blinding Lights</strong>
+                </p>
+              </div>
+            )}
           </div>
 
           {/* StreamElements card */}
