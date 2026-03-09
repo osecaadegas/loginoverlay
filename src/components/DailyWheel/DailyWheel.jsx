@@ -443,7 +443,7 @@ export default function DailyWheel() {
         return { success: false, error: 'No StreamElements username found' };
       }
 
-      const response = await fetch('/api/streamelements/award-points', {
+      const response = await fetch('/api/chat-commands?cmd=award', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: seUsername, points })

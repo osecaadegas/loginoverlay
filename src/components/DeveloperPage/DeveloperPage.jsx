@@ -197,7 +197,7 @@ function ApiPanel() {
     { method: 'GET',  path: '/api/image-search', desc: 'Image search proxy' },
     { method: 'POST', path: '/api/raid-shoutout', desc: 'Raid shoutout handler' },
     { method: 'POST', path: '/api/slot-ai', desc: 'Slot AI suggestions' },
-    { method: 'POST', path: '/api/streamelements/award-points', desc: 'Award StreamElements points' },
+    { method: 'POST', path: '/api/chat-commands?cmd=award', desc: 'Award StreamElements points' },
   ];
 
   return (
