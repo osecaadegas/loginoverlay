@@ -1,8 +1,9 @@
 /**
  * SlotRequestsConfig.jsx — Config panel for Slot Requests widget.
- * Shows SE command, lets streamer manage the queue (mark played / clear).
+ * Connects to Twitch IRC directly to listen for !sr commands.
+ * Lets streamer manage the queue (mark played / clear).
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 
@@ -34,6 +35,9 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const c = config || {};
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [ircStatus, setIrcStatus] = useState('off'); // off | connecting | live
+  const wsRef = useRef(null);
+  const reconnectTimer = useRef(null);
 
   const fetchQueue = useCallback(async () => {
     if (!user) return;
@@ -62,6 +66,63 @@ export default function SlotRequestsConfig({ config, onChange }) {
 
   const set = (key, val) => onChange({ ...c, [key]: val });
 
+  /* ── Twitch IRC chat listener ── */
+  useEffect(() => {
+    const raw = c.twitchChannel;
+    if (!raw || !user) { setIrcStatus('off'); return; }
+    const channel = raw.trim().toLowerCase().replace(/^#/, '');
+    if (!channel) { setIrcStatus('off'); return; }
+
+    let ws;
+    let alive = true;
+
+    const connect = () => {
+      if (!alive) return;
+      setIrcStatus('connecting');
+      ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+      wsRef.current = ws;
+
+      ws.onopen = () => {
+        ws.send('PASS SCHMOOPIIE');
+        ws.send('NICK justinfan' + Math.floor(Math.random() * 100000));
+        ws.send('JOIN #' + channel);
+      };
+
+      ws.onmessage = async (event) => {
+        const lines = event.data.split('\r\n');
+        for (const line of lines) {
+          if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
+          if (line.includes(' 366 ')) setIrcStatus('live');
+
+          const m = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!sr (.+)/i);
+          if (m) {
+            const requester = m[1];
+            const slotName = m[2].trim();
+            if (slotName) {
+              try {
+                await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(user.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`);
+              } catch (err) { console.error('[SlotRequests] IRC fetch error', err); }
+            }
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        if (alive) { setIrcStatus('off'); reconnectTimer.current = setTimeout(connect, 5000); }
+      };
+      ws.onerror = () => ws.close();
+    };
+
+    const debounce = setTimeout(connect, 800);
+
+    return () => {
+      alive = false;
+      clearTimeout(debounce);
+      clearTimeout(reconnectTimer.current);
+      if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
+    };
+  }, [c.twitchChannel, user]);
+
   const markPlayed = async (id) => {
     await supabase.from('slot_requests').update({ status: 'played' }).eq('id', id);
     fetchQueue();
@@ -80,30 +141,38 @@ export default function SlotRequestsConfig({ config, onChange }) {
     setLoading(false);
   };
 
-  const commandUrl = user
-    ? `\${customapi.${window.location.origin}/api/chat-commands?cmd=sr&user_id=${user.id}&requester=\${user}&w1=\${1}&w2=\${2}&w3=\${3}&w4=\${4}&w5=\${5}&w6=\${6}&w7=\${7}&w8=\${8}&w9=\${9}&w10=\${10}}`
-    : '(log in to see your command)';
+  const statusDot = { width: 8, height: 8, borderRadius: '50%', flexShrink: 0 };
+  const statusColors = { off: '#64748b', connecting: '#f59e0b', live: '#22c55e' };
+  const statusLabels = { off: 'Not connected', connecting: 'Connecting…', live: 'Listening to chat' };
 
   return (
     <div style={S.section}>
-      {/* SE Command */}
+      {/* Twitch Channel */}
       <div>
-        <p style={S.label}>🎮 StreamElements Command</p>
-        <p style={S.hint}>Create a <strong style={{ color: '#e2e8f0' }}>!sr</strong> command with this response:</p>
-        <code
-          style={S.code}
-          title="Click to copy"
-          onClick={(e) => {
-            navigator.clipboard.writeText(e.currentTarget.textContent);
-            e.currentTarget.style.borderColor = '#f59e0b';
-            setTimeout(() => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }, 1500);
-          }}
-        >
-          {commandUrl}
-        </code>
-        <p style={{ ...S.hint, marginTop: 4 }}>
-          Viewers type: <strong style={{ color: '#e2e8f0' }}>!sr Gates of Olympus</strong> · Click to copy
+        <p style={S.label}>📺 Twitch Channel</p>
+        <p style={S.hint}>Enter your Twitch channel name. The widget will listen for <strong style={{ color: '#e2e8f0' }}>!sr</strong> commands in chat automatically.</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+          <input
+            type="text"
+            value={c.twitchChannel || ''}
+            onChange={e => set('twitchChannel', e.target.value)}
+            placeholder="your_channel_name"
+            style={{
+              flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: 6, color: '#e2e8f0', padding: '6px 10px', fontSize: '0.78rem',
+              outline: 'none',
+            }}
+          />
+          <div style={{ ...statusDot, background: statusColors[ircStatus] }} title={statusLabels[ircStatus]} />
+        </div>
+        <p style={{ fontSize: '0.65rem', color: statusColors[ircStatus], margin: '4px 0 0', lineHeight: 1.3 }}>
+          {statusLabels[ircStatus]}
         </p>
+        {ircStatus === 'live' && (
+          <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '2px 0 0', lineHeight: 1.3 }}>
+            Viewers type: <strong style={{ color: '#e2e8f0' }}>!sr Gates of Olympus</strong> — requests appear below instantly
+          </p>
+        )}
       </div>
 
       {/* Display options */}
