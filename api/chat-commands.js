@@ -13,6 +13,16 @@ const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const SPOTIFY_CLIENT_ID = process.env.VITE_SPOTIFY_CLIENT_ID || process.env.SPOTIFY_CLIENT_ID;
 
+/** Join w1..w10 query params into a single string (SE fallback for ${querystring}) */
+function buildFromWords(query) {
+  const parts = [];
+  for (let i = 1; i <= 10; i++) {
+    const v = query[`w${i}`];
+    if (v && v.trim()) parts.push(v.trim());
+  }
+  return parts.join(' ') || '';
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -37,12 +47,15 @@ async function handleSlotRequest(req, res) {
 
   const { slot, user_id, requester } = req.query;
 
-  if (!slot || !slot.trim()) return res.status(200).send('Usage: !sr <slot name>');
+  // Support individual word params w1..w10 as fallback for SE (${querystring} doesn't resolve)
+  const slotParam = slot || buildFromWords(req.query);
+
+  if (!slotParam || !slotParam.trim()) return res.status(200).send('Usage: !sr <slot name>');
   if (!user_id) return res.status(200).send('Missing streamer user_id');
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(200).send('Server config error');
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const slotName = slot.trim();
+  const slotName = slotParam.trim();
   const viewer = (requester || 'anonymous').trim();
 
   try {
@@ -101,7 +114,10 @@ async function handleSongRequest(req, res) {
 
   const { song, user_id } = req.query;
 
-  if (!song || !song.trim()) return res.status(200).send('Usage: !song <song name>');
+  // Support individual word params w1..w10 as fallback for SE
+  const songParam = song || buildFromWords(req.query);
+
+  if (!songParam || !songParam.trim()) return res.status(200).send('Usage: !song <song name>');
   if (!user_id) return res.status(200).send('Missing streamer user_id');
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(200).send('Server config error');
   if (!SPOTIFY_CLIENT_ID) return res.status(200).send('Server config error — Spotify not configured');
@@ -136,7 +152,7 @@ async function handleSongRequest(req, res) {
     }
 
     // Search Spotify
-    const query = encodeURIComponent(song.trim());
+    const query = encodeURIComponent(songParam.trim());
     const searchRes = await fetch(
       `https://api.spotify.com/v1/search?q=${query}&type=track&limit=1`,
       { headers: { Authorization: `Bearer ${accessToken}` } }
@@ -146,7 +162,7 @@ async function handleSongRequest(req, res) {
 
     const searchData = await searchRes.json();
     const track = searchData.tracks?.items?.[0];
-    if (!track) return res.status(200).send(`No results found for "${song}".`);
+    if (!track) return res.status(200).send(`No results found for "${songParam.trim()}".`);
 
     // Add to queue
     const queueRes = await fetch(
