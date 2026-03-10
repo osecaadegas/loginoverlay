@@ -701,37 +701,39 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Hunt Settings ─── */}
       <div className="bh-panel-section">
-        <h4 className="bh-panel-label">Hunt Settings</h4>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
-          {/* Left: inputs */}
-          <div className="bh-settings-row" style={{ flex: '0 0 auto' }}>
-            <label className="bh-input-group bh-input-sm">
-              <span>Hunt #</span>
-              <input type="text" value={huntNumber}
-                placeholder="42"
-                onChange={e => setHuntNumber(e.target.value)}
-                onBlur={() => save()} />
-            </label>
-            <label className="bh-input-group bh-input-md">
-              <span>Start ({currency})</span>
-              <input type="number" value={startMoney}
-                placeholder="0"
-                onChange={e => setStartMoney(e.target.value)}
-                onBlur={() => save()} />
-            </label>
-            <label className="bh-input-group bh-input-md">
-              <span>Stop Loss ({currency})</span>
-              <input type="number" value={stopLoss}
-                placeholder="0"
-                onChange={e => setStopLoss(e.target.value)}
-                onBlur={() => save()} />
-            </label>
+        <div className="bh-hunt-split">
+          {/* Left half: Hunt Settings */}
+          <div className="bh-hunt-split-left">
+            <h4 className="bh-panel-label">Hunt Settings</h4>
+            <div className="bh-settings-row">
+              <label className="bh-input-group bh-input-sm">
+                <span>Hunt #</span>
+                <input type="text" value={huntNumber}
+                  placeholder="42"
+                  onChange={e => setHuntNumber(e.target.value)}
+                  onBlur={() => save()} />
+              </label>
+              <label className="bh-input-group bh-input-md">
+                <span>Start ({currency})</span>
+                <input type="number" value={startMoney}
+                  placeholder="0"
+                  onChange={e => setStartMoney(e.target.value)}
+                  onBlur={() => save()} />
+              </label>
+              <label className="bh-input-group bh-input-md">
+                <span>Stop Loss ({currency})</span>
+                <input type="number" value={stopLoss}
+                  placeholder="0"
+                  onChange={e => setStopLoss(e.target.value)}
+                  onBlur={() => save()} />
+              </label>
+            </div>
           </div>
 
-          {/* Right: Slot Requests queue */}
-          {slotRequests.length > 0 && (
-            <div className="bh-sr-queue">
-              <span className="bh-sr-queue-title">🎰 Requests ({slotRequests.length})</span>
+          {/* Right half: Slot Requests queue */}
+          <div className="bh-hunt-split-right">
+            <span className="bh-sr-queue-title">🎰 Requests <span className="bh-sr-queue-count">{slotRequests.length}</span></span>
+            {slotRequests.length > 0 ? (
               <div className="bh-sr-queue-list">
                 {slotRequests.map(req => (
                   <div key={req.id} className="bh-sr-queue-item" onClick={() => handlePickRequest(req)} title={`Click to add "${req.slot_name}" to search`}>
@@ -744,8 +746,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   </div>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div className="bh-sr-queue-empty">No requests yet</div>
+            )}
+          </div>
         </div>
       </div>
 

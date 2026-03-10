@@ -3147,29 +3147,65 @@ body.wm-resizing {
   gap: 5px;
 }
 
-/* ─── Slot Requests Queue (inside Hunt Settings) ─── */
-.bh-sr-queue {
+/* ─── Hunt Settings 50/50 Split ─── */
+.bh-hunt-split {
+  display: flex;
+  gap: 0;
+}
+
+.bh-hunt-split-left {
   flex: 1;
-  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding-right: 16px;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.bh-hunt-split-right {
+  flex: 1;
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-left: 16px;
+  min-width: 0;
 }
 
+/* ─── Slot Requests Queue (inside Hunt Settings) ─── */
 .bh-sr-queue-title {
   font-size: 0.68rem;
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.bh-sr-queue-count {
+  font-size: 0.62rem;
+  color: #9346ff;
+  background: rgba(147, 70, 255, 0.15);
+  padding: 0 6px;
+  border-radius: 8px;
+  font-weight: 700;
+}
+
+.bh-sr-queue-empty {
+  font-size: 0.68rem;
+  color: #475569;
+  font-style: italic;
+  padding: 4px 0;
 }
 
 .bh-sr-queue-list {
   display: flex;
   flex-direction: column;
   gap: 3px;
-  max-height: 90px;
+  max-height: 80px;
   overflow-y: auto;
+  flex: 1;
 }
 
 .bh-sr-queue-list::-webkit-scrollbar { width: 4px; }
