@@ -541,7 +541,7 @@ registerWidget({
     tailsImage: '/badges/tails.png',
     autoFlipEnabled: false,
     autoFlipDelay: 15,
-    flipCooldown: 10,
+    flipCooldown: 5,
     accentColor: '#f59e0b',
     textColor: '#ffffff',
     fontFamily: "'Inter', sans-serif",

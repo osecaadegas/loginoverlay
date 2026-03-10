@@ -1,10 +1,9 @@
 /**
- * CoinFlipConfig.jsx — Streamer control panel for the Coin Flip community game.
- * Start/stop bets, flip the coin, view participants, customize appearance.
- * Supports chat betting via !head / !tails (Twitch + Kick).
- * Integrates StreamElements points for real point deductions & payouts.
+ * CoinFlipConfig.jsx — Streamer control panel for the Coin Flip widget.
+ * Instant-flip mode: each chat bet triggers an immediate flip + SE payout.
+ * Commands: !bet heads/tails [amt], !heads, !tails, !flip, !cf, !coinflip
  */
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useStreamElements } from '../../../context/StreamElementsContext';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
@@ -15,14 +14,12 @@ export default function CoinFlipConfig({ config, onChange }) {
   const set = (k, v) => onChange({ ...c, [k]: v });
   const setMulti = (obj) => onChange({ ...c, ...obj });
   const [tab, setTab] = useState('game');
-  const [payoutProcessing, setPayoutProcessing] = useState(false);
-  const [payoutResult, setPayoutResult] = useState(null); // { winners:[], losers:[], errors:[] }
 
   /* ── Points manager state ── */
   const [pmUser, setPmUser] = useState('');
   const [pmAmount, setPmAmount] = useState('');
   const [pmBusy, setPmBusy] = useState(false);
-  const [pmMsg, setPmMsg] = useState(null); // { type: 'ok'|'err', text }
+  const [pmMsg, setPmMsg] = useState(null);
 
   /* ── StreamElements integration ── */
   let seCtx = null;
@@ -30,7 +27,6 @@ export default function CoinFlipConfig({ config, onChange }) {
   const seAccount = seCtx?.seAccount;
   const seConnected = !!seAccount?.se_channel_id && !!seAccount?.se_jwt_token;
 
-  /** Modify any viewer's points using the streamer's SE credentials */
   const modifyViewerPoints = async (username, amount) => {
     if (!seConnected) return { success: false, error: 'SE not connected' };
     try {
@@ -46,7 +42,6 @@ export default function CoinFlipConfig({ config, onChange }) {
     }
   };
 
-  /** Check a viewer's current point balance */
   const getViewerPoints = async (username) => {
     if (!seConnected) return null;
     try {
@@ -60,174 +55,25 @@ export default function CoinFlipConfig({ config, onChange }) {
     } catch { return null; }
   };
 
-  const status = c.gameStatus || 'idle';
-  const chatBets = c._chatBets || {};
-  const headsBettors = Object.entries(chatBets).filter(([, b]) => b.side === 'heads');
-  const tailsBettors = Object.entries(chatBets).filter(([, b]) => b.side === 'tails');
-  const betsHeads = headsBettors.reduce((s, [, b]) => s + b.amount, 0);
-  const betsTails = tailsBettors.reduce((s, [, b]) => s + b.amount, 0);
-  const totalPool = betsHeads + betsTails;
   const history = c.flipHistory || [];
-  const pointPayoutsEnabled = !!c.pointPayoutsEnabled && seConnected;
-
-  /* ── Refs for chat bet accumulation ── */
-  const chatBetsRef = useRef(chatBets);
-  const pendingBetsRef = useRef({});
-  useEffect(() => { chatBetsRef.current = chatBets; }, [chatBets]);
-
-  /* Flush pending chat bets to config every 1.5 seconds */
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const pending = pendingBetsRef.current;
-      if (Object.keys(pending).length > 0) {
-        const merged = { ...chatBetsRef.current, ...pending };
-        pendingBetsRef.current = {};
-        onChange({ ...config, _chatBets: merged });
-      }
-    }, 1500);
-    return () => clearInterval(timer);
-  });
-
-  /* ── Chat message handler — !head / !heads / !tails / !tail / !flip / !cf / !coinflip [amount] ── */
-  const minBet = c.minBet || 10;
-  const maxBet = c.maxBet || 10000;
   const chatBettingEnabled = !!c.chatBettingEnabled;
-  const gameStatus = c.gameStatus || 'idle';
 
-  const handleChatMessage = useCallback((msg) => {
-    if (!chatBettingEnabled) return;
-    const text = (msg.message || '').trim().toLowerCase();
+  /* ── Chat handler for config preview (noop – widget handles everything) ── */
+  const handleChatMessage = useCallback(() => {}, []);
 
-    /* Parse: !heads [amt], !tails [amt], !flip heads [amt], !cf tails [amt], !coinflip heads [amt] */
-    let side, amount;
-    const m1 = text.match(/^!(heads?|tails?)\s*(\d*)$/);
-    if (m1) { side = m1[1].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m1[2]) || minBet; }
-    if (!side) {
-      const m2 = text.match(/^!(flip|cf|coinflip)\s+(heads?|tails?)\s*(\d*)$/);
-      if (m2) { side = m2[2].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m2[3]) || minBet; }
-    }
-    if (!side) return;
-    amount = Math.max(minBet, Math.min(maxBet, amount));
-    const user = msg.username;
-    if (!user) return;
-
-    /* One bet per user per round — first bet wins, ignore duplicates */
-    if (chatBetsRef.current[user] || pendingBetsRef.current[user]) return;
-
-    pendingBetsRef.current[user] = { side, amount, time: Date.now() };
-  }, [chatBettingEnabled, gameStatus, minBet, maxBet]);
-
-  /* ── Connect to chat platforms when bets are open (or idle in auto mode) ── */
-  const chatActive = chatBettingEnabled && (status === 'open' || (!!c.autoFlipEnabled && status === 'idle'));
-  useTwitchChat(chatActive && c.twitchEnabled ? c.twitchChannel : '', handleChatMessage);
-  useKickChat(chatActive && c.kickEnabled ? c.kickChannelId : '', handleChatMessage);
+  const chatActive = chatBettingEnabled && !!c.twitchEnabled && !!c.twitchChannel;
+  const kickActive = chatBettingEnabled && !!c.kickEnabled && !!c.kickChannelId;
+  useTwitchChat(chatActive ? c.twitchChannel : '', handleChatMessage);
+  useKickChat(kickActive ? c.kickChannelId : '', handleChatMessage);
 
   const [chatStatus2, setChatStatus2] = useState({ twitch: false, kick: false });
   useEffect(() => {
-    setChatStatus2({
-      twitch: chatActive && !!c.twitchEnabled && !!c.twitchChannel,
-      kick: chatActive && !!c.kickEnabled && !!c.kickChannelId,
-    });
-  }, [chatActive, c.twitchEnabled, c.twitchChannel, c.kickEnabled, c.kickChannelId]);
-
-  /* ── Process SE payouts after flip ── */
-  const processPayouts = async (result) => {
-    const bets = chatBetsRef.current;
-    const entries = Object.entries(bets);
-    if (entries.length === 0 || !pointPayoutsEnabled) return;
-
-    setPayoutProcessing(true);
-    const winners = [];
-    const losers = [];
-    const errors = [];
-
-    /* Process all bets concurrently — losers get deducted, winners get awarded */
-    const promises = entries.map(async ([username, bet]) => {
-      if (bet.side === result) {
-        // Winner: award +bet.amount (net profit — they keep their original + win same)
-        const res = await modifyViewerPoints(username, bet.amount);
-        if (res.success) {
-          winners.push({ name: username, amount: bet.amount, balance: res.newBalance });
-        } else {
-          errors.push({ name: username, error: res.error, side: 'win' });
-        }
-      } else {
-        // Loser: deduct -bet.amount
-        const res = await modifyViewerPoints(username, -bet.amount);
-        if (res.success) {
-          losers.push({ name: username, amount: bet.amount, balance: res.newBalance });
-        } else {
-          errors.push({ name: username, error: res.error, side: 'lose' });
-        }
-      }
-    });
-
-    await Promise.allSettled(promises);
-    setPayoutResult({ winners, losers, errors });
-    setPayoutProcessing(false);
-  };
-
-  /* ── Game actions ── */
-  const openBets = () => {
-    setPayoutResult(null);
-    setMulti({
-      gameStatus: 'open', _chatBets: {}, flipping: false,
-      lastWinner: '', lastWinAmount: 0, _prevResult: c.result || 'heads',
-    });
-  };
-  const closeBets = () => setMulti({ gameStatus: 'idle', _chatBets: {} });
-
-  const flipCoin = () => {
-    /* True 50/50 using crypto-quality randomness when available */
-    let result;
-    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
-      const arr = new Uint32Array(1);
-      crypto.getRandomValues(arr);
-      result = arr[0] % 2 === 0 ? 'heads' : 'tails';
-    } else {
-      result = Math.random() < 0.5 ? 'heads' : 'tails';
-    }
-    setMulti({
-      gameStatus: 'flipping',
-      flipping: true,
-      _flipStart: Date.now(),
-      _prevResult: c.result || 'heads',
-      result,
-    });
-    // After animation, reveal result & process payouts
-    setTimeout(async () => {
-      const allBets = chatBetsRef.current;
-      const winnersList = Object.entries(allBets)
-        .filter(([, b]) => b.side === result)
-        .map(([name, b]) => ({ name, amount: b.amount }));
-      const newEntry = {
-        result,
-        time: new Date().toLocaleTimeString(),
-        pool: totalPool,
-        winners: winnersList.length,
-        totalBettors: Object.keys(allBets).length,
-      };
-      setMulti({
-        result,
-        flipping: false,
-        gameStatus: 'result',
-        flipHistory: [newEntry, ...history].slice(0, 30),
-      });
-      // Process SE point payouts if enabled
-      if (pointPayoutsEnabled && Object.keys(allBets).length > 0) {
-        await processPayouts(result);
-      }
-    }, 2800);
-  };
-
-  const resetGame = () => {
-    setPayoutResult(null);
-    setMulti({ gameStatus: 'idle', flipping: false, _chatBets: {} });
-  };
+    setChatStatus2({ twitch: chatActive, kick: kickActive });
+  }, [chatActive, kickActive]);
 
   /* ── Streamer Quick Flip (no bets, just animation) ── */
   const streamerFlip = () => {
-    if (status === 'flipping') return;
+    if (c.flipping) return;
     let result;
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
       const arr = new Uint32Array(1);
@@ -237,17 +83,17 @@ export default function CoinFlipConfig({ config, onChange }) {
       result = Math.random() < 0.5 ? 'heads' : 'tails';
     }
     setMulti({
-      gameStatus: 'flipping', flipping: true, _flipStart: Date.now(),
-      _prevResult: c.result || 'heads', _chatBets: {}, result,
+      flipping: true, _flipStart: Date.now(),
+      _prevResult: c.result || 'heads', result,
     });
     setTimeout(() => {
       const newEntry = {
         result, time: new Date().toLocaleTimeString(),
-        pool: 0, winners: 0, totalBettors: 0, streamerFlip: true,
+        user: 'streamer', side: result, amount: 0, won: true, streamerFlip: true,
       };
       setMulti({
-        result, flipping: false, gameStatus: 'result',
-        flipHistory: [newEntry, ...history].slice(0, 30),
+        result, flipping: false,
+        flipHistory: [newEntry, ...history].slice(0, 50),
       });
     }, 2800);
   };
@@ -260,25 +106,10 @@ export default function CoinFlipConfig({ config, onChange }) {
     setPmBusy(true);
     const res = await modifyViewerPoints(username.trim().toLowerCase(), amount);
     if (res.success) {
-      setPmMsg({ type: 'ok', text: `✅ ${amount > 0 ? '+' : ''}${amount.toLocaleString()} pts → ${username} (bal: ${res.newBalance?.toLocaleString()})` });
+      setPmMsg({ type: 'ok', text: `${amount > 0 ? '+' : ''}${amount.toLocaleString()} pts -> ${username} (bal: ${res.newBalance?.toLocaleString()})` });
     } else {
-      setPmMsg({ type: 'err', text: `❌ ${username}: ${res.error}` });
+      setPmMsg({ type: 'err', text: `${username}: ${res.error}` });
     }
-    setPmBusy(false);
-    clearPmMsg();
-  };
-
-  const givePointsToAll = async (amount) => {
-    const bets = chatBetsRef.current;
-    const users = Object.keys(bets);
-    if (users.length === 0) { setPmMsg({ type: 'err', text: '⚠️ No bettors in current round' }); clearPmMsg(); return; }
-    setPmBusy(true);
-    let ok = 0; let fail = 0;
-    await Promise.allSettled(users.map(async (u) => {
-      const res = await modifyViewerPoints(u, amount);
-      if (res.success) ok++; else fail++;
-    }));
-    setPmMsg({ type: ok > 0 ? 'ok' : 'err', text: `${ok > 0 ? '✅' : '❌'} ${ok}/${users.length} users received ${amount > 0 ? '+' : ''}${amount.toLocaleString()} pts${fail ? ` (${fail} failed)` : ''}` });
     setPmBusy(false);
     clearPmMsg();
   };
@@ -299,130 +130,6 @@ export default function CoinFlipConfig({ config, onChange }) {
       {tab === 'game' && (
         <div className="cg-config__section">
           <label className="cg-config__field">
-            <span>Game Title</span>
-            <input value={c.title || ''} onChange={e => set('title', e.target.value)} placeholder="Coin Flip!" />
-          </label>
-
-          {/* Status display */}
-          <div className="cg-config__status-card">
-            <div className="cg-config__status-row">
-              <span className="cg-config__status-label">Status</span>
-              <span className={`cg-config__status-badge cg-config__status-badge--${status}`}>
-                {status === 'idle' ? '⏸ Idle' : status === 'open' ? '🟢 Bets Open' : status === 'flipping' ? '🪙 Flipping' : '🏆 Result'}
-              </span>
-            </div>
-            {(status === 'open' || status === 'result') && (
-              <>
-                <div className="cg-config__status-row">
-                  <span>🟡 Heads ({headsBettors.length})</span>
-                  <span style={{ color: '#facc15', fontWeight: 700 }}>{betsHeads.toLocaleString()} pts</span>
-                </div>
-                <div className="cg-config__status-row">
-                  <span>🔵 Tails ({tailsBettors.length})</span>
-                  <span style={{ color: '#60a5fa', fontWeight: 700 }}>{betsTails.toLocaleString()} pts</span>
-                </div>
-                <div className="cg-config__status-row">
-                  <span>Total Pool</span>
-                  <span style={{ color: '#fff', fontWeight: 700 }}>{totalPool.toLocaleString()} pts</span>
-                </div>
-              </>
-            )}
-          </div>
-
-          {/* Game controls */}
-          <div className="cg-config__actions">
-            {status === 'idle' && (
-              <button className="cg-config__btn cg-config__btn--primary" onClick={openBets}>
-                🟢 Open Bets
-              </button>
-            )}
-            {status === 'open' && (
-              <>
-                <button className="cg-config__btn cg-config__btn--accent" onClick={flipCoin}>
-                  🪙 Flip Coin
-                </button>
-                <button className="cg-config__btn cg-config__btn--muted" onClick={closeBets}>
-                  ⏸ Cancel
-                </button>
-              </>
-            )}
-            {(status === 'result' || status === 'flipping') && (
-              <button className="cg-config__btn cg-config__btn--primary" onClick={resetGame}>
-                🔄 New Round
-              </button>
-            )}
-          </div>
-
-          {/* Streamer Quick Flip — solo flip, no bets */}
-          {status === 'idle' && (
-            <button
-              className="cg-config__btn"
-              style={{
-                width: '100%', padding: '10px 0', marginBottom: 4,
-                background: 'rgba(168,85,247,0.12)', color: '#c084fc',
-                border: '1px solid rgba(168,85,247,0.25)', fontWeight: 700,
-              }}
-              onClick={streamerFlip}
-            >
-              🎲 Streamer Quick Flip
-            </button>
-          )}
-
-          {/* Payout processing indicator */}
-          {payoutProcessing && (
-            <div style={{
-              padding: '10px 12px', borderRadius: 8, marginBottom: 8,
-              background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)',
-              fontSize: 12, color: '#facc15', fontWeight: 600, textAlign: 'center',
-            }}>
-              ⏳ Processing SE point payouts...
-            </div>
-          )}
-
-          {/* Payout results */}
-          {payoutResult && !payoutProcessing && (
-            <div style={{
-              padding: '10px 12px', borderRadius: 8, marginBottom: 8,
-              background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.15)',
-              fontSize: 11, color: '#94a3b8',
-            }}>
-              <div style={{ fontWeight: 700, color: '#22c55e', fontSize: 12, marginBottom: 6 }}>💰 Payouts Complete</div>
-              {payoutResult.winners.length > 0 && (
-                <div style={{ marginBottom: 4 }}>
-                  <span style={{ color: '#22c55e', fontWeight: 600 }}>Winners ({payoutResult.winners.length}):</span>
-                  {payoutResult.winners.slice(0, 10).map(w => (
-                    <div key={w.name} style={{ paddingLeft: 8 }}>
-                      {w.name}: <span style={{ color: '#22c55e' }}>+{w.amount.toLocaleString()}</span>
-                      {w.balance != null && <span style={{ color: '#64748b' }}> (bal: {w.balance.toLocaleString()})</span>}
-                    </div>
-                  ))}
-                  {payoutResult.winners.length > 10 && <div style={{ paddingLeft: 8, color: '#64748b' }}>...and {payoutResult.winners.length - 10} more</div>}
-                </div>
-              )}
-              {payoutResult.losers.length > 0 && (
-                <div style={{ marginBottom: 4 }}>
-                  <span style={{ color: '#f87171', fontWeight: 600 }}>Losers ({payoutResult.losers.length}):</span>
-                  {payoutResult.losers.slice(0, 10).map(l => (
-                    <div key={l.name} style={{ paddingLeft: 8 }}>
-                      {l.name}: <span style={{ color: '#f87171' }}>-{l.amount.toLocaleString()}</span>
-                      {l.balance != null && <span style={{ color: '#64748b' }}> (bal: {l.balance.toLocaleString()})</span>}
-                    </div>
-                  ))}
-                  {payoutResult.losers.length > 10 && <div style={{ paddingLeft: 8, color: '#64748b' }}>...and {payoutResult.losers.length - 10} more</div>}
-                </div>
-              )}
-              {payoutResult.errors.length > 0 && (
-                <div>
-                  <span style={{ color: '#f59e0b', fontWeight: 600 }}>⚠️ Errors ({payoutResult.errors.length}):</span>
-                  {payoutResult.errors.map((e, i) => (
-                    <div key={i} style={{ paddingLeft: 8, color: '#f59e0b' }}>{e.name}: {e.error}</div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
-          <label className="cg-config__field">
             <span>Min Bet</span>
             <input type="number" value={c.minBet || 10} onChange={e => set('minBet', parseInt(e.target.value) || 10)} />
           </label>
@@ -431,23 +138,37 @@ export default function CoinFlipConfig({ config, onChange }) {
             <input type="number" value={c.maxBet || 10000} onChange={e => set('maxBet', parseInt(e.target.value) || 10000)} />
           </label>
           <label className="cg-config__field">
-            <span>Heads Label</span>
-            <input value={c.headsLabel || 'HEADS'} onChange={e => set('headsLabel', e.target.value)} />
+            <span>Cooldown Between Flips (seconds)</span>
+            <input type="number" value={c.flipCooldown ?? 5} onChange={e => set('flipCooldown', parseInt(e.target.value) || 5)} min={1} max={60} />
           </label>
-          <label className="cg-config__field">
-            <span>Tails Label</span>
-            <input value={c.tailsLabel || 'TAILS'} onChange={e => set('tailsLabel', e.target.value)} />
-          </label>
+
+          {/* Streamer Quick Flip */}
+          <button
+            className="cg-config__btn"
+            style={{
+              width: '100%', padding: '10px 0', marginTop: 4,
+              background: 'rgba(168,85,247,0.12)', color: '#c084fc',
+              border: '1px solid rgba(168,85,247,0.25)', fontWeight: 700,
+            }}
+            onClick={streamerFlip}
+            disabled={!!c.flipping}
+          >
+            🎲 Quick Flip (Preview)
+          </button>
+
+          <p style={{ fontSize: 10, color: '#64748b', margin: '8px 0 0', lineHeight: 1.5 }}>
+            Chat commands: <b style={{ color: '#facc15' }}>!bet heads 500</b>, <b style={{ color: '#60a5fa' }}>!tails 100</b>, <b style={{ color: '#a78bfa' }}>!flip heads</b>, <b style={{ color: '#a78bfa' }}>!cf tails</b>
+          </p>
         </div>
       )}
 
-      {/* ═══ CHAT BETTING TAB ═══ */}
+      {/* ═══ CHAT TAB ═══ */}
       {tab === 'chat' && (
         <div className="cg-config__section">
           <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#e2e8f0', fontWeight: 700 }}>Chat Betting</h4>
           <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Viewers type <b style={{ color: '#facc15' }}>!heads</b> / <b style={{ color: '#60a5fa' }}>!tails</b>,
-            or <b style={{ color: '#a78bfa' }}>!flip heads 500</b> / <b style={{ color: '#a78bfa' }}>!cf tails</b> in chat.
+            Viewers type <b style={{ color: '#facc15' }}>!bet heads 500</b> or <b style={{ color: '#60a5fa' }}>!tails</b> to instantly trigger a flip.
+            Points are paid/deducted automatically.
           </p>
 
           {/* Chat betting toggle */}
@@ -465,68 +186,6 @@ export default function CoinFlipConfig({ config, onChange }) {
               {chatBettingEnabled ? '● Chat Betting Enabled' : '○ Chat Betting Disabled'}
             </span>
           </label>
-
-          {/* Auto-flip mode */}
-          {chatBettingEnabled && (
-            <>
-              <label style={{
-                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
-                background: c.autoFlipEnabled ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)',
-                border: `1px solid ${c.autoFlipEnabled ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.06)'}`,
-                borderRadius: 8, cursor: 'pointer', marginBottom: 8, transition: 'all 0.2s',
-              }}>
-                <input type="checkbox" checked={!!c.autoFlipEnabled}
-                  onChange={e => set('autoFlipEnabled', e.target.checked)}
-                  style={{ accentColor: '#3b82f6' }}
-                />
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  <span style={{ fontWeight: 600, fontSize: 13, color: c.autoFlipEnabled ? '#60a5fa' : '#94a3b8' }}>
-                    {c.autoFlipEnabled ? '● Auto Flip Mode On' : '○ Auto Flip Mode Off'}
-                  </span>
-                  <span style={{ fontSize: 10, color: '#64748b' }}>
-                    Chat commands auto-open bets &amp; trigger the flip
-                  </span>
-                </div>
-              </label>
-
-              {c.autoFlipEnabled && (
-                <div style={{
-                  background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.15)',
-                  borderRadius: 8, padding: '10px 12px', marginBottom: 8,
-                  display: 'flex', flexDirection: 'column', gap: 8,
-                }}>
-                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
-                    <span style={{ color: '#94a3b8' }}>Betting Window</span>
-                    <span style={{ color: '#60a5fa', fontWeight: 700 }}>{c.autoFlipDelay || 15}s</span>
-                  </label>
-                  <input type="range" min={5} max={60} step={5}
-                    value={c.autoFlipDelay || 15}
-                    onChange={e => set('autoFlipDelay', parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#3b82f6' }}
-                  />
-                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
-                    <span style={{ color: '#94a3b8' }}>Reset Cooldown</span>
-                    <span style={{ color: '#60a5fa', fontWeight: 700 }}>{c.flipCooldown || 10}s</span>
-                  </label>
-                  <input type="range" min={3} max={30} step={1}
-                    value={c.flipCooldown || 10}
-                    onChange={e => set('flipCooldown', parseInt(e.target.value))}
-                    style={{ width: '100%', accentColor: '#3b82f6' }}
-                  />
-                  {status === 'idle' && (
-                    <div style={{
-                      display: 'flex', alignItems: 'center', gap: 6, fontSize: 11,
-                      color: '#60a5fa', padding: '6px 8px', borderRadius: 6,
-                      background: 'rgba(59,130,246,0.06)',
-                    }}>
-                      <span style={{ fontSize: 14 }}>🤖</span>
-                      Waiting for chat — type !flip heads or !tails to start
-                    </div>
-                  )}
-                </div>
-              )}
-            </>
-          )}
 
           {/* SE Point payouts toggle */}
           <label style={{
@@ -547,8 +206,8 @@ export default function CoinFlipConfig({ config, onChange }) {
               </span>
               <span style={{ fontSize: 10, color: '#64748b' }}>
                 {seConnected
-                  ? 'Losers lose their bet, winners gain +bet amount'
-                  : '⚠️ Connect StreamElements in Profile first'}
+                  ? 'Winners gain bet amount, losers lose bet amount'
+                  : 'Connect StreamElements in Profile first'}
               </span>
             </div>
           </label>
@@ -567,9 +226,8 @@ export default function CoinFlipConfig({ config, onChange }) {
             </span>
           </div>
 
-          {/* Platform status (synced from Profile) */}
+          {/* Platform status */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-            {/* Twitch */}
             <div style={{
               background: 'rgba(168,85,247,0.06)', border: '1px solid rgba(168,85,247,0.2)',
               borderRadius: 8, padding: '8px 10px',
@@ -586,7 +244,6 @@ export default function CoinFlipConfig({ config, onChange }) {
               {chatStatus2.twitch && <span style={{ fontSize: 9, color: '#22c55e', fontWeight: 700, marginTop: 4, display: 'block' }}>● Connected</span>}
             </div>
 
-            {/* Kick */}
             <div style={{
               background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)',
               borderRadius: 8, padding: '8px 10px',
@@ -609,51 +266,6 @@ export default function CoinFlipConfig({ config, onChange }) {
             </p>
           </div>
 
-          {/* Live bets display */}
-          {(status === 'open' || status === 'result') && Object.keys(chatBets).length > 0 && (
-            <div style={{ maxHeight: 200, overflow: 'auto', marginTop: 4 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 6 }}>
-                Live Bets ({Object.keys(chatBets).length})
-              </div>
-              {/* Heads bets */}
-              {headsBettors.length > 0 && (
-                <div style={{ marginBottom: 6 }}>
-                  <div style={{ fontSize: 10, color: '#facc15', fontWeight: 600, marginBottom: 3 }}>
-                    HEADS ({headsBettors.length})
-                  </div>
-                  {headsBettors.map(([user, b]) => (
-                    <div key={user} style={{
-                      display: 'flex', justifyContent: 'space-between', padding: '2px 6px',
-                      fontSize: 10, color: '#94a3b8', borderLeft: '2px solid #facc15',
-                      marginBottom: 1, background: 'rgba(250,204,21,0.04)',
-                    }}>
-                      <span>{user}</span>
-                      <span style={{ color: '#facc15' }}>{b.amount.toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-              {/* Tails bets */}
-              {tailsBettors.length > 0 && (
-                <div>
-                  <div style={{ fontSize: 10, color: '#60a5fa', fontWeight: 600, marginBottom: 3 }}>
-                    TAILS ({tailsBettors.length})
-                  </div>
-                  {tailsBettors.map(([user, b]) => (
-                    <div key={user} style={{
-                      display: 'flex', justifyContent: 'space-between', padding: '2px 6px',
-                      fontSize: 10, color: '#94a3b8', borderLeft: '2px solid #60a5fa',
-                      marginBottom: 1, background: 'rgba(96,165,250,0.04)',
-                    }}>
-                      <span>{user}</span>
-                      <span style={{ color: '#60a5fa' }}>{b.amount.toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          )}
-
           {!c.twitchChannel && !c.kickChannelId && chatBettingEnabled && (
             <p style={{ fontSize: 11, color: '#f59e0b', margin: '8px 0 0' }}>
               ⚠️ No platforms configured — set your Twitch/Kick channels in <b style={{ color: '#e2e8f0' }}>Profile</b> and click <b style={{ color: '#e2e8f0' }}>Sync All</b>.
@@ -667,7 +279,7 @@ export default function CoinFlipConfig({ config, onChange }) {
         <div className="cg-config__section">
           <h4 style={{ margin: '0 0 4px', fontSize: 13, color: '#e2e8f0', fontWeight: 700 }}>Points Manager</h4>
           <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Give or take StreamElements points from a specific viewer or all current bettors.
+            Give or take StreamElements points from a specific viewer.
           </p>
 
           {/* SE connection status */}
@@ -728,61 +340,6 @@ export default function CoinFlipConfig({ config, onChange }) {
                 ➖ Take
               </button>
             </div>
-          </div>
-
-          {/* All bettors section */}
-          <div style={{
-            background: 'rgba(168,85,247,0.04)', border: '1px solid rgba(168,85,247,0.15)',
-            borderRadius: 10, padding: '12px 14px', marginBottom: 10,
-            display: 'flex', flexDirection: 'column', gap: 8,
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: 12, fontWeight: 700, color: '#c084fc' }}>👥 All Current Bettors</span>
-              <span style={{ fontSize: 10, color: '#94a3b8' }}>{Object.keys(chatBets).length} users</span>
-            </div>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-              <input
-                style={{ flex: 1, fontSize: 12 }}
-                type="number"
-                value={pmAmount}
-                onChange={e => setPmAmount(e.target.value)}
-                placeholder="Amount for all"
-              />
-              <button
-                className="cg-config__btn cg-config__btn--primary"
-                style={{ padding: '8px 14px' }}
-                disabled={!seConnected || pmBusy || !pmAmount || Object.keys(chatBets).length === 0}
-                onClick={() => givePointsToAll(Math.abs(parseInt(pmAmount) || 0))}
-              >
-                ➕ Give All
-              </button>
-              <button
-                className="cg-config__btn"
-                style={{
-                  padding: '8px 14px',
-                  background: 'rgba(239,68,68,0.12)', color: '#f87171',
-                  border: '1px solid rgba(239,68,68,0.25)',
-                }}
-                disabled={!seConnected || pmBusy || !pmAmount || Object.keys(chatBets).length === 0}
-                onClick={() => givePointsToAll(-Math.abs(parseInt(pmAmount) || 0))}
-              >
-                ➖ Take All
-              </button>
-            </div>
-            {Object.keys(chatBets).length > 0 && (
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-                {Object.entries(chatBets).map(([user, b]) => (
-                  <span key={user} style={{
-                    fontSize: 10, padding: '2px 8px', borderRadius: 4, fontWeight: 600,
-                    background: b.side === 'heads' ? 'rgba(250,204,21,0.08)' : 'rgba(96,165,250,0.08)',
-                    color: b.side === 'heads' ? '#facc15' : '#60a5fa',
-                    border: `1px solid ${b.side === 'heads' ? 'rgba(250,204,21,0.2)' : 'rgba(96,165,250,0.2)'}`,
-                  }}>
-                    {user} ({b.amount})
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Processing & result */}
@@ -846,21 +403,34 @@ export default function CoinFlipConfig({ config, onChange }) {
       {tab === 'history' && (
         <div className="cg-config__section">
           {history.length === 0 ? (
-            <p className="cg-config__hint">No flips yet. Start a game to see history here.</p>
+            <p className="cg-config__hint">No flips yet. Chat commands will show results here.</p>
           ) : (
             <div className="cg-config__history">
               {history.map((h, i) => (
-                <div key={i} className="cg-config__history-row">
+                <div key={i} className="cg-config__history-row" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span className={`cg-config__history-result cg-config__history-result--${h.result}`}>
                     {h.result === 'heads' ? '🪙 H' : '🪙 T'}
                   </span>
-                  <span className="cg-config__history-pool">{h.pool?.toLocaleString() || 0} pts</span>
-                  {h.totalBettors > 0 && (
+                  {h.user && (
+                    <span style={{ fontSize: 11, color: '#e2e8f0', fontWeight: 600, minWidth: 60 }}>{h.user}</span>
+                  )}
+                  {h.side && (
+                    <span style={{ fontSize: 10, color: h.side === 'heads' ? '#facc15' : '#60a5fa', fontWeight: 600 }}>
+                      {h.side === 'heads' ? 'H' : 'T'}
+                    </span>
+                  )}
+                  <span style={{ fontSize: 10, color: '#94a3b8' }}>{(h.amount || h.pool || 0).toLocaleString()} pts</span>
+                  {h.won != null && (
+                    <span style={{ fontSize: 10, color: h.won ? '#22c55e' : '#f87171', fontWeight: 700 }}>
+                      {h.won ? '✓ Won' : '✗ Lost'}
+                    </span>
+                  )}
+                  {h.pool != null && h.totalBettors > 0 && (
                     <span style={{ fontSize: 10, color: '#22c55e' }}>
                       {h.winners}/{h.totalBettors} won
                     </span>
                   )}
-                  <span className="cg-config__history-time">{h.time}</span>
+                  <span className="cg-config__history-time" style={{ marginLeft: 'auto' }}>{h.time}</span>
                 </div>
               ))}
             </div>

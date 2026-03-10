@@ -1,18 +1,10 @@
 /**
  * CoinFlipWidget.jsx — Proper 3D coin with CSS transforms.
  *
- * Geometry
- *   Two circular faces separated by DEPTH px along the Z-axis.
- *   Heads face  → translateZ(+HALF)              (faces +Z = viewer at 0°)
- *   Tails face  → rotateY(180deg) translateZ(+HALF)  (faces −Z)
- *   Edge ring   → 15 Z-stacked circle slices forming a visible rim.
- *
- * Animation
- *   Spin uses ease-out cubic baked into keyframe rotation values so the coin
- *   naturally decelerates.  Y-axis follows a toss arc.  rotateX wobble adds realism.
- *
- * Config sets `result` **immediately** when the flip starts so the widget
- * always knows which face to target.
+ * Instant-flip mode: any chat bet triggers an immediate spin.
+ * Commands: !bet heads/tails [amount], !heads [amt], !tails [amt],
+ *           !flip heads [amt], !cf tails [amt], !coinflip heads [amt]
+ * SE points are paid/deducted automatically after each flip.
  */
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
@@ -24,7 +16,6 @@ function CoinFlipWidget({ config, widgetId }) {
   const st = c.displayStyle || 'v1';
   const hColor = c.headsColor || '#f59e0b';
   const tColor = c.tailsColor || '#3b82f6';
-  const text   = c.textColor  || '#ffffff';
   const font   = c.fontFamily || "'Inter', sans-serif";
   const hLabel = c.headsLabel || 'HEADS';
   const tLabel = c.tailsLabel || 'TAILS';
@@ -34,64 +25,30 @@ function CoinFlipWidget({ config, widgetId }) {
   /* Guard stale flipping flag (>6 s) */
   const flipping = c.flipping && c._flipStart && (Date.now() - c._flipStart < 6000);
 
-  /* ── Bet data ── */
-  const chatBets = c._chatBets || {};
-  const headsBettors = Object.entries(chatBets).filter(([, b]) => b.side === 'heads');
-  const tailsBettors = Object.entries(chatBets).filter(([, b]) => b.side === 'tails');
-  const headsTotal = headsBettors.reduce((s, [, b]) => s + b.amount, 0);
-  const tailsTotal = tailsBettors.reduce((s, [, b]) => s + b.amount, 0);
-  const showBets = c.chatBettingEnabled && (headsBettors.length > 0 || tailsBettors.length > 0);
-  const status = c.gameStatus || 'idle';
-
-  /* ─── Chat listener: detect !head / !tails bets ─── */
-  const chatBetsRef = useRef(chatBets);
-  const pendingBetsRef = useRef({});
-  useEffect(() => { chatBetsRef.current = chatBets; }, [chatBets]);
-
-  // Flush pending bets to Supabase every 1.5s
-  useEffect(() => {
-    if (!widgetId) return;
-    const timer = setInterval(async () => {
-      const pending = pendingBetsRef.current;
-      if (Object.keys(pending).length === 0) return;
-      const batch = { ...pending };
-      pendingBetsRef.current = {};
-      try {
-        const { data } = await supabase
-          .from('overlay_widgets')
-          .select('config')
-          .eq('id', widgetId)
-          .single();
-        if (!data) return;
-        const current = data.config?._chatBets || {};
-        const merged = { ...current, ...batch };
-        if (Object.keys(merged).length === Object.keys(current).length) return;
-        await supabase
-          .from('overlay_widgets')
-          .update({ config: { ...data.config, _chatBets: merged }, updated_at: new Date().toISOString() })
-          .eq('id', widgetId);
-      } catch (err) {
-        console.error('[CoinFlipWidget] flush bets failed:', err);
-        pendingBetsRef.current = { ...batch, ...pendingBetsRef.current };
-      }
-    }, 1500);
-    return () => clearInterval(timer);
-  }, [widgetId]);
-
   const minBet = c.minBet || 10;
   const maxBet = c.maxBet || 10000;
   const chatBettingEnabled = !!c.chatBettingEnabled;
+  const flipCooldown = (c.flipCooldown ?? 5) * 1000;
+  const cooldownRef = useRef(null);
+  const flippingRef = useRef(false);
+  useEffect(() => { flippingRef.current = flipping; }, [flipping]);
+  useEffect(() => () => { if (cooldownRef.current) clearTimeout(cooldownRef.current); }, []);
 
-  /* ── Auto-flip mode ── */
-  const autoFlipEnabled = !!c.autoFlipEnabled;
-  const autoFlipDelay = (c.autoFlipDelay ?? 15) * 1000;
-  const flipCooldown = (c.flipCooldown ?? 10) * 1000;
-  const autoTimerRef = useRef(null);
-  const autoResetRef = useRef(null);
-  useEffect(() => () => {
-    if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
-    if (autoResetRef.current) clearTimeout(autoResetRef.current);
-  }, []);
+  /* ── SE credentials (from env or config) ── */
+  const seChannelId = c.seChannelId || import.meta.env.VITE_SE_CHANNEL_ID || '';
+  const seJwtToken  = c.seJwtToken  || import.meta.env.VITE_SE_JWT_TOKEN  || '';
+  const seConnected = !!seChannelId && !!seJwtToken;
+  const pointPayoutsEnabled = !!c.pointPayoutsEnabled && seConnected;
+
+  const modifyPoints = useCallback(async (username, amount) => {
+    if (!seConnected) return;
+    try {
+      await fetch(
+        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${username}/${amount}`,
+        { method: 'PUT', headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Accept': 'application/json' } }
+      );
+    } catch (e) { console.error('[CoinFlip] SE points error:', e); }
+  }, [seConnected, seChannelId, seJwtToken]);
 
   const writeConfig = useCallback(async (patch) => {
     if (!widgetId) return;
@@ -105,7 +62,8 @@ function CoinFlipWidget({ config, widgetId }) {
     } catch (e) { console.error('[CoinFlip] writeConfig:', e); }
   }, [widgetId]);
 
-  const doAutoFlip = useCallback(async () => {
+  /* ── Instant flip: one bet → immediate spin → payout → ready ── */
+  const doInstantFlip = useCallback(async (user, side, amount) => {
     if (!widgetId) return;
     let result;
     if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
@@ -114,79 +72,62 @@ function CoinFlipWidget({ config, widgetId }) {
     } else {
       result = Math.random() < 0.5 ? 'heads' : 'tails';
     }
-    // Flush pending bets first
-    const pending = { ...pendingBetsRef.current };
-    pendingBetsRef.current = {};
+    const won = side === result;
+    // Start spin
     try {
       const { data } = await supabase.from('overlay_widgets').select('config').eq('id', widgetId).single();
       if (!data) return;
       const cfg = data.config || {};
-      const mergedBets = { ...(cfg._chatBets || {}), ...pending };
       await supabase.from('overlay_widgets').update({
-        config: { ...cfg, _chatBets: mergedBets, gameStatus: 'flipping', flipping: true, _flipStart: Date.now(), _prevResult: cfg.result || 'heads', result },
+        config: { ...cfg, flipping: true, _flipStart: Date.now(), _prevResult: cfg.result || 'heads', result },
         updated_at: new Date().toISOString(),
       }).eq('id', widgetId);
-    } catch (e) { console.error('[CoinFlip] auto-flip start:', e); return; }
-    // After animation → result
+    } catch (e) { console.error('[CoinFlip] flip start:', e); return; }
+    // After animation → result + payout
     setTimeout(async () => {
+      // SE payout
+      if (pointPayoutsEnabled) {
+        await modifyPoints(user, won ? amount : -amount);
+      }
       try {
         const { data } = await supabase.from('overlay_widgets').select('config').eq('id', widgetId).single();
         if (!data) return;
         const cfg = data.config || {};
-        const bets = Object.entries(cfg._chatBets || {});
-        const entry = {
-          result, time: new Date().toLocaleTimeString(),
-          pool: bets.reduce((s, [, b]) => s + b.amount, 0),
-          winners: bets.filter(([, b]) => b.side === result).length,
-          totalBettors: bets.length,
-        };
+        const entry = { result, user, side, amount, won, time: new Date().toLocaleTimeString() };
         await supabase.from('overlay_widgets').update({
-          config: { ...cfg, gameStatus: 'result', flipping: false, flipHistory: [entry, ...(cfg.flipHistory || [])].slice(0, 30) },
+          config: { ...cfg, flipping: false, flipHistory: [entry, ...(cfg.flipHistory || [])].slice(0, 50) },
           updated_at: new Date().toISOString(),
         }).eq('id', widgetId);
-      } catch (e) { console.error('[CoinFlip] auto-flip result:', e); }
-      // Auto-reset after cooldown
-      autoResetRef.current = setTimeout(() => {
-        writeConfig({ gameStatus: 'idle', _chatBets: {}, flipping: false });
-      }, flipCooldown);
+      } catch (e) { console.error('[CoinFlip] flip result:', e); }
+      // Cooldown before accepting new bets
+      cooldownRef.current = setTimeout(() => { cooldownRef.current = null; }, flipCooldown);
     }, 3000);
-  }, [widgetId, flipCooldown, writeConfig]);
+  }, [widgetId, flipCooldown, pointPayoutsEnabled, modifyPoints]);
 
-  /* ── Chat handler: !heads, !tails, !flip, !cf, !coinflip ── */
+  /* ── Chat handler ── */
   const handleChatMessage = useCallback((msg) => {
     if (!chatBettingEnabled) return;
+    if (flippingRef.current || cooldownRef.current) return;
     const txt = (msg.message || '').trim().toLowerCase();
 
-    /* Parse: !heads [amt], !tails [amt], !flip heads [amt], !cf tails [amt], !coinflip heads [amt] */
     let side, amount;
-    const m1 = txt.match(/^!(heads?|tails?)\s*(\d*)$/);
-    if (m1) { side = m1[1].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m1[2]) || minBet; }
-    if (!side) {
-      const m2 = txt.match(/^!(flip|cf|coinflip)\s+(heads?|tails?)\s*(\d*)$/);
-      if (m2) { side = m2[2].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m2[3]) || minBet; }
-    }
+    /* !bet heads 500 / !bet tails */
+    const mb = txt.match(/^!bet\s+(heads?|tails?)\s*(\d*)$/);
+    if (mb) { side = mb[1].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(mb[2]) || minBet; }
+    /* !heads 500, !tails */
+    if (!side) { const m1 = txt.match(/^!(heads?|tails?)\s*(\d*)$/); if (m1) { side = m1[1].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m1[2]) || minBet; } }
+    /* !flip heads 500, !cf tails, !coinflip heads */
+    if (!side) { const m2 = txt.match(/^!(flip|cf|coinflip)\s+(heads?|tails?)\s*(\d*)$/); if (m2) { side = m2[2].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m2[3]) || minBet; } }
     if (!side) return;
     amount = Math.max(minBet, Math.min(maxBet, amount));
     const user = msg.username;
     if (!user) return;
+    doInstantFlip(user, side, amount);
+  }, [chatBettingEnabled, minBet, maxBet, doInstantFlip]);
 
-    /* Auto-flip: auto-open when idle and start the countdown */
-    if (autoFlipEnabled && status === 'idle') {
-      if (chatBetsRef.current[user] || pendingBetsRef.current[user]) return;
-      pendingBetsRef.current[user] = { side, amount, time: Date.now() };
-      writeConfig({ gameStatus: 'open', result: null, _chatBets: {} });
-      if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
-      autoTimerRef.current = setTimeout(() => doAutoFlip(), autoFlipDelay);
-      return;
-    }
-
-    if (status !== 'open') return;
-    if (chatBetsRef.current[user] || pendingBetsRef.current[user]) return;
-    pendingBetsRef.current[user] = { side, amount, time: Date.now() };
-  }, [chatBettingEnabled, status, minBet, maxBet, autoFlipEnabled, autoFlipDelay, writeConfig, doAutoFlip]);
-
-  const listenTwitch = chatBettingEnabled && (status === 'open' || (autoFlipEnabled && status === 'idle')) && !!c.twitchEnabled && !!c.twitchChannel;
-  const listenKick   = chatBettingEnabled && (status === 'open' || (autoFlipEnabled && status === 'idle')) && !!c.kickEnabled   && !!c.kickChannelId;
+  /* Always listen for chat when betting is enabled */
+  const listenTwitch = chatBettingEnabled && !!c.twitchEnabled && !!c.twitchChannel;
+  const listenKick   = chatBettingEnabled && !!c.kickEnabled   && !!c.kickChannelId;
   useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
   useKickChat(listenKick ? c.kickChannelId : '', handleChatMessage);
 
@@ -268,64 +209,13 @@ function CoinFlipWidget({ config, widgetId }) {
     return slices;
   };
 
-  /* ── Bets bar ── */
-  const BetsBar = () => {
-    if (!showBets) return null;
-    const tot = headsTotal + tailsTotal || 1;
-    const hp = Math.round((headsTotal / tot) * 100);
-    return (
-      <div style={{ width: '88%', maxWidth: 400, display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0, fontFamily: font, fontSize: 'clamp(8px,2.5cqi,13px)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700 }}>
-          <span style={{ color: hColor }}>{hLabel} ({headsBettors.length})</span>
-          <span style={{ color: tColor }}>{tLabel} ({tailsBettors.length})</span>
-        </div>
-        <div style={{ width: '100%', height: 8, borderRadius: 4, overflow: 'hidden', background: 'rgba(255,255,255,0.08)', display: 'flex' }}>
-          <div style={{ width: `${hp}%`, height: '100%', background: hColor, transition: 'width 0.4s' }} />
-          <div style={{ width: `${100 - hp}%`, height: '100%', background: tColor, transition: 'width 0.4s' }} />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', color: 'rgba(255,255,255,0.5)', fontSize: 'clamp(7px,2cqi,11px)' }}>
-          <span>{headsTotal.toLocaleString()} pts</span>
-          <span>{tailsTotal.toLocaleString()} pts</span>
-        </div>
-      </div>
-    );
-  };
-
-  /* ── Result label ── */
-  const ResultLabel = ({ extra }) => {
-    if (flipping || !c.result) return null;
-    return (
-      <div style={{
-        fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em',
-        animation: 'cf-pop 0.4s ease-out forwards',
-        fontSize: 'clamp(10px,4cqi,22px)',
-        color: isHeads ? hColor : tColor,
-        textShadow: `0 0 12px ${(isHeads ? hColor : tColor)}66`,
-        ...extra,
-      }}>
-        {isHeads ? hLabel : tLabel}
-      </div>
-    );
-  };
-
-  /* ── Ground shadow ── */
-  const Shadow = () => (
-    <div style={{
-      width: '40%', height: 6, borderRadius: '50%', flexShrink: 0, marginTop: -2,
-      background: flipping
-        ? 'radial-gradient(ellipse, rgba(0,0,0,0.15) 0%, transparent 70%)'
-        : 'radial-gradient(ellipse, rgba(0,0,0,0.3) 0%, transparent 70%)',
-      animation: flipping ? 'cf-shad 0.4s ease-in-out infinite' : 'none',
-    }} />
-  );
-
   /* ── Shared layout pieces ── */
   const wrap = {
     width: '100%', height: '100%', display: 'flex', flexDirection: 'column',
     alignItems: 'center', justifyContent: 'center', gap: '3%',
     fontFamily: font, perspective: 800, background: 'transparent', containerType: 'inline-size',
   };
-  const coinOuter = { width: '50%', maxHeight: showBets ? '55%' : '65%', aspectRatio: '1', flexShrink: 0 };
+  const coinOuter = { width: '60%', maxHeight: '75%', aspectRatio: '1', flexShrink: 0 };
   const coinBody  = { width: '100%', height: '100%', position: 'relative', transformStyle: 'preserve-3d', animation: anim3d };
   /* clipPath instead of overflow:hidden — overflow:hidden flattens the 3D context
      in Chromium/OBS and breaks backfaceVisibility */
@@ -344,7 +234,6 @@ function CoinFlipWidget({ config, widgetId }) {
     return (
       <div style={wrap}>
         <style>{kf}</style>
-        {status === 'open' && <BetsBar />}
         <div style={{ ...coinOuter, filter: 'drop-shadow(0 8px 24px rgba(0,0,0,0.45))' }}>
           <div style={coinBody}>
             {edgeRing(`${hColor}88`, `${hColor}55`)}
@@ -362,9 +251,6 @@ function CoinFlipWidget({ config, widgetId }) {
             })}>{faceContent('tails')}</div>
           </div>
         </div>
-        <Shadow />
-        <ResultLabel />
-        {status === 'result' && <BetsBar />}
       </div>
     );
   }
@@ -377,7 +263,6 @@ function CoinFlipWidget({ config, widgetId }) {
     return (
       <div style={wrap}>
         <style>{kf}</style>
-        {status === 'open' && <BetsBar />}
         <div style={{ ...coinOuter, filter: `drop-shadow(0 0 28px ${glow}55)` }}>
           <div style={coinBody}>
             {edgeRing('#1a1a2e', '#0d0d14')}
@@ -395,9 +280,6 @@ function CoinFlipWidget({ config, widgetId }) {
             })}>{faceContent('tails')}</div>
           </div>
         </div>
-        <Shadow />
-        <ResultLabel extra={{ textShadow: `0 0 20px ${glow}` }} />
-        {status === 'result' && <BetsBar />}
       </div>
     );
   }
@@ -410,9 +292,8 @@ function CoinFlipWidget({ config, widgetId }) {
     return (
       <div style={{ ...wrap, perspective: 'none' }}>
         <style>{kf}</style>
-        {status === 'open' && <BetsBar />}
         <div style={{
-          width: '48%', maxHeight: '65%', aspectRatio: '1', borderRadius: '50%', flexShrink: 0,
+          width: '55%', maxHeight: '75%', aspectRatio: '1', borderRadius: '50%', flexShrink: 0,
           background: hasImg(isHeads ? 'heads' : 'tails') ? 'transparent' : bg,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
@@ -422,12 +303,6 @@ function CoinFlipWidget({ config, widgetId }) {
         }}>
           {faceContent(isHeads ? 'heads' : 'tails')}
         </div>
-        {!flipping && c.result && (
-          <div style={{ fontSize: 'clamp(10px,3.5cqi,18px)', fontWeight: 700, color: text, textTransform: 'uppercase' }}>
-            {isHeads ? hLabel : tLabel}
-          </div>
-        )}
-        {status === 'result' && <BetsBar />}
       </div>
     );
   }
@@ -438,7 +313,6 @@ function CoinFlipWidget({ config, widgetId }) {
   return (
     <div style={wrap}>
       <style>{kf}</style>
-      {status === 'open' && <BetsBar />}
       <div style={{ ...coinOuter, filter: 'drop-shadow(0 10px 24px rgba(0,0,0,0.45))' }}>
         <div style={coinBody}>
           {edgeRing('#92400e', '#d4a017')}
@@ -460,18 +334,6 @@ function CoinFlipWidget({ config, widgetId }) {
           })}>{faceContent('tails')}</div>
         </div>
       </div>
-      <Shadow />
-      {!flipping && c.result && (
-        <div style={{
-          fontSize: 'clamp(10px,3.8cqi,18px)', fontWeight: 800, textTransform: 'uppercase',
-          background: `linear-gradient(90deg, ${isHeads ? hColor : tColor}, #fff, ${isHeads ? hColor : tColor})`,
-          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-          backgroundSize: '200%', animation: 'cf-shimmer 2s linear infinite',
-        }}>
-          {isHeads ? hLabel : tLabel}
-        </div>
-      )}
-      {status === 'result' && <BetsBar />}
     </div>
   );
 }
