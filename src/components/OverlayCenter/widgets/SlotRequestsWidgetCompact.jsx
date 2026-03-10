@@ -13,7 +13,9 @@ export default function SlotRequestsWidgetCompact({ config, requests }) {
 
   const accent = c.accentColor || '#f59e0b';
   const textColor = c.textColor || '#ffffff';
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const fontFamily = c.fontFamily || "'Poppins', sans-serif";
+  const configFontSize = c.fontSize ? `${c.fontSize}px` : undefined;
+  const fontWeight = c.fontWeight || '600';
   const autoSpeed = Number(c.autoSpeed) || 4000;
 
   const hex2rgb = (hex) => {
@@ -87,7 +89,7 @@ export default function SlotRequestsWidgetCompact({ config, requests }) {
 
   if (total === 0) {
     return (
-      <div className="sr-compact-root" style={{ fontFamily, color: textColor, ...rootVars }}>
+      <div className="sr-compact-root" style={{ fontFamily, fontSize: configFontSize, fontWeight: Number(fontWeight), color: textColor, ...rootVars }}>
         <div style={{ textAlign: 'center', opacity: 0.5, fontSize: '1em', padding: 30 }}>
           <div style={{ fontSize: '2em', marginBottom: 6 }}>🎰</div>
           No requests yet
@@ -97,7 +99,7 @@ export default function SlotRequestsWidgetCompact({ config, requests }) {
   }
 
   return (
-    <div className="sr-compact-root" style={{ fontFamily, color: textColor, ...rootVars }}>
+    <div className="sr-compact-root" style={{ fontFamily, fontSize: configFontSize, fontWeight: Number(fontWeight), color: textColor, ...rootVars }}>
       <div className="sr-compact-stage">
         <div className="sr-compact-perspective">
           {visibleCards.map(({ req, idx, offset }) => {

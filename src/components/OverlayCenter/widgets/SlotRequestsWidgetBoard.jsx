@@ -17,7 +17,9 @@ export default function SlotRequestsWidgetBoard({ config, requests }) {
   const containerBg = c.bgColor || 'rgba(15,23,42,0.82)';
   const cardBg = c.cardBg || 'rgba(15,23,42,0.6)';
   const showRequester = c.showRequester !== false;
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const fontFamily = c.fontFamily || "'Poppins', sans-serif";
+  const configFontSize = c.fontSize ? `${c.fontSize}px` : undefined;
+  const fontWeight = c.fontWeight || '600';
   const autoSpeed = Number(c.autoSpeed) || 4000;
 
   const hex2rgb = (hex) => {
@@ -97,7 +99,7 @@ export default function SlotRequestsWidgetBoard({ config, requests }) {
   /* ── Empty state ── */
   if (total === 0) {
     return (
-      <div className="sr-board-root" style={{ fontFamily, color: textColor, ...rootVars }}>
+      <div className="sr-board-root" style={{ fontFamily, fontSize: configFontSize, fontWeight: Number(fontWeight), color: textColor, ...rootVars }}>
         <div className="sr-board-container">
           <div style={{ textAlign: 'center', opacity: 0.5, fontSize: '1.1em', padding: 40 }}>
             <div style={{ fontSize: '2.5em', marginBottom: 8 }}>🎰</div>

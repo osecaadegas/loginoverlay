@@ -16,10 +16,12 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
   const mutedColor = c.mutedColor || '#94a3b8';
   const showRequester = c.showRequester !== false;
   const showNumbers = c.showNumbers !== false;
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const fontFamily = c.fontFamily || "'Poppins', sans-serif";
+  const configFontSize = c.fontSize ? Number(c.fontSize) : null;
+  const fontWeight = c.fontWeight || '600';
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (configFontSize || !containerRef.current) return;
     const observer = new ResizeObserver(entries => {
       for (const entry of entries) {
         const min = Math.min(entry.contentRect.width, entry.contentRect.height);
@@ -28,9 +30,10 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
     });
     observer.observe(containerRef.current);
     return () => observer.disconnect();
-  }, []);
+  }, [configFontSize]);
 
-  const imgSize = Math.max(40, fontSize * 3.6);
+  const fs = configFontSize || fontSize;
+  const imgSize = Math.max(40, fs * 3.6);
 
   return (
     <div
@@ -49,10 +52,10 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
       <div style={{
         flex: 1,
         overflowY: 'auto',
-        padding: `${fontSize * 0.4}px`,
+        padding: `${fs * 0.4}px`,
         display: 'flex',
         flexDirection: 'column',
-        gap: fontSize * 0.5,
+        gap: fs * 0.5,
       }}>
         {requests.length === 0 && (
           <div style={{
@@ -61,7 +64,7 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
             justifyContent: 'center',
             flex: 1,
             color: mutedColor,
-            fontSize: fontSize * 0.85,
+            fontSize: fs * 0.85,
             opacity: 0.6,
           }}>
             No requests yet — viewers type !sr
@@ -74,23 +77,23 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
             style={{
               display: 'flex',
               alignItems: 'center',
-              gap: fontSize * 0.6,
-              padding: `${fontSize * 0.45}px ${fontSize * 0.6}px`,
+              gap: fs * 0.6,
+              padding: `${fs * 0.45}px ${fs * 0.6}px`,
               background: 'rgba(0,0,0,0.55)',
               backdropFilter: 'blur(8px)',
               WebkitBackdropFilter: 'blur(8px)',
               border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: fontSize * 0.6,
+              borderRadius: fs * 0.6,
               boxShadow: '0 4px 16px rgba(0,0,0,0.35)',
               transition: 'transform 0.2s, box-shadow 0.2s',
             }}
           >
             {showNumbers && (
               <span style={{
-                fontSize: fontSize * 0.8,
+                fontSize: fs * 0.8,
                 fontWeight: 800,
                 color: accent,
-                minWidth: fontSize * 1.4,
+                minWidth: fs * 1.4,
                 textAlign: 'center',
                 flexShrink: 0,
               }}>
@@ -103,7 +106,7 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
               style={{
                 width: imgSize,
                 height: imgSize,
-                borderRadius: fontSize * 0.4,
+                borderRadius: fs * 0.4,
                 objectFit: 'cover',
                 flexShrink: 0,
                 border: `2px solid rgba(255,255,255,0.1)`,
@@ -112,8 +115,8 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
             />
             <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
               <span style={{
-                fontSize: fontSize * 1.05,
-                fontWeight: 700,
+                fontSize: fs * 1.05,
+                fontWeight: Number(fontWeight),
                 whiteSpace: 'nowrap',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -123,7 +126,7 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
               </span>
               {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
                 <span style={{
-                  fontSize: fontSize * 0.72,
+                  fontSize: fs * 0.72,
                   color: mutedColor,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',

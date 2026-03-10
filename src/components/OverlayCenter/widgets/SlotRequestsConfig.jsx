@@ -7,6 +7,17 @@ import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 
+const FONT_OPTIONS = [
+  { value: "'Poppins', sans-serif", label: 'Poppins' },
+  { value: "'Inter', sans-serif", label: 'Inter' },
+  { value: "'Roboto', sans-serif", label: 'Roboto' },
+  { value: "'Oswald', sans-serif", label: 'Oswald' },
+  { value: "'Montserrat', sans-serif", label: 'Montserrat' },
+  { value: "'Fira Code', monospace", label: 'Fira Code' },
+  { value: "'Bebas Neue', cursive", label: 'Bebas Neue' },
+  { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
+];
+
 const S = {
   section: { display: 'flex', flexDirection: 'column', gap: 10 },
   label: { fontSize: '0.78rem', fontWeight: 600, color: '#e2e8f0' },
@@ -201,6 +212,42 @@ export default function SlotRequestsConfig({ config, onChange }) {
             onChange={e => set('maxDisplay', Math.max(1, +e.target.value))}
             style={{ width: 50, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '4px 6px', fontSize: '0.78rem' }}
           />
+        </label>
+      </div>
+
+      {/* Typography */}
+      <div>
+        <p style={S.label}>🔤 Typography</p>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0', marginBottom: 6 }}>
+          Font
+          <select
+            value={c.fontFamily || "'Poppins', sans-serif"}
+            onChange={e => set('fontFamily', e.target.value)}
+            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '4px 6px', fontSize: '0.78rem' }}
+          >
+            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+          </select>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0', marginBottom: 6 }}>
+          Size
+          <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
+            onChange={e => set('fontSize', +e.target.value)}
+            style={{ flex: 1, accentColor: '#f59e0b' }}
+          />
+          <span style={{ fontSize: '0.72rem', color: '#94a3b8', minWidth: 30 }}>{c.fontSize || 14}px</span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0' }}>
+          Weight
+          <select
+            value={c.fontWeight || '600'}
+            onChange={e => set('fontWeight', e.target.value)}
+            style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '4px 6px', fontSize: '0.78rem' }}
+          >
+            <option value="400">Normal</option>
+            <option value="600">Semi Bold</option>
+            <option value="700">Bold</option>
+            <option value="800">Extra Bold</option>
+          </select>
         </label>
       </div>
 
