@@ -173,9 +173,9 @@ export default function OverlayRenderer() {
   const [exitTick, setExitTick] = useState(0);
 
   const visibleWidgets = useMemo(() => {
-    const visible = widgets.filter(w => w.is_visible);
-    if (singleWidgetId) return visible.filter(w => w.id === singleWidgetId);
-    return visible;
+    // Standalone URL (?widget=id): always render the requested widget even if hidden
+    if (singleWidgetId) return widgets.filter(w => w.id === singleWidgetId);
+    return widgets.filter(w => w.is_visible);
   }, [widgets, singleWidgetId]);
 
   // Detect newly-hidden widgets and keep them for exit animation
