@@ -338,6 +338,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   });
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
   const [imageShowCount, setImageShowCount] = useState(10);
+
+  // Slot requests queue
+  const [slotRequests, setSlotRequests] = useState([]);
   const [prettyImage, setPrettyImage] = useState(false);
 
   // Persist submit slot state to localStorage
@@ -658,34 +661,91 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
   const currency = config?.currency || '€';
 
+  // Fetch slot requests
+  useEffect(() => {
+    if (!userId) return;
+    const load = async () => {
+      const { data } = await supabase
+        .from('slot_requests')
+        .select('id, slot_name, slot_image, requested_by, created_at')
+        .eq('user_id', userId)
+        .eq('status', 'pending')
+        .order('created_at', { ascending: true });
+      if (data) setSlotRequests(data);
+    };
+    load();
+    const chan = supabase.channel('bh-sr-' + userId)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_requests', filter: `user_id=eq.${userId}` }, () => load())
+      .subscribe();
+    return () => { supabase.removeChannel(chan); };
+  }, [userId]);
+
+  const handlePickRequest = (req) => {
+    const match = slots.find(s => s.name.toLowerCase() === req.slot_name.toLowerCase());
+    if (match) {
+      setSelectedSlot(match);
+      setSlotSearch(match.name);
+    } else {
+      setSelectedSlot(null);
+      setSlotSearch(req.slot_name);
+    }
+  };
+
+  const handleDismissRequest = async (id) => {
+    await supabase.from('slot_requests').update({ status: 'dismissed' }).eq('id', id);
+    setSlotRequests(prev => prev.filter(r => r.id !== id));
+  };
+
   return (
     <div className="bh-panel">
 
       {/* ─── Hunt Settings ─── */}
       <div className="bh-panel-section">
         <h4 className="bh-panel-label">Hunt Settings</h4>
-        <div className="bh-settings-row">
-          <label className="bh-input-group bh-input-sm">
-            <span>Hunt #</span>
-            <input type="text" value={huntNumber}
-              placeholder="42"
-              onChange={e => setHuntNumber(e.target.value)}
-              onBlur={() => save()} />
-          </label>
-          <label className="bh-input-group bh-input-md">
-            <span>Start ({currency})</span>
-            <input type="number" value={startMoney}
-              placeholder="0"
-              onChange={e => setStartMoney(e.target.value)}
-              onBlur={() => save()} />
-          </label>
-          <label className="bh-input-group bh-input-md">
-            <span>Stop Loss ({currency})</span>
-            <input type="number" value={stopLoss}
-              placeholder="0"
-              onChange={e => setStopLoss(e.target.value)}
-              onBlur={() => save()} />
-          </label>
+        <div style={{ display: 'flex', gap: '12px', alignItems: 'flex-start' }}>
+          {/* Left: inputs */}
+          <div className="bh-settings-row" style={{ flex: '0 0 auto' }}>
+            <label className="bh-input-group bh-input-sm">
+              <span>Hunt #</span>
+              <input type="text" value={huntNumber}
+                placeholder="42"
+                onChange={e => setHuntNumber(e.target.value)}
+                onBlur={() => save()} />
+            </label>
+            <label className="bh-input-group bh-input-md">
+              <span>Start ({currency})</span>
+              <input type="number" value={startMoney}
+                placeholder="0"
+                onChange={e => setStartMoney(e.target.value)}
+                onBlur={() => save()} />
+            </label>
+            <label className="bh-input-group bh-input-md">
+              <span>Stop Loss ({currency})</span>
+              <input type="number" value={stopLoss}
+                placeholder="0"
+                onChange={e => setStopLoss(e.target.value)}
+                onBlur={() => save()} />
+            </label>
+          </div>
+
+          {/* Right: Slot Requests queue */}
+          {slotRequests.length > 0 && (
+            <div className="bh-sr-queue">
+              <span className="bh-sr-queue-title">🎰 Requests ({slotRequests.length})</span>
+              <div className="bh-sr-queue-list">
+                {slotRequests.map(req => (
+                  <div key={req.id} className="bh-sr-queue-item" onClick={() => handlePickRequest(req)} title={`Click to add "${req.slot_name}" to search`}>
+                    {req.slot_image && <img src={req.slot_image} alt="" className="bh-sr-queue-img" onError={e => { e.target.style.display = 'none'; }} />}
+                    <div className="bh-sr-queue-info">
+                      <span className="bh-sr-queue-name">{req.slot_name}</span>
+                      <span className="bh-sr-queue-by">by {req.requested_by}</span>
+                    </div>
+                    <button className="bh-sr-queue-dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss">✕</button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
