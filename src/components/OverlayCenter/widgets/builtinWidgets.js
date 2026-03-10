@@ -613,7 +613,10 @@ registerWidget({
   category: 'stream',
   component: SlotRequestsWidget,
   configPanel: SlotRequestsConfig,
-  styles: [{ id: 'v1', icon: '📋', label: 'Classic' }],
+  styles: [
+    { id: 'v1', icon: '📋', label: 'Classic List' },
+    { id: 'v2_board', icon: '🎯', label: 'Hunt Board' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     maxDisplay: 10,
