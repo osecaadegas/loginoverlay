@@ -28,9 +28,26 @@ const S = {
   },
 };
 
-export default function BHStatsConfig({ config, onChange }) {
+export default function BHStatsConfig({ config, onChange, allWidgets }) {
   const c = config || {};
   const set = (key, val) => onChange({ ...c, [key]: val });
+  const setMulti = (obj) => onChange({ ...c, ...obj });
+
+  const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
+
+  const syncFromNavbar = () => {
+    if (!navbarConfig) return;
+    const nb = navbarConfig;
+    setMulti({
+      bgColor: nb.bgColor || '#0f172a',
+      textColor: nb.textColor || '#f1f5f9',
+      mutedColor: nb.mutedColor || '#64748b',
+      accentColor: nb.accentColor || '#818cf8',
+      borderColor: nb.borderColor || 'rgba(255,255,255,0.06)',
+      fontFamily: nb.fontFamily || "'Poppins', sans-serif",
+      fontSize: nb.fontSize ?? 14,
+    });
+  };
 
   return (
     <div style={S.section}>
@@ -42,6 +59,21 @@ export default function BHStatsConfig({ config, onChange }) {
           Make sure you have a Bonus Hunt widget added to this overlay.
         </p>
       </div>
+
+      {/* Sync from Navbar */}
+      {navbarConfig && (
+        <button
+          onClick={syncFromNavbar}
+          style={{
+            width: '100%', padding: '8px 12px', fontSize: '0.78rem', fontWeight: 700,
+            background: 'rgba(129,140,248,0.15)', color: '#818cf8',
+            border: '1px solid rgba(129,140,248,0.25)', borderRadius: 8,
+            cursor: 'pointer', transition: 'opacity 0.2s',
+          }}
+        >
+          🔗 Sync Colors from Navbar
+        </button>
+      )}
 
       {/* Hunt Number override */}
       <div>

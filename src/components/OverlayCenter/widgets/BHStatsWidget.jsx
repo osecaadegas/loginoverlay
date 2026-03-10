@@ -91,7 +91,8 @@ export default function BHStatsWidget({ config, allWidgets }) {
   }, []);
 
   const fmt = n => Number(n || 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const fmtX = n => Number(n || 0).toFixed(2) + 'x';
+  const fmtInt = n => Math.round(Number(n || 0)).toLocaleString();
+  const fmtX = n => Math.round(Number(n || 0)) + 'x';
 
   const fs = fontSize * scale;
   const gap = Math.max(4, 6 * scale);
@@ -126,18 +127,19 @@ export default function BHStatsWidget({ config, allWidgets }) {
   };
 
   const labelStyle = {
-    fontSize: `${fs * 0.65}px`,
+    fontSize: `${fs * 0.7}px`,
     fontWeight: 700,
     color: mutedColor,
     textTransform: 'uppercase',
-    letterSpacing: '0.08em',
+    letterSpacing: '0.1em',
     lineHeight: 1.2,
+    marginBottom: 2,
   };
 
   const valStyle = {
-    fontSize: `${fs * 1.15}px`,
+    fontSize: `${fs * 1.35}px`,
     fontWeight: 800,
-    lineHeight: 1.3,
+    lineHeight: 1.2,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -188,19 +190,19 @@ export default function BHStatsWidget({ config, allWidgets }) {
         </div>
       </div>
 
-      {/* Row 2: Start / Stop */}
+      {/* Row 2: Start / Stop / Total Win */}
       <div style={{ display: 'flex', gap }}>
         <div style={statBoxStyle}>
           <span style={labelStyle}>Start</span>
-          <span style={valStyle}>{currency}{fmt(startMoney)}</span>
+          <span style={valStyle}>{currency}{fmtInt(startMoney)}</span>
         </div>
         <div style={statBoxStyle}>
           <span style={labelStyle}>Stop</span>
-          <span style={valStyle}>{currency}{fmt(stopLoss)}</span>
+          <span style={valStyle}>{currency}{fmtInt(stopLoss)}</span>
         </div>
         <div style={statBoxStyle}>
           <span style={labelStyle}>Total Win</span>
-          <span style={{ ...valStyle, color: bestColor }}>{currency}{fmt(stats.totalWin)}</span>
+          <span style={{ ...valStyle, color: bestColor }}>{currency}{fmtInt(stats.totalWin)}</span>
         </div>
       </div>
 
@@ -230,8 +232,8 @@ export default function BHStatsWidget({ config, allWidgets }) {
           }} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-          <span style={{ fontSize: `${fs * 0.6}px`, color: mutedColor }}>{stats.unopened} remaining</span>
-          <span style={{ fontSize: `${fs * 0.6}px`, color: mutedColor }}>{stats.progressPct.toFixed(0)}%</span>
+          <span style={{ fontSize: `${fs * 0.65}px`, color: mutedColor }}>{stats.unopened} remaining</span>
+          <span style={{ fontSize: `${fs * 0.65}px`, color: mutedColor }}>{Math.round(stats.progressPct)}%</span>
         </div>
       </div>
 
