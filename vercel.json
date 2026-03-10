@@ -30,6 +30,14 @@
       "destination": "/api/$1"
     },
     {
+      "source": "/cmd/sr/:uid/:requester/:slot*",
+      "destination": "/api/chat-commands?cmd=sr&user_id=:uid&requester=:requester&slot=:slot*"
+    },
+    {
+      "source": "/cmd/song/:uid/:song*",
+      "destination": "/api/chat-commands?cmd=song&user_id=:uid&song=:song*"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
