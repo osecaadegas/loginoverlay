@@ -82,22 +82,111 @@ function CoinFlipWidget({ config, widgetId }) {
   const maxBet = c.maxBet || 10000;
   const chatBettingEnabled = !!c.chatBettingEnabled;
 
+  /* ── Auto-flip mode ── */
+  const autoFlipEnabled = !!c.autoFlipEnabled;
+  const autoFlipDelay = (c.autoFlipDelay ?? 15) * 1000;
+  const flipCooldown = (c.flipCooldown ?? 10) * 1000;
+  const autoTimerRef = useRef(null);
+  const autoResetRef = useRef(null);
+  useEffect(() => () => {
+    if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+    if (autoResetRef.current) clearTimeout(autoResetRef.current);
+  }, []);
+
+  const writeConfig = useCallback(async (patch) => {
+    if (!widgetId) return;
+    try {
+      const { data } = await supabase.from('overlay_widgets').select('config').eq('id', widgetId).single();
+      if (!data) return;
+      await supabase.from('overlay_widgets').update({
+        config: { ...data.config, ...patch },
+        updated_at: new Date().toISOString(),
+      }).eq('id', widgetId);
+    } catch (e) { console.error('[CoinFlip] writeConfig:', e); }
+  }, [widgetId]);
+
+  const doAutoFlip = useCallback(async () => {
+    if (!widgetId) return;
+    let result;
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+      const arr = new Uint32Array(1); crypto.getRandomValues(arr);
+      result = arr[0] % 2 === 0 ? 'heads' : 'tails';
+    } else {
+      result = Math.random() < 0.5 ? 'heads' : 'tails';
+    }
+    // Flush pending bets first
+    const pending = { ...pendingBetsRef.current };
+    pendingBetsRef.current = {};
+    try {
+      const { data } = await supabase.from('overlay_widgets').select('config').eq('id', widgetId).single();
+      if (!data) return;
+      const cfg = data.config || {};
+      const mergedBets = { ...(cfg._chatBets || {}), ...pending };
+      await supabase.from('overlay_widgets').update({
+        config: { ...cfg, _chatBets: mergedBets, gameStatus: 'flipping', flipping: true, _flipStart: Date.now(), _prevResult: cfg.result || 'heads', result },
+        updated_at: new Date().toISOString(),
+      }).eq('id', widgetId);
+    } catch (e) { console.error('[CoinFlip] auto-flip start:', e); return; }
+    // After animation → result
+    setTimeout(async () => {
+      try {
+        const { data } = await supabase.from('overlay_widgets').select('config').eq('id', widgetId).single();
+        if (!data) return;
+        const cfg = data.config || {};
+        const bets = Object.entries(cfg._chatBets || {});
+        const entry = {
+          result, time: new Date().toLocaleTimeString(),
+          pool: bets.reduce((s, [, b]) => s + b.amount, 0),
+          winners: bets.filter(([, b]) => b.side === result).length,
+          totalBettors: bets.length,
+        };
+        await supabase.from('overlay_widgets').update({
+          config: { ...cfg, gameStatus: 'result', flipping: false, flipHistory: [entry, ...(cfg.flipHistory || [])].slice(0, 30) },
+          updated_at: new Date().toISOString(),
+        }).eq('id', widgetId);
+      } catch (e) { console.error('[CoinFlip] auto-flip result:', e); }
+      // Auto-reset after cooldown
+      autoResetRef.current = setTimeout(() => {
+        writeConfig({ gameStatus: 'idle', _chatBets: {}, result: null, flipping: false });
+      }, flipCooldown);
+    }, 3000);
+  }, [widgetId, flipCooldown, writeConfig]);
+
+  /* ── Chat handler: !heads, !tails, !flip, !cf, !coinflip ── */
   const handleChatMessage = useCallback((msg) => {
-    if (!chatBettingEnabled || status !== 'open') return;
+    if (!chatBettingEnabled) return;
     const txt = (msg.message || '').trim().toLowerCase();
-    const match = txt.match(/^!(heads?|tails?)\s*(\d*)$/);
-    if (!match) return;
-    const side = match[1].startsWith('head') ? 'heads' : 'tails';
-    let amount = parseInt(match[2]) || minBet;
+
+    /* Parse: !heads [amt], !tails [amt], !flip heads [amt], !cf tails [amt], !coinflip heads [amt] */
+    let side, amount;
+    const m1 = txt.match(/^!(heads?|tails?)\s*(\d*)$/);
+    if (m1) { side = m1[1].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m1[2]) || minBet; }
+    if (!side) {
+      const m2 = txt.match(/^!(flip|cf|coinflip)\s+(heads?|tails?)\s*(\d*)$/);
+      if (m2) { side = m2[2].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m2[3]) || minBet; }
+    }
+    if (!side) return;
     amount = Math.max(minBet, Math.min(maxBet, amount));
     const user = msg.username;
     if (!user) return;
+
+    /* Auto-flip: auto-open when idle and start the countdown */
+    if (autoFlipEnabled && status === 'idle') {
+      if (chatBetsRef.current[user] || pendingBetsRef.current[user]) return;
+      pendingBetsRef.current[user] = { side, amount, time: Date.now() };
+      writeConfig({ gameStatus: 'open', result: null, _chatBets: {} });
+      if (autoTimerRef.current) clearTimeout(autoTimerRef.current);
+      autoTimerRef.current = setTimeout(() => doAutoFlip(), autoFlipDelay);
+      return;
+    }
+
+    if (status !== 'open') return;
     if (chatBetsRef.current[user] || pendingBetsRef.current[user]) return;
     pendingBetsRef.current[user] = { side, amount, time: Date.now() };
-  }, [chatBettingEnabled, status, minBet, maxBet]);
+  }, [chatBettingEnabled, status, minBet, maxBet, autoFlipEnabled, autoFlipDelay, writeConfig, doAutoFlip]);
 
-  const listenTwitch = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!c.twitchChannel;
-  const listenKick   = chatBettingEnabled && status === 'open' && !!c.kickEnabled   && !!c.kickChannelId;
+  const listenTwitch = chatBettingEnabled && (status === 'open' || (autoFlipEnabled && status === 'idle')) && !!c.twitchEnabled && !!c.twitchChannel;
+  const listenKick   = chatBettingEnabled && (status === 'open' || (autoFlipEnabled && status === 'idle')) && !!c.kickEnabled   && !!c.kickChannelId;
   useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
   useKickChat(listenKick ? c.kickChannelId : '', handleChatMessage);
 

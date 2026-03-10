@@ -88,21 +88,25 @@ export default function CoinFlipConfig({ config, onChange }) {
     return () => clearInterval(timer);
   });
 
-  /* ── Chat message handler — !head / !heads / !tails / !tail [amount] ── */
+  /* ── Chat message handler — !head / !heads / !tails / !tail / !flip / !cf / !coinflip [amount] ── */
   const minBet = c.minBet || 10;
   const maxBet = c.maxBet || 10000;
   const chatBettingEnabled = !!c.chatBettingEnabled;
   const gameStatus = c.gameStatus || 'idle';
 
   const handleChatMessage = useCallback((msg) => {
-    if (!chatBettingEnabled || gameStatus !== 'open') return;
+    if (!chatBettingEnabled) return;
     const text = (msg.message || '').trim().toLowerCase();
-    /* Match: !head, !heads, !tails, !tail — optionally followed by amount */
-    const match = text.match(/^!(heads?|tails?)\s*(\d*)$/);
-    if (!match) return;
 
-    const side = match[1].startsWith('head') ? 'heads' : 'tails';
-    let amount = parseInt(match[2]) || minBet;
+    /* Parse: !heads [amt], !tails [amt], !flip heads [amt], !cf tails [amt], !coinflip heads [amt] */
+    let side, amount;
+    const m1 = text.match(/^!(heads?|tails?)\s*(\d*)$/);
+    if (m1) { side = m1[1].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m1[2]) || minBet; }
+    if (!side) {
+      const m2 = text.match(/^!(flip|cf|coinflip)\s+(heads?|tails?)\s*(\d*)$/);
+      if (m2) { side = m2[2].startsWith('head') ? 'heads' : 'tails'; amount = parseInt(m2[3]) || minBet; }
+    }
+    if (!side) return;
     amount = Math.max(minBet, Math.min(maxBet, amount));
     const user = msg.username;
     if (!user) return;
@@ -113,8 +117,8 @@ export default function CoinFlipConfig({ config, onChange }) {
     pendingBetsRef.current[user] = { side, amount, time: Date.now() };
   }, [chatBettingEnabled, gameStatus, minBet, maxBet]);
 
-  /* ── Connect to chat platforms when bets are open ── */
-  const chatActive = chatBettingEnabled && status === 'open';
+  /* ── Connect to chat platforms when bets are open (or idle in auto mode) ── */
+  const chatActive = chatBettingEnabled && (status === 'open' || (!!c.autoFlipEnabled && status === 'idle'));
   useTwitchChat(chatActive && c.twitchEnabled ? c.twitchChannel : '', handleChatMessage);
   useKickChat(chatActive && c.kickEnabled ? c.kickChannelId : '', handleChatMessage);
 
@@ -442,8 +446,8 @@ export default function CoinFlipConfig({ config, onChange }) {
         <div className="cg-config__section">
           <h4 style={{ margin: '0 0 8px', fontSize: 13, color: '#e2e8f0', fontWeight: 700 }}>Chat Betting</h4>
           <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 12px', lineHeight: 1.5 }}>
-            Viewers type <b style={{ color: '#facc15' }}>!head</b> or <b style={{ color: '#60a5fa' }}>!tails</b> in chat to place bets.
-            Optionally add an amount: <b style={{ color: '#a78bfa' }}>!head 500</b>
+            Viewers type <b style={{ color: '#facc15' }}>!heads</b> / <b style={{ color: '#60a5fa' }}>!tails</b>,
+            or <b style={{ color: '#a78bfa' }}>!flip heads 500</b> / <b style={{ color: '#a78bfa' }}>!cf tails</b> in chat.
           </p>
 
           {/* Chat betting toggle */}
@@ -461,6 +465,68 @@ export default function CoinFlipConfig({ config, onChange }) {
               {chatBettingEnabled ? '● Chat Betting Enabled' : '○ Chat Betting Disabled'}
             </span>
           </label>
+
+          {/* Auto-flip mode */}
+          {chatBettingEnabled && (
+            <>
+              <label style={{
+                display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px',
+                background: c.autoFlipEnabled ? 'rgba(59,130,246,0.08)' : 'rgba(255,255,255,0.03)',
+                border: `1px solid ${c.autoFlipEnabled ? 'rgba(59,130,246,0.3)' : 'rgba(255,255,255,0.06)'}`,
+                borderRadius: 8, cursor: 'pointer', marginBottom: 8, transition: 'all 0.2s',
+              }}>
+                <input type="checkbox" checked={!!c.autoFlipEnabled}
+                  onChange={e => set('autoFlipEnabled', e.target.checked)}
+                  style={{ accentColor: '#3b82f6' }}
+                />
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  <span style={{ fontWeight: 600, fontSize: 13, color: c.autoFlipEnabled ? '#60a5fa' : '#94a3b8' }}>
+                    {c.autoFlipEnabled ? '● Auto Flip Mode On' : '○ Auto Flip Mode Off'}
+                  </span>
+                  <span style={{ fontSize: 10, color: '#64748b' }}>
+                    Chat commands auto-open bets &amp; trigger the flip
+                  </span>
+                </div>
+              </label>
+
+              {c.autoFlipEnabled && (
+                <div style={{
+                  background: 'rgba(59,130,246,0.04)', border: '1px solid rgba(59,130,246,0.15)',
+                  borderRadius: 8, padding: '10px 12px', marginBottom: 8,
+                  display: 'flex', flexDirection: 'column', gap: 8,
+                }}>
+                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+                    <span style={{ color: '#94a3b8' }}>Betting Window</span>
+                    <span style={{ color: '#60a5fa', fontWeight: 700 }}>{c.autoFlipDelay || 15}s</span>
+                  </label>
+                  <input type="range" min={5} max={60} step={5}
+                    value={c.autoFlipDelay || 15}
+                    onChange={e => set('autoFlipDelay', parseInt(e.target.value))}
+                    style={{ width: '100%', accentColor: '#3b82f6' }}
+                  />
+                  <label style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12 }}>
+                    <span style={{ color: '#94a3b8' }}>Reset Cooldown</span>
+                    <span style={{ color: '#60a5fa', fontWeight: 700 }}>{c.flipCooldown || 10}s</span>
+                  </label>
+                  <input type="range" min={3} max={30} step={1}
+                    value={c.flipCooldown || 10}
+                    onChange={e => set('flipCooldown', parseInt(e.target.value))}
+                    style={{ width: '100%', accentColor: '#3b82f6' }}
+                  />
+                  {status === 'idle' && (
+                    <div style={{
+                      display: 'flex', alignItems: 'center', gap: 6, fontSize: 11,
+                      color: '#60a5fa', padding: '6px 8px', borderRadius: 6,
+                      background: 'rgba(59,130,246,0.06)',
+                    }}>
+                      <span style={{ fontSize: 14 }}>🤖</span>
+                      Waiting for chat — type !flip heads or !tails to start
+                    </div>
+                  )}
+                </div>
+              )}
+            </>
+          )}
 
           {/* SE Point payouts toggle */}
           <label style={{
