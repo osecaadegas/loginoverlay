@@ -616,6 +616,7 @@ registerWidget({
   styles: [
     { id: 'v1', icon: '📋', label: 'Classic List' },
     { id: 'v2_board', icon: '🎯', label: 'Hunt Board' },
+    { id: 'v3_compact', icon: '🎴', label: 'Compact Carousel' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

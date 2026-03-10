@@ -6,6 +6,7 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import SlotRequestsWidgetList from './SlotRequestsWidgetList';
 import SlotRequestsWidgetBoard from './SlotRequestsWidgetBoard';
+import SlotRequestsWidgetCompact from './SlotRequestsWidgetCompact';
 
 export default function SlotRequestsWidget({ config, userId }) {
   const c = config || {};
@@ -83,6 +84,9 @@ export default function SlotRequestsWidget({ config, userId }) {
   /* ── Style dispatch ── */
   if (c.displayStyle === 'v2_board') {
     return <SlotRequestsWidgetBoard config={c} requests={requests} />;
+  }
+  if (c.displayStyle === 'v3_compact') {
+    return <SlotRequestsWidgetCompact config={c} requests={requests} />;
   }
 
   return <SlotRequestsWidgetList config={c} requests={requests} />;
