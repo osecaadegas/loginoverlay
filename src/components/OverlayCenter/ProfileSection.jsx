@@ -171,11 +171,10 @@ export default function ProfileSection({ widgets, saveWidget }) {
 
     let ws;
     let alive = true;
-    const hasSpotify = !!profile.spotify_access_token;
 
     const connect = () => {
       if (!alive) return;
-      setSongIrcStatus(hasSpotify ? 'connecting' : 'off');
+      setSongIrcStatus('connecting');
       setSrIrcStatus('connecting');
       ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
       songWsRef.current = ws;
@@ -190,19 +189,17 @@ export default function ProfileSection({ widgets, saveWidget }) {
         for (const line of event.data.split('\r\n')) {
           if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
           if (line.includes(' 366 ')) {
-            if (hasSpotify) setSongIrcStatus('live');
+            setSongIrcStatus('live');
             setSrIrcStatus('live');
           }
 
-          // !song handler
-          if (hasSpotify) {
-            const songMatch = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!song (.+)/i);
-            if (songMatch) {
-              const songName = songMatch[2].trim();
-              if (songName) {
-                try { await fetch(`${window.location.origin}/api/chat-commands?cmd=song&user_id=${encodeURIComponent(user.id)}&song=${encodeURIComponent(songName)}`); }
-                catch (err) { console.error('[SongRequest] IRC error', err); }
-              }
+          // !song handler — API checks spotify_tokens table, no client-side token needed
+          const songMatch = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!song (.+)/i);
+          if (songMatch) {
+            const songName = songMatch[2].trim();
+            if (songName) {
+              try { await fetch(`${window.location.origin}/api/chat-commands?cmd=song&user_id=${encodeURIComponent(user.id)}&song=${encodeURIComponent(songName)}`); }
+              catch (err) { console.error('[SongRequest] IRC error', err); }
             }
           }
 
@@ -236,7 +233,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
       clearTimeout(songReconnectRef.current);
       if (songWsRef.current) { songWsRef.current.close(); songWsRef.current = null; }
     };
-  }, [profile.twitchUsername, profile.spotify_access_token, user]);
+  }, [profile.twitchUsername, user]);
 
   /* ── Count connected platforms ── */
   const connectedPlatforms = useMemo(() => {
@@ -537,7 +534,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
               Connecting here auto-syncs to your Navbar &amp; Spotify widgets.
             </p>
             {/* Song Request chat listener status */}
-            {profile.spotify_access_token && user && (
+            {user && profile.twitchUsername && (
               <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(29,185,52,0.08)', borderRadius: 10, border: '1px solid rgba(29,185,52,0.2)' }}>
                 <p style={{ fontSize: '0.74rem', color: '#1DB954', fontWeight: 700, margin: '0 0 6px' }}>🎶 Chat Song Requests</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
