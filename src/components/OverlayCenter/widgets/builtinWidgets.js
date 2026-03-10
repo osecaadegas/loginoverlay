@@ -672,7 +672,37 @@ registerWidget({
   },
 });
 
-// ─── 26. BONUS BUYS ───────────────────────────────────
+// ─── 26b. BONUS HUNT STATS ────────────────────────────
+import BHStatsWidget from './BHStatsWidget';
+import BHStatsConfig from './BHStatsConfig';
+registerWidget({
+  type: 'bh_stats',
+  label: 'BH Stats',
+  icon: '📊',
+  description: 'Standalone bonus hunt stats panel — BE, AVG, progress, best/worst payout',
+  category: 'casino',
+  component: BHStatsWidget,
+  configPanel: BHStatsConfig,
+  defaults: {
+    fontFamily: "'Poppins', sans-serif",
+    fontSize: 14,
+    fontWeight: '600',
+    bgColor: 'rgba(15,23,42,0.9)',
+    cardBg: 'rgba(255,255,255,0.04)',
+    textColor: '#f1f5f9',
+    mutedColor: '#64748b',
+    accentColor: '#818cf8',
+    progressColor: '#22c55e',
+    progressBgColor: 'rgba(255,255,255,0.08)',
+    bestColor: '#22c55e',
+    worstColor: '#f87171',
+    borderColor: 'rgba(255,255,255,0.06)',
+    borderRadius: 14,
+    showTitle: true,
+  },
+});
+
+// ─── 27. BONUS BUYS ───────────────────────────────────
 import BonusBuysWidget from './BonusBuysWidget';
 import BonusBuysConfig from './BonusBuysConfig';
 registerWidget({

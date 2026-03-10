@@ -36,7 +36,7 @@ function BonusHuntWidgetV3({ config, theme }) {
   const widgetWidth = c.widgetWidth ?? 420;
   const cardRadius = c.cardRadius ?? 16;
   const slotImageHeight = c.slotImageHeight ?? 220;
-  const spinDuration = c.flipSpinDuration ?? 8;
+  const spinDuration = c.flipSpinDuration ?? 12;
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -185,18 +185,26 @@ function BonusHuntWidgetV3({ config, theme }) {
               {/* BACK — Stats & Provider Info */}
               <div className="bht3-flip-face bht3-flip-back">
                 <div className="bht3-flip-back-content">
+                  <div className="bht3-flip-back-slot-img">
+                    {backBonus.slot?.image && (
+                      <img src={backBonus.slot.image} alt="" className="bht3-flip-back-slot-thumb"
+                        onError={e => { e.target.style.display = 'none'; }} />
+                    )}
+                  </div>
                   <div className="bht3-flip-back-header">
                     <div className="bht3-flip-back-name">{backBonus.slotName || backBonus.slot?.name}</div>
                     <div className="bht3-flip-back-provider">{backBonus.slot?.provider || 'Unknown'}</div>
                   </div>
                   <div className="bht3-flip-back-stats">
                     <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">📊</span>
                       <span className="bht3-flip-back-stat-label">RTP</span>
                       <span className="bht3-flip-back-stat-val">
                         {backBonus.slot?.rtp ? `${Number(backBonus.slot.rtp).toFixed(2)}%` : '—'}
                       </span>
                     </div>
                     <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">🏆</span>
                       <span className="bht3-flip-back-stat-label">MAX WIN</span>
                       <span className="bht3-flip-back-stat-val">
                         {backBonus.slot?.max_win_multiplier
@@ -205,12 +213,14 @@ function BonusHuntWidgetV3({ config, theme }) {
                       </span>
                     </div>
                     <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">⚡</span>
                       <span className="bht3-flip-back-stat-label">VOLATILITY</span>
                       <span className="bht3-flip-back-stat-val">
                         {fmtVol(backBonus.slot?.volatility)}
                       </span>
                     </div>
                     <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">💰</span>
                       <span className="bht3-flip-back-stat-label">BET SIZE</span>
                       <span className="bht3-flip-back-stat-val">
                         {currency}{fmt(backBonus.betSize)}
