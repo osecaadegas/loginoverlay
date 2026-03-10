@@ -233,10 +233,11 @@ function CoinFlipWidget({ config, widgetId }) {
     : (c.result ? 'cf-land 0.4s ease-out forwards' : 'cf-float 3s ease-in-out infinite');
 
   /* ── Face content ── */
+  const hasImg = (side) => !!(side === 'heads' ? hImg : tImg);
   const faceContent = (side) => {
     const img = side === 'heads' ? hImg : tImg;
     const label = side === 'heads' ? hLabel : tLabel;
-    if (img) return <img src={img} alt={label} style={{ width: '65%', height: '65%', objectFit: 'contain', borderRadius: '50%' }} />;
+    if (img) return <img src={img} alt={label} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} />;
     return (
       <span style={{
         fontSize: 'clamp(8px,7cqi,32px)', fontWeight: 900, color: '#fff',
@@ -251,6 +252,7 @@ function CoinFlipWidget({ config, widgetId }) {
   /* ── 3D Edge: Z-stacked circles forming the coin rim ──
      No backface-visibility — always visible from all angles */
   const edgeRing = (color1, color2) => {
+    if (hasImg('heads') && hasImg('tails')) return null;
     const N = 14;
     const slices = [];
     for (let i = 0; i <= N; i++) {
@@ -347,15 +349,15 @@ function CoinFlipWidget({ config, widgetId }) {
           <div style={coinBody}>
             {edgeRing(`${hColor}88`, `${hColor}55`)}
             <div style={face({
-              background: `radial-gradient(ellipse at 30% 30%, ${hColor}ee, ${hColor}99 45%, ${hColor}66)`,
-              border: '4px solid rgba(255,255,255,0.15)',
-              boxShadow: 'inset 0 -5px 10px rgba(0,0,0,0.35), inset 0 5px 10px rgba(255,255,255,0.25)',
+              background: hasImg('heads') ? 'transparent' : `radial-gradient(ellipse at 30% 30%, ${hColor}ee, ${hColor}99 45%, ${hColor}66)`,
+              border: hasImg('heads') ? 'none' : '4px solid rgba(255,255,255,0.15)',
+              boxShadow: hasImg('heads') ? 'none' : 'inset 0 -5px 10px rgba(0,0,0,0.35), inset 0 5px 10px rgba(255,255,255,0.25)',
               transform: `translateZ(${FACE_Z}px)`,
             })}>{faceContent('heads')}</div>
             <div style={face({
-              background: `radial-gradient(ellipse at 30% 30%, ${tColor}ee, ${tColor}99 45%, ${tColor}66)`,
-              border: '4px solid rgba(255,255,255,0.15)',
-              boxShadow: 'inset 0 -5px 10px rgba(0,0,0,0.35), inset 0 5px 10px rgba(255,255,255,0.25)',
+              background: hasImg('tails') ? 'transparent' : `radial-gradient(ellipse at 30% 30%, ${tColor}ee, ${tColor}99 45%, ${tColor}66)`,
+              border: hasImg('tails') ? 'none' : '4px solid rgba(255,255,255,0.15)',
+              boxShadow: hasImg('tails') ? 'none' : 'inset 0 -5px 10px rgba(0,0,0,0.35), inset 0 5px 10px rgba(255,255,255,0.25)',
               transform: `rotateY(180deg) translateZ(${FACE_Z}px)`,
             })}>{faceContent('tails')}</div>
           </div>
@@ -380,13 +382,15 @@ function CoinFlipWidget({ config, widgetId }) {
           <div style={coinBody}>
             {edgeRing('#1a1a2e', '#0d0d14')}
             <div style={face({
-              background: 'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
-              border: `3px solid ${hColor}`, boxShadow: `0 0 30px ${hColor}44, inset 0 0 20px ${hColor}22`,
+              background: hasImg('heads') ? 'transparent' : 'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
+              border: hasImg('heads') ? 'none' : `3px solid ${hColor}`,
+              boxShadow: hasImg('heads') ? 'none' : `0 0 30px ${hColor}44, inset 0 0 20px ${hColor}22`,
               transform: `translateZ(${FACE_Z}px)`,
             })}>{faceContent('heads')}</div>
             <div style={face({
-              background: 'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
-              border: `3px solid ${tColor}`, boxShadow: `0 0 30px ${tColor}44, inset 0 0 20px ${tColor}22`,
+              background: hasImg('tails') ? 'transparent' : 'radial-gradient(circle at 35% 35%, #1a1a2e, #0d0d14)',
+              border: hasImg('tails') ? 'none' : `3px solid ${tColor}`,
+              boxShadow: hasImg('tails') ? 'none' : `0 0 30px ${tColor}44, inset 0 0 20px ${tColor}22`,
               transform: `rotateY(180deg) translateZ(${FACE_Z}px)`,
             })}>{faceContent('tails')}</div>
           </div>
@@ -409,7 +413,10 @@ function CoinFlipWidget({ config, widgetId }) {
         {status === 'open' && <BetsBar />}
         <div style={{
           width: '48%', maxHeight: '65%', aspectRatio: '1', borderRadius: '50%', flexShrink: 0,
-          background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: hasImg(isHeads ? 'heads' : 'tails') ? 'transparent' : bg,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden',
+          border: hasImg(isHeads ? 'heads' : 'tails') ? 'none' : undefined,
           animation: flipping ? 'cf-flat 0.5s ease-in-out 4 forwards' : 'none',
           transition: 'background 0.3s',
         }}>
@@ -436,19 +443,19 @@ function CoinFlipWidget({ config, widgetId }) {
         <div style={coinBody}>
           {edgeRing('#92400e', '#d4a017')}
           <div style={face({
-            background: `linear-gradient(145deg, #fde68a, ${hColor}, #92400e, ${hColor}, #fde68a)`,
+            background: hasImg('heads') ? 'transparent' : `linear-gradient(145deg, #fde68a, ${hColor}, #92400e, ${hColor}, #fde68a)`,
             backgroundSize: '400% 400%',
-            animation: !flipping ? 'cf-shimmer 3s linear infinite' : 'none',
-            border: '4px ridge rgba(255,255,255,0.25)',
-            boxShadow: 'inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,255,255,0.3)',
+            animation: !flipping && !hasImg('heads') ? 'cf-shimmer 3s linear infinite' : 'none',
+            border: hasImg('heads') ? 'none' : '4px ridge rgba(255,255,255,0.25)',
+            boxShadow: hasImg('heads') ? 'none' : 'inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,255,255,0.3)',
             transform: `translateZ(${FACE_Z}px)`,
           })}>{faceContent('heads')}</div>
           <div style={face({
-            background: `linear-gradient(145deg, #bfdbfe, ${tColor}, #1e3a5f, ${tColor}, #bfdbfe)`,
+            background: hasImg('tails') ? 'transparent' : `linear-gradient(145deg, #bfdbfe, ${tColor}, #1e3a5f, ${tColor}, #bfdbfe)`,
             backgroundSize: '400% 400%',
-            animation: !flipping ? 'cf-shimmer 3s linear infinite' : 'none',
-            border: '4px ridge rgba(255,255,255,0.25)',
-            boxShadow: 'inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,255,255,0.3)',
+            animation: !flipping && !hasImg('tails') ? 'cf-shimmer 3s linear infinite' : 'none',
+            border: hasImg('tails') ? 'none' : '4px ridge rgba(255,255,255,0.25)',
+            boxShadow: hasImg('tails') ? 'none' : 'inset 0 -6px 12px rgba(0,0,0,0.4), inset 0 6px 12px rgba(255,255,255,0.3)',
             transform: `rotateY(180deg) translateZ(${FACE_Z}px)`,
           })}>{faceContent('tails')}</div>
         </div>
