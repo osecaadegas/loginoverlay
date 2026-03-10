@@ -28,8 +28,8 @@ function CoinFlipWidget({ config, widgetId }) {
   const font   = c.fontFamily || "'Inter', sans-serif";
   const hLabel = c.headsLabel || 'HEADS';
   const tLabel = c.tailsLabel || 'TAILS';
-  const hImg   = c.headsImage;
-  const tImg   = c.tailsImage;
+  const hImg   = c.headsImage || '/badges/heads.png';
+  const tImg   = c.tailsImage || '/badges/tails.png';
   const isHeads = c.result !== 'tails';
   /* Guard stale flipping flag (>6 s) */
   const flipping = c.flipping && c._flipStart && (Date.now() - c._flipStart < 6000);

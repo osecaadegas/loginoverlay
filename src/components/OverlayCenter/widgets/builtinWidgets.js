@@ -537,6 +537,8 @@ registerWidget({
     tailsLabel: 'TAILS',
     headsColor: '#f59e0b',
     tailsColor: '#3b82f6',
+    headsImage: '/badges/heads.png',
+    tailsImage: '/badges/tails.png',
     autoFlipEnabled: false,
     autoFlipDelay: 15,
     flipCooldown: 10,
