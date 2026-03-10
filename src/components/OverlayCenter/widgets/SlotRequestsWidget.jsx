@@ -1,9 +1,9 @@
 /**
- * SlotRequestsWidget.jsx — Overlay widget showing chat slot requests.
- * Viewers use !sr <slot> in chat; requests appear here in order.
- * Subscribes to Supabase realtime for live updates.
+ * SlotRequestsWidget.jsx — Hunt Board–style overlay for slot requests.
+ * Top marquee strip · 3D card carousel · Bottom stats bar.
+ * Viewers use !sr <slot> in chat; requests appear here live.
  */
-import React, { useEffect, useState, useRef, useCallback } from 'react';
+import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 
 const DEFAULT_IMG = 'https://i.imgur.com/8E3ucNx.png';
@@ -11,23 +11,28 @@ const DEFAULT_IMG = 'https://i.imgur.com/8E3ucNx.png';
 export default function SlotRequestsWidget({ config, userId }) {
   const c = config || {};
   const [requests, setRequests] = useState([]);
-  const containerRef = useRef(null);
-  const [fontSize, setFontSize] = useState(14);
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+  const timerRef = useRef(null);
 
-  const maxDisplay = c.maxDisplay || 10;
+  const maxDisplay = c.maxDisplay || 20;
   const accent = c.accentColor || '#f59e0b';
   const textColor = c.textColor || '#ffffff';
   const mutedColor = c.mutedColor || '#94a3b8';
-  const bgColor = c.bgColor || 'transparent';
-  const cardBg = c.cardBg || 'rgba(255,255,255,0.04)';
-  const borderColor = c.borderColor || 'rgba(255,255,255,0.08)';
+  const containerBg = c.bgColor || 'rgba(15,23,42,0.82)';
+  const cardBg = c.cardBg || 'rgba(15,23,42,0.6)';
   const showRequester = c.showRequester !== false;
-  const showNumbers = c.showNumbers !== false;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const autoSpeed = Number(c.autoSpeed) || 4000;
 
-  /* ── Fetch initial requests ── */
+  const hex2rgb = (hex) => {
+    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
+    return m ? `${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)}` : '245,158,11';
+  };
+  const accentRgb = hex2rgb(accent);
+
+  /* ── Fetch requests ── */
   const fetchRequests = useCallback(async () => {
     const { data } = await supabase
       .from('slot_requests')
@@ -40,7 +45,7 @@ export default function SlotRequestsWidget({ config, userId }) {
 
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
-  /* ── Realtime subscription ── */
+  /* ── Realtime ── */
   useEffect(() => {
     const channel = supabase
       .channel('slot-requests-widget')
@@ -48,20 +53,17 @@ export default function SlotRequestsWidget({ config, userId }) {
         fetchRequests();
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [fetchRequests]);
 
-  /* ── Twitch IRC listener (anonymous, read-only) ── */
+  /* ── Twitch IRC listener ── */
   useEffect(() => {
     const raw = c.twitchChannel;
     if (!raw || !userId) return;
     const ch = raw.trim().toLowerCase().replace(/^#/, '');
     if (!ch) return;
-
     let alive = true;
     let ws;
-
     const connect = () => {
       if (!alive) return;
       ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
@@ -78,9 +80,8 @@ export default function SlotRequestsWidget({ config, userId }) {
           if (m) {
             const slotName = m[2].trim();
             if (slotName) {
-              try {
-                await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userId)}&requester=${encodeURIComponent(m[1])}&slot=${encodeURIComponent(slotName)}`);
-              } catch {}
+              try { await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userId)}&requester=${encodeURIComponent(m[1])}&slot=${encodeURIComponent(slotName)}`); }
+              catch {}
             }
           }
         }
@@ -88,7 +89,6 @@ export default function SlotRequestsWidget({ config, userId }) {
       ws.onclose = () => { if (alive) reconnectTimer.current = setTimeout(connect, 5000); };
       ws.onerror = () => ws.close();
     };
-
     connect();
     return () => {
       alive = false;
@@ -97,162 +97,168 @@ export default function SlotRequestsWidget({ config, userId }) {
     };
   }, [c.twitchChannel, userId]);
 
-  /* ── Responsive font sizing ── */
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const observer = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const w = entry.contentRect.width;
-        const h = entry.contentRect.height;
-        const min = Math.min(w, h);
-        // Scale font: 10px at 150px, up to 18px at 600px+
-        const fs = Math.max(10, Math.min(18, min * 0.035 + 5));
-        setFontSize(fs);
-      }
-    });
-    observer.observe(containerRef.current);
-    return () => observer.disconnect();
-  }, []);
+  /* ── Auto-cycle carousel ── */
+  const total = requests.length;
+  const advance = useCallback(() => {
+    if (total <= 0) return;
+    setActiveIdx(prev => (prev + 1) % total);
+  }, [total]);
 
-  const imgSize = Math.max(24, fontSize * 2.2);
+  useEffect(() => {
+    if (total <= 1) return;
+    timerRef.current = setInterval(advance, autoSpeed);
+    return () => clearInterval(timerRef.current);
+  }, [total, autoSpeed, advance]);
+
+  useEffect(() => {
+    if (activeIdx >= total && total > 0) setActiveIdx(0);
+  }, [total, activeIdx]);
+
+  /* ── Circular offset ── */
+  const getOffset = useCallback((idx) => {
+    if (total <= 1) return idx - activeIdx;
+    let off = idx - activeIdx;
+    const half = total / 2;
+    while (off > half) off -= total;
+    while (off < -half) off += total;
+    return off;
+  }, [activeIdx, total]);
+
+  const visibleCards = useMemo(() => {
+    if (total === 0) return [];
+    return requests
+      .map((req, idx) => ({ req, idx, offset: getOffset(idx) }))
+      .filter(({ offset }) => Math.abs(offset) <= 3);
+  }, [requests, getOffset, total]);
+
+  /* 3D card transforms */
+  const cardStyle = (offset) => {
+    const absOff = Math.abs(offset);
+    const sign = offset < 0 ? -1 : 1;
+    if (absOff >= 3) {
+      return {
+        position: 'absolute',
+        transform: `translateX(${sign * 260}px) rotateY(${sign * -22}deg) translateZ(-200px) scale(0.3)`,
+        opacity: 0, zIndex: 0,
+        transition: 'transform 0.85s cubic-bezier(0.33,1,0.68,1), opacity 0.85s cubic-bezier(0.33,1,0.68,1), filter 0.85s ease',
+        pointerEvents: 'none', willChange: 'transform, opacity',
+      };
+    }
+    const txMap = [0, 120, 215], tzMap = [50, -10, -50], ryMap = [0, -14, -24];
+    const scMap = [1.05, 0.88, 0.72], opMap = [1, 0.9, 0.65];
+    return {
+      position: 'absolute',
+      transform: `translateX(${txMap[absOff] * sign}px) rotateY(${ryMap[absOff] * sign}deg) translateZ(${tzMap[absOff]}px) scale(${scMap[absOff]})`,
+      opacity: opMap[absOff], zIndex: 10 - absOff * 3,
+      transition: 'transform 0.85s cubic-bezier(0.33,1,0.68,1), opacity 0.85s cubic-bezier(0.33,1,0.68,1), filter 0.85s ease',
+      filter: absOff === 2 ? 'blur(1px)' : 'none',
+      willChange: 'transform, opacity',
+    };
+  };
+
+  const rootVars = {
+    '--sr-accent': accent,
+    '--sr-accent-rgb': accentRgb,
+    '--sr-text': textColor,
+    '--sr-muted': mutedColor,
+    '--sr-container-bg': containerBg,
+    '--sr-card-bg': cardBg,
+  };
+
+  /* ── Empty state ── */
+  if (total === 0) {
+    return (
+      <div className="sr-board-root" style={{ fontFamily, color: textColor, ...rootVars }}>
+        <div className="sr-board-container">
+          <div style={{ textAlign: 'center', opacity: 0.5, fontSize: '1.1em', padding: 40 }}>
+            <div style={{ fontSize: '2.5em', marginBottom: 8 }}>🎰</div>
+            No requests yet — viewers type !sr
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        width: '100%',
-        height: '100%',
-        background: bgColor,
-        fontFamily,
-        color: textColor,
-        display: 'flex',
-        flexDirection: 'column',
-        overflow: 'hidden',
-        borderRadius: 8,
-      }}
-    >
-      {/* Header */}
-      <div style={{
-        padding: `${fontSize * 0.5}px ${fontSize * 0.7}px`,
-        display: 'flex',
-        alignItems: 'center',
-        gap: fontSize * 0.4,
-        borderBottom: `1px solid ${borderColor}`,
-        flexShrink: 0,
-      }}>
-        <span style={{ fontSize: fontSize * 1.2 }}>🎰</span>
-        <span style={{ fontSize: fontSize * 0.95, fontWeight: 700, letterSpacing: '0.02em' }}>
-          Slot Requests
-        </span>
-        {requests.length > 0 && (
-          <span style={{
-            marginLeft: 'auto',
-            fontSize: fontSize * 0.7,
-            background: accent,
-            color: '#000',
-            borderRadius: 99,
-            padding: `${fontSize * 0.1}px ${fontSize * 0.4}px`,
-            fontWeight: 700,
-            lineHeight: 1.4,
-          }}>
-            {requests.length}
-          </span>
-        )}
-      </div>
+    <div className="sr-board-root" style={{ fontFamily, color: textColor, ...rootVars }}>
+      <div className="sr-board-container">
 
-      {/* List */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: `${fontSize * 0.3}px`,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: fontSize * 0.25,
-      }}>
-        {requests.length === 0 && (
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flex: 1,
-            color: mutedColor,
-            fontSize: fontSize * 0.85,
-            opacity: 0.6,
-          }}>
-            No requests yet — viewers type !sr &lt;slot&gt;
+        {/* ─── Top: marquee strip ─── */}
+        <div className="sr-board-strip">
+          <div className="sr-board-strip-scroll" style={{ '--sr-pill-count': total }}>
+            {[...requests, ...requests].map((r, i) => {
+              const idx = i % total;
+              const isActive = idx === activeIdx;
+              return (
+                <button key={`${r.id}-${i >= total ? 'c' : 'o'}`}
+                  className={`sr-board-pill${isActive ? ' sr-board-pill--active' : ''}`}
+                  onClick={() => setActiveIdx(idx)}>
+                  <img src={r.slot_image || DEFAULT_IMG} alt="" className="sr-board-pill-thumb"
+                    onError={e => { e.target.src = DEFAULT_IMG; }} />
+                  <span className="sr-board-pill-name">{r.slot_name}</span>
+                  {showRequester && r.requested_by !== 'anonymous' && (
+                    <span className="sr-board-pill-by">{r.requested_by}</span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-        )}
+          <span className="sr-board-strip-counter">{total}</span>
+        </div>
 
-        {requests.map((r, i) => (
-          <div
-            key={r.id}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: fontSize * 0.5,
-              padding: `${fontSize * 0.35}px ${fontSize * 0.5}px`,
-              background: cardBg,
-              border: `1px solid ${borderColor}`,
-              borderRadius: fontSize * 0.4,
-              transition: 'opacity 0.3s',
-            }}
-          >
-            {/* Number */}
-            {showNumbers && (
-              <span style={{
-                fontSize: fontSize * 0.75,
-                fontWeight: 800,
-                color: accent,
-                minWidth: fontSize * 1.2,
-                textAlign: 'center',
-                flexShrink: 0,
-              }}>
-                #{i + 1}
-              </span>
-            )}
+        {/* ─── Middle: 3D carousel ─── */}
+        <div className="sr-board-stage">
+          <div className="sr-board-perspective">
+            {visibleCards.map(({ req, idx, offset }) => {
+              const isCenter = offset === 0;
+              return (
+                <div key={req.id} className="sr-board-card-wrap" style={cardStyle(offset)}>
+                  <div className={`sr-board-card${isCenter ? ' sr-board-card--center' : ''}`}>
+                    {/* Image */}
+                    <div className="sr-board-card-img-bg">
+                      <img src={req.slot_image || DEFAULT_IMG} alt={req.slot_name}
+                        className="sr-board-card-img"
+                        onError={e => { e.target.src = DEFAULT_IMG; }} />
+                    </div>
+                    <div className="sr-board-card-overlay" />
 
-            {/* Slot image */}
-            <img
-              src={r.slot_image || DEFAULT_IMG}
-              alt=""
-              style={{
-                width: imgSize,
-                height: imgSize,
-                borderRadius: fontSize * 0.3,
-                objectFit: 'cover',
-                flexShrink: 0,
-                background: 'rgba(0,0,0,0.3)',
-              }}
-              onError={e => { e.target.src = DEFAULT_IMG; }}
-            />
+                    {/* Badges */}
+                    <div className="sr-board-card-badges">
+                      <span className="sr-board-badge sr-board-badge--idx">#{idx + 1}</span>
+                    </div>
 
-            {/* Text */}
-            <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <span style={{
-                fontSize,
-                fontWeight: 700,
-                whiteSpace: 'nowrap',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                lineHeight: 1.3,
-              }}>
-                {r.slot_name}
-              </span>
-              {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
-                <span style={{
-                  fontSize: fontSize * 0.7,
-                  color: mutedColor,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  lineHeight: 1.2,
-                }}>
-                  by {r.requested_by}
-                </span>
-              )}
+                    {/* Name + requester */}
+                    <div className="sr-board-card-info">
+                      <div className="sr-board-card-name">{req.slot_name}</div>
+                      {showRequester && req.requested_by !== 'anonymous' && (
+                        <div className="sr-board-card-by">by {req.requested_by}</div>
+                      )}
+                    </div>
+
+                    {/* Glow ring on center */}
+                    {isCenter && <div className="sr-board-card-ring" />}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* ─── Bottom: stats bar ─── */}
+        <div className="sr-board-bottom">
+          <div className="sr-board-stats-row">
+            <div className="sr-board-stat">
+              <span className="sr-board-stat-icon">🎰</span>
+              <span className="sr-board-stat-val">{total} requests</span>
+            </div>
+            <div className="sr-board-stat-divider" />
+            <div className="sr-board-stat">
+              <span className="sr-board-stat-icon">👑</span>
+              <span className="sr-board-stat-val">{requests[activeIdx]?.slot_name || '—'}</span>
             </div>
           </div>
-        ))}
+        </div>
+
       </div>
     </div>
   );
