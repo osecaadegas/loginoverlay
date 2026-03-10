@@ -206,7 +206,6 @@ function BonusHuntWidgetV8({ config, theme }) {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
       }}>
 
       {/* ─── 3D carousel ─── */}
