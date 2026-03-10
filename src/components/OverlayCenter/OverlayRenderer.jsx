@@ -63,7 +63,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     zIndex: widget.z_index || 1,
     animationDuration: `${(animSpeed || 1) * 0.35}s`,
     willChange: 'transform, opacity',
-    overflow: 'visible',
+    overflow: 'hidden',
     filter: shadowFilter,
   };
 
