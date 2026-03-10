@@ -4,6 +4,7 @@
 import React, { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
 import { useAuth } from '../../context/AuthContext';
+import './OverlayRenderer.css';
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
@@ -668,6 +669,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 onMouseDown={handleCanvasClick}
                 data-tour="preview-drag"
               >
+                {/* Theme texture overlay */}
+                {theme?.bg_texture && theme.bg_texture !== 'none' && (
+                  <div className={`or-texture or-texture--${theme.bg_texture}`} />
+                )}
                 {visibleWidgets.length === 0 && (
                   <div className="wm-live-empty">No visible widgets — toggle a widget on to see it here</div>
                 )}

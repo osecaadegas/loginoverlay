@@ -1,6 +1,6 @@
 /* =========================================================
-   OverlayRenderer.css — OBS Browser Source Styles
-   Transparent bg, 1920×1080 canvas, GPU-accelerated.
+   OverlayRenderer.css ï¿½ OBS Browser Source Styles
+   Transparent bg, 1920ï¿½1080 canvas, GPU-accelerated.
    All styles scoped to .or-canvas to avoid leaking globally.
    ========================================================= */
 
@@ -32,7 +32,7 @@
   text-rendering: geometricPrecision;
   -webkit-text-size-adjust: 100%;
 
-  /* -- GPU compositing – backface-hidden gives sharper layer compositing -- */
+  /* -- GPU compositing ï¿½ backface-hidden gives sharper layer compositing -- */
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
 
@@ -45,8 +45,8 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  z-index: 0;
-  opacity: 0.05;
+  z-index: 9998;
+  opacity: 0.15;
 }
 
 .or-texture--dots {
@@ -118,7 +118,7 @@
 .or-anim-in--slide-left  { animation: or-slideInLeft  var(--ov-anim-speed, 0.4s) ease-out both; }
 .or-anim-in--slide-right { animation: or-slideInRight var(--ov-anim-speed, 0.4s) ease-out both; }
 
-/* Swipe In (faster, no fade — pure directional wipe) */
+/* Swipe In (faster, no fade ï¿½ pure directional wipe) */
 .or-anim-in--swipe-up    { animation: or-swipeInUp    var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
 .or-anim-in--swipe-down  { animation: or-swipeInDown  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
 .or-anim-in--swipe-left  { animation: or-swipeInLeft  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
@@ -821,7 +821,7 @@
   text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
 }
 
-/* --- Bonus Hunt: Neon (legacy — kept for backwards compat) --- */
+/* --- Bonus Hunt: Neon (legacy ï¿½ kept for backwards compat) --- */
 .oc-bonushunt--neon .bht-card {
   box-shadow: 0 0 12px rgba(0,255,200,0.06);
 }
@@ -836,7 +836,7 @@
 }
 
 /* -----------------------------------------------------------
-   Bonus Hunt V4 — Neon Command HUD
+   Bonus Hunt V4 ï¿½ Neon Command HUD
    Cyberpunk HUD: scanlines, glitch text, angled stat panels,
    rotating target-lock rings, SVG progress arc, horizontal
    data stream, neon power meter. 100% unique layout.
@@ -870,7 +870,7 @@
 
 /* (corner decorations removed) */
 
-/* --- HEADER — Glitch title --- */
+/* --- HEADER ï¿½ Glitch title --- */
 .bht4-header {
   position: relative; z-index: 2;
   display: flex; justify-content: space-between; align-items: center;
@@ -948,14 +948,14 @@
   clip-path: polygon(8% 0%, 100% 0%, 92% 100%, 0% 100%);
 }
 
-/* --- CENTER — Ring + Target Card + Side Stats --- */
+/* --- CENTER ï¿½ Ring + Target Card + Side Stats --- */
 .bht4-center {
   position: relative; z-index: 2;
   display: flex; align-items: stretch; gap: 10px;
   padding: 8px 14px;
 }
 
-/* Side stats — stacked vertically on the right */
+/* Side stats ï¿½ stacked vertically on the right */
 .bht4-side-stats {
   flex: 0 0 auto;
   display: flex; flex-direction: column; gap: 3px;
@@ -1147,7 +1147,7 @@
   text-shadow: 0 0 6px rgba(239,68,68,0.3);
 }
 
-/* --- DATA STREAM — Horizontal auto-scrolling card ribbon --- */
+/* --- DATA STREAM ï¿½ Horizontal auto-scrolling card ribbon --- */
 .bht4-stream {
   position: relative; z-index: 2;
   padding: 6px 0;
@@ -1185,7 +1185,7 @@
   100% { transform: translateX(-50%); }
 }
 
-/* Stream cards — full-bleed image */
+/* Stream cards ï¿½ full-bleed image */
 .bht4-stream-card {
   flex: 0 0 auto;
   width: 130px; height: 140px;
@@ -1253,7 +1253,7 @@
   font-size: 0.58em; font-weight: 600; color: #fff;
 }
 
-/* --- POWER METER — Compact neon total payout --- */
+/* --- POWER METER ï¿½ Compact neon total payout --- */
 .bht4-power {
   position: relative; z-index: 2;
   padding: 4px 14px 0;
@@ -1379,7 +1379,7 @@
 
 /* --- Bonus Hunt: Compact --- */
 /* -------------------------------------------------------------------
-   COMPACT STYLE (v6_compact) — full rewrite
+   COMPACT STYLE (v6_compact) ï¿½ full rewrite
    Root is a flex column that fills the widget slot. Fixed-size cards
    (header, current, summary) use flex-shrink:0. The list card fills
    all remaining space with flex:1. Two list modes:
@@ -1489,7 +1489,7 @@
 .oc-bonushunt--compact .bht-bonus-card-img {
   height: 85px; flex-shrink: 0;
 }
-/* Hide the old gradient overlay — compact uses the info bar instead */
+/* Hide the old gradient overlay ï¿½ compact uses the info bar instead */
 .oc-bonushunt--compact .bht-bonus-card-overlay { display: none; }
 
 /* -- Compact info bar (below each card image) -- */
@@ -1576,7 +1576,7 @@
   transition: width 0.5s ease;
 }
 
-/* --- Bonus Hunt: Carousel (v7) — Stacked layout --- */
+/* --- Bonus Hunt: Carousel (v7) ï¿½ Stacked layout --- */
 .oc-bonushunt--carousel {
   flex-direction: column !important;
   overflow: hidden !important;
@@ -1844,7 +1844,7 @@
 }
 
 /* ----------------------------------------------------------
-   Bonus Hunt Widget — Style 2 (Sleek Slate)
+   Bonus Hunt Widget ï¿½ Style 2 (Sleek Slate)
    ---------------------------------------------------------- */
 
 .bht2-root {
@@ -2516,7 +2516,7 @@
 
 
 /* ---------------------------------------------------------------
-   STYLE 3 — FLIP CARD   (bht3-*)
+   STYLE 3 ï¿½ FLIP CARD   (bht3-*)
    --------------------------------------------------------------- */
 
 /* -- Spin keyframe -- */
@@ -2525,7 +2525,7 @@
   to   { transform: rotateY(360deg); }
 }
 
-/* -- Root — override .or-widget-inner & .oc-bonushunt glass styles -- */
+/* -- Root ï¿½ override .or-widget-inner & .oc-bonushunt glass styles -- */
 .bht3-root {
   display: flex;
   flex-direction: column;
@@ -2942,7 +2942,7 @@
 }
 
 /* =========================================================
-   RAID SHOUTOUT WIDGET — Minimal Expand/Collapse Alert
+   RAID SHOUTOUT WIDGET ï¿½ Minimal Expand/Collapse Alert
    ========================================================= */
 
 /* --- Wrapper: full widget area, centered --- */
@@ -3089,7 +3089,7 @@
 }
 
 /* ---------------------------------------------------
-   PHASE ANIMATIONS — Enter / Visible / Exit
+   PHASE ANIMATIONS ï¿½ Enter / Visible / Exit
    --------------------------------------------------- */
 
 /* Entering: slide up from below */
@@ -3119,7 +3119,7 @@
 }
 
 /* -----------------------------------------------------------
-   CHAT WIDGET — OBS Overlay styles
+   CHAT WIDGET ï¿½ OBS Overlay styles
    ----------------------------------------------------------- */
 .ov-chat-widget {
   box-sizing: border-box;
@@ -3144,7 +3144,7 @@
 }
 
 /* ---------------------------------------------------
-   Community Games – OBS Overlay Styles
+   Community Games ï¿½ OBS Overlay Styles
    --------------------------------------------------- */
 
 /* --- Salty Words Widget --- */
@@ -3338,7 +3338,7 @@
 .ov-chat-widget--classic .ov-chat-messages { padding: 6px 0; }
 .ov-chat-widget--classic .ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
 
-/* -- Floating Mode — transparent bg, pill bubbles -- */
+/* -- Floating Mode ï¿½ transparent bg, pill bubbles -- */
 .ov-chat-widget--floating { background: transparent !important; border: none !important; }
 .ov-chat-widget--floating .ov-chat-messages {
   display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
@@ -3347,7 +3347,7 @@
 .ov-chat-widget--floating .ov-chat-msg:hover { background: none; }
 .ov-chat-widget--floating .ov-chat-username::after { content: none; }
 
-/* -- Bubble Mode — social media speech bubbles -- */
+/* -- Bubble Mode ï¿½ social media speech bubbles -- */
 .ov-chat-widget--bubble .ov-chat-messages { padding: 6px 0; }
 .ov-chat-widget--bubble .ov-chat-msg {
   gap: 8px; align-items: flex-start;
@@ -3355,12 +3355,12 @@
 .ov-chat-widget--bubble .ov-chat-msg:hover { background: rgba(255,255,255,0.02); }
 .ov-chat-widget--bubble .ov-chat-username::after { content: none; }
 
-/* -- Ticker Mode — horizontal scroll bar -- */
+/* -- Ticker Mode ï¿½ horizontal scroll bar -- */
 .ov-chat-widget--ticker {
   overflow: hidden !important;
 }
 
-/* -- Stack Mode — fading message pile, transparent -- */
+/* -- Stack Mode ï¿½ fading message pile, transparent -- */
 .ov-chat-widget--stack { background: transparent !important; border: none !important; }
 .ov-chat-widget--stack .ov-chat-messages {
   display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
@@ -3371,7 +3371,7 @@
 .ov-chat-widget--stack .ov-chat-msg:hover { background: none; }
 .ov-chat-widget--stack .ov-chat-username::after { content: none; }
 
-/* -- Typewriter Mode — terminal / hacker look -- */
+/* -- Typewriter Mode ï¿½ terminal / hacker look -- */
 .ov-chat-widget--typewriter {
   border: 1px solid rgba(74,222,128,0.15) !important;
   box-shadow: 0 0 20px rgba(74,222,128,0.06), inset 0 0 40px rgba(0,20,0,0.3);
@@ -3385,7 +3385,7 @@
 .ov-chat-widget--typewriter .ov-chat-msg:hover { background: rgba(74,222,128,0.04); }
 .ov-chat-widget--typewriter .ov-chat-username::after { content: none; }
 
-/* -- Sidebar Mode — color-coded left border strip -- */
+/* -- Sidebar Mode ï¿½ color-coded left border strip -- */
 .ov-chat-widget--sidebar .ov-chat-messages { padding: 4px 0; }
 .ov-chat-widget--sidebar .ov-chat-msg {
   gap: 0; transition: background 0.12s;
@@ -3394,7 +3394,7 @@
 .ov-chat-widget--sidebar .ov-chat-username::after { content: none; }
 
 /* ------------------------------------------------------
-   Cards Mode — dark card per message with Twitch badges
+   Cards Mode ï¿½ dark card per message with Twitch badges
    ------------------------------------------------------ */
 .ov-chat-widget--cards {
   background: rgba(18,10,35,0.95) !important;
@@ -3540,7 +3540,7 @@
 }
 
 /* -----------------------------------------------------------
-   BONUS HUNT V8 — Card Stack / Fan Carousel (transparent BG)
+   BONUS HUNT V8 ï¿½ Card Stack / Fan Carousel (transparent BG)
    ----------------------------------------------------------- */
 .bhv8-root {
   position: relative;
@@ -3596,7 +3596,7 @@
   75% { transform: rotateX(0deg) rotateY(-1.5deg); }
 }
 
-/* card wrapper — absolutely centred; inline transform slides it into position */
+/* card wrapper ï¿½ absolutely centred; inline transform slides it into position */
 .bhv8-card-wrapper {
   /* position set inline */
   width: 200px;
@@ -3914,7 +3914,7 @@
 
 
 /* -----------------------------------------------------------
-   BONUS HUNT V9 — Hunt Board (contained 3D carousel)
+   BONUS HUNT V9 ï¿½ Hunt Board (contained 3D carousel)
    ----------------------------------------------------------- */
 .bhv9-root {
   width: 100%; height: 100%;
@@ -4163,7 +4163,7 @@
 .bhv9-current-bet { font-size: 0.72em; font-weight: 700; color: var(--bhv9-muted, #94a3b8); }
 
 /* -----------------------------------------------------------
-   BONUS HUNT V5 — Horizontal + V7 — Carousel
+   BONUS HUNT V5 ï¿½ Horizontal + V7 ï¿½ Carousel
    (shared bhtc-* card styles used by both layouts)
    ----------------------------------------------------------- */
 
