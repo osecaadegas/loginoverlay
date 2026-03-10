@@ -81,7 +81,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
   };
 
   const commandUrl = user
-    ? `\${customapi.${window.location.origin}/api/chat-commands?cmd=sr&user_id=${user.id}&requester=\${user}&slot=\${querystring}}`
+    ? `\${customapi.${window.location.origin}/api/chat-commands?cmd=sr&user_id=${user.id}&requester=\${user}&slot=\${querystring}&_=1}`
     : '(log in to see your command)';
 
   return (
