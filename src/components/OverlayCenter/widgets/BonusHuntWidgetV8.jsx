@@ -50,6 +50,8 @@ function BonusHuntWidgetV8({ config, theme }) {
   /* ─── Auto-cycle ─── */
   const [activeIdx, setActiveIdx] = useState(0);
   const timerRef = useRef(null);
+  const rootRef = useRef(null);
+  const [scale, setScale] = useState(1);
   const total = bonuses.length;
 
   /* current bonus (first not-opened) */
@@ -78,6 +80,20 @@ function BonusHuntWidgetV8({ config, theme }) {
     timerRef.current = setInterval(advance, autoSpeed);
     return () => clearInterval(timerRef.current);
   }, [total, autoSpeed, advance, bonusOpening, huntComplete]);
+
+  /* ─── Responsive: scale all content to fit container ─── */
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      if (width > 0 && height > 0) {
+        setScale(Math.min(width / 670, height / 380));
+      }
+    });
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   /* ─── Circular offset: shortest distance around the ring ─── */
   const getOffset = useCallback((idx) => {
@@ -164,7 +180,7 @@ function BonusHuntWidgetV8({ config, theme }) {
 
   if (total === 0) {
     return (
-      <div style={{ ...rootStyle, justifyContent: 'center' }}>
+      <div ref={rootRef} style={{ ...rootStyle, justifyContent: 'center' }}>
         <div style={{ textAlign: 'center', opacity: 0.5, fontSize: '1.1em' }}>
           <div style={{ fontSize: '2.5em', marginBottom: 8 }}>🎴</div>
           No bonuses added yet
@@ -174,9 +190,24 @@ function BonusHuntWidgetV8({ config, theme }) {
   }
 
   return (
-    <div className="bhv8-root" style={rootStyle}>
+    <div ref={rootRef} className="bhv8-root" style={rootStyle}>
       {/* subtle ambient light */}
       <div className="bhv8-glow" />
+
+      {/* ─── Responsive scaler ─── */}
+      <div style={{
+        position: 'absolute',
+        left: '50%',
+        top: '50%',
+        transform: `translate(-50%, -50%) scale(${scale})`,
+        transformOrigin: 'center center',
+        width: 670,
+        height: 380,
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}>
 
       {/* ─── 3D carousel ─── */}
       <div className="bhv8-stage">
@@ -280,7 +311,7 @@ function BonusHuntWidgetV8({ config, theme }) {
         </div>
       )}
 
-
+      </div>
     </div>
   );
 }
