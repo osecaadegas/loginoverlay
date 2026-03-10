@@ -7,6 +7,7 @@ import { supabase } from '../../../config/supabaseClient';
 import SlotRequestsWidgetList from './SlotRequestsWidgetList';
 import SlotRequestsWidgetBoard from './SlotRequestsWidgetBoard';
 import SlotRequestsWidgetCompact from './SlotRequestsWidgetCompact';
+import SlotRequestsWidgetFloat from './SlotRequestsWidgetFloat';
 
 export default function SlotRequestsWidget({ config, userId }) {
   const c = config || {};
@@ -87,6 +88,9 @@ export default function SlotRequestsWidget({ config, userId }) {
   }
   if (c.displayStyle === 'v3_compact') {
     return <SlotRequestsWidgetCompact config={c} requests={requests} />;
+  }
+  if (c.displayStyle === 'v4_float') {
+    return <SlotRequestsWidgetFloat config={c} requests={requests} />;
   }
 
   return <SlotRequestsWidgetList config={c} requests={requests} />;
