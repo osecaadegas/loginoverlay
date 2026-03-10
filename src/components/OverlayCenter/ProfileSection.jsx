@@ -3,7 +3,7 @@
  * Manages streamer identity, connected accounts, and preferences.
  * Syncs profile data to all relevant widgets (navbar, chat, giveaway, etc.)
  */
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../config/supabaseClient';
 import { startSpotifyAuth } from '../../utils/spotifyAuth';
@@ -120,6 +120,9 @@ export default function ProfileSection({ widgets, saveWidget }) {
   const [seTestMsg, setSeTestMsg] = useState('');
   const [spotifyLoading, setSpotifyLoading] = useState(false);
   const [spotifyError, setSpotifyError] = useState('');
+  const [songIrcStatus, setSongIrcStatus] = useState('off');
+  const songWsRef = useRef(null);
+  const songReconnectRef = useRef(null);
 
   /* ── Load profile from existing widget configs + user metadata ── */
   useEffect(() => {
@@ -155,6 +158,58 @@ export default function ProfileSection({ widgets, saveWidget }) {
   }, [user, widgets]);
 
   const set = (key, val) => setProfile(prev => ({ ...prev, [key]: val }));
+
+  /* ── Twitch IRC listener for !song commands ── */
+  useEffect(() => {
+    const channel = (profile.twitchUsername || '').trim().toLowerCase();
+    if (!channel || !user || !profile.spotify_access_token) { setSongIrcStatus('off'); return; }
+
+    let ws;
+    let alive = true;
+
+    const connect = () => {
+      if (!alive) return;
+      setSongIrcStatus('connecting');
+      ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
+      songWsRef.current = ws;
+
+      ws.onopen = () => {
+        ws.send('PASS SCHMOOPIIE');
+        ws.send('NICK justinfan' + Math.floor(Math.random() * 100000));
+        ws.send('JOIN #' + channel);
+      };
+
+      ws.onmessage = async (event) => {
+        for (const line of event.data.split('\r\n')) {
+          if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
+          if (line.includes(' 366 ')) setSongIrcStatus('live');
+
+          const m = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!song (.+)/i);
+          if (m) {
+            const songName = m[2].trim();
+            if (songName) {
+              try {
+                await fetch(`${window.location.origin}/api/chat-commands?cmd=song&user_id=${encodeURIComponent(user.id)}&song=${encodeURIComponent(songName)}`);
+              } catch (err) { console.error('[SongRequest] IRC fetch error', err); }
+            }
+          }
+        }
+      };
+
+      ws.onclose = () => {
+        if (alive) { setSongIrcStatus('off'); songReconnectRef.current = setTimeout(connect, 5000); }
+      };
+      ws.onerror = () => ws.close();
+    };
+
+    const debounce = setTimeout(connect, 800);
+    return () => {
+      alive = false;
+      clearTimeout(debounce);
+      clearTimeout(songReconnectRef.current);
+      if (songWsRef.current) { songWsRef.current.close(); songWsRef.current = null; }
+    };
+  }, [profile.twitchUsername, profile.spotify_access_token, user]);
 
   /* ── Count connected platforms ── */
   const connectedPlatforms = useMemo(() => {
@@ -454,31 +509,26 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
               Connecting here auto-syncs to your Navbar &amp; Spotify widgets.
             </p>
-            {/* Song Request command helper */}
+            {/* Song Request chat listener status */}
             {profile.spotify_access_token && user && (
               <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(29,185,52,0.08)', borderRadius: 10, border: '1px solid rgba(29,185,52,0.2)' }}>
                 <p style={{ fontSize: '0.74rem', color: '#1DB954', fontWeight: 700, margin: '0 0 6px' }}>🎶 Chat Song Requests</p>
-                <p style={{ fontSize: '0.7rem', color: '#94a3b8', margin: '0 0 6px', lineHeight: 1.4 }}>
-                  Add this as a StreamElements custom command so viewers can queue songs:
-                </p>
-                <code
-                  style={{
-                    display: 'block', fontSize: '0.65rem', color: '#e2e8f0', background: 'rgba(0,0,0,0.3)',
-                    padding: '8px 10px', borderRadius: 6, wordBreak: 'break-all', cursor: 'pointer',
-                    lineHeight: 1.5, border: '1px solid rgba(255,255,255,0.06)',
-                  }}
-                  title="Click to copy"
-                  onClick={(e) => {
-                    navigator.clipboard.writeText(e.currentTarget.textContent);
-                    e.currentTarget.style.borderColor = '#1DB954';
-                    setTimeout(() => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }, 1500);
-                  }}
-                >
-                  {`\${customapi.${window.location.origin}/api/chat-commands?cmd=song&user_id=${user.id}&r=\${user}&w1=\${1}&w2=\${2}&w3=\${3}&w4=\${4}&w5=\${5}&w6=\${6}&w7=\${7}&w8=\${8}&w9=\${9}&w10=\${10}}`}
-                </code>
-                <p style={{ fontSize: '0.65rem', color: '#64748b', margin: '6px 0 0', lineHeight: 1.4 }}>
-                  Command name: <strong style={{ color: '#e2e8f0' }}>!song</strong> · Click above to copy · Viewers type: <strong style={{ color: '#e2e8f0' }}>!song Blinding Lights</strong>
-                </p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: songIrcStatus === 'live' ? '#22c55e' : songIrcStatus === 'connecting' ? '#f59e0b' : '#64748b' }} />
+                  <span style={{ fontSize: '0.72rem', color: songIrcStatus === 'live' ? '#22c55e' : songIrcStatus === 'connecting' ? '#f59e0b' : '#64748b', fontWeight: 600 }}>
+                    {songIrcStatus === 'live' ? `Listening to #${profile.twitchUsername}` : songIrcStatus === 'connecting' ? 'Connecting…' : 'Not connected'}
+                  </span>
+                </div>
+                {songIrcStatus === 'live' && (
+                  <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '4px 0 0', lineHeight: 1.4 }}>
+                    Viewers type <strong style={{ color: '#e2e8f0' }}>!song Blinding Lights</strong> in chat to queue songs on Spotify
+                  </p>
+                )}
+                {songIrcStatus === 'off' && profile.twitchUsername && (
+                  <p style={{ fontSize: '0.65rem', color: '#64748b', margin: '4px 0 0', lineHeight: 1.4 }}>
+                    Will auto-connect when Spotify is linked and Twitch username is set
+                  </p>
+                )}
               </div>
             )}
           </div>
