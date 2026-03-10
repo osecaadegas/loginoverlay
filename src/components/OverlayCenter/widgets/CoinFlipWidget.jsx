@@ -147,7 +147,7 @@ function CoinFlipWidget({ config, widgetId }) {
       } catch (e) { console.error('[CoinFlip] auto-flip result:', e); }
       // Auto-reset after cooldown
       autoResetRef.current = setTimeout(() => {
-        writeConfig({ gameStatus: 'idle', _chatBets: {}, result: null, flipping: false });
+        writeConfig({ gameStatus: 'idle', _chatBets: {}, flipping: false });
       }, flipCooldown);
     }, 3000);
   }, [widgetId, flipCooldown, writeConfig]);

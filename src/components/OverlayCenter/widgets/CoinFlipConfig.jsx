@@ -171,7 +171,7 @@ export default function CoinFlipConfig({ config, onChange }) {
   const openBets = () => {
     setPayoutResult(null);
     setMulti({
-      gameStatus: 'open', result: null, _chatBets: {}, flipping: false,
+      gameStatus: 'open', _chatBets: {}, flipping: false,
       lastWinner: '', lastWinAmount: 0, _prevResult: c.result || 'heads',
     });
   };
@@ -222,7 +222,7 @@ export default function CoinFlipConfig({ config, onChange }) {
 
   const resetGame = () => {
     setPayoutResult(null);
-    setMulti({ gameStatus: 'idle', result: null, flipping: false, _chatBets: {} });
+    setMulti({ gameStatus: 'idle', flipping: false, _chatBets: {} });
   };
 
   /* ── Streamer Quick Flip (no bets, just animation) ── */
