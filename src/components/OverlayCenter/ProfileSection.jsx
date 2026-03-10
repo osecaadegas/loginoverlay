@@ -474,7 +474,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
                     setTimeout(() => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)'; }, 1500);
                   }}
                 >
-                  {`\${customapi.${window.location.origin}/cmd/song/${user.id}/\${querystring}}`}
+                  {`\${customapi.${window.location.origin}/api/chat-commands?cmd=song&user_id=${user.id}&song=\${querystring}&r=\${user}}`}
                 </code>
                 <p style={{ fontSize: '0.65rem', color: '#64748b', margin: '6px 0 0', lineHeight: 1.4 }}>
                   Command name: <strong style={{ color: '#e2e8f0' }}>!song</strong> · Click above to copy · Viewers type: <strong style={{ color: '#e2e8f0' }}>!song Blinding Lights</strong>
