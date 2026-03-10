@@ -19,27 +19,33 @@ export default function SlotRequestsWidget({ config, userId }) {
 
   /* ── Fetch requests ── */
   const fetchRequests = useCallback(async () => {
+    if (!userId) return;
     const { data } = await supabase
       .from('slot_requests')
       .select('*')
+      .eq('user_id', userId)
       .eq('status', 'pending')
       .order('created_at', { ascending: true })
       .limit(maxDisplay);
     if (data) setRequests(data);
-  }, [maxDisplay]);
+  }, [userId, maxDisplay]);
 
   useEffect(() => { fetchRequests(); }, [fetchRequests]);
 
   /* ── Realtime ── */
   useEffect(() => {
+    if (!userId) return;
     const channel = supabase
-      .channel('slot-requests-widget')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_requests' }, () => {
+      .channel(`slot-requests-widget-${userId}`)
+      .on('postgres_changes', {
+        event: '*', schema: 'public', table: 'slot_requests',
+        filter: `user_id=eq.${userId}`,
+      }, () => {
         fetchRequests();
       })
       .subscribe();
     return () => { supabase.removeChannel(channel); };
-  }, [fetchRequests]);
+  }, [fetchRequests, userId]);
 
   /* ── Twitch IRC listener ── */
   useEffect(() => {

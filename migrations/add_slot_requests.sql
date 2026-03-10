@@ -17,7 +17,7 @@ CREATE INDEX idx_slot_requests_user ON slot_requests (user_id, status, created_a
 ALTER TABLE slot_requests ENABLE ROW LEVEL SECURITY;
 
 -- Streamer can read/manage their own requests
-CREATE POLICY slot_requests_select ON slot_requests FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY slot_requests_select ON slot_requests FOR SELECT USING (true);
 CREATE POLICY slot_requests_insert ON slot_requests FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY slot_requests_update ON slot_requests FOR UPDATE USING (auth.uid() = user_id);
 CREATE POLICY slot_requests_delete ON slot_requests FOR DELETE USING (auth.uid() = user_id);
