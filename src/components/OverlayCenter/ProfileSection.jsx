@@ -123,6 +123,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
   const [songIrcStatus, setSongIrcStatus] = useState('off');
   const songWsRef = useRef(null);
   const songReconnectRef = useRef(null);
+  const [srIrcStatus, setSrIrcStatus] = useState('off');
 
   /* ── Load profile from existing widget configs + user metadata ── */
   useEffect(() => {
@@ -159,17 +160,23 @@ export default function ProfileSection({ widgets, saveWidget }) {
 
   const set = (key, val) => setProfile(prev => ({ ...prev, [key]: val }));
 
-  /* ── Twitch IRC listener for !song commands ── */
+  /* ── Twitch IRC listener for !song and !sr commands ── */
   useEffect(() => {
     const channel = (profile.twitchUsername || '').trim().toLowerCase();
-    if (!channel || !user || !profile.spotify_access_token) { setSongIrcStatus('off'); return; }
+    if (!channel || !user) {
+      setSongIrcStatus('off');
+      setSrIrcStatus('off');
+      return;
+    }
 
     let ws;
     let alive = true;
+    const hasSpotify = !!profile.spotify_access_token;
 
     const connect = () => {
       if (!alive) return;
-      setSongIrcStatus('connecting');
+      setSongIrcStatus(hasSpotify ? 'connecting' : 'off');
+      setSrIrcStatus('connecting');
       ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
       songWsRef.current = ws;
 
@@ -182,22 +189,42 @@ export default function ProfileSection({ widgets, saveWidget }) {
       ws.onmessage = async (event) => {
         for (const line of event.data.split('\r\n')) {
           if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
-          if (line.includes(' 366 ')) setSongIrcStatus('live');
+          if (line.includes(' 366 ')) {
+            if (hasSpotify) setSongIrcStatus('live');
+            setSrIrcStatus('live');
+          }
 
-          const m = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!song (.+)/i);
-          if (m) {
-            const songName = m[2].trim();
-            if (songName) {
-              try {
-                await fetch(`${window.location.origin}/api/chat-commands?cmd=song&user_id=${encodeURIComponent(user.id)}&song=${encodeURIComponent(songName)}`);
-              } catch (err) { console.error('[SongRequest] IRC fetch error', err); }
+          // !song handler
+          if (hasSpotify) {
+            const songMatch = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!song (.+)/i);
+            if (songMatch) {
+              const songName = songMatch[2].trim();
+              if (songName) {
+                try { await fetch(`${window.location.origin}/api/chat-commands?cmd=song&user_id=${encodeURIComponent(user.id)}&song=${encodeURIComponent(songName)}`); }
+                catch (err) { console.error('[SongRequest] IRC error', err); }
+              }
+            }
+          }
+
+          // !sr handler
+          const srMatch = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!sr (.+)/i);
+          if (srMatch) {
+            const requester = srMatch[1];
+            const slotName = srMatch[2].trim();
+            if (slotName) {
+              try { await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(user.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`); }
+              catch (err) { console.error('[SlotRequest] IRC error', err); }
             }
           }
         }
       };
 
       ws.onclose = () => {
-        if (alive) { setSongIrcStatus('off'); songReconnectRef.current = setTimeout(connect, 5000); }
+        if (alive) {
+          setSongIrcStatus('off');
+          setSrIrcStatus('off');
+          songReconnectRef.current = setTimeout(connect, 5000);
+        }
       };
       ws.onerror = () => ws.close();
     };
@@ -527,6 +554,23 @@ export default function ProfileSection({ widgets, saveWidget }) {
                 {songIrcStatus === 'off' && profile.twitchUsername && (
                   <p style={{ fontSize: '0.65rem', color: '#64748b', margin: '4px 0 0', lineHeight: 1.4 }}>
                     Will auto-connect when Spotify is linked and Twitch username is set
+                  </p>
+                )}
+              </div>
+            )}
+            {/* Slot Request chat listener status */}
+            {user && profile.twitchUsername && (
+              <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(245,158,11,0.08)', borderRadius: 10, border: '1px solid rgba(245,158,11,0.2)' }}>
+                <p style={{ fontSize: '0.74rem', color: '#f59e0b', fontWeight: 700, margin: '0 0 6px' }}>🎰 Chat Slot Requests</p>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: srIrcStatus === 'live' ? '#22c55e' : srIrcStatus === 'connecting' ? '#f59e0b' : '#64748b' }} />
+                  <span style={{ fontSize: '0.72rem', color: srIrcStatus === 'live' ? '#22c55e' : srIrcStatus === 'connecting' ? '#f59e0b' : '#64748b', fontWeight: 600 }}>
+                    {srIrcStatus === 'live' ? `Listening to #${profile.twitchUsername}` : srIrcStatus === 'connecting' ? 'Connecting…' : 'Not connected'}
+                  </span>
+                </div>
+                {srIrcStatus === 'live' && (
+                  <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '4px 0 0', lineHeight: 1.4 }}>
+                    Viewers type <strong style={{ color: '#e2e8f0' }}>!sr Gates of Olympus</strong> in chat to request slots
                   </p>
                 )}
               </div>
