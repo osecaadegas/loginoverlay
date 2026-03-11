@@ -451,44 +451,37 @@ function BonusHuntWidget({ config, theme }) {
         </>
       )}
 
-      {/* ═══ Current Bonus Card ═══ */}
-      {currentBonus && (
+      {/* ═══ Current Bonus Card (compact only) ═══ */}
+      {currentBonus && isCompactBH && (
         <div className="bht-card bht-current">
-          {isCompactBH ? (
-            <>
-              <div className={`bht-cpt-current${(currentBonus.isExtremeBonus || currentBonus.isExtreme) ? ' bht-cpt-current--extreme' : ''}${currentBonus.isSuperBonus ? ' bht-cpt-current--super' : ''}`}>
-                <div className="bht-cpt-current-img-wrap">
-                  {currentBonus.slot?.image && (
-                    <img src={currentBonus.slot.image} alt={currentBonus.slotName}
-                      className="bht-cpt-current-img"
-                      onError={e => { e.target.style.display = 'none'; }} />
-                  )}
-                  {(currentBonus.isExtremeBonus || currentBonus.isExtreme) && <div className="bht-cpt-blood-drip" />}
+          <div className={`bht-cpt-current${(currentBonus.isExtremeBonus || currentBonus.isExtreme) ? ' bht-cpt-current--extreme' : ''}${currentBonus.isSuperBonus ? ' bht-cpt-current--super' : ''}`}>
+            <div className="bht-cpt-current-img-wrap">
+              {currentBonus.slot?.image && (
+                <img src={currentBonus.slot.image} alt={currentBonus.slotName}
+                  className="bht-cpt-current-img"
+                  onError={e => { e.target.style.display = 'none'; }} />
+              )}
+              {(currentBonus.isExtremeBonus || currentBonus.isExtreme) && <div className="bht-cpt-blood-drip" />}
+            </div>
+            <div className="bht-cpt-current-info">
+              <div className="bht-cpt-current-name">{currentBonus.slotName}</div>
+              <div className="bht-cpt-current-counter">#{currentIndex + 1} / {bonuses.length}</div>
+              <div className="bht-cpt-current-stats">
+                <div className="bht-cpt-current-stat">
+                  <span className="bht-cpt-current-stat-label">BET</span>
+                  <span>{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
                 </div>
-                <div className="bht-cpt-current-info">
-                  <div className="bht-cpt-current-name">{currentBonus.slotName}</div>
-                  <div className="bht-cpt-current-counter">#{currentIndex + 1} / {bonuses.length}</div>
-                  <div className="bht-cpt-current-stats">
-                    <div className="bht-cpt-current-stat">
-                      <span className="bht-cpt-current-stat-label">BET</span>
-                      <span>{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
-                    </div>
-                    <div className="bht-cpt-current-stat">
-                      <span className="bht-cpt-current-stat-label">WIN</span>
-                      <span>{currency}0.00</span>
-                    </div>
-                    <div className="bht-cpt-current-stat">
-                      <span className="bht-cpt-current-stat-label">MULTI</span>
-                      <span>0x</span>
-                    </div>
-                  </div>
+                <div className="bht-cpt-current-stat">
+                  <span className="bht-cpt-current-stat-label">WIN</span>
+                  <span>{currency}0.00</span>
+                </div>
+                <div className="bht-cpt-current-stat">
+                  <span className="bht-cpt-current-stat-label">MULTI</span>
+                  <span>0x</span>
                 </div>
               </div>
-            </>
-          ) : (
-            <>
-            </>
-          )}
+            </div>
+          </div>
         </div>
       )}
 
