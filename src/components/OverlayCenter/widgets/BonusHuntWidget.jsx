@@ -487,25 +487,6 @@ function BonusHuntWidget({ config, theme }) {
             </>
           ) : (
             <>
-              <div className="bht-current-header">
-                <span className="bht-current-label">BONUS</span>
-                <span className="bht-current-counter">{currentIndex + 1}/{bonuses.length}</span>
-              </div>
-
-              <div className="bht-current-stats">
-                <div className="bht-current-stat">
-                  <span className="bht-current-stat-label">BET</span>
-                  <span className="bht-current-stat-value">{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
-                </div>
-                <div className="bht-current-stat">
-                  <span className="bht-current-stat-label">MULTI</span>
-                  <span className="bht-current-stat-value">{(() => { const bet = Number(currentBonus.betSize) || 0; const pay = Number(currentBonus.payout) || 0; return bet > 0 ? `${(pay / bet).toFixed(0)}x` : '0x'; })()}</span>
-                </div>
-                <div className="bht-current-stat">
-                  <span className="bht-current-stat-label">WIN</span>
-                  <span className="bht-current-stat-value">{currency}{(Number(currentBonus.payout) || 0).toFixed(0)}</span>
-                </div>
-              </div>
             </>
           )}
         </div>
