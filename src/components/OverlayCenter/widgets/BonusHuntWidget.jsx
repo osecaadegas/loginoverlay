@@ -446,7 +446,7 @@ function BonusHuntWidget({ config, theme }) {
             <div className="bht-stat-label">
               B.E.
             </div>
-            <div className="bht-stat-value" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>{stats.breakEven.toFixed(0)}x</div>
+            <div className="bht-stat-value" style={{ color: stats.liveBE >= 100 ? '#4ade80' : '#f87171' }}>{stats.liveBE.toFixed(0)}x</div>
           </div>
           <div className="bht-stat-box">
             <div className="bht-stat-label">
