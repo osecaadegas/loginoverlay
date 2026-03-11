@@ -598,158 +598,141 @@
   margin-bottom: 10px;
 }
 
-/* -- Horizontal thumbnail strip -- */
-.bht-thumb-strip {
-  display: flex;
-  gap: 8px;
-  overflow-x: auto;
-  padding-bottom: 8px;
-  margin-bottom: 10px;
-  scrollbar-width: none;
-}
-.bht-thumb-strip::-webkit-scrollbar { display: none; }
-.bht-thumb-card {
-  flex: 0 0 75px;
-  height: 95px;
-  position: relative;
-  border-radius: 8px;
+/* -- Horizontal 3D Carousel -- */
+.bht-carousel-viewport {
+  width: 100%;
   overflow: hidden;
-  background: rgba(0,0,0,0.3);
-  border: 2px solid transparent;
+  position: relative;
+  perspective: 800px;
+  flex: 1;
+  min-height: 0;
 }
-.bht-thumb-card--active {
-  border-color: var(--bht-current-accent, #facc15);
-  box-shadow: 0 0 8px rgba(250,204,21,0.3);
+.bht-carousel-track {
+  display: flex;
+  gap: 12px;
+  will-change: transform;
 }
-.bht-thumb-card--super {
-  border-color: var(--bht-super-badge, #eab308);
-  box-shadow: 0 0 10px rgba(234,179,8,0.3);
+.bht-carousel-track--opening {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
-.bht-thumb-card--opened {
-  opacity: 0.6;
+@keyframes bht-cls-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(calc(var(--bht-cls-count, 5) * var(--bht-cls-step, 132px) * -1)); }
 }
-.bht-thumb-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-.bht-thumb-placeholder {
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(135deg, #1a1f3a, #0e1225);
-}
-.bht-thumb-bet {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  font-size: 0.65em;
-  font-weight: 700;
-  color: #fff;
-  background: rgba(0,0,0,0.65);
-  text-align: center;
-  padding: 2px 0;
+.bht-carousel-track--scroll {
+  animation: bht-cls-scroll calc(var(--bht-cls-count, 5) * 3s) linear infinite;
 }
 
-/* -- Vertical list rows -- */
-.bht-list-rows {
-  max-height: var(--bht-list-max-height, 400px);
+/* -- 3D Card -- */
+.bht-carousel-card {
+  flex: 0 0 120px;
+  height: 160px;
+  perspective: 600px;
+  transform-style: preserve-3d;
+  transition: transform 0.4s ease, opacity 0.3s;
+}
+.bht-carousel-card:hover {
+  transform: rotateY(-5deg) scale(1.04);
+}
+.bht-carousel-card--active {
+  transform: rotateY(0deg) scale(1.12);
+  z-index: 2;
+}
+.bht-carousel-card--opened { opacity: 0.6; }
+.bht-carousel-card--opened.bht-carousel-card--active { opacity: 1; }
+.bht-carousel-card--super {
+  filter: drop-shadow(0 0 8px rgba(234,179,8,0.5));
+}
+.bht-carousel-card--extreme {
+  filter: drop-shadow(0 0 10px rgba(220,38,38,0.5));
+}
+
+/* -- Card inner: 3D depth -- */
+.bht-carousel-card-inner {
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  background: rgba(0,0,0,0.5);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.5),
+    0 1px 0 rgba(255,255,255,0.06) inset;
+  transform: translateZ(0);
+  transition: box-shadow 0.3s, border-color 0.3s;
+}
+.bht-carousel-card--active .bht-carousel-card-inner {
+  border-color: var(--bht-current-accent, #86efac);
+  box-shadow:
+    0 6px 24px rgba(0,0,0,0.6),
+    0 0 16px 2px rgba(134,239,172,0.25),
+    0 1px 0 rgba(255,255,255,0.1) inset;
+}
+.bht-carousel-card--super .bht-carousel-card-inner {
+  border-color: rgba(234,179,8,0.5);
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.5),
+    0 0 12px 2px rgba(234,179,8,0.2),
+    0 1px 0 rgba(255,255,255,0.06) inset;
+}
+.bht-carousel-card--extreme .bht-carousel-card-inner {
+  border-color: rgba(220,38,38,0.6);
+  box-shadow:
+    0 4px 16px rgba(0,0,0,0.5),
+    0 0 16px 3px rgba(220,38,38,0.35),
+    0 1px 0 rgba(255,255,255,0.06) inset;
+}
+
+/* -- Card image -- */
+.bht-carousel-card-img-wrap {
+  flex: 1;
   overflow: hidden;
   position: relative;
 }
-.bht-list-rows-track {
-  display: flex;
-  flex-direction: column;
-  will-change: transform;
-  animation: bht-carousel-scroll calc(var(--bht-item-count, 5) * 8s) linear infinite;
-}
-@keyframes bht-carousel-scroll {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
-}
-.bht-list-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 6px 4px;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.bht-list-row--active {
-  background: rgba(255,255,255,0.06);
-}
-.bht-list-row--super {
-  background: rgba(234,179,8,0.08);
-}
-.bht-list-row--opened {
-  opacity: 0.6;
-}
-.bht-list-row-idx {
-  font-size: 0.7em;
-  font-weight: 800;
-  color: var(--bht-header-accent, #60a5fa);
-  min-width: 24px;
-  text-align: center;
-}
-.bht-list-row-thumb {
-  width: 36px;
-  height: 36px;
-  border-radius: 6px;
-  overflow: hidden;
-  flex-shrink: 0;
-  background: rgba(0,0,0,0.3);
-}
-.bht-list-row-img {
+.bht-carousel-card-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  transition: transform 0.4s;
 }
-.bht-list-row-img-ph {
+.bht-carousel-card:hover .bht-carousel-card-img {
+  transform: scale(1.08);
+}
+.bht-carousel-card-img-ph {
   width: 100%;
   height: 100%;
   background: linear-gradient(135deg, #1a1f3a, #0e1225);
 }
-.bht-list-row-info {
-  flex: 1;
-  min-width: 0;
+
+/* -- Card info bar -- */
+.bht-carousel-card-info {
+  padding: 4px 6px;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
 }
-.bht-list-row-name {
-  font-size: 0.78em;
+.bht-carousel-card-name {
+  font-size: 0.7em;
   font-weight: 700;
-  color: var(--bht-text, #fff);
+  color: #fff;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: block;
-}
-.bht-list-row-provider {
-  font-size: 0.6em;
-  color: var(--bht-muted, #93c5fd);
   text-transform: uppercase;
-  letter-spacing: 0.3px;
-  display: block;
 }
-.bht-list-row-stats {
-  display: flex;
-  gap: 8px;
-  flex-shrink: 0;
-}
-.bht-list-row-col {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  min-width: 40px;
-}
-.bht-list-row-col-label {
-  font-size: 0.55em;
+.bht-carousel-card-bet {
+  font-size: 0.65em;
   font-weight: 600;
-  color: var(--bht-muted, #93c5fd);
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
+  color: var(--bht-list-accent, #93c5fd);
 }
-.bht-list-row-col-val {
-  font-size: 0.75em;
-  font-weight: 700;
-  color: var(--bht-text, #fff);
+.bht-carousel-card-multi {
+  font-size: 0.65em;
+  font-weight: 800;
+  color: #fbbf24;
 }
 
 /* -- Legacy compact bonus cards -- */
