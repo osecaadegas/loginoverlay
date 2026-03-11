@@ -368,7 +368,7 @@
 .oc-bonushunt {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 6px;
   font-family: var(--oc-font, 'Inter', sans-serif);
   overflow: hidden;
 }
@@ -391,8 +391,8 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-bottom: 10px;
+  gap: 6px;
+  margin-bottom: 4px;
 }
 .bht-header-avatar {
   width: 36px; height: 36px; border-radius: 50%;
@@ -438,7 +438,7 @@
 .bht-header-stats {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 5px;
 }
 .bht-header-stats--3col {
   grid-template-columns: 1fr 1fr 1fr;
@@ -446,7 +446,7 @@
 .bht-stat-box {
   background: rgba(0,0,0,0.25);
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
-  padding: 10px;
+  padding: 5px 8px;
 }
 .bht-stat-label {
   display: flex;
@@ -455,7 +455,7 @@
   font-size: 0.6em;
   text-transform: uppercase;
   color: var(--bht-muted, #93c5fd);
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 .bht-stat-value {
   font-size: 1.2em;
