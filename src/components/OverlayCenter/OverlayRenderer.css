@@ -387,10 +387,11 @@
 }
 .bht-header-center {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 12px;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
 }
 .bht-header-avatar {
   width: 36px; height: 36px; border-radius: 50%;

@@ -132,7 +132,7 @@ function BonusHuntWidget({ config, theme }) {
     fontSize: `${fontSize}px`,
     width: '100%',
     height: '100%',
-    overflow: isCompactBH ? 'hidden' : 'hidden auto',
+    overflow: 'hidden',
     gap: `${cardGap}px`,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
@@ -431,27 +431,18 @@ function BonusHuntWidget({ config, theme }) {
           <div className="bht-stat-box">
             <div className="bht-stat-label">
               START
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
-              </svg>
             </div>
-            <div className="bht-stat-value">{currency}{startMoney.toFixed(2)}</div>
+            <div className="bht-stat-value">{currency}{startMoney.toFixed(0)}</div>
           </div>
           <div className="bht-stat-box">
             <div className="bht-stat-label">
               B.E.
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
-              </svg>
             </div>
             <div className="bht-stat-value" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>{stats.breakEven.toFixed(0)}x</div>
           </div>
           <div className="bht-stat-box">
             <div className="bht-stat-label">
               AVG
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-              </svg>
             </div>
             <div className="bht-stat-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(0)}x</div>
           </div>
@@ -515,23 +506,14 @@ function BonusHuntWidget({ config, theme }) {
               </div>
               <div className="bht-current-stats">
                 <div className="bht-current-stat">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="16" /><line x1="8" y1="12" x2="16" y2="12" />
-                  </svg>
                   <span className="bht-current-stat-label">BET</span>
                   <span className="bht-current-stat-value">{currency}{(Number(currentBonus.betSize) || 0).toFixed(2)}</span>
                 </div>
                 <div className="bht-current-stat">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
-                  </svg>
                   <span className="bht-current-stat-label">MULTI</span>
                   <span className="bht-current-stat-value">{(() => { const bet = Number(currentBonus.betSize) || 0; const pay = Number(currentBonus.payout) || 0; return bet > 0 ? `${(pay / bet).toFixed(0)}x` : '0x'; })()}</span>
                 </div>
                 <div className="bht-current-stat">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
                   <span className="bht-current-stat-label">WIN</span>
                   <span className="bht-current-stat-value">{currency}{(Number(currentBonus.payout) || 0).toFixed(0)}</span>
                 </div>
