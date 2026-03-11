@@ -1223,8 +1223,8 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
   });
   if (!isFinite(worstMulti)) worstMulti = 0;
 
-  const currentBE = totalBet > 0 ? start / totalBet : 0;
-  const neededToBreakEven = Math.max(0, start - totalPayout);
+  const currentBE = totalBet > 0 ? target / totalBet : 0;
+  const neededToBreakEven = Math.max(0, target - totalPayout);
   const remainingBonuses = total - openedCount;
   const avgNeeded = remainingBonuses > 0 && neededToBreakEven > 0 ? neededToBreakEven / remainingBonuses : 0;
 
