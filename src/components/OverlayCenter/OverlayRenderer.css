@@ -444,7 +444,89 @@
   grid-template-columns: 1fr 1fr 1fr;
 }
 .bht-header-stats--4col {
+  grid-template-columns: 1fr;
+  perspective: 600px;
+}
+
+/* \u2500\u2500 Flip container \u2500\u2500 */
+.bht-flip-container {
+  position: relative;
+  width: 100%;
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.bht-flip-container--flipped {
+  transform: rotateX(180deg);
+}
+.bht-flip-face {
+  backface-visibility: hidden;
+  display: grid;
+  gap: 5px;
+}
+.bht-flip-front {
   grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+.bht-flip-back {
+  grid-template-columns: 1fr 1fr;
+  position: absolute;
+  inset: 0;
+  transform: rotateX(180deg);
+}
+
+/* \u2500\u2500 Best/Worst slot cards on back \u2500\u2500 */
+.bht-flip-slot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(0,0,0,0.3);
+  border-radius: calc(var(--bht-card-radius, 16px) - 4px);
+  padding: 4px 6px;
+  overflow: hidden;
+}
+.bht-flip-slot--best {
+  border: 1px solid rgba(74, 222, 128, 0.3);
+}
+.bht-flip-slot--worst {
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+.bht-flip-slot--empty {
+  border: 1px solid rgba(255,255,255,0.08);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.bht-flip-slot-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.bht-flip-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.bht-flip-slot-tag {
+  font-size: 0.5em;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--bht-muted, #93c5fd);
+}
+.bht-flip-slot-name {
+  font-size: 0.7em;
+  font-weight: 700;
+  color: var(--bht-stat-value, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bht-flip-slot-stats {
+  font-size: 0.65em;
+  font-weight: 600;
+  color: var(--bht-muted, #93c5fd);
 }
 .bht-stat-box {
   background: rgba(0,0,0,0.25);
@@ -727,15 +809,15 @@
 }
 .bht-progress-bar {
   flex: 1;
-  height: 6px;
+  height: 10px;
   background: rgba(255,255,255,0.1);
-  border-radius: 3px;
+  border-radius: 5px;
   overflow: hidden;
 }
 .bht-progress-fill {
   height: 100%;
   background: linear-gradient(90deg, #22c55e, #4ade80);
-  border-radius: 3px;
+  border-radius: 5px;
   transition: width 0.6s ease;
 }
 .bht-progress-text {
