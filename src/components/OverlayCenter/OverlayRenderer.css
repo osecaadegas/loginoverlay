@@ -493,13 +493,13 @@
 }
 .bht-current-img-full {
   width: 100%;
-  height: var(--bht-slot-img-height, 45px);
+  height: var(--bht-slot-img-height, 22px);
   object-fit: cover;
   display: block;
 }
 .bht-current-img-placeholder {
   width: 100%;
-  height: var(--bht-slot-img-height, 45px);
+  height: var(--bht-slot-img-height, 22px);
   background: linear-gradient(135deg, #1a1f3a, #0e1225);
 }
 .bht-current-name-overlay {
