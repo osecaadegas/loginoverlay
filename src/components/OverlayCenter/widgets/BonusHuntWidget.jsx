@@ -491,19 +491,7 @@ function BonusHuntWidget({ config, theme }) {
                 <span className="bht-current-label">BONUS</span>
                 <span className="bht-current-counter">{currentIndex + 1}/{bonuses.length}</span>
               </div>
-              <div className="bht-current-img-card">
-                {currentBonus.slot?.image ? (
-                  <img src={currentBonus.slot.image} alt={currentBonus.slotName}
-                    className="bht-current-img-full"
-                    onError={e => { e.target.style.display = 'none'; }} />
-                ) : (
-                  <div className="bht-current-img-placeholder" />
-                )}
-                <span className="bht-current-name-overlay">{currentBonus.slotName || currentBonus.slot?.name}</span>
-                {(currentBonus.isSuperBonus || currentBonus.isExtremeBonus || currentBonus.isExtreme) && (
-                  <span className="bht-current-best-badge">BEST</span>
-                )}
-              </div>
+
               <div className="bht-current-stats">
                 <div className="bht-current-stat">
                   <span className="bht-current-stat-label">BET</span>
@@ -593,71 +581,42 @@ function BonusHuntWidget({ config, theme }) {
             </div>
           ) : (
             <>
-              <div className="bht-list-section-title">BONUS LIST</div>
-              {/* ── Horizontal 3D carousel ── */}
-              <div className="bht-carousel-viewport">
+              {/* ── 3D Card Stack (3 visible) ── */}
+              <div className="bht-stack">
                 {(() => {
-                  const cardW = 120, gap = 12, step = cardW + gap;
-                  if (isOpening && currentIndex >= 0) {
+                  const total = bonuses.length;
+                  if (total === 0) return null;
+                  const ci = isOpening && currentIndex >= 0 ? currentIndex : 0;
+                  const indices = [
+                    (ci - 1 + total) % total,
+                    ci,
+                    (ci + 1) % total
+                  ];
+                  return indices.map((bIdx, pos) => {
+                    const bonus = bonuses[bIdx];
+                    const payout = Number(bonus.payout) || 0;
+                    const bet = Number(bonus.betSize) || 0;
+                    const multi = bet > 0 ? payout / bet : 0;
+                    const posClass = pos === 0 ? 'bht-stack-card--left' : pos === 1 ? 'bht-stack-card--center' : 'bht-stack-card--right';
                     return (
-                      <div key="cls-opening" className="bht-carousel-track bht-carousel-track--opening"
-                        style={{ transform: `translateX(calc(50% - ${cardW / 2}px - ${currentIndex * step}px))` }}>
-                        {bonuses.map((bonus, idx) => {
-                          const payout = Number(bonus.payout) || 0;
-                          const bet = Number(bonus.betSize) || 0;
-                          const multi = bet > 0 ? payout / bet : 0;
-                          const isActive = idx === currentIndex;
-                          return (
-                            <div key={`cls-o-${bonus.id || idx}`}
-                              className={`bht-carousel-card${isActive ? ' bht-carousel-card--active' : ''}${bonus.opened ? ' bht-carousel-card--opened' : ''}${bonus.isSuperBonus ? ' bht-carousel-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-carousel-card--extreme' : ''}`}>
-                              <div className="bht-carousel-card-inner">
-                                <div className="bht-carousel-card-img-wrap">
-                                  {bonus.slot?.image ? (
-                                    <img src={bonus.slot.image} alt={bonus.slotName} className="bht-carousel-card-img"
-                                      onError={e => { e.target.style.display = 'none'; }} />
-                                  ) : <div className="bht-carousel-card-img-ph" />}
-                                </div>
-                                <div className="bht-carousel-card-info">
-                                  <span className="bht-carousel-card-name">{bonus.slotName || bonus.slot?.name}</span>
-                                  <span className="bht-carousel-card-bet">{currency}{bet.toFixed(2)}</span>
-                                  {bonus.opened && <span className="bht-carousel-card-multi">{multi.toFixed(1)}x</span>}
-                                </div>
-                              </div>
-                            </div>
-                          );
-                        })}
+                      <div key={`stk-${bIdx}-${pos}`}
+                        className={`bht-stack-card ${posClass}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
+                        <div className="bht-stack-card-inner">
+                          <div className="bht-stack-card-img-wrap">
+                            {bonus.slot?.image ? (
+                              <img src={bonus.slot.image} alt={bonus.slotName} className="bht-stack-card-img"
+                                onError={e => { e.target.style.display = 'none'; }} />
+                            ) : <div className="bht-stack-card-img-ph" />}
+                          </div>
+                          <div className="bht-stack-card-info">
+                            <span className="bht-stack-card-name">{bonus.slotName || bonus.slot?.name}</span>
+                            <span className="bht-stack-card-bet">{currency}{bet.toFixed(2)}</span>
+                            {bonus.opened && <span className="bht-stack-card-multi">{multi.toFixed(1)}x</span>}
+                          </div>
+                        </div>
                       </div>
                     );
-                  }
-                  return (
-                    <div key="cls-scroll" className="bht-carousel-track bht-carousel-track--scroll"
-                      style={{ '--bht-cls-count': bonuses.length, '--bht-cls-step': `${step}px` }}>
-                      {[...bonuses, ...bonuses].map((bonus, i) => {
-                        const idx = i % bonuses.length;
-                        const payout = Number(bonus.payout) || 0;
-                        const bet = Number(bonus.betSize) || 0;
-                        const multi = bet > 0 ? payout / bet : 0;
-                        return (
-                          <div key={`cls-s-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                            className={`bht-carousel-card${idx === currentIndex ? ' bht-carousel-card--active' : ''}${bonus.opened ? ' bht-carousel-card--opened' : ''}${bonus.isSuperBonus ? ' bht-carousel-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-carousel-card--extreme' : ''}`}>
-                            <div className="bht-carousel-card-inner">
-                              <div className="bht-carousel-card-img-wrap">
-                                {bonus.slot?.image ? (
-                                  <img src={bonus.slot.image} alt={bonus.slotName} className="bht-carousel-card-img"
-                                    onError={e => { e.target.style.display = 'none'; }} />
-                                ) : <div className="bht-carousel-card-img-ph" />}
-                              </div>
-                              <div className="bht-carousel-card-info">
-                                <span className="bht-carousel-card-name">{bonus.slotName || bonus.slot?.name}</span>
-                                <span className="bht-carousel-card-bet">{currency}{bet.toFixed(2)}</span>
-                                {bonus.opened && <span className="bht-carousel-card-multi">{multi.toFixed(1)}x</span>}
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  );
+                  });
                 })()}
               </div>
               {/* ── Vertical list rows ── */}
