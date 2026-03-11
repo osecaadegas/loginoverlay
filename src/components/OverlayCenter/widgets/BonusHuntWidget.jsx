@@ -72,12 +72,13 @@ function BonusHuntWidget({ config, theme }) {
     return { totalBetAll, totalWin, superCount, breakEven, liveBE, avgMulti, openedCount: openedBonuses.length, bestSlot, worstSlot };
   }, [bonuses, startMoney, stopLoss]);
 
-  /* ─── Stats flip toggle (10s interval) ─── */
+  /* ─── Stats flip toggle (10s interval, only during bonus opening) ─── */
   const [statsFlipped, setStatsFlipped] = useState(false);
   useEffect(() => {
+    if (!c.bonusOpening) { setStatsFlipped(false); return; }
     const id = setInterval(() => setStatsFlipped(f => !f), 10000);
     return () => clearInterval(id);
-  }, []);
+  }, [c.bonusOpening]);
 
   /* ─── Compact: measure list viewport for centring ─── */
   const listRef = useRef(null);
