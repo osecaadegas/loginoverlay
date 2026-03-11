@@ -179,52 +179,33 @@ export default function TournamentsPage() {
   return (
     <div className="tp-page">
       <div className="tp-container">
-        {/* Header */}
-        <header className="tp-header">
-          <div className="tp-header-content">
-            <h1 className="tp-title">
-              <span className="tp-title-icon">&#9876;</span>
-              {phase === 'setup' ? 'Tournament Creator' : (tournamentName || 'Tournament')}
-            </h1>
-            {phase !== 'setup' && (
+
+        {/* ── NO TOURNAMENT ── */}
+        {phase === 'setup' && (
+          <div className="tp-empty">
+            <span className="tp-empty-icon">🏆</span>
+            <h2 className="tp-empty-title">No Active Tournament</h2>
+            <p className="tp-empty-sub">There are no tournaments running right now. Check back later!</p>
+          </div>
+        )}
+
+        {/* ── ACTIVE / COMPLETED PHASE ── */}
+        {(phase === 'active' || phase === 'completed') && (
+          <>
+          <header className="tp-header">
+            <div className="tp-header-content">
+              <h1 className="tp-title">
+                <span className="tp-title-icon">&#9876;</span>
+                {tournamentName || 'Tournament'}
+              </h1>
               <div className="tp-header-meta">
                 <span className="tp-badge tp-badge--type">{TOURNAMENT_TYPES[tournamentType]?.icon} {TOURNAMENT_TYPES[tournamentType]?.label}</span>
                 <span className="tp-badge tp-badge--players">{playerCount} Players</span>
                 {phase === 'completed' && <span className="tp-badge tp-badge--champion">&#127942; Champion: {champion}</span>}
               </div>
-            )}
-          </div>
-          {phase !== 'setup' && (
+            </div>
             <button className="tp-btn tp-btn--danger tp-btn--sm" onClick={resetTournament}>Reset</button>
-          )}
-        </header>
-
-        {/* ── SETUP PHASE ── */}
-        {phase === 'setup' && (
-          <SetupPhase
-            tournamentName={tournamentName}
-            setTournamentName={setTournamentName}
-            tournamentType={tournamentType}
-            setTournamentType={setTournamentType}
-            playerCount={playerCount}
-            setPlayerCount={setPlayerCount}
-            players={players}
-            updatePlayer={updatePlayer}
-            typeConfig={typeConfig}
-            setTypeConfig={setTypeConfig}
-            slotSearches={slotSearches}
-            handleSlotSearch={handleSlotSearch}
-            showSuggestions={showSuggestions}
-            setShowSuggestions={setShowSuggestions}
-            filteredSlots={filteredSlots}
-            handleSlotSelect={handleSlotSelect}
-            canStart={canStart}
-            startTournament={startTournament}
-          />
-        )}
-
-        {/* ── ACTIVE / COMPLETED PHASE ── */}
-        {(phase === 'active' || phase === 'completed') && (
+          </header>
           <div className="tp-active-layout">
             {/* Progress bar */}
             <ProgressBar stats={stats} phase={phase} />
@@ -261,6 +242,7 @@ export default function TournamentsPage() {
               </div>
             )}
           </div>
+          </>
         )}
       </div>
     </div>
