@@ -8,12 +8,13 @@ import './OverlayRenderer.css';
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
-  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle, userId,
+  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle, userId, canvasW, canvasH,
 }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   const slotRef = useRef(null);
   const coordsRef = useRef(null);
+  const isBg = widget.widget_type === 'background';
 
   /* Block native text selection during any drag */
   const blockSelect = useCallback((e) => e.preventDefault(), []);
@@ -158,10 +159,10 @@ const DraggableSlot = memo(function DraggableSlot({
       className={`wm-live-slot ${isSelected ? 'wm-live-slot--selected' : ''}`}
       style={{
         position: 'absolute',
-        left: widget.position_x,
-        top: widget.position_y,
-        width: widget.width,
-        height: widget.height,
+        left: isBg ? 0 : widget.position_x,
+        top: isBg ? 0 : widget.position_y,
+        width: isBg ? canvasW : widget.width,
+        height: isBg ? canvasH : widget.height,
         zIndex: isSelected ? 9999 : (widget.z_index || 1),
       }}
     >
@@ -170,22 +171,24 @@ const DraggableSlot = memo(function DraggableSlot({
         <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
       </div>
 
-      {/* Transparent drag surface on top — catches ALL mouse events */}
-      <div
-        className="wm-drag-overlay"
-        style={{
-          position: 'absolute',
-          inset: 0,
-          zIndex: 2,
-          cursor: isSelected ? 'grab' : 'pointer',
-          background: 'transparent',
-        }}
-        onMouseDown={handleMouseDown}
-        onDragStart={e => e.preventDefault()}
-      />
+      {/* Transparent drag surface on top — catches ALL mouse events (skip for background) */}
+      {!isBg && (
+        <div
+          className="wm-drag-overlay"
+          style={{
+            position: 'absolute',
+            inset: 0,
+            zIndex: 2,
+            cursor: isSelected ? 'grab' : 'pointer',
+            background: 'transparent',
+          }}
+          onMouseDown={handleMouseDown}
+          onDragStart={e => e.preventDefault()}
+        />
+      )}
 
-      {/* Selection overlay + resize handles (highest z) */}
-      {isSelected && (
+      {/* Selection overlay + resize handles (highest z) — skip for background */}
+      {isSelected && !isBg && (
         <div className="wm-slot-selection" style={{ zIndex: 3 }}>
           <div className="wm-resize-handle wm-resize-nw" onMouseDown={e => handleResizeDown(e, 'nw')} />
           <div className="wm-resize-handle wm-resize-ne" onMouseDown={e => handleResizeDown(e, 'ne')} />
@@ -688,6 +691,8 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     onMove={handlePreviewMove}
                     onResize={handlePreviewResize}
                     onStyleCycle={handleStyleCycle}
+                    canvasW={CANVAS_W}
+                    canvasH={CANVAS_H}
                     userId={user?.id}
                   />
                 ))}
