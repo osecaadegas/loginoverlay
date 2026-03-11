@@ -804,19 +804,19 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
-  gap: 4px;
-  padding: 10px;
+  flex-direction: row;
+  gap: 8px;
+  padding: 4px 10px;
 }
 .bht-footer-label {
-  font-size: 0.7em;
+  font-size: 0.6em;
   font-weight: 700;
   color: var(--bht-muted, #93c5fd);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
 .bht-footer-value {
-  font-size: 1.5em;
+  font-size: 1em;
   font-weight: 800;
   color: var(--bht-total-pay-bg, #eab308);
   text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
