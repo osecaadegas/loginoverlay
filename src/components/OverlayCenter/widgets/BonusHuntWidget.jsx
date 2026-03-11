@@ -4,6 +4,7 @@ import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
 import BonusHuntWidgetV4 from './BonusHuntWidgetV4';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
+import BonusHuntWidgetV10 from './BonusHuntWidgetV10';
 
 function BonusHuntWidget({ config, theme }) {
   const c = config || {};
@@ -99,6 +100,9 @@ function BonusHuntWidget({ config, theme }) {
   }
   if (c.displayStyle === 'v9_hunt_board') {
     return <BonusHuntWidgetV9 config={sortedConfig} theme={theme} />;
+  }
+  if (c.displayStyle === 'v10_spotlight') {
+    return <BonusHuntWidgetV10 config={sortedConfig} theme={theme} />;
   }
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */

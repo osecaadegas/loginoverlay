@@ -5211,3 +5211,391 @@
   pointer-events: none;
   z-index: 3;
 }
+
+
+/* ═════════════════════════════════════════════════════════════
+   V10 — "Spotlight" Bonus Hunt
+   Dark blue, compact list → expanding current bonus on opening
+   ═════════════════════════════════════════════════════════════ */
+
+.v10-root {
+  display: flex;
+  flex-direction: column;
+  background: var(--v10-bg, #0b1628);
+  color: var(--v10-text, #e2e8f0);
+  gap: 0;
+}
+
+/* ── Header ── */
+.v10-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 6px;
+  background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+}
+.v10-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--v10-accent, #2563eb);
+}
+.v10-header-text {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.v10-title {
+  font-size: 1.1em;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  color: var(--v10-text);
+}
+.v10-hunt-num {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--v10-muted, #64748b);
+}
+
+/* ── Top stats: START / STOP / TARGET ── */
+.v10-stats-top {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  padding: 6px 10px;
+}
+.v10-stat-pill {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--v10-card, #101d33);
+  border-radius: 8px;
+  padding: 6px 8px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.v10-stat-icon {
+  font-size: 1em;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+.v10-stat-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.v10-stat-label {
+  font-size: 0.55em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--v10-muted);
+}
+.v10-stat-value {
+  font-size: 0.8em;
+  font-weight: 800;
+  color: var(--v10-stat-val, #ffffff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Progress bar ── */
+.v10-progress {
+  padding: 4px 12px 6px;
+}
+.v10-progress-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 3px;
+}
+.v10-progress-label {
+  font-size: 0.6em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--v10-muted);
+}
+.v10-progress-count {
+  font-size: 0.7em;
+  font-weight: 700;
+  color: var(--v10-text);
+}
+.v10-progress-track {
+  height: 5px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.v10-progress-fill {
+  height: 100%;
+  background: var(--v10-accent, #2563eb);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+
+/* ── Bottom stats: AVG / BE INI / BE ── */
+.v10-stats-bottom {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 6px;
+  padding: 4px 10px 6px;
+}
+.v10-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+  background: var(--v10-card, #101d33);
+  border-radius: 8px;
+  padding: 6px 4px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.v10-stat-box-icon {
+  font-size: 0.85em;
+  opacity: 0.5;
+}
+.v10-stat-box-label {
+  font-size: 0.5em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--v10-muted);
+}
+.v10-stat-box-value {
+  font-size: 0.8em;
+  font-weight: 800;
+  color: var(--v10-stat-val, #ffffff);
+}
+
+/* ── Bonus List label ── */
+.v10-list-label {
+  text-align: center;
+  font-size: 0.65em;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--v10-accent, #2563eb);
+  padding: 4px 0 2px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Spotlight / Current bonus expanded card ── */
+.v10-spotlight {
+  display: flex;
+  gap: 10px;
+  padding: 8px 10px;
+  margin: 4px 8px;
+  background: var(--v10-card, #101d33);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.1);
+  animation: v10-pop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+@keyframes v10-pop {
+  0% { transform: scale(0.9); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+.v10-spotlight--super {
+  border-color: var(--v10-green, #4ade80);
+  box-shadow: inset 0 0 12px rgba(74,222,128,0.15), 0 0 8px rgba(74,222,128,0.1);
+}
+.v10-spotlight--extreme {
+  border-color: var(--v10-red, #f87171);
+  box-shadow: inset 0 0 12px rgba(248,113,113,0.15), 0 0 8px rgba(248,113,113,0.1);
+}
+.v10-spotlight-img-wrap {
+  position: relative;
+  flex-shrink: 0;
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(0,0,0,0.3);
+}
+.v10-spotlight-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.v10-spotlight-img-ph {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.8em;
+  opacity: 0.3;
+}
+.v10-spotlight-badge {
+  position: absolute;
+  bottom: 2px;
+  left: 2px;
+  font-size: 0.5em;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.v10-spotlight-badge--super {
+  background: rgba(74,222,128,0.85);
+  color: #052e16;
+}
+.v10-spotlight-badge--extreme {
+  background: rgba(248,113,113,0.85);
+  color: #450a0a;
+}
+.v10-spotlight-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+}
+.v10-spotlight-name {
+  font-size: 1em;
+  font-weight: 800;
+  color: var(--v10-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v10-spotlight-provider {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: var(--v10-muted);
+}
+.v10-spotlight-bet {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--v10-accent, #2563eb);
+}
+
+/* ── Bonus list (auto-scroll) ── */
+.v10-list {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+  min-height: 0;
+}
+.v10-list-inner {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 4px 8px;
+}
+
+@keyframes v10Scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+/* ── Row ── */
+.v10-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px;
+  background: var(--v10-row-bg, #131f36);
+  border-radius: 6px;
+  border: 1px solid rgba(255,255,255,0.04);
+  min-height: 28px;
+}
+.v10-row--opened {
+  opacity: 0.5;
+}
+.v10-row--super {
+  border-color: rgba(74,222,128,0.25);
+}
+.v10-row--extreme {
+  border-color: rgba(248,113,113,0.25);
+}
+.v10-row-index {
+  font-size: 0.7em;
+  font-weight: 700;
+  color: var(--v10-muted);
+  min-width: 22px;
+}
+.v10-row-thumb {
+  width: 24px;
+  height: 24px;
+  border-radius: 4px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.v10-row-name {
+  flex: 1;
+  font-size: 0.8em;
+  font-weight: 700;
+  color: var(--v10-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.v10-row-badge {
+  font-size: 0.5em;
+  font-weight: 800;
+  padding: 1px 4px;
+  border-radius: 3px;
+  flex-shrink: 0;
+}
+.v10-row-badge--super {
+  background: rgba(74,222,128,0.8);
+  color: #052e16;
+}
+.v10-row-badge--extreme {
+  background: rgba(248,113,113,0.8);
+  color: #450a0a;
+}
+.v10-row-bet {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--v10-muted);
+  white-space: nowrap;
+  margin-left: auto;
+}
+.v10-row-result {
+  font-size: 0.75em;
+  font-weight: 700;
+  white-space: nowrap;
+  margin-left: auto;
+}
+
+/* ── Opened section ── */
+.v10-opened-section {
+  padding: 6px 12px;
+  text-align: center;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.v10-opened-empty {
+  font-size: 0.75em;
+  color: var(--v10-muted);
+  font-style: italic;
+}
+.v10-opened-label {
+  font-size: 0.7em;
+  font-weight: 700;
+  color: var(--v10-muted);
+}
+
+/* ── Footer ── */
+.v10-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  background: var(--v10-footer-bg, #101d33);
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.v10-footer-label {
+  font-size: 0.75em;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--v10-muted);
+}
+.v10-footer-value {
+  font-size: 1.1em;
+  font-weight: 900;
+  color: var(--v10-total-pay, #3b82f6);
+}
