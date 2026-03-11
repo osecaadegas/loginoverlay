@@ -736,6 +736,110 @@
   color: #fbbf24;
 }
 
+/* -- Vertical list rows -- */
+.bht-list-rows {
+  max-height: var(--bht-list-max-height, 400px);
+  overflow: hidden;
+  position: relative;
+  margin-top: 8px;
+}
+.bht-list-rows-track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+.bht-list-rows-track--static {
+  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1);
+}
+@keyframes bht-list-scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.bht-list-rows-track--scroll {
+  animation: bht-list-scroll calc(var(--bht-item-count, 5) * 8s) linear infinite;
+}
+.bht-list-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.bht-list-row--active {
+  background: rgba(255,255,255,0.06);
+}
+.bht-list-row--super {
+  background: rgba(234,179,8,0.08);
+}
+.bht-list-row--opened {
+  opacity: 0.6;
+}
+.bht-list-row--opened.bht-list-row--active {
+  opacity: 1;
+}
+.bht-list-row-idx {
+  font-size: 0.7em;
+  font-weight: 800;
+  color: var(--bht-header-accent, #60a5fa);
+  min-width: 24px;
+  text-align: center;
+}
+.bht-list-row-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  overflow: hidden;
+  flex-shrink: 0;
+  background: rgba(0,0,0,0.3);
+}
+.bht-list-row-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.bht-list-row-img-ph {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1f3a, #0e1225);
+}
+.bht-list-row-info {
+  flex: 1;
+  min-width: 0;
+}
+.bht-list-row-name {
+  font-size: 0.78em;
+  font-weight: 700;
+  color: var(--bht-text, #fff);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+.bht-list-row-stats {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.bht-list-row-col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  min-width: 40px;
+}
+.bht-list-row-col-label {
+  font-size: 0.55em;
+  font-weight: 600;
+  color: var(--bht-muted, #93c5fd);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+.bht-list-row-col-val {
+  font-size: 0.75em;
+  font-weight: 700;
+  color: var(--bht-text, #fff);
+}
+
 /* -- Legacy compact bonus cards -- */
 .bht-bonus-list {
   max-height: var(--bht-list-max-height, 400px);

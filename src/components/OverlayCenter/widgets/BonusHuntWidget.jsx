@@ -660,6 +660,93 @@ function BonusHuntWidget({ config, theme }) {
                   );
                 })()}
               </div>
+              {/* ── Vertical list rows ── */}
+              <div className="bht-list-rows">
+                {(() => {
+                  const itemH = 48, count = bonuses.length, step = itemH;
+                  if (isOpening && currentIndex >= 0) {
+                    return (
+                      <div key="lr-static" className="bht-list-rows-track bht-list-rows-track--static"
+                        style={{ transform: `translateY(${-(currentIndex * step)}px)` }}>
+                        {bonuses.map((bonus, idx) => {
+                          const payout = Number(bonus.payout) || 0;
+                          const bet = Number(bonus.betSize) || 0;
+                          const multi = bet > 0 ? payout / bet : 0;
+                          return (
+                            <div key={bonus.id || idx}
+                              className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}`}>
+                              <span className="bht-list-row-idx">{idx + 1}</span>
+                              <div className="bht-list-row-thumb">
+                                {bonus.slot?.image ? (
+                                  <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
+                                    onError={e => { e.target.style.display = 'none'; }} />
+                                ) : <div className="bht-list-row-img-ph" />}
+                              </div>
+                              <div className="bht-list-row-info">
+                                <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                              </div>
+                              <div className="bht-list-row-stats">
+                                <div className="bht-list-row-col">
+                                  <span className="bht-list-row-col-label">BET</span>
+                                  <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                                </div>
+                                <div className="bht-list-row-col">
+                                  <span className="bht-list-row-col-label">MULTI</span>
+                                  <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                                </div>
+                                <div className="bht-list-row-col">
+                                  <span className="bht-list-row-col-label">WIN</span>
+                                  <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+                  return (
+                    <div key="lr-scroll" className="bht-list-rows-track bht-list-rows-track--scroll"
+                      style={{ '--bht-item-count': count }}>
+                      {[...bonuses, ...bonuses].map((bonus, i) => {
+                        const idx = i % count;
+                        const payout = Number(bonus.payout) || 0;
+                        const bet = Number(bonus.betSize) || 0;
+                        const multi = bet > 0 ? payout / bet : 0;
+                        return (
+                          <div key={`lr-${bonus.id || idx}-${i >= count ? 'c' : 'o'}`}
+                            className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}`}>
+                            <span className="bht-list-row-idx">{idx + 1}</span>
+                            <div className="bht-list-row-thumb">
+                              {bonus.slot?.image ? (
+                                <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
+                                  onError={e => { e.target.style.display = 'none'; }} />
+                              ) : <div className="bht-list-row-img-ph" />}
+                            </div>
+                            <div className="bht-list-row-info">
+                              <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                            </div>
+                            <div className="bht-list-row-stats">
+                              <div className="bht-list-row-col">
+                                <span className="bht-list-row-col-label">BET</span>
+                                <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                              </div>
+                              <div className="bht-list-row-col">
+                                <span className="bht-list-row-col-label">MULTI</span>
+                                <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                              </div>
+                              <div className="bht-list-row-col">
+                                <span className="bht-list-row-col-label">WIN</span>
+                                <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                })()}
+              </div>
             </>
           )}
         </div>
