@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useEffect, useState } from 'react';
 
 /**
  * BonusHuntWidgetV4 — "Forged Metal"
@@ -16,6 +16,15 @@ function BonusHuntWidgetV4({ config, theme }) {
 
   const accentColor = c.headerAccent || '#e8a020';
   const textColor = c.textColor || '#d4d4d8';
+  const bgColor = c.headerColor || '#1a1a1e';
+  const headerBg = c.currentBonusColor || '#2a2a30';
+  const statLabelColor = c.mutedTextColor || '#666666';
+  const statValueColor = c.statValueColor || accentColor;
+  const listBg = c.listCardColor || '#1a1a1e';
+  const rowNameColor = c.listCardAccent || '#cccccc';
+  const footerBg = c.summaryColor || '#2a2a30';
+  const greenColor = c.superBadgeColor || '#66bb6a';
+  const redColor = c.extremeBadgeColor || '#ef5350';
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const fontSize = c.fontSize ?? 12;
   const brightness = c.brightness ?? 100;
@@ -48,6 +57,17 @@ function BonusHuntWidgetV4({ config, theme }) {
   const fmt = (v) => `${currency}${v.toFixed(2)}`;
   const fmtX = (v) => (!Number.isFinite(v) || v <= 0) ? '0.00x' : `${v.toFixed(2)}x`;
 
+  /* ─── Auto-scroll logic ─── */
+  const listRef = useRef(null);
+  const innerRef = useRef(null);
+  const [scrollH, setScrollH] = useState(0);
+
+  useEffect(() => {
+    if (!innerRef.current) return;
+    const h = innerRef.current.scrollHeight;
+    setScrollH(h);
+  }, [bonuses]);
+
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
@@ -59,6 +79,15 @@ function BonusHuntWidgetV4({ config, theme }) {
       : undefined,
     '--m4-accent': accentColor,
     '--m4-text': textColor,
+    '--m4-bg': bgColor,
+    '--m4-header-bg': headerBg,
+    '--m4-stat-label': statLabelColor,
+    '--m4-stat-value': statValueColor,
+    '--m4-list-bg': listBg,
+    '--m4-row-name': rowNameColor,
+    '--m4-footer-bg': footerBg,
+    '--m4-green': greenColor,
+    '--m4-red': redColor,
   };
 
   return (
@@ -87,9 +116,9 @@ function BonusHuntWidgetV4({ config, theme }) {
       <div className="m4-stats-bar">
         {[
           { label: 'START', value: `${currency}${startMoney.toFixed(0)}` },
-          { label: 'B.E.', value: fmtX(stats.liveBE), color: stats.liveBE >= 100 ? '#66bb6a' : '#ef5350' },
-          { label: 'AVG', value: fmtX(stats.avgMulti), color: stats.avgMulti >= 100 ? '#66bb6a' : '#ef5350' },
-          { label: 'PROFIT', value: (profit >= 0 ? '+' : '') + fmt(profit), color: profit >= 0 ? '#66bb6a' : '#ef5350' },
+          { label: 'B.E.', value: fmtX(stats.liveBE), color: stats.liveBE >= 100 ? greenColor : redColor },
+          { label: 'AVG', value: fmtX(stats.avgMulti), color: stats.avgMulti >= 100 ? greenColor : redColor },
+          { label: 'PROFIT', value: (profit >= 0 ? '+' : '') + fmt(profit), color: profit >= 0 ? greenColor : redColor },
         ].map((s, i) => (
           <div key={i} className="m4-stat-cell">
             <span className="m4-stat-label">{s.label}</span>
@@ -135,39 +164,43 @@ function BonusHuntWidgetV4({ config, theme }) {
         </div>
       )}
 
-      {/* ═══ BONUS LIST — Scrolling metal rows ═══ */}
-      <div className="m4-list">
-        {bonuses.map((bonus, idx) => {
-          const isActive = idx === currentIndex;
-          const payout = Number(bonus.payout) || 0;
-          const bet = Number(bonus.betSize) || 0;
-          const multi = bet > 0 ? payout / bet : 0;
-          return (
-            <div key={bonus.id || idx}
-              className={`m4-row${isActive ? ' m4-row--active' : ''}${bonus.opened ? ' m4-row--opened' : ''}`}>
-              <span className="m4-row-idx">{idx + 1}</span>
-              <div className="m4-row-img-wrap">
-                {bonus.slot?.image ? (
-                  <img src={bonus.slot.image} alt="" className="m4-row-img"
-                    onError={e => { e.target.style.display = 'none'; }} />
-                ) : <div className="m4-row-img-ph" />}
+      {/* ═══ BONUS LIST — Auto-scrolling metal rows ═══ */}
+      <div className="m4-list" ref={listRef}>
+        <div className="m4-list-inner" ref={innerRef}
+          style={scrollH > 0 ? { animation: `m4Scroll ${Math.max(bonuses.length * 1.5, 8)}s linear infinite` } : undefined}>
+          {[...bonuses, ...bonuses].map((bonus, idx) => {
+            const realIdx = idx % bonuses.length;
+            const isActive = realIdx === currentIndex;
+            const payout = Number(bonus.payout) || 0;
+            const bet = Number(bonus.betSize) || 0;
+            const multi = bet > 0 ? payout / bet : 0;
+            return (
+              <div key={`${bonus.id || realIdx}-${idx < bonuses.length ? 'a' : 'b'}`}
+                className={`m4-row${isActive ? ' m4-row--active' : ''}${bonus.opened ? ' m4-row--opened' : ''}`}>
+                <span className="m4-row-idx">{realIdx + 1}</span>
+                <div className="m4-row-img-wrap">
+                  {bonus.slot?.image ? (
+                    <img src={bonus.slot.image} alt="" className="m4-row-img"
+                      onError={e => { e.target.style.display = 'none'; }} />
+                  ) : <div className="m4-row-img-ph" />}
+                </div>
+                <span className="m4-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                <span className="m4-row-bet">{currency}{bet.toFixed(2)}</span>
+                {bonus.opened ? (
+                  <>
+                    <span className="m4-row-multi">{multi.toFixed(1)}x</span>
+                    <span className="m4-row-win">{currency}{payout.toFixed(0)}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="m4-row-multi">—</span>
+                    <span className="m4-row-win">—</span>
+                  </>
+                )}
               </div>
-              <span className="m4-row-name">{bonus.slotName || bonus.slot?.name}</span>
-              <span className="m4-row-bet">{currency}{bet.toFixed(2)}</span>
-              {bonus.opened ? (
-                <>
-                  <span className="m4-row-multi">{multi.toFixed(1)}x</span>
-                  <span className="m4-row-win">{currency}{payout.toFixed(0)}</span>
-                </>
-              ) : (
-                <>
-                  <span className="m4-row-multi">—</span>
-                  <span className="m4-row-win">—</span>
-                </>
-              )}
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
       </div>
 
       {/* ═══ FOOTER — Total payout plate ═══ */}
