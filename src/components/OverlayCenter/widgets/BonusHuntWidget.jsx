@@ -670,11 +670,14 @@ function BonusHuntWidget({ config, theme }) {
               <div className="bht-list-rows">
                 {(() => {
                   const itemH = 48, count = bonuses.length, step = itemH;
+                  const shouldScroll = count >= 7;
+                  const items = shouldScroll ? [...bonuses, ...bonuses] : bonuses;
                   return (
-                    <div key="lr-scroll" className="bht-list-rows-track bht-list-rows-track--scroll"
-                      style={{ '--bht-item-count': count }}>
-                      {[...bonuses, ...bonuses].map((bonus, i) => {
-                        const idx = i % count;
+                    <div key={shouldScroll ? 'lr-scroll' : 'lr-static'}
+                      className={`bht-list-rows-track${shouldScroll ? ' bht-list-rows-track--scroll' : ''}`}
+                      style={shouldScroll ? { '--bht-item-count': count } : undefined}>
+                      {items.map((bonus, i) => {
+                        const idx = shouldScroll ? i % count : i;
                         const payout = Number(bonus.payout) || 0;
                         const bet = Number(bonus.betSize) || 0;
                         const multi = bet > 0 ? payout / bet : 0;
