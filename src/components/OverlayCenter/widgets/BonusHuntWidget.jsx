@@ -488,7 +488,8 @@ function BonusHuntWidget({ config, theme }) {
                   )}
                   <div className="bht-flip-slot-info">
                     <span className="bht-flip-slot-name">{stats.bestSlot.slotName}</span>
-                    <span className="bht-flip-slot-stats"><span className="bht-flip-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span> <span className="bht-flip-slot-payout">{currency}{stats.bestSlot._payout.toFixed(0)}</span></span>
+                    <span className="bht-flip-slot-payout">{currency}{stats.bestSlot._payout.toFixed(0)}</span>
+                    <span className="bht-flip-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span>
                   </div>
                 </div>
               ) : (
@@ -504,7 +505,8 @@ function BonusHuntWidget({ config, theme }) {
                   )}
                   <div className="bht-flip-slot-info">
                     <span className="bht-flip-slot-name">{stats.worstSlot.slotName}</span>
-                    <span className="bht-flip-slot-stats"><span className="bht-flip-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span> <span className="bht-flip-slot-payout">{currency}{stats.worstSlot._payout.toFixed(0)}</span></span>
+                    <span className="bht-flip-slot-payout">{currency}{stats.worstSlot._payout.toFixed(0)}</span>
+                    <span className="bht-flip-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span>
                   </div>
                 </div>
               ) : (

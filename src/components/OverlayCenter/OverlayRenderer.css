@@ -516,20 +516,15 @@
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.bht-flip-slot-stats {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
+.bht-flip-slot-payout {
+  font-size: 0.75em;
+  font-weight: 800;
+  color: #fff;
 }
 .bht-flip-slot-multi {
   font-size: 0.75em;
   font-weight: 800;
   color: #fbbf24;
-}
-.bht-flip-slot-payout {
-  font-size: 1em;
-  font-weight: 800;
-  color: #fff;
 }
 .bht-stat-box {
   background: rgba(0,0,0,0.25);
