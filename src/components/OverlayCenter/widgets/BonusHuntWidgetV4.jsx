@@ -116,13 +116,12 @@ function BonusHuntWidgetV4({ config, theme }) {
       <div className="m4-stats-bar">
         {[
           { label: 'START', value: `${currency}${startMoney.toFixed(0)}` },
-          { label: 'B.E.', value: fmtX(stats.liveBE), color: stats.liveBE >= 100 ? greenColor : redColor },
-          { label: 'AVG', value: fmtX(stats.avgMulti), color: stats.avgMulti >= 100 ? greenColor : redColor },
-          { label: 'PROFIT', value: (profit >= 0 ? '+' : '') + fmt(profit), color: profit >= 0 ? greenColor : redColor },
+          { label: 'B/E', value: fmtX(stats.liveBE) },
+          { label: 'AVG X', value: fmtX(stats.avgMulti) },
         ].map((s, i) => (
           <div key={i} className="m4-stat-cell">
             <span className="m4-stat-label">{s.label}</span>
-            <span className="m4-stat-value" style={s.color ? { color: s.color } : undefined}>{s.value}</span>
+            <span className="m4-stat-value">{s.value}</span>
           </div>
         ))}
       </div>
@@ -174,9 +173,12 @@ function BonusHuntWidgetV4({ config, theme }) {
             const payout = Number(bonus.payout) || 0;
             const bet = Number(bonus.betSize) || 0;
             const multi = bet > 0 ? payout / bet : 0;
+            const isExtreme = bonus.opened && multi >= 500;
+            const isSuper = bonus.opened && !isExtreme && multi >= 250;
+            const payoutIsLoss = bonus.opened && multi < 100;
             return (
               <div key={`${bonus.id || realIdx}-${idx < bonuses.length ? 'a' : 'b'}`}
-                className={`m4-row${isActive ? ' m4-row--active' : ''}${bonus.opened ? ' m4-row--opened' : ''}${bonus.isSuperBonus ? ' m4-row--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' m4-row--extreme' : ''}`}>
+                className={`m4-row${isActive ? ' m4-row--active' : ''}${bonus.opened ? ' m4-row--opened' : ''}${isSuper ? ' m4-row--super' : ''}${isExtreme ? ' m4-row--extreme' : ''}`}>
                 <div className="m4-row-img-wrap">
                   {bonus.slot?.image ? (
                     <img src={bonus.slot.image} alt="" className="m4-row-img"
@@ -188,7 +190,7 @@ function BonusHuntWidgetV4({ config, theme }) {
                 {bonus.opened ? (
                   <>
                     <span className="m4-row-multi">{multi.toFixed(1)}x</span>
-                    <span className="m4-row-win">{currency}{payout.toFixed(0)}</span>
+                    <span className={`m4-row-win${payoutIsLoss ? ' m4-row-win--loss' : ''}`}>{currency}{payout.toFixed(0)}</span>
                   </>
                 ) : (
                   <>
@@ -202,10 +204,12 @@ function BonusHuntWidgetV4({ config, theme }) {
         </div>
       </div>
 
-      {/* ═══ FOOTER — Total payout plate ═══ */}
+      {/* ═══ FOOTER — Profit plate ═══ */}
       <footer className="m4-footer">
-        <span className="m4-footer-label">TOTAL PAY</span>
-        <span className="m4-footer-value">{fmt(stats.totalWin)}</span>
+        <span className="m4-footer-label">PROFIT</span>
+        <span className="m4-footer-value" style={{ color: profit >= 0 ? greenColor : redColor }}>
+          {(profit >= 0 ? '+' : '') + fmt(profit)}
+        </span>
       </footer>
     </div>
   );
