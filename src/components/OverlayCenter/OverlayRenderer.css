@@ -1355,11 +1355,21 @@
   border-left: 2px solid var(--m4-accent, #e8a020);
   border-radius: 2px;
 }
-.m4-row--opened {
-  opacity: 0.55;
+.m4-row--opened .m4-row-img-wrap {
+  opacity: 0.45;
 }
-.m4-row--opened.m4-row--super,
-.m4-row--opened.m4-row--extreme {
+.m4-row--opened .m4-row-name {
+  opacity: 0.45;
+}
+.m4-row--opened .m4-row-bet {
+  opacity: 0.45;
+}
+.m4-row--opened.m4-row--super .m4-row-img-wrap,
+.m4-row--opened.m4-row--super .m4-row-name,
+.m4-row--opened.m4-row--super .m4-row-bet,
+.m4-row--opened.m4-row--extreme .m4-row-img-wrap,
+.m4-row--opened.m4-row--extreme .m4-row-name,
+.m4-row--opened.m4-row--extreme .m4-row-bet {
   opacity: 1;
 }
 .m4-row-img-wrap {
