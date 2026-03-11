@@ -477,10 +477,10 @@
 .bht-flip-slot {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   background: rgba(0,0,0,0.3);
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
-  padding: 4px 6px;
+  padding: 2px 4px;
   overflow: hidden;
 }
 .bht-flip-slot--best {
@@ -505,11 +505,11 @@
 .bht-flip-slot-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   min-width: 0;
 }
 .bht-flip-slot-name {
-  font-size: 0.8em;
+  font-size: 0.6em;
   font-weight: 700;
   color: var(--bht-stat-value, #fff);
   white-space: nowrap;
@@ -517,12 +517,12 @@
   text-overflow: ellipsis;
 }
 .bht-flip-slot-payout {
-  font-size: 0.75em;
+  font-size: 0.6em;
   font-weight: 800;
   color: #fff;
 }
 .bht-flip-slot-multi {
-  font-size: 0.75em;
+  font-size: 0.6em;
   font-weight: 800;
   color: #fbbf24;
 }
@@ -2153,10 +2153,9 @@
   box-shadow: 0 0 8px rgba(234,179,8,0.45);
 }
 
-/* -- Opening mode: stop animation, slide smoothly -- */
+/* -- Opening mode: keep auto-scroll, allow smooth slide -- */
 .bhtc-carousel-track--opening,
 .bhh-carousel-track--opening {
-  animation: none !important;
   transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }
 

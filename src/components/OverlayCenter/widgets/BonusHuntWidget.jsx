@@ -76,7 +76,7 @@ function BonusHuntWidget({ config, theme }) {
   const [statsFlipped, setStatsFlipped] = useState(false);
   useEffect(() => {
     if (!c.bonusOpening) { setStatsFlipped(false); return; }
-    const id = setInterval(() => setStatsFlipped(f => !f), 10000);
+    const id = setInterval(() => setStatsFlipped(f => !f), 30000);
     return () => clearInterval(id);
   }, [c.bonusOpening]);
 
