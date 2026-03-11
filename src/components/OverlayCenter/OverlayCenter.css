@@ -2223,10 +2223,14 @@
 }
 .wm-live-canvas {
   font-family: var(--ov-font, 'Inter', sans-serif);
+  font-size: 16px;
   color: var(--ov-text, #ffffff);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: geometricPrecision;
+  -webkit-text-size-adjust: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.18);
 }
 
@@ -2546,6 +2550,11 @@ body.wm-resizing {
   transition: box-shadow 0.2s ease, outline 0.2s ease;
   user-select: none;
   -webkit-user-select: none;
+  will-change: transform, opacity;
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  text-rendering: geometricPrecision;
 }
 
 .wm-live-slot--active {
