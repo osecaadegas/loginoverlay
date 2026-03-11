@@ -671,46 +671,88 @@ function BonusHuntWidget({ config, theme }) {
                 {(() => {
                   const itemH = 48, count = bonuses.length, step = itemH;
                   const shouldScroll = count >= 7;
-                  const items = shouldScroll ? [...bonuses, ...bonuses] : bonuses;
-                  return (
-                    <div key={shouldScroll ? 'lr-scroll' : 'lr-static'}
-                      className={`bht-list-rows-track${shouldScroll ? ' bht-list-rows-track--scroll' : ''}`}
-                      style={shouldScroll ? { '--bht-item-count': count } : undefined}>
-                      {items.map((bonus, i) => {
-                        const idx = shouldScroll ? i % count : i;
-                        const payout = Number(bonus.payout) || 0;
-                        const bet = Number(bonus.betSize) || 0;
-                        const multi = bet > 0 ? payout / bet : 0;
-                        return (
-                          <div key={`lr-${bonus.id || idx}-${i >= count ? 'c' : 'o'}`}
-                            className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}`}>
-                            <span className="bht-list-row-idx">{idx + 1}</span>
-                            <div className="bht-list-row-thumb">
-                              {bonus.slot?.image ? (
-                                <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
-                                  onError={e => { e.target.style.display = 'none'; }} />
-                              ) : <div className="bht-list-row-img-ph" />}
-                            </div>
-                            <div className="bht-list-row-info">
-                              <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
-                            </div>
-                            <div className="bht-list-row-stats">
-                              <div className="bht-list-row-col">
-                                <span className="bht-list-row-col-label">BET</span>
-                                <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                  if (!shouldScroll) {
+                    return (
+                      <div key="lr-static" className="bht-list-rows-track">
+                        {bonuses.map((bonus, i) => {
+                          const payout = Number(bonus.payout) || 0;
+                          const bet = Number(bonus.betSize) || 0;
+                          const multi = bet > 0 ? payout / bet : 0;
+                          return (
+                            <div key={`lr-${bonus.id || i}-o`}
+                              className={`bht-list-row${i === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}`}>
+                              <span className="bht-list-row-idx">{i + 1}</span>
+                              <div className="bht-list-row-thumb">
+                                {bonus.slot?.image ? (
+                                  <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
+                                    onError={e => { e.target.style.display = 'none'; }} />
+                                ) : <div className="bht-list-row-img-ph" />}
                               </div>
-                              <div className="bht-list-row-col">
-                                <span className="bht-list-row-col-label">MULTI</span>
-                                <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                              <div className="bht-list-row-info">
+                                <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
                               </div>
-                              <div className="bht-list-row-col">
-                                <span className="bht-list-row-col-label">WIN</span>
-                                <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                              <div className="bht-list-row-stats">
+                                <div className="bht-list-row-col">
+                                  <span className="bht-list-row-col-label">BET</span>
+                                  <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                                </div>
+                                <div className="bht-list-row-col">
+                                  <span className="bht-list-row-col-label">MULTI</span>
+                                  <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                                </div>
+                                <div className="bht-list-row-col">
+                                  <span className="bht-list-row-col-label">WIN</span>
+                                  <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                                </div>
                               </div>
                             </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  }
+                  /* Scrolling: bonuses + spacer + bonuses (duplicate) */
+                  const renderRow = (bonus, idx, key) => {
+                    const payout = Number(bonus.payout) || 0;
+                    const bet = Number(bonus.betSize) || 0;
+                    const multi = bet > 0 ? payout / bet : 0;
+                    return (
+                      <div key={key}
+                        className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}`}>
+                        <span className="bht-list-row-idx">{idx + 1}</span>
+                        <div className="bht-list-row-thumb">
+                          {bonus.slot?.image ? (
+                            <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
+                              onError={e => { e.target.style.display = 'none'; }} />
+                          ) : <div className="bht-list-row-img-ph" />}
+                        </div>
+                        <div className="bht-list-row-info">
+                          <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                        </div>
+                        <div className="bht-list-row-stats">
+                          <div className="bht-list-row-col">
+                            <span className="bht-list-row-col-label">BET</span>
+                            <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
                           </div>
-                        );
-                      })}
+                          <div className="bht-list-row-col">
+                            <span className="bht-list-row-col-label">MULTI</span>
+                            <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
+                          </div>
+                          <div className="bht-list-row-col">
+                            <span className="bht-list-row-col-label">WIN</span>
+                            <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  };
+                  return (
+                    <div key="lr-scroll" className="bht-list-rows-track bht-list-rows-track--scroll"
+                      style={{ '--bht-item-count': count + 1 }}>
+                      {bonuses.map((b, i) => renderRow(b, i, `lr-${b.id || i}-o`))}
+                      <div key="lr-spacer-a" className="bht-list-row-spacer" />
+                      {bonuses.map((b, i) => renderRow(b, i, `lr-${b.id || i}-c`))}
+                      <div key="lr-spacer-b" className="bht-list-row-spacer" />
                     </div>
                   );
                 })()}

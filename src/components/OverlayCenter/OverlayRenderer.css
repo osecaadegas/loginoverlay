@@ -943,6 +943,10 @@
 .bht-list-rows-track--scroll {
   animation: bht-list-scroll calc(var(--bht-item-count, 5) * 8s) linear infinite;
 }
+.bht-list-row-spacer {
+  height: 48px;
+  flex-shrink: 0;
+}
 .bht-list-row {
   display: flex;
   align-items: center;
