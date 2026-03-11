@@ -177,7 +177,6 @@ function BonusHuntWidgetV4({ config, theme }) {
             return (
               <div key={`${bonus.id || realIdx}-${idx < bonuses.length ? 'a' : 'b'}`}
                 className={`m4-row${isActive ? ' m4-row--active' : ''}${bonus.opened ? ' m4-row--opened' : ''}`}>
-                <span className="m4-row-idx">{realIdx + 1}</span>
                 <div className="m4-row-img-wrap">
                   {bonus.slot?.image ? (
                     <img src={bonus.slot.image} alt="" className="m4-row-img"

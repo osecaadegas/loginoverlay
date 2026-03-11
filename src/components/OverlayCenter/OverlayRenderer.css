@@ -1301,10 +1301,10 @@
 }
 .m4-row {
   display: grid;
-  grid-template-columns: 26px 48px 1fr 58px 46px 60px;
+  grid-template-columns: 48px 1fr auto auto auto;
   align-items: center;
-  gap: 6px;
-  padding: 10px 6px;
+  gap: 8px;
+  padding: 10px 8px;
   min-height: 52px;
   border-bottom: 1px solid rgba(255,255,255,0.04);
   transition: background 0.2s;
@@ -1316,13 +1316,6 @@
 }
 .m4-row--opened {
   opacity: 0.5;
-}
-.m4-row-idx {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--m4-stat-label, #555);
-  text-align: center;
-  font-variant-numeric: tabular-nums;
 }
 .m4-row-img-wrap {
   width: 44px;
@@ -1344,33 +1337,38 @@
   background: color-mix(in srgb, var(--m4-bg, #1a1a1e), #ffffff 5%);
 }
 .m4-row-name {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--m4-row-name, #ccc);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 .m4-row-bet {
-  font-size: 10px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--m4-text, #999);
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }
 .m4-row-multi {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   color: var(--m4-accent, #e8a020);
   text-align: center;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 44px;
 }
 .m4-row-win {
-  font-size: 10px;
-  font-weight: 700;
+  font-size: 12px;
+  font-weight: 800;
   color: var(--m4-green, #66bb6a);
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  min-width: 50px;
 }
 
 /* ═══ FOOTER ═══ */
