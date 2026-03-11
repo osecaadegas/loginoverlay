@@ -588,7 +588,6 @@ function BonusHuntWidget({ config, theme }) {
                             ) : <div className="bht-stack-card-img-ph" />}
                           </div>
                           <div className="bht-stack-card-info">
-                            <span className="bht-stack-card-name">{bonus.slotName || bonus.slot?.name}</span>
                             <span className="bht-stack-card-bet">{currency}{bet.toFixed(2)}</span>
                             {bonus.opened && <span className="bht-stack-card-multi">{multi.toFixed(1)}x</span>}
                           </div>
