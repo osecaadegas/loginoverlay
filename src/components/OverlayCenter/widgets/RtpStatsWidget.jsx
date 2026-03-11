@@ -75,7 +75,29 @@ function RtpStatsWidget({ config, theme, allWidgets, userId }) {
 
   const bhConfig = bhWidget?.config || {};
   const bonusOpening = bhConfig.bonusOpening === true;
-  const bonuses = bhConfig.bonuses || [];
+
+  /* ── Apply same sort as BonusHuntWidget so current bonus matches ── */
+  const bonuses = useMemo(() => {
+    const raw = bhConfig.bonuses || [];
+    const sb = bhConfig.sortBy;
+    const sd = bhConfig.sortDir || 'asc';
+    if (!sb || sb === 'default') return raw;
+    const dir = sd === 'desc' ? -1 : 1;
+    return [...raw].sort((a, b) => {
+      if (sb === 'bet') return ((a.betSize || 0) - (b.betSize || 0)) * dir;
+      if (sb === 'provider') {
+        const pa = (a.slot?.provider || '').toLowerCase();
+        const pb = (b.slot?.provider || '').toLowerCase();
+        if (pa !== pb) return pa.localeCompare(pb) * dir;
+        return (a.slotName || '').localeCompare(b.slotName || '') * dir;
+      }
+      if (sb === 'type') {
+        const rank = (x) => x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
+        return (rank(b) - rank(a)) * dir;
+      }
+      return 0;
+    });
+  }, [bhConfig.bonuses, bhConfig.sortBy, bhConfig.sortDir]);
 
   /* ── Current bonus (first unopened) ── */
   const currentBonus = useMemo(() => bonuses.find(b => !b.opened), [bonuses]);
