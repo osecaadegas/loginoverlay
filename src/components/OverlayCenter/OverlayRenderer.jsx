@@ -54,6 +54,8 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     ? `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))`
     : undefined;
 
+  const widgetRadius = widget.config?.cardRadius;
+
   const style = {
     position: 'absolute',
     left: isBg ? 0 : widget.position_x,
@@ -64,6 +66,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     animationDuration: `${(animSpeed || 1) * 0.35}s`,
     willChange: 'transform, opacity',
     overflow: 'hidden',
+    borderRadius: widgetRadius ? `${widgetRadius}px` : undefined,
     filter: shadowFilter,
   };
 

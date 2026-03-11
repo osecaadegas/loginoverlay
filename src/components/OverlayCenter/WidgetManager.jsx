@@ -166,7 +166,7 @@ const DraggableSlot = memo(function DraggableSlot({
       }}
     >
       {/* Widget content */}
-      <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1 }}>
+      <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1, borderRadius: widget.config?.cardRadius ? `${widget.config.cardRadius}px` : undefined }}>
         <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
       </div>
 
