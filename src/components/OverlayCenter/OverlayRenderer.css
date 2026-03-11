@@ -1074,12 +1074,34 @@
 .bht-footer {
   background: var(--bht-summary-bg, #1e3a8a);
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.12));
+  padding: 4px 10px;
+  perspective: 400px;
+}
+.bht-footer-flip-wrap {
+  width: 100%;
+  position: relative;
+}
+.bht-footer-flip {
+  width: 100%;
+  transition: transform 0.7s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transform-style: preserve-3d;
+}
+.bht-footer-flip--flipped {
+  transform: rotateX(180deg);
+}
+.bht-footer-flip-face {
+  backface-visibility: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: row;
   gap: 8px;
-  padding: 4px 10px;
+}
+.bht-footer-flip-front {
+}
+.bht-footer-flip-back {
+  position: absolute;
+  inset: 0;
+  transform: rotateX(180deg);
 }
 .bht-footer-label {
   font-size: 0.6em;

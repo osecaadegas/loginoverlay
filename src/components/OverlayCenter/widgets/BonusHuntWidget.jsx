@@ -717,10 +717,31 @@ function BonusHuntWidget({ config, theme }) {
         </div>
       )}
 
-      {/* ═══ Total Pay Footer ═══ */}
+      {/* ═══ Total Pay Footer (flips with stats) ═══ */}
       <div className="bht-card bht-footer">
-        <span className="bht-footer-label">TOTAL PAY</span>
-        <span className="bht-footer-value">{currency}{stats.totalWin.toFixed(2)}</span>
+        <div className="bht-footer-flip-wrap">
+          <div className={`bht-footer-flip${statsFlipped ? ' bht-footer-flip--flipped' : ''}`}>
+            <div className="bht-footer-flip-face bht-footer-flip-front">
+              <span className="bht-footer-label">TOTAL PAY</span>
+              <span className="bht-footer-value">{currency}{stats.totalWin.toFixed(2)}</span>
+            </div>
+            <div className="bht-footer-flip-face bht-footer-flip-back">
+              {(() => {
+                const target = Math.max(startMoney - stopLoss, 0);
+                const profit = stats.totalWin - target;
+                const isProfit = profit >= 0;
+                return (
+                  <>
+                    <span className="bht-footer-label">{isProfit ? 'PROFIT' : 'LOSS'}</span>
+                    <span className="bht-footer-value" style={{ color: isProfit ? '#4ade80' : '#f87171' }}>
+                      {isProfit ? '+' : ''}{currency}{profit.toFixed(2)}
+                    </span>
+                  </>
+                );
+              })()}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
