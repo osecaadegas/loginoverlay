@@ -626,11 +626,11 @@ function BonusHuntWidget({ config, theme }) {
           ) : (
             <>
               {/* ── 3D Animated Card Carousel ── */}
-              <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
+              <div className="bht-stack bht-stack--spinning">
                 {(() => {
                   const total = bonuses.length;
                   if (total === 0) return null;
-                  const ci = isOpening && currentIndex >= 0 ? currentIndex : carouselIdx % total;
+                  const ci = carouselIdx % total;
                   const posMap = { '-2': 'bht-stack-card--far-left', '-1': 'bht-stack-card--left', '0': 'bht-stack-card--center', '1': 'bht-stack-card--right', '2': 'bht-stack-card--far-right' };
                   return bonuses.map((bonus, bIdx) => {
                     const rawDist = ((bIdx - ci) % total + total) % total;
