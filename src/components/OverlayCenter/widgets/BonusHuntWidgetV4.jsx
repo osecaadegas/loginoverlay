@@ -190,7 +190,7 @@ function BonusHuntWidgetV4({ config, theme }) {
                 {bonus.opened ? (
                   <>
                     <span className="m4-row-multi">{multi.toFixed(1)}x</span>
-                    <span className={`m4-row-win${payoutIsLoss ? ' m4-row-win--loss' : ''}`}>{currency}{payout.toFixed(0)}</span>
+                    <span className="m4-row-win" style={{ color: payoutIsLoss ? redColor : greenColor }}>{currency}{payout.toFixed(0)}</span>
                   </>
                 ) : (
                   <>
