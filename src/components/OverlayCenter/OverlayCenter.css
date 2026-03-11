@@ -203,12 +203,12 @@
 }
 
 .oc-sidebar-icon {
-  font-size: 1.7rem;
+  font-size: 27.2px;
   filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
 }
 
 .oc-sidebar-title {
-  font-size: 1.15rem;
+  font-size: 18.4px;
   font-weight: 800;
   color: #fff;
   margin: 0;
@@ -221,7 +221,7 @@
 
 /* Sidebar section divider label */
 .oc-sidebar-divider-label {
-  font-size: 0.65rem;
+  font-size: 10.4px;
   text-transform: uppercase;
   letter-spacing: 1.5px;
   color: var(--oc-text-muted);
@@ -245,7 +245,7 @@
   border: 1px solid transparent;
   background: transparent;
   color: var(--oc-text-secondary);
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 500;
   cursor: pointer;
   transition: all var(--oc-transition);
@@ -286,7 +286,7 @@
 }
 
 .oc-sidebar-btn-icon {
-  font-size: 1.25rem;
+  font-size: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -307,12 +307,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   font-weight: inherit;
-  font-size: 0.875rem;
+  font-size: 14px;
   line-height: 1.3;
 }
 
 .oc-sidebar-btn-desc {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: var(--oc-text-muted);
   font-weight: 400;
   line-height: 1.2;
@@ -341,20 +341,20 @@
   border-radius: 1px;
 }
 .oc-sidebar-btn--sub .oc-sidebar-btn-icon {
-  font-size: 0.85rem;
+  font-size: 13.6px;
 }
 .oc-sidebar-btn--sub .oc-sidebar-btn-label {
-  font-size: 0.78rem;
+  font-size: 12.5px;
 }
 .oc-sidebar-btn--sub .oc-sidebar-btn-desc {
-  font-size: 0.62rem;
+  font-size: 9.9px;
 }
 
 /* --- Community Games Config Panel --- */
 .cg-config { display: flex; flex-direction: column; gap: 12px; }
 .cg-config__tabs { display: flex; gap: 4px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 8px; }
 .cg-config__tab {
-  padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 0.78rem; font-weight: 600;
+  padding: 6px 12px; border: none; border-radius: 6px; cursor: pointer; font-size: 12.5px; font-weight: 600;
   background: transparent; color: #94a3b8; transition: all 0.15s;
 }
 .cg-config__tab:hover { background: rgba(255,255,255,0.04); color: var(--theme-border, #e2e8f0); }
@@ -362,21 +362,21 @@
 .cg-config__section { display: flex; flex-direction: column; gap: 10px; }
 .cg-config__field { display: flex; flex-direction: column; gap: 3px; }
 .cg-config__field > span {
-  font-size: 0.72rem; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em;
+  font-size: 11.5px; font-weight: 600; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.04em;
 }
 .cg-config__field > input,
 .cg-config__field > select {
   width: 100%; padding: 8px 11px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px; color: #fff; font-size: 0.82rem; box-sizing: border-box;
+  border-radius: 8px; color: #fff; font-size: 13.1px; box-sizing: border-box;
 }
 .cg-config__status-card {
   background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08);
   border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; gap: 8px;
 }
-.cg-config__status-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: #94a3b8; }
+.cg-config__status-row { display: flex; justify-content: space-between; align-items: center; font-size: 12.8px; color: #94a3b8; }
 .cg-config__status-label { font-weight: 600; }
 .cg-config__status-badge {
-  padding: 3px 10px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 6px; font-size: 11.5px; font-weight: 700;
 }
 .cg-config__status-badge--idle { background: rgba(100,116,139,0.15); color: #94a3b8; }
 .cg-config__status-badge--open { background: rgba(34,197,94,0.12); color: #4ade80; }
@@ -386,7 +386,7 @@
 .cg-config__status-badge--result { background: rgba(124,58,237,0.12); color: #a78bfa; }
 .cg-config__actions { display: flex; gap: 8px; flex-wrap: wrap; }
 .cg-config__btn {
-  padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.82rem;
+  padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13.1px;
   font-weight: 600; transition: all 0.15s; flex: 1; min-width: 100px; text-align: center;
 }
 .cg-config__btn--primary { background: linear-gradient(135deg, #7c3aed, #6d28d9); color: #fff; }
@@ -398,21 +398,21 @@
 .cg-config__btn:disabled { opacity: 0.5; cursor: not-allowed; }
 .cg-config__color-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
 .cg-config__color { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.cg-config__color > span { font-size: 0.68rem; color: #94a3b8; font-weight: 600; }
+.cg-config__color > span { font-size: 10.9px; color: #94a3b8; font-weight: 600; }
 .cg-config__color > input[type="color"] {
   width: 36px; height: 36px; border: 2px solid rgba(255,255,255,0.1); border-radius: 8px;
   cursor: pointer; background: transparent; padding: 0;
 }
-.cg-config__hint { font-size: 0.76rem; color: #64748b; margin: 0; line-height: 1.4; }
+.cg-config__hint { font-size: 12.2px; color: #64748b; margin: 0; line-height: 1.4; }
 .cg-config__history { display: flex; flex-direction: column; gap: 6px; }
 .cg-config__history-row {
   display: flex; align-items: center; gap: 10px; padding: 6px 10px;
-  background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 0.78rem;
+  background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 12.5px;
 }
 .cg-config__history-result--heads { color: #facc15; font-weight: 700; }
 .cg-config__history-result--tails { color: #60a5fa; font-weight: 700; }
 .cg-config__history-pool { color: #94a3b8; margin-left: auto; }
-.cg-config__history-time { color: #475569; font-size: 0.7rem; }
+.cg-config__history-time { color: #475569; font-size: 11.2px; }
 .cg-config__history-win { color: #4ade80; font-weight: 700; }
 .cg-config__history-loss { color: #f87171; }
 .cg-config__symbol-grid { display: flex; flex-wrap: wrap; gap: 6px; }
@@ -421,24 +421,24 @@
   background: rgba(255,255,255,0.06); border-radius: 8px; border: 1px solid rgba(255,255,255,0.08);
 }
 .cg-config__symbol-remove {
-  background: none; border: none; color: #f87171; cursor: pointer; font-size: 0.7rem;
+  background: none; border: none; color: #f87171; cursor: pointer; font-size: 11.2px;
   padding: 0 2px; opacity: 0.6;
 }
 .cg-config__symbol-remove:hover { opacity: 1; }
 .cg-config__add-row { display: flex; gap: 8px; align-items: center; }
 .cg-config__add-row > input {
   flex: 1; padding: 8px 11px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 8px; color: #fff; font-size: 0.82rem;
+  border-radius: 8px; color: #fff; font-size: 13.1px;
 }
 .cg-config__word-select { display: flex; flex-wrap: wrap; gap: 6px; }
 .cg-config__word-list { display: flex; flex-direction: column; gap: 6px; }
 .cg-config__word-item {
   display: flex; align-items: center; gap: 8px;
 }
-.cg-config__word-num { color: #475569; font-size: 0.72rem; font-weight: 700; width: 18px; text-align: center; }
+.cg-config__word-num { color: #475569; font-size: 11.5px; font-weight: 700; width: 18px; text-align: center; }
 .cg-config__word-input {
   flex: 1; padding: 7px 10px; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 6px; color: #fff; font-size: 0.8rem;
+  border-radius: 6px; color: #fff; font-size: 12.8px;
 }
 
 /* --- Resolution Selector --- */
@@ -454,7 +454,7 @@
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   color: var(--oc-text-primary);
-  font-size: 0.8rem;
+  font-size: 12.8px;
   cursor: pointer;
   transition: border-color var(--oc-transition);
   outline: none;
@@ -476,7 +476,7 @@
 }
 
 .oc-sidebar-url-label {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: var(--oc-text-muted);
@@ -500,7 +500,7 @@
   background: var(--oc-bg-surface);
   border: none;
   color: var(--oc-text-secondary);
-  font-size: 0.72rem;
+  font-size: 11.5px;
   padding: 10px 10px;
   outline: none;
   cursor: pointer;
@@ -514,7 +514,7 @@
   color: var(--oc-accent-light);
   padding: 10px 14px;
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 13.6px;
   transition: all var(--oc-transition);
 }
 
@@ -527,7 +527,7 @@
   border: 1px solid var(--oc-border);
   border-radius: var(--oc-radius-sm);
   color: var(--oc-text-muted);
-  font-size: 0.72rem;
+  font-size: 11.5px;
   padding: 8px 10px;
   cursor: pointer;
   transition: all var(--oc-transition);
@@ -556,7 +556,7 @@
   margin-bottom: 10px;
 }
 .oc-obs-url-label {
-  font-size: 0.65rem;
+  font-size: 10.4px;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   color: var(--oc-text-muted);
@@ -583,7 +583,7 @@
   background: transparent;
   border: none;
   color: var(--oc-text-secondary);
-  font-size: 0.72rem;
+  font-size: 11.5px;
   padding: 5px 10px;
   outline: none;
   cursor: pointer;
@@ -601,7 +601,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 0.8rem;
+  font-size: 12.8px;
   border-radius: 50%;
   transition: all 0.15s;
   flex-shrink: 0;
@@ -616,7 +616,7 @@
 }
 
 .oc-sidebar-user {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: var(--oc-text-muted);
   word-break: break-all;
 }
@@ -630,7 +630,7 @@
   justify-content: center;
   padding: 48px 24px;
   color: var(--oc-text-secondary);
-  font-size: 0.95rem;
+  font-size: 15.2px;
 }
 
 .oc-panel-section { padding: 0; }
@@ -648,14 +648,14 @@
 
 .oc-empty-panel h2 {
   color: var(--oc-text-primary);
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 700;
   margin: 0;
 }
 
 .oc-empty-panel p {
   margin: 0 0 8px;
-  font-size: 0.92rem;
+  font-size: 14.7px;
   max-width: 360px;
   line-height: 1.6;
 }
@@ -667,7 +667,7 @@
   background: linear-gradient(135deg, #7c3aed 0%, var(--theme-secondary, #8b5cf6) 50%, #6366f1 100%);
   color: #fff;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 14.4px;
   cursor: pointer;
   transition: all var(--oc-transition);
   box-shadow: 0 4px 20px rgba(139, 92, 246, 0.35);
@@ -695,7 +695,7 @@
 }
 
 .oc-welcome-title {
-  font-size: 1.4rem;
+  font-size: 22.4px;
   font-weight: 800;
   color: #fff;
   margin: 0 0 6px;
@@ -703,7 +703,7 @@
 }
 
 .oc-welcome-sub {
-  font-size: 0.9rem;
+  font-size: 14.4px;
   color: var(--oc-text-secondary);
   margin: 0 0 20px;
 }
@@ -740,7 +740,7 @@
   background: linear-gradient(135deg, var(--oc-accent-solid), var(--oc-accent));
   color: #fff;
   font-weight: 800;
-  font-size: 0.85rem;
+  font-size: 13.6px;
   flex-shrink: 0;
   box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
 }
@@ -752,12 +752,12 @@
 }
 
 .oc-welcome-step strong {
-  font-size: 0.88rem;
+  font-size: 14.1px;
   color: var(--oc-text-primary);
 }
 
 .oc-welcome-step span {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: var(--oc-text-secondary);
   line-height: 1.4;
 }
@@ -782,7 +782,7 @@
 }
 
 .oc-panel-title {
-  font-size: 1.5rem;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
   margin: 0;
@@ -791,7 +791,7 @@
 
 /* Panel subtitle � explains what this section does */
 .oc-panel-subtitle {
-  font-size: 0.82rem;
+  font-size: 13.1px;
   color: var(--oc-text-muted);
   margin: 4px 0 0;
   line-height: 1.5;
@@ -810,7 +810,7 @@
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   color: var(--oc-text-primary);
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--oc-transition);
@@ -839,7 +839,7 @@
   box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
 }
 
-.oc-btn--sm { padding: 7px 12px; font-size: 0.78rem; border-radius: 8px; }
+.oc-btn--sm { padding: 7px 12px; font-size: 12.5px; border-radius: 8px; }
 
 .oc-btn--danger {
   color: var(--oc-danger);
@@ -905,7 +905,7 @@
 }
 
 .wm-page-title {
-  font-size: 1.65rem;
+  font-size: 26.4px;
   font-weight: 800;
   color: var(--oc-text-primary);
   margin: 0;
@@ -917,7 +917,7 @@
 }
 
 .wm-page-desc {
-  font-size: 0.82rem;
+  font-size: 13.1px;
   color: var(--oc-text-muted);
   margin: 6px 0 0;
   line-height: 1.55;
@@ -932,7 +932,7 @@
 }
 
 .wm-sync-toast {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #22c55e;
   font-weight: 600;
   animation: wm-fadeIn 0.3s ease;
@@ -945,7 +945,7 @@
   gap: 6px;
   padding: 10px 20px;
   border-radius: 10px;
-  font-size: 0.8rem;
+  font-size: 12.8px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -992,20 +992,20 @@
 }
 
 .wm-quickstart-icon {
-  font-size: 1.7rem;
+  font-size: 27.2px;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
 .wm-quickstart strong {
   color: var(--oc-text-primary);
-  font-size: 0.9rem;
+  font-size: 14.4px;
   display: block;
   margin-bottom: 4px;
 }
 
 .wm-quickstart p {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: var(--oc-text-muted);
   margin: 0;
   line-height: 1.6;
@@ -1022,7 +1022,7 @@
 }
 
 .wm-picker-hint {
-  font-size: 0.76rem;
+  font-size: 12.2px;
   color: var(--oc-text-muted);
   margin: 0 0 20px;
 }
@@ -1036,7 +1036,7 @@
 }
 
 .wm-picker-group-title {
-  font-size: 0.64rem;
+  font-size: 10.2px;
   text-transform: uppercase;
   letter-spacing: 1.6px;
   color: #a78bfa;
@@ -1086,7 +1086,7 @@
 }
 
 .wm-picker-card-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
   flex-shrink: 0;
   margin-top: 1px;
   position: relative;
@@ -1104,12 +1104,12 @@
 
 .wm-picker-card-name {
   font-weight: 700;
-  font-size: 0.84rem;
+  font-size: 13.4px;
   color: var(--oc-text-primary);
 }
 
 .wm-picker-card-desc {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: var(--oc-text-muted);
   line-height: 1.45;
 }
@@ -1132,7 +1132,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.72rem;
+  font-size: 11.5px;
   text-transform: uppercase;
   letter-spacing: 1.4px;
   font-weight: 800;
@@ -1165,7 +1165,7 @@
 }
 
 .wm-section-count {
-  font-size: 0.62rem;
+  font-size: 9.9px;
   background: rgba(255, 255, 255, 0.06);
   padding: 1px 8px;
   border-radius: 10px;
@@ -1291,7 +1291,7 @@
 }
 
 .wm-tile-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -1318,12 +1318,12 @@
 
 .wm-tile-name {
   font-weight: 700;
-  font-size: 0.84rem;
+  font-size: 13.4px;
   color: var(--oc-text-primary);
 }
 
 .wm-tile-desc {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: var(--oc-text-muted);
   line-height: 1.45;
 }
@@ -1360,7 +1360,7 @@
   position: absolute;
   width: 100%;
   text-align: center;
-  font-size: 0.38rem;
+  font-size: 6.1px;
   font-weight: 800;
   letter-spacing: 0.5px;
   color: rgba(255,255,255,0.5);
@@ -1378,7 +1378,7 @@
 }
 
 .wm-tile-add {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   font-weight: 700;
   color: #a78bfa;
   background: rgba(139, 92, 246, 0.08);
@@ -1416,7 +1416,7 @@
 }
 
 .wm-tile-btn--arrow {
-  font-size: 0.6rem;
+  font-size: 9.6px;
   color: var(--oc-text-muted);
 }
 
@@ -1441,7 +1441,7 @@
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   cursor: pointer;
-  font-size: 0.75rem;
+  font-size: 12px;
   transition: all 0.15s ease;
   color: var(--oc-text-secondary);
 }
@@ -1508,12 +1508,12 @@
   align-items: center;
   gap: 10px;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 16px;
   color: var(--oc-text-primary);
 }
 
 .wm-sidepanel-icon {
-  font-size: 1.3rem;
+  font-size: 20.8px;
 }
 
 .wm-sidepanel-close {
@@ -1526,7 +1526,7 @@
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   color: var(--oc-text-secondary);
-  font-size: 0.9rem;
+  font-size: 14.4px;
   cursor: pointer;
   transition: all 0.15s ease;
 }
@@ -1639,7 +1639,7 @@
 }
 
 .wm-card-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
   flex-shrink: 0;
   width: 40px;
   height: 40px;
@@ -1659,13 +1659,13 @@
 
 .wm-card-name {
   font-weight: 700;
-  font-size: 0.94rem;
+  font-size: 15px;
   color: var(--oc-text-primary);
   white-space: nowrap;
 }
 
 .wm-card-badge {
-  font-size: 0.56rem;
+  font-size: 9px;
   font-weight: 800;
   letter-spacing: 1px;
   padding: 3px 12px;
@@ -1716,7 +1716,7 @@
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   cursor: pointer;
-  font-size: 0.85rem;
+  font-size: 13.6px;
   transition: all 0.15s ease;
   color: var(--oc-text-secondary);
 }
@@ -1749,7 +1749,7 @@
 }
 
 .wm-obs-summary {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 600;
   color: var(--oc-text-muted);
   cursor: pointer;
@@ -1766,7 +1766,7 @@
 
 .wm-obs-summary::before {
   content: '?';
-  font-size: 0.65rem;
+  font-size: 10.4px;
   transition: transform 0.2s ease;
   display: inline-block;
 }
@@ -1798,7 +1798,7 @@
   background: var(--oc-bg-surface);
   border: none;
   color: var(--oc-text-secondary);
-  font-size: 0.7rem;
+  font-size: 11.2px;
   padding: 10px 14px;
   outline: none;
   cursor: pointer;
@@ -1817,7 +1817,7 @@
   color: var(--oc-accent-light);
   padding: 10px 16px;
   cursor: pointer;
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 600;
   transition: all 0.15s ease;
   white-space: nowrap;
@@ -1840,18 +1840,18 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 800;
   color: var(--oc-text-primary);
   letter-spacing: 0.3px;
 }
 
 .wm-layout-icon {
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .wm-layout-hint {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   color: var(--oc-text-muted);
   margin: 6px 0 16px;
   line-height: 1.45;
@@ -1903,7 +1903,7 @@
   position: absolute;
   bottom: 4px;
   right: 6px;
-  font-size: 0.55rem;
+  font-size: 8.8px;
   color: rgba(255, 255, 255, 0.25);
   font-family: 'JetBrains Mono', monospace;
   font-weight: 600;
@@ -1935,7 +1935,7 @@
 }
 
 .wm-slider-label {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 700;
   color: var(--oc-text-muted);
   letter-spacing: 0.4px;
@@ -2026,7 +2026,7 @@
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-card);
   color: var(--oc-text-primary);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   text-align: center;
   outline: none;
@@ -2060,7 +2060,7 @@
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-card);
   color: var(--oc-text-primary);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   outline: none;
   cursor: pointer;
   transition: border-color 0.15s ease;
@@ -2081,7 +2081,7 @@
 }
 
 .wm-style-switcher-label {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 800;
   color: var(--oc-text-primary);
   letter-spacing: 0.3px;
@@ -2104,7 +2104,7 @@
   border: 1px solid var(--oc-border);
   background: rgba(255, 255, 255, 0.03);
   color: var(--oc-text-secondary);
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -2124,7 +2124,7 @@
 }
 
 .wm-style-switcher-icon {
-  font-size: 1.2rem;
+  font-size: 19.2px;
 }
 
 /* Config Panel wrapper */
@@ -2167,7 +2167,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 800;
   color: var(--oc-text-primary);
   letter-spacing: 0.3px;
@@ -2188,7 +2188,7 @@
 }
 
 .wm-live-dims {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: var(--oc-text-muted);
   font-weight: 600;
   letter-spacing: 0.5px;
@@ -2248,7 +2248,7 @@
 }
 
 .wm-live-hint {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   color: var(--oc-text-muted);
   margin: 12px 0 0;
   line-height: 1.5;
@@ -2281,7 +2281,7 @@
 }
 
 .wm-qg-title {
-  font-size: 0.88rem;
+  font-size: 14.1px;
   font-weight: 800;
   color: var(--oc-text-primary);
   margin: 0 0 14px;
@@ -2302,7 +2302,7 @@
   counter-increment: qg;
   position: relative;
   padding-left: 30px;
-  font-size: 0.76rem;
+  font-size: 12.2px;
   color: var(--oc-text-muted);
   line-height: 1.55;
 }
@@ -2320,7 +2320,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.68rem;
+  font-size: 10.9px;
   font-weight: 700;
   color: #a78bfa;
 }
@@ -2397,7 +2397,7 @@
 }
 
 .gt-tooltip-step {
-  font-size: 0.62rem;
+  font-size: 9.9px;
   font-weight: 700;
   color: #a78bfa;
   background: rgba(139, 92, 246, 0.1);
@@ -2407,7 +2407,7 @@
 }
 
 .gt-tooltip-page {
-  font-size: 0.6rem;
+  font-size: 9.6px;
   font-weight: 700;
   color: #818cf8;
   background: rgba(99, 102, 241, 0.12);
@@ -2419,7 +2419,7 @@
 }
 
 .gt-tooltip-skip {
-  font-size: 0.62rem;
+  font-size: 9.9px;
   color: #94a3b8;
   background: none;
   border: none;
@@ -2435,14 +2435,14 @@
 }
 
 .gt-tooltip-title {
-  font-size: 0.95rem;
+  font-size: 15.2px;
   font-weight: 800;
   color: var(--theme-text, #f1f5f9);
   margin: 0 0 6px;
 }
 
 .gt-tooltip-body {
-  font-size: 0.74rem;
+  font-size: 11.8px;
   color: #cbd5e1;
   line-height: 1.55;
   margin: 0 0 18px;
@@ -2455,7 +2455,7 @@
 }
 
 .gt-btn {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 700;
   padding: 7px 16px;
   border-radius: 10px;
@@ -2517,7 +2517,7 @@
 }
 
 .gt-progress-label {
-  font-size: 0.58rem;
+  font-size: 9.3px;
   color: #64748b;
   font-weight: 600;
   letter-spacing: 0.3px;
@@ -2701,7 +2701,7 @@ body.wm-resizing {
 }
 
 .oc-config-field > span {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: var(--oc-text-secondary);
   min-width: 100px;
   font-weight: 500;
@@ -2716,7 +2716,7 @@ body.wm-resizing {
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   color: var(--oc-text-primary);
-  font-size: 0.8rem;
+  font-size: 12.8px;
   transition: border-color var(--oc-transition);
   outline: none;
 }
@@ -2735,7 +2735,7 @@ body.wm-resizing {
 }
 
 .oc-config-hint {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: var(--oc-text-muted);
   margin: 4px 0 0;
 }
@@ -2770,7 +2770,7 @@ body.wm-resizing {
 }
 
 .oc-twitch-name {
-  font-size: 0.88rem;
+  font-size: 14.1px;
   font-weight: 700;
   color: var(--oc-text-primary);
   overflow: hidden;
@@ -2779,7 +2779,7 @@ body.wm-resizing {
 }
 
 .oc-twitch-badge {
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: var(--oc-accent-light);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -2796,7 +2796,7 @@ body.wm-resizing {
 }
 
 .oc-theme-section-title {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 700;
   color: var(--oc-text-secondary);
   text-transform: uppercase;
@@ -2816,7 +2816,7 @@ body.wm-resizing {
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   color: var(--oc-text-secondary);
-  font-size: 0.82rem;
+  font-size: 13.1px;
   cursor: pointer;
   transition: all var(--oc-transition);
   text-transform: capitalize;
@@ -2863,8 +2863,8 @@ body.wm-resizing {
   border-color: var(--oc-border-hover);
 }
 
-.oc-color-field span { font-size: 0.82rem; font-weight: 600; }
-.oc-color-field code { font-size: 0.68rem; color: var(--oc-text-muted); }
+.oc-color-field span { font-size: 13.1px; font-weight: 600; }
+.oc-color-field code { font-size: 10.9px; color: var(--oc-text-muted); }
 
 .oc-slider-grid {
   display: grid;
@@ -2879,7 +2879,7 @@ body.wm-resizing {
 }
 
 .oc-slider-label {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: var(--oc-text-secondary);
   min-width: 76px;
   font-weight: 500;
@@ -2892,7 +2892,7 @@ body.wm-resizing {
 }
 
 .oc-slider-value {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: var(--oc-text-muted);
   min-width: 32px;
   text-align: right;
@@ -2910,7 +2910,7 @@ body.wm-resizing {
   border: 1px solid var(--oc-border);
   background: var(--oc-bg-surface);
   color: var(--oc-text-primary);
-  font-size: 0.82rem;
+  font-size: 13.1px;
   transition: border-color var(--oc-transition);
   outline: none;
 }
@@ -2927,7 +2927,7 @@ body.wm-resizing {
   background: var(--oc-bg-surface);
   color: var(--oc-text-secondary);
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   resize: vertical;
   outline: none;
   transition: border-color var(--oc-transition);
@@ -2952,7 +2952,7 @@ body.wm-resizing {
 .oc-preview-frame-label {
   padding: 10px 16px;
   background: var(--oc-bg-surface);
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: var(--oc-text-muted);
   border-bottom: 1px solid var(--oc-border);
   font-weight: 600;
@@ -2961,7 +2961,7 @@ body.wm-resizing {
 .oc-preview-iframe { display: block; background: transparent; }
 
 .oc-preview-hint {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--oc-text-muted);
   margin-top: 14px;
 }
@@ -2974,7 +2974,7 @@ body.wm-resizing {
 }
 
 .oc-empty-icon {
-  font-size: 3rem;
+  font-size: 48px;
   display: block;
   margin-bottom: 12px;
   opacity: 0.6;
@@ -2982,7 +2982,7 @@ body.wm-resizing {
 
 .oc-empty p {
   margin: 4px 0;
-  font-size: 0.88rem;
+  font-size: 14.1px;
   line-height: 1.6;
   max-width: 400px;
   margin-left: auto;
@@ -3063,7 +3063,7 @@ body.wm-resizing {
 
   .oc-color-grid { grid-template-columns: repeat(2, 1fr); }
 
-  .oc-panel-title { font-size: 1.2rem; }
+  .oc-panel-title { font-size: 19.2px; }
 
   .oc-welcome-card {
     padding: 20px;
@@ -3098,7 +3098,7 @@ body.wm-resizing {
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 0.82rem;
+  font-size: 13.1px;
   color: #cbd5e1;
   white-space: nowrap;
   cursor: pointer;
@@ -3130,7 +3130,7 @@ body.wm-resizing {
 }
 
 .bh-panel-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
@@ -3142,7 +3142,7 @@ body.wm-resizing {
 }
 
 .bh-count {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   color: #64748b;
   background: rgba(255, 255, 255, 0.06);
   padding: 1px 7px;
@@ -3182,7 +3182,7 @@ body.wm-resizing {
 
 /* ─── Slot Requests Queue (inside Hunt Settings) ─── */
 .bh-sr-queue-title {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
@@ -3193,7 +3193,7 @@ body.wm-resizing {
 }
 
 .bh-sr-queue-count {
-  font-size: 0.62rem;
+  font-size: 9.9px;
   color: #9346ff;
   background: rgba(147, 70, 255, 0.15);
   padding: 0 6px;
@@ -3202,7 +3202,7 @@ body.wm-resizing {
 }
 
 .bh-sr-queue-empty {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: #475569;
   font-style: italic;
   padding: 4px 0;
@@ -3254,7 +3254,7 @@ body.wm-resizing {
 }
 
 .bh-sr-queue-name {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 600;
   color: #e2e8f0;
   white-space: nowrap;
@@ -3263,7 +3263,7 @@ body.wm-resizing {
 }
 
 .bh-sr-queue-by {
-  font-size: 0.6rem;
+  font-size: 9.6px;
   color: #64748b;
 }
 
@@ -3271,7 +3271,7 @@ body.wm-resizing {
   background: none;
   border: none;
   color: #64748b;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   cursor: pointer;
   padding: 2px 4px;
   border-radius: 4px;
@@ -3304,7 +3304,7 @@ body.wm-resizing {
 }
 
 .bh-input-group span {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: #64748b;
   font-weight: 500;
 }
@@ -3315,7 +3315,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   width: 100%;
 }
 
@@ -3343,7 +3343,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
 }
 
 .bh-search-input:focus {
@@ -3407,7 +3407,7 @@ body.wm-resizing {
 }
 
 .bh-suggestion-name {
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 500;
   color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
@@ -3419,7 +3419,7 @@ body.wm-resizing {
 }
 
 .bh-pending-badge {
-  font-size: 0.6rem;
+  font-size: 9.6px;
   font-weight: 700;
   color: #fbbf24;
   background: rgba(251, 191, 36, 0.15);
@@ -3432,14 +3432,14 @@ body.wm-resizing {
 }
 
 .bh-suggestion-provider {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   color: #64748b;
 }
 
 .bh-suggestion-empty {
   padding: 12px;
   text-align: center;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: #475569;
 }
 
@@ -3454,7 +3454,7 @@ body.wm-resizing {
 
 /* --- Submit Slot Button & Dropdown --- */
 .bh-submit-slot-btn {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 6px;
@@ -3500,7 +3500,7 @@ body.wm-resizing {
   gap: 2px;
 }
 .bh-submit-field span {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   font-weight: 500;
   color: #94a3b8;
   text-transform: uppercase;
@@ -3516,7 +3516,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 5px;
   padding: 4px 7px;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--theme-border, #e2e8f0);
   outline: none;
   transition: border-color 0.2s;
@@ -3527,7 +3527,7 @@ body.wm-resizing {
 }
 
 .bh-submit-search-btn {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   padding: 4px 8px;
   border-radius: 6px;
   border: 1px solid rgba(168, 85, 247, 0.3);
@@ -3598,7 +3598,7 @@ body.wm-resizing {
   transform: translateX(-50%);
   background: rgba(34, 197, 94, 0.85);
   color: #fff;
-  font-size: 0.55rem;
+  font-size: 8.8px;
   font-weight: 700;
   padding: 1px 6px;
   border-radius: 3px;
@@ -3618,7 +3618,7 @@ body.wm-resizing {
   border: 1px dashed rgba(255, 255, 255, 0.12);
   border-radius: 6px;
   color: #94a3b8;
-  font-size: 0.62rem;
+  font-size: 9.9px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.2s, border-color 0.2s, color 0.2s;
@@ -3639,7 +3639,7 @@ body.wm-resizing {
   padding-top: 4px;
 }
 .bh-pretty-toggle {
-  font-size: 0.62rem;
+  font-size: 9.9px;
   padding: 3px 8px;
   border-radius: 4px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3666,7 +3666,7 @@ body.wm-resizing {
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 .bh-submit-cancel {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   padding: 4px 10px;
   border-radius: 5px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -3680,7 +3680,7 @@ body.wm-resizing {
   color: var(--theme-border, #e2e8f0);
 }
 .bh-submit-save {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 5px;
@@ -3708,7 +3708,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.04);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
 }
 
 .bh-bet-field:focus {
@@ -3720,7 +3720,7 @@ body.wm-resizing {
 .bh-extreme-btn {
   padding: 4px 8px;
   border-radius: 5px;
-  font-size: 0.68rem;
+  font-size: 10.9px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
@@ -3767,7 +3767,7 @@ body.wm-resizing {
   border: none;
   background: rgba(147, 70, 255, 0.2);
   color: #a78bfa;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -3793,7 +3793,7 @@ body.wm-resizing {
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   cursor: pointer;
 }
@@ -3813,7 +3813,7 @@ body.wm-resizing {
   flex-wrap: wrap;
 }
 .bh-sort-label {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
   font-weight: 500;
 }
@@ -3823,7 +3823,7 @@ body.wm-resizing {
   border: 1px solid rgba(148, 163, 184, 0.2);
   background: rgba(30, 41, 59, 0.5);
   color: #94a3b8;
-  font-size: 0.72rem;
+  font-size: 11.5px;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -3851,7 +3851,7 @@ body.wm-resizing {
   text-align: center;
   padding: 16px 0;
   color: #475569;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   margin: 0;
 }
 
@@ -3944,7 +3944,7 @@ body.wm-resizing {
   background: #ffffff;
 }
 .bh-opening-text {
-  font-size: 0.85rem;
+  font-size: 13.6px;
   font-weight: 700;
   color: #94a3b8;
   letter-spacing: 0.03em;
@@ -3954,14 +3954,14 @@ body.wm-resizing {
   color: #22c55e;
 }
 .bh-opening-hint {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   color: #475569;
 }
 
 /* --- Grip handle --- */
 .bh-list-grip {
   color: #334155;
-  font-size: 0.8rem;
+  font-size: 12.8px;
   cursor: grab;
   flex-shrink: 0;
   line-height: 1;
@@ -3969,7 +3969,7 @@ body.wm-resizing {
 
 /* --- Provider label --- */
 .bh-list-provider {
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: #64748b;
   display: flex;
   align-items: center;
@@ -3979,7 +3979,7 @@ body.wm-resizing {
 /* --- Super badge inline --- */
 .bh-list-super-badge {
   margin-left: 4px;
-  font-size: 0.6rem;
+  font-size: 9.6px;
   font-weight: 800;
   color: #eab308;
   background: rgba(234, 179, 8, 0.15);
@@ -3991,7 +3991,7 @@ body.wm-resizing {
 
 .bh-list-extreme-badge {
   margin-left: 4px;
-  font-size: 0.6rem;
+  font-size: 9.6px;
   font-weight: 800;
   color: #ef4444;
   background: rgba(239, 68, 68, 0.15);
@@ -4036,7 +4036,7 @@ body.wm-resizing {
   min-width: 44px;
 }
 .bh-list-field-label {
-  font-size: 0.6rem;
+  font-size: 9.6px;
   color: #475569;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -4044,14 +4044,14 @@ body.wm-resizing {
   white-space: nowrap;
 }
 .bh-list-field-value {
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 600;
   color: var(--theme-border, #e2e8f0);
   font-variant-numeric: tabular-nums;
 }
 .bh-list-field-locked {
   color: #475569;
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-style: italic;
 }
 .bh-list-field-mult {
@@ -4067,7 +4067,7 @@ body.wm-resizing {
   border: 1px solid rgba(147, 70, 255, 0.25);
   background: rgba(15, 23, 42, 0.8);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-variant-numeric: tabular-nums;
   text-align: center;
   transition: border-color 0.15s;
@@ -4095,7 +4095,7 @@ body.wm-resizing {
   border: 1px solid rgba(147, 70, 255, 0.3);
   background: rgba(15, 23, 42, 0.8);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
 }
 .bh-list-edit-input:focus {
   outline: none;
@@ -4113,7 +4113,7 @@ body.wm-resizing {
   padding: 3px 8px;
   border-radius: 4px;
   border: none;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -4134,7 +4134,7 @@ body.wm-resizing {
 }
 
 .bh-list-num {
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: #475569;
   min-width: 18px;
   font-weight: 700;
@@ -4158,7 +4158,7 @@ body.wm-resizing {
 }
 
 .bh-list-name {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 500;
   color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
@@ -4167,7 +4167,7 @@ body.wm-resizing {
 }
 
 .bh-list-bet {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   color: #64748b;
   font-variant-numeric: tabular-nums;
 }
@@ -4177,7 +4177,7 @@ body.wm-resizing {
 }
 
 .bh-list-result {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   color: #22c55e;
   font-variant-numeric: tabular-nums;
@@ -4194,7 +4194,7 @@ body.wm-resizing {
   color: #475569;
   cursor: pointer;
   border-radius: 3px;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   transition: all 0.15s;
 }
 
@@ -4240,7 +4240,7 @@ body.wm-resizing {
 }
 
 .tm-modal-header h2 {
-  font-size: 1.15rem;
+  font-size: 18.4px;
   font-weight: 700;
   color: #fff;
   margin: 0;
@@ -4250,7 +4250,7 @@ body.wm-resizing {
   background: transparent;
   border: none;
   color: #64748b;
-  font-size: 1.2rem;
+  font-size: 19.2px;
   cursor: pointer;
   padding: 4px 8px;
   border-radius: 6px;
@@ -4272,7 +4272,7 @@ body.wm-resizing {
 }
 
 .tm-section h3 {
-  font-size: 0.88rem;
+  font-size: 14.1px;
   font-weight: 700;
   color: #94a3b8;
   text-transform: uppercase;
@@ -4292,7 +4292,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   color: #94a3b8;
-  font-size: 0.82rem;
+  font-size: 13.1px;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -4327,13 +4327,13 @@ body.wm-resizing {
 }
 
 .tm-player-num {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #a78bfa;
   font-weight: 700;
 }
 
 .tm-player-label {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: #64748b;
 }
 
@@ -4345,7 +4345,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.8rem;
+  font-size: 12.8px;
   margin-bottom: 6px;
 }
 
@@ -4386,7 +4386,7 @@ body.wm-resizing {
   gap: 8px;
   padding: 6px 10px;
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: var(--theme-border, #e2e8f0);
   transition: background 0.1s;
 }
@@ -4411,7 +4411,7 @@ body.wm-resizing {
   background: linear-gradient(135deg, rgba(147, 70, 255, 0.3), rgba(147, 70, 255, 0.15));
   border: 1px solid rgba(147, 70, 255, 0.4);
   color: #a78bfa;
-  font-size: 0.95rem;
+  font-size: 15.2px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -4429,7 +4429,7 @@ body.wm-resizing {
   border-radius: 20px;
   background: rgba(147, 70, 255, 0.12);
   color: #a78bfa;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
 }
 
@@ -4452,7 +4452,7 @@ body.wm-resizing {
 }
 
 .tm-match-title {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 700;
   color: #64748b;
   text-transform: uppercase;
@@ -4496,7 +4496,7 @@ body.wm-resizing {
 }
 
 .tm-input-group label {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #64748b;
   min-width: 36px;
 }
@@ -4508,7 +4508,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.1);
   background: rgba(255, 255, 255, 0.04);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   min-width: 0;
 }
 
@@ -4523,13 +4523,13 @@ body.wm-resizing {
 
 .tm-bo3-inputs .tm-input-group label {
   min-width: 20px;
-  font-size: 0.68rem;
+  font-size: 10.9px;
 }
 
 .tm-vs {
   display: flex;
   align-items: center;
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 800;
   color: #475569;
   padding: 0 4px;
@@ -4542,7 +4542,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   color: #94a3b8;
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -4572,7 +4572,7 @@ body.wm-resizing {
   border: none;
   background: rgba(147, 70, 255, 0.2);
   color: #a78bfa;
-  font-size: 0.88rem;
+  font-size: 14.1px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
@@ -4588,7 +4588,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(255, 255, 255, 0.03);
   color: #94a3b8;
-  font-size: 0.88rem;
+  font-size: 14.1px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
@@ -4955,7 +4955,7 @@ body.wm-resizing {
 }
 
 .nb-spotify-connect-icon {
-  font-size: 1.5rem;
+  font-size: 24px;
 }
 
 .nb-spotify-connect-info div {
@@ -4965,12 +4965,12 @@ body.wm-resizing {
 }
 
 .nb-spotify-connect-info strong {
-  font-size: 0.88rem;
+  font-size: 14.1px;
   color: var(--theme-text, #f1f5f9);
 }
 
 .nb-spotify-connect-info span {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #94a3b8;
 }
 
@@ -5311,7 +5311,7 @@ body.wm-resizing {
 }
 
 .bh-gtb-action-icon {
-  font-size: 1.3rem;
+  font-size: 20.8px;
   flex-shrink: 0;
 }
 
@@ -5322,13 +5322,13 @@ body.wm-resizing {
 }
 
 .bh-gtb-action-title {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   color: #c4b5fd;
 }
 
 .bh-gtb-action-desc {
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: #7c7faa;
 }
 
@@ -5338,7 +5338,7 @@ body.wm-resizing {
   border: none;
   border-radius: 8px;
   padding: 8px 16px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -5478,19 +5478,19 @@ body.wm-resizing {
 }
 
 .bh-save-hunt-icon {
-  font-size: 1rem;
+  font-size: 16px;
 }
 
 .bh-save-hunt-title {
   display: block;
-  font-size: 0.8rem;
+  font-size: 12.8px;
   font-weight: 700;
   color: var(--theme-border, #e2e8f0);
 }
 
 .bh-save-hunt-desc {
   display: block;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: #94a3b8;
   margin-top: 1px;
 }
@@ -5502,7 +5502,7 @@ body.wm-resizing {
   border: 1px solid rgba(99, 102, 241, 0.35);
   border-radius: 8px;
   color: #c4b5fd;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -5524,7 +5524,7 @@ body.wm-resizing {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #94a3b8;
   padding: 6px 0;
 }
@@ -5541,7 +5541,7 @@ body.wm-resizing {
   border: 1px solid rgba(34, 197, 94, 0.35);
   border-radius: 8px;
   color: #86efac;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -5564,7 +5564,7 @@ body.wm-resizing {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 8px;
   color: #94a3b8;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -5585,14 +5585,14 @@ body.wm-resizing {
   background: rgba(99,102,241,0.08);
   border-radius: 8px;
   margin-top: 8px;
-  font-size: 0.75rem;
+  font-size: 12px;
   color: #94a3b8;
 }
 
 .bh-history-msg {
   padding: 8px 12px;
   border-radius: 8px;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   margin-top: 8px;
   font-weight: 500;
 }
@@ -5635,7 +5635,7 @@ body.wm-resizing {
   min-width: 0;
 }
 .bh-history-name {
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 600;
   color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
@@ -5643,7 +5643,7 @@ body.wm-resizing {
   text-overflow: ellipsis;
 }
 .bh-history-date {
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: #64748b;
   margin-top: 2px;
 }
@@ -5659,7 +5659,7 @@ body.wm-resizing {
   background: rgba(255,255,255,0.06);
   padding: 2px 8px;
   border-radius: 10px;
-  font-size: 0.68rem;
+  font-size: 10.9px;
   font-weight: 600;
   color: #94a3b8;
   white-space: nowrap;
@@ -5706,7 +5706,7 @@ body.wm-resizing {
 }
 .bh-history-stat-label {
   display: block;
-  font-size: 0.6rem;
+  font-size: 9.6px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -5714,7 +5714,7 @@ body.wm-resizing {
 }
 .bh-history-stat-val {
   display: block;
-  font-size: 0.82rem;
+  font-size: 13.1px;
   font-weight: 700;
   color: var(--theme-border, #e2e8f0);
 }
@@ -5727,7 +5727,7 @@ body.wm-resizing {
 }
 .bh-history-bonus-preview-label {
   display: block;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: #64748b;
   margin-bottom: 6px;
   text-transform: uppercase;
@@ -5743,7 +5743,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   padding: 2px 8px;
   border-radius: 6px;
-  font-size: 0.62rem;
+  font-size: 9.9px;
   color: #94a3b8;
   white-space: nowrap;
 }
@@ -5781,7 +5781,7 @@ body.wm-resizing {
   gap: 6px;
 }
 .bh-history-confirm-text {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #fca5a5;
   font-weight: 600;
 }
@@ -6010,7 +6010,7 @@ body.wm-resizing {
   background: rgba(255,255,255,0.03);
   border: none;
   color: #cbd5e1;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: background 0.15s;
@@ -6033,7 +6033,7 @@ body.wm-resizing {
   gap: 8px;
   padding: 8px 10px;
   cursor: pointer;
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 600;
   color: var(--theme-border, #e2e8f0);
 }
@@ -6163,7 +6163,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.04);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
 }
 .ov-slide-cfg-add-input:focus {
   outline: none;
@@ -6175,7 +6175,7 @@ body.wm-resizing {
   color: #fff;
   padding: 7px 12px;
   border-radius: 6px;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
@@ -6355,7 +6355,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.03);
   color: #94a3b8;
-  font-size: 0.75rem;
+  font-size: 12px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -6406,8 +6406,8 @@ body.wm-resizing {
 }
 
 .oc-bg-texture-icon { font-size: 16px; }
-.oc-bg-texture-name { font-size: 0.68rem; font-weight: 600; }
-.oc-bg-texture-desc { font-size: 0.58rem; opacity: 0.55; line-height: 1.2; }
+.oc-bg-texture-name { font-size: 10.9px; font-weight: 600; }
+.oc-bg-texture-desc { font-size: 9.3px; opacity: 0.55; line-height: 1.2; }
 
 /* -- Config: quick presets -- */
 .oc-bg-quick-grid {
@@ -6423,7 +6423,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   background: rgba(255,255,255,0.03);
   color: #cbd5e1;
-  font-size: 0.68rem;
+  font-size: 10.9px;
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s;
@@ -6462,7 +6462,7 @@ body.wm-resizing {
 }
 
 .tm-player-num-inline {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   font-weight: 700;
   color: #94a3b8;
   min-width: 22px;
@@ -6476,7 +6476,7 @@ body.wm-resizing {
   border-radius: 6px;
   padding: 5px 8px;
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.75rem;
+  font-size: 12px;
 }
 
 .tm-slot-wrapper-inline {
@@ -6496,7 +6496,7 @@ body.wm-resizing {
   border-radius: 6px;
   padding: 6px 8px;
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.8rem;
+  font-size: 12.8px;
   font-weight: 600;
   outline: none;
   transition: border-color 0.15s;
@@ -6509,7 +6509,7 @@ body.wm-resizing {
   font-weight: 500;
 }
 .tm-setup-input-slot {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   font-weight: 500;
   padding: 4px 6px;
 }
@@ -6525,7 +6525,7 @@ body.wm-resizing {
   border-radius: 6px;
   padding: 5px 8px;
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.72rem;
+  font-size: 11.5px;
 }
 
 .tm-slot-thumb-inline {
@@ -6547,7 +6547,7 @@ body.wm-resizing {
 }
 
 .tm-match-inline-header {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: #94a3b8;
   margin-bottom: 8px;
   padding-bottom: 6px;
@@ -6572,7 +6572,7 @@ body.wm-resizing {
 }
 
 .tm-match-inline-pname {
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   color: var(--theme-border, #e2e8f0);
 }
@@ -6587,7 +6587,7 @@ body.wm-resizing {
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: #94a3b8;
 }
 
@@ -6599,12 +6599,12 @@ body.wm-resizing {
   border-radius: 5px;
   padding: 3px 6px;
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.72rem;
+  font-size: 11.5px;
   width: 100%;
 }
 
 .tm-vs-inline {
-  font-size: 0.7rem;
+  font-size: 11.2px;
   font-weight: 700;
   color: #475569;
   padding-top: 20px;
@@ -6617,7 +6617,7 @@ body.wm-resizing {
   border-radius: 6px;
   padding: 4px 8px;
   color: #94a3b8;
-  font-size: 0.7rem;
+  font-size: 11.2px;
   cursor: pointer;
   transition: all 0.2s;
   text-align: center;
@@ -6650,7 +6650,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.1);
   background: rgba(255,255,255,0.04);
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.75rem;
+  font-size: 12px;
   font-family: inherit;
   cursor: pointer;
   outline: none;
@@ -6676,7 +6676,7 @@ body.wm-resizing {
 }
 
 .oc-sidebar-preset-hint {
-  font-size: 0.66rem;
+  font-size: 10.6px;
   color: #64748b;
   margin: 2px 0 8px;
   line-height: 1.3;
@@ -6695,7 +6695,7 @@ body.wm-resizing {
   border-radius: 6px;
   padding: 5px 8px;
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.72rem;
+  font-size: 11.5px;
 }
 
 .oc-sidebar-preset-save-btn {
@@ -6704,7 +6704,7 @@ body.wm-resizing {
   border-radius: 6px;
   padding: 4px 10px;
   color: #c4b5fd;
-  font-size: 0.7rem;
+  font-size: 11.2px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -6722,7 +6722,7 @@ body.wm-resizing {
 
 .oc-sidebar-preset-msg {
   display: block;
-  font-size: 0.68rem;
+  font-size: 10.9px;
   color: #22c55e;
   margin-top: 4px;
 }
@@ -6754,7 +6754,7 @@ body.wm-resizing {
 }
 
 .oc-sidebar-preset-name {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: var(--theme-border, #e2e8f0);
   font-weight: 500;
   white-space: nowrap;
@@ -6763,7 +6763,7 @@ body.wm-resizing {
 }
 
 .oc-sidebar-preset-date {
-  font-size: 0.6rem;
+  font-size: 9.6px;
   color: #475569;
 }
 
@@ -6779,7 +6779,7 @@ body.wm-resizing {
   border-radius: 5px;
   padding: 2px 8px;
   color: #a5b4fc;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -6794,7 +6794,7 @@ body.wm-resizing {
   border-radius: 5px;
   padding: 2px 6px;
   color: #f87171;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -6807,7 +6807,7 @@ body.wm-resizing {
 
 .oc-sidebar-preset-section-label {
   display: block;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   font-weight: 600;
   color: #94a3b8;
   text-transform: uppercase;
@@ -6825,7 +6825,7 @@ body.wm-resizing {
   border: 1px solid rgba(56,189,248,0.3);
   border-radius: 4px;
   padding: 2px 6px;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   cursor: pointer;
   transition: all 0.2s;
 }
@@ -6837,7 +6837,7 @@ body.wm-resizing {
 /* ------- PREVIEW DIMS ------- */
 
 .oc-preview-dims {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #64748b;
   font-weight: 500;
 }
@@ -6851,7 +6851,7 @@ body.wm-resizing {
 }
 
 .bhl-description {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: #94a3b8;
   margin: 0 0 16px;
   line-height: 1.5;
@@ -6866,7 +6866,7 @@ body.wm-resizing {
   gap: 12px;
   padding: 48px 0;
   color: #94a3b8;
-  font-size: 0.82rem;
+  font-size: 13.1px;
 }
 
 /* -- Stats bar -- */
@@ -6895,7 +6895,7 @@ body.wm-resizing {
 }
 
 .bhl-stat-value {
-  font-size: 0.9rem;
+  font-size: 14.4px;
   font-weight: 700;
   color: var(--theme-border, #e2e8f0);
   white-space: nowrap;
@@ -6905,7 +6905,7 @@ body.wm-resizing {
 }
 
 .bhl-stat-label {
-  font-size: 0.6rem;
+  font-size: 9.6px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -6941,7 +6941,7 @@ body.wm-resizing {
 }
 
 .bhl-search-icon {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   margin-right: 6px;
   flex-shrink: 0;
 }
@@ -6951,7 +6951,7 @@ body.wm-resizing {
   background: transparent;
   border: none;
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.78rem;
+  font-size: 12.5px;
   padding: 8px 0;
   outline: none;
 }
@@ -6965,7 +6965,7 @@ body.wm-resizing {
   border: none;
   color: #64748b;
   cursor: pointer;
-  font-size: 0.72rem;
+  font-size: 11.5px;
   padding: 2px 4px;
   flex-shrink: 0;
 }
@@ -6979,7 +6979,7 @@ body.wm-resizing {
   border: 1px solid rgba(255,255,255,0.08);
   border-radius: 8px;
   color: var(--theme-border, #e2e8f0);
-  font-size: 0.75rem;
+  font-size: 12px;
   padding: 8px 10px;
   outline: none;
   cursor: pointer;
@@ -7002,7 +7002,7 @@ body.wm-resizing {
   border: none;
   color: #64748b;
   padding: 6px 10px;
-  font-size: 0.85rem;
+  font-size: 13.6px;
   cursor: pointer;
   transition: all 0.15s;
 }
@@ -7018,7 +7018,7 @@ body.wm-resizing {
 }
 
 .bhl-results-count {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #64748b;
   margin: -6px 0 10px;
 }
@@ -7034,20 +7034,20 @@ body.wm-resizing {
 }
 
 .bhl-empty-icon {
-  font-size: 2.5rem;
+  font-size: 40px;
   margin-bottom: 12px;
   opacity: 0.6;
 }
 
 .bhl-empty-title {
-  font-size: 1rem;
+  font-size: 16px;
   font-weight: 700;
   color: var(--theme-border, #e2e8f0);
   margin: 0 0 6px;
 }
 
 .bhl-empty-text {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   color: #64748b;
   max-width: 340px;
   line-height: 1.5;
@@ -7108,7 +7108,7 @@ body.wm-resizing {
 }
 
 .bhl-card-name {
-  font-size: 0.85rem;
+  font-size: 13.6px;
   font-weight: 700;
   color: var(--theme-border, #e2e8f0);
   margin: 0;
@@ -7120,7 +7120,7 @@ body.wm-resizing {
 }
 
 .bhl-card-pnl {
-  font-size: 0.78rem;
+  font-size: 12.5px;
   font-weight: 700;
   white-space: nowrap;
   flex-shrink: 0;
@@ -7140,7 +7140,7 @@ body.wm-resizing {
 .bhl-card-date,
 .bhl-card-bonus-count,
 .bhl-card-best-slot {
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: #64748b;
   white-space: nowrap;
 }
@@ -7205,7 +7205,7 @@ body.wm-resizing {
 
 .bhl-detail-label {
   display: block;
-  font-size: 0.58rem;
+  font-size: 9.3px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -7214,7 +7214,7 @@ body.wm-resizing {
 
 .bhl-detail-value {
   display: block;
-  font-size: 0.8rem;
+  font-size: 12.8px;
   font-weight: 700;
   color: var(--theme-border, #e2e8f0);
 }
@@ -7226,7 +7226,7 @@ body.wm-resizing {
 
 .bhl-bonus-section-label {
   display: block;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -7255,7 +7255,7 @@ body.wm-resizing {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.05);
   border-radius: 6px;
-  font-size: 0.7rem;
+  font-size: 11.2px;
 }
 
 .bhl-bonus-item--opened {
@@ -7307,7 +7307,7 @@ body.wm-resizing {
 .bhl-bonus-pending {
   color: #64748b;
   font-style: italic;
-  font-size: 0.65rem;
+  font-size: 10.4px;
   flex-shrink: 0;
 }
 
@@ -7316,7 +7316,7 @@ body.wm-resizing {
   color: #facc15;
   padding: 1px 5px;
   border-radius: 4px;
-  font-size: 0.55rem;
+  font-size: 8.8px;
   font-weight: 800;
   letter-spacing: 0.05em;
   flex-shrink: 0;
@@ -7337,7 +7337,7 @@ body.wm-resizing {
   border: 1px solid rgba(99, 102, 241, 0.25);
   border-radius: 8px;
   color: #a5b4fc;
-  font-size: 0.75rem;
+  font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
@@ -7359,7 +7359,7 @@ body.wm-resizing {
 }
 
 .bhl-confirm-text {
-  font-size: 0.72rem;
+  font-size: 11.5px;
   color: #fca5a5;
   font-weight: 600;
 }
