@@ -435,7 +435,7 @@ function BonusHuntWidget({ config, theme }) {
           )}
           <div className="bht-title">{huntTitle}</div>
         </div>
-        <div className="bht-header-stats bht-header-stats--3col">
+        <div className="bht-header-stats bht-header-stats--4col">
           <div className="bht-stat-box">
             <div className="bht-stat-label">
               START
@@ -444,9 +444,15 @@ function BonusHuntWidget({ config, theme }) {
           </div>
           <div className="bht-stat-box">
             <div className="bht-stat-label">
+              STOP
+            </div>
+            <div className="bht-stat-value">{currency}{stopLoss.toFixed(0)}</div>
+          </div>
+          <div className="bht-stat-box">
+            <div className="bht-stat-label">
               B.E.
             </div>
-            <div className="bht-stat-value" style={{ color: stats.liveBE >= 100 ? '#4ade80' : '#f87171' }}>{stats.liveBE.toFixed(0)}x</div>
+            <div className="bht-stat-value" style={{ color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }}>{stats.liveBE.toFixed(0)}x</div>
           </div>
           <div className="bht-stat-box">
             <div className="bht-stat-label">

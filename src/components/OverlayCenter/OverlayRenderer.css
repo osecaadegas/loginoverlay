@@ -443,6 +443,9 @@
 .bht-header-stats--3col {
   grid-template-columns: 1fr 1fr 1fr;
 }
+.bht-header-stats--4col {
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+}
 .bht-stat-box {
   background: rgba(0,0,0,0.25);
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
