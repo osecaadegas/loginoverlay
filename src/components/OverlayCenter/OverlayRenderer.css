@@ -1356,7 +1356,11 @@
   border-radius: 2px;
 }
 .m4-row--opened {
-  opacity: 0.5;
+  opacity: 0.55;
+}
+.m4-row--opened.m4-row--super,
+.m4-row--opened.m4-row--extreme {
+  opacity: 1;
 }
 .m4-row-img-wrap {
   width: 48px;
@@ -1413,7 +1417,7 @@
   min-width: 54px;
 }
 .m4-row-win--loss {
-  color: var(--m4-red, #ef5350);
+  color: var(--m4-red, #ef5350) !important;
 }
 
 /* ═══ FOOTER ═══ */
