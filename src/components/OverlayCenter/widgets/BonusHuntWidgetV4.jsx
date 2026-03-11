@@ -74,6 +74,7 @@ function BonusHuntWidgetV4({ config, theme }) {
     width: '100%',
     height: '100%',
     overflow: 'hidden',
+    borderRadius: `${c.cardRadius ?? 0}px`,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
       : undefined,
