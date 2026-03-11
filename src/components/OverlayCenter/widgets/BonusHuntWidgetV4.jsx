@@ -98,10 +98,6 @@ function BonusHuntWidgetV4({ config, theme }) {
       {/* ═══ HEADER — Stamped title plate ═══ */}
       <header className="m4-header">
         <div className="m4-header-left">
-          {c.avatarUrl && (
-            <img src={c.avatarUrl} alt="" className="m4-avatar"
-              onError={e => { e.target.style.display = 'none'; }} />
-          )}
           <div className="m4-title-plate">
             <span className="m4-title">{huntTitle}</span>
           </div>
