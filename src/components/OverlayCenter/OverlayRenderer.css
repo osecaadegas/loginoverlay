@@ -600,58 +600,86 @@
   margin-bottom: 10px;
 }
 
-/* -- 3D Card Stack (3 visible) -- */
+/* -- 3D Animated Card Carousel (5 visible) -- */
 .bht-stack {
   display: flex;
   justify-content: center;
   align-items: center;
   position: relative;
   height: 210px;
-  perspective: 900px;
+  perspective: 1000px;
   margin: 6px 0;
 }
 .bht-stack-card {
   position: absolute;
   width: 120px;
   height: 190px;
-  transition: transform 0.5s cubic-bezier(0.4,0,0.2,1), opacity 0.4s, filter 0.4s;
+  transition: transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.5s, filter 0.5s;
   transform-style: preserve-3d;
 }
+
+/* Far left — barely visible, deep in perspective */
+.bht-stack-card--far-left {
+  transform: translateX(-170px) translateZ(-120px) rotateY(35deg) scale(0.65);
+  z-index: 0;
+  opacity: 0.3;
+  filter: brightness(0.45) blur(1px);
+}
+
+/* Left — tilted, behind center */
 .bht-stack-card--left {
-  transform: translateX(-95px) translateZ(-60px) rotateY(18deg) scale(0.85);
+  transform: translateX(-95px) translateZ(-50px) rotateY(20deg) scale(0.85);
   z-index: 1;
   opacity: 0.7;
   filter: brightness(0.7);
 }
+
+/* Center — hero card */
 .bht-stack-card--center {
-  transform: translateX(0) translateZ(0) rotateY(0deg) scale(1);
+  transform: translateX(0) translateZ(20px) rotateY(0deg) scale(1);
   z-index: 3;
   opacity: 1;
+}
+
+/* Right — tilted, behind center */
+.bht-stack-card--right {
+  transform: translateX(95px) translateZ(-50px) rotateY(-20deg) scale(0.85);
+  z-index: 1;
+  opacity: 0.7;
+  filter: brightness(0.7);
+}
+
+/* Far right — barely visible, deep in perspective */
+.bht-stack-card--far-right {
+  transform: translateX(170px) translateZ(-120px) rotateY(-35deg) scale(0.65);
+  z-index: 0;
+  opacity: 0.3;
+  filter: brightness(0.45) blur(1px);
+}
+
+/* -- Center card float animation during opening -- */
+.bht-stack:not(.bht-stack--spinning) .bht-stack-card--center {
   animation: bht-stack-float 3s ease-in-out infinite;
 }
 @keyframes bht-stack-float {
-  0%, 100% { transform: translateX(0) translateZ(0) rotateY(0deg) scale(1); }
-  50%      { transform: translateX(0) translateZ(10px) rotateY(0deg) scale(1.03); }
+  0%, 100% { transform: translateX(0) translateZ(20px) rotateY(0deg) scale(1); }
+  50%      { transform: translateX(0) translateZ(35px) rotateY(0deg) scale(1.04); }
 }
-.bht-stack-card--right {
-  transform: translateX(95px) translateZ(-60px) rotateY(-18deg) scale(0.85);
-  z-index: 1;
-  opacity: 0.7;
-  filter: brightness(0.7);
-}
-.bht-stack-card--left {
+
+/* -- Side card gentle tilt during opening -- */
+.bht-stack:not(.bht-stack--spinning) .bht-stack-card--left {
   animation: bht-stack-tilt-left 4s ease-in-out infinite;
 }
 @keyframes bht-stack-tilt-left {
-  0%, 100% { transform: translateX(-95px) translateZ(-60px) rotateY(18deg) scale(0.85); }
-  50%      { transform: translateX(-95px) translateZ(-50px) rotateY(22deg) scale(0.87); }
+  0%, 100% { transform: translateX(-95px) translateZ(-50px) rotateY(20deg) scale(0.85); }
+  50%      { transform: translateX(-95px) translateZ(-40px) rotateY(24deg) scale(0.87); }
 }
-.bht-stack-card--right {
+.bht-stack:not(.bht-stack--spinning) .bht-stack-card--right {
   animation: bht-stack-tilt-right 4s ease-in-out infinite;
 }
 @keyframes bht-stack-tilt-right {
-  0%, 100% { transform: translateX(95px) translateZ(-60px) rotateY(-18deg) scale(0.85); }
-  50%      { transform: translateX(95px) translateZ(-50px) rotateY(-22deg) scale(0.87); }
+  0%, 100% { transform: translateX(95px) translateZ(-50px) rotateY(-20deg) scale(0.85); }
+  50%      { transform: translateX(95px) translateZ(-40px) rotateY(-24deg) scale(0.87); }
 }
 .bht-stack-card--opened { opacity: 0.5; }
 .bht-stack-card--center.bht-stack-card--opened { opacity: 1; }

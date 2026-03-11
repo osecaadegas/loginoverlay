@@ -166,6 +166,14 @@ function BonusHuntWidget({ config, theme }) {
   /* Stop carousel only when actively in opening phase AND there's a bonus to open */
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
 
+  /* ─── Classic: auto-rotating carousel during hunt ─── */
+  const [carouselIdx, setCarouselIdx] = useState(0);
+  useEffect(() => {
+    if (isCompactBH || isOpening || bonuses.length < 2) return;
+    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 2500);
+    return () => clearInterval(id);
+  }, [isCompactBH, isOpening, bonuses.length]);
+
   const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
     : isHorizontalBH ? ' oc-bonushunt--horizontal'
     : isCompactBH ? ' oc-bonushunt--compact'
@@ -555,26 +563,28 @@ function BonusHuntWidget({ config, theme }) {
             </div>
           ) : (
             <>
-              {/* ── 3D Card Stack (3 visible) ── */}
-              <div className="bht-stack">
+              {/* ── 3D Animated Card Carousel ── */}
+              <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
                 {(() => {
                   const total = bonuses.length;
                   if (total === 0) return null;
-                  const ci = isOpening && currentIndex >= 0 ? currentIndex : 0;
-                  const indices = [
-                    (ci - 1 + total) % total,
-                    ci,
-                    (ci + 1) % total
+                  const ci = isOpening && currentIndex >= 0 ? currentIndex : carouselIdx % total;
+                  const positions = [
+                    { offset: -2, cls: 'bht-stack-card--far-left' },
+                    { offset: -1, cls: 'bht-stack-card--left' },
+                    { offset:  0, cls: 'bht-stack-card--center' },
+                    { offset:  1, cls: 'bht-stack-card--right' },
+                    { offset:  2, cls: 'bht-stack-card--far-right' },
                   ];
-                  return indices.map((bIdx, pos) => {
+                  return positions.map(({ offset, cls }) => {
+                    const bIdx = ((ci + offset) % total + total) % total;
                     const bonus = bonuses[bIdx];
                     const payout = Number(bonus.payout) || 0;
                     const bet = Number(bonus.betSize) || 0;
                     const multi = bet > 0 ? payout / bet : 0;
-                    const posClass = pos === 0 ? 'bht-stack-card--left' : pos === 1 ? 'bht-stack-card--center' : 'bht-stack-card--right';
                     return (
-                      <div key={`stk-${bIdx}-${pos}`}
-                        className={`bht-stack-card ${posClass}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
+                      <div key={`stk-${bIdx}-${offset}`}
+                        className={`bht-stack-card ${cls}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
                         <div className="bht-stack-card-inner">
                           <div className="bht-stack-card-img-wrap">
                             {bonus.slot?.image ? (
