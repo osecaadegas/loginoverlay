@@ -176,7 +176,7 @@ function BonusHuntWidgetV4({ config, theme }) {
             const multi = bet > 0 ? payout / bet : 0;
             return (
               <div key={`${bonus.id || realIdx}-${idx < bonuses.length ? 'a' : 'b'}`}
-                className={`m4-row${isActive ? ' m4-row--active' : ''}${bonus.opened ? ' m4-row--opened' : ''}`}>
+                className={`m4-row${isActive ? ' m4-row--active' : ''}${bonus.opened ? ' m4-row--opened' : ''}${bonus.isSuperBonus ? ' m4-row--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' m4-row--extreme' : ''}`}>
                 <div className="m4-row-img-wrap">
                   {bonus.slot?.image ? (
                     <img src={bonus.slot.image} alt="" className="m4-row-img"
