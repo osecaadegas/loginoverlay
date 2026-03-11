@@ -489,17 +489,18 @@
   position: relative;
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
   overflow: hidden;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
+  max-height: 80px;
 }
 .bht-current-img-full {
   width: 100%;
-  height: var(--bht-slot-img-height, 22px);
+  height: 80px;
   object-fit: cover;
   display: block;
 }
 .bht-current-img-placeholder {
   width: 100%;
-  height: var(--bht-slot-img-height, 22px);
+  height: 80px;
   background: linear-gradient(135deg, #1a1f3a, #0e1225);
 }
 .bht-current-name-overlay {
