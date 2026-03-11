@@ -76,6 +76,14 @@ function BonusHuntWidget({ config, theme }) {
     return () => ro.disconnect();
   }, [isCompactBH]);
 
+  /* ─── Classic: auto-rotating carousel during hunt ─── */
+  const [carouselIdx, setCarouselIdx] = useState(0);
+  useEffect(() => {
+    if (isCompactBH || bonuses.length < 2) return;
+    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 2500);
+    return () => clearInterval(id);
+  }, [isCompactBH, bonuses.length]);
+
   /* ─── Style switcher (early returns AFTER all hooks) ─── */
   if (c.displayStyle === 'v3') {
     return <BonusHuntWidgetV3 config={sortedConfig} theme={theme} />;
@@ -165,14 +173,6 @@ function BonusHuntWidget({ config, theme }) {
   const currentIndex = currentBonus ? bonuses.indexOf(currentBonus) : -1;
   /* Stop carousel only when actively in opening phase AND there's a bonus to open */
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
-
-  /* ─── Classic: auto-rotating carousel during hunt ─── */
-  const [carouselIdx, setCarouselIdx] = useState(0);
-  useEffect(() => {
-    if (isCompactBH || isOpening || bonuses.length < 2) return;
-    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 2500);
-    return () => clearInterval(id);
-  }, [isCompactBH, isOpening, bonuses.length]);
 
   const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
     : isHorizontalBH ? ' oc-bonushunt--horizontal'
