@@ -484,10 +484,10 @@
   overflow: hidden;
 }
 .bht-flip-slot--best {
-  border: 1px solid rgba(74, 222, 128, 0.3);
+  border: 2px solid #4ade80;
 }
 .bht-flip-slot--worst {
-  border: 1px solid rgba(248, 113, 113, 0.3);
+  border: 2px solid #f87171;
 }
 .bht-flip-slot--empty {
   border: 1px solid rgba(255,255,255,0.08);
@@ -505,18 +505,11 @@
 .bht-flip-slot-info {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   min-width: 0;
 }
-.bht-flip-slot-tag {
-  font-size: 0.5em;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--bht-muted, #93c5fd);
-}
 .bht-flip-slot-name {
-  font-size: 0.7em;
+  font-size: 0.8em;
   font-weight: 700;
   color: var(--bht-stat-value, #fff);
   white-space: nowrap;
@@ -524,9 +517,19 @@
   text-overflow: ellipsis;
 }
 .bht-flip-slot-stats {
-  font-size: 0.65em;
-  font-weight: 600;
-  color: var(--bht-muted, #93c5fd);
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.bht-flip-slot-multi {
+  font-size: 0.75em;
+  font-weight: 800;
+  color: #fbbf24;
+}
+.bht-flip-slot-payout {
+  font-size: 1em;
+  font-weight: 800;
+  color: #fff;
 }
 .bht-stat-box {
   background: rgba(0,0,0,0.25);

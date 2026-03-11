@@ -486,14 +486,12 @@ function BonusHuntWidget({ config, theme }) {
                       onError={e => { e.target.style.display = 'none'; }} />
                   )}
                   <div className="bht-flip-slot-info">
-                    <span className="bht-flip-slot-tag">🏆 BEST</span>
                     <span className="bht-flip-slot-name">{stats.bestSlot.slotName}</span>
-                    <span className="bht-flip-slot-stats">{stats.bestSlot._multi.toFixed(1)}x · {currency}{stats.bestSlot._payout.toFixed(0)}</span>
+                    <span className="bht-flip-slot-stats"><span className="bht-flip-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span> <span className="bht-flip-slot-payout">{currency}{stats.bestSlot._payout.toFixed(0)}</span></span>
                   </div>
                 </div>
               ) : (
                 <div className="bht-flip-slot bht-flip-slot--empty">
-                  <span className="bht-flip-slot-tag">🏆 BEST</span>
                   <span className="bht-flip-slot-name">—</span>
                 </div>
               )}
@@ -504,14 +502,12 @@ function BonusHuntWidget({ config, theme }) {
                       onError={e => { e.target.style.display = 'none'; }} />
                   )}
                   <div className="bht-flip-slot-info">
-                    <span className="bht-flip-slot-tag">💀 WORST</span>
                     <span className="bht-flip-slot-name">{stats.worstSlot.slotName}</span>
-                    <span className="bht-flip-slot-stats">{stats.worstSlot._multi.toFixed(1)}x · {currency}{stats.worstSlot._payout.toFixed(0)}</span>
+                    <span className="bht-flip-slot-stats"><span className="bht-flip-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span> <span className="bht-flip-slot-payout">{currency}{stats.worstSlot._payout.toFixed(0)}</span></span>
                   </div>
                 </div>
               ) : (
                 <div className="bht-flip-slot bht-flip-slot--empty">
-                  <span className="bht-flip-slot-tag">💀 WORST</span>
                   <span className="bht-flip-slot-name">—</span>
                 </div>
               )}
