@@ -574,9 +574,6 @@ function BonusHuntWidget({ config, theme }) {
                     const rawDist = ((bIdx - ci) % total + total) % total;
                     const dist = rawDist <= Math.floor(total / 2) ? rawDist : rawDist - total;
                     const posCls = posMap[String(dist)] || 'bht-stack-card--hidden';
-                    const payout = Number(bonus.payout) || 0;
-                    const bet = Number(bonus.betSize) || 0;
-                    const multi = bet > 0 ? payout / bet : 0;
                     return (
                       <div key={`stk-${bIdx}`}
                         className={`bht-stack-card ${posCls}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
@@ -587,16 +584,26 @@ function BonusHuntWidget({ config, theme }) {
                                 onError={e => { e.target.style.display = 'none'; }} />
                             ) : <div className="bht-stack-card-img-ph" />}
                           </div>
-                          <div className="bht-stack-card-info">
-                            <span className="bht-stack-card-bet">{currency}{bet.toFixed(2)}</span>
-                            {bonus.opened && <span className="bht-stack-card-multi">{multi.toFixed(1)}x</span>}
-                          </div>
                         </div>
                       </div>
                     );
                   });
                 })()}
               </div>
+              {/* ── Progress bar ── */}
+              {(() => {
+                const total = bonuses.length;
+                const opened = bonuses.filter(b => b.opened).length;
+                const pct = total > 0 ? (opened / total) * 100 : 0;
+                return (
+                  <div className="bht-progress">
+                    <div className="bht-progress-bar">
+                      <div className="bht-progress-fill" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="bht-progress-text">{opened}/{total}</span>
+                  </div>
+                );
+              })()}
               {/* ── Vertical list rows ── */}
               <div className="bht-list-rows">
                 {(() => {

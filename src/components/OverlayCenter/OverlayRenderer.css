@@ -714,6 +714,34 @@
   filter: brightness(0.7) drop-shadow(0 0 12px rgba(220,38,38,0.55));
 }
 
+/* -- Progress bar -- */
+.bht-progress {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  margin: 2px 0 6px;
+}
+.bht-progress-bar {
+  flex: 1;
+  height: 6px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.bht-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #4ade80);
+  border-radius: 3px;
+  transition: width 0.6s ease;
+}
+.bht-progress-text {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 /* -- Stack card inner -- */
 .bht-stack-card-inner {
   width: 100%;
