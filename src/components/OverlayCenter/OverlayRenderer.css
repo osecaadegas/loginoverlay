@@ -600,7 +600,7 @@
   margin-bottom: 10px;
 }
 
-/* -- 3D Animated Card Carousel (5 visible) -- */
+/* -- 3D Animated Card Carousel (5 visible + hidden) -- */
 .bht-stack {
   display: flex;
   justify-content: center;
@@ -608,14 +608,29 @@
   position: relative;
   height: 210px;
   perspective: 1000px;
+  perspective-origin: 50% 50%;
   margin: 6px 0;
+  overflow: hidden;
 }
 .bht-stack-card {
   position: absolute;
   width: 120px;
   height: 190px;
-  transition: transform 0.7s cubic-bezier(0.4,0,0.2,1), opacity 0.5s, filter 0.5s;
+  transition: transform 0.8s cubic-bezier(0.25,0.46,0.45,0.94),
+              opacity 0.8s cubic-bezier(0.25,0.46,0.45,0.94),
+              filter 0.8s cubic-bezier(0.25,0.46,0.45,0.94),
+              z-index 0s 0.4s;
   transform-style: preserve-3d;
+  will-change: transform, opacity, filter;
+}
+
+/* Hidden — off-screen, invisible */
+.bht-stack-card--hidden {
+  transform: translateX(0) translateZ(-200px) rotateY(0deg) scale(0.4);
+  z-index: -1;
+  opacity: 0;
+  pointer-events: none;
+  filter: brightness(0.3) blur(3px);
 }
 
 /* Far left — barely visible, deep in perspective */
@@ -639,6 +654,7 @@
   transform: translateX(0) translateZ(20px) rotateY(0deg) scale(1);
   z-index: 3;
   opacity: 1;
+  filter: brightness(1);
 }
 
 /* Right — tilted, behind center */

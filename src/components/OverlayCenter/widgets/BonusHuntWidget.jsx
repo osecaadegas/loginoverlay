@@ -569,22 +569,17 @@ function BonusHuntWidget({ config, theme }) {
                   const total = bonuses.length;
                   if (total === 0) return null;
                   const ci = isOpening && currentIndex >= 0 ? currentIndex : carouselIdx % total;
-                  const positions = [
-                    { offset: -2, cls: 'bht-stack-card--far-left' },
-                    { offset: -1, cls: 'bht-stack-card--left' },
-                    { offset:  0, cls: 'bht-stack-card--center' },
-                    { offset:  1, cls: 'bht-stack-card--right' },
-                    { offset:  2, cls: 'bht-stack-card--far-right' },
-                  ];
-                  return positions.map(({ offset, cls }) => {
-                    const bIdx = ((ci + offset) % total + total) % total;
-                    const bonus = bonuses[bIdx];
+                  const posMap = { '-2': 'bht-stack-card--far-left', '-1': 'bht-stack-card--left', '0': 'bht-stack-card--center', '1': 'bht-stack-card--right', '2': 'bht-stack-card--far-right' };
+                  return bonuses.map((bonus, bIdx) => {
+                    const rawDist = ((bIdx - ci) % total + total) % total;
+                    const dist = rawDist <= Math.floor(total / 2) ? rawDist : rawDist - total;
+                    const posCls = posMap[String(dist)] || 'bht-stack-card--hidden';
                     const payout = Number(bonus.payout) || 0;
                     const bet = Number(bonus.betSize) || 0;
                     const multi = bet > 0 ? payout / bet : 0;
                     return (
-                      <div key={`stk-${bIdx}-${offset}`}
-                        className={`bht-stack-card ${cls}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
+                      <div key={`stk-${bIdx}`}
+                        className={`bht-stack-card ${posCls}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
                         <div className="bht-stack-card-inner">
                           <div className="bht-stack-card-img-wrap">
                             {bonus.slot?.image ? (
