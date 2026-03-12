@@ -211,12 +211,12 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             onChange={v => set('listMaxHeight', v)} />
 
           <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Image</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Image URL for the back face of the 3D flip card (Style 3).</p>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Image URL for the back face of the 3D flip card (Style 3). Default: /badges/back.png</p>
           <input
             className="oc-widget-css-input"
-            value={c.flipBackImage || ''}
+            value={c.flipBackImage ?? '/badges/back.png'}
             onChange={e => set('flipBackImage', e.target.value)}
-            placeholder="https://example.com/back-image.png"
+            placeholder="/badges/back.png"
             style={{ width: '100%', padding: '6px 8px', marginBottom: 8, fontSize: 12 }}
           />
 
