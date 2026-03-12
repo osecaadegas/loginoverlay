@@ -2975,17 +2975,18 @@
 
 /* -- Root � override .or-widget-inner & .oc-bonushunt glass styles -- */
 .bht3-root {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  /* Kill the glass card background so V3 cards show their own bg */
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
   border: none !important;
-  padding: 0 !important;
-  border-radius: 0 !important;
-  overflow: hidden !important;
+  /* Must be visible so 3D flipping is not clipped */
+  overflow: visible !important;
+  /* Preserve 3D context through the tree */
   transform-style: preserve-3d;
 }
 
@@ -3130,23 +3131,26 @@
   margin-top: 1px;
 }
 
-/* -- Flip area — all absolute positioning, no flex chain -- */
+/* -- Flip area -- */
 .bht3-flip-area {
-  position: absolute;
-  inset: 0;
+  width: 100%;
+  overflow: visible;
   transform-style: preserve-3d;
+  padding-top: 12px;
 }
 
 .bht3-flip-container {
-  position: absolute;
-  inset: 0;
   perspective: 1000px;
+  width: 100%;
+  overflow: visible;
   transform-style: preserve-3d;
+  padding-top: 6px;
 }
 
 .bht3-flip-inner {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  height: var(--bht3-flip-height, 220px);
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
 }
@@ -3154,6 +3158,7 @@
 .bht3-flip-face {
   position: absolute;
   inset: 0;
+  border-radius: var(--bht3-card-radius, 16px);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   overflow: hidden;
@@ -3162,6 +3167,7 @@
 /* -- FRONT face -- */
 .bht3-flip-front {
   background: var(--theme-background, #0f172a);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
 .bht3-flip-img {
@@ -3268,53 +3274,25 @@
 /* -- BACK face -- */
 .bht3-flip-back {
   transform: rotateY(180deg);
-  background: none;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  margin: 0;
-}
-
-.bht3-flip-back-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: fill;
-  display: block;
+  background: linear-gradient(155deg, #0f172a 0%, #1a1040 40%, #0f172a 100%);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .bht3-flip-back-content {
   padding: 16px 20px;
   width: 100%;
-  height: 100%;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 8px;
-  position: relative;
-  z-index: 1;
 }
 
 .bht3-flip-back-provider-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  max-width: 100%;
-  padding: 6px 0 8px;
-  min-height: 70px;
-}
-
-.bht3-flip-back-provider-logo img {
-  max-height: 80px;
-  max-width: 90%;
-  object-fit: contain;
-  filter: drop-shadow(0 2px 12px rgba(129, 140, 248, 0.5)) brightness(1.1);
-}
-
-.bht3-flip-back-provider-logo span {
   font-size: 26px;
   font-weight: 900;
   color: var(--bht3-header-accent, #818cf8);
@@ -3325,6 +3303,7 @@
   text-overflow: ellipsis;
   max-width: 100%;
   text-shadow: 0 2px 12px rgba(129, 140, 248, 0.35), 0 1px 4px rgba(0,0,0,0.5);
+  padding: 2px 0 4px;
 }
 
 .bht3-flip-back-header {
