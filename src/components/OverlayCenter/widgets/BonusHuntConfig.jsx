@@ -589,13 +589,21 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     save(updated);
   };
 
-  const handlePayoutChange = (bonusId, value) => {
-    const payout = Number(value) || 0;
+  const handlePayoutChange = (bonusId, rawInput) => {
+    const digits = rawInput.replace(/\D/g, '').replace(/^0+/, '') || '0';
+    const cents = parseInt(digits, 10);
+    const payout = cents / 100;
     const updated = bonusList.map(b =>
       b.id === bonusId ? { ...b, opened: payout > 0, payout, result: payout } : b
     );
     setBonusList(updated);
     save(updated);
+  };
+  const formatPayoutDisplay = (val) => {
+    if (!val && val !== 0) return '';
+    const n = Number(val);
+    if (n === 0) return '';
+    return n.toFixed(2);
   };
 
   // SHA-256 hash helper (must match admin panel)
@@ -1104,10 +1112,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   <div className="bh-list-field">
                     <span className="bh-list-field-label">Payment {!bonusOpening && '🔒'}</span>
                     {bonusOpening ? (
-                      <input className="bh-list-payout-input" type="number"
+                      <input className="bh-list-payout-input" type="text" inputMode="numeric"
                         data-payout-idx={i}
-                        value={bonus.payout || ''}
-                        placeholder="0"
+                        value={formatPayoutDisplay(bonus.payout)}
+                        placeholder="0.00"
                         onChange={e => handlePayoutChange(bonus.id, e.target.value)}
                         onKeyDown={e => {
                           if (e.key === 'Enter') {
@@ -1115,8 +1123,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                             const next = document.querySelector(`[data-payout-idx="${i + 1}"]`);
                             if (next) next.focus();
                           }
-                        }}
-                        step="0.01" />
+                        }} />
                     ) : (
                       <span className="bh-list-field-value bh-list-field-locked">Locked</span>
                     )}
