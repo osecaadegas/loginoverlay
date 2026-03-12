@@ -38,7 +38,7 @@ function BonusHuntWidgetV3({ config, theme }) {
   const cardRadius = c.cardRadius ?? 16;
   const slotImageHeight = c.slotImageHeight ?? 220;
   const spinDuration = c.flipSpinDuration ?? 14;
-  const flipBackImage = c.flipBackImage ?? '/badges/back.png';
+  const flipBackImage = c.flipBackImage || '/badges/back.png';
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
