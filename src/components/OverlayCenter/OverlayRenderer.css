@@ -3275,15 +3275,15 @@
 /* -- BACK face — card back image (default, visible at 0°) -- */
 .bht3-flip-back {
   background: #191f1f;
+  display: flex;
 }
 
 .bht3-flip-back-img {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   display: block;
+  border-radius: inherit;
 }
 
 .bht3-flip-back-content {
