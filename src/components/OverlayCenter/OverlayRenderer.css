@@ -2977,7 +2977,7 @@
 .bht3-root {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 0;
   /* Kill the glass card background so V3 cards show their own bg */
   background: transparent !important;
   backdrop-filter: none !important;
@@ -3134,23 +3134,25 @@
 /* -- Flip area -- */
 .bht3-flip-area {
   width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow: visible;
   transform-style: preserve-3d;
-  padding-top: 12px;
 }
 
 .bht3-flip-container {
   perspective: 1000px;
   width: 100%;
+  flex: 1;
   overflow: visible;
   transform-style: preserve-3d;
-  padding-top: 6px;
 }
 
 .bht3-flip-inner {
   position: relative;
   width: 100%;
-  height: var(--bht3-flip-height, 220px);
+  height: 100%;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
 }
