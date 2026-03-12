@@ -194,8 +194,10 @@ function BonusHuntWidgetV3({ config, theme }) {
               {/* BACK — Card back image or Stats */}
               <div
                 className={`bht3-flip-face bht3-flip-back${flipBackImage ? ' bht3-flip-back--image-only' : ''}`}
-                style={flipBackImage ? { backgroundImage: `url(${flipBackImage})` } : undefined}
               >
+                {flipBackImage && (
+                  <img src={flipBackImage} alt="" className="bht3-flip-back-img" />
+                )}
                 {!flipBackImage && (
                   <div className="bht3-flip-back-content">
                     <div className="bht3-flip-back-provider-logo">
