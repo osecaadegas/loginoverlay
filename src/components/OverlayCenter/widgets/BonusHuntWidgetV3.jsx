@@ -135,7 +135,6 @@ function BonusHuntWidgetV3({ config, theme }) {
     fontSize: `${fontSize}px`,
     width: '100%',
     height: '100%',
-    overflow: 'hidden auto',
     '--bht3-header-bg': headerColor,
     '--bht3-header-accent': headerAccent,
     '--bht3-summary-bg': summaryColor,
@@ -191,69 +190,9 @@ function BonusHuntWidgetV3({ config, theme }) {
                 </div>
               </div>
 
-              {/* BACK — Card back image or Stats */}
-              <div
-                className={`bht3-flip-face bht3-flip-back${flipBackImage ? ' bht3-flip-back--image-only' : ''}`}
-              >
-                {flipBackImage && (
-                  <img src={flipBackImage} alt="" className="bht3-flip-back-img" />
-                )}
-                {!flipBackImage && (
-                  <div className="bht3-flip-back-content">
-                    <div className="bht3-flip-back-provider-logo">
-                      <img
-                        src={getProviderImage(backBonus.slot?.provider)}
-                        alt={backBonus.slot?.provider || 'Provider'}
-                        onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
-                      />
-                      <span style={{ display: 'none' }}>{backBonus.slot?.provider || 'Unknown'}</span>
-                    </div>
-                    <div className="bht3-flip-back-header">
-                      <div className="bht3-flip-back-name">{backBonus.slotName || backBonus.slot?.name}</div>
-                    </div>
-                    <div className="bht3-flip-back-stats">
-                      <div className="bht3-flip-back-stat">
-                        <span className="bht3-flip-back-stat-icon">📊</span>
-                        <span className="bht3-flip-back-stat-label">RTP</span>
-                        <span className="bht3-flip-back-stat-val">
-                          {backBonus.slot?.rtp ? `${Number(backBonus.slot.rtp).toFixed(2)}%` : '—'}
-                        </span>
-                      </div>
-                      <div className="bht3-flip-back-stat">
-                        <span className="bht3-flip-back-stat-icon">🏆</span>
-                        <span className="bht3-flip-back-stat-label">MAX WIN</span>
-                        <span className="bht3-flip-back-stat-val">
-                          {backBonus.slot?.max_win_multiplier
-                            ? `${Number(backBonus.slot.max_win_multiplier).toLocaleString()}x`
-                            : '—'}
-                        </span>
-                      </div>
-                      <div className="bht3-flip-back-stat">
-                        <span className="bht3-flip-back-stat-icon">⚡</span>
-                        <span className="bht3-flip-back-stat-label">VOLATILITY</span>
-                        <span className="bht3-flip-back-stat-val">
-                          {fmtVol(backBonus.slot?.volatility)}
-                        </span>
-                      </div>
-                      <div className="bht3-flip-back-stat">
-                        <span className="bht3-flip-back-stat-icon">💰</span>
-                        <span className="bht3-flip-back-stat-label">BET SIZE</span>
-                        <span className="bht3-flip-back-stat-val">
-                          {currency}{fmt(backBonus.betSize)}
-                        </span>
-                      </div>
-                    </div>
-                    {backBonus.opened && (
-                      <div className="bht3-flip-back-result">
-                        <span>WIN: {currency}{fmt(backBonus.payout)}</span>
-                        <span className="bht3-flip-back-multi">
-                          {((Number(backBonus.payout) || 0) / (Number(backBonus.betSize) || 1)).toFixed(1)}x
-                        </span>
-                      </div>
-                    )}
-                    <div className="bht3-flip-back-num">#{(nextIdx % bonuses.length) + 1} / {bonuses.length}</div>
-                  </div>
-                )}
+              {/* BACK — Full card image */}
+              <div className="bht3-flip-face bht3-flip-back">
+                <img src={flipBackImage} alt="" className="bht3-flip-back-img" />
               </div>
             </div>
           </div>

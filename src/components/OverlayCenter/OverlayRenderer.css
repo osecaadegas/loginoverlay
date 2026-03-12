@@ -2975,21 +2975,17 @@
 
 /* -- Root � override .or-widget-inner & .oc-bonushunt glass styles -- */
 .bht3-root {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  /* Kill the glass card background so V3 cards show their own bg */
+  position: relative;
+  width: 100%;
+  height: 100%;
   background: transparent !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
   border: none !important;
-  /* Remove parent .or-widget-inner padding & radius */
   padding: 0 !important;
   border-radius: 0 !important;
-  /* Must be visible so 3D flipping is not clipped */
-  overflow: visible !important;
-  /* Preserve 3D context through the tree */
+  overflow: hidden !important;
   transform-style: preserve-3d;
 }
 
@@ -3134,28 +3130,23 @@
   margin-top: 1px;
 }
 
-/* -- Flip area -- */
+/* -- Flip area — all absolute positioning, no flex chain -- */
 .bht3-flip-area {
-  width: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: visible;
+  position: absolute;
+  inset: 0;
   transform-style: preserve-3d;
 }
 
 .bht3-flip-container {
+  position: absolute;
+  inset: 0;
   perspective: 1000px;
-  width: 100%;
-  flex: 1;
-  overflow: visible;
   transform-style: preserve-3d;
 }
 
 .bht3-flip-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
 }
@@ -3163,7 +3154,6 @@
 .bht3-flip-face {
   position: absolute;
   inset: 0;
-  border-radius: var(--bht3-card-radius, 16px);
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   overflow: hidden;
@@ -3279,25 +3269,11 @@
 /* -- BACK face -- */
 .bht3-flip-back {
   transform: rotateY(180deg);
-  background-color: #0f172a;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  border: 1px solid rgba(129, 140, 248, 0.2);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.bht3-flip-back--image-only {
+  background: none;
   border: none;
-  border-radius: 0;
   box-shadow: none;
   padding: 0;
   margin: 0;
-  background-color: #000;
 }
 
 .bht3-flip-back-img {
