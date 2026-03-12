@@ -38,7 +38,6 @@ function BonusHuntWidgetV3({ config, theme }) {
   const cardRadius = c.cardRadius ?? 16;
   const slotImageHeight = c.slotImageHeight ?? 220;
   const spinDuration = c.flipSpinDuration ?? 14;
-  const flipBackImage = c.flipBackImage || '/badges/back.png';
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -191,9 +190,8 @@ function BonusHuntWidgetV3({ config, theme }) {
                 </div>
               </div>
 
-              {/* BACK — Back image + provider logo */}
+              {/* BACK — Provider logo */}
               <div className="bht3-flip-face bht3-flip-back">
-                <img src={flipBackImage} alt="" className="bht3-flip-back-img" />
                 <div className="bht3-flip-back-logo-overlay">
                   <img
                     src={getProviderImage(backBonus.slot?.provider)}

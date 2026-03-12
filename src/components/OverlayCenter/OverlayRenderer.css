@@ -3278,15 +3278,6 @@
   overflow: hidden;
 }
 
-.bht3-flip-back-img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
 .bht3-flip-back-logo-overlay {
   position: absolute;
   inset: 0;
