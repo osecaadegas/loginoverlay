@@ -239,8 +239,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
 
       {/* Row 3: Best / Worst payout */}
       <div style={{ display: 'flex', gap }}>
-        <div style={statBoxStyle}>
-          <span style={labelStyle}>🏆 Best Payout</span>
+        <div style={{ ...statBoxStyle, border: `1px solid ${bestColor}` }}>
           {stats.best ? (
             <>
               <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.0}px` }}>
@@ -257,8 +256,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
             <span style={{ ...valStyle, color: mutedColor, fontSize: `${fs * 0.85}px` }}>—</span>
           )}
         </div>
-        <div style={statBoxStyle}>
-          <span style={labelStyle}>💀 Worst Payout</span>
+        <div style={{ ...statBoxStyle, border: `1px solid ${worstColor}` }}>
           {stats.worst ? (
             <>
               <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.0}px` }}>
