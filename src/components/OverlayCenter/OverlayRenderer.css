@@ -3275,11 +3275,29 @@
 .bht3-flip-back {
   transform: rotateY(180deg);
   background: linear-gradient(155deg, #0f172a 0%, #1a1040 40%, #0f172a 100%);
+  background-size: cover;
+  background-position: center;
   border: 1px solid rgba(129, 140, 248, 0.2);
   box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+
+.bht3-flip-back-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+}
+
+.bht3-flip-back-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
 }
 
 .bht3-flip-back-content {
@@ -3290,6 +3308,8 @@
   flex-direction: column;
   align-items: center;
   gap: 8px;
+  position: relative;
+  z-index: 1;
 }
 
 .bht3-flip-back-provider-logo {
@@ -3297,15 +3317,15 @@
   align-items: center;
   justify-content: center;
   max-width: 100%;
-  padding: 2px 0 4px;
-  min-height: 40px;
+  padding: 6px 0 8px;
+  min-height: 70px;
 }
 
 .bht3-flip-back-provider-logo img {
-  max-height: 48px;
-  max-width: 80%;
+  max-height: 80px;
+  max-width: 90%;
   object-fit: contain;
-  filter: drop-shadow(0 2px 8px rgba(129, 140, 248, 0.35));
+  filter: drop-shadow(0 2px 12px rgba(129, 140, 248, 0.5)) brightness(1.1);
 }
 
 .bht3-flip-back-provider-logo span {

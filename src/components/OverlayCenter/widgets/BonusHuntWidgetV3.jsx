@@ -38,6 +38,7 @@ function BonusHuntWidgetV3({ config, theme }) {
   const cardRadius = c.cardRadius ?? 16;
   const slotImageHeight = c.slotImageHeight ?? 220;
   const spinDuration = c.flipSpinDuration ?? 14;
+  const flipBackImage = c.flipBackImage || '';
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -192,6 +193,9 @@ function BonusHuntWidgetV3({ config, theme }) {
 
               {/* BACK — Stats & Provider Info */}
               <div className="bht3-flip-face bht3-flip-back">
+                {flipBackImage && (
+                  <div className="bht3-flip-back-bg" style={{ backgroundImage: `url(${flipBackImage})` }} />
+                )}
                 <div className="bht3-flip-back-content">
                   <div className="bht3-flip-back-provider-logo">
                     <img

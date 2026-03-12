@@ -76,7 +76,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
     'superBadgeColor', 'extremeBadgeColor', 'textColor', 'mutedTextColor', 'statValueColor',
     'cardOutlineColor', 'cardOutlineWidth',
     'fontFamily', 'fontSize', 'cardRadius', 'cardGap', 'widgetWidth', 'cardPadding',
-    'slotImageHeight', 'listMaxHeight',
+    'slotImageHeight', 'listMaxHeight', 'flipBackImage',
     'brightness', 'contrast', 'saturation',
     'displayStyle',
   ];
@@ -209,6 +209,16 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             onChange={v => set('slotImageHeight', v)} />
           <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"
             onChange={v => set('listMaxHeight', v)} />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Image</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Image URL for the back face of the 3D flip card (Style 3).</p>
+          <input
+            className="oc-widget-css-input"
+            value={c.flipBackImage || ''}
+            onChange={e => set('flipBackImage', e.target.value)}
+            placeholder="https://example.com/back-image.png"
+            style={{ width: '100%', padding: '6px 8px', marginBottom: 8, fontSize: 12 }}
+          />
 
           <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
           <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
