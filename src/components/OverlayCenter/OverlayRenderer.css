@@ -3130,37 +3130,44 @@
   margin-top: 1px;
 }
 
-/* -- Flip area — all absolute positioning, no flex chain -- */
+/* -- Flip area — UNO-card style frame -- */
 .bht3-flip-area {
   position: absolute;
   inset: 0;
-  transform-style: preserve-3d;
 }
 
 .bht3-flip-container {
   position: absolute;
   inset: 0;
-  perspective: 1000px;
-  transform-style: preserve-3d;
+  perspective: 800px;
 }
 
+/* -- Card body — white frame like UNO card -- */
 .bht3-flip-inner {
   position: absolute;
   inset: 0;
+  background: #fffffd;
+  border-radius: 1em;
+  box-shadow: 0 0 6px -4px black;
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
+  pointer-events: none;
+  user-select: none;
 }
 
+/* -- Both faces — inset from card frame -- */
 .bht3-flip-face {
   position: absolute;
-  inset: 0;
+  inset: 0.7em;
+  border-radius: 1.25em;
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
   overflow: hidden;
 }
 
-/* -- FRONT face -- */
+/* -- FRONT face — slot image (rotated, visible at 180°) -- */
 .bht3-flip-front {
+  transform: rotateY(180deg);
   background: var(--theme-background, #0f172a);
 }
 
@@ -3265,14 +3272,9 @@
   top: 38px;
 }
 
-/* -- BACK face -- */
+/* -- BACK face — card back image (default, visible at 0°) -- */
 .bht3-flip-back {
-  transform: rotateY(180deg);
-  background: none;
-  border: none;
-  box-shadow: none;
-  padding: 0;
-  margin: 0;
+  background: #191f1f;
 }
 
 .bht3-flip-back-img {
