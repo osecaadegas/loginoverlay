@@ -79,14 +79,7 @@ function BonusHuntWidgetV3({ config, theme }) {
     }
   }, [bonusOpening, currentBonusIdx]);
 
-  /* JS-driven flip — single clock drives both transform AND data swap.
-     Timeline per cycle (duration = spinDuration seconds):
-       0%  – 35%  : front dwell   (0°)
-       35% – 50%  : ease flip     (0° → 180°)
-       50% – 85%  : back dwell    (180°)
-       85% – 100% : ease flip     (180° → 360°)   */
-  const easeInOut = (t) => t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-
+  /* JS-driven flip — continuous smooth rotation, data swaps at edge-on (90°/270°). */
   useEffect(() => {
     if ((bonusOpening && !huntComplete) || bonuses.length <= 1) return;
 
@@ -95,19 +88,7 @@ function BonusHuntWidgetV3({ config, theme }) {
     backRef.current = false;
 
     const tick = (now) => {
-      const p = ((now - start) % dur) / dur;         // 0..1 progress
-      let angle;
-      if (p <= 0.35) {
-        angle = 0;                                     // front dwell
-      } else if (p <= 0.50) {
-        const seg = (p - 0.35) / 0.15;                // 0..1 within flip segment
-        angle = easeInOut(seg) * 180;                  // 0° → 180°
-      } else if (p <= 0.85) {
-        angle = 180;                                   // back dwell
-      } else {
-        const seg = (p - 0.85) / 0.15;
-        angle = 180 + easeInOut(seg) * 180;            // 180° → 360°
-      }
+      const angle = (((now - start) % dur) / dur) * 360;
 
       if (flipRef.current) flipRef.current.style.transform = `rotateY(${angle}deg)`;
 
