@@ -3288,10 +3288,10 @@
 
 .bht3-flip-back--image-only {
   border: none;
-  box-shadow: none;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
   padding: 0;
   margin: 0;
-  background: none;
+  background-color: #000;
 }
 
 .bht3-flip-back-img {
