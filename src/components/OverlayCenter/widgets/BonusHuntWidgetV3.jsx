@@ -190,18 +190,64 @@ function BonusHuntWidgetV3({ config, theme }) {
                 </div>
               </div>
 
-              {/* BACK — Provider logo */}
+              {/* BACK — Stats & Provider Info */}
               <div className="bht3-flip-face bht3-flip-back">
-                <div className="bht3-flip-back-logo-overlay">
-                  <img
-                    src={getProviderImage(backBonus.slot?.provider)}
-                    alt={backBonus.slot?.provider || ''}
-                    className="bht3-flip-back-provider-img"
-                    onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
-                  />
-                  <span className="bht3-flip-back-provider-text" style={{ display: 'none' }}>
-                    {backBonus.slot?.provider || ''}
-                  </span>
+                <div className="bht3-flip-back-content">
+                  <div className="bht3-flip-back-provider-logo">
+                    <img
+                      src={getProviderImage(backBonus.slot?.provider)}
+                      alt={backBonus.slot?.provider || ''}
+                      className="bht3-flip-back-provider-img"
+                      onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'inline'; }}
+                    />
+                    <span className="bht3-flip-back-provider-text" style={{ display: 'none' }}>
+                      {backBonus.slot?.provider || 'Unknown'}
+                    </span>
+                  </div>
+                  <div className="bht3-flip-back-header">
+                    <div className="bht3-flip-back-name">{backBonus.slotName || backBonus.slot?.name}</div>
+                  </div>
+                  <div className="bht3-flip-back-stats">
+                    <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">📈</span>
+                      <span className="bht3-flip-back-stat-label">RTP</span>
+                      <span className="bht3-flip-back-stat-val">
+                        {backBonus.slot?.rtp ? `${Number(backBonus.slot.rtp).toFixed(2)}%` : '—'}
+                      </span>
+                    </div>
+                    <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">🏅</span>
+                      <span className="bht3-flip-back-stat-label">MAX WIN</span>
+                      <span className="bht3-flip-back-stat-val">
+                        {backBonus.slot?.max_win_multiplier
+                          ? `${Number(backBonus.slot.max_win_multiplier).toLocaleString()}x`
+                          : '—'}
+                      </span>
+                    </div>
+                    <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">⚡</span>
+                      <span className="bht3-flip-back-stat-label">VOLATILITY</span>
+                      <span className="bht3-flip-back-stat-val">
+                        {fmtVol(backBonus.slot?.volatility)}
+                      </span>
+                    </div>
+                    <div className="bht3-flip-back-stat">
+                      <span className="bht3-flip-back-stat-icon">💰</span>
+                      <span className="bht3-flip-back-stat-label">BET SIZE</span>
+                      <span className="bht3-flip-back-stat-val">
+                        {currency}{fmt(backBonus.betSize)}
+                      </span>
+                    </div>
+                  </div>
+                  {backBonus.opened && (
+                    <div className="bht3-flip-back-result">
+                      <span>WIN: {currency}{fmt(backBonus.payout)}</span>
+                      <span className="bht3-flip-back-multi">
+                        {((Number(backBonus.payout) || 0) / (Number(backBonus.betSize) || 1)).toFixed(1)}x
+                      </span>
+                    </div>
+                  )}
+                  <div className="bht3-flip-back-num">#{(nextIdx % bonuses.length) + 1} / {bonuses.length}</div>
                 </div>
               </div>
             </div>

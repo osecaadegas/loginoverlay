@@ -3274,37 +3274,129 @@
 /* -- BACK face -- */
 .bht3-flip-back {
   transform: rotateY(180deg);
-  background: #0f172a;
-  overflow: hidden;
-}
-
-.bht3-flip-back-logo-overlay {
-  position: absolute;
-  inset: 0;
+  background: linear-gradient(155deg, #0f172a 0%, #1a1040 40%, #0f172a 100%);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
+}
+
+.bht3-flip-back-content {
+  padding: 16px 20px;
+  width: 100%;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.bht3-flip-back-provider-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 2px 0 4px;
 }
 
 .bht3-flip-back-provider-img {
-  max-height: 40%;
+  max-height: 48px;
   max-width: 70%;
   object-fit: contain;
-  filter: drop-shadow(0 2px 16px rgba(0,0,0,0.8)) brightness(1.15);
+  filter: drop-shadow(0 2px 12px rgba(129, 140, 248, 0.35)) brightness(1.1);
 }
 
 .bht3-flip-back-provider-text {
   font-size: 26px;
   font-weight: 900;
-  color: #fff;
+  color: var(--bht3-header-accent, #818cf8);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  text-shadow: 0 2px 16px rgba(0,0,0,0.8), 0 1px 4px rgba(0,0,0,0.6);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 80%;
+  max-width: 100%;
+  text-shadow: 0 2px 12px rgba(129, 140, 248, 0.35), 0 1px 4px rgba(0,0,0,0.5);
+}
+
+.bht3-flip-back-header {
+  margin-bottom: 4px;
+}
+
+.bht3-flip-back-name {
+  font-size: 16.8px;
+  font-weight: 800;
+  color: #f1f5f9;
+  margin-bottom: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.5);
+}
+
+.bht3-flip-back-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  width: 100%;
+}
+
+.bht3-flip-back-stat {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  padding: 8px 6px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: background 0.3s ease;
+}
+
+.bht3-flip-back-stat:hover {
+  background: rgba(129, 140, 248, 0.08);
+}
+
+.bht3-flip-back-stat-icon {
+  font-size: 13.6px;
+  line-height: 1;
+}
+
+.bht3-flip-back-stat-label {
+  font-size: 8.3px;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.bht3-flip-back-stat-val {
+  font-size: 13.6px;
+  font-weight: 800;
+  color: #f1f5f9;
+}
+
+.bht3-flip-back-result {
+  font-size: 13.6px;
+  font-weight: 700;
+  color: #86efac;
+  padding: 4px 12px;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(34, 197, 94, 0.15);
+}
+
+.bht3-flip-back-multi {
+  margin-left: 8px;
+  color: #facc15;
+  font-weight: 800;
+}
+
+.bht3-flip-back-num {
+  font-size: 9.6px;
+  color: rgba(255, 255, 255, 0.3);
+  letter-spacing: 0.05em;
 }
 
 /* -- Summary -- */
