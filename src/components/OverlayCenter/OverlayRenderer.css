@@ -3288,7 +3288,8 @@
 
 .bht3-flip-back--image-only {
   border: none;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.4);
+  border-radius: 0;
+  box-shadow: none;
   padding: 0;
   margin: 0;
   background-color: #000;
