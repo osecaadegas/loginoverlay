@@ -1212,6 +1212,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         targetMoney={targetMoney}
         stopLoss={stopLoss}
         currency={currency}
+        config={c}
       />
 
     </div>
@@ -1221,7 +1222,13 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 /* ═══════════════════════════════════════════════════════
    FLOATING STATS FAB — draggable, bottom-right default
    ═══════════════════════════════════════════════════════ */
-function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, currency }) {
+function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, currency, config }) {
+  /* Theme colors from widget config */
+  const accentColor = config?.headerAccent || '#7c3aed';
+  const bgColor = config?.headerColor || 'rgba(15, 10, 35, 0.65)';
+  const textColor = config?.textColor || '#e2e8f0';
+  const mutedColor = config?.mutedTextColor || '#94a3b8';
+
   /* Compute stats */
   const total = bonusList.length;
   const opened = bonusList.filter(b => b.opened);
@@ -1261,30 +1268,30 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
   return (
     <div style={{
       position: 'fixed', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 99999,
-      background: 'rgba(15, 10, 35, 0.65)',
+      background: bgColor,
       backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)',
-      border: '1px solid rgba(124,58,237,0.25)',
+      border: `1px solid ${accentColor}40`,
       borderRadius: 999,
-      boxShadow: '0 4px 24px rgba(0,0,0,0.4), 0 0 12px rgba(124,58,237,0.1)',
+      boxShadow: `0 4px 24px rgba(0,0,0,0.4), 0 0 12px ${accentColor}1a`,
       padding: '6px 20px',
       display: 'flex', alignItems: 'center', gap: 14,
-      fontFamily: "'Inter', sans-serif",
-      color: '#e2e8f0',
+      fontFamily: config?.fontFamily || "'Inter', sans-serif",
+      color: textColor,
       whiteSpace: 'nowrap',
     }}>
-      <StatChip label="Bonuses" value={`${openedCount} / ${total}`} />
-      <StatChip label="Start" value={fmtV(start)} />
-      <StatChip label="Total Bet" value={fmtV(totalBet)} />
-      <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : '#94a3b8'} />
-      <StatChip label="Target" value={fmtV(target)} color="#c084fc" />
-      <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} />
-      <StatChip label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" />
+      <StatChip label="Bonuses" value={`${openedCount} / ${total}`} mutedColor={mutedColor} />
+      <StatChip label="Start" value={fmtV(start)} mutedColor={mutedColor} />
+      <StatChip label="Total Bet" value={fmtV(totalBet)} mutedColor={mutedColor} />
+      <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : mutedColor} mutedColor={mutedColor} />
+      <StatChip label="Target" value={fmtV(target)} color={accentColor} mutedColor={mutedColor} />
+      <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} mutedColor={mutedColor} />
+      <StatChip label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" mutedColor={mutedColor} />
 
       {openedCount > 0 && (
         <>
-          <div style={{ width: 1, height: 24, background: 'rgba(124,58,237,0.3)' }} />
-          <StatChip label="🏆 Best" value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + '…' : bestSlot} ${bestMulti.toFixed(1)}x`} color="#4ade80" />
-          <StatChip label="💀 Worst" value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + '…' : worstSlot} ${worstMulti.toFixed(1)}x`} color="#f87171" />
+          <div style={{ width: 1, height: 24, background: `${accentColor}4d` }} />
+          <StatChip label="🏆 Best" value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + '…' : bestSlot} ${bestMulti.toFixed(1)}x`} color="#4ade80" mutedColor={mutedColor} />
+          <StatChip label="💀 Worst" value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + '…' : worstSlot} ${worstMulti.toFixed(1)}x`} color="#f87171" mutedColor={mutedColor} />
         </>
       )}
     </div>
@@ -1292,10 +1299,10 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
 }
 
 /* Compact stat chip for the top bar */
-function StatChip({ label, value, color }) {
+function StatChip({ label, value, color, mutedColor }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', whiteSpace: 'nowrap' }}>
-      <span style={{ fontSize: 10, color: '#94a3b8', fontWeight: 500, lineHeight: 1.2 }}>{label}</span>
+      <span style={{ fontSize: 10, color: mutedColor || '#94a3b8', fontWeight: 500, lineHeight: 1.2 }}>{label}</span>
       <span style={{ fontSize: 13, fontWeight: 700, color: color || '#fff', lineHeight: 1.3 }}>{value}</span>
     </div>
   );
