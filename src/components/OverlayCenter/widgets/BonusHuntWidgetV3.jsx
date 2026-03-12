@@ -192,15 +192,11 @@ function BonusHuntWidgetV3({ config, theme }) {
               {/* BACK — Stats & Provider Info */}
               <div className="bht3-flip-face bht3-flip-back">
                 <div className="bht3-flip-back-content">
-                  <div className="bht3-flip-back-slot-img">
-                    {backBonus.slot?.image && (
-                      <img src={backBonus.slot.image} alt="" className="bht3-flip-back-slot-thumb"
-                        onError={e => { e.target.style.display = 'none'; }} />
-                    )}
+                  <div className="bht3-flip-back-provider-logo">
+                    {backBonus.slot?.provider || 'Unknown'}
                   </div>
                   <div className="bht3-flip-back-header">
                     <div className="bht3-flip-back-name">{backBonus.slotName || backBonus.slot?.name}</div>
-                    <div className="bht3-flip-back-provider">{backBonus.slot?.provider || 'Unknown'}</div>
                   </div>
                   <div className="bht3-flip-back-stats">
                     <div className="bht3-flip-back-stat">

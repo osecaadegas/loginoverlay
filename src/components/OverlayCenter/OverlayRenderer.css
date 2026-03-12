@@ -3292,21 +3292,18 @@
   gap: 8px;
 }
 
-.bht3-flip-back-slot-img {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+.bht3-flip-back-provider-logo {
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--bht3-header-accent, #818cf8);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
   overflow: hidden;
-  border: 2px solid rgba(129, 140, 248, 0.3);
-  flex-shrink: 0;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
-}
-
-.bht3-flip-back-slot-thumb {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-shadow: 0 2px 12px rgba(129, 140, 248, 0.35), 0 1px 4px rgba(0,0,0,0.5);
+  padding: 2px 0 4px;
 }
 
 .bht3-flip-back-header {
@@ -3322,14 +3319,6 @@
   overflow: hidden;
   text-overflow: ellipsis;
   text-shadow: 0 1px 8px rgba(0,0,0,0.5);
-}
-
-.bht3-flip-back-provider {
-  font-size: 11.5px;
-  font-weight: 700;
-  color: #818cf8;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
 }
 
 .bht3-flip-back-stats {
