@@ -2971,10 +2971,11 @@
    STYLE 3 � FLIP CARD   (bht3-*)
    --------------------------------------------------------------- */
 
-/* -- Spin keyframe -- */
+/* -- Spin keyframe -- dwell on each face, then smooth flip */
 @keyframes bht3-spin {
-  from { transform: rotateY(0deg); }
-  to   { transform: rotateY(360deg); }
+  0%, 35%   { transform: rotateY(0deg); }
+  50%, 85%  { transform: rotateY(180deg); }
+  100%      { transform: rotateY(360deg); }
 }
 
 /* -- Root � override .or-widget-inner & .oc-bonushunt glass styles -- */
@@ -3157,7 +3158,7 @@
   height: var(--bht3-flip-height, 220px);
   transform-style: preserve-3d;
   -webkit-transform-style: preserve-3d;
-  animation: bht3-spin var(--bht3-spin-duration, 12s) cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
+  animation: bht3-spin var(--bht3-spin-duration, 14s) ease-in-out infinite;
 }
 
 .bht3-flip-face {

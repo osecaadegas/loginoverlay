@@ -36,7 +36,7 @@ function BonusHuntWidgetV3({ config, theme }) {
   const widgetWidth = c.widgetWidth ?? 420;
   const cardRadius = c.cardRadius ?? 16;
   const slotImageHeight = c.slotImageHeight ?? 220;
-  const spinDuration = c.flipSpinDuration ?? 12;
+  const spinDuration = c.flipSpinDuration ?? 14;
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -88,10 +88,18 @@ function BonusHuntWidgetV3({ config, theme }) {
     const startTime = performance.now();
     backRef.current = false;
 
+    /*  Match the CSS dwell keyframes:
+        0-35%  : front visible  (dwell)
+        35-50% : flip front→back (ease-in-out)
+        50-85% : back visible   (dwell)
+        85-100%: flip back→front (ease-in-out)
+        Front passes through 90° (invisible) at ~42.5% of cycle.
+        Back  passes through 270° at ~92.5%.  */
     const tick = (now) => {
       const elapsed = (now - startTime) % dur;
-      const angle = (elapsed / dur) * 360;
-      const isFrontHidden = angle > 90 && angle < 270;
+      const progress = elapsed / dur;
+      /* Front is hidden roughly from 40% to 92% of cycle */
+      const isFrontHidden = progress > 0.40 && progress < 0.92;
 
       if (isFrontHidden && !backRef.current) {
         backRef.current = true;
@@ -119,6 +127,14 @@ function BonusHuntWidgetV3({ config, theme }) {
   const frontBonus = bonuses[displayIdx % bonuses.length] || bonuses[0];
   /* Back shows the NEXT slot — user sees slot name + stats when card flips */
   const backBonus = bonuses[nextIdx % bonuses.length] || bonuses[0];
+
+  /* ─── Preload upcoming images so swap is seamless ─── */
+  useEffect(() => {
+    if (bonuses.length <= 1) return;
+    const preload = (src) => { if (src) { const img = new Image(); img.src = src; } };
+    preload(bonuses[(displayIdx + 1) % bonuses.length]?.slot?.image);
+    preload(bonuses[(nextIdx + 1) % bonuses.length]?.slot?.image);
+  }, [displayIdx, nextIdx, bonuses]);
 
   /* ─── Root CSS variables for theming ─── */
   const rootStyle = {
