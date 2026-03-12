@@ -77,6 +77,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
     'cardOutlineColor', 'cardOutlineWidth',
     'fontFamily', 'fontSize', 'cardRadius', 'cardGap', 'widgetWidth', 'cardPadding',
     'slotImageHeight', 'listMaxHeight', 'flipBackImage',
+    'flipShowProvider', 'flipShowRTP', 'flipShowPotential', 'flipShowVolatility', 'flipShowBetSize', 'flipShowWin',
     'brightness', 'contrast', 'saturation',
     'displayStyle',
   ];
@@ -219,6 +220,24 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             placeholder="/badges/back.png"
             style={{ width: '100%', padding: '6px 8px', marginBottom: 8, fontSize: 12 }}
           />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back — Visible Stats</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Choose which stats appear on the back face of the 3D flip card (Style 3).</p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+            {[
+              ['flipShowProvider', 'Provider Logo'],
+              ['flipShowRTP', 'RTP'],
+              ['flipShowPotential', 'Max Win (Potential)'],
+              ['flipShowVolatility', 'Volatility'],
+              ['flipShowBetSize', 'Bet Size'],
+              ['flipShowWin', 'Win Result'],
+            ].map(([key, label]) => (
+              <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
+                <input type="checkbox" checked={c[key] !== false} onChange={e => set(key, e.target.checked)} />
+                {label}
+              </label>
+            ))}
+          </div>
 
           <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
           <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
