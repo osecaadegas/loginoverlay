@@ -1,5 +1,4 @@
 import { useState, useMemo } from 'react';
-import { useTheme } from '../../context/ThemeContext';
 import { themeList, THEME_CATEGORIES } from '../../data/appThemes';
 import './ThemesPage.css';
 
@@ -42,10 +41,13 @@ function ThemeCard({ theme, isActive, onSelect }) {
 }
 
 export default function ThemesPage({ onApply }) {
-  const { currentTheme, setTheme } = useTheme();
+  const [selectedTheme, setSelectedTheme] = useState(() => {
+    return localStorage.getItem('overlayTheme') || 'default';
+  });
 
   const handleSelect = (themeId) => {
-    setTheme(themeId);
+    setSelectedTheme(themeId);
+    localStorage.setItem('overlayTheme', themeId);
     if (onApply) onApply(themeId);
   };
   const [category, setCategory] = useState('all');
@@ -73,7 +75,7 @@ export default function ThemesPage({ onApply }) {
     return list;
   }, [category, search]);
 
-  const activeTheme = themeList.find(t => t.id === currentTheme);
+  const activeTheme = themeList.find(t => t.id === selectedTheme);
 
   return (
     <div className="themes-page">
@@ -138,7 +140,7 @@ export default function ThemesPage({ onApply }) {
             <ThemeCard
               key={theme.id}
               theme={theme}
-              isActive={theme.id === currentTheme}
+              isActive={theme.id === selectedTheme}
               onSelect={handleSelect}
             />
           ))}
