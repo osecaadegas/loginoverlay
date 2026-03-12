@@ -1026,11 +1026,13 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               }
               return 0;
             });
+            const firstUnopenedId = bonusOpening ? sorted.find(b => !b.opened && !(Number(b.payout) > 0))?.id : null;
             return sorted.map((bonus, i) => {
               const realIdx = canDrag ? bonusList.indexOf(bonus) : i;
+              const needsInput = bonusOpening && bonus.id === firstUnopenedId;
               return (
             <div key={bonus.id}
-              className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''} ${bonus.isExtremeBonus ? 'bh-list-item--extreme' : ''}${dragIdx === realIdx ? ' bh-list-item--dragging' : ''}`}
+              className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''} ${bonus.isExtremeBonus ? 'bh-list-item--extreme' : ''}${dragIdx === realIdx ? ' bh-list-item--dragging' : ''}${needsInput ? ' bh-list-item--needs-input' : ''}`}
               draggable={canDrag}
               onDragStart={e => { if (!canDrag) return; setDragIdx(realIdx); e.dataTransfer.effectAllowed = 'move'; }}
               onDragOver={e => { if (!canDrag || dragIdx === null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
@@ -1254,9 +1256,10 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
   });
   if (!isFinite(worstMulti)) worstMulti = 0;
 
-  const currentBE = totalBet > 0 ? target / totalBet : 0;
   const neededToBreakEven = Math.max(0, target - totalPayout);
   const remainingBonuses = total - openedCount;
+  const remainingBet = bonusList.filter(b => !b.opened).reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+  const liveBE = remainingBet > 0 ? neededToBreakEven / remainingBet : 0;
   const avgNeeded = remainingBonuses > 0 && neededToBreakEven > 0 ? neededToBreakEven / remainingBonuses : 0;
 
   const fmtV = (v) => `${currency}${v.toFixed(2)}`;
@@ -1285,7 +1288,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
       <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : mutedColor} mutedColor={mutedColor} />
       <StatChip label="Target" value={fmtV(target)} color={accentColor} mutedColor={mutedColor} />
       <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} mutedColor={mutedColor} />
-      <StatChip label="BE x" value={`${currentBE.toFixed(2)}x`} color="#fbbf24" mutedColor={mutedColor} />
+      <StatChip label="BE x" value={`${liveBE.toFixed(2)}x`} color="#fbbf24" mutedColor={mutedColor} />
 
       {openedCount > 0 && (
         <>
