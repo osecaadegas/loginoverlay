@@ -44,13 +44,28 @@ export const GAME_PROVIDERS = [
   { id: 'pgsoft', name: 'PG Soft', slug: 'pgsoft', image: '/providers/pg_soft.png' },
 ];
 
+// Common suffixes that DB normalization appends but logo files omit
+const STRIP_SUFFIXES = /\s+(gaming|studios?|games?|interactive|industries|entertainment|group)\s*$/i;
+
 // Get provider by ID or slug
 export const getProvider = (idOrSlug) => {
-  return GAME_PROVIDERS.find(p => 
-    p.id === idOrSlug || 
-    p.slug === idOrSlug || 
-    p.name.toLowerCase() === idOrSlug?.toLowerCase()
+  if (!idOrSlug) return null;
+  const lower = idOrSlug.toLowerCase();
+  // exact match on id, slug, or name
+  const exact = GAME_PROVIDERS.find(p =>
+    p.id === idOrSlug || p.slug === idOrSlug || p.name.toLowerCase() === lower
   );
+  if (exact) return exact;
+  // try after stripping suffix (e.g. "Red Tiger Gaming" → "Red Tiger")
+  const stripped = lower.replace(STRIP_SUFFIXES, '');
+  if (stripped !== lower) {
+    return GAME_PROVIDERS.find(p =>
+      p.name.toLowerCase() === stripped ||
+      p.id === stripped.replace(/\s+/g, '-') ||
+      p.slug === stripped.replace(/\s+/g, '-')
+    );
+  }
+  return null;
 };
 
 // Convert a provider name/slug to the underscore-based filename used by scraped logos
@@ -63,11 +78,18 @@ const toProviderFilename = (name) => {
 // Get provider image URL by ID, slug, or name
 export const getProviderImage = (idOrSlug) => {
   if (!idOrSlug) return '/providers/default.png';
-  // 1) Check static list first
+  // 1) Check static list (with fuzzy suffix-stripping)
   const provider = getProvider(idOrSlug);
   if (provider?.image) return provider.image;
   // 2) Generate path from name (matches scraped logos in public/providers/)
-  return toProviderFilename(idOrSlug) || '/providers/default.png';
+  //    Also try with common suffixes stripped
+  const full = toProviderFilename(idOrSlug);
+  const stripped = idOrSlug.replace(STRIP_SUFFIXES, '');
+  if (stripped !== idOrSlug) {
+    const short = toProviderFilename(stripped);
+    if (short) return short;
+  }
+  return full || '/providers/default.png';
 };
 
 // Get provider name by ID or slug

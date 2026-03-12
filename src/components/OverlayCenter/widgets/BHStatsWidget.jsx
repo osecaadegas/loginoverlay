@@ -95,7 +95,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
   const fmtX = n => Math.round(Number(n || 0)) + 'x';
 
   const fs = fontSize * scale;
-  const gap = Math.max(4, 6 * scale);
+  const gap = Math.max(6, 8 * scale);
 
   const rootStyle = {
     width: '100%',
@@ -109,25 +109,25 @@ export default function BHStatsWidget({ config, allWidgets }) {
     overflow: 'hidden auto',
     display: 'flex',
     flexDirection: 'column',
-    padding: `${Math.max(8, 12 * scale)}px`,
-    gap: gap + 2,
+    padding: `${Math.max(10, 14 * scale)}px`,
+    gap: gap + 4,
     boxSizing: 'border-box',
   };
 
   const statBoxStyle = {
     background: cardBg,
     border: `1px solid ${borderColor}`,
-    borderRadius: Math.max(6, 10 * scale),
-    padding: `${Math.max(6, 8 * scale)}px ${Math.max(8, 10 * scale)}px`,
+    borderRadius: Math.max(8, 12 * scale),
+    padding: `${Math.max(8, 10 * scale)}px ${Math.max(10, 12 * scale)}px`,
     display: 'flex',
     flexDirection: 'column',
-    gap: 2,
+    gap: 3,
     flex: 1,
     minWidth: 0,
   };
 
   const labelStyle = {
-    fontSize: `${fs * 0.7}px`,
+    fontSize: `${fs * 0.75}px`,
     fontWeight: 700,
     color: mutedColor,
     textTransform: 'uppercase',
@@ -137,9 +137,9 @@ export default function BHStatsWidget({ config, allWidgets }) {
   };
 
   const valStyle = {
-    fontSize: `${fs * 1.35}px`,
+    fontSize: `${fs * 1.45}px`,
     fontWeight: 800,
-    lineHeight: 1.2,
+    lineHeight: 1.25,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -210,13 +210,13 @@ export default function BHStatsWidget({ config, allWidgets }) {
       <div style={{ ...statBoxStyle, flex: 'none' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={labelStyle}>Progress</span>
-          <span style={{ fontSize: `${fs * 0.72}px`, fontWeight: 700, color: textColor }}>
+          <span style={{ fontSize: `${fs * 0.78}px`, fontWeight: 700, color: textColor }}>
             {stats.openedCount} / {stats.total} opened
           </span>
         </div>
         <div style={{
           width: '100%',
-          height: Math.max(8, 12 * scale),
+          height: Math.max(10, 14 * scale),
           background: progressBg,
           borderRadius: 99,
           overflow: 'hidden',
@@ -232,45 +232,45 @@ export default function BHStatsWidget({ config, allWidgets }) {
           }} />
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-          <span style={{ fontSize: `${fs * 0.65}px`, color: mutedColor }}>{stats.unopened} remaining</span>
-          <span style={{ fontSize: `${fs * 0.65}px`, color: mutedColor }}>{Math.round(stats.progressPct)}%</span>
+          <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{stats.unopened} remaining</span>
+          <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{Math.round(stats.progressPct)}%</span>
         </div>
       </div>
 
       {/* Row 3: Best / Worst payout */}
       <div style={{ display: 'flex', gap }}>
-        <div style={{ ...statBoxStyle, border: `1px solid ${bestColor}` }}>
+        <div style={{ ...statBoxStyle, border: `1.5px solid ${bestColor}` }}>
           {stats.best ? (
             <>
-              <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.0}px` }}>
+              <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.1}px` }}>
                 {currency}{fmt(stats.best.payout)}
-                <span style={{ marginLeft: 6, fontSize: `${fs * 0.75}px`, color: '#facc15', fontWeight: 800 }}>
+                <span style={{ marginLeft: 6, fontSize: `${fs * 0.8}px`, color: '#facc15', fontWeight: 800 }}>
                   {stats.best.multi.toFixed(1)}x
                 </span>
               </span>
-              <span style={{ fontSize: `${fs * 0.65}px`, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {stats.best.name}
               </span>
             </>
           ) : (
-            <span style={{ ...valStyle, color: mutedColor, fontSize: `${fs * 0.85}px` }}>—</span>
+            <span style={{ ...valStyle, color: mutedColor, fontSize: `${fs * 0.9}px` }}>—</span>
           )}
         </div>
-        <div style={{ ...statBoxStyle, border: `1px solid ${worstColor}` }}>
+        <div style={{ ...statBoxStyle, border: `1.5px solid ${worstColor}` }}>
           {stats.worst ? (
             <>
-              <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.0}px` }}>
+              <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.1}px` }}>
                 {currency}{fmt(stats.worst.payout)}
-                <span style={{ marginLeft: 6, fontSize: `${fs * 0.75}px`, color: mutedColor, fontWeight: 800 }}>
+                <span style={{ marginLeft: 6, fontSize: `${fs * 0.8}px`, color: mutedColor, fontWeight: 800 }}>
                   {stats.worst.multi.toFixed(1)}x
                 </span>
               </span>
-              <span style={{ fontSize: `${fs * 0.65}px`, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {stats.worst.name}
               </span>
             </>
           ) : (
-            <span style={{ ...valStyle, color: mutedColor, fontSize: `${fs * 0.85}px` }}>—</span>
+            <span style={{ ...valStyle, color: mutedColor, fontSize: `${fs * 0.9}px` }}>—</span>
           )}
         </div>
       </div>
