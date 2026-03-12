@@ -3962,9 +3962,24 @@ body.wm-resizing {
 .bh-list-grip {
   color: #334155;
   font-size: 12.8px;
-  cursor: grab;
+  cursor: default;
   flex-shrink: 0;
   line-height: 1;
+  opacity: 0.3;
+}
+.bh-list-grip--active {
+  cursor: grab;
+  opacity: 1;
+}
+.bh-list-grip--active:active {
+  cursor: grabbing;
+}
+.bh-list-item--dragging {
+  opacity: 0.4;
+  background: rgba(96, 165, 250, 0.08);
+}
+.bh-list-item[draggable="true"] {
+  transition: opacity 0.15s;
 }
 
 /* --- Provider label --- */

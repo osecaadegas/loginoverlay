@@ -323,6 +323,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [editName, setEditName] = useState('');
   const [editBet, setEditBet] = useState('');
   const [editBonusType, setEditBonusType] = useState('none');
+  const [dragIdx, setDragIdx] = useState(null);
   const searchRef = useRef(null);
 
   // Submit slot state — restore from localStorage cache
@@ -578,6 +579,15 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   };
 
   const handleCancelEdit = () => setEditingId(null);
+
+  const handleDragDrop = (fromIdx, toIdx) => {
+    if (fromIdx === toIdx) return;
+    const updated = [...bonusList];
+    const [moved] = updated.splice(fromIdx, 1);
+    updated.splice(toIdx, 0, moved);
+    setBonusList(updated);
+    save(updated);
+  };
 
   const handlePayoutChange = (bonusId, value) => {
     const payout = Number(value) || 0;
@@ -999,25 +1009,37 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         <div className="bh-list">
           {bonusList.length === 0 ? (
             <p className="bh-list-empty">No bonuses added yet</p>
-          ) : [...bonusList].sort((a, b) => {
-            const dir = sortDir === 'desc' ? -1 : 1;
-            if (sortBy === 'bet') return ((a.betSize || 0) - (b.betSize || 0)) * dir;
-            if (sortBy === 'provider') {
-              const pa = (a.slot?.provider || '').toLowerCase();
-              const pb = (b.slot?.provider || '').toLowerCase();
-              if (pa !== pb) return pa.localeCompare(pb) * dir;
-              return (a.slotName || '').localeCompare(b.slotName || '') * dir;
-            }
-            if (sortBy === 'type') {
-              const rank = (x) => x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
-              return (rank(b) - rank(a)) * dir;
-            }
-            return 0; // default = insertion order
-          }).map((bonus, i) => (
-            <div key={bonus.id} className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''} ${bonus.isExtremeBonus ? 'bh-list-item--extreme' : ''}`}>
+          ) : (() => {
+            const canDrag = sortBy === 'default';
+            const sorted = [...bonusList].sort((a, b) => {
+              const dir = sortDir === 'desc' ? -1 : 1;
+              if (sortBy === 'bet') return ((a.betSize || 0) - (b.betSize || 0)) * dir;
+              if (sortBy === 'provider') {
+                const pa = (a.slot?.provider || '').toLowerCase();
+                const pb = (b.slot?.provider || '').toLowerCase();
+                if (pa !== pb) return pa.localeCompare(pb) * dir;
+                return (a.slotName || '').localeCompare(b.slotName || '') * dir;
+              }
+              if (sortBy === 'type') {
+                const rank = (x) => x.isExtremeBonus ? 2 : x.isSuperBonus ? 1 : 0;
+                return (rank(b) - rank(a)) * dir;
+              }
+              return 0;
+            });
+            return sorted.map((bonus, i) => {
+              const realIdx = canDrag ? bonusList.indexOf(bonus) : i;
+              return (
+            <div key={bonus.id}
+              className={`bh-list-item ${bonus.opened ? 'bh-list-item--opened' : ''} ${bonus.isSuperBonus ? 'bh-list-item--super' : ''} ${bonus.isExtremeBonus ? 'bh-list-item--extreme' : ''}${dragIdx === realIdx ? ' bh-list-item--dragging' : ''}`}
+              draggable={canDrag}
+              onDragStart={e => { if (!canDrag) return; setDragIdx(realIdx); e.dataTransfer.effectAllowed = 'move'; }}
+              onDragOver={e => { if (!canDrag || dragIdx === null) return; e.preventDefault(); e.dataTransfer.dropEffect = 'move'; }}
+              onDrop={e => { if (!canDrag || dragIdx === null) return; e.preventDefault(); handleDragDrop(dragIdx, realIdx); setDragIdx(null); }}
+              onDragEnd={() => setDragIdx(null)}
+            >
 
               {/* Drag handle + number */}
-              <span className="bh-list-grip">⠿</span>
+              <span className={`bh-list-grip${canDrag ? ' bh-list-grip--active' : ''}`} title={canDrag ? 'Drag to reorder' : 'Set sort to Default to reorder'}>⠿</span>
               <span className="bh-list-num">#{i + 1}</span>
 
               {/* Slot image */}
@@ -1115,7 +1137,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 </>
               )}
             </div>
-          ))}
+              );
+            });
+          })()}
         </div>
       </div>
 
