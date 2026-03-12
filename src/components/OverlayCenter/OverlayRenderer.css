@@ -3274,30 +3274,16 @@
 /* -- BACK face -- */
 .bht3-flip-back {
   transform: rotateY(180deg);
-  background: linear-gradient(155deg, #0f172a 0%, #1a1040 40%, #0f172a 100%);
+  background-color: #0f172a;
   background-size: cover;
   background-position: center;
+  background-repeat: no-repeat;
   border: 1px solid rgba(129, 140, 248, 0.2);
   box-shadow: 0 8px 32px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05);
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
-}
-
-.bht3-flip-back-bg {
-  position: absolute;
-  inset: 0;
-  background-size: cover;
-  background-position: center;
-  z-index: 0;
-}
-
-.bht3-flip-back-bg::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.55);
 }
 
 .bht3-flip-back-content {
