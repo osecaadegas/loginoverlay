@@ -78,6 +78,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
     'fontFamily', 'fontSize', 'cardRadius', 'cardGap', 'widgetWidth', 'cardPadding',
     'slotImageHeight', 'listMaxHeight', 'flipBackImage',
     'flipShowProvider', 'flipShowRTP', 'flipShowPotential', 'flipShowVolatility', 'flipShowBetSize', 'flipShowWin',
+    'flipBackColor1', 'flipBackColor2', 'flipBackBorder',
     'brightness', 'contrast', 'saturation',
     'displayStyle',
   ];
@@ -210,6 +211,14 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             onChange={v => set('slotImageHeight', v)} />
           <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"
             onChange={v => set('listMaxHeight', v)} />
+
+          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Colors</h4>
+          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Background gradient and border for the back face of the 3D flip card (Style 3).</p>
+          <div className="nb-color-grid">
+            <ColorPicker label="Back BG Start" value={c.flipBackColor1 || '#0f172a'} onChange={v => set('flipBackColor1', v)} />
+            <ColorPicker label="Back BG Middle" value={c.flipBackColor2 || '#1a1040'} onChange={v => set('flipBackColor2', v)} />
+            <ColorPicker label="Back Border" value={c.flipBackBorder || '#818cf8'} onChange={v => set('flipBackBorder', v)} />
+          </div>
 
           <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Image</h4>
           <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Image URL for the back face of the 3D flip card (Style 3). Default: /badges/back.png</p>

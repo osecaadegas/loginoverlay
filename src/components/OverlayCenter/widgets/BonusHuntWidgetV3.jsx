@@ -191,7 +191,12 @@ function BonusHuntWidgetV3({ config, theme }) {
               </div>
 
               {/* BACK — Stats & Provider Info */}
-              <div className="bht3-flip-face bht3-flip-back">
+              <div className="bht3-flip-face bht3-flip-back" style={{
+                ...(c.flipBackColor1 || c.flipBackColor2 ? {
+                  background: `linear-gradient(155deg, ${c.flipBackColor1 || '#0f172a'} 0%, ${c.flipBackColor2 || '#1a1040'} 40%, ${c.flipBackColor1 || '#0f172a'} 100%)`
+                } : {}),
+                ...(c.flipBackBorder ? { borderColor: `${c.flipBackBorder}33` } : {}),
+              }}>
                 <div className="bht3-flip-back-content">
                   {c.flipShowProvider !== false && (
                   <div className="bht3-flip-back-provider-logo">
