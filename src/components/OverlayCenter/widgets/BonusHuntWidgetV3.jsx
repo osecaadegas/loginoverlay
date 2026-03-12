@@ -94,13 +94,13 @@ function BonusHuntWidgetV3({ config, theme }) {
 
       if (flipRef.current) flipRef.current.style.transform = `rotateY(${angle}deg)`;
 
-      const frontHidden = angle < 89 || angle > 271;
-      if (!frontHidden && !backRef.current) {
+      const frontHidden = angle > 89 && angle < 271;
+      if (frontHidden && !backRef.current) {
         backRef.current = true;
-        setNextIdx(prev => (prev + 1) % bonuses.length);
-      } else if (frontHidden && backRef.current) {
-        backRef.current = false;
         setDisplayIdx(prev => (prev + 1) % bonuses.length);
+      } else if (!frontHidden && backRef.current) {
+        backRef.current = false;
+        setNextIdx(prev => (prev + 1) % bonuses.length);
       }
 
       animRef.current = requestAnimationFrame(tick);
@@ -163,13 +163,8 @@ function BonusHuntWidgetV3({ config, theme }) {
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
           <div className="bht3-flip-container">
-            <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(180deg)' } : undefined}>
-              {/* BACK — Card back image (visible at 0°) */}
-              <div className="bht3-flip-face bht3-flip-back">
-                <img src={flipBackImage} alt="" className="bht3-flip-back-img" />
-              </div>
-
-              {/* FRONT — Slot Image (rotated, visible at 180°) */}
+            <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
+              {/* FRONT — Slot Image */}
               <div className="bht3-flip-face bht3-flip-front">
                 {frontBonus.isSuperBonus && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
                 {frontBonus.isExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
@@ -193,6 +188,11 @@ function BonusHuntWidgetV3({ config, theme }) {
                   )}
                   <div className="bht3-flip-num">#{(displayIdx % bonuses.length) + 1} / {bonuses.length}</div>
                 </div>
+              </div>
+
+              {/* BACK — Full card image */}
+              <div className="bht3-flip-face bht3-flip-back">
+                <img src={flipBackImage} alt="" className="bht3-flip-back-img" />
               </div>
             </div>
           </div>
