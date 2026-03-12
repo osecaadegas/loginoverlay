@@ -69,10 +69,9 @@ function BonusHuntWidgetV3({ config, theme }) {
   const [nextIdx, setNextIdx] = useState(1);
   const backRef = useRef(false);
   const animRef = useRef(null);
+  const flipRef = useRef(null);
 
-  /* When bonusOpening is ON → lock displayIdx to the current bonus.
-     When hunt is complete → let the normal spinning resume.
-     The CSS animation is paused via animation-play-state in the JSX. */
+  /* When bonusOpening is ON → lock displayIdx to the current bonus. */
   useEffect(() => {
     if (bonusOpening && currentBonusIdx >= 0) {
       setDisplayIdx(currentBonusIdx);
@@ -80,38 +79,49 @@ function BonusHuntWidgetV3({ config, theme }) {
     }
   }, [bonusOpening, currentBonusIdx]);
 
-  /* Normal spin cycling — only when NOT in bonusOpening mode (or hunt complete) */
+  /* JS-driven flip — single clock drives both transform AND data swap.
+     Timeline per cycle (duration = spinDuration seconds):
+       0%  – 35%  : front dwell   (0°)
+       35% – 50%  : ease flip     (0° → 180°)
+       50% – 85%  : back dwell    (180°)
+       85% – 100% : ease flip     (180° → 360°)   */
+  const easeInOut = (t) => t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
+
   useEffect(() => {
     if ((bonusOpening && !huntComplete) || bonuses.length <= 1) return;
 
     const dur = spinDuration * 1000;
-    const startTime = performance.now();
+    const start = performance.now();
     backRef.current = false;
 
-    /*  Match the CSS dwell keyframes:
-        0-35%  : front visible  (dwell)
-        35-50% : flip front→back (ease-in-out)
-        50-85% : back visible   (dwell)
-        85-100%: flip back→front (ease-in-out)
-        Front passes through 90° (invisible) at ~42.5% of cycle.
-        Back  passes through 270° at ~92.5%.  */
     const tick = (now) => {
-      const elapsed = (now - startTime) % dur;
-      const progress = elapsed / dur;
-      /* Front is hidden roughly from 40% to 92% of cycle */
-      const isFrontHidden = progress > 0.40 && progress < 0.92;
+      const p = ((now - start) % dur) / dur;         // 0..1 progress
+      let angle;
+      if (p <= 0.35) {
+        angle = 0;                                     // front dwell
+      } else if (p <= 0.50) {
+        const seg = (p - 0.35) / 0.15;                // 0..1 within flip segment
+        angle = easeInOut(seg) * 180;                  // 0° → 180°
+      } else if (p <= 0.85) {
+        angle = 180;                                   // back dwell
+      } else {
+        const seg = (p - 0.85) / 0.15;
+        angle = 180 + easeInOut(seg) * 180;            // 180° → 360°
+      }
 
-      if (isFrontHidden && !backRef.current) {
+      if (flipRef.current) flipRef.current.style.transform = `rotateY(${angle}deg)`;
+
+      const frontHidden = angle > 89 && angle < 271;
+      if (frontHidden && !backRef.current) {
         backRef.current = true;
         setDisplayIdx(prev => (prev + 1) % bonuses.length);
-      } else if (!isFrontHidden && backRef.current) {
+      } else if (!frontHidden && backRef.current) {
         backRef.current = false;
         setNextIdx(prev => (prev + 1) % bonuses.length);
       }
 
       animRef.current = requestAnimationFrame(tick);
     };
-
     animRef.current = requestAnimationFrame(tick);
     return () => { if (animRef.current) cancelAnimationFrame(animRef.current); };
   }, [bonuses.length, spinDuration, bonusOpening, huntComplete]);
@@ -161,7 +171,7 @@ function BonusHuntWidgetV3({ config, theme }) {
       : undefined,
   };
 
-  /* Whether to pause the CSS flip animation */
+  /* Whether to pause the JS flip */
   const pauseFlip = bonusOpening && !huntComplete;
 
   return (
@@ -171,7 +181,7 @@ function BonusHuntWidgetV3({ config, theme }) {
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
           <div className="bht3-flip-container">
-            <div className="bht3-flip-inner" style={pauseFlip ? { animationPlayState: 'paused', transform: 'rotateY(0deg)' } : undefined}>
+            <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
               {/* FRONT — Slot Image */}
               <div className="bht3-flip-face bht3-flip-front">
                 {frontBonus.isSuperBonus && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
