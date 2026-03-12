@@ -3293,6 +3293,22 @@
 }
 
 .bht3-flip-back-provider-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 100%;
+  padding: 2px 0 4px;
+  min-height: 40px;
+}
+
+.bht3-flip-back-provider-logo img {
+  max-height: 48px;
+  max-width: 80%;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(129, 140, 248, 0.35));
+}
+
+.bht3-flip-back-provider-logo span {
   font-size: 26px;
   font-weight: 900;
   color: var(--bht3-header-accent, #818cf8);
@@ -3303,7 +3319,6 @@
   text-overflow: ellipsis;
   max-width: 100%;
   text-shadow: 0 2px 12px rgba(129, 140, 248, 0.35), 0 1px 4px rgba(0,0,0,0.5);
-  padding: 2px 0 4px;
 }
 
 .bht3-flip-back-header {

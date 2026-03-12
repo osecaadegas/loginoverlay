@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
+import { getProviderImage } from '../../../utils/gameProviders';
 
 /**
  * BonusHuntWidgetV3 — Style 3: Flip Card
@@ -193,7 +194,12 @@ function BonusHuntWidgetV3({ config, theme }) {
               <div className="bht3-flip-face bht3-flip-back">
                 <div className="bht3-flip-back-content">
                   <div className="bht3-flip-back-provider-logo">
-                    {backBonus.slot?.provider || 'Unknown'}
+                    <img
+                      src={getProviderImage(backBonus.slot?.provider)}
+                      alt={backBonus.slot?.provider || 'Provider'}
+                      onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }}
+                    />
+                    <span style={{ display: 'none' }}>{backBonus.slot?.provider || 'Unknown'}</span>
                   </div>
                   <div className="bht3-flip-back-header">
                     <div className="bht3-flip-back-name">{backBonus.slotName || backBonus.slot?.name}</div>

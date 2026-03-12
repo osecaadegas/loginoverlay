@@ -53,10 +53,21 @@ export const getProvider = (idOrSlug) => {
   );
 };
 
-// Get provider image URL by ID or slug
+// Convert a provider name/slug to the underscore-based filename used by scraped logos
+const toProviderFilename = (name) => {
+  if (!name) return null;
+  const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '');
+  return `/providers/${slug}.png`;
+};
+
+// Get provider image URL by ID, slug, or name
 export const getProviderImage = (idOrSlug) => {
+  if (!idOrSlug) return '/providers/default.png';
+  // 1) Check static list first
   const provider = getProvider(idOrSlug);
-  return provider?.image || '/providers/default.png';
+  if (provider?.image) return provider.image;
+  // 2) Generate path from name (matches scraped logos in public/providers/)
+  return toProviderFilename(idOrSlug) || '/providers/default.png';
 };
 
 // Get provider name by ID or slug
