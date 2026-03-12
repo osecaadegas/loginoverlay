@@ -2984,6 +2984,9 @@
   -webkit-backdrop-filter: none !important;
   box-shadow: none !important;
   border: none !important;
+  /* Remove parent .or-widget-inner padding & radius */
+  padding: 0 !important;
+  border-radius: 0 !important;
   /* Must be visible so 3D flipping is not clipped */
   overflow: visible !important;
   /* Preserve 3D context through the tree */
