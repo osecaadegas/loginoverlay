@@ -3207,8 +3207,6 @@
   right: 0;
   padding: 10px 14px;
   z-index: 2;
-  -webkit-text-stroke: 1px #000;
-  paint-order: stroke fill;
 }
 
 .bht3-flip-slot-name {
@@ -3223,25 +3221,40 @@
 }
 
 .bht3-flip-bet {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: #fff;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  text-shadow:
+    -1px -1px 0 #000,  1px -1px 0 #000,
+    -1px  1px 0 #000,  1px  1px 0 #000,
+     0   -1px 0 #000,  0    1px 0 #000,
+    -1px  0   0 #000,  1px  0   0 #000,
+     0 2px 6px rgba(0,0,0,0.8);
 }
 
 .bht3-flip-payout {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 800;
   color: #86efac;
   margin-top: 2px;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  text-shadow:
+    -1px -1px 0 #000,  1px -1px 0 #000,
+    -1px  1px 0 #000,  1px  1px 0 #000,
+     0   -1px 0 #000,  0    1px 0 #000,
+    -1px  0   0 #000,  1px  0   0 #000,
+     0 2px 6px rgba(0,0,0,0.8);
 }
 
 .bht3-flip-multi {
   margin-left: 8px;
   color: #facc15;
   font-weight: 800;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  text-shadow:
+    -1px -1px 0 #000,  1px -1px 0 #000,
+    -1px  1px 0 #000,  1px  1px 0 #000,
+     0   -1px 0 #000,  0    1px 0 #000,
+    -1px  0   0 #000,  1px  0   0 #000,
+     0 2px 6px rgba(0,0,0,0.8);
 }
 
 .bht3-flip-num {
