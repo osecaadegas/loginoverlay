@@ -2991,6 +2991,11 @@
   transform-style: preserve-3d;
 }
 
+/* Override the widget-slot overflow:hidden so flip cards aren't clipped */
+.or-widget-slot:has(.bht3-root) {
+  overflow: visible !important;
+}
+
 /* -- Card base -- */
 .bht3-card {
   border-radius: var(--bht3-card-radius, 16px);
@@ -3137,7 +3142,7 @@
   width: 100%;
   overflow: visible;
   transform-style: preserve-3d;
-  padding-top: 12px;
+  padding: 14px 14px 14px;
 }
 
 .bht3-flip-container {
@@ -3145,7 +3150,7 @@
   width: 100%;
   overflow: visible;
   transform-style: preserve-3d;
-  padding-top: 6px;
+  padding: 6px;
 }
 
 .bht3-flip-inner {
