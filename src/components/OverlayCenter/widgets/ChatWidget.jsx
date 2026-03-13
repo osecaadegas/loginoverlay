@@ -84,6 +84,7 @@ function ChatWidget({ config, theme }) {
   const scrollRef = useRef(null);
   const maxMessages = c.maxMessages || 50;
   const chatStyle = c.chatStyle || 'classic';
+  const isMetal = chatStyle === 'metal';
 
   /* Style config */
   const textColor = isMetal ? '#d4d8e0' : (c.textColor || '#e2e8f0');
@@ -100,8 +101,6 @@ function ChatWidget({ config, theme }) {
   const nameBold = c.nameBold ?? true;
   const msgLineHeight = c.msgLineHeight ?? 1.45;
   const msgPadH = c.msgPadH ?? 10;
-
-  const isMetal = chatStyle === 'metal';
 
   /* Style-specific bg defaults */
   const bgDefaults = {
