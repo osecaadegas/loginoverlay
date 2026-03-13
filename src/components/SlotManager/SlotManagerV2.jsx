@@ -112,14 +112,49 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
   const [tab, setTab] = useState('basic');
   const [imgResults, setImgResults] = useState([]);
   const [imgSearching, setImgSearching] = useState(false);
+  const [scrapedImages, setScrapedImages] = useState([]);
+  const [scrapeLoading, setScrapeLoading] = useState(false);
   const nameRef = useRef(null);
+  const scrapeRef = useRef('');
 
   useEffect(() => {
     setForm(slot || {});
     setTab('basic');
     setImgResults([]);
+    setScrapedImages([]);
+    scrapeRef.current = '';
     if (isNew) setTimeout(() => nameRef.current?.focus(), 100);
   }, [slot, isNew]);
+
+  // Auto-scrape slot info (RTP, volatility, max win, provider, images) from demoslot/slotark/slotslaunch
+  useEffect(() => {
+    const n = (form.name || '').trim();
+    if (!n || n.length < 3) return;
+    if (n === scrapeRef.current) return;
+    scrapeRef.current = n;
+    const timer = setTimeout(async () => {
+      setScrapeLoading(true);
+      try {
+        const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(n)}`);
+        if (res.ok) {
+          const { info } = await res.json();
+          if (info) {
+            setScrapedImages(info.images || (info.image ? [info.image] : []));
+            setForm(prev => ({
+              ...prev,
+              ...(info.provider && !prev.provider ? { provider: info.provider } : {}),
+              ...(info.rtp && !prev.rtp ? { rtp: String(info.rtp) } : {}),
+              ...(info.volatility && !prev.volatility ? { volatility: info.volatility } : {}),
+              ...(info.max_win_multiplier && !prev.max_win_multiplier ? { max_win_multiplier: String(info.max_win_multiplier) } : {}),
+              ...(info.image && !prev.image ? { image: info.image } : {}),
+            }));
+          } else { setScrapedImages([]); }
+        } else { setScrapedImages([]); }
+      } catch { setScrapedImages([]); }
+      setScrapeLoading(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [form.name]);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
@@ -217,6 +252,23 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
                       <img src={img.thumb} alt="" />
                     </button>
                   ))}
+                </div>
+              )}
+              {scrapeLoading && (
+                <p style={{ fontSize: 11, color: '#94a3b8', margin: '4px 0' }}>⏳ Auto-fetching slot info…</p>
+              )}
+              {scrapedImages.length > 0 && (
+                <div style={{ marginTop: 6 }}>
+                  <span style={{ fontSize: 11, color: '#94a3b8' }}>Scraped images (DemoSlot / SlotArk / SlotsLaunch):</span>
+                  <div className="sm-img-results" style={{ marginTop: 4 }}>
+                    {scrapedImages.slice(0, 12).map((url, i) => (
+                      <button key={`sc-${i}`} type="button"
+                        className={`sm-img-result-btn${form.image === url ? ' selected' : ''}`}
+                        onClick={() => set('image', url)}>
+                        <img src={url} alt="" />
+                      </button>
+                    ))}
+                  </div>
                 </div>
               )}
               <label className="sm-field">
