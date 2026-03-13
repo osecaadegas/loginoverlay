@@ -56,6 +56,10 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
 
   const widgetRadius = widget.config?.cardRadius;
 
+  /* Widgets with 3D transforms (flip cards) need visible overflow */
+  const wStyle = widget.config?.displayStyle || '';
+  const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack';
+
   const style = {
     position: 'absolute',
     left: isBg ? 0 : widget.position_x,
@@ -64,7 +68,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(animSpeed || 1) * 0.35}s`,
-    overflow: 'hidden',
+    overflow: needs3D ? 'visible' : 'hidden',
     borderRadius: widgetRadius ? `${widgetRadius}px` : undefined,
     filter: shadowFilter,
   };
