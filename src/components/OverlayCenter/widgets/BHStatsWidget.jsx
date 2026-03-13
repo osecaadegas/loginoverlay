@@ -182,20 +182,6 @@ export default function BHStatsWidget({ config, allWidgets }) {
         </div>
       )}
 
-      {/* ═══ Flip container: stats ↔ best/worst ═══ */}
-      <div style={{ perspective: 800, position: 'relative', flex: 1, minHeight: 0 }}>
-        <div style={{
-          position: 'relative', width: '100%', height: '100%',
-          transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1)',
-          transformStyle: 'preserve-3d',
-          transform: statsFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)',
-        }}>
-          {/* FRONT: Stats */}
-          <div style={{
-            position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
-            display: 'flex', flexDirection: 'column', gap: gap + 4, overflow: 'hidden',
-          }}>
-
       {/* Row 1: BE x / AVG x / Live BE */}
       <div style={{ display: 'flex', gap }}>
         <div style={statBoxStyle}>
@@ -228,145 +214,112 @@ export default function BHStatsWidget({ config, allWidgets }) {
         </div>
       </div>
 
-      {/* Progress bar */}
-      <div style={{ ...statBoxStyle, flex: 'none' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={labelStyle}>Progress</span>
-          <span style={{ fontSize: `${fs * 0.78}px`, fontWeight: 700, color: textColor }}>
-            {stats.openedCount} / {stats.total} opened
-          </span>
-        </div>
+      {/* ═══ Flip: Progress bar ↔ Best/Worst with images ═══ */}
+      <div style={{ perspective: 800, position: 'relative' }}>
         <div style={{
-          width: '100%',
-          height: Math.max(10, 14 * scale),
-          background: progressBg,
-          borderRadius: 99,
-          overflow: 'hidden',
-          marginTop: 2,
+          position: 'relative',
+          transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1)',
+          transformStyle: 'preserve-3d',
+          transform: statsFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)',
         }}>
-          <div style={{
-            width: `${stats.progressPct}%`,
-            height: '100%',
-            background: `linear-gradient(90deg, ${progressColor}, ${accentColor})`,
-            borderRadius: 99,
-            transition: 'width 0.6s cubic-bezier(0.33,1,0.68,1)',
-            minWidth: stats.progressPct > 0 ? 4 : 0,
-          }} />
-        </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-          <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{stats.unopened} remaining</span>
-          <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{Math.round(stats.progressPct)}%</span>
-        </div>
-      </div>
-
-      {/* Row 3: Best / Worst payout */}
-      <div style={{ display: 'flex', gap }}>
-        <div style={{ ...statBoxStyle, border: `1.5px solid ${bestColor}` }}>
-          {stats.best ? (
-            <>
-              <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.1}px` }}>
-                {currency}{fmt(stats.best.payout)}
-                <span style={{ marginLeft: 6, fontSize: `${fs * 0.8}px`, color: '#facc15', fontWeight: 800 }}>
-                  {stats.best.multi.toFixed(1)}x
+          {/* FRONT: Progress bar */}
+          <div style={{ backfaceVisibility: 'hidden' }}>
+            <div style={{ ...statBoxStyle, flex: 'none' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={labelStyle}>Progress</span>
+                <span style={{ fontSize: `${fs * 0.78}px`, fontWeight: 700, color: textColor }}>
+                  {stats.openedCount} / {stats.total} opened
                 </span>
-              </span>
-              <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {stats.best.name}
-              </span>
-            </>
-          ) : (
-            <span style={{ ...valStyle, color: mutedColor, fontSize: `${fs * 0.9}px` }}>—</span>
-          )}
-        </div>
-        <div style={{ ...statBoxStyle, border: `1.5px solid ${worstColor}` }}>
-          {stats.worst ? (
-            <>
-              <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.1}px` }}>
-                {currency}{fmt(stats.worst.payout)}
-                <span style={{ marginLeft: 6, fontSize: `${fs * 0.8}px`, color: mutedColor, fontWeight: 800 }}>
-                  {stats.worst.multi.toFixed(1)}x
-                </span>
-              </span>
-              <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {stats.worst.name}
-              </span>
-            </>
-          ) : (
-            <span style={{ ...valStyle, color: mutedColor, fontSize: `${fs * 0.9}px` }}>—</span>
-          )}
-        </div>
-      </div>
-
-          </div>{/* end FRONT */}
+              </div>
+              <div style={{
+                width: '100%',
+                height: Math.max(10, 14 * scale),
+                background: progressBg,
+                borderRadius: 99,
+                overflow: 'hidden',
+                marginTop: 2,
+              }}>
+                <div style={{
+                  width: `${stats.progressPct}%`,
+                  height: '100%',
+                  background: `linear-gradient(90deg, ${progressColor}, ${accentColor})`,
+                  borderRadius: 99,
+                  transition: 'width 0.6s cubic-bezier(0.33,1,0.68,1)',
+                  minWidth: stats.progressPct > 0 ? 4 : 0,
+                }} />
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
+                <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{stats.unopened} remaining</span>
+                <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{Math.round(stats.progressPct)}%</span>
+              </div>
+            </div>
+          </div>
 
           {/* BACK: Best / Worst with images */}
           <div style={{
             position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
             transform: 'rotateX(180deg)',
-            display: 'flex', flexDirection: 'column', justifyContent: 'center',
-            gap: gap + 4, overflow: 'hidden',
+            display: 'flex', gap, overflow: 'hidden',
           }}>
-            <div style={{ display: 'flex', gap, flex: 1 }}>
-              {/* Best slot */}
-              <div style={{
-                ...statBoxStyle, border: `1.5px solid ${bestColor}`,
-                flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
-                padding: `${Math.max(8, 10 * scale)}px`,
-              }}>
-                {stats.best ? (
-                  <>
-                    {stats.best.image ? (
-                      <img src={stats.best.image} alt="" style={{
-                        width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
-                        borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
-                      }} onError={e => { e.target.style.display = 'none'; }} />
-                    ) : (
-                      <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                      <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: bestColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Best</span>
-                      <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.2}px` }}>
-                        {currency}{fmt(stats.best.payout)}
-                      </span>
-                      <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: '#facc15' }}>
-                        {stats.best.multi.toFixed(1)}x
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <span style={{ ...valStyle, color: mutedColor }}>—</span>
-                )}
-              </div>
-              {/* Worst slot */}
-              <div style={{
-                ...statBoxStyle, border: `1.5px solid ${worstColor}`,
-                flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
-                padding: `${Math.max(8, 10 * scale)}px`,
-              }}>
-                {stats.worst ? (
-                  <>
-                    {stats.worst.image ? (
-                      <img src={stats.worst.image} alt="" style={{
-                        width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
-                        borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
-                      }} onError={e => { e.target.style.display = 'none'; }} />
-                    ) : (
-                      <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
-                    )}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                      <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: worstColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Worst</span>
-                      <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.2}px` }}>
-                        {currency}{fmt(stats.worst.payout)}
-                      </span>
-                      <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: mutedColor }}>
-                        {stats.worst.multi.toFixed(1)}x
-                      </span>
-                    </div>
-                  </>
-                ) : (
-                  <span style={{ ...valStyle, color: mutedColor }}>—</span>
-                )}
-              </div>
+            {/* Best slot */}
+            <div style={{
+              ...statBoxStyle, border: `1.5px solid ${bestColor}`,
+              flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
+              padding: `${Math.max(8, 10 * scale)}px`,
+            }}>
+              {stats.best ? (
+                <>
+                  {stats.best.image ? (
+                    <img src={stats.best.image} alt="" style={{
+                      width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
+                      borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
+                    }} onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                    <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: bestColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Best</span>
+                    <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.2}px` }}>
+                      {currency}{fmt(stats.best.payout)}
+                    </span>
+                    <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: '#facc15' }}>
+                      {stats.best.multi.toFixed(1)}x
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <span style={{ ...valStyle, color: mutedColor }}>—</span>
+              )}
+            </div>
+            {/* Worst slot */}
+            <div style={{
+              ...statBoxStyle, border: `1.5px solid ${worstColor}`,
+              flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
+              padding: `${Math.max(8, 10 * scale)}px`,
+            }}>
+              {stats.worst ? (
+                <>
+                  {stats.worst.image ? (
+                    <img src={stats.worst.image} alt="" style={{
+                      width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
+                      borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
+                    }} onError={e => { e.target.style.display = 'none'; }} />
+                  ) : (
+                    <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
+                  )}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                    <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: worstColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Worst</span>
+                    <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.2}px` }}>
+                      {currency}{fmt(stats.worst.payout)}
+                    </span>
+                    <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: mutedColor }}>
+                      {stats.worst.multi.toFixed(1)}x
+                    </span>
+                  </div>
+                </>
+              ) : (
+                <span style={{ ...valStyle, color: mutedColor }}>—</span>
+              )}
             </div>
           </div>{/* end BACK */}
 
