@@ -160,31 +160,32 @@ function BonusHuntWidgetV3({ config, theme }) {
     <div className="oc-widget-inner oc-bonushunt bht3-root" style={rootStyle}>
 
       {/* ═══ Flip Card Carousel ═══ */}
-      {bonuses.length > 0 && (
+      {bonuses.length > 0 && (() => {
+        const isSuper = !!frontBonus.isSuperBonus;
+        const isExtreme = !!(frontBonus.isExtremeBonus || frontBonus.isExtreme);
+        return (
         <div className="bht3-flip-area">
-          {/* Glow overlay — flat 2D sibling with INLINE styles for OBS */}
-          {frontBonus.isSuperBonus && (
-            <div style={{
-              position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
-              pointerEvents: 'none', zIndex: 0,
-              border: '2.5px solid rgba(250, 204, 21, 0.6)',
-              boxShadow: '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)',
-            }} />
-          )}
-          {(frontBonus.isExtremeBonus || frontBonus.isExtreme) && (
-            <div className="bht3-glow-extreme-anim" style={{
-              position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
-              pointerEvents: 'none', zIndex: 0,
-              border: '3px solid rgba(239, 68, 68, 0.8)',
-              boxShadow: '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
-            }} />
-          )}
+          {/* DEBUG: always show extreme glow to test rendering */}
+          <div className="bht3-glow-extreme-anim" style={{
+            position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
+            pointerEvents: 'none', zIndex: 0,
+            border: isExtreme ? '3px solid rgba(239, 68, 68, 0.8)' : isSuper ? '2.5px solid rgba(250, 204, 21, 0.6)' : '3px solid rgba(239, 68, 68, 0.8)',
+            boxShadow: isExtreme ? '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)' : isSuper ? '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)' : '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
+          }} />
+          {/* DEBUG watermark: shows data flags so we can verify */}
+          <div style={{
+            position: 'absolute', top: '2px', left: '22px', zIndex: 99,
+            fontSize: '10px', color: '#ff0', background: 'rgba(0,0,0,0.8)',
+            padding: '2px 6px', borderRadius: '3px', fontFamily: 'monospace', pointerEvents: 'none',
+          }}>
+            S:{String(isSuper)} E:{String(isExtreme)} keys:{Object.keys(frontBonus).filter(k => /super|extreme/i.test(k)).join(',')}
+          </div>
           <div className="bht3-flip-container" style={{ position: 'relative', zIndex: 1 }}>
             <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
               {/* FRONT — Slot Image */}
               <div className="bht3-flip-face bht3-flip-front">
-                {frontBonus.isSuperBonus && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
-                {(frontBonus.isExtremeBonus || frontBonus.isExtreme) && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
+                {isSuper && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
+                {isExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
                   <img src={frontBonus.slot.image} alt={frontBonus.slotName} className="bht3-flip-img"
                     onError={e => { e.target.style.display = 'none'; }} />
@@ -280,7 +281,7 @@ function BonusHuntWidgetV3({ config, theme }) {
             </div>
           </div>
         </div>
-      )}
+        );})()}
     </div>
   );
 }
