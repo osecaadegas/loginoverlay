@@ -696,6 +696,71 @@ const SlotManagerV2 = () => {
     } catch (e) { notify(e.message, 'error'); }
   }, [selectedIds, loadSlots, clearSelection, notify]);
 
+  /* ── Bulk stat check (scrape RTP / Max Win / Volatility) ─── */
+  const [statCheckRunning, setStatCheckRunning] = useState(false);
+  const [statCheckProgress, setStatCheckProgress] = useState({ done: 0, total: 0, updated: 0 });
+  const statCheckAbort = useRef(false);
+
+  const bulkStatCheck = useCallback(async () => {
+    if (statCheckRunning) { statCheckAbort.current = true; return; }
+    statCheckAbort.current = false;
+    setStatCheckRunning(true);
+    setStatCheckProgress({ done: 0, total: 0, updated: 0 });
+
+    try {
+      // Fetch all slots missing at least one stat
+      let all = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from('slots')
+          .select('id, name, provider, rtp, volatility, max_win_multiplier')
+          .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null')
+          .range(from, from + step - 1);
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        all = all.concat(data);
+        if (data.length < step) break;
+        from += step;
+      }
+
+      setStatCheckProgress({ done: 0, total: all.length, updated: 0 });
+      if (all.length === 0) { notify('All slots already have stats filled'); setStatCheckRunning(false); return; }
+
+      let updated = 0;
+      for (let i = 0; i < all.length; i++) {
+        if (statCheckAbort.current) { notify(`Stopped at ${i}/${all.length}`); break; }
+        const slot = all[i];
+        try {
+          const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}`);
+          if (res.ok) {
+            const { info } = await res.json();
+            if (info) {
+              const upd = {};
+              if (!slot.rtp && info.rtp) upd.rtp = info.rtp;
+              if (!slot.volatility && info.volatility) upd.volatility = info.volatility;
+              if (!slot.max_win_multiplier && info.max_win_multiplier) upd.max_win_multiplier = info.max_win_multiplier;
+              if (Object.keys(upd).length > 0) {
+                const { error } = await supabase.from('slots').update(upd).eq('id', slot.id);
+                if (!error) updated++;
+              }
+            }
+          }
+        } catch { /* skip slot */ }
+        setStatCheckProgress({ done: i + 1, total: all.length, updated });
+      }
+
+      notify(`Done! Checked ${all.length} slots, updated ${updated}`);
+      loadSlots();
+    } catch (e) {
+      console.error('bulkStatCheck:', e);
+      notify(e.message, 'error');
+    } finally {
+      setStatCheckRunning(false);
+    }
+  }, [statCheckRunning, loadSlots, notify]);
+
   /* ── Keyboard shortcuts ────────────────────────────────────── */
   useEffect(() => {
     const handleKey = (e) => {
@@ -760,10 +825,27 @@ const SlotManagerV2 = () => {
         </div>
         <div className="sm-toolbar-right">
           <span className="sm-count">{totalCount.toLocaleString()} slots</span>
+          <button className="sm-btn-ghost" onClick={bulkStatCheck} disabled={false}>
+            {statCheckRunning ? '⏹ Stop Check' : '🔄 Check Stats'}
+          </button>
           <button className="sm-btn-ghost" onClick={() => setShowProviders(true)}>Providers</button>
           <button className="sm-btn-primary" onClick={() => { setEditorSlot({}); setIsNewSlot(true); }}>+ Add Slot</button>
         </div>
       </div>
+
+      {/* ── Stat check progress ─────────────────────────── */}
+      {statCheckRunning && statCheckProgress.total > 0 && (
+        <div style={{ padding: '8px 16px', background: '#1e293b', borderRadius: 8, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>
+              Checking slots… {statCheckProgress.done}/{statCheckProgress.total} — {statCheckProgress.updated} updated
+            </div>
+            <div style={{ height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' }}>
+              <div style={{ height: '100%', width: `${(statCheckProgress.done / statCheckProgress.total * 100)}%`, background: '#3b82f6', borderRadius: 3, transition: 'width 0.3s' }} />
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Table ────────────────────────────────────────── */}
       <div className="sm-table-wrap">
