@@ -162,10 +162,12 @@ function BonusHuntWidgetV3({ config, theme }) {
       {/* ═══ Flip Card Carousel ═══ */}
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
+          {/* Glow wrapper sits OUTSIDE the 3D context so box-shadow renders in OBS */}
+          <div className={`bht3-flip-glow-wrap${frontBonus.isSuperBonus ? ' bht3-glow-super' : ''}${(frontBonus.isExtremeBonus || frontBonus.isExtreme) ? ' bht3-glow-extreme' : ''}`}>
           <div className="bht3-flip-container">
             <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
               {/* FRONT — Slot Image */}
-              <div className={`bht3-flip-face bht3-flip-front${frontBonus.isSuperBonus ? ' bht3-flip-super' : ''}${(frontBonus.isExtremeBonus || frontBonus.isExtreme) ? ' bht3-flip-extreme' : ''}`}>
+              <div className="bht3-flip-face bht3-flip-front">
                 {frontBonus.isSuperBonus && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
                 {(frontBonus.isExtremeBonus || frontBonus.isExtreme) && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
@@ -262,6 +264,7 @@ function BonusHuntWidgetV3({ config, theme }) {
               </div>
             </div>
           </div>
+          </div>{/* close bht3-flip-glow-wrap */}
         </div>
       )}
     </div>

@@ -3174,25 +3174,31 @@
 .bht3-flip-front {
   background: var(--theme-background, #0f172a);
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  transition: box-shadow 0.4s ease;
 }
 
-/* Super bonus: golden glow */
-.bht3-flip-front.bht3-flip-super {
+/* ── Glow wrapper — sits OUTSIDE the 3D context so box-shadow renders in OBS ── */
+.bht3-flip-glow-wrap {
+  border-radius: var(--bht3-card-radius, 16px);
+  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+}
+
+/* Super bonus: golden glow (on wrapper) */
+.bht3-flip-glow-wrap.bht3-glow-super {
   box-shadow:
     0 0 12px 3px rgba(250, 204, 21, 0.5),
     0 0 28px 6px rgba(234, 179, 8, 0.3),
-    0 0 48px 12px rgba(234, 179, 8, 0.15),
-    inset 0 0 12px rgba(250, 204, 21, 0.08);
-  border: 1.5px solid rgba(250, 204, 21, 0.45);
+    0 0 48px 12px rgba(234, 179, 8, 0.15);
+  outline: 2px solid rgba(250, 204, 21, 0.55);
+  outline-offset: -1px;
 }
 
-/* Extreme bonus: red outline + subtle trill */
-.bht3-flip-front.bht3-flip-extreme {
+/* Extreme bonus: red glow + trill (on wrapper) */
+.bht3-flip-glow-wrap.bht3-glow-extreme {
   box-shadow:
-    0 0 10px 2px rgba(239, 68, 68, 0.45),
-    0 0 24px 5px rgba(239, 68, 68, 0.2);
-  border: 1.5px solid rgba(239, 68, 68, 0.6);
+    0 0 14px 4px rgba(239, 68, 68, 0.55),
+    0 0 32px 8px rgba(239, 68, 68, 0.3);
+  outline: 2.5px solid rgba(239, 68, 68, 0.75);
+  outline-offset: -1px;
   animation: bht3-trill 2.5s ease-in-out infinite;
 }
 
