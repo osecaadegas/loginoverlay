@@ -699,9 +699,27 @@ const SlotManagerV2 = () => {
   /* ── Bulk stat check (scrape RTP / Max Win / Volatility) ─── */
   const [statCheckRunning, setStatCheckRunning] = useState(false);
   const [statCheckProgress, setStatCheckProgress] = useState({ done: 0, total: 0, updated: 0, page: 0, totalPages: 0 });
-  const [statCheckReport, setStatCheckReport] = useState(null); // { entries: [], total, updated, skipped, failed }
+  const [statCheckReport, setStatCheckReport] = useState(null);
+  const [statCheckShowPanel, setStatCheckShowPanel] = useState(false);
+  const [statCheckMode, setStatCheckMode] = useState('all'); // 'all' | 'newest' | 'provider'
+  const [statCheckProvider, setStatCheckProvider] = useState('');
+  const [statCheckPage, setStatCheckPage] = useState(1);
+  const [statCheckTotalPages, setStatCheckTotalPages] = useState(1);
   const statCheckAbort = useRef(false);
-  const PAGE_SIZE_CHECK = 25;
+  const STAT_CHECK_PAGE = 200;
+
+  // Count slots needing check for the current mode (for page picker)
+  const refreshStatCheckCount = useCallback(async () => {
+    let q = supabase.from('slots').select('id', { count: 'exact', head: true })
+      .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null');
+    if (statCheckMode === 'provider' && statCheckProvider) q = q.eq('provider', statCheckProvider);
+    const { count } = await q;
+    const total = count || 0;
+    setStatCheckTotalPages(Math.max(1, Math.ceil(total / STAT_CHECK_PAGE)));
+    if (statCheckPage > Math.max(1, Math.ceil(total / STAT_CHECK_PAGE))) setStatCheckPage(1);
+  }, [statCheckMode, statCheckProvider, statCheckPage]);
+
+  useEffect(() => { if (statCheckShowPanel) refreshStatCheckCount(); }, [statCheckShowPanel, statCheckMode, statCheckProvider, refreshStatCheckCount]);
 
   const bulkStatCheck = useCallback(async () => {
     if (statCheckRunning) { statCheckAbort.current = true; return; }
@@ -711,91 +729,86 @@ const SlotManagerV2 = () => {
     setStatCheckProgress({ done: 0, total: 0, updated: 0, page: 0, totalPages: 0 });
 
     const report = [];
-    let totalChecked = 0;
-    let totalUpdated = 0;
-    let totalSkipped = 0;
-    let totalFailed = 0;
+    let totalChecked = 0, totalUpdated = 0, totalSkipped = 0, totalFailed = 0;
 
     try {
-      // Count how many slots need checking
-      const { count, error: cErr } = await supabase
-        .from('slots')
-        .select('id', { count: 'exact', head: true })
-        .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null');
+      // Build base query
+      const buildQuery = (select, opts) => {
+        let q = supabase.from('slots').select(select, opts)
+          .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null');
+        if (statCheckMode === 'provider' && statCheckProvider) q = q.eq('provider', statCheckProvider);
+        if (statCheckMode === 'newest') q = q.order('created_at', { ascending: false, nullsFirst: false });
+        else q = q.order('name', { ascending: true });
+        return q;
+      };
+
+      // Count
+      const { count, error: cErr } = await buildQuery('id', { count: 'exact', head: true });
       if (cErr) throw cErr;
       const total = count || 0;
-      if (total === 0) { notify('All slots already have stats filled'); setStatCheckRunning(false); return; }
+      if (total === 0) { notify('All matching slots already have stats filled'); setStatCheckRunning(false); return; }
 
-      const totalPages = Math.ceil(total / PAGE_SIZE_CHECK);
-      setStatCheckProgress({ done: 0, total, updated: 0, page: 0, totalPages });
+      const totalPages = Math.ceil(total / STAT_CHECK_PAGE);
+      const startPage = statCheckPage - 1; // 0-indexed
+      const from = startPage * STAT_CHECK_PAGE;
+      const to = Math.min(from + STAT_CHECK_PAGE - 1, total - 1);
+      const pageSlotCount = to - from + 1;
 
-      // Process page by page
-      for (let pg = 0; pg < totalPages; pg++) {
+      setStatCheckProgress({ done: 0, total: pageSlotCount, updated: 0, page: statCheckPage, totalPages });
+
+      // Fetch the chosen page
+      const { data: pageSlots, error: pErr } = await buildQuery('id, name, provider, rtp, volatility, max_win_multiplier')
+        .range(from, to);
+      if (pErr) throw pErr;
+      if (!pageSlots || pageSlots.length === 0) { notify('No slots on this page'); setStatCheckRunning(false); return; }
+
+      for (const slot of pageSlots) {
         if (statCheckAbort.current) break;
-        setStatCheckProgress(p => ({ ...p, page: pg + 1 }));
-
-        // Always fetch from offset 0 because already-updated rows drop out of the filter
-        const { data: pageSlots, error: pErr } = await supabase
-          .from('slots')
-          .select('id, name, provider, rtp, volatility, max_win_multiplier')
-          .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null')
-          .order('name', { ascending: true })
-          .range(0, PAGE_SIZE_CHECK - 1);
-        if (pErr) throw pErr;
-        if (!pageSlots || pageSlots.length === 0) break;
-
-        for (const slot of pageSlots) {
-          if (statCheckAbort.current) break;
-          totalChecked++;
-          try {
-            const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}`);
-            if (res.ok) {
-              const { info } = await res.json();
-              if (info) {
-                const upd = {};
-                const changes = [];
-                if (!slot.rtp && info.rtp) { upd.rtp = info.rtp; changes.push(`RTP: ${info.rtp}%`); }
-                if (!slot.volatility && info.volatility) { upd.volatility = info.volatility; changes.push(`Volatility: ${info.volatility}`); }
-                if (!slot.max_win_multiplier && info.max_win_multiplier) { upd.max_win_multiplier = info.max_win_multiplier; changes.push(`Max Win: ${info.max_win_multiplier}x`); }
-                if (Object.keys(upd).length > 0) {
-                  const { error } = await supabase.from('slots').update(upd).eq('id', slot.id);
-                  if (!error) {
-                    totalUpdated++;
-                    report.push({ name: slot.name, status: 'updated', changes });
-                  } else {
-                    totalFailed++;
-                    report.push({ name: slot.name, status: 'error', changes: [error.message] });
-                  }
-                } else {
-                  totalSkipped++;
-                  report.push({ name: slot.name, status: 'no-data', changes: ['No new data found'] });
-                }
+        totalChecked++;
+        try {
+          const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}`);
+          if (res.ok) {
+            const { info } = await res.json();
+            if (info) {
+              const upd = {};
+              const changes = [];
+              if (!slot.rtp && info.rtp) { upd.rtp = info.rtp; changes.push(`RTP: ${info.rtp}%`); }
+              if (!slot.volatility && info.volatility) { upd.volatility = info.volatility; changes.push(`Volatility: ${info.volatility}`); }
+              if (!slot.max_win_multiplier && info.max_win_multiplier) { upd.max_win_multiplier = info.max_win_multiplier; changes.push(`Max Win: ${info.max_win_multiplier}x`); }
+              if (Object.keys(upd).length > 0) {
+                const { error } = await supabase.from('slots').update(upd).eq('id', slot.id);
+                if (!error) { totalUpdated++; report.push({ name: slot.name, status: 'updated', changes }); }
+                else { totalFailed++; report.push({ name: slot.name, status: 'error', changes: [error.message] }); }
               } else {
                 totalSkipped++;
-                report.push({ name: slot.name, status: 'no-data', changes: ['Slot not found on scraping sources'] });
+                report.push({ name: slot.name, status: 'no-data', changes: ['No new data found'] });
               }
             } else {
-              totalFailed++;
-              report.push({ name: slot.name, status: 'error', changes: [`HTTP ${res.status}`] });
+              totalSkipped++;
+              report.push({ name: slot.name, status: 'no-data', changes: ['Slot not found on scraping sources'] });
             }
-          } catch (err) {
+          } else {
             totalFailed++;
-            report.push({ name: slot.name, status: 'error', changes: [err.message || 'Network error'] });
+            report.push({ name: slot.name, status: 'error', changes: [`HTTP ${res.status}`] });
           }
-          setStatCheckProgress({ done: totalChecked, total, updated: totalUpdated, page: pg + 1, totalPages });
+        } catch (err) {
+          totalFailed++;
+          report.push({ name: slot.name, status: 'error', changes: [err.message || 'Network error'] });
         }
+        setStatCheckProgress({ done: totalChecked, total: pageSlotCount, updated: totalUpdated, page: statCheckPage, totalPages });
       }
 
       setStatCheckReport({ entries: report, total: totalChecked, updated: totalUpdated, skipped: totalSkipped, failed: totalFailed });
       notify(`Done! Checked ${totalChecked} slots, updated ${totalUpdated}`);
       loadSlots();
+      refreshStatCheckCount();
     } catch (e) {
       console.error('bulkStatCheck:', e);
       notify(e.message, 'error');
     } finally {
       setStatCheckRunning(false);
     }
-  }, [statCheckRunning, loadSlots, notify]);
+  }, [statCheckRunning, statCheckMode, statCheckProvider, statCheckPage, loadSlots, notify, refreshStatCheckCount]);
 
   /* ── Keyboard shortcuts ────────────────────────────────────── */
   useEffect(() => {
@@ -861,24 +874,71 @@ const SlotManagerV2 = () => {
         </div>
         <div className="sm-toolbar-right">
           <span className="sm-count">{totalCount.toLocaleString()} slots</span>
-          <button className="sm-btn-ghost" onClick={bulkStatCheck} disabled={false}>
-            {statCheckRunning ? '⏹ Stop Check' : '🔄 Check Stats'}
+          <button className="sm-btn-ghost" onClick={() => setStatCheckShowPanel(p => !p)}>
+            {statCheckShowPanel ? '✕ Close Stats' : '🔄 Check Stats'}
           </button>
           <button className="sm-btn-ghost" onClick={() => setShowProviders(true)}>Providers</button>
           <button className="sm-btn-primary" onClick={() => { setEditorSlot({}); setIsNewSlot(true); }}>+ Add Slot</button>
         </div>
       </div>
 
-      {/* ── Stat check progress ─────────────────────────── */}
-      {statCheckRunning && statCheckProgress.total > 0 && (
-        <div style={{ padding: '8px 16px', background: '#1e293b', borderRadius: 8, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>
-              Page {statCheckProgress.page}/{statCheckProgress.totalPages} — {statCheckProgress.done}/{statCheckProgress.total} slots — {statCheckProgress.updated} updated
-            </div>
-            <div style={{ height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${(statCheckProgress.done / statCheckProgress.total * 100)}%`, background: '#3b82f6', borderRadius: 3, transition: 'width 0.3s' }} />
-            </div>
+      {/* ── Stat check control panel ──────────────────────── */}
+      {statCheckShowPanel && (
+        <div style={{ padding: '12px 16px', background: '#1e293b', borderRadius: 8, marginBottom: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {/* Row 1: Mode + Provider + Page */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <label style={{ fontSize: 12, color: '#94a3b8' }}>Mode:</label>
+            {['all', 'newest', 'provider'].map(m => (
+              <button key={m} disabled={statCheckRunning}
+                onClick={() => { setStatCheckMode(m); setStatCheckPage(1); }}
+                style={{
+                  padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
+                  background: statCheckMode === m ? '#3b82f6' : '#334155', color: statCheckMode === m ? '#fff' : '#94a3b8',
+                }}>
+                {m === 'all' ? 'All' : m === 'newest' ? 'Newest' : 'By Provider'}
+              </button>
+            ))}
+
+            {statCheckMode === 'provider' && (
+              <select value={statCheckProvider} disabled={statCheckRunning}
+                onChange={e => { setStatCheckProvider(e.target.value); setStatCheckPage(1); }}
+                style={{ padding: '4px 8px', borderRadius: 6, fontSize: 12, background: '#0f172a', color: '#e2e8f0', border: '1px solid #334155' }}>
+                <option value="">— Select Provider —</option>
+                {providers.map(p => <option key={p} value={p}>{p}</option>)}
+              </select>
+            )}
+
+            <span style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <label style={{ fontSize: 12, color: '#94a3b8' }}>Page:</label>
+              <button disabled={statCheckRunning || statCheckPage <= 1} onClick={() => setStatCheckPage(p => p - 1)}
+                style={{ background: '#334155', border: 'none', color: '#e2e8f0', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 13 }}>◀</button>
+              <span style={{ fontSize: 12, color: '#e2e8f0', minWidth: 70, textAlign: 'center' }}>{statCheckPage} / {statCheckTotalPages}</span>
+              <button disabled={statCheckRunning || statCheckPage >= statCheckTotalPages} onClick={() => setStatCheckPage(p => p + 1)}
+                style={{ background: '#334155', border: 'none', color: '#e2e8f0', borderRadius: 4, padding: '2px 8px', cursor: 'pointer', fontSize: 13 }}>▶</button>
+              <span style={{ fontSize: 11, color: '#64748b' }}>(200/page)</span>
+            </span>
+          </div>
+
+          {/* Row 2: Start / Progress */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <button onClick={bulkStatCheck}
+              disabled={statCheckMode === 'provider' && !statCheckProvider}
+              style={{
+                padding: '6px 18px', borderRadius: 6, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer',
+                background: statCheckRunning ? '#dc2626' : '#22c55e', color: '#fff',
+              }}>
+              {statCheckRunning ? '⏹ Stop' : '▶ Start Check'}
+            </button>
+            {statCheckRunning && statCheckProgress.total > 0 && (
+              <div style={{ flex: 1 }}>
+                <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 3 }}>
+                  {statCheckProgress.done}/{statCheckProgress.total} slots — {statCheckProgress.updated} updated
+                </div>
+                <div style={{ height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${(statCheckProgress.done / statCheckProgress.total * 100)}%`, background: '#3b82f6', borderRadius: 3, transition: 'width 0.3s' }} />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
