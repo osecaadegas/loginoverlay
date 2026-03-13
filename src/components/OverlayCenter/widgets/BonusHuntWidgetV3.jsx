@@ -165,7 +165,7 @@ function BonusHuntWidgetV3({ config, theme }) {
           <div className="bht3-flip-container">
             <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
               {/* FRONT — Slot Image */}
-              <div className="bht3-flip-face bht3-flip-front">
+              <div className={`bht3-flip-face bht3-flip-front${frontBonus.isSuperBonus ? ' bht3-flip-super' : ''}${frontBonus.isExtreme ? ' bht3-flip-extreme' : ''}`}>
                 {frontBonus.isSuperBonus && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
                 {frontBonus.isExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
