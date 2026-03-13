@@ -86,15 +86,15 @@ function ChatWidget({ config, theme }) {
   const chatStyle = c.chatStyle || 'classic';
 
   /* Style config */
-  const textColor = c.textColor || '#e2e8f0';
-  const headerBg = c.headerBg || 'rgba(30,41,59,0.5)';
-  const headerText = c.headerText || '#94a3b8';
+  const textColor = isMetal ? '#d4d8e0' : (c.textColor || '#e2e8f0');
+  const headerBg = isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : (c.headerBg || 'rgba(30,41,59,0.5)');
+  const headerText = isMetal ? '#a8b0c0' : (c.headerText || '#94a3b8');
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
   const fontSize = c.fontSize || 13;
   const msgSpacing = c.msgSpacing ?? 2;
-  const borderRadius = c.borderRadius ?? 12;
+  const borderRadius = c.borderRadius ?? (isMetal ? 10 : 12);
   const borderWidth = c.borderWidth ?? 1;
-  const borderColor = c.borderColor || 'rgba(51,65,85,0.5)';
+  const borderColor = isMetal ? 'rgba(200,210,225,0.18)' : (c.borderColor || 'rgba(51,65,85,0.5)');
   const width = c.width || 350;
   const height = c.height || 500;
   const nameBold = c.nameBold ?? true;
@@ -114,7 +114,9 @@ function ChatWidget({ config, theme }) {
     cards: 'rgba(18,10,35,0.95)',
     metal: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
   };
-  const bgColor = c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic;
+  const bgColor = isMetal
+    ? 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)'
+    : (c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic);
 
   /* Which features each style shows */
   const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal') ? (c.showHeader !== false) : false;
