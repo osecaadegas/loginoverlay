@@ -33,9 +33,8 @@
   text-rendering: geometricPrecision;
   -webkit-text-size-adjust: 100%;
 
-  /* -- GPU compositing � backface-hidden gives sharper layer compositing -- */
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  /* -- Crisp image rendering for thumbnails / logos -- */
+  image-rendering: auto;
 
   /* -- Subtle text shadow so letters survive video compression -- */
   text-shadow: 0 0 1px rgba(0, 0, 0, 0.18);
@@ -80,11 +79,13 @@
 /* --- Widget Slot --- */
 .or-widget-slot {
   position: absolute;
-  will-change: transform, opacity;
   transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
   text-rendering: geometricPrecision;
+}
+
+/* Promote to GPU layer only while animating */
+.or-widget-slot[class*="or-anim-"] {
+  will-change: transform, opacity;
 }
 
 /* --- Widget base glass card --- */

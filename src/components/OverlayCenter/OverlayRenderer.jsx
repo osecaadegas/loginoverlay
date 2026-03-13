@@ -64,7 +64,6 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(animSpeed || 1) * 0.35}s`,
-    willChange: 'transform, opacity',
     overflow: 'hidden',
     borderRadius: widgetRadius ? `${widgetRadius}px` : undefined,
     filter: shadowFilter,
