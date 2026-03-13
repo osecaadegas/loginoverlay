@@ -384,7 +384,20 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         ...(nb.saturation != null && { saturation: nb.saturation }),
       };
     default:
-      return null; // widget has no sync mapping
+      // Generic fallback — apply standard colour keys to any widget
+      return {
+        ...c,
+        ...(nb.bgColor     != null && { bgColor: nb.bgColor }),
+        ...(nb.accentColor  != null && { accentColor: nb.accentColor }),
+        ...(nb.textColor    != null && { textColor: nb.textColor }),
+        ...(nb.mutedColor   != null && { mutedColor: nb.mutedColor }),
+        ...(nb.borderColor  != null && { borderColor: nb.borderColor }),
+        ...(nb.fontFamily   != null && { fontFamily: nb.fontFamily }),
+        ...(nb.fontSize     != null && { fontSize: nb.fontSize }),
+        ...(nb.brightness   != null && { brightness: nb.brightness }),
+        ...(nb.contrast     != null && { contrast: nb.contrast }),
+        ...(nb.saturation   != null && { saturation: nb.saturation }),
+      };
   }
 }
 
