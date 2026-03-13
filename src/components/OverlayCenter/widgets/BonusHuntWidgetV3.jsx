@@ -116,9 +116,9 @@ function BonusHuntWidgetV3({ config, theme }) {
   };
 
   /* ─── Pick data for front / back ─── */
-  const frontBonus = bonuses[displayIdx % bonuses.length] || bonuses[0];
+  const frontBonus = bonuses.length > 0 ? (bonuses[displayIdx % bonuses.length] || bonuses[0]) : null;
   /* Back shows the NEXT slot — user sees slot name + stats when card flips */
-  const backBonus = bonuses[nextIdx % bonuses.length] || bonuses[0];
+  const backBonus = bonuses.length > 0 ? (bonuses[nextIdx % bonuses.length] || bonuses[0]) : null;
 
   /* ─── Preload upcoming images so swap is seamless ─── */
   useEffect(() => {
@@ -166,8 +166,8 @@ function BonusHuntWidgetV3({ config, theme }) {
 
   const frontBorder = getBorderStyle(frontBonus);
   const backBorder = getBorderStyle(backBonus);
-  const frontIsExtreme = !!(frontBonus.isExtremeBonus || frontBonus.isExtreme);
-  const frontIsSuper = !!frontBonus.isSuperBonus;
+  const frontIsExtreme = !!(frontBonus && (frontBonus.isExtremeBonus || frontBonus.isExtreme));
+  const frontIsSuper = !!(frontBonus && frontBonus.isSuperBonus);
 
   /* Flat glow style (box-shadow) — rendered as overlay OUTSIDE 3D context */
   const glowOverlayStyle = (() => {
