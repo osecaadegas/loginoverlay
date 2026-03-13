@@ -169,29 +169,12 @@ function BonusHuntWidgetV3({ config, theme }) {
   const frontIsExtreme = !!(frontBonus && (frontBonus.isExtremeBonus || frontBonus.isExtreme));
   const frontIsSuper = !!(frontBonus && frontBonus.isSuperBonus);
 
-  /* Flat glow style (box-shadow) — rendered as overlay OUTSIDE 3D context */
-  const glowOverlayStyle = (() => {
-    if (frontIsExtreme) return {
-      position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
-      pointerEvents: 'none', zIndex: 2,
-      boxShadow: '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
-    };
-    if (frontIsSuper) return {
-      position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
-      pointerEvents: 'none', zIndex: 2,
-      boxShadow: '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)',
-    };
-    return null;
-  })();
-
   return (
     <div className="oc-widget-inner oc-bonushunt bht3-root" style={rootStyle}>
 
       {/* ═══ Flip Card Carousel ═══ */}
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
-          {/* Glow overlay — flat 2D, outside preserve-3d, proven to render in OBS */}
-          {glowOverlayStyle && <div style={glowOverlayStyle} />}
           <div className={`bht3-flip-container${frontIsExtreme ? ' bht3-trill-active' : ''}`}>
             <div
               className="bht3-flip-inner"
