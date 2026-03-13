@@ -162,9 +162,23 @@ function BonusHuntWidgetV3({ config, theme }) {
       {/* ═══ Flip Card Carousel ═══ */}
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
-          {/* Glow overlay — flat 2D sibling, never inside preserve-3d */}
-          {frontBonus.isSuperBonus && <div className="bht3-glow-overlay bht3-glow-overlay--super" />}
-          {(frontBonus.isExtremeBonus || frontBonus.isExtreme) && <div className="bht3-glow-overlay bht3-glow-overlay--extreme" />}
+          {/* Glow overlay — flat 2D sibling with INLINE styles for OBS */}
+          {frontBonus.isSuperBonus && (
+            <div style={{
+              position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
+              pointerEvents: 'none', zIndex: 0,
+              border: '2.5px solid rgba(250, 204, 21, 0.6)',
+              boxShadow: '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)',
+            }} />
+          )}
+          {(frontBonus.isExtremeBonus || frontBonus.isExtreme) && (
+            <div className="bht3-glow-extreme-anim" style={{
+              position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
+              pointerEvents: 'none', zIndex: 0,
+              border: '3px solid rgba(239, 68, 68, 0.8)',
+              boxShadow: '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
+            }} />
+          )}
           <div className="bht3-flip-container" style={{ position: 'relative', zIndex: 1 }}>
             <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
               {/* FRONT — Slot Image */}
@@ -180,11 +194,11 @@ function BonusHuntWidgetV3({ config, theme }) {
                 <div className="bht3-flip-gradient" />
                 <div className="bht3-flip-front-info">
                   {frontBonus.opened ? (
-                    <div className="bht3-flip-payout">
+                    <div className="bht3-flip-payout" style={{ fontSize: '15px', fontWeight: 800, color: '#86efac', background: 'rgba(0,0,0,0.8)', padding: '4px 10px', borderRadius: '4px' }}>
                       WIN: {currency}{fmt(frontBonus.payout)}
                     </div>
                   ) : <div />}
-                  <div className="bht3-flip-bet">{currency}{fmt(frontBonus.betSize)}</div>
+                  <div className="bht3-flip-bet" style={{ fontSize: '15px', fontWeight: 800, color: '#fff', background: 'rgba(0,0,0,0.8)', padding: '4px 10px', borderRadius: '4px' }}>{currency}{fmt(frontBonus.betSize)}</div>
                 </div>
               </div>
 

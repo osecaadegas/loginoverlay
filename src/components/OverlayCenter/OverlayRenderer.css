@@ -3176,28 +3176,8 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
-/* ── Glow overlay: SIBLING of 3D container, never inside preserve-3d ── */
-.bht3-glow-overlay {
-  position: absolute;
-  inset: 8px;  /* match padding of flip-area minus a bit */
-  border-radius: var(--bht3-card-radius, 16px);
-  pointer-events: none;
-  z-index: 0;
-}
-
-.bht3-glow-overlay--super {
-  border: 2.5px solid rgba(250, 204, 21, 0.6);
-  box-shadow:
-    0 0 12px 3px rgba(250, 204, 21, 0.5),
-    0 0 28px 6px rgba(234, 179, 8, 0.3),
-    0 0 48px 12px rgba(234, 179, 8, 0.15);
-}
-
-.bht3-glow-overlay--extreme {
-  border: 3px solid rgba(239, 68, 68, 0.8);
-  box-shadow:
-    0 0 14px 4px rgba(239, 68, 68, 0.55),
-    0 0 32px 8px rgba(239, 68, 68, 0.3);
+/* ── Extreme glow trill animation (applied via className for keyframes) ── */
+.bht3-glow-extreme-anim {
   animation: bht3-trill 2.5s ease-in-out infinite;
 }
 
