@@ -52,10 +52,12 @@ export default function BHStatsWidget({ config, allWidgets }) {
       if (!worst || multi < worst.multi) worst = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout, image: b.slot?.image || null };
     }
 
+    const avgBet = total > 0 ? totalBetAll / total : 0;
+
     return {
       total, openedCount: opened.length, unopened,
       totalBetAll, totalWin, breakEven, liveBE, avgMulti,
-      progressPct, best, worst,
+      progressPct, best, worst, avgBet,
     };
   }, [bonuses, startMoney, stopLoss]);
 
@@ -372,6 +374,87 @@ export default function BHStatsWidget({ config, allWidgets }) {
 
         </div>{/* end flipper */}
       </div>{/* end perspective */}
+
+      {/* ═══ Auto-scroll ticker bar ═══ */}
+      {(() => {
+        const items = [
+          { icon: '🎰', label: 'Slots', value: `${stats.total}` },
+          { icon: '📂', label: 'Opened', value: `${stats.openedCount}` },
+          { icon: '📦', label: 'Remaining', value: `${stats.unopened}` },
+          { icon: '💰', label: 'Total Bet', value: `${currency}${fmtInt(stats.totalBetAll)}` },
+          { icon: '🏆', label: 'Total Win', value: `${currency}${fmtInt(stats.totalWin)}` },
+          { icon: '📊', label: 'Avg Bet', value: `${currency}${fmt(stats.avgBet)}` },
+          { icon: '🎯', label: 'BE', value: `${fmtX(stats.breakEven)}` },
+          { icon: '⚡', label: 'Live BE', value: `${fmtX(stats.liveBE)}` },
+          { icon: '📈', label: 'AVG Multi', value: `${fmtX(stats.avgMulti)}` },
+        ];
+        if (stats.best) items.push({ icon: '🟢', label: 'Best', value: `${stats.best.multi.toFixed(1)}x` });
+        if (stats.worst) items.push({ icon: '🔴', label: 'Worst', value: `${stats.worst.multi.toFixed(1)}x` });
+
+        const doubled = [...items, ...items];
+        const dur = items.length * 3;
+
+        const tickerBg = isMetal
+          ? 'linear-gradient(90deg, rgba(42,45,51,0.95), rgba(46,50,56,0.95))'
+          : cardBg;
+        const tickerBorder = isMetal
+          ? '1px solid rgba(200,210,225,0.1)'
+          : `1px solid ${borderColor}`;
+        const pillBg = isMetal
+          ? 'rgba(180,185,195,0.08)'
+          : 'rgba(255,255,255,0.06)';
+        const pillBorder = isMetal
+          ? '1px solid rgba(200,210,225,0.12)'
+          : '1px solid rgba(255,255,255,0.08)';
+
+        return (
+          <div style={{
+            background: tickerBg,
+            border: tickerBorder,
+            borderRadius: Math.max(6, 8 * scale),
+            overflow: 'hidden',
+            position: 'relative',
+            ...(isMetal && { boxShadow: metalBoxShadow }),
+          }}>
+            <div
+              className="bhstats-ticker-scroll"
+              style={{
+                display: 'inline-flex',
+                gap: Math.max(6, 8 * scale),
+                padding: `${Math.max(5, 6 * scale)}px ${Math.max(8, 10 * scale)}px`,
+                whiteSpace: 'nowrap',
+                animation: `bhstats-ticker ${dur}s linear infinite`,
+              }}
+            >
+              {doubled.map((it, i) => (
+                <span key={i} style={{
+                  display: 'inline-flex', alignItems: 'center', gap: Math.max(4, 5 * scale),
+                  background: pillBg,
+                  border: pillBorder,
+                  borderRadius: Math.max(4, 6 * scale),
+                  padding: `${Math.max(2, 3 * scale)}px ${Math.max(6, 8 * scale)}px`,
+                  flexShrink: 0,
+                  ...(isMetal && { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }),
+                }}>
+                  <span style={{ fontSize: `${fs * 0.75}px` }}>{it.icon}</span>
+                  <span style={{
+                    fontSize: `${fs * 0.7}px`, fontWeight: 700, color: mutedColor,
+                    textTransform: 'uppercase', letterSpacing: '0.06em',
+                    ...(isMetal && {
+                      background: 'linear-gradient(90deg, #8a90a0, #b0b8c8)',
+                      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    }),
+                  }}>{it.label}</span>
+                  <span style={{
+                    fontSize: `${fs * 0.78}px`, fontWeight: 800, color: textColor,
+                    ...(isMetal && { textShadow: '0 1px 2px rgba(0,0,0,0.4)' }),
+                  }}>{it.value}</span>
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }

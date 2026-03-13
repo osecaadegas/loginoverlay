@@ -3430,6 +3430,13 @@
   font-size: 17.6px;
 }
 
+/* -- BH Stats ticker marquee -- */
+@keyframes bhstats-ticker {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.bhstats-ticker-scroll:hover { animation-play-state: paused; }
+
 /* -- Stats Footer with 30s flip -- */
 .bht3-stats-footer {
   perspective: 600px;
