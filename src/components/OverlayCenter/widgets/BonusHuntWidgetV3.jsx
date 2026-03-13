@@ -134,7 +134,7 @@ function BonusHuntWidgetV3({ config, theme }) {
     fontSize: `${fontSize}px`,
     width: '100%',
     height: '100%',
-    overflow: 'hidden auto',
+    overflow: 'visible',
     '--bht3-header-bg': headerColor,
     '--bht3-header-accent': headerAccent,
     '--bht3-summary-bg': summaryColor,
