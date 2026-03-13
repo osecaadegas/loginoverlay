@@ -5,7 +5,6 @@ import BonusHuntWidgetV4 from './BonusHuntWidgetV4';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
 import BonusHuntWidgetV10 from './BonusHuntWidgetV10';
-import BonusHuntWidgetV11 from './BonusHuntWidgetV11';
 
 function BonusHuntWidget({ config, theme }) {
   const c = config || {};
@@ -122,9 +121,6 @@ function BonusHuntWidget({ config, theme }) {
   }
   if (c.displayStyle === 'v10_spotlight') {
     return <BonusHuntWidgetV10 config={sortedConfig} theme={theme} />;
-  }
-  if (c.displayStyle === 'v11_glass') {
-    return <BonusHuntWidgetV11 config={sortedConfig} theme={theme} />;
   }
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */

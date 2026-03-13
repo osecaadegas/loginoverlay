@@ -1,6 +1,9 @@
+﻿/* =========================================================
+}
+  color: var(--v10-total-pay, #3b82f6);
 /* =========================================================
-   OverlayRenderer.css � OBS Browser Source Styles
-   Transparent bg, 1920�1080 canvas, GPU-accelerated.
+   OverlayRenderer.css ï¿½ OBS Browser Source Styles
+   Transparent bg, 1920ï¿½1080 canvas, GPU-accelerated.
    All styles scoped to .or-canvas to avoid leaking globally.
    ========================================================= */
 
@@ -120,7 +123,7 @@
 .or-anim-in--slide-left  { animation: or-slideInLeft  var(--ov-anim-speed, 0.4s) ease-out both; }
 .or-anim-in--slide-right { animation: or-slideInRight var(--ov-anim-speed, 0.4s) ease-out both; }
 
-/* Swipe In (faster, no fade � pure directional wipe) */
+/* Swipe In (faster, no fade ï¿½ pure directional wipe) */
 .or-anim-in--swipe-up    { animation: or-swipeInUp    var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
 .or-anim-in--swipe-down  { animation: or-swipeInDown  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
 .or-anim-in--swipe-left  { animation: or-swipeInLeft  var(--ov-anim-speed, 0.35s) cubic-bezier(0.22,1,0.36,1) both; }
@@ -708,7 +711,7 @@
   will-change: transform, opacity, filter;
 }
 
-/* Hidden — off-screen, invisible */
+/* Hidden â€” off-screen, invisible */
 .bht-stack-card--hidden {
   transform: translateX(0) translateZ(-200px) rotateY(0deg) scale(0.4);
   z-index: -1;
@@ -717,7 +720,7 @@
   filter: brightness(0.3) blur(3px);
 }
 
-/* Far left — barely visible, deep in perspective */
+/* Far left â€” barely visible, deep in perspective */
 .bht-stack-card--far-left {
   transform: translateX(-170px) translateZ(-120px) rotateY(35deg) scale(0.65);
   z-index: 0;
@@ -725,7 +728,7 @@
   filter: brightness(0.45) blur(1px);
 }
 
-/* Left — tilted, behind center */
+/* Left â€” tilted, behind center */
 .bht-stack-card--left {
   transform: translateX(-95px) translateZ(-50px) rotateY(20deg) scale(0.85);
   z-index: 1;
@@ -733,7 +736,7 @@
   filter: brightness(0.7);
 }
 
-/* Center — hero card */
+/* Center â€” hero card */
 .bht-stack-card--center {
   transform: translateX(0) translateZ(20px) rotateY(0deg) scale(1);
   z-index: 3;
@@ -741,7 +744,7 @@
   filter: brightness(1);
 }
 
-/* Right — tilted, behind center */
+/* Right â€” tilted, behind center */
 .bht-stack-card--right {
   transform: translateX(95px) translateZ(-50px) rotateY(-20deg) scale(0.85);
   z-index: 1;
@@ -749,7 +752,7 @@
   filter: brightness(0.7);
 }
 
-/* Far right — barely visible, deep in perspective */
+/* Far right â€” barely visible, deep in perspective */
 .bht-stack-card--far-right {
   transform: translateX(170px) translateZ(-120px) rotateY(-35deg) scale(0.65);
   z-index: 0;
@@ -1122,7 +1125,7 @@
   text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
 }
 
-/* --- Bonus Hunt: Neon (legacy � kept for backwards compat) --- */
+/* --- Bonus Hunt: Neon (legacy ï¿½ kept for backwards compat) --- */
 .oc-bonushunt--neon .bht-card {
   box-shadow: 0 0 12px rgba(0,255,200,0.06);
 }
@@ -1137,7 +1140,7 @@
 }
 
 /* -----------------------------------------------------------
-   Bonus Hunt V4 — "Forged Metal"
+   Bonus Hunt V4 â€” "Forged Metal"
    Dark brushed-steel industrial theme: metal texture overlay,
    embossed rivets, stamped text, industrial gauge, compact rows.
    ----------------------------------------------------------- */
@@ -1182,7 +1185,7 @@
   z-index: 1;
 }
 
-/* ═══ HEADER ═══ */
+/* â•â•â• HEADER â•â•â• */
 .m4-header {
   display: flex;
   align-items: center;
@@ -1253,7 +1256,7 @@
   text-transform: uppercase;
 }
 
-/* ═══ STATS BAR ═══ */
+/* â•â•â• STATS BAR â•â•â• */
 .m4-stats-bar {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1286,7 +1289,7 @@
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
-/* ═══ GAUGE ═══ */
+/* â•â•â• GAUGE â•â•â• */
 .m4-gauge {
   display: flex;
   align-items: center;
@@ -1332,7 +1335,7 @@
   letter-spacing: 0.04em;
 }
 
-/* ═══ CURRENT BONUS ═══ */
+/* â•â•â• CURRENT BONUS â•â•â• */
 .m4-current {
   display: flex;
   gap: 8px;
@@ -1455,7 +1458,7 @@
   50% { transform: scale(1.03); }
 }
 
-/* ═══ BONUS LIST ═══ */
+/* â•â•â• BONUS LIST â•â•â• */
 .m4-list {
   flex: 1;
   overflow: hidden;
@@ -1562,7 +1565,7 @@
   color: var(--m4-red, #ef5350) !important;
 }
 
-/* ═══ FOOTER ═══ */
+/* â•â•â• FOOTER â•â•â• */
 .m4-footer {
   display: flex;
   align-items: center;
@@ -2030,7 +2033,7 @@
   color: #fde68a;
 }
 
-/* --- Bonus Hunt: Carousel (v7) � Stacked layout --- */
+/* --- Bonus Hunt: Carousel (v7) ï¿½ Stacked layout --- */
 .oc-bonushunt--carousel {
   flex-direction: column !important;
   overflow: hidden !important;
@@ -2297,7 +2300,7 @@
 }
 
 /* ----------------------------------------------------------
-   Bonus Hunt Widget � Style 2 (Sleek Slate)
+   Bonus Hunt Widget ï¿½ Style 2 (Sleek Slate)
    ---------------------------------------------------------- */
 
 .bht2-root {
@@ -2969,12 +2972,12 @@
 
 
 /* ---------------------------------------------------------------
-   STYLE 3 � FLIP CARD   (bht3-*)
+   STYLE 3 ï¿½ FLIP CARD   (bht3-*)
    --------------------------------------------------------------- */
 
-/* -- Spin keyframe removed — rotation is JS-driven for perfect sync -- */
+/* -- Spin keyframe removed â€” rotation is JS-driven for perfect sync -- */
 
-/* -- Root � override .or-widget-inner & .oc-bonushunt glass styles -- */
+/* -- Root ï¿½ override .or-widget-inner & .oc-bonushunt glass styles -- */
 .bht3-root {
   display: flex;
   flex-direction: column;
@@ -3176,7 +3179,7 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
-/* ── Extreme trill: subtle shake on the flip container ── */
+/* â”€â”€ Extreme trill: subtle shake on the flip container â”€â”€ */
 .bht3-flip-container.bht3-trill-active {
   animation: bht3-trill 2.5s ease-in-out infinite;
 }
@@ -3198,7 +3201,7 @@
   display: block;
 }
 
-/* ── Light sweep on super / extreme front face ── */
+/* â”€â”€ Light sweep on super / extreme front face â”€â”€ */
 .bht3-sweep {
   position: absolute;
   inset: 0;
@@ -3629,397 +3632,6 @@
   color: #f87171;
 }
 
-/* ===============================================================
-   STYLE 11 — GLASS (Glassmorphism)   (bhg-*)
-   =============================================================== */
-
-/* Root */
-.bhg-root {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  background: transparent !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  box-shadow: none !important;
-  border: none !important;
-}
-
-/* Glass card base */
-.bhg-card {
-  background: rgba(255, 255, 255, 0.06);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: var(--bhg-radius, 16px);
-  padding: 14px 16px;
-  box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-}
-
-/* ── Header ── */
-.bhg-header-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 12px;
-}
-.bhg-header-left {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.bhg-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 2px solid rgba(255,255,255,0.15);
-}
-.bhg-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.08);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 16px;
-}
-.bhg-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--bhg-text, #f1f5f9);
-  letter-spacing: 0.06em;
-}
-.bhg-subtitle {
-  font-size: 11px;
-  color: var(--bhg-muted, #94a3b8);
-}
-.bhg-badge {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.15);
-  padding: 4px 12px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--bhg-accent, #818cf8);
-}
-
-/* Stats row */
-.bhg-stats-row {
-  display: flex;
-  gap: 8px;
-}
-.bhg-stat {
-  flex: 1;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 8px 10px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.bhg-stat-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--bhg-muted, #94a3b8);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-}
-.bhg-stat-val {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--bhg-stat-val, #fff);
-}
-
-/* ── Summary ── */
-.bhg-summary-top {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.bhg-label {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--bhg-text, #f1f5f9);
-  letter-spacing: 0.05em;
-}
-.bhg-label-xs {
-  font-size: 10px;
-  color: var(--bhg-muted, #94a3b8);
-  margin-left: auto;
-}
-.bhg-pill {
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.1);
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--bhg-accent, #818cf8);
-}
-
-/* Progress */
-.bhg-progress {
-  height: 6px;
-  border-radius: 3px;
-  background: rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-  margin-bottom: 10px;
-}
-.bhg-progress-fill {
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, var(--bhg-accent, #818cf8), rgba(167,139,250,0.9));
-  transition: width 0.5s ease;
-}
-
-/* Badges */
-.bhg-badges {
-  display: flex;
-  gap: 8px;
-}
-.bhg-badge-tag {
-  font-size: 11px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.bhg-badge-tag--super {
-  background: rgba(234, 179, 8, 0.12);
-  color: #facc15;
-  border: 1px solid rgba(234, 179, 8, 0.2);
-}
-.bhg-badge-tag--extreme {
-  background: rgba(239, 68, 68, 0.12);
-  color: #fca5a5;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-/* ── Active Bonus ── */
-.bhg-active-inner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.bhg-active-img {
-  width: 56px;
-  height: 48px;
-  border-radius: 10px;
-  object-fit: cover;
-  flex-shrink: 0;
-  border: 1px solid rgba(255,255,255,0.1);
-}
-.bhg-active-placeholder {
-  width: 56px;
-  height: 48px;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.05);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  flex-shrink: 0;
-}
-.bhg-active-info {
-  flex: 1;
-  min-width: 0;
-}
-.bhg-active-name {
-  font-size: 14px;
-  font-weight: 800;
-  color: var(--bhg-text, #f1f5f9);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  margin-bottom: 4px;
-}
-.bhg-active-num {
-  font-size: 11px;
-  color: var(--bhg-muted, #94a3b8);
-  font-weight: 700;
-}
-.bhg-active-mini {
-  display: flex;
-  gap: 8px;
-}
-.bhg-mini {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-.bhg-mini-label {
-  font-size: 9px;
-  font-weight: 700;
-  color: var(--bhg-muted, #94a3b8);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.bhg-mini-val {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--bhg-stat-val, #fff);
-}
-
-/* ── Slot List ── */
-.bhg-list-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-.bhg-list {
-  max-height: var(--bhg-list-max, 400px);
-  overflow: hidden;
-}
-.bhg-list-track {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  animation: bhg-scroll calc(var(--bhg-item-count, 10) * 2.5s) linear infinite;
-}
-@keyframes bhg-scroll {
-  0%   { transform: translateY(0); }
-  100% { transform: translateY(-50%); }
-}
-.bhg-slot {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 10px;
-  border-radius: 10px;
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  transition: background 0.2s, border-color 0.2s;
-}
-.bhg-slot--active {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: var(--bhg-accent, rgba(129,140,248,0.3));
-}
-.bhg-slot--locked {
-  opacity: 0.55;
-}
-.bhg-slot--super {
-  border-color: rgba(234, 179, 8, 0.25);
-}
-.bhg-slot-img-wrap {
-  width: var(--bhg-img-h, 36px);
-  height: var(--bhg-img-h, 36px);
-  flex-shrink: 0;
-  border-radius: 8px;
-  overflow: hidden;
-  background: rgba(255,255,255,0.04);
-}
-.bhg-slot-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-.bhg-slot-placeholder {
-  width: 100%;
-  height: 100%;
-  background: rgba(255,255,255,0.04);
-}
-.bhg-slot-info {
-  flex: 1;
-  min-width: 0;
-}
-.bhg-slot-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-}
-.bhg-slot-name {
-  font-size: 12px;
-  font-weight: 700;
-  color: var(--bhg-text, #f1f5f9);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.bhg-slot-num {
-  font-size: 10px;
-  color: var(--bhg-muted, #94a3b8);
-  flex-shrink: 0;
-  margin-left: 6px;
-}
-.bhg-slot-bottom {
-  display: flex;
-  justify-content: space-between;
-  margin-top: 2px;
-}
-.bhg-slot-bet {
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--bhg-muted, #94a3b8);
-}
-.bhg-slot-multi {
-  font-size: 11px;
-  font-weight: 800;
-  color: var(--bhg-stat-val, #fff);
-}
-
-/* ── Footer ── */
-.bhg-footer-stats {
-  display: flex;
-  gap: 8px;
-  margin-bottom: 10px;
-}
-.bhg-footer-stat {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.06);
-  border-radius: 10px;
-  padding: 8px;
-}
-.bhg-footer-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--bhg-muted, #94a3b8);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-}
-.bhg-footer-val {
-  font-size: 15px;
-  font-weight: 800;
-  color: var(--bhg-stat-val, #fff);
-}
-
-/* Total pay bar */
-.bhg-total {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: var(--bhg-total-bg, #22c55e);
-  color: var(--bhg-total-text, #fff);
-  padding: 10px 14px;
-  border-radius: 10px;
-  font-weight: 800;
-}
-.bhg-total-label {
-  font-size: 12px;
-  letter-spacing: 0.05em;
-}
-.bhg-total-val {
-  font-size: 17px;
-}
-
-/* Shared accent helpers */
-.bhg-green { color: #4ade80 !important; }
-.bhg-amber { color: #fbbf24 !important; }
-
 /* =========================================================
    RAID SHOUTOUT WIDGET — Minimal Expand/Collapse Alert
    ========================================================= */
@@ -4168,7 +3780,7 @@
 }
 
 /* ---------------------------------------------------
-   PHASE ANIMATIONS � Enter / Visible / Exit
+   PHASE ANIMATIONS ï¿½ Enter / Visible / Exit
    --------------------------------------------------- */
 
 /* Entering: slide up from below */
@@ -4198,7 +3810,7 @@
 }
 
 /* -----------------------------------------------------------
-   CHAT WIDGET � OBS Overlay styles
+   CHAT WIDGET ï¿½ OBS Overlay styles
    ----------------------------------------------------------- */
 .ov-chat-widget {
   box-sizing: border-box;
@@ -4223,7 +3835,7 @@
 }
 
 /* ---------------------------------------------------
-   Community Games � OBS Overlay Styles
+   Community Games ï¿½ OBS Overlay Styles
    --------------------------------------------------- */
 
 /* --- Salty Words Widget --- */
@@ -4417,7 +4029,7 @@
 .ov-chat-widget--classic .ov-chat-messages { padding: 6px 0; }
 .ov-chat-widget--classic .ov-chat-msg:hover { background: rgba(255,255,255,0.03); }
 
-/* -- Floating Mode � transparent bg, pill bubbles -- */
+/* -- Floating Mode ï¿½ transparent bg, pill bubbles -- */
 .ov-chat-widget--floating { background: transparent !important; border: none !important; }
 .ov-chat-widget--floating .ov-chat-messages {
   display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
@@ -4426,7 +4038,7 @@
 .ov-chat-widget--floating .ov-chat-msg:hover { background: none; }
 .ov-chat-widget--floating .ov-chat-username::after { content: none; }
 
-/* -- Bubble Mode � social media speech bubbles -- */
+/* -- Bubble Mode ï¿½ social media speech bubbles -- */
 .ov-chat-widget--bubble .ov-chat-messages { padding: 6px 0; }
 .ov-chat-widget--bubble .ov-chat-msg {
   gap: 8px; align-items: flex-start;
@@ -4434,12 +4046,12 @@
 .ov-chat-widget--bubble .ov-chat-msg:hover { background: rgba(255,255,255,0.02); }
 .ov-chat-widget--bubble .ov-chat-username::after { content: none; }
 
-/* -- Ticker Mode � horizontal scroll bar -- */
+/* -- Ticker Mode ï¿½ horizontal scroll bar -- */
 .ov-chat-widget--ticker {
   overflow: hidden !important;
 }
 
-/* -- Stack Mode � fading message pile, transparent -- */
+/* -- Stack Mode ï¿½ fading message pile, transparent -- */
 .ov-chat-widget--stack { background: transparent !important; border: none !important; }
 .ov-chat-widget--stack .ov-chat-messages {
   display: flex; flex-direction: column; justify-content: flex-end; padding: 4px 0;
@@ -4450,7 +4062,7 @@
 .ov-chat-widget--stack .ov-chat-msg:hover { background: none; }
 .ov-chat-widget--stack .ov-chat-username::after { content: none; }
 
-/* -- Typewriter Mode � terminal / hacker look -- */
+/* -- Typewriter Mode ï¿½ terminal / hacker look -- */
 .ov-chat-widget--typewriter {
   border: 1px solid rgba(74,222,128,0.15) !important;
   box-shadow: 0 0 20px rgba(74,222,128,0.06), inset 0 0 40px rgba(0,20,0,0.3);
@@ -4464,7 +4076,7 @@
 .ov-chat-widget--typewriter .ov-chat-msg:hover { background: rgba(74,222,128,0.04); }
 .ov-chat-widget--typewriter .ov-chat-username::after { content: none; }
 
-/* -- Sidebar Mode � color-coded left border strip -- */
+/* -- Sidebar Mode ï¿½ color-coded left border strip -- */
 .ov-chat-widget--sidebar .ov-chat-messages { padding: 4px 0; }
 .ov-chat-widget--sidebar .ov-chat-msg {
   gap: 0; transition: background 0.12s;
@@ -4473,7 +4085,7 @@
 .ov-chat-widget--sidebar .ov-chat-username::after { content: none; }
 
 /* ------------------------------------------------------
-   Cards Mode � dark card per message with Twitch badges
+   Cards Mode ï¿½ dark card per message with Twitch badges
    ------------------------------------------------------ */
 .ov-chat-widget--cards {
   background: rgba(18,10,35,0.95) !important;
@@ -4619,7 +4231,7 @@
 }
 
 /* -----------------------------------------------------------
-   BONUS HUNT V8 � Card Stack / Fan Carousel (transparent BG)
+   BONUS HUNT V8 ï¿½ Card Stack / Fan Carousel (transparent BG)
    ----------------------------------------------------------- */
 .bhv8-root {
   position: relative;
@@ -4675,7 +4287,7 @@
   75% { transform: rotateX(0deg) rotateY(-1.5deg); }
 }
 
-/* card wrapper � absolutely centred; inline transform slides it into position */
+/* card wrapper ï¿½ absolutely centred; inline transform slides it into position */
 .bhv8-card-wrapper {
   /* position set inline */
   width: 200px;
@@ -4993,7 +4605,7 @@
 
 
 /* -----------------------------------------------------------
-   BONUS HUNT V9 � Hunt Board (contained 3D carousel)
+   BONUS HUNT V9 ï¿½ Hunt Board (contained 3D carousel)
    ----------------------------------------------------------- */
 .bhv9-root {
   width: 100%; height: 100%;
@@ -5242,7 +4854,7 @@
 .bhv9-current-bet { font-size: 0.72em; font-weight: 700; color: var(--bhv9-muted, #94a3b8); }
 
 /* -----------------------------------------------------------
-   BONUS HUNT V5 � Horizontal + V7 � Carousel
+   BONUS HUNT V5 ï¿½ Horizontal + V7 ï¿½ Carousel
    (shared bhtc-* card styles used by both layouts)
    ----------------------------------------------------------- */
 
@@ -5928,10 +5540,10 @@
 }
 
 
-/* ═════════════════════════════════════════════════════════════
-   V10 — "Spotlight" Bonus Hunt
-   Dark blue, compact list → expanding current bonus on opening
-   ═════════════════════════════════════════════════════════════ */
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   V10 â€” "Spotlight" Bonus Hunt
+   Dark blue, compact list â†’ expanding current bonus on opening
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .v10-root {
   display: flex;
@@ -5941,7 +5553,7 @@
   gap: 0;
 }
 
-/* ── Header ── */
+/* â”€â”€ Header â”€â”€ */
 .v10-header {
   display: flex;
   align-items: center;
@@ -5973,7 +5585,7 @@
   color: var(--v10-muted, #64748b);
 }
 
-/* ── Top stats: START / STOP / TARGET ── */
+/* â”€â”€ Top stats: START / STOP / TARGET â”€â”€ */
 .v10-stats-top {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -6015,7 +5627,7 @@
   text-overflow: ellipsis;
 }
 
-/* ── Progress bar ── */
+/* â”€â”€ Progress bar â”€â”€ */
 .v10-progress {
   padding: 4px 12px 6px;
 }
@@ -6050,7 +5662,7 @@
   transition: width 0.6s ease;
 }
 
-/* ── Bottom stats: AVG / BE INI / BE ── */
+/* â”€â”€ Bottom stats: AVG / BE INI / BE â”€â”€ */
 .v10-stats-bottom {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -6084,7 +5696,7 @@
   color: var(--v10-stat-val, #ffffff);
 }
 
-/* ── Bonus List label ── */
+/* â”€â”€ Bonus List label â”€â”€ */
 .v10-list-label {
   text-align: center;
   font-size: 0.65em;
@@ -6096,7 +5708,7 @@
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 
-/* ── Spotlight / Current bonus expanded card ── */
+/* â”€â”€ Spotlight / Current bonus expanded card â”€â”€ */
 .v10-spotlight {
   display: flex;
   gap: 10px;
@@ -6186,7 +5798,7 @@
   color: var(--v10-accent, #2563eb);
 }
 
-/* ── Bonus list (auto-scroll) ── */
+/* â”€â”€ Bonus list (auto-scroll) â”€â”€ */
 .v10-list {
   flex: 1;
   overflow: hidden;
@@ -6205,7 +5817,7 @@
   100% { transform: translateY(-50%); }
 }
 
-/* ── Row ── */
+/* â”€â”€ Row â”€â”€ */
 .v10-row {
   display: flex;
   align-items: center;
@@ -6276,7 +5888,7 @@
   margin-left: auto;
 }
 
-/* ── Opened section ── */
+/* â”€â”€ Opened section â”€â”€ */
 .v10-opened-section {
   padding: 6px 12px;
   text-align: center;
@@ -6293,7 +5905,7 @@
   color: var(--v10-muted);
 }
 
-/* ── Footer ── */
+/* â”€â”€ Footer â”€â”€ */
 .v10-footer {
   display: flex;
   justify-content: space-between;

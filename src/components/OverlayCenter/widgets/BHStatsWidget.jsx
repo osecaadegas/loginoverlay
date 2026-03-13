@@ -12,6 +12,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
   const isMetal = (c.displayStyle || 'default') === 'metal';
+  const isGlass = (c.displayStyle || 'default') === 'glass';
 
   /* ─── Find the bonus_hunt widget config ─── */
   const bhConfig = useMemo(() => {
@@ -67,31 +68,36 @@ export default function BHStatsWidget({ config, allWidgets }) {
   const fontWeight = c.fontWeight || '600';
 
   /* Metal palette — polished brushed-steel grey tones */
+  /* Glass palette — frosted translucent panels */
   const bgColor = isMetal
     ? 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)'
+    : isGlass ? 'rgba(255, 255, 255, 0.04)'
     : (c.bgColor || 'rgba(15, 23, 42, 0.9)');
   const cardBg = isMetal
     ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)'
+    : isGlass ? 'rgba(255, 255, 255, 0.06)'
     : (c.cardBg || 'rgba(255,255,255,0.04)');
   const textColor = isMetal ? '#d4d8e0' : (c.textColor || '#f1f5f9');
-  const mutedColor = isMetal ? '#7a8090' : (c.mutedColor || '#64748b');
-  const accentColor = isMetal ? '#a8b0c0' : (c.accentColor || '#818cf8');
-  const progressColor = isMetal ? '#8a9aaa' : (c.progressColor || '#22c55e');
-  const progressBg = isMetal ? 'rgba(255,255,255,0.06)' : (c.progressBgColor || 'rgba(255,255,255,0.08)');
+  const mutedColor = isMetal ? '#7a8090' : isGlass ? '#a1a8b8' : (c.mutedColor || '#64748b');
+  const accentColor = isMetal ? '#a8b0c0' : isGlass ? '#a78bfa' : (c.accentColor || '#818cf8');
+  const progressColor = isMetal ? '#8a9aaa' : isGlass ? '#a78bfa' : (c.progressColor || '#22c55e');
+  const progressBg = isMetal ? 'rgba(255,255,255,0.06)' : isGlass ? 'rgba(255,255,255,0.1)' : (c.progressBgColor || 'rgba(255,255,255,0.08)');
   const bestColor = isMetal ? '#7ecfa0' : (c.bestColor || '#22c55e');
   const worstColor = isMetal ? '#e07070' : (c.worstColor || '#f87171');
-  const borderColor = isMetal ? 'rgba(200,210,225,0.12)' : (c.borderColor || 'rgba(255,255,255,0.06)');
-  const borderRadius = c.borderRadius ?? (isMetal ? 10 : 14);
+  const borderColor = isMetal ? 'rgba(200,210,225,0.12)' : isGlass ? 'rgba(255,255,255,0.12)' : (c.borderColor || 'rgba(255,255,255,0.06)');
+  const borderRadius = c.borderRadius ?? (isMetal ? 10 : isGlass ? 16 : 14);
   const showTitle = c.showTitle !== false;
   const layout = c.layout || 'vertical';
 
   /* Metal-specific extras */
-  const metalBorder = isMetal ? '1px solid rgba(200,210,225,0.18)' : `1px solid ${borderColor}`;
+  const metalBorder = isMetal ? '1px solid rgba(200,210,225,0.18)' : isGlass ? '1px solid rgba(255,255,255,0.12)' : `1px solid ${borderColor}`;
   const metalBoxShadow = isMetal
     ? 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)'
+    : isGlass ? '0 8px 32px rgba(0,0,0,0.2), inset 0 1px 0 rgba(255,255,255,0.08)'
     : 'none';
   const metalRootShadow = isMetal
     ? '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+    : isGlass ? '0 8px 32px rgba(0,0,0,0.25), inset 0 1px 0 rgba(255,255,255,0.06)'
     : 'none';
 
   /* ─── 30-second stats flip ─── */
@@ -147,6 +153,12 @@ export default function BHStatsWidget({ config, allWidgets }) {
       border: '1px solid rgba(200,210,225,0.15)',
       boxShadow: metalRootShadow,
     }),
+    ...(isGlass && {
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255,255,255,0.12)',
+      boxShadow: metalRootShadow,
+    }),
   };
 
   const statBoxStyle = {
@@ -160,6 +172,12 @@ export default function BHStatsWidget({ config, allWidgets }) {
     flex: 1,
     minWidth: 0,
     ...(isMetal && {
+      boxShadow: metalBoxShadow,
+    }),
+    ...(isGlass && {
+      backdropFilter: 'blur(12px)',
+      WebkitBackdropFilter: 'blur(12px)',
+      border: '1px solid rgba(255,255,255,0.1)',
       boxShadow: metalBoxShadow,
     }),
   };
@@ -201,7 +219,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
           paddingBottom: gap,
           borderBottom: isMetal ? '1px solid rgba(200,210,225,0.12)' : `1px solid ${borderColor}`,
         }}>
-          <span style={{ fontSize: fs * 1.3 }}>{isMetal ? '⚙️' : '📊'}</span>
+          <span style={{ fontSize: fs * 1.3 }}>{isMetal ? '⚙️' : isGlass ? '🧊' : '📊'}</span>
           <span style={{
             fontSize: fs * 1.05, fontWeight: 800, letterSpacing: isMetal ? '0.08em' : '0.03em',
             ...(isMetal && {
