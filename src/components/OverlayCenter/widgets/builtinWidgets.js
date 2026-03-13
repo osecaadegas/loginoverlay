@@ -157,6 +157,7 @@ registerWidget({
     { id: 'v2', icon: '📊', label: 'Compact' },
     { id: 'v3', icon: '💡', label: 'Neon' },
     { id: 'v4', icon: '✦', label: 'Minimal' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
@@ -250,6 +251,7 @@ registerWidget({
     { id: 'typewriter', icon: '⌨️', label: 'Terminal' },
     { id: 'sidebar',    icon: '📌', label: 'Sidebar' },
     { id: 'cards',      icon: '🃏', label: 'Cards' },
+    { id: 'metal',      icon: '⚙️', label: 'Metal' },
   ],
   styleConfigKey: 'chatStyle',
   defaults: {
@@ -332,7 +334,10 @@ registerWidget({
   category: 'stream',
   component: ImageSlideshowWidget,
   configPanel: ImageSlideshowConfig,
-  styles: [{ id: 'v1', icon: '🖼️', label: 'Classic' }],
+  styles: [
+    { id: 'v1', icon: '🖼️', label: 'Classic' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
+  ],
   styleConfigKey: 'displayStyle',
   defaults: {
     images: [],
@@ -497,6 +502,7 @@ registerWidget({
     { id: 'glass',        icon: '🪟', label: 'Glass' },
     { id: 'wave',         icon: '🌊', label: 'Wave' },
     { id: 'neon',         icon: '💡', label: 'Neon' },
+    { id: 'metal',        icon: '⚙️', label: 'Metal' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
@@ -562,6 +568,7 @@ registerWidget({
   configPanel: SaltyWordsConfig,
   styles: [
     { id: 'v1', icon: '🧂', label: 'Classic' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
@@ -628,6 +635,7 @@ registerWidget({
     { id: 'v2_board', icon: '🎯', label: 'Hunt Board' },
     { id: 'v3_compact', icon: '🎴', label: 'Compact Carousel' },
     { id: 'v4_float', icon: '💭', label: 'Floating List' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

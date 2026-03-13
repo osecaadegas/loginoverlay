@@ -101,6 +101,8 @@ function ChatWidget({ config, theme }) {
   const msgLineHeight = c.msgLineHeight ?? 1.45;
   const msgPadH = c.msgPadH ?? 10;
 
+  const isMetal = chatStyle === 'metal';
+
   /* Style-specific bg defaults */
   const bgDefaults = {
     classic: 'rgba(15,23,42,0.95)',
@@ -110,13 +112,14 @@ function ChatWidget({ config, theme }) {
     typewriter: 'rgba(0,8,0,0.92)',
     sidebar: 'rgba(10,12,20,0.9)',
     cards: 'rgba(18,10,35,0.95)',
+    metal: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
   };
   const bgColor = c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic;
 
   /* Which features each style shows */
-  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards') ? (c.showHeader !== false) : false;
+  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal') ? (c.showHeader !== false) : false;
   const showLegend = (chatStyle === 'classic') ? (c.showLegend !== false) : false;
-  const showBadges = (chatStyle === 'classic') ? (c.showBadges !== false) : false;
+  const showBadges = (chatStyle === 'classic' || chatStyle === 'metal') ? (c.showBadges !== false) : false;
 
   const handleMessage = useCallback((msg) => {
     setMessages(prev => {
@@ -160,15 +163,20 @@ function ChatWidget({ config, theme }) {
     width: '100%',
     height: '100%',
     background: bgColor,
-    border: (borderWidth && !isTransparent) ? `${borderWidth}px solid ${borderColor}` : 'none',
+    border: isMetal
+      ? '1px solid rgba(200,210,225,0.18)'
+      : (borderWidth && !isTransparent) ? `${borderWidth}px solid ${borderColor}` : 'none',
     borderRadius: isTransparent ? 0 : `${borderRadius}px`,
     fontFamily,
     fontSize: `${fontSize}px`,
-    color: textColor,
+    color: isMetal ? '#d4d8e0' : textColor,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
     filter: filterStyle,
+    ...(isMetal && {
+      boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+    }),
     /* Cards CSS vars — synced from config */
     '--chat-card-bg': c.cardBg || 'rgba(20,15,40,0.85)',
     '--chat-card-border': c.cardBorder || borderColor || 'rgba(100,70,180,0.2)',
@@ -204,7 +212,29 @@ function ChatWidget({ config, theme }) {
         </div>
       )}
 
-      {showHeader && chatStyle !== 'cards' && (
+      {showHeader && chatStyle === 'metal' && (
+        <div style={{
+          padding: '8px 14px',
+          background: 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)',
+          borderBottom: '1px solid rgba(200,210,225,0.12)',
+          display: 'flex', alignItems: 'center', gap: 8,
+        }}>
+          <span style={{
+            fontSize: '0.75em', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase',
+            background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          }}>LIVE CHAT</span>
+          <span style={{
+            marginLeft: 'auto', fontSize: '0.7em', fontWeight: 700, color: '#7a8090',
+            background: 'linear-gradient(135deg, #555a65, #3a3e48)',
+            padding: '2px 8px', borderRadius: 4,
+            border: '1px solid rgba(200,210,225,0.2)',
+            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+          }}>{c.twitchChannel ? c.twitchChannel.toUpperCase() : 'CHANNEL'}</span>
+        </div>
+      )}
+
+      {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && (
         <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
           <span className="ov-chat-header-title">Live Chat</span>
           <div className="ov-chat-header-badges">
@@ -370,6 +400,36 @@ function ChatWidget({ config, theme }) {
                   </div>
                 </div>
                 <div className="ov-cards-msg-text">{msg.message}</div>
+              </div>
+            );
+          }
+
+          /* ── Style: Metal — brushed steel look ── */
+          if (chatStyle === 'metal') {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--metal" style={{
+                padding: `${msgSpacing + 1}px ${msgPadH}px`,
+                animation: 'ov-float-in 0.25s ease-out',
+                borderBottom: '1px solid rgba(200,210,225,0.06)',
+              }}>
+                {showBadges && (
+                  <span style={{
+                    background: 'linear-gradient(135deg, #555a65, #3a3e48)',
+                    color: '#a8b0c0', fontSize: '0.7em', fontWeight: 800,
+                    padding: '2px 6px', borderRadius: 3, marginRight: 6,
+                    border: '1px solid rgba(200,210,225,0.15)',
+                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+                  }}>{plt.icon}</span>
+                )}
+                <div className="ov-chat-msg-body">
+                  <span style={{
+                    fontWeight: 700, fontSize: '0.88em',
+                    background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+                    WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                    marginRight: 6,
+                  }}>{msg.username}</span>
+                  <span style={{ color: '#d4d8e0', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{msg.message}</span>
+                </div>
               </div>
             );
           }

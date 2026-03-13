@@ -12,6 +12,7 @@ import { supabase } from '../../../config/supabaseClient';
 
 function SaltyWordsWidget({ config, widgetId }) {
   const c = config || {};
+  const isMetal = (c.displayStyle || 'v1') === 'metal';
   const words = c.words || [];
   const status = c.gameStatus || 'idle'; // idle | open | reveal | result
   const selectedWord = c.selectedWord || null;
@@ -92,11 +93,30 @@ function SaltyWordsWidget({ config, widgetId }) {
   useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
 
   return (
-    <div className="cg-salty" style={{ '--accent': accent, fontFamily: font }}>
+    <div className="cg-salty" style={{
+      '--accent': accent,
+      fontFamily: font,
+      ...(isMetal && {
+        background: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
+        border: '1px solid rgba(200,210,225,0.18)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+        borderRadius: 10,
+        color: '#d4d8e0',
+      }),
+    }}>
       {/* Title */}
       <div className="cg-salty__header">
-        <span className="cg-salty__title">{title}</span>
-        <span className={`cg-salty__status cg-salty__status--${status}`}>
+        <span className="cg-salty__title" style={isMetal ? {
+          background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          letterSpacing: '0.14em',
+        } : undefined}>{title}</span>
+        <span className={`cg-salty__status cg-salty__status--${status}`} style={isMetal ? {
+          background: 'linear-gradient(135deg, #555a65, #3a3e48)',
+          color: '#a8b0c0',
+          border: '1px solid rgba(200,210,225,0.2)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+        } : undefined}>
           {status === 'idle' && '⏸ Waiting'}
           {status === 'open' && '🟢 Bets Open'}
           {status === 'reveal' && '👀 Revealing...'}
@@ -113,12 +133,27 @@ function SaltyWordsWidget({ config, widgetId }) {
             <div
               key={i}
               className={`cg-salty__word ${isSelected ? 'cg-salty__word--selected' : ''} ${status === 'result' && !isSelected ? 'cg-salty__word--dimmed' : ''}`}
+              style={isMetal ? {
+                background: 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)',
+                border: '1px solid rgba(200,210,225,0.12)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)',
+                ...(isSelected && {
+                  border: '1px solid rgba(200,210,225,0.3)',
+                  boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1), 0 4px 12px rgba(0,0,0,0.4)',
+                }),
+              } : undefined}
             >
-              <div className="cg-salty__word-bar" style={{ width: `${percent}%` }} />
-              <span className="cg-salty__word-text">{w.text || `Word ${i + 1}`}</span>
-              <div className="cg-salty__word-meta">
+              <div className="cg-salty__word-bar" style={isMetal ? {
+                background: 'linear-gradient(90deg, #606878, #8a95a8, #a0aabb)',
+                width: `${percent}%`,
+              } : { width: `${percent}%` }} />
+              <span className="cg-salty__word-text" style={isMetal ? {
+                background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+                WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+              } : undefined}>{w.text || `Word ${i + 1}`}</span>
+              <div className="cg-salty__word-meta" style={isMetal ? { color: '#7a8090' } : undefined}>
                 <span className="cg-salty__word-bets">{(w.bets || 0).toLocaleString()} votes</span>
-                {totalBets > 0 && <span className="cg-salty__word-pct">{percent}%</span>}
+                {totalBets > 0 && <span className="cg-salty__word-pct" style={isMetal ? { color: '#a8b0c0' } : undefined}>{percent}%</span>}
               </div>
               {isSelected && (
                 <div className="cg-salty__word-crown">👑</div>
@@ -130,14 +165,18 @@ function SaltyWordsWidget({ config, widgetId }) {
 
       {/* Pool info */}
       {totalBets > 0 && (
-        <div className="cg-salty__pool">
+        <div className="cg-salty__pool" style={isMetal ? {
+          background: 'linear-gradient(160deg, rgba(180,185,195,0.08) 0%, rgba(120,125,135,0.04) 100%)',
+          border: '1px solid rgba(200,210,225,0.1)',
+          color: '#7a8090',
+        } : undefined}>
           Total Votes: {totalBets.toLocaleString()}
         </div>
       )}
 
       {/* Empty state */}
       {words.length === 0 && (
-        <div className="cg-salty__empty">
+        <div className="cg-salty__empty" style={isMetal ? { color: '#7a8090' } : undefined}>
           No words added yet. Set up the game in the config panel.
         </div>
       )}

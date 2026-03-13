@@ -93,6 +93,91 @@ function GiveawayWidget({ config, widgetId }) {
     @keyframes ga-confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-20px) rotate(360deg);opacity:0}}
   `;
 
+  const isMetal = st === 'metal';
+  const mBg = 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)';
+  const mCardBg = 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)';
+  const mBorder = 'rgba(200,210,225,0.12)';
+  const mText = '#d4d8e0';
+  const mMuted = '#7a8090';
+  const mAccent = '#a8b0c0';
+  const mShadow = '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)';
+  const mInner = 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)';
+
+  /* ─── Metal ─── */
+  if (isMetal) return (
+    <div style={{ width:'100%', height:'100%', fontFamily, background:mBg, color:mText,
+      borderRadius:'clamp(6px,2cqmin,14px)', border:`1px solid rgba(200,210,225,0.18)`,
+      boxShadow:mShadow, display:'flex', flexDirection:'column',
+      overflow:'hidden', boxSizing:'border-box', containerType:'size' }}>
+      <style>{kf}</style>
+      <div style={{ padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2cqmin,12px)', display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
+        borderBottom:`1px solid ${mBorder}`, flexShrink:0,
+        background:mCardBg }}>
+        <span style={{ fontSize:'clamp(12px,5cqmin,24px)' }}>🎁</span>
+        <span style={{ fontWeight:700, fontSize:'clamp(10px,4cqmin,20px)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+          letterSpacing:'0.14em', textTransform:'uppercase',
+          background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{title}</span>
+        {isActive && !isDone && (
+          <span style={{ background:'rgba(138,154,170,0.15)', color:mAccent, fontSize:'clamp(8px,2.5cqmin,13px)', fontWeight:700,
+            padding:'clamp(1px,0.4cqmin,3px) clamp(4px,1.2cqmin,8px)', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em',
+            border:'1px solid rgba(200,210,225,0.2)', boxShadow:mInner,
+            animation:'ga-pulse 2s ease-in-out infinite' }}>LIVE</span>
+        )}
+      </div>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+        padding:'clamp(3px,1.5cqmin,10px)', gap:'clamp(3px,1.5cqmin,8px)', minHeight:0 }}>
+        {winner ? (
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize:'clamp(18px,8cqmin,40px)', marginBottom:'clamp(1px,0.4cqmin,3px)' }}>🎉</div>
+            <div style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:600,
+              background:'linear-gradient(90deg, #8a90a0, #b0b8c8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Winner</div>
+            <div style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800,
+              background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
+              textShadow:'none' }}>{winner}</div>
+            {prize && <div style={{ fontSize:'clamp(9px,3.5cqmin,16px)', color:mMuted, marginTop:'clamp(1px,0.5cqmin,4px)' }}>Prize: <span style={{ color:mAccent, fontWeight:600 }}>{prize}</span></div>}
+          </div>
+        ) : isActive && keyword ? (
+          <>
+            {prize && (
+              <div style={{ background:mCardBg, border:`1px solid ${mBorder}`, borderRadius:'clamp(4px,1.5cqmin,8px)',
+                padding:'clamp(2px,1cqmin,6px) clamp(5px,2cqmin,14px)', textAlign:'center', boxShadow:mInner }}>
+                <div style={{ fontSize:'clamp(7px,2.5cqmin,12px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:600,
+                  background:'linear-gradient(90deg, #8a90a0, #b0b8c8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Prize</div>
+                <div style={{ fontSize:'clamp(12px,5cqmin,24px)', fontWeight:700, color:mText, marginTop:'clamp(1px,0.3cqmin,2px)',
+                  textShadow:'0 1px 2px rgba(0,0,0,0.5)' }}>{prize}</div>
+              </div>
+            )}
+            <div style={{ background:'rgba(168,176,192,0.08)', border:`1px solid rgba(200,210,225,0.18)`, borderRadius:'clamp(4px,2cqmin,10px)',
+              padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2.5cqmin,14px)', textAlign:'center', boxShadow:mInner }}>
+              <div style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mMuted, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Type in chat to enter</div>
+              <div style={{ fontSize:'clamp(14px,6cqmin,30px)', fontWeight:800, letterSpacing:'0.02em',
+                background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>!{keyword}</div>
+            </div>
+            <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)', marginTop:'clamp(1px,0.4cqmin,3px)' }}>
+              <span style={{ fontSize:'clamp(10px,4cqmin,20px)' }}>👥</span>
+              <span style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:mText, textShadow:'0 1px 2px rgba(0,0,0,0.5)' }}>{count}</span>
+              <span style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mMuted }}>participant{count !== 1 ? 's' : ''}</span>
+            </div>
+            {count > 0 && (
+              <div style={{ width:'100%', maxHeight:'20cqb', overflow:'hidden', display:'flex', flexWrap:'wrap', gap:'clamp(2px,0.5cqmin,4px)', justifyContent:'center' }}>
+                {participants.slice(-8).map((name, i) => (
+                  <span key={i} style={{ background:'linear-gradient(135deg, #555a65, #3a3e48)', color:mText, fontSize:'clamp(7px,2.5cqmin,12px)', fontWeight:600,
+                    padding:'clamp(1px,0.3cqmin,2px) clamp(4px,1.2cqmin,8px)', borderRadius:99,
+                    border:'1px solid rgba(200,210,225,0.15)', boxShadow:'inset 0 1px 0 rgba(255,255,255,0.08)' }}>{name}</span>
+                ))}
+              </div>
+            )}
+          </>
+        ) : (
+          <div style={{ textAlign:'center' }}>
+            <div style={{ fontSize:'clamp(18px,8cqmin,36px)', marginBottom:'clamp(2px,1cqmin,6px)', opacity:0.5 }}>🎁</div>
+            <div style={{ fontSize:'clamp(9px,3.5cqmin,16px)', color:mMuted }}>No active giveaway</div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+
   /* ─── v1 Classic Card ─── */
   if (st === 'v1') return (
     <div style={{ width:'100%', height:'100%', fontFamily, background:bgColor, color:textColor,

@@ -109,6 +109,7 @@ function SpotifyWidget({ config, widgetId }) {
     case 'glass':        return <GlassCard data={data} c={c} />;
     case 'wave':         return <WaveStyle data={data} c={c} />;
     case 'neon':         return <NeonStyle data={data} c={c} />;
+    case 'metal':        return <MetalPlayer data={data} c={c} />;
     case 'album_card':
     default:             return <AlbumCard data={data} c={c} />;
   }
@@ -497,6 +498,73 @@ function NeonStyle({ data, c }) {
         }}>
           {data.isPlaying ? '▶ PLAYING' : '⏸ PAUSED'}
         </div>
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   STYLE 7: Metal — brushed steel card
+   ══════════════════════════════════════════════════════════ */
+function MetalPlayer({ data, c }) {
+  return (
+    <div className="oc-spotify oc-spotify--metal" style={{
+      width: '100%', height: '100%', display: 'flex', alignItems: 'center',
+      gap: 12, padding: '10px 14px',
+      background: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
+      borderRadius: 12,
+      border: '1px solid rgba(200,210,225,0.18)',
+      boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+      fontFamily: "'Inter', 'Segoe UI', sans-serif",
+      overflow: 'hidden',
+    }}>
+      {data.albumArt ? (
+        <div style={{
+          width: 52, height: 52, borderRadius: 8, overflow: 'hidden', flexShrink: 0,
+          border: '1px solid rgba(200,210,225,0.15)',
+          boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)',
+        }}>
+          <img src={data.albumArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        </div>
+      ) : (
+        <div style={{
+          width: 52, height: 52, borderRadius: 8, flexShrink: 0,
+          background: 'linear-gradient(135deg, #555a65, #3a3e48)',
+          border: '1px solid rgba(200,210,225,0.15)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+        }}>🎵</div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: 14, fontWeight: 700,
+          background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+          WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{data.track}</div>
+        <div style={{
+          fontSize: 12, color: '#7a8090', marginTop: 2,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+        }}>{data.artist}</div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
+          <span style={{
+            width: 6, height: 6, borderRadius: '50%',
+            background: data.isPlaying ? '#8a9aaa' : '#555',
+            boxShadow: data.isPlaying ? '0 0 6px rgba(138,154,170,0.5)' : 'none',
+          }} />
+          <span style={{
+            fontSize: 10, color: '#7a8090', textTransform: 'uppercase', letterSpacing: '0.14em',
+          }}>{data.isPlaying ? 'Now Playing' : 'Paused'}</span>
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 18, flexShrink: 0 }}>
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} style={{
+            width: 3, borderRadius: 1.5,
+            background: 'linear-gradient(to top, #606878, #a0aabb)',
+            animation: data.isPlaying ? `spotifyEq ${0.4 + i * 0.15}s ease-in-out infinite alternate` : 'none',
+            height: data.isPlaying ? undefined : 4,
+          }} />
+        ))}
       </div>
     </div>
   );

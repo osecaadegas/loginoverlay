@@ -10,13 +10,14 @@ export default function SlotRequestsWidgetList({ config, requests }) {
   const c = config || {};
   const containerRef = useRef(null);
   const [fontSize, setFontSize] = useState(14);
+  const isMetal = (c.displayStyle || 'v1') === 'metal';
 
-  const accent = c.accentColor || '#f59e0b';
-  const textColor = c.textColor || '#ffffff';
-  const mutedColor = c.mutedColor || '#94a3b8';
-  const bgColor = c.bgColor || 'transparent';
-  const cardBg = c.cardBg || 'rgba(255,255,255,0.04)';
-  const borderColor = c.borderColor || 'rgba(255,255,255,0.08)';
+  const accent = isMetal ? '#a8b0c0' : (c.accentColor || '#f59e0b');
+  const textColor = isMetal ? '#d4d8e0' : (c.textColor || '#ffffff');
+  const mutedColor = isMetal ? '#7a8090' : (c.mutedColor || '#94a3b8');
+  const bgColor = isMetal ? 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)' : (c.bgColor || 'transparent');
+  const cardBg = isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : (c.cardBg || 'rgba(255,255,255,0.04)');
+  const borderColor = isMetal ? 'rgba(200,210,225,0.12)' : (c.borderColor || 'rgba(255,255,255,0.08)');
   const showRequester = c.showRequester !== false;
   const showNumbers = c.showNumbers !== false;
   const fontFamily = c.fontFamily || "'Poppins', sans-serif";
@@ -55,6 +56,10 @@ export default function SlotRequestsWidgetList({ config, requests }) {
         flexDirection: 'column',
         overflow: 'hidden',
         borderRadius: 8,
+        ...(isMetal && {
+          border: '1px solid rgba(200,210,225,0.18)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+        }),
       }}
     >
       {/* Header */}
@@ -67,19 +72,30 @@ export default function SlotRequestsWidgetList({ config, requests }) {
         flexShrink: 0,
       }}>
         <span style={{ fontSize: fs * 1.2 }}>🎰</span>
-        <span style={{ fontSize: fs * 0.95, fontWeight: Number(fontWeight), letterSpacing: '0.02em' }}>
+        <span style={{
+          fontSize: fs * 0.95, fontWeight: Number(fontWeight), letterSpacing: isMetal ? '0.14em' : '0.02em',
+          ...(isMetal && {
+            background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+            WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+            textTransform: 'uppercase',
+          }),
+        }}>
           Slot Requests
         </span>
         {requests.length > 0 && (
           <span style={{
             marginLeft: 'auto',
             fontSize: fs * 0.7,
-            background: accent,
-            color: '#000',
+            background: isMetal ? 'linear-gradient(135deg, #555a65, #3a3e48)' : accent,
+            color: isMetal ? '#d4d8e0' : '#000',
             borderRadius: 99,
             padding: `${fs * 0.1}px ${fs * 0.4}px`,
             fontWeight: 700,
             lineHeight: 1.4,
+            ...(isMetal && {
+              border: '1px solid rgba(200,210,225,0.2)',
+              boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+            }),
           }}>
             {requests.length}
           </span>
@@ -121,6 +137,9 @@ export default function SlotRequestsWidgetList({ config, requests }) {
               border: `1px solid ${borderColor}`,
               borderRadius: fs * 0.4,
               transition: 'opacity 0.3s',
+              ...(isMetal && {
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)',
+              }),
             }}
           >
             {showNumbers && (
@@ -156,6 +175,11 @@ export default function SlotRequestsWidgetList({ config, requests }) {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 lineHeight: 1.3,
+                ...(isMetal && {
+                  background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+                  WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                  textShadow: 'none',
+                }),
               }}>
                 {r.slot_name}
               </span>

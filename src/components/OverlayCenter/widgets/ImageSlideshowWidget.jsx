@@ -26,6 +26,7 @@ function ImageSlideshowWidget({ config, theme }) {
   const captionFont = c.captionFont || "'Inter', sans-serif";
   const pauseOnHover = c.pauseOnHover || false;
   const animType = c.animationType || 'fade'; // fade | slide | zoom
+  const isMetal = (c.displayStyle || 'v1') === 'metal';
 
   /* ── Double-buffer state ── */
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -111,10 +112,13 @@ function ImageSlideshowWidget({ config, theme }) {
     width: '100%',
     height: '100%',
     borderRadius: `${borderRadius}px`,
-    border: `${borderWidth}px solid ${borderColor}`,
+    border: isMetal ? '1px solid rgba(200,210,225,0.18)' : `${borderWidth}px solid ${borderColor}`,
     position: 'relative',
     overflow: 'hidden',
     background: '#000',
+    ...(isMetal && {
+      boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+    }),
   };
 
   /* ── Safe index ── */
@@ -211,7 +215,17 @@ function ImageSlideshowWidget({ config, theme }) {
       {showGradient && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 3,
-          background: `linear-gradient(to top, ${gradientColor}, transparent 60%)`,
+          background: isMetal
+            ? 'linear-gradient(to top, rgba(26,28,32,0.85), transparent 50%), linear-gradient(145deg, rgba(42,45,51,0.3), transparent 60%)'
+            : `linear-gradient(to top, ${gradientColor}, transparent 60%)`,
+          pointerEvents: 'none',
+        }} />
+      )}
+
+      {isMetal && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 3,
+          background: 'linear-gradient(145deg, rgba(200,210,225,0.04), transparent 50%)',
           pointerEvents: 'none',
         }} />
       )}
@@ -220,8 +234,12 @@ function ImageSlideshowWidget({ config, theme }) {
         <div className="ov-slideshow-caption" style={{
           fontFamily: captionFont,
           fontSize: `${captionSize}px`,
-          color: captionColor,
+          color: isMetal ? '#d4d8e0' : captionColor,
           zIndex: 4,
+          ...(isMetal && {
+            textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+            letterSpacing: '0.08em',
+          }),
         }}>
           {c.caption}
         </div>
