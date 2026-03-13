@@ -592,7 +592,7 @@
 }
 .bht-fullflip-slot-img {
   height: 100%;
-  aspect-ratio: 1;
+  max-width: 44px;
   border-radius: 6px;
   object-fit: cover;
   flex-shrink: 0;
