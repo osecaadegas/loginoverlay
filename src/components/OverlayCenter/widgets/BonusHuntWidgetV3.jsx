@@ -274,7 +274,3 @@ function BonusHuntWidgetV3({ config, theme }) {
 }
 
 export default React.memo(BonusHuntWidgetV3);
-  );
-}
-
-export default React.memo(BonusHuntWidgetV3);
