@@ -700,7 +700,7 @@ registerWidget({
   styleConfigKey: 'displayStyle',
   defaults: {
     fontFamily: "'Poppins', sans-serif",
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: '600',
     bgColor: 'rgba(15,23,42,0.9)',
     cardBg: 'rgba(255,255,255,0.04)',

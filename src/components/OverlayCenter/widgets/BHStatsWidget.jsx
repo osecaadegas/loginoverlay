@@ -63,7 +63,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
 
   /* ─── Style config ─── */
   const fontFamily = c.fontFamily || (isMetal ? "'Inter', 'Poppins', sans-serif" : "'Poppins', sans-serif");
-  const fontSize = c.fontSize ?? 14;
+  const fontSize = c.fontSize ?? 16;
   const fontWeight = c.fontWeight || '600';
 
   /* Metal palette — polished brushed-steel grey tones */
@@ -108,7 +108,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
     const observer = new ResizeObserver(entries => {
       for (const entry of entries) {
         const w = entry.contentRect.width;
-        const sc = Math.min(1, w / 380);
+        const sc = Math.min(1, w / 320);
         setScale(sc);
       }
     });
@@ -138,6 +138,11 @@ export default function BHStatsWidget({ config, allWidgets }) {
     padding: `${Math.max(10, 14 * scale)}px`,
     gap: gap + 4,
     boxSizing: 'border-box',
+    /* Sharper text rendering */
+    WebkitFontSmoothing: 'antialiased',
+    MozOsxFontSmoothing: 'grayscale',
+    textRendering: 'geometricPrecision',
+    imageRendering: 'auto',
     ...(isMetal && {
       border: '1px solid rgba(200,210,225,0.15)',
       boxShadow: metalRootShadow,
@@ -181,6 +186,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    transform: 'translateZ(0)',
     ...(isMetal && {
       textShadow: '0 1px 2px rgba(0,0,0,0.5)',
     }),
