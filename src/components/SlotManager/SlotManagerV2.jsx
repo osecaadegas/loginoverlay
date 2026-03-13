@@ -705,21 +705,39 @@ const SlotManagerV2 = () => {
   const [statCheckProvider, setStatCheckProvider] = useState('');
   const [statCheckPage, setStatCheckPage] = useState(1);
   const [statCheckTotalPages, setStatCheckTotalPages] = useState(1);
+  const [statCheckDataFilter, setStatCheckDataFilter] = useState('any'); // 'any' | 'all' | 'one'
   const statCheckAbort = useRef(false);
   const STAT_CHECK_PAGE = 200;
 
+  // Helper: apply the data-missing filter to a query
+  const applyDataFilter = (q, filter) => {
+    if (filter === 'all') {
+      // Missing ALL three stats
+      return q.is('rtp', null).is('volatility', null).is('max_win_multiplier', null);
+    } else if (filter === 'one') {
+      // Missing exactly one
+      return q.or(
+        'and(rtp.is.null,volatility.not.is.null,max_win_multiplier.not.is.null),'
+        + 'and(rtp.not.is.null,volatility.is.null,max_win_multiplier.not.is.null),'
+        + 'and(rtp.not.is.null,volatility.not.is.null,max_win_multiplier.is.null)'
+      );
+    }
+    // 'any' — missing at least one
+    return q.or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null');
+  };
+
   // Count slots needing check for the current mode (for page picker)
   const refreshStatCheckCount = useCallback(async () => {
-    let q = supabase.from('slots').select('id', { count: 'exact', head: true })
-      .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null');
+    let q = supabase.from('slots').select('id', { count: 'exact', head: true });
+    q = applyDataFilter(q, statCheckDataFilter);
     if (statCheckMode === 'provider' && statCheckProvider) q = q.eq('provider', statCheckProvider);
     const { count } = await q;
     const total = count || 0;
     setStatCheckTotalPages(Math.max(1, Math.ceil(total / STAT_CHECK_PAGE)));
     if (statCheckPage > Math.max(1, Math.ceil(total / STAT_CHECK_PAGE))) setStatCheckPage(1);
-  }, [statCheckMode, statCheckProvider, statCheckPage]);
+  }, [statCheckMode, statCheckProvider, statCheckPage, statCheckDataFilter]);
 
-  useEffect(() => { if (statCheckShowPanel) refreshStatCheckCount(); }, [statCheckShowPanel, statCheckMode, statCheckProvider, refreshStatCheckCount]);
+  useEffect(() => { if (statCheckShowPanel) refreshStatCheckCount(); }, [statCheckShowPanel, statCheckMode, statCheckProvider, statCheckDataFilter, refreshStatCheckCount]);
 
   const bulkStatCheck = useCallback(async () => {
     if (statCheckRunning) { statCheckAbort.current = true; return; }
@@ -734,8 +752,8 @@ const SlotManagerV2 = () => {
     try {
       // Build base query
       const buildQuery = (select, opts) => {
-        let q = supabase.from('slots').select(select, opts)
-          .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null');
+        let q = supabase.from('slots').select(select, opts);
+        q = applyDataFilter(q, statCheckDataFilter);
         if (statCheckMode === 'provider' && statCheckProvider) q = q.eq('provider', statCheckProvider);
         if (statCheckMode === 'newest') q = q.order('created_at', { ascending: false, nullsFirst: false });
         else q = q.order('name', { ascending: true });
@@ -896,6 +914,19 @@ const SlotManagerV2 = () => {
                   background: statCheckMode === m ? '#3b82f6' : '#334155', color: statCheckMode === m ? '#fff' : '#94a3b8',
                 }}>
                 {m === 'all' ? 'All' : m === 'newest' ? 'Newest' : 'By Provider'}
+              </button>
+            ))}
+
+            <span style={{ width: 1, height: 20, background: '#334155' }} />
+            <label style={{ fontSize: 12, color: '#94a3b8' }}>Filter:</label>
+            {[['any', 'Missing Any'], ['all', 'Missing All'], ['one', 'Missing One']].map(([v, lbl]) => (
+              <button key={v} disabled={statCheckRunning}
+                onClick={() => { setStatCheckDataFilter(v); setStatCheckPage(1); }}
+                style={{
+                  padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
+                  background: statCheckDataFilter === v ? '#8b5cf6' : '#334155', color: statCheckDataFilter === v ? '#fff' : '#94a3b8',
+                }}>
+                {lbl}
               </button>
             ))}
 
