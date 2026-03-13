@@ -388,6 +388,53 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
   }
 }
 
+/* ── Normalise any widget's config into navbar-like source keys ── */
+function extractSyncSource(widgetType, config) {
+  const c = config || {};
+  switch (widgetType) {
+    case 'navbar':
+      return c; // already in the expected shape
+    case 'bonus_hunt':
+      return {
+        bgColor: c.headerColor || c.bgColor,
+        accentColor: c.headerAccent || c.accentColor,
+        textColor: c.textColor,
+        mutedColor: c.mutedTextColor || c.mutedColor,
+        borderColor: c.cardOutlineColor || c.borderColor,
+        ctaColor: c.superBadgeColor || c.ctaColor,
+        fontFamily: c.fontFamily,
+        fontSize: c.fontSize,
+        brightness: c.brightness,
+        contrast: c.contrast,
+        saturation: c.saturation,
+      };
+    case 'background':
+      return {
+        bgColor: c.color1,
+        accentColor: c.color2,
+        brightness: c.brightness,
+        contrast: c.contrast,
+        saturation: c.saturation,
+      };
+    default:
+      // Most widgets use standard keys (bgColor, accentColor, textColor…)
+      return {
+        bgColor: c.bgColor,
+        accentColor: c.accentColor,
+        textColor: c.textColor,
+        mutedColor: c.mutedColor,
+        borderColor: c.borderColor,
+        ctaColor: c.ctaColor,
+        fontFamily: c.fontFamily,
+        fontSize: c.fontSize,
+        borderWidth: c.borderWidth,
+        brightness: c.brightness,
+        contrast: c.contrast,
+        saturation: c.saturation,
+      };
+  }
+}
+
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
   const { user } = useAuth();
   const [editingId, setEditingId] = useState(null);
@@ -395,6 +442,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const [selectedPreviewId, setSelectedPreviewId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
+  const [syncSourceId, setSyncSourceId] = useState(null);
+  const [syncDropOpen, setSyncDropOpen] = useState(false);
+  const syncDropRef = useRef(null);
   const previewRef = useRef(null);
   const [previewScale, setPreviewScale] = useState(0.35);
 
@@ -589,27 +639,44 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     });
   }, [sortedWidgets, onSave]);
 
-  /* ── Sync ALL widgets from the navbar ── */
-  const syncAllFromNavbar = useCallback(async () => {
-    const navWidget = widgets.find(w => w.widget_type === 'navbar');
-    if (!navWidget) {
-      setSyncMsg('No navbar widget found');
+  /* ── Close sync dropdown on outside click ── */
+  useEffect(() => {
+    if (!syncDropOpen) return;
+    function handleClick(e) {
+      if (syncDropRef.current && !syncDropRef.current.contains(e.target)) setSyncDropOpen(false);
+    }
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, [syncDropOpen]);
+
+  /* ── Resolved sync source widget ── */
+  const syncSourceWidget = useMemo(() => {
+    if (syncSourceId) return widgets.find(w => w.id === syncSourceId) || null;
+    return widgets.find(w => w.widget_type === 'navbar') || null;
+  }, [widgets, syncSourceId]);
+
+  /* ── Sync ALL widgets from the chosen source ── */
+  const syncAllFromSource = useCallback(async () => {
+    if (!syncSourceWidget) {
+      setSyncMsg('No source widget found');
       setTimeout(() => setSyncMsg(''), 2500);
       return;
     }
-    const nb = navWidget.config || {};
+    const nb = extractSyncSource(syncSourceWidget.widget_type, syncSourceWidget.config);
+    const srcDef = getWidgetDef(syncSourceWidget.widget_type);
+    const srcLabel = srcDef?.label || syncSourceWidget.widget_type;
     let count = 0;
     for (const w of widgets) {
-      if (w.widget_type === 'navbar') continue;
+      if (w.id === syncSourceWidget.id) continue;
       const synced = buildSyncedConfig(w.widget_type, w.config, nb);
       if (synced) {
         await onSave({ ...w, config: synced });
         count++;
       }
     }
-    setSyncMsg(`Synced ${count} widget${count !== 1 ? 's' : ''} with Navbar!`);
+    setSyncMsg(`Synced ${count} widget${count !== 1 ? 's' : ''} from ${srcLabel}!`);
     setTimeout(() => setSyncMsg(''), 3000);
-  }, [widgets, onSave]);
+  }, [widgets, syncSourceWidget, onSave]);
 
   return (
     <div className="oc-widgets-panel">
@@ -630,9 +697,40 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           >
             👁️ {showPreview ? 'Hide Preview' : 'Live Preview'}
           </button>
-          <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically" data-tour="sync-colors">
-            🔗 Sync Colors
-          </button>
+          <div className="wm-sync-wrap" ref={syncDropRef} data-tour="sync-colors">
+            <button className="wm-btn wm-btn--ghost" onClick={syncAllFromSource} title={`Sync colors from ${getWidgetDef(syncSourceWidget?.widget_type)?.label || 'Navbar'}`}>
+              🔗 Sync Colors
+            </button>
+            <button
+              className="wm-btn wm-btn--ghost wm-sync-chevron"
+              onClick={() => setSyncDropOpen(v => !v)}
+              title="Choose source widget"
+            >
+              ▾
+            </button>
+            {syncDropOpen && (
+              <div className="wm-sync-dropdown">
+                <div className="wm-sync-drop-title">Sync from…</div>
+                {widgets.map(w => {
+                  const def = getWidgetDef(w.widget_type);
+                  const label = def?.label || w.widget_type;
+                  const icon = def?.icon || '📦';
+                  const isActive = syncSourceWidget?.id === w.id;
+                  return (
+                    <button
+                      key={w.id}
+                      className={`wm-sync-drop-item${isActive ? ' wm-sync-drop-item--active' : ''}`}
+                      onClick={() => { setSyncSourceId(w.id); setSyncDropOpen(false); }}
+                    >
+                      <span className="wm-sync-drop-icon">{icon}</span>
+                      <span className="wm-sync-drop-label">{label}</span>
+                      {isActive && <span className="wm-sync-drop-check">✓</span>}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

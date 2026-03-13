@@ -938,6 +938,89 @@
   animation: wm-fadeIn 0.3s ease;
 }
 
+/* --- Sync source selector --- */
+.wm-sync-wrap {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.wm-sync-chevron {
+  padding: 10px 6px !important;
+  margin-left: -4px;
+  border-top-left-radius: 0 !important;
+  border-bottom-left-radius: 0 !important;
+  font-size: 13px;
+  min-width: 0;
+}
+.wm-sync-wrap > .wm-btn:first-child {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.wm-sync-dropdown {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 220px;
+  max-height: 320px;
+  overflow-y: auto;
+  background: var(--oc-bg-surface, #1a1d24);
+  border: 1px solid var(--oc-border, rgba(255,255,255,0.1));
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+  z-index: 100;
+  padding: 6px;
+  animation: wm-fadeIn 0.15s ease;
+}
+.wm-sync-drop-title {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--oc-text-muted, #64748b);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 6px 10px 4px;
+}
+.wm-sync-drop-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--oc-text-primary, #e2e8f0);
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  text-align: left;
+}
+.wm-sync-drop-item:hover {
+  background: rgba(255,255,255,0.06);
+}
+.wm-sync-drop-item--active {
+  background: rgba(99,102,241,0.12);
+  color: #a5b4fc;
+}
+.wm-sync-drop-icon {
+  flex-shrink: 0;
+  font-size: 15px;
+  width: 22px;
+  text-align: center;
+}
+.wm-sync-drop-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wm-sync-drop-check {
+  flex-shrink: 0;
+  color: #818cf8;
+  font-weight: 800;
+  font-size: 14px;
+}
+
 /* --- Buttons --- */
 .wm-btn {
   display: inline-flex;
