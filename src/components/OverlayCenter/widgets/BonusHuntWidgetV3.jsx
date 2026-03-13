@@ -183,6 +183,8 @@ function BonusHuntWidgetV3({ config, theme }) {
             >
               {/* FRONT — Slot Image */}
               <div className="bht3-flip-face bht3-flip-front" style={frontBorder}>
+                {frontIsSuper && <div className="bht3-sweep bht3-sweep--gold" />}
+                {frontIsExtreme && <div className="bht3-sweep bht3-sweep--red" />}
                 {frontIsSuper && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
                 {frontIsExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
