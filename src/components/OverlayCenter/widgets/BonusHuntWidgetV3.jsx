@@ -156,26 +156,33 @@ function BonusHuntWidgetV3({ config, theme }) {
   /* Whether to pause the JS flip */
   const pauseFlip = bonusOpening && !huntComplete;
 
-  /* ─── Glow inline styles (border always renders in 3D context) ─── */
-  const getGlowStyle = (bonus) => {
+  /* ─── Border on card faces (border renders inside 3D, box-shadow doesn't in OBS) ─── */
+  const getBorderStyle = (bonus) => {
     if (!bonus) return {};
-    const isE = !!(bonus.isExtremeBonus || bonus.isExtreme);
-    const isS = !!bonus.isSuperBonus;
-    if (isE) return {
-      border: '3px solid rgba(239, 68, 68, 0.85)',
-      boxShadow: '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
-    };
-    if (isS) return {
-      border: '2.5px solid rgba(250, 204, 21, 0.65)',
-      boxShadow: '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)',
-    };
+    if (bonus.isExtremeBonus || bonus.isExtreme) return { border: '3px solid rgba(239, 68, 68, 0.85)' };
+    if (bonus.isSuperBonus) return { border: '2.5px solid rgba(250, 204, 21, 0.65)' };
     return {};
   };
 
-  const frontGlow = getGlowStyle(frontBonus);
-  const backGlow = getGlowStyle(backBonus);
+  const frontBorder = getBorderStyle(frontBonus);
+  const backBorder = getBorderStyle(backBonus);
   const frontIsExtreme = !!(frontBonus.isExtremeBonus || frontBonus.isExtreme);
   const frontIsSuper = !!frontBonus.isSuperBonus;
+
+  /* Flat glow style (box-shadow) — rendered as overlay OUTSIDE 3D context */
+  const glowOverlayStyle = (() => {
+    if (frontIsExtreme) return {
+      position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
+      pointerEvents: 'none', zIndex: 2,
+      boxShadow: '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
+    };
+    if (frontIsSuper) return {
+      position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
+      pointerEvents: 'none', zIndex: 2,
+      boxShadow: '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)',
+    };
+    return null;
+  })();
 
   return (
     <div className="oc-widget-inner oc-bonushunt bht3-root" style={rootStyle}>
@@ -183,6 +190,8 @@ function BonusHuntWidgetV3({ config, theme }) {
       {/* ═══ Flip Card Carousel ═══ */}
       {bonuses.length > 0 && (
         <div className="bht3-flip-area">
+          {/* Glow overlay — flat 2D, outside preserve-3d, proven to render in OBS */}
+          {glowOverlayStyle && <div style={glowOverlayStyle} />}
           <div className={`bht3-flip-container${frontIsExtreme ? ' bht3-trill-active' : ''}`}>
             <div
               className="bht3-flip-inner"
@@ -190,7 +199,7 @@ function BonusHuntWidgetV3({ config, theme }) {
               style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}
             >
               {/* FRONT — Slot Image */}
-              <div className="bht3-flip-face bht3-flip-front" style={frontGlow}>
+              <div className="bht3-flip-face bht3-flip-front" style={frontBorder}>
                 {frontIsSuper && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
                 {frontIsExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
@@ -216,7 +225,7 @@ function BonusHuntWidgetV3({ config, theme }) {
                   background: `linear-gradient(155deg, ${c.flipBackColor1 || '#0f172a'} 0%, ${c.flipBackColor2 || '#1a1040'} 40%, ${c.flipBackColor1 || '#0f172a'} 100%)`
                 } : {}),
                 ...(c.flipBackBorder ? { borderColor: `${c.flipBackBorder}33` } : {}),
-                ...backGlow,
+                ...backBorder,
               }}>
                 <div className="bht3-flip-back-content">
                   {c.flipShowProvider !== false && (
