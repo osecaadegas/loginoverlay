@@ -569,13 +569,12 @@
 }
 .bht-fullflip-slot {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  gap: 10px;
   background: rgba(0,0,0,0.35);
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
-  padding: 8px 6px;
+  padding: 6px 10px;
   overflow: hidden;
 }
 .bht-fullflip-slot--best {
@@ -588,51 +587,34 @@
 }
 .bht-fullflip-slot--empty {
   border: 1px solid rgba(255,255,255,0.1);
+  justify-content: center;
 }
 .bht-fullflip-slot-img {
-  width: 56px;
-  height: 56px;
-  border-radius: 10px;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
 }
 .bht-fullflip-slot-info {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: center;
   gap: 2px;
   min-width: 0;
-  width: 100%;
-}
-.bht-fullflip-slot-label {
-  font-size: 0.55em;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  opacity: 0.7;
-  color: var(--bht-muted, #93c5fd);
-}
-.bht-fullflip-slot--best .bht-fullflip-slot-label { color: #4ade80; opacity: 1; }
-.bht-fullflip-slot--worst .bht-fullflip-slot-label { color: #f87171; opacity: 1; }
-.bht-fullflip-slot-name {
-  font-size: 0.85em;
-  font-weight: 700;
-  color: var(--bht-stat-value, #fff);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  text-align: center;
 }
 .bht-fullflip-slot-payout {
-  font-size: 0.9em;
+  font-size: 1.15em;
   font-weight: 800;
   color: #fff;
+  line-height: 1.2;
 }
 .bht-fullflip-slot-multi {
-  font-size: 0.85em;
+  font-size: 1.05em;
   font-weight: 800;
   color: #fbbf24;
+  line-height: 1.2;
 }
 
 .bht-stat-box {

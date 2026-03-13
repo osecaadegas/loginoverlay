@@ -492,16 +492,13 @@ function BonusHuntWidget({ config, theme }) {
                       onError={e => { e.target.style.display = 'none'; }} />
                   )}
                   <div className="bht-fullflip-slot-info">
-                    <span className="bht-fullflip-slot-label">BEST</span>
-                    <span className="bht-fullflip-slot-name">{stats.bestSlot.slotName}</span>
                     <span className="bht-fullflip-slot-payout">{currency}{stats.bestSlot._payout.toFixed(0)}</span>
                     <span className="bht-fullflip-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span>
                   </div>
                 </div>
               ) : (
                 <div className="bht-fullflip-slot bht-fullflip-slot--empty">
-                  <span className="bht-fullflip-slot-label">BEST</span>
-                  <span className="bht-fullflip-slot-name">—</span>
+                  <span className="bht-fullflip-slot-payout">—</span>
                 </div>
               )}
               {/* WORST */}
@@ -512,16 +509,13 @@ function BonusHuntWidget({ config, theme }) {
                       onError={e => { e.target.style.display = 'none'; }} />
                   )}
                   <div className="bht-fullflip-slot-info">
-                    <span className="bht-fullflip-slot-label">WORST</span>
-                    <span className="bht-fullflip-slot-name">{stats.worstSlot.slotName}</span>
                     <span className="bht-fullflip-slot-payout">{currency}{stats.worstSlot._payout.toFixed(0)}</span>
                     <span className="bht-fullflip-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span>
                   </div>
                 </div>
               ) : (
                 <div className="bht-fullflip-slot bht-fullflip-slot--empty">
-                  <span className="bht-fullflip-slot-label">WORST</span>
-                  <span className="bht-fullflip-slot-name">—</span>
+                  <span className="bht-fullflip-slot-payout">—</span>
                 </div>
               )}
             </div>
