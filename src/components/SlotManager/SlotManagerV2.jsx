@@ -785,8 +785,9 @@ const SlotManagerV2 = () => {
         totalChecked++;
         try {
           const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}`);
-          if (res.ok) {
-            const { info } = await res.json();
+          if (res.ok || res.status === 404) {
+            const data = await res.json();
+            const info = data?.info;
             if (info) {
               const upd = {};
               const changes = [];
@@ -803,7 +804,7 @@ const SlotManagerV2 = () => {
               }
             } else {
               totalSkipped++;
-              report.push({ name: slot.name, status: 'no-data', changes: ['Slot not found on scraping sources'] });
+              report.push({ name: slot.name, status: 'no-data', changes: ['Not found on scraping sources'] });
             }
           } else {
             totalFailed++;

@@ -230,7 +230,7 @@ export default async function handler(req, res) {
     const launchInfo = launchResult ? parseSlotsLaunch(launchResult.html, slug) : {};
 
     if (!demoResult && !arkResult && !launchResult) {
-      return res.status(404).json({ error: 'Slot not found', name });
+      return res.status(200).json({ ok: true, info: null, notFound: true });
     }
 
     // Merge: prefer demoslot data, fill gaps from slotark, then slotslaunch
