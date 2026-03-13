@@ -47,8 +47,8 @@ export default function BHStatsWidget({ config, allWidgets }) {
     let worst = null;
     for (const b of opened) {
       const multi = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
-      if (!best || multi > best.multi) best = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout };
-      if (!worst || multi < worst.multi) worst = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout };
+      if (!best || multi > best.multi) best = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout, image: b.slot?.image || null };
+      if (!worst || multi < worst.multi) worst = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout, image: b.slot?.image || null };
     }
 
     return {
@@ -75,6 +75,14 @@ export default function BHStatsWidget({ config, allWidgets }) {
   const borderRadius = c.borderRadius ?? 14;
   const showTitle = c.showTitle !== false;
   const layout = c.layout || 'vertical';
+
+  /* ─── 30-second stats flip ─── */
+  const [statsFlipped, setStatsFlipped] = useState(false);
+  useEffect(() => {
+    if (stats.openedCount === 0) { setStatsFlipped(false); return; }
+    const id = setInterval(() => setStatsFlipped(f => !f), 30000);
+    return () => clearInterval(id);
+  }, [stats.openedCount]);
 
   /* ─── Responsive scaling ─── */
   useEffect(() => {
@@ -173,6 +181,20 @@ export default function BHStatsWidget({ config, allWidgets }) {
           )}
         </div>
       )}
+
+      {/* ═══ Flip container: stats ↔ best/worst ═══ */}
+      <div style={{ perspective: 800, position: 'relative', flex: 1, minHeight: 0 }}>
+        <div style={{
+          position: 'relative', width: '100%', height: '100%',
+          transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1)',
+          transformStyle: 'preserve-3d',
+          transform: statsFlipped ? 'rotateX(180deg)' : 'rotateX(0deg)',
+        }}>
+          {/* FRONT: Stats */}
+          <div style={{
+            position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+            display: 'flex', flexDirection: 'column', gap: gap + 4, overflow: 'hidden',
+          }}>
 
       {/* Row 1: BE x / AVG x / Live BE */}
       <div style={{ display: 'flex', gap }}>
@@ -274,6 +296,82 @@ export default function BHStatsWidget({ config, allWidgets }) {
           )}
         </div>
       </div>
+
+          </div>{/* end FRONT */}
+
+          {/* BACK: Best / Worst with images */}
+          <div style={{
+            position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
+            transform: 'rotateX(180deg)',
+            display: 'flex', flexDirection: 'column', justifyContent: 'center',
+            gap: gap + 4, overflow: 'hidden',
+          }}>
+            <div style={{ display: 'flex', gap, flex: 1 }}>
+              {/* Best slot */}
+              <div style={{
+                ...statBoxStyle, border: `1.5px solid ${bestColor}`,
+                flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
+                padding: `${Math.max(8, 10 * scale)}px`,
+              }}>
+                {stats.best ? (
+                  <>
+                    {stats.best.image ? (
+                      <img src={stats.best.image} alt="" style={{
+                        width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
+                        borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
+                      }} onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: bestColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Best</span>
+                      <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.2}px` }}>
+                        {currency}{fmt(stats.best.payout)}
+                      </span>
+                      <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: '#facc15' }}>
+                        {stats.best.multi.toFixed(1)}x
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <span style={{ ...valStyle, color: mutedColor }}>—</span>
+                )}
+              </div>
+              {/* Worst slot */}
+              <div style={{
+                ...statBoxStyle, border: `1.5px solid ${worstColor}`,
+                flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
+                padding: `${Math.max(8, 10 * scale)}px`,
+              }}>
+                {stats.worst ? (
+                  <>
+                    {stats.worst.image ? (
+                      <img src={stats.worst.image} alt="" style={{
+                        width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
+                        borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
+                      }} onError={e => { e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
+                    )}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: worstColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Worst</span>
+                      <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.2}px` }}>
+                        {currency}{fmt(stats.worst.payout)}
+                      </span>
+                      <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: mutedColor }}>
+                        {stats.worst.multi.toFixed(1)}x
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <span style={{ ...valStyle, color: mutedColor }}>—</span>
+                )}
+              </div>
+            </div>
+          </div>{/* end BACK */}
+
+        </div>{/* end flipper */}
+      </div>{/* end perspective */}
     </div>
   );
 }

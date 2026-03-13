@@ -57,31 +57,13 @@ function BonusHuntWidgetV3({ config, theme }) {
     const remaining = Math.max(target - totalWin, 0);
     const liveBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
     const avgMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
-
-    /* Best & worst opened slot by multiplier */
-    let bestSlot = null, worstSlot = null;
-    for (const b of opened) {
-      const pay = Number(b.payout) || 0;
-      const multi = (Number(b.betSize) || 0) > 0 ? pay / Number(b.betSize) : 0;
-      if (!bestSlot || multi > (bestSlot._multi || 0)) bestSlot = { ...b, _multi: multi, _payout: pay };
-      if (!worstSlot || multi < (worstSlot._multi || Infinity)) worstSlot = { ...b, _multi: multi, _payout: pay };
-    }
-
-    return { totalBetAll, totalWin, superCount, extremeCount, breakEven, liveBE, avgMulti, openedCount: opened.length, bestSlot, worstSlot };
+    return { totalBetAll, totalWin, superCount, extremeCount, breakEven, liveBE, avgMulti, openedCount: opened.length };
   }, [bonuses, startMoney, stopLoss]);
 
   /* ─── Current bonus (first unopened) ─── */
   const currentBonus = bonuses.find(b => !b.opened);
   const currentBonusIdx = bonuses.findIndex(b => !b.opened);
   const huntComplete = bonusOpening && currentBonusIdx === -1 && bonuses.length > 0;
-
-  /* ─── Stats footer flip (30s) ─── */
-  const [statsFlipped, setStatsFlipped] = useState(false);
-  useEffect(() => {
-    if (stats.openedCount === 0) { setStatsFlipped(false); return; }
-    const id = setInterval(() => setStatsFlipped(f => !f), 30000);
-    return () => clearInterval(id);
-  }, [stats.openedCount]);
 
   /* ─── Cycling card index ─── */
   const [displayIdx, setDisplayIdx] = useState(0);
@@ -287,62 +269,11 @@ function BonusHuntWidgetV3({ config, theme }) {
           </div>
         </div>
       )}
-      {/* ═══ Stats Footer with 30s flip ═══ */}
-      <div className="bht3-stats-footer">
-        <div className={`bht3-stats-flipper${statsFlipped ? ' bht3-stats-flipper--flipped' : ''}`}>
-          {/* FRONT: Hunt stats */}
-          <div className="bht3-stats-face bht3-stats-front">
-            <div className="bht3-stats-item">
-              <span className="bht3-stats-label">START</span>
-              <span className="bht3-stats-value">{currency}{fmt(startMoney)}</span>
-            </div>
-            <div className="bht3-stats-item">
-              <span className="bht3-stats-label">B.E.</span>
-              <span className="bht3-stats-value" style={{ color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }}>{stats.liveBE.toFixed(1)}x</span>
-            </div>
-            <div className="bht3-stats-item">
-              <span className="bht3-stats-label">AVG</span>
-              <span className="bht3-stats-value" style={{ color: stats.avgMulti >= 1 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(1)}x</span>
-            </div>
-            <div className="bht3-stats-item">
-              <span className="bht3-stats-label">TOTAL</span>
-              <span className="bht3-stats-value" style={{ color: '#22c55e' }}>{currency}{fmt(stats.totalWin)}</span>
-            </div>
-          </div>
-          {/* BACK: Best / Worst slot */}
-          <div className="bht3-stats-face bht3-stats-back">
-            {stats.bestSlot ? (
-              <div className="bht3-stats-slot bht3-stats-slot--best">
-                {stats.bestSlot.slot?.image && (
-                  <img src={stats.bestSlot.slot.image} alt="" className="bht3-stats-slot-img"
-                    onError={e => { e.target.style.display = 'none'; }} />
-                )}
-                <div className="bht3-stats-slot-info">
-                  <span className="bht3-stats-slot-pay">{currency}{fmt(stats.bestSlot._payout)}</span>
-                  <span className="bht3-stats-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span>
-                </div>
-              </div>
-            ) : (
-              <div className="bht3-stats-slot bht3-stats-slot--empty"><span>—</span></div>
-            )}
-            {stats.worstSlot ? (
-              <div className="bht3-stats-slot bht3-stats-slot--worst">
-                {stats.worstSlot.slot?.image && (
-                  <img src={stats.worstSlot.slot.image} alt="" className="bht3-stats-slot-img"
-                    onError={e => { e.target.style.display = 'none'; }} />
-                )}
-                <div className="bht3-stats-slot-info">
-                  <span className="bht3-stats-slot-pay">{currency}{fmt(stats.worstSlot._payout)}</span>
-                  <span className="bht3-stats-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span>
-                </div>
-              </div>
-            ) : (
-              <div className="bht3-stats-slot bht3-stats-slot--empty"><span>—</span></div>
-            )}
-          </div>
-        </div>
-      </div>
     </div>
+  );
+}
+
+export default React.memo(BonusHuntWidgetV3);
   );
 }
 
