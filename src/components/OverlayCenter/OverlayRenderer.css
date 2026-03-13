@@ -3176,8 +3176,8 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
-/* ── Extreme glow trill animation (applied via className for keyframes) ── */
-.bht3-glow-extreme-anim {
+/* ── Extreme trill: subtle shake on the flip container ── */
+.bht3-flip-container.bht3-trill-active {
   animation: bht3-trill 2.5s ease-in-out infinite;
 }
 

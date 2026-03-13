@@ -156,36 +156,43 @@ function BonusHuntWidgetV3({ config, theme }) {
   /* Whether to pause the JS flip */
   const pauseFlip = bonusOpening && !huntComplete;
 
+  /* ─── Glow inline styles (border always renders in 3D context) ─── */
+  const getGlowStyle = (bonus) => {
+    if (!bonus) return {};
+    const isE = !!(bonus.isExtremeBonus || bonus.isExtreme);
+    const isS = !!bonus.isSuperBonus;
+    if (isE) return {
+      border: '3px solid rgba(239, 68, 68, 0.85)',
+      boxShadow: '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
+    };
+    if (isS) return {
+      border: '2.5px solid rgba(250, 204, 21, 0.65)',
+      boxShadow: '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)',
+    };
+    return {};
+  };
+
+  const frontGlow = getGlowStyle(frontBonus);
+  const backGlow = getGlowStyle(backBonus);
+  const frontIsExtreme = !!(frontBonus.isExtremeBonus || frontBonus.isExtreme);
+  const frontIsSuper = !!frontBonus.isSuperBonus;
+
   return (
     <div className="oc-widget-inner oc-bonushunt bht3-root" style={rootStyle}>
 
       {/* ═══ Flip Card Carousel ═══ */}
-      {bonuses.length > 0 && (() => {
-        const isSuper = !!frontBonus.isSuperBonus;
-        const isExtreme = !!(frontBonus.isExtremeBonus || frontBonus.isExtreme);
-        return (
+      {bonuses.length > 0 && (
         <div className="bht3-flip-area">
-          {/* DEBUG: always show extreme glow to test rendering */}
-          <div className="bht3-glow-extreme-anim" style={{
-            position: 'absolute', inset: '20px', borderRadius: 'var(--bht3-card-radius, 16px)',
-            pointerEvents: 'none', zIndex: 0,
-            border: isExtreme ? '3px solid rgba(239, 68, 68, 0.8)' : isSuper ? '2.5px solid rgba(250, 204, 21, 0.6)' : '3px solid rgba(239, 68, 68, 0.8)',
-            boxShadow: isExtreme ? '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)' : isSuper ? '0 0 12px 3px rgba(250,204,21,0.5), 0 0 28px 6px rgba(234,179,8,0.3), 0 0 48px 12px rgba(234,179,8,0.15)' : '0 0 14px 4px rgba(239,68,68,0.55), 0 0 32px 8px rgba(239,68,68,0.3)',
-          }} />
-          {/* DEBUG watermark: shows data flags so we can verify */}
-          <div style={{
-            position: 'absolute', top: '2px', left: '22px', zIndex: 99,
-            fontSize: '10px', color: '#ff0', background: 'rgba(0,0,0,0.8)',
-            padding: '2px 6px', borderRadius: '3px', fontFamily: 'monospace', pointerEvents: 'none',
-          }}>
-            S:{String(isSuper)} E:{String(isExtreme)} keys:{Object.keys(frontBonus).filter(k => /super|extreme/i.test(k)).join(',')}
-          </div>
-          <div className="bht3-flip-container" style={{ position: 'relative', zIndex: 1 }}>
-            <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
+          <div className={`bht3-flip-container${frontIsExtreme ? ' bht3-trill-active' : ''}`}>
+            <div
+              className="bht3-flip-inner"
+              ref={flipRef}
+              style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}
+            >
               {/* FRONT — Slot Image */}
-              <div className="bht3-flip-face bht3-flip-front">
-                {isSuper && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
-                {isExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
+              <div className="bht3-flip-face bht3-flip-front" style={frontGlow}>
+                {frontIsSuper && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
+                {frontIsExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
                   <img src={frontBonus.slot.image} alt={frontBonus.slotName} className="bht3-flip-img"
                     onError={e => { e.target.style.display = 'none'; }} />
@@ -209,6 +216,7 @@ function BonusHuntWidgetV3({ config, theme }) {
                   background: `linear-gradient(155deg, ${c.flipBackColor1 || '#0f172a'} 0%, ${c.flipBackColor2 || '#1a1040'} 40%, ${c.flipBackColor1 || '#0f172a'} 100%)`
                 } : {}),
                 ...(c.flipBackBorder ? { borderColor: `${c.flipBackBorder}33` } : {}),
+                ...backGlow,
               }}>
                 <div className="bht3-flip-back-content">
                   {c.flipShowProvider !== false && (
@@ -281,7 +289,7 @@ function BonusHuntWidgetV3({ config, theme }) {
             </div>
           </div>
         </div>
-        );})()}
+      )}
     </div>
   );
 }
