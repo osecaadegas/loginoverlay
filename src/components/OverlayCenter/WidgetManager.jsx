@@ -665,11 +665,20 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     const nb = extractSyncSource(syncSourceWidget.widget_type, syncSourceWidget.config);
     const srcDef = getWidgetDef(syncSourceWidget.widget_type);
     const srcLabel = srcDef?.label || syncSourceWidget.widget_type;
+    /* Resolve the source widget's display style */
+    const srcStyleKey = srcDef?.styleConfigKey || 'displayStyle';
+    const srcStyleId = syncSourceWidget.config?.[srcStyleKey] || srcDef?.styles?.[0]?.id || 'default';
     let count = 0;
     for (const w of widgets) {
       if (w.id === syncSourceWidget.id) continue;
       const synced = buildSyncedConfig(w.widget_type, w.config, nb);
       if (synced) {
+        /* Also sync displayStyle if the target supports the same style id */
+        const tDef = getWidgetDef(w.widget_type);
+        const tKey = tDef?.styleConfigKey || 'displayStyle';
+        if (tDef?.styles?.some(s => s.id === srcStyleId)) {
+          synced[tKey] = srcStyleId;
+        }
         await onSave({ ...w, config: synced });
         count++;
       }
