@@ -375,24 +375,27 @@ export default function BHStatsWidget({ config, allWidgets }) {
         </div>{/* end flipper */}
       </div>{/* end perspective */}
 
-      {/* ═══ Auto-scroll ticker bar ═══ */}
+      {/* ═══ Auto-scroll ticker: slot info from bonus hunt cards ═══ */}
       {(() => {
-        const items = [
-          { icon: '🎰', label: 'Slots', value: `${stats.total}` },
-          { icon: '📂', label: 'Opened', value: `${stats.openedCount}` },
-          { icon: '📦', label: 'Remaining', value: `${stats.unopened}` },
-          { icon: '💰', label: 'Total Bet', value: `${currency}${fmtInt(stats.totalBetAll)}` },
-          { icon: '🏆', label: 'Total Win', value: `${currency}${fmtInt(stats.totalWin)}` },
-          { icon: '📊', label: 'Avg Bet', value: `${currency}${fmt(stats.avgBet)}` },
-          { icon: '🎯', label: 'BE', value: `${fmtX(stats.breakEven)}` },
-          { icon: '⚡', label: 'Live BE', value: `${fmtX(stats.liveBE)}` },
-          { icon: '📈', label: 'AVG Multi', value: `${fmtX(stats.avgMulti)}` },
-        ];
-        if (stats.best) items.push({ icon: '🟢', label: 'Best', value: `${stats.best.multi.toFixed(1)}x` });
-        if (stats.worst) items.push({ icon: '🔴', label: 'Worst', value: `${stats.worst.multi.toFixed(1)}x` });
+        if (bonuses.length === 0) return null;
+
+        const items = bonuses.map((b, i) => {
+          const name = b.slotName || b.slot?.name || `#${i + 1}`;
+          const provider = b.slot?.provider || '—';
+          const rtp = b.slot?.rtp ? `${b.slot.rtp}%` : '—';
+          const maxWin = b.slot?.maxWin ? `${Number(b.slot.maxWin).toLocaleString()}x` : '—';
+          const vol = b.slot?.volatility
+            ? b.slot.volatility.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+            : '—';
+          const bet = `${currency}${fmt(b.betSize)}`;
+          const opened = b.opened;
+          const payout = opened ? `${currency}${fmt(b.payout)}` : null;
+          const multi = opened && b.betSize ? `${((Number(b.payout) || 0) / (Number(b.betSize) || 1)).toFixed(1)}x` : null;
+          return { name, provider, rtp, maxWin, vol, bet, opened, payout, multi, image: b.slot?.image };
+        });
 
         const doubled = [...items, ...items];
-        const dur = items.length * 3;
+        const dur = Math.max(20, items.length * 4);
 
         const tickerBg = isMetal
           ? 'linear-gradient(90deg, rgba(42,45,51,0.95), rgba(46,50,56,0.95))'
@@ -406,6 +409,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
         const pillBorder = isMetal
           ? '1px solid rgba(200,210,225,0.12)'
           : '1px solid rgba(255,255,255,0.08)';
+        const sep = { width: 1, height: fs * 1, background: isMetal ? 'rgba(200,210,225,0.15)' : 'rgba(255,255,255,0.1)', flexShrink: 0, borderRadius: 1 };
 
         return (
           <div style={{
@@ -420,36 +424,56 @@ export default function BHStatsWidget({ config, allWidgets }) {
               className="bhstats-ticker-scroll"
               style={{
                 display: 'inline-flex',
-                gap: Math.max(6, 8 * scale),
+                alignItems: 'center',
+                gap: Math.max(8, 10 * scale),
                 padding: `${Math.max(5, 6 * scale)}px ${Math.max(8, 10 * scale)}px`,
                 whiteSpace: 'nowrap',
                 animation: `bhstats-ticker ${dur}s linear infinite`,
               }}
             >
               {doubled.map((it, i) => (
-                <span key={i} style={{
-                  display: 'inline-flex', alignItems: 'center', gap: Math.max(4, 5 * scale),
-                  background: pillBg,
-                  border: pillBorder,
-                  borderRadius: Math.max(4, 6 * scale),
-                  padding: `${Math.max(2, 3 * scale)}px ${Math.max(6, 8 * scale)}px`,
-                  flexShrink: 0,
-                  ...(isMetal && { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }),
-                }}>
-                  <span style={{ fontSize: `${fs * 0.75}px` }}>{it.icon}</span>
+                <React.Fragment key={i}>
+                  {i > 0 && <div style={sep} />}
                   <span style={{
-                    fontSize: `${fs * 0.7}px`, fontWeight: 700, color: mutedColor,
-                    textTransform: 'uppercase', letterSpacing: '0.06em',
-                    ...(isMetal && {
-                      background: 'linear-gradient(90deg, #8a90a0, #b0b8c8)',
-                      WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                    }),
-                  }}>{it.label}</span>
-                  <span style={{
-                    fontSize: `${fs * 0.78}px`, fontWeight: 800, color: textColor,
-                    ...(isMetal && { textShadow: '0 1px 2px rgba(0,0,0,0.4)' }),
-                  }}>{it.value}</span>
-                </span>
+                    display: 'inline-flex', alignItems: 'center', gap: Math.max(5, 6 * scale),
+                    background: pillBg,
+                    border: pillBorder,
+                    borderRadius: Math.max(4, 6 * scale),
+                    padding: `${Math.max(3, 4 * scale)}px ${Math.max(8, 10 * scale)}px`,
+                    flexShrink: 0,
+                    opacity: it.opened ? 0.55 : 1,
+                    ...(isMetal && { boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.04)' }),
+                  }}>
+                    {it.image && (
+                      <img src={it.image} alt="" style={{
+                        width: Math.max(18, 22 * scale), height: Math.max(14, 16 * scale),
+                        borderRadius: 3, objectFit: 'cover', flexShrink: 0,
+                      }} onError={e => { e.target.style.display = 'none'; }} />
+                    )}
+                    <span style={{
+                      fontSize: `${fs * 0.78}px`, fontWeight: 800, color: textColor,
+                      maxWidth: Math.max(80, 100 * scale), overflow: 'hidden', textOverflow: 'ellipsis',
+                      ...(isMetal && { textShadow: '0 1px 2px rgba(0,0,0,0.4)' }),
+                    }}>{it.name}</span>
+                    <span style={{
+                      fontSize: `${fs * 0.65}px`, fontWeight: 600, color: mutedColor,
+                      ...(isMetal && {
+                        background: 'linear-gradient(90deg, #8a90a0, #b0b8c8)',
+                        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+                      }),
+                    }}>{it.provider}</span>
+                    <span style={{ fontSize: `${fs * 0.68}px`, fontWeight: 700, color: isMetal ? '#a0b0c0' : accentColor }}>{it.bet}</span>
+                    {it.rtp !== '—' && (
+                      <span style={{ fontSize: `${fs * 0.65}px`, fontWeight: 600, color: mutedColor }}>RTP {it.rtp}</span>
+                    )}
+                    {it.maxWin !== '—' && (
+                      <span style={{ fontSize: `${fs * 0.65}px`, fontWeight: 600, color: isMetal ? '#c8a060' : '#facc15' }}>🏆{it.maxWin}</span>
+                    )}
+                    {it.payout && (
+                      <span style={{ fontSize: `${fs * 0.68}px`, fontWeight: 800, color: bestColor }}>→ {it.payout} ({it.multi})</span>
+                    )}
+                  </span>
+                </React.Fragment>
               ))}
             </div>
           </div>
