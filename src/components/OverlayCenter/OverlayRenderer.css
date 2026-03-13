@@ -535,6 +535,7 @@
 .bht-header--fullflip {
   perspective: 800px;
   overflow: visible;
+  padding: 4px;
 }
 .bht-fullflip-container {
   position: relative;
@@ -550,22 +551,22 @@
   width: 100%;
 }
 .bht-fullflip-front {
-  /* normal flow */
+  /* normal flow — uses default padding via parent */
+  padding: 10px;
 }
 .bht-fullflip-back {
   position: absolute;
   inset: 0;
   transform: rotateX(180deg);
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: stretch;
+  justify-content: stretch;
 }
 .bht-fullflip-slots {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 4px;
   width: 100%;
-  height: 100%;
 }
 .bht-fullflip-slot {
   display: flex;
