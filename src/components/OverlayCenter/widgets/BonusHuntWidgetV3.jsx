@@ -179,9 +179,6 @@ function BonusHuntWidgetV3({ config, theme }) {
                   {frontBonus.opened ? (
                     <div className="bht3-flip-payout">
                       WIN: {currency}{fmt(frontBonus.payout)}
-                      <span className="bht3-flip-multi">
-                        {((Number(frontBonus.payout) || 0) / (Number(frontBonus.betSize) || 1)).toFixed(1)}x
-                      </span>
                     </div>
                   ) : <div />}
                   <div className="bht3-flip-bet">{currency}{fmt(frontBonus.betSize)}</div>
