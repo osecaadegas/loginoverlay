@@ -51,7 +51,7 @@ function BonusHuntWidgetV3({ config, theme }) {
     const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
     const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
     const superCount = bonuses.filter(b => b.isSuperBonus).length;
-    const extremeCount = bonuses.filter(b => b.isExtreme).length;
+    const extremeCount = bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length;
     const target = Math.max(startMoney - stopLoss, 0);
     const breakEven = totalBetAll > 0 ? target / totalBetAll : 0;
     const remaining = Math.max(target - totalWin, 0);
@@ -165,9 +165,9 @@ function BonusHuntWidgetV3({ config, theme }) {
           <div className="bht3-flip-container">
             <div className="bht3-flip-inner" ref={flipRef} style={pauseFlip ? { transform: 'rotateY(0deg)' } : undefined}>
               {/* FRONT — Slot Image */}
-              <div className={`bht3-flip-face bht3-flip-front${frontBonus.isSuperBonus ? ' bht3-flip-super' : ''}${frontBonus.isExtreme ? ' bht3-flip-extreme' : ''}`}>
+              <div className={`bht3-flip-face bht3-flip-front${frontBonus.isSuperBonus ? ' bht3-flip-super' : ''}${(frontBonus.isExtremeBonus || frontBonus.isExtreme) ? ' bht3-flip-extreme' : ''}`}>
                 {frontBonus.isSuperBonus && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
-                {frontBonus.isExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
+                {(frontBonus.isExtremeBonus || frontBonus.isExtreme) && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
                   <img src={frontBonus.slot.image} alt={frontBonus.slotName} className="bht3-flip-img"
                     onError={e => { e.target.style.display = 'none'; }} />
