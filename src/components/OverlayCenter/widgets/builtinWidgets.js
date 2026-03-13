@@ -693,6 +693,11 @@ registerWidget({
   category: 'casino',
   component: BHStatsWidget,
   configPanel: BHStatsConfig,
+  styles: [
+    { id: 'default', icon: '📊', label: 'Default' },
+    { id: 'metal', icon: '⚙️', label: 'Metal' },
+  ],
+  styleConfigKey: 'displayStyle',
   defaults: {
     fontFamily: "'Poppins', sans-serif",
     fontSize: 14,

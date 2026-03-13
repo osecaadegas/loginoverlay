@@ -11,6 +11,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
   const c = config || {};
   const containerRef = useRef(null);
   const [scale, setScale] = useState(1);
+  const isMetal = (c.displayStyle || 'default') === 'metal';
 
   /* ─── Find the bonus_hunt widget config ─── */
   const bhConfig = useMemo(() => {
@@ -59,22 +60,37 @@ export default function BHStatsWidget({ config, allWidgets }) {
   }, [bonuses, startMoney, stopLoss]);
 
   /* ─── Style config ─── */
-  const fontFamily = c.fontFamily || "'Poppins', sans-serif";
+  const fontFamily = c.fontFamily || (isMetal ? "'Inter', 'Poppins', sans-serif" : "'Poppins', sans-serif");
   const fontSize = c.fontSize ?? 14;
   const fontWeight = c.fontWeight || '600';
-  const bgColor = c.bgColor || 'rgba(15, 23, 42, 0.9)';
-  const cardBg = c.cardBg || 'rgba(255,255,255,0.04)';
-  const textColor = c.textColor || '#f1f5f9';
-  const mutedColor = c.mutedColor || '#64748b';
-  const accentColor = c.accentColor || '#818cf8';
-  const progressColor = c.progressColor || '#22c55e';
-  const progressBg = c.progressBgColor || 'rgba(255,255,255,0.08)';
-  const bestColor = c.bestColor || '#22c55e';
-  const worstColor = c.worstColor || '#f87171';
-  const borderColor = c.borderColor || 'rgba(255,255,255,0.06)';
-  const borderRadius = c.borderRadius ?? 14;
+
+  /* Metal palette — polished brushed-steel grey tones */
+  const bgColor = isMetal
+    ? 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)'
+    : (c.bgColor || 'rgba(15, 23, 42, 0.9)');
+  const cardBg = isMetal
+    ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)'
+    : (c.cardBg || 'rgba(255,255,255,0.04)');
+  const textColor = isMetal ? '#d4d8e0' : (c.textColor || '#f1f5f9');
+  const mutedColor = isMetal ? '#7a8090' : (c.mutedColor || '#64748b');
+  const accentColor = isMetal ? '#a8b0c0' : (c.accentColor || '#818cf8');
+  const progressColor = isMetal ? '#8a9aaa' : (c.progressColor || '#22c55e');
+  const progressBg = isMetal ? 'rgba(255,255,255,0.06)' : (c.progressBgColor || 'rgba(255,255,255,0.08)');
+  const bestColor = isMetal ? '#7ecfa0' : (c.bestColor || '#22c55e');
+  const worstColor = isMetal ? '#e07070' : (c.worstColor || '#f87171');
+  const borderColor = isMetal ? 'rgba(200,210,225,0.12)' : (c.borderColor || 'rgba(255,255,255,0.06)');
+  const borderRadius = c.borderRadius ?? (isMetal ? 10 : 14);
   const showTitle = c.showTitle !== false;
   const layout = c.layout || 'vertical';
+
+  /* Metal-specific extras */
+  const metalBorder = isMetal ? '1px solid rgba(200,210,225,0.18)' : `1px solid ${borderColor}`;
+  const metalBoxShadow = isMetal
+    ? 'inset 0 1px 0 rgba(255,255,255,0.07), 0 2px 8px rgba(0,0,0,0.35)'
+    : 'none';
+  const metalRootShadow = isMetal
+    ? '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)'
+    : 'none';
 
   /* ─── 30-second stats flip ─── */
   const [statsFlipped, setStatsFlipped] = useState(false);
@@ -120,18 +136,25 @@ export default function BHStatsWidget({ config, allWidgets }) {
     padding: `${Math.max(10, 14 * scale)}px`,
     gap: gap + 4,
     boxSizing: 'border-box',
+    ...(isMetal && {
+      border: '1px solid rgba(200,210,225,0.15)',
+      boxShadow: metalRootShadow,
+    }),
   };
 
   const statBoxStyle = {
     background: cardBg,
-    border: `1px solid ${borderColor}`,
-    borderRadius: Math.max(8, 12 * scale),
+    border: metalBorder,
+    borderRadius: Math.max(isMetal ? 6 : 8, (isMetal ? 8 : 12) * scale),
     padding: `${Math.max(8, 10 * scale)}px ${Math.max(10, 12 * scale)}px`,
     display: 'flex',
     flexDirection: 'column',
     gap: 3,
     flex: 1,
     minWidth: 0,
+    ...(isMetal && {
+      boxShadow: metalBoxShadow,
+    }),
   };
 
   const labelStyle = {
@@ -139,9 +162,14 @@ export default function BHStatsWidget({ config, allWidgets }) {
     fontWeight: 700,
     color: mutedColor,
     textTransform: 'uppercase',
-    letterSpacing: '0.1em',
+    letterSpacing: isMetal ? '0.14em' : '0.1em',
     lineHeight: 1.2,
     marginBottom: 2,
+    ...(isMetal && {
+      background: 'linear-gradient(90deg, #8a90a0, #b0b8c8)',
+      WebkitBackgroundClip: 'text',
+      WebkitTextFillColor: 'transparent',
+    }),
   };
 
   const valStyle = {
@@ -151,6 +179,9 @@ export default function BHStatsWidget({ config, allWidgets }) {
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    ...(isMetal && {
+      textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+    }),
   };
 
   return (
@@ -160,21 +191,35 @@ export default function BHStatsWidget({ config, allWidgets }) {
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
           paddingBottom: gap,
-          borderBottom: `1px solid ${borderColor}`,
+          borderBottom: isMetal ? '1px solid rgba(200,210,225,0.12)' : `1px solid ${borderColor}`,
         }}>
-          <span style={{ fontSize: fs * 1.3 }}>📊</span>
-          <span style={{ fontSize: fs * 1.05, fontWeight: 800, letterSpacing: '0.03em' }}>
+          <span style={{ fontSize: fs * 1.3 }}>{isMetal ? '⚙️' : '📊'}</span>
+          <span style={{
+            fontSize: fs * 1.05, fontWeight: 800, letterSpacing: isMetal ? '0.08em' : '0.03em',
+            ...(isMetal && {
+              background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              textShadow: 'none',
+            }),
+          }}>
             Hunt Stats
           </span>
           {huntNumber !== '—' && (
             <span style={{
               marginLeft: 'auto',
               fontSize: fs * 0.7,
-              background: accentColor,
-              color: '#fff',
+              background: isMetal
+                ? 'linear-gradient(135deg, #555a65, #3a3e48)'
+                : accentColor,
+              color: isMetal ? '#c0c8d4' : '#fff',
               borderRadius: 99,
               padding: `${fs * 0.08}px ${fs * 0.4}px`,
               fontWeight: 700,
+              ...(isMetal && {
+                border: '1px solid rgba(200,210,225,0.2)',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
+              }),
             }}>
               #{huntNumber}
             </span>
@@ -186,7 +231,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
       <div style={{ display: 'flex', gap }}>
         <div style={statBoxStyle}>
           <span style={labelStyle}>Current BE</span>
-          <span style={{ ...valStyle, color: accentColor }}>{fmtX(stats.breakEven)}</span>
+          <span style={{ ...valStyle, color: isMetal ? '#c0cce0' : accentColor }}>{fmtX(stats.breakEven)}</span>
         </div>
         <div style={statBoxStyle}>
           <span style={labelStyle}>AVG x</span>
@@ -194,7 +239,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
         </div>
         <div style={statBoxStyle}>
           <span style={labelStyle}>Live BE</span>
-          <span style={{ ...valStyle, color: '#f59e0b' }}>{fmtX(stats.liveBE)}</span>
+          <span style={{ ...valStyle, color: isMetal ? '#c8a060' : '#f59e0b' }}>{fmtX(stats.liveBE)}</span>
         </div>
       </div>
 
@@ -242,7 +287,9 @@ export default function BHStatsWidget({ config, allWidgets }) {
                 <div style={{
                   width: `${stats.progressPct}%`,
                   height: '100%',
-                  background: `linear-gradient(90deg, ${progressColor}, ${accentColor})`,
+                  background: isMetal
+                    ? 'linear-gradient(90deg, #606878, #8a95a8, #a0aabb)'
+                    : `linear-gradient(90deg, ${progressColor}, ${accentColor})`,
                   borderRadius: 99,
                   transition: 'width 0.6s cubic-bezier(0.33,1,0.68,1)',
                   minWidth: stats.progressPct > 0 ? 4 : 0,
