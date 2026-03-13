@@ -221,6 +221,18 @@ const DraggableSlot = memo(function DraggableSlot({
 export function buildSyncedConfig(widgetType, currentConfig, nb) {
   if (!nb) return null;
   const c = currentConfig || {};
+
+  /* Shared filter/font block — always included */
+  const sharedFont = {
+    ...(nb.fontFamily != null && { fontFamily: nb.fontFamily }),
+    ...(nb.fontSize   != null && { fontSize: nb.fontSize }),
+  };
+  const sharedFilters = {
+    ...(nb.brightness != null && { brightness: nb.brightness }),
+    ...(nb.contrast   != null && { contrast: nb.contrast }),
+    ...(nb.saturation != null && { saturation: nb.saturation }),
+  };
+
   switch (widgetType) {
     case 'image_slideshow':
       return {
@@ -228,9 +240,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         borderColor: nb.accentColor || 'rgba(51,65,85,0.5)',
         gradientColor: nb.bgColor || 'rgba(15,23,42,0.8)',
         captionColor: nb.textColor || '#e2e8f0',
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'rtp_stats':
       return {
@@ -242,20 +253,16 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         textColor: nb.textColor || '#ffffff',
         providerColor: nb.textColor || '#ffffff',
         slotNameColor: nb.textColor || '#ffffff',
-        fontFamily: nb.fontFamily || "'Inter', sans-serif",
-        fontSize: nb.fontSize ?? 14,
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'background':
       return {
         ...c,
         color1: nb.bgColor || '#0f172a',
         color2: nb.accentColor || '#1e3a5f',
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'chat':
       return {
@@ -265,11 +272,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         headerBg: nb.bgColor || '#111318',
         headerText: nb.mutedColor || '#94a3b8',
         borderColor: nb.accentColor || '#f59e0b',
-        fontFamily: nb.fontFamily || "'Inter', sans-serif",
-        fontSize: nb.fontSize ?? 13,
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'bonus_hunt':
       return {
@@ -291,11 +295,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         statValueColor: nb.textColor || '#f1f5f9',
         cardOutlineColor: nb.borderColor || nb.accentColor || '#f59e0b',
         cardOutlineWidth: nb.borderWidth ?? 2,
-        fontFamily: nb.fontFamily || "'Inter', sans-serif",
-        fontSize: nb.fontSize ?? 13,
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'tournament':
       return {
@@ -315,10 +316,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         bkAccent: nb.accentColor || '#6366f1',
         bkHeaderColor: nb.mutedColor || '#94a3b8',
         xIconColor: nb.accentColor || '#eab308',
-        fontFamily: nb.fontFamily || "'Inter', sans-serif",
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'random_slot_picker':
       return {
@@ -329,10 +328,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         accentColor: nb.accentColor || '#f59e0b',
         textColor: nb.textColor || '#ffffff',
         mutedColor: nb.mutedColor || '#94a3b8',
-        fontFamily: nb.fontFamily || "'Inter', sans-serif",
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'giveaway':
       return {
@@ -340,10 +337,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         bgColor: nb.bgColor || '#13151e',
         accentColor: nb.accentColor || '#9346ff',
         textColor: nb.textColor || '#ffffff',
-        fontFamily: nb.fontFamily || "'Inter', sans-serif",
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'bonus_buys':
       return {
@@ -352,10 +347,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         accentColor: nb.accentColor || '#3b82f6',
         textColor:   nb.textColor   || '#ffffff',
         mutedColor:  nb.mutedColor  || '#64748b',
-        fontFamily:  nb.fontFamily  || "'Inter', sans-serif",
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'single_slot':
       return {
@@ -364,10 +357,8 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         accentColor: nb.accentColor || '#7c3aed',
         textColor:   nb.textColor   || '#ffffff',
         mutedColor:  nb.mutedColor  || '#94a3b8',
-        fontFamily:  nb.fontFamily  || "'Inter', sans-serif",
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
     case 'slot_requests':
       return {
@@ -378,25 +369,101 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         mutedColor:  nb.mutedColor  || '#94a3b8',
         cardBg:      nb.bgColor ? `${nb.bgColor}0a` : 'rgba(255,255,255,0.04)',
         borderColor: nb.borderColor || 'rgba(255,255,255,0.08)',
-        fontFamily:  nb.fontFamily  || "'Inter', sans-serif",
-        ...(nb.brightness != null && { brightness: nb.brightness }),
-        ...(nb.contrast != null && { contrast: nb.contrast }),
-        ...(nb.saturation != null && { saturation: nb.saturation }),
+        ...sharedFont,
+        ...sharedFilters,
       };
-    default:
-      // Generic fallback — apply standard colour keys to any widget
+    /* ── Widgets that were previously missing ── */
+    case 'current_slot':
       return {
         ...c,
-        ...(nb.bgColor     != null && { bgColor: nb.bgColor }),
-        ...(nb.accentColor  != null && { accentColor: nb.accentColor }),
-        ...(nb.textColor    != null && { textColor: nb.textColor }),
-        ...(nb.mutedColor   != null && { mutedColor: nb.mutedColor }),
-        ...(nb.borderColor  != null && { borderColor: nb.borderColor }),
-        ...(nb.fontFamily   != null && { fontFamily: nb.fontFamily }),
-        ...(nb.fontSize     != null && { fontSize: nb.fontSize }),
-        ...(nb.brightness   != null && { brightness: nb.brightness }),
-        ...(nb.contrast     != null && { contrast: nb.contrast }),
-        ...(nb.saturation   != null && { saturation: nb.saturation }),
+        accentColor: nb.accentColor || '#f59e0b',
+        textColor:   nb.textColor   || '#ffffff',
+        mutedColor:  nb.mutedColor  || '#94a3b8',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    case 'bh_stats':
+      return {
+        ...c,
+        bgColor:      nb.bgColor      || 'rgba(15,23,42,0.9)',
+        cardBg:       nb.bgColor ? `${nb.bgColor}0a` : 'rgba(255,255,255,0.04)',
+        accentColor:  nb.accentColor  || '#818cf8',
+        textColor:    nb.textColor    || '#f1f5f9',
+        mutedColor:   nb.mutedColor   || '#64748b',
+        borderColor:  nb.borderColor  || 'rgba(255,255,255,0.06)',
+        progressColor: nb.accentColor || '#22c55e',
+        bestColor:    '#22c55e',
+        worstColor:   '#f87171',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    case 'navbar':
+      return {
+        ...c,
+        bgColor:      nb.bgColor      || '#111318',
+        accentColor:  nb.accentColor  || '#f59e0b',
+        textColor:    nb.textColor    || '#f1f5f9',
+        mutedColor:   nb.mutedColor   || '#94a3b8',
+        borderColor:  nb.borderColor  || nb.accentColor || '#f59e0b',
+        ctaColor:     nb.ctaColor     || '#f43f5e',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    case 'coin_flip':
+      return {
+        ...c,
+        headsColor:  nb.accentColor || '#f59e0b',
+        tailsColor:  nb.bgColor     || '#3b82f6',
+        accentColor: nb.accentColor || '#f59e0b',
+        textColor:   nb.textColor   || '#ffffff',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    case 'spotify_now_playing':
+      return {
+        ...c,
+        accentColor: nb.accentColor || '#1DB954',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    case 'raid_shoutout':
+      return {
+        ...c,
+        accentColor: nb.accentColor || '#9146FF',
+        bgColor:     nb.bgColor     || '#111318',
+        textColor:   nb.textColor   || '#ffffff',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    case 'salty_words':
+      return {
+        ...c,
+        accentColor: nb.accentColor || '#f59e0b',
+        textColor:   nb.textColor   || '#ffffff',
+        cardBg:      nb.bgColor     || '#1e293b',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    case 'predictions':
+      return {
+        ...c,
+        accentColor: nb.accentColor || '#7c3aed',
+        textColor:   nb.textColor   || '#ffffff',
+        ...sharedFont,
+        ...sharedFilters,
+      };
+    default:
+      // Catch-all for any future widgets
+      return {
+        ...c,
+        ...(nb.bgColor      != null && { bgColor: nb.bgColor }),
+        ...(nb.accentColor   != null && { accentColor: nb.accentColor }),
+        ...(nb.textColor     != null && { textColor: nb.textColor }),
+        ...(nb.mutedColor    != null && { mutedColor: nb.mutedColor }),
+        ...(nb.borderColor   != null && { borderColor: nb.borderColor }),
+        ...(nb.cardBg        != null && { cardBg: nb.cardBg }),
+        ...sharedFont,
+        ...sharedFilters,
       };
   }
 }
