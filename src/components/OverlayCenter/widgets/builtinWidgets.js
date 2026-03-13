@@ -26,6 +26,7 @@ registerWidget({
     { id: 'v8_card_stack', icon: '🎴', label: 'Card Stack' },
     { id: 'v9_hunt_board', icon: '🎯', label: 'Hunt Board' },
     { id: 'v10_spotlight', icon: '💎', label: 'Spotlight' },
+    { id: 'v11_glass', icon: '🧊', label: 'Glass' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

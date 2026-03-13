@@ -3629,6 +3629,397 @@
   color: #f87171;
 }
 
+/* ===============================================================
+   STYLE 11 — GLASS (Glassmorphism)   (bhg-*)
+   =============================================================== */
+
+/* Root */
+.bhg-root {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: transparent !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  box-shadow: none !important;
+  border: none !important;
+}
+
+/* Glass card base */
+.bhg-card {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: var(--bhg-radius, 16px);
+  padding: 14px 16px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+/* ── Header ── */
+.bhg-header-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+.bhg-header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.bhg-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid rgba(255,255,255,0.15);
+}
+.bhg-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.bhg-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bhg-text, #f1f5f9);
+  letter-spacing: 0.06em;
+}
+.bhg-subtitle {
+  font-size: 11px;
+  color: var(--bhg-muted, #94a3b8);
+}
+.bhg-badge {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.15);
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bhg-accent, #818cf8);
+}
+
+/* Stats row */
+.bhg-stats-row {
+  display: flex;
+  gap: 8px;
+}
+.bhg-stat {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+.bhg-stat-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--bhg-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.bhg-stat-val {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bhg-stat-val, #fff);
+}
+
+/* ── Summary ── */
+.bhg-summary-top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.bhg-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bhg-text, #f1f5f9);
+  letter-spacing: 0.05em;
+}
+.bhg-label-xs {
+  font-size: 10px;
+  color: var(--bhg-muted, #94a3b8);
+  margin-left: auto;
+}
+.bhg-pill {
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bhg-accent, #818cf8);
+}
+
+/* Progress */
+.bhg-progress {
+  height: 6px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+.bhg-progress-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: linear-gradient(90deg, var(--bhg-accent, #818cf8), rgba(167,139,250,0.9));
+  transition: width 0.5s ease;
+}
+
+/* Badges */
+.bhg-badges {
+  display: flex;
+  gap: 8px;
+}
+.bhg-badge-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 3px 10px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.bhg-badge-tag--super {
+  background: rgba(234, 179, 8, 0.12);
+  color: #facc15;
+  border: 1px solid rgba(234, 179, 8, 0.2);
+}
+.bhg-badge-tag--extreme {
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+/* ── Active Bonus ── */
+.bhg-active-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.bhg-active-img {
+  width: 56px;
+  height: 48px;
+  border-radius: 10px;
+  object-fit: cover;
+  flex-shrink: 0;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+.bhg-active-placeholder {
+  width: 56px;
+  height: 48px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+.bhg-active-info {
+  flex: 1;
+  min-width: 0;
+}
+.bhg-active-name {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bhg-text, #f1f5f9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 4px;
+}
+.bhg-active-num {
+  font-size: 11px;
+  color: var(--bhg-muted, #94a3b8);
+  font-weight: 700;
+}
+.bhg-active-mini {
+  display: flex;
+  gap: 8px;
+}
+.bhg-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.bhg-mini-label {
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--bhg-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.bhg-mini-val {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bhg-stat-val, #fff);
+}
+
+/* ── Slot List ── */
+.bhg-list-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.bhg-list {
+  max-height: var(--bhg-list-max, 400px);
+  overflow: hidden;
+}
+.bhg-list-track {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: bhg-scroll calc(var(--bhg-item-count, 10) * 2.5s) linear infinite;
+}
+@keyframes bhg-scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+.bhg-slot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  transition: background 0.2s, border-color 0.2s;
+}
+.bhg-slot--active {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--bhg-accent, rgba(129,140,248,0.3));
+}
+.bhg-slot--locked {
+  opacity: 0.55;
+}
+.bhg-slot--super {
+  border-color: rgba(234, 179, 8, 0.25);
+}
+.bhg-slot-img-wrap {
+  width: var(--bhg-img-h, 36px);
+  height: var(--bhg-img-h, 36px);
+  flex-shrink: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  background: rgba(255,255,255,0.04);
+}
+.bhg-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.bhg-slot-placeholder {
+  width: 100%;
+  height: 100%;
+  background: rgba(255,255,255,0.04);
+}
+.bhg-slot-info {
+  flex: 1;
+  min-width: 0;
+}
+.bhg-slot-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.bhg-slot-name {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--bhg-text, #f1f5f9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.bhg-slot-num {
+  font-size: 10px;
+  color: var(--bhg-muted, #94a3b8);
+  flex-shrink: 0;
+  margin-left: 6px;
+}
+.bhg-slot-bottom {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 2px;
+}
+.bhg-slot-bet {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--bhg-muted, #94a3b8);
+}
+.bhg-slot-multi {
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--bhg-stat-val, #fff);
+}
+
+/* ── Footer ── */
+.bhg-footer-stats {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.bhg-footer-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 10px;
+  padding: 8px;
+}
+.bhg-footer-label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--bhg-muted, #94a3b8);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.bhg-footer-val {
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--bhg-stat-val, #fff);
+}
+
+/* Total pay bar */
+.bhg-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bhg-total-bg, #22c55e);
+  color: var(--bhg-total-text, #fff);
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+.bhg-total-label {
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+.bhg-total-val {
+  font-size: 17px;
+}
+
+/* Shared accent helpers */
+.bhg-green { color: #4ade80 !important; }
+.bhg-amber { color: #fbbf24 !important; }
+
 /* =========================================================
    RAID SHOUTOUT WIDGET — Minimal Expand/Collapse Alert
    ========================================================= */
