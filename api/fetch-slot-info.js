@@ -149,7 +149,7 @@ function parseSlotsLaunch(html, slug) {
 
 /* ── fetch helpers per source ── */
 
-async function fetchDemoSlot(slug, name) {
+async function fetchDemoSlot(slug, name, fast = false) {
   // Try direct URL patterns
   const patterns = [
     `https://www.demoslot.com/free-slots/${slug}-slot-review/`,
@@ -161,6 +161,7 @@ async function fetchDemoSlot(slug, name) {
     const html = await safeFetch(url);
     if (html) return { html, url };
   }
+  if (fast) return null;
   // Fallback: Bing site-search
   const searchHtml = await safeFetch(`https://www.bing.com/search?q=site:demoslot.com+${encodeURIComponent(name)}+slot`);
   if (searchHtml) {
@@ -173,11 +174,12 @@ async function fetchDemoSlot(slug, name) {
   return null;
 }
 
-async function fetchSlotArk(slug, name) {
+async function fetchSlotArk(slug, name, fast = false) {
   // Direct URL: /slots/{slug}/
   const url = `https://www.slotark.com/slots/${slug}/`;
   const html = await safeFetch(url);
   if (html) return { html, url };
+  if (fast) return null;
   // Fallback: Bing site-search
   const searchHtml = await safeFetch(`https://www.bing.com/search?q=site:slotark.com+${encodeURIComponent(name)}+slot`);
   if (searchHtml) {
@@ -190,7 +192,8 @@ async function fetchSlotArk(slug, name) {
   return null;
 }
 
-async function fetchSlotsLaunch(slug, name) {
+async function fetchSlotsLaunch(slug, name, fast = false) {
+  if (fast) return null; // SlotsLaunch always requires Bing search
   // Bing site-search (URL requires provider slug we don't know)
   const searchHtml = await safeFetch(`https://www.bing.com/search?q=site:slotslaunch.com+${encodeURIComponent(name)}+slot`);
   if (searchHtml) {
@@ -215,14 +218,20 @@ export default async function handler(req, res) {
   const name = (req.query.name || '').trim();
   if (!name) return res.status(400).json({ error: 'Missing query parameter "name".' });
 
+  const fast = req.query.fast === '1';
+  const srcParam = (req.query.sources || 'demoslot,slotark,slotslaunch').toLowerCase();
+  const useDemoSlot = srcParam.includes('demoslot');
+  const useSlotArk = srcParam.includes('slotark');
+  const useSlotsLaunch = srcParam.includes('slotslaunch');
+
   try {
     const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
 
-    // Fetch all sources in parallel
+    // Fetch selected sources in parallel
     const [demoResult, arkResult, launchResult] = await Promise.all([
-      fetchDemoSlot(slug, name),
-      fetchSlotArk(slug, name),
-      fetchSlotsLaunch(slug, name),
+      useDemoSlot ? fetchDemoSlot(slug, name, fast) : null,
+      useSlotArk ? fetchSlotArk(slug, name, fast) : null,
+      useSlotsLaunch ? fetchSlotsLaunch(slug, name, fast) : null,
     ]);
 
     const demoInfo = demoResult ? parseDemoSlot(demoResult.html, slug) : {};

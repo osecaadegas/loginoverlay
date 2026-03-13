@@ -706,8 +706,11 @@ const SlotManagerV2 = () => {
   const [statCheckPage, setStatCheckPage] = useState(1);
   const [statCheckTotalPages, setStatCheckTotalPages] = useState(1);
   const [statCheckDataFilter, setStatCheckDataFilter] = useState('any'); // 'any' | 'all' | 'one'
+  const [statCheckFast, setStatCheckFast] = useState(true);
+  const [statCheckSources, setStatCheckSources] = useState({ demoslot: true, slotark: true, slotslaunch: true });
   const statCheckAbort = useRef(false);
   const STAT_CHECK_PAGE = 200;
+  const STAT_CHECK_BATCH = 5;
 
   // Helper: apply the data-missing filter to a query
   const applyDataFilter = (q, filter) => {
@@ -780,11 +783,14 @@ const SlotManagerV2 = () => {
       if (pErr) throw pErr;
       if (!pageSlots || pageSlots.length === 0) { notify('No slots on this page'); setStatCheckRunning(false); return; }
 
-      for (const slot of pageSlots) {
-        if (statCheckAbort.current) break;
-        totalChecked++;
+      // Build query params for the API
+      const srcList = Object.entries(statCheckSources).filter(([, v]) => v).map(([k]) => k).join(',');
+      const qp = `${statCheckFast ? '&fast=1' : ''}${srcList !== 'demoslot,slotark,slotslaunch' ? `&sources=${srcList}` : ''}`;
+
+      // Process a single slot
+      const processSlot = async (slot) => {
         try {
-          const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}`);
+          const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}${qp}`);
           if (res.ok || res.status === 404) {
             const data = await res.json();
             const info = data?.info;
@@ -796,23 +802,30 @@ const SlotManagerV2 = () => {
               if (!slot.max_win_multiplier && info.max_win_multiplier) { upd.max_win_multiplier = info.max_win_multiplier; changes.push(`Max Win: ${info.max_win_multiplier}x`); }
               if (Object.keys(upd).length > 0) {
                 const { error } = await supabase.from('slots').update(upd).eq('id', slot.id);
-                if (!error) { totalUpdated++; report.push({ name: slot.name, status: 'updated', changes }); }
-                else { totalFailed++; report.push({ name: slot.name, status: 'error', changes: [error.message] }); }
-              } else {
-                totalSkipped++;
-                report.push({ name: slot.name, status: 'no-data', changes: ['No new data found'] });
+                if (!error) return { name: slot.name, status: 'updated', changes };
+                return { name: slot.name, status: 'error', changes: [error.message] };
               }
-            } else {
-              totalSkipped++;
-              report.push({ name: slot.name, status: 'no-data', changes: ['Not found on scraping sources'] });
+              return { name: slot.name, status: 'no-data', changes: ['No new data found'] };
             }
-          } else {
-            totalFailed++;
-            report.push({ name: slot.name, status: 'error', changes: [`HTTP ${res.status}`] });
+            return { name: slot.name, status: 'no-data', changes: ['Not found on scraping sources'] };
           }
+          return { name: slot.name, status: 'error', changes: [`HTTP ${res.status}`] };
         } catch (err) {
-          totalFailed++;
-          report.push({ name: slot.name, status: 'error', changes: [err.message || 'Network error'] });
+          return { name: slot.name, status: 'error', changes: [err.message || 'Network error'] };
+        }
+      };
+
+      // Process in parallel batches of STAT_CHECK_BATCH
+      for (let i = 0; i < pageSlots.length; i += STAT_CHECK_BATCH) {
+        if (statCheckAbort.current) break;
+        const batch = pageSlots.slice(i, i + STAT_CHECK_BATCH);
+        const results = await Promise.all(batch.map(processSlot));
+        for (const r of results) {
+          totalChecked++;
+          if (r.status === 'updated') totalUpdated++;
+          else if (r.status === 'error') totalFailed++;
+          else totalSkipped++;
+          report.push(r);
         }
         setStatCheckProgress({ done: totalChecked, total: pageSlotCount, updated: totalUpdated, page: statCheckPage, totalPages });
       }
@@ -827,7 +840,7 @@ const SlotManagerV2 = () => {
     } finally {
       setStatCheckRunning(false);
     }
-  }, [statCheckRunning, statCheckMode, statCheckProvider, statCheckPage, loadSlots, notify, refreshStatCheckCount]);
+  }, [statCheckRunning, statCheckMode, statCheckProvider, statCheckPage, statCheckFast, statCheckSources, statCheckDataFilter, loadSlots, notify, refreshStatCheckCount]);
 
   /* ── Keyboard shortcuts ────────────────────────────────────── */
   useEffect(() => {
@@ -951,7 +964,32 @@ const SlotManagerV2 = () => {
             </span>
           </div>
 
-          {/* Row 2: Start / Progress */}
+          {/* Row 2: Sources + Fast mode */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+            <label style={{ fontSize: 12, color: '#94a3b8' }}>Sources:</label>
+            {[['demoslot', 'DemoSlot'], ['slotark', 'SlotArk'], ['slotslaunch', 'SlotsLaunch']].map(([k, lbl]) => (
+              <button key={k} disabled={statCheckRunning}
+                onClick={() => setStatCheckSources(s => ({ ...s, [k]: !s[k] }))}
+                style={{
+                  padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
+                  background: statCheckSources[k] ? '#0d9488' : '#334155', color: statCheckSources[k] ? '#fff' : '#94a3b8',
+                }}>
+                {lbl}
+              </button>
+            ))}
+            <span style={{ width: 1, height: 20, background: '#334155' }} />
+            <button disabled={statCheckRunning}
+              onClick={() => setStatCheckFast(f => !f)}
+              style={{
+                padding: '4px 12px', borderRadius: 6, fontSize: 12, fontWeight: 600, cursor: statCheckRunning ? 'default' : 'pointer', border: 'none',
+                background: statCheckFast ? '#f59e0b' : '#334155', color: statCheckFast ? '#fff' : '#94a3b8',
+              }}>
+              {statCheckFast ? '⚡ Fast Mode' : '🐢 Deep Mode'}
+            </button>
+            <span style={{ fontSize: 11, color: '#64748b' }}>{statCheckFast ? 'Direct URLs only' : 'Includes Bing fallback'}</span>
+          </div>
+
+          {/* Row 3: Start / Progress */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <button onClick={bulkStatCheck}
               disabled={statCheckMode === 'provider' && !statCheckProvider}
