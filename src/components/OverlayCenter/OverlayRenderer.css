@@ -3141,7 +3141,7 @@
 .bht3-flip-area {
   width: 100%;
   overflow: visible;
-  transform-style: preserve-3d;
+  position: relative;
   padding: 14px 14px 14px;
 }
 
@@ -3176,29 +3176,28 @@
   box-shadow: 0 4px 24px rgba(0,0,0,0.4);
 }
 
-/* ── Glow wrapper — sits OUTSIDE the 3D context so box-shadow renders in OBS ── */
-.bht3-flip-glow-wrap {
+/* ── Glow overlay: SIBLING of 3D container, never inside preserve-3d ── */
+.bht3-glow-overlay {
+  position: absolute;
+  inset: 8px;  /* match padding of flip-area minus a bit */
   border-radius: var(--bht3-card-radius, 16px);
-  transition: box-shadow 0.4s ease, border-color 0.4s ease;
+  pointer-events: none;
+  z-index: 0;
 }
 
-/* Super bonus: golden glow (on wrapper) */
-.bht3-flip-glow-wrap.bht3-glow-super {
+.bht3-glow-overlay--super {
+  border: 2.5px solid rgba(250, 204, 21, 0.6);
   box-shadow:
     0 0 12px 3px rgba(250, 204, 21, 0.5),
     0 0 28px 6px rgba(234, 179, 8, 0.3),
     0 0 48px 12px rgba(234, 179, 8, 0.15);
-  outline: 2px solid rgba(250, 204, 21, 0.55);
-  outline-offset: -1px;
 }
 
-/* Extreme bonus: red glow + trill (on wrapper) */
-.bht3-flip-glow-wrap.bht3-glow-extreme {
+.bht3-glow-overlay--extreme {
+  border: 3px solid rgba(239, 68, 68, 0.8);
   box-shadow:
     0 0 14px 4px rgba(239, 68, 68, 0.55),
     0 0 32px 8px rgba(239, 68, 68, 0.3);
-  outline: 2.5px solid rgba(239, 68, 68, 0.75);
-  outline-offset: -1px;
   animation: bht3-trill 2.5s ease-in-out infinite;
 }
 
