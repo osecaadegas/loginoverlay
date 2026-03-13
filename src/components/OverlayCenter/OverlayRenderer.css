@@ -3207,6 +3207,9 @@
   right: 0;
   padding: 10px 14px;
   z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
 }
 
 .bht3-flip-slot-name {
