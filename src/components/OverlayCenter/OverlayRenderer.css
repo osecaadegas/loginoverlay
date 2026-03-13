@@ -3430,8 +3430,134 @@
   font-size: 17.6px;
 }
 
+/* -- Stats Footer with 30s flip -- */
+.bht3-stats-footer {
+  perspective: 600px;
+  margin-top: 8px;
+}
+
+.bht3-stats-flipper {
+  position: relative;
+  width: 100%;
+  height: 48px;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-style: preserve-3d;
+}
+
+.bht3-stats-flipper--flipped {
+  transform: rotateX(180deg);
+}
+
+.bht3-stats-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 10px;
+  padding: 0 12px;
+  background: var(--bht3-summary-bg, #0f172a);
+}
+
+.bht3-stats-front {
+  justify-content: space-between;
+}
+
+.bht3-stats-back {
+  transform: rotateX(180deg);
+  justify-content: center;
+  gap: 12px;
+}
+
+.bht3-stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1px;
+}
+
+.bht3-stats-label {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--bht3-muted, #64748b);
+  text-transform: uppercase;
+}
+
+.bht3-stats-value {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--bht3-stat-value, #f1f5f9);
+}
+
+/* Best / Worst slot cards */
+.bht3-stats-slot {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  border: 1.5px solid transparent;
+  max-width: 48%;
+}
+
+.bht3-stats-slot--best {
+  border-color: #22c55e44;
+  background: rgba(34, 197, 94, 0.08);
+}
+
+.bht3-stats-slot--worst {
+  border-color: #ef444444;
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.bht3-stats-slot--empty {
+  justify-content: center;
+  color: var(--bht3-muted, #64748b);
+  font-size: 16px;
+}
+
+.bht3-stats-slot-img {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.bht3-stats-slot-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  min-width: 0;
+}
+
+.bht3-stats-slot-pay {
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--bht3-stat-value, #f1f5f9);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.bht3-stats-slot-multi {
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.bht3-stats-slot--best .bht3-stats-slot-multi {
+  color: #4ade80;
+}
+
+.bht3-stats-slot--worst .bht3-stats-slot-multi {
+  color: #f87171;
+}
+
 /* =========================================================
-   RAID SHOUTOUT WIDGET � Minimal Expand/Collapse Alert
+   RAID SHOUTOUT WIDGET — Minimal Expand/Collapse Alert
    ========================================================= */
 
 /* --- Wrapper: full widget area, centered --- */
