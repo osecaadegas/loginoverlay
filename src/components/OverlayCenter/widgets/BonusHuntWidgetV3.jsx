@@ -176,7 +176,6 @@ function BonusHuntWidgetV3({ config, theme }) {
                 )}
                 <div className="bht3-flip-gradient" />
                 <div className="bht3-flip-front-info">
-                  <div className="bht3-flip-slot-name">{frontBonus.slotName || frontBonus.slot?.name}</div>
                   <div className="bht3-flip-bet">{currency}{fmt(frontBonus.betSize)}</div>
                   {frontBonus.opened && (
                     <div className="bht3-flip-payout">
@@ -186,7 +185,6 @@ function BonusHuntWidgetV3({ config, theme }) {
                       </span>
                     </div>
                   )}
-                  <div className="bht3-flip-num">#{(displayIdx % bonuses.length) + 1} / {bonuses.length}</div>
                 </div>
               </div>
 
