@@ -698,60 +698,96 @@ const SlotManagerV2 = () => {
 
   /* ── Bulk stat check (scrape RTP / Max Win / Volatility) ─── */
   const [statCheckRunning, setStatCheckRunning] = useState(false);
-  const [statCheckProgress, setStatCheckProgress] = useState({ done: 0, total: 0, updated: 0 });
+  const [statCheckProgress, setStatCheckProgress] = useState({ done: 0, total: 0, updated: 0, page: 0, totalPages: 0 });
+  const [statCheckReport, setStatCheckReport] = useState(null); // { entries: [], total, updated, skipped, failed }
   const statCheckAbort = useRef(false);
+  const PAGE_SIZE_CHECK = 25;
 
   const bulkStatCheck = useCallback(async () => {
     if (statCheckRunning) { statCheckAbort.current = true; return; }
     statCheckAbort.current = false;
     setStatCheckRunning(true);
-    setStatCheckProgress({ done: 0, total: 0, updated: 0 });
+    setStatCheckReport(null);
+    setStatCheckProgress({ done: 0, total: 0, updated: 0, page: 0, totalPages: 0 });
+
+    const report = [];
+    let totalChecked = 0;
+    let totalUpdated = 0;
+    let totalSkipped = 0;
+    let totalFailed = 0;
 
     try {
-      // Fetch all slots missing at least one stat
-      let all = [];
-      let from = 0;
-      const step = 1000;
-      while (true) {
-        const { data, error } = await supabase
+      // Count how many slots need checking
+      const { count, error: cErr } = await supabase
+        .from('slots')
+        .select('id', { count: 'exact', head: true })
+        .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null');
+      if (cErr) throw cErr;
+      const total = count || 0;
+      if (total === 0) { notify('All slots already have stats filled'); setStatCheckRunning(false); return; }
+
+      const totalPages = Math.ceil(total / PAGE_SIZE_CHECK);
+      setStatCheckProgress({ done: 0, total, updated: 0, page: 0, totalPages });
+
+      // Process page by page
+      for (let pg = 0; pg < totalPages; pg++) {
+        if (statCheckAbort.current) break;
+        setStatCheckProgress(p => ({ ...p, page: pg + 1 }));
+
+        // Always fetch from offset 0 because already-updated rows drop out of the filter
+        const { data: pageSlots, error: pErr } = await supabase
           .from('slots')
           .select('id, name, provider, rtp, volatility, max_win_multiplier')
           .or('rtp.is.null,volatility.is.null,max_win_multiplier.is.null')
-          .range(from, from + step - 1);
-        if (error) throw error;
-        if (!data || data.length === 0) break;
-        all = all.concat(data);
-        if (data.length < step) break;
-        from += step;
-      }
+          .order('name', { ascending: true })
+          .range(0, PAGE_SIZE_CHECK - 1);
+        if (pErr) throw pErr;
+        if (!pageSlots || pageSlots.length === 0) break;
 
-      setStatCheckProgress({ done: 0, total: all.length, updated: 0 });
-      if (all.length === 0) { notify('All slots already have stats filled'); setStatCheckRunning(false); return; }
-
-      let updated = 0;
-      for (let i = 0; i < all.length; i++) {
-        if (statCheckAbort.current) { notify(`Stopped at ${i}/${all.length}`); break; }
-        const slot = all[i];
-        try {
-          const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}`);
-          if (res.ok) {
-            const { info } = await res.json();
-            if (info) {
-              const upd = {};
-              if (!slot.rtp && info.rtp) upd.rtp = info.rtp;
-              if (!slot.volatility && info.volatility) upd.volatility = info.volatility;
-              if (!slot.max_win_multiplier && info.max_win_multiplier) upd.max_win_multiplier = info.max_win_multiplier;
-              if (Object.keys(upd).length > 0) {
-                const { error } = await supabase.from('slots').update(upd).eq('id', slot.id);
-                if (!error) updated++;
+        for (const slot of pageSlots) {
+          if (statCheckAbort.current) break;
+          totalChecked++;
+          try {
+            const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(slot.name)}`);
+            if (res.ok) {
+              const { info } = await res.json();
+              if (info) {
+                const upd = {};
+                const changes = [];
+                if (!slot.rtp && info.rtp) { upd.rtp = info.rtp; changes.push(`RTP: ${info.rtp}%`); }
+                if (!slot.volatility && info.volatility) { upd.volatility = info.volatility; changes.push(`Volatility: ${info.volatility}`); }
+                if (!slot.max_win_multiplier && info.max_win_multiplier) { upd.max_win_multiplier = info.max_win_multiplier; changes.push(`Max Win: ${info.max_win_multiplier}x`); }
+                if (Object.keys(upd).length > 0) {
+                  const { error } = await supabase.from('slots').update(upd).eq('id', slot.id);
+                  if (!error) {
+                    totalUpdated++;
+                    report.push({ name: slot.name, status: 'updated', changes });
+                  } else {
+                    totalFailed++;
+                    report.push({ name: slot.name, status: 'error', changes: [error.message] });
+                  }
+                } else {
+                  totalSkipped++;
+                  report.push({ name: slot.name, status: 'no-data', changes: ['No new data found'] });
+                }
+              } else {
+                totalSkipped++;
+                report.push({ name: slot.name, status: 'no-data', changes: ['Slot not found on scraping sources'] });
               }
+            } else {
+              totalFailed++;
+              report.push({ name: slot.name, status: 'error', changes: [`HTTP ${res.status}`] });
             }
+          } catch (err) {
+            totalFailed++;
+            report.push({ name: slot.name, status: 'error', changes: [err.message || 'Network error'] });
           }
-        } catch { /* skip slot */ }
-        setStatCheckProgress({ done: i + 1, total: all.length, updated });
+          setStatCheckProgress({ done: totalChecked, total, updated: totalUpdated, page: pg + 1, totalPages });
+        }
       }
 
-      notify(`Done! Checked ${all.length} slots, updated ${updated}`);
+      setStatCheckReport({ entries: report, total: totalChecked, updated: totalUpdated, skipped: totalSkipped, failed: totalFailed });
+      notify(`Done! Checked ${totalChecked} slots, updated ${totalUpdated}`);
       loadSlots();
     } catch (e) {
       console.error('bulkStatCheck:', e);
@@ -838,12 +874,50 @@ const SlotManagerV2 = () => {
         <div style={{ padding: '8px 16px', background: '#1e293b', borderRadius: 8, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 12, color: '#94a3b8', marginBottom: 4 }}>
-              Checking slots… {statCheckProgress.done}/{statCheckProgress.total} — {statCheckProgress.updated} updated
+              Page {statCheckProgress.page}/{statCheckProgress.totalPages} — {statCheckProgress.done}/{statCheckProgress.total} slots — {statCheckProgress.updated} updated
             </div>
             <div style={{ height: 6, background: '#334155', borderRadius: 3, overflow: 'hidden' }}>
               <div style={{ height: '100%', width: `${(statCheckProgress.done / statCheckProgress.total * 100)}%`, background: '#3b82f6', borderRadius: 3, transition: 'width 0.3s' }} />
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ── Stat check report ────────────────────────────── */}
+      {statCheckReport && (
+        <div style={{ background: '#0f172a', border: '1px solid #334155', borderRadius: 8, marginBottom: 12, maxHeight: 400, overflow: 'auto' }}>
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid #334155', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: '#0f172a', zIndex: 1 }}>
+            <span style={{ fontSize: 13, fontWeight: 600, color: '#e2e8f0' }}>
+              📊 Stat Check Report — {statCheckReport.updated} updated, {statCheckReport.skipped} no data, {statCheckReport.failed} failed ({statCheckReport.total} checked)
+            </span>
+            <button onClick={() => setStatCheckReport(null)} style={{ background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: 16 }}>✕</button>
+          </div>
+          <table style={{ width: '100%', fontSize: 12, borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ color: '#94a3b8', textAlign: 'left' }}>
+                <th style={{ padding: '6px 12px', borderBottom: '1px solid #1e293b' }}>Slot</th>
+                <th style={{ padding: '6px 12px', borderBottom: '1px solid #1e293b' }}>Status</th>
+                <th style={{ padding: '6px 12px', borderBottom: '1px solid #1e293b' }}>Details</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statCheckReport.entries.map((e, i) => (
+                <tr key={i} style={{ borderBottom: '1px solid #1e293b' }}>
+                  <td style={{ padding: '5px 12px', color: '#e2e8f0' }}>{e.name}</td>
+                  <td style={{ padding: '5px 12px' }}>
+                    <span style={{
+                      display: 'inline-block', padding: '1px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+                      background: e.status === 'updated' ? '#166534' : e.status === 'error' ? '#7f1d1d' : '#1e293b',
+                      color: e.status === 'updated' ? '#4ade80' : e.status === 'error' ? '#fca5a5' : '#94a3b8',
+                    }}>
+                      {e.status === 'updated' ? '✓ Updated' : e.status === 'error' ? '✗ Error' : '— Skipped'}
+                    </span>
+                  </td>
+                  <td style={{ padding: '5px 12px', color: '#94a3b8' }}>{e.changes.join(', ')}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
 
