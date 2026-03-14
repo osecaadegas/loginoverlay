@@ -688,6 +688,63 @@ export default function ProfileSection({ widgets, saveWidget }) {
         </div>
       )}
 
+      {/* ──── Slot Auto-Tracker Setup Guide ──── */}
+      <div data-tour="profile-autotracker" style={{
+        background: 'linear-gradient(135deg, #0f172a 0%, #1a1040 100%)',
+        border: '1px solid rgba(99,102,241,0.3)',
+        borderRadius: 14,
+        padding: '20px 22px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+      }}>
+        <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#818cf8', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          🔗 Slot Auto-Tracker
+        </h3>
+        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+          Automatically detect which slot you're playing and sync it with your Bonus Hunt overlay — no manual input needed.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>1</span>
+            <p style={{ fontSize: '0.75rem', color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>
+              <strong style={{ color: '#e2e8f0' }}>Install the Chrome extension</strong> — Go to <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: '0.7rem' }}>chrome://extensions</code> → Enable <strong>Developer Mode</strong> → Click <strong>"Load unpacked"</strong> → Select the <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: '0.7rem' }}>browser-extension</code> folder.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>2</span>
+            <p style={{ fontSize: '0.75rem', color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>
+              <strong style={{ color: '#e2e8f0' }}>Enter your User ID</strong> — Click the extension icon and paste your User ID:
+              <br />
+              <span style={{ fontFamily: 'monospace', fontSize: '0.72rem', color: '#a78bfa', background: 'rgba(124,58,237,0.1)', padding: '2px 6px', borderRadius: 4, display: 'inline-block', marginTop: 4, userSelect: 'all' }}>
+                {user?.id || '—'}
+              </span>
+              <button
+                style={{ marginLeft: 8, background: 'rgba(99,102,241,0.15)', border: '1px solid rgba(99,102,241,0.3)', color: '#818cf8', fontSize: '0.7rem', padding: '2px 8px', borderRadius: 5, cursor: 'pointer' }}
+                onClick={() => { navigator.clipboard.writeText(user?.id || ''); }}
+              >📋 Copy</button>
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>3</span>
+            <p style={{ fontSize: '0.75rem', color: '#cbd5e1', margin: 0, lineHeight: 1.5 }}>
+              <strong style={{ color: '#e2e8f0' }}>Enable in Bonus Hunt</strong> — Go to your Bonus Hunt widget → Content tab → Turn on <strong>"🔗 Auto-Tracker"</strong>.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+            <span style={{ background: '#4ade80', color: '#000', borderRadius: '50%', width: 22, height: 22, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11, fontWeight: 700, flexShrink: 0 }}>✓</span>
+            <p style={{ fontSize: '0.75rem', color: '#4ade80', margin: 0, lineHeight: 1.5, fontWeight: 600 }}>
+              Play! When you open a slot on Stake, Roobet, Duelbits, etc., the extension detects it and your overlay highlights it automatically.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: '0.72rem', color: '#fbbf24' }}>
+          💡 <strong>Supported:</strong> Stake, Roobet, Duelbits, Gamdom, Rollbit, BC.Game, Metaspins, Shuffle, Cloudbet & more. The extension only reads tab URLs — it cannot see your balance or bets.
+        </div>
+      </div>
+
       {/* ──── OBS Setup Guide ──── */}
       <div data-tour="profile-obs-guide" style={{
         background: 'rgba(124,58,237,0.06)',
