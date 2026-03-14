@@ -540,6 +540,25 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     loadSlots();
   }, [userId]);
 
+  // Best-match: normalize, then pick the slot with the longest matching name
+  function bestSlotMatch(slotList, queryName) {
+    const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const q = norm(queryName);
+    if (!q) return null;
+    // Exact normalized match first
+    const exact = slotList.find(s => s.name && norm(s.name) === q);
+    if (exact) return exact;
+    // Fuzzy: collect all slots whose normalized name is contained in query or vice-versa
+    const candidates = slotList.filter(s => {
+      if (!s.name) return false;
+      const n = norm(s.name);
+      return n.length >= 3 && (q.includes(n) || n.includes(q));
+    });
+    if (!candidates.length) return null;
+    // Pick the one with the longest name (most specific)
+    return candidates.reduce((best, c) => (c.name.length > best.name.length ? c : best), candidates[0]);
+  }
+
   /* ─── Auto-Tracker: listen for browser extension slot detections ─── */
   const [autoTrackEnabled, setAutoTrackEnabled] = useState(c.autoTrackEnabled ?? false);
   const [lastDetected, setLastDetected] = useState(null);
@@ -584,11 +603,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         } else if (detectedTarget === 'bonus_hunt' && detected.bet_size > 0) {
           // BH target with bet: auto-add directly to the bonus list
           const currentSlots = slotsRef.current;
-          const matchSlot = currentSlots.find(s => s.name && s.name.toLowerCase().trim() === detectedName)
-            || currentSlots.find(s => s.name && (
-              s.name.toLowerCase().trim().includes(detectedName) ||
-              detectedName.includes(s.name.toLowerCase().trim())
-            ));
+          const matchSlot = bestSlotMatch(currentSlots, detected.slot_name);
 
           const newBonus = {
             id: Date.now(),
@@ -611,11 +626,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         } else {
           // Non-BH target or no bet: auto-fill the search input + bet size
           const currentSlots = slotsRef.current;
-          const matchSlot = currentSlots.find(s => s.name && s.name.toLowerCase().trim() === detectedName)
-            || currentSlots.find(s => s.name && (
-              s.name.toLowerCase().trim().includes(detectedName) ||
-              detectedName.includes(s.name.toLowerCase().trim())
-            ));
+          const matchSlot = bestSlotMatch(currentSlots, detected.slot_name);
           if (matchSlot) {
             setSelectedSlot(matchSlot);
             setSlotSearch(matchSlot.name);
