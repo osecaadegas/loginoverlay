@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { configStyles } from './shared/configStyles';
@@ -233,6 +233,50 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
     });
   };
 
+  // ── Auto-tracker: listen for bet/win values from browser extension ──
+  const [autoTrackEnabled, setAutoTrackEnabled] = useState(c.autoTrackEnabled ?? false);
+  const detectedRef = useRef(null);
+
+  useEffect(() => {
+    if (!user || !autoTrackEnabled) return;
+
+    const channel = supabase
+      .channel(`single_slot_tracker:${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'detected_slots',
+        filter: `user_id=eq.${user.id}`,
+      }, (payload) => {
+        const detected = payload.new;
+        if (!detected) return;
+
+        // Auto-fill bet if detected
+        if (detected.bet_size != null && detected.bet_size > 0) {
+          setManualBet(String(detected.bet_size));
+        }
+
+        // Auto-fill payout/win if detected
+        if (detected.last_win != null && detected.last_win >= 0) {
+          setManualPay(String(detected.last_win));
+        }
+
+        // Auto-select slot if no slot is currently selected
+        if (detected.slot_name && !c.slotName) {
+          const term = detected.slot_name.trim();
+          supabase.from('slots').select('id, name, provider, image, rtp')
+            .ilike('name', `%${term}%`).limit(1)
+            .then(({ data }) => {
+              if (data?.length) selectSlot(data[0]);
+            });
+        }
+      })
+      .subscribe();
+
+    detectedRef.current = channel;
+    return () => { supabase.removeChannel(channel); };
+  }, [user, autoTrackEnabled, c.slotName]);
+
   const currency = c.currency || '€';
 
   const S = configStyles('#7c3aed');
@@ -313,6 +357,16 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
           <div style={S.section}>
             <label style={S.label}>RTP %</label>
             <input style={S.input} value={c.rtp || ''} onChange={e => set('rtp', e.target.value)} placeholder="96.5" />
+          </div>
+
+          {/* Auto-tracker toggle */}
+          <div style={{ ...S.section, padding: 10, background: autoTrackEnabled ? 'rgba(74,222,128,0.06)' : 'rgba(255,255,255,0.03)', borderRadius: 10, border: `1px solid ${autoTrackEnabled ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.08)'}`, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', flex: 1 }}>
+              <input type="checkbox" checked={autoTrackEnabled} onChange={e => { setAutoTrackEnabled(e.target.checked); set('autoTrackEnabled', e.target.checked); }} />
+              <span style={{ fontSize: '0.78rem', color: autoTrackEnabled ? '#4ade80' : '#a0a0b4', fontWeight: 600 }}>
+                🔗 Auto-fill bet & win from extension {autoTrackEnabled ? '— ACTIVE' : '— OFF'}
+              </span>
+            </label>
           </div>
 
           {/* Add result manually */}

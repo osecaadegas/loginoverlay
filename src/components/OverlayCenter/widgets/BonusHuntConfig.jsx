@@ -543,7 +543,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [lastDetected, setLastDetected] = useState(null);
 
   useEffect(() => {
-    if (!userId || !autoTrackEnabled || !bonusOpening) return;
+    if (!userId || !autoTrackEnabled) return;
 
     const channel = supabase
       .channel(`detected_slots:${userId}`)
@@ -559,29 +559,48 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         const detectedName = detected.slot_name.toLowerCase().trim();
         setLastDetected(detected.slot_name);
 
-        // Find matching unopened bonus in the list
-        setBonusList(prev => {
-          const matchIdx = prev.findIndex(b =>
-            !b.opened &&
-            !(Number(b.payout) > 0) &&
-            (b.slotName || b.slot?.name || '').toLowerCase().trim().includes(detectedName) ||
-            detectedName.includes((b.slotName || b.slot?.name || '').toLowerCase().trim())
-          );
+        if (bonusOpening) {
+          // During opening: find matching unopened bonus and highlight it
+          setBonusList(prev => {
+            const matchIdx = prev.findIndex(b =>
+              !b.opened &&
+              !(Number(b.payout) > 0) &&
+              ((b.slotName || b.slot?.name || '').toLowerCase().trim().includes(detectedName) ||
+              detectedName.includes((b.slotName || b.slot?.name || '').toLowerCase().trim()))
+            );
 
-          if (matchIdx === -1) return prev;
+            if (matchIdx === -1) return prev;
 
-          // Mark all bonuses before the match as opened (if sequential mode)
-          const updated = prev.map((b, i) => {
-            if (i === matchIdx) return b; // don't open the current one — just highlight it
-            return b;
+            const updated = prev.map((b, i) => {
+              if (i === matchIdx) return b;
+              return b;
+            });
+            return updated;
           });
-          return updated;
-        });
+        } else {
+          // During building: auto-fill the search input + bet size (user still clicks +Add)
+          const matchSlot = slots.find(s =>
+            s.name && s.name.toLowerCase().includes(detectedName) ||
+            detectedName.includes(s.name?.toLowerCase() || '')
+          );
+          if (matchSlot) {
+            setSelectedSlot(matchSlot);
+            setSlotSearch(matchSlot.name);
+          } else {
+            // No exact match in DB, just fill the search text
+            setSelectedSlot(null);
+            setSlotSearch(detected.slot_name);
+          }
+          // Auto-fill bet size if the extension detected it
+          if (detected.bet_size != null && detected.bet_size > 0) {
+            setBetSize(String(detected.bet_size));
+          }
+        }
       })
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [userId, autoTrackEnabled, bonusOpening]);
+  }, [userId, autoTrackEnabled, bonusOpening, slots]);
 
   const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
     ? sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase())))
