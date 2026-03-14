@@ -10,7 +10,12 @@
 
   // Don't run in iframes or if chrome.runtime is unavailable
   if (window !== window.top) return;
-  if (!chrome?.runtime?.sendMessage) return;
+  if (!chrome?.runtime?.id) return;
+
+  // Helper: check if extension context is still valid
+  function alive() {
+    try { return !!chrome.runtime?.id; } catch { return false; }
+  }
 
   // ── State ──
   let isOpen = false;
@@ -292,7 +297,9 @@
 
   // ── Load slot info from background ──
   function loadSlotInfo() {
+    if (!alive()) return;
     chrome.storage.local.get(['lastSlotName', 'lastProvider'], (data) => {
+      if (!alive()) return;
       slotName = data.lastSlotName || '';
       provider = data.lastProvider || '';
 
@@ -321,6 +328,7 @@
     msgEl.textContent = '';
 
     try {
+      if (!alive()) { msgEl.className = 'st-msg error'; msgEl.textContent = 'Extension reloaded — refresh page'; return; }
       const response = await chrome.runtime.sendMessage({
         type: 'SUBMIT_RESULT',
         slotName,
@@ -362,11 +370,14 @@
   loadSlotInfo();
 
   // Refresh slot info when storage changes (new slot detected)
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.lastSlotName || changes.lastProvider) {
-      loadSlotInfo();
-    }
-  });
+  try {
+    chrome.storage.onChanged.addListener((changes) => {
+      if (!alive()) return;
+      if (changes.lastSlotName || changes.lastProvider) {
+        loadSlotInfo();
+      }
+    });
+  } catch { /* extension context may already be invalidated */ }
 
   console.log('[SlotTracker] Floating panel loaded.');
 })();
