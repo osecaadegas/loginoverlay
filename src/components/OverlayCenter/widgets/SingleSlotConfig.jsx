@@ -133,6 +133,12 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
   const [manualPay, setManualPay] = useState('');
   const [addingResult, setAddingResult] = useState(false);
 
+  // Auto-fill bet/payout from extension tracker (via detected_slots → useOverlay)
+  useEffect(() => {
+    if (c.betSize != null && Number(c.betSize) > 0) setManualBet(String(c.betSize));
+    if (c.lastWin != null) setManualPay(String(c.lastWin));
+  }, [c.betSize, c.lastWin]);
+
   const handleAddResult = async () => {
     if (!user || !c.slotName || !manualBet || !manualPay) return;
     setAddingResult(true);
