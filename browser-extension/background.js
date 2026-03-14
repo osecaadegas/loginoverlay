@@ -147,6 +147,11 @@ async function sendToSupabase(slotData) {
         slot_name: slotData.name,
         provider: slotData.provider || '',
         url: slotData.url || '',
+        bet_size: null,
+        last_win: null,
+        target: null,
+        is_super_bonus: false,
+        is_extreme_bonus: false,
         detected_at: new Date().toISOString(),
       }),
     });
