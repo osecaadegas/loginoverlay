@@ -1,6 +1,7 @@
 /**
  * panel.js — Slim top-bar for entering slot results
  * Fixed centered bar at the top of the page, always visible, single row.
+ * Includes destination selector: Bonus Hunt / Single Slot / Current Slot.
  */
 
 (() => {
@@ -15,6 +16,7 @@
 
   let slotName = '';
   let provider = '';
+  let target = 'single_slot'; // default destination
 
   // ── Shadow host ──
   const host = document.createElement('div');
@@ -35,30 +37,30 @@
       transform: translateX(-50%);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       background: rgba(15, 17, 24, 0.92);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(124, 58, 237, 0.3);
       border-radius: 10px;
-      padding: 5px 12px;
+      padding: 5px 10px;
       pointer-events: auto;
       font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
       color: #e2e8f0;
       box-shadow: 0 4px 20px rgba(0,0,0,0.5), 0 0 0 1px rgba(124,58,237,0.15);
       white-space: nowrap;
-      max-width: 95vw;
+      max-width: 98vw;
     }
 
     .st-icon {
-      font-size: 18px;
+      font-size: 16px;
       flex-shrink: 0;
     }
 
     .st-slot {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       color: #a78bfa;
-      max-width: 160px;
+      max-width: 130px;
       overflow: hidden;
       text-overflow: ellipsis;
       flex-shrink: 1;
@@ -71,7 +73,7 @@
 
     .st-sep {
       width: 1px;
-      height: 20px;
+      height: 18px;
       background: rgba(255,255,255,0.1);
       flex-shrink: 0;
     }
@@ -79,14 +81,14 @@
     .st-input {
       background: rgba(255,255,255,0.06);
       border: 1px solid rgba(255,255,255,0.12);
-      border-radius: 6px;
-      padding: 4px 8px;
+      border-radius: 5px;
+      padding: 3px 6px;
       color: #fff;
-      font-size: 13px;
+      font-size: 12px;
       font-weight: 600;
       font-family: inherit;
       outline: none;
-      width: 72px;
+      width: 62px;
       text-align: center;
       transition: border-color 0.2s;
     }
@@ -94,34 +96,60 @@
     .st-input::placeholder { color: #475569; font-weight: 400; }
 
     .st-label {
-      font-size: 10px;
+      font-size: 9px;
       color: #64748b;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.4px;
       font-weight: 600;
     }
 
     .st-field {
       display: flex;
       align-items: center;
-      gap: 4px;
+      gap: 3px;
       flex-shrink: 0;
     }
 
     .st-multi {
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 700;
       color: #a78bfa;
-      min-width: 42px;
+      min-width: 36px;
       text-align: center;
       flex-shrink: 0;
     }
 
+    /* Destination toggle buttons */
+    .st-targets {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .st-target {
+      padding: 3px 7px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      background: transparent;
+      color: #64748b;
+      transition: all 0.15s;
+      white-space: nowrap;
+    }
+    .st-target:hover { color: #a78bfa; border-color: rgba(124,58,237,0.3); }
+    .st-target.active {
+      background: rgba(124, 58, 237, 0.25);
+      color: #c4b5fd;
+      border-color: #7c3aed;
+    }
+
     .st-btn {
-      padding: 5px 14px;
+      padding: 4px 10px;
       border: none;
-      border-radius: 6px;
-      font-size: 12px;
+      border-radius: 5px;
+      font-size: 11px;
       font-weight: 700;
       font-family: inherit;
       cursor: pointer;
@@ -135,7 +163,7 @@
     .st-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
     .st-msg {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
       flex-shrink: 0;
     }
@@ -146,7 +174,7 @@
       background: none;
       border: none;
       color: #64748b;
-      font-size: 16px;
+      font-size: 14px;
       cursor: pointer;
       padding: 0 2px;
       line-height: 1;
@@ -155,12 +183,12 @@
     .st-minimize:hover { color: #f87171; }
 
     .st-bar.minimized .st-content { display: none; }
-    .st-bar.minimized { padding: 4px 10px; gap: 6px; }
+    .st-bar.minimized { padding: 4px 8px; gap: 4px; }
 
     .st-content {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
   `;
   shadow.appendChild(style);
@@ -172,6 +200,12 @@
       <span class="st-icon">🎰</span>
       <div class="st-content" id="stContent">
         <span class="st-slot empty" id="stSlot">No slot</span>
+        <div class="st-sep"></div>
+        <div class="st-targets">
+          <button class="st-target" data-target="bonus_hunt" title="Bonus Hunt">BH</button>
+          <button class="st-target active" data-target="single_slot" title="Single Slot">SS</button>
+          <button class="st-target" data-target="current_slot" title="Current Slot">CS</button>
+        </div>
         <div class="st-sep"></div>
         <div class="st-field">
           <span class="st-label">BET</span>
@@ -199,6 +233,24 @@
   const submitBtn = shadow.getElementById('stSubmit');
   const msgEl = shadow.getElementById('stMsg');
   const minBtn = shadow.getElementById('stMin');
+  const targetBtns = shadow.querySelectorAll('.st-target');
+
+  // ── Destination toggle ──
+  // Load saved target
+  chrome.storage.local.get(['panelTarget'], (data) => {
+    if (data.panelTarget) {
+      target = data.panelTarget;
+      targetBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+    }
+  });
+
+  targetBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      target = btn.dataset.target;
+      targetBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+      if (alive()) chrome.storage.local.set({ panelTarget: target });
+    });
+  });
 
   // ── Minimize toggle ──
   minBtn.addEventListener('click', () => {
@@ -257,7 +309,7 @@
       if (!alive()) { msgEl.className = 'st-msg error'; msgEl.textContent = 'Reload page'; return; }
       const response = await chrome.runtime.sendMessage({
         type: 'SUBMIT_RESULT',
-        slotName, provider,
+        slotName, provider, target,
         betSize: bet,
         payout: pay,
       });

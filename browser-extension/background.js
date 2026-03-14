@@ -153,7 +153,7 @@ async function sendToSupabase(slotData) {
 }
 
 // ── Submit result (bet + payout) from content script panel ──
-async function submitResult({ slotName, provider, betSize, payout }) {
+async function submitResult({ slotName, provider, betSize, payout, target }) {
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = CONFIG;
   const settings = await chrome.storage.local.get(['userId']);
   const { userId } = settings;
@@ -180,6 +180,7 @@ async function submitResult({ slotName, provider, betSize, payout }) {
         provider: provider || '',
         bet_size: betSize || null,
         last_win: payout || null,
+        target: target || 'single_slot',
         detected_at: new Date().toISOString(),
       }),
     });

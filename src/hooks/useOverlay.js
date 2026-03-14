@@ -103,11 +103,17 @@ export function useOverlay() {
         if (detected.bet_size != null) update.betSize = detected.bet_size;
         if (detected.last_win != null) update.lastWin = detected.last_win;
 
-        // Update current_slot and single_slot widgets
+        // Determine which widget(s) to target
+        const detectedTarget = detected.target || 'single_slot';
+        const targetTypes = detectedTarget === 'bonus_hunt'
+          ? ['bonus_hunt']
+          : [detectedTarget]; // 'single_slot' or 'current_slot'
+
+        // Update only the targeted widget type(s)
         setWidgets(prev => {
           const updated = [];
           for (const w of prev) {
-            if (w.widget_type === 'current_slot' || w.widget_type === 'single_slot') {
+            if (targetTypes.includes(w.widget_type)) {
               const merged = { ...w, config: { ...w.config, ...update } };
               updated.push(merged);
               // Persist to DB (fire-and-forget)

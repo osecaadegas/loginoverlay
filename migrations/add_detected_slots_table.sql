@@ -11,6 +11,7 @@ CREATE TABLE IF NOT EXISTS detected_slots (
   url         TEXT DEFAULT '',
   bet_size    NUMERIC DEFAULT NULL,
   last_win    NUMERIC DEFAULT NULL,
+  target      TEXT DEFAULT 'single_slot',
   detected_at TIMESTAMPTZ DEFAULT now()
 );
 
