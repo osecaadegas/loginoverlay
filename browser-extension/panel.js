@@ -209,6 +209,7 @@
     }
     .st-msg.success { color: #4ade80; }
     .st-msg.error { color: #f87171; }
+    .st-msg.warn { color: #facc15; }
 
     .st-minimize {
       background: none;
@@ -348,7 +349,7 @@
   // ── Load slot ──
   function loadSlotInfo() {
     if (!alive()) return;
-    chrome.storage.local.get(['lastSlotName', 'lastProvider'], (data) => {
+    chrome.storage.local.get(['lastSlotName', 'lastProvider', 'slotInDb'], (data) => {
       if (!alive()) return;
       slotName = data.lastSlotName || '';
       provider = data.lastProvider || '';
@@ -356,6 +357,17 @@
         slotEl.textContent = slotName;
         slotEl.classList.remove('empty');
         slotEl.title = provider ? `${slotName} (${provider})` : slotName;
+        // Show "Not in DB" warning if slot not found
+        if (data.slotInDb === false) {
+          msgEl.className = 'st-msg warn';
+          msgEl.textContent = '⚠ Not in DB';
+        } else {
+          // Clear previous warning only if it was the DB warning
+          if (msgEl.textContent === '⚠ Not in DB') {
+            msgEl.className = 'st-msg';
+            msgEl.textContent = '';
+          }
+        }
       } else {
         slotEl.textContent = 'No slot';
         slotEl.classList.add('empty');
@@ -424,7 +436,7 @@
   try {
     chrome.storage.onChanged.addListener((changes) => {
       if (!alive()) return;
-      if (changes.lastSlotName || changes.lastProvider) loadSlotInfo();
+      if (changes.lastSlotName || changes.lastProvider || changes.slotInDb) loadSlotInfo();
     });
   } catch {}
 

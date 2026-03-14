@@ -356,6 +356,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [sortDir, setSortDir] = useState(c.sortDir || 'asc');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [slots, setSlots] = useState([]);
+  const slotsRef = useRef([]);
+  useEffect(() => { slotsRef.current = slots; }, [slots]);
   const [bonusOpening, setBonusOpening] = useState(c.bonusOpening ?? false);
   const [editingId, setEditingId] = useState(null);
   const [editName, setEditName] = useState('');
@@ -581,10 +583,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           });
         } else if (detectedTarget === 'bonus_hunt' && detected.bet_size > 0) {
           // BH target with bet: auto-add directly to the bonus list
-          const matchSlot = slots.find(s =>
-            s.name && (s.name.toLowerCase().includes(detectedName) ||
-            detectedName.includes(s.name?.toLowerCase() || ''))
-          );
+          const currentSlots = slotsRef.current;
+          const matchSlot = currentSlots.find(s => s.name && s.name.toLowerCase().trim() === detectedName)
+            || currentSlots.find(s => s.name && (
+              s.name.toLowerCase().trim().includes(detectedName) ||
+              detectedName.includes(s.name.toLowerCase().trim())
+            ));
 
           const newBonus = {
             id: Date.now(),
@@ -606,10 +610,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           });
         } else {
           // Non-BH target or no bet: auto-fill the search input + bet size
-          const matchSlot = slots.find(s =>
-            s.name && s.name.toLowerCase().includes(detectedName) ||
-            detectedName.includes(s.name?.toLowerCase() || '')
-          );
+          const currentSlots = slotsRef.current;
+          const matchSlot = currentSlots.find(s => s.name && s.name.toLowerCase().trim() === detectedName)
+            || currentSlots.find(s => s.name && (
+              s.name.toLowerCase().trim().includes(detectedName) ||
+              detectedName.includes(s.name.toLowerCase().trim())
+            ));
           if (matchSlot) {
             setSelectedSlot(matchSlot);
             setSlotSearch(matchSlot.name);
@@ -625,7 +631,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       .subscribe();
 
     return () => { supabase.removeChannel(channel); };
-  }, [userId, autoTrackEnabled, bonusOpening, slots]);
+  }, [userId, autoTrackEnabled, bonusOpening]);
 
   const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
     ? sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase())))

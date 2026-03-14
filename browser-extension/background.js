@@ -102,6 +102,21 @@ function extractSlotFromUrl(url) {
   }
 }
 
+// ── Check if slot exists in the slots DB ──
+async function checkSlotInDb(slotName) {
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = CONFIG;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('YOUR_PROJECT')) return false;
+  try {
+    const q = encodeURIComponent(slotName);
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/slots?name=ilike.%25${q}%25&select=name&limit=1`, {
+      headers: { 'apikey': SUPABASE_ANON_KEY, 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.length > 0;
+  } catch { return false; }
+}
+
 // ── Send to Supabase ──
 async function sendToSupabase(slotData) {
   const { SUPABASE_URL, SUPABASE_ANON_KEY } = CONFIG;
@@ -138,7 +153,9 @@ async function sendToSupabase(slotData) {
 
     if (response.ok) {
       console.log(`[SlotTracker] ✅ Detected: ${slotData.name}`);
-      chrome.storage.local.set({ lastSlotName: slotData.name, lastProvider: slotData.provider || '' });
+      // Check if slot exists in the slots DB
+      const inDb = await checkSlotInDb(slotData.name);
+      chrome.storage.local.set({ lastSlotName: slotData.name, lastProvider: slotData.provider || '', slotInDb: inDb });
       chrome.action.setBadgeText({ text: '✓' });
       chrome.action.setBadgeBackgroundColor({ color: '#4ade80' });
     } else {
