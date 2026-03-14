@@ -7,19 +7,17 @@
 // Load Supabase config (URL + anon key)
 importScripts('config.js');
 
-// ── Casino URL patterns ──
-const CASINO_HOSTS = [
-  'stake.com', 'stake.games', 'roobet.com', 'duelbits.com',
-  'gamdom.com', 'rollbit.com', 'bc.game', 'csgoempire.com',
-  'metaspins.com', 'shuffle.com', 'jackpotcity.com', 'casumo.com',
-  '888casino.com', 'betsson.com', 'leovegas.com', 'cloudbet.com',
-];
+// Path segments that indicate a slot/game page
+const GAME_PATH_SIGNALS = new Set([
+  'play', 'game', 'launch', 'slot', 'slots', 'casino',
+]);
 
-// Segments to ignore when parsing URL path
+// Segments to skip when looking for the slot name
 const IGNORE_SEGMENTS = new Set([
-  'play', 'game', 'launch', 'casino', 'slots', 'en', 'pt', 'br',
-  'games', 'slot', 'real', 'demo', 'fun', 'lobby', 'category',
+  'play', 'game', 'launch', 'casino', 'slots', 'en', 'pt', 'br', 'se',
+  'games', 'slot', 'real', 'demo', 'fun', 'lobby', 'category', 'en-se',
   'providers', 'provider', 'home', 'live', 'table', 'originals',
+  'en-us', 'en-gb', 'pt-br', 'de', 'fr', 'es', 'it', 'nl', 'fi', 'no', 'sv',
 ]);
 
 // Provider keywords in URL
@@ -37,23 +35,19 @@ const PROVIDER_MAP = {
 let lastDetectedSlug = '';
 
 // ── Extract slot name from URL ──
+// Works on ANY casino — detects game pages by URL path patterns
 function extractSlotFromUrl(url) {
   try {
     const urlObj = new URL(url);
-    const host = urlObj.hostname.toLowerCase();
+    if (!urlObj.protocol.startsWith('http')) return null;
 
-    // Check if it's a casino site
-    if (!CASINO_HOSTS.some(h => host.includes(h))) return null;
+    const pathSegments = urlObj.pathname.split('/').filter(Boolean);
+    const lowerSegments = pathSegments.map(s => s.toLowerCase());
 
-    const cleanUrl = url.toLowerCase();
+    // Check if URL path contains a game-related signal segment
+    const hasGameSignal = lowerSegments.some(s => GAME_PATH_SIGNALS.has(s));
 
-    // Detect provider
-    let provider = '';
-    for (const [key, value] of Object.entries(PROVIDER_MAP)) {
-      if (cleanUrl.includes(key)) { provider = value; break; }
-    }
-
-    // Try query params first
+    // Also check query params for game identifiers
     const params = new URLSearchParams(urlObj.search);
     const paramKeys = ['game', 'gameId', 'gameName', 'gameSymbol', 'game_id', 'title', 'name', 'gameCode', 'slug'];
     let slug = '';
@@ -62,19 +56,31 @@ function extractSlotFromUrl(url) {
       if (val) { slug = val; break; }
     }
 
-    // Fallback: last meaningful path segment
+    // If no game signal in path and no game query param, skip
+    if (!hasGameSignal && !slug) return null;
+
+    const cleanUrl = url.toLowerCase();
+
+    // Detect provider from URL
+    let provider = '';
+    for (const [key, value] of Object.entries(PROVIDER_MAP)) {
+      if (cleanUrl.includes(key)) { provider = value; break; }
+    }
+
+    // If no slug from params, find the last meaningful path segment
     if (!slug) {
-      const segments = urlObj.pathname.split('/').filter(
+      const meaningful = pathSegments.filter(
         s => s.length > 2 && !IGNORE_SEGMENTS.has(s.toLowerCase())
       );
-      if (segments.length) slug = segments[segments.length - 1];
+      if (meaningful.length) slug = meaningful[meaningful.length - 1];
     }
 
     if (!slug) return null;
 
-    // Clean slug
+    // Clean slug — remove numeric prefixes like "235325-"
     slug = slug.toLowerCase().split('.')[0];
     slug = slug.replace(/^(game-|slot-|play-|casino-|provider-)/i, '');
+    slug = slug.replace(/^\d+-/, ''); // strip leading ID numbers like "235325-"
 
     // Skip if it's just a category/lobby page
     if (IGNORE_SEGMENTS.has(slug)) return null;

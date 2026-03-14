@@ -741,7 +741,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
         </div>
 
         <div style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: '0.72rem', color: '#fbbf24' }}>
-          💡 <strong>Supported:</strong> Stake, Roobet, Duelbits, Gamdom, Rollbit, BC.Game, Metaspins, Shuffle, Cloudbet & more. The extension only reads tab URLs — it cannot see your balance or bets.
+          💡 Works on <strong>any casino</strong> — Stake, Roobet, Duelbits, Megarich, and more. The extension only reads tab URLs — it cannot see your balance or bets.
         </div>
       </div>
 
