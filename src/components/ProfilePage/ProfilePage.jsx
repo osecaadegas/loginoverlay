@@ -302,11 +302,8 @@ export default function ProfilePage() {
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
                   <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
                   <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
-                    <strong style={{ color: '#e2e8f0' }}>Configure the extension</strong><br />
-                    Click the extension icon in your toolbar and enter:<br />
-                    • <strong>Supabase URL</strong> — your project URL<br />
-                    • <strong>Supabase Anon Key</strong> — your anon/public key<br />
-                    • <strong>User ID</strong> — copy it using the button above ☝️
+                    <strong style={{ color: '#e2e8f0' }}>Enter your User ID</strong><br />
+                    Click the extension icon in your toolbar and paste your User ID. Copy it using the button above ☝️
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>

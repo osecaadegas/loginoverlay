@@ -5,12 +5,10 @@
 const $ = id => document.getElementById(id);
 
 async function loadSettings() {
-  const settings = await chrome.storage.local.get(['supabaseUrl', 'supabaseKey', 'userId', 'lastSlotName', 'lastProvider']);
-  const { supabaseUrl, supabaseKey, userId, lastSlotName, lastProvider } = settings;
+  const settings = await chrome.storage.local.get(['userId', 'lastSlotName', 'lastProvider']);
+  const { userId, lastSlotName, lastProvider } = settings;
 
-  if (supabaseUrl && supabaseKey && userId) {
-    $('supabaseUrl').value = supabaseUrl;
-    $('supabaseKey').value = supabaseKey;
+  if (userId) {
     $('userId').value = userId;
     $('status').className = 'status-bar connected';
     $('statusText').textContent = 'Connected — tracking active';
@@ -25,20 +23,10 @@ async function loadSettings() {
 }
 
 $('saveBtn').addEventListener('click', async () => {
-  const supabaseUrl = $('supabaseUrl').value.trim().replace(/\/$/, '');
-  const supabaseKey = $('supabaseKey').value.trim();
   const userId = $('userId').value.trim();
 
-  if (!supabaseUrl || !supabaseKey || !userId) {
-    $('statusText').textContent = 'Please fill all fields';
-    return;
-  }
-
-  // Validate URL format
-  try {
-    new URL(supabaseUrl);
-  } catch {
-    $('statusText').textContent = 'Invalid Supabase URL';
+  if (!userId) {
+    $('statusText').textContent = 'Please enter your User ID';
     return;
   }
 
@@ -49,7 +37,7 @@ $('saveBtn').addEventListener('click', async () => {
     return;
   }
 
-  await chrome.storage.local.set({ supabaseUrl, supabaseKey, userId });
+  await chrome.storage.local.set({ userId });
 
   $('status').className = 'status-bar connected';
   $('statusText').textContent = 'Connected — tracking active';
@@ -58,8 +46,6 @@ $('saveBtn').addEventListener('click', async () => {
 
 $('clearBtn').addEventListener('click', async () => {
   await chrome.storage.local.clear();
-  $('supabaseUrl').value = '';
-  $('supabaseKey').value = '';
   $('userId').value = '';
   $('status').className = 'status-bar disconnected';
   $('statusText').textContent = 'Disconnected';

@@ -106,14 +106,8 @@
   </div>
 
   <div id="setupForm">
-    <label>Supabase URL</label>
-    <input type="text" id="supabaseUrl" placeholder="https://xxxx.supabase.co" />
-
-    <label>Supabase Anon Key</label>
-    <input type="text" id="supabaseKey" placeholder="eyJhbGci..." />
-
     <label>Your User ID</label>
-    <input type="text" id="userId" placeholder="Copy from Profile page" />
+    <input type="text" id="userId" placeholder="Paste your User ID from the Profile page" />
 
     <button class="btn btn-primary" id="saveBtn">Save & Connect</button>
     <button class="btn btn-danger" id="clearBtn" style="display:none;">Disconnect</button>
@@ -126,9 +120,10 @@
   </div>
 
   <div class="help">
-    Find your User ID on your Profile page. The Supabase URL and Anon Key are in your site's settings.
+    Find your User ID on your Profile page using the "Copy Full ID" button.
   </div>
 
+  <script src="config.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

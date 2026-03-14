@@ -4,6 +4,9 @@
  * the detected slot name to Supabase for the overlay to pick up.
  */
 
+// Load Supabase config (URL + anon key)
+importScripts('config.js');
+
 // ── Casino URL patterns ──
 const CASINO_HOSTS = [
   'stake.com', 'stake.games', 'roobet.com', 'duelbits.com',
@@ -95,21 +98,27 @@ function extractSlotFromUrl(url) {
 
 // ── Send to Supabase ──
 async function sendToSupabase(slotData) {
-  const settings = await chrome.storage.local.get(['supabaseUrl', 'supabaseKey', 'userId']);
-  const { supabaseUrl, supabaseKey, userId } = settings;
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = CONFIG;
+  const settings = await chrome.storage.local.get(['userId']);
+  const { userId } = settings;
 
-  if (!supabaseUrl || !supabaseKey || !userId) {
-    console.log('[SlotTracker] Not configured yet — open extension popup to set up.');
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('YOUR_PROJECT')) {
+    console.log('[SlotTracker] config.js not configured — update SUPABASE_URL and SUPABASE_ANON_KEY.');
+    return;
+  }
+
+  if (!userId) {
+    console.log('[SlotTracker] No User ID set — open extension popup to enter it.');
     return;
   }
 
   try {
-    const response = await fetch(`${supabaseUrl}/rest/v1/detected_slots`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/detected_slots`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'apikey': supabaseKey,
-        'Authorization': `Bearer ${supabaseKey}`,
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
         'Prefer': 'resolution=merge-duplicates',
       },
       body: JSON.stringify({
