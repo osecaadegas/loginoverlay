@@ -119,7 +119,7 @@ async function sendToSupabase(slotData) {
   }
 
   try {
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/detected_slots`, {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/detected_slots?on_conflict=user_id`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
