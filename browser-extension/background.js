@@ -152,6 +152,60 @@ async function sendToSupabase(slotData) {
   }
 }
 
+// ── Submit result (bet + payout) from content script panel ──
+async function submitResult({ slotName, provider, betSize, payout }) {
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = CONFIG;
+  const settings = await chrome.storage.local.get(['userId']);
+  const { userId } = settings;
+
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || SUPABASE_URL.includes('YOUR_PROJECT')) {
+    return { ok: false, error: 'Config not set' };
+  }
+  if (!userId) {
+    return { ok: false, error: 'No User ID — set in popup' };
+  }
+
+  try {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/detected_slots?on_conflict=user_id`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        slot_name: slotName,
+        provider: provider || '',
+        bet_size: betSize || null,
+        last_win: payout || null,
+        detected_at: new Date().toISOString(),
+      }),
+    });
+
+    if (response.ok) {
+      console.log(`[SlotTracker] ✅ Result: ${slotName} — bet ${betSize}, win ${payout}`);
+      return { ok: true };
+    } else {
+      const err = await response.text();
+      console.error('[SlotTracker] ❌ Submit error:', err);
+      return { ok: false, error: 'Supabase error' };
+    }
+  } catch (err) {
+    console.error('[SlotTracker] ❌ Network error:', err);
+    return { ok: false, error: 'Network error' };
+  }
+}
+
+// ── Message listener for content script ──
+chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
+  if (msg.type === 'SUBMIT_RESULT') {
+    submitResult(msg).then(sendResponse);
+    return true; // keep channel open for async response
+  }
+});
+
 // ── Helper: process a URL ──
 function processUrl(url) {
   if (!url) return;
