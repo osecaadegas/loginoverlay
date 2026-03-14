@@ -152,29 +152,38 @@ async function sendToSupabase(slotData) {
   }
 }
 
+// ── Helper: process a URL ──
+function processUrl(url) {
+  if (!url) return;
+  const result = extractSlotFromUrl(url);
+  if (result && result.slug !== lastDetectedSlug) {
+    lastDetectedSlug = result.slug;
+    sendToSupabase(result);
+  }
+}
+
 // ── Tab listeners ──
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.url || changeInfo.title) {
-    const url = changeInfo.url || tab.url;
-    if (!url) return;
-    const result = extractSlotFromUrl(url);
-    if (result && result.slug !== lastDetectedSlug) {
-      lastDetectedSlug = result.slug;
-      sendToSupabase(result);
-    }
+  // Trigger on URL change, title change, OR page load complete
+  if (changeInfo.url || changeInfo.title || changeInfo.status === 'complete') {
+    processUrl(changeInfo.url || tab.url);
   }
 });
 
 chrome.tabs.onActivated.addListener(async (activeInfo) => {
   try {
     const tab = await chrome.tabs.get(activeInfo.tabId);
-    if (!tab.url) return;
-    const result = extractSlotFromUrl(tab.url);
-    if (result && result.slug !== lastDetectedSlug) {
-      lastDetectedSlug = result.slug;
-      sendToSupabase(result);
-    }
+    processUrl(tab.url);
   } catch { /* tab might be gone */ }
 });
+
+// ── Check current tab on startup ──
+async function checkCurrentTab() {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.url) processUrl(tab.url);
+  } catch { /* no active tab */ }
+}
+checkCurrentTab();
 
 console.log('[SlotTracker] Background service worker started.');
