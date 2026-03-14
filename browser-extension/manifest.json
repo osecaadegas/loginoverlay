@@ -1,0 +1,31 @@
+{
+  "manifest_version": 3,
+  "name": "Slot Auto-Tracker",
+  "version": "1.0.0",
+  "description": "Detects which slot game you're playing and sends it to your overlay automatically.",
+  "permissions": ["tabs", "storage"],
+  "host_permissions": [
+    "https://*.stake.com/*",
+    "https://*.stake.games/*",
+    "https://*.roobet.com/*",
+    "https://*.duelbits.com/*",
+    "https://*.gamdom.com/*",
+    "https://*.rollbit.com/*",
+    "https://*.bc.game/*",
+    "https://*.csgoempire.com/*",
+    "https://*.metaspins.com/*",
+    "https://*.shuffle.com/*",
+    "https://*.jackpotcity.com/*",
+    "https://*.casumo.com/*",
+    "https://*.888casino.com/*",
+    "https://*.betsson.com/*",
+    "https://*.leovegas.com/*",
+    "https://*.cloudbet.com/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

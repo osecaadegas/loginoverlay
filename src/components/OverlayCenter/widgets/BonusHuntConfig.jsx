@@ -538,6 +538,51 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     loadSlots();
   }, [userId]);
 
+  /* ─── Auto-Tracker: listen for browser extension slot detections ─── */
+  const [autoTrackEnabled, setAutoTrackEnabled] = useState(c.autoTrackEnabled ?? false);
+  const [lastDetected, setLastDetected] = useState(null);
+
+  useEffect(() => {
+    if (!userId || !autoTrackEnabled || !bonusOpening) return;
+
+    const channel = supabase
+      .channel(`detected_slots:${userId}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'detected_slots',
+        filter: `user_id=eq.${userId}`,
+      }, (payload) => {
+        const detected = payload.new;
+        if (!detected?.slot_name) return;
+
+        const detectedName = detected.slot_name.toLowerCase().trim();
+        setLastDetected(detected.slot_name);
+
+        // Find matching unopened bonus in the list
+        setBonusList(prev => {
+          const matchIdx = prev.findIndex(b =>
+            !b.opened &&
+            !(Number(b.payout) > 0) &&
+            (b.slotName || b.slot?.name || '').toLowerCase().trim().includes(detectedName) ||
+            detectedName.includes((b.slotName || b.slot?.name || '').toLowerCase().trim())
+          );
+
+          if (matchIdx === -1) return prev;
+
+          // Mark all bonuses before the match as opened (if sequential mode)
+          const updated = prev.map((b, i) => {
+            if (i === matchIdx) return b; // don't open the current one — just highlight it
+            return b;
+          });
+          return updated;
+        });
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [userId, autoTrackEnabled, bonusOpening]);
+
   const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
     ? sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase())))
     : [];
@@ -549,13 +594,13 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       targetMoney: Number(targetMoney) || 0,
       stopLoss: Number(stopLoss) || 0,
       huntNumber: huntNumber,
-      showStatistics, animatedTracker, bonusOpening,
+      showStatistics, animatedTracker, bonusOpening, autoTrackEnabled,
       sortBy, sortDir,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
       ...extras,
     });
-  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, showStatistics, animatedTracker, bonusOpening, sortBy, sortDir, bonusList]);
+  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, showStatistics, animatedTracker, bonusOpening, autoTrackEnabled, sortBy, sortDir, bonusList]);
 
   const handleAddBonus = () => {
     const betNum = Number(betSize);
@@ -1014,6 +1059,27 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </label>
           {!bonusOpening && (
             <span className="bh-opening-hint">Enable to unlock payout inputs</span>
+          )}
+        </div>
+
+        {/* ── Auto-Tracker toggle ── */}
+        <div className={`bh-opening-toggle ${autoTrackEnabled ? 'bh-opening-toggle--active' : ''}`} style={{ marginTop: 6 }}>
+          <label className="bh-opening-label">
+            <input type="checkbox" checked={autoTrackEnabled}
+              onChange={e => { setAutoTrackEnabled(e.target.checked); save(bonusList, { autoTrackEnabled: e.target.checked }); }} />
+            <span className="bh-opening-switch" />
+            <span className="bh-opening-text">
+              {autoTrackEnabled ? '🔗 Auto-Tracker — ACTIVE' : '🔗 Auto-Tracker — OFF'}
+            </span>
+          </label>
+          {autoTrackEnabled && lastDetected && (
+            <span className="bh-opening-hint" style={{ color: '#4ade80' }}>Last detected: {lastDetected}</span>
+          )}
+          {autoTrackEnabled && !lastDetected && (
+            <span className="bh-opening-hint">Browser extension will auto-detect your current slot</span>
+          )}
+          {!autoTrackEnabled && (
+            <span className="bh-opening-hint">Enable + install Chrome extension to auto-track slots</span>
           )}
         </div>
 

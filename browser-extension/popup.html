@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      width: 320px;
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: #0f1219;
+      color: #e2e8f0;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .subtitle {
+      font-size: 11px;
+      color: #64748b;
+      margin-bottom: 14px;
+    }
+    .status-bar {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      margin-bottom: 14px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .status-bar.connected { background: rgba(74,222,128,0.12); color: #4ade80; }
+    .status-bar.disconnected { background: rgba(248,113,113,0.12); color: #f87171; }
+    .status-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+    }
+    .status-bar.connected .status-dot { background: #4ade80; }
+    .status-bar.disconnected .status-dot { background: #f87171; }
+    label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    input {
+      width: 100%;
+      padding: 8px 10px;
+      background: #1a1f2e;
+      border: 1px solid #2d3548;
+      border-radius: 6px;
+      color: #e2e8f0;
+      font-size: 12px;
+      margin-bottom: 10px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input:focus { border-color: #3b82f6; }
+    input::placeholder { color: #475569; }
+    .btn {
+      width: 100%;
+      padding: 9px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .btn:hover { opacity: 0.85; }
+    .btn-primary { background: #3b82f6; color: #fff; }
+    .btn-danger { background: #ef4444; color: #fff; margin-top: 6px; }
+    .detected {
+      margin-top: 12px;
+      padding: 8px 10px;
+      background: #1a1f2e;
+      border-radius: 8px;
+      border: 1px solid #2d3548;
+    }
+    .detected-label { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; }
+    .detected-name { font-size: 14px; font-weight: 700; color: #fff; margin-top: 2px; }
+    .detected-provider { font-size: 11px; color: #94a3b8; }
+    .help {
+      margin-top: 12px;
+      font-size: 10px;
+      color: #475569;
+      line-height: 1.5;
+    }
+    .help a { color: #3b82f6; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <h1>🎰 Slot Auto-Tracker</h1>
+  <p class="subtitle">Detects which slot you're playing</p>
+
+  <div id="status" class="status-bar disconnected">
+    <div class="status-dot"></div>
+    <span id="statusText">Not configured</span>
+  </div>
+
+  <div id="setupForm">
+    <label>Supabase URL</label>
+    <input type="text" id="supabaseUrl" placeholder="https://xxxx.supabase.co" />
+
+    <label>Supabase Anon Key</label>
+    <input type="text" id="supabaseKey" placeholder="eyJhbGci..." />
+
+    <label>Your User ID</label>
+    <input type="text" id="userId" placeholder="Copy from Profile page" />
+
+    <button class="btn btn-primary" id="saveBtn">Save & Connect</button>
+    <button class="btn btn-danger" id="clearBtn" style="display:none;">Disconnect</button>
+  </div>
+
+  <div id="detectedSlot" class="detected" style="display:none;">
+    <div class="detected-label">Last Detected Slot</div>
+    <div class="detected-name" id="detectedName">—</div>
+    <div class="detected-provider" id="detectedProvider"></div>
+  </div>
+
+  <div class="help">
+    Find your User ID on your Profile page. The Supabase URL and Anon Key are in your site's settings.
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

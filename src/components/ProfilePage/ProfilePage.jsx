@@ -8,6 +8,7 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState('');
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
+  const [idCopied, setIdCopied] = useState(false);
   const [showAvatarPicker, setShowAvatarPicker] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState('');
   const [inventory, setInventory] = useState([]);
@@ -241,7 +242,18 @@ export default function ProfilePage() {
               </div>
             </div>
             <h2>{user?.email}</h2>
-            <p className="profile-id">User ID: {user?.id.substring(0, 8)}...</p>
+            <p className="profile-id">
+              User ID: {user?.id.substring(0, 8)}...
+              <button
+                className="copy-id-btn"
+                onClick={() => {
+                  navigator.clipboard.writeText(user?.id || '').then(() => {
+                    setIdCopied(true);
+                    setTimeout(() => setIdCopied(false), 2000);
+                  });
+                }}
+              >{idCopied ? '✅ Copied!' : '📋 Copy Full ID'}</button>
+            </p>
           </div>
 
           <div className="settings-card">
@@ -260,6 +272,62 @@ export default function ProfilePage() {
                 <input type="checkbox" defaultChecked />
                 <span className="toggle-slider"></span>
               </label>
+            </div>
+          </div>
+
+          {/* ── Slot Auto-Tracker Setup Guide ── */}
+          <div className="settings-card" style={{ background: 'linear-gradient(135deg, #0f172a 0%, #1a1040 100%)', border: '1px solid rgba(99,102,241,0.3)' }}>
+            <h3>🔗 Slot Auto-Tracker</h3>
+            <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>
+              Automatically detect which slot you're playing and sync it with your Bonus Hunt overlay — no manual input needed.
+            </p>
+
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: 14, marginBottom: 12 }}>
+              <h4 style={{ fontSize: 13, color: '#e2e8f0', marginBottom: 10 }}>Setup Guide</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Download the extension</strong><br />
+                    Find the <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>browser-extension</code> folder in the project files.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Install in Chrome / Edge</strong><br />
+                    Go to <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>chrome://extensions</code> → Enable <strong>Developer Mode</strong> (top right) → Click <strong>"Load unpacked"</strong> → Select the <code style={{ background: 'rgba(99,102,241,0.2)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>browser-extension</code> folder.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Configure the extension</strong><br />
+                    Click the extension icon in your toolbar and enter:<br />
+                    • <strong>Supabase URL</strong> — your project URL<br />
+                    • <strong>Supabase Anon Key</strong> — your anon/public key<br />
+                    • <strong>User ID</strong> — copy it using the button above ☝️
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#6366f1', color: '#fff', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>4</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Enable in Bonus Hunt</strong><br />
+                    In the Overlay Center → Bonus Hunt → Content tab, turn on <strong>"🔗 Auto-Tracker"</strong>.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#4ade80', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#4ade80' }}>Play!</strong><br />
+                    When you open a slot on Stake, Roobet, Duelbits, etc., the extension detects it and your overlay highlights the matching bonus automatically.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(250,204,21,0.08)', border: '1px solid rgba(250,204,21,0.2)', borderRadius: 8, padding: 10, fontSize: 11, color: '#fbbf24' }}>
+              💡 <strong>Supported casinos:</strong> Stake, Roobet, Duelbits, Gamdom, Rollbit, BC.Game, Metaspins, Shuffle, Cloudbet, and more. The extension only reads tab URLs — it cannot see your balance or bets.
             </div>
           </div>
 
