@@ -100,14 +100,6 @@ export function useOverlay() {
           slotId: slotData?.id || null,
         };
         if (slotData?.rtp) update.rtp = slotData.rtp;
-        if (detected.bet_size != null) {
-          update.betSize = detected.bet_size;   // CurrentSlotWidget reads betSize
-          update.lastBet = detected.bet_size;    // SingleSlotWidget reads lastBet
-        }
-        if (detected.last_win != null) {
-          update.lastWin = detected.last_win;    // general
-          update.lastPay = detected.last_win;    // SingleSlotWidget reads lastPay
-        }
 
         // Update current_slot and single_slot widgets
         setWidgets(prev => {
