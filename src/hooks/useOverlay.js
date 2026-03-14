@@ -4,6 +4,7 @@
  */
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
+import { supabase } from '../config/supabaseClient';
 import {
   getOrCreateInstance,
   getTheme,
@@ -61,6 +62,69 @@ export function useOverlay() {
       onTheme: (t) => setTheme(t),
     });
     return () => unsubscribeOverlay(channelRef.current);
+  }, [user]);
+
+  // ── Auto-tracker: listen for detected_slots changes and update current_slot / single_slot widgets ──
+  const detectedChannelRef = useRef(null);
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel(`detected_slots_${user.id}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'detected_slots',
+        filter: `user_id=eq.${user.id}`,
+      }, async (payload) => {
+        const detected = payload.new;
+        if (!detected?.slot_name) return;
+
+        // Look up the slot in the database (fuzzy match)
+        const term = detected.slot_name.trim();
+        let slotData = null;
+        try {
+          const { data } = await supabase.from('slots')
+            .select('id, name, provider, image, rtp')
+            .ilike('name', `%${term}%`)
+            .limit(1);
+          if (data?.length) {
+            slotData = data[0];
+          }
+        } catch { /* ignore lookup error */ }
+
+        // Build the update payload
+        const update = {
+          slotName: slotData?.name || detected.slot_name,
+          provider: slotData?.provider || detected.provider || '',
+          imageUrl: slotData?.image || '',
+          slotId: slotData?.id || null,
+        };
+        if (slotData?.rtp) update.rtp = slotData.rtp;
+
+        // Update current_slot and single_slot widgets
+        setWidgets(prev => {
+          const updated = [];
+          for (const w of prev) {
+            if (w.widget_type === 'current_slot' || w.widget_type === 'single_slot') {
+              const merged = { ...w, config: { ...w.config, ...update } };
+              updated.push(merged);
+              // Persist to DB (fire-and-forget)
+              upsertWidget(user.id, merged).catch(() => {});
+            } else {
+              updated.push(w);
+            }
+          }
+          return updated;
+        });
+      })
+      .subscribe();
+
+    detectedChannelRef.current = channel;
+    return () => {
+      if (detectedChannelRef.current) {
+        supabase.removeChannel(detectedChannelRef.current);
+      }
+    };
   }, [user]);
 
   // ── Actions ──
