@@ -7,10 +7,10 @@
 (() => {
   'use strict';
 
-  // Currency symbols/codes we look for
-  const CURRENCY_RE = /[$€£kr\s]*/i;
-  // Matches a number like 0.20, 1,234.56, 1.234,56 (EU), 50, etc.
-  const NUMBER_RE = /[\d]+(?:[.,]\d{1,3})*/;
+  // Currency symbols we require near numbers to avoid false positives
+  const CURRENCY_SYMBOLS = /[$\u20AC\u00A3\u00A5kr]/i;  // $ € £ ¥ kr
+  // Matches a currency amount like €2.00, $1,234.56, 0.20 kr, etc.
+  const CURRENCY_AMOUNT_RE = /(?:[$\u20AC\u00A3\u00A5]\s*([\d]+(?:[.,]\d{1,3})*))|(?:([\d]+(?:[.,]\d{1,3})*)\s*(?:kr|\u20AC|\$|\u00A3))/i;
 
   // ── Patterns that indicate a BET value ──
   const BET_PATTERNS = [
@@ -87,26 +87,22 @@
 
     if (!isBet && !isWin) return;
 
-    // Try to find the value in the same element
-    const match = text.match(new RegExp(`(?:${CURRENCY_RE.source})\\s*(${NUMBER_RE.source})`, 'i'));
+    // Extract currency amount — MUST have a currency symbol to avoid false matches
     let amount = null;
 
-    if (match) {
-      // If the element contains both the label and a number, extract it
-      // But first check there's a number that isn't part of the label word
-      const numbers = text.match(/[\d]+(?:[.,]\d{1,3})*/g);
-      if (numbers) {
-        // Take the last number (usually the value, not part of the label)
-        amount = parseAmount(numbers[numbers.length - 1]);
-      }
+    // First try: find a currency-prefixed or currency-suffixed number in this element
+    const currMatch = text.match(CURRENCY_AMOUNT_RE);
+    if (currMatch) {
+      amount = parseAmount(currMatch[1] || currMatch[2]);
     }
 
-    // If no number in this element, check the next sibling or child
+    // If no currency amount here, check the next sibling
     if (amount === null) {
       const sibling = el.nextElementSibling;
       if (sibling) {
         const sibText = (sibling.textContent || '').trim();
-        amount = parseAmount(sibText);
+        const sibMatch = sibText.match(CURRENCY_AMOUNT_RE);
+        if (sibMatch) amount = parseAmount(sibMatch[1] || sibMatch[2]);
       }
     }
 
@@ -115,7 +111,8 @@
       const parentSib = el.parentElement.nextElementSibling;
       if (parentSib) {
         const pText = (parentSib.textContent || '').trim();
-        amount = parseAmount(pText);
+        const pMatch = pText.match(CURRENCY_AMOUNT_RE);
+        if (pMatch) amount = parseAmount(pMatch[1] || pMatch[2]);
       }
     }
 
