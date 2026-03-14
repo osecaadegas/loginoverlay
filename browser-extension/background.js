@@ -33,6 +33,47 @@ const PROVIDER_MAP = {
 };
 
 let lastDetectedSlug = '';
+let latestValues = { betSize: null, lastWin: null };
+
+// ── Listen for bet/win values from content script ──
+chrome.runtime.onMessage.addListener((msg) => {
+  if (msg.type === 'SLOT_VALUES') {
+    const changed = msg.betSize !== latestValues.betSize || msg.lastWin !== latestValues.lastWin;
+    latestValues.betSize = msg.betSize;
+    latestValues.lastWin = msg.lastWin;
+    // If values changed and we have a detected slot, push update
+    if (changed && lastDetectedSlug) {
+      pushValuesUpdate();
+    }
+  }
+});
+
+// Push just the bet/win values to Supabase (lightweight update)
+async function pushValuesUpdate() {
+  const { SUPABASE_URL, SUPABASE_ANON_KEY } = CONFIG;
+  const settings = await chrome.storage.local.get(['userId']);
+  const { userId } = settings;
+  if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !userId) return;
+
+  try {
+    await fetch(`${SUPABASE_URL}/rest/v1/detected_slots?on_conflict=user_id`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SUPABASE_ANON_KEY,
+        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+        'Prefer': 'resolution=merge-duplicates',
+      },
+      body: JSON.stringify({
+        user_id: userId,
+        bet_size: latestValues.betSize,
+        last_win: latestValues.lastWin,
+        detected_at: new Date().toISOString(),
+      }),
+    });
+    console.log(`[SlotTracker] 💰 Values: bet=${latestValues.betSize}, win=${latestValues.lastWin}`);
+  } catch { /* ignore */ }
+}
 
 // ── Extract slot name from URL ──
 // Works on ANY casino — detects game pages by URL path patterns
@@ -132,6 +173,8 @@ async function sendToSupabase(slotData) {
         slot_name: slotData.name,
         provider: slotData.provider || '',
         url: slotData.url || '',
+        bet_size: latestValues.betSize,
+        last_win: latestValues.lastWin,
         detected_at: new Date().toISOString(),
       }),
     });

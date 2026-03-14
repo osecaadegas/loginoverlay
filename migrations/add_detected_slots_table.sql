@@ -6,9 +6,11 @@
 CREATE TABLE IF NOT EXISTS detected_slots (
   id          UUID DEFAULT gen_random_uuid() PRIMARY KEY,
   user_id     UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  slot_name   TEXT NOT NULL,
+  slot_name   TEXT NOT NULL DEFAULT '',
   provider    TEXT DEFAULT '',
   url         TEXT DEFAULT '',
+  bet_size    NUMERIC DEFAULT NULL,
+  last_win    NUMERIC DEFAULT NULL,
   detected_at TIMESTAMPTZ DEFAULT now()
 );
 
