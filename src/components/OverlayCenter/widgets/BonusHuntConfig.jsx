@@ -556,6 +556,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         const detected = payload.new;
         if (!detected?.slot_name) return;
 
+        // Only process entries targeting bonus_hunt
+        const detectedTarget = detected.target || '';
         const detectedName = detected.slot_name.toLowerCase().trim();
         setLastDetected(detected.slot_name);
 
@@ -577,8 +579,33 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             });
             return updated;
           });
+        } else if (detectedTarget === 'bonus_hunt' && detected.bet_size > 0) {
+          // BH target with bet: auto-add directly to the bonus list
+          const matchSlot = slots.find(s =>
+            s.name && (s.name.toLowerCase().includes(detectedName) ||
+            detectedName.includes(s.name?.toLowerCase() || ''))
+          );
+
+          const newBonus = {
+            id: Date.now(),
+            slot: matchSlot || { name: detected.slot_name, provider: detected.provider || '' },
+            slotName: matchSlot?.name || detected.slot_name,
+            betSize: Number(detected.bet_size),
+            isSuperBonus: !!detected.is_super_bonus,
+            isExtremeBonus: !!detected.is_extreme_bonus,
+            opened: false,
+            result: 0,
+            payout: 0,
+          };
+
+          setBonusList(prev => {
+            const updated = [...prev, newBonus];
+            // Save immediately (use setTimeout to avoid state race)
+            setTimeout(() => save(updated), 0);
+            return updated;
+          });
         } else {
-          // During building: auto-fill the search input + bet size (user still clicks +Add)
+          // Non-BH target or no bet: auto-fill the search input + bet size
           const matchSlot = slots.find(s =>
             s.name && s.name.toLowerCase().includes(detectedName) ||
             detectedName.includes(s.name?.toLowerCase() || '')
@@ -587,11 +614,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             setSelectedSlot(matchSlot);
             setSlotSearch(matchSlot.name);
           } else {
-            // No exact match in DB, just fill the search text
             setSelectedSlot(null);
             setSlotSearch(detected.slot_name);
           }
-          // Auto-fill bet size if the extension detected it
           if (detected.bet_size != null && detected.bet_size > 0) {
             setBetSize(String(detected.bet_size));
           }

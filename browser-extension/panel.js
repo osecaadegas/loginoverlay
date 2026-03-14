@@ -145,6 +145,46 @@
       border-color: #7c3aed;
     }
 
+    /* BH-only bonus type buttons */
+    .st-bonus-types {
+      display: none;
+      gap: 3px;
+      flex-shrink: 0;
+    }
+    .st-bar.bh-mode .st-bonus-types { display: flex; }
+    .st-bar.bh-mode .st-win-field { display: none; }
+    .st-bar.bh-mode .st-multi { display: none; }
+
+    .st-btype {
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 800;
+      font-family: inherit;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.12);
+      background: transparent;
+      transition: all 0.15s;
+    }
+    .st-btype-s {
+      color: #64748b;
+    }
+    .st-btype-s:hover { color: #facc15; border-color: rgba(250,204,21,0.4); }
+    .st-btype-s.active {
+      color: #facc15;
+      background: rgba(250, 204, 21, 0.15);
+      border-color: #facc15;
+    }
+    .st-btype-e {
+      color: #64748b;
+    }
+    .st-btype-e:hover { color: #ef4444; border-color: rgba(239,68,68,0.4); }
+    .st-btype-e.active {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+      border-color: #ef4444;
+    }
+
     .st-btn {
       padding: 4px 10px;
       border: none;
@@ -211,7 +251,11 @@
           <span class="st-label">BET</span>
           <input class="st-input" id="stBet" type="number" step="0.01" min="0" placeholder="0.00" />
         </div>
-        <div class="st-field">
+        <div class="st-bonus-types">
+          <button class="st-btype st-btype-s" id="stSuper" title="Super Bonus">S</button>
+          <button class="st-btype st-btype-e" id="stExtreme" title="Extreme Bonus">E</button>
+        </div>
+        <div class="st-field st-win-field">
           <span class="st-label">WIN</span>
           <input class="st-input" id="stPayout" type="number" step="0.01" min="0" placeholder="0.00" />
         </div>
@@ -234,6 +278,30 @@
   const msgEl = shadow.getElementById('stMsg');
   const minBtn = shadow.getElementById('stMin');
   const targetBtns = shadow.querySelectorAll('.st-target');
+  const superBtn = shadow.getElementById('stSuper');
+  const extremeBtn = shadow.getElementById('stExtreme');
+
+  let isSuperBonus = false;
+  let isExtremeBonus = false;
+
+  // ── Super / Extreme toggles ──
+  superBtn.addEventListener('click', () => {
+    isSuperBonus = !isSuperBonus;
+    if (isSuperBonus) isExtremeBonus = false;
+    superBtn.classList.toggle('active', isSuperBonus);
+    extremeBtn.classList.toggle('active', isExtremeBonus);
+  });
+  extremeBtn.addEventListener('click', () => {
+    isExtremeBonus = !isExtremeBonus;
+    if (isExtremeBonus) isSuperBonus = false;
+    extremeBtn.classList.toggle('active', isExtremeBonus);
+    superBtn.classList.toggle('active', isSuperBonus);
+  });
+
+  // ── Update BH mode class on bar ──
+  function updateBHMode() {
+    bar.classList.toggle('bh-mode', target === 'bonus_hunt');
+  }
 
   // ── Destination toggle ──
   // Load saved target
@@ -241,6 +309,7 @@
     if (data.panelTarget) {
       target = data.panelTarget;
       targetBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+      updateBHMode();
     }
   });
 
@@ -248,6 +317,7 @@
     btn.addEventListener('click', () => {
       target = btn.dataset.target;
       targetBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+      updateBHMode();
       if (alive()) chrome.storage.local.set({ panelTarget: target });
     });
   });
@@ -272,7 +342,7 @@
   }
   betInput.addEventListener('input', updateMulti);
   payoutInput.addEventListener('input', updateMulti);
-  betInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') payoutInput.focus(); });
+  betInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') { target === 'bonus_hunt' ? handleSubmit() : payoutInput.focus(); } });
   payoutInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') handleSubmit(); });
 
   // ── Load slot ──
@@ -297,7 +367,7 @@
   // ── Submit ──
   async function handleSubmit() {
     const bet = parseFloat(betInput.value);
-    const pay = parseFloat(payoutInput.value) || 0;
+    const pay = target === 'bonus_hunt' ? 0 : (parseFloat(payoutInput.value) || 0);
     if (!(bet > 0)) return;
 
     submitBtn.disabled = true;
@@ -312,12 +382,23 @@
         slotName, provider, target,
         betSize: bet,
         payout: pay,
+        isSuperBonus: target === 'bonus_hunt' ? isSuperBonus : false,
+        isExtremeBonus: target === 'bonus_hunt' ? isExtremeBonus : false,
       });
       if (response?.ok) {
         msgEl.className = 'st-msg success';
         msgEl.textContent = '✓';
-        payoutInput.value = '';
+        if (target !== 'bonus_hunt') {
+          payoutInput.value = '';
+        }
         multiEl.textContent = '';
+        // Reset S/E after BH send
+        if (target === 'bonus_hunt') {
+          isSuperBonus = false;
+          isExtremeBonus = false;
+          superBtn.classList.remove('active');
+          extremeBtn.classList.remove('active');
+        }
         setTimeout(() => { msgEl.textContent = ''; }, 2000);
       } else {
         msgEl.className = 'st-msg error';
