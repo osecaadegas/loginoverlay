@@ -104,17 +104,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         for (const line of lines) {
           if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
           if (line.includes(' 366 ')) setIrcStatus('live');
-
-          const m = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!sr (.+)/i);
-          if (m) {
-            const requester = m[1];
-            const slotName = m[2].trim();
-            if (slotName) {
-              try {
-                await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(user.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`);
-              } catch (err) { console.error('[SlotRequests] IRC fetch error', err); }
-            }
-          }
+          // !sr handling is done by ProfileSection's global IRC listener
         }
       };
 
