@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — Slot Auto-Tracker Extension</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #e2e8f0; background: #0f1118; line-height: 1.7; }
+    h1 { color: #a78bfa; font-size: 1.6rem; border-bottom: 1px solid rgba(124,58,237,0.3); padding-bottom: 12px; }
+    h2 { color: #c4b5fd; font-size: 1.15rem; margin-top: 28px; }
+    p, li { font-size: 0.95rem; color: #cbd5e1; }
+    a { color: #a78bfa; }
+    ul { padding-left: 20px; }
+    .updated { font-size: 0.85rem; color: #64748b; }
+  </style>
+</head>
+<body>
+  <h1>Privacy Policy — Slot Auto-Tracker</h1>
+  <p class="updated">Last updated: March 17, 2026</p>
+
+  <h2>1. What This Extension Does</h2>
+  <p>Slot Auto-Tracker is a browser extension that detects which slot game you are playing on online casino websites by reading the page URL. It displays a small top bar so you can submit bet and win amounts to your personal streaming overlay.</p>
+
+  <h2>2. Data We Collect</h2>
+  <ul>
+    <li><strong>Page URLs</strong> — The extension reads the URL of the active tab to identify the slot game name and provider. URLs are processed locally and are not stored or shared beyond the single database record described below.</li>
+    <li><strong>User-entered data</strong> — Bet size, win amount, destination mode (Bonus Hunt / Single Slot / Current Slot), and Super/Extreme bonus flags that you manually enter in the extension bar.</li>
+    <li><strong>User ID</strong> — A user-provided identifier stored locally via <code>chrome.storage</code> to associate detected data with your overlay account.</li>
+  </ul>
+
+  <h2>3. How Data Is Used</h2>
+  <p>All collected data is sent exclusively to your own Supabase database instance to update your personal streaming overlay in real time. The extension does not send data to any third-party analytics, advertising, or tracking services.</p>
+
+  <h2>4. Data Storage</h2>
+  <ul>
+    <li><strong>Local storage</strong> — Your User ID, last detected slot name, and panel preferences are stored locally in the browser using <code>chrome.storage.local</code>.</li>
+    <li><strong>Remote storage</strong> — Detected slot name, bet size, win amount, and related flags are stored in a single row (per user) in the <code>detected_slots</code> table of your Supabase project. This row is overwritten with each new detection or submission.</li>
+  </ul>
+
+  <h2>5. Data Sharing</h2>
+  <p>We do not sell, share, or transfer any user data to third parties. Data is only sent to the Supabase project URL configured in the extension.</p>
+
+  <h2>6. Permissions Explained</h2>
+  <ul>
+    <li><strong>tabs</strong> — Read the active tab URL to detect which slot game is being played.</li>
+    <li><strong>storage</strong> — Persist your User ID and panel preferences across browser sessions.</li>
+    <li><strong>host_permissions (&lt;all_urls&gt;)</strong> — Inject the input bar on casino game pages. A broad permission is required because casino websites vary widely and cannot be enumerated in advance.</li>
+  </ul>
+
+  <h2>7. Remote Code</h2>
+  <p>The extension does not load or execute any remotely hosted code. All JavaScript runs locally from the extension package. The only network requests are REST API calls to your Supabase database.</p>
+
+  <h2>8. Children's Privacy</h2>
+  <p>This extension is not intended for use by anyone under 18 years of age. We do not knowingly collect data from minors.</p>
+
+  <h2>9. Changes to This Policy</h2>
+  <p>We may update this privacy policy from time to time. Changes will be reflected by the "Last updated" date above.</p>
+
+  <h2>10. Contact</h2>
+  <p>If you have questions about this privacy policy, contact us at the email listed on the Chrome Web Store developer page.</p>
+</body>
+</html>
