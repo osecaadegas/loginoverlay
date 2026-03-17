@@ -38,6 +38,14 @@
       "destination": "/api/chat-commands?cmd=song&user_id=:uid&song=:song*"
     },
     {
+      "source": "/support-extension.html",
+      "destination": "/support-extension.html"
+    },
+    {
+      "source": "/privacy-policy-extension.html",
+      "destination": "/privacy-policy-extension.html"
+    },
+    {
       "source": "/((?!api/).*)",
       "destination": "/index.html"
     }

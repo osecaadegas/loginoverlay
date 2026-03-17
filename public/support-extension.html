@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Support — Slot Auto-Tracker Extension</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 20px; color: #e2e8f0; background: #0f1118; line-height: 1.7; }
+    h1 { color: #a78bfa; font-size: 1.6rem; border-bottom: 1px solid rgba(124,58,237,0.3); padding-bottom: 12px; }
+    h2 { color: #c4b5fd; font-size: 1.15rem; margin-top: 28px; }
+    p, li { font-size: 0.95rem; color: #cbd5e1; }
+    a { color: #a78bfa; }
+    ul, ol { padding-left: 20px; }
+    code { background: rgba(255,255,255,0.08); padding: 2px 6px; border-radius: 4px; font-size: 0.9rem; color: #e2e8f0; }
+    .faq { background: #1a1f2e; border: 1px solid #2d3548; border-radius: 8px; padding: 14px 18px; margin-top: 12px; }
+    .faq-q { font-weight: 700; color: #e2e8f0; margin-bottom: 4px; }
+    .faq-a { color: #94a3b8; font-size: 0.92rem; }
+  </style>
+</head>
+<body>
+  <h1>Support — Slot Auto-Tracker</h1>
+
+  <h2>Getting Started</h2>
+  <ol>
+    <li>Click the extension icon and paste your <strong>User ID</strong> from your SecaHub Profile page.</li>
+    <li>Click <strong>Save &amp; Connect</strong>.</li>
+    <li>Navigate to any casino slot game — click the extension icon to show the tracker bar.</li>
+    <li>Enter your bet, choose a destination (BH / SS / CS), and press <strong>Send</strong>.</li>
+  </ol>
+
+  <h2>FAQ</h2>
+
+  <div class="faq">
+    <div class="faq-q">The bar doesn't appear when I click the icon</div>
+    <div class="faq-a">Make sure you're on an <code>http://</code> or <code>https://</code> page. The bar cannot inject on browser internal pages like <code>chrome://</code> or the new tab page.</div>
+  </div>
+
+  <div class="faq">
+    <div class="faq-q">It says "Not in DB" in yellow</div>
+    <div class="faq-a">The detected slot isn't in your slots database yet. You can still send data — it will use the name from the URL. To add the slot properly, use the "Submit Slot" form in the Bonus Hunt config.</div>
+  </div>
+
+  <div class="faq">
+    <div class="faq-q">Where do I find my User ID?</div>
+    <div class="faq-a">Go to your SecaHub Profile page and click the "Copy Full ID" button. It's a UUID like <code>c9855d5e-b1f3-4db7-af78-...</code></div>
+  </div>
+
+  <div class="faq">
+    <div class="faq-q">The wrong slot name is detected</div>
+    <div class="faq-a">The extension reads the slot name from the casino page URL. Some casinos use IDs instead of names. You can manually type the correct name in the search field on the Bonus Hunt page.</div>
+  </div>
+
+  <div class="faq">
+    <div class="faq-q">Can I use this on multiple casinos?</div>
+    <div class="faq-a">Yes — the extension works on any casino website. Click the extension icon on each casino tab to activate the bar.</div>
+  </div>
+
+  <h2>Contact</h2>
+  <p>For bugs or feature requests, reach out via the contact email listed on the Chrome Web Store page or open an issue on <a href="https://github.com/osecaadegas/loginoverlay/issues">GitHub</a>.</p>
+</body>
+</html>
