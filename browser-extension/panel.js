@@ -431,12 +431,36 @@
     return div.innerHTML;
   }
 
-  loadSlotInfo();
+  // ── Start hidden; only show on slot pages ──
+  host.style.display = 'none';
 
+  function showBar() { host.style.display = ''; loadSlotInfo(); }
+  function hideBar() { host.style.display = 'none'; }
+
+  // Ask background if this page is a slot/game page
+  if (alive()) {
+    try {
+      chrome.runtime.sendMessage({ type: 'CHECK_SLOT_PAGE' }, (res) => {
+        if (res?.isSlotPage) showBar();
+      });
+    } catch {}
+  }
+
+  // Also show if a slot gets detected later (URL change within SPA)
   try {
     chrome.storage.onChanged.addListener((changes) => {
       if (!alive()) return;
-      if (changes.lastSlotName || changes.lastProvider || changes.slotInDb) loadSlotInfo();
+      if (changes.lastSlotName || changes.lastProvider || changes.slotInDb) {
+        // Re-check if current page is a slot page
+        try {
+          chrome.runtime.sendMessage({ type: 'CHECK_SLOT_PAGE' }, (res) => {
+            if (res?.isSlotPage) {
+              showBar();
+              loadSlotInfo();
+            }
+          });
+        } catch {}
+      }
     });
   } catch {}
 

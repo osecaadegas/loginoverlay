@@ -229,6 +229,13 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     submitResult(msg).then(sendResponse);
     return true; // keep channel open for async response
   }
+  if (msg.type === 'CHECK_SLOT_PAGE') {
+    // Check if the sender tab's URL is a slot/game page
+    const url = sender.tab?.url || '';
+    const result = extractSlotFromUrl(url);
+    sendResponse({ isSlotPage: !!result, slotName: result?.name || '', provider: result?.provider || '' });
+    return false;
+  }
 });
 
 // ── Helper: process a URL ──
