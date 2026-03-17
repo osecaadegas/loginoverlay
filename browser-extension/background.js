@@ -236,6 +236,20 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     sendResponse({ isSlotPage: !!result, slotName: result?.name || '', provider: result?.provider || '' });
     return false;
   }
+  if (msg.type === 'INJECT_PANEL') {
+    // Inject panel.js into the specified tab (uses activeTab grant)
+    const tabId = msg.tabId;
+    if (tabId) {
+      chrome.scripting.executeScript({
+        target: { tabId },
+        files: ['panel.js'],
+      }).then(() => sendResponse({ ok: true }))
+        .catch(err => sendResponse({ ok: false, error: err.message }));
+      return true;
+    }
+    sendResponse({ ok: false, error: 'No tab ID' });
+    return false;
+  }
 });
 
 // ── Helper: process a URL ──

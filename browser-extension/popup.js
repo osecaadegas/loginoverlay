@@ -66,3 +66,14 @@ chrome.storage.onChanged.addListener((changes) => {
 });
 
 loadSettings();
+
+// Auto-inject the panel bar into the active tab when popup opens
+// (activeTab permission grants access when user clicks the extension icon)
+(async () => {
+  try {
+    const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+    if (tab?.id && tab.url?.startsWith('http')) {
+      chrome.runtime.sendMessage({ type: 'INJECT_PANEL', tabId: tab.id });
+    }
+  } catch {}
+})();

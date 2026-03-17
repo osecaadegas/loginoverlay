@@ -1,22 +1,13 @@
 {
   "manifest_version": 3,
   "name": "Slot Auto-Tracker",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Detects which slot game you're playing and sends it to your overlay automatically.",
-  "permissions": ["tabs", "storage"],
-  "host_permissions": ["<all_urls>"],
+  "permissions": ["tabs", "storage", "activeTab", "scripting"],
   "background": {
     "service_worker": "background.js"
   },
   "action": {
     "default_popup": "popup.html"
-  },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["panel.js"],
-      "run_at": "document_idle",
-      "all_frames": false
-    }
-  ]
+  }
 }

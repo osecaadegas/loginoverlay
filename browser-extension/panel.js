@@ -9,6 +9,8 @@
 
   if (window !== window.top) return;
   if (!chrome?.runtime?.id) return;
+  // Prevent duplicate injection
+  if (document.getElementById('slot-tracker-panel-host')) return;
 
   function alive() {
     try { return !!chrome.runtime?.id; } catch { return false; }
