@@ -14,8 +14,8 @@ export default function SlotRequestsWidgetCompact({ config, requests }) {
   const accent = c.accentColor || '#f59e0b';
   const textColor = c.textColor || '#ffffff';
   const fontFamily = c.fontFamily || "'Poppins', sans-serif";
-  const configFontSize = c.fontSize ? `${c.fontSize}px` : undefined;
-  const fontWeight = c.fontWeight || '600';
+  const configFontSize = c.fontSize ? `${c.fontSize}px` : '15px';
+  const fontWeight = c.fontWeight || '700';
   const autoSpeed = Number(c.autoSpeed) || 4000;
 
   const hex2rgb = (hex) => {

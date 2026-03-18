@@ -19,14 +19,15 @@ function RecentWinsWidget({ config }) {
       display: 'flex', flexDirection: 'column', padding: 8, gap: 4,
     }}>
       <div style={{
-        fontSize: 12, fontWeight: 700, color: accent, textTransform: 'uppercase',
+        fontSize: 14, fontWeight: 700, color: accent, textTransform: 'uppercase',
         letterSpacing: '1px', padding: '0 4px 4px', borderBottom: `1px solid ${border}`,
         display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0,
+        textShadow: '0 1px 4px rgba(0,0,0,0.6)',
       }}>
         <span>🏅</span> Recent Wins
       </div>
       {wins.length === 0 && (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: muted, fontSize: 12 }}>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: muted, fontSize: 14 }}>
           No wins yet
         </div>
       )}
@@ -36,13 +37,13 @@ function RecentWinsWidget({ config }) {
           border: `1px solid ${border}`, padding: '6px 8px',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
-          <span style={{ flex: 1, fontSize: 12, fontWeight: 600, color: text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+          <span style={{ flex: 1, fontSize: 14, fontWeight: 700, color: text, overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
             {w.slot || 'Unknown'}
           </span>
-          <span style={{ fontSize: 13, fontWeight: 700, color: accent, flexShrink: 0 }}>
+          <span style={{ fontSize: 15, fontWeight: 700, color: accent, flexShrink: 0, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
             {c.currency || '€'}{(w.amount || 0).toLocaleString()}
           </span>
-          <span style={{ fontSize: 11, fontWeight: 700, color: '#facc15', flexShrink: 0 }}>
+          <span style={{ fontSize: 13, fontWeight: 700, color: '#facc15', flexShrink: 0, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
             {(w.multi || 0).toFixed(2)}x
           </span>
         </div>

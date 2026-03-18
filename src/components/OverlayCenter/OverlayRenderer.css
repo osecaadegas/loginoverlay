@@ -426,18 +426,21 @@
   flex-shrink: 0;
 }
 .bht-title {
-  font-size: 1em;
+  font-size: 1.05em;
   font-weight: 700;
   color: var(--bht-text, #fff);
   line-height: 1.2;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 .bht-subtitle {
-  font-size: 0.75em;
+  font-size: 0.82em;
   color: var(--bht-muted, #93c5fd);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-badge {
-  font-size: 0.75em;
+  font-size: 0.82em;
   color: var(--bht-muted, #93c5fd);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-header-stats {
   display: grid;
@@ -513,22 +516,25 @@
   min-width: 0;
 }
 .bht-flip-slot-name {
-  font-size: 0.6em;
+  font-size: 0.72em;
   font-weight: 700;
   color: var(--bht-stat-value, #fff);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-flip-slot-payout {
-  font-size: 0.6em;
+  font-size: 0.72em;
   font-weight: 800;
   color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-flip-slot-multi {
-  font-size: 0.6em;
+  font-size: 0.72em;
   font-weight: 800;
   color: #fbbf24;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 /* ── Full-card flip (classic best/worst) ── */
@@ -628,15 +634,18 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 0.6em;
+  font-size: 0.75em;
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--bht-muted, #93c5fd);
   margin-bottom: 2px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-stat-value {
-  font-size: 1.2em;
+  font-size: 1.25em;
   font-weight: 700;
   color: var(--bht-stat-value, #fff);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 
 /* -- Current bonus card -- */
@@ -651,16 +660,18 @@
   margin-bottom: 8px;
 }
 .bht-current-label {
-  font-size: 0.75em;
+  font-size: 0.82em;
   font-weight: 700;
   color: var(--bht-muted, #93c5fd);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-current-counter {
-  font-size: 0.85em;
+  font-size: 0.92em;
   font-weight: 800;
   color: var(--bht-text, #fff);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 .bht-current-img-card {
   position: relative;
@@ -684,18 +695,19 @@
   position: absolute;
   bottom: 0; left: 0; right: 0;
   padding: 8px 10px;
-  font-size: 0.85em;
+  font-size: 0.92em;
   font-weight: 700;
   color: #fff;
   background: linear-gradient(to top, rgba(0,0,0,0.75), transparent);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
 }
 .bht-current-best-badge {
   position: absolute;
   top: 6px; right: 6px;
-  font-size: 0.65em;
+  font-size: 0.75em;
   font-weight: 800;
   text-transform: uppercase;
   padding: 2px 8px;
@@ -703,6 +715,7 @@
   background: var(--bht-current-accent, #22c55e);
   color: #fff;
   box-shadow: 0 2px 8px rgba(34,197,94,0.4);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 /* Legacy current bonus (compact) */
 .bht-current-top {
@@ -725,8 +738,9 @@
   color: var(--bht-text, #fff);
 }
 .bht-current-bet {
-  font-size: 0.75em;
+  font-size: 0.82em;
   color: var(--bht-current-accent, #86efac);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-current-stats {
   display: grid;
@@ -742,23 +756,26 @@
   align-items: center;
   gap: 4px;
   color: var(--bht-current-accent, #86efac);
-  font-size: 0.7em;
+  font-size: 0.78em;
 }
 .bht-current-stat-label {
-  font-size: 0.8em;
-  font-weight: 600;
-  color: var(--bht-muted, #93c5fd);
-  text-transform: uppercase;
-}
-.bht-current-stat-value {
-  font-size: 1.1em;
-  font-weight: 800;
-  color: var(--bht-text, #fff);
-}
-.bht-current-stat span {
   font-size: 0.85em;
   font-weight: 700;
+  color: var(--bht-muted, #93c5fd);
+  text-transform: uppercase;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.bht-current-stat-value {
+  font-size: 1.15em;
+  font-weight: 800;
   color: var(--bht-text, #fff);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+}
+.bht-current-stat span {
+  font-size: 0.92em;
+  font-weight: 700;
+  color: var(--bht-text, #fff);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 /* -- Bonus list card -- */
@@ -767,13 +784,14 @@
   background-image: linear-gradient(135deg, transparent, rgba(0,0,0,0.2));
 }
 .bht-list-section-title {
-  font-size: 0.75em;
+  font-size: 0.82em;
   font-weight: 700;
   color: var(--bht-muted, #93c5fd);
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 1px;
   margin-bottom: 10px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 
 /* -- 3D Animated Card Carousel (5 visible + hidden) -- */
@@ -1201,14 +1219,15 @@
   transform: rotateX(180deg);
 }
 .bht-footer-label {
-  font-size: 0.6em;
+  font-size: 0.75em;
   font-weight: 700;
   color: var(--bht-muted, #93c5fd);
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .bht-footer-value {
-  font-size: 1em;
+  font-size: 1.05em;
   font-weight: 800;
   color: var(--bht-total-pay-bg, #eab308);
   text-shadow: 0 0 12px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 30%, transparent);
@@ -1771,10 +1790,10 @@
 .oc-bonushunt--compact .bht-header-top { margin-bottom: 3px; }
 .oc-bonushunt--compact .bht-header-stats { gap: 4px; }
 .oc-bonushunt--compact .bht-stat-box { padding: 2px 6px; }
-.oc-bonushunt--compact .bht-stat-value { font-size: 0.95em; }
+.oc-bonushunt--compact .bht-stat-value { font-size: 1em; }
 .oc-bonushunt--compact .bht-icon-circle { width: 28px; height: 28px; }
 .oc-bonushunt--compact .bht-icon-circle svg { width: 14px; height: 14px; }
-.oc-bonushunt--compact .bht-title { font-size: 0.85em; }
+.oc-bonushunt--compact .bht-title { font-size: 0.92em; }
 
 /* -- Merged header + count card -- */
 .bht-compact-avatar {
@@ -1788,7 +1807,7 @@
 .bht-compact-title-block {
   display: flex; align-items: baseline; gap: 6px; flex: 1; min-width: 0;
 }
-.bht-compact-title-block .bht-title { font-size: 0.9em; font-weight: 700; white-space: nowrap; }
+.bht-compact-title-block .bht-title { font-size: 0.95em; font-weight: 700; white-space: nowrap; }
 .bht-compact-hunt-num {
   font-size: 0.8em; font-weight: 700;
   color: var(--bht-header-accent, #60a5fa); white-space: nowrap;
@@ -3930,10 +3949,10 @@
 /* --- Salty Words Widget --- */
 .cg-salty { font-family: 'Inter', sans-serif; color: #fff; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
 .cg-salty__header { display: flex; align-items: center; gap: 10px; }
-.cg-salty__title { font-size: 15px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; }
+.cg-salty__title { font-size: 16px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; text-shadow: 0 1px 4px rgba(0,0,0,0.6); }
 .cg-salty__status {
-  padding: 2px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  text-transform: uppercase;
+  padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .cg-salty__status--idle { background: rgba(100,116,139,0.2); color: #94a3b8; }
 .cg-salty__status--open { background: rgba(34,197,94,0.15); color: #4ade80; }
@@ -3955,25 +3974,25 @@
   position: absolute; left: 0; top: 0; bottom: 0; background: rgba(124,58,237,0.12);
   border-radius: 8px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
 }
-.cg-salty__word-text { position: relative; z-index: 1; font-size: 13px; font-weight: 700; }
-.cg-salty__word-bets { font-weight: 600; }
+.cg-salty__word-text { position: relative; z-index: 1; font-size: 14px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
+.cg-salty__word-bets { font-weight: 700; }
 .cg-salty__word-crown {
   position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 2; font-size: 14px;
 }
-.cg-salty__word-meta { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; font-size: 11px; color: #94a3b8; }
+.cg-salty__word-meta { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #94a3b8; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
 .cg-salty__word-pct { font-weight: 700; color: #a78bfa; }
 .cg-salty__pool {
-  text-align: center; font-size: 12px; color: #64748b; padding-top: 4px;
+  text-align: center; font-size: 13px; color: #64748b; padding-top: 4px;
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 .cg-salty__pool span { color: #a78bfa; font-weight: 700; }
-.cg-salty__empty { text-align: center; color: #475569; font-size: 12px; padding: 20px 0; }
+.cg-salty__empty { text-align: center; color: #475569; font-size: 13px; padding: 20px 0; }
 
 /* --- Predictions Widget --- */
 .cg-predict { font-family: 'Inter', sans-serif; color: #fff; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
 .cg-predict__status {
-  padding: 2px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; letter-spacing: 0.06em;
-  text-transform: uppercase; display: inline-block;
+  padding: 2px 10px; border-radius: 6px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em;
+  text-transform: uppercase; display: inline-block; text-shadow: 0 1px 3px rgba(0,0,0,0.5);
 }
 .cg-predict__status--idle { background: rgba(100,116,139,0.2); color: #94a3b8; }
 .cg-predict__status--open { background: rgba(34,197,94,0.15); color: #4ade80; }
@@ -4002,18 +4021,18 @@
   border-radius: 10px;
 }
 .cg-predict__option-content { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-.cg-predict__option-label { font-size: 13px; font-weight: 800; }
+.cg-predict__option-label { font-size: 14px; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
 .cg-predict__option-pct { position: relative; z-index: 1; font-size: 22px; font-weight: 900; }
 .cg-predict__option--a .cg-predict__option-pct { color: #60a5fa; }
 .cg-predict__option--b .cg-predict__option-pct { color: #f87171; }
-.cg-predict__option-pts { font-size: 11px; color: #94a3b8; font-weight: 600; }
+.cg-predict__option-pts { font-size: 13px; color: #94a3b8; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
 .cg-predict__option-crown { position: relative; z-index: 1; font-size: 14px; }
 .cg-predict__vs {
-  display: flex; align-items: center; font-size: 12px; font-weight: 900; color: #475569;
+  display: flex; align-items: center; font-size: 13px; font-weight: 900; color: #475569;
   writing-mode: vertical-lr; text-transform: uppercase; letter-spacing: 0.1em;
 }
 .cg-predict__pool {
-  text-align: center; font-size: 12px; color: #64748b; padding-top: 4px;
+  text-align: center; font-size: 13px; color: #64748b; padding-top: 4px;
   border-top: 1px solid rgba(255,255,255,0.06);
 }
 .cg-predict__pool span { color: #a78bfa; font-weight: 700; }

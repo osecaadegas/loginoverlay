@@ -230,12 +230,12 @@ function TournamentWidget({ config, theme }) {
             maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis',
             lineHeight: 1.2,
             ...(minimal
-              ? { fontSize: 'clamp(11px, 2.4vw, 20px)', whiteSpace: 'nowrap' }
+              ? { fontSize: 'clamp(13px, 2.4vw, 20px)', whiteSpace: 'nowrap' }
               : { fontSize: nameSize + 2, whiteSpace: 'nowrap' }),
           }}>{name}</span>
           {showSlotName && slotName && (
             <span style={{
-              fontSize: minimal ? 'clamp(9px, 1.8vw, 15px)' : slotNameSize,
+              fontSize: minimal ? 'clamp(11px, 1.8vw, 15px)' : slotNameSize,
               color: slotNameColor, fontFamily,
               opacity: 0.8, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               maxWidth: '100%', textTransform: 'uppercase', letterSpacing: '0.3px',
@@ -246,7 +246,7 @@ function TournamentWidget({ config, theme }) {
             fontWeight: 700, fontFamily,
             color: valColor(result), lineHeight: 1.2,
             ...(minimal
-              ? { fontSize: 'clamp(11px, 2.2vw, 18px)' }
+              ? { fontSize: 'clamp(13px, 2.2vw, 18px)' }
               : { fontSize: resultSize }),
           }}>{fmtResult(result)}</span>
         </div>
@@ -368,9 +368,10 @@ function TournamentWidget({ config, theme }) {
               left: playerKey === 'player1' ? 'auto' : 8,
               right: playerKey === 'player1' ? 8 : 'auto',
               background: arenaWinColor, color: '#fff', fontWeight: 800,
-              fontSize: 11, padding: '3px 10px', borderRadius: 4,
+              fontSize: 13, padding: '3px 10px', borderRadius: 4,
               textTransform: 'uppercase', letterSpacing: '0.8px', zIndex: 3,
               boxShadow: `0 2px 8px ${arenaWinColor}60`,
+              textShadow: '0 1px 3px rgba(0,0,0,0.5)',
             }}>WINNER</div>
           )}
           {isWinner && (
@@ -385,7 +386,7 @@ function TournamentWidget({ config, theme }) {
           {/* Player name — black stripe at top */}
           <div style={{
             background: 'rgba(0,0,0,0.88)', padding: '4px 10px',
-            fontSize: 12, fontWeight: 700, fontStyle: 'italic',
+            fontSize: 14, fontWeight: 700, fontStyle: 'italic',
             color: '#fff', fontFamily, letterSpacing: '0.3px',
             textShadow: '0 1px 4px rgba(0,0,0,0.8)',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
@@ -421,8 +422,9 @@ function TournamentWidget({ config, theme }) {
                 borderRadius: 6, zIndex: 2,
               }}>
                 <span style={{
-                  fontSize: 14, fontWeight: 800,
+                  fontSize: 15, fontWeight: 800,
                   color: isWinner ? arenaWinColor : valColor(result), fontFamily,
+                  textShadow: '0 1px 4px rgba(0,0,0,0.6)',
                 }}>{fmtResult(result)}</span>
               </div>
             )}
@@ -437,24 +439,24 @@ function TournamentWidget({ config, theme }) {
             {vals && vals.val1 !== null ? (
               <div style={{
                 flex: 1, padding: '3px 4px', textAlign: 'center',
-                fontSize: 11, fontWeight: 700,
+                fontSize: 13, fontWeight: 700,
                 color: '#93c5fd', fontFamily,
               }}>{currency}{vals.val1.toFixed(2)}</div>
             ) : (
               <div style={{ flex: 1, padding: '3px 4px', textAlign: 'center',
-                fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
+                fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
             )}
             {vals && vals.val2 !== null ? (
               <div style={{
                 flex: 1, padding: '3px 4px', textAlign: 'center',
                 borderLeft: '1px solid rgba(255,255,255,0.1)',
-                fontSize: 11, fontWeight: 700,
+                fontSize: 13, fontWeight: 700,
                 color: '#4ade80', fontFamily,
               }}>{currency}{vals.val2.toFixed(2)}</div>
             ) : (
               <div style={{ flex: 1, padding: '3px 4px', textAlign: 'center',
                 borderLeft: '1px solid rgba(255,255,255,0.1)',
-                fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
+                fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
             )}
           </div>
         </div>
@@ -563,9 +565,9 @@ function TournamentWidget({ config, theme }) {
       const isLoser = hasWinner && !isWinner;
       const vals = getVals(match, playerKey);
 
-      const nameFs = large ? 'clamp(10px, 1.8vw, 16px)' : 'clamp(8px, 1.4vw, 13px)';
-      const statFs = large ? 'clamp(10px, 1.4vw, 14px)' : 'clamp(7px, 1vw, 10px)';
-      const labelFs = large ? 'clamp(7px, 0.9vw, 10px)' : 'clamp(6px, 0.7vw, 8px)';
+      const nameFs = large ? 'clamp(12px, 1.8vw, 16px)' : 'clamp(10px, 1.4vw, 13px)';
+      const statFs = large ? 'clamp(12px, 1.4vw, 14px)' : 'clamp(9px, 1vw, 11px)';
+      const labelFs = large ? 'clamp(9px, 0.9vw, 11px)' : 'clamp(8px, 0.7vw, 9px)';
       const borderGlow = isWinner ? esGold : esBorder;
 
       return (
@@ -630,7 +632,7 @@ function TournamentWidget({ config, theme }) {
               background: 'rgba(0,0,0,0.6)',
             }}>
               <span style={{
-                fontSize: large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(10px, 1.6vw, 16px)',
+                fontSize: large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(12px, 1.6vw, 16px)',
                 fontWeight: 900, fontFamily: esFont,
                 color: valColor(result),
                 textShadow: `0 0 10px ${valColor(result)}60`,

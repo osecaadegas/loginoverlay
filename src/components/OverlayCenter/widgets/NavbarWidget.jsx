@@ -232,7 +232,8 @@ function NavbarWidget({ config, widgetId, userId }) {
   const borderWidth = c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : 3);
   const barHeight = c.barHeight ?? 64;
   const borderRadius = c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : 999);
-  const fontSize = c.fontSize ?? (isRetro ? 10 : 12);
+  const fontSize = c.fontSize ?? (isRetro ? 13 : 15);
+  const textShadow = '0 1px 4px rgba(0,0,0,0.6)';
   const ctaColor = c.ctaColor || (isRetro ? '#ff4500' : '#f43f5e');
   const cryptoUpColor = c.cryptoUpColor || '#34d399';
   const cryptoDownColor = c.cryptoDownColor || '#f87171';
@@ -359,8 +360,8 @@ function NavbarWidget({ config, widgetId, userId }) {
                     borderRadius: '50%',
                     background: 'transparent',
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: fontSize * 0.7, fontWeight: 600, letterSpacing: '0.12em',
-                    textTransform: 'uppercase', color: textColor,
+                    fontSize: fontSize * 0.7, fontWeight: 700, letterSpacing: '0.12em',
+                    textTransform: 'uppercase', color: textColor, textShadow,
                   }}>
                     {(c.streamerName || 'S').slice(0, 5)}
                   </div>
@@ -377,16 +378,16 @@ function NavbarWidget({ config, widgetId, userId }) {
                   ? `linear-gradient(to right, ${accentColor}, ${ctaColor}, ${accentColor})`
                   : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #ec4899, #a855f7)`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
-                fontSize: fontSize * 1.2, fontWeight: (isMetal || isRetro) ? 700 : 600,
+                fontSize: fontSize * 1.2, fontWeight: (isMetal || isRetro) ? 700 : 700,
                 letterSpacing: isMetal ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
               }}>
                 {c.streamerName || 'STREAMER'}
               </span>
               {c.motto && (
                 <span style={{
-                  marginTop: 2, fontSize: fontSize * 0.82, fontWeight: 600,
+                  marginTop: 2, fontSize: fontSize * 0.82, fontWeight: 700,
                   letterSpacing: isMetal ? '0.4em' : isRetro ? '0.2em' : '0.35em',
-                  textTransform: 'uppercase', color: mutedColor,
+                  textTransform: 'uppercase', color: mutedColor, textShadow,
                 }}>
                   {c.motto}
                 </span>
@@ -420,7 +421,7 @@ function NavbarWidget({ config, widgetId, userId }) {
             background: 'linear-gradient(135deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02))',
             border: '1px solid rgba(255,255,255,0.08)',
             color: textColor,
-            fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.28em',
+            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.28em',
             boxShadow: `inset 0 1px 0 rgba(255,255,255,0.04), inset 0 -1px 0 rgba(0,0,0,0.15), 0 0 14px rgba(${accentColorRGB},0.08)`,
             flexShrink: 0,
           } : isGlass ? {
@@ -429,7 +430,7 @@ function NavbarWidget({ config, widgetId, userId }) {
             border: '1px solid rgba(255,255,255,0.15)',
             backdropFilter: 'blur(8px)',
             color: textColor,
-            fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.25em',
+            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.25em',
             flexShrink: 0,
           } : isRetro ? {
             borderRadius: 2, padding: '6px 14px',
@@ -442,7 +443,7 @@ function NavbarWidget({ config, widgetId, userId }) {
             borderRadius: 999, padding: '6px 20px',
             background: `linear-gradient(to bottom, ${accentColor}e6, ${accentColor}cc)`,
             color: textColor,
-            fontSize: fontSize * 0.92, fontWeight: 600, letterSpacing: '0.25em',
+            fontSize: fontSize * 0.92, fontWeight: 700, letterSpacing: '0.25em',
             boxShadow: `0 0 18px ${accentColor}e6`,
             flexShrink: 0,
           }}>
@@ -567,7 +568,7 @@ function NavbarWidget({ config, widgetId, userId }) {
               <span style={{
                 fontSize: fontSize * 1.2, fontWeight: 700,
                 color: textColor, letterSpacing: '0.04em',
-                whiteSpace: 'nowrap',
+                whiteSpace: 'nowrap', textShadow,
               }}>{current.handle}</span>
             </div>
           </div>
@@ -580,9 +581,9 @@ function NavbarWidget({ config, widgetId, userId }) {
           <div style={{
             display: 'flex', alignItems: 'center', gap: 8,
             fontSize: fontSize * 1.1, fontWeight: 700, color: textColor,
-            letterSpacing: '0.1em', flexShrink: 0,
+            letterSpacing: '0.1em', flexShrink: 0, textShadow,
           }}>
-            <span style={{ fontSize: fontSize * 0.85, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em' }}>
+            <span style={{ fontSize: fontSize * 0.85, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.15em', fontWeight: 700 }}>
               START
             </span>
             <span style={{ fontWeight: 800, color: accentColor }}>
@@ -728,13 +729,13 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
         </div>
       )}
       <div style={{ display: 'flex', flexDirection: 'column', lineHeight: 1.15 }}>
-        <span style={{ fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 4, letterSpacing: '0.04em' }}>
+        <span style={{ fontWeight: 700, color: '#ffffff', display: 'flex', alignItems: 'center', gap: 4, letterSpacing: '0.04em', textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
           {coin.toUpperCase()}
-          <span style={{ color: changeColor, fontSize: fontSize * 0.8 }}>{isUp ? '▲' : '▼'}</span>
+          <span style={{ color: changeColor, fontSize: fontSize * 0.85 }}>{isUp ? '▲' : '▼'}</span>
         </span>
-        <span style={{ fontSize: fontSize * 0.82, color: changeColor, opacity: 0.95 }}>
+        <span style={{ fontSize: fontSize * 0.88, color: changeColor, opacity: 0.95, fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
           ${price.price?.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}{' '}
-          <span style={{ fontWeight: 600 }}>{isUp ? '+' : ''}{price.change?.toFixed(2)}%</span>
+          <span style={{ fontWeight: 700 }}>{isUp ? '+' : ''}{price.change?.toFixed(2)}%</span>
         </span>
       </div>
     </div>
@@ -830,11 +831,11 @@ function NowPlayingDisplay({ data, musicDisplayStyle, fontSize, textColor, muted
 function NP_Text({ data, fontSize, textColor, mutedColor }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 160, maxWidth: 300, overflow: 'hidden' }}>
-      <span style={{ fontSize: fontSize * 0.75, fontWeight: 600, letterSpacing: '0.28em', textTransform: 'uppercase', color: mutedColor }}>
+      <span style={{ fontSize: fontSize * 0.85, fontWeight: 700, letterSpacing: '0.28em', textTransform: 'uppercase', color: mutedColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
         Now Playing
       </span>
-      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.9, fontWeight: 500, color: textColor }} />
-      <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight: 600, letterSpacing: '0.04em', color: textColor }} />
+      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.95, fontWeight: 600, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+      <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight: 700, letterSpacing: '0.04em', color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
     </div>
   );
 }
@@ -860,8 +861,8 @@ function NP_Pill({ data, fontSize, textColor, mutedColor, accentColor, isMetal, 
         }}>🎵</div>
       )}
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 0.95, fontWeight: 600, color: textColor }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.75, color: mutedColor }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.85, color: mutedColor, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
@@ -882,13 +883,13 @@ function NP_Marquee({ data, fontSize, textColor, mutedColor, accentColor }) {
           animation: data.isPlaying ? 'spotifyPulse 1.5s ease-in-out infinite' : 'none',
           flexShrink: 0,
         }} />
-        <span style={{ fontSize: fontSize * 0.7, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 600 }}>
+        <span style={{ fontSize: fontSize * 0.82, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.2em', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
           Now Playing
         </span>
       </div>
       <div style={{ overflow: 'hidden', whiteSpace: 'nowrap' }}>
         <span className="nb-marquee-scroll" style={{
-          display: 'inline-block', fontSize: fontSize * 1, fontWeight: 600, color: textColor,
+          display: 'inline-block', fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)',
           animation: data.isPlaying ? 'nbMarquee 12s linear infinite' : 'none',
           paddingRight: 60,
         }}>
@@ -920,8 +921,8 @@ function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, isMet
         }}>🎵</div>
       )}
       <div style={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.8, color: mutedColor, marginTop: 1 }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, marginTop: 1, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
         <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 3 }}>
           {[0, 1, 2].map(i => (
             <div key={i} style={{
@@ -930,7 +931,7 @@ function NP_AlbumArt({ data, fontSize, textColor, mutedColor, accentColor, isMet
               height: data.isPlaying ? undefined : 3,
             }} />
           ))}
-          <span style={{ fontSize: fontSize * 0.65, color: `${accentColor}cc`, marginLeft: 3, textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+          <span style={{ fontSize: fontSize * 0.78, color: `${accentColor}cc`, marginLeft: 3, textTransform: 'uppercase', letterSpacing: '0.1em', fontWeight: 700, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>
             {data.isPlaying ? 'Live' : 'Paused'}
           </span>
         </div>
@@ -957,8 +958,8 @@ function NP_Equalizer({ data, fontSize, textColor, mutedColor, accentColor }) {
       </div>
       {/* Info */}
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight: 700, color: textColor }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.78, color: accentColor }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: accentColor, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
@@ -988,8 +989,8 @@ function NP_Vinyl({ data, fontSize, textColor, mutedColor, accentColor, barHeigh
         }} />
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.8, color: mutedColor, marginTop: 1 }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.1, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, marginTop: 1, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );
@@ -1003,9 +1004,9 @@ function NP_Minimal({ data, fontSize, textColor, mutedColor, accentColor }) {
         fontSize: fontSize * 1.1, color: accentColor, flexShrink: 0,
         animation: data.isPlaying ? 'spotifyPulse 1.8s ease-in-out infinite' : 'none',
       }}>♫</span>
-      <ScrollText text={data.track} style={{ fontSize: fontSize * 0.95, fontWeight: 600, color: textColor, flex: 1, minWidth: 0 }} />
-      <span style={{ fontSize: fontSize * 0.75, color: mutedColor, flexShrink: 0 }}>—</span>
-      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.8, color: mutedColor, flex: 1, minWidth: 0 }} />
+      <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight: 700, color: textColor, flex: 1, minWidth: 0, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+      <span style={{ fontSize: fontSize * 0.85, color: mutedColor, flexShrink: 0, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>—</span>
+      <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, flex: 1, minWidth: 0, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
     </div>
   );
 }
@@ -1029,8 +1030,8 @@ function NP_Wave({ data, fontSize, textColor, mutedColor, accentColor, barHeight
         ))}
       </div>
       <div style={{ minWidth: 0, flex: 1 }}>
-        <ScrollText text={data.track} style={{ fontSize: fontSize * 1, fontWeight: 600, color: textColor }} />
-        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.78, color: mutedColor }} />
+        <ScrollText text={data.track} style={{ fontSize: fontSize * 1.05, fontWeight: 700, color: textColor, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
+        <ScrollText text={data.artist} style={{ fontSize: fontSize * 0.88, color: mutedColor, fontWeight: 600, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }} />
       </div>
     </div>
   );

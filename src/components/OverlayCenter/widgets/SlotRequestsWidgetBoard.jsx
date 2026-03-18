@@ -18,8 +18,8 @@ export default function SlotRequestsWidgetBoard({ config, requests }) {
   const cardBg = c.cardBg || 'rgba(15,23,42,0.6)';
   const showRequester = c.showRequester !== false;
   const fontFamily = c.fontFamily || "'Poppins', sans-serif";
-  const configFontSize = c.fontSize ? `${c.fontSize}px` : undefined;
-  const fontWeight = c.fontWeight || '600';
+  const configFontSize = c.fontSize ? `${c.fontSize}px` : '15px';
+  const fontWeight = c.fontWeight || '700';
   const autoSpeed = Number(c.autoSpeed) || 4000;
 
   const hex2rgb = (hex) => {

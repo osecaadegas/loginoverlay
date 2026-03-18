@@ -37,8 +37,8 @@ function SessionStatsWidget({ config }) {
           padding: '8px 4px', gap: 2, minWidth: 0,
         }}>
           <span style={{ fontSize: 16 }}>{s.icon}</span>
-          <span style={{ fontSize: 10, fontWeight: 600, color: muted, textTransform: 'uppercase', letterSpacing: '0.5px' }}>{s.label}</span>
-          <span style={{ fontSize: 14, fontWeight: 700, color: s.color, fontFamily: font }}>{s.value}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: muted, textTransform: 'uppercase', letterSpacing: '0.5px', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{s.label}</span>
+          <span style={{ fontSize: 16, fontWeight: 700, color: s.color, fontFamily: font, textShadow: '0 1px 4px rgba(0,0,0,0.6)' }}>{s.value}</span>
         </div>
       ))}
     </div>

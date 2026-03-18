@@ -22,7 +22,7 @@ export default function SlotRequestsWidgetList({ config, requests }) {
   const showNumbers = c.showNumbers !== false;
   const fontFamily = c.fontFamily || "'Poppins', sans-serif";
   const configFontSize = c.fontSize ? Number(c.fontSize) : null;
-  const fontWeight = c.fontWeight || '600';
+  const fontWeight = c.fontWeight || '700';
 
   /* ── Responsive font sizing (fallback when no manual size set) ── */
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function SlotRequestsWidgetList({ config, requests }) {
         const w = entry.contentRect.width;
         const h = entry.contentRect.height;
         const min = Math.min(w, h);
-        const fs = Math.max(10, Math.min(18, min * 0.035 + 5));
+        const fs = Math.max(13, Math.min(18, min * 0.035 + 5));
         setFontSize(fs);
       }
     });
@@ -85,7 +85,7 @@ export default function SlotRequestsWidgetList({ config, requests }) {
         {requests.length > 0 && (
           <span style={{
             marginLeft: 'auto',
-            fontSize: fs * 0.7,
+            fontSize: fs * 0.78,
             background: isMetal ? 'linear-gradient(135deg, #555a65, #3a3e48)' : accent,
             color: isMetal ? '#d4d8e0' : '#000',
             borderRadius: 99,
@@ -144,7 +144,7 @@ export default function SlotRequestsWidgetList({ config, requests }) {
           >
             {showNumbers && (
               <span style={{
-                fontSize: fs * 0.75,
+                fontSize: fs * 0.78,
                 fontWeight: 800,
                 color: accent,
                 minWidth: fs * 1.2,
@@ -175,6 +175,7 @@ export default function SlotRequestsWidgetList({ config, requests }) {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 lineHeight: 1.3,
+                textShadow: '0 1px 4px rgba(0,0,0,0.6)',
                 ...(isMetal && {
                   background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
                   WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
@@ -185,7 +186,7 @@ export default function SlotRequestsWidgetList({ config, requests }) {
               </span>
               {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
                 <span style={{
-                  fontSize: fs * 0.7,
+                  fontSize: fs * 0.78,
                   color: mutedColor,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',

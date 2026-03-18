@@ -91,7 +91,7 @@ function ChatWidget({ config, theme }) {
   const headerBg = isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : (c.headerBg || 'rgba(30,41,59,0.5)');
   const headerText = isMetal ? '#a8b0c0' : (c.headerText || '#94a3b8');
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize || 13;
+  const fontSize = c.fontSize || 15;
   const msgSpacing = c.msgSpacing ?? 2;
   const borderRadius = c.borderRadius ?? (isMetal ? 10 : 12);
   const borderWidth = c.borderWidth ?? 1;
@@ -221,12 +221,12 @@ function ChatWidget({ config, theme }) {
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
           <span style={{
-            fontSize: '0.75em', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase',
+            fontSize: '0.85em', fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase',
             background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>LIVE CHAT</span>
           <span style={{
-            marginLeft: 'auto', fontSize: '0.7em', fontWeight: 700, color: '#7a8090',
+            marginLeft: 'auto', fontSize: '0.82em', fontWeight: 700, color: '#7a8090',
             background: 'linear-gradient(135deg, #555a65, #3a3e48)',
             padding: '2px 8px', borderRadius: 4,
             border: '1px solid rgba(200,210,225,0.2)',
@@ -283,11 +283,11 @@ function ChatWidget({ config, theme }) {
                     width: 22, height: 22, borderRadius: '50%',
                     background: nameColor + '33', color: nameColor,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: '0.7em', fontWeight: 800, flexShrink: 0, marginTop: 1,
+                    fontSize: '0.82em', fontWeight: 800, flexShrink: 0, marginTop: 1,
                   }}>{msg.username.charAt(0).toUpperCase()}</span>
                   <div style={{ minWidth: 0 }}>
-                    <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.82em', lineHeight: 1.2 }}>{msg.username}</span>
-                    <div style={{ color: textColor, lineHeight: 1.35, wordBreak: 'break-word', opacity: 0.92 }}>{msg.message}</div>
+                    <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.92em', lineHeight: 1.2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
+                    <div style={{ color: textColor, lineHeight: 1.35, wordBreak: 'break-word', opacity: 0.92, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</div>
                   </div>
                 </div>
               </div>
@@ -306,10 +306,10 @@ function ChatWidget({ config, theme }) {
                   background: `linear-gradient(135deg, ${nameColor}44, ${nameColor}22)`,
                   border: `1.5px solid ${nameColor}55`,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: nameColor, fontSize: '0.75em', fontWeight: 800,
+                  color: nameColor, fontSize: '0.85em', fontWeight: 800,
                 }}>{msg.username.charAt(0).toUpperCase()}</div>
                 <div style={{ minWidth: 0, maxWidth: '85%' }}>
-                  <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.78em', display: 'block', marginBottom: 2 }}>
+                  <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.88em', display: 'block', marginBottom: 2, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>
                     {msg.username}
                   </span>
                   <div style={{
@@ -317,7 +317,7 @@ function ChatWidget({ config, theme }) {
                     padding: '7px 12px', position: 'relative',
                     border: '1px solid rgba(255,255,255,0.04)',
                   }}>
-                    <span style={{ wordBreak: 'break-word' }}>{msg.message}</span>
+                    <span style={{ wordBreak: 'break-word', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
                   </div>
                 </div>
               </div>
@@ -336,10 +336,10 @@ function ChatWidget({ config, theme }) {
                 animation: age === 0 ? 'ov-float-in 0.3s ease-out' : 'none',
               }}>
                 <span style={{
-                  color: nameColor, fontWeight: 700, fontSize: '0.88em', flexShrink: 0,
+                  color: nameColor, fontWeight: 700, fontSize: '0.95em', flexShrink: 0,
                 }}>{msg.username}</span>
                 <span style={{ color: 'rgba(255,255,255,0.25)', margin: '0 5px', flexShrink: 0 }}>›</span>
-                <span style={{ wordBreak: 'break-word', opacity: 0.9 }}>{msg.message}</span>
+                <span style={{ wordBreak: 'break-word', opacity: 0.9, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
               </div>
             );
           }
@@ -352,10 +352,10 @@ function ChatWidget({ config, theme }) {
                 fontFamily: "'Fira Code', 'JetBrains Mono', 'Courier New', monospace",
                 animation: 'ov-slide-left 0.25s ease-out',
               }}>
-                <span style={{ color: '#4ade80', fontWeight: 600, fontSize: '0.85em', opacity: 0.7 }}>{'>'}</span>
-                <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.88em', marginLeft: 4 }}>{msg.username}</span>
+                <span style={{ color: '#4ade80', fontWeight: 700, fontSize: '0.92em', opacity: 0.7 }}>{'>'}</span>
+                <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.95em', marginLeft: 4, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
                 <span style={{ color: 'rgba(74,222,128,0.3)', margin: '0 6px' }}>$</span>
-                <span style={{ color: '#d1fae5', wordBreak: 'break-word', opacity: 0.85 }}>{msg.message}</span>
+                <span style={{ color: '#d1fae5', wordBreak: 'break-word', opacity: 0.85, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
               </div>
             );
           }
@@ -371,12 +371,12 @@ function ChatWidget({ config, theme }) {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{
-                    fontSize: '0.65em', fontWeight: 800, color: plt.color,
-                    textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.7,
+                    fontSize: '0.78em', fontWeight: 800, color: plt.color,
+                    textTransform: 'uppercase', letterSpacing: '0.06em', opacity: 0.7, textShadow: '0 1px 3px rgba(0,0,0,0.5)',
                   }}>{plt.label}</span>
-                  <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.85em' }}>{msg.username}</span>
+                  <span style={{ color: nameColor, fontWeight: 700, fontSize: '0.92em', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.username}</span>
                 </div>
-                <span style={{ color: textColor, wordBreak: 'break-word', opacity: 0.88, paddingLeft: 1 }}>{msg.message}</span>
+                <span style={{ color: textColor, wordBreak: 'break-word', opacity: 0.88, paddingLeft: 1, textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}>{msg.message}</span>
               </div>
             );
           }
@@ -416,7 +416,7 @@ function ChatWidget({ config, theme }) {
                 {showBadges && (
                   <span style={{
                     background: 'linear-gradient(135deg, #555a65, #3a3e48)',
-                    color: '#a8b0c0', fontSize: '0.7em', fontWeight: 800,
+                    color: '#a8b0c0', fontSize: '0.82em', fontWeight: 800,
                     padding: '2px 6px', borderRadius: 3, marginRight: 6,
                     border: '1px solid rgba(200,210,225,0.15)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
@@ -424,7 +424,7 @@ function ChatWidget({ config, theme }) {
                 )}
                 <div className="ov-chat-msg-body">
                   <span style={{
-                    fontWeight: 700, fontSize: '0.88em',
+                    fontWeight: 700, fontSize: '0.95em',
                     background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
                     WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                     marginRight: 6,

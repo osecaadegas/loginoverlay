@@ -114,11 +114,11 @@ function GiveawayWidget({ config, widgetId }) {
         borderBottom:`1px solid ${mBorder}`, flexShrink:0,
         background:mCardBg }}>
         <span style={{ fontSize:'clamp(12px,5cqmin,24px)' }}>🎁</span>
-        <span style={{ fontWeight:700, fontSize:'clamp(10px,4cqmin,20px)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
+        <span style={{ fontWeight:700, fontSize:'clamp(12px,4cqmin,20px)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
           letterSpacing:'0.14em', textTransform:'uppercase',
           background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{title}</span>
         {isActive && !isDone && (
-          <span style={{ background:'rgba(138,154,170,0.15)', color:mAccent, fontSize:'clamp(8px,2.5cqmin,13px)', fontWeight:700,
+          <span style={{ background:'rgba(138,154,170,0.15)', color:mAccent, fontSize:'clamp(10px,2.5cqmin,13px)', fontWeight:700,
             padding:'clamp(1px,0.4cqmin,3px) clamp(4px,1.2cqmin,8px)', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em',
             border:'1px solid rgba(200,210,225,0.2)', boxShadow:mInner,
             animation:'ga-pulse 2s ease-in-out infinite' }}>LIVE</span>
@@ -129,19 +129,19 @@ function GiveawayWidget({ config, widgetId }) {
         {winner ? (
           <div style={{ textAlign:'center' }}>
             <div style={{ fontSize:'clamp(18px,8cqmin,40px)', marginBottom:'clamp(1px,0.4cqmin,3px)' }}>🎉</div>
-            <div style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:600,
+            <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:700,
               background:'linear-gradient(90deg, #8a90a0, #b0b8c8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Winner</div>
             <div style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800,
               background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-              textShadow:'none' }}>{winner}</div>
-            {prize && <div style={{ fontSize:'clamp(9px,3.5cqmin,16px)', color:mMuted, marginTop:'clamp(1px,0.5cqmin,4px)' }}>Prize: <span style={{ color:mAccent, fontWeight:600 }}>{prize}</span></div>}
+              textShadow:'0 1px 4px rgba(0,0,0,0.6)' }}>{winner}</div>
+            {prize && <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mMuted, marginTop:'clamp(1px,0.5cqmin,4px)' }}>Prize: <span style={{ color:mAccent, fontWeight:700 }}>{prize}</span></div>}
           </div>
         ) : isActive && keyword ? (
           <>
             {prize && (
               <div style={{ background:mCardBg, border:`1px solid ${mBorder}`, borderRadius:'clamp(4px,1.5cqmin,8px)',
                 padding:'clamp(2px,1cqmin,6px) clamp(5px,2cqmin,14px)', textAlign:'center', boxShadow:mInner }}>
-                <div style={{ fontSize:'clamp(7px,2.5cqmin,12px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:600,
+                <div style={{ fontSize:'clamp(10px,2.5cqmin,12px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:700,
                   background:'linear-gradient(90deg, #8a90a0, #b0b8c8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Prize</div>
                 <div style={{ fontSize:'clamp(12px,5cqmin,24px)', fontWeight:700, color:mText, marginTop:'clamp(1px,0.3cqmin,2px)',
                   textShadow:'0 1px 2px rgba(0,0,0,0.5)' }}>{prize}</div>
@@ -149,19 +149,19 @@ function GiveawayWidget({ config, widgetId }) {
             )}
             <div style={{ background:'rgba(168,176,192,0.08)', border:`1px solid rgba(200,210,225,0.18)`, borderRadius:'clamp(4px,2cqmin,10px)',
               padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2.5cqmin,14px)', textAlign:'center', boxShadow:mInner }}>
-              <div style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mMuted, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Type in chat to enter</div>
+              <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mMuted, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Type in chat to enter</div>
               <div style={{ fontSize:'clamp(14px,6cqmin,30px)', fontWeight:800, letterSpacing:'0.02em',
                 background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>!{keyword}</div>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)', marginTop:'clamp(1px,0.4cqmin,3px)' }}>
               <span style={{ fontSize:'clamp(10px,4cqmin,20px)' }}>👥</span>
               <span style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:mText, textShadow:'0 1px 2px rgba(0,0,0,0.5)' }}>{count}</span>
-              <span style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mMuted }}>participant{count !== 1 ? 's' : ''}</span>
+              <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mMuted }}>participant{count !== 1 ? 's' : ''}</span>
             </div>
             {count > 0 && (
               <div style={{ width:'100%', maxHeight:'20cqb', overflow:'hidden', display:'flex', flexWrap:'wrap', gap:'clamp(2px,0.5cqmin,4px)', justifyContent:'center' }}>
                 {participants.slice(-8).map((name, i) => (
-                  <span key={i} style={{ background:'linear-gradient(135deg, #555a65, #3a3e48)', color:mText, fontSize:'clamp(7px,2.5cqmin,12px)', fontWeight:600,
+                  <span key={i} style={{ background:'linear-gradient(135deg, #555a65, #3a3e48)', color:mText, fontSize:'clamp(10px,2.5cqmin,12px)', fontWeight:700,
                     padding:'clamp(1px,0.3cqmin,2px) clamp(4px,1.2cqmin,8px)', borderRadius:99,
                     border:'1px solid rgba(200,210,225,0.15)', boxShadow:'inset 0 1px 0 rgba(255,255,255,0.08)' }}>{name}</span>
                 ))}
@@ -171,7 +171,7 @@ function GiveawayWidget({ config, widgetId }) {
         ) : (
           <div style={{ textAlign:'center' }}>
             <div style={{ fontSize:'clamp(18px,8cqmin,36px)', marginBottom:'clamp(2px,1cqmin,6px)', opacity:0.5 }}>🎁</div>
-            <div style={{ fontSize:'clamp(9px,3.5cqmin,16px)', color:mMuted }}>No active giveaway</div>
+            <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mMuted }}>No active giveaway</div>
           </div>
         )}
       </div>
@@ -187,9 +187,9 @@ function GiveawayWidget({ config, widgetId }) {
       <div style={{ padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2cqmin,12px)', display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
         borderBottom:`1px solid ${borderColor}`, flexShrink:0 }}>
         <span style={{ fontSize:'clamp(12px,5cqmin,24px)' }}>🎁</span>
-        <span style={{ fontWeight:700, fontSize:'clamp(10px,4cqmin,20px)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{title}</span>
+        <span style={{ fontWeight:700, fontSize:'clamp(12px,4cqmin,20px)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis' }}>{title}</span>
         {isActive && !isDone && (
-          <span style={{ background:'#22c55e33', color:'#22c55e', fontSize:'clamp(8px,2.5cqmin,13px)', fontWeight:700,
+          <span style={{ background:'#22c55e33', color:'#22c55e', fontSize:'clamp(10px,2.5cqmin,13px)', fontWeight:700,
             padding:'clamp(1px,0.4cqmin,3px) clamp(4px,1.2cqmin,8px)', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.05em',
             animation:'ga-pulse 2s ease-in-out infinite' }}>LIVE</span>
         )}
@@ -199,34 +199,34 @@ function GiveawayWidget({ config, widgetId }) {
         {winner ? (
           <div style={{ textAlign:'center' }}>
             <div style={{ fontSize:'clamp(18px,8cqmin,40px)', marginBottom:'clamp(1px,0.4cqmin,3px)' }}>🎉</div>
-            <div style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:600, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Winner</div>
+            <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:700, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Winner</div>
             <div style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:accentColor, textShadow:`0 0 20px ${accentColor}66` }}>{winner}</div>
-            {prize && <div style={{ fontSize:'clamp(9px,3.5cqmin,16px)', color:mutedColor, marginTop:'clamp(1px,0.5cqmin,4px)' }}>Prize: <span style={{ color:'#fbbf24', fontWeight:600 }}>{prize}</span></div>}
+            {prize && <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mutedColor, marginTop:'clamp(1px,0.5cqmin,4px)' }}>Prize: <span style={{ color:'#fbbf24', fontWeight:700 }}>{prize}</span></div>}
           </div>
         ) : isActive && keyword ? (
           <>
             {prize && (
               <div style={{ background:cardBg, border:`1px solid ${borderColor}`, borderRadius:'clamp(4px,1.5cqmin,8px)',
                 padding:'clamp(2px,1cqmin,6px) clamp(5px,2cqmin,14px)', textAlign:'center' }}>
-                <div style={{ fontSize:'clamp(7px,2.5cqmin,12px)', color:mutedColor, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:600 }}>Prize</div>
+                <div style={{ fontSize:'clamp(10px,2.5cqmin,12px)', color:mutedColor, textTransform:'uppercase', letterSpacing:'0.08em', fontWeight:700 }}>Prize</div>
                 <div style={{ fontSize:'clamp(12px,5cqmin,24px)', fontWeight:700, color:'#fbbf24', marginTop:'clamp(1px,0.3cqmin,2px)' }}>{prize}</div>
               </div>
             )}
             <div style={{ background:`${accentColor}18`, border:`1px solid ${accentColor}44`, borderRadius:'clamp(4px,2cqmin,10px)',
               padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2.5cqmin,14px)', textAlign:'center',
               animation:'ga-glow 3s ease-in-out infinite' }}>
-              <div style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mutedColor, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Type in chat to enter</div>
+              <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Type in chat to enter</div>
               <div style={{ fontSize:'clamp(14px,6cqmin,30px)', fontWeight:800, color:accentColor, letterSpacing:'0.02em' }}>!{keyword}</div>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)', marginTop:'clamp(1px,0.4cqmin,3px)' }}>
               <span style={{ fontSize:'clamp(10px,4cqmin,20px)' }}>👥</span>
               <span style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:textColor, animation:count > 0 ? 'ga-bounce 0.4s ease' : 'none' }}>{count}</span>
-              <span style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mutedColor }}>participant{count !== 1 ? 's' : ''}</span>
+              <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor }}>participant{count !== 1 ? 's' : ''}</span>
             </div>
             {count > 0 && (
               <div style={{ width:'100%', maxHeight:'20cqb', overflow:'hidden', display:'flex', flexWrap:'wrap', gap:'clamp(2px,0.5cqmin,4px)', justifyContent:'center' }}>
                 {participants.slice(-8).map((name, i) => (
-                  <span key={i} style={{ background:`${accentColor}22`, color:accentColor, fontSize:'clamp(7px,2.5cqmin,12px)', fontWeight:600,
+                  <span key={i} style={{ background:`${accentColor}22`, color:accentColor, fontSize:'clamp(10px,2.5cqmin,12px)', fontWeight:700,
                     padding:'clamp(1px,0.3cqmin,2px) clamp(4px,1.2cqmin,8px)', borderRadius:99 }}>{name}</span>
                 ))}
               </div>
@@ -235,7 +235,7 @@ function GiveawayWidget({ config, widgetId }) {
         ) : (
           <div style={{ textAlign:'center' }}>
             <div style={{ fontSize:'clamp(18px,8cqmin,36px)', marginBottom:'clamp(2px,1cqmin,6px)', opacity:0.5 }}>🎁</div>
-            <div style={{ fontSize:'clamp(9px,3.5cqmin,16px)', color:mutedColor }}>No active giveaway</div>
+            <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mutedColor }}>No active giveaway</div>
           </div>
         )}
       </div>
@@ -298,30 +298,30 @@ function GiveawayWidget({ config, widgetId }) {
         justifyContent:'center', gap:'clamp(3px,1.8cqmin,10px)', boxSizing:'border-box',
         animation:isActive && !isDone ? 'ga-glow 3s ease-in-out infinite' : 'none',
       }}>
-        <div style={{ fontSize:'clamp(8px,3.5cqmin,18px)', fontWeight:800, color:accentColor, letterSpacing:'0.2em', textTransform:'uppercase',
+        <div style={{ fontSize:'clamp(10px,3.5cqmin,18px)', fontWeight:800, color:accentColor, letterSpacing:'0.2em', textTransform:'uppercase',
           textShadow:`0 0 8px ${accentColor}88` }}>
           {isDone ? '★ ENDED ★' : isActive ? '★ GIVEAWAY ★' : '★ GIVEAWAY ★'}
         </div>
         {winner ? (
           <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:'clamp(8px,3cqmin,14px)', color:mutedColor, letterSpacing:'0.08em', textTransform:'uppercase' }}>Winner</div>
+            <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor, letterSpacing:'0.08em', textTransform:'uppercase' }}>Winner</div>
             <div style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:accentColor, textShadow:`0 0 16px ${accentColor}` }}>{winner}</div>
           </div>
         ) : isActive ? (
           <>
             {prize && <div style={{ fontSize:'clamp(14px,7cqmin,34px)', fontWeight:800, color:textColor, textShadow:'0 0 10px rgba(255,255,255,0.2)' }}>{prize}</div>}
             {keyword && (
-              <div style={{ fontSize:'clamp(8px,3.5cqmin,18px)', color:mutedColor }}>
+              <div style={{ fontSize:'clamp(10px,3.5cqmin,18px)', color:mutedColor }}>
                 Type <span style={{ color:accentColor, fontWeight:700, textShadow:`0 0 6px ${accentColor}` }}>!{keyword}</span> to enter
               </div>
             )}
             <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)' }}>
               <span style={{ fontSize:'clamp(14px,7cqmin,36px)', fontWeight:800, color:accentColor, textShadow:`0 0 12px ${accentColor}66` }}>{count}</span>
-              <span style={{ fontSize:'clamp(8px,3.5cqmin,16px)', color:mutedColor }}>entries</span>
+              <span style={{ fontSize:'clamp(10px,3.5cqmin,16px)', color:mutedColor }}>entries</span>
             </div>
           </>
         ) : (
-          <div style={{ fontSize:'clamp(8px,3.5cqmin,16px)', color:mutedColor }}>No active giveaway</div>
+          <div style={{ fontSize:'clamp(10px,3.5cqmin,16px)', color:mutedColor }}>No active giveaway</div>
         )}
       </div>
     </div>
@@ -335,21 +335,21 @@ function GiveawayWidget({ config, widgetId }) {
       <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)' }}>
         <span style={{ width:'clamp(5px,2cqmin,10px)', height:'clamp(5px,2cqmin,10px)', borderRadius:'50%', background:statusColor, display:'inline-block',
           animation:isActive && !isDone ? 'ga-pulse 2s infinite' : 'none' }} />
-        <span style={{ fontSize:'clamp(8px,3.5cqmin,16px)', fontWeight:600, color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em' }}>{statusLabel}</span>
+        <span style={{ fontSize:'clamp(10px,3.5cqmin,16px)', fontWeight:700, color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em' }}>{statusLabel}</span>
       </div>
       {winner ? (
         <div style={{ textAlign:'center' }}>
           <div style={{ fontSize:'clamp(16px,8cqmin,40px)', fontWeight:800, color:accentColor }}>{winner}</div>
-          <div style={{ fontSize:'clamp(8px,3.5cqmin,14px)', color:mutedColor, marginTop:'1%' }}>winner</div>
+          <div style={{ fontSize:'clamp(10px,3.5cqmin,14px)', color:mutedColor, marginTop:'1%' }}>winner</div>
         </div>
       ) : isActive ? (
         <>
           {prize && <div style={{ fontSize:'clamp(14px,7cqmin,36px)', fontWeight:800, color:textColor }}>{prize}</div>}
-          {keyword && <div style={{ fontSize:'clamp(8px,3.5cqmin,16px)', color:mutedColor }}>!{keyword}</div>}
+          {keyword && <div style={{ fontSize:'clamp(10px,3.5cqmin,16px)', color:mutedColor }}>!{keyword}</div>}
           <div style={{ fontSize:'clamp(10px,5cqmin,24px)', fontWeight:700, color:accentColor }}>{count} <span style={{ fontWeight:400, color:mutedColor, fontSize:'0.7em' }}>entries</span></div>
         </>
       ) : (
-        <div style={{ fontSize:'clamp(8px,4cqmin,18px)', color:mutedColor, opacity:0.5 }}>🎁</div>
+        <div style={{ fontSize:'clamp(10px,4cqmin,18px)', color:mutedColor, opacity:0.5 }}>🎁</div>
       )}
     </div>
   );

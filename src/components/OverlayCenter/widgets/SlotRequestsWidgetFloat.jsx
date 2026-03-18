@@ -18,14 +18,14 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
   const showNumbers = c.showNumbers !== false;
   const fontFamily = c.fontFamily || "'Poppins', sans-serif";
   const configFontSize = c.fontSize ? Number(c.fontSize) : null;
-  const fontWeight = c.fontWeight || '600';
+  const fontWeight = c.fontWeight || '700';
 
   useEffect(() => {
     if (configFontSize || !containerRef.current) return;
     const observer = new ResizeObserver(entries => {
       for (const entry of entries) {
         const min = Math.min(entry.contentRect.width, entry.contentRect.height);
-        setFontSize(Math.max(10, Math.min(18, min * 0.035 + 5)));
+        setFontSize(Math.max(13, Math.min(18, min * 0.035 + 5)));
       }
     });
     observer.observe(containerRef.current);
@@ -121,12 +121,13 @@ export default function SlotRequestsWidgetFloat({ config, requests }) {
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
                 lineHeight: 1.3,
+                textShadow: '0 1px 4px rgba(0,0,0,0.6)',
               }}>
                 {r.slot_name}
               </span>
               {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
                 <span style={{
-                  fontSize: fs * 0.72,
+                  fontSize: fs * 0.78,
                   color: mutedColor,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',

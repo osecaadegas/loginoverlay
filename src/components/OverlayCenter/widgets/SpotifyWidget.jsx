@@ -136,10 +136,10 @@ function AlbumCard({ data, c }) {
             <img src={data.albumArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
           </div>
         )}
-        <div style={{ fontSize: 16, fontWeight: 700, color: '#fff', lineHeight: 1.2 }}>
+        <div style={{ fontSize: 18, fontWeight: 700, color: '#fff', lineHeight: 1.2, textShadow: '0 2px 8px rgba(0,0,0,0.7)' }}>
           {data.track}
         </div>
-        <div style={{ fontSize: 12, color: '#ffffffaa', marginTop: 3 }}>
+        <div style={{ fontSize: 14, fontWeight: 600, color: '#ffffffcc', marginTop: 3, textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
           {data.artist}
         </div>
         <div style={{
@@ -151,7 +151,7 @@ function AlbumCard({ data, c }) {
             boxShadow: data.isPlaying ? `0 0 8px ${accent}` : 'none',
             animation: data.isPlaying ? 'spotifyPulse 1.5s ease-in-out infinite' : 'none',
           }} />
-          <span style={{ fontSize: 12, color: '#ffffff88', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+          <span style={{ fontSize: 13, fontWeight: 600, color: '#ffffff99', textTransform: 'uppercase', letterSpacing: '0.08em', textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>
             {data.isPlaying ? 'Now Playing' : 'Paused'}
           </span>
           <svg width="16" height="16" viewBox="0 0 24 24" fill={accent} style={{ marginLeft: 'auto' }}>
@@ -192,12 +192,14 @@ function MiniPlayer({ data, c }) {
 
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 13, fontWeight: 600, color: '#fff',
+          fontSize: 15, fontWeight: 700, color: '#fff',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 1px 4px rgba(0,0,0,0.5)',
         }}>{data.track}</div>
         <div style={{
-          fontSize: 12, color: '#b3b3b3',
+          fontSize: 13, fontWeight: 600, color: '#b3b3b3',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 1px 3px rgba(0,0,0,0.4)',
         }}>{data.artist}</div>
       </div>
 
@@ -266,12 +268,14 @@ function VinylSpin({ data, c }) {
       {/* Track info */}
       <div style={{ textAlign: 'center', padding: '0 16px', zIndex: 1 }}>
         <div style={{
-          fontSize: 14, fontWeight: 700, color: '#fff',
+          fontSize: 16, fontWeight: 700, color: '#fff',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220,
+          textShadow: '0 2px 8px rgba(0,0,0,0.6)',
         }}>{data.track}</div>
         <div style={{
-          fontSize: 12, color: accent, marginTop: 3,
+          fontSize: 13, fontWeight: 600, color: accent, marginTop: 3,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 220,
+          textShadow: '0 1px 4px rgba(0,0,0,0.4)',
         }}>{data.artist}</div>
       </div>
     </div>
@@ -329,13 +333,14 @@ function GlassCard({ data, c }) {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{
-            fontSize: 15, fontWeight: 700, color: '#fff',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            textShadow: '0 1px 6px rgba(0,0,0,0.5)',
-          }}>{data.track}</div>
-          <div style={{
-          fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 3,
+          fontSize: 17, fontWeight: 700, color: '#fff',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 2px 8px rgba(0,0,0,0.6)',
+        }}>{data.track}</div>
+        <div style={{
+          fontSize: 14, fontWeight: 600, color: 'rgba(255,255,255,0.75)', marginTop: 3,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 1px 6px rgba(0,0,0,0.5)',
         }}>{data.artist}</div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 6 }}>
             <span style={{
@@ -343,7 +348,7 @@ function GlassCard({ data, c }) {
               background: data.isPlaying ? accent : '#666',
               boxShadow: data.isPlaying ? `0 0 6px ${accent}` : 'none',
             }} />
-            <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+            <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.1em', textShadow: '0 1px 4px rgba(0,0,0,0.4)' }}>
               {data.isPlaying ? 'Playing' : 'Paused'}
             </span>
           </div>
@@ -397,12 +402,14 @@ function WaveStyle({ data, c }) {
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
         <div style={{
-          fontSize: 14, fontWeight: 700, color: '#fff',
+          fontSize: 16, fontWeight: 700, color: '#fff',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 1px 6px rgba(0,0,0,0.5)',
         }}>{data.track}</div>
         <div style={{
-          fontSize: 12, color: accent, marginTop: 2,
+          fontSize: 13, fontWeight: 600, color: accent, marginTop: 2,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          textShadow: '0 1px 4px rgba(0,0,0,0.4)',
         }}>{data.artist}</div>
       </div>
 
@@ -466,18 +473,18 @@ function NeonStyle({ data, c }) {
 
       <div style={{ flex: 1, minWidth: 0, position: 'relative', zIndex: 1 }}>
         <div style={{
-          fontSize: 15, fontWeight: 700,
+          fontSize: 17, fontWeight: 700,
           color: '#fff',
-          textShadow: `0 0 8px ${accent}88, 0 0 2px ${accent}44`,
+          textShadow: `0 0 10px ${accent}88, 0 0 3px ${accent}44`,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{data.track}</div>
         <div style={{
-          fontSize: 12, color: accent, marginTop: 3,
-          textShadow: `0 0 6px ${accent}44`,
+          fontSize: 14, fontWeight: 600, color: accent, marginTop: 3,
+          textShadow: `0 0 8px ${accent}44`,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{data.artist}</div>
         <div style={{
-          fontSize: 11, color: `${accent}99`, marginTop: 4,
+          fontSize: 12, fontWeight: 600, color: `${accent}99`, marginTop: 4,
           textTransform: 'uppercase', letterSpacing: '0.15em',
         }}>
           {data.isPlaying ? '▶ PLAYING' : '⏸ PAUSED'}
@@ -520,13 +527,13 @@ function MetalPlayer({ data, c }) {
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: 14, fontWeight: 700,
+          fontSize: 16, fontWeight: 700,
           background: 'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)',
           WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{data.track}</div>
         <div style={{
-          fontSize: 12, color: '#7a8090', marginTop: 2,
+          fontSize: 13, fontWeight: 600, color: '#8a94a8', marginTop: 2,
           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
         }}>{data.artist}</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 4 }}>
@@ -536,7 +543,7 @@ function MetalPlayer({ data, c }) {
             boxShadow: data.isPlaying ? '0 0 6px rgba(138,154,170,0.5)' : 'none',
           }} />
           <span style={{
-            fontSize: 10, color: '#7a8090', textTransform: 'uppercase', letterSpacing: '0.14em',
+            fontSize: 12, fontWeight: 600, color: '#8a94a8', textTransform: 'uppercase', letterSpacing: '0.14em',
           }}>{data.isPlaying ? 'Now Playing' : 'Paused'}</span>
         </div>
       </div>
