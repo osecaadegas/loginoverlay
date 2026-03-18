@@ -19,11 +19,84 @@ const FONT_OPTIONS = [
   { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
 ];
 
+/* Keys saved per-style so each style remembers its own look */
+const PER_STYLE_KEYS = [
+  'headerColor', 'headerAccent', 'countCardColor', 'currentBonusColor', 'currentBonusAccent',
+  'listCardColor', 'listCardAccent', 'summaryColor', 'cardOutlineColor',
+  'superBadgeColor', 'extremeBadgeColor', 'totalPayColor', 'totalPayText',
+  'textColor', 'mutedTextColor', 'statValueColor',
+  'fontFamily', 'fontSize',
+  'widgetWidth', 'cardPadding', 'cardRadius', 'cardGap', 'cardOutlineWidth',
+  'slotImageHeight', 'listMaxHeight',
+  'brightness', 'contrast', 'saturation',
+  'flipBackColor1', 'flipBackColor2', 'flipBackBorder', 'flipBackImage', 'flipSpinDuration',
+  'flipShowProvider', 'flipShowRTP', 'flipShowPotential', 'flipShowVolatility', 'flipShowBetSize', 'flipShowWin',
+  'v8CardWidth', 'v8CardHeight', 'v8FontSize', 'v8AutoSpeed', 'v8ShowStats', 'v8ShowProgress',
+  'v8CardSpacing', 'v8CardRadius', 'v8StatsFontSize', 'v8NameFontSize',
+  'v9CardWidth', 'v9CardHeight', 'v9FontSize', 'v9AutoSpeed', 'v9ShowStats', 'v9ShowProgress',
+  'v9CardSpacing', 'v9CardRadius', 'v9StatsFontSize', 'v9TitleFontSize', 'v9ContainerRadius',
+  'v9ContainerBg', 'v9ShowHeader',
+  'custom_css',
+];
+
+/** Save current per-style keys into styleConfigs[styleId] */
+export function saveStyleConfig(config, styleId) {
+  const snapshot = {};
+  PER_STYLE_KEYS.forEach(k => { if (config[k] !== undefined) snapshot[k] = config[k]; });
+  return {
+    ...config,
+    styleConfigs: { ...(config.styleConfigs || {}), [styleId]: snapshot },
+  };
+}
+
+/** Load per-style keys from styleConfigs[styleId] into top-level config */
+export function loadStyleConfig(config, styleId) {
+  const saved = config.styleConfigs?.[styleId];
+  if (!saved) return config;
+  return { ...config, ...saved };
+}
+
+/** Full swap: save oldStyle, load newStyle, set displayStyle */
+export function swapStyleConfig(config, oldStyle, newStyle) {
+  let next = saveStyleConfig(config, oldStyle);
+  next = loadStyleConfig(next, newStyle);
+  next.displayStyle = newStyle;
+  return next;
+}
+
 export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
   const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+
+  /* ─── Per-style aware set: also persists to styleConfigs[currentStyle] ─── */
+  const set = (key, val) => {
+    const updated = { ...c, [key]: val };
+    if (PER_STYLE_KEYS.includes(key)) {
+      const sc = { ...(updated.styleConfigs || {}) };
+      sc[currentStyle] = { ...(sc[currentStyle] || {}), [key]: val };
+      updated.styleConfigs = sc;
+    }
+    onChange(updated);
+  };
+  const setMulti = (obj) => {
+    const updated = { ...c, ...obj };
+    const styleUpdates = {};
+    Object.keys(obj).forEach(k => {
+      if (PER_STYLE_KEYS.includes(k)) styleUpdates[k] = obj[k];
+    });
+    if (Object.keys(styleUpdates).length > 0) {
+      const sc = { ...(updated.styleConfigs || {}) };
+      sc[currentStyle] = { ...(sc[currentStyle] || {}), ...styleUpdates };
+      updated.styleConfigs = sc;
+    }
+    onChange(updated);
+  };
+
+  /* ─── prevStyleRef tracks last known style for external swap detection ─── */
+  /* Per-style swap is handled in WidgetManager.handleStyleCycle.
+     The set/setMulti wrappers above ensure every edit is persisted
+     to styleConfigs[currentStyle] automatically. */
 
   // Auth for history
   const { user } = useAuth();
@@ -158,68 +231,138 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
       {/* ═══════ STYLE TAB ═══════ */}
       {activeTab === 'style' && (
         <div className="nb-section">
+          <p className="oc-config-hint" style={{ marginBottom: 10, fontSize: 11, textAlign: 'center', background: 'rgba(99,102,241,0.08)', padding: '6px 10px', borderRadius: 8, border: '1px solid rgba(99,102,241,0.15)' }}>
+            🎨 Settings below are saved <b>per style</b> — each style remembers its own config.
+          </p>
+
           {navbarConfig && (
             <button className="oc-btn oc-btn--sm oc-btn--primary" style={{ marginBottom: 12, width: '100%' }} onClick={syncFromNavbar}>
               🔗 Sync Colors from Navbar
             </button>
           )}
-          <h4 className="nb-subtitle">Card Colors</h4>
-          <div className="nb-color-grid">
-            <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
-            <ColorPicker label="Header Accent" value={c.headerAccent || '#60a5fa'} onChange={v => set('headerAccent', v)} />
-            <ColorPicker label="Count Card BG" value={c.countCardColor || '#1e3a8a'} onChange={v => set('countCardColor', v)} />
-            <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || '#166534'} onChange={v => set('currentBonusColor', v)} />
-            <ColorPicker label="Current Accent" value={c.currentBonusAccent || '#86efac'} onChange={v => set('currentBonusAccent', v)} />
-            <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
-            <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#d8b4fe'} onChange={v => set('listCardAccent', v)} />
-            <ColorPicker label="Summary BG" value={c.summaryColor || '#1e3a8a'} onChange={v => set('summaryColor', v)} />
-            <ColorPicker label="Card Outline" value={c.cardOutlineColor || 'transparent'} onChange={v => set('cardOutlineColor', v)} />
-          </div>
 
-          <h4 className="nb-subtitle">Badge Colors</h4>
-          <div className="nb-color-grid">
-            <ColorPicker label="Super Badge" value={c.superBadgeColor || '#eab308'} onChange={v => set('superBadgeColor', v)} />
-            <ColorPicker label="Extreme Badge" value={c.extremeBadgeColor || '#ef4444'} onChange={v => set('extremeBadgeColor', v)} />
-            <ColorPicker label="Total Pay BG" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
-            <ColorPicker label="Total Pay Text" value={c.totalPayText || '#ffffff'} onChange={v => set('totalPayText', v)} />
-          </div>
+          {/* ── Shared Colors (V1/V2/V3/V5/V6/V7/V10) ── */}
+          {['v1','v2','v3','v5_horizontal','v6_compact','v7_carousel','v10_spotlight'].includes(currentStyle) && (<>
+            <h4 className="nb-subtitle">Card Colors</h4>
+            <div className="nb-color-grid">
+              <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
+              <ColorPicker label="Header Accent" value={c.headerAccent || '#60a5fa'} onChange={v => set('headerAccent', v)} />
+              {currentStyle !== 'v3' && currentStyle !== 'v10_spotlight' && <>
+                <ColorPicker label="Count Card BG" value={c.countCardColor || '#1e3a8a'} onChange={v => set('countCardColor', v)} />
+                <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || '#166534'} onChange={v => set('currentBonusColor', v)} />
+                <ColorPicker label="Current Accent" value={c.currentBonusAccent || '#86efac'} onChange={v => set('currentBonusAccent', v)} />
+              </>}
+              {currentStyle === 'v10_spotlight' &&
+                <ColorPicker label="Panel BG" value={c.currentBonusColor || '#101d33'} onChange={v => set('currentBonusColor', v)} />
+              }
+              <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
+              {currentStyle !== 'v3' &&
+                <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#d8b4fe'} onChange={v => set('listCardAccent', v)} />
+              }
+              <ColorPicker label="Summary BG" value={c.summaryColor || '#1e3a8a'} onChange={v => set('summaryColor', v)} />
+              <ColorPicker label="Card Outline" value={c.cardOutlineColor || 'transparent'} onChange={v => set('cardOutlineColor', v)} />
+            </div>
 
-          <h4 className="nb-subtitle">Text Colors</h4>
-          <div className="nb-color-grid">
-            <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
-            <ColorPicker label="Muted Text" value={c.mutedTextColor || '#93c5fd'} onChange={v => set('mutedTextColor', v)} />
-            <ColorPicker label="Stat Values" value={c.statValueColor || '#ffffff'} onChange={v => set('statValueColor', v)} />
-          </div>
+            <h4 className="nb-subtitle">Badge Colors</h4>
+            <div className="nb-color-grid">
+              <ColorPicker label="Super Badge" value={c.superBadgeColor || '#eab308'} onChange={v => set('superBadgeColor', v)} />
+              <ColorPicker label="Extreme Badge" value={c.extremeBadgeColor || '#ef4444'} onChange={v => set('extremeBadgeColor', v)} />
+              <ColorPicker label="Total Pay BG" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
+              <ColorPicker label="Total Pay Text" value={c.totalPayText || '#ffffff'} onChange={v => set('totalPayText', v)} />
+            </div>
 
-          <h4 className="nb-subtitle">Typography</h4>
-          <label className="nb-field">
-            <span>Font</span>
-            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select>
-          </label>
-          <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={22} step={1} unit="px"
-            onChange={v => set('fontSize', v)} />
+            <h4 className="nb-subtitle">Text Colors</h4>
+            <div className="nb-color-grid">
+              <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
+              <ColorPicker label="Muted Text" value={c.mutedTextColor || '#93c5fd'} onChange={v => set('mutedTextColor', v)} />
+              <ColorPicker label="Stat Values" value={c.statValueColor || '#ffffff'} onChange={v => set('statValueColor', v)} />
+            </div>
 
-          <h4 className="nb-subtitle">Dimensions</h4>
-          <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
-            onChange={v => set('widgetWidth', v)} />
-          <SliderField label="Card Padding" value={c.cardPadding ?? 14} min={6} max={30} step={1} unit="px"
-            onChange={v => set('cardPadding', v)} />
-          <SliderField label="Card Radius" value={c.cardRadius ?? 16} min={0} max={32} step={1} unit="px"
-            onChange={v => set('cardRadius', v)} />
-          <SliderField label="Card Gap" value={c.cardGap ?? 12} min={4} max={24} step={1} unit="px"
-            onChange={v => set('cardGap', v)} />
-          <SliderField label="Outline Width" value={c.cardOutlineWidth ?? 2} min={0} max={6} step={1} unit="px"
-            onChange={v => set('cardOutlineWidth', v)} />
-          <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 180} min={80} max={400} step={10} unit="px"
-            onChange={v => set('slotImageHeight', v)} />
-          <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"
-            onChange={v => set('listMaxHeight', v)} />
+            <h4 className="nb-subtitle">Typography</h4>
+            <label className="nb-field">
+              <span>Font</span>
+              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </label>
+            <SliderField label="Font Size" value={c.fontSize ?? 13} min={8} max={22} step={1} unit="px"
+              onChange={v => set('fontSize', v)} />
 
-          {/* ═══════ V8 Card Stack Settings ═══════ */}
-          {c.displayStyle === 'v8_card_stack' && (<>
-            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>🎴 Card Stack Settings</h4>
+            {/* Dimensions — only for styles that use them */}
+            {['v1','v2','v5_horizontal','v6_compact','v7_carousel'].includes(currentStyle) && (<>
+              <h4 className="nb-subtitle">Dimensions</h4>
+              <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
+                onChange={v => set('widgetWidth', v)} />
+              <SliderField label="Card Padding" value={c.cardPadding ?? 14} min={6} max={30} step={1} unit="px"
+                onChange={v => set('cardPadding', v)} />
+              <SliderField label="Card Radius" value={c.cardRadius ?? 16} min={0} max={32} step={1} unit="px"
+                onChange={v => set('cardRadius', v)} />
+              <SliderField label="Card Gap" value={c.cardGap ?? 12} min={4} max={24} step={1} unit="px"
+                onChange={v => set('cardGap', v)} />
+              <SliderField label="Outline Width" value={c.cardOutlineWidth ?? 2} min={0} max={6} step={1} unit="px"
+                onChange={v => set('cardOutlineWidth', v)} />
+              <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 180} min={80} max={400} step={10} unit="px"
+                onChange={v => set('slotImageHeight', v)} />
+              <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"
+                onChange={v => set('listMaxHeight', v)} />
+            </>)}
+
+            {/* V3 only — widgetWidth + cardRadius + slotImageHeight */}
+            {currentStyle === 'v3' && (<>
+              <h4 className="nb-subtitle">Dimensions</h4>
+              <SliderField label="Widget Width" value={c.widgetWidth ?? 420} min={200} max={800} step={10} unit="px"
+                onChange={v => set('widgetWidth', v)} />
+              <SliderField label="Card Radius" value={c.cardRadius ?? 16} min={0} max={32} step={1} unit="px"
+                onChange={v => set('cardRadius', v)} />
+              <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 220} min={80} max={400} step={10} unit="px"
+                onChange={v => set('slotImageHeight', v)} />
+            </>)}
+          </>)}
+
+          {/* ── V4 Neon Colors ── */}
+          {currentStyle === 'v4_neon' && (<>
+            <h4 className="nb-subtitle">💡 Neon Colors</h4>
+            <div className="nb-color-grid">
+              <ColorPicker label="Accent" value={c.headerAccent || '#e8a020'} onChange={v => set('headerAccent', v)} />
+              <ColorPicker label="Background" value={c.headerColor || '#1a1a1e'} onChange={v => set('headerColor', v)} />
+              <ColorPicker label="Header BG" value={c.currentBonusColor || '#2a2a30'} onChange={v => set('currentBonusColor', v)} />
+              <ColorPicker label="Footer BG" value={c.summaryColor || '#2a2a30'} onChange={v => set('summaryColor', v)} />
+              <ColorPicker label="List BG" value={c.listCardColor || '#1a1a1e'} onChange={v => set('listCardColor', v)} />
+              <ColorPicker label="Row Name" value={c.listCardAccent || '#cccccc'} onChange={v => set('listCardAccent', v)} />
+              <ColorPicker label="Text" value={c.textColor || '#d4d4d8'} onChange={v => set('textColor', v)} />
+              <ColorPicker label="Stat Labels" value={c.mutedTextColor || '#666666'} onChange={v => set('mutedTextColor', v)} />
+              <ColorPicker label="Stat Values" value={c.statValueColor || '#e8a020'} onChange={v => set('statValueColor', v)} />
+              <ColorPicker label="Green (Win)" value={c.superBadgeColor || '#66bb6a'} onChange={v => set('superBadgeColor', v)} />
+              <ColorPicker label="Red (Loss)" value={c.extremeBadgeColor || '#ef5350'} onChange={v => set('extremeBadgeColor', v)} />
+            </div>
+            <h4 className="nb-subtitle">Typography</h4>
+            <label className="nb-field">
+              <span>Font</span>
+              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </label>
+            <SliderField label="Font Size" value={c.fontSize ?? 12} min={8} max={22} step={1} unit="px"
+              onChange={v => set('fontSize', v)} />
+          </>)}
+
+          {/* ── V8 Card Stack ── */}
+          {currentStyle === 'v8_card_stack' && (<>
+            <h4 className="nb-subtitle">🎴 Card Stack Colors</h4>
+            <div className="nb-color-grid">
+              <ColorPicker label="Accent" value={c.headerAccent || '#7c3aed'} onChange={v => set('headerAccent', v)} />
+              <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
+              <ColorPicker label="Muted Text" value={c.mutedTextColor || '#94a3b8'} onChange={v => set('mutedTextColor', v)} />
+              <ColorPicker label="Payout Color" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
+            </div>
+            <h4 className="nb-subtitle">Typography</h4>
+            <label className="nb-field">
+              <span>Font</span>
+              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </label>
+            <h4 className="nb-subtitle">Card Dimensions</h4>
             <SliderField label="Card Width" value={c.v8CardWidth ?? 180} min={100} max={400} step={5} unit="px"
               onChange={v => set('v8CardWidth', v)} />
             <SliderField label="Card Height" value={c.v8CardHeight ?? 260} min={140} max={500} step={5} unit="px"
@@ -234,7 +377,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               onChange={v => set('v8StatsFontSize', v)} />
             <SliderField label="Auto-Cycle Speed" value={c.v8AutoSpeed ?? 4000} min={1000} max={12000} step={500} unit="ms"
               onChange={v => set('v8AutoSpeed', v)} />
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 4 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 8 }}>
               <input type="checkbox" checked={c.v8ShowStats !== false} onChange={e => set('v8ShowStats', e.target.checked)} />
               Show Stats Bar
             </label>
@@ -244,9 +387,24 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             </label>
           </>)}
 
-          {/* ═══════ V9 Hunt Board Settings ═══════ */}
-          {c.displayStyle === 'v9_hunt_board' && (<>
-            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>🎯 Hunt Board Settings</h4>
+          {/* ── V9 Hunt Board ── */}
+          {currentStyle === 'v9_hunt_board' && (<>
+            <h4 className="nb-subtitle">🎯 Hunt Board Colors</h4>
+            <div className="nb-color-grid">
+              <ColorPicker label="Accent" value={c.headerAccent || '#e844d0'} onChange={v => set('headerAccent', v)} />
+              <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
+              <ColorPicker label="Muted Text" value={c.mutedTextColor || '#94a3b8'} onChange={v => set('mutedTextColor', v)} />
+              <ColorPicker label="Payout Color" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
+              <ColorPicker label="Container BG" value={c.v9ContainerBg || 'rgba(15,23,42,0.85)'} onChange={v => set('v9ContainerBg', v)} />
+            </div>
+            <h4 className="nb-subtitle">Typography</h4>
+            <label className="nb-field">
+              <span>Font</span>
+              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </label>
+            <h4 className="nb-subtitle">Card Dimensions</h4>
             <SliderField label="Card Width" value={c.v9CardWidth ?? 160} min={100} max={400} step={5} unit="px"
               onChange={v => set('v9CardWidth', v)} />
             <SliderField label="Card Height" value={c.v9CardHeight ?? 230} min={140} max={500} step={5} unit="px"
@@ -263,8 +421,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               onChange={v => set('v9StatsFontSize', v)} />
             <SliderField label="Auto-Cycle Speed" value={c.v9AutoSpeed ?? 4000} min={1000} max={12000} step={500} unit="ms"
               onChange={v => set('v9AutoSpeed', v)} />
-            <ColorPicker label="Container BG" value={c.v9ContainerBg || 'rgba(15,23,42,0.85)'} onChange={v => set('v9ContainerBg', v)} />
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 4 }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 8 }}>
               <input type="checkbox" checked={c.v9ShowHeader !== false} onChange={e => set('v9ShowHeader', e.target.checked)} />
               Show Header
             </label>
@@ -278,41 +435,51 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             </label>
           </>)}
 
-          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Colors</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Background gradient and border for the back face of the 3D flip card (Style 3).</p>
-          <div className="nb-color-grid">
-            <ColorPicker label="Back BG Start" value={c.flipBackColor1 || '#0f172a'} onChange={v => set('flipBackColor1', v)} />
-            <ColorPicker label="Back BG Middle" value={c.flipBackColor2 || '#1a1040'} onChange={v => set('flipBackColor2', v)} />
-            <ColorPicker label="Back Border" value={c.flipBackBorder || '#818cf8'} onChange={v => set('flipBackBorder', v)} />
-          </div>
+          {/* ── V10 Spotlight — typography only (colors covered above) ── */}
+          {currentStyle === 'v10_spotlight' && (<>
+            <h4 className="nb-subtitle">Dimensions</h4>
+            <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
+              onChange={v => set('widgetWidth', v)} />
+          </>)}
 
-          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Image</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Image URL for the back face of the 3D flip card (Style 3). Default: /badges/back.png</p>
-          <input
-            className="oc-widget-css-input"
-            value={c.flipBackImage || '/badges/back.png'}
-            onChange={e => set('flipBackImage', e.target.value)}
-            placeholder="/badges/back.png"
-            style={{ width: '100%', padding: '6px 8px', marginBottom: 8, fontSize: 12 }}
-          />
+          {/* ── V3 Flip Card Back (only for Flip Card style) ── */}
+          {currentStyle === 'v3' && (<>
+            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Colors</h4>
+            <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Background gradient and border for the back face of the 3D flip card.</p>
+            <div className="nb-color-grid">
+              <ColorPicker label="Back BG Start" value={c.flipBackColor1 || '#0f172a'} onChange={v => set('flipBackColor1', v)} />
+              <ColorPicker label="Back BG Middle" value={c.flipBackColor2 || '#1a1040'} onChange={v => set('flipBackColor2', v)} />
+              <ColorPicker label="Back Border" value={c.flipBackBorder || '#818cf8'} onChange={v => set('flipBackBorder', v)} />
+            </div>
 
-          <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back — Visible Stats</h4>
-          <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Choose which stats appear on the back face of the 3D flip card (Style 3).</p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
-            {[
-              ['flipShowProvider', 'Provider Logo'],
-              ['flipShowRTP', 'RTP'],
-              ['flipShowPotential', 'Max Win (Potential)'],
-              ['flipShowVolatility', 'Volatility'],
-              ['flipShowBetSize', 'Bet Size'],
-              ['flipShowWin', 'Win Result'],
-            ].map(([key, label]) => (
-              <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
-                <input type="checkbox" checked={c[key] !== false} onChange={e => set(key, e.target.checked)} />
-                {label}
-              </label>
-            ))}
-          </div>
+            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Image</h4>
+            <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Image URL for the back face of the 3D flip card. Default: /badges/back.png</p>
+            <input
+              className="oc-widget-css-input"
+              value={c.flipBackImage || '/badges/back.png'}
+              onChange={e => set('flipBackImage', e.target.value)}
+              placeholder="/badges/back.png"
+              style={{ width: '100%', padding: '6px 8px', marginBottom: 8, fontSize: 12 }}
+            />
+
+            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back — Visible Stats</h4>
+            <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Choose which stats appear on the back face.</p>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 12 }}>
+              {[
+                ['flipShowProvider', 'Provider Logo'],
+                ['flipShowRTP', 'RTP'],
+                ['flipShowPotential', 'Max Win (Potential)'],
+                ['flipShowVolatility', 'Volatility'],
+                ['flipShowBetSize', 'Bet Size'],
+                ['flipShowWin', 'Win Result'],
+              ].map(([key, label]) => (
+                <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer' }}>
+                  <input type="checkbox" checked={c[key] !== false} onChange={e => set(key, e.target.checked)} />
+                  {label}
+                </label>
+              ))}
+            </div>
+          </>)}
 
           <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Custom CSS</h4>
           <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Override styles for this widget in OBS.</p>
