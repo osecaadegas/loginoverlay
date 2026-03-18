@@ -3360,11 +3360,42 @@ body.wm-resizing {
 
 .bh-suggestion-empty.bh-suggestion-submit {
   cursor: pointer;
-  transition: color 0.15s;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 14px 12px;
 }
 
 .bh-suggestion-empty.bh-suggestion-submit:hover {
-  color: #a855f7;
+  background: rgba(168, 85, 247, 0.08);
+}
+
+.bh-notfound-label {
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.bh-submit-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 18px;
+  background: linear-gradient(135deg, #9346ff, #7c3aed);
+  color: #fff;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(147, 70, 255, 0.3);
+}
+
+.bh-suggestion-empty.bh-suggestion-submit:hover .bh-submit-cta {
+  background: linear-gradient(135deg, #a855f7, #8b5cf6);
+  box-shadow: 0 3px 14px rgba(147, 70, 255, 0.45);
+  transform: translateY(-1px);
 }
 
 /* --- Submit Slot Button & Dropdown --- */
