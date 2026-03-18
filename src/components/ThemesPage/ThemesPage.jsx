@@ -1,154 +1,105 @@
-import { useState, useMemo } from 'react';
-import { themeList, THEME_CATEGORIES } from '../../data/appThemes';
+import { useState } from 'react';
+import { themeList, metallicPresets } from '../../data/appThemes';
+import { useTheme } from '../../context/ThemeContext';
 import './ThemesPage.css';
 
-function ThemeCard({ theme, isActive, onSelect }) {
-  const { colors } = theme;
-  return (
-    <div
-      className={`theme-card${isActive ? ' theme-card--active' : ''}`}
-      onClick={() => onSelect(theme.id)}
-      style={{ borderColor: isActive ? colors.primary : undefined }}
-    >
-      {isActive && <div className="theme-card__check">✓</div>}
-      {theme.id.startsWith('fx-') && <div className="theme-card__fx-badge">FX</div>}
+/* ── Theme descriptions for the cards ── */
+const DESC = {
+  classic:     'Clean modern look with subtle glass surfaces and neutral tones.',
+  metallic:    'Brushed-metal surfaces with a sweeping sheen highlight.',
+  carbon:      'Carbon-fibre weave texture, matte dark panels, sharp accent lines.',
+  retro:       'Pixel-art inspired with warm CRT glow and scan-line overlays.',
+  futuristic:  'Holographic glows, neon edges, translucent panels with blur.',
+};
 
-      {/* Color swatch with mini mockup */}
-      <div className="theme-card__swatch">
-        <div className="theme-card__swatch-bg" style={{ background: colors.background }} />
-        <div
-          className="theme-card__mockup"
-          style={{ background: colors.panelBg, border: `1px solid ${colors.border}` }}
-        >
-          <div className="theme-card__mockup-bar" style={{ background: colors.primary }} />
-          <div className="theme-card__mockup-bar" style={{ background: colors.secondary }} />
-          <div className="theme-card__mockup-dots">
-            <div className="theme-card__mockup-dot" style={{ background: colors.primary }} />
-            <div className="theme-card__mockup-dot" style={{ background: colors.secondary }} />
-            <div className="theme-card__mockup-dot" style={{ background: colors.accent }} />
-          </div>
-        </div>
-      </div>
-
-      <div className="theme-card__info">
-        <div className="theme-card__name" style={{ color: isActive ? colors.primary : undefined }}>
-          {theme.name}
-        </div>
-        <div className="theme-card__category">{theme.category}</div>
-      </div>
-    </div>
-  );
-}
+/* ── Material icons (emoji) ── */
+const ICON = {
+  classic:    '🎯',
+  metallic:   '⚙️',
+  carbon:     '🏎️',
+  retro:      '🕹️',
+  futuristic: '🚀',
+};
 
 export default function ThemesPage({ onApply }) {
-  const [selectedTheme, setSelectedTheme] = useState(() => {
-    return localStorage.getItem('overlayTheme') || 'default';
-  });
+  const { currentTheme, setTheme, metalColor, setMetalColor } = useTheme();
+  const [hoveredTheme, setHoveredTheme] = useState(null);
 
   const handleSelect = (themeId) => {
-    setSelectedTheme(themeId);
+    setTheme(themeId);
     localStorage.setItem('overlayTheme', themeId);
     if (onApply) onApply(themeId);
   };
-  const [category, setCategory] = useState('all');
-  const [search, setSearch] = useState('');
 
-  // Count per category
-  const categoryCounts = useMemo(() => {
-    const counts = { all: themeList.length };
-    for (const t of themeList) {
-      counts[t.category] = (counts[t.category] || 0) + 1;
-    }
-    return counts;
-  }, []);
-
-  // Filter
-  const filtered = useMemo(() => {
-    let list = themeList;
-    if (category !== 'all') {
-      list = list.filter(t => t.category === category);
-    }
-    if (search.trim()) {
-      const q = search.toLowerCase();
-      list = list.filter(t => t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
-    }
-    return list;
-  }, [category, search]);
-
-  const activeTheme = themeList.find(t => t.id === selectedTheme);
+  const handleMetalPick = (presetId) => {
+    setMetalColor(presetId);
+  };
 
   return (
     <div className="themes-page">
       <div className="themes-header">
-        <h1>🎨 Themes</h1>
-        <p>{themeList.length} themes available — pick your vibe</p>
+        <h1>Themes</h1>
+        <p>Choose a visual style — applies to all overlay widgets</p>
       </div>
 
-      {/* Current theme banner */}
-      {activeTheme && (
-        <div className="themes-current">
-          <div
-            className="themes-current__preview"
-            style={{ background: activeTheme.colors.background }}
-          >
-            <div style={{
-              position: 'absolute',
-              inset: 4,
-              borderRadius: 6,
-              background: activeTheme.colors.panelBg,
-              border: `1px solid ${activeTheme.colors.border}`,
-            }} />
+      {/* ── Theme cards ── */}
+      <div className="themes-grid">
+        {themeList.map(t => {
+          const isActive = t.id === currentTheme;
+          const c = t.colors;
+          return (
+            <div
+              key={t.id}
+              className={`theme-card${isActive ? ' theme-card--active' : ''}`}
+              onClick={() => handleSelect(t.id)}
+              onMouseEnter={() => setHoveredTheme(t.id)}
+              onMouseLeave={() => setHoveredTheme(null)}
+              style={{ '--card-primary': c.primary, '--card-surface': c.surface, '--card-border': c.border, '--card-bg': c.background }}
+            >
+              {isActive && <div className="theme-card__check">&#10003;</div>}
+
+              {/* Surface preview swatch */}
+              <div className="theme-card__swatch" data-theme={t.id}>
+                <div className="theme-card__swatch-bg" style={{ background: c.background }} />
+                <div className="theme-card__mockup" style={{ background: c.surface, border: `1px solid ${c.border}` }}>
+                  <div className="theme-card__mockup-bar" style={{ background: c.primary }} />
+                  <div className="theme-card__mockup-bar theme-card__mockup-bar--sm" style={{ background: c.accent }} />
+                  <div className="theme-card__mockup-dots">
+                    <span style={{ background: c.primary }} />
+                    <span style={{ background: c.accent }} />
+                    <span style={{ background: c.muted }} />
+                  </div>
+                </div>
+              </div>
+
+              <div className="theme-card__info">
+                <div className="theme-card__icon">{ICON[t.id]}</div>
+                <div className="theme-card__name">{t.name}</div>
+                <div className="theme-card__desc">{DESC[t.id]}</div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Metallic colour picker (shown only when metallic theme is active) ── */}
+      {currentTheme === 'metallic' && (
+        <div className="metal-picker">
+          <h3 className="metal-picker__title">Metal Colour</h3>
+          <p className="metal-picker__hint">Pick the metallic tint for your widgets</p>
+          <div className="metal-picker__grid">
+            {Object.entries(metallicPresets).map(([id, preset]) => (
+              <button
+                key={id}
+                className={`metal-swatch${metalColor === id ? ' metal-swatch--active' : ''}`}
+                onClick={() => handleMetalPick(id)}
+                style={{ '--swatch-bg': preset.gradient }}
+                title={preset.label}
+              >
+                <span className="metal-swatch__label">{preset.label}</span>
+              </button>
+            ))}
           </div>
-          <div className="themes-current__info">
-            <div className="themes-current__label">Current Theme</div>
-            <div className="themes-current__name">{activeTheme.name}</div>
-          </div>
-        </div>
-      )}
-
-      {/* Search */}
-      <div className="themes-search">
-        <span className="themes-search__icon">🔍</span>
-        <input
-          className="themes-search__input"
-          type="text"
-          placeholder="Search themes..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-      </div>
-
-      {/* Category filters */}
-      <div className="themes-categories">
-        {THEME_CATEGORIES.map(cat => (
-          <button
-            key={cat.id}
-            className={`themes-cat-btn${category === cat.id ? ' themes-cat-btn--active' : ''}`}
-            onClick={() => setCategory(cat.id)}
-          >
-            <span>{cat.emoji}</span>
-            <span>{cat.label}</span>
-            <span className="themes-cat-btn__count">({categoryCounts[cat.id] || 0})</span>
-          </button>
-        ))}
-      </div>
-
-      {/* Grid */}
-      {filtered.length > 0 ? (
-        <div className="themes-grid">
-          {filtered.map(theme => (
-            <ThemeCard
-              key={theme.id}
-              theme={theme}
-              isActive={theme.id === selectedTheme}
-              onSelect={handleSelect}
-            />
-          ))}
-        </div>
-      ) : (
-        <div className="themes-empty">
-          <div className="themes-empty__icon">🔍</div>
-          <div className="themes-empty__text">No themes match your search</div>
         </div>
       )}
     </div>

@@ -245,7 +245,7 @@ export default function OverlayRenderer() {
   if (!userId) return null; // still loading
 
   return (
-    <div className="or-canvas" style={{
+    <div className="or-canvas" data-theme={theme?.theme_id || 'classic'} style={{
       ...themeVars,
       width: canvasWidth,
       height: canvasHeight,

@@ -16,22 +16,22 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
-  /* Default Theme Variables */
-  --theme-primary: #00e1ff;
-  --theme-secondary: #9147ff;
-  --theme-accent: #a855f7;
-  --theme-background: rgba(26, 27, 46, 0.95);
-  --theme-text: #f3f4f6;
-  --theme-panel-bg: linear-gradient(135deg, rgba(26, 27, 46, 0.95) 0%, rgba(22, 33, 62, 0.95) 100%);
-  --theme-border: rgba(255, 255, 255, 0.1);
-  --theme-font: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  --theme-border-animation: none;
+  /* Default Theme Variables (classic) */
+  --theme-primary: #7c3aed;
+  --theme-secondary: #6366f1;
+  --theme-accent: #a78bfa;
+  --theme-background: #0f0f1a;
+  --theme-surface: #1a1a2e;
+  --theme-text: #e2e8f0;
+  --theme-muted: #64748b;
+  --theme-border: rgba(255, 255, 255, 0.08);
+  --theme-font: 'Inter', sans-serif;
 
   /* RGB component versions for rgba() usage in overlay widgets */
-  --theme-primary-rgb: 0, 225, 255;
-  --theme-secondary-rgb: 145, 71, 255;
-  --theme-accent-rgb: 168, 85, 247;
-  --theme-text-rgb: 243, 244, 246;
+  --theme-primary-rgb: 124, 58, 237;
+  --theme-secondary-rgb: 99, 102, 241;
+  --theme-accent-rgb: 167, 139, 250;
+  --theme-text-rgb: 226, 232, 240;
 
   /* Responsive Breakpoints */
   --breakpoint-mobile: 320px;
@@ -197,64 +197,4 @@ body.custom {
   100% { background-position: 40px 0; }
 }
 
-@keyframes neon-pulse {
-  0%, 100% { filter: brightness(1) drop-shadow(0 0 5px currentColor); }
-  50% { filter: brightness(1.5) drop-shadow(0 0 15px currentColor); }
-}
-
-@keyframes fire-pulse {
-  0%, 100% { filter: hue-rotate(0deg) brightness(1); }
-  25% { filter: hue-rotate(-10deg) brightness(1.2); }
-  75% { filter: hue-rotate(10deg) brightness(1.3); }
-}
-
-@keyframes rainbow-flash {
-  0% { filter: hue-rotate(0deg) saturate(2); }
-  100% { filter: hue-rotate(360deg) saturate(2); }
-}
-
-@keyframes glitch-scroll {
-  0% { background-position: 0 0; }
-  100% { background-position: 18px 0; }
-}
-
-@keyframes disco-flash {
-  0% { filter: hue-rotate(0deg) brightness(1); }
-  25% { filter: hue-rotate(90deg) brightness(1.5); }
-  50% { filter: hue-rotate(180deg) brightness(1); }
-  75% { filter: hue-rotate(270deg) brightness(1.5); }
-  100% { filter: hue-rotate(360deg) brightness(1); }
-}
-
-@keyframes holographic-shift {
-  0% { filter: hue-rotate(0deg) saturate(1.5); }
-  100% { filter: hue-rotate(360deg) saturate(1.5); }
-}
-
-@keyframes lightning-flash {
-  0%, 90%, 100% { opacity: 1; }
-  45%, 55% { opacity: 0.5; }
-  50% { opacity: 1; filter: brightness(2); }
-}
-
-/* Apply animations to panels when FX theme is active */
-body.fx-theme-active .bonus-item,
-body.fx-theme-active .header,
-body.fx-theme-active .navbar,
-body.fx-theme-active .bracket-widget-display,
-body.fx-theme-active .phase-tab.active,
-body.fx-theme-active .stats-panel,
-body.fx-theme-active .modern-bonus-item,
-body.fx-theme-active .stats-card,
-body.fx-theme-active .panel,
-body.fx-theme-active .card:not(.spinning-card):not(.card-front):not(.card-back),
-body.fx-theme-active [class*="-panel"]:not(.customization-panel),
-body.fx-theme-active [class*="-card"]:not(.spinning-card) {
-  animation: var(--theme-border-animation, none) 3s ease-in-out infinite !important;
-  border-width: 2px !important;
-}
-
-/* Keep spinning card animation intact */
-body.fx-theme-active .spinning-card {
-  animation: spin3d 6s linear infinite !important;
-}
+/* (theme FX animations removed — visual effects now in theme-system.css) */

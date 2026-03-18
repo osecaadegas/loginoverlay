@@ -1,111 +1,123 @@
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
-import { themeMap } from '../data/appThemes';
+import { themeMap, metallicPresets } from '../data/appThemes';
 
 const ThemeContext = createContext(null);
 
-/** Determine FX animation name from theme id */
-function getFxAnimation(themeId) {
-  if (!themeId || !themeId.startsWith('fx-')) return 'none';
-  if (themeId.includes('pulse')) return 'rgb-pulse';
-  if (themeId.includes('neon')) return 'neon-pulse';
-  if (themeId.includes('fire') || themeId.includes('inferno') || themeId.includes('magma')) return 'fire-pulse';
-  if (themeId.includes('rainbow') || themeId.includes('disco') || themeId.includes('holographic') || themeId.includes('prism')) return 'rainbow-flash';
-  if (themeId.includes('glitch') || themeId.includes('corrupted')) return 'glitch-scroll';
-  if (themeId.includes('lightning') || themeId.includes('thunder')) return 'lightning-flash';
-  if (themeId.includes('stripe') || themeId.includes('retro') || themeId.includes('danger') || themeId.includes('electric')) return 'stripe-scroll';
-  return 'rgb-pulse';
+/** Convert hex to r,g,b string */
+function hexToRGB(hex) {
+  if (!hex) return null;
+  const m = hex.match(/^#([0-9a-f]{3,8})$/i);
+  if (!m) return null;
+  let h = m[1];
+  if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
+  const n = parseInt(h.substring(0, 6), 16);
+  return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
 }
 
-/** Convert hex/rgb color to r,g,b string for use in rgba() */
-function colorToRGB(color) {
-  if (!color) return null;
-  // Handle hex
-  const hex = color.match(/^#([0-9a-f]{3,8})$/i);
-  if (hex) {
-    let h = hex[1];
-    if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-    const n = parseInt(h.substring(0, 6), 16);
-    return `${(n >> 16) & 255}, ${(n >> 8) & 255}, ${n & 255}`;
-  }
-  // Handle rgb/rgba
-  const rgb = color.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/);
-  if (rgb) return `${rgb[1]}, ${rgb[2]}, ${rgb[3]}`;
-  return null;
-}
-
-/** Apply a theme's CSS variables to the document root */
-function applyThemeToDOM(themeId, theme) {
+/** Apply the selected theme to <html> via data-theme + CSS vars */
+function applyThemeToDOM(themeId, theme, metalColor) {
   if (!theme) return;
   const root = document.documentElement;
-  root.style.setProperty('--theme-primary', theme.colors.primary);
-  root.style.setProperty('--theme-secondary', theme.colors.secondary);
-  root.style.setProperty('--theme-accent', theme.colors.accent);
-  root.style.setProperty('--theme-background', theme.colors.background);
-  root.style.setProperty('--theme-text', theme.colors.text);
-  root.style.setProperty('--theme-panel-bg', theme.colors.panelBg);
-  root.style.setProperty('--theme-border', theme.colors.border);
+
+  // data-theme attribute drives all theme-system.css selectors
+  root.setAttribute('data-theme', themeId);
+
+  // Set --t-* variables (mirrors the CSS but allows per-user overrides)
+  const c = theme.colors;
+  root.style.setProperty('--t-primary', c.primary);
+  root.style.setProperty('--t-secondary', c.secondary);
+  root.style.setProperty('--t-accent', c.accent);
+  root.style.setProperty('--t-bg', c.background);
+  root.style.setProperty('--t-surface', c.surface);
+  root.style.setProperty('--t-text', c.text);
+  root.style.setProperty('--t-muted', c.muted);
+  root.style.setProperty('--t-border', c.border);
+  root.style.setProperty('--t-font', theme.font);
+
+  // RGB splits
+  const pRGB = hexToRGB(c.primary);
+  const aRGB = hexToRGB(c.accent);
+  const tRGB = hexToRGB(c.text);
+  if (pRGB) root.style.setProperty('--t-primary-rgb', pRGB);
+  if (aRGB) root.style.setProperty('--t-accent-rgb', aRGB);
+  if (tRGB) root.style.setProperty('--t-text-rgb', tRGB);
+
+  // Backward-compat --theme-* aliases used by dashboard pages
+  root.style.setProperty('--theme-primary', c.primary);
+  root.style.setProperty('--theme-secondary', c.secondary);
+  root.style.setProperty('--theme-accent', c.accent);
+  root.style.setProperty('--theme-background', c.background);
+  root.style.setProperty('--theme-text', c.text);
+  root.style.setProperty('--theme-panel-bg', c.surface);
+  root.style.setProperty('--theme-border', c.border);
   root.style.setProperty('--theme-font', theme.font);
+  if (pRGB) root.style.setProperty('--theme-primary-rgb', pRGB);
+  if (tRGB) root.style.setProperty('--theme-text-rgb', tRGB);
 
-  // Set RGB component versions for rgba() usage
-  const primaryRGB = colorToRGB(theme.colors.primary);
-  const secondaryRGB = colorToRGB(theme.colors.secondary);
-  const accentRGB = colorToRGB(theme.colors.accent);
-  const textRGB = colorToRGB(theme.colors.text);
-  if (primaryRGB) root.style.setProperty('--theme-primary-rgb', primaryRGB);
-  if (secondaryRGB) root.style.setProperty('--theme-secondary-rgb', secondaryRGB);
-  if (accentRGB) root.style.setProperty('--theme-accent-rgb', accentRGB);
-  if (textRGB) root.style.setProperty('--theme-text-rgb', textRGB);
-
-  // FX border animation
-  const animation = getFxAnimation(themeId);
-  root.style.setProperty('--theme-border-animation', animation);
-  if (themeId && themeId.startsWith('fx-')) {
-    document.body.classList.add('fx-theme-active');
-  } else {
-    document.body.classList.remove('fx-theme-active');
+  // Metallic tint
+  if (themeId === 'metallic' && metalColor) {
+    const preset = metallicPresets[metalColor];
+    if (preset) {
+      root.style.setProperty('--t-metal-hex', preset.hex);
+      root.style.setProperty('--t-metal-gradient', preset.gradient);
+      root.style.setProperty('--t-primary', preset.hex);
+      const mRGB = hexToRGB(preset.hex);
+      if (mRGB) root.style.setProperty('--t-primary-rgb', mRGB);
+    }
   }
 
-  // Apply background to body
-  document.body.style.background = theme.colors.background;
+  // Remove old FX class
+  document.body.classList.remove('fx-theme-active');
+  document.body.style.background = c.background;
 }
 
 export function ThemeProvider({ children }) {
   const [currentTheme, setCurrentTheme] = useState(() => {
-    return localStorage.getItem('selectedTheme') || 'default';
+    const saved = localStorage.getItem('selectedTheme');
+    return (saved && themeMap[saved]) ? saved : 'classic';
   });
 
-  // Apply theme on mount and when it changes
+  const [metalColor, setMetalColorState] = useState(() => {
+    return localStorage.getItem('metallicColor') || 'chrome';
+  });
+
   useEffect(() => {
     const theme = themeMap[currentTheme];
-    if (theme) {
-      applyThemeToDOM(currentTheme, theme);
-    }
-    // Also keep the window.THEME_DEFINITIONS reference for backward compatibility
+    if (theme) applyThemeToDOM(currentTheme, theme, metalColor);
     window.THEME_DEFINITIONS = themeMap;
-  }, [currentTheme]);
+  }, [currentTheme, metalColor]);
 
-  // Listen for external themeChanged events (overlay system, customization panel)
+  // Cross-tab sync
   useEffect(() => {
-    const handleExternalThemeChange = (e) => {
-      const themeId = e.detail?.theme;
-      if (themeId && themeMap[themeId]) {
-        setCurrentTheme(themeId);
-        localStorage.setItem('selectedTheme', themeId);
+    const handler = (e) => {
+      const id = e.detail?.theme;
+      if (id && themeMap[id]) {
+        setCurrentTheme(id);
+        localStorage.setItem('selectedTheme', id);
+      }
+      if (e.detail?.metalColor) {
+        setMetalColorState(e.detail.metalColor);
+        localStorage.setItem('metallicColor', e.detail.metalColor);
       }
     };
-    window.addEventListener('themeChanged', handleExternalThemeChange);
-    return () => window.removeEventListener('themeChanged', handleExternalThemeChange);
+    window.addEventListener('themeChanged', handler);
+    return () => window.removeEventListener('themeChanged', handler);
   }, []);
 
   const setTheme = useCallback((themeId) => {
     if (!themeMap[themeId]) return;
     setCurrentTheme(themeId);
     localStorage.setItem('selectedTheme', themeId);
-    // Dispatch event for backward compatibility with overlay system
     window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: themeId } }));
   }, []);
 
-  const value = { currentTheme, setTheme, themes: themeMap };
+  const setMetalColor = useCallback((color) => {
+    setMetalColorState(color);
+    localStorage.setItem('metallicColor', color);
+    window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: currentTheme, metalColor: color } }));
+  }, [currentTheme]);
+
+  const value = { currentTheme, setTheme, metalColor, setMetalColor, themes: themeMap };
 
   return (
     <ThemeContext.Provider value={value}>

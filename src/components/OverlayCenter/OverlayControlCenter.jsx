@@ -120,9 +120,9 @@ export default function OverlayControlCenter() {
 
     const themeColors = {
       accentColor: t.colors.accent,
-      bgColor: t.colors.background,
+      bgColor: t.colors.surface,
       textColor: t.colors.text,
-      mutedColor: t.colors.secondary,
+      mutedColor: t.colors.muted,
       borderColor: t.colors.border,
       fontFamily: t.font,
     };
