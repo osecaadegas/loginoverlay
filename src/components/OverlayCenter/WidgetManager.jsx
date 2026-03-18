@@ -490,8 +490,8 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   useEffect(() => {
     if (!showPreview || !previewRef.current) return;
     function calcScale() {
-      const avail = previewRef.current.getBoundingClientRect().width - 4;
-      setPreviewScale(Math.min(avail / CANVAS_W, 0.55));
+      const avail = previewRef.current.getBoundingClientRect().width - 48;
+      setPreviewScale(avail / CANVAS_W);
     }
     calcScale();
     const ro = new ResizeObserver(calcScale);
@@ -740,12 +740,13 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               })()}
             </span>
           </div>
-          <div className="wm-live-body">
+          <div>
             <div
               className="wm-live-canvas-wrap"
               style={{
                 width: CANVAS_W * previewScale,
                 height: CANVAS_H * previewScale,
+                margin: '0 auto',
               }}
             >
               <div
@@ -784,23 +785,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   />
                 ))}
               </div>
-            </div>
-
-            {/* ── Quick Guide side panel ── */}
-            <div className="wm-quick-guide">
-            <h4 className="wm-qg-title">📋 Quick Guide</h4>
-            <ol className="wm-qg-list">
-              <li><strong>Add widgets</strong> — click <b>+ Add</b> on any grey tile below.</li>
-              <li><strong>Move &amp; resize</strong> — drag on preview, corner handles to resize, arrow keys for 1px nudge (<b>Shift</b> = 10px).</li>
-              <li><strong>Customize</strong> — hit ⚙️ on any active tile to change colors, fonts &amp; sizes.</li>
-              <li><strong>Sync colors</strong> — set Navbar first, then 🔗 Sync Colors to apply everywhere.</li>
-              <li><strong>Toggle</strong> — click the ON / OFF switch to show or hide a widget.</li>
-              <li><strong>Background &amp; effects</strong> — add the Background widget and open its settings for gradients, images, particles &amp; blur.</li>
-              <li><strong>Connect profiles</strong> — open the Profile section to link your Spotify, Twitch, or Kick accounts; tokens sync to widgets automatically.</li>
-              <li><strong>Bonus Hunt &amp; Tournament</strong> — use the sidebar pages to fill in session data; widgets update in real-time.</li>
-              <li><strong>Full overlay in OBS</strong> — copy the OBS URL from the sidebar and add it as a Browser Source.</li>
-              <li><strong>Single widget in OBS</strong> — open ⚙️ settings, expand "OBS Browser Source URL", and copy the link.</li>
-            </ol>
             </div>
           </div>
         </div>
