@@ -86,7 +86,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
 // ─── CSS variable builder from theme ───
 function buildThemeVars(theme) {
   if (!theme) return {};
-  return {
+  const vars = {
     '--oc-primary': theme.primary_color || '#9346ff',
     '--oc-secondary': theme.secondary_color || '#1a1b2e',
     '--oc-accent': theme.accent_color || '#00e1ff',
@@ -100,6 +100,17 @@ function buildThemeVars(theme) {
     '--oc-font-weight': theme.font_weight || 500,
     '--oc-anim-speed': theme.animation_speed ?? 1,
   };
+
+  // When metallic theme is active, pipe the stored color into --t-metal-* vars
+  // so the CSS sheen / gradient effects pick up the user's chosen metal tint.
+  if (theme.style_preset === 'metallic' && theme.primary_color) {
+    const hex = theme.primary_color;
+    vars['--t-metal-hex'] = hex;
+    // Build a simple brushed-metal gradient from the hex
+    vars['--t-metal-gradient'] = `linear-gradient(135deg, ${hex}cc 0%, ${hex}66 40%, ${hex}99 60%, ${hex}cc 100%)`;
+  }
+
+  return vars;
 }
 
 export default function OverlayRenderer() {

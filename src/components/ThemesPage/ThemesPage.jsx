@@ -28,11 +28,13 @@ export default function ThemesPage({ onApply }) {
   const handleSelect = (themeId) => {
     setTheme(themeId);
     localStorage.setItem('overlayTheme', themeId);
-    if (onApply) onApply(themeId);
+    if (onApply) onApply(themeId, themeId === 'metallic' ? metalColor : null);
   };
 
   const handleMetalPick = (presetId) => {
     setMetalColor(presetId);
+    // Re-sync all widgets with the new metal color
+    if (onApply) onApply('metallic', presetId);
   };
 
   return (

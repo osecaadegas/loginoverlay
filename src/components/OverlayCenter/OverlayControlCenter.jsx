@@ -117,22 +117,36 @@ export default function OverlayControlCenter() {
   const THEME_TO_NAV_STYLE = { classic: 'glass', metallic: 'metallic', carbon: 'carbon', retro: 'retro', futuristic: 'futuristic' };
 
   /* ── Sync theme colors to all overlay widgets ── */
-  const syncThemeToWidgets = useCallback(async (themeId) => {
+  const syncThemeToWidgets = useCallback(async (themeId, metalPresetId) => {
     const t = themeMap[themeId];
     if (!t || !widgets?.length) return;
 
+    // For metallic theme, override primary/accent with the chosen metal color
+    let colors = { ...t.colors };
+    let themePatch = { style_preset: themeId };
+    if (themeId === 'metallic' && metalPresetId) {
+      const preset = (await import('../../data/appThemes')).metallicPresets[metalPresetId];
+      if (preset) {
+        colors.primary = preset.hex;
+        colors.accent = preset.hex;
+        // Store metal color in DB so the overlay renderer can pick it up
+        themePatch.primary_color = preset.hex;
+        themePatch.accent_color = preset.hex;
+      }
+    }
+
     const themeColors = {
-      accentColor: t.colors.accent,
-      bgColor: t.colors.surface,
-      textColor: t.colors.text,
-      mutedColor: t.colors.muted,
-      borderColor: t.colors.border,
+      accentColor: colors.accent,
+      bgColor: colors.surface,
+      textColor: colors.text,
+      mutedColor: colors.muted,
+      borderColor: colors.border,
       fontFamily: t.font,
     };
 
     try {
       // Persist theme choice to overlay_themes so the OBS renderer picks it up
-      await saveTheme({ style_preset: themeId });
+      await saveTheme(themePatch);
 
       // Update navbar widget — also set its displayStyle to match the theme
       const navStyle = THEME_TO_NAV_STYLE[themeId] || 'glass';
