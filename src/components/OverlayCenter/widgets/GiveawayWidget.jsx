@@ -66,8 +66,9 @@ function GiveawayWidget({ config, widgetId }) {
     return () => clearInterval(timer);
   }, [widgetId]);
 
-  // Chat message handler
-  const handleMessage = useCallback((msg) => {
+  // Chat message handler — use a stable ref to avoid WebSocket reconnects on keyword change
+  const handleMessageRef = useRef(null);
+  handleMessageRef.current = (msg) => {
     if (!keyword) return;
     const text = (msg.message || '').trim().toLowerCase();
     if (text === `!${keyword}` || text.startsWith(`!${keyword} `)) {
@@ -77,11 +78,15 @@ function GiveawayWidget({ config, widgetId }) {
         pendingRef.current.push(name);
       }
     }
-  }, [keyword]);
+  };
+  const handleMessage = useCallback((msg) => {
+    handleMessageRef.current?.(msg);
+  }, []);
 
-  // Connect to chat platforms when giveaway is active
-  const listenTwitch = isActive && !isDone && !!c.twitchEnabled && !!c.twitchChannel;
-  const listenKick   = isActive && !isDone && !!c.kickEnabled   && !!c.kickChannelId;
+  // Connect to chat platforms when keyword is set and no winner yet
+  // Always listen if channel is configured — no need for isActive or enabled flags
+  const listenTwitch = !isDone && !!keyword && !!c.twitchChannel;
+  const listenKick   = !isDone && !!keyword && !!c.kickChannelId;
   useTwitchChat(listenTwitch ? c.twitchChannel : '', handleMessage);
   useKickChat(listenKick ? c.kickChannelId : '', handleMessage);
 
