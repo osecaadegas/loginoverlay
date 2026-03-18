@@ -3877,38 +3877,46 @@ body.wm-resizing {
 }
 
 /* --- Bonus Opening toggle --- */
-.bh-opening-toggle {
+/* --- Compact toggles row --- */
+.bh-toggles-row {
   display: flex;
-  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.bh-compact-toggle {
+  flex: 1;
+  display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 12px 16px;
-  border-radius: 10px;
-  border: 2px dashed rgba(100, 116, 139, 0.3);
+  gap: 8px;
+  padding: 7px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(100, 116, 139, 0.2);
   background: rgba(15, 23, 42, 0.5);
-  margin-bottom: 12px;
-  transition: all 0.25s;
-}
-.bh-opening-toggle--active {
-  border-color: rgba(34, 197, 94, 0.5);
-  background: rgba(34, 197, 94, 0.06);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.08);
-}
-.bh-opening-label {
-  display: flex;
-  align-items: center;
-  gap: 10px;
   cursor: pointer;
   user-select: none;
+  transition: all 0.2s;
 }
-.bh-opening-label input[type="checkbox"] {
+.bh-compact-toggle input[type="checkbox"] {
   display: none;
+}
+.bh-compact-toggle--active {
+  border-color: rgba(34, 197, 94, 0.4);
+  background: rgba(34, 197, 94, 0.06);
+}
+.bh-compact-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #94a3b8;
+  white-space: nowrap;
+}
+.bh-compact-toggle--active .bh-compact-text {
+  color: #4ade80;
 }
 .bh-opening-switch {
   position: relative;
-  width: 42px;
-  height: 22px;
-  border-radius: 12px;
+  width: 34px;
+  height: 18px;
+  border-radius: 10px;
   background: #334155;
   transition: background 0.25s;
   flex-shrink: 0;
@@ -3916,19 +3924,19 @@ body.wm-resizing {
 .bh-opening-switch::after {
   content: '';
   position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 16px;
-  height: 16px;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
   border-radius: 50%;
   background: #64748b;
   transition: all 0.25s;
 }
-.bh-opening-label input:checked + .bh-opening-switch {
+.bh-compact-toggle input:checked + .bh-opening-switch {
   background: #22c55e;
 }
-.bh-opening-label input:checked + .bh-opening-switch::after {
-  left: 23px;
+.bh-compact-toggle input:checked + .bh-opening-switch::after {
+  left: 18px;
   background: #ffffff;
 }
 .bh-opening-text {

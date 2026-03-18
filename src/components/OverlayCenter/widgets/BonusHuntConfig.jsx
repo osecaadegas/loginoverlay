@@ -1274,40 +1274,20 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Bonus List ─── */}
       <div className="bh-panel-section">
-        {/* ── Bonus Opening toggle — prominent ── */}
-        <div className={`bh-opening-toggle ${bonusOpening ? 'bh-opening-toggle--active' : ''}`}>
-          <label className="bh-opening-label">
+        {/* ── Bonus Opening + Auto-Tracker toggles ── */}
+        <div className="bh-toggles-row">
+          <label className={`bh-compact-toggle ${bonusOpening ? 'bh-compact-toggle--active' : ''}`}>
             <input type="checkbox" checked={bonusOpening}
               onChange={e => { setBonusOpening(e.target.checked); save(bonusList, { bonusOpening: e.target.checked }); }} />
             <span className="bh-opening-switch" />
-            <span className="bh-opening-text">
-              {bonusOpening ? '🎰 Bonus Opening — ACTIVE' : '🔒 Bonus Opening — OFF'}
-            </span>
+            <span className="bh-compact-text">{bonusOpening ? '🎰 Opening' : '🔒 Opening'}</span>
           </label>
-          {!bonusOpening && (
-            <span className="bh-opening-hint">Enable to unlock payout inputs</span>
-          )}
-        </div>
-
-        {/* ── Auto-Tracker toggle ── */}
-        <div className={`bh-opening-toggle ${autoTrackEnabled ? 'bh-opening-toggle--active' : ''}`} style={{ marginTop: 6 }}>
-          <label className="bh-opening-label">
+          <label className={`bh-compact-toggle ${autoTrackEnabled ? 'bh-compact-toggle--active' : ''}`}>
             <input type="checkbox" checked={autoTrackEnabled}
               onChange={e => { setAutoTrackEnabled(e.target.checked); save(bonusList, { autoTrackEnabled: e.target.checked }); }} />
             <span className="bh-opening-switch" />
-            <span className="bh-opening-text">
-              {autoTrackEnabled ? '🔗 Auto-Tracker — ACTIVE' : '🔗 Auto-Tracker — OFF'}
-            </span>
+            <span className="bh-compact-text">{autoTrackEnabled ? '🔗 Tracker' : '🔗 Tracker'}</span>
           </label>
-          {autoTrackEnabled && lastDetected && (
-            <span className="bh-opening-hint" style={{ color: '#4ade80' }}>Last detected: {lastDetected}</span>
-          )}
-          {autoTrackEnabled && !lastDetected && (
-            <span className="bh-opening-hint">Browser extension will auto-detect your current slot</span>
-          )}
-          {!autoTrackEnabled && (
-            <span className="bh-opening-hint">Enable + install Chrome extension to auto-track slots</span>
-          )}
         </div>
 
         <h4 className="bh-panel-label">
