@@ -225,7 +225,19 @@ export default function SlotApprovals() {
                 </span>
                 <div className="ss-card-date">{new Date(s.submitted_at).toLocaleDateString()}</div>
 
-                {/* Admin actions */}
+                {/* Edit button for any status */}
+                {s.status !== 'pending' && (
+                  <div className="sa-actions">
+                    <button
+                      className="sa-edit-btn"
+                      onClick={() => editingId === s.id ? setEditingId(null) : startEdit(s)}
+                    >
+                      {editingId === s.id ? '✕ Close Edit' : '✏️ Edit'}
+                    </button>
+                  </div>
+                )}
+
+                {/* Admin actions for pending */}
                 {s.status === 'pending' && (
                   <div className="sa-actions">
                     <button
