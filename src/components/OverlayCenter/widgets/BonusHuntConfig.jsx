@@ -963,7 +963,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                       setShowSubmitSlot(true);
                       setShowSuggestions(false);
                     }}>
-                    {slots.length === 0 ? 'Loading slots...' : <>Not found — <strong>click to submit "{slotSearch}"</strong></>}
+                    {slots.length === 0 ? 'Loading slots...' : <>Not found — <strong>+ Submit Slot</strong></>}
                   </div>
                 )}
               </div>
@@ -971,23 +971,18 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </div>
         </div>
 
-        {/* Row 2: Bet + Submit Slot */}
+        {/* Row 2: Bet */}
         <div className="bh-add-row">
           <input type="number" className="bh-bet-field" value={betSize}
             onChange={e => setBetSize(e.target.value)}
             onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
             placeholder={`Bet (${currency})`} step="0.1" />
-          <button
-            className={`bh-submit-slot-btn${showSubmitSlot ? ' active' : ''}`}
-            onClick={() => {
-              if (!showSubmitSlot && slotSearch.trim() && !selectedSlot) {
-                setField('name', slotSearch.trim());
-              }
-              setShowSubmitSlot(p => !p);
-            }}
-          >
-            {showSubmitSlot ? '✕ Close' : '+ Submit Slot'}
-          </button>
+          {showSubmitSlot && (
+            <button
+              className="bh-submit-slot-btn active"
+              onClick={() => setShowSubmitSlot(false)}
+            >✕ Close</button>
+          )}
         </div>
 
         {/* Row 3: Add + Super + Extreme */}
