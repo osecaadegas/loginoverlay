@@ -181,6 +181,19 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
             </button>
           )}
 
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Media Fit</h4>
+          <div className="oc-bg-mode-grid">
+            {FIT_OPTIONS.map(f => (
+              <button key={f.value}
+                className={`oc-bg-mode-btn ${(c.mediaFit || 'cover') === f.value ? 'oc-bg-mode-btn--active' : ''}`}
+                onClick={() => set('mediaFit', f.value)}>
+                <span style={{ fontSize: 18 }}>{f.icon}</span>
+                <span>{f.label}</span>
+                <span style={{ fontSize: 10, color: '#94a3b8' }}>{f.hint}</span>
+              </button>
+            ))}
+          </div>
+
           <SliderField label="Border Radius" value={c.borderRadius ?? 12} onChange={v => set('borderRadius', v)} min={0} max={50} suffix="px" />
           {!isClean && <SliderField label="Border Width" value={c.borderWidth ?? 1} onChange={v => set('borderWidth', v)} min={0} max={8} suffix="px" />}
 

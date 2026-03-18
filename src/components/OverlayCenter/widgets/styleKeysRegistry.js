@@ -79,7 +79,7 @@ export const RANDOM_SLOT_PICKER_STYLE_KEYS = [
 /* ── Image Slideshow ── */
 export const IMAGE_SLIDESHOW_STYLE_KEYS = [
   'borderRadius', 'borderWidth', 'borderColor', 'showGradient', 'gradientColor', 'showDots',
-  'custom_css',
+  'mediaFit', 'custom_css',
 ];
 
 /* ── RTP Stats ── */

@@ -130,12 +130,13 @@ function ImageSlideshowWidget({ config, theme }) {
   const safe = (i) => ((i % images.length) + images.length) % images.length;
 
   /* ── Shared image base ── */
+  const mediaFit = c.mediaFit || 'cover'; // cover | contain | fill
   const baseImg = {
     position: 'absolute',
     inset: 0,
     width: '100%',
     height: '100%',
-    objectFit: 'cover',
+    objectFit: mediaFit,
     objectPosition: 'center',
   };
 
