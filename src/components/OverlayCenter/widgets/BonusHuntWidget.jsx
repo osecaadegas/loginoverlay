@@ -140,7 +140,7 @@ function BonusHuntWidget({ config, theme }) {
   const superBadgeColor = c.superBadgeColor || '#eab308';
   const extremeBadgeColor = c.extremeBadgeColor || '#ef4444';
   const textColor = c.textColor || '#ffffff';
-  const mutedTextColor = c.mutedTextColor || (isNeonBH ? '#44aa88' : '#93c5fd');
+  const mutedTextColor = c.mutedTextColor || (isNeonBH ? '#77ddbb' : '#93c5fd');
   const statValueColor = c.statValueColor || '#ffffff';
   const cardOutlineColor = c.cardOutlineColor || (isNeonBH ? 'rgba(0,255,200,0.15)' : 'transparent');
   const cardOutlineWidth = c.cardOutlineWidth ?? (isNeonBH ? 1 : 2);
