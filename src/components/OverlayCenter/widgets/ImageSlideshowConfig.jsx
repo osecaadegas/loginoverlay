@@ -19,6 +19,12 @@ const ANIM_OPTIONS = [
   { value: 'zoom',  icon: '🔍', label: 'Zoom' },
 ];
 
+const DISPLAY_STYLES = [
+  { value: 'v1',    icon: '🖼️', label: 'Default' },
+  { value: 'metal', icon: '⚙️', label: 'Metal' },
+  { value: 'clean', icon: '✨', label: 'Clean' },
+];
+
 /* ─── Helpers ─── */
 function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suffix = '' }) {
   return (
@@ -67,8 +73,10 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
     set('images', arr);
   };
 
+  const isClean = currentStyle === 'clean';
+
   const tabs = [
-    { id: 'images',  label: '🖼️ Images' },
+    { id: 'images',  label: '🖼️ Media' },
     { id: 'timing',  label: '⏱️ Timing' },
     { id: 'style',   label: '🎨 Style' },
     { id: 'caption', label: '💬 Caption' },
@@ -83,9 +91,9 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
       {/* ═══════ IMAGES TAB ═══════ */}
       {activeTab === 'images' && (
         <div className="nb-section">
-          <h4 className="nb-subtitle">Images ({images.length})</h4>
+          <h4 className="nb-subtitle">Media ({images.length})</h4>
           <p className="oc-config-hint" style={{ marginBottom: 6 }}>
-            Add image URLs. Images will always fill the widget area (cover mode).
+            Add image, GIF, or video URLs (mp4, webm, ogg). Media fills the widget area.
           </p>
 
           <div className="ov-slide-cfg-images">
@@ -106,7 +114,7 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
                 value={newUrl}
                 onChange={e => setNewUrl(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') addImage(); }}
-                placeholder="Paste image URL..."
+                placeholder="Paste image / GIF / video URL..."
                 className="ov-slide-cfg-add-input"
               />
               <button onClick={addImage} className="ov-slide-cfg-add-btn" disabled={!newUrl.trim()}>
@@ -150,7 +158,22 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
       {/* ═══════ STYLE TAB ═══════ */}
       {activeTab === 'style' && (
         <div className="nb-section">
-          <h4 className="nb-subtitle">Appearance</h4>
+          <h4 className="nb-subtitle">Display Style</h4>
+          <div className="oc-bg-mode-grid">
+            {DISPLAY_STYLES.map(s => (
+              <button key={s.value}
+                className={`oc-bg-mode-btn ${currentStyle === s.value ? 'oc-bg-mode-btn--active' : ''}`}
+                onClick={() => set('displayStyle', s.value)}>
+                <span style={{ fontSize: 20 }}>{s.icon}</span>
+                <span>{s.label}</span>
+              </button>
+            ))}
+          </div>
+          {isClean && (
+            <p className="oc-config-hint" style={{ marginTop: 6 }}>Clean mode: no borders, gradients, or overlays — just the media.</p>
+          )}
+
+          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Appearance</h4>
 
           {navbarConfig && (
             <button className="nb-preset-load-btn" onClick={syncFromNavbar} style={{ marginBottom: 10, width: '100%' }}>
@@ -159,23 +182,29 @@ export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
           )}
 
           <SliderField label="Border Radius" value={c.borderRadius ?? 12} onChange={v => set('borderRadius', v)} min={0} max={50} suffix="px" />
-          <SliderField label="Border Width" value={c.borderWidth ?? 1} onChange={v => set('borderWidth', v)} min={0} max={8} suffix="px" />
+          {!isClean && <SliderField label="Border Width" value={c.borderWidth ?? 1} onChange={v => set('borderWidth', v)} min={0} max={8} suffix="px" />}
 
-          <label className="nb-color-item" style={{ marginTop: 8 }}>
-            <input type="color" value={c.borderColor || '#334155'} onChange={e => set('borderColor', e.target.value)} />
-            <span>Border Color</span>
-          </label>
-
-          <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Gradient Overlay</h4>
-          <label className="nb-field">
-            <span>Show Gradient</span>
-            <input type="checkbox" checked={c.showGradient !== false} onChange={e => set('showGradient', e.target.checked)} />
-          </label>
-          {c.showGradient !== false && (
-            <label className="nb-color-item">
-              <input type="color" value={c.gradientColor || '#0f172a'} onChange={e => set('gradientColor', e.target.value)} />
-              <span>Gradient Color</span>
+          {!isClean && (
+            <label className="nb-color-item" style={{ marginTop: 8 }}>
+              <input type="color" value={c.borderColor || '#334155'} onChange={e => set('borderColor', e.target.value)} />
+              <span>Border Color</span>
             </label>
+          )}
+
+          {!isClean && (
+            <>
+              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Gradient Overlay</h4>
+              <label className="nb-field">
+                <span>Show Gradient</span>
+                <input type="checkbox" checked={c.showGradient !== false} onChange={e => set('showGradient', e.target.checked)} />
+              </label>
+              {c.showGradient !== false && (
+                <label className="nb-color-item">
+                  <input type="color" value={c.gradientColor || '#0f172a'} onChange={e => set('gradientColor', e.target.value)} />
+                  <span>Gradient Color</span>
+                </label>
+              )}
+            </>
           )}
 
           <h4 className="nb-subtitle" style={{ marginTop: 14 }}>Navigation</h4>

@@ -26,7 +26,12 @@ function ImageSlideshowWidget({ config, theme }) {
   const captionFont = c.captionFont || "'Inter', sans-serif";
   const pauseOnHover = c.pauseOnHover || false;
   const animType = c.animationType || 'fade'; // fade | slide | zoom
-  const isMetal = (c.displayStyle || 'v1') === 'metal';
+  const displayStyle = c.displayStyle || 'v1';
+  const isMetal = displayStyle === 'metal';
+  const isClean = displayStyle === 'clean';
+
+  /* ── Video detection ── */
+  const VIDEO_EXTS = /\.(mp4|webm|ogg|mov|m4v|avi|mkv)(\?|$)/i;
 
   /* ── Double-buffer state ── */
   const [currentIdx, setCurrentIdx] = useState(0);
@@ -111,11 +116,11 @@ function ImageSlideshowWidget({ config, theme }) {
   const containerStyle = {
     width: '100%',
     height: '100%',
-    borderRadius: `${borderRadius}px`,
-    border: isMetal ? '1px solid rgba(200,210,225,0.18)' : `${borderWidth}px solid ${borderColor}`,
+    borderRadius: isClean ? 0 : `${borderRadius}px`,
+    border: isClean ? 'none' : (isMetal ? '1px solid rgba(200,210,225,0.18)' : `${borderWidth}px solid ${borderColor}`),
     position: 'relative',
     overflow: 'hidden',
-    background: '#000',
+    background: isClean ? 'transparent' : '#000',
     ...(isMetal && {
       boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
     }),
@@ -188,6 +193,33 @@ function ImageSlideshowWidget({ config, theme }) {
     };
   })();
 
+  /* ── Render media element (image or video) ── */
+  const renderMedia = (src, style, key) => {
+    if (VIDEO_EXTS.test(src)) {
+      return (
+        <video
+          key={key}
+          src={src}
+          style={style}
+          autoPlay
+          loop
+          muted
+          playsInline
+          onError={e => { e.target.style.display = 'none'; }}
+        />
+      );
+    }
+    return (
+      <img
+        key={key}
+        src={src}
+        alt="Slideshow"
+        style={style}
+        onError={e => { e.target.style.display = 'none'; }}
+      />
+    );
+  };
+
   return (
     <div
       className="ov-slideshow-widget"
@@ -195,24 +227,12 @@ function ImageSlideshowWidget({ config, theme }) {
       onMouseEnter={() => { if (pauseOnHover) paused.current = true; }}
       onMouseLeave={() => { if (pauseOnHover) paused.current = false; }}
     >
-      {/* Bottom layer — "current" image */}
-      <img
-        src={images[safe(currentIdx)]}
-        alt="Slideshow"
-        style={currentLayerStyle}
-        onError={e => { e.target.style.display = 'none'; }}
-      />
-      {/* Top layer — "next" image */}
-      {images.length > 1 && (
-        <img
-          src={images[safe(nextIdx)]}
-          alt="Slideshow"
-          style={nextLayerStyle}
-          onError={e => { e.target.style.display = 'none'; }}
-        />
-      )}
+      {/* Bottom layer — "current" media */}
+      {renderMedia(images[safe(currentIdx)], currentLayerStyle, `cur-${safe(currentIdx)}`)}
+      {/* Top layer — "next" media */}
+      {images.length > 1 && renderMedia(images[safe(nextIdx)], nextLayerStyle, `nxt-${safe(nextIdx)}`)}
 
-      {showGradient && (
+      {!isClean && showGradient && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 3,
           background: isMetal
@@ -222,7 +242,7 @@ function ImageSlideshowWidget({ config, theme }) {
         }} />
       )}
 
-      {isMetal && (
+      {!isClean && isMetal && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 3,
           background: 'linear-gradient(145deg, rgba(200,210,225,0.04), transparent 50%)',
@@ -230,7 +250,7 @@ function ImageSlideshowWidget({ config, theme }) {
         }} />
       )}
 
-      {showCaption && (
+      {!isClean && showCaption && (
         <div className="ov-slideshow-caption" style={{
           fontFamily: captionFont,
           fontSize: `${captionSize}px`,
@@ -245,7 +265,7 @@ function ImageSlideshowWidget({ config, theme }) {
         </div>
       )}
 
-      {images.length > 1 && c.showDots && (
+      {!isClean && images.length > 1 && c.showDots && (
         <div className="ov-slideshow-dots" style={{ zIndex: 5 }}>
           {images.map((_, i) => (
             <span key={i} className={`ov-slideshow-dot ${i === safe(transitioning ? nextIdx : currentIdx) ? 'ov-slideshow-dot--active' : ''}`} />
