@@ -99,6 +99,15 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
     set('winner', list[idx]);
   };
 
+  // Remove a single participant
+  const removeParticipant = (name) => {
+    const updated = (c.participants || []).filter(n => n !== name);
+    participantsRef.current.delete(name);
+    const patch = { participants: updated };
+    if (c.winner === name) patch.winner = '';
+    onChange({ ...c, ...patch });
+  };
+
   // Clear all entries
   const clearEntries = () => {
     setMulti({ participants: [], winner: '' });
@@ -264,8 +273,19 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
                   background: name === c.winner ? '#9346ff22' : i % 2 === 0 ? 'rgba(255,255,255,0.02)' : 'transparent',
                 }}>
                   <span style={{ color: '#64748b', fontSize: 10, minWidth: 24 }}>#{i + 1}</span>
-                  <span style={{ fontWeight: name === c.winner ? 700 : 400, color: name === c.winner ? '#c4b5fd' : '#e2e8f0' }}>{name}</span>
-                  {name === c.winner && <span style={{ marginLeft: 'auto', fontSize: 10 }}>🏆</span>}
+                  <span style={{ fontWeight: name === c.winner ? 700 : 400, color: name === c.winner ? '#c4b5fd' : '#e2e8f0', flex: 1 }}>{name}</span>
+                  {name === c.winner && <span style={{ fontSize: 10 }}>🏆</span>}
+                  <button
+                    onClick={() => removeParticipant(name)}
+                    title={`Remove ${name}`}
+                    style={{
+                      background: 'transparent', border: 'none', color: '#64748b',
+                      cursor: 'pointer', fontSize: 13, padding: '0 4px', lineHeight: 1,
+                      borderRadius: 4, transition: 'color 0.15s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#ef4444'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#64748b'}
+                  >✕</button>
                 </div>
               ))}
             </div>

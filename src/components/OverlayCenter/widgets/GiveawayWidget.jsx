@@ -1,7 +1,90 @@
-import React, { useRef, useEffect, useCallback } from 'react';
+import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import { supabase } from '../../../config/supabaseClient';
+
+/* ─── Confetti burst generator ─── */
+function ConfettiBurst({ count = 60, accentColor }) {
+  const pieces = useMemo(() => {
+    const colors = [accentColor, '#ffd700', '#ff6b6b', '#22c55e', '#3b82f6', '#f59e0b', '#e879f9', '#ffffff'];
+    return Array.from({ length: count }, (_, i) => ({
+      id: i,
+      color: colors[i % colors.length],
+      x: Math.random() * 100,
+      delay: Math.random() * 1.2,
+      dur: 2.2 + Math.random() * 1.8,
+      size: 4 + Math.random() * 6,
+      rot: Math.random() * 720 - 360,
+      drift: (Math.random() - 0.5) * 80,
+      shape: Math.random() > 0.5 ? 'rect' : 'circle',
+    }));
+  }, [count, accentColor]);
+
+  return (
+    <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none', zIndex: 10 }}>
+      {pieces.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute',
+          left: `${p.x}%`,
+          top: '-5%',
+          width: p.shape === 'rect' ? p.size : p.size * 0.8,
+          height: p.shape === 'rect' ? p.size * 0.6 : p.size * 0.8,
+          borderRadius: p.shape === 'circle' ? '50%' : '1px',
+          background: p.color,
+          animation: `ga-confetti-fall ${p.dur}s ${p.delay}s ease-in forwards`,
+          opacity: 0,
+          '--drift': `${p.drift}px`,
+          '--rot': `${p.rot}deg`,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+/* ─── 3D Trophy + Winner Name ─── */
+function TrophyWinner({ winner, accentColor, textColor, mutedColor, prize, fontSize = 'clamp(18px,8cqmin,42px)' }) {
+  return (
+    <div style={{
+      textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center',
+      gap: 'clamp(2px,1cqmin,8px)', animation: 'ga-winner-entrance 0.8s cubic-bezier(.17,.67,.35,1.2) forwards',
+      zIndex: 5, position: 'relative',
+    }}>
+      {/* 3D Trophy */}
+      <div style={{
+        fontSize: 'clamp(28px,14cqmin,72px)', lineHeight: 1,
+        animation: 'ga-trophy-3d 2.5s ease-in-out infinite',
+        filter: 'drop-shadow(0 4px 12px rgba(255,215,0,0.5))',
+        transformStyle: 'preserve-3d',
+      }}>🏆</div>
+
+      {/* Winner label */}
+      <div style={{
+        fontSize: 'clamp(9px,2.5cqmin,13px)', color: mutedColor, textTransform: 'uppercase',
+        letterSpacing: '0.18em', fontWeight: 700,
+      }}>Winner</div>
+
+      {/* Winner name with glow */}
+      <div style={{
+        fontSize, fontWeight: 900, lineHeight: 1.1,
+        background: `linear-gradient(135deg, ${accentColor}, #ffd700, ${accentColor})`,
+        backgroundSize: '200% 200%',
+        WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
+        animation: 'ga-name-shimmer 3s ease-in-out infinite',
+        filter: `drop-shadow(0 0 12px ${accentColor}88)`,
+        textShadow: 'none',
+      }}>{winner}</div>
+
+      {/* Prize */}
+      {prize && (
+        <div style={{
+          fontSize: 'clamp(11px,3.5cqmin,16px)', color: mutedColor, marginTop: 'clamp(1px,0.4cqmin,4px)',
+        }}>
+          Prize: <span style={{ color: '#fbbf24', fontWeight: 700 }}>{prize}</span>
+        </div>
+      )}
+    </div>
+  );
+}
 
 function GiveawayWidget({ config, widgetId }) {
   const c = config || {};
@@ -95,7 +178,36 @@ function GiveawayWidget({ config, widgetId }) {
     @keyframes ga-glow{0%,100%{box-shadow:0 0 6px ${accentColor}33}50%{box-shadow:0 0 18px ${accentColor}77}}
     @keyframes ga-bounce{0%{transform:scale(1)}50%{transform:scale(1.12)}100%{transform:scale(1)}}
     @keyframes ga-shine{0%{background-position:-200% center}100%{background-position:200% center}}
-    @keyframes ga-confetti{0%{transform:translateY(0) rotate(0);opacity:1}100%{transform:translateY(-20px) rotate(360deg);opacity:0}}
+    @keyframes ga-confetti-fall{
+      0%{transform:translateY(0) translateX(0) rotate(0deg);opacity:1}
+      20%{opacity:1}
+      100%{transform:translateY(110cqb) translateX(var(--drift,0px)) rotate(var(--rot,360deg));opacity:0}
+    }
+    @keyframes ga-winner-entrance{
+      0%{opacity:0;transform:scale(0.3) translateY(20px)}
+      60%{opacity:1;transform:scale(1.08) translateY(-4px)}
+      100%{opacity:1;transform:scale(1) translateY(0)}
+    }
+    @keyframes ga-trophy-3d{
+      0%{transform:perspective(200px) rotateY(0deg) scale(1)}
+      25%{transform:perspective(200px) rotateY(15deg) scale(1.05)}
+      50%{transform:perspective(200px) rotateY(0deg) scale(1.1)}
+      75%{transform:perspective(200px) rotateY(-15deg) scale(1.05)}
+      100%{transform:perspective(200px) rotateY(0deg) scale(1)}
+    }
+    @keyframes ga-name-shimmer{
+      0%{background-position:0% 50%}
+      50%{background-position:100% 50%}
+      100%{background-position:0% 50%}
+    }
+    @keyframes ga-haptic{
+      0%,100%{transform:translateX(0)}
+      10%{transform:translateX(-2px)}
+      20%{transform:translateX(2px)}
+      30%{transform:translateX(-1px)}
+      40%{transform:translateX(1px)}
+      50%{transform:translateX(0)}
+    }
   `;
 
   const isMetal = st === 'metal';
@@ -137,10 +249,11 @@ function GiveawayWidget({ config, widgetId }) {
         padding:'0 clamp(8px,3cqmin,16px) clamp(6px,3cqmin,14px)', gap:'clamp(4px,2cqmin,12px)', minHeight:0 }}>
         {winner ? (
           <>
-            <div style={{ fontSize:'clamp(12px,4cqmin,18px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:700 }}>🎉 Winner</div>
-            <div style={{ fontSize:'clamp(20px,10cqmin,48px)', fontWeight:800, lineHeight:1.1,
-              background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{winner}</div>
-            {prize && <div style={{ fontSize:'clamp(13px,4cqmin,18px)', color:mMuted }}>Prize: <span style={{ color:'#d4d8e0', fontWeight:700 }}>{prize}</span></div>}
+            <ConfettiBurst accentColor={mAccent} count={50} />
+            <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
+              <TrophyWinner winner={winner} accentColor={mAccent} textColor={mText} mutedColor={mMuted} prize={prize}
+                fontSize="clamp(20px,10cqmin,48px)" />
+            </div>
           </>
         ) : isActive && keyword ? (
           <>
@@ -186,14 +299,15 @@ function GiveawayWidget({ config, widgetId }) {
         )}
       </div>
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-        padding:'clamp(3px,1.5cqmin,10px)', gap:'clamp(3px,1.5cqmin,8px)', minHeight:0 }}>
+        padding:'clamp(3px,1.5cqmin,10px)', gap:'clamp(3px,1.5cqmin,8px)', minHeight:0, position:'relative' }}>
         {winner ? (
-          <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:'clamp(18px,8cqmin,40px)', marginBottom:'clamp(1px,0.4cqmin,3px)' }}>🎉</div>
-            <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em', fontWeight:700, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Winner</div>
-            <div style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:accentColor, textShadow:`0 0 20px ${accentColor}66` }}>{winner}</div>
-            {prize && <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mutedColor, marginTop:'clamp(1px,0.5cqmin,4px)' }}>Prize: <span style={{ color:'#fbbf24', fontWeight:700 }}>{prize}</span></div>}
-          </div>
+          <>
+            <ConfettiBurst accentColor={accentColor} count={55} />
+            <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
+              <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={prize}
+                fontSize="clamp(16px,7cqmin,36px)" />
+            </div>
+          </>
         ) : isActive && keyword ? (
           <>
             {prize && (
@@ -265,9 +379,12 @@ function GiveawayWidget({ config, widgetId }) {
         )}
         {/* Prize or Winner */}
         {winner ? (
-          <div style={{ textAlign:'center', padding:'clamp(2px,0.8cqmin,6px) 0' }}>
-            <div style={{ fontSize:'clamp(11px,4cqmin,18px)', color:mutedColor, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:3 }}>🎉 Winner</div>
-            <div style={{ fontSize:'clamp(18px,8cqmin,40px)', fontWeight:800, color:accentColor, textShadow:`0 0 12px ${accentColor}44` }}>{winner}</div>
+          <div style={{ textAlign:'center', padding:'clamp(2px,0.8cqmin,6px) 0', position:'relative' }}>
+            <ConfettiBurst accentColor={accentColor} count={45} />
+            <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
+              <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={null}
+                fontSize="clamp(18px,8cqmin,40px)" />
+            </div>
           </div>
         ) : prize ? (
           <div style={{ textAlign:'center', fontSize:'clamp(18px,8cqmin,40px)', fontWeight:800, color:textColor }}>{prize}</div>
@@ -294,10 +411,13 @@ function GiveawayWidget({ config, widgetId }) {
           {isDone ? '★ ENDED ★' : isActive ? '★ GIVEAWAY ★' : '★ GIVEAWAY ★'}
         </div>
         {winner ? (
-          <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mutedColor, letterSpacing:'0.08em', textTransform:'uppercase' }}>Winner</div>
-            <div style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:accentColor, textShadow:`0 0 16px ${accentColor}` }}>{winner}</div>
-          </div>
+          <>
+            <ConfettiBurst accentColor={accentColor} count={55} />
+            <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
+              <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={null}
+                fontSize="clamp(16px,7cqmin,36px)" />
+            </div>
+          </>
         ) : isActive ? (
           <>
             {prize && <div style={{ fontSize:'clamp(14px,7cqmin,34px)', fontWeight:800, color:textColor, textShadow:'0 0 10px rgba(255,255,255,0.2)' }}>{prize}</div>}
@@ -329,9 +449,12 @@ function GiveawayWidget({ config, widgetId }) {
         <span style={{ fontSize:'clamp(10px,3.5cqmin,16px)', fontWeight:700, color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em' }}>{statusLabel}</span>
       </div>
       {winner ? (
-        <div style={{ textAlign:'center' }}>
-          <div style={{ fontSize:'clamp(16px,8cqmin,40px)', fontWeight:800, color:accentColor }}>{winner}</div>
-          <div style={{ fontSize:'clamp(10px,3.5cqmin,14px)', color:mutedColor, marginTop:'1%' }}>winner</div>
+        <div style={{ textAlign:'center', position:'relative' }}>
+          <ConfettiBurst accentColor={accentColor} count={40} />
+          <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
+            <TrophyWinner winner={winner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} prize={null}
+              fontSize="clamp(16px,8cqmin,40px)" />
+          </div>
         </div>
       ) : isActive ? (
         <>
