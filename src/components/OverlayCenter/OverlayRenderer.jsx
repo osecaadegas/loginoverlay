@@ -56,9 +56,11 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
 
   const widgetRadius = widget.config?.cardRadius;
 
-  /* Widgets with 3D transforms (flip cards) need visible overflow */
+  /* Widgets with 3D transforms (flip cards, carousel) need visible overflow */
   const wStyle = widget.config?.displayStyle || '';
-  const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack';
+  const isBH = widget.widget_type === 'bonus_hunt';
+  const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack'
+    || (isBH && !['v2', 'v5_compact'].includes(wStyle));
 
   const style = {
     position: 'absolute',
