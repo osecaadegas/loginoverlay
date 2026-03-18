@@ -1238,53 +1238,53 @@
   box-shadow: 0 0 12px rgba(0,255,200,0.08);
 }
 .oc-bonushunt--neon .bht-title {
-  font-size: 1.25em;
+  font-size: 1.5em;
   text-shadow: 0 0 10px rgba(0,255,200,0.5), 0 1px 4px rgba(0,0,0,0.9);
 }
 .oc-bonushunt--neon .bht-subtitle,
 .oc-bonushunt--neon .bht-badge {
-  font-size: 0.92em;
+  font-size: 1em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-header-stats {
-  gap: 8px;
+  gap: 10px;
 }
 .oc-bonushunt--neon .bht-stat-box {
-  padding: 8px 10px;
+  padding: 10px 12px;
 }
 .oc-bonushunt--neon .bht-stat-label,
 .oc-bonushunt--neon .bht-current-label,
 .oc-bonushunt--neon .bht-current-stat-label,
 .oc-bonushunt--neon .bht-footer-label,
 .oc-bonushunt--neon .bht-list-section-title {
-  font-size: 0.88em;
+  font-size: 1em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-stat-value,
 .oc-bonushunt--neon .bht-current-counter,
 .oc-bonushunt--neon .bht-current-stat-value {
-  font-size: 1.4em;
+  font-size: 1.65em;
   text-shadow: 0 0 10px rgba(0,255,200,0.4), 0 1px 4px rgba(0,0,0,0.9);
 }
 .oc-bonushunt--neon .bht-current-name,
 .oc-bonushunt--neon .bht-current-name-overlay {
-  font-size: 1.05em;
+  font-size: 1.15em;
   text-shadow: 0 0 8px rgba(0,255,200,0.35), 0 1px 4px rgba(0,0,0,0.9);
 }
 .oc-bonushunt--neon .bht-current-bet {
-  font-size: 0.92em;
+  font-size: 1.05em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-current-stat {
-  padding: 10px;
+  padding: 12px;
   gap: 6px;
 }
 .oc-bonushunt--neon .bht-current-stat span {
-  font-size: 1em;
+  font-size: 1.1em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-current-stats {
-  gap: 10px;
+  gap: 12px;
 }
 .oc-bonushunt--neon .bht-list-row {
   padding: 10px 8px;
@@ -1295,40 +1295,53 @@
   height: 46px;
 }
 .oc-bonushunt--neon .bht-list-row-idx {
-  font-size: 0.82em;
+  font-size: 0.9em;
   text-shadow: 0 0 6px rgba(0,255,200,0.35), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-list-row-name {
-  font-size: 0.9em;
+  font-size: 1em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-list-row-col-label {
-  font-size: 0.65em;
+  font-size: 0.72em;
   text-shadow: 0 0 4px rgba(0,255,200,0.25), 0 1px 2px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-list-row-col-val {
-  font-size: 0.88em;
+  font-size: 1em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-footer-value {
-  font-size: 1.3em;
+  font-size: 1.5em;
   text-shadow: 0 0 12px rgba(0,255,200,0.45), 0 1px 4px rgba(0,0,0,0.9);
 }
 .oc-bonushunt--neon .bht-footer {
-  padding: 12px 14px;
+  padding: 14px 16px;
 }
 .oc-bonushunt--neon .bht-progress-text {
-  font-size: 13px;
+  font-size: 15px;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-total-pay {
   box-shadow: 0 0 20px rgba(0,255,200,0.15);
 }
+.oc-bonushunt--neon .bht-stack-card-name {
+  font-size: 0.85em;
+}
+.oc-bonushunt--neon .bht-stack-card-bet,
+.oc-bonushunt--neon .bht-stack-card-multi {
+  font-size: 0.8em;
+}
+.oc-bonushunt--neon .bht-stack-card-info {
+  padding: 6px 8px;
+  gap: 2px;
+}
 .oc-bonushunt--neon .bht-flip-slot-name {
+  font-size: 0.9em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-flip-slot-payout,
 .oc-bonushunt--neon .bht-flip-slot-multi {
+  font-size: 1em;
   text-shadow: 0 0 8px rgba(0,255,200,0.35), 0 1px 3px rgba(0,0,0,0.85);
 }
 
