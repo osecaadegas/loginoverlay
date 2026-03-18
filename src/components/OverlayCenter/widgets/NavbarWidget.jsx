@@ -219,22 +219,24 @@ function NavbarWidget({ config, widgetId, userId }) {
   const isMetal = (c.displayStyle === 'metallic');
   const isGlass = (c.displayStyle === 'glass');
   const isRetro = (c.displayStyle === 'retro');
-  const accentColor = c.accentColor || (isMetal ? '#7c8dff' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : '#f59e0b');
+  const isCarbon = (c.displayStyle === 'carbon');
+  const isFuturistic = (c.displayStyle === 'futuristic');
+  const accentColor = c.accentColor || (isMetal ? '#7c8dff' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b');
   const accentColorRGB = hexToRgb(accentColor);
-  const bgColor = c.bgColor || (isMetal ? '#14162a' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : '#111318');
-  const textColor = c.textColor || (isMetal ? '#d0d4e4' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : '#f1f5f9');
-  const mutedColor = c.mutedColor || (isMetal ? '#5a6180' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : '#94a3b8');
+  const bgColor = c.bgColor || (isMetal ? '#14162a' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318');
+  const textColor = c.textColor || (isMetal ? '#d0d4e4' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9');
+  const mutedColor = c.mutedColor || (isMetal ? '#5a6180' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8');
   const borderColor = c.borderColor || accentColor;
-  const fontFamily = c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : "'Inter', sans-serif");
+  const fontFamily = c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif");
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
-  const borderWidth = c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : 3);
+  const borderWidth = c.borderWidth ?? (isMetal ? 1 : isGlass ? 1 : isRetro ? 3 : isCarbon ? 1 : isFuturistic ? 1 : 3);
   const barHeight = c.barHeight ?? 64;
-  const borderRadius = c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : 999);
+  const borderRadius = c.borderRadius ?? (isMetal ? 16 : isGlass ? 20 : isRetro ? 4 : isCarbon ? 8 : isFuturistic ? 20 : 999);
   const fontSize = c.fontSize ?? (isRetro ? 13 : 15);
   const textShadow = '0 1px 4px rgba(0,0,0,0.6)';
-  const ctaColor = c.ctaColor || (isRetro ? '#ff4500' : '#f43f5e');
+  const ctaColor = c.ctaColor || (isRetro ? '#ff4500' : isFuturistic ? '#00ffcc' : '#f43f5e');
   const cryptoUpColor = c.cryptoUpColor || '#34d399';
   const cryptoDownColor = c.cryptoDownColor || '#f87171';
   const bgColorRGB = hexToRgb(bgColor);
@@ -254,6 +256,20 @@ function NavbarWidget({ config, widgetId, userId }) {
     boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(${accentColorRGB},0.06)`,
     fontFamily, overflow: 'hidden',
     border: `1px solid rgba(255,255,255,0.08)`,
+  } : isCarbon ? {
+    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    background: `repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), ${bgColor}`,
+    padding: `${borderWidth}px`,
+    boxShadow: `0 12px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)`,
+    fontFamily, overflow: 'hidden',
+    border: `1px solid rgba(255,255,255,0.06)`,
+  } : isFuturistic ? {
+    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    background: `linear-gradient(135deg, rgba(0,255,204,0.06), transparent 40%, rgba(0,255,204,0.04))`,
+    padding: `${borderWidth}px`,
+    boxShadow: `0 0 20px rgba(${accentColorRGB},0.15), 0 0 60px rgba(${accentColorRGB},0.05), 0 12px 30px rgba(0,0,0,0.5)`,
+    fontFamily, overflow: 'hidden',
+    border: `1px solid rgba(${accentColorRGB},0.25)`,
   } : isGlass ? {
     width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
     background: `linear-gradient(135deg, rgba(30,30,60,0.82), rgba(20,20,50,0.88))`,
@@ -281,6 +297,20 @@ function NavbarWidget({ config, widgetId, userId }) {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
     borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
+    padding: '0 10px', color: textColor, fontSize, gap: 0,
+    overflow: 'visible', position: 'relative',
+    ...(needsFilter && { filter: filterStr }),
+  } : isCarbon ? {
+    display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
+    borderRadius: borderRadius - borderWidth,
+    background: `linear-gradient(180deg, ${bgColor}, #060606)`,
+    padding: '0 10px', color: textColor, fontSize, gap: 0,
+    overflow: 'visible', position: 'relative',
+    ...(needsFilter && { filter: filterStr }),
+  } : isFuturistic ? {
+    display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
+    borderRadius: borderRadius - borderWidth,
+    background: `linear-gradient(135deg, rgba(${bgColorRGB},0.95), rgba(${bgColorRGB},0.88))`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),

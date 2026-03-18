@@ -113,6 +113,9 @@ export default function OverlayControlCenter() {
     sharePreset, unsharePreset,
   } = usePresets({ user, isAdmin, overlayState, updateState, widgets, saveWidget, addWidget });
 
+  /* ── Map theme id → navbar displayStyle ── */
+  const THEME_TO_NAV_STYLE = { classic: 'glass', metallic: 'metallic', carbon: 'carbon', retro: 'retro', futuristic: 'futuristic' };
+
   /* ── Sync theme colors to all overlay widgets ── */
   const syncThemeToWidgets = useCallback(async (themeId) => {
     const t = themeMap[themeId];
@@ -128,10 +131,14 @@ export default function OverlayControlCenter() {
     };
 
     try {
-      // Update navbar widget
+      // Persist theme choice to overlay_themes so the OBS renderer picks it up
+      await saveTheme({ style_preset: themeId });
+
+      // Update navbar widget — also set its displayStyle to match the theme
+      const navStyle = THEME_TO_NAV_STYLE[themeId] || 'glass';
       const navWidget = widgets.find(w => w.widget_type === 'navbar');
       if (navWidget) {
-        await saveWidget({ ...navWidget, config: { ...navWidget.config, ...themeColors } });
+        await saveWidget({ ...navWidget, config: { ...navWidget.config, ...themeColors, displayStyle: navStyle } });
       }
 
       // Sync all other widgets
@@ -145,7 +152,7 @@ export default function OverlayControlCenter() {
     } catch (err) {
       console.error('[ThemeSync] Failed to sync:', err);
     }
-  }, [widgets, saveWidget]);
+  }, [widgets, saveWidget, saveTheme]);
 
   const overlayUrl = useMemo(() => {
     if (!instance) return '';
