@@ -161,8 +161,8 @@ function BonusHuntWidget({ config, theme }) {
     fontFamily,
     fontSize: `${fontSize}px`,
     width: '100%',
-    height: '100%',
-    overflow: 'hidden',
+    height: isNeonBH ? 'auto' : '100%',
+    overflow: isNeonBH ? 'visible' : 'hidden',
     gap: `${cardGap}px`,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`

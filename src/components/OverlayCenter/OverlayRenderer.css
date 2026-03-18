@@ -378,9 +378,10 @@
 }
 .oc-bonushunt--neon {
   overflow: visible;
-  justify-content: center;
+  align-items: center;
 }
 /* Neon: show 3D cards first, stats below */
+.oc-bonushunt--neon > * { flex-shrink: 0; }
 .oc-bonushunt--neon .bht-card.bht-list-card { order: 1; }
 .oc-bonushunt--neon .bht-card.bht-header     { order: 2; }
 .oc-bonushunt--neon .bht-card.bht-footer     { order: 3; }
