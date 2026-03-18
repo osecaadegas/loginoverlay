@@ -1127,8 +1127,12 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     }}>
                     {slots.length === 0 ? 'Loading slots...' : (
                       <>
-                        <span className="bh-notfound-label">No results for "{slotSearch.trim()}"</span>
-                        <span className="bh-submit-cta">+ Add This Slot</span>
+                        <span className="bh-notfound-label">"{slotSearch.trim()}" isn't in the database yet</span>
+                        <span className="bh-submit-cta">
+                          <span className="bh-submit-cta-icon">&#x2b;</span>
+                          Click here to add it
+                        </span>
+                        <span className="bh-submit-hint">👆 Press to open the submit form</span>
                       </>
                     )}
                   </div>
