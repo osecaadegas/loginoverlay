@@ -110,69 +110,55 @@ function GiveawayWidget({ config, widgetId }) {
       boxShadow:mShadow, display:'flex', flexDirection:'column',
       overflow:'hidden', boxSizing:'border-box', containerType:'size' }}>
       <style>{kf}</style>
-      <div style={{ padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2cqmin,12px)', display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
-        borderBottom:`1px solid ${mBorder}`, flexShrink:0,
-        background:mCardBg }}>
-        <span style={{ fontSize:'clamp(12px,5cqmin,24px)' }}>🎁</span>
-        <span style={{ fontWeight:700, fontSize:'clamp(12px,4cqmin,20px)', flex:1, whiteSpace:'nowrap', overflow:'hidden', textOverflow:'ellipsis',
-          letterSpacing:'0.14em', textTransform:'uppercase',
-          background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{title}</span>
+
+      {/* ── Header row ── */}
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between',
+        padding:'clamp(6px,3cqmin,14px) clamp(8px,3cqmin,16px)', flexShrink:0 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)' }}>
+          <span style={{ fontSize:'clamp(14px,5cqmin,26px)' }}>🎁</span>
+          <span style={{ fontWeight:800, fontSize:'clamp(14px,5cqmin,24px)', letterSpacing:'0.1em', textTransform:'uppercase',
+            background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{title}</span>
+        </div>
         {isActive && !isDone && (
-          <span style={{ background:'rgba(138,154,170,0.15)', color:mAccent, fontSize:'clamp(10px,2.5cqmin,13px)', fontWeight:700,
-            padding:'clamp(1px,0.4cqmin,3px) clamp(4px,1.2cqmin,8px)', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.08em',
-            border:'1px solid rgba(200,210,225,0.2)', boxShadow:mInner,
+          <span style={{ background:'rgba(34,197,94,0.15)', color:'#4ade80', fontSize:'clamp(11px,3cqmin,14px)', fontWeight:800,
+            padding:'clamp(2px,0.6cqmin,4px) clamp(6px,2cqmin,12px)', borderRadius:99, textTransform:'uppercase', letterSpacing:'0.1em',
+            border:'1px solid rgba(34,197,94,0.25)',
             animation:'ga-pulse 2s ease-in-out infinite' }}>LIVE</span>
         )}
       </div>
+
+      {/* ── Body ── */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-        padding:'clamp(3px,1.5cqmin,10px)', gap:'clamp(3px,1.5cqmin,8px)', minHeight:0 }}>
+        padding:'0 clamp(8px,3cqmin,16px) clamp(6px,3cqmin,14px)', gap:'clamp(4px,2cqmin,12px)', minHeight:0 }}>
         {winner ? (
-          <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:'clamp(18px,8cqmin,40px)', marginBottom:'clamp(1px,0.4cqmin,3px)' }}>🎉</div>
-            <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:700,
-              background:'linear-gradient(90deg, #8a90a0, #b0b8c8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Winner</div>
-            <div style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800,
-              background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent',
-              textShadow:'0 1px 4px rgba(0,0,0,0.6)' }}>{winner}</div>
-            {prize && <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mMuted, marginTop:'clamp(1px,0.5cqmin,4px)' }}>Prize: <span style={{ color:mAccent, fontWeight:700 }}>{prize}</span></div>}
-          </div>
+          <>
+            <div style={{ fontSize:'clamp(12px,4cqmin,18px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:700 }}>🎉 Winner</div>
+            <div style={{ fontSize:'clamp(20px,10cqmin,48px)', fontWeight:800, lineHeight:1.1,
+              background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{winner}</div>
+            {prize && <div style={{ fontSize:'clamp(13px,4cqmin,18px)', color:mMuted }}>Prize: <span style={{ color:'#d4d8e0', fontWeight:700 }}>{prize}</span></div>}
+          </>
         ) : isActive && keyword ? (
           <>
             {prize && (
-              <div style={{ background:mCardBg, border:`1px solid ${mBorder}`, borderRadius:'clamp(4px,1.5cqmin,8px)',
-                padding:'clamp(2px,1cqmin,6px) clamp(5px,2cqmin,14px)', textAlign:'center', boxShadow:mInner }}>
-                <div style={{ fontSize:'clamp(10px,2.5cqmin,12px)', color:mMuted, textTransform:'uppercase', letterSpacing:'0.14em', fontWeight:700,
-                  background:'linear-gradient(90deg, #8a90a0, #b0b8c8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>Prize</div>
-                <div style={{ fontSize:'clamp(12px,5cqmin,24px)', fontWeight:700, color:mText, marginTop:'clamp(1px,0.3cqmin,2px)',
-                  textShadow:'0 1px 2px rgba(0,0,0,0.5)' }}>{prize}</div>
-              </div>
+              <div style={{ fontSize:'clamp(18px,8cqmin,38px)', fontWeight:800, textAlign:'center', lineHeight:1.1,
+                background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>{prize}</div>
             )}
-            <div style={{ background:'rgba(168,176,192,0.08)', border:`1px solid rgba(200,210,225,0.18)`, borderRadius:'clamp(4px,2cqmin,10px)',
-              padding:'clamp(3px,1.5cqmin,8px) clamp(5px,2.5cqmin,14px)', textAlign:'center', boxShadow:mInner }}>
-              <div style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mMuted, marginBottom:'clamp(1px,0.4cqmin,3px)' }}>Type in chat to enter</div>
-              <div style={{ fontSize:'clamp(14px,6cqmin,30px)', fontWeight:800, letterSpacing:'0.02em',
-                background:'linear-gradient(90deg, #c8ccd4, #e8ecf4, #a0a8b8)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent' }}>!{keyword}</div>
+            <div style={{ display:'flex', alignItems:'baseline', gap:'clamp(4px,1.5cqmin,8px)', textAlign:'center' }}>
+              <span style={{ fontSize:'clamp(12px,4cqmin,16px)', color:mMuted }}>Type</span>
+              <span style={{ fontSize:'clamp(16px,6cqmin,28px)', fontWeight:800, color:'#d4d8e0', textShadow:'0 1px 3px rgba(0,0,0,0.5)' }}>!{keyword}</span>
+              <span style={{ fontSize:'clamp(12px,4cqmin,16px)', color:mMuted }}>to enter</span>
             </div>
-            <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1.5cqmin,8px)', marginTop:'clamp(1px,0.4cqmin,3px)' }}>
-              <span style={{ fontSize:'clamp(10px,4cqmin,20px)' }}>👥</span>
-              <span style={{ fontSize:'clamp(16px,7cqmin,36px)', fontWeight:800, color:mText, textShadow:'0 1px 2px rgba(0,0,0,0.5)' }}>{count}</span>
-              <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:mMuted }}>participant{count !== 1 ? 's' : ''}</span>
+            <div style={{ display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)' }}>
+              <span style={{ fontSize:'clamp(12px,4cqmin,18px)' }}>👥</span>
+              <span style={{ fontSize:'clamp(18px,8cqmin,40px)', fontWeight:800, color:'#d4d8e0', textShadow:'0 1px 3px rgba(0,0,0,0.5)' }}>{count}</span>
+              <span style={{ fontSize:'clamp(12px,4cqmin,16px)', color:mMuted }}>participant{count !== 1 ? 's' : ''}</span>
             </div>
-            {count > 0 && (
-              <div style={{ width:'100%', maxHeight:'20cqb', overflow:'hidden', display:'flex', flexWrap:'wrap', gap:'clamp(2px,0.5cqmin,4px)', justifyContent:'center' }}>
-                {participants.slice(-8).map((name, i) => (
-                  <span key={i} style={{ background:'linear-gradient(135deg, #555a65, #3a3e48)', color:mText, fontSize:'clamp(10px,2.5cqmin,12px)', fontWeight:700,
-                    padding:'clamp(1px,0.3cqmin,2px) clamp(4px,1.2cqmin,8px)', borderRadius:99,
-                    border:'1px solid rgba(200,210,225,0.15)', boxShadow:'inset 0 1px 0 rgba(255,255,255,0.08)' }}>{name}</span>
-                ))}
-              </div>
-            )}
           </>
         ) : (
-          <div style={{ textAlign:'center' }}>
-            <div style={{ fontSize:'clamp(18px,8cqmin,36px)', marginBottom:'clamp(2px,1cqmin,6px)', opacity:0.5 }}>🎁</div>
-            <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:mMuted }}>No active giveaway</div>
-          </div>
+          <>
+            <div style={{ fontSize:'clamp(24px,10cqmin,48px)', opacity:0.4 }}>🎁</div>
+            <div style={{ fontSize:'clamp(13px,4cqmin,18px)', color:mMuted }}>No active giveaway</div>
+          </>
         )}
       </div>
     </div>
