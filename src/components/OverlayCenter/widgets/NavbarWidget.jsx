@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { fetchNowPlaying, refreshSpotifyToken } from '../../../utils/spotifyAuth';
-import { supabase } from '../../../config/supabaseClient';
+import { fetchNowPlaying, serverRefreshToken } from '../../../utils/spotifyAuth';
 
 /* ─── Crypto price fetcher (CoinGecko free API) ─── */
 const CRYPTO_IDS = {
@@ -91,7 +90,7 @@ function useClock() {
 }
 
 /* ─── Main Navbar Widget (OBS Render) ─── */
-function NavbarWidget({ config, widgetId }) {
+function NavbarWidget({ config, widgetId, userId }) {
   const c = config || {};
   const time = useClock();
   const [cryptoPrices, setCryptoPrices] = useState({});
@@ -101,15 +100,13 @@ function NavbarWidget({ config, widgetId }) {
   const [socialIndex, setSocialIndex] = useState(0);
   const [socialFading, setSocialFading] = useState(false);
   const spotifyTokenRef = useRef(c.spotify_access_token);
-  const spotifyRefreshRef = useRef(c.spotify_refresh_token);
   const spotifyExpiresRef = useRef(c.spotify_expires_at);
 
   // Keep refs in sync with config
   useEffect(() => {
     spotifyTokenRef.current = c.spotify_access_token;
-    spotifyRefreshRef.current = c.spotify_refresh_token;
     spotifyExpiresRef.current = c.spotify_expires_at;
-  }, [c.spotify_access_token, c.spotify_refresh_token, c.spotify_expires_at]);
+  }, [c.spotify_access_token, c.spotify_expires_at]);
 
   // Crypto price polling — always fetch all coins
   useEffect(() => {
@@ -166,25 +163,12 @@ function NavbarWidget({ config, widgetId }) {
 
     let stopped = false;
 
-    const persistTokens = (fresh) => {
-      if (!widgetId) return;
-      supabase.from('overlay_widgets').select('config').eq('id', widgetId).single()
-        .then(({ data }) => {
-          if (data) {
-            const updated = { ...data.config, spotify_access_token: fresh.access_token, spotify_refresh_token: fresh.refresh_token, spotify_expires_at: fresh.expires_at };
-            supabase.from('overlay_widgets').update({ config: updated, updated_at: new Date().toISOString() }).eq('id', widgetId);
-          }
-        });
-    };
-
     const doRefresh = async () => {
-      if (!spotifyRefreshRef.current) return false;
+      if (!userId) return false;
       try {
-        const fresh = await refreshSpotifyToken(spotifyRefreshRef.current);
+        const fresh = await serverRefreshToken(userId);
         spotifyTokenRef.current = fresh.access_token;
-        spotifyRefreshRef.current = fresh.refresh_token;
         spotifyExpiresRef.current = fresh.expires_at;
-        persistTokens(fresh);
         return true;
       } catch {
         return false;
@@ -222,7 +206,7 @@ function NavbarWidget({ config, widgetId }) {
     poll();
     const id = setInterval(poll, 10000);
     return () => { stopped = true; clearInterval(id); };
-  }, [c.musicSource, c.spotify_access_token, widgetId]);
+  }, [c.musicSource, c.spotify_access_token, widgetId, userId]);
 
   // Manual "Now Playing"
   const displayNowPlaying = c.musicSource === 'spotify' && nowPlaying

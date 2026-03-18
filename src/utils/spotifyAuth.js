@@ -164,6 +164,39 @@ export async function refreshSpotifyToken(refreshToken) {
   };
 }
 
+/* ─── Server-side refresh via API (works from unauthenticated overlay pages) ─── */
+let _serverRefreshPromise = null;
+
+/**
+ * Refresh Spotify tokens via the server-side API route.
+ * Uses a module-level promise to deduplicate concurrent calls (e.g. NavbarWidget + SpotifyWidget).
+ * Returns { access_token, expires_at } or throws.
+ */
+export async function serverRefreshToken(userId) {
+  if (!userId) throw new Error('No userId for server refresh');
+
+  if (_serverRefreshPromise) return _serverRefreshPromise;
+
+  _serverRefreshPromise = (async () => {
+    const res = await fetch('/api/spotify-refresh', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: userId }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || 'Server token refresh failed');
+    }
+    return res.json();
+  })();
+
+  try {
+    return await _serverRefreshPromise;
+  } finally {
+    _serverRefreshPromise = null;
+  }
+}
+
 /**
  * Fetch currently playing track. Returns { artist, track, isPlaying, albumArt } or null.
  * Throws on 401 so callers can trigger a token refresh.

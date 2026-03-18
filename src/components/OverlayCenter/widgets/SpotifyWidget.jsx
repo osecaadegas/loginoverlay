@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { fetchNowPlaying, refreshSpotifyToken } from '../../../utils/spotifyAuth';
-import { supabase } from '../../../config/supabaseClient';
+import { fetchNowPlaying, serverRefreshToken } from '../../../utils/spotifyAuth';
 
 /* ────────────── helpers ────────────── */
 function marquee(text, max = 28) {
@@ -12,43 +11,28 @@ const SPOTIFY_GREEN = '#1DB954';
 /* ═══════════════════════════════════════════════════════
    Spotify Now Playing Widget — 6 embedded styles
    ═══════════════════════════════════════════════════════ */
-function SpotifyWidget({ config, widgetId }) {
+function SpotifyWidget({ config, widgetId, userId }) {
   const c = config || {};
   const [nowPlaying, setNowPlaying] = useState(null);
   const tokenRef  = useRef(c.spotify_access_token);
-  const refreshRef = useRef(c.spotify_refresh_token);
   const expiresRef = useRef(c.spotify_expires_at);
 
   useEffect(() => {
     tokenRef.current  = c.spotify_access_token;
-    refreshRef.current = c.spotify_refresh_token;
     expiresRef.current = c.spotify_expires_at;
-  }, [c.spotify_access_token, c.spotify_refresh_token, c.spotify_expires_at]);
+  }, [c.spotify_access_token, c.spotify_expires_at]);
 
-  /* ── Polling with token persistence (mirrors NavbarWidget) ── */
+  /* ── Polling with server-side token refresh ── */
   useEffect(() => {
     if (!tokenRef.current) return;
     let stopped = false;
 
-    const persistTokens = (fresh) => {
-      if (!widgetId) return;
-      supabase.from('overlay_widgets').select('config').eq('id', widgetId).single()
-        .then(({ data }) => {
-          if (data) {
-            const updated = { ...data.config, spotify_access_token: fresh.access_token, spotify_refresh_token: fresh.refresh_token, spotify_expires_at: fresh.expires_at };
-            supabase.from('overlay_widgets').update({ config: updated, updated_at: new Date().toISOString() }).eq('id', widgetId);
-          }
-        });
-    };
-
     const doRefresh = async () => {
-      if (!refreshRef.current) return false;
+      if (!userId) return false;
       try {
-        const fresh = await refreshSpotifyToken(refreshRef.current);
+        const fresh = await serverRefreshToken(userId);
         tokenRef.current  = fresh.access_token;
-        refreshRef.current = fresh.refresh_token;
         expiresRef.current = fresh.expires_at;
-        persistTokens(fresh);
         return true;
       } catch { return false; }
     };
@@ -84,7 +68,7 @@ function SpotifyWidget({ config, widgetId }) {
     poll();
     const id = setInterval(poll, 8000);
     return () => { stopped = true; clearInterval(id); };
-  }, [c.spotify_access_token, widgetId]);
+  }, [c.spotify_access_token, widgetId, userId]);
 
   /* ── Manual fallback ── */
   const data = nowPlaying
