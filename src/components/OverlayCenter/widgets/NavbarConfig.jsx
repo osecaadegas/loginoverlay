@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { NAVBAR_STYLE_KEYS } from './styleKeysRegistry';
 import ColorPicker from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 
@@ -41,10 +43,9 @@ const FONT_OPTIONS = [
 export default function NavbarConfig({ config, onChange }) {
   const c = config || {};
   const { user } = useAuth();
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, NAVBAR_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('setup');
-
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
 
   // Twitch info
   const isTwitch = user?.app_metadata?.provider === 'twitch';

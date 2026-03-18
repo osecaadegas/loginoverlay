@@ -1,4 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { TOURNAMENT_STYLE_KEYS } from './styleKeysRegistry';
 import { getAllSlots, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import { useAuth } from '../../../context/AuthContext';
 import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
@@ -74,8 +76,8 @@ function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = 
 export default function TournamentConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const { user } = useAuth();
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.layout || 'grid';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, TOURNAMENT_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'bracket');
 
   /* ─── Slot data (for search) ─── */

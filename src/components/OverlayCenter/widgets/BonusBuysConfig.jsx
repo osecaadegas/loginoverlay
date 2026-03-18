@@ -3,6 +3,8 @@ import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import { configStyles } from './shared/configStyles';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { BONUS_BUYS_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -16,8 +18,8 @@ const FONT_OPTIONS = [
 export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) {
   const { user } = useAuth();
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BONUS_BUYS_STYLE_KEYS);
 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);

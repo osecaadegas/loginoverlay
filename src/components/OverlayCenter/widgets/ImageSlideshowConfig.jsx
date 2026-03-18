@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { IMAGE_SLIDESHOW_STYLE_KEYS } from './styleKeysRegistry';
 import TabBar from './shared/TabBar';
 
 const FONT_OPTIONS = [
@@ -32,8 +34,8 @@ function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suf
 
 export default function ImageSlideshowConfig({ config, onChange, allWidgets }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, IMAGE_SLIDESHOW_STYLE_KEYS);
   const images = c.images || [];
   const [newUrl, setNewUrl] = useState('');
   const [activeTab, setActiveTab] = useState('images');

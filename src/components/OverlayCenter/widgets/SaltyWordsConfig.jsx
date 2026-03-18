@@ -6,11 +6,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { SALTY_WORDS_STYLE_KEYS } from './styleKeysRegistry';
 
 export default function SaltyWordsConfig({ config, onChange }) {
   const c = config || {};
-  const set = (k, v) => onChange({ ...c, [k]: v });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, SALTY_WORDS_STYLE_KEYS);
   const [tab, setTab] = useState('game');
   const [newWord, setNewWord] = useState('');
 

@@ -8,11 +8,13 @@ import { useStreamElements } from '../../../context/StreamElementsContext';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { COIN_FLIP_STYLE_KEYS } from './styleKeysRegistry';
 
 export default function CoinFlipConfig({ config, onChange }) {
   const c = config || {};
-  const set = (k, v) => onChange({ ...c, [k]: v });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, COIN_FLIP_STYLE_KEYS);
   const [tab, setTab] = useState('game');
 
   /* ── Points manager state ── */

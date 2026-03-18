@@ -7,6 +7,8 @@ import { useAuth } from '../../../context/AuthContext';
 import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../services/overlayService';
 import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -19,84 +21,11 @@ const FONT_OPTIONS = [
   { value: "'Press Start 2P', cursive", label: 'Press Start 2P' },
 ];
 
-/* Keys saved per-style so each style remembers its own look */
-const PER_STYLE_KEYS = [
-  'headerColor', 'headerAccent', 'countCardColor', 'currentBonusColor', 'currentBonusAccent',
-  'listCardColor', 'listCardAccent', 'summaryColor', 'cardOutlineColor',
-  'superBadgeColor', 'extremeBadgeColor', 'totalPayColor', 'totalPayText',
-  'textColor', 'mutedTextColor', 'statValueColor',
-  'fontFamily', 'fontSize',
-  'widgetWidth', 'cardPadding', 'cardRadius', 'cardGap', 'cardOutlineWidth',
-  'slotImageHeight', 'listMaxHeight',
-  'brightness', 'contrast', 'saturation',
-  'flipBackColor1', 'flipBackColor2', 'flipBackBorder', 'flipBackImage', 'flipSpinDuration',
-  'flipShowProvider', 'flipShowRTP', 'flipShowPotential', 'flipShowVolatility', 'flipShowBetSize', 'flipShowWin',
-  'v8CardWidth', 'v8CardHeight', 'v8FontSize', 'v8AutoSpeed', 'v8ShowStats', 'v8ShowProgress',
-  'v8CardSpacing', 'v8CardRadius', 'v8StatsFontSize', 'v8NameFontSize',
-  'v9CardWidth', 'v9CardHeight', 'v9FontSize', 'v9AutoSpeed', 'v9ShowStats', 'v9ShowProgress',
-  'v9CardSpacing', 'v9CardRadius', 'v9StatsFontSize', 'v9TitleFontSize', 'v9ContainerRadius',
-  'v9ContainerBg', 'v9ShowHeader',
-  'custom_css',
-];
-
-/** Save current per-style keys into styleConfigs[styleId] */
-export function saveStyleConfig(config, styleId) {
-  const snapshot = {};
-  PER_STYLE_KEYS.forEach(k => { if (config[k] !== undefined) snapshot[k] = config[k]; });
-  return {
-    ...config,
-    styleConfigs: { ...(config.styleConfigs || {}), [styleId]: snapshot },
-  };
-}
-
-/** Load per-style keys from styleConfigs[styleId] into top-level config */
-export function loadStyleConfig(config, styleId) {
-  const saved = config.styleConfigs?.[styleId];
-  if (!saved) return config;
-  return { ...config, ...saved };
-}
-
-/** Full swap: save oldStyle, load newStyle, set displayStyle */
-export function swapStyleConfig(config, oldStyle, newStyle) {
-  let next = saveStyleConfig(config, oldStyle);
-  next = loadStyleConfig(next, newStyle);
-  next.displayStyle = newStyle;
-  return next;
-}
-
 export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
   const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
   const currentStyle = c.displayStyle || 'v1';
-
-  /* ─── Per-style aware set: also persists to styleConfigs[currentStyle] ─── */
-  const set = (key, val) => {
-    const updated = { ...c, [key]: val };
-    if (PER_STYLE_KEYS.includes(key)) {
-      const sc = { ...(updated.styleConfigs || {}) };
-      sc[currentStyle] = { ...(sc[currentStyle] || {}), [key]: val };
-      updated.styleConfigs = sc;
-    }
-    onChange(updated);
-  };
-  const setMulti = (obj) => {
-    const updated = { ...c, ...obj };
-    const styleUpdates = {};
-    Object.keys(obj).forEach(k => {
-      if (PER_STYLE_KEYS.includes(k)) styleUpdates[k] = obj[k];
-    });
-    if (Object.keys(styleUpdates).length > 0) {
-      const sc = { ...(updated.styleConfigs || {}) };
-      sc[currentStyle] = { ...(sc[currentStyle] || {}), ...styleUpdates };
-      updated.styleConfigs = sc;
-    }
-    onChange(updated);
-  };
-
-  /* ─── prevStyleRef tracks last known style for external swap detection ─── */
-  /* Per-style swap is handled in WidgetManager.handleStyleCycle.
-     The set/setMulti wrappers above ensure every edit is persisted
-     to styleConfigs[currentStyle] automatically. */
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BONUS_HUNT_STYLE_KEYS);
 
   // Auth for history
   const { user } = useAuth();

@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { getAllProviders, getSlotsByProviders } from '../../../utils/slotUtils';
 import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { RANDOM_SLOT_PICKER_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -13,8 +15,8 @@ const FONT_OPTIONS = [
 
 export default function RandomSlotPickerConfig({ config, onChange, allWidgets, mode }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, RANDOM_SLOT_PICKER_STYLE_KEYS);
 
   const allTabs = [
     { id: 'content', label: '🎰 Pick' },

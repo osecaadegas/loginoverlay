@@ -3,7 +3,8 @@
  */
 import React, { useState, useCallback, useMemo, useRef, useEffect, memo } from 'react';
 import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
-import { swapStyleConfig } from './widgets/BonusHuntConfig';
+import { swapStyleConfig } from './widgets/shared/perStyleConfig';
+import { getStyleKeysForWidget } from './widgets/styleKeysRegistry';
 import { useAuth } from '../../context/AuthContext';
 import './OverlayRenderer.css';
 
@@ -580,9 +581,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     const current = widget.config?.[key] || styles[0].id;
     const idx = styles.findIndex(s => s.id === current);
     const next = styles[(idx + 1) % styles.length];
-    /* For bonus_hunt, swap per-style configs so each style remembers its own settings */
-    if (widget.widget_type === 'bonus_hunt') {
-      const swapped = swapStyleConfig(widget.config || {}, current, next.id);
+    const styleKeys = getStyleKeysForWidget(widget.widget_type);
+    if (styleKeys) {
+      const swapped = swapStyleConfig(widget.config || {}, current, next.id, styleKeys, key);
       onSave({ ...widget, config: swapped });
     } else {
       onSave({ ...widget, config: { ...widget.config, [key]: next.id } });

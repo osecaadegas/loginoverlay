@@ -2,6 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { GIVEAWAY_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -15,8 +17,8 @@ const FONT_OPTIONS = [
 /* ─── Giveaway Config Panel ─── */
 export default function GiveawayConfig({ config, onChange, allWidgets }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, GIVEAWAY_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('setup');
   const [confirmClear, setConfirmClear] = useState(false);
   const [chatStatus, setChatStatus] = useState({ twitch: false, kick: false });

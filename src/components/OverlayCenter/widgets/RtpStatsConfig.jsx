@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import ColorPickerBase from './shared/ColorPicker';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { RTP_STATS_STYLE_KEYS } from './styleKeysRegistry';
 import TabBar from './shared/TabBar';
 const ColorPicker = (props) => <ColorPickerBase {...props} showHex={false} className="nb-color-item" />;
 
@@ -32,8 +34,8 @@ function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suf
 
 export default function RtpStatsConfig({ config, onChange, allWidgets }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, RTP_STATS_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('visibility');
 
   /* ─── Check if bonus hunt widget exists ─── */

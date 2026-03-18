@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { BACKGROUND_STYLE_KEYS } from './styleKeysRegistry';
 import ColorPickerBase from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 const ColorPicker = (props) => <ColorPickerBase {...props} showHex={false} className="nb-color-item" />;
@@ -56,8 +58,8 @@ function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suf
 
 export default function BackgroundConfig({ config, onChange, allWidgets }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BACKGROUND_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('source');
 
   /* ─── Navbar sync ─── */

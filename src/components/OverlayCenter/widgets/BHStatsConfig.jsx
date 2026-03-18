@@ -4,6 +4,8 @@
  */
 import React from 'react';
 import ColorPicker from './shared/ColorPicker';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { BH_STATS_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
   { value: "'Poppins', sans-serif", label: 'Poppins' },
@@ -30,8 +32,8 @@ const S = {
 
 export default function BHStatsConfig({ config, onChange, allWidgets }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BH_STATS_STYLE_KEYS);
 
   const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
 

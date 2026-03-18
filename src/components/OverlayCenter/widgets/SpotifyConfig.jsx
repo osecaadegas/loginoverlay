@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { SPOTIFY_STYLE_KEYS } from './styleKeysRegistry';
 
 export default function SpotifyConfig({ config, onChange }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set } = makePerStyleSetters(onChange, c, currentStyle, SPOTIFY_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('content');
 
   const TABS = [

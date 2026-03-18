@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import ColorPicker from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { CHAT_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -18,8 +20,8 @@ const FONT_OPTIONS = [
 
 export default function ChatConfig({ config, onChange, allWidgets }) {
   const c = config || {};
-  const set = (key, val) => onChange({ ...c, [key]: val });
-  const setMulti = (obj) => onChange({ ...c, ...obj });
+  const currentStyle = c.chatStyle || 'classic';
+  const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, CHAT_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('platforms');
 
   // ─── Navbar sync ───

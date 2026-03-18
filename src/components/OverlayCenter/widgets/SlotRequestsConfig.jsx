@@ -6,6 +6,8 @@
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
+import { makePerStyleSetters } from './shared/perStyleConfig';
+import { SLOT_REQUESTS_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
   { value: "'Poppins', sans-serif", label: 'Poppins' },
@@ -75,7 +77,8 @@ export default function SlotRequestsConfig({ config, onChange }) {
     return () => { supabase.removeChannel(channel); };
   }, [user, fetchQueue]);
 
-  const set = (key, val) => onChange({ ...c, [key]: val });
+  const currentStyle = c.displayStyle || 'v1';
+  const { set } = makePerStyleSetters(onChange, c, currentStyle, SLOT_REQUESTS_STYLE_KEYS);
 
   /* ── Twitch IRC chat listener ── */
   useEffect(() => {
