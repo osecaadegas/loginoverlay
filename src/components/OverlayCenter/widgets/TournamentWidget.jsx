@@ -856,6 +856,285 @@ function TournamentWidget({ config, theme }) {
   };
 
   /* ═══════════════════════════════════════════════════════════════
+     SCOREBOARD — Bo3 focused layout with PAY / MULTI columns per round
+     Stacked player cards showing all rounds side-by-side with phase tabs.
+     ═══════════════════════════════════════════════════════════════ */
+  const renderScoreboard = () => {
+    const sbAccent   = c.sbAccent   || '#3b82f6';  // blue accent
+    const sbHeaderBg = c.sbHeaderBg || 'rgba(0,0,0,0.85)';
+    const sbCardBg   = c.sbCardBg   || '#1a1d2e';
+    const sbTextCol  = c.sbTextColor || '#ffffff';
+    const sbPayCol   = c.sbPayColor  || '#e2e8f0';
+    const sbMultiCol = c.sbMultiColor || '#facc15';
+    const sbWinCol   = c.sbWinColor  || '#22c55e';
+    const sbLoseCol  = c.sbLoseColor || '#ef4444';
+    const sbTabBg    = c.sbTabBg     || 'rgba(0,0,0,0.6)';
+    const sbTabActive = c.sbTabActive || sbAccent;
+    const sbFont     = fontFamily;
+    const bracketData = c.bracketData || [];
+    const bracketActiveRound = c.bracketActiveRound ?? 0;
+
+    /* Current match from the flat list */
+    const currentMatch = matches[currentMatchIdx] || matches[0];
+    if (!currentMatch) return null;
+
+    const isBo3 = currentMatch.type === 'bonus_bo3';
+    const roundCount = isBo3 ? 3 : 1;
+    const scoreboard = isBo3 ? getBoScoreboard(currentMatch) : null;
+
+    /* Get values for a player in a specific round */
+    const getRoundVals = (match, playerKey, roundIdx) => {
+      const rd = match?.rounds?.[roundIdx]?.[playerKey];
+      if (!rd) return { pay: null, multi: null };
+      if (match.type === 'spins') {
+        const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+        const pay = (isNaN(s) || isNaN(e)) ? null : e;
+        const multi = (isNaN(s) || isNaN(e) || s === 0) ? null : (e - s) / s;
+        return { pay, multi };
+      }
+      const cost = parseFloat(rd.bonusCost), payout = parseFloat(rd.bonusPayout);
+      const pay = isNaN(payout) ? null : payout;
+      const multi = (isNaN(cost) || isNaN(payout) || cost === 0) ? null : payout / cost;
+      return { pay, multi };
+    };
+
+    /* Total pay + multi across all rounds */
+    const getPlayerTotals = (match, playerKey) => {
+      let totalPay = 0, totalCost = 0, anyData = false;
+      for (let i = 0; i < roundCount; i++) {
+        const rd = match?.rounds?.[i]?.[playerKey];
+        if (!rd) continue;
+        if (match.type === 'spins') {
+          const s = parseFloat(rd.startBalance), e = parseFloat(rd.endBalance);
+          if (!isNaN(s) && !isNaN(e)) { totalPay += e; totalCost += s; anyData = true; }
+        } else {
+          const cost = parseFloat(rd.bonusCost), payout = parseFloat(rd.bonusPayout);
+          if (!isNaN(payout)) { totalPay += payout; anyData = true; }
+          if (!isNaN(cost)) totalCost += cost;
+        }
+      }
+      if (!anyData) return { pay: null, multi: null };
+      const multi = totalCost > 0 ? totalPay / totalCost : null;
+      return { pay: totalPay, multi };
+    };
+
+    /* Render one player card */
+    const renderSbPlayer = (match, playerKey) => {
+      const name = match[playerKey] || 'Player';
+      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const slotImage = pSlot?.image || null;
+      const slotName = pSlot?.name || '';
+      const hasWinner = match.winner != null;
+      const isWinner = match.winner === playerKey;
+      const isLoser = hasWinner && !isWinner;
+      const totals = getPlayerTotals(match, playerKey);
+
+      return (
+        <div style={{
+          display: 'flex', flexDirection: 'column',
+          background: sbCardBg,
+          borderRadius: `${cardRadius}px`,
+          overflow: 'hidden',
+          border: isWinner
+            ? `2px solid ${sbWinCol}`
+            : isLoser ? `1px solid ${sbLoseCol}40` : `1px solid ${cardBorder}`,
+          opacity: isLoser ? 0.7 : 1,
+          transition: 'all 0.3s ease',
+          flex: 1, minHeight: 0,
+        }}>
+          {/* Player name header */}
+          <div style={{
+            background: sbHeaderBg,
+            padding: '4px 10px',
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            {isWinner && <span style={{ fontSize: 14 }}>🏆</span>}
+            <span style={{
+              fontWeight: 700, color: sbTextCol, fontSize: 'clamp(11px, 1.6vw, 15px)',
+              fontFamily: sbFont, whiteSpace: 'nowrap', overflow: 'hidden',
+              textOverflow: 'ellipsis', flex: 1,
+            }}>{name}</span>
+          </div>
+
+          {/* Content: slot image + round columns */}
+          <div style={{
+            flex: 1, display: 'flex', alignItems: 'stretch', minHeight: 0,
+          }}>
+            {/* Slot image */}
+            <div style={{
+              width: 'clamp(60px, 28%, 140px)', flexShrink: 0, position: 'relative',
+              overflow: 'hidden',
+            }}>
+              {slotImage ? (
+                <img src={slotImage} alt={slotName} style={{
+                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                }} />
+              ) : (
+                <div style={{
+                  width: '100%', height: '100%',
+                  background: 'rgba(0,0,0,0.3)', display: 'flex',
+                  alignItems: 'center', justifyContent: 'center',
+                  fontSize: 24, color: 'rgba(255,255,255,0.1)',
+                }}>🎰</div>
+              )}
+              {/* Slot name overlay */}
+              {slotName && (
+                <div style={{
+                  position: 'absolute', bottom: 0, left: 0, right: 0,
+                  background: 'rgba(0,0,0,0.75)', padding: '2px 4px',
+                  fontSize: 'clamp(7px, 1vw, 10px)', fontWeight: 600,
+                  color: '#d4d8e0', textTransform: 'uppercase',
+                  letterSpacing: '0.3px', lineHeight: 1.2,
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                  fontFamily: sbFont,
+                }}>{slotName}</div>
+              )}
+            </div>
+
+            {/* Round columns */}
+            <div style={{
+              flex: 1, display: 'flex', minWidth: 0,
+            }}>
+              {Array.from({ length: roundCount }, (_, rIdx) => {
+                const vals = getRoundVals(match, playerKey, rIdx);
+                const roundWinner = scoreboard?.roundResults?.[rIdx]?.winner;
+                const wonThisRound = roundWinner === playerKey;
+                const lostThisRound = roundWinner && roundWinner !== 'draw' && roundWinner !== playerKey;
+                const roundDone = roundWinner != null;
+
+                return (
+                  <div key={rIdx} style={{
+                    flex: 1, display: 'flex', flexDirection: 'column',
+                    justifyContent: 'center', alignItems: 'flex-end',
+                    padding: '4px 8px', minWidth: 0,
+                    borderLeft: '1px solid rgba(255,255,255,0.06)',
+                    background: wonThisRound ? `${sbWinCol}10`
+                      : lostThisRound ? `${sbLoseCol}08` : 'transparent',
+                  }}>
+                    {/* PAY */}
+                    <div style={{
+                      display: 'flex', alignItems: 'baseline', gap: 4,
+                      justifyContent: 'flex-end', width: '100%',
+                    }}>
+                      <span style={{
+                        fontSize: 'clamp(8px, 0.9vw, 10px)', fontWeight: 600,
+                        color: '#94a3b8', fontFamily: sbFont,
+                      }}>PAY</span>
+                      <span style={{
+                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 700,
+                        color: sbPayCol, fontFamily: sbFont,
+                      }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(2)}` : '—'}</span>
+                    </div>
+                    {/* MULTI */}
+                    <div style={{
+                      display: 'flex', alignItems: 'baseline', gap: 4,
+                      justifyContent: 'flex-end', width: '100%',
+                    }}>
+                      <span style={{
+                        fontSize: 'clamp(8px, 0.9vw, 10px)', fontWeight: 600,
+                        color: '#94a3b8', fontFamily: sbFont,
+                      }}>MULTI</span>
+                      <span style={{
+                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 700,
+                        color: sbMultiCol, fontFamily: sbFont,
+                      }}>{vals.multi !== null ? `${vals.multi.toFixed(2)}x` : '—'}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Bottom score bar: per-round indicators + totals */}
+          <div style={{
+            display: 'flex', alignItems: 'center', padding: '3px 6px',
+            background: 'rgba(0,0,0,0.5)', gap: 6,
+            borderTop: '1px solid rgba(255,255,255,0.06)',
+          }}>
+            {/* Round win/loss indicators */}
+            {isBo3 && scoreboard && (
+              <div style={{ display: 'flex', gap: 3 }}>
+                {scoreboard.roundResults.map((rr, i) => (
+                  <span key={i} style={{
+                    fontSize: 'clamp(10px, 1.2vw, 14px)',
+                    opacity: rr.winner ? 1 : 0.3,
+                  }}>
+                    {rr.winner === playerKey ? '🏅'
+                      : rr.winner === 'draw' ? '🤝'
+                      : rr.winner ? '❌' : '⚪'}
+                  </span>
+                ))}
+              </div>
+            )}
+
+            <div style={{ flex: 1 }} />
+
+            {/* Totals */}
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              fontSize: 'clamp(9px, 1vw, 12px)', fontFamily: sbFont,
+            }}>
+              <span style={{ color: '#94a3b8' }}>
+                {currency}{totals.pay !== null ? totals.pay.toFixed(2) : '0.00'}
+              </span>
+              <span style={{
+                fontWeight: 700,
+                color: totals.multi !== null && totals.multi >= 1 ? sbWinCol : sbLoseCol,
+              }}>
+                {totals.multi !== null ? `${totals.multi.toFixed(2)}x` : '—'}
+              </span>
+              <span style={{ fontSize: 'clamp(9px, 1vw, 12px)', color: sbPayCol }}>
+                {currency}{(totals.pay !== null && totals.multi !== null) ? ((totals.pay / totals.multi) || 0).toFixed(0) : '0'}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    return (
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', fontFamily: sbFont,
+        padding: `${padding}px`, gap: `${gap}px`,
+      }}>
+        {/* Both player cards */}
+        {renderSbPlayer(currentMatch, 'player1')}
+        {renderSbPlayer(currentMatch, 'player2')}
+
+        {/* Phase tabs at bottom */}
+        {bracketData.length > 1 && (
+          <div style={{
+            display: 'flex', flexShrink: 0,
+            borderRadius: 6, overflow: 'hidden',
+            border: '1px solid rgba(255,255,255,0.08)',
+          }}>
+            {bracketData.map((round, rIdx) => {
+              const isActive = rIdx === bracketActiveRound;
+              return (
+                <div key={rIdx} style={{
+                  flex: 1, textAlign: 'center',
+                  padding: 'clamp(4px, 0.6vw, 8px) 4px',
+                  fontSize: 'clamp(8px, 1.1vw, 12px)',
+                  fontWeight: 800, fontFamily: sbFont,
+                  textTransform: 'uppercase', letterSpacing: '0.8px',
+                  color: isActive ? '#fff' : 'rgba(255,255,255,0.4)',
+                  background: isActive ? sbTabActive : sbTabBg,
+                  transition: 'all 0.2s',
+                  cursor: 'default',
+                  borderRight: rIdx < bracketData.length - 1 ? '1px solid rgba(255,255,255,0.08)' : 'none',
+                }}>
+                  {round.label}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
      MAIN RETURN
      ═══════════════════════════════════════════════════════════════ */
   return (
@@ -907,7 +1186,8 @@ function TournamentWidget({ config, theme }) {
       `}</style>
 
       {/* ── Layout-specific content ── */}
-      {layout === 'esports' ? renderEsports()
+      {layout === 'scoreboard' ? renderScoreboard()
+        : layout === 'esports' ? renderEsports()
         : layout === 'arena' ? renderArena()
         : (layout === 'vertical' || layout === 'minimal') ? renderVertical()
         : renderEsports()}

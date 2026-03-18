@@ -120,6 +120,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     'arenaAccent', 'arenaWinColor', 'arenaCardBg', 'arenaCurrency', 'arenaLoseOpacity',
     'ftAccent', 'ftCyan', 'ftBg', 'ftCardBg', 'ftBorder',
     'esCyan', 'esPurple', 'esGold', 'esBg', 'esCardBg', 'esBorder',
+    'sbAccent', 'sbHeaderBg', 'sbCardBg', 'sbTextColor', 'sbPayColor', 'sbMultiColor',
+    'sbWinColor', 'sbLoseColor', 'sbTabBg', 'sbTabActive',
   ];
 
   /* ─── Built-in presets ─── */
@@ -208,6 +210,31 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         esBg: '#030712',
         esCardBg: 'rgba(15,23,42,0.75)',
         esBorder: 'rgba(0,229,255,0.18)',
+      },
+    },
+    {
+      name: '🏆 Bo3 Scoreboard',
+      builtin: true,
+      values: {
+        layout: 'scoreboard',
+        showBg: true,
+        bgColor: '#0f1120',
+        borderRadius: 10,
+        borderWidth: 0,
+        containerPadding: 6,
+        cardGap: 6,
+        cardRadius: 8,
+        cardBorder: 'rgba(255,255,255,0.08)',
+        sbAccent: '#3b82f6',
+        sbHeaderBg: 'rgba(0,0,0,0.85)',
+        sbCardBg: '#1a1d2e',
+        sbTextColor: '#ffffff',
+        sbPayColor: '#e2e8f0',
+        sbMultiColor: '#facc15',
+        sbWinColor: '#22c55e',
+        sbLoseColor: '#ef4444',
+        sbTabBg: 'rgba(0,0,0,0.6)',
+        sbTabActive: '#3b82f6',
       },
     },
   ];
@@ -922,6 +949,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               { id: 'minimal',  icon: '✨', label: 'Minimal' },
               { id: 'arena',    icon: '⚔️', label: 'Arena' },
               { id: 'esports', icon: '🎮', label: 'Esports' },
+              { id: 'scoreboard', icon: '🏆', label: 'Scoreboard' },
             ].map(m => (
               <button key={m.id}
                 className={`oc-bg-mode-btn ${(c.layout || 'esports') === m.id ? 'oc-bg-mode-btn--active' : ''}`}
@@ -938,6 +966,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               ? 'Clean minimal style — same vertical layout, subtle styling.'
               : (c.layout || 'esports') === 'arena'
               ? 'Battle Arena — VS cards with profit display, winner highlights.'
+              : (c.layout || 'esports') === 'scoreboard'
+              ? 'Bo3 Scoreboard — PAY & MULTI per round, slot images, phase tabs.'
               : 'Cyberpunk 3D glass panels — bracket grid + dramatic current match.'}
           </p>
 
@@ -997,6 +1027,27 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                   <ColorPicker label="Background" value={c.esBg || '#030712'} onChange={v => set('esBg', v)} />
                   <ColorPicker label="Card BG" value={c.esCardBg || 'rgba(15,23,42,0.75)'} onChange={v => set('esCardBg', v)} />
                   <ColorPicker label="Border" value={c.esBorder || 'rgba(0,229,255,0.18)'} onChange={v => set('esBorder', v)} />
+                </div>
+              </div>
+            </details>
+          )}
+
+          {/* ── Scoreboard-specific colors ── */}
+          {(c.layout || 'esports') === 'scoreboard' && (
+            <details className="bk-details" open>
+              <summary>Scoreboard Colors</summary>
+              <div className="bk-details-body">
+                <div className="nb-color-grid">
+                  <ColorPicker label="Accent" value={c.sbAccent || '#3b82f6'} onChange={v => set('sbAccent', v)} />
+                  <ColorPicker label="Header BG" value={c.sbHeaderBg || 'rgba(0,0,0,0.85)'} onChange={v => set('sbHeaderBg', v)} />
+                  <ColorPicker label="Card BG" value={c.sbCardBg || '#1a1d2e'} onChange={v => set('sbCardBg', v)} />
+                  <ColorPicker label="Text" value={c.sbTextColor || '#ffffff'} onChange={v => set('sbTextColor', v)} />
+                  <ColorPicker label="Pay Color" value={c.sbPayColor || '#e2e8f0'} onChange={v => set('sbPayColor', v)} />
+                  <ColorPicker label="Multi Color" value={c.sbMultiColor || '#facc15'} onChange={v => set('sbMultiColor', v)} />
+                  <ColorPicker label="Win" value={c.sbWinColor || '#22c55e'} onChange={v => set('sbWinColor', v)} />
+                  <ColorPicker label="Lose" value={c.sbLoseColor || '#ef4444'} onChange={v => set('sbLoseColor', v)} />
+                  <ColorPicker label="Tab BG" value={c.sbTabBg || 'rgba(0,0,0,0.6)'} onChange={v => set('sbTabBg', v)} />
+                  <ColorPicker label="Tab Active" value={c.sbTabActive || '#3b82f6'} onChange={v => set('sbTabActive', v)} />
                 </div>
               </div>
             </details>
