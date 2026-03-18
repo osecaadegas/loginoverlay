@@ -123,17 +123,24 @@ export default function OverlayControlCenter() {
 
     // For metallic theme, override primary/accent with the chosen metal color
     let colors = { ...t.colors };
-    let themePatch = { style_preset: themeId, metal_color: metalPresetId || 'chrome' };
     if (themeId === 'metallic' && metalPresetId) {
       const preset = (await import('../../data/appThemes')).metallicPresets[metalPresetId];
       if (preset) {
         colors.primary = preset.hex;
         colors.accent = preset.hex;
-        // Store metal color in DB so the overlay renderer can pick it up
-        themePatch.primary_color = preset.hex;
-        themePatch.accent_color = preset.hex;
       }
     }
+
+    // Persist ALL theme properties to DB so the OBS overlay renderer picks them up
+    const themePatch = {
+      style_preset: themeId,
+      metal_color: metalPresetId || 'chrome',
+      primary_color: colors.primary,
+      secondary_color: colors.secondary,
+      accent_color: colors.accent,
+      text_color: colors.text,
+      font_family: t.font,
+    };
 
     const themeColors = {
       accentColor: colors.accent,

@@ -99,6 +99,12 @@ function buildThemeVars(theme) {
     '--oc-font': theme.font_family || 'Inter',
     '--oc-font-weight': theme.font_weight || 500,
     '--oc-anim-speed': theme.animation_speed ?? 1,
+    // Mirror DB colors into --t-* vars so theme-system.css works in OBS
+    '--t-primary': theme.primary_color || '#9346ff',
+    '--t-secondary': theme.secondary_color || '#1a1b2e',
+    '--t-accent': theme.accent_color || '#00e1ff',
+    '--t-text': theme.text_color || '#ffffff',
+    '--t-font': theme.font_family || 'Inter',
   };
 
   // When metallic theme is active, pipe the stored color into --t-metal-* vars
@@ -106,7 +112,6 @@ function buildThemeVars(theme) {
   if (theme.style_preset === 'metallic' && theme.primary_color) {
     const hex = theme.primary_color;
     vars['--t-metal-hex'] = hex;
-    // Build a simple brushed-metal gradient from the hex
     vars['--t-metal-gradient'] = `linear-gradient(135deg, ${hex}cc 0%, ${hex}66 40%, ${hex}99 60%, ${hex}cc 100%)`;
   }
 
