@@ -2,8 +2,10 @@
  * SlotRequestsWidget.jsx — Dispatcher: fetches data, manages IRC,
  * then delegates rendering to the selected display style.
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import useTwitchChat from '../../../hooks/useTwitchChat';
+import useKickChat from '../../../hooks/useKickChat';
 import SlotRequestsWidgetList from './SlotRequestsWidgetList';
 import SlotRequestsWidgetBoard from './SlotRequestsWidgetBoard';
 import SlotRequestsWidgetCompact from './SlotRequestsWidgetCompact';
@@ -44,7 +46,32 @@ export default function SlotRequestsWidget({ config, userId }) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchRequests, userId]);
 
-  // IRC !sr handling is done by ProfileSection's global listener
+  /* ── IRC !sr listener (always on when channel is configured) ── */
+  const userIdRef = useRef(userId);
+  userIdRef.current = userId;
+
+  const handleMessageRef = useRef(null);
+  handleMessageRef.current = async (msg) => {
+    const text = (msg.message || '').trim();
+    const match = text.match(/^!sr\s+(.+)/i);
+    if (!match) return;
+    const slotName = match[1].trim();
+    if (!slotName || !userIdRef.current) return;
+    try {
+      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userIdRef.current)}&requester=${encodeURIComponent(msg.username)}&slot=${encodeURIComponent(slotName)}`);
+    } catch (err) {
+      console.error('[SlotRequestsWidget] !sr error', err);
+    }
+  };
+
+  const handleMessage = useCallback((msg) => {
+    handleMessageRef.current?.(msg);
+  }, []);
+
+  const listenTwitch = !!c.twitchChannel;
+  const listenKick = !!c.kickChannelId;
+  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleMessage);
+  useKickChat(listenKick ? c.kickChannelId : '', handleMessage);
 
   /* ── Style dispatch ── */
   if (c.displayStyle === 'v2_board') {

@@ -29,6 +29,10 @@ const SYNC_MAP = {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
   },
+  slot_requests: {
+    twitchUsername: 'twitchChannel',
+    kickChannel: 'kickChannelId',
+  },
   spotify_now_playing: {
     spotify_access_token: 'spotify_access_token',
     spotify_refresh_token: 'spotify_refresh_token',

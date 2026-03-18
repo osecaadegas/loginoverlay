@@ -642,6 +642,8 @@ registerWidget({
     maxDisplay: 10,
     showRequester: true,
     showNumbers: true,
+    twitchChannel: '',
+    kickChannelId: '',
     accentColor: '#f59e0b',
     textColor: '#ffffff',
     mutedColor: '#94a3b8',
