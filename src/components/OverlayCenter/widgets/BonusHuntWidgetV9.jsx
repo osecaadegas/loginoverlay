@@ -1,31 +1,40 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 
 /**
- * V9 — Hunt Board
- * A contained panel with a top slot-name strip, a 3D card carousel in the
- * centre (same depth-perspective as V8 card stack), and a stats bar at the
- * bottom.  Looks like a broadcast overlay "hunt board".
+ * V9 — Hunt Board  (fully rebuilt)
+ * Contained panel with title header, 3D card carousel, progress bar,
+ * and a clean stats grid. Every dimension is configurable from the panel.
  */
-function BonusHuntWidgetV9({ config, theme }) {
+function BonusHuntWidgetV9({ config }) {
   const c = config || {};
   const bonuses = c.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
   const stopLoss = Number(c.stopLoss) || 0;
 
-  /* ─── Colours ─── */
-  const accentColor   = c.headerAccent || c.v9AccentColor || '#e844d0';
-  const textColor     = c.textColor || '#ffffff';
-  const mutedColor    = c.mutedTextColor || '#94a3b8';
-  const containerBg   = c.v9ContainerBg || 'rgba(15,23,42,0.82)';
-  const cardBg        = c.listCardColor || 'rgba(15,23,42,0.6)';
+  /* ─── Configurable sizes ─── */
+  const cardW = Number(c.v9CardWidth) || 160;
+  const cardH = Number(c.v9CardHeight) || 230;
+  const fontSize = Number(c.v9FontSize) || 14;
+  const autoSpeed = Number(c.v9AutoSpeed) || 4000;
+  const showStats = c.v9ShowStats !== false;
+  const showHeader = c.v9ShowHeader !== false;
+  const showProgress = c.v9ShowProgress !== false;
+  const cardSpacing = Number(c.v9CardSpacing) || 110;
+  const cardRadius = Number(c.v9CardRadius) || 14;
+  const containerRadius = Number(c.v9ContainerRadius) || 18;
+  const statsFontSize = Number(c.v9StatsFontSize) || 13;
+  const titleFontSize = Number(c.v9TitleFontSize) || 18;
+
+  /* ─── Colors ─── */
+  const accentColor = c.headerAccent || '#e844d0';
+  const textColor = c.textColor || '#ffffff';
+  const mutedColor = c.mutedTextColor || '#94a3b8';
+  const containerBg = c.v9ContainerBg || 'rgba(15,23,42,0.85)';
   const totalPayColor = c.totalPayColor || '#eab308';
-  const superBadge    = c.superBadgeColor || '#eab308';
-  const extremeBadge  = c.extremeBadgeColor || '#ef4444';
-  const fontFamily    = c.fontFamily || "'Inter', sans-serif";
-  const autoSpeed     = Number(c.v9AutoSpeed) || 4000;
-  const showStats     = c.v9ShowStats !== false;
-  const bonusOpening  = c.bonusOpening === true;
+  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const bonusOpening = c.bonusOpening === true;
+  const huntTitle = c.huntTitle || c.title || 'BONUS HUNT';
 
   const hex2rgb = (hex) => {
     const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
@@ -55,7 +64,6 @@ function BonusHuntWidgetV9({ config, theme }) {
   const timerRef = useRef(null);
   const total = bonuses.length;
 
-  /* current bonus (first not-opened) */
   const currentBonusIdx = bonuses.findIndex(b => !b.opened);
   const huntComplete = bonusOpening && currentBonusIdx === -1 && total > 0;
 
@@ -64,19 +72,11 @@ function BonusHuntWidgetV9({ config, theme }) {
     setActiveIdx(prev => (prev + 1) % total);
   }, [total]);
 
-  /* When bonusOpening is ON → lock to the current bonus, stop cycling.
-     The 3D transition still fires because activeIdx changes when
-     currentBonusIdx advances (user fills payout → next card slides in).
-     When hunt is complete (all opened) → resume spinning the results. */
   useEffect(() => {
-    if (bonusOpening && currentBonusIdx >= 0) {
-      setActiveIdx(currentBonusIdx);
-    }
+    if (bonusOpening && currentBonusIdx >= 0) setActiveIdx(currentBonusIdx);
   }, [bonusOpening, currentBonusIdx]);
 
   useEffect(() => {
-    /* No auto-cycle when bonusOpening is active with unopened bonuses, or ≤1 card.
-       Resume cycling when hunt is complete so results keep spinning. */
     if ((bonusOpening && !huntComplete) || total <= 1) return;
     timerRef.current = setInterval(advance, autoSpeed);
     return () => clearInterval(timerRef.current);
@@ -87,12 +87,11 @@ function BonusHuntWidgetV9({ config, theme }) {
     if (total <= 1) return idx - activeIdx;
     let off = idx - activeIdx;
     const half = total / 2;
-    while (off > half)  off -= total;
+    while (off > half) off -= total;
     while (off < -half) off += total;
     return off;
   }, [activeIdx, total]);
 
-  /* visible cards [-3,+3] */
   const visibleCards = useMemo(() => {
     if (total === 0) return [];
     return bonuses
@@ -100,49 +99,70 @@ function BonusHuntWidgetV9({ config, theme }) {
       .filter(({ offset }) => Math.abs(offset) <= 3);
   }, [bonuses, getOffset, total]);
 
-  /* 3D transforms matching V8 style */
+  /* ─── 3D card transforms ─── */
   const cardStyle = (offset) => {
     const absOff = Math.abs(offset);
     const sign = offset < 0 ? -1 : 1;
+    const spacing = cardSpacing;
+
     if (absOff >= 3) {
       return {
         position: 'absolute',
-        transform: `translateX(${sign * 260}px) rotateY(${sign * -22}deg) translateZ(-200px) scale(0.3)`,
-        opacity: 0, zIndex: 0,
-        transition: 'transform 0.85s cubic-bezier(0.33,1,0.68,1), opacity 0.85s cubic-bezier(0.33,1,0.68,1), filter 0.85s ease',
-        pointerEvents: 'none', willChange: 'transform, opacity',
+        transform: `translateX(${sign * spacing * 2.3}px) rotateY(${sign * -20}deg) translateZ(-180px) scale(0.3)`,
+        opacity: 0, zIndex: 0, pointerEvents: 'none',
+        transition: 'all 0.85s cubic-bezier(0.33,1,0.68,1)',
+        willChange: 'transform, opacity',
       };
     }
-    const txMap = [0, 120, 215], tzMap = [50, -10, -50], ryMap = [0, -14, -24];
-    const scMap = [1.05, 0.88, 0.72], opMap = [1, 0.9, 0.65];
+
+    const txMap = [0, spacing, spacing * 1.8];
+    const tzMap = [45, -10, -50];
+    const ryMap = [0, -14, -23];
+    const scMap = [1.04, 0.86, 0.7];
+    const opMap = [1, 0.85, 0.55];
+
     return {
       position: 'absolute',
       transform: `translateX(${txMap[absOff] * sign}px) rotateY(${ryMap[absOff] * sign}deg) translateZ(${tzMap[absOff]}px) scale(${scMap[absOff]})`,
-      opacity: opMap[absOff], zIndex: 10 - absOff * 3,
-      transition: 'transform 0.85s cubic-bezier(0.33,1,0.68,1), opacity 0.85s cubic-bezier(0.33,1,0.68,1), filter 0.85s ease',
+      opacity: opMap[absOff],
+      zIndex: 10 - absOff * 3,
       filter: absOff === 2 ? 'blur(1px)' : 'none',
+      transition: 'all 0.85s cubic-bezier(0.33,1,0.68,1)',
       willChange: 'transform, opacity',
     };
   };
 
-  /* ─── Top strip: all slot names as pills ─── */
-
-  const rootVars = {
-    '--bhv9-accent': accentColor,
-    '--bhv9-accent-rgb': accentRgb,
-    '--bhv9-text': textColor,
-    '--bhv9-muted': mutedColor,
-    '--bhv9-container-bg': containerBg,
-    '--bhv9-card-bg': cardBg,
-    '--bhv9-total-pay': totalPayColor,
+  const rootStyle = {
+    fontFamily,
+    fontSize: `${fontSize}px`,
+    width: '100%',
+    height: '100%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+    background: 'transparent',
+    color: textColor,
+    '--v9-accent': accentColor,
+    '--v9-accent-rgb': accentRgb,
+    '--v9-text': textColor,
+    '--v9-muted': mutedColor,
+    '--v9-total-pay': totalPayColor,
+    '--v9-card-w': `${cardW}px`,
+    '--v9-card-h': `${cardH}px`,
+    '--v9-card-radius': `${cardRadius}px`,
+    '--v9-container-bg': containerBg,
+    '--v9-container-radius': `${containerRadius}px`,
+    '--v9-stats-size': `${statsFontSize}px`,
+    '--v9-title-size': `${titleFontSize}px`,
   };
 
   if (total === 0) {
     return (
-      <div className="bhv9-root" style={{ fontFamily, color: textColor, ...rootVars }}>
-        <div className="bhv9-container">
-          <div style={{ textAlign: 'center', opacity: 0.5, fontSize: '1.1em', padding: 40 }}>
-            <div style={{ fontSize: '2.5em', marginBottom: 8 }}>🎯</div>
+      <div className="v9-root" style={rootStyle}>
+        <div className="v9-container">
+          <div className="v9-empty">
+            <span className="v9-empty-icon">🎯</span>
             No bonuses added yet
           </div>
         </div>
@@ -150,41 +170,29 @@ function BonusHuntWidgetV9({ config, theme }) {
     );
   }
 
-  /* Current bonus for the bottom highlight */
+  const pct = total > 0 ? (stats.openedCount / total) * 100 : 0;
   const curBonus = currentBonusIdx >= 0 ? bonuses[currentBonusIdx] : null;
-  const curBet   = curBonus ? (Number(curBonus.betSize) || 0) : 0;
-  const curPay   = curBonus ? (Number(curBonus.payout) || 0) : 0;
-  const curMulti = curBet > 0 ? curPay / curBet : 0;
 
   return (
-    <div className="bhv9-root" style={{ fontFamily, color: textColor, ...rootVars }}>
-      <div className="bhv9-container">
+    <div className="v9-root" style={rootStyle}>
+      <div className="v9-container">
 
-        {/* ─── Top: single-row marquee strip ─── */}
-        <div className="bhv9-strip">
-          <div className="bhv9-strip-scroll" style={{ '--bhv9-pill-count': total }}>
-            {[...bonuses, ...bonuses].map((b, i) => {
-              const idx = i % total;
-              const bet = Number(b.betSize) || 0;
-              const isActive = idx === activeIdx;
-              const image = b.slot?.image || '';
-              return (
-                <button key={`${idx}-${i >= total ? 'c' : 'o'}`}
-                  className={`bhv9-strip-pill${isActive ? ' bhv9-strip-pill--active' : ''}${b.opened ? ' bhv9-strip-pill--opened' : ''}`}
-                  onClick={() => setActiveIdx(idx)}>
-                  {image && <img src={image} alt="" className="bhv9-strip-thumb" onError={e => { e.target.style.display = 'none'; }} />}
-                  <span className="bhv9-strip-name">{b.slotName || b.slot?.name || '?'}</span>
-                  <span className="bhv9-strip-bet">{currency}{bet.toFixed(bet >= 10 ? 1 : 2)}</span>
-                </button>
-              );
-            })}
+        {/* ── Header ── */}
+        {showHeader && (
+          <div className="v9-header">
+            <div className="v9-header-left">
+              <span className="v9-title">{huntTitle}</span>
+              {c.huntNumber && <span className="v9-hunt-num">#{c.huntNumber}</span>}
+            </div>
+            <div className="v9-header-right">
+              <span className="v9-header-count">{stats.openedCount}/{total}</span>
+            </div>
           </div>
-          <span className="bhv9-strip-counter">{stats.openedCount}/{total}</span>
-        </div>
+        )}
 
-        {/* ─── Middle: 3D carousel ─── */}
-        <div className="bhv9-stage">
-          <div className="bhv9-cards-perspective">
+        {/* ── 3D Carousel Stage ── */}
+        <div className="v9-stage">
+          <div className="v9-perspective">
             {visibleCards.map(({ bonus, idx, offset }) => {
               const bet = Number(bonus.betSize) || 0;
               const payout = Number(bonus.payout) || 0;
@@ -194,50 +202,50 @@ function BonusHuntWidgetV9({ config, theme }) {
               const slotName = bonus.slotName || bonus.slot?.name || 'Unknown';
               const provider = bonus.slot?.provider || bonus.provider || '';
               const image = bonus.slot?.image || '';
+              const isSuper = bonus.isSuperBonus;
+              const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
 
               return (
-                <div key={`v9-${idx}`} className="bhv9-card-wrapper" style={cardStyle(offset)}>
-                  <div className={`bhv9-card${isCenter ? ' bhv9-card--center' : ''}${isCurrent ? ' bhv9-card--current' : ''}${bonus.opened ? ' bhv9-card--opened' : ''}`}>
-                    {/* image */}
-                    <div className="bhv9-card-img-bg">
+                <div key={`v9-${idx}`} className="v9-card-wrap" style={cardStyle(offset)}>
+                  <div className={`v9-card${isCenter ? ' v9-card--center' : ''}${isCurrent ? ' v9-card--current' : ''}${bonus.opened ? ' v9-card--opened' : ''}${isSuper ? ' v9-card--super' : ''}${isExtreme ? ' v9-card--extreme' : ''}`}>
+
+                    <div className="v9-card-img-wrap">
                       {image ? (
-                        <img src={image} alt={slotName} className="bhv9-card-img"
+                        <img src={image} alt={slotName} className="v9-card-img"
                           onError={e => { e.target.style.display = 'none'; }} />
                       ) : (
-                        <div className="bhv9-card-img-placeholder">🎰</div>
+                        <div className="v9-card-img-ph">🎰</div>
                       )}
                     </div>
-                    <div className="bhv9-card-overlay" />
 
-                    {/* extreme mystery cover */}
-                    {(bonus.isExtremeBonus || bonus.isExtreme) && !bonus.opened && (
-                      <div className={`bhv9-extreme-cover${bonusOpening && isCenter && isCurrent ? ' bhv9-extreme-cover--reveal' : ''}`} />
+                    <div className="v9-card-gradient" />
+
+                    {isExtreme && !bonus.opened && (
+                      <div className={`v9-extreme-cover${bonusOpening && isCenter && isCurrent ? ' v9-extreme-cover--reveal' : ''}`} />
                     )}
 
-                    {/* top badges */}
-                    <div className="bhv9-card-badges">
-                      <span className="bhv9-badge bhv9-badge--idx">#{idx + 1}</span>
-                      <span className="bhv9-badge bhv9-badge--bet">{currency}{bet.toFixed(bet >= 10 ? 1 : 2)}</span>
+                    <div className="v9-badges">
+                      <span className="v9-badge v9-badge--idx">#{idx + 1}</span>
+                      <span className="v9-badge v9-badge--bet">
+                        {currency}{bet.toFixed(bet >= 10 ? 1 : 2)}
+                      </span>
                     </div>
 
-                    {/* super/extreme */}
-                    {(bonus.isSuperBonus || bonus.isExtreme) && (
-                      <div className="bhv9-card-super"
-                        style={{ color: bonus.isExtreme ? extremeBadge : superBadge }}>
-                        {bonus.isExtreme ? '🔥' : '⭐'}
-                      </div>
-                    )}
+                    <div className="v9-card-info">
+                      <div className="v9-card-name">{slotName}</div>
+                      {provider && <div className="v9-card-provider">{provider}</div>}
+                    </div>
 
-                    {/* result bar */}
                     {bonus.opened && (
-                      <div className="bhv9-card-result">
-                        <span className="bhv9-card-payout">{currency}{payout.toFixed(2)}</span>
-                        <span className="bhv9-card-multi">{multi.toFixed(1)}x</span>
+                      <div className="v9-card-result">
+                        <span className="v9-result-payout">{currency}{payout.toFixed(2)}</span>
+                        <span className={`v9-result-multi${multi >= 50 ? ' v9-result-multi--big' : ''}`}>
+                          {multi.toFixed(1)}x
+                        </span>
                       </div>
                     )}
 
-                    {/* current glow ring */}
-                    {isCurrent && isCenter && <div className="bhv9-card-ring" />}
+                    {isCurrent && isCenter && <div className="v9-ring" />}
                   </div>
                 </div>
               );
@@ -245,45 +253,56 @@ function BonusHuntWidgetV9({ config, theme }) {
           </div>
         </div>
 
-        {/* ─── Bottom: stats bar ─── */}
-        {showStats && (
-          <div className="bhv9-bottom">
-            {/* Stats row */}
-            <div className="bhv9-stats-row">
-              <div className="bhv9-stat">
-                <span className="bhv9-stat-icon">💰</span>
-                <span className="bhv9-stat-val">{currency}{startMoney.toFixed(0)}</span>
-              </div>
-              <div className="bhv9-stat-divider" />
-              <div className="bhv9-stat">
-                <span className="bhv9-stat-icon">📊</span>
-                <span className="bhv9-stat-val">{stats.avgMulti.toFixed(1)}X</span>
-              </div>
-              <div className="bhv9-stat-divider" />
-              <div className="bhv9-stat">
-                <span className="bhv9-stat-icon">🏆</span>
-                <span className="bhv9-stat-val">{stats.maxMulti.toFixed(0)}X</span>
-              </div>
+        {/* ── Progress bar ── */}
+        {showProgress && (
+          <div className="v9-progress">
+            <div className="v9-progress-bar">
+              <div className="v9-progress-fill" style={{ width: `${pct}%` }} />
             </div>
-
-            {/* Current bonus highlight */}
-            {curBonus && (
-              <div className="bhv9-current">
-                <span className="bhv9-current-crown">👑</span>
-                <span className="bhv9-current-name">{curBonus.slotName || curBonus.slot?.name}</span>
-                {curBonus.opened ? (
-                  <>
-                    <span className="bhv9-current-payout">{currency}{curPay.toFixed(2)}</span>
-                    <span className="bhv9-current-multi">{curMulti.toFixed(0)}X</span>
-                  </>
-                ) : (
-                  <span className="bhv9-current-bet">{currency}{curBet.toFixed(2)}</span>
-                )}
-              </div>
-            )}
+            <span className="v9-progress-text">{stats.openedCount}/{total}</span>
           </div>
         )}
 
+        {/* ── Stats grid ── */}
+        {showStats && (
+          <div className="v9-stats">
+            <div className="v9-stat-box">
+              <span className="v9-stat-label">START</span>
+              <span className="v9-stat-value">{currency}{startMoney.toFixed(0)}</span>
+            </div>
+            <div className="v9-stat-box">
+              <span className="v9-stat-label">AVG</span>
+              <span className="v9-stat-value">{stats.avgMulti.toFixed(1)}x</span>
+            </div>
+            <div className="v9-stat-box">
+              <span className="v9-stat-label">B.E.</span>
+              <span className="v9-stat-value">{stats.breakEven.toFixed(1)}x</span>
+            </div>
+            <div className="v9-stat-box">
+              <span className="v9-stat-label">BEST</span>
+              <span className="v9-stat-value">{stats.maxMulti.toFixed(0)}x</span>
+            </div>
+            <div className="v9-stat-box">
+              <span className="v9-stat-label">PAYOUT</span>
+              <span className="v9-stat-value" style={{ color: totalPayColor }}>{currency}{stats.totalWin.toFixed(0)}</span>
+            </div>
+            <div className="v9-stat-box">
+              <span className="v9-stat-label">PROFIT</span>
+              <span className={`v9-stat-value ${stats.profit >= 0 ? 'v9-val--green' : 'v9-val--red'}`}>
+                {stats.profit >= 0 ? '+' : ''}{currency}{stats.profit.toFixed(0)}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* ── Current bonus highlight ── */}
+        {curBonus && (
+          <div className="v9-current">
+            <span className="v9-current-label">NOW OPENING</span>
+            <span className="v9-current-name">{curBonus.slotName || curBonus.slot?.name}</span>
+            <span className="v9-current-bet">{currency}{(Number(curBonus.betSize) || 0).toFixed(2)}</span>
+          </div>
+        )}
       </div>
     </div>
   );

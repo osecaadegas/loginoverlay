@@ -81,6 +81,11 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
     'flipBackColor1', 'flipBackColor2', 'flipBackBorder',
     'brightness', 'contrast', 'saturation',
     'displayStyle',
+    'v8CardWidth', 'v8CardHeight', 'v8FontSize', 'v8AutoSpeed', 'v8ShowStats', 'v8ShowProgress',
+    'v8CardSpacing', 'v8CardRadius', 'v8StatsFontSize', 'v8NameFontSize',
+    'v9CardWidth', 'v9CardHeight', 'v9FontSize', 'v9AutoSpeed', 'v9ShowStats', 'v9ShowProgress',
+    'v9CardSpacing', 'v9CardRadius', 'v9StatsFontSize', 'v9TitleFontSize', 'v9ContainerRadius',
+    'v9ContainerBg', 'v9ShowHeader',
   ];
 
   const savePreset = () => {
@@ -211,6 +216,67 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             onChange={v => set('slotImageHeight', v)} />
           <SliderField label="List Max Height" value={c.listMaxHeight ?? 400} min={200} max={1200} step={20} unit="px"
             onChange={v => set('listMaxHeight', v)} />
+
+          {/* ═══════ V8 Card Stack Settings ═══════ */}
+          {c.displayStyle === 'v8_card_stack' && (<>
+            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>🎴 Card Stack Settings</h4>
+            <SliderField label="Card Width" value={c.v8CardWidth ?? 180} min={100} max={400} step={5} unit="px"
+              onChange={v => set('v8CardWidth', v)} />
+            <SliderField label="Card Height" value={c.v8CardHeight ?? 260} min={140} max={500} step={5} unit="px"
+              onChange={v => set('v8CardHeight', v)} />
+            <SliderField label="Card Spacing" value={c.v8CardSpacing ?? 120} min={60} max={250} step={5} unit="px"
+              onChange={v => set('v8CardSpacing', v)} />
+            <SliderField label="Card Radius" value={c.v8CardRadius ?? 16} min={0} max={40} step={1} unit="px"
+              onChange={v => set('v8CardRadius', v)} />
+            <SliderField label="Name Font Size" value={c.v8NameFontSize ?? 14} min={8} max={32} step={1} unit="px"
+              onChange={v => set('v8NameFontSize', v)} />
+            <SliderField label="Stats Font Size" value={c.v8StatsFontSize ?? 13} min={8} max={28} step={1} unit="px"
+              onChange={v => set('v8StatsFontSize', v)} />
+            <SliderField label="Auto-Cycle Speed" value={c.v8AutoSpeed ?? 4000} min={1000} max={12000} step={500} unit="ms"
+              onChange={v => set('v8AutoSpeed', v)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 4 }}>
+              <input type="checkbox" checked={c.v8ShowStats !== false} onChange={e => set('v8ShowStats', e.target.checked)} />
+              Show Stats Bar
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 2 }}>
+              <input type="checkbox" checked={c.v8ShowProgress !== false} onChange={e => set('v8ShowProgress', e.target.checked)} />
+              Show Progress Bar
+            </label>
+          </>)}
+
+          {/* ═══════ V9 Hunt Board Settings ═══════ */}
+          {c.displayStyle === 'v9_hunt_board' && (<>
+            <h4 className="nb-subtitle" style={{ marginTop: 18 }}>🎯 Hunt Board Settings</h4>
+            <SliderField label="Card Width" value={c.v9CardWidth ?? 160} min={100} max={400} step={5} unit="px"
+              onChange={v => set('v9CardWidth', v)} />
+            <SliderField label="Card Height" value={c.v9CardHeight ?? 230} min={140} max={500} step={5} unit="px"
+              onChange={v => set('v9CardHeight', v)} />
+            <SliderField label="Card Spacing" value={c.v9CardSpacing ?? 110} min={60} max={250} step={5} unit="px"
+              onChange={v => set('v9CardSpacing', v)} />
+            <SliderField label="Card Radius" value={c.v9CardRadius ?? 14} min={0} max={40} step={1} unit="px"
+              onChange={v => set('v9CardRadius', v)} />
+            <SliderField label="Container Radius" value={c.v9ContainerRadius ?? 18} min={0} max={40} step={1} unit="px"
+              onChange={v => set('v9ContainerRadius', v)} />
+            <SliderField label="Title Font Size" value={c.v9TitleFontSize ?? 18} min={10} max={36} step={1} unit="px"
+              onChange={v => set('v9TitleFontSize', v)} />
+            <SliderField label="Stats Font Size" value={c.v9StatsFontSize ?? 13} min={8} max={28} step={1} unit="px"
+              onChange={v => set('v9StatsFontSize', v)} />
+            <SliderField label="Auto-Cycle Speed" value={c.v9AutoSpeed ?? 4000} min={1000} max={12000} step={500} unit="ms"
+              onChange={v => set('v9AutoSpeed', v)} />
+            <ColorPicker label="Container BG" value={c.v9ContainerBg || 'rgba(15,23,42,0.85)'} onChange={v => set('v9ContainerBg', v)} />
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 4 }}>
+              <input type="checkbox" checked={c.v9ShowHeader !== false} onChange={e => set('v9ShowHeader', e.target.checked)} />
+              Show Header
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 2 }}>
+              <input type="checkbox" checked={c.v9ShowStats !== false} onChange={e => set('v9ShowStats', e.target.checked)} />
+              Show Stats Grid
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 2 }}>
+              <input type="checkbox" checked={c.v9ShowProgress !== false} onChange={e => set('v9ShowProgress', e.target.checked)} />
+              Show Progress Bar
+            </label>
+          </>)}
 
           <h4 className="nb-subtitle" style={{ marginTop: 18 }}>Flip Card Back Colors</h4>
           <p className="oc-config-hint" style={{ marginBottom: 6, fontSize: 11 }}>Background gradient and border for the back face of the 3D flip card (Style 3).</p>
