@@ -145,7 +145,7 @@ function BonusHuntWidget({ config, theme }) {
   const cardOutlineColor = c.cardOutlineColor || (isNeonBH ? 'rgba(0,255,200,0.15)' : 'transparent');
   const cardOutlineWidth = c.cardOutlineWidth ?? (isNeonBH ? 1 : 2);
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize ?? (isCompactBH ? 13 : isNeonBH ? 18 : 15);
+  const fontSize = c.fontSize ?? (isCompactBH ? 13 : isNeonBH ? 20 : 15);
   const cardRadius = c.cardRadius ?? (isCompactBH ? 8 : 16);
   const cardGap = c.cardGap ?? (isCompactBH ? 3 : isNeonBH ? 14 : 12);
   const widgetWidth = c.widgetWidth ?? 400;
