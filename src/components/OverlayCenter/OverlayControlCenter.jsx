@@ -123,7 +123,7 @@ export default function OverlayControlCenter() {
 
     // For metallic theme, override primary/accent with the chosen metal color
     let colors = { ...t.colors };
-    let themePatch = { style_preset: themeId };
+    let themePatch = { style_preset: themeId, metal_color: metalPresetId || 'chrome' };
     if (themeId === 'metallic' && metalPresetId) {
       const preset = (await import('../../data/appThemes')).metallicPresets[metalPresetId];
       if (preset) {

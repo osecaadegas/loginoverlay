@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { themeMap, metallicPresets } from '../data/appThemes';
+import { useAuth } from './AuthContext';
+import { supabase } from '../config/supabaseClient';
 
 const ThemeContext = createContext(null);
 
@@ -72,6 +74,7 @@ function applyThemeToDOM(themeId, theme, metalColor) {
 }
 
 export function ThemeProvider({ children }) {
+  const { user } = useAuth();
   const [currentTheme, setCurrentTheme] = useState(() => {
     const saved = localStorage.getItem('selectedTheme');
     return (saved && themeMap[saved]) ? saved : 'classic';
@@ -80,6 +83,59 @@ export function ThemeProvider({ children }) {
   const [metalColor, setMetalColorState] = useState(() => {
     return localStorage.getItem('metallicColor') || 'chrome';
   });
+
+  const [dbLoaded, setDbLoaded] = useState(false);
+  const savePending = useRef(false);
+
+  // ── Load theme from DB when user is authenticated ──
+  useEffect(() => {
+    if (!user) { setDbLoaded(false); return; }
+    let cancelled = false;
+
+    supabase
+      .from('overlay_themes')
+      .select('style_preset, metal_color')
+      .eq('user_id', user.id)
+      .single()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const themeId = data.style_preset;
+        if (themeId && themeMap[themeId]) {
+          setCurrentTheme(themeId);
+          localStorage.setItem('selectedTheme', themeId);
+        }
+        if (data.metal_color && metallicPresets[data.metal_color]) {
+          setMetalColorState(data.metal_color);
+          localStorage.setItem('metallicColor', data.metal_color);
+        }
+        setDbLoaded(true);
+      })
+      .catch(() => { setDbLoaded(true); });
+
+    return () => { cancelled = true; };
+  }, [user]);
+
+  // ── Save theme to DB (debounced) ──
+  const saveToDb = useCallback((themeId, metalPreset) => {
+    if (!user) return;
+    // Avoid writing during initial DB load
+    if (!dbLoaded) return;
+    if (savePending.current) return;
+    savePending.current = true;
+
+    const patch = {
+      user_id: user.id,
+      style_preset: themeId,
+      metal_color: metalPreset,
+      updated_at: new Date().toISOString(),
+    };
+
+    supabase
+      .from('overlay_themes')
+      .upsert(patch, { onConflict: 'user_id' })
+      .then(() => { savePending.current = false; })
+      .catch(() => { savePending.current = false; });
+  }, [user, dbLoaded]);
 
   useEffect(() => {
     const theme = themeMap[currentTheme];
@@ -108,14 +164,16 @@ export function ThemeProvider({ children }) {
     if (!themeMap[themeId]) return;
     setCurrentTheme(themeId);
     localStorage.setItem('selectedTheme', themeId);
+    saveToDb(themeId, metalColor);
     window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: themeId } }));
-  }, []);
+  }, [metalColor, saveToDb]);
 
   const setMetalColor = useCallback((color) => {
     setMetalColorState(color);
     localStorage.setItem('metallicColor', color);
+    saveToDb(currentTheme, color);
     window.dispatchEvent(new CustomEvent('themeChanged', { detail: { theme: currentTheme, metalColor: color } }));
-  }, [currentTheme]);
+  }, [currentTheme, saveToDb]);
 
   const value = { currentTheme, setTheme, metalColor, setMetalColor, themes: themeMap };
 
