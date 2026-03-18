@@ -1238,37 +1238,53 @@
   box-shadow: 0 0 12px rgba(0,255,200,0.08);
 }
 .oc-bonushunt--neon .bht-title {
-  font-size: 1.15em;
+  font-size: 1.25em;
   text-shadow: 0 0 10px rgba(0,255,200,0.5), 0 1px 4px rgba(0,0,0,0.9);
 }
 .oc-bonushunt--neon .bht-subtitle,
 .oc-bonushunt--neon .bht-badge {
-  font-size: 0.88em;
+  font-size: 0.92em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
+}
+.oc-bonushunt--neon .bht-header-stats {
+  gap: 8px;
+}
+.oc-bonushunt--neon .bht-stat-box {
+  padding: 8px 10px;
 }
 .oc-bonushunt--neon .bht-stat-label,
 .oc-bonushunt--neon .bht-current-label,
 .oc-bonushunt--neon .bht-current-stat-label,
 .oc-bonushunt--neon .bht-footer-label,
 .oc-bonushunt--neon .bht-list-section-title {
-  font-size: 0.82em;
+  font-size: 0.88em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-stat-value,
 .oc-bonushunt--neon .bht-current-counter,
 .oc-bonushunt--neon .bht-current-stat-value {
-  font-size: 1.3em;
+  font-size: 1.4em;
   text-shadow: 0 0 10px rgba(0,255,200,0.4), 0 1px 4px rgba(0,0,0,0.9);
 }
 .oc-bonushunt--neon .bht-current-name,
 .oc-bonushunt--neon .bht-current-name-overlay {
+  font-size: 1.05em;
   text-shadow: 0 0 8px rgba(0,255,200,0.35), 0 1px 4px rgba(0,0,0,0.9);
 }
 .oc-bonushunt--neon .bht-current-bet {
+  font-size: 0.92em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
+.oc-bonushunt--neon .bht-current-stat {
+  padding: 10px;
+  gap: 6px;
+}
 .oc-bonushunt--neon .bht-current-stat span {
+  font-size: 1em;
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
+}
+.oc-bonushunt--neon .bht-current-stats {
+  gap: 10px;
 }
 .oc-bonushunt--neon .bht-list-row {
   padding: 10px 8px;
@@ -1295,8 +1311,11 @@
   text-shadow: 0 0 6px rgba(0,255,200,0.3), 0 1px 3px rgba(0,0,0,0.85);
 }
 .oc-bonushunt--neon .bht-footer-value {
-  font-size: 1.15em;
+  font-size: 1.3em;
   text-shadow: 0 0 12px rgba(0,255,200,0.45), 0 1px 4px rgba(0,0,0,0.9);
+}
+.oc-bonushunt--neon .bht-footer {
+  padding: 12px 14px;
 }
 .oc-bonushunt--neon .bht-progress-text {
   font-size: 13px;
