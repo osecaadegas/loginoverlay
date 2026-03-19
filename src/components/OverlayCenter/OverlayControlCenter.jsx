@@ -21,6 +21,7 @@ import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
+import ExtensionAdmin from '../AdminPanel/ExtensionAdmin';
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
 
@@ -81,7 +82,7 @@ export default function OverlayControlCenter() {
   const [collectionsOpen, setCollectionsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
-  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot'];
+  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot', 'extension'];
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
@@ -293,6 +294,7 @@ export default function OverlayControlCenter() {
               { key: 'bonus_buys', icon: '🛒', label: 'Bonus Buys', desc: 'Track bonus buy sessions' },
               { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
               { key: 'single_slot', icon: '🎰', label: 'Single Slot', desc: 'Slot stats & records' },
+              { key: 'extension', icon: '📺', label: 'Twitch Extension', desc: 'Manage viewer features' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -512,6 +514,9 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'profile' && (
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />
+          )}
+          {activePanel === 'extension' && (
+            <ExtensionAdmin />
           )}
         </main>
       </div>
