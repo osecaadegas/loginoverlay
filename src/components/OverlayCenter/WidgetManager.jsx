@@ -832,9 +832,14 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   /* Close context menu on click outside */
   useEffect(() => {
     if (!ctxMenu) return;
-    const close = () => setCtxMenu(null);
-    window.addEventListener('mousedown', close);
-    return () => window.removeEventListener('mousedown', close);
+    const close = (e) => {
+      const menu = document.querySelector('.wm-ctx-menu--rich');
+      if (menu && menu.contains(e.target)) return;
+      setCtxMenu(null);
+    };
+    /* Use pointerdown on next tick so the opening right-click doesn't immediately close */
+    const id = setTimeout(() => window.addEventListener('pointerdown', close), 0);
+    return () => { clearTimeout(id); window.removeEventListener('pointerdown', close); };
   }, [ctxMenu]);
 
   /* ── Sync ALL widgets from the navbar ── */
