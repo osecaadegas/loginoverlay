@@ -83,6 +83,15 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   return (
     <div id={slotId} className={`or-widget-slot ${animClass}`} style={style}>
       {mergedCSS && <style>{`#${slotId} { ${mergedCSS} }`}</style>}
+      {(() => {
+        const elCSS = widget.config?.elementCSS;
+        if (!elCSS || Object.keys(elCSS).length === 0) return null;
+        const rules = Object.entries(elCSS).map(([sel, props]) => {
+          const decls = Object.entries(props).filter(([k]) => k !== '_init').map(([k, v]) => `${k}:${v} !important`).join(';');
+          return decls ? `#${slotId} ${sel}{${decls}}` : '';
+        }).filter(Boolean).join('\n');
+        return rules ? <style>{rules}</style> : null;
+      })()}
       <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
     </div>
   );

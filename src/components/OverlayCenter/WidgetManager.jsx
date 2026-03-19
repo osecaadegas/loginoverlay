@@ -171,8 +171,19 @@ const DraggableSlot = memo(function DraggableSlot({
         animationDuration: `${(widget.config?.animSpeed || 1) * 0.35}s`,
       }}
     >
+      {/* Element-scoped CSS overrides */}
+      {(() => {
+        const elCSS = widget.config?.elementCSS;
+        if (!elCSS || Object.keys(elCSS).length === 0) return null;
+        const slotId = `wm-el-${widget.id}`;
+        const rules = Object.entries(elCSS).map(([sel, props]) => {
+          const decls = Object.entries(props).filter(([k]) => k !== '_init').map(([k, v]) => `${k}:${v} !important`).join(';');
+          return decls ? `#${slotId} ${sel}{${decls}}` : '';
+        }).filter(Boolean).join('\n');
+        return rules ? <style>{rules}</style> : null;
+      })()}
       {/* Widget content */}
-      <div style={{
+      <div id={`wm-el-${widget.id}`} style={{
         pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden',
         position: 'relative', zIndex: 1,
         borderRadius: widget.config?.cardRadius ? `${widget.config.cardRadius}px` : undefined,
@@ -1349,6 +1360,147 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           handleConfigChange(latest, { ...latest.config, advancedCSS: {} });
                         }}>Reset All Advanced</button>
                       )}
+                    </div>
+                  </details>
+
+                  {/* ── Element Styles (per-inner-element targeting) ── */}
+                  <details className="wm-ctx-section">
+                    <summary className="wm-ctx-section-title">🎯 Element Styles</summary>
+                    <div className="wm-ctx-section-body wm-ctx-els">
+                      {(() => {
+                        const elCSS = w.config?.elementCSS || {};
+                        const setEl = (selector, prop, val) => {
+                          const latest = widgets.find(x => x.id === w.id) || w;
+                          const cur = JSON.parse(JSON.stringify(latest.config?.elementCSS || {}));
+                          if (!cur[selector]) cur[selector] = {};
+                          if (val === '' || val === undefined) { delete cur[selector][prop]; if (Object.keys(cur[selector]).length === 0) delete cur[selector]; }
+                          else cur[selector][prop] = val;
+                          handleConfigChange(latest, { ...latest.config, elementCSS: cur });
+                        };
+                        const removeTarget = (selector) => {
+                          const latest = widgets.find(x => x.id === w.id) || w;
+                          const cur = JSON.parse(JSON.stringify(latest.config?.elementCSS || {}));
+                          delete cur[selector];
+                          handleConfigChange(latest, { ...latest.config, elementCSS: cur });
+                        };
+                        const TARGETS = [
+                          { group: 'Text & Headings', items: [
+                            { sel: '*',       label: 'All Elements' },
+                            { sel: 'h1,h2,h3,h4,h5,h6', label: 'All Headings' },
+                            { sel: 'p',       label: 'Paragraphs' },
+                            { sel: 'span',    label: 'Spans' },
+                            { sel: 'a',       label: 'Links' },
+                          ]},
+                          { group: 'Common Parts', items: [
+                            { sel: '[class*="title"]',  label: 'Titles' },
+                            { sel: '[class*="label"]',  label: 'Labels' },
+                            { sel: '[class*="value"],[class*="val"]', label: 'Values' },
+                            { sel: '[class*="name"]',   label: 'Names' },
+                            { sel: '[class*="stat"]',   label: 'Stats' },
+                            { sel: '[class*="header"]', label: 'Headers' },
+                            { sel: '[class*="subtitle"],[class*="sub"]', label: 'Subtitles' },
+                          ]},
+                          { group: 'Cards & Containers', items: [
+                            { sel: '[class*="card"]',   label: 'Cards' },
+                            { sel: '[class*="badge"],[class*="pill"]', label: 'Badges / Pills' },
+                            { sel: '[class*="row"]',    label: 'Rows' },
+                            { sel: '[class*="grid"]',   label: 'Grids' },
+                            { sel: '[class*="wrap"],[class*="container"]', label: 'Wrappers' },
+                          ]},
+                          { group: 'Media', items: [
+                            { sel: 'img',                label: 'Images' },
+                            { sel: '[class*="avatar"],[class*="logo"]', label: 'Avatars / Logos' },
+                            { sel: '[class*="progress"],[class*="bar"]', label: 'Progress Bars' },
+                          ]},
+                        ];
+                        const EL_PROPS = [
+                          { p: 'font-family',    label: 'Font',     type: 'select', opts: ["inherit","'Inter', sans-serif","'Poppins', sans-serif","'Roboto', sans-serif","'Oswald', sans-serif","'Montserrat', sans-serif","'Fira Code', monospace","'Bebas Neue', cursive","'Press Start 2P', cursive","'Orbitron', sans-serif","'Arial', sans-serif","'Georgia', serif","'Courier New', monospace"] },
+                          { p: 'font-size',      label: 'Size',     type: 'presets', opts: ['8px','10px','11px','12px','13px','14px','16px','18px','20px','24px','28px','32px','36px','48px','64px'] },
+                          { p: 'font-weight',    label: 'Weight',   type: 'select', opts: ['inherit','100','200','300','400','500','600','700','800','900'] },
+                          { p: 'color',          label: 'Color',    type: 'color' },
+                          { p: 'background',     label: 'BG',       type: 'color' },
+                          { p: 'text-transform', label: 'Case',     type: 'select', opts: ['none','uppercase','lowercase','capitalize'] },
+                          { p: 'letter-spacing', label: 'Spacing',  type: 'presets', opts: ['-1px','0px','0.5px','1px','2px','3px','4px'] },
+                          { p: 'text-shadow',    label: 'Shadow',   type: 'presets', opts: ['none','1px 1px 2px rgba(0,0,0,0.5)','0 0 6px rgba(139,92,246,0.6)','0 0 10px #8b5cf6','2px 2px 0 #000'] },
+                          { p: 'padding',        label: 'Padding',  type: 'presets', opts: ['0px','2px','4px','8px','12px','16px','24px'] },
+                          { p: 'border-radius',  label: 'Radius',   type: 'presets', opts: ['0px','4px','8px','12px','16px','50%','9999px'] },
+                          { p: 'border',         label: 'Border',   type: 'presets', opts: ['none','1px solid #fff','1px solid rgba(255,255,255,0.15)','2px solid #8b5cf6'] },
+                          { p: 'opacity',        label: 'Opacity',  type: 'presets', opts: ['0','0.3','0.5','0.7','0.8','0.9','1'] },
+                        ];
+                        const activeTargets = Object.keys(elCSS);
+                        return (
+                          <>
+                            <div className="wm-ctx-els-add">
+                              <select className="wm-ctx-els-target-select" defaultValue=""
+                                onChange={e => { let v = e.target.value; if (v === '__custom') { v = prompt('Enter a CSS selector (e.g. .my-class, span.title, [data-x])'); if (!v) { e.target.value = ''; return; } } if (v) { setEl(v, '_init', '1'); setTimeout(() => { const c = JSON.parse(JSON.stringify((widgets.find(x => x.id === w.id) || w).config?.elementCSS || {})); if (c[v]?._init) { delete c[v]._init; if (Object.keys(c[v]).length === 0) c[v] = {}; const latest = widgets.find(x => x.id === w.id) || w; handleConfigChange(latest, { ...latest.config, elementCSS: c }); } }, 50); } e.target.value = ''; }}>
+                                <option value="" disabled>＋ Add element target…</option>
+                                {TARGETS.map(g => (
+                                  <optgroup key={g.group} label={g.group}>
+                                    {g.items.filter(it => !activeTargets.includes(it.sel)).map(it => (
+                                      <option key={it.sel} value={it.sel}>{it.label}</option>
+                                    ))}
+                                  </optgroup>
+                                ))}
+                                <optgroup label="Custom">
+                                  <option value="__custom">Custom CSS Selector…</option>
+                                </optgroup>
+                              </select>
+                            </div>
+                            {activeTargets.map(sel => {
+                              const targetDef = TARGETS.flatMap(g => g.items).find(it => it.sel === sel);
+                              const displayLabel = targetDef?.label || sel;
+                              const props = elCSS[sel] || {};
+                              return (
+                                <details key={sel} open className="wm-ctx-els-target">
+                                  <summary className="wm-ctx-els-target-header">
+                                    <span className="wm-ctx-els-target-name">{displayLabel}</span>
+                                    <code className="wm-ctx-els-target-sel">{sel}</code>
+                                    <button className="wm-ctx-adv-clear" title="Remove" onClick={e => { e.preventDefault(); removeTarget(sel); }}>✕</button>
+                                  </summary>
+                                  <div className="wm-ctx-els-target-body">
+                                    {EL_PROPS.map(pr => {
+                                      const val = props[pr.p];
+                                      return (
+                                        <div key={pr.p} className={`wm-ctx-adv-row ${val ? 'wm-ctx-adv-row--active' : ''}`}>
+                                          <label className="wm-ctx-adv-label">{pr.label}</label>
+                                          {pr.type === 'select' ? (
+                                            <select className="wm-ctx-adv-input" value={val || ''} onChange={e => setEl(sel, pr.p, e.target.value)}>
+                                              <option value="">—</option>
+                                              {pr.opts.map(o => <option key={o} value={o}>{o}</option>)}
+                                            </select>
+                                          ) : pr.type === 'color' ? (
+                                            <div className="wm-ctx-adv-color-wrap">
+                                              <input type="color" className="wm-ctx-color-input" value={val || '#ffffff'} onChange={e => setEl(sel, pr.p, e.target.value)} />
+                                              <input type="text" className="wm-ctx-adv-input wm-ctx-adv-input--short" value={val || ''} placeholder="#fff" onChange={e => setEl(sel, pr.p, e.target.value)} />
+                                            </div>
+                                          ) : pr.type === 'presets' ? (
+                                            <div className="wm-ctx-adv-combo">
+                                              <select className="wm-ctx-adv-combo-select" value={val && pr.opts.includes(val) ? val : '__custom'} onChange={e => { if (e.target.value !== '__custom') setEl(sel, pr.p, e.target.value); }}>
+                                                <option value="__custom">{val && !pr.opts.includes(val) ? val : '— pick —'}</option>
+                                                {pr.opts.map(o => <option key={o} value={o}>{o}</option>)}
+                                              </select>
+                                              <input type="text" className="wm-ctx-adv-combo-input" value={val || ''} placeholder="custom" onChange={e => setEl(sel, pr.p, e.target.value)} />
+                                            </div>
+                                          ) : (
+                                            <input type="text" className="wm-ctx-adv-input" value={val || ''} onChange={e => setEl(sel, pr.p, e.target.value)} />
+                                          )}
+                                          {val && <button className="wm-ctx-adv-clear" title="Reset" onClick={() => setEl(sel, pr.p, '')}>✕</button>}
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </details>
+                              );
+                            })}
+                            {Object.keys(elCSS).length > 0 && (
+                              <button className="wm-ctx-mini-btn" style={{ marginTop: 4 }} onClick={() => {
+                                const latest = widgets.find(x => x.id === w.id) || w;
+                                handleConfigChange(latest, { ...latest.config, elementCSS: {} });
+                              }}>Reset All Element Styles</button>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </details>
                 </div>
