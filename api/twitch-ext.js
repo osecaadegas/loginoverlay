@@ -111,12 +111,36 @@ export default async function handler(req, res) {
       // ═══ POINTS ═══════════════════════════════════════
 
       case 'get_points': {
-        const { data } = await supabase
+        let { data } = await supabase
           .from('ext_viewer_points')
           .select('points, lifetime_earned')
           .eq('broadcaster_id', broadcasterId)
           .eq('twitch_user_id', viewerId)
           .single();
+
+        // Auto-create viewer points row on first visit with starting points from config
+        if (!data) {
+          const displayName = body.display_name || '';
+          const { data: cfg } = await supabase
+            .from('ext_config')
+            .select('starting_points')
+            .eq('broadcaster_id', broadcasterId)
+            .single();
+          const startingPts = cfg?.starting_points || 500;
+
+          const { data: created } = await supabase
+            .from('ext_viewer_points')
+            .upsert({
+              broadcaster_id: broadcasterId,
+              twitch_user_id: viewerId,
+              twitch_display_name: displayName,
+              points: startingPts,
+              lifetime_earned: startingPts,
+            }, { onConflict: 'broadcaster_id,twitch_user_id' })
+            .select('points, lifetime_earned')
+            .single();
+          data = created;
+        }
 
         return res.json({ points: data?.points || 0, lifetime: data?.lifetime_earned || 0 });
       }
@@ -124,11 +148,21 @@ export default async function handler(req, res) {
       // ═══ CONFIG ═══════════════════════════════════════
 
       case 'get_config': {
-        const { data } = await supabase
+        let { data } = await supabase
           .from('ext_config')
           .select('*')
           .eq('broadcaster_id', broadcasterId)
           .single();
+
+        // Auto-create default config for this broadcaster if none exists
+        if (!data) {
+          const { data: created } = await supabase
+            .from('ext_config')
+            .upsert({ broadcaster_id: broadcasterId }, { onConflict: 'broadcaster_id' })
+            .select()
+            .single();
+          data = created;
+        }
 
         return res.json({ config: data || {} });
       }
