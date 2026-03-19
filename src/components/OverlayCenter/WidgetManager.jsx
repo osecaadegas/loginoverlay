@@ -499,6 +499,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const [copiedId, setCopiedId] = useState(null);
   const previewRef = useRef(null);
   const [ctxMenu, setCtxMenu] = useState(null);  // { x, y, widget }
+  const [ctxHoverSel, setCtxHoverSel] = useState(null); // CSS selector being hovered in Element Styles
   const [previewScale, setPreviewScale] = useState(0.35);
 
   /* ── Drag-to-reorder z-index state ── */
@@ -945,6 +946,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     animClass={enterAnims.get(w.id) || ''}
                   />
                 ))}
+                {/* Element highlight overlay when hovering selectors */}
+                {ctxHoverSel && ctxMenu && (
+                  <style>{`#wm-el-${ctxMenu.widget.id} ${ctxHoverSel}{outline:2px solid #a78bfa !important;background:rgba(139,92,246,0.12) !important;box-shadow:0 0 12px rgba(139,92,246,0.35) !important;transition:outline 0.15s,background 0.15s,box-shadow 0.15s !important;}`}</style>
+                )}
                 {/* Exiting widgets — kept in DOM for exit animation */}
                 {exitingWidgets.map(w => (
                   <DraggableSlot
@@ -1443,20 +1448,30 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                         return (
                           <>
                             <div className="wm-ctx-els-add">
-                              <select className="wm-ctx-els-target-select" defaultValue=""
-                                onChange={e => { let v = e.target.value; if (v === '__custom') { v = prompt('Enter a CSS selector (e.g. .my-class, span.title, [data-x])'); if (!v) { e.target.value = ''; return; } } if (v) { setEl(v, '_init', '1'); setTimeout(() => { const c = JSON.parse(JSON.stringify((widgets.find(x => x.id === w.id) || w).config?.elementCSS || {})); if (c[v]?._init) { delete c[v]._init; if (Object.keys(c[v]).length === 0) c[v] = {}; const latest = widgets.find(x => x.id === w.id) || w; handleConfigChange(latest, { ...latest.config, elementCSS: c }); } }, 50); } e.target.value = ''; }}>
-                                <option value="" disabled>＋ Add element target…</option>
-                                {TARGETS.map(g => (
-                                  <optgroup key={g.group} label={g.group}>
-                                    {g.items.filter(it => !activeTargets.includes(it.sel)).map(it => (
-                                      <option key={it.sel} value={it.sel}>{it.label}</option>
-                                    ))}
-                                  </optgroup>
-                                ))}
-                                <optgroup label="Custom">
-                                  <option value="__custom">Custom CSS Selector…</option>
-                                </optgroup>
-                              </select>
+                              <details className="wm-ctx-els-dropdown">
+                                <summary className="wm-ctx-els-target-select">＋ Add element target…</summary>
+                                <div className="wm-ctx-els-dropdown-list" onMouseLeave={() => setCtxHoverSel(null)}>
+                                  {TARGETS.map(g => (
+                                    <div key={g.group} className="wm-ctx-els-dropdown-group">
+                                      <div className="wm-ctx-els-dropdown-group-label">{g.group}</div>
+                                      {g.items.filter(it => !activeTargets.includes(it.sel)).map(it => (
+                                        <div key={it.sel} className="wm-ctx-els-dropdown-item"
+                                          onMouseEnter={() => setCtxHoverSel(it.sel)}
+                                          onMouseLeave={() => setCtxHoverSel(null)}
+                                          onClick={() => { setEl(it.sel, '_init', '1'); setCtxHoverSel(null); setTimeout(() => { const c = JSON.parse(JSON.stringify((widgets.find(x => x.id === w.id) || w).config?.elementCSS || {})); if (c[it.sel]?._init) { delete c[it.sel]._init; if (Object.keys(c[it.sel]).length === 0) c[it.sel] = {}; const latest = widgets.find(x => x.id === w.id) || w; handleConfigChange(latest, { ...latest.config, elementCSS: c }); } }, 50); }}>
+                                          {it.label}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  ))}
+                                  <div className="wm-ctx-els-dropdown-group">
+                                    <div className="wm-ctx-els-dropdown-group-label">Custom</div>
+                                    <div className="wm-ctx-els-dropdown-item" onClick={() => { const v = prompt('Enter a CSS selector (e.g. .my-class, span.title, [data-x])'); if (v) { setEl(v, '_init', '1'); setCtxHoverSel(null); setTimeout(() => { const c = JSON.parse(JSON.stringify((widgets.find(x => x.id === w.id) || w).config?.elementCSS || {})); if (c[v]?._init) { delete c[v]._init; if (Object.keys(c[v]).length === 0) c[v] = {}; const latest = widgets.find(x => x.id === w.id) || w; handleConfigChange(latest, { ...latest.config, elementCSS: c }); } }, 50); } }}>
+                                      ✏️ Custom CSS Selector…
+                                    </div>
+                                  </div>
+                                </div>
+                              </details>
                             </div>
                             {activeTargets.map(sel => {
                               const targetDef = TARGETS.flatMap(g => g.items).find(it => it.sel === sel);
@@ -1464,7 +1479,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                               const props = elCSS[sel] || {};
                               return (
                                 <details key={sel} open className="wm-ctx-els-target">
-                                  <summary className="wm-ctx-els-target-header">
+                                  <summary className="wm-ctx-els-target-header"
+                                    onMouseEnter={() => setCtxHoverSel(sel)}
+                                    onMouseLeave={() => setCtxHoverSel(null)}>
                                     <span className="wm-ctx-els-target-name">{displayLabel}</span>
                                     <code className="wm-ctx-els-target-sel">{sel}</code>
                                     <button className="wm-ctx-adv-clear" title="Remove" onClick={e => { e.preventDefault(); removeTarget(sel); }}>✕</button>
