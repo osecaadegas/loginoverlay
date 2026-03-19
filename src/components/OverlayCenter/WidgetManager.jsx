@@ -558,42 +558,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     setCtxMenu({ x: e.clientX - rect.left, y: e.clientY - rect.top, widget });
   }, []);
 
-  const ctxAction = useCallback((action) => {
-    const w = ctxMenu?.widget;
-    if (!w) return;
-    setCtxMenu(null);
-    switch (action) {
-      case 'edit':     setEditingId(w.id); break;
-      case 'toggle':   onSave({ ...w, is_visible: !w.is_visible }); break;
-      case 'copyUrl':  copyWidgetUrl(w.id); break;
-      case 'front':    handleMoveLayer(w.id, sortedWidgets.length); break;
-      case 'back':     handleMoveLayer(w.id, -sortedWidgets.length); break;
-      case 'center': {
-        const cx = Math.round((CANVAS_W - w.width) / 2);
-        const cy = Math.round((CANVAS_H - w.height) / 2);
-        onSave({ ...w, position_x: Math.max(0, cx), position_y: Math.max(0, cy) });
-        break;
-      }
-      case 'resetSize': {
-        const def = getWidgetDef(w.widget_type);
-        const dw = def?.defaults?.width || 400;
-        const dh = def?.defaults?.height || 300;
-        onSave({ ...w, width: dw, height: dh });
-        break;
-      }
-      case 'delete':   onRemove(w.id); break;
-      default: break;
-    }
-  }, [ctxMenu, onSave, onRemove, copyWidgetUrl, handleMoveLayer, sortedWidgets.length, CANVAS_W, CANVAS_H]);
-
-  /* Close context menu on click outside */
-  useEffect(() => {
-    if (!ctxMenu) return;
-    const close = () => setCtxMenu(null);
-    window.addEventListener('mousedown', close);
-    return () => window.removeEventListener('mousedown', close);
-  }, [ctxMenu]);
-
   const copyWidgetUrl = useCallback((widgetId) => {
     if (!overlayToken) return;
     const url = `${window.location.origin}/overlay/${overlayToken}?widget=${widgetId}`;
@@ -722,6 +686,43 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
       if (w.z_index !== newZ) onSave({ ...w, z_index: newZ });
     });
   }, [sortedWidgets, onSave]);
+
+  /* ── Right-click context menu action handler ── */
+  const ctxAction = useCallback((action) => {
+    const w = ctxMenu?.widget;
+    if (!w) return;
+    setCtxMenu(null);
+    switch (action) {
+      case 'edit':     setEditingId(w.id); break;
+      case 'toggle':   onSave({ ...w, is_visible: !w.is_visible }); break;
+      case 'copyUrl':  copyWidgetUrl(w.id); break;
+      case 'front':    handleMoveLayer(w.id, sortedWidgets.length); break;
+      case 'back':     handleMoveLayer(w.id, -sortedWidgets.length); break;
+      case 'center': {
+        const cx = Math.round((CANVAS_W - w.width) / 2);
+        const cy = Math.round((CANVAS_H - w.height) / 2);
+        onSave({ ...w, position_x: Math.max(0, cx), position_y: Math.max(0, cy) });
+        break;
+      }
+      case 'resetSize': {
+        const def = getWidgetDef(w.widget_type);
+        const dw = def?.defaults?.width || 400;
+        const dh = def?.defaults?.height || 300;
+        onSave({ ...w, width: dw, height: dh });
+        break;
+      }
+      case 'delete':   onRemove(w.id); break;
+      default: break;
+    }
+  }, [ctxMenu, onSave, onRemove, copyWidgetUrl, handleMoveLayer, sortedWidgets.length, CANVAS_W, CANVAS_H]);
+
+  /* Close context menu on click outside */
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const close = () => setCtxMenu(null);
+    window.addEventListener('mousedown', close);
+    return () => window.removeEventListener('mousedown', close);
+  }, [ctxMenu]);
 
   /* ── Sync ALL widgets from the navbar ── */
   const syncAllFromNavbar = useCallback(async () => {
