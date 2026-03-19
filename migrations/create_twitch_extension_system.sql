@@ -246,7 +246,7 @@ CREATE TABLE IF NOT EXISTS ext_session_slots (
   played_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_ext_ss_session ON ext_session_slots(session_id);
+CREATE INDEX idx_ext_sesslots_session ON ext_session_slots(session_id);
 
 -- ─── ALL-TIME STATS (AGGREGATED) ────────────────────────────────────
 
