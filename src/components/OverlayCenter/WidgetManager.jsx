@@ -11,6 +11,7 @@ import './OverlayRenderer.css';
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
   widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle, onContextMenu, userId, canvasW, canvasH,
+  animClass, exiting,
 }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
@@ -158,7 +159,7 @@ const DraggableSlot = memo(function DraggableSlot({
   return (
     <div
       ref={slotRef}
-      className={`wm-live-slot ${isSelected ? 'wm-live-slot--selected' : ''}`}
+      className={`wm-live-slot ${isSelected ? 'wm-live-slot--selected' : ''} ${animClass || ''}`}
       style={{
         position: 'absolute',
         left: isBg ? 0 : widget.position_x,
@@ -166,6 +167,8 @@ const DraggableSlot = memo(function DraggableSlot({
         width: isBg ? canvasW : widget.width,
         height: isBg ? canvasH : widget.height,
         zIndex: isSelected ? 9999 : (widget.z_index || 1),
+        pointerEvents: exiting ? 'none' : undefined,
+        animationDuration: '0.35s',
       }}
     >
       {/* Widget content */}
@@ -503,6 +506,78 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   }, [showPreview, CANVAS_W]);
 
   const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
+
+  /* ── Transition animation tracking for live preview ── */
+  const exitingMapRef = useRef(new Map());      // widgetId → { widget, timer }
+  const prevVisibleIdsRef = useRef(null);       // null = first render
+  const [enterAnims, setEnterAnims] = useState(new Map()); // widgetId → animClass
+  const [exitTick, setExitTick] = useState(0);
+
+  useEffect(() => {
+    const currentIds = new Set(visibleWidgets.map(w => w.id));
+
+    // First render: seed with current IDs so already-visible widgets don't animate in
+    if (prevVisibleIdsRef.current === null) {
+      prevVisibleIdsRef.current = currentIds;
+      return;
+    }
+    const prevIds = prevVisibleIdsRef.current;
+    const ANIM_MS = 400;
+
+    // Detect newly-hidden → play exit animation
+    for (const id of prevIds) {
+      if (!currentIds.has(id)) {
+        const w = widgets.find(x => x.id === id);
+        if (w) {
+          const exitAnim = (w.exit_animation || w.animation || 'fade');
+          if (exitAnim !== 'none') {
+            if (exitingMapRef.current.has(id)) clearTimeout(exitingMapRef.current.get(id).timer);
+            const timer = setTimeout(() => {
+              exitingMapRef.current.delete(id);
+              setExitTick(t => t + 1);
+            }, ANIM_MS);
+            exitingMapRef.current.set(id, { widget: w, timer });
+            setExitTick(t => t + 1);
+          }
+        }
+      }
+    }
+
+    // Detect newly-visible → play enter animation
+    const newEnter = new Map();
+    for (const id of currentIds) {
+      // Cancel exit if widget re-shown
+      if (exitingMapRef.current.has(id)) {
+        clearTimeout(exitingMapRef.current.get(id).timer);
+        exitingMapRef.current.delete(id);
+      }
+      if (!prevIds.has(id)) {
+        const w = widgets.find(x => x.id === id);
+        if (w) {
+          const enterAnim = (w.animation || 'fade');
+          if (enterAnim !== 'none') {
+            const norm = enterAnim === 'slide' ? 'slide-up' : enterAnim;
+            newEnter.set(id, `or-anim-in--${norm}`);
+          }
+        }
+      }
+    }
+    if (newEnter.size > 0) {
+      setEnterAnims(newEnter);
+      setTimeout(() => setEnterAnims(new Map()), ANIM_MS);
+    }
+
+    prevVisibleIdsRef.current = currentIds;
+  }, [visibleWidgets, widgets]);
+
+  const exitingWidgets = useMemo(() => {
+    void exitTick;
+    const norm = v => v === 'slide' ? 'slide-up' : (v || 'fade');
+    return Array.from(exitingMapRef.current.entries()).map(([id, e]) => ({
+      ...e.widget,
+      _exitAnimClass: `or-anim-out--${norm(e.widget.exit_animation || e.widget.animation)}`,
+    }));
+  }, [exitTick]);
 
   /* ── Drag handlers for live preview ── */
   const handlePreviewSelect = useCallback((id) => {
@@ -848,6 +923,26 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     canvasW={CANVAS_W}
                     canvasH={CANVAS_H}
                     userId={user?.id}
+                    animClass={enterAnims.get(w.id) || ''}
+                  />
+                ))}
+                {/* Exiting widgets — kept in DOM for exit animation */}
+                {exitingWidgets.map(w => (
+                  <DraggableSlot
+                    key={`exit-${w.id}`}
+                    widget={w}
+                    theme={theme}
+                    allWidgets={widgets}
+                    isSelected={false}
+                    scale={previewScale}
+                    onSelect={() => {}}
+                    onMove={() => {}}
+                    onResize={() => {}}
+                    canvasW={CANVAS_W}
+                    canvasH={CANVAS_H}
+                    userId={user?.id}
+                    animClass={w._exitAnimClass}
+                    exiting
                   />
                 ))}
               </div>
