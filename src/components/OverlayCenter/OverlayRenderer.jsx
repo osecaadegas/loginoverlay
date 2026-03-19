@@ -42,6 +42,11 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     : `or-anim-in--${enterAnim}`;
   const customCSS = widget.config?.custom_css || '';
 
+  /* ─── Advanced CSS overrides (per-property editor) ─── */
+  const advCSS = widget.config?.advancedCSS || {};
+  const advStr = Object.entries(advCSS).map(([k,v]) => `${k}:${v}`).join(';');
+  const mergedCSS = [customCSS, advStr].filter(Boolean).join(';');
+
   /* ─── Background widgets always fill the entire canvas ─── */
   const isBg = widget.widget_type === 'background';
 
@@ -77,7 +82,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
 
   return (
     <div id={slotId} className={`or-widget-slot ${animClass}`} style={style}>
-      {customCSS && <style>{`#${slotId} { ${customCSS} }`}</style>}
+      {mergedCSS && <style>{`#${slotId} { ${mergedCSS} }`}</style>}
       <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
     </div>
   );

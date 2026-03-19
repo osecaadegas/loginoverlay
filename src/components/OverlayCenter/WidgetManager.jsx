@@ -172,7 +172,12 @@ const DraggableSlot = memo(function DraggableSlot({
       }}
     >
       {/* Widget content */}
-      <div style={{ pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden', position: 'relative', zIndex: 1, borderRadius: widget.config?.cardRadius ? `${widget.config.cardRadius}px` : undefined }}>
+      <div style={{
+        pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden',
+        position: 'relative', zIndex: 1,
+        borderRadius: widget.config?.cardRadius ? `${widget.config.cardRadius}px` : undefined,
+        ...Object.fromEntries(Object.entries(widget.config?.advancedCSS || {}).map(([k,v]) => [k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), v])),
+      }}>
         <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
       </div>
 
@@ -1222,6 +1227,116 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           <span className="wm-ctx-slider-val">{w.config?.[f.key] ?? 0}</span>
                         </div>
                       ))}
+                    </div>
+                  </details>
+
+                  {/* ── Advanced CSS ── */}
+                  <details className="wm-ctx-section">
+                    <summary className="wm-ctx-section-title">⚡ Advanced CSS</summary>
+                    <div className="wm-ctx-section-body wm-ctx-adv">
+                      {(() => {
+                        const adv = w.config?.advancedCSS || {};
+                        const setAdv = (prop, val) => {
+                          const latest = widgets.find(x => x.id === w.id) || w;
+                          const cur = { ...(latest.config?.advancedCSS || {}) };
+                          if (val === '' || val === undefined) { delete cur[prop]; } else { cur[prop] = val; }
+                          handleConfigChange(latest, { ...latest.config, advancedCSS: cur });
+                        };
+                        const CSS_PROPS = [
+                          { group: 'Box Model', props: [
+                            { p: 'padding',        label: 'Padding',        ph: '0px',          type: 'text' },
+                            { p: 'margin',         label: 'Margin',         ph: '0px',          type: 'text' },
+                            { p: 'border',         label: 'Border',         ph: 'none',         type: 'text' },
+                            { p: 'border-radius',  label: 'Border Radius',  ph: '0px',          type: 'text' },
+                            { p: 'box-sizing',     label: 'Box Sizing',     ph: 'border-box',   type: 'text' },
+                            { p: 'overflow',       label: 'Overflow',       ph: 'hidden',       type: 'select', opts: ['visible','hidden','scroll','auto','clip'] },
+                          ]},
+                          { group: 'Typography', props: [
+                            { p: 'font-size',        label: 'Font Size',        ph: '14px',        type: 'text' },
+                            { p: 'font-weight',      label: 'Font Weight',      ph: '500',         type: 'text' },
+                            { p: 'font-style',       label: 'Font Style',       ph: 'normal',      type: 'select', opts: ['normal','italic','oblique'] },
+                            { p: 'font-family',      label: 'Font Family',      ph: 'Inter',       type: 'text' },
+                            { p: 'line-height',      label: 'Line Height',      ph: '1.4',         type: 'text' },
+                            { p: 'letter-spacing',   label: 'Letter Spacing',   ph: '0px',         type: 'text' },
+                            { p: 'text-align',       label: 'Text Align',       ph: 'left',        type: 'select', opts: ['left','center','right','justify'] },
+                            { p: 'text-transform',   label: 'Text Transform',   ph: 'none',        type: 'select', opts: ['none','uppercase','lowercase','capitalize'] },
+                            { p: 'text-decoration',  label: 'Text Decoration',  ph: 'none',        type: 'select', opts: ['none','underline','line-through','overline'] },
+                            { p: 'text-shadow',      label: 'Text Shadow',      ph: 'none',        type: 'text' },
+                            { p: 'word-spacing',     label: 'Word Spacing',     ph: '0px',         type: 'text' },
+                          ]},
+                          { group: 'Colors', props: [
+                            { p: 'color',            label: 'Text Color',       ph: '#ffffff',     type: 'color' },
+                            { p: 'background',       label: 'Background',       ph: 'transparent', type: 'text' },
+                            { p: 'background-color', label: 'BG Color',         ph: 'transparent', type: 'color' },
+                            { p: 'opacity',          label: 'Opacity',          ph: '1',           type: 'text' },
+                          ]},
+                          { group: 'Layout', props: [
+                            { p: 'display',        label: 'Display',        ph: 'block',       type: 'select', opts: ['block','flex','grid','inline','inline-block','inline-flex','none'] },
+                            { p: 'flex-direction',  label: 'Flex Direction', ph: 'row',         type: 'select', opts: ['row','row-reverse','column','column-reverse'] },
+                            { p: 'justify-content', label: 'Justify',       ph: 'flex-start',  type: 'select', opts: ['flex-start','center','flex-end','space-between','space-around','space-evenly'] },
+                            { p: 'align-items',     label: 'Align Items',   ph: 'stretch',     type: 'select', opts: ['stretch','flex-start','center','flex-end','baseline'] },
+                            { p: 'gap',             label: 'Gap',            ph: '0px',         type: 'text' },
+                          ]},
+                          { group: 'Transform & Effects', props: [
+                            { p: 'transform',       label: 'Transform',      ph: 'none',        type: 'text' },
+                            { p: 'filter',           label: 'Filter',         ph: 'none',        type: 'text' },
+                            { p: 'backdrop-filter',  label: 'Backdrop Filter',ph: 'none',        type: 'text' },
+                            { p: 'mix-blend-mode',   label: 'Blend Mode',     ph: 'normal',      type: 'select', opts: ['normal','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion','hue','saturation','color','luminosity'] },
+                            { p: 'box-shadow',       label: 'Box Shadow',     ph: 'none',        type: 'text' },
+                            { p: 'outline',          label: 'Outline',        ph: 'none',        type: 'text' },
+                            { p: 'cursor',           label: 'Cursor',         ph: 'default',     type: 'text' },
+                          ]},
+                          { group: 'Transitions', props: [
+                            { p: 'transition',       label: 'Transition',     ph: 'none',        type: 'text' },
+                            { p: 'animation',        label: 'Animation',      ph: 'none',        type: 'text' },
+                          ]},
+                        ];
+                        return CSS_PROPS.map(g => (
+                          <details key={g.group} className="wm-ctx-adv-group">
+                            <summary className="wm-ctx-adv-group-title">{g.group}</summary>
+                            <div className="wm-ctx-adv-group-body">
+                              {g.props.map(pr => {
+                                const val = adv[pr.p];
+                                const isSet = val !== undefined && val !== '';
+                                return (
+                                  <div key={pr.p} className={`wm-ctx-adv-row ${isSet ? 'wm-ctx-adv-row--active' : ''}`}>
+                                    <label className="wm-ctx-adv-label" title={pr.p}>{pr.label}</label>
+                                    {pr.type === 'select' ? (
+                                      <select className="wm-ctx-adv-input" value={val || ''}
+                                        onChange={e => setAdv(pr.p, e.target.value)}>
+                                        <option value="">—</option>
+                                        {pr.opts.map(o => <option key={o} value={o}>{o}</option>)}
+                                      </select>
+                                    ) : pr.type === 'color' ? (
+                                      <div className="wm-ctx-adv-color-wrap">
+                                        <input type="color" className="wm-ctx-color-input"
+                                          value={val || pr.ph}
+                                          onChange={e => setAdv(pr.p, e.target.value)} />
+                                        <input type="text" className="wm-ctx-adv-input wm-ctx-adv-input--short"
+                                          value={val || ''} placeholder={pr.ph}
+                                          onChange={e => setAdv(pr.p, e.target.value)} />
+                                      </div>
+                                    ) : (
+                                      <input type="text" className="wm-ctx-adv-input"
+                                        value={val || ''} placeholder={pr.ph}
+                                        onChange={e => setAdv(pr.p, e.target.value)} />
+                                    )}
+                                    {isSet && (
+                                      <button className="wm-ctx-adv-clear" title="Reset" onClick={() => setAdv(pr.p, '')}>✕</button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </details>
+                        ));
+                      })()}
+                      {Object.keys(w.config?.advancedCSS || {}).length > 0 && (
+                        <button className="wm-ctx-mini-btn" style={{ marginTop: 4 }} onClick={() => {
+                          const latest = widgets.find(x => x.id === w.id) || w;
+                          handleConfigChange(latest, { ...latest.config, advancedCSS: {} });
+                        }}>Reset All Advanced</button>
+                      )}
                     </div>
                   </details>
                 </div>

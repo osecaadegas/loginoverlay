@@ -2944,6 +2944,104 @@ body.wm-resizing {
   font-family: 'JetBrains Mono', 'Fira Code', monospace;
 }
 
+/* ── Advanced CSS Editor ── */
+.wm-ctx-adv { gap: 2px !important; }
+.wm-ctx-adv-group {
+  border: 1px solid rgba(255,255,255,0.04);
+  border-radius: 5px;
+  overflow: hidden;
+}
+.wm-ctx-adv-group[open] { background: rgba(255,255,255,0.015); }
+.wm-ctx-adv-group-title {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: color 0.12s, background 0.12s;
+}
+.wm-ctx-adv-group-title::-webkit-details-marker { display: none; }
+.wm-ctx-adv-group-title::before {
+  content: '▸';
+  font-size: 8px;
+  margin-right: 5px;
+  color: rgba(139,92,246,0.4);
+  transition: transform 0.15s;
+}
+.wm-ctx-adv-group[open] > .wm-ctx-adv-group-title::before { transform: rotate(90deg); }
+.wm-ctx-adv-group-title:hover { color: #fff; background: rgba(255,255,255,0.03); }
+.wm-ctx-adv-group-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 2px 4px 4px;
+}
+
+/* Advanced row */
+.wm-ctx-adv-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: background 0.12s;
+}
+.wm-ctx-adv-row:hover { background: rgba(255,255,255,0.03); }
+.wm-ctx-adv-row--active {
+  background: rgba(139,92,246,0.08);
+  border-left: 2px solid rgba(139,92,246,0.6);
+  padding-left: 2px;
+}
+.wm-ctx-adv-row--active:hover { background: rgba(139,92,246,0.12); }
+.wm-ctx-adv-label {
+  font-size: 9px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+  min-width: 68px;
+  max-width: 68px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.wm-ctx-adv-row--active .wm-ctx-adv-label { color: rgba(200,180,255,0.85); }
+.wm-ctx-adv-input {
+  flex: 1;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  color: #e2e8f0;
+  padding: 2px 5px;
+  font-size: 10px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  outline: none;
+  width: 0;
+  min-width: 0;
+  transition: border-color 0.15s;
+}
+.wm-ctx-adv-input:focus { border-color: rgba(139,92,246,0.5); }
+.wm-ctx-adv-input--short { flex: 1; max-width: 70px; }
+.wm-ctx-adv-color-wrap {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
+.wm-ctx-adv-clear {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.25);
+  font-size: 10px;
+  cursor: pointer;
+  padding: 0 2px;
+  transition: color 0.12s;
+  flex-shrink: 0;
+}
+.wm-ctx-adv-clear:hover { color: #f87171; }
+
 /* --- Config Forms (widget-specific — legacy support) --- */
 .oc-config-form {
   display: flex;
