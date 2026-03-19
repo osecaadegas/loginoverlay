@@ -3030,6 +3030,50 @@ body.wm-resizing {
   gap: 4px;
   flex: 1;
 }
+.wm-ctx-adv-combo {
+  display: flex;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.wm-ctx-adv-combo-select {
+  flex: 1;
+  min-width: 0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 10px;
+  padding: 2px 3px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.wm-ctx-adv-combo-select:hover {
+  border-color: rgba(139,92,246,0.4);
+  background: rgba(255,255,255,0.09);
+}
+.wm-ctx-adv-combo-select:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+.wm-ctx-adv-combo-input {
+  width: 60px;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  color: #e2e8f0;
+  font-size: 10px;
+  padding: 2px 4px;
+  transition: border-color 0.15s;
+}
+.wm-ctx-adv-combo-input:focus {
+  outline: none;
+  border-color: #8b5cf6;
+}
+.wm-ctx-adv-combo-input::placeholder {
+  color: rgba(255,255,255,0.2);
+}
 .wm-ctx-adv-clear {
   background: none;
   border: none;

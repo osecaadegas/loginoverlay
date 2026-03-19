@@ -1244,51 +1244,52 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                         };
                         const CSS_PROPS = [
                           { group: 'Box Model', props: [
-                            { p: 'padding',        label: 'Padding',        ph: '0px',          type: 'text' },
-                            { p: 'margin',         label: 'Margin',         ph: '0px',          type: 'text' },
-                            { p: 'border',         label: 'Border',         ph: 'none',         type: 'text' },
-                            { p: 'border-radius',  label: 'Border Radius',  ph: '0px',          type: 'text' },
-                            { p: 'box-sizing',     label: 'Box Sizing',     ph: 'border-box',   type: 'text' },
-                            { p: 'overflow',       label: 'Overflow',       ph: 'hidden',       type: 'select', opts: ['visible','hidden','scroll','auto','clip'] },
+                            { p: 'padding',        label: 'Padding',        ph: '0px',  type: 'presets', opts: ['0px','2px','4px','6px','8px','10px','12px','16px','20px','24px','32px','4px 8px','8px 16px','12px 24px'] },
+                            { p: 'margin',         label: 'Margin',         ph: '0px',  type: 'presets', opts: ['0px','2px','4px','8px','12px','16px','24px','auto','0 auto','4px 8px','8px 16px'] },
+                            { p: 'border',         label: 'Border',         ph: 'none', type: 'presets', opts: ['none','1px solid #fff','1px solid rgba(255,255,255,0.2)','2px solid #8b5cf6','2px dashed #f59e0b','1px solid #333','2px solid #ef4444','3px double #8b5cf6'] },
+                            { p: 'border-radius',  label: 'Border Radius',  ph: '0px',  type: 'presets', opts: ['0px','2px','4px','6px','8px','10px','12px','16px','20px','24px','50%','9999px'] },
+                            { p: 'box-sizing',     label: 'Box Sizing',     ph: 'border-box', type: 'select', opts: ['border-box','content-box'] },
+                            { p: 'overflow',       label: 'Overflow',       ph: 'hidden', type: 'select', opts: ['visible','hidden','scroll','auto','clip'] },
                           ]},
                           { group: 'Typography', props: [
-                            { p: 'font-size',        label: 'Font Size',        ph: '14px',        type: 'text' },
-                            { p: 'font-weight',      label: 'Font Weight',      ph: '500',         type: 'text' },
-                            { p: 'font-style',       label: 'Font Style',       ph: 'normal',      type: 'select', opts: ['normal','italic','oblique'] },
-                            { p: 'font-family',      label: 'Font Family',      ph: 'Inter',       type: 'text' },
-                            { p: 'line-height',      label: 'Line Height',      ph: '1.4',         type: 'text' },
-                            { p: 'letter-spacing',   label: 'Letter Spacing',   ph: '0px',         type: 'text' },
-                            { p: 'text-align',       label: 'Text Align',       ph: 'left',        type: 'select', opts: ['left','center','right','justify'] },
-                            { p: 'text-transform',   label: 'Text Transform',   ph: 'none',        type: 'select', opts: ['none','uppercase','lowercase','capitalize'] },
-                            { p: 'text-decoration',  label: 'Text Decoration',  ph: 'none',        type: 'select', opts: ['none','underline','line-through','overline'] },
-                            { p: 'text-shadow',      label: 'Text Shadow',      ph: 'none',        type: 'text' },
-                            { p: 'word-spacing',     label: 'Word Spacing',     ph: '0px',         type: 'text' },
+                            { p: 'font-size',        label: 'Font Size',        ph: '14px',   type: 'presets', opts: ['8px','10px','11px','12px','13px','14px','16px','18px','20px','24px','28px','32px','36px','48px','64px','72px'] },
+                            { p: 'font-weight',      label: 'Font Weight',      ph: '500',    type: 'select', opts: ['100','200','300','400','500','600','700','800','900'] },
+                            { p: 'font-style',       label: 'Font Style',       ph: 'normal', type: 'select', opts: ['normal','italic','oblique'] },
+                            { p: 'font-family',      label: 'Font Family',      ph: 'Inter',  type: 'select', opts: ["'Inter', sans-serif","'Poppins', sans-serif","'Roboto', sans-serif","'Oswald', sans-serif","'Montserrat', sans-serif","'Fira Code', monospace","'Bebas Neue', cursive","'Press Start 2P', cursive","'Orbitron', sans-serif","'Arial', sans-serif","'Georgia', serif","'Courier New', monospace"] },
+                            { p: 'line-height',      label: 'Line Height',      ph: '1.4',    type: 'presets', opts: ['1','1.1','1.2','1.3','1.4','1.5','1.6','1.8','2','2.5','normal'] },
+                            { p: 'letter-spacing',   label: 'Letter Spacing',   ph: '0px',    type: 'presets', opts: ['-1px','-0.5px','0px','0.3px','0.5px','1px','1.5px','2px','3px','4px','5px','0.05em','0.1em','0.2em'] },
+                            { p: 'text-align',       label: 'Text Align',       ph: 'left',   type: 'select', opts: ['left','center','right','justify'] },
+                            { p: 'text-transform',   label: 'Text Transform',   ph: 'none',   type: 'select', opts: ['none','uppercase','lowercase','capitalize'] },
+                            { p: 'text-decoration',  label: 'Text Decoration',  ph: 'none',   type: 'select', opts: ['none','underline','line-through','overline','underline wavy'] },
+                            { p: 'text-shadow',      label: 'Text Shadow',      ph: 'none',   type: 'presets', opts: ['none','1px 1px 2px rgba(0,0,0,0.5)','0 0 4px rgba(139,92,246,0.6)','0 0 8px #8b5cf6','2px 2px 0 #000','0 0 10px #fff, 0 0 20px #8b5cf6','0 0 6px #f59e0b','0 2px 4px rgba(0,0,0,0.8)'] },
+                            { p: 'word-spacing',     label: 'Word Spacing',     ph: '0px',    type: 'presets', opts: ['0px','1px','2px','4px','8px','12px','-1px','-2px'] },
                           ]},
                           { group: 'Colors', props: [
                             { p: 'color',            label: 'Text Color',       ph: '#ffffff',     type: 'color' },
-                            { p: 'background',       label: 'Background',       ph: 'transparent', type: 'text' },
+                            { p: 'background',       label: 'Background',       ph: 'transparent', type: 'presets', opts: ['transparent','none','#0f172a','#1e293b','rgba(0,0,0,0.5)','rgba(0,0,0,0.8)','rgba(15,23,42,0.9)','rgba(139,92,246,0.15)','linear-gradient(135deg, #1a1b2e, #2d1b69)','linear-gradient(135deg, #0f172a, #1e293b)','linear-gradient(to right, #8b5cf6, #ec4899)','linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))'] },
                             { p: 'background-color', label: 'BG Color',         ph: 'transparent', type: 'color' },
-                            { p: 'opacity',          label: 'Opacity',          ph: '1',           type: 'text' },
+                            { p: 'opacity',          label: 'Opacity',          ph: '1',           type: 'presets', opts: ['0','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','1'] },
                           ]},
                           { group: 'Layout', props: [
-                            { p: 'display',        label: 'Display',        ph: 'block',       type: 'select', opts: ['block','flex','grid','inline','inline-block','inline-flex','none'] },
-                            { p: 'flex-direction',  label: 'Flex Direction', ph: 'row',         type: 'select', opts: ['row','row-reverse','column','column-reverse'] },
-                            { p: 'justify-content', label: 'Justify',       ph: 'flex-start',  type: 'select', opts: ['flex-start','center','flex-end','space-between','space-around','space-evenly'] },
-                            { p: 'align-items',     label: 'Align Items',   ph: 'stretch',     type: 'select', opts: ['stretch','flex-start','center','flex-end','baseline'] },
-                            { p: 'gap',             label: 'Gap',            ph: '0px',         type: 'text' },
+                            { p: 'display',        label: 'Display',        ph: 'block',      type: 'select', opts: ['block','flex','grid','inline','inline-block','inline-flex','none'] },
+                            { p: 'flex-direction',  label: 'Flex Direction', ph: 'row',        type: 'select', opts: ['row','row-reverse','column','column-reverse'] },
+                            { p: 'justify-content', label: 'Justify',       ph: 'flex-start', type: 'select', opts: ['flex-start','center','flex-end','space-between','space-around','space-evenly'] },
+                            { p: 'align-items',     label: 'Align Items',   ph: 'stretch',    type: 'select', opts: ['stretch','flex-start','center','flex-end','baseline'] },
+                            { p: 'flex-wrap',       label: 'Flex Wrap',     ph: 'nowrap',     type: 'select', opts: ['nowrap','wrap','wrap-reverse'] },
+                            { p: 'gap',             label: 'Gap',           ph: '0px',        type: 'presets', opts: ['0px','2px','4px','6px','8px','10px','12px','16px','20px','24px','32px'] },
                           ]},
                           { group: 'Transform & Effects', props: [
-                            { p: 'transform',       label: 'Transform',      ph: 'none',        type: 'text' },
-                            { p: 'filter',           label: 'Filter',         ph: 'none',        type: 'text' },
-                            { p: 'backdrop-filter',  label: 'Backdrop Filter',ph: 'none',        type: 'text' },
-                            { p: 'mix-blend-mode',   label: 'Blend Mode',     ph: 'normal',      type: 'select', opts: ['normal','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion','hue','saturation','color','luminosity'] },
-                            { p: 'box-shadow',       label: 'Box Shadow',     ph: 'none',        type: 'text' },
-                            { p: 'outline',          label: 'Outline',        ph: 'none',        type: 'text' },
-                            { p: 'cursor',           label: 'Cursor',         ph: 'default',     type: 'text' },
+                            { p: 'transform',       label: 'Transform',       ph: 'none', type: 'presets', opts: ['none','scale(1.05)','scale(0.95)','scale(1.1)','scale(1.5)','scale(2)','rotate(5deg)','rotate(15deg)','rotate(45deg)','rotate(90deg)','rotate(180deg)','skewX(5deg)','skewY(5deg)','translateX(10px)','translateY(10px)','translateX(-10px)','perspective(500px) rotateY(15deg)'] },
+                            { p: 'filter',           label: 'Filter',          ph: 'none', type: 'presets', opts: ['none','blur(1px)','blur(2px)','blur(4px)','brightness(0.5)','brightness(1.2)','brightness(1.5)','contrast(1.5)','contrast(2)','grayscale(1)','grayscale(0.5)','sepia(1)','sepia(0.5)','saturate(1.5)','saturate(2)','hue-rotate(90deg)','hue-rotate(180deg)','invert(1)','drop-shadow(0 4px 8px rgba(0,0,0,0.5))'] },
+                            { p: 'backdrop-filter',  label: 'Backdrop Filter', ph: 'none', type: 'presets', opts: ['none','blur(4px)','blur(8px)','blur(12px)','blur(16px)','blur(24px)','blur(8px) brightness(0.8)','blur(12px) saturate(1.5)','blur(16px) brightness(1.1)'] },
+                            { p: 'mix-blend-mode',   label: 'Blend Mode',      ph: 'normal', type: 'select', opts: ['normal','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion','hue','saturation','color','luminosity'] },
+                            { p: 'box-shadow',       label: 'Box Shadow',      ph: 'none', type: 'presets', opts: ['none','0 2px 4px rgba(0,0,0,0.3)','0 4px 8px rgba(0,0,0,0.4)','0 8px 16px rgba(0,0,0,0.5)','0 4px 12px rgba(139,92,246,0.3)','0 0 8px rgba(139,92,246,0.5)','0 0 16px rgba(139,92,246,0.6)','inset 0 2px 4px rgba(0,0,0,0.3)','inset 0 0 8px rgba(139,92,246,0.3)','0 0 0 2px #8b5cf6','0 0 0 2px #f59e0b','0 20px 40px rgba(0,0,0,0.6)'] },
+                            { p: 'outline',          label: 'Outline',         ph: 'none', type: 'presets', opts: ['none','1px solid #fff','2px solid #8b5cf6','2px dashed #f59e0b','2px dotted #ef4444','3px solid rgba(139,92,246,0.5)'] },
+                            { p: 'cursor',           label: 'Cursor',          ph: 'default', type: 'select', opts: ['default','pointer','crosshair','move','text','wait','help','not-allowed','grab','grabbing','zoom-in','zoom-out'] },
                           ]},
                           { group: 'Transitions', props: [
-                            { p: 'transition',       label: 'Transition',     ph: 'none',        type: 'text' },
-                            { p: 'animation',        label: 'Animation',      ph: 'none',        type: 'text' },
+                            { p: 'transition',   label: 'Transition',  ph: 'none', type: 'presets', opts: ['none','all 0.2s ease','all 0.3s ease','all 0.5s ease','all 0.3s ease-in-out','opacity 0.3s ease','transform 0.3s ease','all 0.3s cubic-bezier(0.4,0,0.2,1)','all 0.5s cubic-bezier(0.4,0,0.2,1)'] },
+                            { p: 'animation',    label: 'Animation',   ph: 'none', type: 'presets', opts: ['none','spin 2s linear infinite','pulse 2s ease-in-out infinite','bounce 1s ease infinite','ping 1s cubic-bezier(0,0,0.2,1) infinite'] },
                           ]},
                         ];
                         return CSS_PROPS.map(g => (
@@ -1313,6 +1314,17 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                                           value={val || pr.ph}
                                           onChange={e => setAdv(pr.p, e.target.value)} />
                                         <input type="text" className="wm-ctx-adv-input wm-ctx-adv-input--short"
+                                          value={val || ''} placeholder={pr.ph}
+                                          onChange={e => setAdv(pr.p, e.target.value)} />
+                                      </div>
+                                    ) : pr.type === 'presets' ? (
+                                      <div className="wm-ctx-adv-combo">
+                                        <select className="wm-ctx-adv-combo-select" value={val && pr.opts.includes(val) ? val : '__custom'}
+                                          onChange={e => { if (e.target.value !== '__custom') setAdv(pr.p, e.target.value); }}>
+                                          <option value="__custom">{val && !pr.opts.includes(val) ? val : `— pick —`}</option>
+                                          {pr.opts.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                        <input type="text" className="wm-ctx-adv-combo-input"
                                           value={val || ''} placeholder={pr.ph}
                                           onChange={e => setAdv(pr.p, e.target.value)} />
                                       </div>
