@@ -10,7 +10,7 @@ import './OverlayRenderer.css';
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
 const DraggableSlot = memo(function DraggableSlot({
-  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle, userId, canvasW, canvasH,
+  widget, theme, allWidgets, isSelected, scale, onSelect, onMove, onResize, onStyleCycle, onContextMenu, userId, canvasW, canvasH,
 }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
@@ -185,6 +185,7 @@ const DraggableSlot = memo(function DraggableSlot({
             background: 'transparent',
           }}
           onMouseDown={handleMouseDown}
+          onContextMenu={e => { e.preventDefault(); e.stopPropagation(); onSelect(widget.id); onContextMenu?.(e, widget); }}
           onDragStart={e => e.preventDefault()}
         />
       )}
@@ -478,6 +479,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
   const previewRef = useRef(null);
+  const [ctxMenu, setCtxMenu] = useState(null);  // { x, y, widget }
   const [previewScale, setPreviewScale] = useState(0.35);
 
   /* ── Drag-to-reorder z-index state ── */
@@ -546,7 +548,51 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     if (e.target === e.currentTarget) {
       setSelectedPreviewId(null);
     }
+    setCtxMenu(null);
   }, []);
+
+  /* ── Right-click context menu handler ── */
+  const handleSlotContextMenu = useCallback((e, widget) => {
+    const rect = previewRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setCtxMenu({ x: e.clientX - rect.left, y: e.clientY - rect.top, widget });
+  }, []);
+
+  const ctxAction = useCallback((action) => {
+    const w = ctxMenu?.widget;
+    if (!w) return;
+    setCtxMenu(null);
+    switch (action) {
+      case 'edit':     setEditingId(w.id); break;
+      case 'toggle':   onSave({ ...w, is_visible: !w.is_visible }); break;
+      case 'copyUrl':  copyWidgetUrl(w.id); break;
+      case 'front':    handleMoveLayer(w.id, sortedWidgets.length); break;
+      case 'back':     handleMoveLayer(w.id, -sortedWidgets.length); break;
+      case 'center': {
+        const cx = Math.round((CANVAS_W - w.width) / 2);
+        const cy = Math.round((CANVAS_H - w.height) / 2);
+        onSave({ ...w, position_x: Math.max(0, cx), position_y: Math.max(0, cy) });
+        break;
+      }
+      case 'resetSize': {
+        const def = getWidgetDef(w.widget_type);
+        const dw = def?.defaults?.width || 400;
+        const dh = def?.defaults?.height || 300;
+        onSave({ ...w, width: dw, height: dh });
+        break;
+      }
+      case 'delete':   onRemove(w.id); break;
+      default: break;
+    }
+  }, [ctxMenu, onSave, onRemove, copyWidgetUrl, handleMoveLayer, sortedWidgets.length, CANVAS_W, CANVAS_H]);
+
+  /* Close context menu on click outside */
+  useEffect(() => {
+    if (!ctxMenu) return;
+    const close = () => setCtxMenu(null);
+    window.addEventListener('mousedown', close);
+    return () => window.removeEventListener('mousedown', close);
+  }, [ctxMenu]);
 
   const copyWidgetUrl = useCallback((widgetId) => {
     if (!overlayToken) return;
@@ -780,6 +826,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     onMove={handlePreviewMove}
                     onResize={handlePreviewResize}
                     onStyleCycle={handleStyleCycle}
+                    onContextMenu={handleSlotContextMenu}
                     canvasW={CANVAS_W}
                     canvasH={CANVAS_H}
                     userId={user?.id}
@@ -787,6 +834,32 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 ))}
               </div>
             </div>
+
+            {/* ── Right-click context menu ── */}
+            {ctxMenu && (() => {
+              const def = getWidgetDef(ctxMenu.widget.widget_type);
+              return (
+                <div
+                  className="wm-ctx-menu"
+                  style={{ left: ctxMenu.x, top: ctxMenu.y }}
+                  onMouseDown={e => e.stopPropagation()}
+                >
+                  <div className="wm-ctx-header">{def?.icon} {ctxMenu.widget.label || def?.label}</div>
+                  <button className="wm-ctx-item" onClick={() => ctxAction('edit')}>⚙️ Edit Settings</button>
+                  <button className="wm-ctx-item" onClick={() => ctxAction('toggle')}>
+                    {ctxMenu.widget.is_visible ? '👁️ Hide Widget' : '👁️‍🗨️ Show Widget'}
+                  </button>
+                  <button className="wm-ctx-item" onClick={() => ctxAction('copyUrl')}>🔗 Copy OBS URL</button>
+                  <div className="wm-ctx-divider" />
+                  <button className="wm-ctx-item" onClick={() => ctxAction('front')}>⬆️ Bring to Front</button>
+                  <button className="wm-ctx-item" onClick={() => ctxAction('back')}>⬇️ Send to Back</button>
+                  <button className="wm-ctx-item" onClick={() => ctxAction('center')}>🎯 Center on Canvas</button>
+                  <button className="wm-ctx-item" onClick={() => ctxAction('resetSize')}>📐 Reset Size</button>
+                  <div className="wm-ctx-divider" />
+                  <button className="wm-ctx-item wm-ctx-item--danger" onClick={() => ctxAction('delete')}>🗑️ Delete Widget</button>
+                </div>
+              );
+            })()}
           </div>
         </div>
       )}
