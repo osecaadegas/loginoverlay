@@ -15,7 +15,7 @@ const STEPS = [
   {
     target: null,
     title: 'Welcome to your Overlay Center! 🎉',
-    body: 'This quick tour walks you through every feature — from building your overlay to going live on OBS. Takes about 2 minutes. Press Next to start!',
+    body: 'This quick tour walks you through every feature — from building your overlay to going live on OBS and Twitch. Takes about 3 minutes. Press Next to start!',
     position: 'center',
     page: 'widgets',
   },
@@ -70,6 +70,7 @@ const STEPS = [
     position: 'center',
     page: 'widgets',
   },
+
   /* ── Profile page ── */
   {
     target: '[data-tour="profile-identity"]',
@@ -114,76 +115,146 @@ const STEPS = [
     page: 'profile',
   },
   {
+    target: '[data-tour="profile-autotracker"]',
+    title: '14. Slot Auto-Tracker 🔗',
+    body: 'Install our Chrome extension to automatically detect which slot you\'re playing. It syncs with your Bonus Hunt overlay in real-time — no manual input needed.',
+    position: 'top',
+    page: 'profile',
+  },
+  {
+    target: '[data-tour="profile-twitch-ext"]',
+    title: '15. Twitch Extension 📺',
+    body: 'Your Twitch Extension lets viewers interact directly on your channel — predictions, giveaways, slot stats, and mini-games. It works automatically once installed on Twitch.',
+    position: 'top',
+    page: 'profile',
+  },
+  {
     target: '[data-tour="profile-obs-guide"]',
-    title: '14. OBS Setup Guide 🖥️',
+    title: '16. OBS Setup Guide 🖥️',
     body: 'Scroll down for a quick checklist to make your overlay pixel-perfect in OBS — browser source dimensions, canvas resolution, and common fixes for blurry overlays.',
     position: 'top',
     page: 'profile',
   },
 
-  /* ── Bonus Hunt page ── */
+  /* ── Streamer Tools ── */
   {
     target: '[data-tour="bonus-hunt-page"]',
-    title: '15. Bonus Hunt 🎯',
+    title: '17. Bonus Hunt 🎯',
     body: 'This is where you run your bonus hunts! Add bonuses with name, bet, and slot info. Start the hunt, open bonuses, record results — the overlay widget updates in real-time for your viewers.',
     position: 'float-top',
     page: 'bonus_hunt',
   },
-
-  /* ── Tournament page ── */
   {
     target: '[data-tour="tournament-page"]',
-    title: '16. Tournament 🏆',
+    title: '18. Tournament 🏆',
     body: 'Set up slot battles and tournaments here. Add players, assign slots, track scores, and run brackets. The Tournament widget on your overlay shows the leaderboard live.',
     position: 'float-top',
     page: 'tournament',
   },
+  {
+    target: '[data-tour="bonus-buys-page"]',
+    title: '19. Bonus Buys 🛒',
+    body: 'Track your bonus buy sessions — log every purchase with slot name, bet size, and result. See your profit/loss stats over time.',
+    position: 'float-top',
+    page: 'bonus_buys',
+  },
+  {
+    target: '[data-tour="current-slot-page"]',
+    title: '20. Current Slot 🎰',
+    body: 'Set what slot you\'re currently playing. This updates your Current Slot widget on the overlay so viewers always know what game you\'re on.',
+    position: 'float-top',
+    page: 'current_slot',
+  },
 
-  /* ── Library page ── */
+  /* ── Community Tools ── */
+  {
+    target: '[data-tour="random-slot-page"]',
+    title: '21. Random Slot Picker 🎲',
+    body: 'Let your viewers pick a random slot for you to play! Spin the wheel and get a surprise slot suggestion from the database.',
+    position: 'float-top',
+    page: 'random_slot_picker',
+  },
+  {
+    target: '[data-tour="slot-requests-page"]',
+    title: '22. Slot Requests 📋',
+    body: 'Viewers can request slots via the !sr chat command. Manage the queue here — accept, skip, or clear requests.',
+    position: 'float-top',
+    page: 'slot_requests',
+  },
+
+  /* ── Community Games ── */
+  {
+    target: '[data-tour="coin-flip-page"]',
+    title: '23. Coin Flip 🪙',
+    body: 'A simple heads-or-tails betting game for your viewers. They place bets with their channel points and the winner takes it all.',
+    position: 'float-top',
+    page: 'coin_flip',
+  },
+  {
+    target: '[data-tour="salty-words-page"]',
+    title: '24. Salty Words 🧂',
+    body: 'A word-guessing betting game — viewers bet on hidden words. Great for filling downtime between bonus hunts.',
+    position: 'float-top',
+    page: 'salty_words',
+  },
+  {
+    target: '[data-tour="predictions-page"]',
+    title: '25. Predictions 🔮',
+    body: 'Create two-outcome predictions for your viewers. Will the bonus pay over 100x? Let them bet on it with their channel points!',
+    position: 'float-top',
+    page: 'predictions',
+  },
+
+  /* ── Collections ── */
   {
     target: '[data-tour="library-page"]',
-    title: '17. Library 📚',
+    title: '26. Library 📚',
     body: 'Every bonus hunt you finish is saved here automatically. Browse your past hunts, view detailed stats and results, and see your full history.',
     position: 'bottom',
     page: 'library',
   },
-
-  /* ── Presets page ── */
   {
     target: '[data-tour="presets-page"]',
-    title: '18. Presets — Save Layouts 💾',
+    title: '27. Presets — Save Layouts 💾',
     body: 'Save your current widget layout as a preset. Give it a name and click Save — it captures all widget positions, sizes, colors, and styles.',
     position: 'float-top',
     page: 'presets',
   },
   {
     target: '[data-tour="presets-shared"]',
-    title: '19. Presets — Load & Share',
+    title: '28. Presets — Load & Share',
     body: 'Load any saved preset to instantly restore a layout. Admins can share presets so all users can pick from ready-made layouts in the Shared section.',
     position: 'float-top',
     page: 'presets',
   },
-
-  /* ── Submit Slots page ── */
   {
     target: '[data-tour="slots-page"]',
-    title: '20. Submit Slots 🎰',
+    title: '29. Submit Slots 🎰',
     body: 'Add new slot games to the database. Fill in the name, provider, RTP, volatility, and max win — then use the 🔍 Search button to find an image. An admin will review your submission.',
     position: 'bottom',
     page: 'slots',
   },
 
+  /* ── Themes ── */
+  {
+    target: null,
+    title: '30. Themes 🎨',
+    body: 'Browse and apply pre-made themes to completely change your overlay\'s look. Each theme updates colors, fonts, and styles across all your widgets at once.',
+    position: 'center',
+    page: 'theme',
+  },
+
   /* ── OBS setup ── */
   {
     target: '[data-tour="obs-url"]',
-    title: '21. OBS — Full Overlay',
+    title: '31. OBS — Full Overlay',
     body: 'Copy this URL and add it as a Browser Source in OBS (width: 1920, height: 1080). This loads your entire overlay with all widgets in one source.',
     position: 'right',
     page: 'widgets',
   },
   {
     target: null,
-    title: '22. OBS — Single Widget',
+    title: '32. OBS — Single Widget',
     body: 'Want just one widget in OBS? Open its settings ⚙️ → expand "OBS Browser Source URL" → copy the link. Add it as a separate Browser Source.',
     position: 'center',
     page: 'widgets',
@@ -380,9 +451,18 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     profile: 'Profile',
     bonus_hunt: 'Bonus Hunt',
     tournament: 'Tournament',
+    bonus_buys: 'Bonus Buys',
+    current_slot: 'Current Slot',
+    single_slot: 'Single Slot',
+    random_slot_picker: 'Random Slot',
+    slot_requests: 'Slot Requests',
+    coin_flip: 'Coin Flip',
+    salty_words: 'Salty Words',
+    predictions: 'Predictions',
     library: 'Library',
     presets: 'Presets',
     slots: 'Submit Slots',
+    theme: 'Themes',
   };
   const pageLabel = pageLabels[current.page] || '';
 

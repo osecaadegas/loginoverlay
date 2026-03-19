@@ -749,6 +749,72 @@ export default function ProfileSection({ widgets, saveWidget }) {
         </div>
       </div>
 
+      {/* ──── Twitch Extension Info ──── */}
+      <div data-tour="profile-twitch-ext" style={{
+        background: 'linear-gradient(135deg, #0f172a 0%, #1a0a2e 100%)',
+        border: '1px solid rgba(169,85,247,0.3)',
+        borderRadius: 14,
+        padding: '20px 22px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 14,
+      }}>
+        <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#a855f7', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
+          📺 Twitch Extension
+        </h3>
+        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+          Your channel has a built-in Twitch Extension that lets viewers interact directly from your stream page — no extra setup needed from viewers.
+        </p>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 10,
+            padding: '14px 16px',
+          }}>
+            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>🎰 What viewers can do</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🔮 <strong style={{ color: '#e2e8f0' }}>Predictions</strong> — Bet on outcomes during your stream</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎁 <strong style={{ color: '#e2e8f0' }}>Giveaways</strong> — Enter giveaways with one click</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎲 <strong style={{ color: '#e2e8f0' }}>Mini-games</strong> — Play Blackjack and Mines to earn points</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>📊 <strong style={{ color: '#e2e8f0' }}>Stats</strong> — See live session stats and leaderboards</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎡 <strong style={{ color: '#e2e8f0' }}>Daily Wheel</strong> — Spin once per day for bonus points</span>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'rgba(255,255,255,0.03)',
+            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 10,
+            padding: '14px 16px',
+          }}>
+            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>📋 Two display modes</h4>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>📌 <strong style={{ color: '#a855f7' }}>Panel</strong> — Shows below your stream as a tabbed panel with all features</span>
+              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🖼️ <strong style={{ color: '#a855f7' }}>Video Overlay</strong> — A floating "🎰 Interact" button on the stream video that slides open a side panel</span>
+            </div>
+          </div>
+
+          <div style={{
+            background: 'rgba(169,85,247,0.08)',
+            border: '1px solid rgba(169,85,247,0.2)',
+            borderRadius: 10,
+            padding: '14px 16px',
+          }}>
+            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#a855f7', margin: '0 0 8px 0' }}>⚙️ Streamer controls</h4>
+            <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+              Manage your extension from the <strong style={{ color: '#e2e8f0' }}>Admin Panel → Extension</strong> page. From there you can create predictions,
+              run giveaways, start betting pools, and configure all viewer-facing features. Points are tracked automatically per viewer.
+            </p>
+          </div>
+        </div>
+
+        <div style={{ background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: '0.72rem', color: '#4ade80' }}>
+          ✅ The extension works on <strong>any streamer's channel</strong> that installs it — all data is per-channel and auto-configured.
+        </div>
+      </div>
+
       {/* ──── OBS Setup Guide ──── */}
       <div data-tour="profile-obs-guide" style={{
         background: 'rgba(124,58,237,0.06)',

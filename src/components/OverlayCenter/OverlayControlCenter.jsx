@@ -29,7 +29,7 @@ import './widgets/builtinWidgets';
 import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
 
 /* ── Generic WidgetPanel: replaces 14 identical panel wrappers ── */
-const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page' };
+const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', single_slot: 'single-slot-page', random_slot_picker: 'random-slot-page', slot_requests: 'slot-requests-page', coin_flip: 'coin-flip-page', salty_words: 'salty-words-page', predictions: 'predictions-page' };
 
 function WidgetPanel({ widgetType, widgets, saveWidget, addWidget, loading }) {
   const def = getWidgetDef(widgetType);
