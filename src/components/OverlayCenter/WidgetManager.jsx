@@ -1144,6 +1144,68 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     </div>
                   </details>
 
+                  {/* ── Typography ── */}
+                  <details className="wm-ctx-section">
+                    <summary className="wm-ctx-section-title">🔤 Typography</summary>
+                    <div className="wm-ctx-section-body">
+                      <div className="wm-ctx-select-row">
+                        <label className="wm-ctx-input-label">Font</label>
+                        <select className="wm-ctx-select" value={w.config?.fontFamily || "'Inter', sans-serif"}
+                          onChange={e => ctxUpdateConfig('fontFamily', e.target.value)}>
+                          <option value="'Inter', sans-serif">Inter</option>
+                          <option value="'Poppins', sans-serif">Poppins</option>
+                          <option value="'Roboto', sans-serif">Roboto</option>
+                          <option value="'Oswald', sans-serif">Oswald</option>
+                          <option value="'Montserrat', sans-serif">Montserrat</option>
+                          <option value="'Fira Code', monospace">Fira Code</option>
+                          <option value="'Bebas Neue', cursive">Bebas Neue</option>
+                          <option value="'Press Start 2P', cursive">Press Start 2P</option>
+                          <option value="'Orbitron', sans-serif">Orbitron</option>
+                        </select>
+                      </div>
+                      <div className="wm-ctx-slider-row">
+                        <label className="wm-ctx-slider-label">Size</label>
+                        <input type="range" className="wm-ctx-range" min={8} max={72} step={1}
+                          value={w.config?.fontSize ?? 14}
+                          onChange={e => ctxUpdateConfig('fontSize', +e.target.value)} />
+                        <span className="wm-ctx-slider-val">{w.config?.fontSize ?? 14}px</span>
+                      </div>
+                      <div className="wm-ctx-select-row">
+                        <label className="wm-ctx-input-label">Weight</label>
+                        <select className="wm-ctx-select" value={w.config?.fontWeight ?? 500}
+                          onChange={e => ctxUpdateConfig('fontWeight', +e.target.value)}>
+                          <option value={300}>Light</option>
+                          <option value={400}>Regular</option>
+                          <option value={500}>Medium</option>
+                          <option value={600}>Semi Bold</option>
+                          <option value={700}>Bold</option>
+                          <option value={800}>Extra Bold</option>
+                          <option value={900}>Black</option>
+                        </select>
+                      </div>
+                    </div>
+                  </details>
+
+                  {/* ── Colors ── */}
+                  <details className="wm-ctx-section">
+                    <summary className="wm-ctx-section-title">🎨 Colors</summary>
+                    <div className="wm-ctx-section-body">
+                      {[
+                        { key: 'textColor',   label: 'Text',       def: '#ffffff' },
+                        { key: 'bgColor',     label: 'Background', def: '#0f172a' },
+                        { key: 'accentColor', label: 'Accent',     def: '#f59e0b' },
+                      ].map(f => (
+                        <div key={f.key} className="wm-ctx-color-row">
+                          <label className="wm-ctx-color-label">{f.label}</label>
+                          <input type="color" className="wm-ctx-color-input"
+                            value={w.config?.[f.key] || f.def}
+                            onChange={e => ctxUpdateConfig(f.key, e.target.value)} />
+                          <span className="wm-ctx-color-hex">{w.config?.[f.key] || f.def}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
+
                   {/* ── Shadow ── */}
                   <details className="wm-ctx-section">
                     <summary className="wm-ctx-section-title">🌑 Shadow</summary>

@@ -2912,6 +2912,38 @@ body.wm-resizing {
   border-color: rgba(139,92,246,0.25);
 }
 
+/* Color picker rows */
+.wm-ctx-color-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.wm-ctx-color-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+  min-width: 52px;
+}
+.wm-ctx-color-input {
+  width: 24px;
+  height: 20px;
+  border: 1px solid rgba(255,255,255,0.15);
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  -webkit-appearance: none;
+  appearance: none;
+}
+.wm-ctx-color-input::-webkit-color-swatch-wrapper { padding: 1px; }
+.wm-ctx-color-input::-webkit-color-swatch { border: none; border-radius: 3px; }
+.wm-ctx-color-input::-moz-color-swatch { border: none; border-radius: 3px; }
+.wm-ctx-color-hex {
+  font-size: 10px;
+  color: rgba(255,255,255,0.4);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
 /* --- Config Forms (widget-specific — legacy support) --- */
 .oc-config-form {
   display: flex;
