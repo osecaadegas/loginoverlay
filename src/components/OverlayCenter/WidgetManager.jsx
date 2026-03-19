@@ -168,7 +168,7 @@ const DraggableSlot = memo(function DraggableSlot({
         height: isBg ? canvasH : widget.height,
         zIndex: isSelected ? 9999 : (widget.z_index || 1),
         pointerEvents: exiting ? 'none' : undefined,
-        animationDuration: '0.35s',
+        animationDuration: `${(widget.config?.animSpeed || 1) * 0.35}s`,
       }}
     >
       {/* Widget content */}
@@ -522,7 +522,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
       return;
     }
     const prevIds = prevVisibleIdsRef.current;
-    const ANIM_MS = 400;
 
     // Detect newly-hidden → play exit animation
     for (const id of prevIds) {
@@ -531,11 +530,12 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         if (w) {
           const exitAnim = (w.exit_animation || w.animation || 'fade');
           if (exitAnim !== 'none') {
+            const ms = ((w.config?.animSpeed || 1) * 0.35 + 0.15) * 1000;
             if (exitingMapRef.current.has(id)) clearTimeout(exitingMapRef.current.get(id).timer);
             const timer = setTimeout(() => {
               exitingMapRef.current.delete(id);
               setExitTick(t => t + 1);
-            }, ANIM_MS);
+            }, ms);
             exitingMapRef.current.set(id, { widget: w, timer });
             setExitTick(t => t + 1);
           }
@@ -545,6 +545,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
     // Detect newly-visible → play enter animation
     const newEnter = new Map();
+    let maxEnterMs = 0;
     for (const id of currentIds) {
       // Cancel exit if widget re-shown
       if (exitingMapRef.current.has(id)) {
@@ -558,13 +559,15 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           if (enterAnim !== 'none') {
             const norm = enterAnim === 'slide' ? 'slide-up' : enterAnim;
             newEnter.set(id, `or-anim-in--${norm}`);
+            const ms = ((w.config?.animSpeed || 1) * 0.35 + 0.15) * 1000;
+            if (ms > maxEnterMs) maxEnterMs = ms;
           }
         }
       }
     }
     if (newEnter.size > 0) {
       setEnterAnims(newEnter);
-      setTimeout(() => setEnterAnims(new Map()), ANIM_MS);
+      setTimeout(() => setEnterAnims(new Map()), maxEnterMs || 400);
     }
 
     prevVisibleIdsRef.current = currentIds;
@@ -1106,6 +1109,13 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           onChange={e => ctxUpdateField('exit_animation', e.target.value)}>
                           {EXIT_ANIMS.map(a => <option key={a.v} value={a.v}>{a.l}</option>)}
                         </select>
+                      </div>
+                      <div className="wm-ctx-slider-row">
+                        <label className="wm-ctx-slider-label">Duration</label>
+                        <input type="range" className="wm-ctx-range" min={0.2} max={5} step={0.1}
+                          value={w.config?.animSpeed ?? 1}
+                          onChange={e => ctxUpdateConfig('animSpeed', +e.target.value)} />
+                        <span className="wm-ctx-slider-val">{((w.config?.animSpeed ?? 1) * 0.35).toFixed(2)}s</span>
                       </div>
                     </div>
                   </details>

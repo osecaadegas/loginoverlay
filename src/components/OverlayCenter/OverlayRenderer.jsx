@@ -69,7 +69,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     width: isBg ? canvasWidth : widget.width,
     height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
-    animationDuration: `${(animSpeed || 1) * 0.35}s`,
+    animationDuration: `${(widget.config?.animSpeed || animSpeed || 1) * 0.35}s`,
     overflow: needs3D ? 'visible' : 'hidden',
     borderRadius: widgetRadius ? `${widgetRadius}px` : undefined,
     filter: shadowFilter,
@@ -205,12 +205,11 @@ export default function OverlayRenderer() {
   // Detect newly-hidden widgets and keep them for exit animation
   useEffect(() => {
     const currentIds = new Set(visibleWidgets.map(w => w.id));
-    const animDuration = ((theme?.animation_speed || 1) * 0.35 + 0.15) * 1000;
-
     for (const id of prevVisibleIds.current) {
       if (!currentIds.has(id)) {
         const w = widgets.find(x => x.id === id);
         if (w && (w.exit_animation || w.animation) !== 'none') {
+          const animDuration = ((w.config?.animSpeed || theme?.animation_speed || 1) * 0.35 + 0.15) * 1000;
           if (exitingRef.current.has(id)) clearTimeout(exitingRef.current.get(id).timer);
           const timer = setTimeout(() => {
             exitingRef.current.delete(id);
