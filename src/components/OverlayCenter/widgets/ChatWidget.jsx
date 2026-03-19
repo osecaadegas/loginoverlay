@@ -253,11 +253,6 @@ function ChatWidget({ config, theme }) {
       )}
 
       <div className="ov-chat-messages" ref={scrollRef} style={{ lineHeight: msgLineHeight }}>
-        {messages.length === 0 && (
-          <div className="ov-chat-empty-hint">
-            💬 Waiting for messages...
-          </div>
-        )}
         {messages.map((msg, msgIdx) => {
           const plt = PLATFORM_META[msg.platform] || PLATFORM_META.twitch;
           const nameColor = c.useNativeColors && msg.color ? msg.color : plt.color;
