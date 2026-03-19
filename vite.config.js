@@ -13,7 +13,8 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(__dirname, 'index.html'),
-        extension: resolve(__dirname, 'extension.html')
+        extension: resolve(__dirname, 'extension.html'),
+        'extension-overlay': resolve(__dirname, 'extension-overlay.html')
       },
       output: {
         manualChunks(id) {
