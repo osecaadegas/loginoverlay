@@ -17,6 +17,7 @@
  */
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'crypto';
+import adminHandler from './_lib/ext-admin.js';
 
 // ─── JWT Verification ───────────────────────────────────
 
@@ -67,6 +68,11 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // Forward admin requests (Bearer token auth) to admin handler
+  if (req.headers.authorization?.startsWith('Bearer ')) {
+    return adminHandler(req, res);
+  }
+
   const supabase = createClient(
     process.env.SUPABASE_URL,
     process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -93,7 +99,7 @@ export default async function handler(req, res) {
   // Resolve broadcaster's Supabase user_id from their Twitch channel ID
   const { data: broadcasterProfile } = await supabase
     .from('user_profiles')
-    .select('id')
+    .select('user_id')
     .eq('twitch_id', channelId)
     .single();
 
@@ -101,7 +107,7 @@ export default async function handler(req, res) {
     return res.status(404).json({ error: 'Broadcaster not found' });
   }
 
-  const broadcasterId = broadcasterProfile.id;
+  const broadcasterId = broadcasterProfile.user_id;
   const action = req.query.action || req.body?.action;
   const body = req.method === 'POST' ? req.body : req.query;
 

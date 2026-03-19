@@ -36,7 +36,8 @@ export default async function handler(req, res) {
     case 'sr':    return handleSlotRequest(req, res);
     case 'song':  return handleSongRequest(req, res);
     case 'award': return handleAwardPoints(req, res);
-    default:      return res.status(400).json({ error: 'Unknown cmd. Use ?cmd=sr|song|award' });
+    case 'spotify-refresh': return handleSpotifyRefresh(req, res);
+    default:      return res.status(400).json({ error: 'Unknown cmd. Use ?cmd=sr|song|award|spotify-refresh' });
   }
 }
 
@@ -259,4 +260,94 @@ async function handleAwardPoints(req, res) {
     console.error('Error awarding points:', error);
     return res.status(500).json({ error: 'Internal server error', message: error.message });
   }
+}
+
+/* ─── Spotify Token Refresh (?cmd=spotify-refresh) ─── */
+
+async function handleSpotifyRefresh(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY || !SPOTIFY_CLIENT_ID) {
+    return res.status(500).json({ error: 'Server config error' });
+  }
+
+  const { user_id } = req.body || {};
+  if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+  const { data: tokenRow, error: readErr } = await supabase
+    .from('spotify_tokens')
+    .select('refresh_token, access_token, expires_at')
+    .eq('user_id', user_id)
+    .single();
+
+  if (readErr || !tokenRow?.refresh_token) {
+    return res.status(404).json({ error: 'No Spotify tokens found for this user' });
+  }
+
+  if (tokenRow.expires_at && Date.now() < tokenRow.expires_at - 60000) {
+    return res.status(200).json({
+      access_token: tokenRow.access_token,
+      expires_at: tokenRow.expires_at,
+    });
+  }
+
+  let freshData;
+  try {
+    const spotRes = await fetch('https://accounts.spotify.com/api/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        client_id: SPOTIFY_CLIENT_ID,
+        grant_type: 'refresh_token',
+        refresh_token: tokenRow.refresh_token,
+      }),
+    });
+
+    if (!spotRes.ok) {
+      const err = await spotRes.json().catch(() => ({}));
+      return res.status(401).json({ error: err.error_description || 'Token refresh failed' });
+    }
+
+    freshData = await spotRes.json();
+  } catch (err) {
+    return res.status(502).json({ error: 'Failed to contact Spotify' });
+  }
+
+  const newAccessToken = freshData.access_token;
+  const newRefreshToken = freshData.refresh_token || tokenRow.refresh_token;
+  const newExpiresAt = Date.now() + freshData.expires_in * 1000;
+
+  await supabase.from('spotify_tokens').update({
+    access_token: newAccessToken,
+    refresh_token: newRefreshToken,
+    expires_at: newExpiresAt,
+    updated_at: new Date().toISOString(),
+  }).eq('user_id', user_id);
+
+  const tokenPayload = {
+    spotify_access_token: newAccessToken,
+    spotify_refresh_token: newRefreshToken,
+    spotify_expires_at: newExpiresAt,
+  };
+
+  const { data: widgets } = await supabase
+    .from('overlay_widgets')
+    .select('id, config, widget_type')
+    .eq('user_id', user_id)
+    .in('widget_type', ['navbar', 'spotify_now_playing']);
+
+  if (widgets?.length) {
+    for (const w of widgets) {
+      await supabase.from('overlay_widgets').update({
+        config: { ...w.config, ...tokenPayload },
+        updated_at: new Date().toISOString(),
+      }).eq('id', w.id);
+    }
+  }
+
+  return res.status(200).json({
+    access_token: newAccessToken,
+    expires_at: newExpiresAt,
+  });
 }
