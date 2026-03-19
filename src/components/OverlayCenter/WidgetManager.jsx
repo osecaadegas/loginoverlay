@@ -178,7 +178,8 @@ const DraggableSlot = memo(function DraggableSlot({
         const slotId = `wm-el-${widget.id}`;
         const rules = Object.entries(elCSS).map(([sel, props]) => {
           const decls = Object.entries(props).filter(([k]) => k !== '_init').map(([k, v]) => `${k}:${v} !important`).join(';');
-          return decls ? `#${slotId} ${sel}{${decls}}` : '';
+          const scoped = sel.split(',').map(s => `#${slotId} ${s.trim()}`).join(',');
+          return decls ? `${scoped}{${decls}}` : '';
         }).filter(Boolean).join('\n');
         return rules ? <style>{rules}</style> : null;
       })()}
@@ -948,7 +949,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 ))}
                 {/* Element highlight overlay when hovering selectors */}
                 {ctxHoverSel && ctxMenu && (
-                  <style>{`#wm-el-${ctxMenu.widget.id} ${ctxHoverSel}{outline:2px solid #a78bfa !important;background:rgba(139,92,246,0.12) !important;box-shadow:0 0 12px rgba(139,92,246,0.35) !important;transition:outline 0.15s,background 0.15s,box-shadow 0.15s !important;}`}</style>
+                  <style>{`${ctxHoverSel.split(',').map(s => `#wm-el-${ctxMenu.widget.id} ${s.trim()}`).join(',')}{outline:2px solid #a78bfa !important;background:rgba(139,92,246,0.12) !important;box-shadow:0 0 12px rgba(139,92,246,0.35) !important;transition:outline 0.15s,background 0.15s,box-shadow 0.15s !important;}`}</style>
                 )}
                 {/* Exiting widgets — kept in DOM for exit animation */}
                 {exitingWidgets.map(w => (
