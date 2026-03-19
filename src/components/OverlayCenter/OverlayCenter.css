@@ -2684,7 +2684,10 @@ body.wm-resizing {
   top: 0;
   background: rgba(15, 17, 30, 0.98);
   z-index: 1;
+  cursor: grab;
+  user-select: none;
 }
+.wm-ctx-menu--rich .wm-ctx-header:active { cursor: grabbing; }
 .wm-ctx-close {
   background: none;
   border: none;

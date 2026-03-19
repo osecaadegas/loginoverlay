@@ -1025,8 +1025,20 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   onMouseDown={e => e.stopPropagation()}
                   onClick={e => e.stopPropagation()}
                 >
-                  {/* Header */}
-                  <div className="wm-ctx-header">
+                  {/* Header — draggable */}
+                  <div className="wm-ctx-header" style={{ cursor: 'grab' }}
+                    onMouseDown={e => {
+                      e.preventDefault();
+                      const startX = e.clientX, startY = e.clientY;
+                      const origX = ctxMenu.x, origY = ctxMenu.y;
+                      const onMove = ev => {
+                        setCtxMenu(prev => prev ? { ...prev, x: origX + ev.clientX - startX, y: origY + ev.clientY - startY } : null);
+                      };
+                      const onUp = () => { document.removeEventListener('mousemove', onMove); document.removeEventListener('mouseup', onUp); };
+                      document.addEventListener('mousemove', onMove);
+                      document.addEventListener('mouseup', onUp);
+                    }}
+                  >
                     <span>{def?.icon} {w.label || def?.label}</span>
                     <button className="wm-ctx-close" onClick={() => setCtxMenu(null)}>✕</button>
                   </div>
