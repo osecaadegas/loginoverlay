@@ -389,7 +389,7 @@ CREATE POLICY "Service inserts ga entries" ON ext_giveaway_entries FOR INSERT WI
 CREATE POLICY "Anyone reads ga entries" ON ext_giveaway_entries FOR SELECT USING (true);
 CREATE POLICY "Anyone reads ga winners" ON ext_giveaway_winners FOR SELECT USING (true);
 CREATE POLICY "Broadcaster manages ga winners" ON ext_giveaway_winners FOR ALL
-  USING (broadcaster_id = auth.uid());
+  USING (giveaway_id IN (SELECT id FROM ext_giveaways WHERE broadcaster_id = auth.uid()));
 CREATE POLICY "Broadcaster manages sessions" ON ext_stream_sessions FOR ALL
   USING (broadcaster_id = auth.uid());
 CREATE POLICY "Anyone reads sessions" ON ext_stream_sessions FOR SELECT USING (true);
