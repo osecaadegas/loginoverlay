@@ -87,7 +87,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
         const elCSS = widget.config?.elementCSS;
         if (!elCSS || Object.keys(elCSS).length === 0) return null;
         const rules = Object.entries(elCSS).map(([sel, props]) => {
-          const decls = Object.entries(props).filter(([k]) => k !== '_init').map(([k, v]) => `${k}:${v} !important`).join(';');
+          const decls = Object.entries(props).filter(([k]) => k !== '_init').map(([k, v]) => `${k}:${v}`).join(';');
           const scoped = sel.split(',').map(s => `#${slotId} ${s.trim()}`).join(',');
           return decls ? `${scoped}{${decls}}` : '';
         }).filter(Boolean).join('\n');
