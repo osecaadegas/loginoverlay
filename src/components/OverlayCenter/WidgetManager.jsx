@@ -689,19 +689,19 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
 
   /* ── Right-click context menu action handler ── */
   const ctxAction = useCallback((action) => {
-    const w = ctxMenu?.widget;
+    const w = ctxMenu?.widget ? widgets.find(x => x.id === ctxMenu.widget.id) || ctxMenu.widget : null;
     if (!w) return;
-    setCtxMenu(null);
     switch (action) {
-      case 'edit':     setEditingId(w.id); break;
-      case 'toggle':   onSave({ ...w, is_visible: !w.is_visible }); break;
-      case 'copyUrl':  copyWidgetUrl(w.id); break;
-      case 'front':    handleMoveLayer(w.id, sortedWidgets.length); break;
-      case 'back':     handleMoveLayer(w.id, -sortedWidgets.length); break;
+      case 'edit':     setCtxMenu(null); setEditingId(w.id); break;
+      case 'toggle':   onSave({ ...w, is_visible: !w.is_visible }); setCtxMenu(null); break;
+      case 'copyUrl':  copyWidgetUrl(w.id); setCtxMenu(null); break;
+      case 'front':    handleMoveLayer(w.id, sortedWidgets.length); setCtxMenu(null); break;
+      case 'back':     handleMoveLayer(w.id, -sortedWidgets.length); setCtxMenu(null); break;
       case 'center': {
         const cx = Math.round((CANVAS_W - w.width) / 2);
         const cy = Math.round((CANVAS_H - w.height) / 2);
         onSave({ ...w, position_x: Math.max(0, cx), position_y: Math.max(0, cy) });
+        setCtxMenu(null);
         break;
       }
       case 'resetSize': {
@@ -709,12 +709,29 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         const dw = def?.defaults?.width || 400;
         const dh = def?.defaults?.height || 300;
         onSave({ ...w, width: dw, height: dh });
+        setCtxMenu(null);
         break;
       }
-      case 'delete':   onRemove(w.id); break;
+      case 'delete':   setCtxMenu(null); onRemove(w.id); break;
       default: break;
     }
-  }, [ctxMenu, onSave, onRemove, copyWidgetUrl, handleMoveLayer, sortedWidgets.length, CANVAS_W, CANVAS_H]);
+  }, [ctxMenu, widgets, onSave, onRemove, copyWidgetUrl, handleMoveLayer, sortedWidgets.length, CANVAS_W, CANVAS_H]);
+
+  /* Update widget field from context menu (keeps menu open) */
+  const ctxUpdateField = useCallback((field, value) => {
+    if (!ctxMenu?.widget) return;
+    const w = widgets.find(x => x.id === ctxMenu.widget.id);
+    if (!w) return;
+    onSave({ ...w, [field]: value });
+  }, [ctxMenu, widgets, onSave]);
+
+  /* Update widget config key from context menu (keeps menu open) */
+  const ctxUpdateConfig = useCallback((key, value) => {
+    if (!ctxMenu?.widget) return;
+    const w = widgets.find(x => x.id === ctxMenu.widget.id);
+    if (!w) return;
+    onSave({ ...w, config: { ...w.config, [key]: value } });
+  }, [ctxMenu, widgets, onSave]);
 
   /* Close context menu on click outside */
   useEffect(() => {
@@ -836,28 +853,210 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               </div>
             </div>
 
-            {/* ── Right-click context menu ── */}
+            {/* ── Right-click context menu — rich controls ── */}
             {ctxMenu && (() => {
-              const def = getWidgetDef(ctxMenu.widget.widget_type);
+              const w = widgets.find(x => x.id === ctxMenu.widget.id) || ctxMenu.widget;
+              const def = getWidgetDef(w.widget_type);
+              const styles = def?.styles;
+              const styleKey = def?.styleConfigKey || 'displayStyle';
+              const currentStyle = w.config?.[styleKey] || styles?.[0]?.id;
+              const isBg = w.widget_type === 'background';
+
+              /* Animation options list */
+              const ENTER_ANIMS = [
+                { v: 'fade', l: 'Fade In' },
+                { v: 'slide-up', l: 'Slide from Bottom' },
+                { v: 'slide-down', l: 'Slide from Top' },
+                { v: 'slide-left', l: 'Slide from Right' },
+                { v: 'slide-right', l: 'Slide from Left' },
+                { v: 'swipe-up', l: 'Swipe Up' },
+                { v: 'swipe-down', l: 'Swipe Down' },
+                { v: 'swipe-left', l: 'Swipe Left' },
+                { v: 'swipe-right', l: 'Swipe Right' },
+                { v: 'scale', l: 'Scale Up' },
+                { v: 'scale-down', l: 'Scale Down' },
+                { v: 'flip-x', l: 'Flip Horizontal' },
+                { v: 'flip-y', l: 'Flip Vertical' },
+                { v: 'bounce', l: 'Bounce In' },
+                { v: 'glow', l: 'Glow' },
+                { v: 'blur', l: 'Blur In' },
+                { v: 'rotate', l: 'Rotate In' },
+                { v: 'none', l: 'None (Cut)' },
+              ];
+              const EXIT_ANIMS = [
+                { v: 'fade', l: 'Fade Out' },
+                { v: 'slide-up', l: 'Slide to Top' },
+                { v: 'slide-down', l: 'Slide to Bottom' },
+                { v: 'slide-left', l: 'Slide to Left' },
+                { v: 'slide-right', l: 'Slide to Right' },
+                { v: 'swipe-up', l: 'Swipe Up' },
+                { v: 'swipe-down', l: 'Swipe Down' },
+                { v: 'swipe-left', l: 'Swipe Left' },
+                { v: 'swipe-right', l: 'Swipe Right' },
+                { v: 'scale', l: 'Scale Down' },
+                { v: 'scale-up', l: 'Scale Up' },
+                { v: 'flip-x', l: 'Flip Horizontal' },
+                { v: 'flip-y', l: 'Flip Vertical' },
+                { v: 'bounce', l: 'Bounce Out' },
+                { v: 'glow', l: 'Glow' },
+                { v: 'blur', l: 'Blur Out' },
+                { v: 'rotate', l: 'Rotate Out' },
+                { v: 'none', l: 'None (Cut)' },
+              ];
+
               return (
                 <div
-                  className="wm-ctx-menu"
+                  className="wm-ctx-menu wm-ctx-menu--rich"
                   style={{ left: ctxMenu.x, top: ctxMenu.y }}
                   onMouseDown={e => e.stopPropagation()}
+                  onClick={e => e.stopPropagation()}
                 >
-                  <div className="wm-ctx-header">{def?.icon} {ctxMenu.widget.label || def?.label}</div>
-                  <button className="wm-ctx-item" onClick={() => ctxAction('edit')}>⚙️ Edit Settings</button>
-                  <button className="wm-ctx-item" onClick={() => ctxAction('toggle')}>
-                    {ctxMenu.widget.is_visible ? '👁️ Hide Widget' : '👁️‍🗨️ Show Widget'}
-                  </button>
-                  <button className="wm-ctx-item" onClick={() => ctxAction('copyUrl')}>🔗 Copy OBS URL</button>
+                  {/* Header */}
+                  <div className="wm-ctx-header">
+                    <span>{def?.icon} {w.label || def?.label}</span>
+                    <button className="wm-ctx-close" onClick={() => setCtxMenu(null)}>✕</button>
+                  </div>
+
+                  {/* Quick actions row */}
+                  <div className="wm-ctx-actions-row">
+                    <button className="wm-ctx-action-btn" onClick={() => ctxAction('edit')} title="Edit Settings">⚙️</button>
+                    <button className="wm-ctx-action-btn" onClick={() => ctxAction('toggle')} title={w.is_visible ? 'Hide' : 'Show'}>
+                      {w.is_visible ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                    <button className="wm-ctx-action-btn" onClick={() => ctxAction('copyUrl')} title="Copy OBS URL">🔗</button>
+                    <button className="wm-ctx-action-btn" onClick={() => ctxAction('front')} title="Bring to Front">⬆️</button>
+                    <button className="wm-ctx-action-btn" onClick={() => ctxAction('back')} title="Send to Back">⬇️</button>
+                    <button className="wm-ctx-action-btn" onClick={() => ctxAction('center')} title="Center">🎯</button>
+                    <button className="wm-ctx-action-btn wm-ctx-action-btn--danger" onClick={() => ctxAction('delete')} title="Delete">🗑️</button>
+                  </div>
+
                   <div className="wm-ctx-divider" />
-                  <button className="wm-ctx-item" onClick={() => ctxAction('front')}>⬆️ Bring to Front</button>
-                  <button className="wm-ctx-item" onClick={() => ctxAction('back')}>⬇️ Send to Back</button>
-                  <button className="wm-ctx-item" onClick={() => ctxAction('center')}>🎯 Center on Canvas</button>
-                  <button className="wm-ctx-item" onClick={() => ctxAction('resetSize')}>📐 Reset Size</button>
-                  <div className="wm-ctx-divider" />
-                  <button className="wm-ctx-item wm-ctx-item--danger" onClick={() => ctxAction('delete')}>🗑️ Delete Widget</button>
+
+                  {/* ── Dimensions ── */}
+                  {!isBg && (
+                    <details className="wm-ctx-section">
+                      <summary className="wm-ctx-section-title">📐 Dimensions</summary>
+                      <div className="wm-ctx-section-body">
+                        <div className="wm-ctx-input-row">
+                          <label className="wm-ctx-input-label">W</label>
+                          <input type="number" className="wm-ctx-num" value={Math.round(w.width)} min={20}
+                            onChange={e => ctxUpdateField('width', Math.max(20, +e.target.value))} />
+                          <label className="wm-ctx-input-label">H</label>
+                          <input type="number" className="wm-ctx-num" value={Math.round(w.height)} min={20}
+                            onChange={e => ctxUpdateField('height', Math.max(20, +e.target.value))} />
+                        </div>
+                        <button className="wm-ctx-mini-btn" onClick={() => ctxAction('resetSize')}>Reset to Default</button>
+                      </div>
+                    </details>
+                  )}
+
+                  {/* ── Position ── */}
+                  {!isBg && (
+                    <details className="wm-ctx-section">
+                      <summary className="wm-ctx-section-title">📍 Position</summary>
+                      <div className="wm-ctx-section-body">
+                        <div className="wm-ctx-input-row">
+                          <label className="wm-ctx-input-label">X</label>
+                          <input type="number" className="wm-ctx-num" value={Math.round(w.position_x)} min={0}
+                            onChange={e => ctxUpdateField('position_x', Math.max(0, +e.target.value))} />
+                          <label className="wm-ctx-input-label">Y</label>
+                          <input type="number" className="wm-ctx-num" value={Math.round(w.position_y)} min={0}
+                            onChange={e => ctxUpdateField('position_y', Math.max(0, +e.target.value))} />
+                        </div>
+                        <button className="wm-ctx-mini-btn" onClick={() => ctxAction('center')}>Center on Canvas</button>
+                      </div>
+                    </details>
+                  )}
+
+                  {/* ── Style ── */}
+                  {styles && styles.length > 1 && (
+                    <details className="wm-ctx-section">
+                      <summary className="wm-ctx-section-title">🎨 Style</summary>
+                      <div className="wm-ctx-section-body">
+                        <div className="wm-ctx-style-grid">
+                          {styles.map(s => (
+                            <button
+                              key={s.id}
+                              className={`wm-ctx-style-btn ${currentStyle === s.id ? 'wm-ctx-style-btn--active' : ''}`}
+                              onClick={() => {
+                                const styleKeys = getStyleKeysForWidget(w.widget_type);
+                                if (styleKeys) {
+                                  const swapped = swapStyleConfig(w.config || {}, currentStyle, s.id, styleKeys, styleKey);
+                                  handleConfigChange(w, swapped);
+                                } else {
+                                  handleConfigChange(w, { ...w.config, [styleKey]: s.id });
+                                }
+                              }}
+                            >{s.label}</button>
+                          ))}
+                        </div>
+                      </div>
+                    </details>
+                  )}
+
+                  {/* ── Transitions ── */}
+                  <details className="wm-ctx-section">
+                    <summary className="wm-ctx-section-title">🎬 Transitions</summary>
+                    <div className="wm-ctx-section-body">
+                      <div className="wm-ctx-select-row">
+                        <label className="wm-ctx-input-label">In</label>
+                        <select className="wm-ctx-select" value={w.animation || 'fade'}
+                          onChange={e => ctxUpdateField('animation', e.target.value)}>
+                          {ENTER_ANIMS.map(a => <option key={a.v} value={a.v}>{a.l}</option>)}
+                        </select>
+                      </div>
+                      <div className="wm-ctx-select-row">
+                        <label className="wm-ctx-input-label">Out</label>
+                        <select className="wm-ctx-select" value={w.exit_animation || 'fade'}
+                          onChange={e => ctxUpdateField('exit_animation', e.target.value)}>
+                          {EXIT_ANIMS.map(a => <option key={a.v} value={a.v}>{a.l}</option>)}
+                        </select>
+                      </div>
+                    </div>
+                  </details>
+
+                  {/* ── Filters ── */}
+                  <details className="wm-ctx-section">
+                    <summary className="wm-ctx-section-title">🌈 Filters</summary>
+                    <div className="wm-ctx-section-body">
+                      {[
+                        { key: 'brightness', label: 'Brightness', min: 0, max: 200, def: 100 },
+                        { key: 'contrast',   label: 'Contrast',   min: 0, max: 200, def: 100 },
+                        { key: 'saturation', label: 'Saturation', min: 0, max: 200, def: 100 },
+                      ].map(f => (
+                        <div key={f.key} className="wm-ctx-slider-row">
+                          <label className="wm-ctx-slider-label">{f.label}</label>
+                          <input type="range" className="wm-ctx-range" min={f.min} max={f.max}
+                            value={w.config?.[f.key] ?? f.def}
+                            onChange={e => ctxUpdateConfig(f.key, +e.target.value)} />
+                          <span className="wm-ctx-slider-val">{w.config?.[f.key] ?? f.def}%</span>
+                        </div>
+                      ))}
+                      <button className="wm-ctx-mini-btn" onClick={() => {
+                        const latest = widgets.find(x => x.id === w.id) || w;
+                        handleConfigChange(latest, { ...latest.config, brightness: 100, contrast: 100, saturation: 100 });
+                      }}>Reset Filters</button>
+                    </div>
+                  </details>
+
+                  {/* ── Shadow ── */}
+                  <details className="wm-ctx-section">
+                    <summary className="wm-ctx-section-title">🌑 Shadow</summary>
+                    <div className="wm-ctx-section-body">
+                      {[
+                        { key: 'shadowSize',      label: 'Size',      min: 0, max: 100 },
+                        { key: 'shadowIntensity',  label: 'Intensity', min: 0, max: 100 },
+                      ].map(f => (
+                        <div key={f.key} className="wm-ctx-slider-row">
+                          <label className="wm-ctx-slider-label">{f.label}</label>
+                          <input type="range" className="wm-ctx-range" min={f.min} max={f.max}
+                            value={w.config?.[f.key] ?? 0}
+                            onChange={e => ctxUpdateConfig(f.key, +e.target.value)} />
+                          <span className="wm-ctx-slider-val">{w.config?.[f.key] ?? 0}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </details>
                 </div>
               );
             })()}

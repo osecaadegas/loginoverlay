@@ -2662,7 +2662,257 @@ body.wm-resizing {
   background: rgba(255, 255, 255, 0.08);
 }
 
-/* --- Config Forms (widget-specific � legacy support) --- */
+/* ── Rich Context Menu ── */
+.wm-ctx-menu--rich {
+  min-width: 260px;
+  max-width: 300px;
+  max-height: 75vh;
+  overflow-y: auto;
+  padding: 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139,92,246,0.3) transparent;
+}
+.wm-ctx-menu--rich::-webkit-scrollbar { width: 4px; }
+.wm-ctx-menu--rich::-webkit-scrollbar-thumb { background: rgba(139,92,246,0.3); border-radius: 2px; }
+
+.wm-ctx-menu--rich .wm-ctx-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 10px 6px;
+  position: sticky;
+  top: 0;
+  background: rgba(15, 17, 30, 0.98);
+  z-index: 1;
+}
+.wm-ctx-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.4);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 2px 4px;
+  border-radius: 4px;
+  transition: color 0.15s, background 0.15s;
+}
+.wm-ctx-close:hover {
+  color: #fff;
+  background: rgba(255,255,255,0.08);
+}
+
+/* Quick-action icon row */
+.wm-ctx-actions-row {
+  display: flex;
+  gap: 2px;
+  padding: 4px 8px 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.wm-ctx-action-btn {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 6px;
+  width: 30px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  cursor: pointer;
+  transition: background 0.12s, border-color 0.12s;
+}
+.wm-ctx-action-btn:hover {
+  background: rgba(139,92,246,0.15);
+  border-color: rgba(139,92,246,0.3);
+}
+.wm-ctx-action-btn--danger:hover {
+  background: rgba(248,113,113,0.12);
+  border-color: rgba(248,113,113,0.3);
+}
+
+/* Collapsible sections */
+.wm-ctx-section {
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+.wm-ctx-section[open] {
+  padding-bottom: 4px;
+}
+.wm-ctx-section-title {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.65);
+  cursor: pointer;
+  user-select: none;
+  list-style: none;
+  transition: color 0.12s, background 0.12s;
+}
+.wm-ctx-section-title::-webkit-details-marker { display: none; }
+.wm-ctx-section-title::before {
+  content: '▸';
+  font-size: 9px;
+  color: rgba(139,92,246,0.5);
+  transition: transform 0.15s;
+}
+.wm-ctx-section[open] > .wm-ctx-section-title::before { transform: rotate(90deg); }
+.wm-ctx-section-title:hover { color: #fff; background: rgba(255,255,255,0.03); }
+.wm-ctx-section-body {
+  padding: 2px 10px 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+/* Input rows */
+.wm-ctx-input-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wm-ctx-input-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 600;
+  min-width: 12px;
+  text-align: right;
+}
+.wm-ctx-num {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 5px;
+  color: #e2e8f0;
+  padding: 3px 6px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  width: 0;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.wm-ctx-num:focus {
+  border-color: rgba(139,92,246,0.5);
+}
+.wm-ctx-num::-webkit-inner-spin-button { opacity: 0.3; }
+
+/* Select rows */
+.wm-ctx-select-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wm-ctx-select {
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 5px;
+  color: #e2e8f0;
+  padding: 3px 6px;
+  font-size: 11px;
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s;
+}
+.wm-ctx-select:focus { border-color: rgba(139,92,246,0.5); }
+.wm-ctx-select option { background: #1a1d2e; color: #e2e8f0; }
+
+/* Slider rows */
+.wm-ctx-slider-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.wm-ctx-slider-label {
+  font-size: 10px;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+  min-width: 52px;
+}
+.wm-ctx-range {
+  flex: 1;
+  height: 3px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+.wm-ctx-range::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgb(139,92,246);
+  border: 2px solid rgba(15,17,30,0.9);
+  cursor: pointer;
+}
+.wm-ctx-range::-moz-range-thumb {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgb(139,92,246);
+  border: 2px solid rgba(15,17,30,0.9);
+  cursor: pointer;
+}
+.wm-ctx-slider-val {
+  font-size: 10px;
+  color: rgba(255,255,255,0.5);
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+  min-width: 32px;
+  text-align: right;
+}
+
+/* Style grid */
+.wm-ctx-style-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+.wm-ctx-style-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 600;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04);
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.wm-ctx-style-btn:hover {
+  background: rgba(139,92,246,0.12);
+  color: #fff;
+  border-color: rgba(139,92,246,0.3);
+}
+.wm-ctx-style-btn--active {
+  background: rgba(139,92,246,0.2);
+  border-color: rgba(139,92,246,0.5);
+  color: #fff;
+}
+
+/* Mini action button */
+.wm-ctx-mini-btn {
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 5px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.5);
+  cursor: pointer;
+  align-self: flex-start;
+  transition: all 0.12s;
+}
+.wm-ctx-mini-btn:hover {
+  background: rgba(139,92,246,0.12);
+  color: #fff;
+  border-color: rgba(139,92,246,0.25);
+}
+
+/* --- Config Forms (widget-specific — legacy support) --- */
 .oc-config-form {
   display: flex;
   flex-direction: column;
