@@ -80,11 +80,7 @@ function SpotifyWidget({ config, widgetId, userId }) {
   const style = c.displayStyle || 'album_card';
 
   if (!data) {
-    return (
-      <div className="oc-widget-inner oc-spotify oc-spotify--empty" style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span className="oc-widget-empty" style={{ opacity: 0.5, fontSize: 14 }}>🎵 Waiting for Spotify…</span>
-      </div>
-    );
+    return null;
   }
 
   switch (style) {
