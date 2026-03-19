@@ -4,7 +4,7 @@
  * Sections: Predictions, Bets, Giveaways, Suggestions, Config
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { supabase } from '../../../lib/supabase';
+import { supabase } from '../../config/supabaseClient';
 
 export default function ExtensionAdmin() {
   const [section, setSection] = useState('predictions');
