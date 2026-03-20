@@ -34,6 +34,7 @@ import PrivacyPolicy from './components/Legal/PrivacyPolicy';
 import TermsOfService from './components/Legal/TermsOfService';
 import LoginPage from './components/Login/LoginPage';
 import CookieConsent from './components/CookieConsent/CookieConsent';
+import useGiveawayListener from './hooks/useGiveawayListener';
 // ThemesPage is now rendered inside OverlayControlCenter
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
@@ -278,6 +279,7 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
 // Layout wrapper to show sidebar on all pages except overlay and widget display routes
 function LayoutWrapper({ children }) {
   const location = useLocation();
+  useGiveawayListener(); // persistent chat listener for giveaway keyword
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const isOverlayCenter = location.pathname === '/overlay-center';
