@@ -82,8 +82,14 @@ export default function TheLifeCrimes({
       const notorietyPenalty = Math.min(Math.floor((player.level - 20) * 0.1), 5);
       successChance -= notorietyPenalty;
     }
+
+    // Skill bonuses (mirrors server-side logic)
+    const intelligence = player.intelligence || 0;
+    const power = player.power || 0;
+    const skillBonus = (intelligence * 0.15) + (power * 0.05);
+    successChance += skillBonus;
     
-    return Math.max(10, Math.min(85, successChance));
+    return Math.max(10, Math.min(90, successChance));
   };
 
   // SECURE: Use server-side RPC for crime execution
@@ -126,7 +132,8 @@ export default function TheLifeCrimes({
       
       if (crimeResult.crime_success) {
         // Successful crime
-        let successMessage = `Success! +$${crimeResult.reward?.toLocaleString() || 0} +${crimeResult.xp_gained || 0}XP (${Math.round(crimeResult.success_chance)}%)`;
+        const skillInfo = crimeResult.skill_bonus > 0 ? ` 🧠+${Math.round(crimeResult.skill_bonus)}%` : '';
+        let successMessage = `Success! +$${crimeResult.reward?.toLocaleString() || 0} +${crimeResult.xp_gained || 0}XP (${Math.round(crimeResult.success_chance)}%${skillInfo})`;
         
         // Handle item drops if any
         if (crimeResult.dropped_items && crimeResult.dropped_items.length > 0) {
