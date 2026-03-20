@@ -127,16 +127,18 @@ BEGIN
   -- Level difference bonus/penalty
   v_level_difference := v_player.level - v_crime.min_level_required;
   IF v_level_difference >= 0 THEN
-    v_base_success_chance := v_base_success_chance + LEAST(v_level_difference * 2, 10);
+    -- Over-leveled: +1.5% per level above, cap at +20 (was +10)
+    v_base_success_chance := v_base_success_chance + LEAST(v_level_difference * 1.5, 20);
   ELSE
-    v_base_success_chance := v_base_success_chance + (v_level_difference * 5);
+    -- Under-leveled: -3% per level below (was -5, too punishing)
+    v_base_success_chance := v_base_success_chance + (v_level_difference * 3);
   END IF;
 
   -- === SKILL BONUSES ===
-  -- Intelligence: primary crime skill — up to +15% at level 100
-  v_skill_bonus := v_effective_intelligence * 0.15;
-  -- Power: secondary bonus — up to +5% at level 100
-  v_skill_bonus := v_skill_bonus + v_effective_power * 0.05;
+  -- Intelligence: primary crime skill — up to +20% at level 100 (was 15%)
+  v_skill_bonus := v_effective_intelligence * 0.20;
+  -- Power: secondary bonus — up to +8% at level 100 (was 5%)
+  v_skill_bonus := v_skill_bonus + v_effective_power * 0.08;
   v_base_success_chance := v_base_success_chance + v_skill_bonus;
   
   -- HP penalty for being low health
@@ -149,15 +151,15 @@ BEGIN
   v_daily_catches := COALESCE(v_player.daily_catches, 0);
   v_base_success_chance := v_base_success_chance - LEAST(v_daily_catches * 3, 15);
   
-  -- Wealth-based risk factor
+  -- Wealth-based risk factor (max -3, was -5)
   v_total_wealth := COALESCE(v_player.cash, 0) + COALESCE(v_player.bank_balance, 0);
   IF v_total_wealth > 1000000 THEN
-    v_base_success_chance := v_base_success_chance - LEAST(FLOOR(LOG(v_total_wealth::NUMERIC / 1000000) + 1), 5);
+    v_base_success_chance := v_base_success_chance - LEAST(FLOOR(LOG(v_total_wealth::NUMERIC / 1000000) + 1), 3);
   END IF;
   
-  -- Level-based notoriety penalty
+  -- Level-based notoriety penalty (max -3, was -5)
   IF v_player.level > 20 THEN
-    v_base_success_chance := v_base_success_chance - LEAST(FLOOR((v_player.level - 20) * 0.1), 5);
+    v_base_success_chance := v_base_success_chance - LEAST(FLOOR((v_player.level - 20) * 0.05), 3);
   END IF;
   
   -- Clamp between 10% and 90% (skills can push cap from 85 to 90)

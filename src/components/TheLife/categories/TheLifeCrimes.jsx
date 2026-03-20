@@ -57,9 +57,9 @@ export default function TheLifeCrimes({
     
     const levelDifference = player.level - robbery.min_level_required;
     if (levelDifference >= 0) {
-      successChance += Math.min(levelDifference * 2, 10);
+      successChance += Math.min(levelDifference * 1.5, 20);
     } else {
-      successChance += (levelDifference * 5);
+      successChance += (levelDifference * 3);
     }
     
     const hpPercentage = player.hp / player.max_hp;
@@ -74,19 +74,19 @@ export default function TheLifeCrimes({
     
     const totalWealth = (player.cash || 0) + (player.bank_balance || 0);
     if (totalWealth > 1000000) {
-      const wealthPenalty = Math.min(Math.floor(Math.log10(totalWealth / 1000000) + 1), 5);
+      const wealthPenalty = Math.min(Math.floor(Math.log10(totalWealth / 1000000) + 1), 3);
       successChance -= wealthPenalty;
     }
     
     if (player.level > 20) {
-      const notorietyPenalty = Math.min(Math.floor((player.level - 20) * 0.1), 5);
+      const notorietyPenalty = Math.min(Math.floor((player.level - 20) * 0.05), 3);
       successChance -= notorietyPenalty;
     }
 
     // Skill bonuses (mirrors server-side logic)
     const intelligence = player.intelligence || 0;
     const power = player.power || 0;
-    const skillBonus = (intelligence * 0.15) + (power * 0.05);
+    const skillBonus = (intelligence * 0.20) + (power * 0.08);
     successChance += skillBonus;
     
     return Math.max(10, Math.min(90, successChance));
