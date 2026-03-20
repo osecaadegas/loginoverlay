@@ -164,7 +164,7 @@ BEGIN
   END IF;
 
   -- Get current skill level from actual DB value
-  EXECUTE format('SELECT ($1).%I', p_skill_name) INTO v_current_level USING v_player;
+  v_current_level := COALESCE((to_jsonb(v_player)->>p_skill_name)::INTEGER, 0);
   
   IF v_current_level >= v_max_level THEN
     RETURN jsonb_build_object('success', false, 'error', 'Skill already at max level (100)');

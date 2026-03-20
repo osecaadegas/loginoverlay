@@ -70,28 +70,25 @@ export default function TheLifeProfile({
     }
   };
 
-  const equipItem = async (item) => {
-    if (!item.boost_type) {
+  const equipItem = async (invItem) => {
+    if (!invItem.item?.boost_type) {
       setMessage({ type: 'error', text: 'This item cannot be equipped!' });
       return;
     }
 
-    const equipSlot = item.boost_type === 'power' ? 'equipped_weapon_id' : 
-                      item.boost_type === 'defense' ? 'equipped_gear_id' : null;
-
-    if (!equipSlot) {
-      setMessage({ type: 'error', text: 'Invalid equipment type!' });
-      return;
-    }
-
     try {
-      const { error } = await supabase
-        .from('the_life_players')
-        .update({ [equipSlot]: item.id })
-        .eq('user_id', user.id);
+      const { data, error } = await supabase.rpc('equip_item', {
+        p_inventory_id: invItem.id
+      });
 
       if (error) throw error;
-      setMessage({ type: 'success', text: `Equipped ${item.name}!` });
+
+      if (!data?.success) {
+        setMessage({ type: 'error', text: data?.error || 'Failed to equip item' });
+        return;
+      }
+
+      setMessage({ type: 'success', text: data.message });
       initializePlayer();
     } catch (err) {
       console.error('Error equipping item:', err);
@@ -101,12 +98,17 @@ export default function TheLifeProfile({
 
   const unequipItem = async (slot) => {
     try {
-      const { error } = await supabase
-        .from('the_life_players')
-        .update({ [slot]: null })
-        .eq('user_id', user.id);
+      const { data, error } = await supabase.rpc('unequip_item', {
+        p_slot: slot
+      });
 
       if (error) throw error;
+
+      if (!data?.success) {
+        setMessage({ type: 'error', text: data?.error || 'Failed to unequip item' });
+        return;
+      }
+
       setMessage({ type: 'success', text: 'Item unequipped!' });
       initializePlayer();
     } catch (err) {
@@ -293,7 +295,7 @@ export default function TheLifeProfile({
                     </div>
                     <button 
                       className="equip-btn-simple"
-                      onClick={() => equipItem(inv.item)}
+                      onClick={() => equipItem(inv)}
                       disabled={player.equipped_weapon_id === inv.item.id}
                     >
                       {player.equipped_weapon_id === inv.item.id ? '✓' : 'Equip'}
@@ -318,7 +320,7 @@ export default function TheLifeProfile({
                     </div>
                     <button 
                       className="equip-btn-simple"
-                      onClick={() => equipItem(inv.item)}
+                      onClick={() => equipItem(inv)}
                       disabled={player.equipped_gear_id === inv.item.id}
                     >
                       {player.equipped_gear_id === inv.item.id ? '✓' : 'Equip'}

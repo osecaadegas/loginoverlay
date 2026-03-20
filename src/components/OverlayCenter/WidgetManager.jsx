@@ -6,6 +6,7 @@ import { getWidgetDef, getWidgetsByCategory } from './widgets/widgetRegistry';
 import { swapStyleConfig } from './widgets/shared/perStyleConfig';
 import { getStyleKeysForWidget } from './widgets/styleKeysRegistry';
 import { useAuth } from '../../context/AuthContext';
+import buildThemeVars from './themeVarsBuilder';
 import './OverlayRenderer.css';
 
 /* ── Draggable preview slot — OBS-style click & drag + resize ── */
@@ -886,6 +887,18 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           <button className="wm-btn wm-btn--ghost" onClick={syncAllFromNavbar} title="Copy the Navbar's colors and fonts to all other widgets automatically" data-tour="sync-colors">
             🔗 Sync Colors
           </button>
+          <button
+            className="wm-btn wm-btn--ghost"
+            title="Turn off all background effects (particles, fog, glimpse)"
+            onClick={() => {
+              const bg = widgets.find(w => w.widget_type === 'background');
+              if (!bg) return;
+              const cleaned = { ...bg.config, fxParticles: 'none', fxFog: 'none', fxGlimpse: 'none' };
+              onSave({ ...bg, config: cleaned });
+            }}
+          >
+            🚫 Clear Effects
+          </button>
         </div>
       </div>
 
@@ -917,11 +930,13 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
             >
               <div
                 className="wm-live-canvas"
+                data-theme={theme?.style_preset || 'classic'}
                 style={{
                   width: CANVAS_W,
                   height: CANVAS_H,
                   transform: `scale(${previewScale})`,
                   transformOrigin: 'top left',
+                  ...buildThemeVars(theme),
                 }}
                 onMouseDown={handleCanvasClick}
                 data-tour="preview-drag"

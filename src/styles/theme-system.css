@@ -99,7 +99,8 @@
 }
 
 /* Sweeping sheen animation for metallic surfaces */
-[data-theme="metallic"] .or-widget-slot::after {
+[data-theme="metallic"] .or-widget-slot::after,
+[data-theme="metallic"] .wm-live-slot::after {
   content: '';
   position: absolute;
   inset: 0;
@@ -139,7 +140,8 @@
 }
 
 /* Carbon weave pattern overlay */
-[data-theme="carbon"] .or-widget-slot::before {
+[data-theme="carbon"] .or-widget-slot::before,
+[data-theme="carbon"] .wm-live-slot::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -189,7 +191,8 @@
 }
 
 /* CRT scan-line overlay */
-[data-theme="retro"] .or-widget-slot::before {
+[data-theme="retro"] .or-widget-slot::before,
+[data-theme="retro"] .wm-live-slot::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -206,7 +209,8 @@
 }
 
 /* Warm CRT glow on retro panels */
-[data-theme="retro"] .or-widget-slot {
+[data-theme="retro"] .or-widget-slot,
+[data-theme="retro"] .wm-live-slot {
   box-shadow: 0 0 20px rgba(250,204,21,0.1), 0 0 60px rgba(250,204,21,0.04);
 }
 
@@ -236,7 +240,8 @@
 }
 
 /* Animated neon glow pulse on borders */
-[data-theme="futuristic"] .or-widget-slot {
+[data-theme="futuristic"] .or-widget-slot,
+[data-theme="futuristic"] .wm-live-slot {
   animation: futuristic-glow 3s ease-in-out infinite alternate;
 }
 @keyframes futuristic-glow {
@@ -249,7 +254,9 @@
    â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 @media (prefers-reduced-motion: reduce) {
   [data-theme="metallic"] .or-widget-slot::after,
-  [data-theme="futuristic"] .or-widget-slot {
+  [data-theme="metallic"] .wm-live-slot::after,
+  [data-theme="futuristic"] .or-widget-slot,
+  [data-theme="futuristic"] .wm-live-slot {
     animation: none !important;
   }
 }

@@ -4,6 +4,7 @@
  */
 import React, { useMemo, memo, useRef, useState, useEffect } from 'react';
 import { getWidgetDef } from './widgets/widgetRegistry';
+import buildThemeVars from './themeVarsBuilder';
 
 // Register built-in widgets (idempotent)
 import './widgets/builtinWidgets';
@@ -77,12 +78,13 @@ export default function OverlayPreview({ widgets, theme }) {
         position: 'relative',
         background: '#0f0f1a',
       }}>
-        <div className="wm-live-canvas" style={{
+        <div className="wm-live-canvas" data-theme={theme?.style_preset || 'classic'} style={{
           width: CANVAS_W,
           height: CANVAS_H,
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
           position: 'relative',
+          ...buildThemeVars(theme),
         }}>
           {visibleWidgets.map(w => (
             <PreviewSlot key={w.id} widget={w} theme={theme} allWidgets={widgets} canvasWidth={CANVAS_W} canvasHeight={CANVAS_H} />

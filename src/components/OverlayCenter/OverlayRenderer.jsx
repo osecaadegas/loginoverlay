@@ -19,6 +19,7 @@ import {
   unsubscribeOverlay,
 } from '../../services/overlayService';
 import { getWidgetDef } from './widgets/widgetRegistry';
+import buildThemeVars from './themeVarsBuilder';
 import './OverlayRenderer.css';
 import './OverlayCenter.css';
 
@@ -97,41 +98,6 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     </div>
   );
 });
-
-// ─── CSS variable builder from theme ───
-function buildThemeVars(theme) {
-  if (!theme) return {};
-  const vars = {
-    '--oc-primary': theme.primary_color || '#9346ff',
-    '--oc-secondary': theme.secondary_color || '#1a1b2e',
-    '--oc-accent': theme.accent_color || '#00e1ff',
-    '--oc-text': theme.text_color || '#ffffff',
-    '--oc-opacity': theme.opacity ?? 0.9,
-    '--oc-blur': `${theme.blur_intensity ?? 12}px`,
-    '--oc-shadow': theme.shadow_strength ?? 0.5,
-    '--oc-glow': theme.glow_intensity ?? 0.4,
-    '--oc-radius': `${theme.border_radius ?? 12}px`,
-    '--oc-font': theme.font_family || 'Inter',
-    '--oc-font-weight': theme.font_weight || 500,
-    '--oc-anim-speed': theme.animation_speed ?? 1,
-    // Mirror DB colors into --t-* vars so theme-system.css works in OBS
-    '--t-primary': theme.primary_color || '#9346ff',
-    '--t-secondary': theme.secondary_color || '#1a1b2e',
-    '--t-accent': theme.accent_color || '#00e1ff',
-    '--t-text': theme.text_color || '#ffffff',
-    '--t-font': theme.font_family || 'Inter',
-  };
-
-  // When metallic theme is active, pipe the stored color into --t-metal-* vars
-  // so the CSS sheen / gradient effects pick up the user's chosen metal tint.
-  if (theme.style_preset === 'metallic' && theme.primary_color) {
-    const hex = theme.primary_color;
-    vars['--t-metal-hex'] = hex;
-    vars['--t-metal-gradient'] = `linear-gradient(135deg, ${hex}cc 0%, ${hex}66 40%, ${hex}99 60%, ${hex}cc 100%)`;
-  }
-
-  return vars;
-}
 
 export default function OverlayRenderer() {
   const { token } = useParams();

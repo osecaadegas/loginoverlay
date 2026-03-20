@@ -21,13 +21,6 @@ export default function TheLifeJail({
     
     try {
       setLoading(true);
-      const { data: playerData } = await supabase
-        .from('the_life_players')
-        .select('id')
-        .eq('user_id', user.id)
-        .single();
-
-      if (!playerData) return;
 
       const jailCard = theLifeInventory.find(inv => 
         inv.item?.name === 'Jail Free Card' && inv.quantity > 0
@@ -38,28 +31,29 @@ export default function TheLifeJail({
         return;
       }
 
-      if (jailCard.quantity === 1) {
-        await supabase
-          .from('the_life_player_inventory')
-          .delete()
-          .eq('id', jailCard.id);
-      } else {
-        await supabase
-          .from('the_life_player_inventory')
-          .update({ quantity: jailCard.quantity - 1 })
-          .eq('id', jailCard.id);
-      }
-
-      const { data, error } = await supabase
-        .from('the_life_players')
-        .update({ jail_until: null })
-        .eq('user_id', user.id)
-        .select()
-        .single();
+      // Use secure server-side RPC (handles inventory + jail_until atomically)
+      const { data, error } = await supabase.rpc('use_consumable_item', {
+        p_inventory_id: jailCard.id
+      });
 
       if (error) throw error;
-      // Merge with current player state to preserve local values like stamina
-      setPlayerFromAction(prev => ({ ...prev, ...data }));
+
+      if (!data?.success) {
+        setMessage({ type: 'error', text: data?.error || 'Failed to use card!' });
+        return;
+      }
+
+      // Refresh player and inventory from server
+      const { data: updatedPlayer } = await supabase
+        .from('the_life_players')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (updatedPlayer) {
+        setPlayerFromAction(prev => ({ ...prev, ...updatedPlayer }));
+      }
+
       await loadTheLifeInventory();
       setMessage({ type: 'success', text: '🔓 You escaped jail using a Jail Free Card!' });
     } catch (err) {
@@ -82,20 +76,7 @@ export default function TheLifeJail({
 
       if (error) throw error;
 
-      if (!result.success) {
-        // Show bribe amount if provided
-        if (result.bribe_required) {
-          setMessage({ 
-            type: 'error', 
-            text: `${result.error}. Bribe costs $${result.bribe_required.toLocaleString()}` 
-          });
-        } else {
-          setMessage({ type: 'error', text: result.error });
-        }
-        return;
-      }
-
-      // Refresh player data
+      // Always refresh player state since bribe may deduct cash even on failure
       const { data: updatedPlayer } = await supabase
         .from('the_life_players')
         .select('*')
@@ -106,9 +87,28 @@ export default function TheLifeJail({
         setPlayerFromAction(prev => ({ ...prev, ...updatedPlayer }));
       }
 
+      if (!result.success) {
+        if (result.bribe_failed) {
+          // RNG failure - cash was deducted
+          setMessage({ 
+            type: 'error', 
+            text: `${result.error} Lost $${result.amount_lost?.toLocaleString()}` 
+          });
+        } else if (result.required) {
+          // Not enough cash
+          setMessage({ 
+            type: 'error', 
+            text: `${result.error}. Bribe costs $${result.required.toLocaleString()}` 
+          });
+        } else {
+          setMessage({ type: 'error', text: result.error });
+        }
+        return;
+      }
+
       setMessage({ 
         type: 'success', 
-        text: `💰 ${result.message} Cost: $${result.bribe_paid?.toLocaleString()}` 
+        text: `💰 ${result.message} Cost: $${result.amount_paid?.toLocaleString()}` 
       });
     } catch (err) {
       console.error('Error paying bribe:', err);
