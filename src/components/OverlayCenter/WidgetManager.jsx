@@ -893,8 +893,11 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
             onClick={() => {
               const bg = widgets.find(w => w.widget_type === 'background');
               if (!bg) return;
-              const cleaned = { ...bg.config, fxParticles: 'none', fxFog: 'none', fxGlimpse: 'none' };
-              onSave({ ...bg, config: cleaned });
+              const style = bg.config?.displayStyle || 'v1';
+              const fxClear = { fxParticles: 'none', fxFog: 'none', fxGlimpse: 'none' };
+              const sc = { ...(bg.config?.styleConfigs || {}) };
+              sc[style] = { ...(sc[style] || {}), ...fxClear };
+              onSave({ ...bg, config: { ...bg.config, ...fxClear, styleConfigs: sc } });
             }}
           >
             🚫 Clear Effects
