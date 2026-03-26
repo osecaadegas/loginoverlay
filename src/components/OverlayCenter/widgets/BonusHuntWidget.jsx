@@ -487,7 +487,6 @@ function BonusHuntWidget({ config, theme }) {
               {/* BEST */}
               {stats.bestSlot ? (
                 <div className="bht-fullflip-slot bht-fullflip-slot--best">
-                  <span className="bht-fullflip-slot-badge bht-fullflip-slot-badge--best">BEST</span>
                   <div className="bht-fullflip-slot-img-wrap">
                     {stats.bestSlot.slot?.image ? (
                       <img src={stats.bestSlot.slot.image} alt="" className="bht-fullflip-slot-img"
@@ -503,14 +502,12 @@ function BonusHuntWidget({ config, theme }) {
                 </div>
               ) : (
                 <div className="bht-fullflip-slot bht-fullflip-slot--empty">
-                  <span className="bht-fullflip-slot-badge bht-fullflip-slot-badge--best">BEST</span>
                   <span className="bht-fullflip-slot-payout">—</span>
                 </div>
               )}
               {/* WORST */}
               {stats.worstSlot ? (
                 <div className="bht-fullflip-slot bht-fullflip-slot--worst">
-                  <span className="bht-fullflip-slot-badge bht-fullflip-slot-badge--worst">WORST</span>
                   <div className="bht-fullflip-slot-img-wrap">
                     {stats.worstSlot.slot?.image ? (
                       <img src={stats.worstSlot.slot.image} alt="" className="bht-fullflip-slot-img"
@@ -526,7 +523,6 @@ function BonusHuntWidget({ config, theme }) {
                 </div>
               ) : (
                 <div className="bht-fullflip-slot bht-fullflip-slot--empty">
-                  <span className="bht-fullflip-slot-badge bht-fullflip-slot-badge--worst">WORST</span>
                   <span className="bht-fullflip-slot-payout">—</span>
                 </div>
               )}
