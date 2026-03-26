@@ -160,9 +160,16 @@ export function useOverlay() {
 
   const saveWidget = useCallback(async (widget) => {
     if (!user) return;
-    const w = await upsertWidget(user.id, widget);
-    setWidgets(prev => prev.map(p => p.id === w.id ? w : p));
-    return w;
+    // Optimistic update — reflect changes in UI immediately
+    setWidgets(prev => prev.map(p => p.id === widget.id ? widget : p));
+    try {
+      const w = await upsertWidget(user.id, widget);
+      // Sync with DB response (authoritative)
+      setWidgets(prev => prev.map(p => p.id === w.id ? w : p));
+      return w;
+    } catch (err) {
+      console.error('[useOverlay] saveWidget error:', err);
+    }
   }, [user]);
 
   const removeWidget = useCallback(async (widgetId) => {

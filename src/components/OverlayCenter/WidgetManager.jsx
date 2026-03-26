@@ -893,10 +893,17 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
             onClick={() => {
               const bg = widgets.find(w => w.widget_type === 'background');
               if (!bg) return;
-              const style = bg.config?.displayStyle || 'v1';
-              const fxClear = { fxParticles: 'none', fxFog: 'none', fxGlimpse: 'none' };
+              const fxClear = {
+                fxParticles: 'none', fxParticleColor: '#ffffff', fxParticleCount: 25,
+                fxParticleSpeed: 50, fxParticleSize: 50,
+                fxFog: 'none', fxFogColor: '#000000',
+                fxGlimpse: 'none', fxGlimpseColor: '#ffffff', fxGlimpseSpeed: 50,
+              };
+              // Clear fx keys in ALL style variants
               const sc = { ...(bg.config?.styleConfigs || {}) };
-              sc[style] = { ...(sc[style] || {}), ...fxClear };
+              for (const key of Object.keys(sc)) {
+                sc[key] = { ...sc[key], fxParticles: 'none', fxFog: 'none', fxGlimpse: 'none' };
+              }
               onSave({ ...bg, config: { ...bg.config, ...fxClear, styleConfigs: sc } });
             }}
           >
