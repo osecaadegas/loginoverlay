@@ -701,16 +701,16 @@ function BonusHuntWidget({ config, theme }) {
                               </div>
                               <div className="bht-list-row-stats">
                                 <div className="bht-list-row-col">
-                                  <span className="bht-list-row-col-label">BET</span>
-                                  <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                                  <span className="bht-list-row-col-label">WIN</span>
+                                  <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
                                 </div>
                                 <div className="bht-list-row-col">
                                   <span className="bht-list-row-col-label">MULTI</span>
                                   <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
                                 </div>
                                 <div className="bht-list-row-col">
-                                  <span className="bht-list-row-col-label">WIN</span>
-                                  <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                                  <span className="bht-list-row-col-label">BET</span>
+                                  <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
                                 </div>
                               </div>
                             </div>
@@ -739,16 +739,16 @@ function BonusHuntWidget({ config, theme }) {
                         </div>
                         <div className="bht-list-row-stats">
                           <div className="bht-list-row-col">
-                            <span className="bht-list-row-col-label">BET</span>
-                            <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
+                            <span className="bht-list-row-col-label">WIN</span>
+                            <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
                           </div>
                           <div className="bht-list-row-col">
                             <span className="bht-list-row-col-label">MULTI</span>
                             <span className="bht-list-row-col-val">{multi.toFixed(1)}x</span>
                           </div>
                           <div className="bht-list-row-col">
-                            <span className="bht-list-row-col-label">WIN</span>
-                            <span className="bht-list-row-col-val">{currency}{payout.toFixed(0)}</span>
+                            <span className="bht-list-row-col-label">BET</span>
+                            <span className="bht-list-row-col-val">{currency}{bet.toFixed(2)}</span>
                           </div>
                         </div>
                       </div>
