@@ -580,46 +580,33 @@
 .bht-fullflip-slots {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 6px;
+  gap: 5px;
   width: 100%;
+  height: 100%;
   padding: 4px;
 }
 .bht-fullflip-slot {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: stretch;
-  gap: 0;
-  background: rgba(0,0,0,0.45);
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
   overflow: hidden;
-  min-height: 0;
+  background: rgba(0,0,0,0.55);
 }
 .bht-fullflip-slot--best {
-  border: 2px solid #4ade80;
-  box-shadow: 0 0 14px rgba(74, 222, 128, 0.3), inset 0 0 20px rgba(74, 222, 128, 0.06);
+  box-shadow: inset 0 0 0 2px #4ade80, 0 0 12px rgba(74,222,128,0.25);
 }
 .bht-fullflip-slot--worst {
-  border: 2px solid #f87171;
-  box-shadow: 0 0 14px rgba(248, 113, 113, 0.3), inset 0 0 20px rgba(248, 113, 113, 0.06);
+  box-shadow: inset 0 0 0 2px #f87171, 0 0 12px rgba(248,113,113,0.25);
 }
 .bht-fullflip-slot--empty {
-  border: 1px solid rgba(255,255,255,0.1);
-  justify-content: center;
-  align-items: center;
-  padding: 8px;
-}
-
-/* ── Image area — wider ── */
-.bht-fullflip-slot-img-wrap {
-  flex: 0 0 55%;
   display: flex;
-  align-items: center;
   justify-content: center;
-  overflow: hidden;
-  background: rgba(0,0,0,0.2);
+  align-items: center;
+  border: 1px solid rgba(255,255,255,0.1);
 }
+/* ── Hero image fills the card ── */
 .bht-fullflip-slot-img {
+  position: absolute;
+  inset: 0;
   width: 100%;
   height: 100%;
   object-fit: cover;
@@ -627,36 +614,48 @@
   display: block;
 }
 .bht-fullflip-slot-img-placeholder {
-  font-size: 1.6em;
-  opacity: 0.35;
-}
-/* ── Info column ── */
-.bht-fullflip-slot-info {
+  position: absolute;
+  inset: 0;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 2px;
-  min-width: 0;
-  flex: 1;
-  padding: 4px 6px;
-  overflow: hidden;
+  font-size: 2em;
+  opacity: 0.3;
+}
+/* ── Text overlay at bottom ── */
+.bht-fullflip-slot-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 6px 5px;
+  background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.5) 55%, transparent 100%);
+}
+.bht-fullflip-slot--best .bht-fullflip-slot-overlay {
+  background: linear-gradient(to top, rgba(10,40,20,0.9) 0%, rgba(0,0,0,0.5) 55%, transparent 100%);
+}
+.bht-fullflip-slot--worst .bht-fullflip-slot-overlay {
+  background: linear-gradient(to top, rgba(50,15,15,0.9) 0%, rgba(0,0,0,0.5) 55%, transparent 100%);
 }
 .bht-fullflip-slot-payout {
-  font-size: clamp(0.9em, 2.8vw, 1.45em);
+  font-size: 1.3em;
   font-weight: 800;
-  white-space: nowrap;
   color: #fff;
-  line-height: 1.15;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
+  white-space: nowrap;
+  line-height: 1;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.7);
 }
 .bht-fullflip-slot-multi {
-  font-size: clamp(0.8em, 2.4vw, 1.25em);
+  font-size: 1em;
   font-weight: 800;
   color: #fbbf24;
-  line-height: 1.15;
   white-space: nowrap;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  line-height: 1;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 
 .bht-stat-box {
