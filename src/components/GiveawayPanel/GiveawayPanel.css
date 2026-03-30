@@ -282,6 +282,83 @@
   font-weight: 600;
 }
 
+/* ═══ Spin Reel ═══ */
+.spin-reel {
+  position: relative;
+  height: 192px; /* ~4 visible rows of 48px */
+  overflow: hidden;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.4);
+  border: 2px solid rgba(255,255,255,0.08);
+  margin-bottom: 0.75rem;
+  /* Fade edges */
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 82%, transparent 100%);
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 18%, #000 82%, transparent 100%);
+}
+.spin-reel-track {
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+.spin-reel-item {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: rgba(255,255,255,0.55);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: color 0.3s, background 0.3s;
+}
+.spin-reel-item--winner {
+  color: #fff;
+  font-size: 1.2rem;
+  font-weight: 800;
+  background: linear-gradient(90deg, rgba(var(--theme-primary-rgb, 145,71,255), 0.2), rgba(var(--theme-secondary-rgb, 0,225,255), 0.2));
+}
+/* Arrow pointers on left and right — centered vertically */
+.spin-reel-pointer {
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 1.1rem;
+  color: var(--theme-primary, #9147ff);
+  z-index: 2;
+  filter: drop-shadow(0 0 4px var(--theme-primary, #9147ff));
+  animation: reel-pointer-pulse 0.6s ease-in-out infinite alternate;
+  /* Override mask so pointer is always visible */
+}
+.spin-reel-pointer--right {
+  left: auto;
+  right: 4px;
+}
+/* Highlight line across the center */
+.spin-reel::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 48px;
+  transform: translateY(-50%);
+  border-top: 2px solid var(--theme-primary, #9147ff);
+  border-bottom: 2px solid var(--theme-primary, #9147ff);
+  background: rgba(var(--theme-primary-rgb, 145,71,255), 0.08);
+  z-index: 1;
+  pointer-events: none;
+}
+
+@keyframes reel-pointer-pulse {
+  from { opacity: 0.7; transform: translateY(-50%) scale(1); }
+  to   { opacity: 1; transform: translateY(-50%) scale(1.2); }
+}
+
 .draw-btn {
   width: 100%;
   padding: 0.85rem;

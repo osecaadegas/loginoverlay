@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import './GiveawayPanel.css';
 import useDraggable from '../../hooks/useDraggable';
 import { useAuth } from '../../context/AuthContext';
@@ -22,6 +22,9 @@ const GiveawayPanel = ({ onClose }) => {
   const [showWheel, setShowWheel] = useState(false);
   const [wheelRotation, setWheelRotation] = useState(0);
   const [showConfetti, setShowConfetti] = useState(false);
+  const [spinReel, setSpinReel] = useState(null); // { names: string[], winnerIdx: number }
+  const reelRef = useRef(null);
+  const reelItemH = 48; // px per name row
 
   // Load user's giveaway from database on mount
   useEffect(() => {
@@ -251,8 +254,24 @@ const GiveawayPanel = ({ onClose }) => {
           <div className="giveaway-draw">
             <div className="section">
               <h3>Winner Selection</h3>
+
+              {/* ── Spin Reel ── */}
+              {spinReel && (
+                <div className="spin-reel" ref={reelRef}>
+                  <div className="spin-reel-pointer">▶</div>
+                  <div className="spin-reel-pointer spin-reel-pointer--right">◀</div>
+                  <div className="spin-reel-track">
+                    {spinReel.names.map((name, i) => (
+                      <div key={`sr-${i}`}
+                        className={`spin-reel-item${i === spinReel.winnerIdx ? ' spin-reel-item--winner' : ''}`}>
+                        {name}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
               
-              {winner && (
+              {!spinReel && winner && (
                 <div className={`winner-display ${isSpinning ? 'spinning' : 'final'}`}>
                   <div className="winner-icon">🎉</div>
                   <div className="winner-text">
@@ -262,7 +281,7 @@ const GiveawayPanel = ({ onClose }) => {
                 </div>
               )}
 
-              {!winner && (
+              {!spinReel && !winner && (
                 <div className="no-winner">
                   <div className="no-winner-icon">🎲</div>
                   <div className="no-winner-text">Ready to draw!</div>
