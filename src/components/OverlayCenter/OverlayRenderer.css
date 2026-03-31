@@ -971,6 +971,38 @@
   filter: brightness(0.7) drop-shadow(0 0 12px rgba(220,38,38,0.55));
 }
 
+/* ── Extreme card "hiding behind other cards" 3D animation ── */
+.bht-stack:not(.bht-stack--spinning) .bht-stack-card--center.bht-stack-card--extreme {
+  animation: bht-extreme-hide-center 4s ease-in-out infinite;
+}
+@keyframes bht-extreme-hide-center {
+  0%, 100% { transform: translateX(0) translateZ(20px) rotateY(0deg) scale(1); }
+  20%      { transform: translateX(12px) translateZ(-20px) rotateY(-10deg) scale(0.88); }
+  40%      { transform: translateX(18px) translateZ(-50px) rotateY(-18deg) scale(0.78); }
+  55%      { transform: translateX(14px) translateZ(-40px) rotateY(-14deg) scale(0.82); }
+  75%      { transform: translateX(4px) translateZ(-5px) rotateY(-3deg) scale(0.95); }
+}
+
+.bht-stack:not(.bht-stack--spinning) .bht-stack-card--left.bht-stack-card--extreme {
+  animation: bht-extreme-hide-left 4.5s ease-in-out infinite;
+}
+@keyframes bht-extreme-hide-left {
+  0%, 100% { transform: translateX(-95px) translateZ(-50px) rotateY(20deg) scale(0.85); }
+  25%      { transform: translateX(-65px) translateZ(-85px) rotateY(32deg) scale(0.72); }
+  45%      { transform: translateX(-55px) translateZ(-100px) rotateY(38deg) scale(0.66); }
+  65%      { transform: translateX(-72px) translateZ(-70px) rotateY(26deg) scale(0.78); }
+}
+
+.bht-stack:not(.bht-stack--spinning) .bht-stack-card--right.bht-stack-card--extreme {
+  animation: bht-extreme-hide-right 4.5s ease-in-out infinite;
+}
+@keyframes bht-extreme-hide-right {
+  0%, 100% { transform: translateX(95px) translateZ(-50px) rotateY(-20deg) scale(0.85); }
+  25%      { transform: translateX(65px) translateZ(-85px) rotateY(-32deg) scale(0.72); }
+  45%      { transform: translateX(55px) translateZ(-100px) rotateY(-38deg) scale(0.66); }
+  65%      { transform: translateX(72px) translateZ(-70px) rotateY(-26deg) scale(0.78); }
+}
+
 /* -- Progress bar -- */
 .bht-progress {
   display: flex;
