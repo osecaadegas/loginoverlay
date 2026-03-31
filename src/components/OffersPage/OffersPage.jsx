@@ -145,7 +145,11 @@ export default function OffersPage() {
             <div key={offer.id} className={`op-card-wrapper ${flippedCards[offer.id] ? 'flipped' : ''}`}>
               <div className="op-card-inner">
                 {/* ===== FRONT FACE ===== */}
-                <div className={`op-card op-card-front ${index === 0 ? 'op-card-featured' : ''}`}>
+                <div
+                  className={`op-card op-card-front ${index === 0 ? 'op-card-featured' : ''}`}
+                  onClick={() => { if (offer.bonusLink) window.open(offer.bonusLink, '_blank', 'noopener,noreferrer'); }}
+                  style={{ cursor: 'pointer' }}
+                >
                   {/* Card Image with Badge */}
                   <div className="op-card-image">
                     {offer.videoUrl ? (
@@ -175,7 +179,7 @@ export default function OffersPage() {
                   <div className="op-card-title-row">
                     <span className="op-card-title">{offer.title}</span>
                     <div className="op-card-title-right">
-                      <button className="op-card-info-btn" onClick={() => toggleFlip(offer.id)}>MORE INFO</button>
+                      <button className="op-card-info-btn" onClick={(e) => { e.stopPropagation(); toggleFlip(offer.id); }}>MORE INFO</button>
                       <span className="op-card-tc">+18 | T&C APPLY</span>
                     </div>
                   </div>
@@ -224,7 +228,7 @@ export default function OffersPage() {
                   {offer.promoCode && (
                     <div
                       className={`op-card-promo ${copiedId === offer.id ? 'copied' : ''}`}
-                      onClick={(e) => copyPromoCode(e, offer.id, offer.promoCode)}
+                      onClick={(e) => { e.stopPropagation(); copyPromoCode(e, offer.id, offer.promoCode); }}
                       title="Click to copy"
                     >
                       <span className="op-card-promo-icon">
@@ -246,6 +250,7 @@ export default function OffersPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="op-card-claim"
+                    onClick={(e) => e.stopPropagation()}
                   >
                     CLAIM BONUS
                   </a>
