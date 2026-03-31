@@ -107,10 +107,10 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
     setMulti({ spinningWinner: winnerName, winner: '' });
     setTimeout(() => {
       // Use refs to get latest config/onChange — avoids stale closure
-      // 3s spin + 1s hold on winner before revealing
+      // 5s spin + 2s hold on winner before revealing = 7s total
       const latest = configRef.current;
       onChangeRef.current({ ...latest, winner: winnerName, spinningWinner: '' });
-    }, 4000);
+    }, 7000);
   };
 
   // Remove a single participant
