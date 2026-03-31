@@ -669,6 +669,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [savingHunt, setSavingHunt] = useState(false);
   const [saveHuntMsg, setSaveHuntMsg] = useState('');
   const [showSaveConfirm, setShowSaveConfirm] = useState(false);
+  const autoSaveTimerRef = useRef(null);
+  const autoSaveFiredRef = useRef(false);
 
   useEffect(() => {
     const loadSlots = async () => {
@@ -904,6 +906,26 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     );
     setBonusList(updated);
     save(updated);
+
+    // Auto-save: if all bonuses now have a payout > 0, save the hunt after 3s
+    if (bonusOpening && updated.length > 0 && updated.every(b => b.opened && Number(b.payout) > 0)) {
+      if (!autoSaveFiredRef.current) {
+        if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+        setSaveHuntMsg('✅ All bonuses paid — auto-saving in 3s…');
+        autoSaveTimerRef.current = setTimeout(() => {
+          autoSaveFiredRef.current = true;
+          handleSaveAndClose();
+        }, 3000);
+      }
+    } else {
+      // If user clears a payout, cancel the pending auto-save
+      if (autoSaveTimerRef.current) {
+        clearTimeout(autoSaveTimerRef.current);
+        autoSaveTimerRef.current = null;
+        setSaveHuntMsg('');
+      }
+      autoSaveFiredRef.current = false;
+    }
   };
   const formatPayoutDisplay = (val) => {
     if (!val && val !== 0) return '';
@@ -960,6 +982,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setBonusOpening(false);
       setSaveHuntName('');
       setShowSaveConfirm(false);
+      // Reset auto-save state for next hunt
+      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+      autoSaveTimerRef.current = null;
+      autoSaveFiredRef.current = false;
       onChange({
         ...config,
         bonuses: [],
