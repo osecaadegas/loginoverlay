@@ -702,7 +702,7 @@ function BonusHuntWidget({ config, theme }) {
                           const multi = bet > 0 ? payout / bet : 0;
                           return (
                             <div key={`lr-${bonus.id || i}-o`}
-                              className={`bht-list-row${i === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}`}>
+                              className={`bht-list-row${i === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}>
                               <span className="bht-list-row-idx">{i + 1}</span>
                               <div className="bht-list-row-thumb">
                                 {bonus.slot?.image ? (
@@ -712,6 +712,8 @@ function BonusHuntWidget({ config, theme }) {
                               </div>
                               <div className="bht-list-row-info">
                                 <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                                {(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--extreme">EXTREME</span>}
+                                {bonus.isSuperBonus && !(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--super">SUPER</span>}
                               </div>
                               <div className="bht-list-row-stats">
                                 <div className="bht-list-row-col">
@@ -740,7 +742,7 @@ function BonusHuntWidget({ config, theme }) {
                     const multi = bet > 0 ? payout / bet : 0;
                     return (
                       <div key={key}
-                        className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}`}>
+                        className={`bht-list-row${idx === currentIndex ? ' bht-list-row--active' : ''}${bonus.opened ? ' bht-list-row--opened' : ''}${bonus.isSuperBonus ? ' bht-list-row--super' : ''}${bonus.isExtremeBonus || bonus.isExtreme ? ' bht-list-row--extreme' : ''}`}>
                         <span className="bht-list-row-idx">{idx + 1}</span>
                         <div className="bht-list-row-thumb">
                           {bonus.slot?.image ? (
@@ -750,6 +752,8 @@ function BonusHuntWidget({ config, theme }) {
                         </div>
                         <div className="bht-list-row-info">
                           <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                          {(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--extreme">EXTREME</span>}
+                          {bonus.isSuperBonus && !(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--super">SUPER</span>}
                         </div>
                         <div className="bht-list-row-stats">
                           <div className="bht-list-row-col">
