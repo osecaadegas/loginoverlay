@@ -129,7 +129,7 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
       requestAnimationFrame(() => {
         const centerOffset = Math.floor(VISIBLE / 2) * ITEM_H;
         const target = winnerIdx * ITEM_H - centerOffset;
-        track.style.transition = 'transform 4s cubic-bezier(0.15, 0.0, 0.1, 1)';
+        track.style.transition = 'transform 4.5s cubic-bezier(0.12, 0.0, 0.02, 1)';
         track.style.transform = `translateY(-${target}px)`;
       });
     });

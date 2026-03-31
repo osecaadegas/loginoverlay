@@ -109,7 +109,7 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
       // Use refs to get latest config/onChange — avoids stale closure
       const latest = configRef.current;
       onChangeRef.current({ ...latest, winner: winnerName, spinningWinner: '' });
-    }, 4200);
+    }, 5000);
   };
 
   // Remove a single participant
