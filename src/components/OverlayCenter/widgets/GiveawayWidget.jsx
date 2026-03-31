@@ -89,11 +89,12 @@ function TrophyWinner({ winner, accentColor, textColor, mutedColor, prize, fontS
 /* ─── Spin Reel ─── */
 function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor }) {
   const trackRef = useRef(null);
+  const lockedRef = useRef(null); // lock reel data on first render so re-renders don't reshuffle
   const ITEM_H = 48;
   const VISIBLE = 5; // odd number so winner lands exactly in center row
 
-  const reelData = useMemo(() => {
-    if (!participants.length || !winnerName) return { names: [], winnerIdx: 0 };
+  // Build reel data ONCE and lock it — ignore subsequent prop changes during animation
+  if (!lockedRef.current && participants.length && winnerName) {
     const shuffle = (arr) => {
       const a = [...arr];
       for (let i = a.length - 1; i > 0; i--) {
@@ -102,21 +103,19 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
       }
       return a;
     };
-    // 3 shuffled passes of all names, then the winner
     const names = [];
     for (let p = 0; p < 3; p++) names.push(...shuffle(participants));
-    const winIdx = names.length; // exact index of the winner
+    const winIdx = names.length;
     names.push(winnerName);
-    // pad after winner so it can sit in the center
     const pad = Math.floor(VISIBLE / 2);
     const others = participants.filter(n => n !== winnerName);
     for (let i = 0; i < pad; i++) {
       names.push(others.length > 0 ? others[i % others.length] : `Player ${i + 1}`);
     }
-    return { names, winnerIdx: winIdx };
-  }, [participants, winnerName]);
+    lockedRef.current = { names, winnerIdx: winIdx };
+  }
 
-  const { names: reelNames, winnerIdx } = reelData;
+  const { names: reelNames, winnerIdx } = lockedRef.current || { names: [], winnerIdx: 0 };
 
   useEffect(() => {
     const track = trackRef.current;
@@ -133,7 +132,8 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
         track.style.transform = `translateY(-${target}px)`;
       });
     });
-  }, [reelNames, winnerIdx]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // run once on mount only
 
   if (!reelNames.length) return null;
 
