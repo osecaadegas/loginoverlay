@@ -23,6 +23,12 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
   const [confirmClear, setConfirmClear] = useState(false);
   const [chatStatus, setChatStatus] = useState({ twitch: false, kick: false });
 
+  // Keep a ref to always call the latest onChange (avoids stale closures in timeouts)
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const configRef = useRef(c);
+  configRef.current = c;
+
   // Navbar sync
   const nb = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
   const syncFromNavbar = () => {
@@ -96,7 +102,14 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
     const list = c.participants || [];
     if (list.length === 0) return;
     const idx = Math.floor(Math.random() * list.length);
-    set('winner', list[idx]);
+    const winnerName = list[idx];
+    // Show spin reel first, then reveal winner after animation
+    setMulti({ spinningWinner: winnerName, winner: '' });
+    setTimeout(() => {
+      // Use refs to get latest config/onChange — avoids stale closure
+      const latest = configRef.current;
+      onChangeRef.current({ ...latest, winner: winnerName, spinningWinner: '' });
+    }, 4200);
   };
 
   // Remove a single participant

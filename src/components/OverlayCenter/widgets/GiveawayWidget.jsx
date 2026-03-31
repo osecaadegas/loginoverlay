@@ -86,6 +86,104 @@ function TrophyWinner({ winner, accentColor, textColor, mutedColor, prize, fontS
   );
 }
 
+/* ─── Spin Reel ─── */
+function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor }) {
+  const trackRef = useRef(null);
+  const ITEM_H = 48;
+  const VISIBLE = 4; // show 4 names at a time
+
+  const reelNames = useMemo(() => {
+    if (!participants.length || !winnerName) return [];
+    const shuffle = (arr) => {
+      const a = [...arr];
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    };
+    // 6 shuffled passes + winner at center of visible area
+    const passes = [];
+    for (let p = 0; p < 6; p++) passes.push(...shuffle(participants));
+    passes.push(winnerName);
+    // pad after winner so it lands in the center
+    const pad = Math.floor(VISIBLE / 2);
+    for (let i = 0; i < pad; i++) passes.push(participants[i % participants.length]);
+    return passes;
+  }, [participants, winnerName]);
+
+  const winnerIdx = useMemo(() => {
+    if (!reelNames.length) return 0;
+    // winner is 6*participants.length into the list
+    return reelNames.lastIndexOf(winnerName, reelNames.length - Math.floor(VISIBLE / 2));
+  }, [reelNames, winnerName]);
+
+  useEffect(() => {
+    const track = trackRef.current;
+    if (!track || !reelNames.length) return;
+    // Start at top
+    track.style.transition = 'none';
+    track.style.transform = 'translateY(0)';
+    // Trigger spin
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const centerOffset = Math.floor(VISIBLE / 2) * ITEM_H;
+        const target = winnerIdx * ITEM_H - centerOffset;
+        track.style.transition = 'transform 4s cubic-bezier(0.15, 0.0, 0.1, 1)';
+        track.style.transform = `translateY(-${target}px)`;
+      });
+    });
+  }, [reelNames, winnerIdx]);
+
+  if (!reelNames.length) return null;
+
+  const reelH = VISIBLE * ITEM_H;
+
+  return (
+    <div style={{
+      position: 'relative', width: '90%', height: reelH,
+      overflow: 'hidden', borderRadius: 10, margin: '0 auto',
+      background: 'rgba(0,0,0,0.35)',
+      maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)',
+      WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)',
+    }}>
+      {/* center highlight band */}
+      <div style={{
+        position: 'absolute', left: 0, right: 0,
+        top: '50%', transform: 'translateY(-50%)',
+        height: ITEM_H, borderTop: `2px solid ${accentColor}`, borderBottom: `2px solid ${accentColor}`,
+        background: `${accentColor}15`, zIndex: 3, pointerEvents: 'none',
+      }} />
+      {/* left pointer */}
+      <div style={{
+        position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)',
+        fontSize: 16, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
+        animation: 'ga-pulse 1.2s ease-in-out infinite',
+      }}>▶</div>
+      {/* right pointer */}
+      <div style={{
+        position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
+        fontSize: 16, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
+        animation: 'ga-pulse 1.2s ease-in-out infinite',
+      }}>◀</div>
+      {/* scrolling track */}
+      <div ref={trackRef} style={{
+        display: 'flex', flexDirection: 'column', willChange: 'transform',
+      }}>
+        {reelNames.map((name, i) => (
+          <div key={`sr-${i}`} style={{
+            height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: 'clamp(14px, 5cqmin, 22px)', fontWeight: 700,
+            color: i === winnerIdx ? accentColor : textColor,
+            textShadow: i === winnerIdx ? `0 0 8px ${accentColor}88` : 'none',
+            opacity: i === winnerIdx ? 1 : 0.7,
+          }}>{name}</div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function GiveawayWidget({ config, widgetId }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
@@ -99,6 +197,7 @@ function GiveawayWidget({ config, widgetId }) {
   const participants = c.participants || [];
   const count = participants.length;
   const winner = c.winner || '';
+  const spinningWinner = c.spinningWinner || '';
   const isActive = !!c.isActive;
   const keyword = (c.keyword || '').toLowerCase().trim();
   const title = c.title || 'Giveaway';
@@ -247,7 +346,9 @@ function GiveawayWidget({ config, widgetId }) {
       {/* ── Body ── */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
         padding:'0 clamp(8px,3cqmin,16px) clamp(6px,3cqmin,14px)', gap:'clamp(4px,2cqmin,12px)', minHeight:0 }}>
-        {winner ? (
+        {spinningWinner && !winner ? (
+          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={mAccent} textColor={mText} mutedColor={mMuted} />
+        ) : winner ? (
           <>
             <ConfettiBurst accentColor={mAccent} count={50} />
             <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
@@ -300,7 +401,9 @@ function GiveawayWidget({ config, widgetId }) {
       </div>
       <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
         padding:'clamp(3px,1.5cqmin,10px)', gap:'clamp(3px,1.5cqmin,8px)', minHeight:0, position:'relative' }}>
-        {winner ? (
+        {spinningWinner && !winner ? (
+          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
+        ) : winner ? (
           <>
             <ConfettiBurst accentColor={accentColor} count={55} />
             <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
@@ -378,7 +481,9 @@ function GiveawayWidget({ config, widgetId }) {
           </div>
         )}
         {/* Prize or Winner */}
-        {winner ? (
+        {spinningWinner && !winner ? (
+          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
+        ) : winner ? (
           <div style={{ textAlign:'center', padding:'clamp(2px,0.8cqmin,6px) 0', position:'relative' }}>
             <ConfettiBurst accentColor={accentColor} count={45} />
             <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
@@ -410,7 +515,9 @@ function GiveawayWidget({ config, widgetId }) {
           textShadow:`0 0 8px ${accentColor}88` }}>
           {isDone ? '★ ENDED ★' : isActive ? '★ GIVEAWAY ★' : '★ GIVEAWAY ★'}
         </div>
-        {winner ? (
+        {spinningWinner && !winner ? (
+          <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
+        ) : winner ? (
           <>
             <ConfettiBurst accentColor={accentColor} count={55} />
             <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
@@ -448,7 +555,9 @@ function GiveawayWidget({ config, widgetId }) {
           animation:isActive && !isDone ? 'ga-pulse 2s infinite' : 'none' }} />
         <span style={{ fontSize:'clamp(10px,3.5cqmin,16px)', fontWeight:700, color:mutedColor, textTransform:'uppercase', letterSpacing:'0.1em' }}>{statusLabel}</span>
       </div>
-      {winner ? (
+      {spinningWinner && !winner ? (
+        <SpinReel participants={participants} winnerName={spinningWinner} accentColor={accentColor} textColor={textColor} mutedColor={mutedColor} />
+      ) : winner ? (
         <div style={{ textAlign:'center', position:'relative' }}>
           <ConfettiBurst accentColor={accentColor} count={40} />
           <div style={{ animation: 'ga-haptic 0.5s ease-out' }}>
