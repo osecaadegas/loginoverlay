@@ -506,6 +506,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
   const [stopLoss, setStopLoss] = useState(c.stopLoss || '');
   const [huntNumber, setHuntNumber] = useState(c.huntNumber || '');
+  const [casinoName, setCasinoName] = useState(c.casinoName || '');
   const [betSize, setBetSize] = useState('');
   const [slotSearch, setSlotSearch] = useState('');
   const [selectedSlot, setSelectedSlot] = useState(null);
@@ -819,13 +820,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       targetMoney: Number(targetMoney) || 0,
       stopLoss: Number(stopLoss) || 0,
       huntNumber: huntNumber,
+      casinoName: casinoName,
       showStatistics, animatedTracker, bonusOpening, autoTrackEnabled,
       sortBy, sortDir,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
       ...extras,
     });
-  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, showStatistics, animatedTracker, bonusOpening, autoTrackEnabled, sortBy, sortDir, bonusList]);
+  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, casinoName, showStatistics, animatedTracker, bonusOpening, autoTrackEnabled, sortBy, sortDir, bonusList]);
 
   const handleAddBonus = () => {
     const betNum = Number(betSize);
@@ -939,7 +941,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const handleSaveAndClose = async () => {
     if (!userId) { setSaveHuntMsg('⚠️ Not logged in'); return; }
     if (bonusList.length === 0) { setSaveHuntMsg('⚠️ No bonuses to save'); return; }
-    const name = saveHuntName.trim() || `Hunt ${new Date().toLocaleDateString()}`;
+    const parts = [casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : '', new Date().toLocaleDateString()].filter(Boolean);
+    const name = saveHuntName.trim() || parts.join(' / ') || `Hunt ${new Date().toLocaleDateString()}`;
     setSavingHunt(true);
     setSaveHuntMsg('');
     try {
@@ -979,6 +982,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setTargetMoney('');
       setStopLoss('');
       setHuntNumber('');
+      setCasinoName('');
       setBonusOpening(false);
       setSaveHuntName('');
       setShowSaveConfirm(false);
@@ -992,6 +996,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         startMoney: 0,
         targetMoney: 0,
         stopLoss: 0,
+        casinoName: '',
         bonusOpening: false,
         huntActive: false,
       });
@@ -1008,6 +1013,37 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setSavingHunt(false);
     }
   };
+
+  // Reset hunt without saving — start fresh
+  const handleResetHunt = () => {
+    setBonusList([]);
+    setStartMoney('');
+    setTargetMoney('');
+    setStopLoss('');
+    setHuntNumber('');
+    setCasinoName('');
+    setBonusOpening(false);
+    setSaveHuntName('');
+    setShowSaveConfirm(false);
+    if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
+    autoSaveTimerRef.current = null;
+    autoSaveFiredRef.current = false;
+    onChange({
+      ...config,
+      bonuses: [],
+      startMoney: 0,
+      targetMoney: 0,
+      stopLoss: 0,
+      casinoName: '',
+      huntNumber: '',
+      bonusOpening: false,
+      huntActive: false,
+    });
+    setSaveHuntMsg('🔄 Hunt reset. Ready for a new hunt!');
+    setTimeout(() => setSaveHuntMsg(''), 3000);
+  };
+
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
 
   const currency = config?.currency || '€';
 
@@ -1051,6 +1087,16 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Hunt Settings ─── */}
       <div className="bh-panel-section">
+        {/* Casino name (optional) */}
+        <div className="bh-settings-row" style={{ marginBottom: 8 }}>
+          <label className="bh-input-group" style={{ flex: 1 }}>
+            <span>🏛️ Casino (optional)</span>
+            <input type="text" value={casinoName}
+              placeholder="e.g. Stake, Gamdom, Roobet…"
+              onChange={e => setCasinoName(e.target.value)}
+              onBlur={() => save()} />
+          </label>
+        </div>
         <div className="bh-hunt-split">
           {/* Left half: Hunt Settings */}
           <div className="bh-hunt-split-left">
@@ -1502,25 +1548,46 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             </div>
 
             {saveHuntMsg && (
-              <div className={`bh-gtb-message ${saveHuntMsg.startsWith('✅') ? 'bh-gtb-message--success' : 'bh-gtb-message--error'}`}>
+              <div className={`bh-gtb-message ${saveHuntMsg.startsWith('✅') || saveHuntMsg.startsWith('🔄') ? 'bh-gtb-message--success' : 'bh-gtb-message--error'}`}>
                 {saveHuntMsg}
               </div>
             )}
 
             {!showSaveConfirm ? (
-              <button
-                className="bh-save-hunt-btn"
-                onClick={() => setShowSaveConfirm(true)}
-              >
-                💾 Save & Close Hunt
-              </button>
+              <div className="bh-save-hunt-actions" style={{ gap: 8 }}>
+                <button
+                  className="bh-save-hunt-btn"
+                  onClick={() => setShowSaveConfirm(true)}
+                >
+                  💾 Save & Close Hunt
+                </button>
+                {!showResetConfirm ? (
+                  <button
+                    className="bh-save-hunt-btn"
+                    style={{ background: 'linear-gradient(135deg, #991b1b 0%, #dc2626 100%)' }}
+                    onClick={() => setShowResetConfirm(true)}
+                  >
+                    🔄 Reset Hunt
+                  </button>
+                ) : (
+                  <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                    <span style={{ fontSize: 12, color: '#fca5a5' }}>Discard without saving?</span>
+                    <button className="bh-save-hunt-confirm" style={{ background: '#dc2626', fontSize: 12, padding: '4px 10px' }} onClick={() => { setShowResetConfirm(false); handleResetHunt(); }}>
+                      Yes, Reset
+                    </button>
+                    <button className="bh-save-hunt-cancel" style={{ fontSize: 12, padding: '4px 10px' }} onClick={() => setShowResetConfirm(false)}>
+                      Cancel
+                    </button>
+                  </div>
+                )}
+              </div>
             ) : (
               <div className="bh-save-hunt-form">
                 <input
                   className="bh-gtb-input"
                   value={saveHuntName}
                   onChange={e => setSaveHuntName(e.target.value)}
-                  placeholder={`Hunt name (default: Hunt ${new Date().toLocaleDateString()})`}
+                  placeholder={[casinoName.trim(), huntNumber ? `Hunt #${huntNumber}` : '', new Date().toLocaleDateString()].filter(Boolean).join(' / ') || `Hunt ${new Date().toLocaleDateString()}`}
                   maxLength={60}
                   onKeyDown={e => e.key === 'Enter' && handleSaveAndClose()}
                   autoFocus
