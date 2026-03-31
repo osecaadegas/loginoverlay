@@ -90,10 +90,10 @@ function TrophyWinner({ winner, accentColor, textColor, mutedColor, prize, fontS
 function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor }) {
   const trackRef = useRef(null);
   const ITEM_H = 48;
-  const VISIBLE = 4; // show 4 names at a time
+  const VISIBLE = 5; // odd number so winner lands exactly in center row
 
-  const reelNames = useMemo(() => {
-    if (!participants.length || !winnerName) return [];
+  const reelData = useMemo(() => {
+    if (!participants.length || !winnerName) return { names: [], winnerIdx: 0 };
     const shuffle = (arr) => {
       const a = [...arr];
       for (let i = a.length - 1; i > 0; i--) {
@@ -102,21 +102,21 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
       }
       return a;
     };
-    // 6 shuffled passes + winner at center of visible area
-    const passes = [];
-    for (let p = 0; p < 6; p++) passes.push(...shuffle(participants));
-    passes.push(winnerName);
-    // pad after winner so it lands in the center
+    // 6 shuffled passes of all names, then the winner
+    const names = [];
+    for (let p = 0; p < 6; p++) names.push(...shuffle(participants));
+    const winIdx = names.length; // exact index of the winner
+    names.push(winnerName);
+    // pad after winner so it can sit in the center
     const pad = Math.floor(VISIBLE / 2);
-    for (let i = 0; i < pad; i++) passes.push(participants[i % participants.length]);
-    return passes;
+    const others = participants.filter(n => n !== winnerName);
+    for (let i = 0; i < pad; i++) {
+      names.push(others.length > 0 ? others[i % others.length] : `Player ${i + 1}`);
+    }
+    return { names, winnerIdx: winIdx };
   }, [participants, winnerName]);
 
-  const winnerIdx = useMemo(() => {
-    if (!reelNames.length) return 0;
-    // winner is 6*participants.length into the list
-    return reelNames.lastIndexOf(winnerName, reelNames.length - Math.floor(VISIBLE / 2));
-  }, [reelNames, winnerName]);
+  const { names: reelNames, winnerIdx } = reelData;
 
   useEffect(() => {
     const track = trackRef.current;
