@@ -89,9 +89,10 @@ function TrophyWinner({ winner, accentColor, textColor, mutedColor, prize, fontS
 /* ─── Spin Reel ─── */
 function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor }) {
   const trackRef = useRef(null);
-  const lockedRef = useRef(null); // lock reel data on first render so re-renders don't reshuffle
-  const ITEM_H = 48;
-  const VISIBLE = 5; // odd number so winner lands exactly in center row
+  const winnerElRef = useRef(null);
+  const lockedRef = useRef(null);
+  const ITEM_H = 40;
+  const VISIBLE = 3; // odd number so winner lands exactly in center row
 
   // Build reel data ONCE and lock it — ignore subsequent prop changes during animation
   if (!lockedRef.current && participants.length && winnerName) {
@@ -107,10 +108,11 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
     for (let p = 0; p < 3; p++) names.push(...shuffle(participants));
     const winIdx = names.length;
     names.push(winnerName);
+    // pad after winner so it can sit in center
     const pad = Math.floor(VISIBLE / 2);
     const others = participants.filter(n => n !== winnerName);
     for (let i = 0; i < pad; i++) {
-      names.push(others.length > 0 ? others[i % others.length] : `Player ${i + 1}`);
+      names.push(others.length > 0 ? others[i % others.length] : `—`);
     }
     lockedRef.current = { names, winnerIdx: winIdx };
   }
@@ -119,21 +121,25 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
 
   useEffect(() => {
     const track = trackRef.current;
-    if (!track || !reelNames.length) return;
+    const winEl = winnerElRef.current;
+    if (!track || !winEl || !reelNames.length) return;
     // Start at top
     track.style.transition = 'none';
     track.style.transform = 'translateY(0)';
-    // Trigger spin
+    // Read actual DOM position of the winner element
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        const centerOffset = Math.floor(VISIBLE / 2) * ITEM_H;
-        const target = winnerIdx * ITEM_H - centerOffset;
+        const containerH = track.parentElement.clientHeight;
+        const winnerTop = winEl.offsetTop;
+        const winnerH = winEl.offsetHeight;
+        // Scroll so the winner is vertically centered in the container
+        const target = winnerTop - (containerH / 2) + (winnerH / 2);
         track.style.transition = 'transform 5s cubic-bezier(0.2, 0.0, 0.01, 1)';
-        track.style.transform = `translateY(-${target}px)`;
+        track.style.transform = `translateY(-${Math.max(0, target)}px)`;
       });
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // run once on mount only
+  }, []);
 
   if (!reelNames.length) return null;
 
@@ -141,11 +147,11 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
 
   return (
     <div style={{
-      position: 'relative', width: '90%', height: reelH,
+      position: 'relative', width: '90%', height: reelH, flexShrink: 0,
       overflow: 'hidden', borderRadius: 10, margin: '0 auto',
       background: 'rgba(0,0,0,0.35)',
-      maskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)',
-      WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 18%, black 82%, transparent 100%)',
+      maskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
+      WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 15%, black 85%, transparent 100%)',
     }}>
       {/* center highlight band */}
       <div style={{
@@ -157,13 +163,13 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
       {/* left pointer */}
       <div style={{
         position: 'absolute', left: 4, top: '50%', transform: 'translateY(-50%)',
-        fontSize: 16, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
+        fontSize: 14, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
         animation: 'ga-pulse 1.2s ease-in-out infinite',
       }}>▶</div>
       {/* right pointer */}
       <div style={{
         position: 'absolute', right: 4, top: '50%', transform: 'translateY(-50%)',
-        fontSize: 16, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
+        fontSize: 14, color: accentColor, zIndex: 4, filter: `drop-shadow(0 0 4px ${accentColor})`,
         animation: 'ga-pulse 1.2s ease-in-out infinite',
       }}>◀</div>
       {/* scrolling track */}
@@ -171,13 +177,16 @@ function SpinReel({ participants, winnerName, accentColor, textColor, mutedColor
         display: 'flex', flexDirection: 'column', willChange: 'transform',
       }}>
         {reelNames.map((name, i) => (
-          <div key={`sr-${i}`} style={{
-            height: ITEM_H, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 'clamp(14px, 5cqmin, 22px)', fontWeight: 700,
-            color: i === winnerIdx ? accentColor : textColor,
-            textShadow: i === winnerIdx ? `0 0 8px ${accentColor}88` : 'none',
-            opacity: i === winnerIdx ? 1 : 0.7,
-          }}>{name}</div>
+          <div
+            key={`sr-${i}`}
+            ref={i === winnerIdx ? winnerElRef : undefined}
+            style={{
+              height: ITEM_H, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 'clamp(13px, 4.5cqmin, 20px)', fontWeight: 700,
+              color: i === winnerIdx ? accentColor : textColor,
+              textShadow: i === winnerIdx ? `0 0 8px ${accentColor}88` : 'none',
+              opacity: i === winnerIdx ? 1 : 0.7,
+            }}>{name}</div>
         ))}
       </div>
     </div>
