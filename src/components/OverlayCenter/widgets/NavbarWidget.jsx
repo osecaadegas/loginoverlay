@@ -221,11 +221,11 @@ function NavbarWidget({ config, widgetId, userId }) {
   const isRetro = (c.displayStyle === 'retro');
   const isCarbon = (c.displayStyle === 'carbon');
   const isFuturistic = (c.displayStyle === 'futuristic');
-  const accentColor = c.accentColor || (isMetal ? '#7c8dff' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b');
+  const accentColor = c.accentColor || (isMetal ? '#e8a020' : isGlass ? '#60a5fa' : isRetro ? '#ff6b2b' : isCarbon ? '#ef4444' : isFuturistic ? '#00ffcc' : '#f59e0b');
   const accentColorRGB = hexToRgb(accentColor);
-  const bgColor = c.bgColor || (isMetal ? '#14162a' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318');
-  const textColor = c.textColor || (isMetal ? '#d0d4e4' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9');
-  const mutedColor = c.mutedColor || (isMetal ? '#5a6180' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8');
+  const bgColor = c.bgColor || (isMetal ? '#1a1a1e' : isGlass ? '#0f172a' : isRetro ? '#1a0a00' : isCarbon ? '#0a0a0a' : isFuturistic ? '#050d1a' : '#111318');
+  const textColor = c.textColor || (isMetal ? '#d4d4d8' : isGlass ? '#e0eaff' : isRetro ? '#ffd9b3' : isCarbon ? '#d4d4d8' : isFuturistic ? '#e0fff5' : '#f1f5f9');
+  const mutedColor = c.mutedColor || (isMetal ? '#666666' : isGlass ? '#6b8ccc' : isRetro ? '#885530' : isCarbon ? '#52525b' : isFuturistic ? '#4fd1c5' : '#94a3b8');
   const borderColor = c.borderColor || accentColor;
   const fontFamily = c.fontFamily || (isRetro ? "'Press Start 2P', 'Courier New', monospace" : isFuturistic ? "'Orbitron', sans-serif" : "'Inter', sans-serif");
   const brightness = c.brightness ?? 100;
@@ -255,7 +255,7 @@ function NavbarWidget({ config, widgetId, userId }) {
     padding: `${borderWidth}px`,
     boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(${accentColorRGB},0.06)`,
     fontFamily, overflow: 'hidden',
-    border: `1px solid rgba(255,255,255,0.08)`,
+    border: `1px solid rgba(200,210,225,0.18)`,
   } : isCarbon ? {
     width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
     background: `repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), ${bgColor}`,
