@@ -87,6 +87,7 @@ async function handleSlotRequest(req, res) {
         slotImage = partialMatch[0].image || null;
       } else {
         // 3) Word-by-word fuzzy match — e.g. "gates olympus" matches "Gates of Olympus"
+        //    Fetches multiple candidates and picks the best (highest word-overlap ratio, then shortest name)
         const stopWords = new Set(['of', 'the', 'a', 'an', 'and', 'in', 'on', 'at', 'to', 'for', 'by', 'or', 'is', 'it', 'vs']);
         const words = rawName.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
         if (words.length > 0) {
@@ -94,10 +95,18 @@ async function handleSlotRequest(req, res) {
           for (const word of words) {
             q = q.ilike('name', `%${word}%`);
           }
-          const { data: fuzzyMatch } = await q.limit(1);
-          if (fuzzyMatch && fuzzyMatch.length > 0) {
-            resolvedName = fuzzyMatch[0].name;
-            slotImage = fuzzyMatch[0].image || null;
+          const { data: fuzzyMatches } = await q.limit(20);
+          if (fuzzyMatches && fuzzyMatches.length > 0) {
+            // Score each: ratio of matched keywords to total words in the slot name (higher = tighter match)
+            const scored = fuzzyMatches.map(s => {
+              const nameWords = s.name.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+              const totalWords = nameWords.length || 1;
+              return { ...s, score: words.length / totalWords, nameLen: s.name.length };
+            });
+            // Best = highest score (most overlap), then shortest name
+            scored.sort((a, b) => b.score - a.score || a.nameLen - b.nameLen);
+            resolvedName = scored[0].name;
+            slotImage = scored[0].image || null;
           }
         }
       }
