@@ -63,26 +63,44 @@ async function handleSlotRequest(req, res) {
     // Look up the slot in the DB first (case-insensitive) to resolve the canonical name
     let resolvedName = rawName;
     let slotImage = null;
-    const { data: matchedSlot } = await supabase
+
+    // 1) Exact case-insensitive match
+    const { data: exactMatch } = await supabase
       .from('slots')
       .select('name, image')
       .ilike('name', rawName)
       .limit(1);
 
-    // If exact case-insensitive match didn't hit, try partial match
-    if (!matchedSlot || matchedSlot.length === 0) {
+    if (exactMatch && exactMatch.length > 0) {
+      resolvedName = exactMatch[0].name;
+      slotImage = exactMatch[0].image || null;
+    } else {
+      // 2) Substring match
       const { data: partialMatch } = await supabase
         .from('slots')
         .select('name, image')
         .ilike('name', `%${rawName}%`)
         .limit(1);
+
       if (partialMatch && partialMatch.length > 0) {
         resolvedName = partialMatch[0].name;
         slotImage = partialMatch[0].image || null;
+      } else {
+        // 3) Word-by-word fuzzy match — e.g. "gates olympus" matches "Gates of Olympus"
+        const stopWords = new Set(['of', 'the', 'a', 'an', 'and', 'in', 'on', 'at', 'to', 'for', 'by', 'or', 'is', 'it', 'vs']);
+        const words = rawName.toLowerCase().split(/\s+/).filter(w => w.length > 1 && !stopWords.has(w));
+        if (words.length > 0) {
+          let q = supabase.from('slots').select('name, image');
+          for (const word of words) {
+            q = q.ilike('name', `%${word}%`);
+          }
+          const { data: fuzzyMatch } = await q.limit(1);
+          if (fuzzyMatch && fuzzyMatch.length > 0) {
+            resolvedName = fuzzyMatch[0].name;
+            slotImage = fuzzyMatch[0].image || null;
+          }
+        }
       }
-    } else {
-      resolvedName = matchedSlot[0].name;
-      slotImage = matchedSlot[0].image || null;
     }
 
     // Check for duplicate using the resolved name (case-insensitive)
