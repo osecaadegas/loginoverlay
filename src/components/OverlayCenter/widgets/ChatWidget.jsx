@@ -199,6 +199,7 @@ function ChatWidget({ config, theme }) {
         @keyframes ov-pop-in{from{opacity:0;transform:scale(0.8) translateY(8px)}to{opacity:1;transform:scale(1) translateY(0)}}
         @keyframes ov-slide-left{from{opacity:0;transform:translateX(-16px)}to{opacity:1;transform:translateX(0)}}
         @keyframes ov-cursor-blink{0%,50%{opacity:1}51%,100%{opacity:0}}
+        @keyframes ov-live-pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.6;transform:scale(1.2)}}
       `}</style>
 
       {showHeader && chatStyle === 'cards' && (
@@ -226,12 +227,19 @@ function ChatWidget({ config, theme }) {
             WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
           }}>LIVE CHAT</span>
           <span style={{
-            marginLeft: 'auto', fontSize: '0.82em', fontWeight: 700, color: '#7a8090',
-            background: 'linear-gradient(135deg, #555a65, #3a3e48)',
-            padding: '2px 8px', borderRadius: 4,
-            border: '1px solid rgba(200,210,225,0.2)',
-            boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.08)',
-          }}>{c.twitchChannel ? c.twitchChannel.toUpperCase() : 'CHANNEL'}</span>
+            marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5,
+            fontSize: '0.78em', fontWeight: 700, color: '#4ade80',
+            letterSpacing: '0.06em', textTransform: 'uppercase',
+          }}>
+            <span style={{
+              width: 8, height: 8, borderRadius: '50%',
+              background: '#22c55e',
+              boxShadow: '0 0 6px rgba(34,197,94,0.6)',
+              display: 'inline-block',
+              animation: 'ov-live-pulse 2s ease-in-out infinite',
+            }} />
+            Live
+          </span>
         </div>
       )}
 
