@@ -48,7 +48,7 @@ export default function SlotRequestsWidgetList({ config, requests }) {
 
     let raf;
     let scrollPos = 0;
-    const speed = 0.5; // px per frame (~30px/sec at 60fps)
+    const speed = 0.2; // px per frame (~12px/sec at 60fps)
     let paused = false;
 
     const step = () => {
@@ -188,18 +188,16 @@ export default function SlotRequestsWidgetList({ config, requests }) {
               }),
             }}
           >
-            {showNumbers && (
-              <span style={{
-                fontSize: fs * 0.78,
-                fontWeight: 800,
-                color: accent,
-                minWidth: fs * 1.2,
-                textAlign: 'center',
-                flexShrink: 0,
-              }}>
-                #{i + 1}
-              </span>
-            )}
+            <span style={{
+              fontSize: fs * 0.85,
+              fontWeight: 800,
+              color: accent,
+              minWidth: fs * 1.4,
+              textAlign: 'center',
+              flexShrink: 0,
+            }}>
+              {i + 1}
+            </span>
             <img
               src={r.slot_image || DEFAULT_IMG}
               alt=""
