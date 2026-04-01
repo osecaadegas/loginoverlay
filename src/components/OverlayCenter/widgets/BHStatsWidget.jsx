@@ -328,7 +328,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
             </div>
           </div>
 
-          {/* BACK: Best / Worst with images */}
+          {/* BACK: Best / Worst — hero image cards */}
           <div style={{
             position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
             transform: 'rotateX(180deg)',
@@ -336,62 +336,120 @@ export default function BHStatsWidget({ config, allWidgets }) {
           }}>
             {/* Best slot */}
             <div style={{
-              ...statBoxStyle, border: `1.5px solid ${bestColor}`,
-              flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
-              padding: `${Math.max(8, 10 * scale)}px`,
+              flex: 1, position: 'relative', borderRadius: Math.max(6, 8 * scale),
+              overflow: 'hidden', background: 'rgba(0,0,0,0.55)',
+              boxShadow: `inset 0 0 0 2px ${bestColor}, 0 0 14px rgba(74,222,128,0.3)`,
             }}>
               {stats.best ? (
                 <>
+                  {/* Ribbon */}
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 3,
+                    textAlign: 'center', fontSize: `${Math.max(9, fs * 0.65)}px`, fontWeight: 800,
+                    letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 0',
+                    background: 'linear-gradient(90deg, rgba(74,222,128,0.85), rgba(34,197,94,0.95))',
+                    color: '#052e16',
+                  }}>↑ BEST</div>
+                  {/* Hero image */}
                   {stats.best.image ? (
                     <img src={stats.best.image} alt="" style={{
-                      width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
-                      borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
+                      position: 'absolute', inset: 0, width: '100%', height: '100%',
+                      objectFit: 'cover', objectPosition: 'center', display: 'block',
                     }} onError={e => { e.target.style.display = 'none'; }} />
                   ) : (
-                    <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
+                    <div style={{
+                      position: 'absolute', inset: 0, display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', fontSize: '2em', opacity: 0.3,
+                    }}>🎰</div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                    <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: bestColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Best</span>
-                    <span style={{ ...valStyle, color: bestColor, fontSize: `${fs * 1.2}px` }}>
-                      {currency}{fmt(stats.best.payout)}
-                    </span>
-                    <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: '#facc15' }}>
-                      {stats.best.multi.toFixed(1)}x
-                    </span>
+                  {/* Bottom overlay */}
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    padding: `${Math.max(18, 24 * scale)}px 6px ${Math.max(4, 5 * scale)}px`,
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.3) 75%, transparent 100%)',
+                  }}>
+                    <span style={{
+                      fontSize: `${Math.max(9, fs * 0.65)}px`, fontWeight: 700, color: 'rgba(255,255,255,0.8)',
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      maxWidth: '100%', lineHeight: 1.2,
+                      textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+                    }}>{stats.best.name}</span>
+                    <span style={{
+                      fontSize: `${Math.max(14, fs * 1.4)}px`, fontWeight: 800, color: '#fff',
+                      whiteSpace: 'nowrap', lineHeight: 1,
+                      textShadow: '0 1px 3px rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,0.9)',
+                    }}>{currency}{fmt(stats.best.payout)}</span>
+                    <span style={{
+                      fontSize: `${Math.max(11, fs * 1.15)}px`, fontWeight: 800, color: '#fbbf24',
+                      whiteSpace: 'nowrap', lineHeight: 1,
+                      textShadow: '0 1px 3px rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,0.8)',
+                    }}>{stats.best.multi.toFixed(1)}x</span>
                   </div>
                 </>
               ) : (
-                <span style={{ ...valStyle, color: mutedColor }}>—</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <span style={{ ...valStyle, color: mutedColor }}>—</span>
+                </div>
               )}
             </div>
             {/* Worst slot */}
             <div style={{
-              ...statBoxStyle, border: `1.5px solid ${worstColor}`,
-              flexDirection: 'row', alignItems: 'center', gap: Math.max(8, 10 * scale),
-              padding: `${Math.max(8, 10 * scale)}px`,
+              flex: 1, position: 'relative', borderRadius: Math.max(6, 8 * scale),
+              overflow: 'hidden', background: 'rgba(0,0,0,0.55)',
+              boxShadow: `inset 0 0 0 2px ${worstColor}, 0 0 14px rgba(248,113,113,0.3)`,
             }}>
               {stats.worst ? (
                 <>
+                  {/* Ribbon */}
+                  <div style={{
+                    position: 'absolute', top: 0, left: 0, right: 0, zIndex: 3,
+                    textAlign: 'center', fontSize: `${Math.max(9, fs * 0.65)}px`, fontWeight: 800,
+                    letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 0',
+                    background: 'linear-gradient(90deg, rgba(248,113,113,0.85), rgba(239,68,68,0.95))',
+                    color: '#450a0a',
+                  }}>↓ WORST</div>
+                  {/* Hero image */}
                   {stats.worst.image ? (
                     <img src={stats.worst.image} alt="" style={{
-                      width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale),
-                      borderRadius: Math.max(6, 8 * scale), objectFit: 'cover', flexShrink: 0,
+                      position: 'absolute', inset: 0, width: '100%', height: '100%',
+                      objectFit: 'cover', objectPosition: 'center', display: 'block',
                     }} onError={e => { e.target.style.display = 'none'; }} />
                   ) : (
-                    <div style={{ width: Math.max(48, 60 * scale), height: Math.max(48, 60 * scale), borderRadius: Math.max(6, 8 * scale), background: cardBg, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: fs * 1.5, flexShrink: 0 }}>🎰</div>
+                    <div style={{
+                      position: 'absolute', inset: 0, display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', fontSize: '2em', opacity: 0.3,
+                    }}>🎰</div>
                   )}
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
-                    <span style={{ fontSize: `${fs * 0.7}px`, fontWeight: 700, color: worstColor, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Worst</span>
-                    <span style={{ ...valStyle, color: worstColor, fontSize: `${fs * 1.2}px` }}>
-                      {currency}{fmt(stats.worst.payout)}
-                    </span>
-                    <span style={{ fontSize: `${fs * 0.9}px`, fontWeight: 800, color: mutedColor }}>
-                      {stats.worst.multi.toFixed(1)}x
-                    </span>
+                  {/* Bottom overlay */}
+                  <div style={{
+                    position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1,
+                    padding: `${Math.max(18, 24 * scale)}px 6px ${Math.max(4, 5 * scale)}px`,
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.75) 45%, rgba(0,0,0,0.3) 75%, transparent 100%)',
+                  }}>
+                    <span style={{
+                      fontSize: `${Math.max(9, fs * 0.65)}px`, fontWeight: 700, color: 'rgba(255,255,255,0.8)',
+                      whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      maxWidth: '100%', lineHeight: 1.2,
+                      textShadow: '0 1px 4px rgba(0,0,0,0.9)',
+                    }}>{stats.worst.name}</span>
+                    <span style={{
+                      fontSize: `${Math.max(14, fs * 1.4)}px`, fontWeight: 800, color: '#fff',
+                      whiteSpace: 'nowrap', lineHeight: 1,
+                      textShadow: '0 1px 3px rgba(0,0,0,1), 0 2px 8px rgba(0,0,0,0.9)',
+                    }}>{currency}{fmt(stats.worst.payout)}</span>
+                    <span style={{
+                      fontSize: `${Math.max(11, fs * 1.15)}px`, fontWeight: 800, color: mutedColor,
+                      whiteSpace: 'nowrap', lineHeight: 1,
+                      textShadow: '0 1px 3px rgba(0,0,0,1), 0 2px 6px rgba(0,0,0,0.8)',
+                    }}>{stats.worst.multi.toFixed(1)}x</span>
                   </div>
                 </>
               ) : (
-                <span style={{ ...valStyle, color: mutedColor }}>—</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                  <span style={{ ...valStyle, color: mutedColor }}>—</span>
+                </div>
               )}
             </div>
           </div>{/* end BACK */}
