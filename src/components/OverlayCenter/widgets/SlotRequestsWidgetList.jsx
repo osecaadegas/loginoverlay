@@ -9,6 +9,7 @@ const DEFAULT_IMG = 'https://i.imgur.com/8E3ucNx.png';
 export default function SlotRequestsWidgetList({ config, requests }) {
   const c = config || {};
   const containerRef = useRef(null);
+  const listRef = useRef(null);
   const [fontSize, setFontSize] = useState(14);
   const isMetal = (c.displayStyle || 'v1') === 'metal';
 
@@ -39,6 +40,47 @@ export default function SlotRequestsWidgetList({ config, requests }) {
     observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, [configFontSize]);
+
+  /* ── Auto-scroll when more than 2 requests ── */
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el || requests.length <= 2) return;
+
+    let raf;
+    let scrollPos = 0;
+    const speed = 0.5; // px per frame (~30px/sec at 60fps)
+    let paused = false;
+
+    const step = () => {
+      if (!paused && el.scrollHeight > el.clientHeight) {
+        scrollPos += speed;
+        // When we've scrolled past the content, loop back to the top smoothly
+        if (scrollPos >= el.scrollHeight - el.clientHeight) {
+          // Pause briefly at the bottom, then reset
+          paused = true;
+          setTimeout(() => {
+            scrollPos = 0;
+            el.scrollTop = 0;
+            paused = false;
+          }, 2000);
+        } else {
+          el.scrollTop = scrollPos;
+        }
+      }
+      raf = requestAnimationFrame(step);
+    };
+
+    // Start after a short delay so the list has rendered
+    const timer = setTimeout(() => {
+      scrollPos = el.scrollTop;
+      raf = requestAnimationFrame(step);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timer);
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [requests.length]);
 
   const fs = configFontSize || fontSize;
   const imgSize = Math.max(24, fs * 2.2);
@@ -103,13 +145,17 @@ export default function SlotRequestsWidgetList({ config, requests }) {
       </div>
 
       {/* List */}
-      <div style={{
+      <div
+        ref={listRef}
+        style={{
         flex: 1,
         overflowY: 'auto',
         padding: `${fs * 0.3}px`,
         display: 'flex',
         flexDirection: 'column',
         gap: fs * 0.25,
+        scrollbarWidth: 'none',
+        msOverflowStyle: 'none',
       }}>
         {requests.length === 0 && (
           <div style={{
