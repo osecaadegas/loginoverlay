@@ -56,52 +56,69 @@ async function handleSlotRequest(req, res) {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(200).send('Server config error');
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-  const slotName = slotParam.trim();
+  const rawName = slotParam.trim();
   const viewer = (requester || 'anonymous').trim();
 
   try {
-    // Check for duplicate
+    // Look up the slot in the DB first (case-insensitive) to resolve the canonical name
+    let resolvedName = rawName;
+    let slotImage = null;
+    const { data: matchedSlot } = await supabase
+      .from('slots')
+      .select('name, image')
+      .ilike('name', rawName)
+      .limit(1);
+
+    // If exact case-insensitive match didn't hit, try partial match
+    if (!matchedSlot || matchedSlot.length === 0) {
+      const { data: partialMatch } = await supabase
+        .from('slots')
+        .select('name, image')
+        .ilike('name', `%${rawName}%`)
+        .limit(1);
+      if (partialMatch && partialMatch.length > 0) {
+        resolvedName = partialMatch[0].name;
+        slotImage = partialMatch[0].image || null;
+      }
+    } else {
+      resolvedName = matchedSlot[0].name;
+      slotImage = matchedSlot[0].image || null;
+    }
+
+    // Check for duplicate using the resolved name (case-insensitive)
     const { data: existing } = await supabase
       .from('slot_requests')
       .select('id')
       .eq('user_id', user_id)
       .eq('status', 'pending')
-      .ilike('slot_name', slotName)
+      .ilike('slot_name', resolvedName)
       .limit(1);
 
     if (existing && existing.length > 0) {
-      return res.status(200).send(`"${slotName}" is already in the queue!`);
+      return res.status(200).send(`"${resolvedName}" is already in the queue!`);
     }
 
-    // Look up slot image
-    let slotImage = null;
-    const { data: matchedSlot } = await supabase
-      .from('slots')
-      .select('name, image')
-      .ilike('name', `%${slotName}%`)
-      .limit(1);
-
-    if (matchedSlot && matchedSlot.length > 0 && matchedSlot[0].image) {
-      slotImage = matchedSlot[0].image;
-    }
-
-    // Insert request
+    // Insert request with the canonical DB name
     const { error: insertErr } = await supabase
       .from('slot_requests')
       .insert({
         user_id,
-        slot_name: slotName,
+        slot_name: resolvedName,
         slot_image: slotImage,
         requested_by: viewer,
         status: 'pending',
       });
 
     if (insertErr) {
+      // Catch race-condition duplicate (concurrent inserts)
+      if (insertErr.code === '23505' || (insertErr.message && insertErr.message.includes('duplicate'))) {
+        return res.status(200).send(`"${resolvedName}" is already in the queue!`);
+      }
       console.error('Insert error:', insertErr);
       return res.status(200).send('Could not add request. Try again later.');
     }
 
-    return res.status(200).send(`🎰 Added "${slotName}" to the queue (requested by ${viewer})`);
+    return res.status(200).send(`🎰 Added "${resolvedName}" to the queue (requested by ${viewer})`);
   } catch (err) {
     console.error('Slot request error:', err);
     return res.status(200).send('Something went wrong. Try again later.');

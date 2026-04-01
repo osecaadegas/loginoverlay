@@ -50,15 +50,30 @@ export default function SlotRequestsWidget({ config, userId }) {
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
 
+  /* Dedup map: track recently submitted slot requests to avoid duplicates from chat */
+  const recentSrRef = useRef(new Map());
+
   const handleMessageRef = useRef(null);
   handleMessageRef.current = async (msg) => {
     const text = (msg.message || '').trim();
     const match = text.match(/^!sr\s+(.+)/i);
     if (!match) return;
-    const slotName = match[1].trim();
+    const slotName = match[1].trim().toLowerCase();
     if (!slotName || !userIdRef.current) return;
+
+    // Skip if same slot was requested in the last 10 seconds
+    const now = Date.now();
+    const lastTime = recentSrRef.current.get(slotName);
+    if (lastTime && now - lastTime < 10000) return;
+    recentSrRef.current.set(slotName, now);
+
+    // Clean old entries
+    for (const [key, ts] of recentSrRef.current) {
+      if (now - ts > 30000) recentSrRef.current.delete(key);
+    }
+
     try {
-      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userIdRef.current)}&requester=${encodeURIComponent(msg.username)}&slot=${encodeURIComponent(slotName)}`);
+      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userIdRef.current)}&requester=${encodeURIComponent(msg.username)}&slot=${encodeURIComponent(match[1].trim())}`);
     } catch (err) {
       console.error('[SlotRequestsWidget] !sr error', err);
     }
