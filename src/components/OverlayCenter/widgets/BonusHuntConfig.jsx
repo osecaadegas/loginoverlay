@@ -176,14 +176,11 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             <div className="nb-color-grid">
               <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
               <ColorPicker label="Header Accent" value={c.headerAccent || '#60a5fa'} onChange={v => set('headerAccent', v)} />
-              {currentStyle !== 'v3' && currentStyle !== 'v10_spotlight' && <>
+              {currentStyle !== 'v3' && <>
                 <ColorPicker label="Count Card BG" value={c.countCardColor || '#1e3a8a'} onChange={v => set('countCardColor', v)} />
                 <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || '#166534'} onChange={v => set('currentBonusColor', v)} />
                 <ColorPicker label="Current Accent" value={c.currentBonusAccent || '#86efac'} onChange={v => set('currentBonusAccent', v)} />
               </>}
-              {currentStyle === 'v10_spotlight' &&
-                <ColorPicker label="Panel BG" value={c.currentBonusColor || '#101d33'} onChange={v => set('currentBonusColor', v)} />
-              }
               <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
               {currentStyle !== 'v3' &&
                 <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#d8b4fe'} onChange={v => set('listCardAccent', v)} />
@@ -364,7 +361,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             </label>
           </>)}
 
-          {/* ── V10 Spotlight — typography only (colors covered above) ── */}
+          {/* ── V10 Metallic — dimensions (colors covered above) ── */}
           {currentStyle === 'v10_spotlight' && (<>
             <h4 className="nb-subtitle">Dimensions</h4>
             <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
