@@ -4,7 +4,7 @@
  * Captures: offer_id, casino_name, logged-in user_id, SE username,
  * IP address (via a free API), user-agent, and the page source.
  */
-import { supabase } from '../../config/supabaseClient';
+import { supabase } from '../config/supabaseClient';
 
 let cachedIp = null;
 
