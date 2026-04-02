@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import { getMethodIcons } from '../../utils/depositMethods';
 import { getProviderName } from '../../utils/gameProviders';
+import trackOfferClick from '../../utils/trackOfferClick';
 import './OffersPage.css';
 
 export default function OffersPage() {
@@ -147,7 +148,7 @@ export default function OffersPage() {
                 {/* ===== FRONT FACE ===== */}
                 <div
                   className={`op-card op-card-front ${index === 0 ? 'op-card-featured' : ''}`}
-                  onClick={() => { if (offer.bonusLink) window.open(offer.bonusLink, '_blank', 'noopener,noreferrer'); }}
+                  onClick={() => { if (offer.bonusLink) { trackOfferClick({ offerId: offer.id, casinoName: offer.casino, pageSource: 'offers' }); window.open(offer.bonusLink, '_blank', 'noopener,noreferrer'); } }}
                   style={{ cursor: 'pointer' }}
                 >
                   {/* Card Image with Badge */}
@@ -250,7 +251,7 @@ export default function OffersPage() {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="op-card-claim"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={(e) => { e.stopPropagation(); trackOfferClick({ offerId: offer.id, casinoName: offer.casino, pageSource: 'offers' }); }}
                   >
                     CLAIM BONUS
                   </a>
@@ -365,6 +366,7 @@ export default function OffersPage() {
                       target="_blank"
                       rel="noopener noreferrer"
                       className="op-back-cta"
+                      onClick={() => trackOfferClick({ offerId: offer.id, casinoName: offer.casino, pageSource: 'offers' })}
                     >
                       CLAIM BONUS
                     </a>

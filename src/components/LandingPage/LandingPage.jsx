@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../config/supabaseClient';
+import trackOfferClick from '../../utils/trackOfferClick';
 import AuthModal from '../Auth/AuthModal';
 import './LandingPage.css';
 
@@ -43,9 +44,10 @@ export default function LandingPage() {
     }
   };
 
-  const handleOfferClick = (bonusLink) => {
-    if (bonusLink) {
-      window.open(bonusLink, '_blank', 'noopener,noreferrer');
+  const handleOfferClick = (offer) => {
+    if (offer.bonus_link) {
+      trackOfferClick({ offerId: offer.id, casinoName: offer.casino_name, pageSource: 'landing' });
+      window.open(offer.bonus_link, '_blank', 'noopener,noreferrer');
     }
   };
 
@@ -152,7 +154,7 @@ export default function LandingPage() {
           <p className="offers-subheading">Best offers and bonuses exclusive for you</p>
           <div className="offers-container">
             {casinoOffers.map((offer) => (
-              <div key={offer.id} className="offer-card" onClick={() => handleOfferClick(offer.bonus_link)}>
+              <div key={offer.id} className="offer-card" onClick={() => handleOfferClick(offer)}>
                 <div className="offer-logo">
                   {offer.video_url ? (
                     <video
@@ -192,7 +194,7 @@ export default function LandingPage() {
                   )}
                 </div>
                 <div className="offer-actions">
-                  <button className="offer-btn claim" onClick={(e) => { e.stopPropagation(); handleOfferClick(offer.bonus_link); }}>CLAIM BONUS</button>
+                  <button className="offer-btn claim" onClick={(e) => { e.stopPropagation(); handleOfferClick(offer); }}>CLAIM BONUS</button>
                   <button className="offer-btn more" onClick={(e) => { e.stopPropagation(); navigate('/offers'); }}>🔍 SHOW MORE</button>
                 </div>
               </div>

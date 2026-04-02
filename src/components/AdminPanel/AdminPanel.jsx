@@ -59,6 +59,9 @@ export default function AdminPanel() {
   const [selectedUserId, setSelectedUserId] = useState(null);
   const [roleFilter, setRoleFilter] = useState(null);
   const [offerSearch, setOfferSearch] = useState('');
+  const [offerClicks, setOfferClicks] = useState([]);
+  const [clicksLoading, setClicksLoading] = useState(false);
+  const [offerSubTab, setOfferSubTab] = useState('cards'); // 'cards' | 'analytics'
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -506,6 +509,22 @@ export default function AdminPanel() {
       console.error('Error loading offers:', error);
     } else {
       setOffers(data || []);
+    }
+  };
+
+  const loadOfferClicks = async () => {
+    setClicksLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('offer_clicks')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (!error) setOfferClicks(data || []);
+    } catch (err) {
+      console.error('Error loading offer clicks:', err);
+    } finally {
+      setClicksLoading(false);
     }
   };
 
@@ -3426,34 +3445,62 @@ export default function AdminPanel() {
         <div className="offers-management">
           <div className="offers-header">
             <h2>Casino Offer Cards</h2>
-            <div className="offers-header-actions">
-              <div className="offer-search-bar">
-                <input
-                  type="text"
-                  placeholder="Search by casino name, title, or badge..."
-                  value={offerSearch}
-                  onChange={(e) => setOfferSearch(e.target.value)}
-                />
+            <div className="offers-header-actions" style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 4 }}>
+                <button
+                  onClick={() => setOfferSubTab('cards')}
+                  style={{
+                    padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    background: offerSubTab === 'cards' ? '#6366f1' : 'rgba(255,255,255,0.08)', color: offerSubTab === 'cards' ? '#fff' : '#94a3b8',
+                  }}
+                >📦 Cards</button>
+                <button
+                  onClick={() => { setOfferSubTab('analytics'); if (offerClicks.length === 0) loadOfferClicks(); }}
+                  style={{
+                    padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                    background: offerSubTab === 'analytics' ? '#6366f1' : 'rgba(255,255,255,0.08)', color: offerSubTab === 'analytics' ? '#fff' : '#94a3b8',
+                  }}
+                >📊 Click Analytics</button>
               </div>
-              <button onClick={() => openOfferModal()} className="btn-create-offer">
-                ➕ Create New Offer
-              </button>
+              {offerSubTab === 'cards' && (
+                <>
+                  <div className="offer-search-bar">
+                    <input
+                      type="text"
+                      placeholder="Search by casino name, title, or badge..."
+                      value={offerSearch}
+                      onChange={(e) => setOfferSearch(e.target.value)}
+                    />
+                  </div>
+                  <button onClick={() => openOfferModal()} className="btn-create-offer">
+                    ➕ Create New Offer
+                  </button>
+                </>
+              )}
+              {offerSubTab === 'analytics' && (
+                <button onClick={loadOfferClicks} className="btn-create-offer" style={{ fontSize: 12 }}>
+                  🔄 Refresh
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="offers-grid">
-            {offers
-              .filter(offer => {
-                if (!offerSearch.trim()) return true;
-                const search = offerSearch.toLowerCase();
-                return (
-                  offer.casino_name?.toLowerCase().includes(search) ||
-                  offer.title?.toLowerCase().includes(search) ||
-                  offer.badge?.toLowerCase().includes(search) ||
-                  offer.bonus_value?.toLowerCase().includes(search)
-                );
-              })
-              .map((offer) => (
+          {/* ── CARDS SUB-TAB ── */}
+          {offerSubTab === 'cards' && (
+            <>
+              <div className="offers-grid">
+                {offers
+                  .filter(offer => {
+                    if (!offerSearch.trim()) return true;
+                    const search = offerSearch.toLowerCase();
+                    return (
+                      offer.casino_name?.toLowerCase().includes(search) ||
+                      offer.title?.toLowerCase().includes(search) ||
+                      offer.badge?.toLowerCase().includes(search) ||
+                      offer.bonus_value?.toLowerCase().includes(search)
+                    );
+                  })
+                  .map((offer) => (
               <div key={offer.id} className={`offer-admin-card ${!offer.is_active ? 'inactive' : ''}`}>
                 <div className="offer-admin-image">
                   <img src={offer.image_url} alt={offer.casino_name} />
@@ -3505,6 +3552,111 @@ export default function AdminPanel() {
           {offers.length === 0 && (
             <div className="no-offers">
               <p>No casino offers yet. Create your first offer!</p>
+            </div>
+          )}
+            </>
+          )}
+
+          {/* ── ANALYTICS SUB-TAB ── */}
+          {offerSubTab === 'analytics' && (
+            <div style={{ marginTop: 16 }}>
+              {clicksLoading ? (
+                <p style={{ color: '#94a3b8', textAlign: 'center', padding: 40 }}>Loading click data…</p>
+              ) : offerClicks.length === 0 ? (
+                <p style={{ color: '#94a3b8', textAlign: 'center', padding: 40 }}>No clicks recorded yet. Clicks will appear here once viewers start clicking offer cards.</p>
+              ) : (
+                <>
+                  {/* Summary cards */}
+                  {(() => {
+                    const byOffer = {};
+                    const uniqueIps = new Set();
+                    const uniqueUsers = new Set();
+                    const today = new Date().toISOString().slice(0, 10);
+                    let todayCount = 0;
+                    for (const c of offerClicks) {
+                      const name = c.casino_name || 'Unknown';
+                      byOffer[name] = (byOffer[name] || 0) + 1;
+                      if (c.ip_address) uniqueIps.add(c.ip_address);
+                      if (c.se_username) uniqueUsers.add(c.se_username);
+                      else if (c.user_id) uniqueUsers.add(c.user_id);
+                      if (c.created_at?.startsWith(today)) todayCount++;
+                    }
+                    const sorted = Object.entries(byOffer).sort((a, b) => b[1] - a[1]);
+                    return (
+                      <>
+                        {/* Stats row */}
+                        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
+                          {[
+                            { label: 'Total Clicks', value: offerClicks.length, color: '#818cf8' },
+                            { label: 'Today', value: todayCount, color: '#22c55e' },
+                            { label: 'Unique IPs', value: uniqueIps.size, color: '#f59e0b' },
+                            { label: 'Known Users', value: uniqueUsers.size, color: '#a78bfa' },
+                          ].map(s => (
+                            <div key={s.label} style={{ flex: 1, minWidth: 120, background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: '12px 14px' }}>
+                              <div style={{ fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{s.label}</div>
+                              <div style={{ fontSize: 22, fontWeight: 800, color: s.color, marginTop: 2 }}>{s.value.toLocaleString()}</div>
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Per-offer breakdown */}
+                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: 14, marginBottom: 16 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>Clicks by Casino</div>
+                          {sorted.map(([name, count]) => {
+                            const pct = Math.round((count / offerClicks.length) * 100);
+                            return (
+                              <div key={name} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                <span style={{ width: 130, fontSize: 12, color: '#e2e8f0', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{name}</span>
+                                <div style={{ flex: 1, height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                                  <div style={{ width: `${pct}%`, height: '100%', background: '#6366f1', borderRadius: 99, minWidth: pct > 0 ? 4 : 0 }} />
+                                </div>
+                                <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, minWidth: 50, textAlign: 'right' }}>{count} ({pct}%)</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    );
+                  })()}
+
+                  {/* Click log table */}
+                  <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, overflow: 'hidden' }}>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Recent Clicks</div>
+                    <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
+                        <thead>
+                          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Casino</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>User / IP</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Source</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Time</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {offerClicks.slice(0, 200).map(click => (
+                            <tr key={click.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
+                              <td style={{ padding: '6px 12px', color: '#e2e8f0', fontWeight: 600 }}>{click.casino_name || '—'}</td>
+                              <td style={{ padding: '6px 12px', color: click.se_username ? '#a78bfa' : '#94a3b8' }}>
+                                {click.se_username || click.ip_address || '—'}
+                              </td>
+                              <td style={{ padding: '6px 12px' }}>
+                                <span style={{
+                                  padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600,
+                                  background: click.page_source === 'landing' ? 'rgba(34,197,94,0.12)' : 'rgba(99,102,241,0.12)',
+                                  color: click.page_source === 'landing' ? '#86efac' : '#a5b4fc',
+                                }}>{click.page_source}</span>
+                              </td>
+                              <td style={{ padding: '6px 12px', color: '#64748b', fontSize: 11 }}>
+                                {new Date(click.created_at).toLocaleString()}
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           )}
         </div>
