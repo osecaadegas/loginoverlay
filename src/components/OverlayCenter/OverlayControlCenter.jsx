@@ -22,6 +22,7 @@ import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
 import ExtensionAdmin from '../AdminPanel/ExtensionAdmin';
+import GivePointsPanel from './GivePointsPanel';
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
 
@@ -95,6 +96,12 @@ export default function OverlayControlCenter() {
   const collectionsKeys = ['library', 'presets', 'slots', 'approvals', 'theme'];
   const isCollectionActive = collectionsKeys.includes(activePanel);
   useEffect(() => { if (isCollectionActive) setCollectionsOpen(true); }, [isCollectionActive]);
+
+  /* Auto-expand Community Games when one of its children is active */
+  const communityGameKeys = ['coin_flip', 'salty_words', 'predictions', 'give_points'];
+  const isCommunityGameActive = communityGameKeys.includes(activePanel);
+  useEffect(() => { if (isCommunityGameActive) setCommunityOpen(true); }, [isCommunityGameActive]);
+
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
@@ -340,7 +347,7 @@ export default function OverlayControlCenter() {
 
             {/* ─── Community Games dropdown ─── */}
             <button
-              className={`oc-sidebar-btn ${communityOpen ? 'oc-sidebar-btn--active' : ''}`}
+              className={`oc-sidebar-btn ${communityOpen || isCommunityGameActive ? 'oc-sidebar-btn--active' : ''}`}
               onClick={() => setCommunityOpen(o => !o)}
             >
               <span className="oc-sidebar-btn-icon">🎮</span>
@@ -354,6 +361,7 @@ export default function OverlayControlCenter() {
               { key: 'coin_flip', icon: '🪙', label: 'Coin Flip', desc: 'Heads or tails betting' },
               { key: 'salty_words', icon: '🧂', label: 'Salty Words', desc: 'Word betting game' },
               { key: 'predictions', icon: '🔮', label: 'Predictions', desc: 'Two-outcome bets' },
+              { key: 'give_points', icon: '💰', label: 'Give Points', desc: 'Award points to viewers' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -478,6 +486,11 @@ export default function OverlayControlCenter() {
               availableWidgets={getAllWidgetDefs()}
               overlayToken={instance?.overlay_token}
             />
+          )}
+          {activePanel === 'give_points' && (
+            <div className="oc-panel-section">
+              <GivePointsPanel allWidgets={widgets} />
+            </div>
           )}
           {/* Generic widget panels — resolved from registry */}
           {['bonus_hunt','tournament','current_slot','random_slot_picker','slot_requests','single_slot','bonus_buys','coin_flip','salty_words','predictions'].includes(activePanel) && (
