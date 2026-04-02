@@ -149,7 +149,7 @@ export default function PrivacyPolicy() {
           </p>
           <ul>
             <li>Website: <strong>https://www.osecaadegas.pt</strong></li>
-            <li>Discord: <strong>https://discord.gg/ASvCcpp5b8</strong></li>
+            <li>Discord: <strong>https://discord.gg/4yZ3F2Pk4z</strong></li>
           </ul>
         </section>
       </div>

@@ -223,7 +223,7 @@ export default function Sidebar({ className = '', onClose }) {
             { href: 'https://www.twitch.tv/osecaadegas95', label: 'Twitch',    cls: 'sb-social--twitch' },
             { href: 'https://www.youtube.com/@osecaadegas', label: 'YouTube',   cls: 'sb-social--youtube' },
             { href: 'https://www.instagram.com/osecaadegas/', label: 'Instagram', cls: 'sb-social--instagram' },
-            { href: 'https://discord.gg/ASvCcpp5b8',       label: 'Discord',   cls: 'sb-social--discord' },
+            { href: 'https://discord.gg/4yZ3F2Pk4z',       label: 'Discord',   cls: 'sb-social--discord' },
           ].map((s) => (
             <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
                className={`sb-social ${s.cls}`} title={s.label}>
