@@ -62,6 +62,9 @@ export default function AdminPanel() {
   const [offerClicks, setOfferClicks] = useState([]);
   const [clicksLoading, setClicksLoading] = useState(false);
   const [offerSubTab, setOfferSubTab] = useState('cards'); // 'cards' | 'analytics'
+  const [expandedClickId, setExpandedClickId] = useState(null);
+  const [clickFilter, setClickFilter] = useState('');
+  const [clickDateFilter, setClickDateFilter] = useState('all'); // 'all' | 'today' | '7d' | '30d'
   
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
@@ -3619,38 +3622,123 @@ export default function AdminPanel() {
                     );
                   })()}
 
-                  {/* Click log table */}
+                  {/* Click log table — full audit detail */}
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, overflow: 'hidden' }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>Recent Clicks</div>
-                    <div style={{ maxHeight: 400, overflowY: 'auto' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', gap: 8 }}>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Full Click History ({offerClicks.length} total)</div>
+                      <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <input
+                          type="text"
+                          placeholder="Filter by casino, user, IP..."
+                          value={clickFilter}
+                          onChange={(e) => setClickFilter(e.target.value)}
+                          style={{ padding: '4px 10px', borderRadius: 6, border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.05)', color: '#e2e8f0', fontSize: 11, width: 200 }}
+                        />
+                        {['all', 'today', '7d', '30d'].map(f => (
+                          <button key={f} onClick={() => setClickDateFilter(f)} style={{
+                            padding: '3px 10px', borderRadius: 6, border: 'none', fontSize: 10, fontWeight: 600, cursor: 'pointer',
+                            background: clickDateFilter === f ? '#6366f1' : 'rgba(255,255,255,0.06)', color: clickDateFilter === f ? '#fff' : '#94a3b8',
+                          }}>{{ all: 'All', today: 'Today', '7d': '7 Days', '30d': '30 Days' }[f]}</button>
+                        ))}
+                      </div>
+                    </div>
+                    <div style={{ maxHeight: 600, overflowY: 'auto' }}>
                       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                         <thead>
                           <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600, width: 28 }}></th>
                             <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Casino</th>
-                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>User / IP</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Twitch</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>SE Name</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>IP Address</th>
                             <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Source</th>
-                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Time</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Date & Time</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {offerClicks.slice(0, 200).map(click => (
-                            <tr key={click.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                              <td style={{ padding: '6px 12px', color: '#e2e8f0', fontWeight: 600 }}>{click.casino_name || '—'}</td>
-                              <td style={{ padding: '6px 12px', color: click.se_username ? '#a78bfa' : '#94a3b8' }}>
-                                {click.se_username || click.ip_address || '—'}
-                              </td>
-                              <td style={{ padding: '6px 12px' }}>
-                                <span style={{
-                                  padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600,
-                                  background: click.page_source === 'landing' ? 'rgba(34,197,94,0.12)' : 'rgba(99,102,241,0.12)',
-                                  color: click.page_source === 'landing' ? '#86efac' : '#a5b4fc',
-                                }}>{click.page_source}</span>
-                              </td>
-                              <td style={{ padding: '6px 12px', color: '#64748b', fontSize: 11 }}>
-                                {new Date(click.created_at).toLocaleString()}
-                              </td>
-                            </tr>
-                          ))}
+                          {(() => {
+                            const now = new Date();
+                            const filtered = offerClicks.filter(c => {
+                              // Date filter
+                              if (clickDateFilter !== 'all') {
+                                const created = new Date(c.created_at);
+                                if (clickDateFilter === 'today' && created.toDateString() !== now.toDateString()) return false;
+                                if (clickDateFilter === '7d' && (now - created) > 7 * 86400000) return false;
+                                if (clickDateFilter === '30d' && (now - created) > 30 * 86400000) return false;
+                              }
+                              // Text filter
+                              if (clickFilter.trim()) {
+                                const q = clickFilter.toLowerCase();
+                                return (
+                                  (c.casino_name || '').toLowerCase().includes(q) ||
+                                  (c.twitch_username || '').toLowerCase().includes(q) ||
+                                  (c.se_username || '').toLowerCase().includes(q) ||
+                                  (c.ip_address || '').toLowerCase().includes(q) ||
+                                  (c.user_agent || '').toLowerCase().includes(q) ||
+                                  (c.page_source || '').toLowerCase().includes(q)
+                                );
+                              }
+                              return true;
+                            });
+                            if (filtered.length === 0) return (
+                              <tr><td colSpan={7} style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>No clicks match your filters</td></tr>
+                            );
+                            return filtered.slice(0, 500).map((click, idx) => {
+                              const isExpanded = expandedClickId === click.id;
+                              const dt = new Date(click.created_at);
+                              const dateStr = dt.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+                              const timeStr = dt.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                              const isLoggedIn = !!(click.twitch_username || click.se_username || click.user_id);
+                              return (
+                                <React.Fragment key={click.id}>
+                                  <tr
+                                    onClick={() => setExpandedClickId(isExpanded ? null : click.id)}
+                                    style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', background: isExpanded ? 'rgba(99,102,241,0.06)' : idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
+                                  >
+                                    <td style={{ padding: '6px 8px', color: '#64748b', fontSize: 10 }}>{isExpanded ? '▼' : '▶'}</td>
+                                    <td style={{ padding: '6px 12px', color: '#e2e8f0', fontWeight: 600 }}>{click.casino_name || '—'}</td>
+                                    <td style={{ padding: '6px 12px', color: click.twitch_username ? '#a78bfa' : '#4a5568' }}>
+                                      {click.twitch_username || (isLoggedIn ? '—' : <span style={{ color: '#ef4444', fontSize: 10 }}>not logged in</span>)}
+                                    </td>
+                                    <td style={{ padding: '6px 12px', color: click.se_username ? '#818cf8' : '#4a5568' }}>
+                                      {click.se_username || '—'}
+                                    </td>
+                                    <td style={{ padding: '6px 12px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 11 }}>
+                                      {click.ip_address || '—'}
+                                    </td>
+                                    <td style={{ padding: '6px 12px' }}>
+                                      <span style={{
+                                        padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600,
+                                        background: click.page_source === 'landing' ? 'rgba(34,197,94,0.12)' : 'rgba(99,102,241,0.12)',
+                                        color: click.page_source === 'landing' ? '#86efac' : '#a5b4fc',
+                                      }}>{click.page_source}</span>
+                                    </td>
+                                    <td style={{ padding: '6px 12px' }}>
+                                      <div style={{ color: '#e2e8f0', fontSize: 11 }}>{dateStr}</div>
+                                      <div style={{ color: '#64748b', fontSize: 10 }}>{timeStr}</div>
+                                    </td>
+                                  </tr>
+                                  {isExpanded && (
+                                    <tr style={{ background: 'rgba(99,102,241,0.04)' }}>
+                                      <td colSpan={7} style={{ padding: '10px 20px 14px 36px' }}>
+                                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px 24px', fontSize: 11 }}>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Click ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.id}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Offer ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.offer_id}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>User ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.user_id || 'Anonymous'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Twitch: </span><span style={{ color: '#a78bfa' }}>{click.twitch_username || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>SE Username: </span><span style={{ color: '#818cf8' }}>{click.se_username || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>IP Address: </span><span style={{ color: '#f59e0b', fontFamily: 'monospace' }}>{click.ip_address || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Page: </span><span style={{ color: '#94a3b8' }}>{click.page_source}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Exact Time: </span><span style={{ color: '#94a3b8' }}>{new Date(click.created_at).toISOString()}</span></div>
+                                          <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#64748b', fontWeight: 600 }}>User Agent: </span><span style={{ color: '#64748b', fontSize: 10, wordBreak: 'break-all' }}>{click.user_agent || '—'}</span></div>
+                                        </div>
+                                      </td>
+                                    </tr>
+                                  )}
+                                </React.Fragment>
+                              );
+                            });
+                          })()}
                         </tbody>
                       </table>
                     </div>

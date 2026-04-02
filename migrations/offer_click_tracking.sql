@@ -7,6 +7,7 @@ CREATE TABLE IF NOT EXISTS offer_clicks (
   casino_name   TEXT,
   user_id       UUID REFERENCES auth.users(id) ON DELETE SET NULL,
   se_username   TEXT,
+  twitch_username TEXT,
   ip_address    INET,
   user_agent    TEXT,
   page_source   TEXT DEFAULT 'offers',   -- 'offers', 'landing', 'admin'

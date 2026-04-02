@@ -33,7 +33,10 @@ export default async function trackOfferClick({ offerId, casinoName, pageSource 
       supabase.auth.getUser(),
     ]);
 
-    const userId = userResult?.data?.user?.id || null;
+    const user = userResult?.data?.user || null;
+    const userId = user?.id || null;
+    const meta = user?.user_metadata || {};
+    const twitchUsername = meta.preferred_username || meta.user_name || meta.full_name || null;
 
     // Separate try so a missing / RLS-blocked table never prevents the insert
     let seUsername = null;
@@ -47,6 +50,7 @@ export default async function trackOfferClick({ offerId, casinoName, pageSource 
       casino_name: casinoName || null,
       user_id: userId,
       se_username: seUsername,
+      twitch_username: twitchUsername,
       ip_address: ipResult || null,
       user_agent: navigator.userAgent,
       page_source: pageSource,
