@@ -28,14 +28,19 @@ async function getIp() {
  */
 export default async function trackOfferClick({ offerId, casinoName, pageSource = 'offers' }) {
   try {
-    const [ipResult, userResult, seConn] = await Promise.all([
+    const [ipResult, userResult] = await Promise.all([
       getIp(),
       supabase.auth.getUser(),
-      supabase.from('streamelements_connections').select('se_username').maybeSingle(),
     ]);
 
     const userId = userResult?.data?.user?.id || null;
-    const seUsername = seConn?.data?.se_username || null;
+
+    // Separate try so a missing / RLS-blocked table never prevents the insert
+    let seUsername = null;
+    try {
+      const seConn = await supabase.from('streamelements_connections').select('se_username').maybeSingle();
+      seUsername = seConn?.data?.se_username || null;
+    } catch { /* ignore */ }
 
     await supabase.from('offer_clicks').insert({
       offer_id: offerId,
