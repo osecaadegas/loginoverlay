@@ -38,7 +38,7 @@ function getMorphValue(meshes, name) {
 }
 
 /* ── Avatar Model ────────────────────────────────────── */
-function AvatarModel({ url, state, accentColor }) {
+function AvatarModel({ url, state, accentColor, flipModel }) {
   const { scene } = useGLTF(url);
   const groupRef = useRef();
   const morphMeshes = useRef([]);
@@ -148,7 +148,7 @@ function AvatarModel({ url, state, accentColor }) {
 
   return (
     <group ref={groupRef}>
-      <primitive object={clonedScene} scale={1} rotation={[0, Math.PI, 0]} />
+      <primitive object={clonedScene} scale={1} rotation={[0, flipModel ? Math.PI : 0, 0]} />
     </group>
   );
 }
@@ -210,6 +210,7 @@ export default function AIChatBot3DAvatar({
   height = 400,
   bgColor = 'transparent',
   showParticles = true,
+  flipModel = false,
   cameraDistance = 2.2,
   cameraHeight = 0.85,
 }) {
@@ -268,7 +269,7 @@ export default function AIChatBot3DAvatar({
 
         {/* Avatar */}
         <React.Suspense fallback={null}>
-          <AvatarModel url={avatarUrl} state={state} accentColor={accentColor} />
+          <AvatarModel url={avatarUrl} state={state} accentColor={accentColor} flipModel={flipModel} />
         </React.Suspense>
 
         {/* Particles */}

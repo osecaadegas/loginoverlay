@@ -209,6 +209,11 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
               <input type="checkbox" checked={c.avatar3dParticles !== false} onChange={e => set('avatar3dParticles', e.target.checked)} />
               <span>Floating particles effect</span>
             </div>
+
+            <div style={checkboxRow}>
+              <input type="checkbox" checked={c.avatar3dFlip === true} onChange={e => set('avatar3dFlip', e.target.checked)} />
+              <span>Flip avatar (face camera)</span>
+            </div>
           </>
         )}
       </div>

@@ -131,6 +131,7 @@ function AIChatBotWidget({ config }) {
   const avatar3dUrl = c.avatar3dUrl || '';
   const avatar3dSize = c.avatar3dSize || 300;
   const avatar3dParticles = c.avatar3dParticles !== false;
+  const avatar3dFlip = !!c.avatar3dFlip;
   const avatar3dPosition = c.avatar3dPosition || 'top'; // 'top', 'left', 'right'
 
   // Auto-scroll
@@ -213,6 +214,7 @@ function AIChatBotWidget({ config }) {
           width={width}
           height={height}
           showParticles={avatar3dParticles}
+          flipModel={avatar3dFlip}
         />
       </Suspense>
     );
