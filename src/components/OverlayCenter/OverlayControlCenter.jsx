@@ -83,7 +83,7 @@ export default function OverlayControlCenter() {
   const [collectionsOpen, setCollectionsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
-  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot', 'extension'];
+  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot', 'extension', 'ai_chatbot'];
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
@@ -302,6 +302,7 @@ export default function OverlayControlCenter() {
               { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
               { key: 'single_slot', icon: '🎰', label: 'Single Slot', desc: 'Slot stats & records' },
               { key: 'extension', icon: '📺', label: 'Twitch Extension', desc: 'Manage viewer features' },
+              { key: 'ai_chatbot', icon: '🤖', label: 'AI Chat Bot', desc: 'AI chatbot with TTS' },
             ].map(tab => (
               <button
                 key={tab.key}

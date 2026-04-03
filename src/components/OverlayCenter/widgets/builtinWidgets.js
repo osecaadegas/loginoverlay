@@ -853,3 +853,37 @@ registerWidget({
     fontFamily: "'Inter', sans-serif",
   },
 });
+
+// ─── 32. AI CHAT BOT ──────────────────────────────────
+import AIChatBotWidget from './AIChatBotWidget';
+import AIChatBotConfig from './AIChatBotConfig';
+registerWidget({
+  type: 'ai_chatbot',
+  label: 'AI Chat Bot',
+  icon: '🤖',
+  description: 'AI chatbot that responds to Twitch chat with TTS',
+  category: 'stream',
+  component: AIChatBotWidget,
+  configPanel: AIChatBotConfig,
+  defaults: {
+    geminiApiKey: '',
+    geminiModel: 'gemini-2.0-flash',
+    systemPrompt: 'You are a fun and friendly stream chatbot. Keep answers short (1-2 sentences max).',
+    botName: 'AI Bot',
+    botAvatar: '',
+    twitchChannel: '',
+    triggerWord: '!ai',
+    maxMessages: 20,
+    ttsEnabled: true,
+    ttsVoice: '',
+    ttsRate: 1,
+    ttsPitch: 1,
+    showHeader: true,
+    bgColor: 'rgba(15,23,42,0.95)',
+    textColor: '#e2e8f0',
+    accentColor: '#9146FF',
+    fontSize: 14,
+    width: 380,
+    height: 500,
+  },
+});
