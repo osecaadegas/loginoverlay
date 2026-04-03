@@ -200,41 +200,38 @@ function AIChatBotWidget({ config }) {
   // Cleanup on unmount
   useEffect(() => () => { recognitionRef.current?.stop(); window.speechSynthesis?.cancel(); }, []);
 
-  const isHorizontalAvatar = avatar3dEnabled && (avatar3dPosition === 'left' || avatar3dPosition === 'right');
-  const containerDir = isHorizontalAvatar ? 'row' : 'column';
+  /* ── 3D-only mode: just the avatar, no chat box ─── */
+  if (avatar3dEnabled && avatar3dUrl) {
+    return (
+      <Suspense fallback={
+        <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>Loading 3D…</div>
+      }>
+        <AIChatBot3DAvatar
+          avatarUrl={avatar3dUrl}
+          state={avatarState}
+          accentColor={accentColor}
+          width={width}
+          height={height}
+          showParticles={avatar3dParticles}
+        />
+      </Suspense>
+    );
+  }
 
-  const avatarBlock = avatar3dEnabled && avatar3dUrl ? (
-    <Suspense fallback={
-      <div style={{ width: avatar3dSize, height: avatar3dSize, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>Loading 3D…</div>
-    }>
-      <AIChatBot3DAvatar
-        avatarUrl={avatar3dUrl}
-        state={avatarState}
-        accentColor={accentColor}
-        width={isHorizontalAvatar ? avatar3dSize : width}
-        height={avatar3dSize}
-        showParticles={avatar3dParticles}
-      />
-    </Suspense>
-  ) : null;
-
+  /* ── Standard chat-only mode ─────────────────────── */
   return (
     <div style={{
-      width: isHorizontalAvatar ? width + avatar3dSize + 4 : width,
-      height: isHorizontalAvatar ? Math.max(height, avatar3dSize) : height + (avatarBlock ? avatar3dSize : 0),
-      display: 'flex', flexDirection: containerDir,
+      width, height,
+      display: 'flex', flexDirection: 'column',
       borderRadius: 12, overflow: 'hidden',
     }}>
-      {/* Avatar left/top */}
-      {avatarBlock && (avatar3dPosition === 'left' || avatar3dPosition === 'top') && avatarBlock}
-
       <div style={{
-        flex: 1, minWidth: 0, width: isHorizontalAvatar ? width : undefined,
+        flex: 1, minWidth: 0,
         background: bgColor, color: textColor,
         display: 'flex', flexDirection: 'column', overflow: 'hidden',
         fontFamily: "'Inter', sans-serif", fontSize,
         border: `1px solid rgba(255,255,255,0.08)`,
-        borderRadius: isHorizontalAvatar ? 0 : 12,
+        borderRadius: 12,
       }}>
       {/* Header */}
       {showHeader && (
@@ -312,9 +309,6 @@ function AIChatBotWidget({ config }) {
         )}
       </div>
       </div>
-
-      {/* Avatar right/bottom */}
-      {avatarBlock && avatar3dPosition === 'right' && avatarBlock}
     </div>
   );
 }

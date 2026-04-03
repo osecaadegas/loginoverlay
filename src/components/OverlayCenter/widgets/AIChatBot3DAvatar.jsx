@@ -210,8 +210,8 @@ export default function AIChatBot3DAvatar({
   height = 400,
   bgColor = 'transparent',
   showParticles = true,
-  cameraDistance = 0.65,
-  cameraHeight = 1.45,
+  cameraDistance = 2.2,
+  cameraHeight = 0.85,
 }) {
   const [error, setError] = useState(null);
 
