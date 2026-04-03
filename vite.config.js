@@ -21,6 +21,8 @@ export default defineConfig({
           // Split node_modules into vendor chunks
           if (id.includes('node_modules')) {
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
+              // Keep @react-three with three, not with react
+              if (id.includes('@react-three')) return 'vendor-three'
               return 'vendor-react'
             }
             if (id.includes('@supabase')) {
