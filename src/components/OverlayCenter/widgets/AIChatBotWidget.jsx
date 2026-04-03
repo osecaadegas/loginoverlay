@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+
+const AIChatBot3DAvatar = lazy(() => import('./AIChatBot3DAvatar'));
 
 /**
  * AIChatBotWidget — Overlay widget that shows an AI chatbot.
  * Reads messages from Twitch IRC chat, responds via Google Gemini,
  * and optionally speaks responses using Web Speech API TTS.
+ * Supports a 3D animated avatar (Ready Player Me + Three.js).
  *
  * Props: config, theme, allWidgets
  */
@@ -32,8 +35,8 @@ async function askGemini(apiKey, model, systemPrompt, history, userMsg) {
   return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't think of anything to say!";
 }
 
-/* ── TTS helper ──────────────────────────────────────── */
-function speak(text, voice, rate, pitch) {
+/* ── TTS helper (returns callbacks for speaking state) ─ */
+function speak(text, voice, rate, pitch, onStart, onEnd) {
   if (!window.speechSynthesis) return;
   window.speechSynthesis.cancel();
   const utt = new SpeechSynthesisUtterance(text);
@@ -44,6 +47,9 @@ function speak(text, voice, rate, pitch) {
   }
   utt.rate = rate || 1;
   utt.pitch = pitch || 1;
+  utt.onstart = () => onStart?.();
+  utt.onend = () => onEnd?.();
+  utt.onerror = () => onEnd?.();
   window.speechSynthesis.speak(utt);
 }
 
@@ -113,11 +119,19 @@ function AIChatBotWidget({ config }) {
   const [messages, setMessages] = useState([]);
   const [thinking, setThinking] = useState(false);
   const [micActive, setMicActive] = useState(false);
+  const [avatarState, setAvatarState] = useState('idle'); // 'idle' | 'speaking' | 'thinking'
   const scrollRef = useRef(null);
   const historyRef = useRef([]);
   const recognitionRef = useRef(null);
   const micEnabled = c.micEnabled !== false;
   const streamerName = c.streamerName || 'Streamer';
+
+  // 3D avatar config
+  const avatar3dEnabled = !!c.avatar3dEnabled;
+  const avatar3dUrl = c.avatar3dUrl || '';
+  const avatar3dSize = c.avatar3dSize || 300;
+  const avatar3dParticles = c.avatar3dParticles !== false;
+  const avatar3dPosition = c.avatar3dPosition || 'top'; // 'top', 'left', 'right'
 
   // Auto-scroll
   useEffect(() => {
@@ -132,14 +146,22 @@ function AIChatBotWidget({ config }) {
     historyRef.current.push({ role: 'user', text: `${username}: ${text}` });
 
     setThinking(true);
+    setAvatarState('thinking');
     try {
       const reply = await askGemini(apiKey, model, systemPrompt, historyRef.current, `${username}: ${text}`);
       const botMsg = { id: Date.now() + 1, role: 'bot', username: botName, text: reply, time: new Date() };
       setMessages(prev => [...prev.slice(-(maxMessages - 1)), botMsg]);
       historyRef.current.push({ role: 'model', text: reply });
-      if (ttsEnabled) speak(reply, ttsVoice, ttsRate, ttsPitch);
+      if (ttsEnabled) {
+        speak(reply, ttsVoice, ttsRate, ttsPitch,
+          () => setAvatarState('speaking'),
+          () => setAvatarState('idle'));
+      } else {
+        setAvatarState('idle');
+      }
     } catch (err) {
       console.error('[AIChatBot]', err);
+      setAvatarState('idle');
     } finally {
       setThinking(false);
     }
@@ -176,15 +198,44 @@ function AIChatBotWidget({ config }) {
   };
 
   // Cleanup on unmount
-  useEffect(() => () => { recognitionRef.current?.stop(); }, []);
+  useEffect(() => () => { recognitionRef.current?.stop(); window.speechSynthesis?.cancel(); }, []);
+
+  const isHorizontalAvatar = avatar3dEnabled && (avatar3dPosition === 'left' || avatar3dPosition === 'right');
+  const containerDir = isHorizontalAvatar ? 'row' : 'column';
+
+  const avatarBlock = avatar3dEnabled && avatar3dUrl ? (
+    <Suspense fallback={
+      <div style={{ width: avatar3dSize, height: avatar3dSize, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>Loading 3D…</div>
+    }>
+      <AIChatBot3DAvatar
+        avatarUrl={avatar3dUrl}
+        state={avatarState}
+        accentColor={accentColor}
+        width={isHorizontalAvatar ? avatar3dSize : width}
+        height={avatar3dSize}
+        showParticles={avatar3dParticles}
+      />
+    </Suspense>
+  ) : null;
 
   return (
     <div style={{
-      width, height, background: bgColor, color: textColor, borderRadius: 12,
-      display: 'flex', flexDirection: 'column', overflow: 'hidden',
-      fontFamily: "'Inter', sans-serif", fontSize,
-      border: `1px solid rgba(255,255,255,0.08)`,
+      width: isHorizontalAvatar ? width + avatar3dSize + 4 : width,
+      height: isHorizontalAvatar ? Math.max(height, avatar3dSize) : height + (avatarBlock ? avatar3dSize : 0),
+      display: 'flex', flexDirection: containerDir,
+      borderRadius: 12, overflow: 'hidden',
     }}>
+      {/* Avatar left/top */}
+      {avatarBlock && (avatar3dPosition === 'left' || avatar3dPosition === 'top') && avatarBlock}
+
+      <div style={{
+        flex: 1, minWidth: 0, width: isHorizontalAvatar ? width : undefined,
+        background: bgColor, color: textColor,
+        display: 'flex', flexDirection: 'column', overflow: 'hidden',
+        fontFamily: "'Inter', sans-serif", fontSize,
+        border: `1px solid rgba(255,255,255,0.08)`,
+        borderRadius: isHorizontalAvatar ? 0 : 12,
+      }}>
       {/* Header */}
       {showHeader && (
         <div style={{
@@ -260,6 +311,10 @@ function AIChatBotWidget({ config }) {
           </div>
         )}
       </div>
+      </div>
+
+      {/* Avatar right/bottom */}
+      {avatarBlock && avatar3dPosition === 'right' && avatarBlock}
     </div>
   );
 }

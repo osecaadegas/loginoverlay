@@ -89,6 +89,62 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
         />
       </div>
 
+      {/* ── 3D Avatar ── */}
+      <div style={sectionStyle}>
+        <div style={headingStyle}>🧍 3D Avatar (Jarvis Mode)</div>
+
+        <div style={checkboxRow}>
+          <input type="checkbox" checked={!!c.avatar3dEnabled} onChange={e => set('avatar3dEnabled', e.target.checked)} />
+          <span>Enable 3D animated avatar</span>
+        </div>
+        <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
+          Uses a Ready Player Me avatar with idle breathing, eye blinks, lip sync when speaking, and thinking animations.
+        </div>
+
+        {c.avatar3dEnabled && (
+          <>
+            <label style={labelStyle}>Avatar GLB URL</label>
+            <input
+              value={c.avatar3dUrl || ''}
+              onChange={e => set('avatar3dUrl', e.target.value)}
+              placeholder="https://models.readyplayer.me/YOUR_ID.glb"
+              style={{ ...inputStyle, marginBottom: 6 }}
+            />
+            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
+              Create a free avatar at{' '}
+              <a href="https://readyplayer.me" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>readyplayer.me</a>
+              {' '}→ copy the .glb URL. Must end in <code style={{ color: '#818cf8' }}>.glb</code>
+            </div>
+
+            <label style={labelStyle}>Avatar Size (px)</label>
+            <input
+              type="number"
+              min={150}
+              max={800}
+              value={c.avatar3dSize || 300}
+              onChange={e => set('avatar3dSize', parseInt(e.target.value) || 300)}
+              style={{ ...inputStyle, width: 100, marginBottom: 10 }}
+            />
+
+            <label style={labelStyle}>Avatar Position</label>
+            <select
+              value={c.avatar3dPosition || 'top'}
+              onChange={e => set('avatar3dPosition', e.target.value)}
+              style={{ ...inputStyle, marginBottom: 10 }}
+            >
+              <option value="top">Above chat</option>
+              <option value="left">Left of chat</option>
+              <option value="right">Right of chat</option>
+            </select>
+
+            <div style={checkboxRow}>
+              <input type="checkbox" checked={c.avatar3dParticles !== false} onChange={e => set('avatar3dParticles', e.target.checked)} />
+              <span>Floating particles effect</span>
+            </div>
+          </>
+        )}
+      </div>
+
       {/* ── Bot Identity ── */}
       <div style={sectionStyle}>
         <div style={headingStyle}>🎭 Bot Identity</div>
