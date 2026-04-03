@@ -1,0 +1,37 @@
+[
+  {
+    "id": "cyber-girl",
+    "name": "Cyber Girl",
+    "file": "/avatars/cyber-girl.glb",
+    "thumbnail": "/avatars/cyber-girl.png",
+    "tags": ["female", "cyberpunk", "sci-fi"]
+  },
+  {
+    "id": "robot-assistant",
+    "name": "Robot Assistant",
+    "file": "/avatars/robot-assistant.glb",
+    "thumbnail": "/avatars/robot-assistant.png",
+    "tags": ["robot", "sci-fi", "neutral"]
+  },
+  {
+    "id": "dark-mage",
+    "name": "Dark Mage",
+    "file": "/avatars/dark-mage.glb",
+    "thumbnail": "/avatars/dark-mage.png",
+    "tags": ["male", "fantasy", "magic"]
+  },
+  {
+    "id": "neon-samurai",
+    "name": "Neon Samurai",
+    "file": "/avatars/neon-samurai.glb",
+    "thumbnail": "/avatars/neon-samurai.png",
+    "tags": ["male", "cyberpunk", "warrior"]
+  },
+  {
+    "id": "ai-android",
+    "name": "AI Android",
+    "file": "/avatars/ai-android.glb",
+    "thumbnail": "/avatars/ai-android.png",
+    "tags": ["neutral", "sci-fi", "android"]
+  }
+]

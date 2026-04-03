@@ -8,6 +8,9 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
   const set = (key, val) => onChange({ ...c, [key]: val });
   const [voices, setVoices] = useState([]);
   const [showKey, setShowKey] = useState(false);
+  const [avatarList, setAvatarList] = useState([]);
+  const [voiceFilter, setVoiceFilter] = useState('');
+  const [previewingVoice, setPreviewingVoice] = useState(null);
 
   // Load TTS voices
   useEffect(() => {
@@ -18,6 +21,14 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
     load();
     window.speechSynthesis?.addEventListener('voiceschanged', load);
     return () => window.speechSynthesis?.removeEventListener('voiceschanged', load);
+  }, []);
+
+  // Load avatar gallery
+  useEffect(() => {
+    fetch('/avatars/avatars.json')
+      .then(r => r.ok ? r.json() : [])
+      .then(list => setAvatarList(Array.isArray(list) ? list : []))
+      .catch(() => setAvatarList([]));
   }, []);
 
   // Try to auto-fill twitch channel from other widgets
@@ -103,19 +114,74 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
 
         {c.avatar3dEnabled && (
           <>
-            <label style={labelStyle}>Avatar GLB URL</label>
+            {/* Avatar Gallery */}
+            {avatarList.length > 0 && (
+              <>
+                <label style={labelStyle}>Choose an Avatar</label>
+                <div style={{
+                  display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12,
+                  maxHeight: 240, overflowY: 'auto', padding: 2,
+                }}>
+                  {avatarList.map(av => {
+                    const selected = c.avatar3dUrl === av.file;
+                    return (
+                      <div
+                        key={av.id}
+                        onClick={() => set('avatar3dUrl', av.file)}
+                        style={{
+                          borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
+                          border: selected ? `2px solid ${c.accentColor || '#9146FF'}` : '2px solid rgba(255,255,255,0.08)',
+                          background: selected ? `${c.accentColor || '#9146FF'}15` : 'rgba(255,255,255,0.02)',
+                          transition: 'all 0.2s',
+                        }}
+                      >
+                        <div style={{
+                          width: '100%', aspectRatio: '1', background: 'rgba(0,0,0,0.3)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          overflow: 'hidden',
+                        }}>
+                          {av.thumbnail ? (
+                            <img
+                              src={av.thumbnail}
+                              alt={av.name}
+                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
+                            />
+                          ) : null}
+                          <div style={{
+                            display: av.thumbnail ? 'none' : 'flex',
+                            alignItems: 'center', justifyContent: 'center',
+                            fontSize: 28, width: '100%', height: '100%',
+                          }}>🧍</div>
+                        </div>
+                        <div style={{
+                          padding: '5px 6px', fontSize: 10, fontWeight: 600, textAlign: 'center',
+                          color: selected ? '#e2e8f0' : '#94a3b8',
+                          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                        }}>
+                          {av.name}
+                          {selected && <span style={{ color: c.accentColor || '#9146FF', marginLeft: 4 }}>✓</span>}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+
+            <label style={labelStyle}>Or paste a custom GLB URL</label>
             <input
               value={c.avatar3dUrl || ''}
               onChange={e => set('avatar3dUrl', e.target.value)}
-              placeholder="https://api.avaturn.me/avatars/YOUR_ID/export?format=glb"
+              placeholder="https://example.com/avatar.glb"
               style={{ ...inputStyle, marginBottom: 6 }}
             />
             <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
-              Create a free avatar at{' '}
+              Download GLB avatars from{' '}
               <a href="https://avaturn.me" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>avaturn.me</a>
-              {' '}or download from{' '}
+              {' '}or{' '}
               <a href="https://sketchfab.com/search?q=avatar&type=models" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>Sketchfab</a>
-              {' '}→ paste the .glb URL. Any GLB with morph targets works
+              . Add your own to <code style={{ color: '#818cf8' }}>/public/avatars/</code> and update <code style={{ color: '#818cf8' }}>avatars.json</code>
             </div>
 
             <label style={labelStyle}>Avatar Size (px)</label>
@@ -271,17 +337,94 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
 
         {c.ttsEnabled !== false && (
           <>
-            <label style={labelStyle}>Voice</label>
-            <select
-              value={c.ttsVoice || ''}
-              onChange={e => set('ttsVoice', e.target.value)}
+            {/* Voice filter */}
+            <label style={labelStyle}>Search voices</label>
+            <input
+              value={voiceFilter}
+              onChange={e => setVoiceFilter(e.target.value)}
+              placeholder="Filter by name or language (e.g. Portuguese, Google, David...)"
               style={{ ...inputStyle, marginBottom: 10 }}
-            >
-              <option value="">System Default</option>
-              {voices.map(v => (
-                <option key={v.name} value={v.name}>{v.name} ({v.lang})</option>
-              ))}
-            </select>
+            />
+
+            {/* Voice cards */}
+            <div style={{ maxHeight: 260, overflowY: 'auto', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              {/* System default option */}
+              <div
+                onClick={() => set('ttsVoice', '')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                  background: !c.ttsVoice ? `${c.accentColor || '#9146FF'}20` : 'rgba(255,255,255,0.02)',
+                  border: !c.ttsVoice ? `1px solid ${c.accentColor || '#9146FF'}55` : '1px solid rgba(255,255,255,0.06)',
+                  transition: 'all 0.15s',
+                }}
+              >
+                <div style={{ fontSize: 16 }}>🔊</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>System Default</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>Browser default voice</div>
+                </div>
+                {!c.ttsVoice && <span style={{ color: c.accentColor || '#9146FF', fontSize: 12, fontWeight: 700 }}>✓</span>}
+              </div>
+
+              {voices
+                .filter(v => {
+                  if (!voiceFilter) return true;
+                  const q = voiceFilter.toLowerCase();
+                  return v.name.toLowerCase().includes(q) || v.lang.toLowerCase().includes(q);
+                })
+                .map(v => {
+                  const selected = c.ttsVoice === v.name;
+                  const isPreviewing = previewingVoice === v.name;
+                  return (
+                    <div
+                      key={v.name}
+                      onClick={() => set('ttsVoice', v.name)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                        background: selected ? `${c.accentColor || '#9146FF'}20` : 'rgba(255,255,255,0.02)',
+                        border: selected ? `1px solid ${c.accentColor || '#9146FF'}55` : '1px solid rgba(255,255,255,0.06)',
+                        transition: 'all 0.15s',
+                      }}
+                    >
+                      <div style={{ fontSize: 14 }}>{v.lang.startsWith('en') ? '🇬🇧' : v.lang.startsWith('pt') ? '🇵🇹' : v.lang.startsWith('es') ? '🇪🇸' : v.lang.startsWith('fr') ? '🇫🇷' : v.lang.startsWith('de') ? '🇩🇪' : v.lang.startsWith('ja') ? '🇯🇵' : v.lang.startsWith('ko') ? '🇰🇷' : v.lang.startsWith('zh') ? '🇨🇳' : v.lang.startsWith('it') ? '🇮🇹' : v.lang.startsWith('ru') ? '🇷🇺' : '🌐'}</div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 11, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {v.name}
+                        </div>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>{v.lang}</div>
+                      </div>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          window.speechSynthesis.cancel();
+                          setPreviewingVoice(v.name);
+                          const utt = new SpeechSynthesisUtterance(`Hello, I'm ${c.botName || 'AI Bot'}.`);
+                          utt.voice = v;
+                          utt.rate = c.ttsRate || 1;
+                          utt.pitch = c.ttsPitch || 1;
+                          utt.onend = () => setPreviewingVoice(null);
+                          utt.onerror = () => setPreviewingVoice(null);
+                          window.speechSynthesis.speak(utt);
+                        }}
+                        title="Preview this voice"
+                        style={{
+                          width: 26, height: 26, borderRadius: '50%', border: 'none', cursor: 'pointer',
+                          background: isPreviewing ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.08)',
+                          color: isPreviewing ? '#ef4444' : 'rgba(255,255,255,0.5)',
+                          fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          flexShrink: 0, transition: 'all 0.15s',
+                        }}
+                      >{isPreviewing ? '⏹' : '▶'}</button>
+                      {selected && <span style={{ color: c.accentColor || '#9146FF', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</span>}
+                    </div>
+                  );
+                })}
+              {voices.length === 0 && (
+                <div style={{ textAlign: 'center', color: '#64748b', fontSize: 11, padding: 16 }}>
+                  Loading voices… (try refreshing if empty)
+                </div>
+              )}
+            </div>
 
             <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
               <div style={{ flex: 1 }}>
