@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useGLTF, Environment, ContactShadows } from '@react-three/drei';
+import { useGLTF, Environment } from '@react-three/drei';
 
 /**
  * AIChatBot3DAvatar — Renders a GLB avatar (Avaturn, Sketchfab, etc.) with:
@@ -158,7 +158,7 @@ function CameraRig({ cameraDistance, cameraHeight }) {
   const { camera } = useThree();
   useEffect(() => {
     camera.position.set(0, cameraHeight, cameraDistance);
-    camera.lookAt(0, cameraHeight - 0.1, 0);
+    camera.lookAt(0, cameraHeight, 0);
   }, [camera, cameraDistance, cameraHeight]);
   return null;
 }
@@ -210,8 +210,8 @@ export default function AIChatBot3DAvatar({
   height = 400,
   bgColor = 'transparent',
   showParticles = true,
-  cameraDistance = 0.8,
-  cameraHeight = 0.55,
+  cameraDistance = 0.65,
+  cameraHeight = 1.45,
 }) {
   const [error, setError] = useState(null);
 
@@ -240,7 +240,7 @@ export default function AIChatBot3DAvatar({
   }
 
   return (
-    <div style={{ width, height, background: bgColor, borderRadius: 8, overflow: 'hidden', position: 'relative' }}>
+    <div style={{ width, height, background: 'transparent', border: 'none', overflow: 'hidden', position: 'relative', pointerEvents: 'auto' }}>
       {/* State indicator */}
       <div style={{
         position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
@@ -274,8 +274,7 @@ export default function AIChatBot3DAvatar({
         {/* Particles */}
         {showParticles && <FloatingParticles color={accentColor} count={40} />}
 
-        {/* Shadow */}
-        <ContactShadows position={[0, -0.6, 0]} opacity={0.4} scale={3} blur={2} />
+
 
         {/* Environment */}
         <Environment preset="city" />
