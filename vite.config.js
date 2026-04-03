@@ -18,20 +18,25 @@ export default defineConfig({
       },
       output: {
         manualChunks(id) {
-          // Split node_modules into vendor chunks
           if (id.includes('node_modules')) {
-            // @react-three uses React hooks — must NOT be in a separate manual chunk
-            // from React. Return undefined so it bundles with the lazy avatar import.
-            if (id.includes('@react-three')) return undefined
-            // three.js core goes to its own lazy chunk (only loaded with 3D avatar)
-            if (id.includes('/three/')) return 'vendor-three'
-            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              return 'vendor-react'
-            }
-            if (id.includes('@supabase')) {
-              return 'vendor-supabase'
-            }
-            // All other node_modules go to vendor
+            // Three.js core library (no React dependency) — lazy loaded with 3D avatar
+            if (id.includes('node_modules/three/')) return 'vendor-three'
+            // Three.js sub-deps that don't use React hooks
+            if (
+              id.includes('camera-controls') ||
+              id.includes('meshline') ||
+              id.includes('maath') ||
+              id.includes('three-mesh-bvh') ||
+              id.includes('stats-gl') ||
+              id.includes('@monogrid')
+            ) return 'vendor-three'
+            // React + anything that calls React hooks (including @react-three, @react-spring, etc.)
+            if (
+              id.includes('react') || id.includes('react-dom') || id.includes('react-router') ||
+              id.includes('@react-three') || id.includes('@react-spring') ||
+              id.includes('suspend-react') || id.includes('@use-gesture')
+            ) return 'vendor-react'
+            if (id.includes('@supabase')) return 'vendor-supabase'
             return 'vendor'
           }
         }
