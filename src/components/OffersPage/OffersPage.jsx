@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
+import { useAuth } from '../../context/AuthContext';
 import { getMethodIcons } from '../../utils/depositMethods';
 import { getProviderName } from '../../utils/gameProviders';
 import trackOfferClick from '../../utils/trackOfferClick';
 import './OffersPage.css';
 
 export default function OffersPage() {
+  const { user, signInWithTwitch } = useAuth();
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [flippedCards, setFlippedCards] = useState({}); // Track which cards are flipped
@@ -112,6 +114,45 @@ export default function OffersPage() {
 
   // Game provider logos/names
   const defaultProviders = ['Pragmatic Play', 'Hacksaw', 'Evolution', 'Quickspin', 'ELK', 'Red Tiger', 'Playson', 'NetEnt'];
+
+  if (!user) {
+    return (
+      <div className="offers-page">
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          minHeight: '60vh', padding: '40px 20px', textAlign: 'center'
+        }}>
+          <div style={{
+            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: 16, padding: '48px 40px', maxWidth: 420,
+          }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🔒</div>
+            <h2 style={{ color: '#e2e8f0', fontSize: '1.5rem', fontWeight: 700, margin: '0 0 8px' }}>Login Required</h2>
+            <p style={{ color: '#94a3b8', fontSize: 14, lineHeight: 1.5, margin: '0 0 24px' }}>
+              You need to log in with Twitch to view our exclusive casino offers and bonuses.
+            </p>
+            <button
+              onClick={() => signInWithTwitch()}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 10,
+                padding: '12px 28px', borderRadius: 10, border: 'none',
+                background: '#9146FF', color: '#fff',
+                fontSize: 15, fontWeight: 700, cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#7c3aed'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#9146FF'; e.currentTarget.style.transform = 'translateY(0)'; }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+              </svg>
+              Login with Twitch
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

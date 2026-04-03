@@ -11,7 +11,7 @@ export default function LandingPage() {
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [casinoOffers, setCasinoOffers] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, signInWithTwitch } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -152,6 +152,36 @@ export default function LandingPage() {
         <section className="offers-section">
           <h2 className="offers-heading">Casinos & Offers</h2>
           <p className="offers-subheading">Best offers and bonuses exclusive for you</p>
+          {!user ? (
+            <div style={{
+              display: 'flex', flexDirection: 'column', alignItems: 'center',
+              padding: '40px 20px', textAlign: 'center',
+              background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
+              borderRadius: 16, margin: '0 auto', maxWidth: 480,
+            }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>🔒</div>
+              <p style={{ color: '#94a3b8', fontSize: 14, margin: '0 0 20px' }}>
+                Log in with Twitch to unlock exclusive casino offers and bonuses.
+              </p>
+              <button
+                onClick={() => signInWithTwitch()}
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 10,
+                  padding: '11px 24px', borderRadius: 10, border: 'none',
+                  background: '#9146FF', color: '#fff',
+                  fontSize: 14, fontWeight: 700, cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = '#7c3aed'; e.currentTarget.style.transform = 'translateY(-2px)'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = '#9146FF'; e.currentTarget.style.transform = 'translateY(0)'; }}
+              >
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/>
+                </svg>
+                Login with Twitch
+              </button>
+            </div>
+          ) : (
           <div className="offers-container">
             {casinoOffers.map((offer) => (
               <div key={offer.id} className="offer-card" onClick={() => handleOfferClick(offer)}>
@@ -200,6 +230,7 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+          )}
         </section>
 
       {/* Auth Modal */}
