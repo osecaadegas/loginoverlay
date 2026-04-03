@@ -11,7 +11,7 @@ const AIChatBot3DAvatar = lazy(() => import('./AIChatBot3DAvatar'));
  * Props: config, theme, allWidgets
  */
 
-/* ── Gemini helper ───────────────────────────────────── */
+/* ── AI Provider helpers ─────────────────────────────── */
 async function askGemini(apiKey, model, systemPrompt, history, userMsg) {
   const contents = [];
   if (systemPrompt) {
@@ -44,6 +44,42 @@ async function askGemini(apiKey, model, systemPrompt, history, userMsg) {
     return "Hmm, I got an empty response. Try again!";
   }
   return text;
+}
+
+async function askGroq(apiKey, model, systemPrompt, history, userMsg) {
+  const messages = [];
+  if (systemPrompt) {
+    messages.push({ role: 'system', content: systemPrompt });
+  }
+  for (const m of history.slice(-10)) {
+    messages.push({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text });
+  }
+  messages.push({ role: 'user', content: userMsg });
+
+  const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ model, messages, max_tokens: 256 }),
+  });
+  const data = await res.json();
+  if (data?.error) {
+    console.error('[AIChatBot] Groq API error:', data.error.message || data.error);
+    return `(API error: ${data.error.message || 'unknown'})`;
+  }
+  const text = data?.choices?.[0]?.message?.content;
+  if (!text) {
+    console.error('[AIChatBot] Unexpected Groq response:', JSON.stringify(data).slice(0, 500));
+    return "Hmm, I got an empty response. Try again!";
+  }
+  return text;
+}
+
+async function askAI(provider, apiKey, model, systemPrompt, history, userMsg) {
+  if (provider === 'groq') return askGroq(apiKey, model, systemPrompt, history, userMsg);
+  return askGemini(apiKey, model, systemPrompt, history, userMsg);
 }
 
 /* ── TTS helper (returns callbacks for speaking state) ─ */
@@ -107,8 +143,9 @@ function useTwitchIRC(channel, triggerWord, onMessage) {
 /* ── Main Widget Component ───────────────────────────── */
 function AIChatBotWidget({ config }) {
   const c = config || {};
+  const aiProvider = c.aiProvider || 'gemini';
   const apiKey = c.geminiApiKey || '';
-  const model = c.geminiModel || 'gemini-2.0-flash';
+  const model = aiProvider === 'groq' ? (c.groqModel || 'llama-3.3-70b-versatile') : (c.geminiModel || 'gemini-2.0-flash');
   const systemPrompt = c.systemPrompt || 'You are a fun and friendly stream chatbot. Keep answers short (1-2 sentences max).';
   const twitchChannel = c.twitchChannel || '';
   const triggerWord = c.triggerWord || '!ai';
@@ -160,7 +197,7 @@ function AIChatBotWidget({ config }) {
     setThinking(true);
     setAvatarState('thinking');
     try {
-      const reply = await askGemini(apiKey, model, systemPrompt, historyRef.current, `${username}: ${text}`);
+      const reply = await askAI(aiProvider, apiKey, model, systemPrompt, historyRef.current, `${username}: ${text}`);
       const botMsg = { id: Date.now() + 1, role: 'bot', username: botName, text: reply, time: new Date() };
       setMessages(prev => [...prev.slice(-(maxMessages - 1)), botMsg]);
       historyRef.current.push({ role: 'model', text: reply });

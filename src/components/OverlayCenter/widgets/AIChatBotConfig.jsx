@@ -60,35 +60,86 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
       <div style={sectionStyle}>
         <div style={headingStyle}>🤖 AI Setup</div>
 
-        <label style={labelStyle}>Gemini API Key (free)</label>
-        <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
-          <input
-            type={showKey ? 'text' : 'password'}
-            value={c.geminiApiKey || ''}
-            onChange={e => set('geminiApiKey', e.target.value)}
-            placeholder="AIzaSy..."
-            style={{ ...inputStyle, flex: 1 }}
-          />
-          <button
-            onClick={() => setShowKey(!showKey)}
-            style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }}
-          >{showKey ? '🙈' : '👁️'}</button>
-        </div>
-        <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
-          Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>aistudio.google.com/apikey</a>
-        </div>
-
-        <label style={labelStyle}>Model</label>
+        <label style={labelStyle}>AI Provider</label>
         <select
-          value={c.geminiModel || 'gemini-2.0-flash'}
-          onChange={e => set('geminiModel', e.target.value)}
+          value={c.aiProvider || 'gemini'}
+          onChange={e => set('aiProvider', e.target.value)}
           style={{ ...inputStyle, marginBottom: 10 }}
         >
-          <option value="gemini-2.0-flash">Gemini 2.0 Flash (fastest, free)</option>
-          <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite (lightest)</option>
-          <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-          <option value="gemini-1.5-pro">Gemini 1.5 Pro (smartest)</option>
+          <option value="gemini">Google Gemini (free, 1,500 req/day)</option>
+          <option value="groq">Groq (free, 14,400 req/day — recommended)</option>
         </select>
+
+        {(c.aiProvider || 'gemini') === 'gemini' && (
+          <>
+            <label style={labelStyle}>Gemini API Key</label>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={c.geminiApiKey || ''}
+                onChange={e => set('geminiApiKey', e.target.value)}
+                placeholder="AIzaSy..."
+                style={{ ...inputStyle, flex: 1 }}
+              />
+              <button
+                onClick={() => setShowKey(!showKey)}
+                style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }}
+              >{showKey ? '🙈' : '👁️'}</button>
+            </div>
+            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
+              Get a free key at <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>aistudio.google.com/apikey</a>
+            </div>
+
+            <label style={labelStyle}>Model</label>
+            <select
+              value={c.geminiModel || 'gemini-2.0-flash'}
+              onChange={e => set('geminiModel', e.target.value)}
+              style={{ ...inputStyle, marginBottom: 10 }}
+            >
+              <option value="gemini-2.0-flash">Gemini 2.0 Flash (fastest, free)</option>
+              <option value="gemini-2.0-flash-lite">Gemini 2.0 Flash Lite (lightest)</option>
+              <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+              <option value="gemini-1.5-pro">Gemini 1.5 Pro (smartest)</option>
+            </select>
+          </>
+        )}
+
+        {(c.aiProvider) === 'groq' && (
+          <>
+            <label style={labelStyle}>Groq API Key</label>
+            <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
+              <input
+                type={showKey ? 'text' : 'password'}
+                value={c.geminiApiKey || ''}
+                onChange={e => set('geminiApiKey', e.target.value)}
+                placeholder="gsk_..."
+                style={{ ...inputStyle, flex: 1 }}
+              />
+              <button
+                onClick={() => setShowKey(!showKey)}
+                style={{ padding: '6px 10px', borderRadius: 6, border: 'none', background: 'rgba(255,255,255,0.08)', color: '#94a3b8', fontSize: 11, cursor: 'pointer' }}
+              >{showKey ? '🙈' : '👁️'}</button>
+            </div>
+            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
+              Get a free key at <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>console.groq.com/keys</a>
+            </div>
+            <div style={{ padding: '8px 10px', borderRadius: 6, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.2)', marginBottom: 10, fontSize: 10, color: '#86efac' }}>
+              ✅ Groq is free with 14,400 requests/day — 10× more than Gemini. Ultra-fast inference!
+            </div>
+
+            <label style={labelStyle}>Model</label>
+            <select
+              value={c.groqModel || 'llama-3.3-70b-versatile'}
+              onChange={e => set('groqModel', e.target.value)}
+              style={{ ...inputStyle, marginBottom: 10 }}
+            >
+              <option value="llama-3.3-70b-versatile">Llama 3.3 70B (smartest, recommended)</option>
+              <option value="llama-3.1-8b-instant">Llama 3.1 8B Instant (fastest)</option>
+              <option value="mixtral-8x7b-32768">Mixtral 8x7B (balanced)</option>
+              <option value="gemma2-9b-it">Gemma 2 9B (Google)</option>
+            </select>
+          </>
+        )}
 
         <label style={labelStyle}>System Prompt / Personality</label>
         <textarea
@@ -348,8 +399,26 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
               value={voiceFilter}
               onChange={e => setVoiceFilter(e.target.value)}
               placeholder="Filter by name or language (e.g. Portuguese, Google, David...)"
-              style={{ ...inputStyle, marginBottom: 10 }}
+              style={{ ...inputStyle, marginBottom: 6 }}
             />
+            <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
+              {['🇵🇹 PT', '🇬🇧 EN', '🇪🇸 ES', '🇫🇷 FR', '🇩🇪 DE'].map(tag => {
+                const langCode = tag.split(' ')[1].toLowerCase();
+                const active = voiceFilter.toLowerCase() === langCode;
+                return (
+                  <button key={tag} onClick={() => setVoiceFilter(active ? '' : langCode)}
+                    style={{
+                      padding: '3px 8px', borderRadius: 4, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600,
+                      background: active ? 'rgba(145,70,255,0.2)' : 'rgba(255,255,255,0.05)',
+                      color: active ? '#a78bfa' : '#64748b',
+                    }}>{tag}</button>
+                );
+              })}
+            </div>
+
+            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 8, padding: '6px 8px', borderRadius: 4, background: 'rgba(255,255,255,0.02)' }}>
+              💡 Want more PT voices? Use <strong>Microsoft Edge</strong> browser — it has 5+ high-quality Portuguese voices including <em>Microsoft Francisca</em> and <em>Microsoft António</em>. Chrome has fewer PT voices.
+            </div>
 
             {/* Voice cards */}
             <div style={{ maxHeight: 260, overflowY: 'auto', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
@@ -377,6 +446,13 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                   const q = voiceFilter.toLowerCase();
                   return v.name.toLowerCase().includes(q) || v.lang.toLowerCase().includes(q);
                 })
+                .sort((a, b) => {
+                  // Sort PT voices first
+                  const aPt = a.lang.startsWith('pt') ? 0 : 1;
+                  const bPt = b.lang.startsWith('pt') ? 0 : 1;
+                  if (aPt !== bPt) return aPt - bPt;
+                  return a.name.localeCompare(b.name);
+                })
                 .map(v => {
                   const selected = c.ttsVoice === v.name;
                   const isPreviewing = previewingVoice === v.name;
@@ -403,7 +479,8 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                           e.stopPropagation();
                           window.speechSynthesis.cancel();
                           setPreviewingVoice(v.name);
-                          const utt = new SpeechSynthesisUtterance(`Hello, I'm ${c.botName || 'AI Bot'}.`);
+                          const previewText = v.lang.startsWith('pt') ? `Olá, eu sou o ${c.botName || 'AI Bot'}, o teu assistente de stream!` : `Hello, I'm ${c.botName || 'AI Bot'}.`;
+                          const utt = new SpeechSynthesisUtterance(previewText);
                           utt.voice = v;
                           utt.rate = c.ttsRate || 1;
                           utt.pitch = c.ttsPitch || 1;
