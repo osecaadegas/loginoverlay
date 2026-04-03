@@ -4,7 +4,7 @@ import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-thre
 import * as THREE from 'three';
 
 /**
- * AIChatBot3DAvatar — Renders a Ready Player Me GLB avatar with:
+ * AIChatBot3DAvatar — Renders a GLB avatar (Avaturn, Sketchfab, etc.) with:
  *  - Idle: breathing, random eye blinks, subtle body sway
  *  - Speaking: mouth movement synced to word boundaries, subtle gestures
  *  - Thinking: head tilt, look up
@@ -223,7 +223,7 @@ export default function AIChatBot3DAvatar({
         color: 'rgba(255,255,255,0.3)', fontSize: 12, textAlign: 'center', padding: 20,
       }}>
         Set a 3D Avatar URL in config<br />
-        <span style={{ fontSize: 10 }}>Create one free at readyplayer.me</span>
+        <span style={{ fontSize: 10 }}>Create one free at avaturn.me or download from Sketchfab</span>
       </div>
     );
   }

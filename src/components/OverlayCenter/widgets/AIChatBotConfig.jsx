@@ -98,7 +98,7 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
           <span>Enable 3D animated avatar</span>
         </div>
         <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
-          Uses a Ready Player Me avatar with idle breathing, eye blinks, lip sync when speaking, and thinking animations.
+          Uses a 3D GLB avatar with idle breathing, eye blinks, lip sync when speaking, and thinking animations.
         </div>
 
         {c.avatar3dEnabled && (
@@ -107,13 +107,15 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
             <input
               value={c.avatar3dUrl || ''}
               onChange={e => set('avatar3dUrl', e.target.value)}
-              placeholder="https://models.readyplayer.me/YOUR_ID.glb"
+              placeholder="https://api.avaturn.me/avatars/YOUR_ID/export?format=glb"
               style={{ ...inputStyle, marginBottom: 6 }}
             />
             <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
               Create a free avatar at{' '}
-              <a href="https://readyplayer.me" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>readyplayer.me</a>
-              {' '}→ copy the .glb URL. Must end in <code style={{ color: '#818cf8' }}>.glb</code>
+              <a href="https://avaturn.me" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>avaturn.me</a>
+              {' '}or download from{' '}
+              <a href="https://sketchfab.com/search?q=avatar&type=models" target="_blank" rel="noopener noreferrer" style={{ color: '#818cf8' }}>Sketchfab</a>
+              {' '}→ paste the .glb URL. Any GLB with morph targets works
             </div>
 
             <label style={labelStyle}>Avatar Size (px)</label>

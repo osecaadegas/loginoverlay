@@ -6,7 +6,7 @@ const AIChatBot3DAvatar = lazy(() => import('./AIChatBot3DAvatar'));
  * AIChatBotWidget — Overlay widget that shows an AI chatbot.
  * Reads messages from Twitch IRC chat, responds via Google Gemini,
  * and optionally speaks responses using Web Speech API TTS.
- * Supports a 3D animated avatar (Ready Player Me + Three.js).
+ * Supports a 3D animated avatar (GLB model + Three.js).
  *
  * Props: config, theme, allWidgets
  */
