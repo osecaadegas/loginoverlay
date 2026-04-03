@@ -1,7 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useGLTF, OrbitControls, Environment, ContactShadows } from '@react-three/drei';
-import * as THREE from 'three';
+import { useGLTF, Environment, ContactShadows } from '@react-three/drei';
 
 /**
  * AIChatBot3DAvatar — Renders a GLB avatar (Avaturn, Sketchfab, etc.) with:
