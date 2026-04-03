@@ -148,7 +148,7 @@ function AvatarModel({ url, state, accentColor }) {
 
   return (
     <group ref={groupRef}>
-      <primitive object={clonedScene} scale={1} />
+      <primitive object={clonedScene} scale={1} rotation={[0, Math.PI, 0]} />
     </group>
   );
 }
