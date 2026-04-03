@@ -20,16 +20,13 @@ export default defineConfig({
         manualChunks(id) {
           // Split node_modules into vendor chunks
           if (id.includes('node_modules')) {
+            // Let three/R3F be naturally code-split via the lazy-loaded 3D avatar
+            if (id.includes('three') || id.includes('@react-three')) return undefined
             if (id.includes('react') || id.includes('react-dom') || id.includes('react-router')) {
-              // Keep @react-three with three, not with react
-              if (id.includes('@react-three')) return 'vendor-three'
               return 'vendor-react'
             }
             if (id.includes('@supabase')) {
               return 'vendor-supabase'
-            }
-            if (id.includes('three')) {
-              return 'vendor-three'
             }
             // All other node_modules go to vendor
             return 'vendor'
