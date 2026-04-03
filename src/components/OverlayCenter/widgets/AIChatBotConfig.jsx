@@ -149,6 +149,59 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
         />
       </div>
 
+      {/* ── Microphone / Voice Input ── */}
+      <div style={sectionStyle}>
+        <div style={headingStyle}>🎙️ Voice Input (Your Mic)</div>
+
+        <div style={checkboxRow}>
+          <input type="checkbox" checked={c.micEnabled !== false} onChange={e => set('micEnabled', e.target.checked)} />
+          <span>Enable microphone listening</span>
+        </div>
+        <div style={{ fontSize: 10, color: '#64748b', marginBottom: 10 }}>
+          Click the 🎙️ button in the widget header to start/stop. Your spoken words are sent to the AI as prompts.
+          Uses browser Speech Recognition (free, works in Chrome/Edge).
+        </div>
+
+        {c.micEnabled !== false && (
+          <>
+            <label style={labelStyle}>Your Name (shown in chat)</label>
+            <input
+              value={c.streamerName || ''}
+              onChange={e => set('streamerName', e.target.value)}
+              placeholder="Streamer"
+              style={{ ...inputStyle, marginBottom: 10 }}
+            />
+
+            <label style={labelStyle}>Recognition Language</label>
+            <select
+              value={c.micLang || 'en-US'}
+              onChange={e => set('micLang', e.target.value)}
+              style={inputStyle}
+            >
+              <option value="en-US">English (US)</option>
+              <option value="en-GB">English (UK)</option>
+              <option value="pt-PT">Português (Portugal)</option>
+              <option value="pt-BR">Português (Brasil)</option>
+              <option value="es-ES">Español</option>
+              <option value="fr-FR">Français</option>
+              <option value="de-DE">Deutsch</option>
+              <option value="it-IT">Italiano</option>
+              <option value="nl-NL">Nederlands</option>
+              <option value="ja-JP">日本語</option>
+              <option value="ko-KR">한국어</option>
+              <option value="zh-CN">中文 (简体)</option>
+              <option value="ru-RU">Русский</option>
+              <option value="ar-SA">العربية</option>
+              <option value="tr-TR">Türkçe</option>
+              <option value="pl-PL">Polski</option>
+              <option value="sv-SE">Svenska</option>
+              <option value="no-NO">Norsk</option>
+              <option value="da-DK">Dansk</option>
+            </select>
+          </>
+        )}
+      </div>
+
       {/* ── TTS ── */}
       <div style={sectionStyle}>
         <div style={headingStyle}>🔊 Text-to-Speech</div>

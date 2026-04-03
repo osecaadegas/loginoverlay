@@ -112,8 +112,12 @@ function AIChatBotWidget({ config }) {
 
   const [messages, setMessages] = useState([]);
   const [thinking, setThinking] = useState(false);
+  const [micActive, setMicActive] = useState(false);
   const scrollRef = useRef(null);
   const historyRef = useRef([]);
+  const recognitionRef = useRef(null);
+  const micEnabled = c.micEnabled !== false;
+  const streamerName = c.streamerName || 'Streamer';
 
   // Auto-scroll
   useEffect(() => {
@@ -143,6 +147,37 @@ function AIChatBotWidget({ config }) {
 
   useTwitchIRC(twitchChannel, triggerWord, handleChatMessage);
 
+  /* ── Speech Recognition (mic) ──────────────────────── */
+  const toggleMic = () => {
+    if (micActive) {
+      recognitionRef.current?.stop();
+      setMicActive(false);
+      return;
+    }
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) { console.warn('[AIChatBot] Speech Recognition not supported'); return; }
+    const recognition = new SpeechRecognition();
+    recognition.continuous = true;
+    recognition.interimResults = false;
+    recognition.lang = c.micLang || 'en-US';
+    recognition.onresult = (event) => {
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        if (event.results[i].isFinal) {
+          const transcript = event.results[i][0].transcript.trim();
+          if (transcript) handleChatMessage({ username: streamerName, text: transcript });
+        }
+      }
+    };
+    recognition.onerror = (e) => { if (e.error !== 'no-speech') { console.error('[AIChatBot mic]', e.error); setMicActive(false); } };
+    recognition.onend = () => { if (micActive) recognition.start(); }; // Auto-restart
+    recognitionRef.current = recognition;
+    recognition.start();
+    setMicActive(true);
+  };
+
+  // Cleanup on unmount
+  useEffect(() => () => { recognitionRef.current?.stop(); }, []);
+
   return (
     <div style={{
       width, height, background: bgColor, color: textColor, borderRadius: 12,
@@ -167,11 +202,26 @@ function AIChatBotWidget({ config }) {
           <div>
             <div style={{ fontWeight: 700, fontSize: fontSize + 1, lineHeight: 1.2 }}>{botName}</div>
             <div style={{ fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>
-              {thinking ? 'Thinking…' : `Type ${triggerWord} in chat`}
+              {thinking ? 'Thinking…' : micActive ? '🎙️ Listening to your mic…' : `Type ${triggerWord} in chat`}
             </div>
           </div>
           {ttsEnabled && (
-            <div style={{ marginLeft: 'auto', fontSize: 12, opacity: 0.4 }} title="TTS enabled">🔊</div>
+            <div style={{ fontSize: 12, opacity: 0.4 }} title="TTS enabled">🔊</div>
+          )}
+          {micEnabled && (
+            <button
+              onClick={toggleMic}
+              title={micActive ? 'Stop listening' : 'Start listening to your mic'}
+              style={{
+                marginLeft: ttsEnabled ? 0 : 'auto',
+                width: 28, height: 28, borderRadius: '50%', border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14,
+                background: micActive ? 'rgba(239,68,68,0.25)' : 'rgba(255,255,255,0.08)',
+                color: micActive ? '#ef4444' : 'rgba(255,255,255,0.4)',
+                animation: micActive ? 'ai-mic-pulse 1.5s ease infinite' : 'none',
+                transition: 'all 0.2s',
+              }}
+            >🎙️</button>
           )}
         </div>
       )}
@@ -215,3 +265,11 @@ function AIChatBotWidget({ config }) {
 }
 
 export default React.memo(AIChatBotWidget);
+
+/* Inject mic pulse animation */
+if (typeof document !== 'undefined' && !document.getElementById('ai-mic-pulse-style')) {
+  const style = document.createElement('style');
+  style.id = 'ai-mic-pulse-style';
+  style.textContent = `@keyframes ai-mic-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(239,68,68,0.4); } 50% { box-shadow: 0 0 0 8px rgba(239,68,68,0); } }`;
+  document.head.appendChild(style);
+}
