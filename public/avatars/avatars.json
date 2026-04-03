@@ -1,37 +1,79 @@
 [
   {
-    "id": "cyber-girl",
-    "name": "Cyber Girl",
-    "file": "/avatars/cyber-girl.glb",
-    "thumbnail": "/avatars/cyber-girl.png",
-    "tags": ["female", "cyberpunk", "sci-fi"]
+    "id": "avatar-01",
+    "name": "Avatar 1",
+    "file": "/avatars/824022961986602005.glb",
+    "thumbnail": "",
+    "tags": []
   },
   {
-    "id": "robot-assistant",
-    "name": "Robot Assistant",
-    "file": "/avatars/robot-assistant.glb",
-    "thumbnail": "/avatars/robot-assistant.png",
-    "tags": ["robot", "sci-fi", "neutral"]
+    "id": "avatar-02",
+    "name": "Avatar 2",
+    "file": "/avatars/1296904030812597462.glb",
+    "thumbnail": "",
+    "tags": []
   },
   {
-    "id": "dark-mage",
-    "name": "Dark Mage",
-    "file": "/avatars/dark-mage.glb",
-    "thumbnail": "/avatars/dark-mage.png",
-    "tags": ["male", "fantasy", "magic"]
+    "id": "avatar-03",
+    "name": "Avatar 3",
+    "file": "/avatars/1711319250230595362.glb",
+    "thumbnail": "",
+    "tags": []
   },
   {
-    "id": "neon-samurai",
-    "name": "Neon Samurai",
-    "file": "/avatars/neon-samurai.glb",
-    "thumbnail": "/avatars/neon-samurai.png",
-    "tags": ["male", "cyberpunk", "warrior"]
+    "id": "avatar-04",
+    "name": "Avatar 4",
+    "file": "/avatars/3493590446520631963.glb",
+    "thumbnail": "",
+    "tags": []
   },
   {
-    "id": "ai-android",
-    "name": "AI Android",
-    "file": "/avatars/ai-android.glb",
-    "thumbnail": "/avatars/ai-android.png",
-    "tags": ["neutral", "sci-fi", "android"]
+    "id": "avatar-05",
+    "name": "Avatar 5",
+    "file": "/avatars/3640925089614202413.glb",
+    "thumbnail": "",
+    "tags": []
+  },
+  {
+    "id": "avatar-06",
+    "name": "Avatar 6",
+    "file": "/avatars/3834717849459246899.glb",
+    "thumbnail": "",
+    "tags": []
+  },
+  {
+    "id": "avatar-07",
+    "name": "Avatar 7",
+    "file": "/avatars/4240122115842624286.glb",
+    "thumbnail": "",
+    "tags": []
+  },
+  {
+    "id": "avatar-08",
+    "name": "Avatar 8",
+    "file": "/avatars/4371605353531398331.glb",
+    "thumbnail": "",
+    "tags": []
+  },
+  {
+    "id": "avatar-09",
+    "name": "Avatar 9",
+    "file": "/avatars/4450315755567433536.glb",
+    "thumbnail": "",
+    "tags": []
+  },
+  {
+    "id": "avatar-10",
+    "name": "Avatar 10",
+    "file": "/avatars/6462838249384906260.glb",
+    "thumbnail": "",
+    "tags": []
+  },
+  {
+    "id": "avatar-11",
+    "name": "Avatar 11",
+    "file": "/avatars/8232090975149790447.glb",
+    "thumbnail": "",
+    "tags": []
   }
 ]
