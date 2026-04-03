@@ -32,7 +32,18 @@ async function askGemini(apiKey, model, systemPrompt, history, userMsg) {
     }
   );
   const data = await res.json();
-  return data?.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't think of anything to say!";
+  if (data?.error) {
+    console.error('[AIChatBot] Gemini API error:', data.error.message || data.error);
+    return `(API error: ${data.error.message || 'unknown'})`;
+  }
+  const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) {
+    console.error('[AIChatBot] Unexpected Gemini response:', JSON.stringify(data).slice(0, 500));
+    const blocked = data?.candidates?.[0]?.finishReason;
+    if (blocked === 'SAFETY') return "(Response blocked by safety filter — try rephrasing!)";
+    return "Hmm, I got an empty response. Try again!";
+  }
+  return text;
 }
 
 /* ── TTS helper (returns callbacks for speaking state) ─ */
