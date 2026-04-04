@@ -3,12 +3,7 @@
  * Shows community-voted slot suggestions on stream (realtime)
  */
 import React, { useState, useEffect } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '../../../config/supabaseClient';
 
 export default function ExtSlotPickerWidget({ config = {}, widgetData = {} }) {
   const [suggestions, setSuggestions] = useState([]);

@@ -3,12 +3,7 @@
  * Animated winner announcement that appears on stream
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { createClient } from '@supabase/supabase-js';
-
-const supabase = createClient(
-  import.meta.env.VITE_SUPABASE_URL,
-  import.meta.env.VITE_SUPABASE_ANON_KEY
-);
+import { supabase } from '../../../config/supabaseClient';
 
 export default function ExtGiveawayWinnerWidget({ config = {}, widgetData = {} }) {
   const [winner, setWinner] = useState(null);

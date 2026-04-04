@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '../config/supabaseClient';
 
@@ -21,20 +21,25 @@ export function StreamElementsProvider({ children }) {
   const [redemptions, setRedemptions] = useState([]);
   const [latestRedemption, setLatestRedemption] = useState(null);
   const [autoConnecting, setAutoConnecting] = useState(false);
+  const didAutoConnect = useRef(false);
 
   // Load user's StreamElements connection from database
   useEffect(() => {
     if (user) {
       const init = async () => {
         await loadStreamElementsConnection();
-        await autoConnectTwitchUser();
+        if (!didAutoConnect.current) {
+          didAutoConnect.current = true;
+          await autoConnectTwitchUser();
+        }
       };
       init();
     } else {
       setSeAccount(null);
       setPoints(0);
+      didAutoConnect.current = false;
     }
-  }, [user]);
+  }, [user?.id]);
 
   // Auto-connect Twitch users to StreamElements
   const autoConnectTwitchUser = async () => {
@@ -511,12 +516,12 @@ export function StreamElementsProvider({ children }) {
       }
     };
 
-    // Check immediately and then every 3 seconds
+    // Check immediately and then every 10 seconds
     checkRedemptions();
-    const interval = setInterval(checkRedemptions, 3000);
+    const interval = setInterval(checkRedemptions, 10000);
 
     return () => clearInterval(interval);
-  }, [user]);
+  }, [user?.id]);
 
   const value = {
     seAccount,
