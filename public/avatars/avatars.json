@@ -22,14 +22,5 @@
   { "id": "avatar-21", "name": "Avatar 21", "file": "/avatars/7358642820833195174.glb" },
   { "id": "avatar-22", "name": "Avatar 22", "file": "/avatars/8558624389089208810.glb" },
   { "id": "avatar-23", "name": "Avatar 23", "file": "/avatars/9101833808108867999.glb" },
-  { "id": "blacksmith", "name": "Blacksmith", "file": "/avatars/blacksmith.glb" },
-  { "id": "bodybuilder", "name": "Bodybuilder", "file": "/avatars/bodybuilder_ahmad_2.glb" },
-  { "id": "crimson-lace", "name": "Crimson Lace", "file": "/avatars/crimson_lace_confidence.glb" },
-  { "id": "emilka", "name": "Emilka", "file": "/avatars/emilka.glb" },
-  { "id": "sexy-girl", "name": "Animated Girl", "file": "/avatars/facial_animation_of_a_sexy_girl.glb" },
-  { "id": "kara", "name": "Kara", "file": "/avatars/kara.glb" },
-  { "id": "leggings-girl", "name": "Leggings Girl", "file": "/avatars/leggings_girl.glb" },
-  { "id": "neon-cyborg", "name": "Neon Cyborg", "file": "/avatars/neon_cyborg.glb" },
-  { "id": "sunny-denim", "name": "Sunny Denim", "file": "/avatars/sunny_confidence_in_denim.glb" },
-  { "id": "white-beard", "name": "White Beard", "file": "/avatars/white-bearded_strong_man_by_tripo.glb" }
+  { "id": "sexy-girl", "name": "Animated Girl", "file": "/avatars/facial_animation_of_a_sexy_girl.glb" }
 ]
