@@ -168,6 +168,7 @@ function AIChatBotWidget({ config }) {
   const [thinking, setThinking] = useState(false);
   const [micActive, setMicActive] = useState(false);
   const [avatarState, setAvatarState] = useState('idle'); // 'idle' | 'speaking' | 'thinking'
+  const [reactionCount, setReactionCount] = useState(0); // bumped on each new question → triggers jump
   const scrollRef = useRef(null);
   const historyRef = useRef([]);
   const recognitionRef = useRef(null);
@@ -189,6 +190,9 @@ function AIChatBotWidget({ config }) {
 
   const handleChatMessage = async ({ username, text }) => {
     if (!apiKey || !text) return;
+
+    // Trigger jump reaction on new question
+    setReactionCount(prev => prev + 1);
 
     const userMsg = { id: Date.now(), role: 'user', username, text, time: new Date() };
     setMessages(prev => [...prev.slice(-(maxMessages - 2)), userMsg]);
@@ -263,6 +267,16 @@ function AIChatBotWidget({ config }) {
           height={height}
           showParticles={avatar3dParticles}
           flipModel={avatar3dFlip}
+          modelScale={c.avatar3dScale || 1}
+          cameraHeight={c.avatar3dCamHeight ?? 0.85}
+          cameraDistance={c.avatar3dCamDist ?? 2.2}
+          breathing={c.avatar3dBreathing ?? 1}
+          sway={c.avatar3dSway ?? 1}
+          headMove={c.avatar3dHeadMove ?? 1}
+          armMove={c.avatar3dArmMove ?? 1}
+          gestures={c.avatar3dGestures ?? 1}
+          animSpeed={c.avatar3dSpeed ?? 1}
+          reaction={reactionCount}
         />
       </Suspense>
     );
