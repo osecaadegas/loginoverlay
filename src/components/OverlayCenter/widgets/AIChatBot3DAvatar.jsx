@@ -15,24 +15,24 @@ import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.j
 // VRM/VRoid (J_Bip_C_Hips), CC3/iClone (CC_Base_Hip), DAZ (hip, lShldr),
 // Unreal (pelvis, spine_01), Generic (pelvis, upperarm_l)
 const BONE_ALIASES = {
-  Hips:          [/\bhips?\b/i, /\bpelvis\b/i, /CC_Base_Hip/i, /J_Bip_C_Hips/i, /root/i],
-  Spine:         [/\bspine\b(?![\d_]*[12])/i, /\bspine[_.]?0?0?\b/i, /CC_Base_Spine01/i, /J_Bip_C_Spine/i, /\babdomen\b/i],
-  Spine1:        [/spine[_.]?0?1\b/i, /\bchest\b/i, /CC_Base_Spine02/i, /J_Bip_C_Spine2/i, /\babdomenUpper\b/i],
-  Spine2:        [/spine[_.]?0?2\b/i, /\bupperchest\b/i, /\bupper[_.]?chest\b/i, /CC_Base_NeckTwist/i, /J_Bip_C_UpperBody/i],
+  Hips:          [/\bhips?\b/i, /\bpelvis\b/i, /\bpelvic\b/i, /CC_Base_Hip/i, /J_Bip_C_Hips/i],
+  Spine:         [/\bspine\b(?![\d_]*[1-9])/i, /CC_Base_Spine01/i, /J_Bip_C_Spine\b/i, /\babdomen\b/i, /\btorso\b(?!\d)/i, /\bspine lower\b/i, /\bwaist\b/i],
+  Spine1:        [/\bspine[_. ]?0?1(?:\b|[_ ])/i, /\bchest\b/i, /CC_Base_Spine02/i, /J_Bip_C_Chest\b/i, /\btorso2\b/i, /\bspine upper\b/i],
+  Spine2:        [/\bspine[_. ]?0?2(?:\b|[_ ])/i, /\bupper[_. ]?chest\b/i, /J_Bip_C_UpperChest/i, /J_Bip_C_UpperBody/i],
   Neck:          [/\bneck\b/i, /CC_Base_Neck/i, /J_Bip_C_Neck/i],
   Head:          [/\bhead\b/i, /CC_Base_Head/i, /J_Bip_C_Head/i],
-  LeftShoulder:  [/l(?:eft)?[_.]?shoulder/i, /shoulder[_.]?l\b/i, /CC_Base_L_Clavicle/i, /J_Bip_L_Shoulder/i, /\blCollar\b/i, /clavicle[_.]?l\b/i],
-  LeftArm:       [/l(?:eft)?[_.]?(?:upper[_.]?)?arm\b/i, /upper[_.]?arm[_.]?l\b/i, /CC_Base_L_Upperarm/i, /J_Bip_L_UpperArm/i, /\blShldr\b/i],
-  LeftForeArm:   [/l(?:eft)?[_.]?(?:fore[_.]?)?arm/i, /fore[_.]?arm[_.]?l\b/i, /lower[_.]?arm[_.]?l\b/i, /CC_Base_L_Forearm/i, /J_Bip_L_LowerArm/i, /\blForeArm\b/i],
-  LeftHand:      [/l(?:eft)?[_.]?hand\b/i, /hand[_.]?l\b/i, /CC_Base_L_Hand/i, /J_Bip_L_Hand/i, /\blHand\b/i],
-  RightShoulder: [/r(?:ight)?[_.]?shoulder/i, /shoulder[_.]?r\b/i, /CC_Base_R_Clavicle/i, /J_Bip_R_Shoulder/i, /\brCollar\b/i, /clavicle[_.]?r\b/i],
-  RightArm:      [/r(?:ight)?[_.]?(?:upper[_.]?)?arm\b/i, /upper[_.]?arm[_.]?r\b/i, /CC_Base_R_Upperarm/i, /J_Bip_R_UpperArm/i, /\brShldr\b/i],
-  RightForeArm:  [/r(?:ight)?[_.]?(?:fore[_.]?)?arm/i, /fore[_.]?arm[_.]?r\b/i, /lower[_.]?arm[_.]?r\b/i, /CC_Base_R_Forearm/i, /J_Bip_R_LowerArm/i, /\brForeArm\b/i],
-  RightHand:     [/r(?:ight)?[_.]?hand\b/i, /hand[_.]?r\b/i, /CC_Base_R_Hand/i, /J_Bip_R_Hand/i, /\brHand\b/i],
-  LeftUpLeg:     [/l(?:eft)?[_.]?(?:up[_.]?)?leg\b/i, /(?:thigh|upper[_.]?leg)[_.]?l\b/i, /l(?:eft)?[_.]?thigh\b/i, /CC_Base_L_Thigh/i, /J_Bip_L_UpperLeg/i, /\blThigh\b/i],
-  LeftLeg:       [/l(?:eft)?[_.]?(?:lower[_.]?)?leg\b/i, /(?:shin|lower[_.]?leg|calf)[_.]?l\b/i, /l(?:eft)?[_.]?shin\b/i, /CC_Base_L_Calf/i, /J_Bip_L_LowerLeg/i, /\blShin\b/i],
-  RightUpLeg:    [/r(?:ight)?[_.]?(?:up[_.]?)?leg\b/i, /(?:thigh|upper[_.]?leg)[_.]?r\b/i, /r(?:ight)?[_.]?thigh\b/i, /CC_Base_R_Thigh/i, /J_Bip_R_UpperLeg/i, /\brThigh\b/i],
-  RightLeg:      [/r(?:ight)?[_.]?(?:lower[_.]?)?leg\b/i, /(?:shin|lower[_.]?leg|calf)[_.]?r\b/i, /r(?:ight)?[_.]?shin\b/i, /CC_Base_R_Calf/i, /J_Bip_R_LowerLeg/i, /\brShin\b/i],
+  LeftShoulder:  [/(?<![a-zA-Z])l(?:eft)?[_. ]?shoulder\b/i, /\bshoulder[_. ]?l\b/i, /CC_Base_L_Clavicle/i, /J_Bip_L_Shoulder/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?clav/i, /\bclavicle[_. ]?l\b/i, /\bscapula[_. ]?l\b/i, /\blCollar\b/i],
+  LeftArm:       [/(?<![a-zA-Z])l(?:eft)?[_. ]?(?:upper[_. ]?)?arm\b/i, /\bupper[_. ]?arm[_. ]?l\b/i, /\barm[_. ]?l\b/i, /\bup[_. ]?arm[_. ]?l\b/i, /CC_Base_L_Upperarm/i, /J_Bip_L_UpperArm/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?shldr\b/i, /\blShldr\b/i],
+  LeftForeArm:   [/(?<![a-zA-Z])l(?:eft)?[_. ]?fore[_. ]?arm/i, /\bfore[_. ]?arm[_. ]?l\b/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?lower[_. ]?arm/i, /\blower[_. ]?arm[_. ]?l\b/i, /\blow[_. ]?arm[_. ]?l\b/i, /CC_Base_L_Forearm/i, /J_Bip_L_LowerArm/i, /\blForeArm\b/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?elbow/i, /\belbow[_. ]?l\b/i],
+  LeftHand:      [/(?<![a-zA-Z])l(?:eft)?[_. ]?hand\b/i, /\bhand[_. ]?l\b/i, /CC_Base_L_Hand/i, /J_Bip_L_Hand/i, /\blHand\b/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?wrist/i, /\bwrist[_. ]?l\b/i],
+  RightShoulder: [/(?<![a-zA-Z])r(?:ight)?[_. ]?shoulder\b/i, /\bshoulder[_. ]?r\b/i, /CC_Base_R_Clavicle/i, /J_Bip_R_Shoulder/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?clav/i, /\bclavicle[_. ]?r\b/i, /\bscapula[_. ]?r\b/i, /\brCollar\b/i],
+  RightArm:      [/(?<![a-zA-Z])r(?:ight)?[_. ]?(?:upper[_. ]?)?arm\b/i, /\bupper[_. ]?arm[_. ]?r\b/i, /\barm[_. ]?r\b/i, /\bup[_. ]?arm[_. ]?r\b/i, /CC_Base_R_Upperarm/i, /J_Bip_R_UpperArm/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?shldr\b/i, /\brShldr\b/i],
+  RightForeArm:  [/(?<![a-zA-Z])r(?:ight)?[_. ]?fore[_. ]?arm/i, /\bfore[_. ]?arm[_. ]?r\b/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?lower[_. ]?arm/i, /\blower[_. ]?arm[_. ]?r\b/i, /\blow[_. ]?arm[_. ]?r\b/i, /CC_Base_R_Forearm/i, /J_Bip_R_LowerArm/i, /\brForeArm\b/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?elbow/i, /\belbow[_. ]?r\b/i],
+  RightHand:     [/(?<![a-zA-Z])r(?:ight)?[_. ]?hand\b/i, /\bhand[_. ]?r\b/i, /CC_Base_R_Hand/i, /J_Bip_R_Hand/i, /\brHand\b/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?wrist/i, /\bwrist[_. ]?r\b/i],
+  LeftUpLeg:     [/(?<![a-zA-Z])l(?:eft)?[_. ]?(?:up[_. ]?)?leg\b/i, /\b(?:thigh|upper[_. ]?leg)[_. ]?l\b/i, /\bleg[_. ]?l\b/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?thigh\b/i, /CC_Base_L_Thigh/i, /J_Bip_L_UpperLeg/i, /\blThigh\b/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?hip\b/i, /\bhip\d?[_. ]?l\b/i],
+  LeftLeg:       [/(?<![a-zA-Z])l(?:eft)?[_. ]?knee\b/i, /\b(?:shin|lower[_. ]?leg|calf|knee)[_. ]?l\b/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?(?:lower[_. ]?)?shin\b/i, /(?<![a-zA-Z])l(?:eft)?[_. ]?calf\b/i, /CC_Base_L_Calf/i, /J_Bip_L_LowerLeg/i, /\blShin\b/i],
+  RightUpLeg:    [/(?<![a-zA-Z])r(?:ight)?[_. ]?(?:up[_. ]?)?leg\b/i, /\b(?:thigh|upper[_. ]?leg)[_. ]?r\b/i, /\bleg[_. ]?r\b/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?thigh\b/i, /CC_Base_R_Thigh/i, /J_Bip_R_UpperLeg/i, /\brThigh\b/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?hip\b/i, /\bhip\d?[_. ]?r\b/i],
+  RightLeg:      [/(?<![a-zA-Z])r(?:ight)?[_. ]?knee\b/i, /\b(?:shin|lower[_. ]?leg|calf|knee)[_. ]?r\b/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?(?:lower[_. ]?)?shin\b/i, /(?<![a-zA-Z])r(?:ight)?[_. ]?calf\b/i, /CC_Base_R_Calf/i, /J_Bip_R_LowerLeg/i, /\brShin\b/i],
 };
 
 // Priority order: more specific bones first (ForeArm before Arm, UpLeg before Leg, Spine1/2 before Spine)
@@ -43,41 +43,85 @@ const BONE_MATCH_ORDER = [
   'Spine2', 'Spine1', 'Spine', 'Neck', 'Head', 'Hips',
 ];
 
+/* ── Per-model manual bone maps for non-standard naming conventions ── */
+const MODEL_PROFILES = {
+  '824022961986602005.glb': {
+    bones: { Hips:'Pelvis_M', Spine:'Spine1_M', Spine1:'Spine2_M', Spine2:'Chest_M',
+      Neck:'Neck1_M', Head:'Head_M',
+      LeftShoulder:'Scapula_L', LeftArm:'Shoulder_L', LeftForeArm:'Elbow_L', LeftHand:'Wrist_L',
+      RightShoulder:'Scapula_R', RightArm:'Shoulder_R', RightForeArm:'Elbow_R', RightHand:'Wrist_R',
+      LeftUpLeg:'Hip1_L', LeftLeg:'Knee1_L', RightUpLeg:'Hip1_R', RightLeg:'Knee1_R' },
+  },
+  '3493590446520631963.glb': {
+    bones: { Hips:'pelvis adj', Spine:'spine lower', Spine1:'spine upper',
+      Neck:'head neck lower', Head:'head neck upper',
+      LeftShoulder:'arm left shoulder 1', LeftArm:'g_l_uprarm', LeftForeArm:'g_l_forarm', LeftHand:'arm left wrist',
+      RightShoulder:'arm right shoulder 1', RightArm:'g_r_uprarm', RightForeArm:'g_r_forarm', RightHand:'arm right wrist',
+      LeftUpLeg:'leg left thigh', LeftLeg:'leg left knee', RightUpLeg:'leg right thigh', RightLeg:'leg right knee' },
+  },
+};
+
+/**
+ * Strip rig-specific prefixes and suffixes from bone names for universal matching.
+ */
+function stripBoneName(name) {
+  let s = name;
+  s = s.replace(/^\d+\.!?/, '');                 // numbered prefix: "22.joint_Base X" → "joint_Base X"
+  s = s.replace(/^[A-Za-z0-9_]+[:|]/, '');        // Mixamo "mixamorig:" / Blender "Armature|"
+  s = s.replace(/^[A-Za-z0-9_]+\./, '');          // dot prefix: "ValveBiped.Bip01_X" → "Bip01_X"
+  s = s.replace(/^(Armature_|armature_|Bip0?1[_ ]|Character[_ ]|Root[_ ]|J_Bip_[CLR]_|CC_Base_[LR]?_?|joint_(?:Base )?|G_)/i, '');
+  s = s.replace(/JNT$/i, '');                     // JNT suffix: "HeadJNT" → "Head"
+  s = s.replace(/[_ ]\d+$/, '');                  // numeric suffix: "ArmL_1" → "ArmL"
+  return s.trim();
+}
+
 /**
  * Scan a scene and map real bone names to our canonical names.
  * Uses priority ordering so e.g. "LeftForeArm" is matched before "LeftArm".
+ * Supports manual per-model bone maps for non-standard rigs.
  */
-function mapBones(scene) {
+function mapBones(scene, url) {
+  // Check for manual bone map based on filename
+  const filename = url ? url.split('/').pop() : '';
+  const profile = MODEL_PROFILES[filename];
+
   const allBones = [];
   scene.traverse((child) => {
     if (child.isBone || child.type === 'Bone') allBones.push(child);
   });
-
-  // Also check non-bone objects that might be acting as skeleton joints (some exporters use Object3D)
+  // Fallback: check non-bone objects that might be skeleton joints
   if (allBones.length === 0) {
     scene.traverse((child) => {
       if (child.isObject3D && child.children.length > 0 && !child.isMesh && !child.isLight && !child.isCamera) {
-        // Heuristic: if name matches any bone alias, treat as bone
-        const n = child.name.toLowerCase();
-        if (/hip|spine|head|neck|arm|leg|shoulder|hand|thigh|pelvis|chest/i.test(n)) {
+        if (/hip|spine|head|neck|arm|leg|shoulder|hand|thigh|pelvis|chest|elbow|knee|wrist/i.test(child.name)) {
           allBones.push(child);
         }
       }
     });
   }
 
+  // If manual bone map exists, use it directly
+  if (profile?.bones) {
+    const result = {};
+    for (const [canonical, rawName] of Object.entries(profile.bones)) {
+      for (const bone of allBones) {
+        if (bone.name === rawName) { result[canonical] = bone; break; }
+      }
+    }
+    return result;
+  }
+
   const result = {};
-  const used = new Set(); // prevent same bone matching twice
+  const used = new Set();
 
   for (const canonical of BONE_MATCH_ORDER) {
     const patterns = BONE_ALIASES[canonical];
     if (!patterns) continue;
 
-    // First pass: try exact canonical name (case-insensitive, strip ALL known prefixes)
+    // First pass: exact canonical match on stripped name
     for (const bone of allBones) {
       if (used.has(bone)) continue;
-      // Strip common prefixes: mixamorig:, Armature_, Armature|, Bip01_, Character_, Root_, etc.
-      const stripped = bone.name.replace(/^[A-Za-z0-9_]*[:|]/g, '').replace(/^(Armature_|armature_|Bip0?1[_ ]?|Character[_ ]|Root[_ ])/i, '');
+      const stripped = stripBoneName(bone.name);
       if (stripped.toLowerCase() === canonical.toLowerCase()) {
         result[canonical] = bone;
         used.add(bone);
@@ -86,11 +130,11 @@ function mapBones(scene) {
     }
     if (result[canonical]) continue;
 
-    // Second pass: regex aliases (test against both raw name and stripped name)
+    // Second pass: regex aliases against both raw and stripped names
     for (const bone of allBones) {
       if (used.has(bone)) continue;
       const raw = bone.name;
-      const stripped = raw.replace(/^[A-Za-z0-9_]*[:|]/g, '').replace(/^(Armature_|armature_|Bip0?1[_ ]?|Character[_ ]|Root[_ ])/i, '');
+      const stripped = stripBoneName(raw);
       for (const rx of patterns) {
         if (rx.test(raw) || rx.test(stripped)) {
           result[canonical] = bone;
@@ -216,6 +260,11 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   const jumpActive = useRef(false);
   const lastReaction = useRef(0);
 
+  // Rest-pose tracking for adaptive animations
+  const restPose = useRef({});
+  const needsArmDown = useRef(true);
+  const rg = (bone, axis) => restPose.current[bone]?.[axis] ?? 0;
+
   // Clone scene for isolation, fix missing textures/colors
   const clonedScene = useMemo(() => {
     let clone;
@@ -273,8 +322,19 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
 
   // Find bones using universal mapper
   useEffect(() => {
-    bones.current = mapBones(clonedScene);
+    bones.current = mapBones(clonedScene, url);
+    // Record rest-pose rotations for adaptive animation
+    const rest = {};
+    for (const [name, bone] of Object.entries(bones.current)) {
+      rest[name] = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+    }
+    restPose.current = rest;
+    // Detect T-pose: arms near 0 rotation means horizontal (needs lowering)
+    const laZ = Math.abs(rest.LeftArm?.z || 0);
+    const raZ = Math.abs(rest.RightArm?.z || 0);
+    needsArmDown.current = laZ < 0.4 && raZ < 0.4;
     console.log('[3DAvatar] Found bones:', Object.keys(bones.current).join(', ') || 'none');
+    console.log('[3DAvatar] T-pose detected:', needsArmDown.current, '| Rest arm Z:', (rest.LeftArm?.z || 0).toFixed(2), '/', (rest.RightArm?.z || 0).toFixed(2));
     // Debug: log all bone names in the model
     const allBoneNames = [];
     clonedScene.traverse((child) => {
@@ -282,7 +342,7 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     });
     console.log('[3DAvatar] All model bones:', allBoneNames.join(', '));
     console.log('[3DAvatar] Animations:', animations?.length || 0);
-  }, [clonedScene, animations]);
+  }, [clonedScene, animations, url]);
 
   // Play built-in animations if they exist
   useEffect(() => {
@@ -359,25 +419,33 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
       }
     }
 
-    // ── BREAK T-POSE: Lower arms naturally (skip if built-in animation controls body) ──
+    // ── BREAK T-POSE: Lower arms naturally (rest-pose-aware) ──
     if (b.LeftArm && noBuiltin) {
-      b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, 1.1, dt * 2);
+      const rz = rg('LeftArm', 'z');
+      const target = needsArmDown.current ? rz + 1.1 : rz;
+      b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, target, dt * 2);
     }
     if (b.RightArm && noBuiltin) {
-      b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, -1.1, dt * 2);
+      const rz = rg('RightArm', 'z');
+      const target = needsArmDown.current ? rz - 1.1 : rz;
+      b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, target, dt * 2);
     }
     if (b.LeftForeArm && noBuiltin) {
-      b.LeftForeArm.rotation.z = MathUtils.lerp(b.LeftForeArm.rotation.z, 0.15, dt * 2);
+      const rz = rg('LeftForeArm', 'z');
+      const target = needsArmDown.current ? rz + 0.15 : rz;
+      b.LeftForeArm.rotation.z = MathUtils.lerp(b.LeftForeArm.rotation.z, target, dt * 2);
     }
     if (b.RightForeArm && noBuiltin) {
-      b.RightForeArm.rotation.z = MathUtils.lerp(b.RightForeArm.rotation.z, -0.15, dt * 2);
+      const rz = rg('RightForeArm', 'z');
+      const target = needsArmDown.current ? rz - 0.15 : rz;
+      b.RightForeArm.rotation.z = MathUtils.lerp(b.RightForeArm.rotation.z, target, dt * 2);
     }
 
-    // ── BREATHING (always active) ──
+    // ── BREATHING (always active, rest-pose-relative) ──
     breathPhase.current += dt * 0.8;
     const breathVal = Math.sin(breathPhase.current);
-    if (b.Spine1) b.Spine1.rotation.x = breathVal * 0.008 * br;
-    if (b.Spine2) b.Spine2.rotation.x = breathVal * 0.006 * br;
+    if (b.Spine1) b.Spine1.rotation.x = rg('Spine1', 'x') + breathVal * 0.008 * br;
+    if (b.Spine2) b.Spine2.rotation.x = rg('Spine2', 'x') + breathVal * 0.006 * br;
 
     // ── REACTION: JUMP ──
     let jumpY = 0;
@@ -394,8 +462,8 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         }
         // Arms up during peak
         if (jumpPhase.current > 1 && jumpPhase.current < 2.5) {
-          if (b.LeftArm && noBuiltin) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, 2.5, dt * 8);
-          if (b.RightArm && noBuiltin) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, -2.5, dt * 8);
+          if (b.LeftArm && noBuiltin) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, rg('LeftArm','z') + 2.5, dt * 8);
+          if (b.RightArm && noBuiltin) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, rg('RightArm','z') - 2.5, dt * 8);
         }
       } else {
         jumpActive.current = false;
@@ -530,10 +598,14 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         const liftPhase = sp < 0.4 ? sp / 0.4 : sp < 0.7 ? 1 : 1 - (sp - 0.7) / 0.3;
         const leanPhase = sp > 0.2 && sp < 0.7 ? Math.sin((sp - 0.2) / 0.5 * Math.PI) : 0;
         if (noBuiltin) {
-          if (b.LeftArm) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, 1.1 + liftPhase * 1.5 * am, dt * 4);
-          if (b.RightArm) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, -1.1 - liftPhase * 1.5 * am, dt * 4);
-          if (b.LeftForeArm) b.LeftForeArm.rotation.z = MathUtils.lerp(b.LeftForeArm.rotation.z, 0.15 + liftPhase * 0.3, dt * 4);
-          if (b.RightForeArm) b.RightForeArm.rotation.z = MathUtils.lerp(b.RightForeArm.rotation.z, -0.15 - liftPhase * 0.3, dt * 4);
+          const laBase = needsArmDown.current ? rg('LeftArm','z') + 1.1 : rg('LeftArm','z');
+          const raBase = needsArmDown.current ? rg('RightArm','z') - 1.1 : rg('RightArm','z');
+          const lfBase = needsArmDown.current ? rg('LeftForeArm','z') + 0.15 : rg('LeftForeArm','z');
+          const rfBase = needsArmDown.current ? rg('RightForeArm','z') - 0.15 : rg('RightForeArm','z');
+          if (b.LeftArm) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, laBase + liftPhase * 1.5 * am, dt * 4);
+          if (b.RightArm) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, raBase - liftPhase * 1.5 * am, dt * 4);
+          if (b.LeftForeArm) b.LeftForeArm.rotation.z = MathUtils.lerp(b.LeftForeArm.rotation.z, lfBase + liftPhase * 0.3, dt * 4);
+          if (b.RightForeArm) b.RightForeArm.rotation.z = MathUtils.lerp(b.RightForeArm.rotation.z, rfBase - liftPhase * 0.3, dt * 4);
         }
         // Lean back during hold
         if (b.Spine1) b.Spine1.rotation.x += leanPhase * -0.08 * ge;
@@ -557,12 +629,12 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         if (b.Head) {
           const lookX = (Math.sin(lookPhase.current * 1.3) * 0.04 + Math.sin(lookPhase.current * 0.4) * 0.03) * hm;
           const lookY = (Math.sin(lookPhase.current) * 0.06 + Math.sin(lookPhase.current * 0.6 + 1) * 0.04) * hm;
-          b.Head.rotation.y = MathUtils.lerp(b.Head.rotation.y, lookY, dt * 1.5);
-          b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, lookX + (b.Head.rotation.x || 0) * 0.1, dt * 1.5);
+          b.Head.rotation.y = MathUtils.lerp(b.Head.rotation.y, rg('Head','y') + lookY, dt * 1.5);
+          b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, rg('Head','x') + lookX, dt * 1.5);
         }
         if (b.Neck) {
           const neckY = Math.sin(lookPhase.current * 0.8 + 0.3) * 0.025 * hm;
-          b.Neck.rotation.y = MathUtils.lerp(b.Neck.rotation.y, neckY, dt * 2);
+          b.Neck.rotation.y = MathUtils.lerp(b.Neck.rotation.y, rg('Neck','y') + neckY, dt * 2);
         }
       }
 
@@ -573,10 +645,10 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
       }
       // Reset legs when not pacing
       if (curIdle !== 'pacing' && noBuiltin) {
-        if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = MathUtils.lerp(b.LeftUpLeg.rotation.x, 0, dt * 4);
-        if (b.RightUpLeg) b.RightUpLeg.rotation.x = MathUtils.lerp(b.RightUpLeg.rotation.x, 0, dt * 4);
-        if (b.LeftLeg) b.LeftLeg.rotation.x = MathUtils.lerp(b.LeftLeg.rotation.x, 0, dt * 4);
-        if (b.RightLeg) b.RightLeg.rotation.x = MathUtils.lerp(b.RightLeg.rotation.x, 0, dt * 4);
+        if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = MathUtils.lerp(b.LeftUpLeg.rotation.x, rg('LeftUpLeg','x'), dt * 4);
+        if (b.RightUpLeg) b.RightUpLeg.rotation.x = MathUtils.lerp(b.RightUpLeg.rotation.x, rg('RightUpLeg','x'), dt * 4);
+        if (b.LeftLeg) b.LeftLeg.rotation.x = MathUtils.lerp(b.LeftLeg.rotation.x, rg('LeftLeg','x'), dt * 4);
+        if (b.RightLeg) b.RightLeg.rotation.x = MathUtils.lerp(b.RightLeg.rotation.x, rg('RightLeg','x'), dt * 4);
       }
     }
 
@@ -678,10 +750,10 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
       // ── Return legs + lateral position to center ──
       if (groupRef.current) groupRef.current.position.x = MathUtils.lerp(groupRef.current.position.x, 0, dt * 3);
       if (noBuiltin) {
-        if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = MathUtils.lerp(b.LeftUpLeg.rotation.x, 0, dt * 4);
-        if (b.RightUpLeg) b.RightUpLeg.rotation.x = MathUtils.lerp(b.RightUpLeg.rotation.x, 0, dt * 4);
-        if (b.LeftLeg) b.LeftLeg.rotation.x = MathUtils.lerp(b.LeftLeg.rotation.x, 0, dt * 4);
-        if (b.RightLeg) b.RightLeg.rotation.x = MathUtils.lerp(b.RightLeg.rotation.x, 0, dt * 4);
+        if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = MathUtils.lerp(b.LeftUpLeg.rotation.x, rg('LeftUpLeg','x'), dt * 4);
+        if (b.RightUpLeg) b.RightUpLeg.rotation.x = MathUtils.lerp(b.RightUpLeg.rotation.x, rg('RightUpLeg','x'), dt * 4);
+        if (b.LeftLeg) b.LeftLeg.rotation.x = MathUtils.lerp(b.LeftLeg.rotation.x, rg('LeftLeg','x'), dt * 4);
+        if (b.RightLeg) b.RightLeg.rotation.x = MathUtils.lerp(b.RightLeg.rotation.x, rg('RightLeg','x'), dt * 4);
       }
 
       // ── Weight shift (slow side-to-side like a real person standing) ──
@@ -767,13 +839,15 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         if (noBuiltin) {
           const armEnergy = 0.06 + emph * 0.12;
           const armCycle = Math.sin(wordPhase.current * 0.6);
+          const laBase = needsArmDown.current ? rg('LeftArm','z') + 1.1 : rg('LeftArm','z');
+          const raBase = needsArmDown.current ? rg('RightArm','z') - 1.1 : rg('RightArm','z');
           if (b.LeftArm) {
-            b.LeftArm.rotation.x = MathUtils.lerp(b.LeftArm.rotation.x, armCycle * armEnergy * ge, dt * 4);
-            b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, 1.1 + Math.sin(sentencePhase.current * 1.2) * 0.2 * ge + emph * 0.15, dt * 3);
+            b.LeftArm.rotation.x = MathUtils.lerp(b.LeftArm.rotation.x, rg('LeftArm','x') + armCycle * armEnergy * ge, dt * 4);
+            b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, laBase + Math.sin(sentencePhase.current * 1.2) * 0.2 * ge + emph * 0.15, dt * 3);
           }
           if (b.RightArm) {
-            b.RightArm.rotation.x = MathUtils.lerp(b.RightArm.rotation.x, -armCycle * armEnergy * 0.8 * ge, dt * 4);
-            b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, -1.1 - Math.sin(sentencePhase.current * 1.1 + 0.5) * 0.2 * ge - emph * 0.15, dt * 3);
+            b.RightArm.rotation.x = MathUtils.lerp(b.RightArm.rotation.x, rg('RightArm','x') - armCycle * armEnergy * 0.8 * ge, dt * 4);
+            b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, raBase - Math.sin(sentencePhase.current * 1.1 + 0.5) * 0.2 * ge - emph * 0.15, dt * 3);
           }
           if (b.LeftForeArm) b.LeftForeArm.rotation.y = MathUtils.lerp(b.LeftForeArm.rotation.y || 0, armCycle * 0.08 * ge, dt * 3);
           if (b.RightForeArm) b.RightForeArm.rotation.y = MathUtils.lerp(b.RightForeArm.rotation.y || 0, -armCycle * 0.08 * ge, dt * 3);
@@ -822,9 +896,11 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
           const zSign = useRight ? -1 : 1;
 
           if (gestArm) {
+            const gestArmName = useRight ? 'RightArm' : 'LeftArm';
+            const armBase = needsArmDown.current ? rg(gestArmName,'z') + (useRight ? -1.1 : 1.1) : rg(gestArmName,'z');
             const targetX = gt.armX * ge * gestureBlend;
-            const targetZ = (useRight ? -1.1 : 1.1) + gt.armZ * ge * gestureBlend;
-            gestArm.rotation.x = MathUtils.lerp(gestArm.rotation.x, targetX + holdWobble * ge, dt * 4);
+            const targetZ = armBase + gt.armZ * ge * gestureBlend;
+            gestArm.rotation.x = MathUtils.lerp(gestArm.rotation.x, rg(gestArmName,'x') + targetX + holdWobble * ge, dt * 4);
             gestArm.rotation.z = MathUtils.lerp(gestArm.rotation.z, targetZ, dt * 3.5);
           }
           if (gestFore) {
@@ -860,13 +936,13 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         setMorphMapped(mapped, 'mouthSmile', 0.05);
       }
       if (b.Head) {
-        b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, -0.12 * ge, dt * 3);
-        b.Head.rotation.z = MathUtils.lerp(b.Head.rotation.z, 0.08 * ge, dt * 3);
-        b.Head.rotation.y = Math.sin(breathPhase.current * 0.5) * 0.04 * ge;
+        b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, rg('Head','x') - 0.12 * ge, dt * 3);
+        b.Head.rotation.z = MathUtils.lerp(b.Head.rotation.z, rg('Head','z') + 0.08 * ge, dt * 3);
+        b.Head.rotation.y = rg('Head','y') + Math.sin(breathPhase.current * 0.5) * 0.04 * ge;
       }
       if (b.RightForeArm && noBuiltin) {
-        b.RightForeArm.rotation.x = MathUtils.lerp(b.RightForeArm.rotation.x, -0.8 * ge, dt * 2);
-        b.RightForeArm.rotation.z = MathUtils.lerp(b.RightForeArm.rotation.z, -0.3 * ge, dt * 2);
+        b.RightForeArm.rotation.x = MathUtils.lerp(b.RightForeArm.rotation.x, rg('RightForeArm','x') - 0.8 * ge, dt * 2);
+        b.RightForeArm.rotation.z = MathUtils.lerp(b.RightForeArm.rotation.z, rg('RightForeArm','z') - 0.3 * ge, dt * 2);
       }
       // Return to center
       if (groupRef.current) groupRef.current.position.x = MathUtils.lerp(groupRef.current.position.x, 0, dt * 3);
@@ -874,10 +950,10 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         b.Hips.rotation.z = MathUtils.lerp(b.Hips.rotation.z, 0, dt * 2);
       }
       if (noBuiltin) {
-        if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = MathUtils.lerp(b.LeftUpLeg.rotation.x, 0, dt * 4);
-        if (b.RightUpLeg) b.RightUpLeg.rotation.x = MathUtils.lerp(b.RightUpLeg.rotation.x, 0, dt * 4);
-        if (b.LeftLeg) b.LeftLeg.rotation.x = MathUtils.lerp(b.LeftLeg.rotation.x, 0, dt * 4);
-        if (b.RightLeg) b.RightLeg.rotation.x = MathUtils.lerp(b.RightLeg.rotation.x, 0, dt * 4);
+        if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = MathUtils.lerp(b.LeftUpLeg.rotation.x, rg('LeftUpLeg','x'), dt * 4);
+        if (b.RightUpLeg) b.RightUpLeg.rotation.x = MathUtils.lerp(b.RightUpLeg.rotation.x, rg('RightUpLeg','x'), dt * 4);
+        if (b.LeftLeg) b.LeftLeg.rotation.x = MathUtils.lerp(b.LeftLeg.rotation.x, rg('LeftLeg','x'), dt * 4);
+        if (b.RightLeg) b.RightLeg.rotation.x = MathUtils.lerp(b.RightLeg.rotation.x, rg('RightLeg','x'), dt * 4);
       }
     }
   });
