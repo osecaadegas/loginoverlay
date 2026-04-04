@@ -1,6 +1,25 @@
-import React, { useState, useEffect, useRef, lazy, Suspense } from 'react';
+import React, { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
 
 const AIChatBot3DAvatar = lazy(() => import('./AIChatBot3DAvatar'));
+
+/* ── ErrorBoundary to prevent 3D avatar crashes from taking down the page ── */
+class Avatar3DErrorBoundary extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  componentDidCatch(err, info) { console.error('[3DAvatar] Render crash:', err, info); }
+  render() {
+    if (this.state.error) {
+      return (
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center',
+          width: '100%', height: '100%', color: '#ef4444', fontSize: 11, textAlign: 'center', padding: 20 }}>
+          3D Avatar error<br />
+          <span style={{ fontSize: 9, color: '#94a3b8' }}>{String(this.state.error?.message || this.state.error)}</span>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
 
 /**
  * AIChatBotWidget — Overlay widget that shows an AI chatbot.
@@ -256,6 +275,7 @@ function AIChatBotWidget({ config }) {
   /* ── 3D-only mode: just the avatar, no chat box ─── */
   if (avatar3dEnabled && avatar3dUrl) {
     return (
+      <Avatar3DErrorBoundary>
       <Suspense fallback={
         <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>Loading 3D…</div>
       }>
@@ -279,6 +299,7 @@ function AIChatBotWidget({ config }) {
           reaction={reactionCount}
         />
       </Suspense>
+      </Avatar3DErrorBoundary>
     );
   }
 
