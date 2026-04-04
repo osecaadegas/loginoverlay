@@ -53,6 +53,19 @@ function mapBones(scene) {
     if (child.isBone || child.type === 'Bone') allBones.push(child);
   });
 
+  // Also check non-bone objects that might be acting as skeleton joints (some exporters use Object3D)
+  if (allBones.length === 0) {
+    scene.traverse((child) => {
+      if (child.isObject3D && child.children.length > 0 && !child.isMesh && !child.isLight && !child.isCamera) {
+        // Heuristic: if name matches any bone alias, treat as bone
+        const n = child.name.toLowerCase();
+        if (/hip|spine|head|neck|arm|leg|shoulder|hand|thigh|pelvis|chest/i.test(n)) {
+          allBones.push(child);
+        }
+      }
+    });
+  }
+
   const result = {};
   const used = new Set(); // prevent same bone matching twice
 
@@ -60,11 +73,11 @@ function mapBones(scene) {
     const patterns = BONE_ALIASES[canonical];
     if (!patterns) continue;
 
-    // First pass: try exact canonical name (case-insensitive includes, for standard Mixamo/Avaturn)
+    // First pass: try exact canonical name (case-insensitive, strip ALL known prefixes)
     for (const bone of allBones) {
       if (used.has(bone)) continue;
-      // Strip common prefixes for matching
-      const stripped = bone.name.replace(/^(mixamorig:|Armature_|armature_)/i, '');
+      // Strip common prefixes: mixamorig:, Armature_, Armature|, Bip01_, Character_, Root_, etc.
+      const stripped = bone.name.replace(/^[A-Za-z0-9_]*[:|]/g, '').replace(/^(Armature_|armature_|Bip0?1[_ ]?|Character[_ ]|Root[_ ])/i, '');
       if (stripped.toLowerCase() === canonical.toLowerCase()) {
         result[canonical] = bone;
         used.add(bone);
@@ -73,12 +86,13 @@ function mapBones(scene) {
     }
     if (result[canonical]) continue;
 
-    // Second pass: regex aliases
+    // Second pass: regex aliases (test against both raw name and stripped name)
     for (const bone of allBones) {
       if (used.has(bone)) continue;
-      const name = bone.name;
+      const raw = bone.name;
+      const stripped = raw.replace(/^[A-Za-z0-9_]*[:|]/g, '').replace(/^(Armature_|armature_|Bip0?1[_ ]?|Character[_ ]|Root[_ ])/i, '');
       for (const rx of patterns) {
-        if (rx.test(name)) {
+        if (rx.test(raw) || rx.test(stripped)) {
           result[canonical] = bone;
           used.add(bone);
           break;
@@ -160,6 +174,7 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   const morphMapped = useRef([]);
   const bones = useRef({});
   const mixerRef = useRef(null);
+  const builtinHasBody = useRef(false); // tracks if built-in anims affect body bones
   const blinkTimer = useRef(0);
   const nextBlink = useRef(Math.random() * 4 + 2);
   const breathPhase = useRef(0);
@@ -252,10 +267,16 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
 
   // Play built-in animations if they exist
   useEffect(() => {
+    builtinHasBody.current = false;
     if (animations && animations.length > 0 && clonedScene) {
       const mixer = new AnimationMixer(clonedScene);
       mixerRef.current = mixer;
       const clip = animations[0];
+      // Check if any track targets body bones (not just facial morphs)
+      const bodyPattern = /arm|shoulder|shldr|clavicle|hand|forearm|hip|spine|chest|neck|head|leg|thigh|pelvis/i;
+      for (const track of clip.tracks) {
+        if (bodyPattern.test(track.name)) { builtinHasBody.current = true; break; }
+      }
       const action = mixer.clipAction(clip);
       action.play();
       return () => { mixer.stopAllAction(); mixer.uncacheRoot(clonedScene); };
@@ -303,7 +324,7 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     const hm = headMove ?? 1;
     const am = armMove ?? 1;
     const ge = gestures ?? 1;
-    const noBuiltin = !animations?.length;
+    const noBuiltin = !builtinHasBody.current;
 
     // Update built-in animation mixer
     if (mixerRef.current) mixerRef.current.update(dt);
@@ -319,7 +340,7 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
       }
     }
 
-    // ── BREAK T-POSE: Lower arms naturally ──
+    // ── BREAK T-POSE: Lower arms naturally (skip if built-in animation controls body) ──
     if (b.LeftArm && noBuiltin) {
       b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, 1.1, dt * 2);
     }
