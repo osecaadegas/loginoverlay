@@ -1,79 +1,35 @@
 [
-  {
-    "id": "avatar-01",
-    "name": "Avatar 1",
-    "file": "/avatars/824022961986602005.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-02",
-    "name": "Avatar 2",
-    "file": "/avatars/1296904030812597462.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-03",
-    "name": "Avatar 3",
-    "file": "/avatars/1711319250230595362.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-04",
-    "name": "Avatar 4",
-    "file": "/avatars/3493590446520631963.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-05",
-    "name": "Avatar 5",
-    "file": "/avatars/3640925089614202413.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-06",
-    "name": "Avatar 6",
-    "file": "/avatars/3834717849459246899.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-07",
-    "name": "Avatar 7",
-    "file": "/avatars/4240122115842624286.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-08",
-    "name": "Avatar 8",
-    "file": "/avatars/4371605353531398331.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-09",
-    "name": "Avatar 9",
-    "file": "/avatars/4450315755567433536.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-10",
-    "name": "Avatar 10",
-    "file": "/avatars/6462838249384906260.glb",
-    "thumbnail": "",
-    "tags": []
-  },
-  {
-    "id": "avatar-11",
-    "name": "Avatar 11",
-    "file": "/avatars/8232090975149790447.glb",
-    "thumbnail": "",
-    "tags": []
-  }
+  { "id": "avatar-01", "name": "Avatar 1", "file": "/avatars/824022961986602005.glb" },
+  { "id": "avatar-02", "name": "Avatar 2", "file": "/avatars/1296904030812597462.glb" },
+  { "id": "avatar-03", "name": "Avatar 3", "file": "/avatars/1711319250230595362.glb" },
+  { "id": "avatar-04", "name": "Avatar 4", "file": "/avatars/3493590446520631963.glb" },
+  { "id": "avatar-05", "name": "Avatar 5", "file": "/avatars/3640925089614202413.glb" },
+  { "id": "avatar-06", "name": "Avatar 6", "file": "/avatars/3834717849459246899.glb" },
+  { "id": "avatar-07", "name": "Avatar 7", "file": "/avatars/4240122115842624286.glb" },
+  { "id": "avatar-08", "name": "Avatar 8", "file": "/avatars/4371605353531398331.glb" },
+  { "id": "avatar-09", "name": "Avatar 9", "file": "/avatars/4450315755567433536.glb" },
+  { "id": "avatar-10", "name": "Avatar 10", "file": "/avatars/6462838249384906260.glb" },
+  { "id": "avatar-11", "name": "Avatar 11", "file": "/avatars/8232090975149790447.glb" },
+  { "id": "avatar-12", "name": "Avatar 12", "file": "/avatars/1126693235709775930.glb" },
+  { "id": "avatar-13", "name": "Avatar 13", "file": "/avatars/1332881142247193159.glb" },
+  { "id": "avatar-14", "name": "Avatar 14", "file": "/avatars/2914707689262839002.glb" },
+  { "id": "avatar-15", "name": "Avatar 15", "file": "/avatars/330948017661333885.glb" },
+  { "id": "avatar-16", "name": "Avatar 16", "file": "/avatars/4229619864375409353.glb" },
+  { "id": "avatar-17", "name": "Avatar 17", "file": "/avatars/4476170053525632637.glb" },
+  { "id": "avatar-18", "name": "Avatar 18", "file": "/avatars/5078519759161622804.glb" },
+  { "id": "avatar-19", "name": "Avatar 19", "file": "/avatars/6450060599276401442.glb" },
+  { "id": "avatar-20", "name": "Avatar 20", "file": "/avatars/7307638738104714060.glb" },
+  { "id": "avatar-21", "name": "Avatar 21", "file": "/avatars/7358642820833195174.glb" },
+  { "id": "avatar-22", "name": "Avatar 22", "file": "/avatars/8558624389089208810.glb" },
+  { "id": "avatar-23", "name": "Avatar 23", "file": "/avatars/9101833808108867999.glb" },
+  { "id": "blacksmith", "name": "Blacksmith", "file": "/avatars/blacksmith.glb" },
+  { "id": "bodybuilder", "name": "Bodybuilder", "file": "/avatars/bodybuilder_ahmad_2.glb" },
+  { "id": "crimson-lace", "name": "Crimson Lace", "file": "/avatars/crimson_lace_confidence.glb" },
+  { "id": "emilka", "name": "Emilka", "file": "/avatars/emilka.glb" },
+  { "id": "sexy-girl", "name": "Animated Girl", "file": "/avatars/facial_animation_of_a_sexy_girl.glb" },
+  { "id": "kara", "name": "Kara", "file": "/avatars/kara.glb" },
+  { "id": "leggings-girl", "name": "Leggings Girl", "file": "/avatars/leggings_girl.glb" },
+  { "id": "neon-cyborg", "name": "Neon Cyborg", "file": "/avatars/neon_cyborg.glb" },
+  { "id": "sunny-denim", "name": "Sunny Denim", "file": "/avatars/sunny_confidence_in_denim.glb" },
+  { "id": "white-beard", "name": "White Beard", "file": "/avatars/white-bearded_strong_man_by_tripo.glb" }
 ]

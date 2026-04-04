@@ -1,4 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, lazy, Suspense } from 'react';
+
+const AvatarThumbnail = lazy(() => import('./AvatarThumbnail.jsx'));
 
 /**
  * AIChatBotConfig — Config panel for the AI Chat Bot widget.
@@ -165,53 +167,45 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
 
         {c.avatar3dEnabled && (
           <>
-            {/* Avatar Gallery */}
+            {/* Avatar Gallery with live 3D previews */}
             {avatarList.length > 0 && (
               <>
                 <label style={labelStyle}>Choose an Avatar</label>
                 <div style={{
                   display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 12,
-                  maxHeight: 240, overflowY: 'auto', padding: 2,
+                  maxHeight: 360, overflowY: 'auto', padding: 2,
                 }}>
                   {avatarList.map(av => {
                     const selected = c.avatar3dUrl === av.file;
                     return (
-                      <div
-                        key={av.id}
-                        onClick={() => set('avatar3dUrl', av.file)}
-                        style={{
-                          borderRadius: 8, overflow: 'hidden', cursor: 'pointer',
-                          border: selected ? `2px solid ${c.accentColor || '#9146FF'}` : '2px solid rgba(255,255,255,0.08)',
-                          background: selected ? `${c.accentColor || '#9146FF'}15` : 'rgba(255,255,255,0.02)',
-                          transition: 'all 0.2s',
-                        }}
-                      >
+                      <div key={av.id} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                        <Suspense fallback={
+                          <div
+                            onClick={() => set('avatar3dUrl', av.file)}
+                            style={{
+                              width: 80, height: 80, borderRadius: 8, cursor: 'pointer',
+                              border: selected ? `2px solid ${c.accentColor || '#9146FF'}` : '2px solid rgba(255,255,255,0.08)',
+                              background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontSize: 28,
+                            }}
+                          >🧍</div>
+                        }>
+                          <AvatarThumbnail
+                            url={av.file}
+                            size={80}
+                            onClick={() => set('avatar3dUrl', av.file)}
+                            selected={selected}
+                            accentColor={c.accentColor || '#9146FF'}
+                          />
+                        </Suspense>
                         <div style={{
-                          width: '100%', aspectRatio: '1', background: 'rgba(0,0,0,0.3)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          overflow: 'hidden',
-                        }}>
-                          {av.thumbnail ? (
-                            <img
-                              src={av.thumbnail}
-                              alt={av.name}
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                              onError={e => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'flex'; }}
-                            />
-                          ) : null}
-                          <div style={{
-                            display: av.thumbnail ? 'none' : 'flex',
-                            alignItems: 'center', justifyContent: 'center',
-                            fontSize: 28, width: '100%', height: '100%',
-                          }}>🧍</div>
-                        </div>
-                        <div style={{
-                          padding: '5px 6px', fontSize: 10, fontWeight: 600, textAlign: 'center',
+                          marginTop: 3, fontSize: 9, fontWeight: 600, textAlign: 'center',
                           color: selected ? '#e2e8f0' : '#94a3b8',
                           whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                          maxWidth: 80,
                         }}>
                           {av.name}
-                          {selected && <span style={{ color: c.accentColor || '#9146FF', marginLeft: 4 }}>✓</span>}
+                          {selected && <span style={{ color: c.accentColor || '#9146FF', marginLeft: 3 }}>✓</span>}
                         </div>
                       </div>
                     );
