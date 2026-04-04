@@ -216,13 +216,32 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   const jumpActive = useRef(false);
   const lastReaction = useRef(0);
 
-  // Clone scene for isolation
+  // Clone scene for isolation, fix missing textures/colors
   const clonedScene = useMemo(() => {
     let clone;
     try { clone = skeletonClone(scene); } catch { clone = scene.clone(true); }
     clone.traverse((child) => {
       if (child.isMesh) {
-        child.material = child.material.clone();
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        const cloned = mats.map(mat => {
+          const m = mat.clone();
+          // Preserve all texture maps from original
+          const texProps = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'envMap', 'lightMap', 'specularMap'];
+          for (const prop of texProps) {
+            if (mat[prop]) m[prop] = mat[prop];
+          }
+          // Ensure color space is correct on diffuse map
+          if (m.map) m.map.colorSpace = 'srgb';
+          // Fix models with vertex colors — ensure material uses them
+          if (child.geometry?.attributes?.color) {
+            m.vertexColors = true;
+          }
+          // Ensure material isn't invisible
+          if (m.transparent && m.opacity === 0) m.opacity = 1;
+          m.needsUpdate = true;
+          return m;
+        });
+        child.material = Array.isArray(child.material) ? cloned : cloned[0];
         child.castShadow = true;
         child.receiveShadow = true;
       }
