@@ -315,56 +315,6 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                 style={{ marginTop: 6, padding: '5px 12px', borderRadius: 5, border: 'none', fontSize: 10, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', color: '#94a3b8' }}
               >↺ Reset All to Defaults</button>
             </div>
-
-            {/* ── Animation Controls ── */}
-            <div style={{ marginTop: 8, padding: '10px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 }}>🎬 Animation Controls</div>
-
-              <label style={labelStyle}>Model Scale ({(c.avatar3dScale || 1).toFixed(1)}x)</label>
-              <input type="range" min="0.5" max="2" step="0.1" value={c.avatar3dScale || 1}
-                onChange={e => set('avatar3dScale', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Camera Height ({(c.avatar3dCamHeight ?? 0.85).toFixed(2)})</label>
-              <input type="range" min="0" max="2" step="0.05" value={c.avatar3dCamHeight ?? 0.85}
-                onChange={e => set('avatar3dCamHeight', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Camera Distance ({(c.avatar3dCamDist ?? 2.2).toFixed(1)})</label>
-              <input type="range" min="0.5" max="5" step="0.1" value={c.avatar3dCamDist ?? 2.2}
-                onChange={e => set('avatar3dCamDist', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Breathing ({Math.round((c.avatar3dBreathing ?? 1) * 100)}%)</label>
-              <input type="range" min="0" max="3" step="0.1" value={c.avatar3dBreathing ?? 1}
-                onChange={e => set('avatar3dBreathing', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Body Sway ({Math.round((c.avatar3dSway ?? 1) * 100)}%)</label>
-              <input type="range" min="0" max="3" step="0.1" value={c.avatar3dSway ?? 1}
-                onChange={e => set('avatar3dSway', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Head Movement ({Math.round((c.avatar3dHeadMove ?? 1) * 100)}%)</label>
-              <input type="range" min="0" max="3" step="0.1" value={c.avatar3dHeadMove ?? 1}
-                onChange={e => set('avatar3dHeadMove', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Arm Movement ({Math.round((c.avatar3dArmMove ?? 1) * 100)}%)</label>
-              <input type="range" min="0" max="3" step="0.1" value={c.avatar3dArmMove ?? 1}
-                onChange={e => set('avatar3dArmMove', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Gesture Intensity ({Math.round((c.avatar3dGestures ?? 1) * 100)}%)</label>
-              <input type="range" min="0" max="3" step="0.1" value={c.avatar3dGestures ?? 1}
-                onChange={e => set('avatar3dGestures', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 8 }} />
-
-              <label style={labelStyle}>Animation Speed ({(c.avatar3dSpeed ?? 1).toFixed(1)}x)</label>
-              <input type="range" min="0.2" max="3" step="0.1" value={c.avatar3dSpeed ?? 1}
-                onChange={e => set('avatar3dSpeed', parseFloat(e.target.value))} style={{ width: '100%', marginBottom: 4 }} />
-
-              <button
-                onClick={() => {
-                  set('avatar3dScale', 1); set('avatar3dCamHeight', 0.85); set('avatar3dCamDist', 2.2);
-                  set('avatar3dBreathing', 1); set('avatar3dSway', 1); set('avatar3dHeadMove', 1);
-                  set('avatar3dArmMove', 1); set('avatar3dGestures', 1); set('avatar3dSpeed', 1);
-                }}
-                style={{ marginTop: 6, padding: '5px 12px', borderRadius: 5, border: 'none', fontSize: 10, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', color: '#94a3b8' }}
-              >↺ Reset All to Defaults</button>
-            </div>
           </>
         )}
       </div>

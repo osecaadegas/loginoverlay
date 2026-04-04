@@ -5,35 +5,139 @@ import { AnimationMixer, MathUtils } from 'three';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 /**
- * AIChatBot3DAvatar — Renders a GLB avatar (Avaturn, Sketchfab, etc.) with:
- *  - Idle: breathing, random eye blinks, subtle body sway
- *  - Speaking: mouth movement synced to word boundaries, subtle gestures
- *  - Thinking: head tilt, look up
+ * AIChatBot3DAvatar — Renders a GLB avatar (Avaturn, Sketchfab, Mixamo, VRM, CC3, etc.)
+ * Universal bone & morph target mapper for cross-format compatibility.
  */
 
-/* ── Morph target helpers ────────────────────────────── */
-function findMorphMeshes(scene) {
-  const meshes = [];
+/* ── Universal bone alias map ────────────────────────── */
+// Each canonical bone maps to regex patterns matching known formats:
+// Mixamo (mixamorig:Hips), Avaturn/RPM (Hips), Blender (hips, upper_arm.L),
+// VRM/VRoid (J_Bip_C_Hips), CC3/iClone (CC_Base_Hip), DAZ (hip, lShldr),
+// Unreal (pelvis, spine_01), Generic (pelvis, upperarm_l)
+const BONE_ALIASES = {
+  Hips:          [/\bhips?\b/i, /\bpelvis\b/i, /CC_Base_Hip/i, /J_Bip_C_Hips/i, /root/i],
+  Spine:         [/\bspine\b(?![\d_]*[12])/i, /\bspine[_.]?0?0?\b/i, /CC_Base_Spine01/i, /J_Bip_C_Spine/i, /\babdomen\b/i],
+  Spine1:        [/spine[_.]?0?1\b/i, /\bchest\b/i, /CC_Base_Spine02/i, /J_Bip_C_Spine2/i, /\babdomenUpper\b/i],
+  Spine2:        [/spine[_.]?0?2\b/i, /\bupperchest\b/i, /\bupper[_.]?chest\b/i, /CC_Base_NeckTwist/i, /J_Bip_C_UpperBody/i],
+  Neck:          [/\bneck\b/i, /CC_Base_Neck/i, /J_Bip_C_Neck/i],
+  Head:          [/\bhead\b/i, /CC_Base_Head/i, /J_Bip_C_Head/i],
+  LeftShoulder:  [/l(?:eft)?[_.]?shoulder/i, /shoulder[_.]?l\b/i, /CC_Base_L_Clavicle/i, /J_Bip_L_Shoulder/i, /\blCollar\b/i, /clavicle[_.]?l\b/i],
+  LeftArm:       [/l(?:eft)?[_.]?(?:upper[_.]?)?arm\b/i, /upper[_.]?arm[_.]?l\b/i, /CC_Base_L_Upperarm/i, /J_Bip_L_UpperArm/i, /\blShldr\b/i],
+  LeftForeArm:   [/l(?:eft)?[_.]?(?:fore[_.]?)?arm/i, /fore[_.]?arm[_.]?l\b/i, /lower[_.]?arm[_.]?l\b/i, /CC_Base_L_Forearm/i, /J_Bip_L_LowerArm/i, /\blForeArm\b/i],
+  LeftHand:      [/l(?:eft)?[_.]?hand\b/i, /hand[_.]?l\b/i, /CC_Base_L_Hand/i, /J_Bip_L_Hand/i, /\blHand\b/i],
+  RightShoulder: [/r(?:ight)?[_.]?shoulder/i, /shoulder[_.]?r\b/i, /CC_Base_R_Clavicle/i, /J_Bip_R_Shoulder/i, /\brCollar\b/i, /clavicle[_.]?r\b/i],
+  RightArm:      [/r(?:ight)?[_.]?(?:upper[_.]?)?arm\b/i, /upper[_.]?arm[_.]?r\b/i, /CC_Base_R_Upperarm/i, /J_Bip_R_UpperArm/i, /\brShldr\b/i],
+  RightForeArm:  [/r(?:ight)?[_.]?(?:fore[_.]?)?arm/i, /fore[_.]?arm[_.]?r\b/i, /lower[_.]?arm[_.]?r\b/i, /CC_Base_R_Forearm/i, /J_Bip_R_LowerArm/i, /\brForeArm\b/i],
+  RightHand:     [/r(?:ight)?[_.]?hand\b/i, /hand[_.]?r\b/i, /CC_Base_R_Hand/i, /J_Bip_R_Hand/i, /\brHand\b/i],
+  LeftUpLeg:     [/l(?:eft)?[_.]?(?:up[_.]?)?leg\b/i, /(?:thigh|upper[_.]?leg)[_.]?l\b/i, /l(?:eft)?[_.]?thigh\b/i, /CC_Base_L_Thigh/i, /J_Bip_L_UpperLeg/i, /\blThigh\b/i],
+  LeftLeg:       [/l(?:eft)?[_.]?(?:lower[_.]?)?leg\b/i, /(?:shin|lower[_.]?leg|calf)[_.]?l\b/i, /l(?:eft)?[_.]?shin\b/i, /CC_Base_L_Calf/i, /J_Bip_L_LowerLeg/i, /\blShin\b/i],
+  RightUpLeg:    [/r(?:ight)?[_.]?(?:up[_.]?)?leg\b/i, /(?:thigh|upper[_.]?leg)[_.]?r\b/i, /r(?:ight)?[_.]?thigh\b/i, /CC_Base_R_Thigh/i, /J_Bip_R_UpperLeg/i, /\brThigh\b/i],
+  RightLeg:      [/r(?:ight)?[_.]?(?:lower[_.]?)?leg\b/i, /(?:shin|lower[_.]?leg|calf)[_.]?r\b/i, /r(?:ight)?[_.]?shin\b/i, /CC_Base_R_Calf/i, /J_Bip_R_LowerLeg/i, /\brShin\b/i],
+};
+
+// Priority order: more specific bones first (ForeArm before Arm, UpLeg before Leg, Spine1/2 before Spine)
+const BONE_MATCH_ORDER = [
+  'LeftForeArm', 'RightForeArm', 'LeftHand', 'RightHand',
+  'LeftShoulder', 'RightShoulder', 'LeftArm', 'RightArm',
+  'LeftUpLeg', 'RightUpLeg', 'LeftLeg', 'RightLeg',
+  'Spine2', 'Spine1', 'Spine', 'Neck', 'Head', 'Hips',
+];
+
+/**
+ * Scan a scene and map real bone names to our canonical names.
+ * Uses priority ordering so e.g. "LeftForeArm" is matched before "LeftArm".
+ */
+function mapBones(scene) {
+  const allBones = [];
   scene.traverse((child) => {
-    if (child.isMesh && child.morphTargetDictionary && child.morphTargetInfluences) {
-      meshes.push(child);
-    }
+    if (child.isBone || child.type === 'Bone') allBones.push(child);
   });
-  return meshes;
+
+  const result = {};
+  const used = new Set(); // prevent same bone matching twice
+
+  for (const canonical of BONE_MATCH_ORDER) {
+    const patterns = BONE_ALIASES[canonical];
+    if (!patterns) continue;
+
+    // First pass: try exact canonical name (case-insensitive includes, for standard Mixamo/Avaturn)
+    for (const bone of allBones) {
+      if (used.has(bone)) continue;
+      // Strip common prefixes for matching
+      const stripped = bone.name.replace(/^(mixamorig:|Armature_|armature_)/i, '');
+      if (stripped.toLowerCase() === canonical.toLowerCase()) {
+        result[canonical] = bone;
+        used.add(bone);
+        break;
+      }
+    }
+    if (result[canonical]) continue;
+
+    // Second pass: regex aliases
+    for (const bone of allBones) {
+      if (used.has(bone)) continue;
+      const name = bone.name;
+      for (const rx of patterns) {
+        if (rx.test(name)) {
+          result[canonical] = bone;
+          used.add(bone);
+          break;
+        }
+      }
+      if (result[canonical]) break;
+    }
+  }
+
+  return result;
 }
 
-function setMorph(meshes, name, value) {
-  for (const mesh of meshes) {
-    const idx = mesh.morphTargetDictionary?.[name];
-    if (idx !== undefined) {
-      mesh.morphTargetInfluences[idx] = value;
+/* ── Universal morph target aliases ────────────────── */
+// Maps our canonical morph name to arrays of alternative names across formats:
+// ARKit, Mixamo, VRM, CC3, generic
+const MORPH_ALIASES = {
+  mouthOpen:      ['mouthOpen', 'jawOpen', 'Mouth_Open', 'Fcl_MTH_A', 'viseme_aa', 'A', 'mouth_open', 'MouthOpen'],
+  jawOpen:        ['jawOpen', 'Jaw_Open', 'jaw_open', 'JawOpen', 'Fcl_MTH_A'],
+  mouthSmile:     ['mouthSmile', 'mouthSmileLeft', 'mouthSmileRight', 'Mouth_Smile', 'Fcl_MTH_Joy', 'smile', 'mouth_smile', 'MouthSmile', 'happy'],
+  browInnerUp:    ['browInnerUp', 'Brow_Inner_Up', 'Fcl_BRW_Surprised', 'brow_inner_up', 'BrowInnerUp', 'browUp'],
+  eyeBlinkLeft:   ['eyeBlinkLeft', 'Eye_Blink_Left', 'Fcl_EYE_Close_L', 'eyeBlink_L', 'eye_blink_left', 'EyeBlinkLeft', 'blink_L', 'Blink_Left'],
+  eyeBlinkRight:  ['eyeBlinkRight', 'Eye_Blink_Right', 'Fcl_EYE_Close_R', 'eyeBlink_R', 'eye_blink_right', 'EyeBlinkRight', 'blink_R', 'Blink_Right'],
+};
+
+/**
+ * Build a fast lookup: for each mesh, map our canonical morph name → actual index.
+ * Call once after scene load. Returns array of { mesh, morphMap } objects.
+ */
+function buildMorphMap(meshes) {
+  return meshes.map(mesh => {
+    const dict = mesh.morphTargetDictionary || {};
+    const morphMap = {};
+    for (const [canonical, aliases] of Object.entries(MORPH_ALIASES)) {
+      for (const alias of aliases) {
+        if (alias in dict) { morphMap[canonical] = dict[alias]; break; }
+      }
+      // Fallback: case-insensitive partial match
+      if (morphMap[canonical] === undefined) {
+        const lc = canonical.toLowerCase();
+        for (const key of Object.keys(dict)) {
+          if (key.toLowerCase().includes(lc)) { morphMap[canonical] = dict[key]; break; }
+        }
+      }
     }
+    return { mesh, morphMap };
+  });
+}
+
+/* ── Morph helpers using the resolved map ────────────── */
+function setMorphMapped(mapped, canonical, value) {
+  for (const { mesh, morphMap } of mapped) {
+    const idx = morphMap[canonical];
+    if (idx !== undefined) mesh.morphTargetInfluences[idx] = value;
   }
 }
 
-function getMorphValue(meshes, name) {
-  for (const mesh of meshes) {
-    const idx = mesh.morphTargetDictionary?.[name];
+function getMorphMapped(mapped, canonical) {
+  for (const { mesh, morphMap } of mapped) {
+    const idx = morphMap[canonical];
     if (idx !== undefined) return mesh.morphTargetInfluences[idx];
   }
   return 0;
@@ -53,7 +157,7 @@ function pickRandom(arr, exclude) {
 function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing, sway, headMove, armMove, gestures, animSpeed, reaction }) {
   const { scene, animations } = useGLTF(url);
   const groupRef = useRef();
-  const morphMeshes = useRef([]);
+  const morphMapped = useRef([]);
   const bones = useRef({});
   const mixerRef = useRef(null);
   const blinkTimer = useRef(0);
@@ -76,6 +180,22 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   const speakAnim = useRef('talking');
   const prevState = useRef(state);
 
+  // ── Advanced speech rhythm state ──
+  const syllablePhase = useRef(0);        // fast phoneme-like oscillator
+  const wordPhase = useRef(0);            // slower word-level cadence
+  const sentencePhase = useRef(0);        // slow sentence-level phrasing
+  const speechPause = useRef(0);          // countdown for brief pauses between "words"
+  const speechPauseActive = useRef(false);
+  const emphasisTimer = useRef(0);        // triggers random emphasis nods
+  const nextEmphasis = useRef(1.2 + Math.random() * 1.5);
+  const emphasisStrength = useRef(0);     // current emphasis blend (decays)
+  const gestureBeat = useRef(0);          // gesture state machine: 0=rest 1=reach 2=hold 3=retract
+  const gestureTimer = useRef(0);         // timer within current gesture beat
+  const gestureSide = useRef(1);          // 1=right hand, -1=left hand
+  const gestureTarget = useRef({ armX: 0, armZ: 0, foreX: 0, foreY: 0 }); // current gesture pose
+  const weightShiftPhase = useRef(0);     // slow weight shift between feet
+  const speechStartTime = useRef(0);      // track how long we've been speaking
+
   // Reaction (jump) state
   const jumpPhase = useRef(0);
   const jumpActive = useRef(false);
@@ -95,31 +215,38 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     return clone;
   }, [scene]);
 
-  // Find morph meshes
+  // Find morph meshes and build mapped lookup
   useEffect(() => {
-    morphMeshes.current = findMorphMeshes(clonedScene);
-  }, [clonedScene]);
-
-  // Find common bones in the skeleton
-  useEffect(() => {
-    const boneMap = {};
-    const boneNames = [
-      'Hips', 'Spine', 'Spine1', 'Spine2', 'Neck', 'Head',
-      'LeftShoulder', 'LeftArm', 'LeftForeArm', 'LeftHand',
-      'RightShoulder', 'RightArm', 'RightForeArm', 'RightHand',
-      'LeftUpLeg', 'LeftLeg', 'RightUpLeg', 'RightLeg',
-    ];
+    const meshes = [];
     clonedScene.traverse((child) => {
-      if (child.isBone || child.type === 'Bone') {
-        for (const name of boneNames) {
-          if (child.name.includes(name) && !boneMap[name]) {
-            boneMap[name] = child;
-          }
-        }
+      if (child.isMesh && child.morphTargetDictionary && child.morphTargetInfluences) {
+        meshes.push(child);
       }
     });
-    bones.current = boneMap;
-    console.log('[3DAvatar] Found bones:', Object.keys(boneMap).join(', ') || 'none');
+    morphMapped.current = buildMorphMap(meshes);
+    // Debug: log found morphs
+    if (meshes.length) {
+      const allMorphNames = new Set();
+      meshes.forEach(m => Object.keys(m.morphTargetDictionary || {}).forEach(k => allMorphNames.add(k)));
+      console.log('[3DAvatar] Morph targets:', [...allMorphNames].join(', '));
+      const resolved = {};
+      for (const c of Object.keys(MORPH_ALIASES)) {
+        if (morphMapped.current.some(({ morphMap }) => morphMap[c] !== undefined)) resolved[c] = '✓';
+      }
+      console.log('[3DAvatar] Resolved morphs:', Object.keys(resolved).join(', ') || 'none');
+    }
+  }, [clonedScene]);
+
+  // Find bones using universal mapper
+  useEffect(() => {
+    bones.current = mapBones(clonedScene);
+    console.log('[3DAvatar] Found bones:', Object.keys(bones.current).join(', ') || 'none');
+    // Debug: log all bone names in the model
+    const allBoneNames = [];
+    clonedScene.traverse((child) => {
+      if (child.isBone || child.type === 'Bone') allBoneNames.push(child.name);
+    });
+    console.log('[3DAvatar] All model bones:', allBoneNames.join(', '));
     console.log('[3DAvatar] Animations:', animations?.length || 0);
   }, [clonedScene, animations]);
 
@@ -139,6 +266,20 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   useEffect(() => {
     if (state === 'speaking' && prevState.current !== 'speaking') {
       speakAnim.current = pickRandom(SPEAK_ANIMS, speakAnim.current);
+      // Reset speech rhythm for a fresh start
+      syllablePhase.current = 0;
+      wordPhase.current = 0;
+      sentencePhase.current = 0;
+      speechPause.current = 0;
+      speechPauseActive.current = false;
+      emphasisTimer.current = 0;
+      emphasisStrength.current = 0;
+      nextEmphasis.current = 1.0 + Math.random() * 1.2;
+      gestureBeat.current = 0;
+      gestureTimer.current = 0;
+      gestureSide.current = Math.random() > 0.5 ? 1 : -1;
+      weightShiftPhase.current = Math.random() * Math.PI;
+      speechStartTime.current = 0;
     }
     prevState.current = state;
   }, [state]);
@@ -153,7 +294,8 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   }, [reaction]);
 
   useFrame((_, delta) => {
-    const meshes = morphMeshes.current;
+    const mapped = morphMapped.current;
+    const hasMorphs = mapped.length > 0;
     const b = bones.current;
     const dt = Math.min(delta, 0.1) * (animSpeed || 1);
     const br = breathing ?? 1;
@@ -206,9 +348,9 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         jumpY = Math.sin(jumpPhase.current) * 0.25;
         if (jumpPhase.current < 0.5) jumpY = -0.03 * (jumpPhase.current / 0.5); // squat before jump
         // Happy face
-        if (meshes.length) {
-          setMorph(meshes, 'mouthSmile', 0.7);
-          setMorph(meshes, 'browInnerUp', 0.3);
+        if (hasMorphs) {
+          setMorphMapped(mapped, 'mouthSmile', 0.7);
+          setMorphMapped(mapped, 'browInnerUp', 0.3);
         }
         // Arms up during peak
         if (jumpPhase.current > 1 && jumpPhase.current < 2.5) {
@@ -228,7 +370,7 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     }
 
     // ── EYE BLINKS ──
-    if (meshes.length) {
+    if (hasMorphs) {
       blinkTimer.current += dt;
       if (blinkTimer.current >= nextBlink.current) {
         blinkTimer.current = 0;
@@ -239,8 +381,8 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         : blinkTimer.current < 0.3
           ? 1 - (blinkTimer.current - 0.15) / 0.15
           : 0;
-      setMorph(meshes, 'eyeBlinkLeft', blinkProgress);
-      setMorph(meshes, 'eyeBlinkRight', blinkProgress);
+      setMorphMapped(mapped, 'eyeBlinkLeft', blinkProgress);
+      setMorphMapped(mapped, 'eyeBlinkRight', blinkProgress);
     }
 
     // ─────────────────────────────────────────────────
@@ -248,13 +390,13 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     // ─────────────────────────────────────────────────
     if (state === 'idle') {
       // Clean up mouth from previous speaking
-      if (meshes.length) {
-        const currentMouth = getMorphValue(meshes, 'mouthOpen');
-        setMorph(meshes, 'mouthOpen', currentMouth * 0.85);
-        setMorph(meshes, 'jawOpen', currentMouth * 0.5);
+      if (hasMorphs) {
+        const currentMouth = getMorphMapped(mapped, 'mouthOpen');
+        setMorphMapped(mapped, 'mouthOpen', currentMouth * 0.85);
+        setMorphMapped(mapped, 'jawOpen', currentMouth * 0.5);
         if (!jumpActive.current) {
-          setMorph(meshes, 'mouthSmile', Math.sin(breathPhase.current * 0.2) * 0.05);
-          setMorph(meshes, 'browInnerUp', 0);
+          setMorphMapped(mapped, 'mouthSmile', Math.sin(breathPhase.current * 0.2) * 0.05);
+          setMorphMapped(mapped, 'browInnerUp', 0);
         }
       }
       mouthPhase.current = 0;
@@ -360,8 +502,8 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
           b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, leanPhase * -0.1, dt * 3);
         }
         // Happy face during stretch
-        if (meshes.length && sp > 0.3 && sp < 0.8) {
-          setMorph(meshes, 'mouthSmile', 0.2);
+        if (hasMorphs && sp > 0.3 && sp < 0.8) {
+          setMorphMapped(mapped, 'mouthSmile', 0.2);
         }
         // Return hips to center
         if (b.Hips && noBuiltin) {
@@ -399,21 +541,101 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     }
 
     // ─────────────────────────────────────────────────
-    //  STATE: SPEAKING — multiple variations
+    //  STATE: SPEAKING — realistic procedural speech
     // ─────────────────────────────────────────────────
     else if (state === 'speaking') {
-      mouthPhase.current += dt * 12;
-      const mouthBase = 0.3;
-      const mouthVar = Math.sin(mouthPhase.current) * 0.25 + Math.sin(mouthPhase.current * 2.3) * 0.15;
+      speechStartTime.current += dt;
       swayPhase.current += dt * 0.3;
+      weightShiftPhase.current += dt * 0.12;
 
-      // Common mouth movement for all speak variants
-      if (meshes.length) {
-        setMorph(meshes, 'mouthOpen', Math.max(0, mouthBase + mouthVar));
-        setMorph(meshes, 'jawOpen', Math.max(0, (mouthBase + mouthVar) * 0.6));
+      // ── Multi-layered speech rhythm ──
+      // Syllable layer (~8 Hz): fast mouth shapes like real phonemes
+      // Word layer (~2 Hz): grouping syllables, with micro-pauses between
+      // Sentence layer (~0.3 Hz): prosody envelope — emphasis rises and falls
+      syllablePhase.current += dt * 8.5;
+      wordPhase.current += dt * 2.2;
+      sentencePhase.current += dt * 0.35;
+
+      // Random micro-pauses between "words" (closed mouth for 80-200ms)
+      if (!speechPauseActive.current) {
+        // Trigger pause randomly aligned with word boundaries
+        if (Math.sin(wordPhase.current) > 0.85 && speechPause.current <= 0) {
+          speechPauseActive.current = true;
+          speechPause.current = 0.08 + Math.random() * 0.14; // 80-220ms pause
+        }
+      }
+      if (speechPauseActive.current) {
+        speechPause.current -= dt;
+        if (speechPause.current <= 0) speechPauseActive.current = false;
       }
 
-      // Return pace position / legs to center
+      // Compute layered mouth value
+      const pauseMult = speechPauseActive.current ? 0.05 : 1.0; // nearly closed during pause
+      const sentenceEnvelope = 0.6 + 0.4 * Math.sin(sentencePhase.current); // prosody wave
+      const wordEnvelope = 0.5 + 0.5 * Math.max(0, Math.sin(wordPhase.current)); // word peaks
+      const syllable1 = Math.sin(syllablePhase.current) * 0.35;
+      const syllable2 = Math.sin(syllablePhase.current * 1.73 + 0.5) * 0.2; // inharmonic for natural feel
+      const syllable3 = Math.sin(syllablePhase.current * 0.7 + 1.2) * 0.15; // slow vowel shape
+      const rawMouth = (0.25 + syllable1 + syllable2 + syllable3) * wordEnvelope * sentenceEnvelope * pauseMult;
+      const mouthVal = Math.max(0, Math.min(1, rawMouth));
+      const jawVal = mouthVal * 0.55 + Math.max(0, mouthVal - 0.3) * 0.3; // jaw lags and is softer
+
+      if (hasMorphs) {
+        setMorphMapped(mapped, 'mouthOpen', mouthVal);
+        setMorphMapped(mapped, 'jawOpen', jawVal);
+      }
+
+      // ── Emphasis system: periodic head nods to stress "important words" ──
+      emphasisTimer.current += dt;
+      if (emphasisTimer.current >= nextEmphasis.current) {
+        emphasisTimer.current = 0;
+        nextEmphasis.current = 0.8 + Math.random() * 1.8; // next emphasis in 0.8-2.6s
+        emphasisStrength.current = 0.6 + Math.random() * 0.4; // how strong this nod is
+      }
+      // Emphasis decays quickly (sharp nod then fade)
+      emphasisStrength.current = Math.max(0, emphasisStrength.current - dt * 2.5);
+      const emph = emphasisStrength.current;
+
+      // ── Gesture beat state machine (reach → hold → retract → rest) ──
+      gestureTimer.current += dt;
+      const gb = gestureBeat.current;
+      if (gb === 0 && gestureTimer.current > 1.5 + Math.random() * 2.0) {
+        // Start new gesture
+        gestureBeat.current = 1;
+        gestureTimer.current = 0;
+        gestureSide.current = Math.random() > 0.4 ? gestureSide.current : -gestureSide.current;
+        // Pick a target pose (variety of gesture shapes)
+        const gType = Math.random();
+        if (gType < 0.33) { // palm-out explain
+          gestureTarget.current = { armX: -0.35, armZ: -0.7 * gestureSide.current, foreX: -0.4, foreY: 0.2 * gestureSide.current };
+        } else if (gType < 0.66) { // palm-up offer
+          gestureTarget.current = { armX: -0.25, armZ: -0.6 * gestureSide.current, foreX: -0.6, foreY: 0.35 * gestureSide.current };
+        } else { // point/enumerate
+          gestureTarget.current = { armX: -0.45, armZ: -0.55 * gestureSide.current, foreX: -0.7, foreY: 0.15 * gestureSide.current };
+        }
+      } else if (gb === 1 && gestureTimer.current > 0.3 + Math.random() * 0.2) {
+        // Reached target → hold
+        gestureBeat.current = 2;
+        gestureTimer.current = 0;
+      } else if (gb === 2 && gestureTimer.current > 0.4 + Math.random() * 0.6) {
+        // Hold done → retract
+        gestureBeat.current = 3;
+        gestureTimer.current = 0;
+      } else if (gb === 3 && gestureTimer.current > 0.3 + Math.random() * 0.2) {
+        // Back to rest
+        gestureBeat.current = 0;
+        gestureTimer.current = 0;
+      }
+
+      // Compute gesture blend (0=rest pose, 1=full gesture pose)
+      let gestureBlend = 0;
+      if (gb === 1) gestureBlend = MathUtils.clamp(gestureTimer.current / 0.3, 0, 1); // ease in
+      else if (gb === 2) gestureBlend = 1; // holding
+      else if (gb === 3) gestureBlend = 1 - MathUtils.clamp(gestureTimer.current / 0.35, 0, 1); // ease out
+      // Add micro-movement during hold (hand isn't perfectly still)
+      const holdWobble = gb === 2 ? Math.sin(gestureTimer.current * 3) * 0.02 : 0;
+
+      // ── Return legs + lateral position to center ──
       if (groupRef.current) groupRef.current.position.x = MathUtils.lerp(groupRef.current.position.x, 0, dt * 3);
       if (noBuiltin) {
         if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = MathUtils.lerp(b.LeftUpLeg.rotation.x, 0, dt * 4);
@@ -422,86 +644,167 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         if (b.RightLeg) b.RightLeg.rotation.x = MathUtils.lerp(b.RightLeg.rotation.x, 0, dt * 4);
       }
 
+      // ── Weight shift (slow side-to-side like a real person standing) ──
+      const ws = Math.sin(weightShiftPhase.current) * 0.008 * sw;
+      if (b.Hips && noBuiltin) {
+        b.Hips.position.x = MathUtils.lerp(b.Hips.position.x || 0, ws, dt * 1.5);
+        b.Hips.rotation.z = MathUtils.lerp(b.Hips.rotation.z, ws * 1.5, dt * 1.5);
+      }
+
       const curSpeak = speakAnim.current;
 
-      // ── SPEAK: Talking (calm nod + subtle gestures) ──
+      // ══════════════════════════════════════════════
+      //  SPEAK: Talking — conversational, warm, natural
+      // ══════════════════════════════════════════════
       if (curSpeak === 'talking') {
-        if (meshes.length) {
-          setMorph(meshes, 'mouthSmile', 0.15 + Math.sin(mouthPhase.current * 0.5) * 0.08);
-          setMorph(meshes, 'browInnerUp', 0.1 + Math.sin(mouthPhase.current * 0.3) * 0.08);
+        // Face: gentle smile that fluctuates, brows react on emphasis
+        if (hasMorphs) {
+          const smileBase = 0.12 + sentenceEnvelope * 0.06;
+          const smilePulse = Math.sin(wordPhase.current * 0.8) * 0.04;
+          setMorphMapped(mapped, 'mouthSmile', smileBase + smilePulse + emph * 0.08);
+          setMorphMapped(mapped, 'browInnerUp', 0.05 + emph * 0.2 + sentenceEnvelope * 0.04);
         }
+        // Head: emphasis nods (x) + slow conversational drift (y) + micro tilt (z)
         if (b.Head) {
-          b.Head.rotation.x = Math.sin(mouthPhase.current * 0.8) * 0.04 * ge;
-          b.Head.rotation.y = Math.sin(mouthPhase.current * 0.3) * 0.05 * ge;
+          const nodTarget = -emph * 0.06 * ge; // nod down on emphasis
+          const driftY = Math.sin(sentencePhase.current * 1.1) * 0.04 * ge + Math.sin(wordPhase.current * 0.3) * 0.02 * ge;
+          const tiltZ = Math.sin(sentencePhase.current * 0.7 + 0.5) * 0.015 * ge;
+          b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, nodTarget + Math.sin(wordPhase.current * 0.5) * 0.015 * ge, dt * 5);
+          b.Head.rotation.y = MathUtils.lerp(b.Head.rotation.y, driftY, dt * 2.5);
+          b.Head.rotation.z = MathUtils.lerp(b.Head.rotation.z, tiltZ, dt * 2);
         }
-        if (b.LeftShoulder) b.LeftShoulder.rotation.z = Math.sin(mouthPhase.current * 0.5) * 0.02 * ge;
-        if (b.RightShoulder) b.RightShoulder.rotation.z = Math.sin(mouthPhase.current * 0.4 + 1) * -0.02 * ge;
-        if (b.Spine2) b.Spine2.rotation.y = Math.sin(mouthPhase.current * 0.25) * 0.015 * ge;
-        if (b.Hips && noBuiltin) {
-          b.Hips.rotation.z = MathUtils.lerp(b.Hips.rotation.z, 0, dt * 3);
+        if (b.Neck) {
+          b.Neck.rotation.y = MathUtils.lerp(b.Neck.rotation.y, Math.sin(sentencePhase.current * 0.6) * 0.02 * ge, dt * 2);
+          b.Neck.rotation.x = MathUtils.lerp(b.Neck.rotation.x, -emph * 0.02 * ge, dt * 4);
+        }
+        // Shoulders: subtle lift on emphasis (people raise shoulders when stressing)
+        if (b.LeftShoulder) b.LeftShoulder.rotation.z = MathUtils.lerp(b.LeftShoulder.rotation.z || 0, emph * 0.015 * ge, dt * 4);
+        if (b.RightShoulder) b.RightShoulder.rotation.z = MathUtils.lerp(b.RightShoulder.rotation.z || 0, -emph * 0.015 * ge, dt * 4);
+        // Spine: very slight lean shifts following sentence rhythm
+        if (b.Spine) b.Spine.rotation.y = MathUtils.lerp(b.Spine.rotation.y || 0, Math.sin(sentencePhase.current * 0.5) * 0.01 * ge, dt * 1.5);
+        if (b.Spine2) b.Spine2.rotation.y = MathUtils.lerp(b.Spine2.rotation.y || 0, Math.sin(sentencePhase.current * 0.4 + 0.3) * 0.008 * ge, dt * 1.5);
+        // Arms: very subtle fidget, mostly at rest
+        if (noBuiltin) {
+          const armDrift = Math.sin(sentencePhase.current * 0.4) * 0.02 * am;
+          if (b.LeftArm) b.LeftArm.rotation.x = MathUtils.lerp(b.LeftArm.rotation.x, armDrift, dt * 2);
+          if (b.RightArm) b.RightArm.rotation.x = MathUtils.lerp(b.RightArm.rotation.x, -armDrift * 0.7, dt * 2);
+          if (b.LeftForeArm) b.LeftForeArm.rotation.y = MathUtils.lerp(b.LeftForeArm.rotation.y || 0, Math.sin(wordPhase.current * 0.2) * 0.03 * am, dt * 2);
+          if (b.RightForeArm) b.RightForeArm.rotation.y = MathUtils.lerp(b.RightForeArm.rotation.y || 0, Math.sin(wordPhase.current * 0.25 + 1) * -0.03 * am, dt * 2);
         }
       }
 
-      // ── SPEAK: Excited (big nods, bouncy, expressive) ──
+      // ══════════════════════════════════════════════
+      //  SPEAK: Excited — energetic, bouncy, big expressions
+      // ══════════════════════════════════════════════
       else if (curSpeak === 'excited') {
-        if (meshes.length) {
-          setMorph(meshes, 'mouthSmile', 0.4 + Math.sin(mouthPhase.current * 0.7) * 0.15);
-          setMorph(meshes, 'browInnerUp', 0.25 + Math.sin(mouthPhase.current * 0.5) * 0.15);
+        // Face: wide smile, brows animated, open expressions
+        if (hasMorphs) {
+          const exciteSmile = 0.35 + sentenceEnvelope * 0.12 + emph * 0.15;
+          const exciteBrow = 0.15 + emph * 0.25 + Math.sin(wordPhase.current * 0.6) * 0.08;
+          setMorphMapped(mapped, 'mouthSmile', Math.min(0.85, exciteSmile));
+          setMorphMapped(mapped, 'browInnerUp', Math.min(0.6, exciteBrow));
         }
+        // Head: bigger emphasis nods + energetic side-to-side + tilt
         if (b.Head) {
-          b.Head.rotation.x = Math.sin(mouthPhase.current * 1.2) * 0.07 * ge;
-          b.Head.rotation.y = Math.sin(mouthPhase.current * 0.5) * 0.08 * ge;
-          b.Head.rotation.z = Math.sin(mouthPhase.current * 0.4) * 0.04 * ge;
+          const bigNod = -emph * 0.09 * ge + Math.sin(wordPhase.current * 0.7) * 0.025 * ge;
+          const sideMotion = Math.sin(sentencePhase.current * 1.5) * 0.06 * ge + Math.sin(wordPhase.current * 0.4) * 0.03 * ge;
+          const tilt = Math.sin(sentencePhase.current * 0.8) * 0.03 * ge + emph * 0.02 * ge;
+          b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, bigNod, dt * 5);
+          b.Head.rotation.y = MathUtils.lerp(b.Head.rotation.y, sideMotion, dt * 3);
+          b.Head.rotation.z = MathUtils.lerp(b.Head.rotation.z, tilt, dt * 3);
         }
-        // Body bounce while excited
+        if (b.Neck) {
+          b.Neck.rotation.x = MathUtils.lerp(b.Neck.rotation.x, -emph * 0.03 * ge, dt * 4);
+          b.Neck.rotation.y = MathUtils.lerp(b.Neck.rotation.y, Math.sin(sentencePhase.current) * 0.03 * ge, dt * 2);
+        }
+        // Body bounce: tied to word rhythm, not constant
         if (groupRef.current) {
-          groupRef.current.position.y += Math.abs(Math.sin(mouthPhase.current * 1.5)) * 0.008 * ge;
+          const bouncePulse = Math.max(0, Math.sin(wordPhase.current)) * 0.006 * ge;
+          const emphBounce = emph * 0.004 * ge;
+          groupRef.current.position.y += bouncePulse + emphBounce;
         }
-        // Arms more animated
+        // Arms: animated gestures synced to emphasis
         if (noBuiltin) {
-          if (b.LeftArm) b.LeftArm.rotation.x = MathUtils.lerp(b.LeftArm.rotation.x, Math.sin(mouthPhase.current * 0.8) * 0.12 * ge, dt * 4);
-          if (b.RightArm) b.RightArm.rotation.x = MathUtils.lerp(b.RightArm.rotation.x, Math.sin(mouthPhase.current * 0.6 + 1) * -0.12 * ge, dt * 4);
-          if (b.LeftArm) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, 1.1 + Math.sin(mouthPhase.current * 0.5) * 0.3 * ge, dt * 3);
-          if (b.RightArm) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, -1.1 - Math.sin(mouthPhase.current * 0.4 + 0.5) * 0.3 * ge, dt * 3);
+          const armEnergy = 0.06 + emph * 0.12;
+          const armCycle = Math.sin(wordPhase.current * 0.6);
+          if (b.LeftArm) {
+            b.LeftArm.rotation.x = MathUtils.lerp(b.LeftArm.rotation.x, armCycle * armEnergy * ge, dt * 4);
+            b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, 1.1 + Math.sin(sentencePhase.current * 1.2) * 0.2 * ge + emph * 0.15, dt * 3);
+          }
+          if (b.RightArm) {
+            b.RightArm.rotation.x = MathUtils.lerp(b.RightArm.rotation.x, -armCycle * armEnergy * 0.8 * ge, dt * 4);
+            b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, -1.1 - Math.sin(sentencePhase.current * 1.1 + 0.5) * 0.2 * ge - emph * 0.15, dt * 3);
+          }
+          if (b.LeftForeArm) b.LeftForeArm.rotation.y = MathUtils.lerp(b.LeftForeArm.rotation.y || 0, armCycle * 0.08 * ge, dt * 3);
+          if (b.RightForeArm) b.RightForeArm.rotation.y = MathUtils.lerp(b.RightForeArm.rotation.y || 0, -armCycle * 0.08 * ge, dt * 3);
         }
-        // Energetic sway
+        // Torso: energetic sway following sentence rhythm
         if (b.Hips && noBuiltin) {
-          b.Hips.rotation.z = Math.sin(swayPhase.current * 1.5) * 0.025 * sw;
-          b.Hips.rotation.y = Math.sin(swayPhase.current) * 0.02 * sw;
+          b.Hips.rotation.y = MathUtils.lerp(b.Hips.rotation.y, Math.sin(sentencePhase.current * 0.8) * 0.02 * sw, dt * 2);
         }
-        if (b.Spine) b.Spine.rotation.y = Math.sin(mouthPhase.current * 0.3) * 0.02 * ge;
+        if (b.Spine) b.Spine.rotation.y = MathUtils.lerp(b.Spine.rotation.y || 0, Math.sin(sentencePhase.current * 0.6) * 0.015 * ge, dt * 2);
+        if (b.Spine2) b.Spine2.rotation.x = MathUtils.lerp(b.Spine2.rotation.x || 0, emph * -0.02 * ge, dt * 3);
+        // Shoulders pop on emphasis
+        if (b.LeftShoulder) b.LeftShoulder.rotation.z = MathUtils.lerp(b.LeftShoulder.rotation.z || 0, emph * 0.025 * ge, dt * 5);
+        if (b.RightShoulder) b.RightShoulder.rotation.z = MathUtils.lerp(b.RightShoulder.rotation.z || 0, -emph * 0.025 * ge, dt * 5);
       }
 
-      // ── SPEAK: Explaining (hand gestures, deliberate movements) ──
+      // ══════════════════════════════════════════════
+      //  SPEAK: Explaining — deliberate gestures, teacher-like
+      // ══════════════════════════════════════════════
       else if (curSpeak === 'explaining') {
-        if (meshes.length) {
-          setMorph(meshes, 'mouthSmile', 0.1 + Math.sin(mouthPhase.current * 0.4) * 0.06);
-          setMorph(meshes, 'browInnerUp', 0.15 + Math.sin(mouthPhase.current * 0.6) * 0.12);
+        // Face: thoughtful, brows raise when making points
+        if (hasMorphs) {
+          const thinkSmile = 0.08 + Math.sin(sentencePhase.current * 0.6) * 0.04;
+          const pointBrow = 0.1 + emph * 0.25 + Math.sin(wordPhase.current * 0.4) * 0.06;
+          setMorphMapped(mapped, 'mouthSmile', thinkSmile + emph * 0.06);
+          setMorphMapped(mapped, 'browInnerUp', Math.min(0.5, pointBrow));
         }
+        // Head: deliberate nods on emphasis + slow scanning + slight tilt when "considering"
         if (b.Head) {
-          b.Head.rotation.x = Math.sin(mouthPhase.current * 0.6) * 0.03 * ge;
-          b.Head.rotation.y = Math.sin(mouthPhase.current * 0.2) * 0.06 * ge;
-          b.Head.rotation.z = Math.sin(mouthPhase.current * 0.15) * 0.02 * ge;
+          const explainNod = -emph * 0.07 * ge;
+          const scanY = Math.sin(sentencePhase.current * 0.8) * 0.05 * ge + Math.sin(wordPhase.current * 0.2) * 0.02 * ge;
+          const thinkTilt = Math.sin(sentencePhase.current * 0.5 + 1) * 0.02 * ge;
+          b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, explainNod + 0.02 * ge, dt * 4); // slight forward lean
+          b.Head.rotation.y = MathUtils.lerp(b.Head.rotation.y, scanY, dt * 2);
+          b.Head.rotation.z = MathUtils.lerp(b.Head.rotation.z, thinkTilt, dt * 2);
         }
-        // One hand gesturing outward (explaining hand)
+        if (b.Neck) b.Neck.rotation.y = MathUtils.lerp(b.Neck.rotation.y, Math.sin(sentencePhase.current * 0.5) * 0.025 * ge, dt * 2);
+        // Gesture arm: reach/hold/retract beats with variety
         if (noBuiltin) {
-          const gestureWave = Math.sin(mouthPhase.current * 0.4);
-          if (b.RightArm) {
-            b.RightArm.rotation.x = MathUtils.lerp(b.RightArm.rotation.x, -0.4 * ge + gestureWave * 0.15 * ge, dt * 3);
-            b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, -0.8 * ge, dt * 3);
+          const gt = gestureTarget.current;
+          const gSide = gestureSide.current;
+          const useRight = gSide > 0;
+          const gestArm = useRight ? b.RightArm : b.LeftArm;
+          const gestFore = useRight ? b.RightForeArm : b.LeftForeArm;
+          const restArm = useRight ? b.LeftArm : b.RightArm;
+          const restFore = useRight ? b.LeftForeArm : b.RightForeArm;
+          const zSign = useRight ? -1 : 1;
+
+          if (gestArm) {
+            const targetX = gt.armX * ge * gestureBlend;
+            const targetZ = (useRight ? -1.1 : 1.1) + gt.armZ * ge * gestureBlend;
+            gestArm.rotation.x = MathUtils.lerp(gestArm.rotation.x, targetX + holdWobble * ge, dt * 4);
+            gestArm.rotation.z = MathUtils.lerp(gestArm.rotation.z, targetZ, dt * 3.5);
           }
-          if (b.RightForeArm) {
-            b.RightForeArm.rotation.x = MathUtils.lerp(b.RightForeArm.rotation.x, -0.5 * ge + gestureWave * 0.2 * ge, dt * 3);
-            b.RightForeArm.rotation.y = MathUtils.lerp(b.RightForeArm.rotation.y, gestureWave * 0.3 * ge, dt * 3);
+          if (gestFore) {
+            gestFore.rotation.x = MathUtils.lerp(gestFore.rotation.x, gt.foreX * ge * gestureBlend + holdWobble * 0.5, dt * 4);
+            gestFore.rotation.y = MathUtils.lerp(gestFore.rotation.y || 0, gt.foreY * ge * gestureBlend, dt * 3.5);
           }
-          // Left arm relaxed
-          if (b.LeftArm) b.LeftArm.rotation.x = MathUtils.lerp(b.LeftArm.rotation.x, 0, dt * 3);
+          // Rest arm stays relaxed with gentle fidget
+          if (restArm) {
+            restArm.rotation.x = MathUtils.lerp(restArm.rotation.x, Math.sin(sentencePhase.current * 0.3) * 0.015 * am, dt * 2);
+          }
+          if (restFore) {
+            restFore.rotation.y = MathUtils.lerp(restFore.rotation.y || 0, Math.sin(wordPhase.current * 0.15) * 0.02 * am, dt * 2);
+          }
         }
-        // Lean forward slightly (like explaining to someone)
-        if (b.Spine) b.Spine.rotation.x = MathUtils.lerp(b.Spine.rotation.x || 0, 0.04 * ge, dt * 2);
-        if (b.Hips && noBuiltin) {
-          b.Hips.rotation.z = MathUtils.lerp(b.Hips.rotation.z, Math.sin(swayPhase.current * 0.5) * 0.01, dt * 2);
-        }
+        // Lean forward slightly (engaging the listener)
+        if (b.Spine) b.Spine.rotation.x = MathUtils.lerp(b.Spine.rotation.x || 0, 0.03 * ge + emph * 0.015, dt * 2);
+        if (b.Spine2) b.Spine2.rotation.y = MathUtils.lerp(b.Spine2.rotation.y || 0, Math.sin(sentencePhase.current * 0.4) * 0.012 * ge, dt * 2);
+        // Shoulders: micro-shrug on emphasis
+        if (b.LeftShoulder) b.LeftShoulder.rotation.z = MathUtils.lerp(b.LeftShoulder.rotation.z || 0, emph * 0.012 * ge, dt * 4);
+        if (b.RightShoulder) b.RightShoulder.rotation.z = MathUtils.lerp(b.RightShoulder.rotation.z || 0, -emph * 0.012 * ge, dt * 4);
       }
     }
 
@@ -510,11 +813,11 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     // ─────────────────────────────────────────────────
     else if (state === 'thinking') {
       breathPhase.current += 0; // already incremented above
-      if (meshes.length) {
-        setMorph(meshes, 'mouthOpen', 0);
-        setMorph(meshes, 'jawOpen', 0);
-        setMorph(meshes, 'browInnerUp', 0.35 + Math.sin(breathPhase.current * 2) * 0.1);
-        setMorph(meshes, 'mouthSmile', 0.05);
+      if (hasMorphs) {
+        setMorphMapped(mapped, 'mouthOpen', 0);
+        setMorphMapped(mapped, 'jawOpen', 0);
+        setMorphMapped(mapped, 'browInnerUp', 0.35 + Math.sin(breathPhase.current * 2) * 0.1);
+        setMorphMapped(mapped, 'mouthSmile', 0.05);
       }
       if (b.Head) {
         b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, -0.12 * ge, dt * 3);
