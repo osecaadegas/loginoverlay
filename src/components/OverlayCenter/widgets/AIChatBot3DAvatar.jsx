@@ -919,8 +919,28 @@ export default function AIChatBot3DAvatar({
   reaction = 0,
 }) {
   const [error, setError] = useState(null);
+  const [activeUrl, setActiveUrl] = useState(avatarUrl);
+  const [fadeOpacity, setFadeOpacity] = useState(1);
+  const fadeRef = useRef(null);
 
-  if (!avatarUrl) {
+  // Smooth crossfade when avatar URL changes
+  useEffect(() => {
+    if (avatarUrl === activeUrl) return;
+    // Fade out
+    setFadeOpacity(0);
+    if (fadeRef.current) clearTimeout(fadeRef.current);
+    fadeRef.current = setTimeout(() => {
+      setActiveUrl(avatarUrl);
+      setError(null);
+      // Small delay then fade in
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setFadeOpacity(1));
+      });
+    }, 350); // match CSS transition duration
+    return () => { if (fadeRef.current) clearTimeout(fadeRef.current); };
+  }, [avatarUrl]);
+
+  if (!activeUrl) {
     return (
       <div style={{
         width, height, display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -945,7 +965,10 @@ export default function AIChatBot3DAvatar({
   }
 
   return (
-    <div style={{ width, height, background: 'transparent', border: 'none', overflow: 'hidden', position: 'relative', pointerEvents: 'auto' }}>
+    <div style={{
+      width, height, background: 'transparent', border: 'none', overflow: 'hidden', position: 'relative', pointerEvents: 'auto',
+      opacity: fadeOpacity, transition: 'opacity 0.35s ease-in-out',
+    }}>
       {/* State indicator */}
       <div style={{
         position: 'absolute', bottom: 8, left: '50%', transform: 'translateX(-50%)',
@@ -973,7 +996,7 @@ export default function AIChatBot3DAvatar({
 
         {/* Avatar */}
         <React.Suspense fallback={null}>
-          <AvatarModel url={avatarUrl} state={state} accentColor={accentColor} flipModel={flipModel}
+          <AvatarModel url={activeUrl} state={state} accentColor={accentColor} flipModel={flipModel}
             modelScale={modelScale} breathing={breathing} sway={sway} headMove={headMove}
             armMove={armMove} gestures={gestures} animSpeed={animSpeed} reaction={reaction} />
         </React.Suspense>
