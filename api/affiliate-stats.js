@@ -3,8 +3,9 @@
  *
  * Proxies affiliate partner report API to avoid exposing the statistic token.
  * Admin-only: verifies user JWT + admin role via Supabase.
+ * Supports multiple programs via ?program= param (each has its own token env var).
  *
- * GET /api/affiliate-stats?from=2026-01-01&to=2026-02-01&group_by=day,brand
+ * GET /api/affiliate-stats?program=gamblezen&from=2026-01-01&to=2026-02-01&group_by=day,brand
  */
 import { createClient } from '@supabase/supabase-js';
 
@@ -14,7 +15,17 @@ const supabaseAdmin = createClient(
 );
 
 const AFFILIATE_API_BASE = process.env.AFFILIATE_API_BASE; // e.g. https://admin.famouspartners.com
-const AFFILIATE_API_TOKEN = process.env.AFFILIATE_API_TOKEN;
+
+// Map of program keys → env var names for their tokens
+const PROGRAM_TOKENS = {
+  gamblezen: process.env.AFFILIATE_TOKEN_GAMBLEZEN,
+  megarich: process.env.AFFILIATE_TOKEN_MEGARICH,
+};
+
+// Also support the legacy single-token env var as fallback for gamblezen
+if (!PROGRAM_TOKENS.gamblezen && process.env.AFFILIATE_API_TOKEN) {
+  PROGRAM_TOKENS.gamblezen = process.env.AFFILIATE_API_TOKEN;
+}
 
 async function verifyAdmin(authHeader) {
   if (!authHeader?.startsWith('Bearer ')) {
@@ -51,9 +62,19 @@ export default async function handler(req, res) {
   if (!adminCheck.authorized) return res.status(403).json({ error: adminCheck.error });
 
   // Validate config
-  if (!AFFILIATE_API_BASE || !AFFILIATE_API_TOKEN) {
-    return res.status(500).json({ error: 'Affiliate API not configured. Set AFFILIATE_API_BASE and AFFILIATE_API_TOKEN env vars.' });
+  if (!AFFILIATE_API_BASE) {
+    return res.status(500).json({ error: 'Affiliate API not configured. Set AFFILIATE_API_BASE env var.' });
   }
+
+  // Determine which program to query
+  const program = (req.query.program || 'gamblezen').toLowerCase();
+  const allowedPrograms = Object.keys(PROGRAM_TOKENS).filter(k => PROGRAM_TOKENS[k]);
+  if (!PROGRAM_TOKENS[program]) {
+    return res.status(400).json({
+      error: `Unknown or unconfigured program: "${program}". Available: ${allowedPrograms.join(', ') || 'none (set AFFILIATE_TOKEN_* env vars)'}`,
+    });
+  }
+  const apiToken = PROGRAM_TOKENS[program];
 
   // Build query
   const { from, to, group_by, columns } = req.query;
@@ -85,7 +106,7 @@ export default async function handler(req, res) {
       headers: {
         'Accept': 'application/json',
         'Content-Type': 'application/json',
-        'Authorization': AFFILIATE_API_TOKEN,
+        'Authorization': apiToken,
       },
     });
 

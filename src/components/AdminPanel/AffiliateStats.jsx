@@ -56,8 +56,14 @@ function getPresetRange(preset) {
 
 function toISO(d) { return d.toISOString().split('T')[0]; }
 
+const PROGRAMS = [
+  { id: 'gamblezen', label: 'Gamblezen', icon: '🎰' },
+  { id: 'megarich', label: 'Megarich', icon: '💎' },
+];
+
 export default function AffiliateStats() {
   const defaultRange = getPresetRange('30d');
+  const [program, setProgram] = useState('gamblezen');
   const [from, setFrom] = useState(toISO(defaultRange.from));
   const [to, setTo] = useState(toISO(defaultRange.to));
   const [groupBy, setGroupBy] = useState('day');
@@ -73,7 +79,7 @@ export default function AffiliateStats() {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('Not authenticated');
 
-      const params = new URLSearchParams({ from, to, group_by: `${groupBy},brand` });
+      const params = new URLSearchParams({ program, from, to, group_by: `${groupBy},brand` });
       const res = await fetch(`/api/affiliate-stats?${params}`, {
         headers: { Authorization: `Bearer ${session.access_token}` },
       });
@@ -88,7 +94,7 @@ export default function AffiliateStats() {
     } finally {
       setLoading(false);
     }
-  }, [from, to, groupBy]);
+  }, [program, from, to, groupBy]);
 
   // Process report data into per-brand aggregates
   const brandData = React.useMemo(() => {
@@ -166,6 +172,19 @@ export default function AffiliateStats() {
       <div className="affiliate-stats-header">
         <h2>📊 Affiliate Partner Stats</h2>
         <p className="affiliate-stats-subtitle">Revenue, deposits, registrations & more — grouped by brand</p>
+      </div>
+
+      {/* Program selector */}
+      <div className="affiliate-program-tabs">
+        {PROGRAMS.map(p => (
+          <button
+            key={p.id}
+            className={`affiliate-program-tab ${program === p.id ? 'active' : ''}`}
+            onClick={() => { setProgram(p.id); setReport(null); setExpandedBrand(null); }}
+          >
+            <span>{p.icon}</span> {p.label}
+          </button>
+        ))}
       </div>
 
       {/* Filters */}

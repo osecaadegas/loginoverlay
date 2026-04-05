@@ -16,6 +16,38 @@
   margin: 0 0 1rem;
 }
 
+/* ── Program Tabs ── */
+.affiliate-program-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+.affiliate-program-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: #aaa;
+  padding: 0.55rem 1.1rem;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.affiliate-program-tab:hover {
+  background: rgba(100,108,255,0.1);
+  color: #fff;
+  border-color: rgba(100,108,255,0.3);
+}
+.affiliate-program-tab.active {
+  background: rgba(100,108,255,0.15);
+  border-color: #646cff;
+  color: #fff;
+  box-shadow: 0 0 8px rgba(100,108,255,0.2);
+}
+
 /* ── Filters ── */
 .affiliate-filters {
   background: rgba(255,255,255,0.03);
