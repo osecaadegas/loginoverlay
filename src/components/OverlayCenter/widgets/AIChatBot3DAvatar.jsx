@@ -1,6 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
-import { useGLTF, Environment } from '@react-three/drei';
+import { useGLTF, Environment, Html } from '@react-three/drei';
 import { AnimationMixer, MathUtils } from 'three';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
@@ -1097,10 +1097,17 @@ export default function AIChatBot3DAvatar({
       </div>
 
       <Canvas
+        key={activeUrl}
         shadows
         gl={{ antialias: true, alpha: true, powerPreference: 'high-performance' }}
         onCreated={({ gl }) => { gl.setClearColor(0x000000, 0); }}
-        onError={() => setError(true)}
+        fallback={
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            width: '100%', height: '100%', color: '#ef4444', fontSize: 12, textAlign: 'center', gap: 6 }}>
+            <span>Failed to load 3D avatar</span>
+            <span style={{ fontSize: 10, color: '#94a3b8' }}>Check the model URL or try a different avatar</span>
+          </div>
+        }
       >
         <CameraRig cameraDistance={cameraDistance} cameraHeight={cameraHeight} />
 
@@ -1111,7 +1118,12 @@ export default function AIChatBot3DAvatar({
         <pointLight position={[0, 1, 2]} intensity={0.3} color={accentColor} />
 
         {/* Avatar */}
-        <React.Suspense fallback={null}>
+        <React.Suspense fallback={
+          <Html center>
+            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: 12, whiteSpace: 'nowrap',
+              textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>Loading 3D model…</div>
+          </Html>
+        }>
           <AvatarModel url={activeUrl} state={state} accentColor={accentColor} flipModel={flipModel}
             modelScale={modelScale} breathing={breathing} sway={sway} headMove={headMove}
             armMove={armMove} gestures={gestures} animSpeed={animSpeed} reaction={reaction} />
@@ -1119,8 +1131,6 @@ export default function AIChatBot3DAvatar({
 
         {/* Particles */}
         {showParticles && <FloatingParticles color={accentColor} count={40} />}
-
-
 
         {/* Environment */}
         <Environment preset="city" />

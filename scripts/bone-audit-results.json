@@ -1,0 +1,884 @@
+[
+  {
+    "file": "1126693235709775930.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftShoulder",
+      "RightShoulder",
+      "LeftArm",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine",
+      "Neck",
+      "Head",
+      "Hips"
+    ],
+    "morphs": 85,
+    "leftArm": null,
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": null,
+    "head": null
+  },
+  {
+    "file": "1296904030812597462.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 0,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "1332881142247193159.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "RightForeArm",
+      "LeftHand",
+      "RightHand",
+      "LeftShoulder",
+      "RightShoulder",
+      "LeftArm",
+      "RightArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2",
+      "Spine1",
+      "Spine",
+      "Neck",
+      "Head",
+      "Hips"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": null,
+    "rightForeArm": null,
+    "hips": null,
+    "head": null
+  },
+  {
+    "file": "1711319250230595362.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftArm",
+      "LeftLeg",
+      "Spine2"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": {
+      "x": -0.022,
+      "y": 0.026,
+      "z": 0.041
+    },
+    "leftForeArm": {
+      "x": 0.202,
+      "y": 0.026,
+      "z": 0.009
+    },
+    "rightForeArm": {
+      "x": -0.022,
+      "y": -0.026,
+      "z": -0.041
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0.193,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "2914707689262839002.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "RightForeArm",
+      "LeftHand",
+      "RightHand",
+      "LeftShoulder",
+      "RightShoulder",
+      "LeftArm",
+      "RightArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2"
+    ],
+    "morphs": 63,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": null,
+    "rightForeArm": null,
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "330948017661333885.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 0,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "3493590446520631963.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "LeftHand",
+      "RightHand",
+      "LeftShoulder",
+      "RightShoulder",
+      "LeftArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2",
+      "Spine1"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": null,
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "3640925089614202413.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftArm",
+      "LeftLeg",
+      "Spine2"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": {
+      "x": -0.715,
+      "y": 0,
+      "z": 0.001
+    },
+    "leftForeArm": {
+      "x": 0.167,
+      "y": 0.029,
+      "z": -0.256
+    },
+    "rightForeArm": {
+      "x": -0.715,
+      "y": 0,
+      "z": -0.001
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0.041
+    },
+    "head": {
+      "x": 0.056,
+      "y": -0.001,
+      "z": 0.041
+    }
+  },
+  {
+    "file": "3834717849459246899.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 0,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "4229619864375409353.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 0,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "4240122115842624286.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 0,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "4371605353531398331.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftArm",
+      "LeftLeg",
+      "Spine2",
+      "Spine1"
+    ],
+    "morphs": 410,
+    "leftArm": null,
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "4450315755567433536.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftArm",
+      "LeftLeg",
+      "Spine2",
+      "Spine1"
+    ],
+    "morphs": 456,
+    "leftArm": null,
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "4476170053525632637.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "RightForeArm",
+      "LeftArm",
+      "RightArm",
+      "Spine2",
+      "Spine1",
+      "Spine",
+      "Neck",
+      "Head",
+      "Hips"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": null,
+    "rightForeArm": null,
+    "hips": null,
+    "head": null
+  },
+  {
+    "file": "5078519759161622804.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "RightForeArm",
+      "LeftHand",
+      "RightHand",
+      "LeftShoulder",
+      "RightShoulder",
+      "LeftArm",
+      "RightArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2",
+      "Spine1",
+      "Spine",
+      "Neck",
+      "Head",
+      "Hips"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": null,
+    "rightForeArm": null,
+    "hips": null,
+    "head": null
+  },
+  {
+    "file": "6450060599276401442.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "RightForeArm",
+      "LeftHand",
+      "RightHand",
+      "LeftShoulder",
+      "RightShoulder",
+      "LeftArm",
+      "RightArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": null,
+    "rightForeArm": null,
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "6462838249384906260.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 0,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "7307638738104714060.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "RightForeArm",
+      "LeftHand",
+      "RightHand",
+      "LeftShoulder",
+      "RightShoulder",
+      "LeftArm",
+      "RightArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2"
+    ],
+    "morphs": 66,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": null,
+    "rightForeArm": null,
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "7358642820833195174.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 0,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "8232090975149790447.glb",
+    "pose": "T-pose",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [],
+    "morphs": 2,
+    "leftArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "824022961986602005.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftForeArm",
+      "RightForeArm",
+      "LeftHand",
+      "RightHand",
+      "LeftArm",
+      "RightArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2",
+      "Spine1",
+      "Spine",
+      "Neck",
+      "Head",
+      "Hips"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": null,
+    "rightForeArm": null,
+    "hips": null,
+    "head": null
+  },
+  {
+    "file": "8558624389089208810.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftArm",
+      "RightArm",
+      "Spine2"
+    ],
+    "morphs": 0,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    }
+  },
+  {
+    "file": "9101833808108867999.glb",
+    "pose": "unknown",
+    "armAxis": "z",
+    "hasBodyAnims": false,
+    "missing": [
+      "LeftHand",
+      "RightHand",
+      "LeftArm",
+      "RightArm",
+      "LeftUpLeg",
+      "RightUpLeg",
+      "LeftLeg",
+      "RightLeg",
+      "Spine2",
+      "Spine1",
+      "Spine",
+      "Neck",
+      "Head"
+    ],
+    "morphs": 81,
+    "leftArm": null,
+    "rightArm": null,
+    "leftForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "rightForeArm": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "hips": {
+      "x": 0,
+      "y": 0,
+      "z": 0
+    },
+    "head": null
+  },
+  {
+    "file": "facial_animation_of_a_sexy_girl.glb",
+    "pose": "A-pose",
+    "armAxis": "y",
+    "hasBodyAnims": true,
+    "missing": [
+      "Spine2"
+    ],
+    "morphs": 1219,
+    "leftArm": {
+      "x": 0,
+      "y": -0.007,
+      "z": 0
+    },
+    "rightArm": {
+      "x": 0.164,
+      "y": -0.106,
+      "z": 0.596
+    },
+    "leftForeArm": {
+      "x": 0.024,
+      "y": -0.001,
+      "z": 0.041
+    },
+    "rightForeArm": {
+      "x": 0.164,
+      "y": 0.106,
+      "z": -0.597
+    },
+    "hips": {
+      "x": 1.571,
+      "y": 0,
+      "z": 0
+    },
+    "head": {
+      "x": -0.208,
+      "y": 0,
+      "z": 0
+    }
+  }
+]
