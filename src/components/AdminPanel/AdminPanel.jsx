@@ -8,7 +8,6 @@ import './AdminPanel.css';
 import './AdminPanel.new.css';
 import SeasonPassAdmin from './SeasonPassAdmin';
 import ExtensionAdmin from './ExtensionAdmin';
-import AffiliateStats from './AffiliateStats';
 import { CasinoOfferModal } from './modals';
 import { 
   TabNavigation, 
@@ -41,7 +40,7 @@ import {
 } from './components';
 
 // Valid tab IDs for URL deep linking
-const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance', 'extension', 'affiliate'];
+const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance', 'extension'];
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -2960,7 +2959,6 @@ export default function AdminPanel() {
           { id: 'seasonpass', label: 'Season Pass', icon: '👑' },
           { id: 'guessbalance', label: 'Guess Balance', icon: '💰' },
           { id: 'extension', label: 'Extension', icon: '🔌' },
-          { id: 'affiliate', label: 'Affiliate Stats', icon: '📊' },
         ]}
         activeTab={activeTab}
         onTabChange={handleTabChange}
@@ -7444,11 +7442,6 @@ export default function AdminPanel() {
       {/* Extension Tab */}
       {activeTab === 'extension' && (
         <ExtensionAdmin />
-      )}
-
-      {/* Affiliate Stats Tab */}
-      {activeTab === 'affiliate' && (
-        <AffiliateStats />
       )}
     </div>
   );
