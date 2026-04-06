@@ -103,6 +103,27 @@ export function useOverlay() {
         if (detected.bet_size != null) update.betSize = detected.bet_size;
         if (detected.last_win != null) update.lastWin = detected.last_win;
 
+        // Also fetch user slot records so bestWin/averageMulti/etc reach OBS
+        try {
+          const resolvedName = slotData?.name || detected.slot_name;
+          const { data: rec } = await supabase
+            .from('user_slot_records')
+            .select('*')
+            .eq('user_id', user.id)
+            .eq('slot_name', resolvedName)
+            .maybeSingle();
+          if (rec) {
+            update.averageMulti = Math.round((rec.average_multi || 0) * 10) / 10;
+            update.bestMulti = Math.round((rec.best_multiplier || 0) * 10) / 10;
+            update.totalBonuses = rec.total_bonuses || 0;
+            update.bestWin = Math.round((rec.best_win || 0) * 10) / 10;
+            update.lastBet = Number(rec.last_bet_size) || 0;
+            update.lastPay = Math.round((rec.last_payout || 0) * 10) / 10;
+            update.lastMulti = Math.round((rec.last_multi || 0) * 10) / 10;
+            update.lastWinIndex = rec.total_bonuses || 0;
+          }
+        } catch { /* don't block slot detection if records lookup fails */ }
+
         // Determine which widget(s) to target
         const detectedTarget = detected.target || 'single_slot';
         const targetTypes = detectedTarget === 'bonus_hunt'

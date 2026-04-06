@@ -136,11 +136,10 @@ function RtpStatsWidget({ config, theme, allWidgets, userId }) {
 
   /* ── Best win for this slot (from user_slot_records) ── */
   const [bestWinData, setBestWinData] = useState(null);
-  const lastBestWinSlotRef = useRef('');
 
+  // Fetch best win on slot change + subscribe to realtime updates
   useEffect(() => {
-    if (!slotName || !userId || slotName === lastBestWinSlotRef.current) return;
-    lastBestWinSlotRef.current = slotName;
+    if (!slotName || !userId) { setBestWinData(null); return; }
     let cancelled = false;
 
     async function fetchBestWin() {
@@ -158,7 +157,24 @@ function RtpStatsWidget({ config, theme, allWidgets, userId }) {
     }
 
     fetchBestWin();
-    return () => { cancelled = true; };
+
+    // Subscribe to changes so bestWin updates live when a new result is recorded
+    const channel = supabase
+      .channel(`bestwin_${userId}_${slotName}`)
+      .on('postgres_changes', {
+        event: '*',
+        schema: 'public',
+        table: 'user_slot_records',
+        filter: `user_id=eq.${userId}`,
+      }, (payload) => {
+        const rec = payload.new;
+        if (rec && rec.slot_name === slotName) {
+          setBestWinData({ best_win: rec.best_win, best_multiplier: rec.best_multiplier });
+        }
+      })
+      .subscribe();
+
+    return () => { cancelled = true; supabase.removeChannel(channel); };
   }, [slotName, userId]);
 
   /* ── Style config ── */
