@@ -435,106 +435,240 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
           <span>Enable TTS (reads AI responses aloud)</span>
         </div>
 
-        {c.ttsEnabled !== false && (
-          <>
-            {/* Voice filter */}
-            <label style={labelStyle}>Search voices</label>
-            <input
-              value={voiceFilter}
-              onChange={e => setVoiceFilter(e.target.value)}
-              placeholder="Filter by name or language (e.g. Portuguese, Google, David...)"
-              style={{ ...inputStyle, marginBottom: 6 }}
-            />
-            <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
-              {['🇵🇹 PT', '🇬🇧 EN', '🇪🇸 ES', '🇫🇷 FR', '🇩🇪 DE', '♂️ Male', '♀️ Female'].map(tag => {
-                const langCode = tag.includes('Male') ? 'male' : tag.includes('Female') ? 'female' : tag.split(' ')[1].toLowerCase();
-                const active = voiceFilter.toLowerCase() === langCode;
-                return (
-                  <button key={tag} onClick={() => setVoiceFilter(active ? '' : langCode)}
-                    style={{
-                      padding: '3px 8px', borderRadius: 4, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600,
-                      background: active ? 'rgba(145,70,255,0.2)' : 'rgba(255,255,255,0.05)',
-                      color: active ? '#a78bfa' : '#64748b',
-                    }}>{tag}</button>
-                );
-              })}
-            </div>
+        {c.ttsEnabled !== false && (() => {
+          // ── Voice classification helpers ──
+          const FEMALE_NAMES = /\b(francisca|fernanda|raquel|maria|branca|in[eê]s|helia|catarina|ana|clara|alice|zira|hazel|susan|jenny|linda|heather|michelle|aria|sara|sabina|elsa|paulina|luciana|larissa|leticia|yara|camila|valentina|elena|karla|nuria|conchita|lucia|elvira|ines|amelie|sylvie|denise|caroline|coralie|hortense|katja|hedda|ingrid|astrid|hillevi|sofie|birgit|heera|swara|hemant|kalpana|madhur|naomi|nanami|ayumi|haruka|misaki|hanhan|huihui|xiaoxiao|xiaoyi|yun|zhiwei|maat|damayanti|gadis|satu|noora|monika|iveta|lado|kendra)\b/i;
+          const MALE_NAMES = /\b(ant[oó]nio|duarte|daniel|cristiano|hector|jorge|tiago|david|james|mark|george|richard|ryan|guy|sean|rishi|sam|liam|eric|ivan|bengt|stefan|filip|adam|bruce|reed|steffan|thomas|guillaume|claude|henri|alain|pablo|alvaro|diego|carlos|enrique|raul|luca|cosimo|diego|hans|conrad|florian|ichiro|keita|kenzo|naoto|takeshi|kangkang|yun|yunyang|zhiwei|rafal|marek|pattara|andika|hemant|sami|rizwan|asad|karsten|heami|junichi|tolga|sergei|dmitry|maxim|pavel)\b/i;
+          const FAMOUS_NAMES = /\b(google|microsoft|apple|amazon|samsung|cortana|siri|alexa)\b/i;
 
-            <div style={{ fontSize: 10, color: '#64748b', marginBottom: 8, padding: '6px 8px', borderRadius: 4, background: 'rgba(255,255,255,0.02)' }}>
-              💡 Want more PT voices? Use <strong>Microsoft Edge</strong> browser — it has 5+ high-quality Portuguese voices including <em>Microsoft Francisca</em> and <em>Microsoft António</em>. Chrome has fewer PT voices.
-            </div>
+          const classifyVoice = (v) => {
+            const n = v.name.toLowerCase();
+            const isFemale = FEMALE_NAMES.test(n) || /\bfemale\b/i.test(n);
+            const isMale = MALE_NAMES.test(n) || /\bmale\b/i.test(n);
+            const isFamous = FAMOUS_NAMES.test(n);
+            // gender: guess from name patterns if not matched
+            let gender = isFemale ? 'female' : isMale ? 'male' : 'unknown';
+            // heuristic: "Online (Natural)" voices from Edge tend to have gendered first names already caught above
+            return { gender, isFamous };
+          };
 
-            {/* Voice cards */}
-            <div style={{ maxHeight: 260, overflowY: 'auto', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              {/* System default option */}
-              <div
-                onClick={() => set('ttsVoice', '')}
-                style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
-                  background: !c.ttsVoice ? `${c.accentColor || '#9146FF'}20` : 'rgba(255,255,255,0.02)',
-                  border: !c.ttsVoice ? `1px solid ${c.accentColor || '#9146FF'}55` : '1px solid rgba(255,255,255,0.06)',
-                  transition: 'all 0.15s',
-                }}
-              >
-                <div style={{ fontSize: 16 }}>🔊</div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>Auto (Portuguese)</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Auto-picks best PT voice available</div>
+          const getLangFlag = (lang) => {
+            if (lang.startsWith('en')) return '🇬🇧';
+            if (lang.startsWith('pt-PT')) return '🇵🇹';
+            if (lang.startsWith('pt-BR')) return '🇧🇷';
+            if (lang.startsWith('pt')) return '🇵🇹';
+            if (lang.startsWith('es')) return '🇪🇸';
+            if (lang.startsWith('fr')) return '🇫🇷';
+            if (lang.startsWith('de')) return '🇩🇪';
+            if (lang.startsWith('it')) return '🇮🇹';
+            if (lang.startsWith('ja')) return '🇯🇵';
+            if (lang.startsWith('ko')) return '🇰🇷';
+            if (lang.startsWith('zh')) return '🇨🇳';
+            if (lang.startsWith('ru')) return '🇷🇺';
+            if (lang.startsWith('nl')) return '🇳🇱';
+            if (lang.startsWith('pl')) return '🇵🇱';
+            if (lang.startsWith('tr')) return '🇹🇷';
+            if (lang.startsWith('sv')) return '🇸🇪';
+            if (lang.startsWith('nb') || lang.startsWith('no')) return '🇳🇴';
+            if (lang.startsWith('da')) return '🇩🇰';
+            if (lang.startsWith('fi')) return '🇫🇮';
+            if (lang.startsWith('ar')) return '🇸🇦';
+            if (lang.startsWith('hi')) return '🇮🇳';
+            if (lang.startsWith('th')) return '🇹🇭';
+            if (lang.startsWith('id')) return '🇮🇩';
+            return '🌐';
+          };
+
+          const getLangLabel = (lang) => {
+            if (lang.startsWith('pt-PT')) return 'Portuguese (Portugal)';
+            if (lang.startsWith('pt-BR')) return 'Portuguese (Brasil)';
+            if (lang.startsWith('pt')) return 'Portuguese';
+            if (lang.startsWith('en-US')) return 'English (US)';
+            if (lang.startsWith('en-GB')) return 'English (UK)';
+            if (lang.startsWith('en-AU')) return 'English (AU)';
+            if (lang.startsWith('en')) return 'English';
+            if (lang.startsWith('es')) return 'Spanish';
+            if (lang.startsWith('fr')) return 'French';
+            if (lang.startsWith('de')) return 'German';
+            if (lang.startsWith('it')) return 'Italian';
+            if (lang.startsWith('ja')) return 'Japanese';
+            if (lang.startsWith('ko')) return 'Korean';
+            if (lang.startsWith('zh')) return 'Chinese';
+            if (lang.startsWith('ru')) return 'Russian';
+            return lang;
+          };
+
+          const getPreviewText = (lang, botName) => {
+            if (lang.startsWith('pt')) return `Olá, eu sou o ${botName}, o teu assistente de stream!`;
+            if (lang.startsWith('es')) return `¡Hola! Soy ${botName}, tu asistente de stream.`;
+            if (lang.startsWith('fr')) return `Bonjour, je suis ${botName}, ton assistant de stream!`;
+            if (lang.startsWith('de')) return `Hallo, ich bin ${botName}, dein Stream-Assistent!`;
+            if (lang.startsWith('it')) return `Ciao, sono ${botName}, il tuo assistente di stream!`;
+            if (lang.startsWith('ja')) return `こんにちは、${botName}です。配信アシスタントです！`;
+            if (lang.startsWith('ko')) return `안녕하세요, ${botName}입니다. 방송 도우미예요!`;
+            if (lang.startsWith('zh')) return `你好，我是${botName}，你的直播助手！`;
+            if (lang.startsWith('ru')) return `Привет! Я ${botName}, твой помощник для стримов!`;
+            return `Hello, I'm ${botName}, your stream assistant!`;
+          };
+
+          // Classify all voices
+          const classified = voices.map(v => ({ ...classifyVoice(v), voice: v }));
+
+          // Filters
+          const filterLang = voiceFilter;
+          const [filterGender, setFilterGender] = [c._ttsFilterGender || '', (v) => set('_ttsFilterGender', v)];
+          const [filterFamous, setFilterFamous] = [c._ttsFilterFamous || '', (v) => set('_ttsFilterFamous', v)];
+
+          const filtered = classified.filter(({ voice: v, gender, isFamous }) => {
+            if (filterLang) {
+              const q = filterLang.toLowerCase();
+              if (!v.name.toLowerCase().includes(q) && !v.lang.toLowerCase().includes(q)) return false;
+            }
+            if (filterGender === 'male' && gender !== 'male') return false;
+            if (filterGender === 'female' && gender !== 'female') return false;
+            if (filterFamous === 'famous' && !isFamous) return false;
+            if (filterFamous === 'standard' && isFamous) return false;
+            return true;
+          });
+
+          const sorted = filtered.sort((a, b) => {
+            const aP = a.voice.lang.startsWith('pt') ? 0 : 1;
+            const bP = b.voice.lang.startsWith('pt') ? 0 : 1;
+            if (aP !== bP) return aP - bP;
+            if (aP === 0) {
+              const aPP = a.voice.lang.startsWith('pt-PT') ? 0 : 1;
+              const bPP = b.voice.lang.startsWith('pt-PT') ? 0 : 1;
+              if (aPP !== bPP) return aPP - bPP;
+            }
+            // Sort famous first within same language
+            if (a.isFamous !== b.isFamous) return a.isFamous ? -1 : 1;
+            return a.voice.name.localeCompare(b.voice.name);
+          });
+
+          const accent = c.accentColor || '#9146FF';
+          const pillStyle = (active) => ({
+            padding: '4px 10px', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600,
+            background: active ? `${accent}30` : 'rgba(255,255,255,0.04)',
+            color: active ? '#a78bfa' : '#64748b',
+            transition: 'all 0.15s',
+          });
+
+          return (
+            <>
+              {/* Search */}
+              <input
+                value={voiceFilter}
+                onChange={e => setVoiceFilter(e.target.value)}
+                placeholder="Search voices by name or language..."
+                style={{ ...inputStyle, marginBottom: 8 }}
+              />
+
+              {/* ── Filter row: Language ── */}
+              <div style={{ marginBottom: 6 }}>
+                <div style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>Language</div>
+                <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap' }}>
+                  {[
+                    { label: 'All', code: '' },
+                    { label: '🇵🇹 PT', code: 'pt' },
+                    { label: '🇬🇧 EN', code: 'en' },
+                    { label: '🇪🇸 ES', code: 'es' },
+                    { label: '🇫🇷 FR', code: 'fr' },
+                    { label: '🇩🇪 DE', code: 'de' },
+                    { label: '🇮🇹 IT', code: 'it' },
+                    { label: '🇯🇵 JA', code: 'ja' },
+                    { label: '🇰🇷 KO', code: 'ko' },
+                    { label: '🇨🇳 ZH', code: 'zh' },
+                    { label: '🇷🇺 RU', code: 'ru' },
+                  ].map(({ label, code }) => (
+                    <button key={code} onClick={() => setVoiceFilter(voiceFilter === code ? '' : code)}
+                      style={pillStyle(voiceFilter === code)}>{label}</button>
+                  ))}
                 </div>
-                {!c.ttsVoice && <span style={{ color: c.accentColor || '#9146FF', fontSize: 12, fontWeight: 700 }}>✓</span>}
               </div>
 
-              {voices
-                .filter(v => {
-                  if (!voiceFilter) return true;
-                  const q = voiceFilter.toLowerCase();
-                  return v.name.toLowerCase().includes(q) || v.lang.toLowerCase().includes(q)
-                    || (q === 'male' && /ant[oó]nio|duarte|daniel|cristiano|hector|jorge|tiago/i.test(v.name))
-                    || (q === 'female' && /francisca|fernanda|raquel|maria|branca|in[eê]s|helia|catarina/i.test(v.name));
-                })
-                .sort((a, b) => {
-                  // Sort PT voices first, then by pt-PT before pt-BR
-                  const aPt = a.lang.startsWith('pt') ? 0 : 1;
-                  const bPt = b.lang.startsWith('pt') ? 0 : 1;
-                  if (aPt !== bPt) return aPt - bPt;
-                  if (aPt === 0) {
-                    const aPtPt = a.lang.startsWith('pt-PT') ? 0 : 1;
-                    const bPtPt = b.lang.startsWith('pt-PT') ? 0 : 1;
-                    if (aPtPt !== bPtPt) return aPtPt - bPtPt;
-                  }
-                  return a.name.localeCompare(b.name);
-                })
-                .map(v => {
+              {/* ── Filter row: Gender ── */}
+              <div style={{ marginBottom: 6 }}>
+                <div style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>Gender</div>
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {[
+                    { label: 'All', code: '' },
+                    { label: '♀️ Female', code: 'female' },
+                    { label: '♂️ Male', code: 'male' },
+                  ].map(({ label, code }) => (
+                    <button key={code} onClick={() => setFilterGender(filterGender === code ? '' : code)}
+                      style={pillStyle(filterGender === code)}>{label}</button>
+                  ))}
+                </div>
+              </div>
+
+              {/* ── Filter row: Type ── */}
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ fontSize: 9, color: '#475569', textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>Type</div>
+                <div style={{ display: 'flex', gap: 3 }}>
+                  {[
+                    { label: 'All', code: '' },
+                    { label: '⭐ Famous (Google, Microsoft…)', code: 'famous' },
+                    { label: '🔊 Standard', code: 'standard' },
+                  ].map(({ label, code }) => (
+                    <button key={code} onClick={() => setFilterFamous(filterFamous === code ? '' : code)}
+                      style={pillStyle(filterFamous === code)}>{label}</button>
+                  ))}
+                </div>
+              </div>
+
+              <div style={{ fontSize: 10, color: '#64748b', marginBottom: 8, padding: '6px 8px', borderRadius: 4, background: 'rgba(255,255,255,0.02)' }}>
+                💡 <strong>Microsoft Edge</strong> has 100+ high-quality natural voices. Chrome has fewer options.
+              </div>
+
+              {/* ── Voice cards ── */}
+              <div style={{ maxHeight: 300, overflowY: 'auto', marginBottom: 10, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                {/* Auto option */}
+                <div
+                  onClick={() => set('ttsVoice', '')}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
+                    background: !c.ttsVoice ? `${accent}20` : 'rgba(255,255,255,0.02)',
+                    border: !c.ttsVoice ? `1px solid ${accent}55` : '1px solid rgba(255,255,255,0.06)',
+                  }}
+                >
+                  <div style={{ fontSize: 14 }}>🤖</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>Auto (Portuguese)</div>
+                    <div style={{ fontSize: 10, color: '#64748b' }}>Auto-picks best PT voice available</div>
+                  </div>
+                  {!c.ttsVoice && <span style={{ color: accent, fontSize: 12, fontWeight: 700 }}>✓</span>}
+                </div>
+
+                {sorted.map(({ voice: v, gender, isFamous }) => {
                   const selected = c.ttsVoice === v.name;
                   const isPreviewing = previewingVoice === v.name;
-                  const isFemale = /francisca|fernanda|raquel|maria|branca|in[eê]s|helia|catarina|female/i.test(v.name);
-                  const isMale = /ant[oó]nio|duarte|daniel|cristiano|hector|jorge|tiago|male/i.test(v.name) && !isFemale;
-                  const genderTag = v.lang.startsWith('pt') ? (isMale ? '♂️' : isFemale ? '♀️' : '') : '';
+                  const genderIcon = gender === 'female' ? '♀️' : gender === 'male' ? '♂️' : '';
                   return (
                     <div
                       key={v.name}
                       onClick={() => set('ttsVoice', v.name)}
                       style={{
                         display: 'flex', alignItems: 'center', gap: 8, padding: '8px 10px', borderRadius: 6, cursor: 'pointer',
-                        background: selected ? `${c.accentColor || '#9146FF'}20` : 'rgba(255,255,255,0.02)',
-                        border: selected ? `1px solid ${c.accentColor || '#9146FF'}55` : '1px solid rgba(255,255,255,0.06)',
+                        background: selected ? `${accent}20` : 'rgba(255,255,255,0.02)',
+                        border: selected ? `1px solid ${accent}55` : '1px solid rgba(255,255,255,0.06)',
                         transition: 'all 0.15s',
                       }}
                     >
-                      <div style={{ fontSize: 14 }}>{v.lang.startsWith('en') ? '🇬🇧' : v.lang.startsWith('pt') ? '🇵🇹' : v.lang.startsWith('es') ? '🇪🇸' : v.lang.startsWith('fr') ? '🇫🇷' : v.lang.startsWith('de') ? '🇩🇪' : v.lang.startsWith('ja') ? '🇯🇵' : v.lang.startsWith('ko') ? '🇰🇷' : v.lang.startsWith('zh') ? '🇨🇳' : v.lang.startsWith('it') ? '🇮🇹' : v.lang.startsWith('ru') ? '🇷🇺' : '🌐'}</div>
+                      <div style={{ fontSize: 14 }}>{getLangFlag(v.lang)}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 11, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {v.name} {genderTag}
+                        <div style={{ fontSize: 11, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          {v.name}
+                          {genderIcon && <span style={{ fontSize: 10 }}>{genderIcon}</span>}
+                          {isFamous && <span style={{ fontSize: 8, background: 'rgba(250,204,21,0.15)', color: '#fbbf24', padding: '1px 5px', borderRadius: 8, fontWeight: 700 }}>⭐</span>}
                         </div>
-                        <div style={{ fontSize: 10, color: '#64748b' }}>{v.lang}{v.lang.startsWith('pt-PT') ? ' (Portugal)' : v.lang.startsWith('pt-BR') ? ' (Brasil)' : ''}</div>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>{getLangLabel(v.lang)}</div>
                       </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           window.speechSynthesis.cancel();
                           setPreviewingVoice(v.name);
-                          const previewText = v.lang.startsWith('pt') ? `Olá, eu sou o ${c.botName || 'AI Bot'}, o teu assistente de stream!` : `Hello, I'm ${c.botName || 'AI Bot'}.`;
-                          const utt = new SpeechSynthesisUtterance(previewText);
+                          const utt = new SpeechSynthesisUtterance(getPreviewText(v.lang, c.botName || 'AI Bot'));
                           utt.voice = v;
                           utt.rate = c.ttsRate || 1;
                           utt.pitch = c.ttsPitch || 1;
@@ -548,52 +682,61 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                           background: isPreviewing ? 'rgba(239,68,68,0.2)' : 'rgba(255,255,255,0.08)',
                           color: isPreviewing ? '#ef4444' : 'rgba(255,255,255,0.5)',
                           fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          flexShrink: 0, transition: 'all 0.15s',
+                          flexShrink: 0,
                         }}
                       >{isPreviewing ? '⏹' : '▶'}</button>
-                      {selected && <span style={{ color: c.accentColor || '#9146FF', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</span>}
+                      {selected && <span style={{ color: accent, fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</span>}
                     </div>
                   );
                 })}
-              {voices.length === 0 && (
-                <div style={{ textAlign: 'center', color: '#64748b', fontSize: 11, padding: 16 }}>
-                  Loading voices… (try refreshing if empty)
+
+                {sorted.length === 0 && voices.length > 0 && (
+                  <div style={{ textAlign: 'center', color: '#64748b', fontSize: 11, padding: 16 }}>
+                    No voices match your filters
+                  </div>
+                )}
+                {voices.length === 0 && (
+                  <div style={{ textAlign: 'center', color: '#64748b', fontSize: 11, padding: 16 }}>
+                    Loading voices… (try refreshing if empty)
+                  </div>
+                )}
+              </div>
+
+              {/* ── Speed & Pitch ── */}
+              <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Speed ({c.ttsRate || 1}x)</label>
+                  <input type="range" min="0.5" max="2" step="0.1" value={c.ttsRate || 1} onChange={e => set('ttsRate', parseFloat(e.target.value))}
+                    style={{ width: '100%' }} />
                 </div>
-              )}
-            </div>
-
-            <div style={{ display: 'flex', gap: 10, marginBottom: 10 }}>
-              <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Speed ({c.ttsRate || 1}x)</label>
-                <input type="range" min="0.5" max="2" step="0.1" value={c.ttsRate || 1} onChange={e => set('ttsRate', parseFloat(e.target.value))}
-                  style={{ width: '100%' }} />
+                <div style={{ flex: 1 }}>
+                  <label style={labelStyle}>Pitch ({c.ttsPitch || 1})</label>
+                  <input type="range" min="0.5" max="2" step="0.1" value={c.ttsPitch || 1} onChange={e => set('ttsPitch', parseFloat(e.target.value))}
+                    style={{ width: '100%' }} />
+                </div>
               </div>
-              <div style={{ flex: 1 }}>
-                <label style={labelStyle}>Pitch ({c.ttsPitch || 1})</label>
-                <input type="range" min="0.5" max="2" step="0.1" value={c.ttsPitch || 1} onChange={e => set('ttsPitch', parseFloat(e.target.value))}
-                  style={{ width: '100%' }} />
-              </div>
-            </div>
 
-            <button
-              onClick={() => {
-                const msg = `Hello! I'm ${c.botName || 'AI Bot'}, your stream assistant!`;
-                const utt = new SpeechSynthesisUtterance(msg);
-                if (c.ttsVoice) {
-                  const found = window.speechSynthesis.getVoices().find(v => v.name === c.ttsVoice);
-                  if (found) utt.voice = found;
-                }
-                utt.rate = c.ttsRate || 1;
-                utt.pitch = c.ttsPitch || 1;
-                window.speechSynthesis.speak(utt);
-              }}
-              style={{
-                padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                background: 'rgba(145,70,255,0.15)', color: '#a78bfa',
-              }}
-            >▶ Test Voice</button>
-          </>
-        )}
+              <button
+                onClick={() => {
+                  window.speechSynthesis.cancel();
+                  const lang = c.ttsVoice ? (voices.find(v => v.name === c.ttsVoice)?.lang || 'en') : 'pt';
+                  const utt = new SpeechSynthesisUtterance(getPreviewText(lang, c.botName || 'AI Bot'));
+                  if (c.ttsVoice) {
+                    const found = window.speechSynthesis.getVoices().find(v => v.name === c.ttsVoice);
+                    if (found) utt.voice = found;
+                  }
+                  utt.rate = c.ttsRate || 1;
+                  utt.pitch = c.ttsPitch || 1;
+                  window.speechSynthesis.speak(utt);
+                }}
+                style={{
+                  padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                  background: 'rgba(145,70,255,0.15)', color: '#a78bfa',
+                }}
+              >▶ Test Voice</button>
+            </>
+          );
+        })()}
       </div>
 
       {/* ── Appearance ── */}
