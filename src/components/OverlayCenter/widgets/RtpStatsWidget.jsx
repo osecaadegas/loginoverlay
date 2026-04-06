@@ -63,7 +63,7 @@ function fmtMultiplier(m) {
 }
 
 /* ─── Main widget ─── */
-function RtpStatsWidget({ config, theme, allWidgets, userId }) {
+function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const c = config || {};
 
   /* ── Find bonus hunt widget ── */
@@ -137,6 +137,42 @@ function RtpStatsWidget({ config, theme, allWidgets, userId }) {
   /* ── Best win for this slot (from user_slot_records) ── */
   const [bestWinData, setBestWinData] = useState(null);
 
+  // Fallback: read bestWin cached in widget config (works in OBS where DB is blocked by RLS)
+  const configBestWin = useMemo(() => {
+    if (!slotName) return null;
+    // Check own widget config first (persisted by dashboard fetch)
+    if (c._cachedBestWin?.slotName === slotName && c._cachedBestWin?.best_win) {
+      return { best_win: c._cachedBestWin.best_win, best_multiplier: c._cachedBestWin.best_multiplier || 0 };
+    }
+    // Fallback: check single_slot widgets
+    if (!allWidgets) return null;
+    const ssWidget = allWidgets.find(w =>
+      (w.widget_type === 'single_slot' || w.widget_type === 'current_slot') &&
+      w.config?.slotName === slotName && w.config?.bestWin
+    );
+    if (ssWidget?.config?.bestWin) {
+      return { best_win: ssWidget.config.bestWin, best_multiplier: ssWidget.config.bestMulti || 0 };
+    }
+    return null;
+  }, [slotName, c._cachedBestWin, allWidgets]);
+
+  // Persist bestWin to widget config so OBS can read it (OBS has no auth → can't query DB)
+  const persistRef = useRef('');
+  const configRef = useRef(c);
+  configRef.current = c;
+  useEffect(() => {
+    if (!bestWinData || !widgetId || !slotName) return;
+    const key = `${slotName}:${bestWinData.best_win}:${bestWinData.best_multiplier}`;
+    if (persistRef.current === key) return; // already persisted
+    persistRef.current = key;
+    const latest = configRef.current;
+    supabase
+      .from('overlay_widgets')
+      .update({ config: { ...latest, _cachedBestWin: { slotName, best_win: bestWinData.best_win, best_multiplier: bestWinData.best_multiplier } } })
+      .eq('id', widgetId)
+      .then(); // fire-and-forget
+  }, [bestWinData, widgetId, slotName]);
+
   // Fetch best win on slot change + subscribe to realtime updates
   useEffect(() => {
     if (!slotName || !userId) { setBestWinData(null); return; }
@@ -150,9 +186,9 @@ function RtpStatsWidget({ config, theme, allWidgets, userId }) {
           .eq('user_id', userId)
           .eq('slot_name', slotName)
           .maybeSingle();
-        if (!cancelled) setBestWinData(data || null);
+        if (!cancelled && data) setBestWinData(data);
       } catch {
-        if (!cancelled) setBestWinData(null);
+        // DB fetch failed (e.g. RLS in OBS) — configBestWin fallback will be used
       }
     }
 
@@ -233,7 +269,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId }) {
     ? (slotInfo?.provider || currentBonus?.slot?.provider || '')
     : (showDemoData ? demoProvider : '');
   const displayInfo = isLive ? slotInfo : (showDemoData ? demoInfo : null);
-  const displayBestWin = isLive ? bestWinData : (showDemoData ? demoBestWin : null);
+  const displayBestWin = isLive ? (bestWinData || configBestWin) : (showDemoData ? demoBestWin : null);
 
   const styleClass = isVertical ? ' rtp-stats-bar--vertical'
     : isNeon ? ' rtp-stats-bar--neon'
