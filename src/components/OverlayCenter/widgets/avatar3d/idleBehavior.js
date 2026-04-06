@@ -69,18 +69,10 @@ export function createIdleBehavior() {
         drift.y = breathVal * 0.003 * br;
       }
 
-      // ─────────────────────────────────────────────
-      //  LAYER 1: BREAK T-POSE (arms down)
-      // ─────────────────────────────────────────────
-      if (needsArmDown) {
-        if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, rg('LeftArm', 'z') + 1.1, 2.5, dt);
-        if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, rg('RightArm', 'z') - 1.1, 2.5, dt);
-        if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, rg('LeftForeArm', 'z') + 0.15, 2.5, dt);
-        if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rg('RightForeArm', 'z') - 0.15, 2.5, dt);
-      }
+      // (T-pose break is handled by animationController before all behaviors)
 
       // ─────────────────────────────────────────────
-      //  LAYER 2: EYE BLINKS
+      //  LAYER 1: EYE BLINKS
       // ─────────────────────────────────────────────
       blink.timer += dt;
       if (blink.timer >= blink.next) {

@@ -106,8 +106,16 @@ export function createAnimationController() {
         }
       }
 
-      // ── 4. RESET GROUP POSITION (behaviors will set it) ──
-      // Don't reset — behaviors use smoothLerp toward their targets
+      // ── 4. T-POSE BREAK (unconditional, before any behavior) ──
+      // Must run every frame so no behavior layer can leave arms horizontal
+      if (rig.needsArmDown) {
+        const { bones: b, restPose } = rig;
+        const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
+        if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, rg('LeftArm', 'z') + 1.1, 2.5, scaledDt);
+        if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, rg('RightArm', 'z') - 1.1, 2.5, scaledDt);
+        if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, rg('LeftForeArm', 'z') + 0.15, 2.5, scaledDt);
+        if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rg('RightForeArm', 'z') - 0.15, 2.5, scaledDt);
+      }
 
       // ── 5. IDLE BEHAVIOR (always running) ──
       idle.update(scaledDt, w.idle, rig, params, groupRef);
