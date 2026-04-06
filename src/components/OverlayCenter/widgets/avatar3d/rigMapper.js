@@ -97,9 +97,11 @@ function collectBones(scene) {
 
 function resolveExplicitBones(allBones, boneMap) {
   const result = {};
+  const norm = (s) => s.toLowerCase().replace(/[_ .]/g, '');
   for (const [canonical, realName] of Object.entries(boneMap)) {
+    const target = norm(realName);
     for (const bone of allBones) {
-      if (bone.name === realName) { result[canonical] = bone; break; }
+      if (bone.name === realName || norm(bone.name) === target) { result[canonical] = bone; break; }
     }
   }
   return result;

@@ -72,10 +72,10 @@ const EXPRESSIVE_AVATAR = {
   bones: {
     Hips: 'Hips', Spine: 'Spine', Spine1: 'Chest',
     Neck: 'Neck', Head: 'Head',
-    LeftShoulder: 'Left shoulder', LeftArm: 'Left arm', LeftForeArm: 'Left elbow', LeftHand: 'Left wrist',
-    RightShoulder: 'Right shoulder', RightArm: 'Right arm', RightForeArm: 'Right elbow', RightHand: 'Right wrist',
-    LeftUpLeg: 'Left leg', LeftLeg: 'Left knee', LeftFoot: 'Left ankle',
-    RightUpLeg: 'Right leg', RightLeg: 'Right knee', RightFoot: 'Right ankle',
+    LeftShoulder: 'Left_shoulder', LeftArm: 'Left_arm', LeftForeArm: 'Left_elbow', LeftHand: 'Left_wrist',
+    RightShoulder: 'Right_shoulder', RightArm: 'Right_arm', RightForeArm: 'Right_elbow', RightHand: 'Right_wrist',
+    LeftUpLeg: 'Left_leg', LeftLeg: 'Left_knee', LeftFoot: 'Left_ankle',
+    RightUpLeg: 'Right_leg', RightLeg: 'Right_knee', RightFoot: 'Right_ankle',
   },
   morphs: {
     // Canonical → actual VRC morph name
