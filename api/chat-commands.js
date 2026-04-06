@@ -125,6 +125,60 @@ async function handleSlotRequest(req, res) {
       return res.status(200).send(`"${resolvedName}" is already in the queue!`);
     }
 
+    // ── SE Points check & deduction ──
+    const seEnabled = req.query.se_enabled === '1';
+    const seCost = parseInt(req.query.se_cost, 10) || 0;
+
+    if (seEnabled && seCost > 0) {
+      // Read SE credentials from the streamer's slot_requests widget config
+      const { data: srWidgets } = await supabase
+        .from('overlay_widgets')
+        .select('config')
+        .eq('user_id', user_id)
+        .eq('widget_type', 'slot_requests')
+        .limit(1);
+
+      const wConfig = srWidgets?.[0]?.config;
+      const seChannelId = wConfig?.seChannelId;
+      const seJwtToken = wConfig?.seJwtToken;
+
+      if (!seChannelId || !seJwtToken) {
+        return res.status(200).send('⚠️ StreamElements not configured. Ask the streamer to connect SE.');
+      }
+
+      const cleanViewer = viewer.replace(/^@/, '').trim().toLowerCase();
+
+      // 1) Check viewer's points
+      const pointsRes = await fetch(
+        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}`,
+        { headers: { 'Authorization': `Bearer ${seJwtToken}` } }
+      );
+
+      if (!pointsRes.ok) {
+        return res.status(200).send(`❌ Could not check points for ${viewer}. Are you a follower?`);
+      }
+
+      const pointsData = await pointsRes.json();
+      const viewerPoints = pointsData.points || 0;
+
+      if (viewerPoints < seCost) {
+        return res.status(200).send(`❌ ${viewer}, you need ${seCost} points to request a slot (you have ${viewerPoints}).`);
+      }
+
+      // 2) Deduct points (negative amount)
+      const deductRes = await fetch(
+        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${-seCost}`,
+        {
+          method: 'PUT',
+          headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' },
+        }
+      );
+
+      if (!deductRes.ok) {
+        return res.status(200).send(`❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`);
+      }
+    }
+
     // Insert request with the canonical DB name
     const { error: insertErr } = await supabase
       .from('slot_requests')
@@ -145,7 +199,11 @@ async function handleSlotRequest(req, res) {
       return res.status(200).send('Could not add request. Try again later.');
     }
 
-    return res.status(200).send(`🎰 Added "${resolvedName}" to the queue (requested by ${viewer})`);
+    return res.status(200).send(
+      seEnabled && seCost > 0
+        ? `🎰 Added "${resolvedName}" to the queue (${viewer} — ${seCost} points deducted)`
+        : `🎰 Added "${resolvedName}" to the queue (requested by ${viewer})`
+    );
   } catch (err) {
     console.error('Slot request error:', err);
     return res.status(200).send('Something went wrong. Try again later.');

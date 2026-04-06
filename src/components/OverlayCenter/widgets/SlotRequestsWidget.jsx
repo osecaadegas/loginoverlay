@@ -49,6 +49,8 @@ export default function SlotRequestsWidget({ config, userId }) {
   /* ── IRC !sr listener (always on when channel is configured) ── */
   const userIdRef = useRef(userId);
   userIdRef.current = userId;
+  const configRef = useRef(c);
+  configRef.current = c;
 
   /* Dedup map: track recently submitted slot requests to avoid duplicates from chat */
   const recentSrRef = useRef(new Map());
@@ -73,7 +75,19 @@ export default function SlotRequestsWidget({ config, userId }) {
     }
 
     try {
-      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userIdRef.current)}&requester=${encodeURIComponent(msg.username)}&slot=${encodeURIComponent(match[1].trim())}`);
+      const params = new URLSearchParams({
+        cmd: 'sr',
+        user_id: userIdRef.current,
+        requester: msg.username,
+        slot: match[1].trim(),
+      });
+      // Pass SE points config if enabled
+      const conf = configRef.current || {};
+      if (conf.srSeEnabled && conf.srSeCost > 0) {
+        params.set('se_enabled', '1');
+        params.set('se_cost', String(conf.srSeCost));
+      }
+      await fetch(`${window.location.origin}/api/chat-commands?${params.toString()}`);
     } catch (err) {
       console.error('[SlotRequestsWidget] !sr error', err);
     }

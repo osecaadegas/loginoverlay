@@ -182,6 +182,43 @@ export default function SlotRequestsConfig({ config, onChange }) {
       {/* Display options */}
       <div>
         <p style={S.label}>Display</p>
+
+        {/* ── SE Points Cost ── */}
+        <div style={{ marginBottom: 10, padding: '10px 12px', background: 'rgba(245,158,11,0.06)', border: '1px solid rgba(245,158,11,0.15)', borderRadius: 8 }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0', cursor: 'pointer', marginBottom: 6 }}>
+            <input
+              type="checkbox"
+              checked={!!c.srSeEnabled}
+              onChange={e => set('srSeEnabled', e.target.checked)}
+            />
+            <span style={{ fontWeight: 600 }}>💰 Require SE Points for !sr</span>
+          </label>
+          {c.srSeEnabled ? (
+            <>
+              <p style={{ fontSize: '0.68rem', color: '#94a3b8', margin: '0 0 6px', lineHeight: 1.4 }}>
+                Each !sr will cost the viewer SE points. If they don't have enough, the request is rejected.
+              </p>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0' }}>
+                Cost per request:
+                <input
+                  type="number" min={1} max={1000000} value={c.srSeCost || 100}
+                  onChange={e => set('srSeCost', Math.max(1, +e.target.value))}
+                  style={{ width: 80, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#f59e0b', padding: '4px 8px', fontSize: '0.78rem', fontWeight: 700 }}
+                />
+                <span style={{ fontSize: '0.7rem', color: '#64748b' }}>points</span>
+              </label>
+              {!(c.seChannelId && c.seJwtToken) && (
+                <p style={{ fontSize: '0.68rem', color: '#ef4444', margin: '6px 0 0', lineHeight: 1.4, fontWeight: 600 }}>
+                  ⚠️ StreamElements not connected — go to Profile and connect SE first.
+                </p>
+              )}
+            </>
+          ) : (
+            <p style={{ fontSize: '0.68rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
+              When disabled, all !sr requests are added to the queue for free.
+            </p>
+          )}
+        </div>
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0', cursor: 'pointer' }}>
           <input
             type="checkbox"
