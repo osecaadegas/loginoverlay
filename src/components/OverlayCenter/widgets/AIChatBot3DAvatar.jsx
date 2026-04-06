@@ -45,19 +45,16 @@ const BONE_MATCH_ORDER = [
 
 /* ── Per-model manual bone maps for non-standard naming conventions ── */
 const MODEL_PROFILES = {
-  '824022961986602005.glb': {
-    bones: { Hips:'Pelvis_M', Spine:'Spine1_M', Spine1:'Spine2_M', Spine2:'Chest_M',
-      Neck:'Neck1_M', Head:'Head_M',
-      LeftShoulder:'Scapula_L', LeftArm:'Shoulder_L', LeftForeArm:'Elbow_L', LeftHand:'Wrist_L',
-      RightShoulder:'Scapula_R', RightArm:'Shoulder_R', RightForeArm:'Elbow_R', RightHand:'Wrist_R',
-      LeftUpLeg:'Hip1_L', LeftLeg:'Knee1_L', RightUpLeg:'Hip1_R', RightLeg:'Knee1_R' },
-  },
-  '3493590446520631963.glb': {
-    bones: { Hips:'pelvis adj', Spine:'spine lower', Spine1:'spine upper',
-      Neck:'head neck lower', Head:'head neck upper',
-      LeftShoulder:'arm left shoulder 1', LeftArm:'g_l_uprarm', LeftForeArm:'g_l_forarm', LeftHand:'arm left wrist',
-      RightShoulder:'arm right shoulder 1', RightArm:'g_r_uprarm', RightForeArm:'g_r_forarm', RightHand:'arm right wrist',
-      LeftUpLeg:'leg left thigh', LeftLeg:'leg left knee', RightUpLeg:'leg right thigh', RightLeg:'leg right knee' },
+  '2914707689262839002.glb': {
+    bones: {
+      Hips: 'Hips', Spine: 'Spine', Spine1: 'Chest',
+      Neck: 'Neck', Head: 'Head',
+      LeftShoulder: 'Left shoulder', LeftArm: 'Left arm', LeftForeArm: 'Left elbow', LeftHand: 'Left wrist',
+      RightShoulder: 'Right shoulder', RightArm: 'Right arm', RightForeArm: 'Right elbow', RightHand: 'Right wrist',
+      LeftUpLeg: 'Left leg', LeftLeg: 'Left knee',
+      RightUpLeg: 'Right leg', RightLeg: 'Right knee',
+    },
+    morphNames: ['vrc.v_aa','vrc.v_ch','vrc.v_dd','vrc.v_e','vrc.v_ff','vrc.v_ih','vrc.v_kk','vrc.v_nn','vrc.v_oh','vrc.v_ou','vrc.v_pp','vrc.v_rr','vrc.v_sil','vrc.v_ss','vrc.v_th','Oh','Grin','E','Ch','Ah','U'],
   },
 };
 
@@ -153,12 +150,25 @@ function mapBones(scene, url) {
 // Maps our canonical morph name to arrays of alternative names across formats:
 // ARKit, Mixamo, VRM, CC3, generic
 const MORPH_ALIASES = {
-  mouthOpen:      ['mouthOpen', 'jawOpen', 'Mouth_Open', 'Fcl_MTH_A', 'viseme_aa', 'A', 'mouth_open', 'MouthOpen'],
-  jawOpen:        ['jawOpen', 'Jaw_Open', 'jaw_open', 'JawOpen', 'Fcl_MTH_A'],
-  mouthSmile:     ['mouthSmile', 'mouthSmileLeft', 'mouthSmileRight', 'Mouth_Smile', 'Fcl_MTH_Joy', 'smile', 'mouth_smile', 'MouthSmile', 'happy'],
+  mouthOpen:      ['mouthOpen', 'jawOpen', 'Mouth_Open', 'Fcl_MTH_A', 'viseme_aa', 'A', 'mouth_open', 'MouthOpen', 'vrc.v_aa', 'Ah'],
+  jawOpen:        ['jawOpen', 'Jaw_Open', 'jaw_open', 'JawOpen', 'Fcl_MTH_A', 'vrc.v_oh', 'Oh'],
+  mouthSmile:     ['mouthSmile', 'mouthSmileLeft', 'mouthSmileRight', 'Mouth_Smile', 'Fcl_MTH_Joy', 'smile', 'mouth_smile', 'MouthSmile', 'happy', 'Grin'],
   browInnerUp:    ['browInnerUp', 'Brow_Inner_Up', 'Fcl_BRW_Surprised', 'brow_inner_up', 'BrowInnerUp', 'browUp'],
   eyeBlinkLeft:   ['eyeBlinkLeft', 'Eye_Blink_Left', 'Fcl_EYE_Close_L', 'eyeBlink_L', 'eye_blink_left', 'EyeBlinkLeft', 'blink_L', 'Blink_Left'],
   eyeBlinkRight:  ['eyeBlinkRight', 'Eye_Blink_Right', 'Fcl_EYE_Close_R', 'eyeBlink_R', 'eye_blink_right', 'EyeBlinkRight', 'blink_R', 'Blink_Right'],
+  // VRC viseme shapes (for lip-sync cycling)
+  viseme_aa:      ['vrc.v_aa', 'Ah', 'viseme_aa'],
+  viseme_oh:      ['vrc.v_oh', 'Oh', 'viseme_O'],
+  viseme_ee:      ['vrc.v_e', 'E', 'viseme_E'],
+  viseme_ih:      ['vrc.v_ih', 'viseme_I'],
+  viseme_ou:      ['vrc.v_ou', 'U', 'viseme_U'],
+  viseme_ff:      ['vrc.v_ff', 'viseme_FF'],
+  viseme_ss:      ['vrc.v_ss', 'viseme_SS'],
+  viseme_ch:      ['vrc.v_ch', 'Ch', 'viseme_CH'],
+  viseme_dd:      ['vrc.v_dd', 'viseme_DD'],
+  viseme_pp:      ['vrc.v_pp', 'viseme_PP'],
+  viseme_nn:      ['vrc.v_nn', 'viseme_nn'],
+  viseme_sil:     ['vrc.v_sil', 'viseme_sil'],
 };
 
 /**
@@ -201,6 +211,45 @@ function getMorphMapped(mapped, canonical) {
   return 0;
 }
 
+/* ── Per-avatar behavior profiles ────────────────────── */
+const AVATAR_PROFILES = {
+  '3640925089614202413.glb': {
+    // Blender VRM: full skeleton, no morphs — extra body expression to compensate
+    bodyMult: 1.3, gestureMult: 1.5, headMult: 1.3,
+    idleWeights: { standing: 2, pacing: 3, lookAround: 3, stretch: 2 },
+    speakWeights: { talking: 1, excited: 3, explaining: 3 },
+    reactionPool: ['jump', 'cheer', 'bigNod', 'bodyShake'],
+  },
+  '8232090975149790447.glb': {
+    // Standard VRM: full skeleton, 1 morph — balanced behavior
+    bodyMult: 1.0, gestureMult: 1.0, headMult: 1.0,
+    idleWeights: { standing: 3, pacing: 2, lookAround: 2, stretch: 3 },
+    speakWeights: { talking: 3, excited: 2, explaining: 2 },
+    reactionPool: ['jump', 'nod', 'cheer', 'laugh'],
+  },
+  '2914707689262839002.glb': {
+    // VRC Girl: full skeleton + 21 VRC visemes — expressive face
+    bodyMult: 0.9, gestureMult: 1.0, headMult: 1.1,
+    idleWeights: { standing: 3, pacing: 1, lookAround: 2, stretch: 2 },
+    speakWeights: { talking: 3, excited: 2, explaining: 2 },
+    reactionPool: ['jump', 'nod', 'surprise', 'cheer', 'laugh'],
+  },
+};
+const DEFAULT_PROFILE = {
+  bodyMult: 1.0, gestureMult: 1.0, headMult: 1.0,
+  idleWeights: { standing: 3, pacing: 2, lookAround: 2, stretch: 3 },
+  speakWeights: { talking: 3, excited: 2, explaining: 2 },
+  reactionPool: ['jump', 'nod', 'cheer'],
+};
+
+function weightedPick(weights, exclude) {
+  const entries = Object.entries(weights).filter(([k]) => k !== exclude);
+  const total = entries.reduce((s, [, w]) => s + w, 0);
+  let r = Math.random() * total;
+  for (const [key, weight] of entries) { r -= weight; if (r <= 0) return key; }
+  return entries[0]?.[0] || Object.keys(weights)[0];
+}
+
 /* ── Idle animation bank ─────────────────────────────── */
 const IDLE_ANIMS = ['standing', 'pacing', 'lookAround', 'stretch'];
 const SPEAK_ANIMS = ['talking', 'excited', 'explaining'];
@@ -214,6 +263,10 @@ function pickRandom(arr, exclude) {
 /* ── Avatar Model ────────────────────────────────────── */
 function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing, sway, headMove, armMove, gestures, animSpeed, reaction }) {
   const { scene, animations } = useGLTF(url);
+  const avatarProfile = useMemo(() => {
+    const fn = url ? url.split('/').pop() : '';
+    return AVATAR_PROFILES[fn] || DEFAULT_PROFILE;
+  }, [url]);
   const groupRef = useRef();
   const morphMapped = useRef([]);
   const bones = useRef({});
@@ -255,9 +308,10 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   const weightShiftPhase = useRef(0);     // slow weight shift between feet
   const speechStartTime = useRef(0);      // track how long we've been speaking
 
-  // Reaction (jump) state
-  const jumpPhase = useRef(0);
-  const jumpActive = useRef(false);
+  // Reaction state (multiple types per avatar)
+  const reactionType = useRef('jump');
+  const reactionProgress = useRef(0);
+  const reactionActive = useRef(false);
   const lastReaction = useRef(0);
 
   // Rest-pose tracking for adaptive animations
@@ -301,9 +355,20 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   // Find morph meshes and build mapped lookup
   useEffect(() => {
     const meshes = [];
+    const filename = url ? url.split('/').pop() : '';
+    const modelProfile = MODEL_PROFILES[filename];
     clonedScene.traverse((child) => {
-      if (child.isMesh && child.morphTargetDictionary && child.morphTargetInfluences) {
-        meshes.push(child);
+      if (child.isMesh && child.morphTargetInfluences?.length > 0) {
+        // Fix empty morphTargetDictionary for VRC models (targetNames stored in primitive.extras)
+        if ((!child.morphTargetDictionary || Object.keys(child.morphTargetDictionary).length === 0) && modelProfile?.morphNames) {
+          child.morphTargetDictionary = {};
+          for (let i = 0; i < Math.min(modelProfile.morphNames.length, child.morphTargetInfluences.length); i++) {
+            child.morphTargetDictionary[modelProfile.morphNames[i]] = i;
+          }
+        }
+        if (child.morphTargetDictionary && Object.keys(child.morphTargetDictionary).length > 0) {
+          meshes.push(child);
+        }
       }
     });
     morphMapped.current = buildMorphMap(meshes);
@@ -365,7 +430,7 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
   // Pick new speak anim each time we enter speaking state
   useEffect(() => {
     if (state === 'speaking' && prevState.current !== 'speaking') {
-      speakAnim.current = pickRandom(SPEAK_ANIMS, speakAnim.current);
+      speakAnim.current = weightedPick(avatarProfile.speakWeights, speakAnim.current);
       // Reset speech rhythm for a fresh start
       syllablePhase.current = 0;
       wordPhase.current = 0;
@@ -384,25 +449,28 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     prevState.current = state;
   }, [state]);
 
-  // Trigger jump on new reaction
+  // Trigger reaction on new reaction signal
   useEffect(() => {
     if (reaction && reaction !== lastReaction.current) {
       lastReaction.current = reaction;
-      jumpActive.current = true;
-      jumpPhase.current = 0;
+      const pool = avatarProfile.reactionPool;
+      reactionType.current = pool[Math.floor(Math.random() * pool.length)];
+      reactionActive.current = true;
+      reactionProgress.current = 0;
     }
-  }, [reaction]);
+  }, [reaction, avatarProfile]);
 
   useFrame((_, delta) => {
     const mapped = morphMapped.current;
     const hasMorphs = mapped.length > 0;
     const b = bones.current;
     const dt = Math.min(delta, 0.1) * (animSpeed || 1);
-    const br = breathing ?? 1;
-    const sw = sway ?? 1;
-    const hm = headMove ?? 1;
-    const am = armMove ?? 1;
-    const ge = gestures ?? 1;
+    const ap = avatarProfile;
+    const br = (breathing ?? 1) * ap.bodyMult;
+    const sw = (sway ?? 1) * ap.bodyMult;
+    const hm = (headMove ?? 1) * ap.headMult;
+    const am = (armMove ?? 1) * ap.bodyMult;
+    const ge = (gestures ?? 1) * ap.gestureMult;
     const noBuiltin = !builtinHasBody.current;
 
     // Update built-in animation mixer
@@ -414,7 +482,7 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
       if (idleTimer.current >= idleDuration.current) {
         idleTimer.current = 0;
         idleDuration.current = IDLE_MIN_SECS + Math.random() * (IDLE_MAX_SECS - IDLE_MIN_SECS);
-        idleAnim.current = pickRandom(IDLE_ANIMS, idleAnim.current);
+        idleAnim.current = weightedPick(avatarProfile.idleWeights, idleAnim.current);
         stretchProgress.current = 0;
       }
     }
@@ -447,27 +515,82 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
     if (b.Spine1) b.Spine1.rotation.x = rg('Spine1', 'x') + breathVal * 0.008 * br;
     if (b.Spine2) b.Spine2.rotation.x = rg('Spine2', 'x') + breathVal * 0.006 * br;
 
-    // ── REACTION: JUMP ──
+    // ── REACTIONS (multiple types per avatar) ──
     let jumpY = 0;
-    if (jumpActive.current) {
-      jumpPhase.current += dt * 4;
-      if (jumpPhase.current < Math.PI) {
-        // Anticipation dip + jump arc
-        jumpY = Math.sin(jumpPhase.current) * 0.25;
-        if (jumpPhase.current < 0.5) jumpY = -0.03 * (jumpPhase.current / 0.5); // squat before jump
-        // Happy face
-        if (hasMorphs) {
-          setMorphMapped(mapped, 'mouthSmile', 0.7);
-          setMorphMapped(mapped, 'browInnerUp', 0.3);
-        }
-        // Arms up during peak
-        if (jumpPhase.current > 1 && jumpPhase.current < 2.5) {
-          if (b.LeftArm && noBuiltin) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, rg('LeftArm','z') + 2.5, dt * 8);
-          if (b.RightArm && noBuiltin) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, rg('RightArm','z') - 2.5, dt * 8);
-        }
-      } else {
-        jumpActive.current = false;
-        jumpPhase.current = 0;
+    if (reactionActive.current) {
+      reactionProgress.current += dt;
+      const rType = reactionType.current;
+      const rp = reactionProgress.current;
+
+      if (rType === 'jump') {
+        const phase = rp * 4;
+        if (phase < Math.PI) {
+          jumpY = Math.sin(phase) * 0.25;
+          if (phase < 0.5) jumpY = -0.03 * (phase / 0.5);
+          if (hasMorphs) { setMorphMapped(mapped, 'mouthSmile', 0.7); setMorphMapped(mapped, 'browInnerUp', 0.3); }
+          if (phase > 1 && phase < 2.5 && noBuiltin) {
+            if (b.LeftArm) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, rg('LeftArm','z') + 2.5, dt * 8);
+            if (b.RightArm) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, rg('RightArm','z') - 2.5, dt * 8);
+          }
+        } else { reactionActive.current = false; }
+      }
+      else if (rType === 'nod') {
+        if (rp < 1.2) {
+          const fade = Math.max(0, 1 - rp / 1.2);
+          const nodCycle = Math.sin(rp * 12) * 0.12 * fade;
+          if (b.Head) b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, rg('Head','x') + nodCycle, dt * 8);
+          if (hasMorphs) setMorphMapped(mapped, 'mouthSmile', 0.3 * fade);
+        } else { reactionActive.current = false; }
+      }
+      else if (rType === 'surprise') {
+        if (rp < 1.0) {
+          const intensity = rp < 0.15 ? rp / 0.15 : Math.max(0, 1 - (rp - 0.15) / 0.85);
+          if (b.Head) b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, rg('Head','x') + 0.12 * intensity, dt * 10);
+          if (b.Spine1) b.Spine1.rotation.x = MathUtils.lerp(b.Spine1.rotation.x, rg('Spine1','x') - 0.05 * intensity, dt * 6);
+          if (hasMorphs) { setMorphMapped(mapped, 'mouthOpen', 0.5 * intensity); setMorphMapped(mapped, 'browInnerUp', 0.5 * intensity); }
+        } else { reactionActive.current = false; }
+      }
+      else if (rType === 'cheer') {
+        if (rp < 1.5) {
+          const phase = rp * 3;
+          jumpY = Math.sin(Math.min(phase, Math.PI)) * 0.15;
+          const armLift = rp < 0.4 ? rp / 0.4 : rp > 1.0 ? Math.max(0, 1 - (rp - 1.0) / 0.5) : 1;
+          if (noBuiltin) {
+            if (b.LeftArm) b.LeftArm.rotation.z = MathUtils.lerp(b.LeftArm.rotation.z, rg('LeftArm','z') + 2.8 * armLift, dt * 8);
+            if (b.RightArm) b.RightArm.rotation.z = MathUtils.lerp(b.RightArm.rotation.z, rg('RightArm','z') - 2.8 * armLift, dt * 8);
+          }
+          if (hasMorphs) { setMorphMapped(mapped, 'mouthSmile', 0.8 * armLift); setMorphMapped(mapped, 'mouthOpen', 0.3 * armLift); }
+        } else { reactionActive.current = false; }
+      }
+      else if (rType === 'laugh') {
+        if (rp < 1.5) {
+          const intensity = rp < 0.3 ? rp / 0.3 : Math.max(0, 1 - (rp - 0.3) / 1.2);
+          const bounce = Math.sin(rp * 16) * 0.008 * intensity;
+          jumpY = bounce;
+          if (b.LeftShoulder) b.LeftShoulder.rotation.z += Math.sin(rp * 14) * 0.04 * intensity;
+          if (b.RightShoulder) b.RightShoulder.rotation.z -= Math.sin(rp * 14) * 0.04 * intensity;
+          if (b.Spine1) b.Spine1.rotation.x += Math.sin(rp * 12) * 0.02 * intensity;
+          if (hasMorphs) { setMorphMapped(mapped, 'mouthSmile', 0.7 * intensity); setMorphMapped(mapped, 'mouthOpen', Math.abs(Math.sin(rp * 10)) * 0.3 * intensity); }
+        } else { reactionActive.current = false; }
+      }
+      else if (rType === 'bigNod') {
+        if (rp < 1.0) {
+          const nodVal = Math.sin(rp * Math.PI * 2) * 0.08 * Math.max(0, 1 - rp);
+          if (b.Head) b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, rg('Head','x') - 0.1 + nodVal, dt * 6);
+          if (b.Spine1) b.Spine1.rotation.x = MathUtils.lerp(b.Spine1.rotation.x, rg('Spine1','x') + 0.03 * (1 - rp), dt * 4);
+        } else { reactionActive.current = false; }
+      }
+      else if (rType === 'bodyShake') {
+        if (rp < 1.3) {
+          const intensity = rp < 0.2 ? rp / 0.2 : Math.max(0, 1 - (rp - 0.2) / 1.1);
+          const shake = Math.sin(rp * 15) * 0.03 * intensity;
+          if (b.Hips && noBuiltin) b.Hips.rotation.z += shake;
+          if (b.Head) b.Head.rotation.z += shake * 0.5;
+          if (noBuiltin) {
+            if (b.LeftArm) b.LeftArm.rotation.x += shake * 2;
+            if (b.RightArm) b.RightArm.rotation.x -= shake * 2;
+          }
+        } else { reactionActive.current = false; }
       }
     }
 
@@ -502,7 +625,10 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         const currentMouth = getMorphMapped(mapped, 'mouthOpen');
         setMorphMapped(mapped, 'mouthOpen', currentMouth * 0.85);
         setMorphMapped(mapped, 'jawOpen', currentMouth * 0.5);
-        if (!jumpActive.current) {
+        // Fade out VRC visemes from speaking
+        const vFade = ['viseme_oh','viseme_ee','viseme_ih','viseme_ou','viseme_ff','viseme_ss','viseme_ch','viseme_dd','viseme_pp','viseme_nn','viseme_sil'];
+        for (const v of vFade) { const c = getMorphMapped(mapped, v); if (c > 0.01) setMorphMapped(mapped, v, c * 0.85); }
+        if (!reactionActive.current) {
           setMorphMapped(mapped, 'mouthSmile', Math.sin(breathPhase.current * 0.2) * 0.05);
           setMorphMapped(mapped, 'browInnerUp', 0);
         }
@@ -695,6 +821,23 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
       if (hasMorphs) {
         setMorphMapped(mapped, 'mouthOpen', mouthVal);
         setMorphMapped(mapped, 'jawOpen', jawVal);
+      }
+
+      // VRC viseme cycling — blend between viseme shapes for natural lip movement
+      const hasVisemes = mapped.some(({morphMap}) => morphMap.viseme_aa !== undefined);
+      if (hasVisemes) {
+        const visemeSeq = ['viseme_aa', 'viseme_ee', 'viseme_oh', 'viseme_ch', 'viseme_aa', 'viseme_ou', 'viseme_ff', 'viseme_ee'];
+        const allVisemes = ['viseme_aa','viseme_oh','viseme_ee','viseme_ih','viseme_ou','viseme_ff','viseme_ss','viseme_ch','viseme_dd','viseme_pp','viseme_nn','viseme_sil'];
+        for (const v of allVisemes) setMorphMapped(mapped, v, 0);
+        if (mouthVal > 0.05) {
+          const idx = Math.floor(syllablePhase.current * 0.7) % visemeSeq.length;
+          const nextIdx = (idx + 1) % visemeSeq.length;
+          const blend = (syllablePhase.current * 0.7) % 1;
+          setMorphMapped(mapped, visemeSeq[idx], mouthVal * (1 - blend));
+          setMorphMapped(mapped, visemeSeq[nextIdx], mouthVal * blend);
+        } else {
+          setMorphMapped(mapped, 'viseme_sil', 0.3);
+        }
       }
 
       // ── Emphasis system: periodic head nods to stress "important words" ──
@@ -934,6 +1077,9 @@ function AvatarModel({ url, state, accentColor, flipModel, modelScale, breathing
         setMorphMapped(mapped, 'jawOpen', 0);
         setMorphMapped(mapped, 'browInnerUp', 0.35 + Math.sin(breathPhase.current * 2) * 0.1);
         setMorphMapped(mapped, 'mouthSmile', 0.05);
+        // Reset VRC visemes
+        const vReset = ['viseme_aa','viseme_oh','viseme_ee','viseme_ih','viseme_ou','viseme_ff','viseme_ss','viseme_ch','viseme_dd','viseme_pp','viseme_nn','viseme_sil'];
+        for (const v of vReset) setMorphMapped(mapped, v, 0);
       }
       if (b.Head) {
         b.Head.rotation.x = MathUtils.lerp(b.Head.rotation.x, rg('Head','x') - 0.12 * ge, dt * 3);
