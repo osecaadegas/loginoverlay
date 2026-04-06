@@ -35,6 +35,7 @@ export function createAnimationController() {
   let prevState = 'idle';
   let morphFade = {}; // morph name → current fade value
   let talkingWasActive = false;
+  let totalTime = 0;
 
   return {
     state,
@@ -70,6 +71,7 @@ export function createAnimationController() {
 
       const speed = params.animSpeed ?? 1;
       const scaledDt = dt * speed;
+      totalTime += scaledDt;
 
       // ── 1. STATE TICK ──
       state.update(scaledDt);
@@ -107,14 +109,16 @@ export function createAnimationController() {
       }
 
       // ── 4. T-POSE BREAK (unconditional, before any behavior) ──
-      // Must run every frame so no behavior layer can leave arms horizontal
+      // Must run every frame so no behavior layer can leave arms horizontal.
+      // Uses fast speed (8) for first ~1s so arms snap down on load.
       if (rig.needsArmDown) {
         const { bones: b, restPose } = rig;
         const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
-        if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, rg('LeftArm', 'z') + 1.1, 2.5, scaledDt);
-        if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, rg('RightArm', 'z') - 1.1, 2.5, scaledDt);
-        if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, rg('LeftForeArm', 'z') + 0.15, 2.5, scaledDt);
-        if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rg('RightForeArm', 'z') - 0.15, 2.5, scaledDt);
+        const armSpeed = totalTime < 1.0 ? 8 : 2.5;
+        if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, rg('LeftArm', 'z') + 1.1, armSpeed, scaledDt);
+        if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, rg('RightArm', 'z') - 1.1, armSpeed, scaledDt);
+        if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, rg('LeftForeArm', 'z') + 0.15, armSpeed, scaledDt);
+        if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rg('RightForeArm', 'z') - 0.15, armSpeed, scaledDt);
       }
 
       // ── 5. IDLE BEHAVIOR (always running) ──

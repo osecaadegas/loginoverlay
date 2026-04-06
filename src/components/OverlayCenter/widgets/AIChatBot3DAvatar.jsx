@@ -1,7 +1,6 @@
 import React, { useRef, useMemo, useEffect, useState } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, Environment, Html } from '@react-three/drei';
-import { AnimationMixer } from 'three';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 import { resolveRig } from './avatar3d/rigMapper';
@@ -22,11 +21,10 @@ import { createAnimationController } from './avatar3d/animationController';
 
 /* ── Avatar Model (inner R3F component) ────────────────── */
 function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headMove, armMove, gestures, animSpeed, reaction }) {
-  const { scene, animations } = useGLTF(url);
+  const { scene } = useGLTF(url);
   const groupRef = useRef();
   const rigRef = useRef(null);
   const controllerRef = useRef(null);
-  const mixerRef = useRef(null);
   const lastReaction = useRef(0);
 
   // Clone scene for isolation, fix missing textures/colors
@@ -69,16 +67,9 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
     console.log('[3DAvatar] All bones:', allBoneNames.join(', '));
   }, [clonedScene, url]);
 
-  // Play built-in animations if they exist
-  useEffect(() => {
-    if (animations?.length > 0 && clonedScene) {
-      const mixer = new AnimationMixer(clonedScene);
-      mixerRef.current = mixer;
-      const action = mixer.clipAction(animations[0]);
-      action.play();
-      return () => { mixer.stopAllAction(); mixer.uncacheRoot(clonedScene); };
-    }
-  }, [animations, clonedScene]);
+  // NOTE: Built-in GLB animations are NOT played.
+  // VRM/VRC models often embed T-pose reference clips that fight
+  // the procedural animation system. All animation is fully procedural.
 
   // Sync state from prop → controller
   useEffect(() => {
@@ -103,9 +94,6 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
     if (!rig || !controller) return;
 
     const dt = Math.min(delta, 0.1);
-
-    // Update built-in animation mixer
-    if (mixerRef.current) mixerRef.current.update(dt);
 
     // Tick the animation controller (orchestrates all behavior layers)
     controller.update(dt, rig, { breathing, sway, headMove, armMove, gestures, animSpeed }, groupRef);
