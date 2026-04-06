@@ -58,13 +58,27 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
     rigRef.current = rig;
     controllerRef.current = createAnimationController();
 
+    // Immediately snap arms down (before first frame renders)
+    if (rig.needsArmDown) {
+      const { bones: b, restPose } = rig;
+      const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
+      if (b.LeftArm) b.LeftArm.rotation.z = rg('LeftArm', 'z') + 1.1;
+      if (b.RightArm) b.RightArm.rotation.z = rg('RightArm', 'z') - 1.1;
+      if (b.LeftForeArm) b.LeftForeArm.rotation.z = rg('LeftForeArm', 'z') + 0.15;
+      if (b.RightForeArm) b.RightForeArm.rotation.z = rg('RightForeArm', 'z') - 0.15;
+    }
+
     // Debug logging
     console.log('[3DAvatar] Bones:', Object.keys(rig.bones).join(', ') || 'none');
     console.log('[3DAvatar] Visemes:', rig.hasVisemes);
     console.log('[3DAvatar] T-pose:', rig.needsArmDown);
+    console.log('[3DAvatar] LeftArm bone:', rig.bones.LeftArm?.name || 'NOT FOUND');
+    console.log('[3DAvatar] RightArm bone:', rig.bones.RightArm?.name || 'NOT FOUND');
+    console.log('[3DAvatar] Rest LeftArm.z:', rig.restPose.LeftArm?.z?.toFixed(3) || 'N/A');
+    console.log('[3DAvatar] Rest RightArm.z:', rig.restPose.RightArm?.z?.toFixed(3) || 'N/A');
     const allBoneNames = [];
     clonedScene.traverse((c) => { if (c.isBone || c.type === 'Bone') allBoneNames.push(c.name); });
-    console.log('[3DAvatar] All bones:', allBoneNames.join(', '));
+    console.log('[3DAvatar] All scene bones (' + allBoneNames.length + '):', allBoneNames.join(', '));
   }, [clonedScene, url]);
 
   // NOTE: Built-in GLB animations are NOT played.

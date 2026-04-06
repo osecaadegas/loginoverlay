@@ -36,6 +36,7 @@ export function createAnimationController() {
   let morphFade = {}; // morph name → current fade value
   let talkingWasActive = false;
   let totalTime = 0;
+  let logged = false;
 
   return {
     state,
@@ -110,15 +111,39 @@ export function createAnimationController() {
 
       // ── 4. T-POSE BREAK (unconditional, before any behavior) ──
       // Must run every frame so no behavior layer can leave arms horizontal.
-      // Uses fast speed (8) for first ~1s so arms snap down on load.
       if (rig.needsArmDown) {
         const { bones: b, restPose } = rig;
         const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
-        const armSpeed = totalTime < 1.0 ? 8 : 2.5;
-        if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, rg('LeftArm', 'z') + 1.1, armSpeed, scaledDt);
-        if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, rg('RightArm', 'z') - 1.1, armSpeed, scaledDt);
-        if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, rg('LeftForeArm', 'z') + 0.15, armSpeed, scaledDt);
-        if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rg('RightForeArm', 'z') - 0.15, armSpeed, scaledDt);
+        const laTarget = rg('LeftArm', 'z') + 1.1;
+        const raTarget = rg('RightArm', 'z') - 1.1;
+        const lfTarget = rg('LeftForeArm', 'z') + 0.15;
+        const rfTarget = rg('RightForeArm', 'z') - 0.15;
+
+        // First 2s: hard-set to avoid any convergence issues
+        if (totalTime < 2.0) {
+          if (b.LeftArm) b.LeftArm.rotation.z = laTarget;
+          if (b.RightArm) b.RightArm.rotation.z = raTarget;
+          if (b.LeftForeArm) b.LeftForeArm.rotation.z = lfTarget;
+          if (b.RightForeArm) b.RightForeArm.rotation.z = rfTarget;
+        } else {
+          if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, laTarget, 2.5, scaledDt);
+          if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, raTarget, 2.5, scaledDt);
+          if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, lfTarget, 2.5, scaledDt);
+          if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rfTarget, 2.5, scaledDt);
+        }
+
+        // One-time diagnostic log
+        if (!logged) {
+          logged = true;
+          console.warn('[T-POSE BREAK] needsArmDown:', true,
+            '| LeftArm:', !!b.LeftArm, '| RightArm:', !!b.RightArm,
+            '| laTarget:', laTarget.toFixed(3), '| raTarget:', raTarget.toFixed(3),
+            '| actual LeftArm.z:', b.LeftArm?.rotation.z?.toFixed(3),
+            '| actual RightArm.z:', b.RightArm?.rotation.z?.toFixed(3));
+        }
+      } else if (!logged) {
+        logged = true;
+        console.warn('[T-POSE BREAK] needsArmDown: FALSE — arms not detected as T-pose');
       }
 
       // ── 5. IDLE BEHAVIOR (always running) ──
