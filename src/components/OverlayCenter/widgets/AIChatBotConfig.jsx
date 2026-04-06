@@ -446,8 +446,8 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
               style={{ ...inputStyle, marginBottom: 6 }}
             />
             <div style={{ display: 'flex', gap: 4, marginBottom: 10, flexWrap: 'wrap' }}>
-              {['🇵🇹 PT', '🇬🇧 EN', '🇪🇸 ES', '🇫🇷 FR', '🇩🇪 DE'].map(tag => {
-                const langCode = tag.split(' ')[1].toLowerCase();
+              {['🇵🇹 PT', '🇬🇧 EN', '🇪🇸 ES', '🇫🇷 FR', '🇩🇪 DE', '♂️ Male', '♀️ Female'].map(tag => {
+                const langCode = tag.includes('Male') ? 'male' : tag.includes('Female') ? 'female' : tag.split(' ')[1].toLowerCase();
                 const active = voiceFilter.toLowerCase() === langCode;
                 return (
                   <button key={tag} onClick={() => setVoiceFilter(active ? '' : langCode)}
@@ -478,8 +478,8 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
               >
                 <div style={{ fontSize: 16 }}>🔊</div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>System Default</div>
-                  <div style={{ fontSize: 10, color: '#64748b' }}>Browser default voice</div>
+                  <div style={{ fontSize: 12, fontWeight: 600, color: '#e2e8f0' }}>Auto (Portuguese)</div>
+                  <div style={{ fontSize: 10, color: '#64748b' }}>Auto-picks best PT voice available</div>
                 </div>
                 {!c.ttsVoice && <span style={{ color: c.accentColor || '#9146FF', fontSize: 12, fontWeight: 700 }}>✓</span>}
               </div>
@@ -488,18 +488,28 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                 .filter(v => {
                   if (!voiceFilter) return true;
                   const q = voiceFilter.toLowerCase();
-                  return v.name.toLowerCase().includes(q) || v.lang.toLowerCase().includes(q);
+                  return v.name.toLowerCase().includes(q) || v.lang.toLowerCase().includes(q)
+                    || (q === 'male' && /ant[oó]nio|duarte|daniel|cristiano|hector|jorge|tiago/i.test(v.name))
+                    || (q === 'female' && /francisca|fernanda|raquel|maria|branca|in[eê]s|helia|catarina/i.test(v.name));
                 })
                 .sort((a, b) => {
-                  // Sort PT voices first
+                  // Sort PT voices first, then by pt-PT before pt-BR
                   const aPt = a.lang.startsWith('pt') ? 0 : 1;
                   const bPt = b.lang.startsWith('pt') ? 0 : 1;
                   if (aPt !== bPt) return aPt - bPt;
+                  if (aPt === 0) {
+                    const aPtPt = a.lang.startsWith('pt-PT') ? 0 : 1;
+                    const bPtPt = b.lang.startsWith('pt-PT') ? 0 : 1;
+                    if (aPtPt !== bPtPt) return aPtPt - bPtPt;
+                  }
                   return a.name.localeCompare(b.name);
                 })
                 .map(v => {
                   const selected = c.ttsVoice === v.name;
                   const isPreviewing = previewingVoice === v.name;
+                  const isFemale = /francisca|fernanda|raquel|maria|branca|in[eê]s|helia|catarina|female/i.test(v.name);
+                  const isMale = /ant[oó]nio|duarte|daniel|cristiano|hector|jorge|tiago|male/i.test(v.name) && !isFemale;
+                  const genderTag = v.lang.startsWith('pt') ? (isMale ? '♂️' : isFemale ? '♀️' : '') : '';
                   return (
                     <div
                       key={v.name}
@@ -514,9 +524,9 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                       <div style={{ fontSize: 14 }}>{v.lang.startsWith('en') ? '🇬🇧' : v.lang.startsWith('pt') ? '🇵🇹' : v.lang.startsWith('es') ? '🇪🇸' : v.lang.startsWith('fr') ? '🇫🇷' : v.lang.startsWith('de') ? '🇩🇪' : v.lang.startsWith('ja') ? '🇯🇵' : v.lang.startsWith('ko') ? '🇰🇷' : v.lang.startsWith('zh') ? '🇨🇳' : v.lang.startsWith('it') ? '🇮🇹' : v.lang.startsWith('ru') ? '🇷🇺' : '🌐'}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontSize: 11, fontWeight: 600, color: '#e2e8f0', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {v.name}
+                          {v.name} {genderTag}
                         </div>
-                        <div style={{ fontSize: 10, color: '#64748b' }}>{v.lang}</div>
+                        <div style={{ fontSize: 10, color: '#64748b' }}>{v.lang}{v.lang.startsWith('pt-PT') ? ' (Portugal)' : v.lang.startsWith('pt-BR') ? ' (Brasil)' : ''}</div>
                       </div>
                       <button
                         onClick={(e) => {

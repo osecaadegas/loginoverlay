@@ -34,14 +34,17 @@ CREATE INDEX IF NOT EXISTS idx_user_slot_records_slot ON user_slot_records(user_
 -- RLS
 ALTER TABLE user_slot_records ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own slot records" ON user_slot_records;
 CREATE POLICY "Users can view own slot records"
   ON user_slot_records FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own slot records" ON user_slot_records;
 CREATE POLICY "Users can insert own slot records"
   ON user_slot_records FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can update own slot records" ON user_slot_records;
 CREATE POLICY "Users can update own slot records"
   ON user_slot_records FOR UPDATE
   USING (auth.uid() = user_id);
@@ -65,10 +68,12 @@ CREATE INDEX IF NOT EXISTS idx_user_slot_results_slot ON user_slot_results(user_
 
 ALTER TABLE user_slot_results ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Users can view own slot results" ON user_slot_results;
 CREATE POLICY "Users can view own slot results"
   ON user_slot_results FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "Users can insert own slot results" ON user_slot_results;
 CREATE POLICY "Users can insert own slot results"
   ON user_slot_results FOR INSERT
   WITH CHECK (auth.uid() = user_id);

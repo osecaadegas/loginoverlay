@@ -101,21 +101,42 @@ async function askAI(provider, apiKey, model, systemPrompt, history, userMsg) {
   return askGemini(apiKey, model, systemPrompt, history, userMsg);
 }
 
+/* ── Detect if we're running inside OBS overlay (not dashboard preview) ── */
+const isOverlayContext = () => window.location.pathname.startsWith('/overlay/');
+
 /* ── TTS helper (returns callbacks for speaking state) ─ */
+let _ttsKeepAlive = null; // Chrome bug workaround — prevents speech from cutting/echoing
 function speak(text, voice, rate, pitch, onStart, onEnd) {
-  if (!window.speechSynthesis) return;
+  if (!window.speechSynthesis) { onEnd?.(); return; }
+  // Only speak in OBS overlay context — prevents echo from dashboard + OBS both speaking
+  if (!isOverlayContext()) { onStart?.(); setTimeout(() => onEnd?.(), 800); return; }
   window.speechSynthesis.cancel();
+  clearInterval(_ttsKeepAlive);
   const utt = new SpeechSynthesisUtterance(text);
+  const voices = window.speechSynthesis.getVoices();
   if (voice) {
-    const voices = window.speechSynthesis.getVoices();
     const found = voices.find(v => v.name === voice);
     if (found) utt.voice = found;
+  } else {
+    // No voice selected — pick a good Portuguese voice as default
+    const ptVoice = voices.find(v => v.lang.startsWith('pt') && /fernanda|francisca|raquel/i.test(v.name))
+      || voices.find(v => v.lang.startsWith('pt-PT'))
+      || voices.find(v => v.lang.startsWith('pt'));
+    if (ptVoice) utt.voice = ptVoice;
   }
   utt.rate = rate || 1;
   utt.pitch = pitch || 1;
-  utt.onstart = () => onStart?.();
-  utt.onend = () => onEnd?.();
-  utt.onerror = () => onEnd?.();
+  utt.onstart = () => {
+    onStart?.();
+    // Chrome bug: speechSynthesis pauses after ~15s; keep-alive workaround
+    _ttsKeepAlive = setInterval(() => {
+      if (!window.speechSynthesis.speaking) { clearInterval(_ttsKeepAlive); return; }
+      window.speechSynthesis.pause();
+      window.speechSynthesis.resume();
+    }, 10000);
+  };
+  utt.onend = () => { clearInterval(_ttsKeepAlive); onEnd?.(); };
+  utt.onerror = () => { clearInterval(_ttsKeepAlive); onEnd?.(); };
   window.speechSynthesis.speak(utt);
 }
 

@@ -130,7 +130,7 @@ export function useOverlay() {
           ? ['bonus_hunt']
           : [detectedTarget]; // 'single_slot' or 'current_slot'
 
-        // Update only the targeted widget type(s)
+        // Update only the targeted widget type(s) + always update rtp_stats with bestWin
         setWidgets(prev => {
           const updated = [];
           for (const w of prev) {
@@ -138,6 +138,12 @@ export function useOverlay() {
               const merged = { ...w, config: { ...w.config, ...update } };
               updated.push(merged);
               // Persist to DB (fire-and-forget)
+              upsertWidget(user.id, merged).catch(() => {});
+            } else if (w.widget_type === 'rtp_stats' && update.bestWin) {
+              // Also cache bestWin into rtp_stats config so OBS can read it (no auth → RLS blocks direct DB query)
+              const cached = { slotName: update.slotName, best_win: update.bestWin, best_multiplier: update.bestMulti || 0 };
+              const merged = { ...w, config: { ...w.config, _cachedBestWin: cached } };
+              updated.push(merged);
               upsertWidget(user.id, merged).catch(() => {});
             } else {
               updated.push(w);
