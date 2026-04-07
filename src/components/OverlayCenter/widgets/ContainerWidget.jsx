@@ -43,6 +43,7 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
         ? `rgba(${parseInt(bgColor.slice(1,3),16)},${parseInt(bgColor.slice(3,5),16)},${parseInt(bgColor.slice(5,7),16)},${bgOpacity/100})`
         : bgColor
       : 'transparent',
+    borderRadius: c.cardRadius ? `${c.cardRadius}px` : undefined,
     overflow: scrollable ? 'auto' : 'hidden',
     display: layout === 'free' ? 'block' : 'flex',
     flexDirection: layout === 'horizontal' ? 'row' : 'column',

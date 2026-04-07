@@ -201,6 +201,20 @@ export default function ContainerConfig({ config, onChange, allWidgets }) {
         <span style={{ fontSize: '0.72rem', color: '#94a3b8', width: 30, textAlign: 'right' }}>{c.bgOpacity ?? 0}%</span>
       </div>
 
+      {/* Border Radius */}
+      <div style={S.row}>
+        <label style={{ ...S.label, flex: '0 0 auto' }}>Corner Radius</label>
+        <input
+          type="range"
+          min={0}
+          max={100}
+          value={c.cardRadius ?? 0}
+          onChange={e => set('cardRadius', Number(e.target.value))}
+          style={{ flex: 1 }}
+        />
+        <span style={{ fontSize: '0.72rem', color: '#94a3b8', width: 30, textAlign: 'right' }}>{c.cardRadius ?? 0}px</span>
+      </div>
+
       {/* Scrollable */}
       <label style={{ ...S.row, cursor: 'pointer' }}>
         <input
