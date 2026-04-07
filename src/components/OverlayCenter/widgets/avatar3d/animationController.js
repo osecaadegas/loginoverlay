@@ -41,6 +41,8 @@ export function createAnimationController() {
   let npcPose = 'idle';              // current NPC pose name
   let npcPoseWeight = 0;             // smooth blend weight for NPC pose
   let npcActive = false;             // is NPC currently doing something?
+  let npcTime = 0;                   // time accumulated while NPC pose is active
+  let prevNpcPose = 'idle';          // for detecting pose changes
 
   return {
     state,
@@ -68,7 +70,11 @@ export function createAnimationController() {
      * @param {string} pose — 'idle'|'walking'|'pushup'|'peeking'|'waving'
      */
     setNpcPose(pose) {
-      npcPose = pose;
+      if (pose !== npcPose) {
+        prevNpcPose = npcPose;
+        npcPose = pose;
+        npcTime = 0; // reset action-local time on pose change
+      }
       npcActive = pose !== 'idle';
     },
 
@@ -122,15 +128,16 @@ export function createAnimationController() {
         }
       }
 
-      // ── 4. T-POSE BREAK (unconditional, before any behavior) ──
-      // Must run every frame so no behavior layer can leave arms horizontal.
-      if (rig.needsArmDown) {
+      // ── 4. T-POSE BREAK (before any behavior, but suppress when NPC active) ──
+      // NPC poses control arm Z themselves, so T-pose break must yield.
+      if (rig.needsArmDown && npcPoseWeight < 0.5) {
         const { bones: b, restPose } = rig;
         const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
         const laTarget = rg('LeftArm', 'z') + 1.1;
         const raTarget = rg('RightArm', 'z') - 1.1;
         const lfTarget = rg('LeftForeArm', 'z') + 0.15;
         const rfTarget = rg('RightForeArm', 'z') - 0.15;
+        const tposeW = 1 - npcPoseWeight * 2; // fade out as NPC blends in
 
         // First 2s: hard-set to avoid any convergence issues
         if (totalTime < 2.0) {
@@ -139,10 +146,10 @@ export function createAnimationController() {
           if (b.LeftForeArm) b.LeftForeArm.rotation.z = lfTarget;
           if (b.RightForeArm) b.RightForeArm.rotation.z = rfTarget;
         } else {
-          if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, laTarget, 2.5, scaledDt);
-          if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, raTarget, 2.5, scaledDt);
-          if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, lfTarget, 2.5, scaledDt);
-          if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rfTarget, 2.5, scaledDt);
+          if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, laTarget, 2.5 * tposeW, scaledDt);
+          if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, raTarget, 2.5 * tposeW, scaledDt);
+          if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, lfTarget, 2.5 * tposeW, scaledDt);
+          if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rfTarget, 2.5 * tposeW, scaledDt);
         }
 
         // One-time diagnostic log
@@ -159,8 +166,10 @@ export function createAnimationController() {
         console.warn('[T-POSE BREAK] needsArmDown: FALSE — arms not detected as T-pose');
       }
 
-      // ── 5. IDLE BEHAVIOR (always running) ──
-      idle.update(scaledDt, w.idle, rig, params, groupRef);
+      // ── 5. IDLE BEHAVIOR (suppress when NPC is active to prevent fighting) ──
+      const idleSuppress = 1 - npcPoseWeight * 0.9; // fade idle to 10% during NPC
+      const effectiveIdleW = w.idle * idleSuppress;
+      idle.update(scaledDt, effectiveIdleW, rig, params, groupRef);
 
       // ── 6. TALKING BEHAVIOR ──
       if (w.talking > 0.01) {
@@ -177,16 +186,17 @@ export function createAnimationController() {
         _applyListening(scaledDt, w.listening, rig, params);
       }
 
-      // ── 9. REACTIONS (additive, on top) ──
-      if (reactions.isPlaying) {
+      // ── 9. REACTIONS (additive, on top — skip during NPC) ──
+      if (reactions.isPlaying && npcPoseWeight < 0.3) {
         reactions.update(scaledDt, rig, groupRef);
       }
 
-      // ── 10. NPC POSE LAYER (overrides idle when active) ──
+      // ── 10. NPC POSE LAYER (replaces idle when active) ──
       const targetNpcW = npcActive ? 1 : 0;
-      npcPoseWeight = smoothLerp(npcPoseWeight, targetNpcW, 4, scaledDt);
+      npcPoseWeight = smoothLerp(npcPoseWeight, targetNpcW, 3.5, scaledDt);
+      if (npcActive) npcTime += scaledDt;
       if (npcPoseWeight > 0.01 && NPC_POSE_MAP[npcPose]) {
-        NPC_POSE_MAP[npcPose](scaledDt, 0, rig, npcPoseWeight, totalTime);
+        NPC_POSE_MAP[npcPose](scaledDt, 0, rig, npcPoseWeight, npcTime);
       }
     },
   };

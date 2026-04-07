@@ -27,6 +27,7 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
   const rigRef = useRef(null);
   const controllerRef = useRef(null);
   const lastReaction = useRef(0);
+  const primitiveRef = useRef();
 
   // Clone scene for isolation, fix missing textures/colors
   const clonedScene = useMemo(() => {
@@ -117,16 +118,19 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
 
     // Tick the animation controller (orchestrates all behavior layers)
     controller.update(dt, rig, { breathing, sway, headMove, armMove, gestures, animSpeed }, groupRef);
-  });
 
-  // Determine final model flip (NPC overrides user flip when roaming)
-  const npcFlip = npcRef?.current?.flipX ?? false;
-  const npcActive = npcRef?.current?.pose && npcRef.current.pose !== 'idle';
-  const finalFlip = npcActive ? npcFlip : flipModel;
+    // Update model flip every frame (NPC overrides user flip when roaming)
+    if (primitiveRef.current) {
+      const npcFlipNow = npcRef?.current?.flipX ?? false;
+      const npcActiveNow = npcRef?.current?.pose && npcRef.current.pose !== 'idle';
+      const shouldFlip = npcActiveNow ? npcFlipNow : flipModel;
+      primitiveRef.current.rotation.y = shouldFlip ? Math.PI : 0;
+    }
+  });
 
   return (
     <group ref={groupRef}>
-      <primitive object={clonedScene} scale={modelScale || 1} rotation={[0, finalFlip ? Math.PI : 0, 0]} />
+      <primitive ref={primitiveRef} object={clonedScene} scale={modelScale || 1} rotation={[0, flipModel ? Math.PI : 0, 0]} />
     </group>
   );
 }

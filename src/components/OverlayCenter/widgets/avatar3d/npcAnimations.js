@@ -1,99 +1,144 @@
 /**
  * npcAnimations.js — Procedural bone poses for NPC behaviors
  *
- * Each pose function receives (dt, progress, rig, weight) and mutates
- * bones/morphs. Progress is 0..1 within the current action phase.
+ * Each pose function receives (dt, progress, rig, weight, npcTime) and mutates
+ * bones/morphs. npcTime is seconds since this NPC pose began (resets on change).
+ *
+ * KEY FIX: Uses absolute bone targets (never +=) to prevent accumulation drift.
+ * Applies only via smoothLerp to get smooth transitions between poses.
  *
  * Called from animationController when NPC is active.
  */
 
 import { smoothLerp } from './noise';
 
+/* ── Helpers ── */
+
+// Hermite ease — holds longer at 0 and 1 vs simple sine
+function smoothstep(t) { return t * t * (3 - 2 * t); }
+
+// Rest-aware target: offset from the bone's rest pose
+function rTarget(rig, boneName, axis, offset) {
+  return (rig.restPose?.[boneName]?.[axis] ?? 0) + offset;
+}
+
 /**
- * Walking cycle — rhythmic leg/arm swing with body bob.
+ * Walking cycle — proper gait with coordinated limbs.
+ * ~1.6 steps/sec (natural walk cadence), phase-consistent.
  */
-export function applyWalking(dt, progress, rig, weight, totalTime) {
-  const { bones: b, morphs, behavior } = rig;
+export function applyWalking(dt, progress, rig, weight, npcTime) {
+  const { bones: b, morphs, restPose } = rig;
   const w = weight;
-  const t = totalTime * 4; // cycle speed (4 Hz)
-  const step = Math.sin(t * Math.PI);
+
+  // Walk frequency: 1.6 Hz = ~96 steps/min (natural cadence)
+  const freq = 1.6;
+  const phase = npcTime * freq * Math.PI * 2;
+  const step = Math.sin(phase);                    // -1..1 oscillation
   const stepAbs = Math.abs(step);
+  const halfStep = Math.sin(phase * 2);            // double freq for bob
 
-  // Leg swing (alternating)
-  if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = smoothLerp(b.LeftUpLeg.rotation.x, step * 0.35 * w, 6, dt);
-  if (b.RightUpLeg) b.RightUpLeg.rotation.x = smoothLerp(b.RightUpLeg.rotation.x, -step * 0.35 * w, 6, dt);
-  if (b.LeftLeg) b.LeftLeg.rotation.x = smoothLerp(b.LeftLeg.rotation.x, Math.max(0, -step) * 0.5 * w, 6, dt);
-  if (b.RightLeg) b.RightLeg.rotation.x = smoothLerp(b.RightLeg.rotation.x, Math.max(0, step) * 0.5 * w, 6, dt);
+  // ── Legs: swing ±0.4 rad ──
+  const legSwing = step * 0.4 * w;
+  if (b.LeftUpLeg)  b.LeftUpLeg.rotation.x  = smoothLerp(b.LeftUpLeg.rotation.x,  rTarget(rig, 'LeftUpLeg', 'x', legSwing), 8, dt);
+  if (b.RightUpLeg) b.RightUpLeg.rotation.x = smoothLerp(b.RightUpLeg.rotation.x, rTarget(rig, 'RightUpLeg', 'x', -legSwing), 8, dt);
 
-  // Counter arm swing
-  if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, -step * 0.2 * w, 5, dt);
-  if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, step * 0.2 * w, 5, dt);
+  // ── Knees: bend on trailing leg ──
+  const lKnee = Math.max(0, -step) * 0.6 * w;  // left knee bends when left leg goes back
+  const rKnee = Math.max(0,  step) * 0.6 * w;  // right knee bends when right leg goes back
+  if (b.LeftLeg)  b.LeftLeg.rotation.x  = smoothLerp(b.LeftLeg.rotation.x,  rTarget(rig, 'LeftLeg', 'x', lKnee), 8, dt);
+  if (b.RightLeg) b.RightLeg.rotation.x = smoothLerp(b.RightLeg.rotation.x, rTarget(rig, 'RightLeg', 'x', rKnee), 8, dt);
 
-  // Body bob (up-down on each step)
+  // ── Counter arm swing: ±0.25 rad, opposite to legs ──
+  const armSwing = step * 0.25 * w;
+  if (b.LeftArm)  b.LeftArm.rotation.x  = smoothLerp(b.LeftArm.rotation.x,  rTarget(rig, 'LeftArm', 'x', -armSwing), 6, dt);
+  if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, rTarget(rig, 'RightArm', 'x', armSwing), 6, dt);
+
+  // ── Elbow: slight bend during arm forward swing ──
+  const lElbow = Math.max(0, -step) * 0.2 * w;
+  const rElbow = Math.max(0,  step) * 0.2 * w;
+  if (b.LeftForeArm)  b.LeftForeArm.rotation.x  = smoothLerp(b.LeftForeArm.rotation.x,  rTarget(rig, 'LeftForeArm', 'x', -lElbow), 6, dt);
+  if (b.RightForeArm) b.RightForeArm.rotation.x = smoothLerp(b.RightForeArm.rotation.x, rTarget(rig, 'RightForeArm', 'x', -rElbow), 6, dt);
+
+  // ── Hip bob: absolute Y offset (double frequency — one bob per step) ──
   if (b.Hips) {
-    b.Hips.position.y = (b.Hips.position.y || 0) + stepAbs * 0.003 * w;
+    const restY = b.Hips._restY ?? b.Hips.position.y;
+    if (b.Hips._restY === undefined) b.Hips._restY = b.Hips.position.y;
+    const bobTarget = restY + (1 - stepAbs) * 0.008 * w; // dip at midstep
+    b.Hips.position.y = smoothLerp(b.Hips.position.y, bobTarget, 10, dt);
   }
 
-  // Slight torso twist
-  if (b.Spine) b.Spine.rotation.y = smoothLerp(b.Spine.rotation.y || 0, step * 0.03 * w, 4, dt);
+  // ── Torso twist: follows legs ──
+  if (b.Spine) b.Spine.rotation.y = smoothLerp(b.Spine.rotation.y, step * 0.04 * w, 5, dt);
 
-  // Head bobs slightly
-  if (b.Head) b.Head.rotation.x = smoothLerp(b.Head.rotation.x, stepAbs * -0.02 * w, 3, dt);
+  // ── Slight forward lean ──
+  if (b.Spine1) b.Spine1.rotation.x = smoothLerp(b.Spine1.rotation.x || 0, 0.03 * w, 3, dt);
 
-  // Neutral face
+  // ── Head: subtle opposite twist + slight nod ──
+  if (b.Head) {
+    b.Head.rotation.y = smoothLerp(b.Head.rotation.y, -step * 0.02 * w, 4, dt);
+    b.Head.rotation.x = smoothLerp(b.Head.rotation.x, stepAbs * -0.015 * w, 4, dt);
+  }
+
+  // Neutral/pleasant face
   morphs.set('mouthSmile', 0.1 * w);
 }
 
 /**
- * Push-up cycle — chest goes down and up, arms bend, body horizontal.
+ * Push-up cycle — body tilts forward, arms push up and down.
+ * ~0.6 reps/sec with hold at top and bottom (smoothstep timing).
  */
-export function applyPushUp(dt, progress, rig, weight, totalTime) {
-  const { bones: b, morphs, behavior } = rig;
+export function applyPushUp(dt, progress, rig, weight, npcTime) {
+  const { bones: b, morphs, restPose } = rig;
   const w = weight;
 
-  // Push-up cycle: ~1.5s per rep
-  const cycle = Math.sin(totalTime * 2.1 * Math.PI); // oscillates -1..1
-  const down = (cycle + 1) * 0.5; // 0 = up, 1 = down
+  // Rep cycle: 0.6 Hz = ~1.67s per rep, smoothstep for top/bottom hold
+  const rawCycle = (npcTime * 0.6) % 1.0;           // 0→1 sawtooth
+  const down = smoothstep(Math.abs(rawCycle * 2 - 1)); // 0→1→0 with holds
 
-  // Lean the whole body forward (horizontal-ish)
-  if (b.Spine) b.Spine.rotation.x = smoothLerp(b.Spine.rotation.x, 0.8 * w, 4, dt);
-  if (b.Spine1) b.Spine1.rotation.x = smoothLerp(b.Spine1.rotation.x, 0.15 * w, 4, dt);
-  if (b.Spine2) b.Spine2.rotation.x = smoothLerp(b.Spine2.rotation.x, 0.1 * w, 4, dt);
+  // ── Torso: tilt forward significantly ──
+  if (b.Spine)  b.Spine.rotation.x  = smoothLerp(b.Spine.rotation.x,  1.1 * w, 4, dt);
+  if (b.Spine1) b.Spine1.rotation.x = smoothLerp(b.Spine1.rotation.x, 0.2 * w, 4, dt);
+  if (b.Spine2) b.Spine2.rotation.x = smoothLerp(b.Spine2.rotation.x, 0.15 * w, 4, dt);
 
-  // Arms: bend elbows during "down" phase
-  const elbowBend = down * 1.0 * w;
-  if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, -0.6 * w, 5, dt);
-  if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, -0.6 * w, 5, dt);
-  if (b.LeftForeArm) b.LeftForeArm.rotation.x = smoothLerp(b.LeftForeArm.rotation.x, -elbowBend, 6, dt);
+  // ── Arms: reach forward and down, elbows bend on "down" ──
+  const armForward = -0.7 * w;                       // arms point down/forward
+  const elbowBend = down * 1.2 * w;                  // deep elbow bend at bottom
+  if (b.LeftArm)  b.LeftArm.rotation.x  = smoothLerp(b.LeftArm.rotation.x,  armForward, 5, dt);
+  if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, armForward, 5, dt);
+  if (b.LeftForeArm)  b.LeftForeArm.rotation.x  = smoothLerp(b.LeftForeArm.rotation.x,  -elbowBend, 6, dt);
   if (b.RightForeArm) b.RightForeArm.rotation.x = smoothLerp(b.RightForeArm.rotation.x, -elbowBend, 6, dt);
 
-  // Head looks up (watching stream)
-  if (b.Head) b.Head.rotation.x = smoothLerp(b.Head.rotation.x, -0.4 * w, 3, dt);
-  if (b.Neck) b.Neck.rotation.x = smoothLerp(b.Neck.rotation.x, -0.2 * w, 3, dt);
+  // ── Head: look up (watching stream) ──
+  if (b.Head) b.Head.rotation.x = smoothLerp(b.Head.rotation.x, -0.5 * w, 3, dt);
+  if (b.Neck) b.Neck.rotation.x = smoothLerp(b.Neck.rotation.x, -0.25 * w, 3, dt);
 
-  // Legs straight
-  if (b.LeftUpLeg) b.LeftUpLeg.rotation.x = smoothLerp(b.LeftUpLeg.rotation.x, 0.0, 4, dt);
-  if (b.RightUpLeg) b.RightUpLeg.rotation.x = smoothLerp(b.RightUpLeg.rotation.x, 0.0, 4, dt);
+  // ── Legs: straight back ──
+  if (b.LeftUpLeg)  b.LeftUpLeg.rotation.x  = smoothLerp(b.LeftUpLeg.rotation.x,  0, 4, dt);
+  if (b.RightUpLeg) b.RightUpLeg.rotation.x = smoothLerp(b.RightUpLeg.rotation.x, 0, 4, dt);
+  if (b.LeftLeg)  b.LeftLeg.rotation.x  = smoothLerp(b.LeftLeg.rotation.x,  0, 4, dt);
+  if (b.RightLeg) b.RightLeg.rotation.x = smoothLerp(b.RightLeg.rotation.x, 0, 4, dt);
 
-  // Body bobs up/down with the push-up
+  // ── Hip Y: absolute vertical offset for body dip (NOT +=) ──
   if (b.Hips) {
-    b.Hips.position.y = (b.Hips.position.y || 0) - down * 0.015 * w;
+    const restY = b.Hips._restY ?? b.Hips.position.y;
+    if (b.Hips._restY === undefined) b.Hips._restY = b.Hips.position.y;
+    const dipTarget = restY - down * 0.025 * w;
+    b.Hips.position.y = smoothLerp(b.Hips.position.y, dipTarget, 8, dt);
   }
 
-  // Effort face
-  const effort = down;
-  morphs.set('mouthOpen', effort * 0.25 * w);
-  morphs.set('browInnerUp', effort * 0.4 * w);
-  morphs.set('mouthSmile', (1 - effort) * 0.2 * w);
+  // ── Effort face ──
+  morphs.set('mouthOpen', down * 0.3 * w);
+  morphs.set('browInnerUp', down * 0.45 * w);
+  morphs.set('mouthSmile', (1 - down) * 0.15 * w);
 }
 
 /**
  * Peeking at chat — lean toward chat, hand shading eyes.
  */
-export function applyPeeking(dt, progress, rig, weight, totalTime) {
+export function applyPeeking(dt, progress, rig, weight, npcTime) {
   const { bones: b, morphs } = rig;
   const w = weight;
-  const sway = Math.sin(totalTime * 1.2) * 0.02;
+  const sway = Math.sin(npcTime * 1.2) * 0.02;
 
   // Lean toward chat
   if (b.Spine) b.Spine.rotation.z = smoothLerp(b.Spine.rotation.z || 0, -0.12 * w + sway, 3, dt);
@@ -118,10 +163,10 @@ export function applyPeeking(dt, progress, rig, weight, totalTime) {
 /**
  * Waving at chat — friendly wave with one hand.
  */
-export function applyNpcWaving(dt, progress, rig, weight, totalTime) {
+export function applyNpcWaving(dt, progress, rig, weight, npcTime) {
   const { bones: b, morphs } = rig;
   const w = weight;
-  const waveOsc = Math.sin(totalTime * 6) * (0.8 + Math.sin(totalTime * 0.5) * 0.2);
+  const waveOsc = Math.sin(npcTime * 6) * (0.8 + Math.sin(npcTime * 0.5) * 0.2);
 
   // Right arm up
   if (b.RightArm) {

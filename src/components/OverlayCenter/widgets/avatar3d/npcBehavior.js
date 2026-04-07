@@ -33,8 +33,8 @@ function pickAction(weights) {
 // Linear interpolation
 function lerp(a, b, t) { return a + (b - a) * Math.min(1, Math.max(0, t)); }
 
-// Ease in-out
-function easeInOut(t) { return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t; }
+// Cubic ease in-out — natural acceleration/deceleration
+function easeInOut(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 
 /**
  * Create the NPC behavior controller.
@@ -83,7 +83,7 @@ export function createNpcBehavior(opts = {}) {
     phase = 'idle';
     pose = 'idle';
     currentAction = null;
-    idleCooldown = 8 + Math.random() * 12; // 8-20s between actions
+    idleCooldown = 5 + Math.random() * 8; // 5-13s between actions
     phaseTime = 0;
   }
 
