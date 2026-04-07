@@ -43,6 +43,22 @@ export default async function handler(req, res) {
 
 /* ─── Slot Request (?cmd=sr&slot=...&user_id=...&requester=...) ─── */
 
+/** Send a message to Twitch chat via the StreamElements bot */
+async function seBotSay(seChannelId, seJwtToken, message) {
+  try {
+    await fetch(`https://api.streamelements.com/kappa/v2/bot/${seChannelId}/say`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${seJwtToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message }),
+    });
+  } catch (err) {
+    console.error('[seBotSay] Failed to send chat message:', err.message);
+  }
+}
+
 async function handleSlotRequest(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
 
@@ -112,22 +128,7 @@ async function handleSlotRequest(req, res) {
       }
     }
 
-    // Check for duplicate using the resolved name (case-insensitive)
-    const { data: existing } = await supabase
-      .from('slot_requests')
-      .select('id')
-      .eq('user_id', user_id)
-      .eq('status', 'pending')
-      .ilike('slot_name', resolvedName)
-      .limit(1);
-
-    if (existing && existing.length > 0) {
-      return res.status(200).send(`"${resolvedName}" is already in the queue!`);
-    }
-
-    // ── SE Points check & deduction ──
-    // Always read SE settings from the streamer's widget config (works for both
-    // IRC-based requests from OBS overlay AND StreamElements custom commands)
+    // ── Resolve SE creds early (needed for points check AND chat bot messages) ──
     const { data: srWidgets } = await supabase
       .from('overlay_widgets')
       .select('config')
@@ -139,37 +140,54 @@ async function handleSlotRequest(req, res) {
     const seEnabled = !!wConfig?.srSeEnabled;
     const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
-    console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
-      'hasSeChannelId:', !!wConfig?.seChannelId, 'hasSeJwtToken:', !!wConfig?.seJwtToken);
+    let seChannelId = wConfig?.seChannelId;
+    let seJwtToken = wConfig?.seJwtToken;
 
-    if (seEnabled && seCost > 0) {
-      let seChannelId = wConfig?.seChannelId;
-      let seJwtToken = wConfig?.seJwtToken;
+    if (!seChannelId || !seJwtToken) {
+      const { data: allWidgets } = await supabase
+        .from('overlay_widgets')
+        .select('config')
+        .eq('user_id', user_id);
 
-      // Fallback: if SE creds aren't on slot_requests widget, find them from any other widget
-      if (!seChannelId || !seJwtToken) {
-        const { data: allWidgets } = await supabase
-          .from('overlay_widgets')
-          .select('config')
-          .eq('user_id', user_id);
-
-        if (allWidgets) {
-          for (const w of allWidgets) {
-            const wc = w.config;
-            if (wc?.seChannelId && wc?.seJwtToken) {
-              seChannelId = seChannelId || wc.seChannelId;
-              seJwtToken = seJwtToken || wc.seJwtToken;
-              break;
-            }
+      if (allWidgets) {
+        for (const w of allWidgets) {
+          const wc = w.config;
+          if (wc?.seChannelId && wc?.seJwtToken) {
+            seChannelId = seChannelId || wc.seChannelId;
+            seJwtToken = seJwtToken || wc.seJwtToken;
+            break;
           }
         }
       }
+    }
 
+    /** Helper: send chat notification via SE bot + return API response */
+    const reply = (msg) => {
+      if (seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
+      return res.status(200).send(msg);
+    };
+
+    console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
+      'hasSeCreds:', !!(seChannelId && seJwtToken));
+
+    // Check for duplicate using the resolved name (case-insensitive)
+    const { data: existing } = await supabase
+      .from('slot_requests')
+      .select('id')
+      .eq('user_id', user_id)
+      .eq('status', 'pending')
+      .ilike('slot_name', resolvedName)
+      .limit(1);
+
+    if (existing && existing.length > 0) {
+      return reply(`"${resolvedName}" is already in the queue!`);
+    }
+
+    // ── SE Points check & deduction ──
+    if (seEnabled && seCost > 0) {
       if (!seChannelId || !seJwtToken) {
         return res.status(200).send('⚠️ StreamElements not configured. Ask the streamer to connect SE.');
       }
-
-      console.log('[SR] SE creds found, checking points for viewer:', viewer);
 
       const cleanViewer = viewer.replace(/^@/, '').trim().toLowerCase();
 
@@ -180,14 +198,14 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!pointsRes.ok) {
-        return res.status(200).send(`❌ Could not check points for ${viewer}. Are you a follower?`);
+        return reply(`❌ Could not check points for ${viewer}. Are you a follower?`);
       }
 
       const pointsData = await pointsRes.json();
       const viewerPoints = pointsData.points || 0;
 
       if (viewerPoints < seCost) {
-        return res.status(200).send(`❌ ${viewer}, you need ${seCost} points to request a slot (you have ${viewerPoints}).`);
+        return reply(`❌ ${viewer}, you need ${seCost} points to request a slot (you have ${viewerPoints}).`);
       }
 
       // 2) Deduct points (negative amount)
@@ -200,7 +218,7 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!deductRes.ok) {
-        return res.status(200).send(`❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`);
+        return reply(`❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`);
       }
     }
 
@@ -218,13 +236,13 @@ async function handleSlotRequest(req, res) {
     if (insertErr) {
       // Catch race-condition duplicate (concurrent inserts)
       if (insertErr.code === '23505' || (insertErr.message && insertErr.message.includes('duplicate'))) {
-        return res.status(200).send(`"${resolvedName}" is already in the queue!`);
+        return reply(`"${resolvedName}" is already in the queue!`);
       }
       console.error('Insert error:', insertErr);
-      return res.status(200).send('Could not add request. Try again later.');
+      return reply('Could not add request. Try again later.');
     }
 
-    return res.status(200).send(
+    return reply(
       seEnabled && seCost > 0
         ? `🎰 Added "${resolvedName}" to the queue (${viewer} — ${seCost} points deducted)`
         : `🎰 Added "${resolvedName}" to the queue (requested by ${viewer})`
