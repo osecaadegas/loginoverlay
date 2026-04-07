@@ -45,21 +45,13 @@ export function StreamElementsProvider({ children }) {
   const autoConnectTwitchUser = async () => {
     setAutoConnecting(true);
     try {
-      console.log('🔍 Checking auto-connect for Twitch user...');
-      
       // Check if user logged in via Twitch
       const { data: { user: authUser } } = await supabase.auth.getUser();
       
-      console.log('User provider:', authUser?.app_metadata?.provider);
-      console.log('User metadata:', authUser?.user_metadata);
-      
       if (!authUser?.app_metadata?.provider || authUser.app_metadata.provider !== 'twitch') {
-        console.log('❌ Not a Twitch user, skipping auto-connect');
         setAutoConnecting(false);
         return;
       }
-
-      console.log('✅ Twitch user detected!');
 
       // Check if already connected
       const { data: existing, error: checkError } = await supabase
@@ -73,49 +65,54 @@ export function StreamElementsProvider({ children }) {
       }
 
       if (existing) {
-        console.log('✅ Already connected to StreamElements');
         setSeAccount(existing);
         await fetchPoints(existing.se_channel_id, existing.se_jwt_token, existing.se_username);
         setAutoConnecting(false);
         return;
       }
 
-      console.log('📝 No existing connection, creating new one...');
-
       // Get Twitch username from user metadata
       const twitchUsername = authUser.user_metadata?.preferred_username || 
                             authUser.user_metadata?.name ||
                             authUser.user_metadata?.user_name;
 
-      console.log('Twitch username:', twitchUsername);
-
       if (!twitchUsername) {
-        console.error('❌ Could not extract Twitch username from metadata');
         setAutoConnecting(false);
         return;
       }
 
-      // Auto-connect using streamer's credentials
-      const streamerChannelId = import.meta.env.VITE_SE_CHANNEL_ID;
-      const streamerJwtToken = import.meta.env.VITE_SE_JWT_TOKEN;
+      // Look up SE credentials from this user's own widget configs (set in Profile)
+      const { data: widgets } = await supabase
+        .from('overlay_widgets')
+        .select('config')
+        .eq('user_id', user.id);
 
-      console.log('SE Channel ID configured:', !!streamerChannelId);
-      console.log('SE JWT Token configured:', !!streamerJwtToken);
+      let seChannelId = null;
+      let seJwtToken = null;
 
-      if (!streamerChannelId || !streamerJwtToken) {
-        console.warn('⚠️ StreamElements credentials not configured. Set VITE_SE_CHANNEL_ID and VITE_SE_JWT_TOKEN environment variables.');
+      if (widgets) {
+        for (const w of widgets) {
+          const wc = w.config;
+          if (wc?.seChannelId && wc?.seJwtToken) {
+            seChannelId = wc.seChannelId;
+            seJwtToken = wc.seJwtToken;
+            break;
+          }
+        }
+      }
+
+      if (!seChannelId || !seJwtToken) {
+        console.log('⚠️ No SE credentials found in widget configs. User needs to connect SE in Profile.');
         setAutoConnecting(false);
         return;
       }
-
-      console.log('🔄 Attempting to fetch SE points for:', twitchUsername);
 
       // Try to fetch points using Twitch username
       const response = await fetch(
-        `https://api.streamelements.com/kappa/v2/points/${streamerChannelId}/${twitchUsername}`,
+        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${twitchUsername}`,
         {
           headers: {
-            'Authorization': `Bearer ${streamerJwtToken}`,
+            'Authorization': `Bearer ${seJwtToken}`,
             'Accept': 'application/json'
           }
         }
@@ -125,17 +122,14 @@ export function StreamElementsProvider({ children }) {
 
       if (response.ok) {
         pointsData = await response.json();
-        console.log('✅ Auto-connect successful! Points:', pointsData.points);
       } else if (response.status === 404) {
         // User doesn't exist in SE yet - create them with 500 starting points
-        console.log('📝 User not found in SE, creating with 500 starting points...');
-        
         const createResponse = await fetch(
-          `https://api.streamelements.com/kappa/v2/points/${streamerChannelId}/${twitchUsername}/500`,
+          `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${twitchUsername}/500`,
           {
             method: 'PUT',
             headers: {
-              'Authorization': `Bearer ${streamerJwtToken}`,
+              'Authorization': `Bearer ${seJwtToken}`,
               'Accept': 'application/json'
             }
           }
@@ -143,25 +137,21 @@ export function StreamElementsProvider({ children }) {
 
         if (createResponse.ok) {
           pointsData = await createResponse.json();
-          console.log('✅ User created in SE with 500 starting points');
         } else {
-          console.error('❌ Failed to create user in SE:', createResponse.status);
-          // Still proceed with 500 points locally
           pointsData = { points: 500 };
         }
       } else {
-        console.error('❌ SE API error:', response.status);
         setAutoConnecting(false);
         return;
       }
 
-      // Save connection to database
+      // Save connection to database with THIS user's own SE creds
       const { error: insertError } = await supabase
         .from('streamelements_connections')
         .insert({
           user_id: user.id,
-          se_channel_id: streamerChannelId,
-          se_jwt_token: streamerJwtToken,
+          se_channel_id: seChannelId,
+          se_jwt_token: seJwtToken,
           se_username: twitchUsername,
           connected_at: new Date().toISOString()
         });
@@ -171,15 +161,13 @@ export function StreamElementsProvider({ children }) {
       }
 
       setSeAccount({
-        se_channel_id: streamerChannelId,
-        se_jwt_token: streamerJwtToken,
+        se_channel_id: seChannelId,
+        se_jwt_token: seJwtToken,
         se_username: twitchUsername
       });
       setPoints(pointsData?.points || 0);
-      console.log('✅ Auto-connect complete! Connected with', pointsData?.points || 0, 'points');
     } catch (err) {
       console.error('Auto-connect failed:', err);
-      // Silently fail - user can manually connect if needed
     } finally {
       setAutoConnecting(false);
     }
