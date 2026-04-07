@@ -895,3 +895,26 @@ registerWidget({
     height: 500,
   },
 });
+
+// ─── 33. CONTAINER ─────────────────────────────────────
+import ContainerWidget from './ContainerWidget';
+import ContainerConfig from './ContainerConfig';
+registerWidget({
+  type: 'container',
+  label: 'Container',
+  icon: '📦',
+  description: 'Group multiple widgets into a single container',
+  category: 'layout',
+  component: ContainerWidget,
+  configPanel: ContainerConfig,
+  defaults: {
+    children: [],
+    layout: 'vertical',
+    gap: 8,
+    padding: 8,
+    bgColor: '#0f172a',
+    bgOpacity: 0,
+    scrollable: false,
+    alignItems: 'stretch',
+  },
+});

@@ -179,11 +179,23 @@ export default function OverlayRenderer() {
   const prevVisibleIds = useRef(new Set());
   const [exitTick, setExitTick] = useState(0);
 
+  // ── Collect IDs of widgets living inside a container ──
+  const containerChildIds = useMemo(() => {
+    const ids = new Set();
+    widgets.forEach(w => {
+      if (w.widget_type === 'container' && Array.isArray(w.config?.children)) {
+        w.config.children.forEach(id => ids.add(id));
+      }
+    });
+    return ids;
+  }, [widgets]);
+
   const visibleWidgets = useMemo(() => {
     // Standalone URL (?widget=id): always render the requested widget even if hidden
     if (singleWidgetId) return widgets.filter(w => w.id === singleWidgetId);
-    return widgets.filter(w => w.is_visible);
-  }, [widgets, singleWidgetId]);
+    // Exclude widgets that are children of a container — they render inside their parent
+    return widgets.filter(w => w.is_visible && !containerChildIds.has(w.id));
+  }, [widgets, singleWidgetId, containerChildIds]);
 
   // Detect newly-hidden widgets and keep them for exit animation
   useEffect(() => {

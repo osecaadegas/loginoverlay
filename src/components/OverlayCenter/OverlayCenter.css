@@ -1493,6 +1493,19 @@
   color: #f59e0b;
 }
 
+/* Container child indicator */
+.wm-tile--in-container {
+  border-left: 3px solid rgba(139, 92, 246, 0.5);
+}
+
+.wm-tile-container-badge {
+  display: inline-block;
+  font-size: 0.6rem;
+  margin-left: 4px;
+  vertical-align: middle;
+  opacity: 0.6;
+}
+
 /* -------------------------------------------
    SIDE PANEL � slide-in widget editor
    ------------------------------------------- */

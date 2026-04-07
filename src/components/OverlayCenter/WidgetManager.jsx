@@ -531,7 +531,18 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     return () => ro.disconnect();
   }, [showPreview, CANVAS_W]);
 
-  const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
+  // Collect IDs of widgets living inside a container — they render inside their parent, not as top-level slots
+  const containerChildIds = useMemo(() => {
+    const ids = new Set();
+    (widgets || []).forEach(w => {
+      if (w.widget_type === 'container' && Array.isArray(w.config?.children)) {
+        w.config.children.forEach(id => ids.add(id));
+      }
+    });
+    return ids;
+  }, [widgets]);
+
+  const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible && !containerChildIds.has(w.id)), [widgets, containerChildIds]);
 
   /* ── Transition animation tracking for live preview ── */
   const exitingMapRef = useRef(new Map());      // widgetId → { widget, timer }
@@ -1595,10 +1606,11 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
               const def = getWidgetDef(w.widget_type);
               const isVisible = w.is_visible;
               const isDragOver = dragOverId === w.id && dragId !== w.id;
+              const isContainerChild = containerChildIds.has(w.id);
               return (
                 <div
                   key={w.id}
-                  className={`wm-tile wm-tile--active ${isVisible ? 'wm-tile--on' : 'wm-tile--paused'}${isDragOver ? ' wm-tile--drag-over' : ''}${dragId === w.id ? ' wm-tile--dragging' : ''}`}
+                  className={`wm-tile wm-tile--active ${isVisible ? 'wm-tile--on' : 'wm-tile--paused'}${isDragOver ? ' wm-tile--drag-over' : ''}${dragId === w.id ? ' wm-tile--dragging' : ''}${isContainerChild ? ' wm-tile--in-container' : ''}`}
                   draggable
                   onDragStart={(e) => handleDragStart(e, w.id)}
                   onDragEnd={handleDragEnd}
@@ -1617,7 +1629,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   <div className="wm-tile-body">
                     <span className="wm-tile-icon">{def?.icon || '📦'}</span>
                     <div className="wm-tile-text">
-                      <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
+                      <span className="wm-tile-name">
+                        {w.label || def?.label || w.widget_type}
+                        {isContainerChild && <span className="wm-tile-container-badge" title="Inside a container">📦</span>}
+                      </span>
                       {def?.description && <span className="wm-tile-desc">{def.description}</span>}
                     </div>
                   </div>
