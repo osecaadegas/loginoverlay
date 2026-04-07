@@ -64,10 +64,12 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
 
   return (
     <div style={wrapStyle}>
-      {childWidgets.map(child => {
+      {childWidgets.map((child, idx) => {
         const def = getWidgetDef(child.widget_type);
         const Comp = def?.component;
         if (!Comp) return null;
+
+        const isLast = idx === childWidgets.length - 1;
 
         const childStyle = layout === 'free'
           ? {
@@ -78,9 +80,9 @@ function ContainerWidget({ config, theme, allWidgets, widgetId, userId }) {
               height: child.config?._containerH ?? child.height,
             }
           : {
-              flex: layout === 'vertical' ? '0 0 auto' : '0 0 auto',
+              flex: isLast ? '1 1 auto' : '0 0 auto',
               width: layout === 'horizontal' ? (child.config?._containerW ?? child.width) : '100%',
-              height: layout === 'vertical' ? (child.config?._containerH ?? child.height) : '100%',
+              height: layout === 'vertical' ? (isLast ? undefined : (child.config?._containerH ?? child.height)) : '100%',
               minHeight: 0,
               minWidth: 0,
             };
