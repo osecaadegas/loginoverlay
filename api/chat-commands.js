@@ -328,13 +328,13 @@ async function refreshSpotifyToken(refreshTokenVal) {
   } catch { return null; }
 }
 
-/* ─── Award SE Points (?cmd=award) POST body: { username, points, user_id } ─── */
+/* ─── Award SE Points (?cmd=award) POST body: { username, points } ─── */
 
 async function handleAwardPoints(req, res) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
   try {
-    const { username, points, user_id } = req.body;
+    const { username, points } = req.body;
 
     if (!username || points === undefined || points === null) {
       return res.status(400).json({ error: 'Missing required fields: username and points' });
@@ -345,34 +345,8 @@ async function handleAwardPoints(req, res) {
       return res.status(400).json({ error: 'Points must be a positive number' });
     }
 
-    let SE_JWT_TOKEN = null;
-    let SE_CHANNEL_ID = null;
-
-    // If a user_id (streamer) is provided, look up THEIR SE credentials from widget configs
-    if (user_id && SUPABASE_URL && SUPABASE_SERVICE_KEY) {
-      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-      const { data: allWidgets } = await supabase
-        .from('overlay_widgets')
-        .select('config')
-        .eq('user_id', user_id);
-
-      if (allWidgets) {
-        for (const w of allWidgets) {
-          const wc = w.config;
-          if (wc?.seChannelId && wc?.seJwtToken) {
-            SE_CHANNEL_ID = wc.seChannelId;
-            SE_JWT_TOKEN = wc.seJwtToken;
-            break;
-          }
-        }
-      }
-    }
-
-    // Fallback to env vars only if no user_id or no creds found
-    if (!SE_JWT_TOKEN || !SE_CHANNEL_ID) {
-      SE_JWT_TOKEN = process.env.STREAMELEMENTS_JWT_TOKEN || process.env.VITE_SE_JWT_TOKEN;
-      SE_CHANNEL_ID = process.env.STREAMELEMENTS_CHANNEL_ID || process.env.VITE_SE_CHANNEL_ID;
-    }
+    const SE_JWT_TOKEN = process.env.STREAMELEMENTS_JWT_TOKEN || process.env.VITE_SE_JWT_TOKEN;
+    const SE_CHANNEL_ID = process.env.STREAMELEMENTS_CHANNEL_ID || process.env.VITE_SE_CHANNEL_ID;
 
     if (!SE_JWT_TOKEN || !SE_CHANNEL_ID) {
       return res.status(500).json({ error: 'StreamElements integration not configured.' });
