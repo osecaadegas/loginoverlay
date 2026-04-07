@@ -446,7 +446,7 @@ export default function DailyWheel() {
       const response = await fetch('/api/chat-commands?cmd=award', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username: seUsername, points })
+        body: JSON.stringify({ username: seUsername, points, user_id: user.id })
       });
 
       const responseData = await response.json();
