@@ -76,8 +76,10 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(widget.config?.animSpeed || animSpeed || 1) * 0.35}s`,
-    overflow: needs3D ? 'visible' : 'hidden',
-    borderRadius: widgetRadius ? `${widgetRadius}px` : undefined,
+    overflow: needs3D ? 'visible' : (widgetRadius ? undefined : 'hidden'),
+    /* Use clip-path instead of overflow:hidden + borderRadius to avoid
+       Chromium compositor black-corner bug on GPU-promoted layers */
+    clipPath: widgetRadius && !needs3D ? `inset(0 round ${widgetRadius}px)` : undefined,
     filter: shadowFilter,
   };
 

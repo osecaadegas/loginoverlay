@@ -110,19 +110,6 @@
   flex-direction: column;
 }
 
-/* When inside a slot with border-radius, the slot clips via overflow:hidden —
-   the inner widget must match exactly to prevent black corners in OBS.
-   !important needed because widgets set borderRadius as inline styles.
-   Suppress outer box-shadow (the slot's drop-shadow filter handles it instead). */
-.or-widget-slot > .or-widget-inner,
-.or-widget-slot > div {
-  border-radius: inherit !important;
-}
-
-.or-widget-slot > .or-widget-inner {
-  box-shadow: none !important;
-}
-
 /* --- Entrance Animations --- */
 .or-anim-in--fade   { animation: or-fadeIn var(--ov-anim-speed, 0.4s) ease-out both; }
 
