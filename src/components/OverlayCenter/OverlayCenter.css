@@ -2502,11 +2502,9 @@ body.wm-resizing {
   transition: box-shadow 0.2s ease, outline 0.2s ease;
   user-select: none;
   -webkit-user-select: none;
-  will-change: transform, opacity;
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  text-rendering: geometricPrecision;
+  /* GPU promotion (translateZ/will-change) removed —
+     it causes Chromium to fill compositor layer with opaque black,
+     bleeding at rounded corners */
 }
 
 .wm-live-slot--active {

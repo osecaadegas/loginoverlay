@@ -193,9 +193,9 @@ const DraggableSlot = memo(function DraggableSlot({
       })()}
       {/* Widget content */}
       <div id={`wm-el-${widget.id}`} style={{
-        pointerEvents: 'none', width: '100%', height: '100%', overflow: 'hidden',
+        pointerEvents: 'none', width: '100%', height: '100%',
         position: 'relative', zIndex: 1,
-        borderRadius: widget.config?.cardRadius ? `${widget.config.cardRadius}px` : undefined,
+        clipPath: widget.config?.cardRadius ? `inset(0 round ${widget.config.cardRadius}px)` : undefined,
         ...Object.fromEntries(Object.entries(widget.config?.advancedCSS || {}).map(([k,v]) => [k.replace(/-([a-z])/g, (_, c) => c.toUpperCase()), v])),
       }}>
         <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
