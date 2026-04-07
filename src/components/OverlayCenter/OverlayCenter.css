@@ -1456,6 +1456,43 @@
   border-color: rgba(239, 68, 68, 0.35);
 }
 
+/* Eye / Lock quick icons on widget tiles */
+.wm-tile-quick-icons {
+  display: flex;
+  gap: 2px;
+  padding: 0 4px;
+}
+
+.wm-tile-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  font-size: 13px;
+  transition: all 0.15s ease;
+  opacity: 0.5;
+  padding: 0;
+}
+
+.wm-tile-icon-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.wm-tile-icon-btn--off {
+  opacity: 0.25;
+}
+
+.wm-tile-icon-btn--active {
+  opacity: 0.85;
+  color: #f59e0b;
+}
+
 /* -------------------------------------------
    SIDE PANEL � slide-in widget editor
    ------------------------------------------- */

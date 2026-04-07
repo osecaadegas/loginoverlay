@@ -33,12 +33,16 @@ const DraggableSlot = memo(function DraggableSlot({
     document.removeEventListener('selectstart', blockSelect);
   }
 
+  const isLocked = !!widget.config?._locked;
+  const isPreviewHidden = !!widget.config?._previewHidden;
+
   /* ── Drag to move — update DOM directly, save on mouseup ── */
   const handleMouseDown = useCallback((e) => {
     if (e.target.closest('.wm-resize-handle') || e.target.closest('.wm-resize-edge')) return;
     e.preventDefault();
     e.stopPropagation();
     onSelect(widget.id);
+    if (isLocked) return; // locked — select but don't drag
 
     const el = slotRef.current;
     if (!el) return;
@@ -82,6 +86,7 @@ const DraggableSlot = memo(function DraggableSlot({
     e.preventDefault();
     e.stopPropagation();
     onSelect(widget.id);
+    if (isLocked) return; // locked — no resize
 
     const el = slotRef.current;
     if (!el) return;
@@ -170,6 +175,8 @@ const DraggableSlot = memo(function DraggableSlot({
         zIndex: isSelected ? 9999 : (widget.z_index || 1),
         pointerEvents: exiting ? 'none' : undefined,
         animationDuration: `${(widget.config?.animSpeed || 1) * 0.35}s`,
+        opacity: isPreviewHidden ? 0.15 : undefined,
+        transition: 'opacity 0.2s ease',
       }}
     >
       {/* Element-scoped CSS overrides */}
@@ -202,7 +209,7 @@ const DraggableSlot = memo(function DraggableSlot({
             position: 'absolute',
             inset: 0,
             zIndex: 2,
-            cursor: isSelected ? 'grab' : 'pointer',
+            cursor: isLocked ? 'not-allowed' : (isSelected ? 'grab' : 'pointer'),
             background: 'transparent',
           }}
           onMouseDown={handleMouseDown}
@@ -791,6 +798,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     switch (action) {
       case 'edit':     setCtxMenu(null); setEditingId(w.id); break;
       case 'toggle':   onSave({ ...w, is_visible: !w.is_visible }); setCtxMenu(null); break;
+      case 'lock':     onSave({ ...w, config: { ...w.config, _locked: !w.config?._locked } }); setCtxMenu(null); break;
       case 'copyUrl':  copyWidgetUrl(w.id); setCtxMenu(null); break;
       case 'front':    handleMoveLayer(w.id, sortedWidgets.length); setCtxMenu(null); break;
       case 'back':     handleMoveLayer(w.id, -sortedWidgets.length); setCtxMenu(null); break;
@@ -1084,6 +1092,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     <button className="wm-ctx-action-btn" onClick={() => ctxAction('edit')} title="Edit Settings">⚙️</button>
                     <button className="wm-ctx-action-btn" onClick={() => ctxAction('toggle')} title={w.is_visible ? 'Hide' : 'Show'}>
                       {w.is_visible ? '👁️' : '👁️‍🗨️'}
+                    </button>
+                    <button className="wm-ctx-action-btn" onClick={() => ctxAction('lock')} title={w.config?._locked ? 'Unlock Position' : 'Lock Position'}>
+                      {w.config?._locked ? '🔒' : '🔓'}
                     </button>
                     <button className="wm-ctx-action-btn" onClick={() => ctxAction('copyUrl')} title="Copy OBS URL">🔗</button>
                     <button className="wm-ctx-action-btn" onClick={() => ctxAction('front')} title="Bring to Front">⬆️</button>
@@ -1609,6 +1620,22 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       <span className="wm-tile-name">{w.label || def?.label || w.widget_type}</span>
                       {def?.description && <span className="wm-tile-desc">{def.description}</span>}
                     </div>
+                  </div>
+                  <div className="wm-tile-quick-icons">
+                    <button
+                      className={`wm-tile-icon-btn${w.config?._previewHidden ? ' wm-tile-icon-btn--off' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); onSave({ ...w, config: { ...w.config, _previewHidden: !w.config?._previewHidden } }); }}
+                      title={w.config?._previewHidden ? 'Show in preview' : 'Hide from preview'}
+                    >
+                      {w.config?._previewHidden ? '🚫' : '👁️'}
+                    </button>
+                    <button
+                      className={`wm-tile-icon-btn${w.config?._locked ? ' wm-tile-icon-btn--active' : ''}`}
+                      onClick={(e) => { e.stopPropagation(); onSave({ ...w, config: { ...w.config, _locked: !w.config?._locked } }); }}
+                      title={w.config?._locked ? 'Unlock position' : 'Lock position'}
+                    >
+                      {w.config?._locked ? '🔒' : '🔓'}
+                    </button>
                   </div>
                   <div className="wm-tile-actions">
                     <div className="wm-tile-arrows">
