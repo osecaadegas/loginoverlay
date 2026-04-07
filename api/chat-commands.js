@@ -139,6 +139,9 @@ async function handleSlotRequest(req, res) {
     const seEnabled = !!wConfig?.srSeEnabled;
     const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
+    console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
+      'hasSeChannelId:', !!wConfig?.seChannelId, 'hasSeJwtToken:', !!wConfig?.seJwtToken);
+
     if (seEnabled && seCost > 0) {
       let seChannelId = wConfig?.seChannelId;
       let seJwtToken = wConfig?.seJwtToken;
@@ -165,6 +168,8 @@ async function handleSlotRequest(req, res) {
       if (!seChannelId || !seJwtToken) {
         return res.status(200).send('⚠️ StreamElements not configured. Ask the streamer to connect SE.');
       }
+
+      console.log('[SR] SE creds found, checking points for viewer:', viewer);
 
       const cleanViewer = viewer.replace(/^@/, '').trim().toLowerCase();
 
