@@ -87,25 +87,39 @@ export function createNpcBehavior(opts = {}) {
     phaseTime = 0;
   }
 
+  // Maximum distance the NPC will travel from home (px)
+  const MAX_ROAM = 350;
+
+  function _clampOffset(x, y) {
+    const dist = Math.sqrt(x * x + y * y);
+    if (dist <= MAX_ROAM) return { x, y };
+    const scale = MAX_ROAM / dist;
+    return { x: x * scale, y: y * scale };
+  }
+
   function _getTargetPosition(action) {
     if (action === 'goto_navbar' && targets.navbar) {
       const nb = targets.navbar;
-      // Stand on top of the navbar (feet on navbar top edge)
-      const tx = nb.x + nb.w * 0.5 - homeX - homeW * 0.5;
-      const ty = nb.y - homeH * 0.8 - homeY; // above navbar
-      return { x: tx, y: ty, found: true };
+      const rawX = nb.x + nb.w * 0.5 - homeX - homeW * 0.5;
+      const rawY = nb.y - homeH * 0.8 - homeY;
+      const dist = Math.sqrt(rawX * rawX + rawY * rawY);
+      if (dist > MAX_ROAM * 1.5) return { x: 0, y: 0, found: false }; // too far, skip
+      const c = _clampOffset(rawX, rawY);
+      return { x: c.x, y: c.y, found: true };
     }
     if (action === 'goto_chat' && targets.chat) {
       const ch = targets.chat;
-      // Stand next to chat widget (right side)
-      const tx = ch.x + ch.w + 10 - homeX - homeW * 0.5;
-      const ty = ch.y + ch.h * 0.3 - homeY - homeH * 0.5;
-      return { x: tx, y: ty, found: true };
+      const rawX = ch.x + ch.w + 10 - homeX - homeW * 0.5;
+      const rawY = ch.y + ch.h * 0.3 - homeY - homeH * 0.5;
+      const dist = Math.sqrt(rawX * rawX + rawY * rawY);
+      if (dist > MAX_ROAM * 1.5) return { x: 0, y: 0, found: false }; // too far, skip
+      const c = _clampOffset(rawX, rawY);
+      return { x: c.x, y: c.y, found: true };
     }
     if (action === 'idle_wander') {
-      // Random nearby position
-      const tx = (Math.random() - 0.5) * 200;
-      const ty = (Math.random() - 0.5) * 80;
+      // Random nearby position (small range)
+      const tx = (Math.random() - 0.5) * 160;
+      const ty = (Math.random() - 0.5) * 60;
       return { x: tx, y: ty, found: true };
     }
     return { x: 0, y: 0, found: false };
