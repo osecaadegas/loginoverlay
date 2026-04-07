@@ -437,8 +437,8 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
 
         {c.ttsEnabled !== false && (() => {
           // ── Voice classification helpers ──
-          const FEMALE_NAMES = /\b(francisca|fernanda|raquel|maria|branca|in[eê]s|helia|catarina|ana|clara|alice|zira|hazel|susan|jenny|linda|heather|michelle|aria|sara|sabina|elsa|paulina|luciana|larissa|leticia|yara|camila|valentina|elena|karla|nuria|conchita|lucia|elvira|ines|amelie|sylvie|denise|caroline|coralie|hortense|katja|hedda|ingrid|astrid|hillevi|sofie|birgit|heera|swara|hemant|kalpana|madhur|naomi|nanami|ayumi|haruka|misaki|hanhan|huihui|xiaoxiao|xiaoyi|yun|zhiwei|maat|damayanti|gadis|satu|noora|monika|iveta|lado|kendra)\b/i;
-          const MALE_NAMES = /\b(ant[oó]nio|duarte|daniel|cristiano|hector|jorge|tiago|david|james|mark|george|richard|ryan|guy|sean|rishi|sam|liam|eric|ivan|bengt|stefan|filip|adam|bruce|reed|steffan|thomas|guillaume|claude|henri|alain|pablo|alvaro|diego|carlos|enrique|raul|luca|cosimo|diego|hans|conrad|florian|ichiro|keita|kenzo|naoto|takeshi|kangkang|yun|yunyang|zhiwei|rafal|marek|pattara|andika|hemant|sami|rizwan|asad|karsten|heami|junichi|tolga|sergei|dmitry|maxim|pavel)\b/i;
+          const FEMALE_NAMES = /\b(francisca|fernanda|raquel|maria|branca|in[eê]s|helia|catarina|ana|clara|alice|zira|hazel|susan|jenny|linda|heather|michelle|aria|sara|sabina|elsa|paulina|luciana|larissa|leticia|yara|camila|valentina|elena|karla|nuria|conchita|lucia|elvira|ines|amelie|sylvie|denise|caroline|coralie|hortense|katja|hedda|ingrid|astrid|hillevi|sofie|birgit|heera|swara|kalpana|madhur|naomi|nanami|ayumi|haruka|misaki|hanhan|huihui|xiaoxiao|xiaoyi|maat|damayanti|gadis|satu|noora|monika|iveta|lado|kendra|brenda|elza|giovanna|leila|manuella|manuela|thalita|gabriela|beatriz|joana|mariana|teresa|lidia|carolina|adriana|diana|rita|rosa|natasha|yelena|tatiana|olga|svetlana|anna|emma|olivia|sophia|isabella|mia|charlotte|amelia|harper|evelyn|abigail|chloe|ella|grace|lily|zoey|victoria|natalie|hannah|emily|madison|elizabeth|samantha|jessica|rachel|ashley|nicole|lauren|rebecca|amanda|katherine|stephanie|amber|danielle|catherine|courtney|brittany|diana|tiffany|jeanette|vivian|joanna|pamela|roxana|silvia|renata|claudia|pilar|amparo|soledad|rosario|milagros|remedios|socorro|guadalupe|dolores|concepcion|mercedes|paloma|esperanza|begona|marisol|rocio|ainhoa|gorka|nekane|edurne|miren|itziar|garazi|nerea|ainara)\b/i;
+          const MALE_NAMES = /\b(ant[oó]nio|duarte|daniel|cristiano|hector|jorge|tiago|david|james|mark|george|richard|ryan|guy|sean|rishi|sam|liam|eric|ivan|bengt|stefan|filip|adam|bruce|reed|steffan|thomas|guillaume|claude|henri|alain|pablo|alvaro|diego|carlos|enrique|raul|luca|cosimo|hans|conrad|florian|ichiro|keita|kenzo|naoto|takeshi|kangkang|yun|yunyang|zhiwei|rafal|marek|pattara|andika|hemant|sami|rizwan|asad|karsten|heami|junichi|tolga|sergei|dmitry|maxim|pavel|gon[cç]alo|f[aá]bio|humberto|julio|j[uú]lio|nicolau|val[eé]rio|donato|bernardo|manuel|miguel|pedro|rafael|rodrigo|gustavo|lucas|leonardo|gabriel|henrique|mateus|vinicius|marcos|fernando|ricardo|joao|jo[aã]o|andre|andr[eé]|alessandro|giuseppe|giovanni|marco|matteo|lorenzo|francesco|roberto|william|michael|john|robert|joseph|charles|edward|henry|andrew|christopher|matthew|anthony|benjamin|jacob|ethan|noah|alexander|oliver|jack|harry|freddie|alfie|oscar|leo|max|archie|charlie|theodore|logan|mason|elijah|aiden|jayden|jackson|sebastian|caleb|owen|nathan|connor|dominic|tyler|dylan|lucas|gabriel|julian|jose|angel|kevin|adrian|javier|alejandro|fernando|ricardo|sergio|andres|santiago|nicolas|emilio|alfonso|ignacio|rodrigo|gonzalo|eduardo|arturo|ernesto|gerardo|gilberto|rogelio|ramiro|saul|abel|efrain|moises|oleg|nikolai|vladimir|aleksandr|boris|konstantin|stanislav|mikhail|yuri|aleksei|andrei|viktor)\b/i;
           const FAMOUS_NAMES = /\b(google|microsoft|apple|amazon|samsung|cortana|siri|alexa)\b/i;
 
           const classifyVoice = (v) => {
@@ -524,8 +524,9 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
               const q = filterLang.toLowerCase();
               if (!v.name.toLowerCase().includes(q) && !v.lang.toLowerCase().includes(q)) return false;
             }
-            if (filterGender === 'male' && gender !== 'male') return false;
-            if (filterGender === 'female' && gender !== 'female') return false;
+            // Gender filter: include matching + unknown (unclassified voices still show)
+            if (filterGender === 'male' && gender === 'female') return false;
+            if (filterGender === 'female' && gender === 'male') return false;
             if (filterFamous === 'famous' && !isFamous) return false;
             if (filterFamous === 'standard' && isFamous) return false;
             return true;
@@ -539,6 +540,12 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
               const aPP = a.voice.lang.startsWith('pt-PT') ? 0 : 1;
               const bPP = b.voice.lang.startsWith('pt-PT') ? 0 : 1;
               if (aPP !== bPP) return aPP - bPP;
+            }
+            // When gender filter active, push unclassified voices to the bottom
+            if (filterGender) {
+              const aMatch = a.gender === filterGender ? 0 : 1;
+              const bMatch = b.gender === filterGender ? 0 : 1;
+              if (aMatch !== bMatch) return aMatch - bMatch;
             }
             // Sort famous first within same language
             if (a.isFamous !== b.isFamous) return a.isFamous ? -1 : 1;
