@@ -126,19 +126,20 @@ async function handleSlotRequest(req, res) {
     }
 
     // ── SE Points check & deduction ──
-    const seEnabled = req.query.se_enabled === '1';
-    const seCost = parseInt(req.query.se_cost, 10) || 0;
+    // Always read SE settings from the streamer's widget config (works for both
+    // IRC-based requests from OBS overlay AND StreamElements custom commands)
+    const { data: srWidgets } = await supabase
+      .from('overlay_widgets')
+      .select('config')
+      .eq('user_id', user_id)
+      .eq('widget_type', 'slot_requests')
+      .limit(1);
+
+    const wConfig = srWidgets?.[0]?.config;
+    const seEnabled = !!wConfig?.srSeEnabled;
+    const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
     if (seEnabled && seCost > 0) {
-      // Read SE credentials from the streamer's slot_requests widget config
-      const { data: srWidgets } = await supabase
-        .from('overlay_widgets')
-        .select('config')
-        .eq('user_id', user_id)
-        .eq('widget_type', 'slot_requests')
-        .limit(1);
-
-      const wConfig = srWidgets?.[0]?.config;
       const seChannelId = wConfig?.seChannelId;
       const seJwtToken = wConfig?.seJwtToken;
 
