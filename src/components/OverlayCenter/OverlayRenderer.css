@@ -110,6 +110,18 @@
   flex-direction: column;
 }
 
+/* When inside a slot with border-radius, the slot clips via overflow:hidden —
+   remove inner border-radius to prevent black corners in OBS */
+.or-widget-slot .or-widget-inner {
+  border-radius: inherit;
+}
+
+/* Also catch widgets that don't use .or-widget-inner (their root div
+   has its own borderRadius + background which causes the same black-corner gap) */
+.or-widget-slot > div {
+  border-radius: inherit;
+}
+
 /* --- Entrance Animations --- */
 .or-anim-in--fade   { animation: or-fadeIn var(--ov-anim-speed, 0.4s) ease-out both; }
 
