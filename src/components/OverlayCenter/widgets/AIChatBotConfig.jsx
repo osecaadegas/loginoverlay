@@ -309,6 +309,26 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                 style={{ marginTop: 6, padding: '5px 12px', borderRadius: 5, border: 'none', fontSize: 10, fontWeight: 600, cursor: 'pointer', background: 'rgba(255,255,255,0.06)', color: '#94a3b8' }}
               >↺ Reset All to Defaults</button>
             </div>
+
+            {/* ── NPC Behavior ── */}
+            <div style={{ marginTop: 10, padding: '10px 12px', borderRadius: 6, background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)' }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#e2e8f0', marginBottom: 8 }}>🎮 NPC Behavior</div>
+              <div style={checkboxRow}>
+                <input type="checkbox" checked={!!c.npcEnabled} onChange={e => set('npcEnabled', e.target.checked)} />
+                <span>Enable NPC roaming</span>
+              </div>
+              <div style={{ fontSize: 10, color: '#64748b', margin: '-4px 0 8px 0', lineHeight: 1.3 }}>
+                Avatar will roam the overlay — walk to the navbar and do push-ups, peek at the chat, wave, and wander around.
+              </div>
+
+              {c.npcEnabled && (
+                <>
+                  <label style={labelStyle}>Walk Speed ({c.npcSpeed || 120} px/s)</label>
+                  <input type="range" min="40" max="300" step="10" value={c.npcSpeed || 120}
+                    onChange={e => set('npcSpeed', parseInt(e.target.value))} style={{ width: '100%', marginBottom: 4 }} />
+                </>
+              )}
+            </div>
           </>
         )}
       </div>

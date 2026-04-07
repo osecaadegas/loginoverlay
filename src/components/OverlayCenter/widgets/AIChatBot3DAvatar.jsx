@@ -1,10 +1,11 @@
-import React, { useRef, useMemo, useEffect, useState } from 'react';
+import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF, Environment, Html } from '@react-three/drei';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 
 import { resolveRig } from './avatar3d/rigMapper';
 import { createAnimationController } from './avatar3d/animationController';
+import { createNpcBehavior } from './avatar3d/npcBehavior';
 
 /**
  * AIChatBot3DAvatar — Modular 3D avatar system for streaming overlays
@@ -20,7 +21,7 @@ import { createAnimationController } from './avatar3d/animationController';
  */
 
 /* ── Avatar Model (inner R3F component) ────────────────── */
-function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headMove, armMove, gestures, animSpeed, reaction }) {
+function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headMove, armMove, gestures, animSpeed, reaction, npcRef }) {
   const { scene } = useGLTF(url);
   const groupRef = useRef();
   const rigRef = useRef(null);
@@ -109,13 +110,23 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
 
     const dt = Math.min(delta, 0.1);
 
+    // Sync NPC pose into animation controller
+    if (npcRef?.current) {
+      controller.setNpcPose(npcRef.current.pose || 'idle');
+    }
+
     // Tick the animation controller (orchestrates all behavior layers)
     controller.update(dt, rig, { breathing, sway, headMove, armMove, gestures, animSpeed }, groupRef);
   });
 
+  // Determine final model flip (NPC overrides user flip when roaming)
+  const npcFlip = npcRef?.current?.flipX ?? false;
+  const npcActive = npcRef?.current?.pose && npcRef.current.pose !== 'idle';
+  const finalFlip = npcActive ? npcFlip : flipModel;
+
   return (
     <group ref={groupRef}>
-      <primitive object={clonedScene} scale={modelScale || 1} rotation={[0, flipModel ? Math.PI : 0, 0]} />
+      <primitive object={clonedScene} scale={modelScale || 1} rotation={[0, finalFlip ? Math.PI : 0, 0]} />
     </group>
   );
 }
@@ -183,11 +194,102 @@ export default function AIChatBot3DAvatar({
   gestures = 1,
   animSpeed = 1,
   reaction = 0,
+  // NPC props
+  npcEnabled = false,
+  npcSpeed = 120,
+  allWidgets = null,
+  widgetId = null,
 }) {
   const [error, setError] = useState(null);
   const [activeUrl, setActiveUrl] = useState(avatarUrl);
   const [fadeOpacity, setFadeOpacity] = useState(1);
   const fadeRef = useRef(null);
+  const npcRef = useRef({ pose: 'idle', offsetX: 0, offsetY: 0, flipX: false });
+  const npcBehaviorRef = useRef(null);
+  const npcRafRef = useRef(null);
+  const lastTimeRef = useRef(null);
+  const avatarStateRef = useRef(state);
+
+  // Keep state ref in sync
+  useEffect(() => { avatarStateRef.current = state; }, [state]);
+
+  // ── NPC behavior system ──
+  useEffect(() => {
+    if (!npcEnabled) {
+      // Reset NPC state when disabled
+      npcRef.current = { pose: 'idle', offsetX: 0, offsetY: 0, flipX: false };
+      if (npcBehaviorRef.current) {
+        npcBehaviorRef.current.reset();
+        npcBehaviorRef.current = null;
+      }
+      if (npcRafRef.current) cancelAnimationFrame(npcRafRef.current);
+      return;
+    }
+
+    const npc = createNpcBehavior({ homeX: 0, homeY: 0, homeW: width, homeH: height });
+    npc.setWalkSpeed(npcSpeed);
+    npcBehaviorRef.current = npc;
+    lastTimeRef.current = performance.now();
+
+    function tick() {
+      const now = performance.now();
+      const dt = Math.min((now - lastTimeRef.current) / 1000, 0.1);
+      lastTimeRef.current = now;
+
+      // Pause NPC roaming when avatar is speaking/thinking (let speech anim play)
+      if (avatarStateRef.current !== 'idle') {
+        npcRef.current = { pose: 'idle', offsetX: 0, offsetY: 0, flipX: false };
+        npc.reset();
+        const wrapper = document.getElementById(`npc-wrapper-${widgetId}`);
+        if (wrapper) wrapper.style.transform = '';
+        npcRafRef.current = requestAnimationFrame(tick);
+        return;
+      }
+
+      const result = npc.update(dt);
+      npcRef.current = result;
+      // Apply CSS offset to the wrapper
+      const wrapper = document.getElementById(`npc-wrapper-${widgetId}`);
+      if (wrapper) {
+        wrapper.style.transform = `translate(${result.offsetX}px, ${result.offsetY}px)`;
+      }
+      npcRafRef.current = requestAnimationFrame(tick);
+    }
+    npcRafRef.current = requestAnimationFrame(tick);
+
+    return () => {
+      if (npcRafRef.current) cancelAnimationFrame(npcRafRef.current);
+    };
+  }, [npcEnabled, width, height, npcSpeed, widgetId]);
+
+  // ── Feed widget targets to NPC ──
+  useEffect(() => {
+    if (!npcEnabled || !npcBehaviorRef.current || !allWidgets) return;
+
+    // Find our own widget to know our home position
+    const self = allWidgets.find(w => w.id === widgetId);
+    if (self) {
+      npcBehaviorRef.current.setHome(self.position_x, self.position_y, self.width, self.height);
+    }
+
+    // Find notable widgets for the NPC to visit
+    const targets = {};
+    for (const w of allWidgets) {
+      if (w.id === widgetId) continue;
+      const t = (w.widget_type || '').toLowerCase();
+      if (t.includes('navbar') || t.includes('nav_bar') || t.includes('navigation')) {
+        targets.navbar = { x: w.position_x, y: w.position_y, w: w.width, h: w.height };
+      }
+      if (t.includes('chat') && !t.includes('aichat') && !t.includes('bot')) {
+        targets.chat = { x: w.position_x, y: w.position_y, w: w.width, h: w.height };
+      }
+      // Fallback: if no navbar found, look for any widget near the top
+      if (!targets.navbar && w.position_y < 80 && w.width > 400) {
+        targets.navbar = { x: w.position_x, y: w.position_y, w: w.width, h: w.height };
+      }
+    }
+    npcBehaviorRef.current.setTargets(targets);
+  }, [npcEnabled, allWidgets, widgetId]);
 
   // Smooth crossfade when avatar URL changes
   useEffect(() => {
@@ -223,6 +325,12 @@ export default function AIChatBot3DAvatar({
   }
 
   return (
+    <div id={npcEnabled ? `npc-wrapper-${widgetId}` : undefined} style={{
+      width, height, position: 'relative',
+      transition: npcEnabled ? undefined : undefined,
+      willChange: npcEnabled ? 'transform' : undefined,
+      zIndex: npcEnabled ? 9999 : undefined,
+    }}>
     <div style={{
       width, height, background: 'transparent', border: 'none', overflow: 'hidden', position: 'relative', pointerEvents: 'auto',
       opacity: fadeOpacity, transition: 'opacity 0.35s ease-in-out',
@@ -266,12 +374,14 @@ export default function AIChatBot3DAvatar({
         }>
           <AvatarModel url={activeUrl} state={state} flipModel={flipModel}
             modelScale={modelScale} breathing={breathing} sway={sway} headMove={headMove}
-            armMove={armMove} gestures={gestures} animSpeed={animSpeed} reaction={reaction} />
+            armMove={armMove} gestures={gestures} animSpeed={animSpeed} reaction={reaction}
+            npcRef={npcEnabled ? npcRef : null} />
         </React.Suspense>
 
         {showParticles && <FloatingParticles color={accentColor} count={40} />}
         <Environment preset="city" />
       </Canvas>
+    </div>
     </div>
   );
 }

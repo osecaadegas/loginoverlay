@@ -67,6 +67,9 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const isBH = widget.widget_type === 'bonus_hunt';
   const needs3D = wStyle === 'v3' || wStyle === 'v8_card_stack'
     || (isBH && !['v2', 'v5_compact'].includes(wStyle));
+  /* NPC-enabled AI avatar needs visible overflow to roam outside its slot */
+  const needsNpcOverflow = !!widget.config?.npcEnabled;
+  const needsVisible = needs3D || needsNpcOverflow;
 
   const style = {
     position: 'absolute',
@@ -76,10 +79,10 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(widget.config?.animSpeed || animSpeed || 1) * 0.35}s`,
-    overflow: needs3D ? 'visible' : (widgetRadius ? undefined : 'hidden'),
+    overflow: needsVisible ? 'visible' : (widgetRadius ? undefined : 'hidden'),
     /* Use clip-path instead of overflow:hidden + borderRadius to avoid
        Chromium compositor black-corner bug on GPU-promoted layers */
-    clipPath: widgetRadius && !needs3D ? `inset(0 round ${widgetRadius}px)` : undefined,
+    clipPath: widgetRadius && !needsVisible ? `inset(0 round ${widgetRadius}px)` : undefined,
     filter: shadowFilter,
   };
 

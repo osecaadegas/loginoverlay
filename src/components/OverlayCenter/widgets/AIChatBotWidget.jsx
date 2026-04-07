@@ -181,7 +181,7 @@ function useTwitchIRC(channel, triggerWord, onMessage) {
 }
 
 /* ── Main Widget Component ───────────────────────────── */
-function AIChatBotWidget({ config }) {
+function AIChatBotWidget({ config, allWidgets, widgetId }) {
   const c = config || {};
   const aiProvider = c.aiProvider || 'gemini';
   const apiKey = c.geminiApiKey || '';
@@ -222,6 +222,10 @@ function AIChatBotWidget({ config }) {
   const avatar3dParticles = c.avatar3dParticles !== false;
   const avatar3dFlip = !!c.avatar3dFlip;
   const avatar3dPosition = c.avatar3dPosition || 'top'; // 'top', 'left', 'right'
+
+  // NPC behavior config
+  const npcEnabled = !!c.npcEnabled;
+  const npcSpeed = c.npcSpeed || 120;
 
   // Auto-scroll
   useEffect(() => {
@@ -318,6 +322,10 @@ function AIChatBotWidget({ config }) {
           gestures={c.avatar3dGestures ?? 1}
           animSpeed={c.avatar3dSpeed ?? 1}
           reaction={reactionCount}
+          npcEnabled={npcEnabled}
+          npcSpeed={npcSpeed}
+          allWidgets={allWidgets}
+          widgetId={widgetId}
         />
       </Suspense>
       </Avatar3DErrorBoundary>

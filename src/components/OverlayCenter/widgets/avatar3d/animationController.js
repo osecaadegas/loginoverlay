@@ -16,6 +16,7 @@ import { createStateManager } from './stateManager';
 import { createIdleBehavior } from './idleBehavior';
 import { createTalkingBehavior } from './talkingBehavior';
 import { createReactionSystem } from './reactionSystem';
+import { NPC_POSE_MAP } from './npcAnimations';
 import { smoothLerp } from './noise';
 
 // Morphs that need smooth fade-out when talking ends
@@ -37,6 +38,9 @@ export function createAnimationController() {
   let talkingWasActive = false;
   let totalTime = 0;
   let logged = false;
+  let npcPose = 'idle';              // current NPC pose name
+  let npcPoseWeight = 0;             // smooth blend weight for NPC pose
+  let npcActive = false;             // is NPC currently doing something?
 
   return {
     state,
@@ -57,6 +61,15 @@ export function createAnimationController() {
      */
     triggerReaction(name, behavior) {
       reactions.trigger(name, behavior);
+    },
+
+    /**
+     * Set the current NPC pose (from npcBehavior).
+     * @param {string} pose — 'idle'|'walking'|'pushup'|'peeking'|'waving'
+     */
+    setNpcPose(pose) {
+      npcPose = pose;
+      npcActive = pose !== 'idle';
     },
 
     /**
@@ -167,6 +180,13 @@ export function createAnimationController() {
       // ── 9. REACTIONS (additive, on top) ──
       if (reactions.isPlaying) {
         reactions.update(scaledDt, rig, groupRef);
+      }
+
+      // ── 10. NPC POSE LAYER (overrides idle when active) ──
+      const targetNpcW = npcActive ? 1 : 0;
+      npcPoseWeight = smoothLerp(npcPoseWeight, targetNpcW, 4, scaledDt);
+      if (npcPoseWeight > 0.01 && NPC_POSE_MAP[npcPose]) {
+        NPC_POSE_MAP[npcPose](scaledDt, 0, rig, npcPoseWeight, totalTime);
       }
     },
   };
