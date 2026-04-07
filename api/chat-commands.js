@@ -140,8 +140,27 @@ async function handleSlotRequest(req, res) {
     const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
     if (seEnabled && seCost > 0) {
-      const seChannelId = wConfig?.seChannelId;
-      const seJwtToken = wConfig?.seJwtToken;
+      let seChannelId = wConfig?.seChannelId;
+      let seJwtToken = wConfig?.seJwtToken;
+
+      // Fallback: if SE creds aren't on slot_requests widget, find them from any other widget
+      if (!seChannelId || !seJwtToken) {
+        const { data: allWidgets } = await supabase
+          .from('overlay_widgets')
+          .select('config')
+          .eq('user_id', user_id);
+
+        if (allWidgets) {
+          for (const w of allWidgets) {
+            const wc = w.config;
+            if (wc?.seChannelId && wc?.seJwtToken) {
+              seChannelId = seChannelId || wc.seChannelId;
+              seJwtToken = seJwtToken || wc.seJwtToken;
+              break;
+            }
+          }
+        }
+      }
 
       if (!seChannelId || !seJwtToken) {
         return res.status(200).send('⚠️ StreamElements not configured. Ask the streamer to connect SE.');
