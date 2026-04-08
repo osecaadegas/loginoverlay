@@ -149,7 +149,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 
       {/* ═══════ CONTENT TAB ═══════ */}
       {activeTab === 'content' && (
-        <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} userAvatar={user?.user_metadata?.avatar_url} currency={c.currency || '€'} />
+        <BonusHuntPanel config={c} onChange={onChange} userId={user?.id} userAvatar={user?.user_metadata?.avatar_url} currency={c.currency || '€'} allWidgets={allWidgets} />
       )}
 
       {/* ═══════ HISTORY TAB ═══════ */}
@@ -497,7 +497,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 }
 
 /* ─── Inline Dropdown Panel (replaces old modal) ─── */
-function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelCurrency }) {
+function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelCurrency, allWidgets }) {
   const c = config || {};
   const [startMoney, setStartMoney] = useState(c.startMoney || '');
   const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
@@ -1079,6 +1079,27 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     setSlotRequests(prev => prev.filter(r => r.id !== id));
   };
 
+  const srWidget = allWidgets?.find(w => w.widget_type === 'slot_requests');
+  const srConfig = srWidget?.config || {};
+  const srSeEnabled = srConfig.srSeEnabled;
+
+  const handleRejectRequest = async (id) => {
+    try {
+      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          request_id: id,
+          user_id: userId,
+          message_template: srConfig.srMsgRejected || undefined,
+        }),
+      });
+      setSlotRequests(prev => prev.filter(r => r.id !== id));
+    } catch (err) {
+      console.error('[bh-reject] error:', err);
+    }
+  };
+
   return (
     <div className="bh-panel">
 
@@ -1135,6 +1156,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                       <span className="bh-sr-queue-name">{req.slot_name}</span>
                       <span className="bh-sr-queue-by">by {req.requested_by}</span>
                     </div>
+                    {srSeEnabled && <button className="bh-sr-queue-dismiss" style={{ color: '#fbbf24', background: 'rgba(251,191,36,0.12)' }} onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund SE points">↩</button>}
                     <button className="bh-sr-queue-dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss">✕</button>
                   </div>
                 ))}
