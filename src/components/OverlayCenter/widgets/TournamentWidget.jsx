@@ -1310,13 +1310,23 @@ function TournamentWidget({ config, theme }) {
       const labelFs = large ? 'clamp(7px, 0.7vw, 9px)' : 'clamp(6px, 0.6vw, 8px)';
       const resultFs = large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(12px, 1.6vw, 16px)';
 
-      /* Neon status system */
-      const borderCol = isWinner ? gGreen : isLoser ? gRed : gBorder;
+      /* Neon status system — Super = gold glow, Extreme = red glow */
+      const slotTag = pSlot?.tag; // 'super' | 'extreme' | null
+      const isSuper = slotTag === 'super';
+      const isExtreme = slotTag === 'extreme';
+      const gGoldBorder = '#fbbf24';
+      const gExtremeRed = '#ef4444';
+      const borderCol = isWinner ? gGreen : isLoser ? gRed
+        : isSuper ? gGoldBorder : isExtreme ? gExtremeRed : gBorder;
       const glowShadow = isWinner
         ? `0 0 16px ${gGreen}50, 0 0 40px ${gGreen}18`
         : isLoser
           ? `0 0 8px ${gRed}25`
-          : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${gCyan}10`;
+          : isSuper
+            ? `0 0 14px ${gGoldBorder}60, 0 0 36px ${gGoldBorder}25, 0 4px 20px rgba(0,0,0,0.5)`
+            : isExtreme
+              ? `0 0 14px ${gExtremeRed}60, 0 0 36px ${gExtremeRed}25, 0 4px 20px rgba(0,0,0,0.5)`
+              : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${gCyan}10`;
 
       return (
         <div style={{
@@ -1367,6 +1377,24 @@ function TournamentWidget({ config, theme }) {
               fontSize: large ? 20 : 14,
               filter: `drop-shadow(0 0 6px ${gGold})`,
             }}>🏆</div>
+          )}
+
+          {/* Super / Extreme tag badge */}
+          {!isLoser && (isSuper || isExtreme) && (
+            <div style={{
+              position: 'absolute', top: 0, left: 0, zIndex: 6,
+              fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 900,
+              color: '#fff', textTransform: 'uppercase', letterSpacing: '0.8px',
+              fontFamily: gFont, lineHeight: 1,
+              padding: '2px 5px 2px 4px',
+              borderRadius: '0 0 5px 0',
+              background: isSuper
+                ? `linear-gradient(135deg, ${gGoldBorder}, #d97706)`
+                : `linear-gradient(135deg, ${gExtremeRed}, #b91c1c)`,
+              boxShadow: isSuper
+                ? `0 0 8px ${gGoldBorder}50`
+                : `0 0 8px ${gExtremeRed}50`,
+            }}>{isSuper ? '⭐ SUPER' : '🔥 EXTREME'}</div>
           )}
 
           {/* Name stripe + Bo3 pips — top */}
@@ -1492,11 +1520,9 @@ function TournamentWidget({ config, theme }) {
     const renderQueuedMatch = (match, idx) => (
       <div key={idx} style={{
         display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 8px)',
-        background: 'rgba(0,0,0,0.3)',
-        border: `1px solid ${gBorder}`,
-        borderRadius: 10, padding: 'clamp(4px, 0.6vw, 8px)',
+        background: 'transparent',
+        borderRadius: 10, padding: 'clamp(2px, 0.3vw, 4px)',
         position: 'relative', overflow: 'hidden',
-        backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
         minHeight: 'clamp(90px, 18vh, 160px)',
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
@@ -1718,13 +1744,10 @@ function TournamentWidget({ config, theme }) {
             <div style={{
               display: 'flex', alignItems: 'stretch',
               gap: 'clamp(3px, 0.5vw, 8px)',
-              background: isGrandFinalMatch ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.3)',
-              border: `2px solid ${isGrandFinalMatch ? gGold : isCurrentLive ? gCyan : `${gGold}40`}`,
-              borderRadius: 12, padding: 'clamp(4px, 0.6vw, 8px)',
+              background: 'transparent',
+              borderRadius: 12, padding: 'clamp(2px, 0.3vw, 4px)',
               position: 'relative', zIndex: 1, overflow: 'hidden',
-              backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
               minHeight: 'clamp(90px, 18vh, 160px)',
-              ...(isCurrentLive ? { animation: 'grid-live-border 2s ease-in-out infinite' } : {}),
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 {renderCard(currentMatch, 'player1', true, isGrandFinalMatch && currentMatch.winner === 'player1')}
