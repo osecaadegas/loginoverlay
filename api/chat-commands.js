@@ -179,21 +179,31 @@ async function handleSlotRequest(req, res) {
     console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
       'hasSeCreds:', !!(seChannelId && seJwtToken));
 
-    // ── Dedup: prevent concurrent calls from creating duplicate rows ──
-    // Multiple sources may call simultaneously (SE command + widget instances).
-    // Strategy: INSERT first, then reconcile — only the earliest row "wins".
+    // ── Dedup: prevent concurrent calls from producing duplicate chat messages ──
+    // Multiple overlay instances may call simultaneously for the same !sr.
+    // We check for existing pending OR recently denied rows to avoid re-processing.
 
-    // Quick pre-check: if this slot is already queued, exit immediately
+    // Pre-check: if this slot is already queued or was recently denied, exit silently
     const { data: existing } = await supabase
       .from('slot_requests')
-      .select('id')
+      .select('id, status, created_at')
       .eq('user_id', user_id)
-      .eq('status', 'pending')
       .ilike('slot_name', resolvedName)
+      .in('status', ['pending', 'denied'])
+      .order('created_at', { ascending: false })
       .limit(1);
 
     if (existing && existing.length > 0) {
-      return res.status(200).send('ok');
+      const row = existing[0];
+      // 'pending' → already in queue
+      if (row.status === 'pending') return res.status(200).send('ok');
+      // 'denied' within last 30 seconds → another call already handled this
+      const age = Date.now() - new Date(row.created_at).getTime();
+      if (row.status === 'denied' && age < 30000) return res.status(200).send('ok');
+      // Old denied row → clean it up and proceed
+      if (row.status === 'denied') {
+        await supabase.from('slot_requests').delete().eq('id', row.id);
+      }
     }
 
     // Insert the request
@@ -214,8 +224,7 @@ async function handleSlotRequest(req, res) {
       return res.status(200).send('ok');
     }
 
-    // Post-insert reconciliation: check if another concurrent call also inserted.
-    // Only the EARLIEST row wins; the rest delete themselves silently.
+    // Post-insert reconciliation: if multiple rows exist, only the earliest wins.
     const { data: dupes } = await supabase
       .from('slot_requests')
       .select('id, created_at')
@@ -227,11 +236,9 @@ async function handleSlotRequest(req, res) {
     if (dupes && dupes.length > 1) {
       const winnerId = dupes[0].id;
       if (inserted.id !== winnerId) {
-        // We're a duplicate — delete our row and exit silently
         await supabase.from('slot_requests').delete().eq('id', inserted.id);
         return res.status(200).send('ok');
       }
-      // We're the winner — clean up the other duplicates
       const loserIds = dupes.slice(1).map(d => d.id);
       await supabase.from('slot_requests').delete().in('id', loserIds);
     }
@@ -241,8 +248,8 @@ async function handleSlotRequest(req, res) {
 
     if (seEnabled && seCost > 0) {
       if (!seChannelId || !seJwtToken) {
-        // No SE creds — delete the row and warn (only this once)
-        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        // No SE creds — mark denied (keeps row for dedup) and warn
+        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = '⚠️ StreamElements not configured. Ask the streamer to connect SE.';
         chatOnce(msg);
         return reply(msg);
@@ -257,7 +264,7 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!pointsRes.ok) {
-        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = `❌ Could not check points for ${viewer}. Are you a follower?`;
         chatOnce(msg);
         return reply(msg);
@@ -267,8 +274,8 @@ async function handleSlotRequest(req, res) {
       const viewerPoints = pointsData.points || 0;
 
       if (viewerPoints < seCost) {
-        // Not enough points — delete the row, notify once
-        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        // Not enough points — mark denied (NOT delete, so other concurrent calls see it)
+        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = fillTemplate(msgTemplates.notEnough, { user: viewer, cost: seCost, points: viewerPoints, slot: resolvedName });
         chatOnce(msg);
         return reply(msg);
@@ -284,7 +291,7 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!deductRes.ok) {
-        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = `❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`;
         chatOnce(msg);
         return reply(msg);
