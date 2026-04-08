@@ -718,10 +718,12 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                                   setMulti({ bracketActiveRound: rIdx, bracketActiveMatch: mIdx, data: { ...c.data, currentMatchIdx: flatIdx } });
                                 }}>
                                 <div className={`bk-mc-player ${winner === 'player1' ? 'bk-mc-player--win' : ''} ${winner === 'player2' ? 'bk-mc-player--lose' : ''}`}>
+                                  {match.slot1?.image && <img src={match.slot1.image} alt="" className="bk-mc-slot-img" onError={e => { e.target.style.display = 'none'; }} />}
                                   <span className="bk-mc-name">{match.player1 || 'TBD'}</span>
                                 </div>
                                 <div className="bk-mc-vs">VS</div>
                                 <div className={`bk-mc-player ${winner === 'player2' ? 'bk-mc-player--win' : ''} ${winner === 'player1' ? 'bk-mc-player--lose' : ''}`}>
+                                  {match.slot2?.image && <img src={match.slot2.image} alt="" className="bk-mc-slot-img" onError={e => { e.target.style.display = 'none'; }} />}
                                   <span className="bk-mc-name">{match.player2 || 'TBD'}</span>
                                 </div>
                                 {isComplete && winner && (
