@@ -1382,7 +1382,7 @@ function TournamentWidget({ config, theme }) {
             );
             const overlayMap = {
               crown: { src: '/tournament/crown.webp', anim: 'grid-winner-overlay-in', style: { top: -6, left: '50%', transform: 'translateX(-50%)', width: large ? '70%' : '60%', zIndex: 7 } },
-              handtrophy: { src: '/tournament/handtrophy.jpg', anim: 'grid-winner-overlay-in-left', style: { top: '50%', left: -4, transform: 'translateY(-50%)', height: large ? '70%' : '55%', zIndex: 7, borderRadius: 6 } },
+              handtrophy: { src: '/tournament/handtrophy.jpg', anim: 'grid-winner-overlay-in-left', blend: true, style: { top: '50%', left: -4, transform: 'translateY(-50%)', height: large ? '70%' : '55%', zIndex: 7, borderRadius: 6 } },
               slottrophy: { src: '/tournament/slottrophy.png', anim: 'grid-winner-overlay-in-right', style: { bottom: 2, right: 4, height: large ? '50%' : '40%', zIndex: 7 } },
               winner: { src: '/tournament/winner.png', anim: 'grid-winner-overlay-in', style: { top: -2, left: '50%', transform: 'translateX(-50%)', width: large ? '80%' : '65%', zIndex: 7 } },
             };
@@ -1399,6 +1399,7 @@ function TournamentWidget({ config, theme }) {
                   filter: `drop-shadow(0 0 8px ${gGold}) drop-shadow(0 0 20px ${gGold}60)`,
                   animation: `${ov.anim} 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
                   pointerEvents: 'none',
+                  ...(ov.blend ? { mixBlendMode: 'screen' } : {}),
                 }}
               />
             );
