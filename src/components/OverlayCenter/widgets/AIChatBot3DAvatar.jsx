@@ -6,6 +6,7 @@ import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.j
 import { resolveRig } from './avatar3d/rigMapper';
 import { createAnimationController } from './avatar3d/animationController';
 import { createNpcBehavior } from './avatar3d/npcBehavior';
+import { getModelConfig } from './avatar3d/modelConfigs';
 
 /**
  * AIChatBot3DAvatar — Modular 3D avatar system for streaming overlays
@@ -130,7 +131,7 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
 
   return (
     <group ref={groupRef}>
-      <primitive ref={primitiveRef} object={clonedScene} scale={modelScale || 1} rotation={[0, flipModel ? Math.PI : 0, 0]} />
+      <primitive ref={primitiveRef} object={clonedScene} scale={(modelScale || 1) * (getModelConfig(url)?.meta?.scale || 1)} rotation={[0, flipModel ? Math.PI : 0, 0]} />
     </group>
   );
 }

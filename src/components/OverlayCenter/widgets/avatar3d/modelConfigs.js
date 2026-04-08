@@ -107,11 +107,56 @@ const EXPRESSIVE_AVATAR = {
   meta: { scale: 1, offsetY: 0 },
 };
 
+// ─── Monster Avatar (monster/monster_rig.glb) ────────────────────────
+// CC3/CC4 Character Creator rig — headless monster body.
+// 82 bones total (52 skinned), CC_Base_ prefix naming.
+// No Head/Neck bones — head motions re-routed to Spine02 for full-body nods.
+// 1 morph target (unused), no visemes. Textures embedded in GLB.
+const MONSTER_AVATAR = {
+  id: 'monster_rig.glb',
+  bones: {
+    Hips: 'CC_Base_Hip_80',
+    Spine: 'CC_Base_Waist_79',
+    Spine1: 'CC_Base_Spine01_78',
+    Spine2: 'CC_Base_Spine02_77',
+    // No Head/Neck — re-route to Spine02 for whole-body head-like motion
+    Neck: 'CC_Base_Spine02_77',
+    Head: 'CC_Base_Spine02_77',
+    LeftShoulder: 'CC_Base_L_Clavicle_51',
+    LeftArm: 'CC_Base_L_Upperarm_50',
+    LeftForeArm: 'CC_Base_L_Forearm_47',
+    LeftHand: 'CC_Base_L_Hand_46',
+    RightShoulder: 'CC_Base_R_Clavicle_72',
+    RightArm: 'CC_Base_R_Upperarm_71',
+    RightForeArm: 'CC_Base_R_Forearm_70',
+    RightHand: 'CC_Base_R_Hand_69',
+    LeftUpLeg: 'CC_Base_L_Thigh_14',
+    LeftLeg: 'CC_Base_L_Calf_11',
+    LeftFoot: 'CC_Base_L_Foot_7',
+    RightUpLeg: 'CC_Base_R_Thigh_29',
+    RightLeg: 'CC_Base_R_Calf_28',
+    RightFoot: 'CC_Base_R_Foot_24',
+  },
+  morphs: {},            // no facial morphs
+  morphNames: null,
+  behavior: {
+    bodyScale: 1.4,      // extra body expression — no head to compensate
+    gestureScale: 1.6,   // bigger arm gestures for monster feel
+    headScale: 0.5,      // reduced since Head=Spine02 (avoid over-rotating torso)
+    faceScale: 0,        // no morphs
+    idleWeights: { standing: 2, shifting: 3, lookAround: 1, stretch: 3 },
+    speakWeights: { conversational: 1, energetic: 3, explaining: 2 },
+    reactions: ['jump', 'cheer', 'bigNod', 'bodyShake'],
+  },
+  meta: { scale: 0.01, offsetY: 0 },  // CC models export in cm, need 0.01 to convert to meters
+};
+
 /* ─── Registry ────────────────────────────────────────────────────────── */
 const MODEL_CONFIGS = {
   [BLENDER_AVATAR.id]: BLENDER_AVATAR,
   [STANDARD_AVATAR.id]: STANDARD_AVATAR,
   [EXPRESSIVE_AVATAR.id]: EXPRESSIVE_AVATAR,
+  [MONSTER_AVATAR.id]: MONSTER_AVATAR,
 };
 
 /** Get config for a model by filename (extracted from URL) */

@@ -1,5 +1,6 @@
 [
   { "id": "avatar-blender", "name": "Blender Avatar", "file": "/avatars/3640925089614202413.glb" },
   { "id": "avatar-standard", "name": "Standard Avatar", "file": "/avatars/8232090975149790447.glb" },
-  { "id": "avatar-expressive", "name": "Expressive Avatar", "file": "/avatars/2914707689262839002.glb" }
+  { "id": "avatar-expressive", "name": "Expressive Avatar", "file": "/avatars/2914707689262839002.glb" },
+  { "id": "avatar-monster", "name": "Monster", "file": "/avatars/monster/monster_rig.glb" }
 ]
