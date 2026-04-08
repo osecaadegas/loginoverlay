@@ -1334,7 +1334,7 @@ function TournamentWidget({ config, theme }) {
           display: 'flex', flexDirection: 'column',
           border: `2px solid ${borderCol}`,
           borderRadius: large ? 14 : 8,
-          overflow: 'hidden',
+          overflow: isChampion ? 'visible' : 'hidden',
           transition: 'all 0.5s ease',
           boxShadow: glowShadow,
           /* Loser gray-out animation */
@@ -1370,8 +1370,17 @@ function TournamentWidget({ config, theme }) {
             }}>⚔</div>
           )}
 
-          {/* Winner overlay image */}
-          {isWinner && (() => {
+          {/* Winner emoji (non-champion) */}
+          {isWinner && !isChampion && (
+            <div style={{
+              position: 'absolute', top: 4, right: 4, zIndex: 5,
+              fontSize: large ? 20 : 14,
+              filter: `drop-shadow(0 0 6px ${gGold})`,
+            }}>🏆</div>
+          )}
+
+          {/* Champion overlay image — final winner only, positioned OUTSIDE card */}
+          {isChampion && (() => {
             const overlayType = c.winnerOverlay || 'none';
             if (overlayType === 'none') return (
               <div style={{
@@ -1381,22 +1390,22 @@ function TournamentWidget({ config, theme }) {
               }}>🏆</div>
             );
             const overlayMap = {
-              crown: { src: '/tournament/crown.webp', anim: 'grid-winner-overlay-in', style: { top: -6, left: '50%', transform: 'translateX(-50%)', width: large ? '70%' : '60%', zIndex: 7 } },
-              handtrophy: { src: '/tournament/handtrophy.jpg', anim: 'grid-winner-overlay-in-left', blend: true, style: { top: '50%', left: -4, transform: 'translateY(-50%)', height: large ? '70%' : '55%', zIndex: 7, borderRadius: 6 } },
-              slottrophy: { src: '/tournament/slottrophy.png', anim: 'grid-winner-overlay-in-right', style: { bottom: 2, right: 4, height: large ? '50%' : '40%', zIndex: 7 } },
-              winner: { src: '/tournament/winner.png', anim: 'grid-winner-overlay-in', style: { top: -2, left: '50%', transform: 'translateX(-50%)', width: large ? '80%' : '65%', zIndex: 7 } },
+              crown: { src: '/tournament/crown.webp', anim: 'grid-winner-overlay-in', style: { top: 0, left: '50%', transform: 'translateX(-50%) translateY(-60%)', width: '65%', zIndex: 10 } },
+              handtrophy: { src: '/tournament/handtrophy.jpg', anim: 'grid-winner-overlay-in-left', blend: true, style: { top: '50%', left: 0, transform: 'translateX(-55%) translateY(-50%)', height: '90%', zIndex: 10, borderRadius: 6 } },
+              slottrophy: { src: '/tournament/slottrophy.png', anim: 'grid-winner-overlay-in-right', style: { bottom: 0, right: 0, transform: 'translateX(30%) translateY(20%)', height: '55%', zIndex: 10 } },
+              winner: { src: '/tournament/winner.png', anim: 'grid-winner-overlay-in', style: { top: 0, left: '50%', transform: 'translateX(-50%) translateY(-55%)', width: '80%', zIndex: 10 } },
             };
             const ov = overlayMap[overlayType];
             if (!ov) return null;
             return (
               <img
                 src={ov.src}
-                alt="winner"
+                alt="champion"
                 style={{
                   position: 'absolute',
                   ...ov.style,
                   objectFit: 'contain',
-                  filter: `drop-shadow(0 0 8px ${gGold}) drop-shadow(0 0 20px ${gGold}60)`,
+                  filter: `drop-shadow(0 0 10px ${gGold}) drop-shadow(0 0 24px ${gGold}70)`,
                   animation: `${ov.anim} 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
                   pointerEvents: 'none',
                   ...(ov.blend ? { mixBlendMode: 'screen' } : {}),
