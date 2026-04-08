@@ -56,10 +56,7 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const ss = cfg.shadowSize ?? 0;
   const si = cfg.shadowIntensity ?? 0;
   const hasShadow = ss > 0 && si > 0;
-  /* Navbar handles its own rounded shape — skip drop-shadow filter on the slot
-     because it rasterises the layer and causes dark-corner fringe on OBS. */
-  const isNavbar = widget.widget_type === 'navbar';
-  const shadowFilter = hasShadow && !isNavbar
+  const shadowFilter = hasShadow
     ? `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))`
     : undefined;
 
@@ -74,7 +71,14 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const needsNpcOverflow = !!widget.config?.npcEnabled;
   const needsVisible = needs3D || needsNpcOverflow;
 
-  const style = {
+  /* Navbar handles its own clipping — skip slot-level clip & shadow */
+  const isNavbar = widget.widget_type === 'navbar';
+  const needsClip = !isNavbar && widgetRadius && !needsVisible;
+
+  /* ── Separate shadow and clip onto two layers so Chromium never
+       rasterises rounded-clip edges through a drop-shadow filter
+       (which causes dark-corner fringe on OBS browser sources). ── */
+  const outerStyle = {
     position: 'absolute',
     left: isBg ? 0 : widget.position_x,
     top: isBg ? 0 : widget.position_y,
@@ -82,14 +86,23 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(widget.config?.animSpeed || animSpeed || 1) * 0.35}s`,
-    /* Navbar clips itself — don't double-clip from the slot */
-    overflow: isNavbar ? 'visible' : (needsVisible ? 'visible' : (widgetRadius ? undefined : 'hidden')),
-    clipPath: isNavbar ? undefined : (widgetRadius && !needsVisible ? `inset(0 round ${widgetRadius}px)` : undefined),
-    filter: shadowFilter,
+    /* Shadow lives on the outer wrapper — away from the clip layer */
+    filter: isNavbar ? undefined : shadowFilter,
+    /* Only use overflow:hidden when there's no radius (clipPath handles radius) */
+    overflow: isNavbar ? 'visible' : (needsVisible ? 'visible' : (needsClip ? 'visible' : 'hidden')),
   };
 
+  /* Inner clip wrapper — only rendered when we need clipPath rounding */
+  const needsInnerClip = needsClip;
+  const innerClipStyle = needsInnerClip ? {
+    width: '100%',
+    height: '100%',
+    clipPath: `inset(0 round ${widgetRadius}px)`,
+    overflow: 'hidden',
+  } : null;
+
   return (
-    <div id={slotId} className={`or-widget-slot ${animClass}`} style={style}>
+    <div id={slotId} className={`or-widget-slot ${animClass}`} style={outerStyle}>
       {mergedCSS && <style>{`#${slotId} { ${mergedCSS} }`}</style>}
       {(() => {
         const elCSS = widget.config?.elementCSS;
@@ -101,7 +114,13 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
         }).filter(Boolean).join('\n');
         return rules ? <style>{rules}</style> : null;
       })()}
-      <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
+      {innerClipStyle ? (
+        <div style={innerClipStyle}>
+          <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
+        </div>
+      ) : (
+        <Component config={widget.config} theme={theme} allWidgets={allWidgets} widgetId={widget.id} userId={userId} />
+      )}
     </div>
   );
 });
