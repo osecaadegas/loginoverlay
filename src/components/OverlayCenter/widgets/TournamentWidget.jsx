@@ -1295,7 +1295,7 @@ function TournamentWidget({ config, theme }) {
     };
 
     /* ── Enhanced player card (full-bleed image, neon glow, pips, cost/pay) ── */
-    const renderCard = (match, playerKey, large = false, isChampion = false) => {
+    const renderCard = (match, playerKey, large = false, isChampion = false, showStats = true) => {
       const name = match[playerKey] || 'TBD';
       const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
       const slotImage = pSlot?.image || null;
@@ -1437,7 +1437,8 @@ function TournamentWidget({ config, theme }) {
             </div>
           )}
 
-          {/* Cost / Payment stats bar — bottom (2:1 number-to-label ratio) */}
+          {/* Cost / Payment stats bar — only on active match */}
+          {showStats && (
           <div style={{
             position: 'relative', zIndex: 2,
             display: 'flex', background: 'rgba(0,0,0,0.85)',
@@ -1468,17 +1469,19 @@ function TournamentWidget({ config, theme }) {
               }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
             </div>
           </div>
+          )}
         </div>
       );
     };
 
-    /* ── VS badge (swords emoji) ── */
+    /* ── VS badge (styled SVG swords) ── */
     const renderVs = (large = false, isLive = false) => {
+      const swordSize = large ? 'clamp(24px, 3.5vw, 40px)' : 'clamp(16px, 2.4vw, 28px)';
       return (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center', flexShrink: 0, gap: 2,
-          padding: '0 clamp(1px, 0.2vw, 3px)',
+          padding: '0 clamp(1px, 0.15vw, 2px)',
         }}>
           {/* LIVE badge */}
           {isLive && (
@@ -1491,13 +1494,19 @@ function TournamentWidget({ config, theme }) {
               boxShadow: '0 0 8px rgba(239,68,68,0.5)',
             }}>LIVE</div>
           )}
-          <div style={{
-            fontSize: large ? 'clamp(18px, 2.8vw, 32px)' : 'clamp(14px, 2vw, 24px)',
-            lineHeight: 1,
-            filter: `drop-shadow(0 0 8px ${gCyan}60) drop-shadow(0 0 16px ${gPurple}40)`,
-            alignSelf: 'center',
+          <svg width={swordSize} height={swordSize} viewBox="0 0 64 64" style={{
+            filter: `drop-shadow(0 0 6px ${gCyan}80) drop-shadow(0 0 14px ${gPurple}50)`,
             ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-          }}>⚔</div>
+          }}>
+            {/* Left sword */}
+            <line x1="8" y1="56" x2="44" y2="8" stroke={gCyan} strokeWidth="3.5" strokeLinecap="round" />
+            <line x1="8" y1="56" x2="18" y2="50" stroke={gCyan} strokeWidth="4" strokeLinecap="round" />
+            <line x1="8" y1="56" x2="14" y2="46" stroke={gCyan} strokeWidth="4" strokeLinecap="round" />
+            {/* Right sword */}
+            <line x1="56" y1="56" x2="20" y2="8" stroke={gPurple} strokeWidth="3.5" strokeLinecap="round" />
+            <line x1="56" y1="56" x2="46" y2="50" stroke={gPurple} strokeWidth="4" strokeLinecap="round" />
+            <line x1="56" y1="56" x2="50" y2="46" stroke={gPurple} strokeWidth="4" strokeLinecap="round" />
+          </svg>
           {/* WINNER label for grand final */}
           {isGrandFinalMatch && large && (
             <div style={{
@@ -1522,11 +1531,11 @@ function TournamentWidget({ config, theme }) {
         minHeight: 'clamp(90px, 18vh, 160px)',
       }}>
         <div style={{ flex: 1, minWidth: 0 }}>
-          {renderCard(match, 'player1', false)}
+          {renderCard(match, 'player1', false, false, false)}
         </div>
         {renderVs(false)}
         <div style={{ flex: 1, minWidth: 0 }}>
-          {renderCard(match, 'player2', false)}
+          {renderCard(match, 'player2', false, false, false)}
         </div>
       </div>
     );
@@ -1603,10 +1612,10 @@ function TournamentWidget({ config, theme }) {
     const flipperShowPhase = flipperTick % 2 === 1 && activePhaseLabel;
     const boRound = getCurrentBoRound(currentMatch);
 
-    /* ── Cap queued matches at 3 rows max, earliest phase first ── */
-    const visibleQueued = queuedMatches.slice(0, 3);
+    /* ── Cap queued matches at 3 rows max, later phases first (drop-down to Now Playing) ── */
+    const visibleQueued = queuedMatches.slice(-3);
 
-    /* ── Group queued matches by phase, show divider label below last match of each phase ── */
+    /* ── Group queued matches by phase, show divider label between phase groups ── */
     const queuedWithPhase = visibleQueued.map((m, i) => {
       const label = getMatchPhaseLabel(m);
       const nextLabel = i < visibleQueued.length - 1 ? getMatchPhaseLabel(visibleQueued[i + 1]) : null;
