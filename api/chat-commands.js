@@ -153,9 +153,10 @@ async function handleSlotRequest(req, res) {
       seJwtToken = seConn.se_jwt_token;
     }
 
-    /** Helper: send chat notification via SE bot + return API response */
+    /** Helper: return API response text (SE custom command displays it in chat).
+     *  Do NOT also call seBotSay — that causes duplicate/spam messages because
+     *  SE already posts the HTTP response text as the command reply. */
     const reply = (msg) => {
-      if (seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
       return res.status(200).send(msg);
     };
 
