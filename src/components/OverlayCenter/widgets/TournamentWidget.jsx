@@ -1370,14 +1370,39 @@ function TournamentWidget({ config, theme }) {
             }}>⚔</div>
           )}
 
-          {/* Winner crown with glow */}
-          {isWinner && (
-            <div style={{
-              position: 'absolute', top: 4, right: 4, zIndex: 5,
-              fontSize: large ? 20 : 14,
-              filter: `drop-shadow(0 0 6px ${gGold})`,
-            }}>🏆</div>
-          )}
+          {/* Winner overlay image */}
+          {isWinner && (() => {
+            const overlayType = c.winnerOverlay || 'none';
+            if (overlayType === 'none') return (
+              <div style={{
+                position: 'absolute', top: 4, right: 4, zIndex: 5,
+                fontSize: large ? 20 : 14,
+                filter: `drop-shadow(0 0 6px ${gGold})`,
+              }}>🏆</div>
+            );
+            const overlayMap = {
+              crown: { src: '/tournament/crown.webp', anim: 'grid-winner-overlay-in', style: { top: -6, left: '50%', transform: 'translateX(-50%)', width: large ? '70%' : '60%', zIndex: 7 } },
+              handtrophy: { src: '/tournament/handtrophy.jpg', anim: 'grid-winner-overlay-in-left', style: { top: '50%', left: -4, transform: 'translateY(-50%)', height: large ? '70%' : '55%', zIndex: 7, borderRadius: 6 } },
+              slottrophy: { src: '/tournament/slottrophy.png', anim: 'grid-winner-overlay-in-right', style: { bottom: 2, right: 4, height: large ? '50%' : '40%', zIndex: 7 } },
+              winner: { src: '/tournament/winner.png', anim: 'grid-winner-overlay-in', style: { top: -2, left: '50%', transform: 'translateX(-50%)', width: large ? '80%' : '65%', zIndex: 7 } },
+            };
+            const ov = overlayMap[overlayType];
+            if (!ov) return null;
+            return (
+              <img
+                src={ov.src}
+                alt="winner"
+                style={{
+                  position: 'absolute',
+                  ...ov.style,
+                  objectFit: 'contain',
+                  filter: `drop-shadow(0 0 8px ${gGold}) drop-shadow(0 0 20px ${gGold}60)`,
+                  animation: `${ov.anim} 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
+                  pointerEvents: 'none',
+                }}
+              />
+            );
+          })()}
 
           {/* Super / Extreme tag badge — outer edge, vertical */}
           {!isLoser && (isSuper || isExtreme) && (() => {
@@ -1911,6 +1936,24 @@ function TournamentWidget({ config, theme }) {
           0%   { opacity: 0; transform: scale(0.3); }
           60%  { opacity: 1; transform: scale(1.2); }
           100% { opacity: 1; transform: scale(1); }
+        }
+        @keyframes grid-winner-overlay-in {
+          0%   { opacity: 0; transform: translateX(-50%) scale(0) rotate(-20deg); }
+          50%  { opacity: 1; transform: translateX(-50%) scale(1.15) rotate(5deg); }
+          70%  { transform: translateX(-50%) scale(0.95) rotate(-2deg); }
+          100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); }
+        }
+        @keyframes grid-winner-overlay-in-left {
+          0%   { opacity: 0; transform: translateY(-50%) scale(0) rotate(-20deg); }
+          50%  { opacity: 1; transform: translateY(-50%) scale(1.15) rotate(5deg); }
+          70%  { transform: translateY(-50%) scale(0.95) rotate(-2deg); }
+          100% { opacity: 1; transform: translateY(-50%) scale(1) rotate(0deg); }
+        }
+        @keyframes grid-winner-overlay-in-right {
+          0%   { opacity: 0; transform: scale(0) rotate(15deg); }
+          50%  { opacity: 1; transform: scale(1.15) rotate(-3deg); }
+          70%  { transform: scale(0.95) rotate(1deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
       `}</style>
 

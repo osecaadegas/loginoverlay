@@ -1039,6 +1039,38 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
             </div>
           </details>
 
+          {/* ── Winner Overlay ── */}
+          <details className="bk-details">
+            <summary>Winner Overlay</summary>
+            <div className="bk-details-body">
+              <label className="nb-field"><span>Winner Image Effect</span></label>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {[
+                  { value: 'none', label: 'None', preview: '❌' },
+                  { value: 'crown', label: 'Crown', preview: '/tournament/crown.webp' },
+                  { value: 'handtrophy', label: 'Hand Trophy', preview: '/tournament/handtrophy.jpg' },
+                  { value: 'slottrophy', label: 'Slot Trophy', preview: '/tournament/slottrophy.png' },
+                  { value: 'winner', label: 'Winner', preview: '/tournament/winner.png' },
+                ].map(opt => (
+                  <div key={opt.value}
+                    onClick={() => set('winnerOverlay', opt.value)}
+                    style={{
+                      cursor: 'pointer', padding: 4, borderRadius: 6,
+                      border: `2px solid ${(c.winnerOverlay || 'none') === opt.value ? '#7c3aed' : 'rgba(255,255,255,0.1)'}`,
+                      background: (c.winnerOverlay || 'none') === opt.value ? 'rgba(124,58,237,0.15)' : 'rgba(0,0,0,0.2)',
+                      textAlign: 'center', width: 64,
+                    }}>
+                    {opt.value === 'none'
+                      ? <div style={{ fontSize: 24, lineHeight: '40px' }}>{opt.preview}</div>
+                      : <img src={opt.preview} alt={opt.label} style={{ width: 56, height: 40, objectFit: 'contain', borderRadius: 4 }} />
+                    }
+                    <div style={{ fontSize: 9, color: '#ccc', marginTop: 2 }}>{opt.label}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </details>
+
           {/* ── Arena-specific colors ── */}
           {(c.layout || 'esports') === 'arena' && (
             <details className="bk-details">

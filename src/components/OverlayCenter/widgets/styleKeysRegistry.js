@@ -38,6 +38,7 @@ export const TOURNAMENT_STYLE_KEYS = [
   'nameColor', 'multiColor', 'slotNameColor', 'nameSize', 'multiSize', 'slotNameSize',
   'fontFamily',
   'showSlotName', 'swordSize', 'swordColor', 'swordBg', 'xIconColor', 'xIconBg', 'eliminatedOpacity',
+  'winnerOverlay',
   'arenaAccent', 'arenaWinColor', 'arenaCardBg', 'arenaCurrency', 'arenaLoseOpacity',
   'esCyan', 'esPurple', 'esGold', 'esBg', 'esCardBg', 'esBorder',
   'sbAccent', 'sbHeaderBg', 'sbCardBg', 'sbTextColor', 'sbPayColor', 'sbMultiColor',
