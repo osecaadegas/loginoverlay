@@ -1664,6 +1664,110 @@ function TournamentWidget({ config, theme }) {
         overflow: 'hidden', fontFamily: gFont,
         background: 'transparent',
       }}>
+        {/* ══════ CHAMPION CELEBRATION — replaces entire layout ══════ */}
+        {isGrandFinalMatch ? (() => {
+          const champName = currentMatch.winner === 'player1' ? currentMatch.player1 : currentMatch.player2;
+          const champSlot = currentMatch.winner === 'player1' ? currentMatch.slot1 : currentMatch.slot2;
+          const champImg = champSlot?.image || null;
+          const confettiColors = ['#fbbf24', '#39ff14', '#00e5ff', '#ff3e9d', '#7c3aed', '#ef4444', '#f472b6', '#34d399', '#facc15', '#60a5fa'];
+          const confetti = Array.from({ length: 35 }, (_, i) => ({
+            id: i,
+            left: `${Math.random() * 100}%`,
+            delay: `${Math.random() * 2.5}s`,
+            dur: `${2.5 + Math.random() * 2}s`,
+            size: 3 + Math.random() * 5,
+            color: confettiColors[i % confettiColors.length],
+            shape: i % 3,
+            drift: (Math.random() - 0.5) * 60,
+            spin: Math.random() * 720 - 360,
+          }));
+          return (
+            <div style={{
+              position: 'relative', overflow: 'hidden',
+              padding: 'clamp(8px, 1.5vw, 16px) clamp(6px, 1vw, 12px)',
+              display: 'flex', flexDirection: 'row', alignItems: 'center',
+              gap: 'clamp(8px, 1.5vw, 16px)',
+              animation: 'grid-champ-overlay-in 0.6s ease-out forwards',
+            }}>
+              {/* Confetti pieces */}
+              {confetti.map(p => (
+                <div key={p.id} style={{
+                  position: 'absolute', top: -10,
+                  left: p.left, zIndex: 0,
+                  width: p.shape === 2 ? p.size * 2 : p.size,
+                  height: p.shape === 2 ? p.size * 0.6 : p.size,
+                  borderRadius: p.shape === 1 ? '50%' : '1px',
+                  background: p.color,
+                  animationName: 'grid-confetti-fall',
+                  animationDuration: p.dur,
+                  animationDelay: p.delay,
+                  animationTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  animationIterationCount: 'infinite',
+                  animationFillMode: 'forwards',
+                  opacity: 0.85,
+                  '--confetti-drift': `${p.drift}px`,
+                  '--confetti-spin': `${p.spin}deg`,
+                }} />
+              ))}
+
+              {/* Slot image — 3D floating */}
+              {champImg && (
+                <div style={{
+                  width: 'clamp(70px, 14vw, 130px)', height: 'clamp(55px, 11vw, 100px)',
+                  borderRadius: 12, overflow: 'hidden', position: 'relative',
+                  flexShrink: 0, zIndex: 1,
+                  border: `2px solid ${gGold}`,
+                  boxShadow: `0 0 20px ${gGold}40, 0 0 40px ${gGold}15, 0 4px 16px rgba(0,0,0,0.5)`,
+                  animation: 'grid-champ-card-in 1s cubic-bezier(0.34, 1.56, 0.64, 1) forwards, grid-champ-3d-float 4s ease-in-out 1s infinite',
+                  transformStyle: 'preserve-3d',
+                }}>
+                  <img src={champImg} alt={champName} style={{
+                    width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                  }} />
+                  {/* Shimmer sweep */}
+                  <div style={{
+                    position: 'absolute', inset: 0,
+                    background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)',
+                    backgroundSize: '300% 100%',
+                    animation: 'grid-champ-shimmer 3s ease-in-out 1.5s infinite',
+                  }} />
+                </div>
+              )}
+
+              {/* Text block — CHAMPION + name + stars */}
+              <div style={{
+                flex: 1, minWidth: 0, zIndex: 1,
+                display: 'flex', flexDirection: 'column',
+                animation: 'grid-champ-card-in 1s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s both',
+              }}>
+                <div style={{
+                  fontSize: 'clamp(10px, 1.8vw, 18px)', fontWeight: 900,
+                  color: gGold, textTransform: 'uppercase',
+                  letterSpacing: '3px', fontFamily: gFont,
+                  textShadow: `0 0 14px ${gGold}70, 0 0 28px ${gGold}30`,
+                  animation: 'grid-champ-title-in 0.8s ease-out 0.4s both',
+                }}>🏆 CHAMPION</div>
+
+                <div style={{
+                  fontSize: 'clamp(12px, 2.2vw, 22px)', fontWeight: 900,
+                  color: '#fff', textTransform: 'uppercase',
+                  letterSpacing: '2px', fontFamily: gFont,
+                  textShadow: `0 0 10px ${gCyan}50, 0 2px 4px rgba(0,0,0,0.5)`,
+                  animation: 'grid-champ-name-in 0.8s ease-out 0.6s both',
+                  whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>{champName}</div>
+
+                <div style={{
+                  fontSize: 'clamp(8px, 1.2vw, 14px)',
+                  animation: 'grid-champ-stars-in 1s ease-out 0.8s both',
+                  letterSpacing: '3px',
+                  filter: `drop-shadow(0 0 4px ${gGold})`,
+                }}>✦ ✦ ✦ ✦ ✦</div>
+              </div>
+            </div>
+          );
+        })() : (
+        <>
         {/* ── Tournament title ── */}
         {c.bracketName && (
           <div style={{
@@ -1812,117 +1916,6 @@ function TournamentWidget({ config, theme }) {
           </div>
         )}
 
-        {/* ── CHAMPION CELEBRATION OVERLAY — confetti + 3D winner display ── */}
-        {isGrandFinalMatch && (() => {
-          const champName = currentMatch.winner === 'player1' ? currentMatch.player1 : currentMatch.player2;
-          const champSlot = currentMatch.winner === 'player1' ? currentMatch.slot1 : currentMatch.slot2;
-          const champImg = champSlot?.image || null;
-          /* 30 confetti pieces with random positions, colours, delays */
-          const confettiColors = ['#fbbf24', '#39ff14', '#00e5ff', '#ff3e9d', '#7c3aed', '#ef4444', '#f472b6', '#34d399', '#facc15', '#60a5fa'];
-          const confetti = Array.from({ length: 40 }, (_, i) => ({
-            id: i,
-            left: `${Math.random() * 100}%`,
-            delay: `${Math.random() * 2.5}s`,
-            dur: `${2.5 + Math.random() * 2}s`,
-            size: 4 + Math.random() * 6,
-            color: confettiColors[i % confettiColors.length],
-            shape: i % 3, // 0=square, 1=circle, 2=rect
-            drift: (Math.random() - 0.5) * 80,
-            spin: Math.random() * 720 - 360,
-          }));
-          return (
-            <div style={{
-              position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none',
-              display: 'flex', flexDirection: 'column',
-              alignItems: 'center', justifyContent: 'center',
-              overflow: 'hidden',
-              background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)',
-              animation: 'grid-champ-overlay-in 0.6s ease-out forwards',
-            }}>
-              {/* Confetti pieces */}
-              {confetti.map(p => (
-                <div key={p.id} style={{
-                  position: 'absolute', top: -10,
-                  left: p.left,
-                  width: p.shape === 2 ? p.size * 2 : p.size,
-                  height: p.shape === 2 ? p.size * 0.6 : p.size,
-                  borderRadius: p.shape === 1 ? '50%' : '1px',
-                  background: p.color,
-                  animationName: 'grid-confetti-fall',
-                  animationDuration: p.dur,
-                  animationDelay: p.delay,
-                  animationTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-                  animationIterationCount: 'infinite',
-                  animationFillMode: 'forwards',
-                  opacity: 0.9,
-                  '--confetti-drift': `${p.drift}px`,
-                  '--confetti-spin': `${p.spin}deg`,
-                }} />
-              ))}
-
-              {/* 3D Champion card */}
-              <div style={{
-                animation: 'grid-champ-card-in 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
-                perspective: '800px',
-                display: 'flex', flexDirection: 'column', alignItems: 'center',
-                transformStyle: 'preserve-3d',
-              }}>
-                {/* "CHAMPION" title */}
-                <div style={{
-                  fontSize: 'clamp(16px, 3vw, 32px)', fontWeight: 900,
-                  color: gGold, textTransform: 'uppercase',
-                  letterSpacing: '6px', fontFamily: gFont,
-                  textShadow: `0 0 20px ${gGold}80, 0 0 40px ${gGold}40, 0 2px 4px rgba(0,0,0,0.6)`,
-                  marginBottom: 'clamp(8px, 1.5vh, 16px)',
-                  animation: 'grid-champ-title-in 0.8s ease-out 0.4s both',
-                }}>🏆 CHAMPION 🏆</div>
-
-                {/* Slot image in 3D rotating frame */}
-                {champImg && (
-                  <div style={{
-                    width: 'clamp(120px, 22vw, 220px)', height: 'clamp(90px, 16vw, 165px)',
-                    borderRadius: 16, overflow: 'hidden', position: 'relative',
-                    border: `3px solid ${gGold}`,
-                    boxShadow: `0 0 30px ${gGold}50, 0 0 60px ${gGold}20, 0 8px 32px rgba(0,0,0,0.6)`,
-                    animation: 'grid-champ-3d-float 4s ease-in-out 1.2s infinite',
-                    transformStyle: 'preserve-3d',
-                  }}>
-                    <img src={champImg} alt={champName} style={{
-                      width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                    }} />
-                    {/* Shimmer sweep */}
-                    <div style={{
-                      position: 'absolute', inset: 0,
-                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)',
-                      backgroundSize: '300% 100%',
-                      animation: 'grid-champ-shimmer 3s ease-in-out 1.5s infinite',
-                    }} />
-                  </div>
-                )}
-
-                {/* Winner name */}
-                <div style={{
-                  marginTop: 'clamp(8px, 1.5vh, 16px)',
-                  fontSize: 'clamp(14px, 2.5vw, 26px)', fontWeight: 900,
-                  color: '#fff', textTransform: 'uppercase',
-                  letterSpacing: '4px', fontFamily: gFont,
-                  textShadow: `0 0 12px ${gCyan}60, 0 0 24px ${gCyan}30, 0 2px 4px rgba(0,0,0,0.6)`,
-                  animation: 'grid-champ-name-in 0.8s ease-out 0.8s both',
-                }}>{champName}</div>
-
-                {/* Animated star/sparkle ring */}
-                <div style={{
-                  marginTop: 'clamp(4px, 0.8vh, 8px)',
-                  fontSize: 'clamp(12px, 2vw, 20px)',
-                  animation: 'grid-champ-stars-in 1s ease-out 1s both',
-                  letterSpacing: '4px',
-                  filter: `drop-shadow(0 0 6px ${gGold})`,
-                }}>✦ ✦ ✦ ✦ ✦</div>
-              </div>
-            </div>
-          );
-        })()}
-
         {/* ── Done matches ── */}
         {doneMatches.length > 0 && (
           <div style={{
@@ -1933,6 +1926,7 @@ function TournamentWidget({ config, theme }) {
             {doneMatches.map((m, i) => renderDoneRow(m, i))}
           </div>
         )}
+        </>)}
       </div>
     );
   };
