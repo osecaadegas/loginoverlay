@@ -39,7 +39,7 @@ export default function StreamElementsPanel() {
     loadAllRedemptions();
   }, []);
 
-  const checkSeCredentials = () => {
+  const checkSeCredentials = async () => {
     // Check if the current user has their own SE connection in the database
     try {
       const { data: { user: authUser } } = await supabase.auth.getUser();
