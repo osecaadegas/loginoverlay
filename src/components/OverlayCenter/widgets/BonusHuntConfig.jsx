@@ -1156,8 +1156,10 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                       <span className="bh-sr-queue-name">{req.slot_name}</span>
                       <span className="bh-sr-queue-by">by {req.requested_by}</span>
                     </div>
-                    {srSeEnabled && <button className="bh-sr-queue-dismiss" style={{ color: '#fbbf24', background: 'rgba(251,191,36,0.12)' }} onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund SE points">↩</button>}
-                    <button className="bh-sr-queue-dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss">✕</button>
+                    <div className="bh-sr-queue-actions">
+                      {srSeEnabled && <button className="bh-sr-queue-btn bh-sr-queue-btn--reject" onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund SE points">Reject</button>}
+                      <button className="bh-sr-queue-btn bh-sr-queue-btn--dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss">✕</button>
+                    </div>
                   </div>
                 ))}
               </div>
