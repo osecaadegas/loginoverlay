@@ -249,81 +249,69 @@ function NavbarWidget({ config, widgetId, userId }) {
     ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
     : 'none';
 
+  /* Use clipPath instead of overflow:hidden to avoid Chromium compositor
+     black-corner artefact on GPU-promoted layers (OBS browser source). */
+  const clipOuter = `inset(0 round ${borderRadius}px)`;
+
   const barOuter = isMetal ? {
-    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.02) 40%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.01) 100%)`,
     padding: `${borderWidth}px`,
-    boxShadow: `0 1px 0 rgba(255,255,255,0.06) inset, 0 -1px 0 rgba(0,0,0,0.4) inset, 0 20px 50px rgba(0,0,0,0.7), 0 0 40px rgba(${accentColorRGB},0.06)`,
-    fontFamily, overflow: 'hidden',
-    border: `1px solid rgba(200,210,225,0.18)`,
+    fontFamily,
   } : isCarbon ? {
-    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    width: '100%', height: '100%', boxSizing: 'border-box',
     background: `repeating-linear-gradient(45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), repeating-linear-gradient(-45deg, rgba(255,255,255,0.02) 0px, rgba(255,255,255,0.02) 2px, transparent 2px, transparent 6px), ${bgColor}`,
     padding: `${borderWidth}px`,
-    boxShadow: `0 12px 30px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.04)`,
-    fontFamily, overflow: 'hidden',
-    border: `1px solid rgba(255,255,255,0.06)`,
+    fontFamily,
   } : isFuturistic ? {
-    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(0,255,204,0.06), transparent 40%, rgba(0,255,204,0.04))`,
     padding: `${borderWidth}px`,
-    boxShadow: `0 0 20px rgba(${accentColorRGB},0.15), 0 0 60px rgba(${accentColorRGB},0.05), 0 12px 30px rgba(0,0,0,0.5)`,
-    fontFamily, overflow: 'hidden',
-    border: `1px solid rgba(${accentColorRGB},0.25)`,
+    fontFamily,
   } : isGlass ? {
-    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(135deg, rgba(30,30,60,0.82), rgba(20,20,50,0.88))`,
     padding: `${borderWidth}px`,
-    boxShadow: `0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.12)`,
-    fontFamily, overflow: 'hidden',
-    border: `1px solid rgba(255,255,255,0.18)`,
+    fontFamily,
   } : isRetro ? {
-    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    width: '100%', height: '100%', boxSizing: 'border-box',
     background: `${borderColor}`,
     padding: `${borderWidth}px`,
-    boxShadow: `4px 4px 0 #000, 8px 8px 0 rgba(0,0,0,0.3)`,
-    fontFamily, overflow: 'hidden',
-    border: `${borderWidth}px solid #000`,
+    fontFamily,
     imageRendering: 'pixelated',
   } : {
-    width: '100%', height: '100%', boxSizing: 'border-box', borderRadius,
+    width: '100%', height: '100%', boxSizing: 'border-box',
     background: `linear-gradient(to bottom, ${borderColor}e6, ${borderColor}cc)`,
     padding: `${borderWidth}px`,
-    boxShadow: `0 18px 40px rgba(0,0,0,0.8)`,
-    fontFamily, overflow: 'hidden',
+    fontFamily,
   };
 
   const barInner = isMetal ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(170deg, rgba(${accentColorRGB},0.04) 0%, ${bgColor} 30%, rgba(${accentColorRGB},0.03) 60%, ${bgColor} 100%)`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isCarbon ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(180deg, ${bgColor}, #060606)`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isFuturistic ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.95), rgba(${bgColorRGB},0.88))`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isGlass ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(135deg, rgba(${bgColorRGB},0.92), rgba(${bgColorRGB},0.85))`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
     ...(needsFilter && { filter: filterStr }),
   } : isRetro ? {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    borderRadius: Math.max(borderRadius - borderWidth, 0),
     background: `linear-gradient(180deg, ${bgColor}, #0d0500)`,
     padding: '0 8px', color: textColor, fontSize, gap: 0,
     overflow: 'visible', position: 'relative',
@@ -331,7 +319,6 @@ function NavbarWidget({ config, widgetId, userId }) {
     borderTop: '2px solid rgba(255,255,255,0.15)',
   } : {
     display: 'flex', alignItems: 'center', height: '100%', boxSizing: 'border-box',
-    borderRadius: borderRadius - borderWidth,
     background: `linear-gradient(to right, ${bgColor}, ${bgColor}f2, ${bgColor})`,
     padding: '0 10px', color: textColor, fontSize, gap: 0,
     overflow: 'visible',
@@ -667,14 +654,13 @@ function NavbarWidget({ config, widgetId, userId }) {
 
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%' }}>
+    <div style={{ display: 'flex', justifyContent: 'center', width: '100%', height: '100%', clipPath: clipOuter }}>
       <div style={barOuter}>
         <div style={barInner}>
           {/* Metallic shine overlay */}
           {isMetal && (
             <div style={{
               position: 'absolute', inset: 0,
-              borderRadius: borderRadius - borderWidth,
               background: 'linear-gradient(110deg, transparent 0%, rgba(255,255,255,0.015) 30%, rgba(255,255,255,0.04) 48%, rgba(255,255,255,0.015) 52%, transparent 70%)',
               pointerEvents: 'none', zIndex: 0,
             }} />
@@ -683,7 +669,6 @@ function NavbarWidget({ config, widgetId, userId }) {
             <div style={{
               position: 'absolute', top: 0, left: 0, right: 0,
               height: barHeight * 0.45,
-              borderRadius: `${borderRadius - borderWidth}px ${borderRadius - borderWidth}px 0 0`,
               background: 'linear-gradient(180deg, rgba(255,255,255,0.03), transparent)',
               pointerEvents: 'none', zIndex: 0,
             }} />
@@ -692,7 +677,6 @@ function NavbarWidget({ config, widgetId, userId }) {
           {isGlass && (
             <div style={{
               position: 'absolute', inset: 0,
-              borderRadius: borderRadius - borderWidth,
               background: 'linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 50%, rgba(255,255,255,0.04) 100%)',
               pointerEvents: 'none', zIndex: 0,
             }} />
@@ -701,7 +685,6 @@ function NavbarWidget({ config, widgetId, userId }) {
           {isRetro && (
             <div style={{
               position: 'absolute', inset: 0,
-              borderRadius: Math.max(borderRadius - borderWidth, 0),
               background: 'repeating-linear-gradient(0deg, transparent 0px, transparent 2px, rgba(0,0,0,0.15) 2px, rgba(0,0,0,0.15) 4px)',
               pointerEvents: 'none', zIndex: 0,
             }} />
