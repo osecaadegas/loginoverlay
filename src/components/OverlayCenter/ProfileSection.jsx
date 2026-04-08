@@ -112,6 +112,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
     spotify_expires_at: null,
   });
   const [seTestMsg, setSeTestMsg] = useState('');
+  const [seSaving, setSeSaving] = useState(false);
   const [spotifyLoading, setSpotifyLoading] = useState(false);
   const [spotifyError, setSpotifyError] = useState('');
   const [songIrcStatus, setSongIrcStatus] = useState('off');
@@ -610,7 +611,14 @@ export default function ProfileSection({ widgets, saveWidget }) {
               </span>
               {(profile.seChannelId && profile.seJwtToken) && (
                 <button style={{ ...S.btn, background: 'rgba(248,113,113,0.1)', color: '#f87171', fontSize: '0.76rem', padding: '6px 12px' }}
-                  onClick={() => { set('seChannelId', ''); set('seJwtToken', ''); setSeTestMsg(''); }}>
+                  onClick={async () => {
+                    set('seChannelId', ''); set('seJwtToken', ''); setSeTestMsg('');
+                    try {
+                      await supabase.from('streamelements_connections').delete().eq('user_id', user.id);
+                    } catch { /* ignore */ }
+                    setSeTestMsg('✅ Credentials cleared');
+                    setTimeout(() => setSeTestMsg(''), 3000);
+                  }}>
                   Clear
                 </button>
               )}
@@ -623,29 +631,55 @@ export default function ProfileSection({ widgets, saveWidget }) {
               <label style={S.label}>JWT Token</label>
               <input style={S.input} type="password" value={profile.seJwtToken} onChange={e => set('seJwtToken', e.target.value)} placeholder="Your SE JWT Token" />
             </div>
-            {(profile.seChannelId && profile.seJwtToken) && (
-              <button style={{ ...S.btn, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '0.76rem', padding: '6px 12px' }}
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button style={{ ...S.btn, background: 'rgba(34,197,94,0.15)', color: '#22c55e', fontSize: '0.76rem', padding: '6px 16px', flex: 1, fontWeight: 700 }}
+                disabled={seSaving || !profile.seChannelId || !profile.seJwtToken}
                 onClick={async () => {
-                  setSeTestMsg('⏳ Testing...');
+                  setSeSaving(true);
+                  setSeTestMsg('');
                   try {
-                    const res = await fetch(`https://api.streamelements.com/kappa/v2/channels/${profile.seChannelId}`, {
-                      headers: { Authorization: `Bearer ${profile.seJwtToken}`, Accept: 'application/json' },
-                    });
-                    if (res.ok) {
-                      const data = await res.json();
-                      setSeTestMsg(`✅ Connected to ${data.displayName || data.username || 'channel'}`);
-                    } else {
-                      setSeTestMsg(`❌ Error ${res.status} — check your credentials`);
-                    }
-                  } catch { setSeTestMsg('❌ Connection failed'); }
-                  setTimeout(() => setSeTestMsg(''), 5000);
+                    await supabase.from('streamelements_connections').upsert({
+                      user_id: user.id,
+                      se_channel_id: profile.seChannelId,
+                      se_jwt_token: profile.seJwtToken,
+                      se_username: profile.twitchUsername || null,
+                      connected_at: new Date().toISOString(),
+                    }, { onConflict: 'user_id' });
+                    setSeTestMsg('✅ Saved!');
+                  } catch (err) {
+                    console.error('[ProfileSection] SE save error:', err);
+                    setSeTestMsg('❌ Failed to save');
+                  }
+                  setSeSaving(false);
+                  setTimeout(() => setSeTestMsg(''), 4000);
                 }}>
-                🔍 Test Connection
+                {seSaving ? '⏳ Saving...' : '💾 Save Credentials'}
               </button>
-            )}
+              {(profile.seChannelId && profile.seJwtToken) && (
+                <button style={{ ...S.btn, background: 'rgba(245,158,11,0.15)', color: '#f59e0b', fontSize: '0.76rem', padding: '6px 12px' }}
+                  onClick={async () => {
+                    setSeTestMsg('⏳ Testing...');
+                    try {
+                      const res = await fetch(`https://api.streamelements.com/kappa/v2/channels/${profile.seChannelId}`, {
+                        headers: { Authorization: `Bearer ${profile.seJwtToken}`, Accept: 'application/json' },
+                      });
+                      if (res.ok) {
+                        const data = await res.json();
+                        setSeTestMsg(`✅ Connected to ${data.displayName || data.username || 'channel'}`);
+                      } else {
+                        setSeTestMsg(`❌ Error ${res.status} — check your credentials`);
+                      }
+                    } catch { setSeTestMsg('❌ Connection failed'); }
+                    setTimeout(() => setSeTestMsg(''), 5000);
+                  }}>
+                  🔍 Test
+                </button>
+              )}
+            </div>
             {seTestMsg && <p style={{ fontSize: '0.74rem', color: seTestMsg.startsWith('✅') ? '#4ade80' : seTestMsg.startsWith('❌') ? '#f87171' : '#f59e0b', margin: 0, fontWeight: 600 }}>{seTestMsg}</p>}
             <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
-              Find these in your <a href="https://streamelements.com/dashboard/account/channels" target="_blank" rel="noreferrer" style={{ color: '#f59e0b' }}>SE Dashboard</a> → Account → Channels. Syncs to Community Games.
+              Find these in your <a href="https://streamelements.com/dashboard/account/channels" target="_blank" rel="noreferrer" style={{ color: '#f59e0b' }}>SE Dashboard</a> → Account → Channels.
+              <br />Each user must enter their own credentials. Saved per-account.
             </p>
           </div>
 
