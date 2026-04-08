@@ -362,7 +362,9 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       ? { numSpins: bracketTypeConfig.numSpins || 50 }
       : bracketType === 'bonus_bo3'
         ? { drawRule: bracketTypeConfig.drawRule || 'no_point' }
-        : {};
+        : bracketType === 'bonus_bo3_classic'
+          ? {}
+          : {};
     const newBracket = generateBracket(seeded, bracketType, cfg);
 
     // Flatten bracket matches for OBS widget compatibility
@@ -785,7 +787,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               {/* ── Match control panel ── */}
               {currentBracketMatch && bracketPhase === 'active' && (() => {
                 const inputFields = getRoundInputFields(currentBracketMatch.type);
-                const isBo3 = currentBracketMatch.type === 'bonus_bo3';
+                const isBo3 = currentBracketMatch.type === 'bonus_bo3' || currentBracketMatch.type === 'bonus_bo3_classic';
                 const scoreboard = isBo3 ? getBoScoreboard(currentBracketMatch) : null;
                 const matchWinner = currentBracketMatch.winner ?? calcMatchWinner(currentBracketMatch);
 

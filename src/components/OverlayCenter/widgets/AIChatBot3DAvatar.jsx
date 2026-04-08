@@ -33,18 +33,32 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
   // Clone scene for isolation, fix missing textures/colors
   const clonedScene = useMemo(() => {
     let clone;
-    try { clone = skeletonClone(scene); } catch { clone = scene.clone(true); }
+    try { clone = skeletonClone(scene); console.log('[3DAvatar] skeletonClone OK'); }
+    catch (e) { clone = scene.clone(true); console.warn('[3DAvatar] skeletonClone failed, using scene.clone:', e.message); }
     clone.traverse((child) => {
       if (child.isMesh) {
+        console.log('[3DAvatar] Mesh:', child.name, 'type:', child.type,
+          'mat:', child.material?.type,
+          'map:', !!child.material?.map,
+          'UVs:', Object.keys(child.geometry?.attributes || {}).filter(k => k.startsWith('uv')).join(','));
         const mats = Array.isArray(child.material) ? child.material : [child.material];
         const cloned = mats.map(mat => {
           const m = mat.clone();
           const texProps = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'envMap', 'lightMap', 'specularMap'];
           for (const prop of texProps) { if (mat[prop]) m[prop] = mat[prop]; }
+          // Ensure all textures are marked for GPU upload
+          for (const prop of texProps) {
+            if (m[prop]) { m[prop].needsUpdate = true; }
+          }
           if (m.map) m.map.colorSpace = 'srgb';
           if (child.geometry?.attributes?.color) m.vertexColors = true;
           if (m.transparent && m.opacity === 0) m.opacity = 1;
           m.needsUpdate = true;
+          console.log('[3DAvatar] Cloned mat:', m.type,
+            'map:', !!m.map, 'normalMap:', !!m.normalMap,
+            'roughnessMap:', !!m.roughnessMap, 'metalnessMap:', !!m.metalnessMap,
+            'color:', m.color?.getHexString(), 'opacity:', m.opacity,
+            'side:', m.side, 'visible:', m.visible);
           return m;
         });
         child.material = Array.isArray(child.material) ? cloned : cloned[0];

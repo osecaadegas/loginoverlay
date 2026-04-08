@@ -113,7 +113,9 @@ export default function TournamentsPage() {
       ? { numSpins: typeConfig.numSpins || 50 }
       : tournamentType === 'bonus_bo3'
         ? { drawRule: typeConfig.drawRule || 'no_point' }
-        : {};
+        : tournamentType === 'bonus_bo3_classic'
+          ? {}
+          : {};
     const newBracket = generateBracket(seeded, tournamentType, config);
     setBracket(newBracket);
     setActiveRound(0);
@@ -485,7 +487,7 @@ function BracketDisplay({ bracket, activeRound, activeMatch, onSelectMatch, tour
 }
 
 function fmtPlayerResult(match, playerKey, type) {
-  if (type === 'bonus_bo3') {
+  if (type === 'bonus_bo3' || type === 'bonus_bo3_classic') {
     let total = 0, any = false;
     for (const round of match.rounds) {
       const r = calcRoundResult(round[playerKey], type);
@@ -508,7 +510,7 @@ function fmtVal(val) {
    ═══════════════════════════════════════════════════ */
 function MatchPanel({ match, tournamentType, roundLabel, matchNum, totalMatches, onRoundInput, onManualWinner, onResetMatch }) {
   const fields = getRoundInputFields(tournamentType);
-  const isBo3 = tournamentType === 'bonus_bo3';
+  const isBo3 = tournamentType === 'bonus_bo3' || tournamentType === 'bonus_bo3_classic';
   const scoreboard = isBo3 ? getBoScoreboard(match) : null;
   const winner = match.winner ?? calcMatchWinner(match);
 

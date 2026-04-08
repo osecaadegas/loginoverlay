@@ -48,7 +48,7 @@ export default function MatchCard({
 
   /* Calculate overall result per player */
   const getPlayerResult = (playerKey) => {
-    if (match.type === 'bonus_bo3') {
+    if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
       // Sum net-profit across all completed rounds
       let total = 0;
       let anyComplete = false;
@@ -66,7 +66,7 @@ export default function MatchCard({
   const p2Result = getPlayerResult('player2');
 
   /* Bo3 scoreboard */
-  const scoreboard = match.type === 'bonus_bo3' ? getBoScoreboard(match) : null;
+  const scoreboard = (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') ? getBoScoreboard(match) : null;
 
   return (
     <div
@@ -122,7 +122,7 @@ export default function MatchCard({
             textTransform: 'uppercase', letterSpacing: '0.6px',
             opacity: 0.8,
           }}>
-            {TOURNAMENT_TYPES[match.type]?.icon} {match.type === 'bonus_bo3' ? 'Bo3' : match.type === 'spins' ? 'Spins' : 'Bonus'}
+            {TOURNAMENT_TYPES[match.type]?.icon} {(match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') ? 'Bo3' : match.type === 'spins' ? 'Spins' : 'Bonus'}
           </div>
         )}
 

@@ -51,6 +51,7 @@ export const TOURNAMENT_TYPES = {
   spins: { id: 'spins', label: 'Spins Tournament', icon: '🎰', description: 'Compare profit after N spins' },
   bonus: { id: 'bonus', label: 'Bonus Tournament', icon: '🎯', description: 'Single bonus buy — highest net profit wins' },
   bonus_bo3: { id: 'bonus_bo3', label: 'Bonus Best of 3', icon: '🔥', description: 'Best of 3 bonus buys — first to 2 wins' },
+  bonus_bo3_classic: { id: 'bonus_bo3_classic', label: 'Bo3 Classic', icon: '🏅', description: 'Best of 3 — highest total payout wins' },
 };
 
 export const MATCH_STATUS = { PENDING: 'pending', IN_PROGRESS: 'in_progress', COMPLETED: 'completed' };
@@ -64,7 +65,7 @@ export const genId = () => `m_${Date.now()}_${++_idCounter}`;
    CREATE MATCH
    ════════════════════════════════════════════════════════ */
 export function createMatch({ player1, player2, slot1, slot2, type, config = {} }) {
-  const roundCount = type === 'bonus_bo3' ? 3 : 1;
+  const roundCount = (type === 'bonus_bo3' || type === 'bonus_bo3_classic') ? 3 : 1;
   const rounds = Array.from({ length: roundCount }, (_, i) => createEmptyRound(i + 1, type));
 
   return {
@@ -101,6 +102,7 @@ function getDefaultConfig(type) {
     case 'spins': return { numSpins: 50 };
     case 'bonus': return {};
     case 'bonus_bo3': return { drawRule: 'no_point' };
+    case 'bonus_bo3_classic': return {};
     default: return {};
   }
 }
@@ -159,6 +161,20 @@ export function calcMatchWinner(match) {
     return calcRoundWinner(match.rounds[0], match.type);
   }
 
+  // bonus_bo3_classic: sum of all 3 payouts, highest total wins
+  if (match.type === 'bonus_bo3_classic') {
+    const allPlayed = match.rounds.every(r => calcRoundResult(r.player1, match.type) !== null && calcRoundResult(r.player2, match.type) !== null);
+    if (!allPlayed) return null;
+    let p1Total = 0, p2Total = 0;
+    for (const round of match.rounds) {
+      p1Total += calcRoundResult(round.player1, match.type);
+      p2Total += calcRoundResult(round.player2, match.type);
+    }
+    if (p1Total > p2Total) return 'player1';
+    if (p2Total > p1Total) return 'player2';
+    return 'draw';
+  }
+
   // bonus_bo3
   const drawRule = match.config?.drawRule || 'no_point';
   let p1Wins = 0, p2Wins = 0;
@@ -190,7 +206,7 @@ export function calcMatchWinner(match) {
  * Returns { p1Wins, p2Wins, draws, roundResults: [{winner, p1Result, p2Result}] }
  */
 export function getBoScoreboard(match) {
-  if (!match || match.type !== 'bonus_bo3') return null;
+  if (!match || (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic')) return null;
   let p1Wins = 0, p2Wins = 0, draws = 0;
   const roundResults = match.rounds.map(round => {
     const p1r = calcRoundResult(round.player1, match.type);
@@ -248,7 +264,7 @@ export function setManualWinner(match, winner) {
  * Reset a match to pending state.
  */
 export function resetMatch(match) {
-  const roundCount = match.type === 'bonus_bo3' ? 3 : 1;
+  const roundCount = (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') ? 3 : 1;
   return {
     ...match,
     winner: null,
