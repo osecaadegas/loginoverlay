@@ -1509,10 +1509,10 @@ function TournamentWidget({ config, theme }) {
           <span style={{
             fontSize: large ? 'clamp(22px, 3.2vw, 38px)' : 'clamp(16px, 2.4vw, 28px)',
             lineHeight: 1,
-            filter: `drop-shadow(0 0 8px ${gCyan}70) drop-shadow(0 0 18px ${gPurple}40)`,
+            color: '#cbd5e1',
+            textShadow: `0 0 10px ${gCyan}90, 0 0 24px ${gCyan}50, 0 0 40px ${gPurple}40`,
             ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-            display: 'inline',
-          }}>⚔️</span>
+          }}>⚔</span>
           {/* WINNER label for grand final */}
           {isGrandFinalMatch && large && (
             <div style={{
@@ -1576,8 +1576,9 @@ function TournamentWidget({ config, theme }) {
           }}>{p1Won ? '🏆 ' : ''}{p1}</span>
           <span style={{
             fontSize: 'clamp(10px, 1.2vw, 14px)', flexShrink: 0,
-            filter: `drop-shadow(0 0 4px ${gCyan}50)`,
-          }}>⚔️</span>
+            color: '#94a3b8',
+            textShadow: `0 0 6px ${gCyan}60, 0 0 14px ${gPurple}30`,
+          }}>⚔</span>
           <span style={{
             flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 800, fontFamily: gFont,
             color: p2Won ? gGreen : 'rgba(255,255,255,0.3)',
@@ -1768,7 +1769,7 @@ function TournamentWidget({ config, theme }) {
               gap: 'clamp(3px, 0.5vw, 8px)',
               background: 'transparent',
               borderRadius: 12, padding: 'clamp(2px, 0.3vw, 4px)',
-              position: 'relative', zIndex: 1, overflow: 'hidden',
+              position: 'relative', zIndex: 1, overflow: 'visible',
               minHeight: 'clamp(110px, 24vh, 200px)',
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
