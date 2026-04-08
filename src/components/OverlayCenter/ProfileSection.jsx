@@ -146,22 +146,41 @@ export default function ProfileSection({ widgets, saveWidget }) {
     const spotRefresh = nb.spotify_refresh_token || sp.spotify_refresh_token || '';
     const spotExpires = nb.spotify_expires_at || sp.spotify_expires_at || null;
 
-    setProfile(prev => ({
-      streamerName: nb.streamerName || meta.full_name || meta.preferred_username || prev.streamerName || '',
-      motto: nb.motto || prev.motto || '',
-      avatarUrl: nb.avatarUrl || meta.avatar_url || prev.avatarUrl || '',
-      twitchUsername: nb.twitchUsername || meta.preferred_username || meta.twitch_username || prev.twitchUsername || '',
-      kickChannel: chat.kickChannelId || ga.kickChannelId || prev.kickChannel || '',
-      youtubeChannel: chat.youtubeVideoId || prev.youtubeChannel || '',
-      youtubeApiKey: chat.youtubeApiKey || prev.youtubeApiKey || '',
-      discordTag: prev.discordTag || '',
-      currency: nb.currency || chat.currency || prev.currency || '€',
-      seChannelId: communityW?.seChannelId || import.meta.env.VITE_SE_CHANNEL_ID || prev.seChannelId || '',
-      seJwtToken: communityW?.seJwtToken || import.meta.env.VITE_SE_JWT_TOKEN || prev.seJwtToken || '',
-      spotify_access_token: spotToken,
-      spotify_refresh_token: spotRefresh,
-      spotify_expires_at: spotExpires,
-    }));
+    /* Load SE credentials from the user's own streamelements_connections row first */
+    (async () => {
+      let seChannel = communityW?.seChannelId || '';
+      let seJwt = communityW?.seJwtToken || '';
+      if (!seChannel || !seJwt) {
+        try {
+          const { data } = await supabase
+            .from('streamelements_connections')
+            .select('se_channel_id, se_jwt_token')
+            .eq('user_id', user.id)
+            .single();
+          if (data) {
+            seChannel = seChannel || data.se_channel_id || '';
+            seJwt = seJwt || data.se_jwt_token || '';
+          }
+        } catch { /* no row yet */ }
+      }
+
+      setProfile(prev => ({
+        streamerName: nb.streamerName || meta.full_name || meta.preferred_username || prev.streamerName || '',
+        motto: nb.motto || prev.motto || '',
+        avatarUrl: nb.avatarUrl || meta.avatar_url || prev.avatarUrl || '',
+        twitchUsername: nb.twitchUsername || meta.preferred_username || meta.twitch_username || prev.twitchUsername || '',
+        kickChannel: chat.kickChannelId || ga.kickChannelId || prev.kickChannel || '',
+        youtubeChannel: chat.youtubeVideoId || prev.youtubeChannel || '',
+        youtubeApiKey: chat.youtubeApiKey || prev.youtubeApiKey || '',
+        discordTag: prev.discordTag || '',
+        currency: nb.currency || chat.currency || prev.currency || '€',
+        seChannelId: seChannel || prev.seChannelId || '',
+        seJwtToken: seJwt || prev.seJwtToken || '',
+        spotify_access_token: spotToken,
+        spotify_refresh_token: spotRefresh,
+        spotify_expires_at: spotExpires,
+      }));
+    })();
   }, [user, widgets]);
 
   const set = (key, val) => setProfile(prev => ({ ...prev, [key]: val }));
@@ -432,6 +451,22 @@ export default function ProfileSection({ widgets, saveWidget }) {
   const handleSyncAll = async () => {
     await syncToWidgets();
     await saveProfileToDb();
+
+    /* Persist SE credentials to streamelements_connections (per-user) */
+    if (user && profile.seChannelId && profile.seJwtToken) {
+      try {
+        await supabase.from('streamelements_connections').upsert({
+          user_id: user.id,
+          se_channel_id: profile.seChannelId,
+          se_jwt_token: profile.seJwtToken,
+          se_username: profile.twitchUsername || null,
+          connected_at: new Date().toISOString(),
+        }, { onConflict: 'user_id' });
+      } catch (err) {
+        console.error('[ProfileSection] SE connection save error:', err);
+      }
+    }
+
     /* Keep localStorage in sync for standalone components (TwitchChat embed) */
     if (profile.twitchUsername) {
       localStorage.setItem('twitchChannel', profile.twitchUsername);

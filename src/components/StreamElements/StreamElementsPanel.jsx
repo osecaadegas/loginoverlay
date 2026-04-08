@@ -40,9 +40,22 @@ export default function StreamElementsPanel() {
   }, []);
 
   const checkSeCredentials = () => {
-    const channelId = import.meta.env.VITE_SE_CHANNEL_ID;
-    const jwtToken = import.meta.env.VITE_SE_JWT_TOKEN;
-    setSeCredentialsConfigured(!!(channelId && jwtToken));
+    // Check if the current user has their own SE connection in the database
+    try {
+      const { data: { user: authUser } } = await supabase.auth.getUser();
+      if (authUser) {
+        const { data } = await supabase
+          .from('streamelements_connections')
+          .select('se_channel_id, se_jwt_token')
+          .eq('user_id', authUser.id)
+          .single();
+        setSeCredentialsConfigured(!!(data?.se_channel_id && data?.se_jwt_token));
+      } else {
+        setSeCredentialsConfigured(false);
+      }
+    } catch {
+      setSeCredentialsConfigured(false);
+    }
   };
 
   const checkIfTwitchUser = async () => {

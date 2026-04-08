@@ -35,8 +35,8 @@ function CoinFlipWidget({ config, widgetId }) {
   useEffect(() => () => { if (cooldownRef.current) clearTimeout(cooldownRef.current); }, []);
 
   /* ── SE credentials (from env or config) ── */
-  const seChannelId = c.seChannelId || import.meta.env.VITE_SE_CHANNEL_ID || '';
-  const seJwtToken  = c.seJwtToken  || import.meta.env.VITE_SE_JWT_TOKEN  || '';
+  const seChannelId = c.seChannelId || '';
+  const seJwtToken  = c.seJwtToken  || '';
   const seConnected = !!seChannelId && !!seJwtToken;
   const pointPayoutsEnabled = !!c.pointPayoutsEnabled && seConnected;
 

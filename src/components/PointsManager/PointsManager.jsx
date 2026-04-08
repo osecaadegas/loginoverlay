@@ -49,8 +49,31 @@ export default function PointsManager() {
     setCurrentPage(1);
   }, [activeTab, searchQuery, statusFilter, gameFilter]);
 
-  const SE_CHANNEL_ID = import.meta.env.VITE_SE_CHANNEL_ID;
-  const SE_JWT_TOKEN = import.meta.env.VITE_SE_JWT_TOKEN;
+  // Load owned SE credentials from the logged-in user's streamelements_connections row
+  const [ownSeChannelId, setOwnSeChannelId] = useState('');
+  const [ownSeJwtToken, setOwnSeJwtToken] = useState('');
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data: { user: authUser } } = await supabase.auth.getUser();
+        if (!authUser) return;
+        const { data } = await supabase
+          .from('streamelements_connections')
+          .select('se_channel_id, se_jwt_token')
+          .eq('user_id', authUser.id)
+          .single();
+        if (data) {
+          setOwnSeChannelId(data.se_channel_id || '');
+          setOwnSeJwtToken(data.se_jwt_token || '');
+        }
+      } catch { /* no connection row yet */ }
+    })();
+  }, []);
+
+  // Fallback: own DB connection → env vars (env vars kept only for server-side/admin)
+  const SE_CHANNEL_ID = ownSeChannelId || import.meta.env.VITE_SE_CHANNEL_ID;
+  const SE_JWT_TOKEN = ownSeJwtToken || import.meta.env.VITE_SE_JWT_TOKEN;
 
   useEffect(() => {
     loadData();
