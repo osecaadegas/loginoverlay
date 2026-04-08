@@ -1047,8 +1047,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '6px 0' }}>
                 {[
                   { value: 'none', label: 'None', emoji: '❌' },
-                  { value: 'crown', label: 'Crown', src: '/tournament/crown.webp' },
-                  { value: 'handtrophy', label: 'Hand Trophy', src: '/tournament/handtrophy.jpg' },
+                  { value: 'crown', label: 'Crown', src: '/tournament/crown.png' },
+                  { value: 'handtrophy', label: 'Hand Trophy', src: '/tournament/handtrophy.png' },
                   { value: 'slottrophy', label: 'Slot Trophy', src: '/tournament/slottrophy.png' },
                   { value: 'winner', label: 'Winner', src: '/tournament/winner.png' },
                 ].map(opt => {

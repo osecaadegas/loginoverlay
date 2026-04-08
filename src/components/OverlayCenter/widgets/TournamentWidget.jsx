@@ -1390,8 +1390,8 @@ function TournamentWidget({ config, theme }) {
               }}>🏆</div>
             );
             const overlayMap = {
-              crown: { src: '/tournament/crown.webp', anim: 'grid-winner-overlay-in', style: { top: 0, left: '50%', transform: 'translateX(-50%) translateY(-60%)', width: '65%', zIndex: 10 } },
-              handtrophy: { src: '/tournament/handtrophy.jpg', anim: 'grid-winner-overlay-in-left', blend: true, style: { top: '50%', left: 0, transform: 'translateX(-55%) translateY(-50%)', height: '90%', zIndex: 10, borderRadius: 6 } },
+              crown: { src: '/tournament/crown.png', anim: 'grid-winner-overlay-in', style: { top: 0, left: '50%', transform: 'translateX(-50%) translateY(-60%)', width: '65%', zIndex: 10 } },
+              handtrophy: { src: '/tournament/handtrophy.png', anim: 'grid-winner-overlay-in-left', style: { top: '50%', left: 0, transform: 'translateX(-55%) translateY(-50%)', height: '90%', zIndex: 10, borderRadius: 6 } },
               slottrophy: { src: '/tournament/slottrophy.png', anim: 'grid-winner-overlay-in-right', style: { bottom: 0, right: 0, transform: 'translateX(30%) translateY(20%)', height: '55%', zIndex: 10 } },
               winner: { src: '/tournament/winner.png', anim: 'grid-winner-overlay-in', style: { top: 0, left: '50%', transform: 'translateX(-50%) translateY(-55%)', width: '80%', zIndex: 10 } },
             };
@@ -1403,12 +1403,11 @@ function TournamentWidget({ config, theme }) {
                 alt="champion"
                 style={{
                   position: 'absolute',
-                  ...ov.style,
+                  ...(ov.style),
                   objectFit: 'contain',
                   filter: `drop-shadow(0 0 10px ${gGold}) drop-shadow(0 0 24px ${gGold}70)`,
                   animation: `${ov.anim} 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
                   pointerEvents: 'none',
-                  ...(ov.blend ? { mixBlendMode: 'screen' } : {}),
                 }}
               />
             );
