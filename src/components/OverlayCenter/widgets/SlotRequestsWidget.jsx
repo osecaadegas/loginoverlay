@@ -63,6 +63,12 @@ export default function SlotRequestsWidget({ config, userId }) {
     const slotName = match[1].trim().toLowerCase();
     if (!slotName || !userIdRef.current) return;
 
+    // When SE integration is enabled, the SE custom command on the SE dashboard
+    // already intercepts !sr and calls the API.  The widget must NOT also call it
+    // — each overlay instance would fire a duplicate request, causing chat spam.
+    const conf = configRef.current || {};
+    if (conf.srSeEnabled) return;
+
     // Skip if same slot was requested in the last 10 seconds
     const now = Date.now();
     const lastTime = recentSrRef.current.get(slotName);

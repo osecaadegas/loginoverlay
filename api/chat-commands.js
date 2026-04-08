@@ -169,21 +169,24 @@ async function handleSlotRequest(req, res) {
       return res.status(200).send(msg);
     };
 
-    /** Send ONE chat message via SE bot (only for the winning call). */
+    /** Send a chat message via SE bot (only when NOT called by SE custom command).
+     *  When SE's custom command calls the API, the HTTP response text is already
+     *  displayed in chat by SE — calling seBotSay would duplicate it. */
     const chatOnce = (msg) => {
-      if (seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
+      // If this call came from the SE custom command (via URL fetch), the response
+      // text will be posted by SE.  Don't also call seBotSay.
+      // If this call came from the widget (non-SE mode), send via seBotSay.
+      if (!seEnabled && seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
     };
 
     console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
       'hasSeCreds:', !!(seChannelId && seJwtToken));
 
-    // ── INSERT FIRST as a distributed lock ──
-    // Multiple overlay instances may call this endpoint concurrently for the
-    // same !sr command.  By inserting first, the DB unique-ish constraint
-    // ensures only ONE call "wins".  Losers get a duplicate error and exit
-    // silently — no seBotSay, no point deduction, no spam.
+    // ── Dedup: prevent concurrent calls from creating duplicate rows ──
+    // Multiple sources may call simultaneously (SE command + widget instances).
+    // Strategy: INSERT first, then reconcile — only the earliest row "wins".
 
-    // Quick pre-check (non-authoritative – the real guard is the insert)
+    // Quick pre-check: if this slot is already queued, exit immediately
     const { data: existing } = await supabase
       .from('slot_requests')
       .select('id')
@@ -193,11 +196,10 @@ async function handleSlotRequest(req, res) {
       .limit(1);
 
     if (existing && existing.length > 0) {
-      // Already in queue — return silently (no seBotSay) to avoid spamming
       return res.status(200).send('ok');
     }
 
-    // Try to insert — this is the real dedup gate
+    // Insert the request
     const { data: inserted, error: insertErr } = await supabase
       .from('slot_requests')
       .insert({
@@ -207,16 +209,34 @@ async function handleSlotRequest(req, res) {
         requested_by: viewer,
         status: 'pending',
       })
-      .select('id')
+      .select('id, created_at')
       .single();
 
     if (insertErr) {
-      // Race-condition duplicate — another instance already inserted.  Exit silently.
-      if (insertErr.code === '23505' || (insertErr.message && insertErr.message.includes('duplicate'))) {
-        return res.status(200).send('ok');
-      }
       console.error('Insert error:', insertErr);
       return res.status(200).send('ok');
+    }
+
+    // Post-insert reconciliation: check if another concurrent call also inserted.
+    // Only the EARLIEST row wins; the rest delete themselves silently.
+    const { data: dupes } = await supabase
+      .from('slot_requests')
+      .select('id, created_at')
+      .eq('user_id', user_id)
+      .eq('status', 'pending')
+      .ilike('slot_name', resolvedName)
+      .order('created_at', { ascending: true });
+
+    if (dupes && dupes.length > 1) {
+      const winnerId = dupes[0].id;
+      if (inserted.id !== winnerId) {
+        // We're a duplicate — delete our row and exit silently
+        await supabase.from('slot_requests').delete().eq('id', inserted.id);
+        return res.status(200).send('ok');
+      }
+      // We're the winner — clean up the other duplicates
+      const loserIds = dupes.slice(1).map(d => d.id);
+      await supabase.from('slot_requests').delete().in('id', loserIds);
     }
 
     // ── We are the winning call.  Handle SE points & chat message. ──
