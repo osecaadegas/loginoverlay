@@ -235,6 +235,53 @@ export default function SlotRequestsConfig({ config, onChange }) {
             </p>
           )}
         </div>
+
+        {/* ── Custom Chat Messages ── */}
+        <div style={{ marginBottom: 10, padding: '10px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 8 }}>
+          <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 6px' }}>💬 Chat Messages</p>
+          <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '0 0 8px', lineHeight: 1.4 }}>
+            Customize the messages sent in Twitch chat. Use <strong style={{ color: '#c4b5fd' }}>{'{slot}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{user}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{cost}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{points}'}</strong> as placeholders.
+          </p>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div>
+              <label style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: 600 }}>Accepted (free)</label>
+              <input
+                type="text"
+                value={c.srMsgAccepted || '🎰 Added "{slot}" to the queue (requested by {user})'}
+                onChange={e => set('srMsgAccepted', e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '5px 8px', fontSize: '0.72rem', outline: 'none' }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: 600 }}>Accepted (with cost)</label>
+              <input
+                type="text"
+                value={c.srMsgAcceptedCost || '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)'}
+                onChange={e => set('srMsgAcceptedCost', e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '5px 8px', fontSize: '0.72rem', outline: 'none' }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: 600 }}>Not enough points</label>
+              <input
+                type="text"
+                value={c.srMsgNotEnough || '❌ {user}, you need {cost} points to request a slot (you have {points}).'}
+                onChange={e => set('srMsgNotEnough', e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '5px 8px', fontSize: '0.72rem', outline: 'none' }}
+              />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: 600 }}>Already in queue</label>
+              <input
+                type="text"
+                value={c.srMsgDuplicate || '"{slot}" is already in the queue!'}
+                onChange={e => set('srMsgDuplicate', e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '5px 8px', fontSize: '0.72rem', outline: 'none' }}
+              />
+            </div>
+          </div>
+        </div>
+
         <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0', cursor: 'pointer' }}>
           <input
             type="checkbox"

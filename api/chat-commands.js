@@ -140,6 +140,15 @@ async function handleSlotRequest(req, res) {
     const seEnabled = !!wConfig?.srSeEnabled;
     const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
+    // Custom message templates (user-configurable from widget settings)
+    const msgTemplates = {
+      accepted: wConfig?.srMsgAccepted || '🎰 Added "{slot}" to the queue (requested by {user})',
+      acceptedCost: wConfig?.srMsgAcceptedCost || '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)',
+      notEnough: wConfig?.srMsgNotEnough || '❌ {user}, you need {cost} points to request a slot (you have {points}).',
+      duplicate: wConfig?.srMsgDuplicate || '"{slot}" is already in the queue!',
+    };
+    const fillTemplate = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
+
     // Load SE credentials from the user's streamelements_connections row
     let seChannelId = null;
     let seJwtToken = null;
@@ -160,10 +169,21 @@ async function handleSlotRequest(req, res) {
       return res.status(200).send(msg);
     };
 
+    /** Send ONE chat message via SE bot (only for the winning call). */
+    const chatOnce = (msg) => {
+      if (seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
+    };
+
     console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
       'hasSeCreds:', !!(seChannelId && seJwtToken));
 
-    // Check for duplicate using the resolved name (case-insensitive)
+    // ── INSERT FIRST as a distributed lock ──
+    // Multiple overlay instances may call this endpoint concurrently for the
+    // same !sr command.  By inserting first, the DB unique-ish constraint
+    // ensures only ONE call "wins".  Losers get a duplicate error and exit
+    // silently — no seBotSay, no point deduction, no spam.
+
+    // Quick pre-check (non-authoritative – the real guard is the insert)
     const { data: existing } = await supabase
       .from('slot_requests')
       .select('id')
@@ -173,13 +193,42 @@ async function handleSlotRequest(req, res) {
       .limit(1);
 
     if (existing && existing.length > 0) {
-      return reply(`"${resolvedName}" is already in the queue!`);
+      // Already in queue — return silently (no seBotSay) to avoid spamming
+      return res.status(200).send('ok');
     }
 
-    // ── SE Points check & deduction ──
+    // Try to insert — this is the real dedup gate
+    const { data: inserted, error: insertErr } = await supabase
+      .from('slot_requests')
+      .insert({
+        user_id,
+        slot_name: resolvedName,
+        slot_image: slotImage,
+        requested_by: viewer,
+        status: 'pending',
+      })
+      .select('id')
+      .single();
+
+    if (insertErr) {
+      // Race-condition duplicate — another instance already inserted.  Exit silently.
+      if (insertErr.code === '23505' || (insertErr.message && insertErr.message.includes('duplicate'))) {
+        return res.status(200).send('ok');
+      }
+      console.error('Insert error:', insertErr);
+      return res.status(200).send('ok');
+    }
+
+    // ── We are the winning call.  Handle SE points & chat message. ──
+    const insertedId = inserted?.id;
+
     if (seEnabled && seCost > 0) {
       if (!seChannelId || !seJwtToken) {
-        return res.status(200).send('⚠️ StreamElements not configured. Ask the streamer to connect SE.');
+        // No SE creds — delete the row and warn (only this once)
+        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        const msg = '⚠️ StreamElements not configured. Ask the streamer to connect SE.';
+        chatOnce(msg);
+        return reply(msg);
       }
 
       const cleanViewer = viewer.replace(/^@/, '').trim().toLowerCase();
@@ -191,14 +240,21 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!pointsRes.ok) {
-        return reply(`❌ Could not check points for ${viewer}. Are you a follower?`);
+        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        const msg = `❌ Could not check points for ${viewer}. Are you a follower?`;
+        chatOnce(msg);
+        return reply(msg);
       }
 
       const pointsData = await pointsRes.json();
       const viewerPoints = pointsData.points || 0;
 
       if (viewerPoints < seCost) {
-        return reply(`❌ ${viewer}, you need ${seCost} points to request a slot (you have ${viewerPoints}).`);
+        // Not enough points — delete the row, notify once
+        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        const msg = fillTemplate(msgTemplates.notEnough, { user: viewer, cost: seCost, points: viewerPoints, slot: resolvedName });
+        chatOnce(msg);
+        return reply(msg);
       }
 
       // 2) Deduct points (negative amount)
@@ -211,35 +267,22 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!deductRes.ok) {
-        return reply(`❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`);
+        if (insertedId) await supabase.from('slot_requests').delete().eq('id', insertedId);
+        const msg = `❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`;
+        chatOnce(msg);
+        return reply(msg);
       }
+
+      // Success with cost
+      const msg = fillTemplate(msgTemplates.acceptedCost, { user: viewer, cost: seCost, slot: resolvedName });
+      chatOnce(msg);
+      return reply(msg);
     }
 
-    // Insert request with the canonical DB name
-    const { error: insertErr } = await supabase
-      .from('slot_requests')
-      .insert({
-        user_id,
-        slot_name: resolvedName,
-        slot_image: slotImage,
-        requested_by: viewer,
-        status: 'pending',
-      });
-
-    if (insertErr) {
-      // Catch race-condition duplicate (concurrent inserts)
-      if (insertErr.code === '23505' || (insertErr.message && insertErr.message.includes('duplicate'))) {
-        return reply(`"${resolvedName}" is already in the queue!`);
-      }
-      console.error('Insert error:', insertErr);
-      return reply('Could not add request. Try again later.');
-    }
-
-    return reply(
-      seEnabled && seCost > 0
-        ? `🎰 Added "${resolvedName}" to the queue (${viewer} — ${seCost} points deducted)`
-        : `🎰 Added "${resolvedName}" to the queue (requested by ${viewer})`
-    );
+    // Success (free)
+    const msg = fillTemplate(msgTemplates.accepted, { user: viewer, slot: resolvedName });
+    chatOnce(msg);
+    return reply(msg);
   } catch (err) {
     console.error('Slot request error:', err);
     return res.status(200).send('Something went wrong. Try again later.');

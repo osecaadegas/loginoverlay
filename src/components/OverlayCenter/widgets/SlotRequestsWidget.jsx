@@ -63,11 +63,6 @@ export default function SlotRequestsWidget({ config, userId }) {
     const slotName = match[1].trim().toLowerCase();
     if (!slotName || !userIdRef.current) return;
 
-    // If SE integration is active, the SE custom command already calls the API.
-    // Don't also call from here — that causes duplicate API calls & spam messages.
-    const conf = configRef.current || {};
-    if (conf.srSeEnabled) return;
-
     // Skip if same slot was requested in the last 10 seconds
     const now = Date.now();
     const lastTime = recentSrRef.current.get(slotName);
