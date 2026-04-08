@@ -169,14 +169,11 @@ async function handleSlotRequest(req, res) {
       return res.status(200).send(msg);
     };
 
-    /** Send a chat message via SE bot (only when NOT called by SE custom command).
-     *  When SE's custom command calls the API, the HTTP response text is already
-     *  displayed in chat by SE — calling seBotSay would duplicate it. */
+    /** Send a single chat message via SE bot.
+     *  When SE is enabled, only the SE custom command calls this API (widget skips).
+     *  So there is exactly 1 call — safe to seBotSay without duplication. */
     const chatOnce = (msg) => {
-      // If this call came from the SE custom command (via URL fetch), the response
-      // text will be posted by SE.  Don't also call seBotSay.
-      // If this call came from the widget (non-SE mode), send via seBotSay.
-      if (!seEnabled && seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
+      if (seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
     };
 
     console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
