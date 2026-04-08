@@ -1382,27 +1382,30 @@ function TournamentWidget({ config, theme }) {
           {/* Super / Extreme tag badge — outer edge, vertical */}
           {!isLoser && (isSuper || isExtreme) && (() => {
             const isLeft = playerKey === 'player1';
+            const badgeText = isSuper ? 'SUPER' : 'EXTREME';
             return (
               <div style={{
                 position: 'absolute',
                 top: '50%', transform: 'translateY(-50%)',
                 ...(isLeft ? { left: 0 } : { right: 0 }),
                 zIndex: 6,
-                writingMode: 'vertical-rl',
-                textOrientation: 'mixed',
-                ...(isLeft ? { transform: 'translateY(-50%) rotate(180deg)' } : {}),
-                fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 900,
-                color: '#fff', textTransform: 'uppercase', letterSpacing: '1.2px',
-                fontFamily: gFont, lineHeight: 1,
-                padding: '5px 3px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                ...(isLeft ? { transform: 'translateY(-50%)' } : {}),
+                fontSize: 'clamp(7px, 0.85vw, 11px)', fontWeight: 900,
+                color: '#fff', textTransform: 'uppercase',
+                fontFamily: gFont, lineHeight: 1.3,
+                padding: 'clamp(4px, 0.5vw, 8px) clamp(3px, 0.4vw, 5px)',
                 borderRadius: isLeft ? '0 4px 4px 0' : '4px 0 0 4px',
                 background: isSuper
                   ? `linear-gradient(180deg, ${gGoldBorder}, #d97706)`
                   : `linear-gradient(180deg, ${gExtremeRed}, #b91c1c)`,
                 boxShadow: isSuper
-                  ? `0 0 10px ${gGoldBorder}60`
-                  : `0 0 10px ${gExtremeRed}60`,
-              }}>{isSuper ? '⭐ SUPER' : '🔥 EXTREME'}</div>
+                  ? `0 0 12px ${gGoldBorder}70, inset 0 0 6px ${gGoldBorder}30`
+                  : `0 0 12px ${gExtremeRed}70, inset 0 0 6px ${gExtremeRed}30`,
+              }}>
+                {(isSuper ? '⭐' : '🔥')}
+                {badgeText.split('').map((ch, ci) => <span key={ci} style={{ display: 'block' }}>{ch}</span>)}
+              </div>
             );
           })()}
 
@@ -1502,12 +1505,13 @@ function TournamentWidget({ config, theme }) {
               boxShadow: '0 0 8px rgba(239,68,68,0.5)',
             }}>LIVE</div>
           )}
-          <div style={{
+          <span style={{
             fontSize: large ? 'clamp(22px, 3.2vw, 38px)' : 'clamp(16px, 2.4vw, 28px)',
             lineHeight: 1,
             filter: `drop-shadow(0 0 8px ${gCyan}70) drop-shadow(0 0 18px ${gPurple}40)`,
             ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-          }}>⚔️</div>
+            display: 'inline',
+          }}>⚔️</span>
           {/* WINNER label for grand final */}
           {isGrandFinalMatch && large && (
             <div style={{
@@ -1530,13 +1534,13 @@ function TournamentWidget({ config, theme }) {
         borderRadius: 10, padding: 'clamp(2px, 0.3vw, 4px)',
         position: 'relative', overflow: 'visible',
         minHeight: 'clamp(90px, 18vh, 160px)',
-        perspective: '800px',
+        perspective: '600px',
       }}>
-        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(4deg)', transformOrigin: 'right center', transition: 'transform 0.3s ease' }}>
+        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(8deg)', transformOrigin: 'right center', transition: 'transform 0.3s ease' }}>
           {renderCard(match, 'player1', false, false, false)}
         </div>
         {renderVs(false)}
-        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(-4deg)', transformOrigin: 'left center', transition: 'transform 0.3s ease' }}>
+        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(-8deg)', transformOrigin: 'left center', transition: 'transform 0.3s ease' }}>
           {renderCard(match, 'player2', false, false, false)}
         </div>
       </div>
@@ -1565,6 +1569,9 @@ function TournamentWidget({ config, theme }) {
             textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             letterSpacing: '0.5px',
             textShadow: p1Won ? `0 0 8px ${gGreen}50` : 'none',
+            textDecoration: !p1Won ? 'line-through' : 'none',
+            textDecorationColor: !p1Won ? '#ef4444' : undefined,
+            textDecorationThickness: '2px',
           }}>{p1Won ? '🏆 ' : ''}{p1}</span>
           <span style={{
             fontSize: 'clamp(10px, 1.2vw, 14px)', flexShrink: 0,
@@ -1576,6 +1583,9 @@ function TournamentWidget({ config, theme }) {
             textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             letterSpacing: '0.5px',
             textShadow: p2Won ? `0 0 8px ${gGreen}50` : 'none',
+            textDecoration: !p2Won ? 'line-through' : 'none',
+            textDecorationColor: !p2Won ? '#ef4444' : undefined,
+            textDecorationThickness: '2px',
           }}>{p2}{p2Won ? ' 🏆' : ''}</span>
         </div>
       );
