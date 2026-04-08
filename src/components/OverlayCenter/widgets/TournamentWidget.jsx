@@ -542,8 +542,20 @@ function TournamentWidget({ config, theme }) {
       ? otherMatches.filter(m => m.winner != null && m !== allMatches[shatterMatchIdx])
       : otherMatches.filter(m => m.winner != null);
 
-    /* Get cost/payment for a player */
+    /* Get cost/payment for a player (Bo3 sums all rounds) */
     const getVals = (match, pKey) => {
+      if (!match?.rounds) return { cost: null, pay: null };
+      if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
+        let totalCost = 0, totalPay = 0, any = false;
+        for (const round of match.rounds) {
+          const rd = round[pKey];
+          if (!rd) continue;
+          const c2 = parseFloat(rd.bonusCost), p2 = parseFloat(rd.bonusPayout);
+          if (!isNaN(c2)) { totalCost += c2; any = true; }
+          if (!isNaN(p2)) { totalPay += p2; any = true; }
+        }
+        return any ? { cost: totalCost, pay: totalPay } : { cost: null, pay: null };
+      }
       const rd = match?.rounds?.[0]?.[pKey];
       if (!rd) return { cost: null, pay: null };
       if (match.type === 'spins') {
@@ -554,7 +566,40 @@ function TournamentWidget({ config, theme }) {
       return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
     };
 
-    /* ── Player Card — image fills card, name stripe top, stats bottom ── */
+    const esGreen = '#39ff14';
+    const esRed   = '#ff3b5c';
+
+    /* Bo3 pip system for esports */
+    const renderEsPips = (match, playerKey) => {
+      if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
+      const scoreboard = getBoScoreboard(match);
+      if (!scoreboard) return null;
+      return (
+        <div style={{
+          display: 'flex', gap: 'clamp(3px, 0.5vw, 5px)',
+          justifyContent: 'center', marginTop: 2,
+        }}>
+          {scoreboard.roundResults.map((rr, i) => {
+            const won = rr.winner === playerKey;
+            const lost = rr.winner && rr.winner !== playerKey && rr.winner !== 'draw';
+            const draw = rr.winner === 'draw';
+            const played = rr.winner != null;
+            return (
+              <div key={i} style={{
+                width: 'clamp(7px, 1vw, 10px)', height: 'clamp(7px, 1vw, 10px)',
+                borderRadius: '50%',
+                background: won ? esGreen : lost ? esRed : draw ? esGold : 'rgba(255,255,255,0.12)',
+                boxShadow: won ? `0 0 6px ${esGreen}80` : lost ? `0 0 4px ${esRed}60` : 'none',
+                border: played ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                transition: 'all 0.4s ease',
+              }} />
+            );
+          })}
+        </div>
+      );
+    };
+
+    /* ── Player Card — image fills card, neon glow, pips, stats ── */
     const renderEsCard = (match, playerKey, large = false) => {
       const name = match[playerKey] || 'TBD';
       const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
@@ -566,22 +611,26 @@ function TournamentWidget({ config, theme }) {
       const vals = getVals(match, playerKey);
 
       const nameFs = large ? 'clamp(12px, 1.8vw, 16px)' : 'clamp(10px, 1.4vw, 13px)';
-      const statFs = large ? 'clamp(12px, 1.4vw, 14px)' : 'clamp(9px, 1vw, 11px)';
-      const labelFs = large ? 'clamp(9px, 0.9vw, 11px)' : 'clamp(8px, 0.7vw, 9px)';
-      const borderGlow = isWinner ? esGold : esBorder;
+      const statFs = large ? 'clamp(12px, 1.4vw, 14px)' : 'clamp(10px, 1.1vw, 12px)';
+      const labelFs = large ? 'clamp(7px, 0.7vw, 9px)' : 'clamp(6px, 0.6vw, 8px)';
+      const borderGlow = isWinner ? esGreen : isLoser ? esRed : esBorder;
 
       return (
         <div style={{
           width: '100%', height: '100%', position: 'relative',
           display: 'flex', flexDirection: 'column',
-          border: `1px solid ${borderGlow}`,
+          border: `2px solid ${borderGlow}`,
           borderRadius: large ? 14 : 8,
           overflow: 'hidden',
-          opacity: isLoser ? 0.4 : 1,
-          transition: 'opacity 0.6s, box-shadow 0.6s, border-color 0.4s',
+          transition: 'all 0.5s ease',
+          opacity: isLoser ? 0.35 : 1,
+          filter: isLoser ? 'grayscale(0.85) brightness(0.5)' : 'none',
           boxShadow: isWinner
-            ? `0 0 24px ${esGold}50, 0 0 60px ${esGold}18`
-            : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${esCyan}10`,
+            ? `0 0 16px ${esGreen}50, 0 0 40px ${esGreen}18`
+            : isLoser
+              ? `0 0 8px ${esRed}25`
+              : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${esCyan}10`,
+          ...(isLoser ? { animation: 'grid-loser-fade 0.8s ease-out forwards' } : {}),
         }}>
           {/* Full-bleed image */}
           {slotImage ? (
@@ -603,39 +652,47 @@ function TournamentWidget({ config, theme }) {
             <div style={{
               position: 'absolute', top: 4, right: 4, zIndex: 5,
               fontSize: large ? 20 : 14,
+              filter: `drop-shadow(0 0 6px ${esGold})`,
             }}>🏆</div>
           )}
 
-          {/* Name stripe — top */}
+          {/* Name stripe + Bo3 pips — top */}
           <div style={{
             position: 'relative', zIndex: 2,
-            padding: large ? '5px 8px' : '2px 5px',
+            padding: large ? '5px 8px 3px' : '2px 5px 2px',
             background: 'rgba(0,0,0,0.75)',
             textAlign: 'center',
           }}>
             <div style={{
               fontSize: nameFs, fontWeight: 800, fontFamily: esFont,
-              color: '#fff', textTransform: 'uppercase', letterSpacing: '0.8px',
+              color: isWinner ? esGreen : isLoser ? 'rgba(255,255,255,0.3)' : '#fff',
+              textTransform: 'uppercase', letterSpacing: '0.8px',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              textShadow: `0 0 8px ${esCyan}30`,
+              textShadow: isWinner ? `0 0 8px ${esGreen}40` : `0 0 8px ${esCyan}30`,
             }}>{name}</div>
+            {renderEsPips(match, playerKey)}
           </div>
 
           {/* Spacer — lets image show through */}
           <div style={{ flex: 1 }} />
 
-          {/* Result overlay (if any) */}
+          {/* Result overlay with neon glow */}
           {result !== null && (
             <div style={{
               position: 'relative', zIndex: 2,
               textAlign: 'center', padding: '2px 0',
-              background: 'rgba(0,0,0,0.6)',
+              background: 'rgba(0,0,0,0.65)',
+              backdropFilter: 'blur(4px)',
             }}>
               <span style={{
                 fontSize: large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(12px, 1.6vw, 16px)',
                 fontWeight: 900, fontFamily: esFont,
-                color: valColor(result),
-                textShadow: `0 0 10px ${valColor(result)}60`,
+                color: result > 0 ? esGreen : result < 0 ? esRed : '#94a3b8',
+                textShadow: result > 0
+                  ? `0 0 12px ${esGreen}70, 0 0 24px ${esGreen}30`
+                  : result < 0
+                    ? `0 0 10px ${esRed}60, 0 0 20px ${esRed}25`
+                    : 'none',
               }}>{fmtResult(result)}</span>
             </div>
           )}
@@ -643,25 +700,31 @@ function TournamentWidget({ config, theme }) {
           {/* Stats bar — bottom */}
           <div style={{
             position: 'relative', zIndex: 2,
-            display: 'flex', background: 'rgba(0,0,0,0.75)',
+            display: 'flex', background: 'rgba(0,0,0,0.85)',
           }}>
             <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
               <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#94a3b8',
+                fontSize: labelFs, fontWeight: 600, color: '#64748b',
                 textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
+                lineHeight: 1,
               }}>Cost</div>
               <div style={{
-                fontSize: statFs, fontWeight: 700, color: esCyan, fontFamily: esFont,
+                fontSize: statFs, fontWeight: 900, color: esCyan, fontFamily: esFont,
+                textShadow: `0 0 6px ${esCyan}30`, lineHeight: 1.2,
               }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
             </div>
             <div style={{ width: 1, background: esBorder }} />
             <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
               <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#94a3b8',
+                fontSize: labelFs, fontWeight: 600, color: '#64748b',
                 textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
-              }}>Payment</div>
+                lineHeight: 1,
+              }}>Pay</div>
               <div style={{
-                fontSize: statFs, fontWeight: 700, color: '#4ade80', fontFamily: esFont,
+                fontSize: statFs, fontWeight: 900, fontFamily: esFont, lineHeight: 1.2,
+                color: vals.pay > (vals.cost || 0) ? esGreen : esRed,
+                textShadow: vals.pay > (vals.cost || 0)
+                  ? `0 0 8px ${esGreen}40` : `0 0 6px ${esRed}30`,
               }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
             </div>
           </div>
@@ -735,8 +798,9 @@ function TournamentWidget({ config, theme }) {
         }}>
           <span style={{
             flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 700, fontFamily: esFont,
-            color: p1Won ? esGold : 'rgba(255,255,255,0.4)',
+            color: p1Won ? esGreen : 'rgba(255,255,255,0.35)',
             textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            textShadow: p1Won ? `0 0 6px ${esGreen}40` : 'none',
           }}>{p1Won ? '🏆 ' : ''}{p1}</span>
           <span style={{
             fontSize: 'clamp(6px, 0.8vw, 9px)', fontWeight: 800, color: '#475569',
@@ -744,8 +808,9 @@ function TournamentWidget({ config, theme }) {
           }}>VS</span>
           <span style={{
             flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 700, fontFamily: esFont,
-            color: p2Won ? esGold : 'rgba(255,255,255,0.4)',
+            color: p2Won ? esGreen : 'rgba(255,255,255,0.35)',
             textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            textShadow: p2Won ? `0 0 6px ${esGreen}40` : 'none',
           }}>{p2}{p2Won ? ' 🏆' : ''}</span>
         </div>
       );
@@ -1139,34 +1204,36 @@ function TournamentWidget({ config, theme }) {
      Groups matches by bracket phase (Quarters / Semis / Final)
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
-    const bracketData = c.bracketData || [];
-    const bracketActiveRound = c.bracketActiveRound ?? 0;
-    const bracketActiveMatch = c.bracketActiveMatch ?? 0;
     const gCyan   = c.esCyan   || '#00e5ff';
     const gPurple = c.esPurple || '#a855f7';
     const gGold   = c.esGold   || '#fbbf24';
     const gBg     = c.esBg     || '#030712';
     const gBorder = c.esBorder || 'rgba(0,229,255,0.18)';
     const gFont   = fontFamily;
-    const gGreen  = '#39ff14';   // neon green for wins
-    const gRed    = '#ff3b5c';   // muted neon red for losses
+    const gGreen  = '#39ff14';
+    const gRed    = '#ff3b5c';
 
-    /* Build phases from bracketData */
-    const phases = bracketData.map((round, rIdx) => ({
-      label: round.label || `Round ${rIdx + 1}`,
-      matches: round.matches || [],
-      isActive: rIdx === bracketActiveRound,
-      roundIdx: rIdx,
-    }));
-    if (phases.length === 0 && matches.length > 0) {
-      phases.push({ label: 'Matches', matches, isActive: true, roundIdx: 0 });
-    }
+    /* ── Match classification (same as esports) ── */
+    const isShatterHolding = shatterMatchIdx != null && shatterInfo;
+    const currentMatch = isShatterHolding
+      ? (allMatches[shatterMatchIdx] || matches[currentMatchIdx] || matches[0])
+      : (matches[currentMatchIdx] || matches[0]);
+    const otherMatches = matches.filter((_, i) => i !== currentMatchIdx);
+    const queuedMatches = otherMatches.filter(m => m.winner == null);
+    const doneMatches = isShatterHolding
+      ? otherMatches.filter(m => m.winner != null && m !== allMatches[shatterMatchIdx])
+      : otherMatches.filter(m => m.winner != null);
 
-    /* Total phases for detecting Grand Final */
-    const totalPhases = phases.length;
+    /* ── Phase info from bracket data ── */
+    const bracketData = c.bracketData || [];
+    const bracketActiveRound = c.bracketActiveRound ?? 0;
+    const totalPhases = bracketData.length;
+    const activePhaseLabel = bracketData[bracketActiveRound]?.label || null;
+    const isFinalPhase = bracketActiveRound === totalPhases - 1 && totalPhases > 1;
+    const isGrandFinalMatch = isFinalPhase && currentMatch?.winner != null;
 
-    /* Get cost & payment for a player's round data */
-    const getPlayerVals = (match, playerKey) => {
+    /* Get cost & payment (Bo3 sums all rounds) */
+    const getVals = (match, playerKey) => {
       if (!match?.rounds) return { cost: null, pay: null };
       if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
         let totalCost = 0, totalPay = 0, any = false;
@@ -1189,8 +1256,8 @@ function TournamentWidget({ config, theme }) {
       return { cost: isNaN(cost) ? null : cost, pay: isNaN(pay) ? null : pay };
     };
 
-    /* Bo3 pip system — round-by-round tracking below player name */
-    const renderBo3Pips = (match, playerKey) => {
+    /* ── Bo3 pip system ── */
+    const renderPips = (match, playerKey) => {
       if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
       const scoreboard = getBoScoreboard(match);
       if (!scoreboard) return null;
@@ -1200,22 +1267,18 @@ function TournamentWidget({ config, theme }) {
           justifyContent: 'center', marginTop: 2,
         }}>
           {scoreboard.roundResults.map((rr, i) => {
-            const isThisPlayer = rr.winner === playerKey;
-            const isOtherPlayer = rr.winner && rr.winner !== playerKey && rr.winner !== 'draw';
-            const isDraw = rr.winner === 'draw';
-            const isPlayed = rr.winner != null;
+            const won = rr.winner === playerKey;
+            const lost = rr.winner && rr.winner !== playerKey && rr.winner !== 'draw';
+            const draw = rr.winner === 'draw';
+            const played = rr.winner != null;
             return (
               <div key={i} style={{
                 width: 'clamp(8px, 1.2vw, 12px)', height: 'clamp(8px, 1.2vw, 12px)',
                 borderRadius: '50%',
-                background: isThisPlayer ? gGreen
-                  : isOtherPlayer ? gRed
-                  : isDraw ? gGold
-                  : 'rgba(255,255,255,0.12)',
-                boxShadow: isThisPlayer ? `0 0 6px ${gGreen}80, 0 0 12px ${gGreen}30`
-                  : isOtherPlayer ? `0 0 6px ${gRed}60`
-                  : 'none',
-                border: isPlayed ? 'none' : '1px solid rgba(255,255,255,0.15)',
+                background: won ? gGreen : lost ? gRed : draw ? gGold : 'rgba(255,255,255,0.12)',
+                boxShadow: won ? `0 0 6px ${gGreen}80, 0 0 12px ${gGreen}30`
+                  : lost ? `0 0 6px ${gRed}60` : 'none',
+                border: played ? 'none' : '1px solid rgba(255,255,255,0.15)',
                 transition: 'all 0.4s ease',
               }} />
             );
@@ -1224,266 +1287,271 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
-    /* ─── Player card ─── */
-    const renderGridPlayer = (match, playerKey, isFinal) => {
+    /* ── Enhanced player card (full-bleed image, neon glow, pips, cost/pay) ── */
+    const renderCard = (match, playerKey, large = false, isChampion = false) => {
       const name = match[playerKey] || 'TBD';
-      const isTBD = !match[playerKey] || match[playerKey] === 'TBD';
       const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
       const slotImage = pSlot?.image || null;
       const result = getPlayerResult(match, playerKey);
       const hasWinner = match.winner != null;
       const isWinner = match.winner === playerKey;
       const isLoser = hasWinner && !isWinner;
-      const vals = getPlayerVals(match, playerKey);
-      const isGrandChampion = isFinal && isWinner && hasWinner;
+      const vals = getVals(match, playerKey);
 
-      /* Colors based on status: neon glow system */
-      const statusBorder = isWinner ? gGreen : isLoser ? gRed : gBorder;
-      const statusGlow = isWinner
-        ? `0 0 12px ${gGreen}50, 0 0 28px ${gGreen}20`
+      const nameFs = large ? 'clamp(12px, 1.8vw, 16px)' : 'clamp(10px, 1.4vw, 13px)';
+      const statFs = large ? 'clamp(12px, 1.4vw, 14px)' : 'clamp(10px, 1.1vw, 12px)';
+      const labelFs = large ? 'clamp(7px, 0.7vw, 9px)' : 'clamp(6px, 0.6vw, 8px)';
+      const resultFs = large ? 'clamp(16px, 2.5vw, 28px)' : 'clamp(12px, 1.6vw, 16px)';
+
+      /* Neon status system */
+      const borderCol = isWinner ? gGreen : isLoser ? gRed : gBorder;
+      const glowShadow = isWinner
+        ? `0 0 16px ${gGreen}50, 0 0 40px ${gGreen}18`
         : isLoser
-          ? `0 0 8px ${gRed}30`
-          : 'none';
+          ? `0 0 8px ${gRed}25`
+          : `0 4px 20px rgba(0,0,0,0.5), 0 0 12px ${gCyan}10`;
 
       return (
         <div style={{
-          flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column',
-          border: `2px solid ${statusBorder}`,
-          borderRadius: isFinal ? 12 : 8, overflow: 'hidden',
-          position: 'relative',
+          width: '100%', height: '100%', position: 'relative',
+          display: 'flex', flexDirection: 'column',
+          border: `2px solid ${borderCol}`,
+          borderRadius: large ? 14 : 8,
+          overflow: 'hidden',
           transition: 'all 0.5s ease',
-          boxShadow: statusGlow,
-          /* Loser: gray-out + glitch-dissolve */
-          opacity: isTBD ? 0.25 : isLoser ? 0.35 : 1,
+          boxShadow: glowShadow,
+          /* Loser gray-out animation */
+          opacity: isLoser ? 0.35 : 1,
           filter: isLoser ? 'grayscale(0.85) brightness(0.5)' : 'none',
           ...(isLoser ? { animation: 'grid-loser-fade 0.8s ease-out forwards' } : {}),
-          /* Grand champion: holographic foil */
-          ...(isGrandChampion ? { animation: 'grid-champion-holo 3s linear infinite' } : {}),
+          /* Champion holographic border */
+          ...(isChampion ? { animation: 'grid-champion-holo 3s linear infinite' } : {}),
         }}>
-          {/* Holographic foil overlay for grand champion */}
-          {isGrandChampion && (
+          {/* Holographic foil overlay for champion */}
+          {isChampion && (
             <div style={{
               position: 'absolute', inset: 0, zIndex: 10, pointerEvents: 'none',
               background: 'linear-gradient(135deg, transparent 20%, rgba(57,255,20,0.08) 30%, rgba(0,229,255,0.1) 40%, rgba(251,191,36,0.08) 50%, transparent 60%)',
               backgroundSize: '300% 300%',
               animation: 'grid-holo-sweep 3s linear infinite',
-              mixBlendMode: 'screen',
-              borderRadius: 'inherit',
+              mixBlendMode: 'screen', borderRadius: 'inherit',
             }} />
           )}
 
-          {/* Slot image */}
-          <div style={{
-            width: '100%', aspectRatio: isFinal ? '16/9' : '3/2',
-            background: `linear-gradient(135deg, ${gBg}, rgba(0,229,255,0.03))`,
-            position: 'relative', overflow: 'hidden',
-          }}>
-            {slotImage ? (
-              <img src={slotImage} alt={name} style={{
-                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-              }} />
-            ) : (
-              <div style={{
-                width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 16, color: 'rgba(255,255,255,0.04)',
-              }}>⚔</div>
-            )}
-            {/* Winner crown with glow */}
-            {isWinner && (
-              <div style={{
-                position: 'absolute', top: 3, right: 4, fontSize: isFinal ? 18 : 14, zIndex: 5,
-                filter: `drop-shadow(0 0 6px ${gGold})`,
-              }}>🏆</div>
-            )}
-          </div>
+          {/* Full-bleed slot image */}
+          {slotImage ? (
+            <img src={slotImage} alt={name} style={{
+              position: 'absolute', inset: 0, width: '100%', height: '100%',
+              objectFit: 'cover', display: 'block',
+            }} />
+          ) : (
+            <div style={{
+              position: 'absolute', inset: 0,
+              background: `linear-gradient(135deg, ${gBg}, rgba(0,229,255,0.05))`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: large ? 28 : 16, color: 'rgba(255,255,255,0.06)',
+            }}>⚔</div>
+          )}
 
-          {/* Name + Bo3 Pips */}
+          {/* Winner crown with glow */}
+          {isWinner && (
+            <div style={{
+              position: 'absolute', top: 4, right: 4, zIndex: 5,
+              fontSize: large ? 20 : 14,
+              filter: `drop-shadow(0 0 6px ${gGold})`,
+            }}>🏆</div>
+          )}
+
+          {/* Name stripe + Bo3 pips — top */}
           <div style={{
-            padding: '3px 6px 2px', background: 'rgba(0,0,0,0.85)',
+            position: 'relative', zIndex: 2,
+            padding: large ? '5px 8px 3px' : '3px 6px 2px',
+            background: 'rgba(0,0,0,0.75)',
             textAlign: 'center',
           }}>
             <div style={{
-              fontSize: 'clamp(9px, 1.3vw, 13px)', fontWeight: 800, fontFamily: gFont,
+              fontSize: nameFs, fontWeight: 800, fontFamily: gFont,
               color: isWinner ? gGreen : isLoser ? 'rgba(255,255,255,0.3)' : '#fff',
-              textTransform: 'uppercase', letterSpacing: '0.6px',
+              textTransform: 'uppercase', letterSpacing: '0.8px',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-              textShadow: isWinner ? `0 0 8px ${gGreen}40` : 'none',
+              textShadow: isWinner ? `0 0 8px ${gGreen}40` : `0 0 8px ${gCyan}30`,
             }}>{name}</div>
-            {renderBo3Pips(match, playerKey)}
+            {renderPips(match, playerKey)}
           </div>
 
-          {/* Cost / Payment stats bar (2:1 number-to-label ratio) */}
-          {(vals.cost !== null || vals.pay !== null) && (
-            <div style={{
-              display: 'flex', background: 'rgba(0,0,0,0.9)',
-              borderTop: `1px solid ${gBorder}`,
-            }}>
-              {/* Cost */}
-              <div style={{
-                flex: 1, textAlign: 'center', padding: '2px 2px 3px',
-              }}>
-                <div style={{
-                  fontSize: 'clamp(6px, 0.6vw, 7px)', fontWeight: 600,
-                  color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px',
-                  fontFamily: gFont, lineHeight: 1,
-                }}>Cost</div>
-                <div style={{
-                  fontSize: 'clamp(10px, 1.3vw, 14px)', fontWeight: 900,
-                  color: gCyan, fontFamily: gFont, lineHeight: 1.2,
-                  textShadow: `0 0 6px ${gCyan}30`,
-                }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
-              </div>
-              <div style={{ width: 1, background: gBorder }} />
-              {/* Payment */}
-              <div style={{
-                flex: 1, textAlign: 'center', padding: '2px 2px 3px',
-              }}>
-                <div style={{
-                  fontSize: 'clamp(6px, 0.6vw, 7px)', fontWeight: 600,
-                  color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px',
-                  fontFamily: gFont, lineHeight: 1,
-                }}>Pay</div>
-                <div style={{
-                  fontSize: 'clamp(10px, 1.3vw, 14px)', fontWeight: 900,
-                  color: vals.pay > (vals.cost || 0) ? gGreen : gRed,
-                  fontFamily: gFont, lineHeight: 1.2,
-                  textShadow: vals.pay > (vals.cost || 0)
-                    ? `0 0 8px ${gGreen}40`
-                    : `0 0 6px ${gRed}30`,
-                }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
-              </div>
-            </div>
-          )}
+          {/* Spacer — lets image show through */}
+          <div style={{ flex: 1 }} />
 
-          {/* Result badge — neon glow overlay at bottom of image */}
+          {/* Result overlay with neon glow */}
           {result !== null && (
             <div style={{
-              position: 'absolute',
-              bottom: vals.cost !== null || vals.pay !== null ? 'auto' : 0,
-              top: vals.cost !== null || vals.pay !== null ? 'auto' : 'auto',
-              left: 0, right: 0, zIndex: 4,
-              /* Position over the image area, above name/stats */
-              ...(vals.cost !== null || vals.pay !== null
-                ? {} : {}),
+              position: 'relative', zIndex: 2,
+              textAlign: 'center', padding: '2px 0',
+              background: 'rgba(0,0,0,0.65)',
+              backdropFilter: 'blur(4px)',
             }}>
-              <div style={{
-                position: 'absolute', bottom: (vals.cost !== null ? 58 : 24),
-                left: 0, right: 0,
-                background: 'rgba(0,0,0,0.65)', textAlign: 'center',
-                padding: '2px 0', backdropFilter: 'blur(4px)',
-              }}>
-                <span style={{
-                  fontSize: 'clamp(12px, 1.6vw, 18px)', fontWeight: 900, fontFamily: gFont,
-                  color: result > 0 ? gGreen : result < 0 ? gRed : '#94a3b8',
-                  textShadow: result > 0
-                    ? `0 0 12px ${gGreen}70, 0 0 24px ${gGreen}30`
-                    : result < 0
-                      ? `0 0 10px ${gRed}60, 0 0 20px ${gRed}25`
-                      : 'none',
-                  letterSpacing: '0.5px',
-                }}>{fmtResult(result)}</span>
-              </div>
+              <span style={{
+                fontSize: resultFs, fontWeight: 900, fontFamily: gFont,
+                color: result > 0 ? gGreen : result < 0 ? gRed : '#94a3b8',
+                textShadow: result > 0
+                  ? `0 0 12px ${gGreen}70, 0 0 24px ${gGreen}30`
+                  : result < 0
+                    ? `0 0 10px ${gRed}60, 0 0 20px ${gRed}25`
+                    : 'none',
+              }}>{fmtResult(result)}</span>
             </div>
           )}
-        </div>
-      );
-    };
 
-    /* ─── Match card ─── */
-    const renderGridMatch = (match, rIdx, mIdx, isFinalPhase) => {
-      const isCurrentMatch = rIdx === bracketActiveRound && mIdx === bracketActiveMatch;
-      const hasWinner = match.winner != null;
-      const isTBD = (!match.player1 || match.player1 === 'TBD') && (!match.player2 || match.player2 === 'TBD');
-      const isGrandFinal = isFinalPhase && hasWinner;
-
-      return (
-        <div key={mIdx} style={{
-          display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 6px)',
-          background: isCurrentMatch ? 'rgba(0,229,255,0.05)' : 'rgba(0,0,0,0.3)',
-          border: `2px solid ${isCurrentMatch ? gCyan : hasWinner ? `${gGold}30` : gBorder}`,
-          borderRadius: 12, padding: 'clamp(4px, 0.6vw, 8px)',
-          opacity: isTBD ? 0.2 : 1,
-          position: 'relative', overflow: 'hidden',
-          transition: 'all 0.4s ease',
-          ...(isCurrentMatch && !hasWinner ? { animation: 'grid-live-border 2s ease-in-out infinite' } : {}),
-        }}>
-          {/* Grand Final particle burst background */}
-          {isGrandFinal && (
-            <>
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-                background: `radial-gradient(ellipse at center, ${gGold}15 0%, transparent 70%)`,
-                animation: 'grid-finale-burst 2s ease-out forwards',
-              }} />
-              <div style={{
-                position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
-                background: `radial-gradient(circle at 30% 40%, ${gGold}10 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${gCyan}08 0%, transparent 50%)`,
-                animation: 'grid-sparkle-drift 4s linear infinite',
-              }} />
-            </>
-          )}
-
-          {renderGridPlayer(match, 'player1', isFinalPhase)}
-
-          {/* VS center focal point */}
+          {/* Cost / Payment stats bar — bottom (2:1 number-to-label ratio) */}
           <div style={{
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0, gap: 3, zIndex: 2,
+            position: 'relative', zIndex: 2,
+            display: 'flex', background: 'rgba(0,0,0,0.85)',
           }}>
-            {/* LIVE badge */}
-            {isCurrentMatch && !hasWinner && (
+            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
               <div style={{
-                fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 900,
-                color: '#fff', background: '#ef4444',
-                padding: '1px 5px', borderRadius: 3, letterSpacing: '1px',
-                textTransform: 'uppercase', fontFamily: gFont,
-                animation: 'grid-live-pulse 1.5s ease-in-out infinite',
-                boxShadow: '0 0 8px rgba(239,68,68,0.5)',
-              }}>LIVE</div>
-            )}
-            {/* VS orb */}
-            <div style={{
-              width: 'clamp(20px, 2.5vw, 30px)', height: 'clamp(20px, 2.5vw, 30px)',
-              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: isCurrentMatch
-                ? `linear-gradient(135deg, ${gPurple}, ${gCyan})`
-                : hasWinner
-                  ? `linear-gradient(135deg, ${gGold}80, ${gGold}40)`
-                  : 'rgba(255,255,255,0.06)',
-              fontSize: 'clamp(7px, 1vw, 11px)', fontWeight: 900, color: '#fff', fontFamily: gFont,
-              boxShadow: isCurrentMatch
-                ? `0 0 12px ${gCyan}50, 0 0 24px ${gPurple}30`
-                : 'none',
-              ...(isCurrentMatch && !hasWinner ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-            }}>VS</div>
-            {/* Grand Final WINNER announcement */}
-            {isGrandFinal && (
+                fontSize: labelFs, fontWeight: 600, color: '#64748b',
+                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: gFont,
+                lineHeight: 1,
+              }}>Cost</div>
               <div style={{
-                fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 900,
-                color: gGold, fontFamily: gFont, letterSpacing: '1.5px',
-                textTransform: 'uppercase',
-                textShadow: `0 0 10px ${gGold}60, 0 0 20px ${gGold}30`,
-                animation: 'grid-winner-scale 1s ease-out forwards, es-text-glow 2s ease-in-out 1s infinite',
-              }}>WINNER</div>
-            )}
+                fontSize: statFs, fontWeight: 900, color: gCyan, fontFamily: gFont,
+                textShadow: `0 0 6px ${gCyan}30`, lineHeight: 1.2,
+              }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
+            </div>
+            <div style={{ width: 1, background: gBorder }} />
+            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
+              <div style={{
+                fontSize: labelFs, fontWeight: 600, color: '#64748b',
+                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: gFont,
+                lineHeight: 1,
+              }}>Pay</div>
+              <div style={{
+                fontSize: statFs, fontWeight: 900, fontFamily: gFont, lineHeight: 1.2,
+                color: vals.pay > (vals.cost || 0) ? gGreen : gRed,
+                textShadow: vals.pay > (vals.cost || 0)
+                  ? `0 0 8px ${gGreen}40` : `0 0 6px ${gRed}30`,
+              }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
+            </div>
           </div>
-
-          {renderGridPlayer(match, 'player2', isFinalPhase)}
         </div>
       );
     };
+
+    /* ── VS badge ── */
+    const renderVs = (large = false, isLive = false) => {
+      const sz = large ? 'clamp(22px, 3vw, 36px)' : 'clamp(14px, 1.8vw, 22px)';
+      return (
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center',
+          justifyContent: 'center', flexShrink: 0, gap: 3,
+        }}>
+          {/* LIVE badge */}
+          {isLive && (
+            <div style={{
+              fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 900,
+              color: '#fff', background: '#ef4444',
+              padding: '1px 5px', borderRadius: 3, letterSpacing: '1px',
+              textTransform: 'uppercase', fontFamily: gFont,
+              animation: 'grid-live-pulse 1.5s ease-in-out infinite',
+              boxShadow: '0 0 8px rgba(239,68,68,0.5)',
+            }}>LIVE</div>
+          )}
+          <div style={{
+            width: sz, height: sz, borderRadius: '50%', flexShrink: 0,
+            background: `linear-gradient(135deg, ${gPurple}, ${gCyan})`,
+            border: '2px solid rgba(0,0,0,0.4)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontSize: large ? 'clamp(9px, 1.2vw, 14px)' : 'clamp(6px, 0.9vw, 10px)',
+            fontWeight: 900, color: '#fff', fontFamily: gFont,
+            boxShadow: `0 0 16px ${gPurple}40, 0 0 8px ${gCyan}30`,
+            alignSelf: 'center',
+            ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
+          }}>VS</div>
+          {/* WINNER label for grand final */}
+          {isGrandFinalMatch && large && (
+            <div style={{
+              fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 900,
+              color: gGold, fontFamily: gFont, letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              textShadow: `0 0 10px ${gGold}60, 0 0 20px ${gGold}30`,
+              animation: 'grid-winner-scale 1s ease-out forwards, es-text-glow 2s ease-in-out 1s infinite',
+            }}>WINNER</div>
+          )}
+        </div>
+      );
+    };
+
+    /* ── Queued match row ── */
+    const renderQueuedMatch = (match, idx) => (
+      <div key={idx} style={{
+        display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 8px)',
+        background: 'rgba(0,0,0,0.3)',
+        border: `1px solid ${gBorder}`,
+        borderRadius: 10, padding: 'clamp(4px, 0.6vw, 8px)',
+        position: 'relative', overflow: 'hidden',
+        backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+        minHeight: 'clamp(90px, 18vh, 160px)',
+      }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {renderCard(match, 'player1', false)}
+        </div>
+        {renderVs(false)}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {renderCard(match, 'player2', false)}
+        </div>
+      </div>
+    );
+
+    /* ── Done match row ── */
+    const renderDoneRow = (match, idx) => {
+      const winner = match.winner;
+      const p1Won = winner === 'player1';
+      const p2Won = winner === 'player2';
+      const p1 = match.player1 || 'TBD';
+      const p2 = match.player2 || 'TBD';
+      const fs = 'clamp(8px, 1.2vw, 13px)';
+      return (
+        <div key={idx} style={{
+          display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 10px)',
+          padding: 'clamp(2px, 0.3vw, 5px) clamp(6px, 0.8vw, 12px)',
+          background: 'rgba(0,0,0,0.25)',
+          border: `1px solid ${gBorder}`,
+          borderRadius: 6,
+          backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+        }}>
+          <span style={{
+            flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 700, fontFamily: gFont,
+            color: p1Won ? gGreen : 'rgba(255,255,255,0.35)',
+            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            textShadow: p1Won ? `0 0 6px ${gGreen}40` : 'none',
+          }}>{p1Won ? '🏆 ' : ''}{p1}</span>
+          <span style={{
+            fontSize: 'clamp(6px, 0.8vw, 9px)', fontWeight: 800, color: '#475569',
+            fontFamily: gFont, flexShrink: 0,
+          }}>VS</span>
+          <span style={{
+            flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 700, fontFamily: gFont,
+            color: p2Won ? gGreen : 'rgba(255,255,255,0.35)',
+            textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            textShadow: p2Won ? `0 0 6px ${gGreen}40` : 'none',
+          }}>{p2}{p2Won ? ' 🏆' : ''}</span>
+        </div>
+      );
+    };
+
+    const hasCurrentWinner = currentMatch?.winner != null;
+    const isCurrentLive = !hasCurrentWinner;
 
     return (
       <div style={{
-        display: 'flex', flexDirection: 'column', fontFamily: gFont,
-        overflow: 'hidden', height: '100%',
-        gap: 'clamp(5px, 0.7vw, 10px)',
-        padding: 'clamp(4px, 0.6vw, 8px)',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden', fontFamily: gFont,
+        background: 'transparent',
       }}>
-        {/* Tournament title */}
+        {/* ── Tournament title ── */}
         {c.bracketName && (
           <div style={{
-            textAlign: 'center', padding: 'clamp(2px, 0.3vw, 6px) 0',
+            textAlign: 'center', padding: 'clamp(3px, 0.4vw, 6px) 0',
           }}>
             <span style={{
               fontSize: 'clamp(11px, 1.5vw, 18px)', fontWeight: 900,
@@ -1493,69 +1561,121 @@ function TournamentWidget({ config, theme }) {
           </div>
         )}
 
-        {/* Phase sections */}
-        {phases.map((phase) => {
-          const hasRealMatches = phase.matches.some(m =>
-            (m.player1 && m.player1 !== 'TBD') || (m.player2 && m.player2 !== 'TBD')
-          );
-          const allDone = phase.matches.length > 0 && phase.matches.every(m => m.winner != null);
-          const isFinalPhase = phase.roundIdx === totalPhases - 1 && totalPhases > 1;
+        {/* ── Queued matches ── */}
+        {queuedMatches.length > 0 && (
+          <div style={{
+            flexShrink: 0, display: 'flex', flexDirection: 'column',
+            gap: 'clamp(3px, 0.5vw, 8px)',
+            padding: 'clamp(3px, 0.5vw, 8px)',
+          }}>
+            {queuedMatches.map((m, i) => renderQueuedMatch(m, i))}
+          </div>
+        )}
 
-          return (
-            <div key={phase.roundIdx} style={{
-              display: 'flex', flexDirection: 'column',
-              gap: 'clamp(4px, 0.5vw, 8px)',
-              opacity: !hasRealMatches ? 0.2 : 1,
-              transition: 'opacity 0.5s',
+        {/* ── Energy divider ── */}
+        <div style={{
+          height: 2, flexShrink: 0, position: 'relative',
+          background: `linear-gradient(90deg, transparent, ${gCyan}60, ${gPurple}60, transparent)`,
+          overflow: 'hidden',
+        }}>
+          <div style={{
+            position: 'absolute', top: 0, left: 0, width: '30%', height: '100%',
+            background: `linear-gradient(90deg, transparent, ${gCyan}, transparent)`,
+            animation: 'es-energy-line 2.5s linear infinite',
+          }} />
+        </div>
+
+        {/* ── Current match (Now Playing) ── */}
+        {currentMatch && (
+          <div style={{
+            flexShrink: 0, padding: 'clamp(4px, 0.8vw, 12px)',
+            position: 'relative',
+          }}>
+            {/* Pulsing bg glow */}
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 0,
+              background: isGrandFinalMatch
+                ? `radial-gradient(ellipse at center, ${gGold}15, transparent 70%)`
+                : `radial-gradient(ellipse at center, ${gPurple}12, transparent 70%)`,
+              animation: 'es-bg-pulse 3s ease-in-out infinite',
+            }} />
+
+            {/* Grand final particle burst */}
+            {isGrandFinalMatch && (
+              <div style={{
+                position: 'absolute', inset: 0, zIndex: 0, pointerEvents: 'none',
+                background: `radial-gradient(circle at 30% 40%, ${gGold}10 0%, transparent 50%), radial-gradient(circle at 70% 60%, ${gCyan}08 0%, transparent 50%)`,
+                animation: 'grid-sparkle-drift 4s linear infinite',
+              }} />
+            )}
+
+            {/* Phase label + "NOW PLAYING" header */}
+            <div style={{
+              textAlign: 'center', marginBottom: 'clamp(2px, 0.4vh, 6px)',
+              position: 'relative', zIndex: 1,
             }}>
-              {/* Phase header with energy lines */}
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: 'clamp(6px, 0.8vw, 12px)',
-              }}>
+              {activePhaseLabel && (
                 <div style={{
-                  flex: 1, height: 2,
-                  background: phase.isActive
-                    ? `linear-gradient(90deg, transparent, ${gCyan}80, ${gCyan}40)`
-                    : allDone
-                      ? `linear-gradient(90deg, transparent, ${gGold}50)`
-                      : 'linear-gradient(90deg, transparent, rgba(255,255,255,0.08))',
-                  borderRadius: 1,
-                  ...(phase.isActive ? { animation: 'grid-line-glow 2s ease-in-out infinite' } : {}),
-                }} />
-                <div style={{
-                  fontSize: 'clamp(9px, 1.2vw, 14px)', fontWeight: 900,
-                  color: phase.isActive ? gCyan : allDone ? gGold : 'rgba(255,255,255,0.35)',
-                  textTransform: 'uppercase', letterSpacing: '2px',
-                  fontFamily: gFont, whiteSpace: 'nowrap',
-                  textShadow: phase.isActive
-                    ? `0 0 12px ${gCyan}60, 0 0 24px ${gCyan}20`
-                    : allDone ? `0 0 8px ${gGold}40` : 'none',
-                  ...(phase.isActive ? { animation: 'es-text-glow 2s ease-in-out infinite' } : {}),
-                }}>
-                  {phase.isActive ? '▸ ' : ''}{phase.label}{allDone ? ' ✓' : ''}
-                </div>
-                <div style={{
-                  flex: 1, height: 2,
-                  background: phase.isActive
-                    ? `linear-gradient(90deg, ${gCyan}40, ${gCyan}80, transparent)`
-                    : allDone
-                      ? `linear-gradient(90deg, ${gGold}50, transparent)`
-                      : 'linear-gradient(90deg, rgba(255,255,255,0.08), transparent)',
-                  borderRadius: 1,
-                  ...(phase.isActive ? { animation: 'grid-line-glow 2s ease-in-out infinite' } : {}),
-                }} />
+                  fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 800,
+                  color: gCyan, textTransform: 'uppercase', letterSpacing: '2px',
+                  fontFamily: gFont, marginBottom: 2,
+                  textShadow: `0 0 10px ${gCyan}50`,
+                  animation: 'es-text-glow 2s ease-in-out infinite',
+                }}>▸ {activePhaseLabel}</div>
+              )}
+              <span style={{
+                fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 800,
+                color: isGrandFinalMatch ? gGold : gGold,
+                textTransform: 'uppercase', letterSpacing: '3px',
+                fontFamily: gFont,
+                textShadow: `0 0 12px ${gGold}50`,
+                animation: 'es-text-glow 2s ease-in-out infinite',
+              }}>{isGrandFinalMatch ? '🏆 Champion Crowned 🏆' : '⚡ Now Playing ⚡'}</span>
+            </div>
+
+            {/* Match cards */}
+            <div style={{
+              display: 'flex', alignItems: 'stretch',
+              gap: 'clamp(3px, 0.5vw, 8px)',
+              background: isGrandFinalMatch ? 'rgba(0,0,0,0.2)' : 'rgba(0,0,0,0.3)',
+              border: `2px solid ${isGrandFinalMatch ? gGold : isCurrentLive ? gCyan : `${gGold}40`}`,
+              borderRadius: 12, padding: 'clamp(4px, 0.6vw, 8px)',
+              position: 'relative', zIndex: 1, overflow: 'hidden',
+              backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+              minHeight: 'clamp(90px, 18vh, 160px)',
+              ...(isCurrentLive ? { animation: 'grid-live-border 2s ease-in-out infinite' } : {}),
+            }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {renderCard(currentMatch, 'player1', true, isGrandFinalMatch && currentMatch.winner === 'player1')}
+              </div>
+              {renderVs(true, isCurrentLive)}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                {renderCard(currentMatch, 'player2', true, isGrandFinalMatch && currentMatch.winner === 'player2')}
               </div>
 
-              {/* Matches — stacked vertically */}
-              <div style={{
-                display: 'flex', flexDirection: 'column',
-                gap: 'clamp(4px, 0.5vw, 8px)',
-              }}>
-                {phase.matches.map((match, mIdx) => renderGridMatch(match, phase.roundIdx, mIdx, isFinalPhase))}
-              </div>
+              {/* Shatter overlay */}
+              {layout === 'grid' && shatterInfo && (
+                <ShatterEffect
+                  imageUrl={shatterInfo.imageUrl}
+                  side={shatterInfo.side}
+                  accentColor={gCyan}
+                  onComplete={() => { setShatterInfo(null); setShatterMatchIdx(null); }}
+                />
+              )}
             </div>
-          );
-        })}
+          </div>
+        )}
+
+        {/* ── Done matches ── */}
+        {doneMatches.length > 0 && (
+          <div style={{
+            flexShrink: 0, display: 'flex', flexDirection: 'column',
+            gap: 'clamp(2px, 0.3vw, 4px)',
+            padding: 'clamp(3px, 0.5vw, 8px)',
+          }}>
+            {doneMatches.map((m, i) => renderDoneRow(m, i))}
+          </div>
+        )}
       </div>
     );
   };
