@@ -1534,7 +1534,7 @@ function TournamentWidget({ config, theme }) {
         background: 'transparent',
         borderRadius: 10, padding: 'clamp(2px, 0.3vw, 4px)',
         position: 'relative', overflow: 'visible',
-        minHeight: 'clamp(90px, 18vh, 160px)',
+        minHeight: 'clamp(60px, 12vh, 110px)',
         perspective: '600px',
       }}>
         <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(8deg)', transformOrigin: 'right center', transition: 'transform 0.3s ease' }}>
@@ -1769,7 +1769,7 @@ function TournamentWidget({ config, theme }) {
               background: 'transparent',
               borderRadius: 12, padding: 'clamp(2px, 0.3vw, 4px)',
               position: 'relative', zIndex: 1, overflow: 'hidden',
-              minHeight: 'clamp(90px, 18vh, 160px)',
+              minHeight: 'clamp(110px, 24vh, 200px)',
             }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 {renderCard(currentMatch, 'player1', true, isGrandFinalMatch && currentMatch.winner === 'player1')}
