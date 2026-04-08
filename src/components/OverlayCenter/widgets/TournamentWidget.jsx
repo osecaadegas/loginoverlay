@@ -1616,8 +1616,8 @@ function TournamentWidget({ config, theme }) {
     const flipperShowPhase = flipperTick % 2 === 1 && activePhaseLabel;
     const boRound = getCurrentBoRound(currentMatch);
 
-    /* ── Cap queued matches at 3 rows max, later phases first (drop-down to Now Playing) ── */
-    const visibleQueued = queuedMatches.slice(-3);
+    /* ── Queued matches: later phases on top, next-to-play near Now Playing ── */
+    const visibleQueued = [...queuedMatches].reverse().slice(0, 3);
 
     /* ── Group queued matches by phase, show divider label between phase groups ── */
     const queuedWithPhase = visibleQueued.map((m, i) => {
