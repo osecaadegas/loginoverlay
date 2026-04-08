@@ -76,6 +76,38 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const bhConfig = bhWidget?.config || {};
   const bonusOpening = bhConfig.bonusOpening === true;
 
+  /* ── Find tournament widget & current match slot ── */
+  const tournamentSlotName = useMemo(() => {
+    const tw = (allWidgets || []).find(w =>
+      w.widget_type === 'tournament' && w.config?.data
+    );
+    if (!tw) return '';
+    const tData = tw.config.data;
+    const allMatches = tData.matches || [];
+    const matches = allMatches.filter(m =>
+      (m.player1 && m.player1 !== 'TBD') || (m.player2 && m.player2 !== 'TBD')
+    );
+    // Find current match: first in_progress, or use stored index
+    const ipIdx = matches.findIndex(m => m.status === 'in_progress');
+    const currentIdx = ipIdx >= 0 ? ipIdx : (() => {
+      const orig = tData.currentMatchIdx ?? 0;
+      const target = allMatches[orig];
+      if (!target) return 0;
+      const idx = matches.indexOf(target);
+      return idx >= 0 ? idx : 0;
+    })();
+    const current = matches[currentIdx];
+    if (!current) return '';
+    // If match has no winner yet, use slot1 name (the "active" slot)
+    // If match has a winner, show the winning slot
+    if (current.winner) {
+      const winSlot = current.winner === 'player1' ? current.slot1 : current.slot2;
+      return winSlot?.name || '';
+    }
+    // No winner yet — prefer slot1 (left player)
+    return current.slot1?.name || current.slot2?.name || '';
+  }, [allWidgets]);
+
   /* ── Apply same sort as BonusHuntWidget so current bonus matches ── */
   const bonuses = useMemo(() => {
     const raw = bhConfig.bonuses || [];
@@ -101,7 +133,10 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
 
   /* ── Current bonus (first unopened) ── */
   const currentBonus = useMemo(() => bonuses.find(b => !b.opened), [bonuses]);
-  const slotName = currentBonus?.slotName || '';
+  /* Priority: bonus hunt slot (if bonus opening) → tournament current match slot → bonus hunt slot */
+  const slotName = (bonusOpening && currentBonus?.slotName)
+    ? currentBonus.slotName
+    : tournamentSlotName || currentBonus?.slotName || '';
 
   /* ── Slot info from DB (primary) or API (fallback) ── */
   const [slotInfo, setSlotInfo] = useState(null);
