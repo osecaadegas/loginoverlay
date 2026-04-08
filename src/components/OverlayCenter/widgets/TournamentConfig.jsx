@@ -1039,44 +1039,6 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
             </div>
           </details>
 
-          {/* ── Winner Overlay ── */}
-          <details className="bk-details" open>
-            <summary>Winner Overlay</summary>
-            <div className="bk-details-body">
-              <label className="nb-field"><span>Winner Image Effect</span></label>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '6px 0' }}>
-                {[
-                  { value: 'none', label: 'None', emoji: '❌' },
-                  { value: 'crown', label: 'Crown', src: '/tournament/crown.png' },
-                  { value: 'handtrophy', label: 'Hand Trophy', src: '/tournament/handtrophy.png' },
-                  { value: 'slottrophy', label: 'Slot Trophy', src: '/tournament/slottrophy.png' },
-                  { value: 'winner', label: 'Winner', src: '/tournament/winner.png' },
-                ].map(opt => {
-                  const active = (c.winnerOverlay || 'none') === opt.value;
-                  return (
-                    <div key={opt.value}
-                      onClick={() => set('winnerOverlay', opt.value)}
-                      style={{
-                        cursor: 'pointer', padding: 6, borderRadius: 8,
-                        border: `2px solid ${active ? '#7c3aed' : 'rgba(255,255,255,0.15)'}`,
-                        background: active ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.05)',
-                        textAlign: 'center', width: 70,
-                        transition: 'all 0.2s ease',
-                      }}>
-                      {opt.emoji
-                        ? <div style={{ fontSize: 28, lineHeight: '48px' }}>{opt.emoji}</div>
-                        : <div style={{ width: 58, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 4, overflow: 'hidden' }}>
-                            <img src={opt.src} alt={opt.label} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                          </div>
-                      }
-                      <div style={{ fontSize: 10, color: active ? '#c4b5fd' : '#aaa', marginTop: 3, fontWeight: active ? 700 : 400 }}>{opt.label}</div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </details>
-
           {/* ── Arena-specific colors ── */}
           {(c.layout || 'esports') === 'arena' && (
             <details className="bk-details">

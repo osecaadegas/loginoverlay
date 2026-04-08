@@ -1334,7 +1334,7 @@ function TournamentWidget({ config, theme }) {
           display: 'flex', flexDirection: 'column',
           border: `2px solid ${borderCol}`,
           borderRadius: large ? 14 : 8,
-          overflow: isChampion ? 'visible' : 'hidden',
+          overflow: 'hidden',
           transition: 'all 0.5s ease',
           boxShadow: glowShadow,
           /* Loser gray-out animation */
@@ -1379,39 +1379,14 @@ function TournamentWidget({ config, theme }) {
             }}>🏆</div>
           )}
 
-          {/* Champion overlay image — final winner only, positioned OUTSIDE card */}
-          {isChampion && (() => {
-            const overlayType = c.winnerOverlay || 'none';
-            if (overlayType === 'none') return (
-              <div style={{
-                position: 'absolute', top: 4, right: 4, zIndex: 5,
-                fontSize: large ? 20 : 14,
-                filter: `drop-shadow(0 0 6px ${gGold})`,
-              }}>🏆</div>
-            );
-            const overlayMap = {
-              crown: { src: '/tournament/crown.png', anim: 'grid-winner-overlay-in', style: { top: 0, left: '50%', transform: 'translateX(-50%) translateY(-60%)', width: '65%', zIndex: 10 } },
-              handtrophy: { src: '/tournament/handtrophy.png', anim: 'grid-winner-overlay-in-left', style: { top: '50%', left: 0, transform: 'translateX(-55%) translateY(-50%)', height: '90%', zIndex: 10, borderRadius: 6 } },
-              slottrophy: { src: '/tournament/slottrophy.png', anim: 'grid-winner-overlay-in-right', style: { bottom: 0, right: 0, transform: 'translateX(30%) translateY(20%)', height: '55%', zIndex: 10 } },
-              winner: { src: '/tournament/winner.png', anim: 'grid-winner-overlay-in', style: { top: 0, left: '50%', transform: 'translateX(-50%) translateY(-55%)', width: '80%', zIndex: 10 } },
-            };
-            const ov = overlayMap[overlayType];
-            if (!ov) return null;
-            return (
-              <img
-                src={ov.src}
-                alt="champion"
-                style={{
-                  position: 'absolute',
-                  ...(ov.style),
-                  objectFit: 'contain',
-                  filter: `drop-shadow(0 0 10px ${gGold}) drop-shadow(0 0 24px ${gGold}70)`,
-                  animation: `${ov.anim} 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards`,
-                  pointerEvents: 'none',
-                }}
-              />
-            );
-          })()}
+          {/* Champion trophy emoji */}
+          {isChampion && (
+            <div style={{
+              position: 'absolute', top: 4, right: 4, zIndex: 5,
+              fontSize: large ? 20 : 14,
+              filter: `drop-shadow(0 0 6px ${gGold})`,
+            }}>🏆</div>
+          )}
 
           {/* Super / Extreme tag badge — outer edge, vertical */}
           {!isLoser && (isSuper || isExtreme) && (() => {
@@ -1837,6 +1812,117 @@ function TournamentWidget({ config, theme }) {
           </div>
         )}
 
+        {/* ── CHAMPION CELEBRATION OVERLAY — confetti + 3D winner display ── */}
+        {isGrandFinalMatch && (() => {
+          const champName = currentMatch.winner === 'player1' ? currentMatch.player1 : currentMatch.player2;
+          const champSlot = currentMatch.winner === 'player1' ? currentMatch.slot1 : currentMatch.slot2;
+          const champImg = champSlot?.image || null;
+          /* 30 confetti pieces with random positions, colours, delays */
+          const confettiColors = ['#fbbf24', '#39ff14', '#00e5ff', '#ff3e9d', '#7c3aed', '#ef4444', '#f472b6', '#34d399', '#facc15', '#60a5fa'];
+          const confetti = Array.from({ length: 40 }, (_, i) => ({
+            id: i,
+            left: `${Math.random() * 100}%`,
+            delay: `${Math.random() * 2.5}s`,
+            dur: `${2.5 + Math.random() * 2}s`,
+            size: 4 + Math.random() * 6,
+            color: confettiColors[i % confettiColors.length],
+            shape: i % 3, // 0=square, 1=circle, 2=rect
+            drift: (Math.random() - 0.5) * 80,
+            spin: Math.random() * 720 - 360,
+          }));
+          return (
+            <div style={{
+              position: 'absolute', inset: 0, zIndex: 50, pointerEvents: 'none',
+              display: 'flex', flexDirection: 'column',
+              alignItems: 'center', justifyContent: 'center',
+              overflow: 'hidden',
+              background: 'radial-gradient(ellipse at center, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.85) 100%)',
+              animation: 'grid-champ-overlay-in 0.6s ease-out forwards',
+            }}>
+              {/* Confetti pieces */}
+              {confetti.map(p => (
+                <div key={p.id} style={{
+                  position: 'absolute', top: -10,
+                  left: p.left,
+                  width: p.shape === 2 ? p.size * 2 : p.size,
+                  height: p.shape === 2 ? p.size * 0.6 : p.size,
+                  borderRadius: p.shape === 1 ? '50%' : '1px',
+                  background: p.color,
+                  animationName: 'grid-confetti-fall',
+                  animationDuration: p.dur,
+                  animationDelay: p.delay,
+                  animationTimingFunction: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
+                  animationIterationCount: 'infinite',
+                  animationFillMode: 'forwards',
+                  opacity: 0.9,
+                  '--confetti-drift': `${p.drift}px`,
+                  '--confetti-spin': `${p.spin}deg`,
+                }} />
+              ))}
+
+              {/* 3D Champion card */}
+              <div style={{
+                animation: 'grid-champ-card-in 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
+                perspective: '800px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center',
+                transformStyle: 'preserve-3d',
+              }}>
+                {/* "CHAMPION" title */}
+                <div style={{
+                  fontSize: 'clamp(16px, 3vw, 32px)', fontWeight: 900,
+                  color: gGold, textTransform: 'uppercase',
+                  letterSpacing: '6px', fontFamily: gFont,
+                  textShadow: `0 0 20px ${gGold}80, 0 0 40px ${gGold}40, 0 2px 4px rgba(0,0,0,0.6)`,
+                  marginBottom: 'clamp(8px, 1.5vh, 16px)',
+                  animation: 'grid-champ-title-in 0.8s ease-out 0.4s both',
+                }}>🏆 CHAMPION 🏆</div>
+
+                {/* Slot image in 3D rotating frame */}
+                {champImg && (
+                  <div style={{
+                    width: 'clamp(120px, 22vw, 220px)', height: 'clamp(90px, 16vw, 165px)',
+                    borderRadius: 16, overflow: 'hidden', position: 'relative',
+                    border: `3px solid ${gGold}`,
+                    boxShadow: `0 0 30px ${gGold}50, 0 0 60px ${gGold}20, 0 8px 32px rgba(0,0,0,0.6)`,
+                    animation: 'grid-champ-3d-float 4s ease-in-out 1.2s infinite',
+                    transformStyle: 'preserve-3d',
+                  }}>
+                    <img src={champImg} alt={champName} style={{
+                      width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+                    }} />
+                    {/* Shimmer sweep */}
+                    <div style={{
+                      position: 'absolute', inset: 0,
+                      background: 'linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.15) 45%, rgba(255,255,255,0.3) 50%, rgba(255,255,255,0.15) 55%, transparent 60%)',
+                      backgroundSize: '300% 100%',
+                      animation: 'grid-champ-shimmer 3s ease-in-out 1.5s infinite',
+                    }} />
+                  </div>
+                )}
+
+                {/* Winner name */}
+                <div style={{
+                  marginTop: 'clamp(8px, 1.5vh, 16px)',
+                  fontSize: 'clamp(14px, 2.5vw, 26px)', fontWeight: 900,
+                  color: '#fff', textTransform: 'uppercase',
+                  letterSpacing: '4px', fontFamily: gFont,
+                  textShadow: `0 0 12px ${gCyan}60, 0 0 24px ${gCyan}30, 0 2px 4px rgba(0,0,0,0.6)`,
+                  animation: 'grid-champ-name-in 0.8s ease-out 0.8s both',
+                }}>{champName}</div>
+
+                {/* Animated star/sparkle ring */}
+                <div style={{
+                  marginTop: 'clamp(4px, 0.8vh, 8px)',
+                  fontSize: 'clamp(12px, 2vw, 20px)',
+                  animation: 'grid-champ-stars-in 1s ease-out 1s both',
+                  letterSpacing: '4px',
+                  filter: `drop-shadow(0 0 6px ${gGold})`,
+                }}>✦ ✦ ✦ ✦ ✦</div>
+              </div>
+            </div>
+          );
+        })()}
+
         {/* ── Done matches ── */}
         {doneMatches.length > 0 && (
           <div style={{
@@ -1946,22 +2032,43 @@ function TournamentWidget({ config, theme }) {
           60%  { opacity: 1; transform: scale(1.2); }
           100% { opacity: 1; transform: scale(1); }
         }
-        @keyframes grid-winner-overlay-in {
-          0%   { opacity: 0; transform: translateX(-50%) scale(0) rotate(-20deg); }
-          50%  { opacity: 1; transform: translateX(-50%) scale(1.15) rotate(5deg); }
-          70%  { transform: translateX(-50%) scale(0.95) rotate(-2deg); }
-          100% { opacity: 1; transform: translateX(-50%) scale(1) rotate(0deg); }
+        @keyframes grid-champ-overlay-in {
+          0%   { opacity: 0; }
+          100% { opacity: 1; }
         }
-        @keyframes grid-winner-overlay-in-left {
-          0%   { opacity: 0; transform: translateY(-50%) scale(0) rotate(-20deg); }
-          50%  { opacity: 1; transform: translateY(-50%) scale(1.15) rotate(5deg); }
-          70%  { transform: translateY(-50%) scale(0.95) rotate(-2deg); }
-          100% { opacity: 1; transform: translateY(-50%) scale(1) rotate(0deg); }
+        @keyframes grid-confetti-fall {
+          0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0.9; }
+          10%  { opacity: 1; }
+          100% { transform: translateY(110vh) translateX(var(--confetti-drift, 0px)) rotate(var(--confetti-spin, 360deg)); opacity: 0; }
         }
-        @keyframes grid-winner-overlay-in-right {
-          0%   { opacity: 0; transform: scale(0) rotate(15deg); }
-          50%  { opacity: 1; transform: scale(1.15) rotate(-3deg); }
-          70%  { transform: scale(0.95) rotate(1deg); }
+        @keyframes grid-champ-card-in {
+          0%   { opacity: 0; transform: perspective(800px) rotateX(40deg) rotateY(-15deg) scale(0.3) translateY(40px); }
+          60%  { opacity: 1; transform: perspective(800px) rotateX(-5deg) rotateY(5deg) scale(1.05) translateY(-10px); }
+          80%  { transform: perspective(800px) rotateX(2deg) rotateY(-2deg) scale(0.98) translateY(2px); }
+          100% { opacity: 1; transform: perspective(800px) rotateX(0) rotateY(0) scale(1) translateY(0); }
+        }
+        @keyframes grid-champ-3d-float {
+          0%, 100% { transform: perspective(800px) rotateY(0deg) rotateX(0deg) translateY(0px); }
+          25%      { transform: perspective(800px) rotateY(6deg) rotateX(3deg) translateY(-4px); }
+          50%      { transform: perspective(800px) rotateY(0deg) rotateX(-3deg) translateY(-6px); }
+          75%      { transform: perspective(800px) rotateY(-6deg) rotateX(2deg) translateY(-3px); }
+        }
+        @keyframes grid-champ-shimmer {
+          0%   { background-position: 200% 0; }
+          100% { background-position: -100% 0; }
+        }
+        @keyframes grid-champ-title-in {
+          0%   { opacity: 0; transform: translateY(-20px) scale(0.7); }
+          60%  { opacity: 1; transform: translateY(2px) scale(1.1); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes grid-champ-name-in {
+          0%   { opacity: 0; transform: translateY(15px) scale(0.9); letter-spacing: 12px; }
+          100% { opacity: 1; transform: translateY(0) scale(1); letter-spacing: 4px; }
+        }
+        @keyframes grid-champ-stars-in {
+          0%   { opacity: 0; transform: scale(0) rotate(-180deg); }
+          60%  { opacity: 1; transform: scale(1.2) rotate(10deg); }
           100% { opacity: 1; transform: scale(1) rotate(0deg); }
         }
       `}</style>
