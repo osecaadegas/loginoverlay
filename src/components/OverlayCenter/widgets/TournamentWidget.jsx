@@ -1506,13 +1506,21 @@ function TournamentWidget({ config, theme }) {
               boxShadow: '0 0 8px rgba(239,68,68,0.5)',
             }}>LIVE</div>
           )}
-          <span style={{
-            fontSize: large ? 'clamp(22px, 3.2vw, 38px)' : 'clamp(16px, 2.4vw, 28px)',
-            lineHeight: 1,
-            color: '#cbd5e1',
-            textShadow: `0 0 10px ${gCyan}90, 0 0 24px ${gCyan}50, 0 0 40px ${gPurple}40`,
+          <div style={{
+            width: large ? 'clamp(36px, 4.5vw, 56px)' : 'clamp(24px, 3.2vw, 38px)',
+            height: large ? 'clamp(36px, 4.5vw, 56px)' : 'clamp(24px, 3.2vw, 38px)',
+            borderRadius: '50%',
+            background: 'transparent',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            overflow: 'hidden',
+            filter: `drop-shadow(0 0 10px ${gCyan}80) drop-shadow(0 0 22px ${gPurple}50)`,
             ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-          }}>⚔</span>
+          }}>
+            <span style={{
+              fontSize: large ? 'clamp(22px, 3.2vw, 38px)' : 'clamp(16px, 2.4vw, 28px)',
+              lineHeight: 1,
+            }}>⚔️</span>
+          </div>
           {/* WINNER label for grand final */}
           {isGrandFinalMatch && large && (
             <div style={{
@@ -1576,9 +1584,11 @@ function TournamentWidget({ config, theme }) {
           }}>{p1Won ? '🏆 ' : ''}{p1}</span>
           <span style={{
             fontSize: 'clamp(10px, 1.2vw, 14px)', flexShrink: 0,
-            color: '#94a3b8',
-            textShadow: `0 0 6px ${gCyan}60, 0 0 14px ${gPurple}30`,
-          }}>⚔</span>
+            width: 'clamp(18px, 2vw, 24px)', height: 'clamp(18px, 2vw, 24px)',
+            borderRadius: '50%', overflow: 'hidden',
+            display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+            filter: `drop-shadow(0 0 4px ${gCyan}50)`,
+          }}>⚔️</span>
           <span style={{
             flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 800, fontFamily: gFont,
             color: p2Won ? gGreen : 'rgba(255,255,255,0.3)',
