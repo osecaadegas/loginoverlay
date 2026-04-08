@@ -6,12 +6,12 @@
  *           !flip heads [amt], !cf tails [amt], !coinflip heads [amt]
  * SE points are paid/deducted automatically after each flip.
  */
-import React, { useMemo, useRef, useEffect, useCallback } from 'react';
+import React, { useMemo, useRef, useEffect, useCallback, useState } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
 import { supabase } from '../../../config/supabaseClient';
 
-function CoinFlipWidget({ config, widgetId }) {
+function CoinFlipWidget({ config, widgetId, userId }) {
   const c = config || {};
   const st = c.displayStyle || 'v1';
   const hColor = c.headsColor || '#f59e0b';
@@ -34,9 +34,25 @@ function CoinFlipWidget({ config, widgetId }) {
   useEffect(() => { flippingRef.current = flipping; }, [flipping]);
   useEffect(() => () => { if (cooldownRef.current) clearTimeout(cooldownRef.current); }, []);
 
-  /* ── SE credentials (from env or config) ── */
-  const seChannelId = c.seChannelId || '';
-  const seJwtToken  = c.seJwtToken  || '';
+  /* ── SE credentials (loaded from user's own streamelements_connections row) ── */
+  const [seChannelId, setSeChannelId] = useState('');
+  const [seJwtToken, setSeJwtToken]   = useState('');
+  useEffect(() => {
+    if (!userId) return;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('streamelements_connections')
+          .select('se_channel_id, se_jwt_token')
+          .eq('user_id', userId)
+          .single();
+        if (data) {
+          setSeChannelId(data.se_channel_id || '');
+          setSeJwtToken(data.se_jwt_token || '');
+        }
+      } catch { /* no connection yet */ }
+    })();
+  }, [userId]);
   const seConnected = !!seChannelId && !!seJwtToken;
   const pointPayoutsEnabled = !!c.pointPayoutsEnabled && seConnected;
 

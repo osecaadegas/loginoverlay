@@ -71,9 +71,9 @@ export default function PointsManager() {
     })();
   }, []);
 
-  // Fallback: own DB connection → env vars (env vars kept only for server-side/admin)
-  const SE_CHANNEL_ID = ownSeChannelId || import.meta.env.VITE_SE_CHANNEL_ID;
-  const SE_JWT_TOKEN = ownSeJwtToken || import.meta.env.VITE_SE_JWT_TOKEN;
+  // Only use the user's own DB credentials — never fall back to env vars
+  const SE_CHANNEL_ID = ownSeChannelId;
+  const SE_JWT_TOKEN = ownSeJwtToken;
 
   useEffect(() => {
     loadData();

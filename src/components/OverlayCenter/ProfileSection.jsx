@@ -32,8 +32,6 @@ const SYNC_MAP = {
   slot_requests: {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
-    seChannelId: 'seChannelId',
-    seJwtToken: 'seJwtToken',
   },
   spotify_now_playing: {
     spotify_access_token: 'spotify_access_token',
@@ -43,26 +41,16 @@ const SYNC_MAP = {
   coin_flip: {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
-    seChannelId: 'seChannelId',
-    seJwtToken: 'seJwtToken',
   },
   point_slot: {
-    seChannelId: 'seChannelId',
-    seJwtToken: 'seJwtToken',
   },
   salty_words: {
-    seChannelId: 'seChannelId',
-    seJwtToken: 'seJwtToken',
   },
   predictions: {
-    seChannelId: 'seChannelId',
-    seJwtToken: 'seJwtToken',
   },
   point_wheel: {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
-    seChannelId: 'seChannelId',
-    seJwtToken: 'seJwtToken',
   },
 };
 
@@ -139,30 +127,27 @@ export default function ProfileSection({ widgets, saveWidget }) {
     const chat = (widgets || []).find(w => w.widget_type === 'chat')?.config || {};
     const ga = (widgets || []).find(w => w.widget_type === 'giveaway')?.config || {};
     const sp = (widgets || []).find(w => w.widget_type === 'spotify_now_playing')?.config || {};
-    const communityW = (widgets || []).find(w => ['coin_flip','point_slot','salty_words','predictions'].includes(w.widget_type))?.config || {};
 
     /* Pick Spotify tokens from whichever widget has them */
     const spotToken = nb.spotify_access_token || sp.spotify_access_token || '';
     const spotRefresh = nb.spotify_refresh_token || sp.spotify_refresh_token || '';
     const spotExpires = nb.spotify_expires_at || sp.spotify_expires_at || null;
 
-    /* Load SE credentials from the user's own streamelements_connections row first */
+    /* Load SE credentials ONLY from the user's own streamelements_connections row — never from widget configs */
     (async () => {
-      let seChannel = communityW?.seChannelId || '';
-      let seJwt = communityW?.seJwtToken || '';
-      if (!seChannel || !seJwt) {
-        try {
-          const { data } = await supabase
-            .from('streamelements_connections')
-            .select('se_channel_id, se_jwt_token')
-            .eq('user_id', user.id)
-            .single();
-          if (data) {
-            seChannel = seChannel || data.se_channel_id || '';
-            seJwt = seJwt || data.se_jwt_token || '';
-          }
-        } catch { /* no row yet */ }
-      }
+      let seChannel = '';
+      let seJwt = '';
+      try {
+        const { data } = await supabase
+          .from('streamelements_connections')
+          .select('se_channel_id, se_jwt_token')
+          .eq('user_id', user.id)
+          .single();
+        if (data) {
+          seChannel = data.se_channel_id || '';
+          seJwt = data.se_jwt_token || '';
+        }
+      } catch { /* no row yet — starts empty */ }
 
       setProfile(prev => ({
         streamerName: nb.streamerName || meta.full_name || meta.preferred_username || prev.streamerName || '',
@@ -174,8 +159,8 @@ export default function ProfileSection({ widgets, saveWidget }) {
         youtubeApiKey: chat.youtubeApiKey || prev.youtubeApiKey || '',
         discordTag: prev.discordTag || '',
         currency: nb.currency || chat.currency || prev.currency || '€',
-        seChannelId: seChannel || prev.seChannelId || '',
-        seJwtToken: seJwt || prev.seJwtToken || '',
+        seChannelId: seChannel,
+        seJwtToken: seJwt,
         spotify_access_token: spotToken,
         spotify_refresh_token: spotRefresh,
         spotify_expires_at: spotExpires,

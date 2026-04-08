@@ -51,6 +51,22 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const [ircStatus, setIrcStatus] = useState('off'); // off | connecting | live
   const wsRef = useRef(null);
   const reconnectTimer = useRef(null);
+  const [seConnectedForSr, setSeConnectedForSr] = useState(false);
+
+  // Check if user has SE connection for the warning message
+  useEffect(() => {
+    if (!user) return;
+    (async () => {
+      try {
+        const { data } = await supabase
+          .from('streamelements_connections')
+          .select('se_channel_id, se_jwt_token')
+          .eq('user_id', user.id)
+          .single();
+        setSeConnectedForSr(!!(data?.se_channel_id && data?.se_jwt_token));
+      } catch { setSeConnectedForSr(false); }
+    })();
+  }, [user?.id]);
 
   const fetchQueue = useCallback(async () => {
     if (!user) return;
@@ -207,7 +223,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
                 />
                 <span style={{ fontSize: '0.7rem', color: '#64748b' }}>points</span>
               </label>
-              {!(c.seChannelId && c.seJwtToken) && (
+              {!seConnectedForSr && (
                 <p style={{ fontSize: '0.68rem', color: '#ef4444', margin: '6px 0 0', lineHeight: 1.4, fontWeight: 600 }}>
                   ⚠️ StreamElements not connected — go to Profile and connect SE first.
                 </p>

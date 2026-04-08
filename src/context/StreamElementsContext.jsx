@@ -81,28 +81,18 @@ export function StreamElementsProvider({ children }) {
         return;
       }
 
-      // Look up SE credentials from this user's own widget configs (set in Profile)
-      const { data: widgets } = await supabase
-        .from('overlay_widgets')
-        .select('config')
-        .eq('user_id', user.id);
+      // Look up SE credentials from this user's own streamelements_connections row
+      const { data: seRow } = await supabase
+        .from('streamelements_connections')
+        .select('se_channel_id, se_jwt_token')
+        .eq('user_id', user.id)
+        .single();
 
-      let seChannelId = null;
-      let seJwtToken = null;
-
-      if (widgets) {
-        for (const w of widgets) {
-          const wc = w.config;
-          if (wc?.seChannelId && wc?.seJwtToken) {
-            seChannelId = wc.seChannelId;
-            seJwtToken = wc.seJwtToken;
-            break;
-          }
-        }
-      }
+      const seChannelId = seRow?.se_channel_id || null;
+      const seJwtToken = seRow?.se_jwt_token || null;
 
       if (!seChannelId || !seJwtToken) {
-        console.log('⚠️ No SE credentials found in widget configs. User needs to connect SE in Profile.');
+        console.log('⚠️ No SE credentials found. User needs to connect SE in Profile.');
         setAutoConnecting(false);
         return;
       }
