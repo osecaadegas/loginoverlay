@@ -1040,33 +1040,39 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
           </details>
 
           {/* ── Winner Overlay ── */}
-          <details className="bk-details">
+          <details className="bk-details" open>
             <summary>Winner Overlay</summary>
             <div className="bk-details-body">
               <label className="nb-field"><span>Winner Image Effect</span></label>
-              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', padding: '6px 0' }}>
                 {[
-                  { value: 'none', label: 'None', preview: '❌' },
-                  { value: 'crown', label: 'Crown', preview: '/tournament/crown.webp' },
-                  { value: 'handtrophy', label: 'Hand Trophy', preview: '/tournament/handtrophy.jpg' },
-                  { value: 'slottrophy', label: 'Slot Trophy', preview: '/tournament/slottrophy.png' },
-                  { value: 'winner', label: 'Winner', preview: '/tournament/winner.png' },
-                ].map(opt => (
-                  <div key={opt.value}
-                    onClick={() => set('winnerOverlay', opt.value)}
-                    style={{
-                      cursor: 'pointer', padding: 4, borderRadius: 6,
-                      border: `2px solid ${(c.winnerOverlay || 'none') === opt.value ? '#7c3aed' : 'rgba(255,255,255,0.1)'}`,
-                      background: (c.winnerOverlay || 'none') === opt.value ? 'rgba(124,58,237,0.15)' : 'rgba(0,0,0,0.2)',
-                      textAlign: 'center', width: 64,
-                    }}>
-                    {opt.value === 'none'
-                      ? <div style={{ fontSize: 24, lineHeight: '40px' }}>{opt.preview}</div>
-                      : <img src={opt.preview} alt={opt.label} style={{ width: 56, height: 40, objectFit: 'contain', borderRadius: 4 }} />
-                    }
-                    <div style={{ fontSize: 9, color: '#ccc', marginTop: 2 }}>{opt.label}</div>
-                  </div>
-                ))}
+                  { value: 'none', label: 'None', emoji: '❌' },
+                  { value: 'crown', label: 'Crown', src: '/tournament/crown.webp' },
+                  { value: 'handtrophy', label: 'Hand Trophy', src: '/tournament/handtrophy.jpg' },
+                  { value: 'slottrophy', label: 'Slot Trophy', src: '/tournament/slottrophy.png' },
+                  { value: 'winner', label: 'Winner', src: '/tournament/winner.png' },
+                ].map(opt => {
+                  const active = (c.winnerOverlay || 'none') === opt.value;
+                  return (
+                    <div key={opt.value}
+                      onClick={() => set('winnerOverlay', opt.value)}
+                      style={{
+                        cursor: 'pointer', padding: 6, borderRadius: 8,
+                        border: `2px solid ${active ? '#7c3aed' : 'rgba(255,255,255,0.15)'}`,
+                        background: active ? 'rgba(124,58,237,0.2)' : 'rgba(255,255,255,0.05)',
+                        textAlign: 'center', width: 70,
+                        transition: 'all 0.2s ease',
+                      }}>
+                      {opt.emoji
+                        ? <div style={{ fontSize: 28, lineHeight: '48px' }}>{opt.emoji}</div>
+                        : <div style={{ width: 58, height: 48, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)', borderRadius: 4, overflow: 'hidden' }}>
+                            <img src={opt.src} alt={opt.label} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                          </div>
+                      }
+                      <div style={{ fontSize: 10, color: active ? '#c4b5fd' : '#aaa', marginTop: 3, fontWeight: active ? 700 : 400 }}>{opt.label}</div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
           </details>
