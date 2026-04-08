@@ -240,7 +240,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <div style={{ marginBottom: 10, padding: '10px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 8 }}>
           <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 6px' }}>💬 Chat Messages</p>
           <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '0 0 8px', lineHeight: 1.4 }}>
-            Customize the messages sent in Twitch chat. Use <strong style={{ color: '#c4b5fd' }}>{'{slot}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{user}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{cost}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{points}'}</strong> as placeholders.
+            Customize the messages sent in Twitch chat. Use <strong style={{ color: '#c4b5fd' }}>{'{slot}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{user}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{cost}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{points}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{by}'}</strong> as placeholders.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div>
@@ -274,7 +274,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
               <label style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: 600 }}>Already in queue</label>
               <input
                 type="text"
-                value={c.srMsgDuplicate || '"{slot}" is already in the queue!'}
+                value={c.srMsgDuplicate || '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!'}
                 onChange={e => set('srMsgDuplicate', e.target.value)}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '5px 8px', fontSize: '0.72rem', outline: 'none' }}
               />

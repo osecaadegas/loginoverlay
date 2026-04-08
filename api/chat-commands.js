@@ -145,7 +145,7 @@ async function handleSlotRequest(req, res) {
       accepted: wConfig?.srMsgAccepted || '🎰 Added "{slot}" to the queue (requested by {user})',
       acceptedCost: wConfig?.srMsgAcceptedCost || '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)',
       notEnough: wConfig?.srMsgNotEnough || '❌ {user}, you need {cost} points to request a slot (you have {points}).',
-      duplicate: wConfig?.srMsgDuplicate || '"{slot}" is already in the queue!',
+      duplicate: wConfig?.srMsgDuplicate || '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!',
     };
     const fillTemplate = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
 
@@ -183,10 +183,10 @@ async function handleSlotRequest(req, res) {
     // Multiple overlay instances may call simultaneously for the same !sr.
     // We check for existing pending OR recently denied rows to avoid re-processing.
 
-    // Pre-check: if this slot is already queued or was recently denied, exit silently
+    // Pre-check: if this slot is already queued or was recently denied, inform & exit
     const { data: existing } = await supabase
       .from('slot_requests')
-      .select('id, status, created_at')
+      .select('id, status, created_at, requested_by')
       .eq('user_id', user_id)
       .ilike('slot_name', resolvedName)
       .in('status', ['pending', 'denied'])
@@ -195,8 +195,12 @@ async function handleSlotRequest(req, res) {
 
     if (existing && existing.length > 0) {
       const row = existing[0];
-      // 'pending' → already in queue
-      if (row.status === 'pending') return res.status(200).send('ok');
+      // 'pending' → already in queue — inform viewer, no points taken
+      if (row.status === 'pending') {
+        const msg = fillTemplate(msgTemplates.duplicate, { slot: resolvedName, user: viewer, by: row.requested_by || '?' });
+        chatOnce(msg);
+        return reply(msg);
+      }
       // 'denied' within last 30 seconds → another call already handled this
       const age = Date.now() - new Date(row.created_at).getTime();
       if (row.status === 'denied' && age < 30000) return res.status(200).send('ok');
