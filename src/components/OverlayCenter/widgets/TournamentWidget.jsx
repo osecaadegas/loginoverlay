@@ -1379,23 +1379,32 @@ function TournamentWidget({ config, theme }) {
             }}>🏆</div>
           )}
 
-          {/* Super / Extreme tag badge */}
-          {!isLoser && (isSuper || isExtreme) && (
-            <div style={{
-              position: 'absolute', top: 0, left: 0, zIndex: 6,
-              fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 900,
-              color: '#fff', textTransform: 'uppercase', letterSpacing: '0.8px',
-              fontFamily: gFont, lineHeight: 1,
-              padding: '2px 5px 2px 4px',
-              borderRadius: '0 0 5px 0',
-              background: isSuper
-                ? `linear-gradient(135deg, ${gGoldBorder}, #d97706)`
-                : `linear-gradient(135deg, ${gExtremeRed}, #b91c1c)`,
-              boxShadow: isSuper
-                ? `0 0 8px ${gGoldBorder}50`
-                : `0 0 8px ${gExtremeRed}50`,
-            }}>{isSuper ? '⭐ SUPER' : '🔥 EXTREME'}</div>
-          )}
+          {/* Super / Extreme tag badge — outer edge, vertical */}
+          {!isLoser && (isSuper || isExtreme) && (() => {
+            const isLeft = playerKey === 'player1';
+            return (
+              <div style={{
+                position: 'absolute',
+                top: '50%', transform: 'translateY(-50%)',
+                ...(isLeft ? { left: 0 } : { right: 0 }),
+                zIndex: 6,
+                writingMode: 'vertical-rl',
+                textOrientation: 'mixed',
+                ...(isLeft ? { transform: 'translateY(-50%) rotate(180deg)' } : {}),
+                fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 900,
+                color: '#fff', textTransform: 'uppercase', letterSpacing: '1.2px',
+                fontFamily: gFont, lineHeight: 1,
+                padding: '5px 3px',
+                borderRadius: isLeft ? '0 4px 4px 0' : '4px 0 0 4px',
+                background: isSuper
+                  ? `linear-gradient(180deg, ${gGoldBorder}, #d97706)`
+                  : `linear-gradient(180deg, ${gExtremeRed}, #b91c1c)`,
+                boxShadow: isSuper
+                  ? `0 0 10px ${gGoldBorder}60`
+                  : `0 0 10px ${gExtremeRed}60`,
+              }}>{isSuper ? '⭐ SUPER' : '🔥 EXTREME'}</div>
+            );
+          })()}
 
           {/* Name stripe + Bo3 pips — top */}
           <div style={{
@@ -1474,14 +1483,13 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
-    /* ── VS badge (styled SVG swords) ── */
+    /* ── VS badge (⚔️ emoji) ── */
     const renderVs = (large = false, isLive = false) => {
-      const swordSize = large ? 'clamp(24px, 3.5vw, 40px)' : 'clamp(16px, 2.4vw, 28px)';
       return (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center', flexShrink: 0, gap: 2,
-          padding: '0 clamp(1px, 0.15vw, 2px)',
+          padding: '0 clamp(0px, 0.1vw, 1px)',
         }}>
           {/* LIVE badge */}
           {isLive && (
@@ -1494,19 +1502,12 @@ function TournamentWidget({ config, theme }) {
               boxShadow: '0 0 8px rgba(239,68,68,0.5)',
             }}>LIVE</div>
           )}
-          <svg width={swordSize} height={swordSize} viewBox="0 0 64 64" style={{
-            filter: `drop-shadow(0 0 6px ${gCyan}80) drop-shadow(0 0 14px ${gPurple}50)`,
+          <div style={{
+            fontSize: large ? 'clamp(22px, 3.2vw, 38px)' : 'clamp(16px, 2.4vw, 28px)',
+            lineHeight: 1,
+            filter: `drop-shadow(0 0 8px ${gCyan}70) drop-shadow(0 0 18px ${gPurple}40)`,
             ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-          }}>
-            {/* Left sword */}
-            <line x1="8" y1="56" x2="44" y2="8" stroke={gCyan} strokeWidth="3.5" strokeLinecap="round" />
-            <line x1="8" y1="56" x2="18" y2="50" stroke={gCyan} strokeWidth="4" strokeLinecap="round" />
-            <line x1="8" y1="56" x2="14" y2="46" stroke={gCyan} strokeWidth="4" strokeLinecap="round" />
-            {/* Right sword */}
-            <line x1="56" y1="56" x2="20" y2="8" stroke={gPurple} strokeWidth="3.5" strokeLinecap="round" />
-            <line x1="56" y1="56" x2="46" y2="50" stroke={gPurple} strokeWidth="4" strokeLinecap="round" />
-            <line x1="56" y1="56" x2="50" y2="46" stroke={gPurple} strokeWidth="4" strokeLinecap="round" />
-          </svg>
+          }}>⚔️</div>
           {/* WINNER label for grand final */}
           {isGrandFinalMatch && large && (
             <div style={{
@@ -1521,20 +1522,21 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
-    /* ── Queued match row ── */
+    /* ── Queued match row (3D perspective) ── */
     const renderQueuedMatch = (match, idx) => (
       <div key={idx} style={{
-        display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 8px)',
+        display: 'flex', alignItems: 'stretch', gap: 'clamp(1px, 0.2vw, 3px)',
         background: 'transparent',
         borderRadius: 10, padding: 'clamp(2px, 0.3vw, 4px)',
-        position: 'relative', overflow: 'hidden',
+        position: 'relative', overflow: 'visible',
         minHeight: 'clamp(90px, 18vh, 160px)',
+        perspective: '800px',
       }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(4deg)', transformOrigin: 'right center', transition: 'transform 0.3s ease' }}>
           {renderCard(match, 'player1', false, false, false)}
         </div>
         {renderVs(false)}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, transform: 'rotateY(-4deg)', transformOrigin: 'left center', transition: 'transform 0.3s ease' }}>
           {renderCard(match, 'player2', false, false, false)}
         </div>
       </div>
@@ -1547,31 +1549,33 @@ function TournamentWidget({ config, theme }) {
       const p2Won = winner === 'player2';
       const p1 = match.player1 || 'TBD';
       const p2 = match.player2 || 'TBD';
-      const fs = 'clamp(8px, 1.2vw, 13px)';
+      const fs = 'clamp(9px, 1.3vw, 14px)';
       return (
         <div key={idx} style={{
-          display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 10px)',
-          padding: 'clamp(2px, 0.3vw, 5px) clamp(6px, 0.8vw, 12px)',
-          background: 'rgba(0,0,0,0.25)',
-          border: `1px solid ${gBorder}`,
-          borderRadius: 6,
+          display: 'flex', alignItems: 'center', gap: 'clamp(6px, 0.8vw, 12px)',
+          padding: 'clamp(4px, 0.5vw, 8px) clamp(8px, 1vw, 14px)',
+          background: 'rgba(0,0,0,0.35)',
+          border: `1px solid ${p1Won || p2Won ? `${gGreen}25` : gBorder}`,
+          borderRadius: 8,
           backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
         }}>
           <span style={{
-            flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 700, fontFamily: gFont,
-            color: p1Won ? gGreen : 'rgba(255,255,255,0.35)',
+            flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 800, fontFamily: gFont,
+            color: p1Won ? gGreen : 'rgba(255,255,255,0.3)',
             textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            textShadow: p1Won ? `0 0 6px ${gGreen}40` : 'none',
+            letterSpacing: '0.5px',
+            textShadow: p1Won ? `0 0 8px ${gGreen}50` : 'none',
           }}>{p1Won ? '🏆 ' : ''}{p1}</span>
           <span style={{
-            fontSize: 'clamp(6px, 0.8vw, 9px)', fontWeight: 800, color: '#475569',
-            fontFamily: gFont, flexShrink: 0,
-          }}>VS</span>
+            fontSize: 'clamp(10px, 1.2vw, 14px)', flexShrink: 0,
+            filter: `drop-shadow(0 0 4px ${gCyan}50)`,
+          }}>⚔️</span>
           <span style={{
-            flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 700, fontFamily: gFont,
-            color: p2Won ? gGreen : 'rgba(255,255,255,0.35)',
+            flex: 1, textAlign: 'left', fontSize: fs, fontWeight: 800, fontFamily: gFont,
+            color: p2Won ? gGreen : 'rgba(255,255,255,0.3)',
             textTransform: 'uppercase', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
-            textShadow: p2Won ? `0 0 6px ${gGreen}40` : 'none',
+            letterSpacing: '0.5px',
+            textShadow: p2Won ? `0 0 8px ${gGreen}50` : 'none',
           }}>{p2}{p2Won ? ' 🏆' : ''}</span>
         </div>
       );
