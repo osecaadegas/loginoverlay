@@ -1472,13 +1472,13 @@ function TournamentWidget({ config, theme }) {
       );
     };
 
-    /* ── VS badge ── */
+    /* ── VS badge (swords emoji) ── */
     const renderVs = (large = false, isLive = false) => {
-      const sz = large ? 'clamp(22px, 3vw, 36px)' : 'clamp(14px, 1.8vw, 22px)';
       return (
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
-          justifyContent: 'center', flexShrink: 0, gap: 3,
+          justifyContent: 'center', flexShrink: 0, gap: 2,
+          padding: '0 clamp(1px, 0.2vw, 3px)',
         }}>
           {/* LIVE badge */}
           {isLive && (
@@ -1492,16 +1492,12 @@ function TournamentWidget({ config, theme }) {
             }}>LIVE</div>
           )}
           <div style={{
-            width: sz, height: sz, borderRadius: '50%', flexShrink: 0,
-            background: `linear-gradient(135deg, ${gPurple}, ${gCyan})`,
-            border: '2px solid rgba(0,0,0,0.4)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: large ? 'clamp(9px, 1.2vw, 14px)' : 'clamp(6px, 0.9vw, 10px)',
-            fontWeight: 900, color: '#fff', fontFamily: gFont,
-            boxShadow: `0 0 16px ${gPurple}40, 0 0 8px ${gCyan}30`,
+            fontSize: large ? 'clamp(18px, 2.8vw, 32px)' : 'clamp(14px, 2vw, 24px)',
+            lineHeight: 1,
+            filter: `drop-shadow(0 0 8px ${gCyan}60) drop-shadow(0 0 16px ${gPurple}40)`,
             alignSelf: 'center',
             ...(large ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
-          }}>VS</div>
+          }}>⚔</div>
           {/* WINNER label for grand final */}
           {isGrandFinalMatch && large && (
             <div style={{
@@ -1607,14 +1603,15 @@ function TournamentWidget({ config, theme }) {
     const flipperShowPhase = flipperTick % 2 === 1 && activePhaseLabel;
     const boRound = getCurrentBoRound(currentMatch);
 
-    /* ── Cap queued matches at 3 rows max ── */
-    const visibleQueued = queuedMatches.slice(-3);
+    /* ── Cap queued matches at 3 rows max, earliest phase first ── */
+    const visibleQueued = queuedMatches.slice(0, 3);
 
-    /* ── Group queued matches by phase, show label only before first of each group ── */
+    /* ── Group queued matches by phase, show divider label below last match of each phase ── */
     const queuedWithPhase = visibleQueued.map((m, i) => {
       const label = getMatchPhaseLabel(m);
-      const prevLabel = i > 0 ? getMatchPhaseLabel(visibleQueued[i - 1]) : null;
-      return { match: m, showLabel: label && label !== prevLabel ? label : null };
+      const nextLabel = i < visibleQueued.length - 1 ? getMatchPhaseLabel(visibleQueued[i + 1]) : null;
+      // Show divider below this match when next match is a different phase
+      return { match: m, showLabel: label && nextLabel && label !== nextLabel ? nextLabel : null };
     });
 
     return (
@@ -1644,18 +1641,19 @@ function TournamentWidget({ config, theme }) {
             padding: 'clamp(3px, 0.5vw, 8px)',
           }}>
             {queuedWithPhase.map((item, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {/* Phase label — only on first match of each phase */}
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {renderQueuedMatch(item.match, i)}
+                {/* Phase label — below the last match of each phase group */}
                 {item.showLabel && (
                   <div style={{
                     textAlign: 'center',
-                    fontSize: 'clamp(6px, 0.7vw, 9px)', fontWeight: 700,
-                    color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase',
-                    letterSpacing: '1.5px', fontFamily: gFont,
-                    padding: '1px 0',
-                  }}>{item.showLabel}</div>
+                    fontSize: 'clamp(8px, 1vw, 12px)', fontWeight: 800,
+                    color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase',
+                    letterSpacing: '2.5px', fontFamily: gFont,
+                    padding: 'clamp(4px, 0.6vw, 8px) 0 clamp(2px, 0.3vw, 4px)',
+                    textShadow: `0 0 10px ${gCyan}30`,
+                  }}>— {item.showLabel} —</div>
                 )}
-                {renderQueuedMatch(item.match, i)}
               </div>
             ))}
           </div>
@@ -1705,20 +1703,20 @@ function TournamentWidget({ config, theme }) {
             }}>
               <div style={{
                 position: 'relative', overflow: 'hidden',
-                height: 'clamp(14px, 2vw, 22px)',
+                height: 'clamp(16px, 2.4vw, 26px)',
               }}>
                 {/* "Now Playing" or phase label — CSS flip */}
                 <span key={flipperTick} style={{
                   display: 'inline-block',
-                  fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 800,
+                  fontSize: 'clamp(10px, 1.5vw, 17px)', fontWeight: 900,
                   color: isGrandFinalMatch ? gGold : flipperShowPhase ? gCyan : gGold,
-                  textTransform: 'uppercase', letterSpacing: '3px',
+                  textTransform: 'uppercase', letterSpacing: '3.5px',
                   fontFamily: gFont,
                   textShadow: isGrandFinalMatch
-                    ? `0 0 12px ${gGold}50`
+                    ? `0 0 14px ${gGold}60, 0 0 28px ${gGold}25`
                     : flipperShowPhase
-                      ? `0 0 10px ${gCyan}60`
-                      : `0 0 12px ${gGold}50`,
+                      ? `0 0 12px ${gCyan}70, 0 0 24px ${gCyan}30`
+                      : `0 0 14px ${gGold}60, 0 0 28px ${gGold}25`,
                   animation: 'grid-flipper-in 0.5s ease-out forwards',
                 }}>
                   {isGrandFinalMatch
@@ -1732,10 +1730,10 @@ function TournamentWidget({ config, theme }) {
               {/* Bo3 Round indicator */}
               {boRound && !isGrandFinalMatch && (
                 <div style={{
-                  fontSize: 'clamp(6px, 0.7vw, 9px)', fontWeight: 700,
-                  color: gPurple, textTransform: 'uppercase', letterSpacing: '1.5px',
-                  fontFamily: gFont, marginTop: 1,
-                  textShadow: `0 0 8px ${gPurple}40`,
+                  fontSize: 'clamp(8px, 0.9vw, 11px)', fontWeight: 800,
+                  color: gPurple, textTransform: 'uppercase', letterSpacing: '2px',
+                  fontFamily: gFont, marginTop: 2,
+                  textShadow: `0 0 10px ${gPurple}50, 0 0 20px ${gPurple}20`,
                 }}>Round {boRound}</div>
               )}
             </div>
