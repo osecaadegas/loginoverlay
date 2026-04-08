@@ -153,6 +153,23 @@ export default function SlotRequestsConfig({ config, onChange }) {
     fetchQueue();
   };
 
+  const rejectRequest = async (id) => {
+    try {
+      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          request_id: id,
+          user_id: user.id,
+          message_template: c.srMsgRejected || undefined,
+        }),
+      });
+      fetchQueue();
+    } catch (err) {
+      console.error('[reject] error:', err);
+    }
+  };
+
   const clearAll = async () => {
     if (!user) return;
     setLoading(true);
@@ -240,7 +257,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <div style={{ marginBottom: 10, padding: '10px 12px', background: 'rgba(99,102,241,0.06)', border: '1px solid rgba(99,102,241,0.15)', borderRadius: 8 }}>
           <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 6px' }}>💬 Chat Messages</p>
           <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '0 0 8px', lineHeight: 1.4 }}>
-            Customize the messages sent in Twitch chat. Use <strong style={{ color: '#c4b5fd' }}>{'{slot}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{user}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{cost}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{points}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{by}'}</strong> as placeholders.
+            Customize the messages sent in Twitch chat. Use <strong style={{ color: '#c4b5fd' }}>{'{slot}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{user}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{cost}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{points}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{by}'}</strong>, <strong style={{ color: '#c4b5fd' }}>{'{refund}'}</strong> as placeholders.
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <div>
@@ -278,6 +295,16 @@ export default function SlotRequestsConfig({ config, onChange }) {
                 onChange={e => set('srMsgDuplicate', e.target.value)}
                 style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '5px 8px', fontSize: '0.72rem', outline: 'none' }}
               />
+            </div>
+            <div>
+              <label style={{ fontSize: '0.7rem', color: '#a5b4fc', fontWeight: 600 }}>Rejected (refund)</label>
+              <input
+                type="text"
+                value={c.srMsgRejected || '🚫 {user}, your request for "{slot}" was rejected. {refund}'}
+                onChange={e => set('srMsgRejected', e.target.value)}
+                style={{ width: '100%', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, color: '#e2e8f0', padding: '5px 8px', fontSize: '0.72rem', outline: 'none' }}
+              />
+              <p style={{ fontSize: '0.6rem', color: '#64748b', margin: '2px 0 0' }}>{'{refund}'} = auto-filled with refund info</p>
             </div>
           </div>
         </div>
@@ -382,6 +409,15 @@ export default function SlotRequestsConfig({ config, onChange }) {
             >
               ✓
             </button>
+            {c.srSeEnabled && (
+              <button
+                style={{ ...S.btn, background: 'rgba(251,191,36,0.15)', color: '#fbbf24', padding: '4px 8px', fontSize: '0.7rem' }}
+                onClick={() => rejectRequest(r.id)}
+                title="Reject &amp; refund SE points"
+              >
+                ↩
+              </button>
+            )}
             <button
               style={{ ...S.btn, background: 'rgba(248,113,113,0.1)', color: '#f87171', padding: '4px 8px', fontSize: '0.7rem' }}
               onClick={() => removeRequest(r.id)}
