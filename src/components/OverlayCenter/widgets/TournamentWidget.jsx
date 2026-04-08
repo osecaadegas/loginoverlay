@@ -1592,13 +1592,6 @@ function TournamentWidget({ config, theme }) {
       return idx >= 0 ? (phaseLabelByIdx[idx] || null) : null;
     };
 
-    /* ── Group queued matches by phase, show label only before first of each group ── */
-    const queuedWithPhase = visibleQueued.map((m, i) => {
-      const label = getMatchPhaseLabel(m);
-      const prevLabel = i > 0 ? getMatchPhaseLabel(visibleQueued[i - 1]) : null;
-      return { match: m, showLabel: label && label !== prevLabel ? label : null };
-    });
-
     /* ── Bo3 current round indicator ── */
     const getCurrentBoRound = (match) => {
       if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
@@ -1616,6 +1609,13 @@ function TournamentWidget({ config, theme }) {
 
     /* ── Cap queued matches at 3 rows max ── */
     const visibleQueued = queuedMatches.slice(-3);
+
+    /* ── Group queued matches by phase, show label only before first of each group ── */
+    const queuedWithPhase = visibleQueued.map((m, i) => {
+      const label = getMatchPhaseLabel(m);
+      const prevLabel = i > 0 ? getMatchPhaseLabel(visibleQueued[i - 1]) : null;
+      return { match: m, showLabel: label && label !== prevLabel ? label : null };
+    });
 
     return (
       <div style={{
