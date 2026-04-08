@@ -1237,7 +1237,9 @@ function TournamentWidget({ config, theme }) {
     const totalPhases = bracketData.length;
     const activePhaseLabel = bracketData[bracketActiveRound]?.label || null;
     const isFinalPhase = bracketActiveRound === totalPhases - 1 && totalPhases > 1;
-    const isGrandFinalMatch = isFinalPhase && currentMatch?.winner != null;
+    /* Champion celebration only when the LAST match of the entire tournament is decided */
+    const isGrandFinalMatch = isFinalPhase && currentMatch?.winner != null
+      && matches.every(m => m.winner != null);
 
     /* Get cost & payment (Bo3 sums all rounds) */
     const getVals = (match, playerKey) => {
