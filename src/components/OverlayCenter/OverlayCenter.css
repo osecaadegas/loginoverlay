@@ -8825,6 +8825,37 @@ body.wm-resizing {
 .bk-player-fields .bk-input { padding: 8px 10px; font-size: 13px; }
 .bk-player-fields .bk-slot-wrap { width: 100%; }
 
+/* --- Locked slot view --- */
+.bk-slot-locked {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: rgba(139,92,246,0.08); border: 1px solid rgba(139,92,246,0.25);
+  border-radius: 8px; padding: 6px 10px;
+}
+.bk-slot-locked-info { display: flex; align-items: center; gap: 8px; flex: 1; min-width: 0; }
+.bk-slot-locked-name { font-size: 13px; font-weight: 600; color: #e2e8f0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-slot-tag {
+  font-size: 9px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px;
+  padding: 2px 6px; border-radius: 4px; flex-shrink: 0;
+}
+.bk-slot-tag--super { background: rgba(59,130,246,0.2); color: #60a5fa; border: 1px solid rgba(59,130,246,0.4); }
+.bk-slot-tag--extreme { background: rgba(239,68,68,0.2); color: #f87171; border: 1px solid rgba(239,68,68,0.4); }
+.bk-slot-locked-actions { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.bk-slot-tag-btn {
+  width: 26px; height: 26px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); color: #64748b; font-size: 11px; font-weight: 800;
+  cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center;
+}
+.bk-slot-tag-btn:hover { background: rgba(255,255,255,0.08); }
+.bk-slot-tag-btn--super.bk-slot-tag-btn--active { background: rgba(59,130,246,0.2); border-color: rgba(59,130,246,0.5); color: #60a5fa; }
+.bk-slot-tag-btn--extreme.bk-slot-tag-btn--active { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.5); color: #f87171; }
+.bk-slot-action-btn {
+  width: 26px; height: 26px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.1);
+  background: rgba(255,255,255,0.04); cursor: pointer; transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; font-size: 12px;
+}
+.bk-slot-action-btn:hover { background: rgba(255,255,255,0.1); }
+.bk-slot-action-btn--delete:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.4); }
+
 /* --- Slot search --- */
 .bk-slot-wrap { position: relative; }
 .bk-slot-input-row { display: flex; align-items: center; gap: 6px; }

@@ -300,10 +300,30 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     setBkShowSuggestions(prev => ({ ...prev, [idx]: term.length > 0 }));
   };
 
+  const [bkEditingSlot, setBkEditingSlot] = useState({});
+
   const handleBkSlotSelect = (idx, slot) => {
     updateBracketPlayer(idx, 'slot', { name: slot.name, image: slot.image || slot.image_url || null });
-    setBkSlotSearches(prev => ({ ...prev, [idx]: slot.name }));
+    setBkSlotSearches(prev => ({ ...prev, [idx]: '' }));
     setBkShowSuggestions(prev => ({ ...prev, [idx]: false }));
+    setBkEditingSlot(prev => ({ ...prev, [idx]: false }));
+  };
+
+  const handleBkSlotDelete = (idx) => {
+    updateBracketPlayer(idx, 'slot', null);
+    setBkSlotSearches(prev => ({ ...prev, [idx]: '' }));
+    setBkEditingSlot(prev => ({ ...prev, [idx]: true }));
+  };
+
+  const handleBkSlotEdit = (idx) => {
+    setBkEditingSlot(prev => ({ ...prev, [idx]: true }));
+    setBkSlotSearches(prev => ({ ...prev, [idx]: '' }));
+  };
+
+  const toggleBkSlotTag = (idx, tag) => {
+    const player = localBracketPlayers[idx];
+    const currentTag = player.slot?.tag;
+    updateBracketPlayer(idx, 'slot', { ...player.slot, tag: currentTag === tag ? null : tag });
   };
 
   /* ─── Fill random players for testing ─── */
@@ -620,27 +640,48 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                         <input className="bk-input" type="text" value={player.name} placeholder="Player name"
                           onChange={e => updateBracketPlayer(idx, 'name', e.target.value)} />
                         <div className="bk-slot-wrap">
-                          <div className="bk-slot-input-row">
-                            {player.slot?.image && (
-                              <img src={player.slot.image} alt="" className="bk-slot-thumb" />
-                            )}
-                            <input className="bk-input bk-input--slot" type="text"
-                              value={bkSlotSearches[idx] ?? player.slot?.name ?? ''}
-                              placeholder="🎰 Search slot..."
-                              onChange={e => handleBkSlotSearch(idx, e.target.value)}
-                              onFocus={() => { if ((bkSlotSearches[idx] || '').length > 0) setBkShowSuggestions(p => ({ ...p, [idx]: true })); }}
-                              onBlur={() => setTimeout(() => setBkShowSuggestions(p => ({ ...p, [idx]: false })), 200)} />
-                          </div>
-                          {bkShowSuggestions[idx] && filteredSlots(bkSlotSearches[idx] || '').length > 0 && (
-                            <div className="bk-slot-dropdown">
-                              {filteredSlots(bkSlotSearches[idx] || '').map(slot => (
-                                <button key={slot.id} className="bk-slot-option"
-                                  onMouseDown={(e) => { e.preventDefault(); handleBkSlotSelect(idx, slot); }}>
-                                  {slot.image && <img src={slot.image} alt={slot.name} className="bk-slot-thumb" />}
-                                  <span>{slot.name}</span>
-                                </button>
-                              ))}
+                          {player.slot?.name && !bkEditingSlot[idx] ? (
+                            /* ── Locked slot view ── */
+                            <div className="bk-slot-locked">
+                              <div className="bk-slot-locked-info">
+                                {player.slot.image && <img src={player.slot.image} alt="" className="bk-slot-thumb" />}
+                                <span className="bk-slot-locked-name">{player.slot.name}</span>
+                                {player.slot.tag && (
+                                  <span className={`bk-slot-tag bk-slot-tag--${player.slot.tag}`}>{player.slot.tag}</span>
+                                )}
+                              </div>
+                              <div className="bk-slot-locked-actions">
+                                <button className={`bk-slot-tag-btn bk-slot-tag-btn--super ${player.slot.tag === 'super' ? 'bk-slot-tag-btn--active' : ''}`}
+                                  onClick={() => toggleBkSlotTag(idx, 'super')} title="Super">S</button>
+                                <button className={`bk-slot-tag-btn bk-slot-tag-btn--extreme ${player.slot.tag === 'extreme' ? 'bk-slot-tag-btn--active' : ''}`}
+                                  onClick={() => toggleBkSlotTag(idx, 'extreme')} title="Extreme">X</button>
+                                <button className="bk-slot-action-btn bk-slot-action-btn--edit" onClick={() => handleBkSlotEdit(idx)} title="Edit">✏️</button>
+                                <button className="bk-slot-action-btn bk-slot-action-btn--delete" onClick={() => handleBkSlotDelete(idx)} title="Delete">🗑️</button>
+                              </div>
                             </div>
+                          ) : (
+                            /* ── Search input ── */
+                            <>
+                              <div className="bk-slot-input-row">
+                                <input className="bk-input bk-input--slot" type="text"
+                                  value={bkSlotSearches[idx] ?? ''}
+                                  placeholder="🎰 Search slot..."
+                                  onChange={e => handleBkSlotSearch(idx, e.target.value)}
+                                  onFocus={() => { if ((bkSlotSearches[idx] || '').length > 0) setBkShowSuggestions(p => ({ ...p, [idx]: true })); }}
+                                  onBlur={() => setTimeout(() => setBkShowSuggestions(p => ({ ...p, [idx]: false })), 200)} />
+                              </div>
+                              {bkShowSuggestions[idx] && filteredSlots(bkSlotSearches[idx] || '').length > 0 && (
+                                <div className="bk-slot-dropdown">
+                                  {filteredSlots(bkSlotSearches[idx] || '').map(slot => (
+                                    <button key={slot.id} className="bk-slot-option"
+                                      onMouseDown={(e) => { e.preventDefault(); handleBkSlotSelect(idx, slot); }}>
+                                      {slot.image && <img src={slot.image} alt={slot.name} className="bk-slot-thumb" />}
+                                      <span>{slot.name}</span>
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
+                            </>
                           )}
                         </div>
                       </div>
