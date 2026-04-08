@@ -1549,13 +1549,29 @@ function TournamentWidget({ config, theme }) {
     const hasCurrentWinner = currentMatch?.winner != null;
     const isCurrentLive = !hasCurrentWinner;
 
-    /* ── Phase lookup: find which phase a match belongs to ── */
-    const getMatchPhaseLabel = (match) => {
+    /* ── Phase lookup by flat index: map each allMatches index → phase label ── */
+    const phaseLabelByIdx = (() => {
+      const map = {};
+      let flatIdx = 0;
       for (const round of bracketData) {
-        if (round.matches && round.matches.includes(match)) return round.label;
+        for (let m = 0; m < (round.matches?.length || 0); m++) {
+          map[flatIdx] = round.label || null;
+          flatIdx++;
+        }
       }
-      return null;
+      return map;
+    })();
+    const getMatchPhaseLabel = (match) => {
+      const idx = allMatches.indexOf(match);
+      return idx >= 0 ? (phaseLabelByIdx[idx] || null) : null;
     };
+
+    /* ── Group queued matches by phase, show label only before first of each group ── */
+    const queuedWithPhase = visibleQueued.map((m, i) => {
+      const label = getMatchPhaseLabel(m);
+      const prevLabel = i > 0 ? getMatchPhaseLabel(visibleQueued[i - 1]) : null;
+      return { match: m, showLabel: label && label !== prevLabel ? label : null };
+    });
 
     /* ── Bo3 current round indicator ── */
     const getCurrentBoRound = (match) => {
@@ -1594,30 +1610,28 @@ function TournamentWidget({ config, theme }) {
           </div>
         )}
 
-        {/* ── Queued matches (max 3 rows) ── */}
+        {/* ── Queued matches (max 3 rows, phase label on first of each group) ── */}
         {visibleQueued.length > 0 && (
           <div style={{
             flexShrink: 0, display: 'flex', flexDirection: 'column',
             gap: 'clamp(3px, 0.5vw, 8px)',
             padding: 'clamp(3px, 0.5vw, 8px)',
           }}>
-            {visibleQueued.map((m, i) => {
-              const phaseLabel = getMatchPhaseLabel(m);
-              return (
-                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-                  {/* Phase label above each queued match */}
-                  {phaseLabel && (
-                    <div style={{
-                      textAlign: 'center',
-                      fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 700,
-                      color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase',
-                      letterSpacing: '1.5px', fontFamily: gFont,
-                    }}>{phaseLabel}</div>
-                  )}
-                  {renderQueuedMatch(m, i)}
-                </div>
-              );
-            })}
+            {queuedWithPhase.map((item, i) => (
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                {/* Phase label — only on first match of each phase */}
+                {item.showLabel && (
+                  <div style={{
+                    textAlign: 'center',
+                    fontSize: 'clamp(6px, 0.7vw, 9px)', fontWeight: 700,
+                    color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase',
+                    letterSpacing: '1.5px', fontFamily: gFont,
+                    padding: '1px 0',
+                  }}>{item.showLabel}</div>
+                )}
+                {renderQueuedMatch(item.match, i)}
+              </div>
+            ))}
           </div>
         )}
 
