@@ -1374,12 +1374,9 @@ function TournamentWidget({ config, theme }) {
                 }} />
               </div>
 
-              {/* Matches grid — side by side for multiple, full width for final */}
+              {/* Matches — stacked vertically */}
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: isFinal ? '1fr' : phase.matches.length <= 2
-                  ? `repeat(${phase.matches.length}, 1fr)`
-                  : 'repeat(2, 1fr)',
+                display: 'flex', flexDirection: 'column',
                 gap: 'clamp(3px, 0.4vw, 6px)',
               }}>
                 {phase.matches.map((match, mIdx) => renderGridMatch(match, phase.roundIdx, mIdx))}
@@ -1446,6 +1443,7 @@ function TournamentWidget({ config, theme }) {
       {layout === 'scoreboard' ? renderScoreboard()
         : layout === 'esports' ? renderEsports()
         : layout === 'arena' ? renderArena()
+        : layout === 'grid' ? renderGrid()
         : layout === 'grid' ? renderGrid()
         : (layout === 'vertical' || layout === 'minimal') ? renderVertical()
         : renderEsports()}
