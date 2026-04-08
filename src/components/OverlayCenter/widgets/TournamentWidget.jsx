@@ -1423,7 +1423,7 @@ function TournamentWidget({ config, theme }) {
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               textShadow: isWinner ? `0 0 8px ${gGreen}40` : `0 0 8px ${gCyan}30`,
             }}>{name}</div>
-            {renderPips(match, playerKey)}
+            {showStats && renderPips(match, playerKey)}
           </div>
 
           {/* Spacer — lets image show through */}
@@ -1492,7 +1492,8 @@ function TournamentWidget({ config, theme }) {
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           justifyContent: 'center', flexShrink: 0, gap: 2,
-          padding: '0 clamp(0px, 0.1vw, 1px)',
+          padding: 0, background: 'none', border: 'none',
+          width: large ? 'clamp(30px, 4vw, 50px)' : 'clamp(20px, 3vw, 36px)',
         }}>
           {/* LIVE badge */}
           {isLive && (
@@ -1556,11 +1557,11 @@ function TournamentWidget({ config, theme }) {
       const fs = 'clamp(9px, 1.3vw, 14px)';
       return (
         <div key={idx} style={{
-          display: 'flex', alignItems: 'center', gap: 'clamp(6px, 0.8vw, 12px)',
-          padding: 'clamp(4px, 0.5vw, 8px) clamp(8px, 1vw, 14px)',
+          display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 8px)',
+          padding: 'clamp(2px, 0.35vw, 5px) clamp(6px, 0.8vw, 10px)',
           background: 'rgba(0,0,0,0.35)',
           border: `1px solid ${p1Won || p2Won ? `${gGreen}25` : gBorder}`,
-          borderRadius: 8,
+          borderRadius: 6,
           backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
         }}>
           <span style={{
@@ -1795,8 +1796,8 @@ function TournamentWidget({ config, theme }) {
         {doneMatches.length > 0 && (
           <div style={{
             flexShrink: 0, display: 'flex', flexDirection: 'column',
-            gap: 'clamp(2px, 0.3vw, 4px)',
-            padding: 'clamp(3px, 0.5vw, 8px)',
+            gap: 'clamp(1px, 0.15vw, 2px)',
+            padding: 'clamp(2px, 0.3vw, 4px) clamp(3px, 0.5vw, 8px)',
           }}>
             {doneMatches.map((m, i) => renderDoneRow(m, i))}
           </div>
