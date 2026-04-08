@@ -105,7 +105,7 @@ function TournamentWidget({ config, theme }) {
   /* ─── Engine helpers ─── */
   const getPlayerResult = (match, playerKey) => {
     if (!match?.rounds) return null;
-    if (match.type === 'bonus_bo3') {
+    if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
       let total = 0, any = false;
       for (const round of match.rounds) {
         const r = calcRoundResult(round[playerKey], match.type);
@@ -144,7 +144,7 @@ function TournamentWidget({ config, theme }) {
      BO3 ROUND DOTS — small indicators for best-of-3 matches
      ═══════════════════════════════════════════════════════════════ */
   const renderBo3Dots = (match) => {
-    if (match.type !== 'bonus_bo3') return null;
+    if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
     const scoreboard = getBoScoreboard(match);
     if (!scoreboard) return null;
     return (
@@ -1135,6 +1135,263 @@ function TournamentWidget({ config, theme }) {
   };
 
   /* ═══════════════════════════════════════════════════════════════
+     GRID — Phase-aware bracket layout with clear round labels
+     Groups matches by bracket phase (Quarters / Semis / Final)
+     ═══════════════════════════════════════════════════════════════ */
+  const renderGrid = () => {
+    const bracketData = c.bracketData || [];
+    const bracketActiveRound = c.bracketActiveRound ?? 0;
+    const bracketActiveMatch = c.bracketActiveMatch ?? 0;
+    const gCyan   = c.esCyan   || '#00e5ff';
+    const gPurple = c.esPurple || '#a855f7';
+    const gGold   = c.esGold   || '#fbbf24';
+    const gBg     = c.esBg     || '#030712';
+    const gCardBg = c.esCardBg || 'rgba(15,23,42,0.75)';
+    const gBorder = c.esBorder || 'rgba(0,229,255,0.18)';
+    const gFont   = fontFamily;
+
+    /* Build flat match list with phase labels from bracketData */
+    const phases = bracketData.map((round, rIdx) => ({
+      label: round.label || `Round ${rIdx + 1}`,
+      matches: round.matches || [],
+      isActive: rIdx === bracketActiveRound,
+      roundIdx: rIdx,
+    }));
+
+    /* If no bracket data, fall back to flat matches grouped as single phase */
+    if (phases.length === 0 && matches.length > 0) {
+      phases.push({ label: 'Matches', matches, isActive: true, roundIdx: 0 });
+    }
+
+    /* Determine how many rounds each match has completed */
+    const getRoundsInfo = (match) => {
+      if (!match?.rounds) return null;
+      if (match.rounds.length <= 1) return null;
+      const completed = match.rounds.filter(r => {
+        const r1 = calcRoundResult(r.player1, match.type);
+        const r2 = calcRoundResult(r.player2, match.type);
+        return r1 !== null && r2 !== null;
+      }).length;
+      return { completed, total: match.rounds.length };
+    };
+
+    /* Player card for grid view */
+    const renderGridPlayer = (match, playerKey, isLarge) => {
+      const name = match[playerKey] || 'TBD';
+      const isTBD = !match[playerKey] || match[playerKey] === 'TBD';
+      const pSlot = playerKey === 'player1' ? match.slot1 : match.slot2;
+      const slotImage = pSlot?.image || null;
+      const result = getPlayerResult(match, playerKey);
+      const hasWinner = match.winner != null;
+      const isWinner = match.winner === playerKey;
+      const isLoser = hasWinner && !isWinner;
+
+      return (
+        <div style={{
+          flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column',
+          border: `1px solid ${isWinner ? gGold : gBorder}`,
+          borderRadius: isLarge ? 10 : 8, overflow: 'hidden',
+          opacity: isTBD ? 0.3 : isLoser ? 0.4 : 1,
+          transition: 'opacity 0.4s, border-color 0.3s',
+          boxShadow: isWinner ? `0 0 16px ${gGold}40` : 'none',
+          position: 'relative',
+        }}>
+          {/* Slot image */}
+          <div style={{
+            width: '100%', aspectRatio: isLarge ? '4/3' : '3/2',
+            background: `linear-gradient(135deg, ${gBg}, rgba(0,229,255,0.04))`,
+            position: 'relative', overflow: 'hidden',
+          }}>
+            {slotImage ? (
+              <img src={slotImage} alt={name} style={{
+                width: '100%', height: '100%', objectFit: 'cover', display: 'block',
+              }} />
+            ) : (
+              <div style={{
+                width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                fontSize: isLarge ? 20 : 14, color: 'rgba(255,255,255,0.06)',
+              }}>⚔</div>
+            )}
+            {/* Winner crown */}
+            {isWinner && (
+              <div style={{
+                position: 'absolute', top: 3, right: 3, fontSize: isLarge ? 18 : 13,
+              }}>🏆</div>
+            )}
+            {/* Result overlay */}
+            {result !== null && (
+              <div style={{
+                position: 'absolute', bottom: 0, left: 0, right: 0,
+                background: 'rgba(0,0,0,0.7)', textAlign: 'center',
+                padding: isLarge ? '3px 0' : '2px 0',
+              }}>
+                <span style={{
+                  fontSize: isLarge ? 'clamp(13px, 2vw, 20px)' : 'clamp(10px, 1.4vw, 14px)',
+                  fontWeight: 900, fontFamily: gFont,
+                  color: valColor(result),
+                  textShadow: `0 0 8px ${valColor(result)}50`,
+                }}>{fmtResult(result)}</span>
+              </div>
+            )}
+          </div>
+          {/* Name bar */}
+          <div style={{
+            padding: isLarge ? '5px 8px' : '3px 6px',
+            background: 'rgba(0,0,0,0.8)', textAlign: 'center',
+          }}>
+            <div style={{
+              fontSize: isLarge ? 'clamp(11px, 1.6vw, 15px)' : 'clamp(9px, 1.2vw, 12px)',
+              fontWeight: 800, fontFamily: gFont, color: '#fff',
+              textTransform: 'uppercase', letterSpacing: '0.5px',
+              whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+            }}>{name}</div>
+          </div>
+        </div>
+      );
+    };
+
+    /* Match card for grid */
+    const renderGridMatch = (match, rIdx, mIdx) => {
+      const isCurrentMatch = rIdx === bracketActiveRound && mIdx === bracketActiveMatch;
+      const hasWinner = match.winner != null;
+      const roundsInfo = getRoundsInfo(match);
+      const isTBD = (!match.player1 || match.player1 === 'TBD') && (!match.player2 || match.player2 === 'TBD');
+
+      return (
+        <div key={mIdx} style={{
+          display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 6px)',
+          background: isCurrentMatch ? 'rgba(0,229,255,0.06)' : 'rgba(0,0,0,0.25)',
+          border: `2px solid ${isCurrentMatch ? gCyan : hasWinner ? `${gGold}40` : gBorder}`,
+          borderRadius: 10, padding: 'clamp(4px, 0.6vw, 8px)',
+          opacity: isTBD ? 0.25 : 1,
+          position: 'relative', overflow: 'hidden',
+          transition: 'border-color 0.3s, background 0.3s',
+          ...(isCurrentMatch ? { animation: 'tw-current-glow 2s ease-in-out infinite' } : {}),
+        }}>
+          {renderGridPlayer(match, 'player1', false)}
+          {/* VS */}
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0, gap: 2,
+          }}>
+            <div style={{
+              width: 'clamp(16px, 2vw, 24px)', height: 'clamp(16px, 2vw, 24px)',
+              borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: isCurrentMatch
+                ? `linear-gradient(135deg, ${gPurple}, ${gCyan})`
+                : 'rgba(255,255,255,0.08)',
+              fontSize: 'clamp(6px, 0.9vw, 10px)', fontWeight: 900, color: '#fff', fontFamily: gFont,
+              ...(isCurrentMatch ? { animation: 'es-vs-pulse 2s ease-in-out infinite' } : {}),
+            }}>VS</div>
+            {/* Round progress for Bo3 */}
+            {roundsInfo && (
+              <div style={{
+                fontSize: 'clamp(7px, 0.8vw, 9px)', fontWeight: 700, color: gCyan,
+                fontFamily: gFont, whiteSpace: 'nowrap',
+              }}>{roundsInfo.completed}/{roundsInfo.total}</div>
+            )}
+          </div>
+          {renderGridPlayer(match, 'player2', false)}
+          {/* LIVE badge */}
+          {isCurrentMatch && !hasWinner && (
+            <div style={{
+              position: 'absolute', top: 4, left: '50%', transform: 'translateX(-50%)',
+              fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 900,
+              color: '#fff', background: '#ef4444',
+              padding: '1px 6px', borderRadius: 3, letterSpacing: '1px',
+              textTransform: 'uppercase', fontFamily: gFont,
+              animation: 'es-text-glow 2s ease-in-out infinite',
+            }}>LIVE</div>
+          )}
+        </div>
+      );
+    };
+
+    return (
+      <div style={{
+        display: 'flex', flexDirection: 'column', fontFamily: gFont,
+        overflow: 'hidden', height: '100%',
+        gap: 'clamp(4px, 0.6vw, 8px)',
+        padding: 'clamp(4px, 0.6vw, 8px)',
+      }}>
+        {/* Tournament title if available */}
+        {c.bracketName && (
+          <div style={{
+            textAlign: 'center', padding: 'clamp(2px, 0.3vw, 4px) 0',
+          }}>
+            <span style={{
+              fontSize: 'clamp(10px, 1.4vw, 16px)', fontWeight: 900,
+              color: '#fff', textTransform: 'uppercase', letterSpacing: '2px',
+              fontFamily: gFont, textShadow: `0 0 12px ${gCyan}30`,
+            }}>⚔ {c.bracketName}</span>
+          </div>
+        )}
+
+        {/* Phase sections */}
+        {phases.map((phase) => {
+          const hasRealMatches = phase.matches.some(m =>
+            (m.player1 && m.player1 !== 'TBD') || (m.player2 && m.player2 !== 'TBD')
+          );
+          const allDone = phase.matches.length > 0 && phase.matches.every(m => m.winner != null);
+          const isFinal = phase.label === 'Final';
+
+          return (
+            <div key={phase.roundIdx} style={{
+              display: 'flex', flexDirection: 'column',
+              gap: 'clamp(3px, 0.4vw, 6px)',
+              opacity: !hasRealMatches ? 0.25 : 1,
+              transition: 'opacity 0.4s',
+            }}>
+              {/* Phase header */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 8px)',
+              }}>
+                <div style={{
+                  flex: 1, height: 1,
+                  background: phase.isActive
+                    ? `linear-gradient(90deg, transparent, ${gCyan}60)`
+                    : allDone
+                      ? `linear-gradient(90deg, transparent, ${gGold}40)`
+                      : 'linear-gradient(90deg, transparent, rgba(255,255,255,0.1))',
+                }} />
+                <div style={{
+                  fontSize: 'clamp(8px, 1.1vw, 13px)', fontWeight: 900,
+                  color: phase.isActive ? gCyan : allDone ? gGold : 'rgba(255,255,255,0.4)',
+                  textTransform: 'uppercase', letterSpacing: '1.5px',
+                  fontFamily: gFont, whiteSpace: 'nowrap',
+                  textShadow: phase.isActive ? `0 0 10px ${gCyan}50` : 'none',
+                  ...(phase.isActive ? { animation: 'es-text-glow 2s ease-in-out infinite' } : {}),
+                }}>
+                  {phase.isActive && '▸ '}{phase.label}{allDone ? ' ✓' : ''}
+                </div>
+                <div style={{
+                  flex: 1, height: 1,
+                  background: phase.isActive
+                    ? `linear-gradient(90deg, ${gCyan}60, transparent)`
+                    : allDone
+                      ? `linear-gradient(90deg, ${gGold}40, transparent)`
+                      : 'linear-gradient(90deg, rgba(255,255,255,0.1), transparent)',
+                }} />
+              </div>
+
+              {/* Matches grid — side by side for multiple, full width for final */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isFinal ? '1fr' : phase.matches.length <= 2
+                  ? `repeat(${phase.matches.length}, 1fr)`
+                  : 'repeat(2, 1fr)',
+                gap: 'clamp(3px, 0.4vw, 6px)',
+              }}>
+                {phase.matches.map((match, mIdx) => renderGridMatch(match, phase.roundIdx, mIdx))}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  /* ═══════════════════════════════════════════════════════════════
      MAIN RETURN
      ═══════════════════════════════════════════════════════════════ */
   return (
@@ -1189,6 +1446,7 @@ function TournamentWidget({ config, theme }) {
       {layout === 'scoreboard' ? renderScoreboard()
         : layout === 'esports' ? renderEsports()
         : layout === 'arena' ? renderArena()
+        : layout === 'grid' ? renderGrid()
         : (layout === 'vertical' || layout === 'minimal') ? renderVertical()
         : renderEsports()}
     </div>
