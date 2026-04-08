@@ -10,7 +10,6 @@ import SeasonPassAdmin from './SeasonPassAdmin';
 import ExtensionAdmin from './ExtensionAdmin';
 import { CasinoOfferModal } from './modals';
 import { 
-  TabNavigation, 
   SidePanel, 
   StatsCard, 
   StatsGrid,
@@ -360,22 +359,42 @@ export default function AdminPanel() {
     }
   }, [isAdmin, adminLoading, navigate]);
 
+  // On-demand data loading: only load data when a tab is first visited
+  const loadedTabsRef = useRef(new Set());
   useEffect(() => {
-    loadUsers();
-    loadOffers();
-    loadCrimes();
-    loadBusinesses();
-    loadItems();
-    loadStoreItems();
-    loadWorkers();
-    loadBoats();
-    loadWheelPrizes();
-    loadEventMessages();
-    loadCategoryInfo();
-    loadWipeSettings();
-    loadGuessBalanceSessions();
-    loadActiveTransferPassword();
-  }, []);
+    if (loadedTabsRef.current.has(activeTab)) return;
+    loadedTabsRef.current.add(activeTab);
+    switch (activeTab) {
+      case 'users':
+        loadUsers();
+        break;
+      case 'offers':
+        loadOffers();
+        break;
+      case 'thelife':
+        loadCrimes();
+        loadBusinesses();
+        loadItems();
+        loadStoreItems();
+        loadWorkers();
+        loadBoats();
+        loadEventMessages();
+        loadCategoryInfo();
+        break;
+      case 'wheel':
+        loadWheelPrizes();
+        break;
+      case 'wipe':
+        loadWipeSettings();
+        break;
+      case 'guessbalance':
+        loadGuessBalanceSessions();
+        loadActiveTransferPassword();
+        break;
+      default:
+        break;
+    }
+  }, [activeTab]);
 
   const loadUsers = async () => {
     setLoading(true);
@@ -2948,21 +2967,34 @@ export default function AdminPanel() {
       {error && <div className="alert alert-error">{error}</div>}
       {success && <div className="alert alert-success">{success}</div>}
 
-      {/* Modern Tab Navigation */}
-      <TabNavigation
-        tabs={[
-          { id: 'users', label: 'User Management', icon: '👥' },
-          { id: 'offers', label: 'Casino Offers', icon: '🎰' },
-          { id: 'thelife', label: 'The Life', icon: '🔫' },
-          { id: 'wheel', label: 'Daily Wheel', icon: '🎡' },
-          { id: 'wipe', label: 'Server Wipe', icon: '💀' },
-          { id: 'seasonpass', label: 'Season Pass', icon: '👑' },
-          { id: 'guessbalance', label: 'Guess Balance', icon: '💰' },
-          { id: 'extension', label: 'Extension', icon: '🔌' },
-        ]}
-        activeTab={activeTab}
-        onTabChange={handleTabChange}
-      />
+      {/* Category Dropdown */}
+      <div className="admin-dropdown-nav">
+        <div className="admin-dropdown-wrapper">
+          <select
+            className="admin-dropdown-select"
+            value={activeTab}
+            onChange={(e) => handleTabChange(e.target.value)}
+          >
+            {[
+              { id: 'users', label: 'User Management', icon: '👥' },
+              { id: 'offers', label: 'Casino Offers', icon: '🎰' },
+              { id: 'thelife', label: 'The Life', icon: '🔫' },
+              { id: 'wheel', label: 'Daily Wheel', icon: '🎡' },
+              { id: 'wipe', label: 'Server Wipe', icon: '💀' },
+              { id: 'seasonpass', label: 'Season Pass', icon: '👑' },
+              { id: 'guessbalance', label: 'Guess Balance', icon: '💰' },
+              { id: 'extension', label: 'Extension', icon: '🔌' },
+            ].map(tab => (
+              <option key={tab.id} value={tab.id}>
+                {tab.icon}  {tab.label}
+              </option>
+            ))}
+          </select>
+          <svg className="admin-dropdown-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="m6 9 6 6 6-6"/>
+          </svg>
+        </div>
+      </div>
 
       {/* User Management Tab */}
       {activeTab === 'users' && (
