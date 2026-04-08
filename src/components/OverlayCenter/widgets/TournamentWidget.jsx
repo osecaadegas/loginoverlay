@@ -74,6 +74,13 @@ function TournamentWidget({ config, theme }) {
   const isMinimalLayout = layout === 'minimal';
   const isArenaLayout = layout === 'arena';
 
+  /* ─── Flipper tick for "Now Playing" header rotation (every 15s) ─── */
+  const [flipperTick, setFlipperTick] = React.useState(0);
+  React.useEffect(() => {
+    const id = setInterval(() => setFlipperTick(t => t + 1), 15000);
+    return () => clearInterval(id);
+  }, []);
+
   /* ─── Style config ─── */
   const showBg = c.showBg !== false;
   const bgColor = showBg ? (c.bgColor || (isArenaLayout ? '#1a1040' : isMinimalLayout ? '#0a0a10' : '#13151e')) : 'transparent';
@@ -1542,6 +1549,32 @@ function TournamentWidget({ config, theme }) {
     const hasCurrentWinner = currentMatch?.winner != null;
     const isCurrentLive = !hasCurrentWinner;
 
+    /* ── Phase lookup: find which phase a match belongs to ── */
+    const getMatchPhaseLabel = (match) => {
+      for (const round of bracketData) {
+        if (round.matches && round.matches.includes(match)) return round.label;
+      }
+      return null;
+    };
+
+    /* ── Bo3 current round indicator ── */
+    const getCurrentBoRound = (match) => {
+      if (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic') return null;
+      if (match.winner != null) return null; // match done
+      const scoreboard = getBoScoreboard(match);
+      if (!scoreboard) return 1;
+      // Current round = first round with no winner yet
+      const idx = scoreboard.roundResults.findIndex(rr => rr.winner == null);
+      return idx >= 0 ? idx + 1 : scoreboard.roundResults.length;
+    };
+
+    /* ── Flipper state: alternates between "Now Playing" and phase label ── */
+    const flipperShowPhase = flipperTick % 2 === 1 && activePhaseLabel;
+    const boRound = getCurrentBoRound(currentMatch);
+
+    /* ── Cap queued matches at 3 rows max ── */
+    const visibleQueued = queuedMatches.slice(-3);
+
     return (
       <div style={{
         display: 'flex', flexDirection: 'column',
@@ -1561,14 +1594,30 @@ function TournamentWidget({ config, theme }) {
           </div>
         )}
 
-        {/* ── Queued matches ── */}
-        {queuedMatches.length > 0 && (
+        {/* ── Queued matches (max 3 rows) ── */}
+        {visibleQueued.length > 0 && (
           <div style={{
             flexShrink: 0, display: 'flex', flexDirection: 'column',
             gap: 'clamp(3px, 0.5vw, 8px)',
             padding: 'clamp(3px, 0.5vw, 8px)',
           }}>
-            {queuedMatches.map((m, i) => renderQueuedMatch(m, i))}
+            {visibleQueued.map((m, i) => {
+              const phaseLabel = getMatchPhaseLabel(m);
+              return (
+                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                  {/* Phase label above each queued match */}
+                  {phaseLabel && (
+                    <div style={{
+                      textAlign: 'center',
+                      fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 700,
+                      color: 'rgba(255,255,255,0.25)', textTransform: 'uppercase',
+                      letterSpacing: '1.5px', fontFamily: gFont,
+                    }}>{phaseLabel}</div>
+                  )}
+                  {renderQueuedMatch(m, i)}
+                </div>
+              );
+            })}
           </div>
         )}
 
@@ -1609,28 +1658,46 @@ function TournamentWidget({ config, theme }) {
               }} />
             )}
 
-            {/* Phase label + "NOW PLAYING" header */}
+            {/* Flipper header: alternates "Now Playing" ↔ phase label every 15s */}
             <div style={{
               textAlign: 'center', marginBottom: 'clamp(2px, 0.4vh, 6px)',
               position: 'relative', zIndex: 1,
             }}>
-              {activePhaseLabel && (
+              <div style={{
+                position: 'relative', overflow: 'hidden',
+                height: 'clamp(14px, 2vw, 22px)',
+              }}>
+                {/* "Now Playing" or phase label — CSS flip */}
+                <span key={flipperTick} style={{
+                  display: 'inline-block',
+                  fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 800,
+                  color: isGrandFinalMatch ? gGold : flipperShowPhase ? gCyan : gGold,
+                  textTransform: 'uppercase', letterSpacing: '3px',
+                  fontFamily: gFont,
+                  textShadow: isGrandFinalMatch
+                    ? `0 0 12px ${gGold}50`
+                    : flipperShowPhase
+                      ? `0 0 10px ${gCyan}60`
+                      : `0 0 12px ${gGold}50`,
+                  animation: 'grid-flipper-in 0.5s ease-out forwards',
+                }}>
+                  {isGrandFinalMatch
+                    ? '🏆 Champion Crowned 🏆'
+                    : flipperShowPhase
+                      ? `▸ ${activePhaseLabel}`
+                      : '⚡ Now Playing ⚡'}
+                </span>
+              </div>
+
+              {/* Bo3 Round indicator */}
+              {boRound && !isGrandFinalMatch && (
                 <div style={{
-                  fontSize: 'clamp(7px, 0.9vw, 10px)', fontWeight: 800,
-                  color: gCyan, textTransform: 'uppercase', letterSpacing: '2px',
-                  fontFamily: gFont, marginBottom: 2,
-                  textShadow: `0 0 10px ${gCyan}50`,
-                  animation: 'es-text-glow 2s ease-in-out infinite',
-                }}>▸ {activePhaseLabel}</div>
+                  fontSize: 'clamp(6px, 0.7vw, 9px)', fontWeight: 700,
+                  color: gPurple, textTransform: 'uppercase', letterSpacing: '1.5px',
+                  fontFamily: gFont, marginTop: 1,
+                  textShadow: `0 0 8px ${gPurple}40`,
+                }}>Round {boRound}</div>
               )}
-              <span style={{
-                fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 800,
-                color: isGrandFinalMatch ? gGold : gGold,
-                textTransform: 'uppercase', letterSpacing: '3px',
-                fontFamily: gFont,
-                textShadow: `0 0 12px ${gGold}50`,
-                animation: 'es-text-glow 2s ease-in-out infinite',
-              }}>{isGrandFinalMatch ? '🏆 Champion Crowned 🏆' : '⚡ Now Playing ⚡'}</span>
             </div>
 
             {/* Match cards */}
@@ -1733,6 +1800,10 @@ function TournamentWidget({ config, theme }) {
           0%   { opacity: 1; filter: grayscale(0) brightness(1); }
           40%  { filter: grayscale(0.5) brightness(0.8); }
           100% { opacity: 0.35; filter: grayscale(0.85) brightness(0.5); }
+        }
+        @keyframes grid-flipper-in {
+          0%   { opacity: 0; transform: translateY(8px) scale(0.95); }
+          100% { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes grid-live-border {
           0%, 100% { border-color: rgba(0,229,255,0.6); box-shadow: 0 0 10px rgba(0,229,255,0.15); }
