@@ -119,9 +119,7 @@ const MONSTER_AVATAR = {
     Spine: 'CC_Base_Waist_79',
     Spine1: 'CC_Base_Spine01_78',
     Spine2: 'CC_Base_Spine02_77',
-    // No Head/Neck — re-route to Spine02 for whole-body head-like motion
-    Neck: 'CC_Base_Spine02_77',
-    Head: 'CC_Base_Spine02_77',
+    // No Head/Neck — headless monster; head animations silently skipped
     LeftShoulder: 'CC_Base_L_Clavicle_51',
     LeftArm: 'CC_Base_L_Upperarm_50',
     LeftForeArm: 'CC_Base_L_Forearm_47',

@@ -50,8 +50,10 @@ export function resolveRig(scene, url) {
   const allBones = collectBones(scene);
 
   // ── Resolve bones ──
+  // Pass scene so explicit resolver can find non-Bone Object3D nodes
+  // (CC/FAB rigs have main arm/leg bones that aren't skin joints)
   const bones = config
-    ? resolveExplicitBones(allBones, config.bones)
+    ? resolveExplicitBones(allBones, config.bones, scene)
     : resolveFallbackBones(allBones);
 
   // ── Resolve morphs ──
@@ -95,13 +97,27 @@ function collectBones(scene) {
   return bones;
 }
 
-function resolveExplicitBones(allBones, boneMap) {
+function resolveExplicitBones(allBones, boneMap, scene) {
   const result = {};
   const norm = (s) => s.toLowerCase().replace(/[_ .]/g, '');
+  const used = new Set();  // track already-assigned objects to avoid aliasing
   for (const [canonical, realName] of Object.entries(boneMap)) {
     const target = norm(realName);
+    // 1. Try collected Bone objects first
     for (const bone of allBones) {
-      if (bone.name === realName || norm(bone.name) === target) { result[canonical] = bone; break; }
+      if (bone.name === realName || norm(bone.name) === target) {
+        if (!used.has(bone)) { result[canonical] = bone; used.add(bone); }
+        break;
+      }
+    }
+    // 2. Fallback: search entire scene for non-Bone Object3D nodes
+    //    (handles CC/FAB rigs where arm/leg bones aren't skin joints)
+    if (!result[canonical] && scene) {
+      scene.traverse((child) => {
+        if (!result[canonical] && (child.name === realName || norm(child.name) === target)) {
+          if (!used.has(child)) { result[canonical] = child; used.add(child); }
+        }
+      });
     }
   }
   return result;
