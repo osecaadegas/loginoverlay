@@ -652,9 +652,9 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                               </div>
                               <div className="bk-slot-locked-actions">
                                 <button className={`bk-slot-tag-btn bk-slot-tag-btn--super ${player.slot.tag === 'super' ? 'bk-slot-tag-btn--active' : ''}`}
-                                  onClick={() => toggleBkSlotTag(idx, 'super')} title="Super">S</button>
+                                  onClick={() => toggleBkSlotTag(idx, 'super')}>Super</button>
                                 <button className={`bk-slot-tag-btn bk-slot-tag-btn--extreme ${player.slot.tag === 'extreme' ? 'bk-slot-tag-btn--active' : ''}`}
-                                  onClick={() => toggleBkSlotTag(idx, 'extreme')} title="Extreme">X</button>
+                                  onClick={() => toggleBkSlotTag(idx, 'extreme')}>Extreme</button>
                                 <button className="bk-slot-action-btn bk-slot-action-btn--edit" onClick={() => handleBkSlotEdit(idx)} title="Edit">✏️</button>
                                 <button className="bk-slot-action-btn bk-slot-action-btn--delete" onClick={() => handleBkSlotDelete(idx)} title="Delete">🗑️</button>
                               </div>
