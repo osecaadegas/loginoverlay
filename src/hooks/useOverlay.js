@@ -185,18 +185,25 @@ export function useOverlay() {
     }
   }, [user]);
 
+  // ── Debounced DB save for widgets ──
+  // Keeps a per-widget timer so rapid keystrokes don't hammer the DB.
+  // The optimistic update is instant; only the upsert is delayed.
+  const saveTimersRef = useRef({});
+
   const saveWidget = useCallback(async (widget) => {
     if (!user) return;
     // Optimistic update — reflect changes in UI immediately
     setWidgets(prev => prev.map(p => p.id === widget.id ? widget : p));
-    try {
-      const w = await upsertWidget(user.id, widget);
-      // Sync with DB response (authoritative)
-      setWidgets(prev => prev.map(p => p.id === w.id ? w : p));
-      return w;
-    } catch (err) {
-      console.error('[useOverlay] saveWidget error:', err);
-    }
+
+    // Debounce the DB write per widget id (500ms)
+    clearTimeout(saveTimersRef.current[widget.id]);
+    saveTimersRef.current[widget.id] = setTimeout(async () => {
+      try {
+        await upsertWidget(user.id, widget);
+      } catch (err) {
+        console.error('[useOverlay] saveWidget error:', err);
+      }
+    }, 500);
   }, [user]);
 
   const removeWidget = useCallback(async (widgetId) => {
