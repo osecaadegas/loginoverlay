@@ -56,7 +56,10 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
   const ss = cfg.shadowSize ?? 0;
   const si = cfg.shadowIntensity ?? 0;
   const hasShadow = ss > 0 && si > 0;
-  const shadowFilter = hasShadow
+  /* Navbar handles its own rounded shape — skip drop-shadow filter on the slot
+     because it rasterises the layer and causes dark-corner fringe on OBS. */
+  const isNavbar = widget.widget_type === 'navbar';
+  const shadowFilter = hasShadow && !isNavbar
     ? `drop-shadow(0 ${Math.round(ss * 0.35)}px ${Math.round(ss * 0.7)}px rgba(0,0,0,${(si / 100).toFixed(2)}))`
     : undefined;
 
@@ -79,10 +82,9 @@ const WidgetSlot = memo(function WidgetSlot({ widget, theme, animSpeed, allWidge
     height: isBg ? canvasHeight : widget.height,
     zIndex: widget.z_index || 1,
     animationDuration: `${(widget.config?.animSpeed || animSpeed || 1) * 0.35}s`,
-    overflow: needsVisible ? 'visible' : (widgetRadius ? undefined : 'hidden'),
-    /* Use clip-path instead of overflow:hidden + borderRadius to avoid
-       Chromium compositor black-corner bug on GPU-promoted layers */
-    clipPath: widgetRadius && !needsVisible ? `inset(0 round ${widgetRadius}px)` : undefined,
+    /* Navbar clips itself — don't double-clip from the slot */
+    overflow: isNavbar ? 'visible' : (needsVisible ? 'visible' : (widgetRadius ? undefined : 'hidden')),
+    clipPath: isNavbar ? undefined : (widgetRadius && !needsVisible ? `inset(0 round ${widgetRadius}px)` : undefined),
     filter: shadowFilter,
   };
 
