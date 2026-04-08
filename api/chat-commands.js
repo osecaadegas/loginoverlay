@@ -128,7 +128,7 @@ async function handleSlotRequest(req, res) {
       }
     }
 
-    // ── Resolve SE creds early (needed for points check AND chat bot messages) ──
+    // ── Resolve SE creds from streamelements_connections (per-user) ──
     const { data: srWidgets } = await supabase
       .from('overlay_widgets')
       .select('config')
@@ -140,25 +140,17 @@ async function handleSlotRequest(req, res) {
     const seEnabled = !!wConfig?.srSeEnabled;
     const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
-    let seChannelId = wConfig?.seChannelId;
-    let seJwtToken = wConfig?.seJwtToken;
-
-    if (!seChannelId || !seJwtToken) {
-      const { data: allWidgets } = await supabase
-        .from('overlay_widgets')
-        .select('config')
-        .eq('user_id', user_id);
-
-      if (allWidgets) {
-        for (const w of allWidgets) {
-          const wc = w.config;
-          if (wc?.seChannelId && wc?.seJwtToken) {
-            seChannelId = seChannelId || wc.seChannelId;
-            seJwtToken = seJwtToken || wc.seJwtToken;
-            break;
-          }
-        }
-      }
+    // Load SE credentials from the user's streamelements_connections row
+    let seChannelId = null;
+    let seJwtToken = null;
+    const { data: seConn } = await supabase
+      .from('streamelements_connections')
+      .select('se_channel_id, se_jwt_token')
+      .eq('user_id', user_id)
+      .single();
+    if (seConn) {
+      seChannelId = seConn.se_channel_id;
+      seJwtToken = seConn.se_jwt_token;
     }
 
     /** Helper: send chat notification via SE bot + return API response */

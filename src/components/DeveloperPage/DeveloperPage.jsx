@@ -234,8 +234,8 @@ function EnvPanel() {
     { key: 'VITE_SUPABASE_URL', desc: 'Supabase project URL', status: !!import.meta.env.VITE_SUPABASE_URL },
     { key: 'VITE_SUPABASE_ANON_KEY', desc: 'Supabase anon/public key', status: !!import.meta.env.VITE_SUPABASE_ANON_KEY },
     { key: 'VITE_SPOTIFY_CLIENT_ID', desc: 'Spotify OAuth client ID', status: !!import.meta.env.VITE_SPOTIFY_CLIENT_ID },
-    { key: 'VITE_SE_CHANNEL_ID', desc: 'StreamElements channel ID (per-user, set in Profile)', status: false },
-    { key: 'VITE_SE_JWT_TOKEN', desc: 'StreamElements JWT token (per-user, set in Profile)', status: false },
+    { key: 'VITE_SE_CHANNEL_ID', desc: 'StreamElements channel ID (site-wide, not used in Overlay Center)', status: !!import.meta.env.VITE_SE_CHANNEL_ID },
+    { key: 'VITE_SE_JWT_TOKEN', desc: 'StreamElements JWT token (site-wide, not used in Overlay Center)', status: !!import.meta.env.VITE_SE_JWT_TOKEN },
     { key: 'VITE_AZURE_TRANSLATOR_KEY', desc: 'Azure Translator API key', status: !!import.meta.env.VITE_AZURE_TRANSLATOR_KEY },
   ];
 
