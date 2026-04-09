@@ -9,6 +9,7 @@ import { resolveRig } from './avatar3d/rigMapper';
 import { createAnimationController } from './avatar3d/animationController';
 import { createNpcBehavior } from './avatar3d/npcBehavior';
 import { getModelConfig } from './avatar3d/modelConfigs';
+import { createClipPlayer, CLIP_NAMES, CLIP_REACTION_MAP } from './avatar3d/clipPlayer';
 
 /**
  * AIChatBot3DAvatar — Modular 3D avatar system for streaming overlays
@@ -62,6 +63,7 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
   const groupRef = useRef();
   const rigRef = useRef(null);
   const controllerRef = useRef(null);
+  const clipPlayerRef = useRef(null);
   const lastReaction = useRef(0);
   const primitiveRef = useRef();
   const processedRef = useRef(false);
@@ -180,12 +182,23 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
     rigRef.current = rig;
     controllerRef.current = createAnimationController();
 
+    // Create clip player for FBX animation playback
+    if (clipPlayerRef.current) clipPlayerRef.current.dispose();
+    clipPlayerRef.current = createClipPlayer(scene);
+
     // Log diagnostics
     const boneNames = Object.keys(rig.bones);
     console.log('[3DAvatar-FBX] Resolved', boneNames.length, 'bones:', boneNames.join(', '));
     console.log('[3DAvatar-FBX] needsArmDown:', rig.needsArmDown,
       '| LeftArm.z:', rig.restPose.LeftArm?.z?.toFixed(3) ?? 'N/A',
       '| RightArm.z:', rig.restPose.RightArm?.z?.toFixed(3) ?? 'N/A');
+
+    return () => {
+      if (clipPlayerRef.current) {
+        clipPlayerRef.current.dispose();
+        clipPlayerRef.current = null;
+      }
+    };
   }, [scene, url]);
 
   useEffect(() => {
@@ -196,8 +209,22 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
     if (reaction && reaction !== lastReaction.current) {
       lastReaction.current = reaction;
       const rig = rigRef.current;
-      if (controllerRef.current && rig) {
-        controllerRef.current.triggerReaction('random', rig.behavior);
+      const clipPlayer = clipPlayerRef.current;
+
+      // Check if this reaction maps to a clip-based animation
+      const clipName = CLIP_REACTION_MAP[reaction];
+      if (clipName && clipPlayer) {
+        clipPlayer.play(clipName);
+      } else if (reaction === 'random') {
+        // 40% chance to play a clip-based reaction, 60% procedural
+        if (clipPlayer && Math.random() < 0.4) {
+          const randomClip = CLIP_NAMES[Math.floor(Math.random() * CLIP_NAMES.length)];
+          clipPlayer.play(randomClip);
+        } else if (controllerRef.current && rig) {
+          controllerRef.current.triggerReaction('random', rig.behavior);
+        }
+      } else if (controllerRef.current && rig) {
+        controllerRef.current.triggerReaction(reaction, rig.behavior);
       }
     }
   }, [reaction]);
@@ -205,12 +232,20 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
   useFrame((_, delta) => {
     const rig = rigRef.current;
     const controller = controllerRef.current;
+    const clipPlayer = clipPlayerRef.current;
     if (!rig || !controller) return;
     const dt = Math.min(delta, 0.1);
+
+    // Tick clip player first — it drives bones via AnimationMixer
+    const clipWeight = clipPlayer ? clipPlayer.update(dt) : 0;
+
     if (npcRef?.current) {
       controller.setNpcPose(npcRef.current.pose || 'idle');
     }
-    controller.update(dt, rig, { breathing, sway, headMove, armMove, gestures, animSpeed }, groupRef);
+
+    // Pass clipWeight so procedural animation scales down during clip playback
+    controller.update(dt, rig, { breathing, sway, headMove, armMove, gestures, animSpeed, clipWeight }, groupRef);
+
     if (primitiveRef.current) {
       const npcFlipNow = npcRef?.current?.flipX ?? false;
       const npcActiveNow = npcRef?.current?.pose && npcRef.current.pose !== 'idle';

@@ -93,6 +93,15 @@ export function createAnimationController() {
       const scaledDt = dt * speed;
       totalTime += scaledDt;
 
+      // ── CLIP SUPPRESSION: when an AnimationClip is playing via clipPlayer,
+      //    scale down all procedural animation. The mixer already drove the
+      //    bones for this frame, so we only apply subtle procedural overlays.
+      const clipW = params.clipWeight ?? 0;
+      const proceduralScale = 1 - clipW; // 0 = full clip, 1 = full procedural
+
+      // If clip has full control, skip procedural entirely
+      if (proceduralScale < 0.02) return;
+
       // ── 1. STATE TICK ──
       state.update(scaledDt);
       const w = state.weights;
@@ -166,37 +175,37 @@ export function createAnimationController() {
         console.warn('[T-POSE BREAK] needsArmDown: FALSE — arms not detected as T-pose');
       }
 
-      // ── 5. IDLE BEHAVIOR (suppress when NPC is active to prevent fighting) ──
-      const idleSuppress = 1 - npcPoseWeight * 0.9; // fade idle to 10% during NPC
+      // ── 5. IDLE BEHAVIOR (suppress when NPC or clip is active) ──
+      const idleSuppress = (1 - npcPoseWeight * 0.9) * proceduralScale;
       const effectiveIdleW = w.idle * idleSuppress;
       idle.update(scaledDt, effectiveIdleW, rig, params, groupRef);
 
       // ── 6. TALKING BEHAVIOR ──
       if (w.talking > 0.01) {
-        talking.update(scaledDt, w.talking, rig, params, groupRef);
+        talking.update(scaledDt, w.talking * proceduralScale, rig, params, groupRef);
       }
 
       // ── 7. THINKING STATE (subtle fidget overlay) ──
       if (w.thinking > 0.05) {
-        _applyThinking(scaledDt, w.thinking, rig, params);
+        _applyThinking(scaledDt, w.thinking * proceduralScale, rig, params);
       }
 
       // ── 8. LISTENING STATE (attentive pose) ──
       if (w.listening > 0.05) {
-        _applyListening(scaledDt, w.listening, rig, params);
+        _applyListening(scaledDt, w.listening * proceduralScale, rig, params);
       }
 
-      // ── 9. REACTIONS (additive, on top — skip during NPC) ──
-      if (reactions.isPlaying && npcPoseWeight < 0.3) {
+      // ── 9. REACTIONS (additive, on top — skip during NPC or clip) ──
+      if (reactions.isPlaying && npcPoseWeight < 0.3 && clipW < 0.3) {
         reactions.update(scaledDt, rig, groupRef);
       }
 
-      // ── 10. NPC POSE LAYER (replaces idle when active) ──
-      const targetNpcW = npcActive ? 1 : 0;
+      // ── 10. NPC POSE LAYER (replaces idle when active, suppress during clip) ──
+      const targetNpcW = (npcActive && clipW < 0.5) ? 1 : 0;
       npcPoseWeight = smoothLerp(npcPoseWeight, targetNpcW, 3.5, scaledDt);
       if (npcActive) npcTime += scaledDt;
       if (npcPoseWeight > 0.01 && NPC_POSE_MAP[npcPose]) {
-        NPC_POSE_MAP[npcPose](scaledDt, 0, rig, npcPoseWeight, npcTime);
+        NPC_POSE_MAP[npcPose](scaledDt, 0, rig, npcPoseWeight * proceduralScale, npcTime);
       }
     },
   };
