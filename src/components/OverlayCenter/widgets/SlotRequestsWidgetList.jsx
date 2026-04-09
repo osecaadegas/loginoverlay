@@ -48,21 +48,35 @@ export default function SlotRequestsWidgetList({ config, requests }) {
 
     let raf;
     let scrollPos = 0;
-    const speed = 0.2; // px per frame (~12px/sec at 60fps)
+    const speed = 0.35; // px per frame (~21px/sec at 60fps)
     let paused = false;
+    let lastTime = 0;
 
-    const step = () => {
+    const step = (timestamp) => {
+      if (!lastTime) lastTime = timestamp;
+      const delta = timestamp - lastTime;
+      lastTime = timestamp;
+
       if (!paused && el.scrollHeight > el.clientHeight) {
-        scrollPos += speed;
-        // When we've scrolled past the content, loop back to the top smoothly
-        if (scrollPos >= el.scrollHeight - el.clientHeight) {
-          // Pause briefly at the bottom, then reset
+        // Use delta time for consistent speed regardless of frame rate
+        scrollPos += speed * (delta / 16.67);
+        const maxScroll = el.scrollHeight - el.clientHeight;
+
+        if (scrollPos >= maxScroll) {
+          scrollPos = maxScroll;
+          el.scrollTop = scrollPos;
           paused = true;
           setTimeout(() => {
-            scrollPos = 0;
+            // Smooth scroll back to top using CSS transition
+            el.style.scrollBehavior = 'smooth';
             el.scrollTop = 0;
-            paused = false;
-          }, 2000);
+            scrollPos = 0;
+            setTimeout(() => {
+              el.style.scrollBehavior = '';
+              paused = false;
+              lastTime = 0;
+            }, 800);
+          }, 2500);
         } else {
           el.scrollTop = scrollPos;
         }
@@ -73,8 +87,9 @@ export default function SlotRequestsWidgetList({ config, requests }) {
     // Start after a short delay so the list has rendered
     const timer = setTimeout(() => {
       scrollPos = el.scrollTop;
+      lastTime = 0;
       raf = requestAnimationFrame(step);
-    }, 1000);
+    }, 1500);
 
     return () => {
       clearTimeout(timer);
