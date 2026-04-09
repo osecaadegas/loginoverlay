@@ -80,7 +80,7 @@ function BonusHuntWidgetV11({ config, theme }) {
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
 
-  const carouselCardW = 160, carouselGap = 10;
+  const carouselCardW = 170, carouselGap = 10;
   const carouselStep = carouselCardW + carouselGap;
 
   const rootStyle = {
