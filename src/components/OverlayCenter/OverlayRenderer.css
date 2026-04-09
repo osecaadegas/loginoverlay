@@ -5943,6 +5943,8 @@
   overflow: hidden;
   color: var(--bht11-text, #ffffff);
   border: 1.5px solid rgba(96,165,250,0.12);
+  height: 100%;
+  box-sizing: border-box;
 }
 
 /* ── 1. Header ── */
@@ -6003,7 +6005,7 @@
   opacity: 0.7;
 }
 
-/* ── 2. Stats Row (card boxes) ── */
+/* ── 2. Stats Row (modern glassmorphism) ── */
 .bht11-stats-row {
   display: flex;
   gap: 8px;
@@ -6013,32 +6015,45 @@
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
-  background: rgba(15,21,53,0.85);
-  border-radius: 14px;
-  padding: 14px 16px;
-  border: 1.5px solid rgba(96,165,250,0.18);
+  justify-content: center;
+  background: linear-gradient(135deg, rgba(96,165,250,0.12) 0%, rgba(59,130,246,0.06) 100%);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 12px;
+  padding: 10px 14px;
+  border: 1px solid rgba(96,165,250,0.22);
+  position: relative;
+  overflow: hidden;
+}
+.bht11-stat-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 10%, rgba(255,255,255,0.15) 50%, transparent 90%);
 }
 .bht11-stat-card-icon {
-  font-size: 1.3em;
-  flex-shrink: 0;
+  display: none;
 }
 .bht11-stat-card-text {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 2px;
 }
 .bht11-stat-card-label {
-  font-size: 0.6em;
+  font-size: 0.55em;
   font-weight: 700;
-  letter-spacing: 1.5px;
+  letter-spacing: 2px;
   color: var(--bht11-muted, #93c5fd);
   text-transform: uppercase;
+  opacity: 0.85;
 }
 .bht11-stat-card-value {
-  font-size: 1.25em;
+  font-size: 1.2em;
   font-weight: 900;
   color: var(--bht11-stat-value, #ffffff);
+  text-shadow: 0 0 12px rgba(96,165,250,0.3);
 }
 
 /* ── 3. Count Bars (full-width stacked) ── */
@@ -6275,9 +6290,15 @@
 
 /* ── 5. Bonus List Section ── */
 .bht11-list-section {
-  flex: 1;
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+.bht11-list-section .bht-bonus-list {
+  flex: 1 1 0;
+  max-height: none;
   min-height: 0;
   overflow: hidden;
 }

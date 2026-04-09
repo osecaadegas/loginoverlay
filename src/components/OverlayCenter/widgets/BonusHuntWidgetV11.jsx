@@ -130,31 +130,8 @@ function BonusHuntWidgetV11({ config, theme }) {
         <span className="bht11-header-number">#{c.huntNumber || c.huntName || bonuses.length}</span>
       </div>
 
-      {/* ═══ 2. Stats Row ═══ */}
-      <div className="bht11-stats-row">
-        <div className="bht11-stat-card">
-          <span className="bht11-stat-card-icon">💰</span>
-          <div className="bht11-stat-card-text">
-            <span className="bht11-stat-card-label">START</span>
-            <span className="bht11-stat-card-value">{currency}{startMoney.toFixed(2)}</span>
-          </div>
-        </div>
-        <div className="bht11-stat-card">
-          <span className="bht11-stat-card-icon">📈</span>
-          <div className="bht11-stat-card-text">
-            <span className="bht11-stat-card-label">BREAKEVEN</span>
-            <span className="bht11-stat-card-value">{(c.bonusOpening ? stats.liveBE : stats.breakEven).toFixed(0)}x</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ═══ 3. Counts ═══ */}
+      {/* ═══ 2. Counts ═══ */}
       <div className="bht11-counts-col">
-        <div className="bht11-count-bar">
-          <span className="bht11-count-bar-icon">🎁</span>
-          <span className="bht11-count-bar-label">BONUSES</span>
-          <span className="bht11-count-bar-value">{bonuses.length}</span>
-        </div>
         {(stats.superCount > 0 || stats.extremeCount > 0) && (
           <div className="bht11-count-bar-row">
             {stats.superCount > 0 && (
@@ -173,6 +150,27 @@ function BonusHuntWidgetV11({ config, theme }) {
             )}
           </div>
         )}
+        <div className="bht11-count-bar">
+          <span className="bht11-count-bar-icon">🎁</span>
+          <span className="bht11-count-bar-label">BONUSES</span>
+          <span className="bht11-count-bar-value">{bonuses.length}</span>
+        </div>
+      </div>
+
+      {/* ═══ 3. Stats Row ═══ */}
+      <div className="bht11-stats-row">
+        <div className="bht11-stat-card">
+          <div className="bht11-stat-card-text">
+            <span className="bht11-stat-card-label">START</span>
+            <span className="bht11-stat-card-value">{currency}{startMoney.toFixed(2)}</span>
+          </div>
+        </div>
+        <div className="bht11-stat-card">
+          <div className="bht11-stat-card-text">
+            <span className="bht11-stat-card-label">BREAKEVEN</span>
+            <span className="bht11-stat-card-value">{(c.bonusOpening ? stats.liveBE : stats.breakEven).toFixed(0)}x</span>
+          </div>
+        </div>
       </div>
 
       {/* ═══ 4. 3D Rotating Card Stack ═══ */}
