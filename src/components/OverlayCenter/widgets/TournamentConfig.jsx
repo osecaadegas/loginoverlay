@@ -12,6 +12,7 @@ import {
   setManualWinner,
   resetMatch,
   calcRoundResult,
+  calcRoundMultiplier,
   calcMatchWinner,
   getBoScoreboard,
   formatResult,
@@ -909,10 +910,11 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                               </label>
                             ))}
                             {(() => {
-                              const r = calcRoundResult(round.player1, currentBracketMatch.type);
+                              const isClassic = currentBracketMatch.type === 'bonus_bo3_classic';
+                              const r = isClassic ? calcRoundMultiplier(round.player1) : calcRoundResult(round.player1, currentBracketMatch.type);
                               return r !== null ? (
-                                <div className={`bk-mp-result ${r > 0 ? 'bk-mp-result--pos' : r < 0 ? 'bk-mp-result--neg' : ''}`}>
-                                  {formatResult(r, currency)}
+                                <div className={`bk-mp-result ${isClassic ? '' : r > 0 ? 'bk-mp-result--pos' : r < 0 ? 'bk-mp-result--neg' : ''}`}>
+                                  {formatResult(r, currency, isClassic ? 'multiplier' : undefined)}
                                 </div>
                               ) : null;
                             })()}
@@ -934,10 +936,11 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                               </label>
                             ))}
                             {(() => {
-                              const r = calcRoundResult(round.player2, currentBracketMatch.type);
+                              const isClassic = currentBracketMatch.type === 'bonus_bo3_classic';
+                              const r = isClassic ? calcRoundMultiplier(round.player2) : calcRoundResult(round.player2, currentBracketMatch.type);
                               return r !== null ? (
-                                <div className={`bk-mp-result ${r > 0 ? 'bk-mp-result--pos' : r < 0 ? 'bk-mp-result--neg' : ''}`}>
-                                  {formatResult(r, currency)}
+                                <div className={`bk-mp-result ${isClassic ? '' : r > 0 ? 'bk-mp-result--pos' : r < 0 ? 'bk-mp-result--neg' : ''}`}>
+                                  {formatResult(r, currency, isClassic ? 'multiplier' : undefined)}
                                 </div>
                               ) : null;
                             })()}

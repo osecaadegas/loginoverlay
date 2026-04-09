@@ -8,6 +8,7 @@ import React from 'react';
 import PlayerCard from './PlayerCard';
 import {
   calcRoundResult,
+  calcRoundMultiplier,
   calcMatchWinner,
   getBoScoreboard,
   TOURNAMENT_TYPES,
@@ -48,8 +49,16 @@ export default function MatchCard({
 
   /* Calculate overall result per player */
   const getPlayerResult = (playerKey) => {
-    if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
-      // Sum net-profit across all completed rounds
+    if (match.type === 'bonus_bo3_classic') {
+      let total = 0;
+      let anyComplete = false;
+      for (const round of match.rounds) {
+        const r = calcRoundMultiplier(round[playerKey]);
+        if (r !== null) { total += r; anyComplete = true; }
+      }
+      return anyComplete ? total : null;
+    }
+    if (match.type === 'bonus_bo3') {
       let total = 0;
       let anyComplete = false;
       for (const round of match.rounds) {
@@ -97,6 +106,7 @@ export default function MatchCard({
           isLoser={!isDraw && isComplete && !p1IsWinner}
           isDraw={isDraw}
           currency={currency}
+          resultMode={match.type === 'bonus_bo3_classic' ? 'multiplier' : undefined}
           accentColor={accentColor}
           loseColor={loseColor}
           drawColor={drawColor}
@@ -180,6 +190,7 @@ export default function MatchCard({
           isLoser={!isDraw && isComplete && !p2IsWinner}
           isDraw={isDraw}
           currency={currency}
+          resultMode={match.type === 'bonus_bo3_classic' ? 'multiplier' : undefined}
           accentColor={accentColor}
           loseColor={loseColor}
           drawColor={drawColor}

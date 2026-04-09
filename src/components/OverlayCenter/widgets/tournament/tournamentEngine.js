@@ -51,7 +51,7 @@ export const TOURNAMENT_TYPES = {
   spins: { id: 'spins', label: 'Spins Tournament', icon: '🎰', description: 'Compare profit after N spins' },
   bonus: { id: 'bonus', label: 'Bonus Tournament', icon: '🎯', description: 'Single bonus buy — highest net profit wins' },
   bonus_bo3: { id: 'bonus_bo3', label: 'Bonus Best of 3', icon: '🔥', description: 'Best of 3 bonus buys — first to 2 wins' },
-  bonus_bo3_classic: { id: 'bonus_bo3_classic', label: 'Bo3 Classic', icon: '🏅', description: 'Best of 3 — highest total payout wins' },
+  bonus_bo3_classic: { id: 'bonus_bo3_classic', label: 'Bo3 Classic', icon: '🏅', description: 'Best of 3 — highest total multiplier wins' },
 };
 
 export const MATCH_STATUS = { PENDING: 'pending', IN_PROGRESS: 'in_progress', COMPLETED: 'completed' };
@@ -133,6 +133,18 @@ export function calcRoundResult(roundData, type) {
 }
 
 /**
+ * Calculate the multiplier for one player in one round (payout / cost).
+ * Used by bonus_bo3_classic to determine winner by sum of multipliers.
+ */
+export function calcRoundMultiplier(roundData) {
+  if (!roundData) return null;
+  const cost = parseFloat(roundData.bonusCost);
+  const payout = parseFloat(roundData.bonusPayout);
+  if (isNaN(cost) || isNaN(payout) || cost <= 0) return null;
+  return payout / cost;
+}
+
+/**
  * Determine the winner of a single round.
  * Compares the result values; higher wins. Equal → draw.
  * Returns 'player1' | 'player2' | 'draw' | null (if incomplete)
@@ -161,14 +173,14 @@ export function calcMatchWinner(match) {
     return calcRoundWinner(match.rounds[0], match.type);
   }
 
-  // bonus_bo3_classic: sum of all 3 payouts, highest total wins
+  // bonus_bo3_classic: sum of all 3 multipliers (payout/cost), highest total wins
   if (match.type === 'bonus_bo3_classic') {
-    const allPlayed = match.rounds.every(r => calcRoundResult(r.player1, match.type) !== null && calcRoundResult(r.player2, match.type) !== null);
+    const allPlayed = match.rounds.every(r => calcRoundMultiplier(r.player1) !== null && calcRoundMultiplier(r.player2) !== null);
     if (!allPlayed) return null;
     let p1Total = 0, p2Total = 0;
     for (const round of match.rounds) {
-      p1Total += calcRoundResult(round.player1, match.type);
-      p2Total += calcRoundResult(round.player2, match.type);
+      p1Total += calcRoundMultiplier(round.player1);
+      p2Total += calcRoundMultiplier(round.player2);
     }
     if (p1Total > p2Total) return 'player1';
     if (p2Total > p1Total) return 'player2';
@@ -207,11 +219,15 @@ export function calcMatchWinner(match) {
  */
 export function getBoScoreboard(match) {
   if (!match || (match.type !== 'bonus_bo3' && match.type !== 'bonus_bo3_classic')) return null;
+  const isClassic = match.type === 'bonus_bo3_classic';
   let p1Wins = 0, p2Wins = 0, draws = 0;
   const roundResults = match.rounds.map(round => {
-    const p1r = calcRoundResult(round.player1, match.type);
-    const p2r = calcRoundResult(round.player2, match.type);
-    const rw = calcRoundWinner(round, match.type);
+    const p1r = isClassic ? calcRoundMultiplier(round.player1) : calcRoundResult(round.player1, match.type);
+    const p2r = isClassic ? calcRoundMultiplier(round.player2) : calcRoundResult(round.player2, match.type);
+    let rw = null;
+    if (p1r !== null && p2r !== null) {
+      rw = p1r > p2r ? 'player1' : p2r > p1r ? 'player2' : 'draw';
+    }
     if (rw === 'player1') p1Wins++;
     else if (rw === 'player2') p2Wins++;
     else if (rw === 'draw') draws++;
@@ -322,8 +338,11 @@ export function getTournamentStats(tournamentData) {
  * Format a result number with sign and currency.
  * e.g., +30.00€ or −5.00€
  */
-export function formatResult(val, currency = '€') {
+export function formatResult(val, currency = '€', mode) {
   if (val === null || val === undefined) return '—';
+  if (mode === 'multiplier') {
+    return `${val.toFixed(2)}x`;
+  }
   const sign = val > 0 ? '+' : val < 0 ? '' : '';
   return `${sign}${val.toFixed(2)}${currency}`;
 }

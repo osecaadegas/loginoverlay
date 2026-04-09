@@ -1,6 +1,7 @@
 import React from 'react';
 import {
   calcRoundResult,
+  calcRoundMultiplier,
   calcMatchWinner,
   getBoScoreboard,
   getTournamentStats,
@@ -112,7 +113,15 @@ function TournamentWidget({ config, theme }) {
   /* ─── Engine helpers ─── */
   const getPlayerResult = (match, playerKey) => {
     if (!match?.rounds) return null;
-    if (match.type === 'bonus_bo3' || match.type === 'bonus_bo3_classic') {
+    if (match.type === 'bonus_bo3_classic') {
+      let total = 0, any = false;
+      for (const round of match.rounds) {
+        const r = calcRoundMultiplier(round[playerKey]);
+        if (r !== null) { total += r; any = true; }
+      }
+      return any ? total : null;
+    }
+    if (match.type === 'bonus_bo3') {
       let total = 0, any = false;
       for (const round of match.rounds) {
         const r = calcRoundResult(round[playerKey], match.type);
@@ -123,14 +132,17 @@ function TournamentWidget({ config, theme }) {
     return calcRoundResult(match.rounds[0]?.[playerKey], match.type);
   };
 
-  const fmtResult = (val) => {
+  const fmtResult = (val, match) => {
     if (val === null || val === undefined) return '—';
+    if (match?.type === 'bonus_bo3_classic') return `${val.toFixed(2)}x`;
     const sign = val > 0 ? '+' : '';
     return `${sign}${val.toFixed(2)}${currency}`;
   };
 
-  const valColor = (val) =>
-    val === null ? '#64748b' : val > 0 ? accentColor : val < 0 ? '#ef4444' : '#94a3b8';
+  const valColor = (val, match) =>
+    val === null ? '#64748b'
+    : match?.type === 'bonus_bo3_classic' ? (val >= 3 ? accentColor : val < 3 ? '#ef4444' : '#94a3b8')
+    : val > 0 ? accentColor : val < 0 ? '#ef4444' : '#94a3b8';
 
   /* ─── Empty state ─── */
   if (matches.length === 0) {
@@ -251,11 +263,11 @@ function TournamentWidget({ config, theme }) {
           )}
           <span style={{
             fontWeight: 700, fontFamily,
-            color: valColor(result), lineHeight: 1.2,
+            color: valColor(result, match), lineHeight: 1.2,
             ...(minimal
               ? { fontSize: 'clamp(13px, 2.2vw, 18px)' }
               : { fontSize: resultSize }),
-          }}>{fmtResult(result)}</span>
+          }}>{fmtResult(result, match)}</span>
         </div>
       </div>
     );
@@ -430,9 +442,9 @@ function TournamentWidget({ config, theme }) {
               }}>
                 <span style={{
                   fontSize: 15, fontWeight: 800,
-                  color: isWinner ? arenaWinColor : valColor(result), fontFamily,
+                  color: isWinner ? arenaWinColor : valColor(result, match), fontFamily,
                   textShadow: '0 1px 4px rgba(0,0,0,0.6)',
-                }}>{fmtResult(result)}</span>
+                }}>{fmtResult(result, match)}</span>
               </div>
             )}
           </div>
@@ -700,7 +712,7 @@ function TournamentWidget({ config, theme }) {
                   : result < 0
                     ? `0 0 10px ${esRed}60, 0 0 20px ${esRed}25`
                     : 'none',
-              }}>{fmtResult(result)}</span>
+              }}>{fmtResult(result, match)}</span>
             </div>
           )}
 
@@ -1456,7 +1468,7 @@ function TournamentWidget({ config, theme }) {
                   : result < 0
                     ? `0 0 10px ${gRed}60, 0 0 20px ${gRed}25`
                     : 'none',
-              }}>{fmtResult(result)}</span>
+              }}>{fmtResult(result, match)}</span>
             </div>
           )}
 

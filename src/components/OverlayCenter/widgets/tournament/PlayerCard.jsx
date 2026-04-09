@@ -8,11 +8,12 @@ import { formatResult } from './tournamentEngine';
 
 export default function PlayerCard({
   name,
-  result,         // number | null — the calculated profit/net
+  result,         // number | null — the calculated profit/net or multiplier sum
   isWinner,       // boolean
   isLoser,        // boolean
   isDraw,         // boolean
   currency = '€',
+  resultMode,     // 'multiplier' for bo3_classic
   accentColor = '#22c55e',
   loseColor = '#ef4444',
   drawColor = '#eab308',
@@ -56,7 +57,7 @@ export default function PlayerCard({
         fontSize: resultSize, fontWeight: 800, color: resultColor,
         fontFamily, letterSpacing: '0.3px',
       }}>
-        {formatResult(result, currency)}
+        {formatResult(result, currency, resultMode)}
       </div>
 
       {/* Win/Draw badge */}

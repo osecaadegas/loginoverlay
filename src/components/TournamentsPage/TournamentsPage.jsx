@@ -3,6 +3,7 @@ import {
   TOURNAMENT_TYPES,
   MATCH_STATUS,
   calcRoundResult,
+  calcRoundMultiplier,
   calcMatchWinner,
   getBoScoreboard,
   getRoundInputFields,
@@ -487,7 +488,15 @@ function BracketDisplay({ bracket, activeRound, activeMatch, onSelectMatch, tour
 }
 
 function fmtPlayerResult(match, playerKey, type) {
-  if (type === 'bonus_bo3' || type === 'bonus_bo3_classic') {
+  if (type === 'bonus_bo3_classic') {
+    let total = 0, any = false;
+    for (const round of match.rounds) {
+      const r = calcRoundMultiplier(round[playerKey]);
+      if (r !== null) { total += r; any = true; }
+    }
+    return any ? `${total.toFixed(2)}x` : '';
+  }
+  if (type === 'bonus_bo3') {
     let total = 0, any = false;
     for (const round of match.rounds) {
       const r = calcRoundResult(round[playerKey], type);
