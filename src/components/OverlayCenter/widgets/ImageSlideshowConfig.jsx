@@ -25,6 +25,13 @@ const DISPLAY_STYLES = [
   { value: 'clean', icon: '✨', label: 'Clean' },
 ];
 
+const FIT_OPTIONS = [
+  { value: 'cover',   icon: '🖼️', label: 'Cover (fill)',   hint: 'Fills area, may crop' },
+  { value: 'contain', icon: '📐', label: 'Contain (fit)',   hint: 'Shows all, may letterbox' },
+  { value: 'fill',    icon: '↔️', label: 'Stretch',         hint: 'Stretches to fit' },
+  { value: 'none',    icon: '📏', label: 'Original size',   hint: 'No scaling' },
+];
+
 /* ─── Helpers ─── */
 function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suffix = '' }) {
   return (
