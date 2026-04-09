@@ -206,20 +206,21 @@ export function createAnimationController() {
 let thinkTime = 0;
 function _applyThinking(dt, weight, rig, params) {
   thinkTime += dt;
-  const { bones: b, morphs, behavior } = rig;
+  const { bones: b, morphs, behavior, restPose } = rig;
   const w = weight;
   const ge = (params.gestures ?? 1) * behavior.gestureScale;
+  const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
 
   // Chin touch gesture (one arm comes up)
   const cycle = Math.sin(thinkTime * 0.4);
-  if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, -0.6 * ge * w, 2, dt);
+  if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, rg('RightArm', 'x') - 0.6 * ge * w, 2, dt);
   if (b.RightForeArm) {
-    b.RightForeArm.rotation.x = smoothLerp(b.RightForeArm.rotation.x, -1.2 * ge * w, 2, dt);
+    b.RightForeArm.rotation.x = smoothLerp(b.RightForeArm.rotation.x, rg('RightForeArm', 'x') - 1.2 * ge * w, 2, dt);
   }
   // Head slight tilt
   if (b.Head) {
-    b.Head.rotation.z = smoothLerp(b.Head.rotation.z, 0.04 * ge * w, 2, dt);
-    b.Head.rotation.x = smoothLerp(b.Head.rotation.x, -0.03 * ge * w, 2, dt);
+    b.Head.rotation.z = smoothLerp(b.Head.rotation.z, rg('Head', 'z') + 0.04 * ge * w, 2, dt);
+    b.Head.rotation.x = smoothLerp(b.Head.rotation.x, rg('Head', 'x') - 0.03 * ge * w, 2, dt);
   }
   // Thoughtful face
   if (behavior.faceScale > 0) {
@@ -232,16 +233,17 @@ function _applyThinking(dt, weight, rig, params) {
 let listenTime = 0;
 function _applyListening(dt, weight, rig, params) {
   listenTime += dt;
-  const { bones: b, morphs, behavior } = rig;
+  const { bones: b, morphs, behavior, restPose } = rig;
   const w = weight;
   const hm = (params.headMove ?? 1) * behavior.headScale;
+  const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
 
   // Lean forward slightly
-  if (b.Spine) b.Spine.rotation.x = smoothLerp(b.Spine.rotation.x || 0, 0.03 * w, 2, dt);
+  if (b.Spine) b.Spine.rotation.x = smoothLerp(b.Spine.rotation.x || 0, rg('Spine', 'x') + 0.03 * w, 2, dt);
   // Head attentive tilt
   if (b.Head) {
-    b.Head.rotation.z = smoothLerp(b.Head.rotation.z, Math.sin(listenTime * 0.3) * 0.04 * hm * w, 2, dt);
-    b.Head.rotation.y = smoothLerp(b.Head.rotation.y, Math.sin(listenTime * 0.2) * 0.03 * hm * w, 1.5, dt);
+    b.Head.rotation.z = smoothLerp(b.Head.rotation.z, rg('Head', 'z') + Math.sin(listenTime * 0.3) * 0.04 * hm * w, 2, dt);
+    b.Head.rotation.y = smoothLerp(b.Head.rotation.y, rg('Head', 'y') + Math.sin(listenTime * 0.2) * 0.03 * hm * w, 1.5, dt);
   }
   // Attentive face
   if (behavior.faceScale > 0) {

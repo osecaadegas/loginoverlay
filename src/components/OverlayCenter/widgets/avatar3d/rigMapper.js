@@ -65,9 +65,18 @@ export function resolveRig(scene, url) {
     || morphs.has('viseme_aa');
 
   // ── Rest pose + T-pose detection ──
+  // If bones have baked rotation data (from FBX animation baking in
+  // AIChatBot3DAvatar.jsx), use those values as the rest pose.
+  // This ensures all procedural animation offsets are relative to the
+  // natural standing pose, not the bind/T-pose.
   const restPose = {};
   for (const [name, bone] of Object.entries(bones)) {
-    restPose[name] = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+    const baked = bone.userData?._bakedRotation;
+    if (baked) {
+      restPose[name] = { x: baked.x, y: baked.y, z: baked.z };
+    } else {
+      restPose[name] = { x: bone.rotation.x, y: bone.rotation.y, z: bone.rotation.z };
+    }
   }
   const laZ = Math.abs(restPose.LeftArm?.z || 0);
   const raZ = Math.abs(restPose.RightArm?.z || 0);

@@ -159,7 +159,7 @@ export function createTalkingBehavior() {
       const wsN = noise1D(speechTime, 400, 0.12);
       if (b.Hips) {
         b.Hips.position.x = smoothLerp(b.Hips.position.x || 0, wsN * 0.008 * sw * w, 1.5, dt);
-        b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, wsN * 0.012 * sw * w, 1.5, dt);
+        b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, rg('Hips', 'z') + wsN * 0.012 * sw * w, 1.5, dt);
       }
 
       // ── Return group X to center ──
@@ -185,27 +185,27 @@ export function createTalkingBehavior() {
         }
         // Head: emphasis nods + drift
         if (b.Head) {
-          const nodX = -emph * 0.06 * ge + Math.sin(phase.word * 0.5) * 0.015 * ge;
-          const driftY = Math.sin(phase.sentence * 1.1) * 0.04 * ge + Math.sin(phase.word * 0.3) * 0.02 * ge;
-          const tiltZ = Math.sin(phase.sentence * 0.7 + 0.5) * 0.015 * ge;
+          const nodX = rg('Head', 'x') - emph * 0.06 * ge + Math.sin(phase.word * 0.5) * 0.015 * ge;
+          const driftY = rg('Head', 'y') + Math.sin(phase.sentence * 1.1) * 0.04 * ge + Math.sin(phase.word * 0.3) * 0.02 * ge;
+          const tiltZ = rg('Head', 'z') + Math.sin(phase.sentence * 0.7 + 0.5) * 0.015 * ge;
           b.Head.rotation.x = smoothLerp(b.Head.rotation.x, nodX * w, 5, dt);
           b.Head.rotation.y = smoothLerp(b.Head.rotation.y, driftY * w, 2.5, dt);
           b.Head.rotation.z = smoothLerp(b.Head.rotation.z, tiltZ * w, 2, dt);
         }
         if (b.Neck) {
-          b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, Math.sin(phase.sentence * 0.6) * 0.02 * ge * w, 2, dt);
-          b.Neck.rotation.x = smoothLerp(b.Neck.rotation.x, -emph * 0.02 * ge * w, 4, dt);
+          b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, rg('Neck', 'y') + Math.sin(phase.sentence * 0.6) * 0.02 * ge * w, 2, dt);
+          b.Neck.rotation.x = smoothLerp(b.Neck.rotation.x, rg('Neck', 'x') - emph * 0.02 * ge * w, 4, dt);
         }
         // Shoulders micro-lift
-        if (b.LeftShoulder) b.LeftShoulder.rotation.z = smoothLerp(b.LeftShoulder.rotation.z || 0, emph * 0.015 * ge * w, 4, dt);
-        if (b.RightShoulder) b.RightShoulder.rotation.z = smoothLerp(b.RightShoulder.rotation.z || 0, -emph * 0.015 * ge * w, 4, dt);
+        if (b.LeftShoulder) b.LeftShoulder.rotation.z = smoothLerp(b.LeftShoulder.rotation.z || 0, rg('LeftShoulder', 'z') + emph * 0.015 * ge * w, 4, dt);
+        if (b.RightShoulder) b.RightShoulder.rotation.z = smoothLerp(b.RightShoulder.rotation.z || 0, rg('RightShoulder', 'z') - emph * 0.015 * ge * w, 4, dt);
         // Spine drift
-        if (b.Spine) b.Spine.rotation.y = smoothLerp(b.Spine.rotation.y || 0, Math.sin(phase.sentence * 0.5) * 0.01 * ge * w, 1.5, dt);
-        if (b.Spine2) b.Spine2.rotation.y = smoothLerp(b.Spine2.rotation.y || 0, Math.sin(phase.sentence * 0.4 + 0.3) * 0.008 * ge * w, 1.5, dt);
+        if (b.Spine) b.Spine.rotation.y = smoothLerp(b.Spine.rotation.y || 0, rg('Spine', 'y') + Math.sin(phase.sentence * 0.5) * 0.01 * ge * w, 1.5, dt);
+        if (b.Spine2) b.Spine2.rotation.y = smoothLerp(b.Spine2.rotation.y || 0, rg('Spine2', 'y') + Math.sin(phase.sentence * 0.4 + 0.3) * 0.008 * ge * w, 1.5, dt);
         // Arms: subtle fidget
         const armD = Math.sin(phase.sentence * 0.4) * 0.02 * am;
-        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, armD * w, 2, dt);
-        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, -armD * 0.7 * w, 2, dt);
+        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, rg('LeftArm', 'x') + armD * w, 2, dt);
+        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, rg('RightArm', 'x') - armD * 0.7 * w, 2, dt);
       }
 
       // ═══════════════════════════════════════════════
@@ -219,16 +219,16 @@ export function createTalkingBehavior() {
         }
         // Head: bigger nods + side motion
         if (b.Head) {
-          const bigNod = -emph * 0.09 * ge + Math.sin(phase.word * 0.7) * 0.025 * ge;
-          const side = Math.sin(phase.sentence * 1.5) * 0.06 * ge + Math.sin(phase.word * 0.4) * 0.03 * ge;
-          const tilt = Math.sin(phase.sentence * 0.8) * 0.03 * ge + emph * 0.02 * ge;
+          const bigNod = rg('Head', 'x') - emph * 0.09 * ge + Math.sin(phase.word * 0.7) * 0.025 * ge;
+          const side = rg('Head', 'y') + Math.sin(phase.sentence * 1.5) * 0.06 * ge + Math.sin(phase.word * 0.4) * 0.03 * ge;
+          const tilt = rg('Head', 'z') + Math.sin(phase.sentence * 0.8) * 0.03 * ge + emph * 0.02 * ge;
           b.Head.rotation.x = smoothLerp(b.Head.rotation.x, bigNod * w, 5, dt);
           b.Head.rotation.y = smoothLerp(b.Head.rotation.y, side * w, 3, dt);
           b.Head.rotation.z = smoothLerp(b.Head.rotation.z, tilt * w, 3, dt);
         }
         if (b.Neck) {
-          b.Neck.rotation.x = smoothLerp(b.Neck.rotation.x, -emph * 0.03 * ge * w, 4, dt);
-          b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, Math.sin(phase.sentence) * 0.03 * ge * w, 2, dt);
+          b.Neck.rotation.x = smoothLerp(b.Neck.rotation.x, rg('Neck', 'x') - emph * 0.03 * ge * w, 4, dt);
+          b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, rg('Neck', 'y') + Math.sin(phase.sentence) * 0.03 * ge * w, 2, dt);
         }
         // Body bounce
         if (groupRef?.current) {
@@ -238,8 +238,8 @@ export function createTalkingBehavior() {
         // Arms: animated
         const armEnergy = 0.06 + emph * 0.12;
         const armCycle = Math.sin(phase.word * 0.6);
-        const laBase = needsArmDown ? rg('LeftArm', 'z') + 1.1 : rg('LeftArm', 'z');
-        const raBase = needsArmDown ? rg('RightArm', 'z') - 1.1 : rg('RightArm', 'z');
+        const laBase = rg('LeftArm', 'z');
+        const raBase = rg('RightArm', 'z');
         if (b.LeftArm) {
           b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, rg('LeftArm', 'x') + armCycle * armEnergy * ge * w, 4, dt);
           b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, laBase + Math.sin(phase.sentence * 1.2) * 0.2 * ge * w + emph * 0.15 * w, 3, dt);
@@ -249,11 +249,11 @@ export function createTalkingBehavior() {
           b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, raBase - Math.sin(phase.sentence * 1.1 + 0.5) * 0.2 * ge * w - emph * 0.15 * w, 3, dt);
         }
         // Torso energy
-        if (b.Hips) b.Hips.rotation.y = smoothLerp(b.Hips.rotation.y, Math.sin(phase.sentence * 0.8) * 0.02 * sw * w, 2, dt);
-        if (b.Spine) b.Spine.rotation.y = smoothLerp(b.Spine.rotation.y || 0, Math.sin(phase.sentence * 0.6) * 0.015 * ge * w, 2, dt);
+        if (b.Hips) b.Hips.rotation.y = smoothLerp(b.Hips.rotation.y, rg('Hips', 'y') + Math.sin(phase.sentence * 0.8) * 0.02 * sw * w, 2, dt);
+        if (b.Spine) b.Spine.rotation.y = smoothLerp(b.Spine.rotation.y || 0, rg('Spine', 'y') + Math.sin(phase.sentence * 0.6) * 0.015 * ge * w, 2, dt);
         // Shoulders pop
-        if (b.LeftShoulder) b.LeftShoulder.rotation.z = smoothLerp(b.LeftShoulder.rotation.z || 0, emph * 0.025 * ge * w, 5, dt);
-        if (b.RightShoulder) b.RightShoulder.rotation.z = smoothLerp(b.RightShoulder.rotation.z || 0, -emph * 0.025 * ge * w, 5, dt);
+        if (b.LeftShoulder) b.LeftShoulder.rotation.z = smoothLerp(b.LeftShoulder.rotation.z || 0, rg('LeftShoulder', 'z') + emph * 0.025 * ge * w, 5, dt);
+        if (b.RightShoulder) b.RightShoulder.rotation.z = smoothLerp(b.RightShoulder.rotation.z || 0, rg('RightShoulder', 'z') - emph * 0.025 * ge * w, 5, dt);
       }
 
       // ═══════════════════════════════════════════════
@@ -267,14 +267,14 @@ export function createTalkingBehavior() {
         }
         // Head: deliberate nods
         if (b.Head) {
-          const nodX = -emph * 0.07 * ge + 0.02 * ge;
-          const scanY = Math.sin(phase.sentence * 0.8) * 0.05 * ge + Math.sin(phase.word * 0.2) * 0.02 * ge;
-          const thinkTilt = Math.sin(phase.sentence * 0.5 + 1) * 0.02 * ge;
+          const nodX = rg('Head', 'x') - emph * 0.07 * ge + 0.02 * ge;
+          const scanY = rg('Head', 'y') + Math.sin(phase.sentence * 0.8) * 0.05 * ge + Math.sin(phase.word * 0.2) * 0.02 * ge;
+          const thinkTilt = rg('Head', 'z') + Math.sin(phase.sentence * 0.5 + 1) * 0.02 * ge;
           b.Head.rotation.x = smoothLerp(b.Head.rotation.x, nodX * w, 4, dt);
           b.Head.rotation.y = smoothLerp(b.Head.rotation.y, scanY * w, 2, dt);
           b.Head.rotation.z = smoothLerp(b.Head.rotation.z, thinkTilt * w, 2, dt);
         }
-        if (b.Neck) b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, Math.sin(phase.sentence * 0.5) * 0.025 * ge * w, 2, dt);
+        if (b.Neck) b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, rg('Neck', 'y') + Math.sin(phase.sentence * 0.5) * 0.025 * ge * w, 2, dt);
 
         // Gesture arm: reach/hold/retract
         const gt = gesture.target;
@@ -287,7 +287,7 @@ export function createTalkingBehavior() {
 
         if (gestArm) {
           const gestArmName = useRight ? 'RightArm' : 'LeftArm';
-          const armBase = needsArmDown ? rg(gestArmName, 'z') + (useRight ? -1.1 : 1.1) : rg(gestArmName, 'z');
+          const armBase = rg(gestArmName, 'z');
           gestArm.rotation.x = smoothLerp(gestArm.rotation.x, rg(gestArmName, 'x') + gt.armX * ge * gestureBlend * w + holdWobble * ge, 4, dt);
           gestArm.rotation.z = smoothLerp(gestArm.rotation.z, armBase + gt.armZ * ge * gestureBlend * w, 3.5, dt);
         }
@@ -295,8 +295,10 @@ export function createTalkingBehavior() {
           gestFore.rotation.x = smoothLerp(gestFore.rotation.x, gt.foreX * ge * gestureBlend * w + holdWobble * 0.5, 4, dt);
           gestFore.rotation.y = smoothLerp(gestFore.rotation.y || 0, gt.foreY * ge * gestureBlend * w, 3.5, dt);
         }
-        if (restArm) restArm.rotation.x = smoothLerp(restArm.rotation.x, Math.sin(phase.sentence * 0.3) * 0.015 * am * w, 2, dt);
-        if (restFore) restFore.rotation.y = smoothLerp(restFore.rotation.y || 0, Math.sin(phase.word * 0.15) * 0.02 * am * w, 2, dt);
+        const restArmName = useRight ? 'LeftArm' : 'RightArm';
+        const restForeName = useRight ? 'LeftForeArm' : 'RightForeArm';
+        if (restArm) restArm.rotation.x = smoothLerp(restArm.rotation.x, rg(restArmName, 'x') + Math.sin(phase.sentence * 0.3) * 0.015 * am * w, 2, dt);
+        if (restFore) restFore.rotation.y = smoothLerp(restFore.rotation.y || 0, rg(restForeName, 'y') + Math.sin(phase.word * 0.15) * 0.02 * am * w, 2, dt);
 
         // Lean forward
         if (b.Spine) b.Spine.rotation.x = smoothLerp(b.Spine.rotation.x || 0, (0.03 * ge + emph * 0.015) * w, 2, dt);

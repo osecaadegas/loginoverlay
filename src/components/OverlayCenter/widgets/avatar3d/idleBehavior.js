@@ -108,17 +108,17 @@ export function createIdleBehavior() {
         const swayN = noise1D(t.total, 10, 0.3);
         const swayN2 = noise1D(t.total, 20, 0.5);
         if (b.Hips) {
-          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, swayN * 0.018 * sw * w, 3, dt);
-          b.Hips.rotation.y = smoothLerp(b.Hips.rotation.y, swayN2 * 0.012 * sw * w, 3, dt);
+          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, rg('Hips', 'z') + swayN * 0.018 * sw * w, 3, dt);
+          b.Hips.rotation.y = smoothLerp(b.Hips.rotation.y, rg('Hips', 'y') + swayN2 * 0.012 * sw * w, 3, dt);
           b.Hips.position.x = smoothLerp(b.Hips.position.x || 0, swayN * 0.004 * sw * w, 3, dt);
         }
-        if (b.Spine) b.Spine.rotation.z = noise1D(t.total, 30, 0.45) * -0.01 * sw * w;
-        // Subtle arm motion
+        if (b.Spine) b.Spine.rotation.z = rg('Spine', 'z') + noise1D(t.total, 30, 0.45) * -0.01 * sw * w;
+        // Subtle arm motion — offset from rest pose, not absolute zero
         const armN = noise1D(t.total, 40, 0.4);
-        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, armN * 0.04 * am * w, 3, dt);
-        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, -armN * 0.03 * am * w, 3, dt);
-        if (b.LeftForeArm) b.LeftForeArm.rotation.y = noise1D(t.total, 50, 0.35) * 0.05 * am * w;
-        if (b.RightForeArm) b.RightForeArm.rotation.y = noise1D(t.total, 60, 0.38) * -0.05 * am * w;
+        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, rg('LeftArm', 'x') + armN * 0.04 * am * w, 3, dt);
+        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, rg('RightArm', 'x') - armN * 0.03 * am * w, 3, dt);
+        if (b.LeftForeArm) b.LeftForeArm.rotation.y = rg('LeftForeArm', 'y') + noise1D(t.total, 50, 0.35) * 0.05 * am * w;
+        if (b.RightForeArm) b.RightForeArm.rotation.y = rg('RightForeArm', 'y') + noise1D(t.total, 60, 0.38) * -0.05 * am * w;
 
         // Head micro-movement
         const headN = noise2D(t.total, 70, 0.2);
@@ -135,16 +135,16 @@ export function createIdleBehavior() {
       else if (v === 'shifting') {
         const shiftN = noise1D(t.total, 80, 0.15);
         if (b.Hips) {
-          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, shiftN * 0.03 * sw * w, 1.5, dt);
+          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, rg('Hips', 'z') + shiftN * 0.03 * sw * w, 1.5, dt);
           b.Hips.position.x = smoothLerp(b.Hips.position.x || 0, shiftN * 0.01 * sw * w, 1.5, dt);
         }
         // Counter-rotate spine for natural feel
-        if (b.Spine) b.Spine.rotation.z = smoothLerp(b.Spine.rotation.z || 0, -shiftN * 0.015 * sw * w, 2, dt);
+        if (b.Spine) b.Spine.rotation.z = smoothLerp(b.Spine.rotation.z || 0, rg('Spine', 'z') - shiftN * 0.015 * sw * w, 2, dt);
 
-        // Arms hang with slight sway
+        // Arms hang with slight sway — offset from rest pose
         const armShiftN = noise1D(t.total, 90, 0.25);
-        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, armShiftN * 0.03 * am * w, 2, dt);
-        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, -armShiftN * 0.025 * am * w, 2, dt);
+        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, rg('LeftArm', 'x') + armShiftN * 0.03 * am * w, 2, dt);
+        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, rg('RightArm', 'x') - armShiftN * 0.025 * am * w, 2, dt);
 
         // Head follows body
         const headShift = noise2D(t.total, 100, 0.18);
@@ -158,7 +158,7 @@ export function createIdleBehavior() {
       else if (v === 'lookAround') {
         // Center hips
         if (b.Hips) {
-          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, 0, 2, dt);
+          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, rg('Hips', 'z'), 2, dt);
           b.Hips.position.x = smoothLerp(b.Hips.position.x || 0, 0, 2, dt);
         }
         // Big head movement using noise for unpredictability
@@ -166,15 +166,15 @@ export function createIdleBehavior() {
         const bigLookY = lookN.y * 0.18 * hm * w;
         const bigLookX = lookN.x * 0.12 * hm * w;
         if (b.Head) {
-          b.Head.rotation.y = smoothLerp(b.Head.rotation.y, bigLookY, 2, dt);
-          b.Head.rotation.x = smoothLerp(b.Head.rotation.x, bigLookX, 2, dt);
+          b.Head.rotation.y = smoothLerp(b.Head.rotation.y, rg('Head', 'y') + bigLookY, 2, dt);
+          b.Head.rotation.x = smoothLerp(b.Head.rotation.x, rg('Head', 'x') + bigLookX, 2, dt);
         }
-        if (b.Neck) b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, bigLookY * 0.4, 2, dt);
+        if (b.Neck) b.Neck.rotation.y = smoothLerp(b.Neck.rotation.y, rg('Neck', 'y') + bigLookY * 0.4, 2, dt);
         // Spine follows head subtly
-        if (b.Spine2) b.Spine2.rotation.y = bigLookY * 0.15;
+        if (b.Spine2) b.Spine2.rotation.y = rg('Spine2', 'y') + bigLookY * 0.15;
         // Arms return to rest
-        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, 0, 2, dt);
-        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, 0, 2, dt);
+        if (b.LeftArm) b.LeftArm.rotation.x = smoothLerp(b.LeftArm.rotation.x, rg('LeftArm', 'x'), 2, dt);
+        if (b.RightArm) b.RightArm.rotation.x = smoothLerp(b.RightArm.rotation.x, rg('RightArm', 'x'), 2, dt);
       }
 
       // ── Stretch: arms up, lean back, relax ──
@@ -185,22 +185,22 @@ export function createIdleBehavior() {
         const lift = sp < 0.4 ? sp / 0.4 : sp < 0.7 ? 1 : 1 - (sp - 0.7) / 0.3;
         const lean = sp > 0.2 && sp < 0.7 ? Math.sin((sp - 0.2) / 0.5 * Math.PI) : 0;
 
-        const laBase = needsArmDown ? rg('LeftArm', 'z') + 1.1 : rg('LeftArm', 'z');
-        const raBase = needsArmDown ? rg('RightArm', 'z') - 1.1 : rg('RightArm', 'z');
+        const laBase = rg('LeftArm', 'z');
+        const raBase = rg('RightArm', 'z');
 
         if (b.LeftArm) b.LeftArm.rotation.z = smoothLerp(b.LeftArm.rotation.z, laBase + lift * 1.5 * am * w, 4, dt);
         if (b.RightArm) b.RightArm.rotation.z = smoothLerp(b.RightArm.rotation.z, raBase - lift * 1.5 * am * w, 4, dt);
-        if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, (needsArmDown ? rg('LeftForeArm', 'z') + 0.15 : rg('LeftForeArm', 'z')) + lift * 0.3, 4, dt);
-        if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, (needsArmDown ? rg('RightForeArm', 'z') - 0.15 : rg('RightForeArm', 'z')) - lift * 0.3, 4, dt);
+        if (b.LeftForeArm) b.LeftForeArm.rotation.z = smoothLerp(b.LeftForeArm.rotation.z, rg('LeftForeArm', 'z') + lift * 0.3, 4, dt);
+        if (b.RightForeArm) b.RightForeArm.rotation.z = smoothLerp(b.RightForeArm.rotation.z, rg('RightForeArm', 'z') - lift * 0.3, 4, dt);
 
         if (b.Spine1) b.Spine1.rotation.x += lean * -0.08 * ge * w;
         if (b.Spine2) b.Spine2.rotation.x += lean * -0.06 * ge * w;
-        if (b.Head) b.Head.rotation.x = smoothLerp(b.Head.rotation.x, lean * -0.1, 3, dt);
+        if (b.Head) b.Head.rotation.x = smoothLerp(b.Head.rotation.x, rg('Head', 'x') + lean * -0.1, 3, dt);
         // Happy face
         if (sp > 0.3 && sp < 0.8) morphs.set('mouthSmile', 0.2 * w);
         // Center hips
         if (b.Hips) {
-          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, 0, 2, dt);
+          b.Hips.rotation.z = smoothLerp(b.Hips.rotation.z, rg('Hips', 'z'), 2, dt);
           b.Hips.position.x = smoothLerp(b.Hips.position.x || 0, 0, 2, dt);
         }
       }

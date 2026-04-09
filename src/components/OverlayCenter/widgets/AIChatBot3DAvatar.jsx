@@ -64,26 +64,37 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
   const controllerRef = useRef(null);
   const lastReaction = useRef(0);
   const primitiveRef = useRef();
-  const bakedRef = useRef(false);
+  const processedRef = useRef(false);
 
-  // Process FBX scene directly — NO skeletonClone.
-  // Strip "mixamorig:" prefix from bone names AND animation track names.
-  // The colon in "mixamorig:" confuses Three.js PropertyBinding path parsing,
-  // so AnimationMixer can't resolve tracks to bones. Renaming fixes baking.
+  // ═══════════════════════════════════════════════════════════════
+  //  FBX PROCESSING PIPELINE (runs once per scene reference)
+  //
+  //  Order is critical:
+  //    1. Strip "mixamorig:" from bone names (PropertyBinding fix)
+  //    2. Strip "mixamorig:" from animation track names
+  //    3. Fix materials (colorSpace, transparency)
+  //    4. Bake embedded animation frame 0 into bone transforms
+  //    5. THEN resolve rig (captures baked rest pose, not bind pose)
+  //    6. Create animation controller
+  //
+  //  If rig is resolved before baking, restPose captures T-pose
+  //  and all procedural animation offsets are wrong.
+  // ═══════════════════════════════════════════════════════════════
   const scene = useMemo(() => {
-    // 1. Strip "mixamorig:" prefix from all bone/node names
+    // 1. Strip "mixamorig:" prefix from all bone/node names.
+    //    The colon confuses Three.js PropertyBinding path parsing.
     fbxScene.traverse((child) => {
-      if (child.name && child.name.startsWith('mixamorig:')) {
-        child.name = child.name.replace('mixamorig:', '');
+      if (child.name && child.name.includes('mixamorig:')) {
+        child.name = child.name.replace(/mixamorig:/g, '');
       }
     });
 
-    // 2. Strip prefix from animation track names so AnimationMixer can resolve them
+    // 2. Strip prefix from animation track names
     if (fbxScene.animations) {
       for (const clip of fbxScene.animations) {
         for (const track of clip.tracks) {
-          if (track.name && track.name.includes('mixamorig:')) {
-            track.name = track.name.replace('mixamorig:', '');
+          if (track.name) {
+            track.name = track.name.replace(/mixamorig:/g, '');
           }
         }
       }
@@ -103,36 +114,78 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
       }
     });
 
-    // 4. Bake embedded Mixamo idle animation into bone rest pose
-    if (!bakedRef.current && fbxScene.animations?.length > 0) {
-      bakedRef.current = true;
+    // 4. Bake embedded animation into bone rest transforms.
+    //    Mixamo FBX ships with a "Take 001" idle clip. We sample it
+    //    at t=0 to set bones into a natural standing pose. Without
+    //    this, bones are in bind pose (T-pose) because FBX stores
+    //    the bind pose in the skeleton, not the animation frame.
+    if (!processedRef.current && fbxScene.animations?.length > 0) {
+      processedRef.current = true;
       const mixer = new AnimationMixer(fbxScene);
       const clip = fbxScene.animations[0];
       const action = mixer.clipAction(clip);
       action.play();
-      mixer.update(0); // init bindings
-      mixer.update(0.5); // advance half-second into idle anim
+      mixer.update(0);     // init bindings (creates PropertyMixer instances)
+      mixer.update(1 / 60); // advance one frame to apply all track values
+
+      // CRITICAL: Capture bone transforms BEFORE action.stop()!
+      // action.stop() resets PropertyMixer accumulators, reverting bones
+      // to bind pose. We capture first, then re-apply after cleanup.
+      const bakedTransforms = new Map();
+      fbxScene.traverse((child) => {
+        if (child.isBone || child.type === 'Bone') {
+          bakedTransforms.set(child, {
+            rx: child.rotation.x, ry: child.rotation.y, rz: child.rotation.z,
+            px: child.position.x, py: child.position.y, pz: child.position.z,
+            qx: child.quaternion.x, qy: child.quaternion.y,
+            qz: child.quaternion.z, qw: child.quaternion.w,
+          });
+        }
+      });
+
       action.stop();
       mixer.uncacheRoot(fbxScene);
+
+      // Re-apply baked transforms and store in userData for resolveRig
+      for (const [bone, t] of bakedTransforms) {
+        bone.quaternion.set(t.qx, t.qy, t.qz, t.qw);
+        bone.position.set(t.px, t.py, t.pz);
+        bone.userData._bakedRotation = { x: t.rx, y: t.ry, z: t.rz };
+        bone.userData._bakedPosition = { x: t.px, y: t.py, z: t.pz };
+      }
+
       console.log('[3DAvatar-FBX] Baked idle frame:', clip.name,
         '| tracks:', clip.tracks.length,
-        '| duration:', clip.duration.toFixed(2) + 's');
+        '| duration:', clip.duration.toFixed(2) + 's',
+        '| bones baked:', bakedTransforms.size);
+
+      // Log arm Z values to verify T-pose was broken
+      for (const [bone, t] of bakedTransforms) {
+        if (bone.name === 'LeftArm' || bone.name === 'RightArm') {
+          console.log('[3DAvatar-FBX]', bone.name, 'baked Z:', t.rz.toFixed(4));
+        }
+      }
+    } else if (!processedRef.current) {
+      processedRef.current = true;
+      console.warn('[3DAvatar-FBX] No animations in FBX — bones stay in bind pose (T-pose).',
+        'Re-export from Mixamo with an animation included.');
     }
 
     return fbxScene;
   }, [fbxScene]);
 
+  // 5. Resolve rig AFTER baking (captures baked rest pose)
   useEffect(() => {
     const rig = resolveRig(scene, url);
     rigRef.current = rig;
     controllerRef.current = createAnimationController();
 
-    // Log bone detection
-    console.log('[3DAvatar-FBX] Bones:', Object.keys(rig.bones).join(', ') || 'none');
-    console.log('[3DAvatar-FBX] T-pose:', rig.needsArmDown);
-    const allBoneNames = [];
-    scene.traverse((c) => { if (c.isBone || c.type === 'Bone') allBoneNames.push(c.name); });
-    console.log('[3DAvatar-FBX] All scene bones (' + allBoneNames.length + '):', allBoneNames.join(', '));
+    // Log diagnostics
+    const boneNames = Object.keys(rig.bones);
+    console.log('[3DAvatar-FBX] Resolved', boneNames.length, 'bones:', boneNames.join(', '));
+    console.log('[3DAvatar-FBX] needsArmDown:', rig.needsArmDown,
+      '| LeftArm.z:', rig.restPose.LeftArm?.z?.toFixed(3) ?? 'N/A',
+      '| RightArm.z:', rig.restPose.RightArm?.z?.toFixed(3) ?? 'N/A');
   }, [scene, url]);
 
   useEffect(() => {
