@@ -213,52 +213,70 @@ function BonusHuntWidgetV11({ config, theme }) {
         </div>
       )}
 
-      {/* ═══ 6. Bonus List Section ═══ */}
+      {/* ═══ 6. Bonus List Section (Compact style) ═══ */}
       <div className="bht11-list-section">
         <div className="bht11-list-title">
           <span className="bht11-list-title-icon">📋</span>
           <span>BONUS LIST</span>
         </div>
-        <div className="bht11-list-scroll">
+        <div className="bht-bonus-list">
           {(() => {
-            const count = bonuses.length;
-            const shouldScroll = count >= 5;
-            const renderRow = (bonus, idx, key) => {
+            const renderCompactCard = (bonus, idx, key) => {
               const payout = Number(bonus.payout) || 0;
               const bet = Number(bonus.betSize) || 0;
+              const multi = bet > 0 ? payout / bet : 0;
               const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
               const isSuper = bonus.isSuperBonus;
               return (
                 <div key={key}
-                  className={`bht11-list-row${idx === currentIndex ? ' bht11-list-row--active' : ''}${bonus.opened ? ' bht11-list-row--opened' : ''}${isExtreme ? ' bht11-list-row--extreme' : ''}${isSuper && !isExtreme ? ' bht11-list-row--super' : ''}`}>
-                  <div className="bht11-list-row-thumb">
+                  className={`bht-cpt-card${idx === currentIndex ? ' bht-cpt-card--active' : ''}${bonus.opened ? ' bht-cpt-card--opened' : ''}${isSuper ? ' bht-cpt-card--super' : ''}${isExtreme ? ' bht-cpt-card--extreme' : ''}`}>
+                  <div className="bht-cpt-card-img-wrap">
                     {bonus.slot?.image ? (
-                      <img src={bonus.slot.image} alt={bonus.slotName} className="bht11-list-row-img"
-                        onError={e => { e.target.style.display = 'none'; }} />
-                    ) : <div className="bht11-list-row-img-ph">🎰</div>}
+                      <img src={bonus.slot.image} alt={bonus.slotName}
+                        className="bht-cpt-card-img"
+                        onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
+                    ) : (
+                      <div className="bht-cpt-card-img-ph" />
+                    )}
+                    {isExtreme && <div className="bht-cpt-blood-drip" />}
+                    {isExtreme && <span className="bht-cpt-badge bht-cpt-badge--extreme">EXTREME</span>}
+                    {!isExtreme && isSuper && <span className="bht-cpt-badge bht-cpt-badge--super">SUPER</span>}
                   </div>
-                  <div className="bht11-list-row-info">
-                    <span className="bht11-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
-                    <span className="bht11-list-row-bet">{currency}{bet.toFixed(2)}</span>
+                  <div className="bht-cpt-card-info">
+                    <div className="bht-cpt-card-row1">
+                      <span className="bht-cpt-card-idx">#{idx + 1}</span>
+                      <span className="bht-cpt-card-name">{bonus.slotName || bonus.slot?.name}</span>
+                    </div>
+                    <div className="bht-cpt-card-row2">
+                      <span className="bht-cpt-card-bet">BET {currency}{bet.toFixed(2)}</span>
+                      {bonus.opened && (
+                        <>
+                          <span className="bht-cpt-card-payout">{currency}{payout.toFixed(2)}</span>
+                          <span className={`bht-cpt-card-multi${multi >= 100 ? ' bht-cpt-card-multi--huge' : multi >= 50 ? ' bht-cpt-card-multi--big' : ''}`}>{multi.toFixed(1)}x</span>
+                        </>
+                      )}
+                    </div>
                   </div>
-                  <span className="bht11-list-row-idx">#{idx + 1}</span>
                 </div>
               );
             };
-            if (!shouldScroll) {
+            if (isOpening) {
+              const cardH = 140, gap = 6, step = cardH + gap;
+              const offset = -(currentIndex * step);
               return (
-                <div className="bht11-list-track">
-                  {bonuses.map((b, i) => renderRow(b, i, `fr-${b.id || i}-o`))}
+                <div key="compact-static" className="bht-compact-track bht-compact-track--static"
+                  style={{ transform: `translateY(${offset}px)` }}>
+                  {bonuses.map((b, i) => renderCompactCard(b, i, b.id || i))}
                 </div>
               );
             }
             return (
-              <div className="bht11-list-track bht11-list-track--scroll"
-                style={{ '--bht11-list-count': count + 1 }}>
-                {bonuses.map((b, i) => renderRow(b, i, `fr-${b.id || i}-o`))}
-                <div className="bht11-list-row-spacer" />
-                {bonuses.map((b, i) => renderRow(b, i, `fr-${b.id || i}-c`))}
-                <div className="bht11-list-row-spacer" />
+              <div key="compact-scroll" className="bht-compact-track bht-compact-track--scroll"
+                style={{ '--bht-compact-count': bonuses.length }}>
+                {[...bonuses, ...bonuses].map((b, i) => {
+                  const idx = i % bonuses.length;
+                  return renderCompactCard(b, idx, `${b.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`);
+                })}
               </div>
             );
           })()}
