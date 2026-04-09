@@ -67,10 +67,29 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
   const bakedRef = useRef(false);
 
   // Process FBX scene directly — NO skeletonClone.
-  // skeletonClone breaks Mixamo "mixamorig:" bone paths
-  // which prevents AnimationMixer from baking the idle frame.
+  // Strip "mixamorig:" prefix from bone names AND animation track names.
+  // The colon in "mixamorig:" confuses Three.js PropertyBinding path parsing,
+  // so AnimationMixer can't resolve tracks to bones. Renaming fixes baking.
   const scene = useMemo(() => {
-    // Fix materials
+    // 1. Strip "mixamorig:" prefix from all bone/node names
+    fbxScene.traverse((child) => {
+      if (child.name && child.name.startsWith('mixamorig:')) {
+        child.name = child.name.replace('mixamorig:', '');
+      }
+    });
+
+    // 2. Strip prefix from animation track names so AnimationMixer can resolve them
+    if (fbxScene.animations) {
+      for (const clip of fbxScene.animations) {
+        for (const track of clip.tracks) {
+          if (track.name && track.name.includes('mixamorig:')) {
+            track.name = track.name.replace('mixamorig:', '');
+          }
+        }
+      }
+    }
+
+    // 3. Fix materials
     fbxScene.traverse((child) => {
       if (child.isMesh) {
         const mats = Array.isArray(child.material) ? child.material : [child.material];
@@ -84,7 +103,7 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
       }
     });
 
-    // Bake embedded Mixamo idle animation into bone rest pose
+    // 4. Bake embedded Mixamo idle animation into bone rest pose
     if (!bakedRef.current && fbxScene.animations?.length > 0) {
       bakedRef.current = true;
       const mixer = new AnimationMixer(fbxScene);
@@ -92,7 +111,7 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
       const action = mixer.clipAction(clip);
       action.play();
       mixer.update(0); // init bindings
-      mixer.update(0.5); // advance into idle anim
+      mixer.update(0.5); // advance half-second into idle anim
       action.stop();
       mixer.uncacheRoot(fbxScene);
       console.log('[3DAvatar-FBX] Baked idle frame:', clip.name,

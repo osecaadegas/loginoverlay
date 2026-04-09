@@ -10,34 +10,34 @@
  */
 
 // ─── Mixamo FBX V2 Avatars ───────────────────────────────────────────
-// Standard Mixamo rig with "mixamorig:" prefix.
-// Bones: mixamorig:Hips, mixamorig:Spine, mixamorig:Head, etc.
+// Standard Mixamo rig — "mixamorig:" prefix is stripped at load time
+// (in AIChatBot3DAvatar.jsx) so bones are just Hips, Spine, Head, etc.
 // No morph targets (Mixamo characters don't have blendshapes).
 // FBX unit scale: FBXLoader auto-applies UnitScaleFactor, but Mixamo
 // exports at 1cm = 1 unit, so we apply 0.01 scale.
 const MIXAMO_V2_BONES = {
-  Hips: 'mixamorig:Hips',
-  Spine: 'mixamorig:Spine',
-  Spine1: 'mixamorig:Spine1',
-  Spine2: 'mixamorig:Spine2',
-  Neck: 'mixamorig:Neck',
-  Head: 'mixamorig:Head',
-  LeftShoulder: 'mixamorig:LeftShoulder',
-  LeftArm: 'mixamorig:LeftArm',
-  LeftForeArm: 'mixamorig:LeftForeArm',
-  LeftHand: 'mixamorig:LeftHand',
-  RightShoulder: 'mixamorig:RightShoulder',
-  RightArm: 'mixamorig:RightArm',
-  RightForeArm: 'mixamorig:RightForeArm',
-  RightHand: 'mixamorig:RightHand',
-  LeftUpLeg: 'mixamorig:LeftUpLeg',
-  LeftLeg: 'mixamorig:LeftLeg',
-  LeftFoot: 'mixamorig:LeftFoot',
-  RightUpLeg: 'mixamorig:RightUpLeg',
-  RightLeg: 'mixamorig:RightLeg',
-  RightFoot: 'mixamorig:RightFoot',
-  LeftEye: 'mixamorig:LeftEye',
-  RightEye: 'mixamorig:RightEye',
+  Hips: 'Hips',
+  Spine: 'Spine',
+  Spine1: 'Spine1',
+  Spine2: 'Spine2',
+  Neck: 'Neck',
+  Head: 'Head',
+  LeftShoulder: 'LeftShoulder',
+  LeftArm: 'LeftArm',
+  LeftForeArm: 'LeftForeArm',
+  LeftHand: 'LeftHand',
+  RightShoulder: 'RightShoulder',
+  RightArm: 'RightArm',
+  RightForeArm: 'RightForeArm',
+  RightHand: 'RightHand',
+  LeftUpLeg: 'LeftUpLeg',
+  LeftLeg: 'LeftLeg',
+  LeftFoot: 'LeftFoot',
+  RightUpLeg: 'RightUpLeg',
+  RightLeg: 'RightLeg',
+  RightFoot: 'RightFoot',
+  LeftEye: 'LeftEye',
+  RightEye: 'RightEye',
 };
 
 const MIXAMO_V2_BEHAVIOR = {
