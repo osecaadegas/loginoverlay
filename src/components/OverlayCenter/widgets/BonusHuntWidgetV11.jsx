@@ -219,7 +219,53 @@ function BonusHuntWidgetV11({ config, theme }) {
         </div>
       </div>
 
-      {/* ═══ 5. Bonus List Section ═══ */}
+      {/* ═══ 5. 3D Rotating Card Stack ═══ */}
+      {bonuses.length > 0 && (
+        <div className="bht11-stack-section">
+          <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
+            {(() => {
+              const total = bonuses.length;
+              if (total === 0) return null;
+              const ci = isOpening && currentIndex >= 0 ? currentIndex : carouselIdx % total;
+              const posMap = { '-2': 'bht-stack-card--far-left', '-1': 'bht-stack-card--left', '0': 'bht-stack-card--center', '1': 'bht-stack-card--right', '2': 'bht-stack-card--far-right' };
+              return bonuses.map((bonus, bIdx) => {
+                const rawDist = ((bIdx - ci) % total + total) % total;
+                const dist = rawDist <= Math.floor(total / 2) ? rawDist : rawDist - total;
+                const posCls = posMap[String(dist)] || 'bht-stack-card--hidden';
+                return (
+                  <div key={`stk-${bIdx}`}
+                    className={`bht-stack-card ${posCls}${bonus.opened ? ' bht-stack-card--opened' : ''}${bonus.isSuperBonus ? ' bht-stack-card--super' : ''}${(bonus.isExtremeBonus || bonus.isExtreme) ? ' bht-stack-card--extreme' : ''}`}>
+                    <div className="bht-stack-card-inner">
+                      <div className="bht-stack-card-img-wrap">
+                        {bonus.slot?.image ? (
+                          <img src={bonus.slot.image} alt={bonus.slotName} className="bht-stack-card-img"
+                            onError={e => { e.target.style.display = 'none'; }} />
+                        ) : <div className="bht-stack-card-img-ph" />}
+                      </div>
+                    </div>
+                  </div>
+                );
+              });
+            })()}
+          </div>
+          {/* ── Progress bar ── */}
+          {(() => {
+            const total = bonuses.length;
+            const opened = bonuses.filter(b => b.opened).length;
+            const pct = total > 0 ? (opened / total) * 100 : 0;
+            return (
+              <div className="bht-progress">
+                <div className="bht-progress-bar">
+                  <div className="bht-progress-fill" style={{ width: `${pct}%` }} />
+                </div>
+                <span className="bht-progress-text">{opened}/{total}</span>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* ═══ 6. Bonus List Section ═══ */}
       <div className="bht11-list-section">
         <div className="bht11-list-title">
           <span className="bht11-list-title-icon">📋</span>
