@@ -1292,25 +1292,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     </div>
                   </details>
 
-                  {/* ── Shadow ── */}
-                  <details className="wm-ctx-section">
-                    <summary className="wm-ctx-section-title">🌑 Shadow</summary>
-                    <div className="wm-ctx-section-body">
-                      {[
-                        { key: 'shadowSize',      label: 'Size',      min: 0, max: 100 },
-                        { key: 'shadowIntensity',  label: 'Intensity', min: 0, max: 100 },
-                      ].map(f => (
-                        <div key={f.key} className="wm-ctx-slider-row">
-                          <label className="wm-ctx-slider-label">{f.label}</label>
-                          <input type="range" className="wm-ctx-range" min={f.min} max={f.max}
-                            value={w.config?.[f.key] ?? 0}
-                            onChange={e => ctxUpdateConfig(f.key, +e.target.value)} />
-                          <span className="wm-ctx-slider-val">{w.config?.[f.key] ?? 0}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </details>
-
                   {/* ── Advanced CSS ── */}
                   <details className="wm-ctx-section">
                     <summary className="wm-ctx-section-title">⚡ Advanced CSS</summary>
@@ -1745,48 +1726,8 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                   </div>
                 )}
 
-                {/* ── Shadow Controls (all widgets) ── */}
+                {/* ── Animations (all widgets) ── */}
                 <div className="wm-layout-panel">
-                  <div className="wm-layout-heading">
-                    <span className="wm-layout-icon">🌑</span>
-                    <span>Shadow</span>
-                  </div>
-                  <p className="wm-layout-hint">Add a drop shadow that follows the widget's visual outline.</p>
-                  <div className="wm-slider-grid">
-                    {[
-                      { label: 'Size',      field: 'shadowSize',      min: 0, max: 100, val: w.config?.shadowSize ?? 0 },
-                      { label: 'Intensity', field: 'shadowIntensity', min: 0, max: 100, val: w.config?.shadowIntensity ?? 0 },
-                    ].map(s => (
-                      <label key={s.field} className="wm-slider-field">
-                        <span className="wm-slider-label">{s.label}</span>
-                        <div className="wm-slider-row">
-                          <input
-                            type="range"
-                            className="wm-range"
-                            min={s.min}
-                            max={s.max}
-                            value={s.val}
-                            onChange={e => {
-                              const latest = widgets.find(x => x.id === w.id) || w;
-                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
-                            }}
-                          />
-                          <input
-                            type="number"
-                            className="wm-slider-num"
-                            min={s.min}
-                            max={s.max}
-                            value={s.val}
-                            onChange={e => {
-                              const latest = widgets.find(x => x.id === w.id) || w;
-                              handleConfigChange(latest, { ...latest.config, [s.field]: +e.target.value });
-                            }}
-                          />
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-
                   <label className="wm-animation-field">
                     <span className="wm-slider-label">🎬 Entrance Animation</span>
                     <select value={w.animation || 'fade'} onChange={e => handlePositionChange(w, 'animation', e.target.value)}>
