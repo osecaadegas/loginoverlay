@@ -119,6 +119,8 @@ export default function ProfileSection({ widgets, saveWidget }) {
   const songWsRef = useRef(null);
   const songReconnectRef = useRef(null);
   const [srIrcStatus, setSrIrcStatus] = useState('off');
+  const widgetsRef = useRef(widgets);
+  widgetsRef.current = widgets;
 
   /* ── Load profile from existing widget configs + user metadata ── */
   useEffect(() => {
@@ -211,6 +213,21 @@ export default function ProfileSection({ widgets, saveWidget }) {
             if (songName) {
               try { await fetch(`${window.location.origin}/api/chat-commands?cmd=song&user_id=${encodeURIComponent(user.id)}&song=${encodeURIComponent(songName)}`); }
               catch (err) { console.error('[SongRequest] IRC error', err); }
+            }
+          }
+
+          // !sr handler — skip when SE is enabled (SE custom command handles it)
+          const srWidget = (widgetsRef.current || []).find(w => w.widget_type === 'slot_requests');
+          const srSeEnabled = srWidget?.config?.srSeEnabled;
+          if (!srSeEnabled) {
+            const srMatch = line.match(/:([\w]+)![\w]+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!sr (.+)/i);
+            if (srMatch) {
+              const requester = srMatch[1];
+              const slotName = srMatch[2].trim();
+              if (slotName) {
+                try { await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(user.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`); }
+                catch (err) { console.error('[SlotRequest] IRC error', err); }
+              }
             }
           }
         }
