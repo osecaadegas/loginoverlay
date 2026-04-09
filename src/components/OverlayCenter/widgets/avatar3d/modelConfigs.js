@@ -149,12 +149,77 @@ const MONSTER_AVATAR = {
   meta: { scale: 0.01, offsetY: 0 },  // CC models export in cm, need 0.01 to convert to meters
 };
 
+// ─── Mixamo FBX V2 Avatars ───────────────────────────────────────────
+// Standard Mixamo rig with "mixamorig:" prefix.
+// Bones: mixamorig:Hips, mixamorig:Spine, mixamorig:Head, etc.
+// No morph targets (Mixamo characters don't have blendshapes).
+// FBX unit scale: FBXLoader auto-applies UnitScaleFactor, but Mixamo
+// exports at 1cm = 1 unit, so we apply 0.01 scale.
+const MIXAMO_V2_BONES = {
+  Hips: 'mixamorig:Hips',
+  Spine: 'mixamorig:Spine',
+  Spine1: 'mixamorig:Spine1',
+  Spine2: 'mixamorig:Spine2',
+  Neck: 'mixamorig:Neck',
+  Head: 'mixamorig:Head',
+  LeftShoulder: 'mixamorig:LeftShoulder',
+  LeftArm: 'mixamorig:LeftArm',
+  LeftForeArm: 'mixamorig:LeftForeArm',
+  LeftHand: 'mixamorig:LeftHand',
+  RightShoulder: 'mixamorig:RightShoulder',
+  RightArm: 'mixamorig:RightArm',
+  RightForeArm: 'mixamorig:RightForeArm',
+  RightHand: 'mixamorig:RightHand',
+  LeftUpLeg: 'mixamorig:LeftUpLeg',
+  LeftLeg: 'mixamorig:LeftLeg',
+  LeftFoot: 'mixamorig:LeftFoot',
+  RightUpLeg: 'mixamorig:RightUpLeg',
+  RightLeg: 'mixamorig:RightLeg',
+  RightFoot: 'mixamorig:RightFoot',
+  LeftEye: 'mixamorig:LeftEye',
+  RightEye: 'mixamorig:RightEye',
+};
+
+const MIXAMO_V2_BEHAVIOR = {
+  bodyScale: 1.2,
+  gestureScale: 1.3,
+  headScale: 1.2,
+  faceScale: 0,       // no morph targets on Mixamo chars
+  idleWeights: { standing: 3, shifting: 2, lookAround: 3, stretch: 2 },
+  speakWeights: { conversational: 2, energetic: 3, explaining: 2 },
+  reactions: ['jump', 'nod', 'cheer', 'wave', 'laugh', 'bigNod', 'surprise'],
+};
+
+function createMixamoV2Config(filename, displayName) {
+  return {
+    id: filename,
+    bones: { ...MIXAMO_V2_BONES },
+    morphs: {},
+    morphNames: null,
+    behavior: { ...MIXAMO_V2_BEHAVIOR },
+    meta: { scale: 0.01, offsetY: 0 },
+  };
+}
+
+const V2_AVATAR_1 = createMixamoV2Config('v2-avatar-1.fbx', 'V2 Avatar 1');
+const V2_AVATAR_2 = createMixamoV2Config('v2-avatar-2.fbx', 'V2 Avatar 2');
+const V2_AVATAR_3 = createMixamoV2Config('v2-avatar-3.fbx', 'V2 Avatar 3');
+const V2_AVATAR_4 = createMixamoV2Config('v2-avatar-4.fbx', 'V2 Avatar 4');
+const V2_AVATAR_5 = createMixamoV2Config('v2-avatar-5.fbx', 'V2 Avatar 5');
+const V2_AVATAR_6 = createMixamoV2Config('v2-avatar-6.fbx', 'V2 Avatar 6');
+
 /* ─── Registry ────────────────────────────────────────────────────────── */
 const MODEL_CONFIGS = {
   [BLENDER_AVATAR.id]: BLENDER_AVATAR,
   [STANDARD_AVATAR.id]: STANDARD_AVATAR,
   [EXPRESSIVE_AVATAR.id]: EXPRESSIVE_AVATAR,
   [MONSTER_AVATAR.id]: MONSTER_AVATAR,
+  [V2_AVATAR_1.id]: V2_AVATAR_1,
+  [V2_AVATAR_2.id]: V2_AVATAR_2,
+  [V2_AVATAR_3.id]: V2_AVATAR_3,
+  [V2_AVATAR_4.id]: V2_AVATAR_4,
+  [V2_AVATAR_5.id]: V2_AVATAR_5,
+  [V2_AVATAR_6.id]: V2_AVATAR_6,
 };
 
 /** Get config for a model by filename (extracted from URL) */

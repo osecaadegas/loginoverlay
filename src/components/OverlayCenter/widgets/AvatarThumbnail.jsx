@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 /**
  * AvatarThumbnail — Renders a single snapshot of a GLB model as an image.
@@ -37,10 +38,11 @@ function processQueue() {
     return;
   }
 
-  const loader = new GLTFLoader();
+  const isFBX = url.toLowerCase().endsWith('.fbx');
+  const loader = isFBX ? new FBXLoader() : new GLTFLoader();
   loader.load(
     url,
-    (gltf) => {
+    (result) => {
       try {
         const renderer = getRenderer();
         const scene = new THREE.Scene();
@@ -55,13 +57,15 @@ function processQueue() {
         fill.position.set(-1, 1, -1);
         scene.add(fill);
 
-        const model = gltf.scene;
+        // FBX returns the scene group directly; GLTF wraps it in { scene }
+        const model = isFBX ? result : result.scene;
         scene.add(model);
 
         // Play first animation briefly to avoid T-pose
-        if (gltf.animations?.length > 0) {
+        const animations = isFBX ? result.animations : result.animations;
+        if (animations?.length > 0) {
           const mixer = new THREE.AnimationMixer(model);
-          const action = mixer.clipAction(gltf.animations[0]);
+          const action = mixer.clipAction(animations[0]);
           action.play();
           mixer.update(0.5);
         }

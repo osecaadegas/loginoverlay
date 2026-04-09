@@ -1,7 +1,8 @@
 import React, { useRef, useMemo, useEffect, useState, useCallback } from 'react';
-import { Canvas, useFrame, useThree } from '@react-three/fiber';
+import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { useGLTF, Environment, Html } from '@react-three/drei';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
+import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
 
 import { resolveRig } from './avatar3d/rigMapper';
 import { createAnimationController } from './avatar3d/animationController';
@@ -21,7 +22,118 @@ import { getModelConfig } from './avatar3d/modelConfigs';
  *   animationController.js → master orchestrator compositing all layers
  */
 
-/* ── Avatar Model (inner R3F component) ────────────────── */
+/* ── Scene processing shared by GLB & FBX ────────────────── */
+function processScene(rawScene) {
+  let clone;
+  try { clone = skeletonClone(rawScene); console.log('[3DAvatar] skeletonClone OK'); }
+  catch (e) { clone = rawScene.clone(true); console.warn('[3DAvatar] skeletonClone failed, using scene.clone:', e.message); }
+  clone.traverse((child) => {
+    if (child.isMesh) {
+      console.log('[3DAvatar] Mesh:', child.name, 'type:', child.type,
+        'mat:', child.material?.type,
+        'map:', !!child.material?.map,
+        'UVs:', Object.keys(child.geometry?.attributes || {}).filter(k => k.startsWith('uv')).join(','));
+      const mats = Array.isArray(child.material) ? child.material : [child.material];
+      const cloned = mats.map(mat => {
+        const m = mat.clone();
+        const texProps = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'envMap', 'lightMap', 'specularMap'];
+        for (const prop of texProps) { if (mat[prop]) m[prop] = mat[prop]; }
+        for (const prop of texProps) {
+          if (m[prop]) { m[prop].needsUpdate = true; }
+        }
+        if (m.map) m.map.colorSpace = 'srgb';
+        if (child.geometry?.attributes?.color) m.vertexColors = true;
+        if (m.transparent && m.opacity === 0) m.opacity = 1;
+        m.needsUpdate = true;
+        return m;
+      });
+      child.material = Array.isArray(child.material) ? cloned : cloned[0];
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+  return clone;
+}
+
+/* ── FBX Avatar Model (inner R3F component) ────────────── */
+function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, headMove, armMove, gestures, animSpeed, reaction, npcRef }) {
+  const fbxScene = useLoader(FBXLoader, url);
+  const groupRef = useRef();
+  const rigRef = useRef(null);
+  const controllerRef = useRef(null);
+  const lastReaction = useRef(0);
+  const primitiveRef = useRef();
+
+  const clonedScene = useMemo(() => processScene(fbxScene), [fbxScene]);
+
+  useEffect(() => {
+    // Reset skeleton to bind pose before resolving rig
+    // (FBX models may load with animation pose baked into bones)
+    clonedScene.traverse((child) => {
+      if (child.isSkinnedMesh && child.skeleton) {
+        child.skeleton.pose();
+      }
+    });
+
+    const rig = resolveRig(clonedScene, url);
+    rigRef.current = rig;
+    controllerRef.current = createAnimationController();
+
+    if (rig.needsArmDown) {
+      const { bones: b, restPose } = rig;
+      const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
+      if (b.LeftArm) b.LeftArm.rotation.z = rg('LeftArm', 'z') + 1.1;
+      if (b.RightArm) b.RightArm.rotation.z = rg('RightArm', 'z') - 1.1;
+      if (b.LeftForeArm) b.LeftForeArm.rotation.z = rg('LeftForeArm', 'z') + 0.15;
+      if (b.RightForeArm) b.RightForeArm.rotation.z = rg('RightForeArm', 'z') - 0.15;
+    }
+
+    console.log('[3DAvatar-FBX] Bones:', Object.keys(rig.bones).join(', ') || 'none');
+    console.log('[3DAvatar-FBX] T-pose:', rig.needsArmDown);
+    const allBoneNames = [];
+    clonedScene.traverse((c) => { if (c.isBone || c.type === 'Bone') allBoneNames.push(c.name); });
+    console.log('[3DAvatar-FBX] All scene bones (' + allBoneNames.length + '):', allBoneNames.join(', '));
+  }, [clonedScene, url]);
+
+  useEffect(() => {
+    controllerRef.current?.setState(state);
+  }, [state]);
+
+  useEffect(() => {
+    if (reaction && reaction !== lastReaction.current) {
+      lastReaction.current = reaction;
+      const rig = rigRef.current;
+      if (controllerRef.current && rig) {
+        controllerRef.current.triggerReaction('random', rig.behavior);
+      }
+    }
+  }, [reaction]);
+
+  useFrame((_, delta) => {
+    const rig = rigRef.current;
+    const controller = controllerRef.current;
+    if (!rig || !controller) return;
+    const dt = Math.min(delta, 0.1);
+    if (npcRef?.current) {
+      controller.setNpcPose(npcRef.current.pose || 'idle');
+    }
+    controller.update(dt, rig, { breathing, sway, headMove, armMove, gestures, animSpeed }, groupRef);
+    if (primitiveRef.current) {
+      const npcFlipNow = npcRef?.current?.flipX ?? false;
+      const npcActiveNow = npcRef?.current?.pose && npcRef.current.pose !== 'idle';
+      const shouldFlip = npcActiveNow ? npcFlipNow : flipModel;
+      primitiveRef.current.rotation.y = shouldFlip ? Math.PI : 0;
+    }
+  });
+
+  return (
+    <group ref={groupRef}>
+      <primitive ref={primitiveRef} object={clonedScene} scale={(modelScale || 1) * (getModelConfig(url)?.meta?.scale || 1)} rotation={[0, flipModel ? Math.PI : 0, 0]} />
+    </group>
+  );
+}
+
+/* ── GLB Avatar Model (inner R3F component) ────────────────── */
 function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headMove, armMove, gestures, animSpeed, reaction, npcRef }) {
   const { scene } = useGLTF(url);
   const groupRef = useRef();
@@ -31,43 +143,7 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
   const primitiveRef = useRef();
 
   // Clone scene for isolation, fix missing textures/colors
-  const clonedScene = useMemo(() => {
-    let clone;
-    try { clone = skeletonClone(scene); console.log('[3DAvatar] skeletonClone OK'); }
-    catch (e) { clone = scene.clone(true); console.warn('[3DAvatar] skeletonClone failed, using scene.clone:', e.message); }
-    clone.traverse((child) => {
-      if (child.isMesh) {
-        console.log('[3DAvatar] Mesh:', child.name, 'type:', child.type,
-          'mat:', child.material?.type,
-          'map:', !!child.material?.map,
-          'UVs:', Object.keys(child.geometry?.attributes || {}).filter(k => k.startsWith('uv')).join(','));
-        const mats = Array.isArray(child.material) ? child.material : [child.material];
-        const cloned = mats.map(mat => {
-          const m = mat.clone();
-          const texProps = ['map', 'normalMap', 'roughnessMap', 'metalnessMap', 'aoMap', 'emissiveMap', 'alphaMap', 'bumpMap', 'envMap', 'lightMap', 'specularMap'];
-          for (const prop of texProps) { if (mat[prop]) m[prop] = mat[prop]; }
-          // Ensure all textures are marked for GPU upload
-          for (const prop of texProps) {
-            if (m[prop]) { m[prop].needsUpdate = true; }
-          }
-          if (m.map) m.map.colorSpace = 'srgb';
-          if (child.geometry?.attributes?.color) m.vertexColors = true;
-          if (m.transparent && m.opacity === 0) m.opacity = 1;
-          m.needsUpdate = true;
-          console.log('[3DAvatar] Cloned mat:', m.type,
-            'map:', !!m.map, 'normalMap:', !!m.normalMap,
-            'roughnessMap:', !!m.roughnessMap, 'metalnessMap:', !!m.metalnessMap,
-            'color:', m.color?.getHexString(), 'opacity:', m.opacity,
-            'side:', m.side, 'visible:', m.visible);
-          return m;
-        });
-        child.material = Array.isArray(child.material) ? cloned : cloned[0];
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-    return clone;
-  }, [scene]);
+  const clonedScene = useMemo(() => processScene(scene), [scene]);
 
   // Resolve rig + create animation controller on scene load
   useEffect(() => {
@@ -338,7 +414,7 @@ export default function AIChatBot3DAvatar({
       <div style={{ width, height, display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: '#ef4444', fontSize: 11, textAlign: 'center', padding: 20 }}>
         Failed to load avatar model.<br />
-        <span style={{ fontSize: 10, color: '#94a3b8' }}>Check the URL ends in .glb</span>
+        <span style={{ fontSize: 10, color: '#94a3b8' }}>Check the URL ends in .glb or .fbx</span>
       </div>
     );
   }
@@ -391,10 +467,16 @@ export default function AIChatBot3DAvatar({
               textShadow: '0 1px 4px rgba(0,0,0,0.5)' }}>Loading 3D model…</div>
           </Html>
         }>
-          <AvatarModel url={activeUrl} state={state} flipModel={flipModel}
-            modelScale={modelScale} breathing={breathing} sway={sway} headMove={headMove}
-            armMove={armMove} gestures={gestures} animSpeed={animSpeed} reaction={reaction}
-            npcRef={npcEnabled ? npcRef : null} />
+          {activeUrl.toLowerCase().endsWith('.fbx')
+            ? <FBXAvatarModel url={activeUrl} state={state} flipModel={flipModel}
+                modelScale={modelScale} breathing={breathing} sway={sway} headMove={headMove}
+                armMove={armMove} gestures={gestures} animSpeed={animSpeed} reaction={reaction}
+                npcRef={npcEnabled ? npcRef : null} />
+            : <AvatarModel url={activeUrl} state={state} flipModel={flipModel}
+                modelScale={modelScale} breathing={breathing} sway={sway} headMove={headMove}
+                armMove={armMove} gestures={gestures} animSpeed={animSpeed} reaction={reaction}
+                npcRef={npcEnabled ? npcRef : null} />
+          }
         </React.Suspense>
 
         {showParticles && <FloatingParticles color={accentColor} count={40} />}

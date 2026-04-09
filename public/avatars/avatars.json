@@ -2,5 +2,11 @@
   { "id": "avatar-blender", "name": "Blender Avatar", "file": "/avatars/3640925089614202413.glb" },
   { "id": "avatar-standard", "name": "Standard Avatar", "file": "/avatars/8232090975149790447.glb" },
   { "id": "avatar-expressive", "name": "Expressive Avatar", "file": "/avatars/2914707689262839002.glb" },
-  { "id": "avatar-monster", "name": "Monster", "file": "/avatars/monster/monster_rig.glb" }
+  { "id": "avatar-monster", "name": "Monster", "file": "/avatars/monster/monster_rig.glb" },
+  { "id": "v2-avatar-1", "name": "V2 Avatar 1", "file": "/avatars/V2/v2-avatar-1.fbx" },
+  { "id": "v2-avatar-2", "name": "V2 Avatar 2", "file": "/avatars/V2/v2-avatar-2.fbx" },
+  { "id": "v2-avatar-3", "name": "V2 Avatar 3", "file": "/avatars/V2/v2-avatar-3.fbx" },
+  { "id": "v2-avatar-4", "name": "V2 Avatar 4", "file": "/avatars/V2/v2-avatar-4.fbx" },
+  { "id": "v2-avatar-5", "name": "V2 Avatar 5", "file": "/avatars/V2/v2-avatar-5.fbx" },
+  { "id": "v2-avatar-6", "name": "V2 Avatar 6", "file": "/avatars/V2/v2-avatar-6.fbx" }
 ]
