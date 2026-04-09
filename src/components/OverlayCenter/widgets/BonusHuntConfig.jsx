@@ -1100,6 +1100,25 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     }
   };
 
+  const handleClearAllRequests = async () => {
+    if (!userId || slotRequests.length === 0) return;
+    const ids = slotRequests.map(r => r.id);
+    await supabase.from('slot_requests').update({ status: 'dismissed' }).in('id', ids);
+    setSlotRequests([]);
+  };
+
+  const handleAddToBH = (req) => {
+    const match = slots.find(s => s.name.toLowerCase() === req.slot_name.toLowerCase());
+    if (match) {
+      setSelectedSlot(match);
+      setSlotSearch(match.name);
+    } else {
+      setSelectedSlot(null);
+      setSlotSearch(req.slot_name);
+    }
+    handleDismissRequest(req.id);
+  };
+
   return (
     <div className="bh-panel">
 
@@ -1146,19 +1165,28 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
           {/* Right half: Slot Requests queue */}
           <div className="bh-hunt-split-right">
-            <span className="bh-sr-queue-title">🎰 Requests <span className="bh-sr-queue-count">{slotRequests.length}</span></span>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+              <span className="bh-sr-queue-title">🎰 Requests <span className="bh-sr-queue-count">{slotRequests.length}</span></span>
+              {slotRequests.length > 0 && (
+                <button className="bh-sr-queue-btn" onClick={handleClearAllRequests}
+                  style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 4, cursor: 'pointer' }}
+                  title="Clear all requests">🗑️ Clear All</button>
+              )}
+            </div>
             {slotRequests.length > 0 ? (
               <div className="bh-sr-queue-list">
                 {slotRequests.map(req => (
-                  <div key={req.id} className="bh-sr-queue-item" onClick={() => handlePickRequest(req)} title={`Click to add "${req.slot_name}" to search`}>
+                  <div key={req.id} className="bh-sr-queue-item" onClick={() => handlePickRequest(req)} title={`Click to search "${req.slot_name}"`}>
                     {req.slot_image && <img src={req.slot_image} alt="" className="bh-sr-queue-img" onError={e => { e.target.style.display = 'none'; }} />}
                     <div className="bh-sr-queue-info">
                       <span className="bh-sr-queue-name">{req.slot_name}</span>
                       <span className="bh-sr-queue-by">by {req.requested_by}</span>
                     </div>
-                    <div className="bh-sr-queue-actions">
-                      {srSeEnabled && <button className="bh-sr-queue-btn bh-sr-queue-btn--reject" onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund SE points">Reject</button>}
-                      <button className="bh-sr-queue-btn bh-sr-queue-btn--dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss">✕</button>
+                    <div className="bh-sr-queue-actions" style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
+                      <button className="bh-sr-queue-btn" onClick={e => { e.stopPropagation(); handleAddToBH(req); }} title="Add to Bonus Hunt"
+                        style={{ fontSize: 10, padding: '3px 8px', background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 4, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>+ Add to BH</button>
+                      {srSeEnabled && <button className="bh-sr-queue-btn bh-sr-queue-btn--reject" onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund points" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>Points Back</button>}
+                      <button className="bh-sr-queue-btn bh-sr-queue-btn--dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss" style={{ fontSize: 16, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>✕</button>
                     </div>
                   </div>
                 ))}
