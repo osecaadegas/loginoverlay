@@ -434,6 +434,18 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       if (next) { nextRound = next.round; nextMatch = next.match; }
     }
 
+    /* Compute active player turn for overlay: player1 finishes all rounds first, then player2 */
+    const updatedMatch = newBracket[bracketActiveRound]?.matches[bracketActiveMatch];
+    if (updatedMatch && !matchCompleted) {
+      const isCls = updatedMatch.type === 'bonus_bo3_classic';
+      let p1Done = 0, p2Done = 0;
+      for (const rd of updatedMatch.rounds) {
+        if ((isCls ? calcRoundMultiplier(rd.player1) : calcRoundResult(rd.player1, updatedMatch.type)) !== null) p1Done++;
+        if ((isCls ? calcRoundMultiplier(rd.player2) : calcRoundResult(rd.player2, updatedMatch.type)) !== null) p2Done++;
+      }
+      updatedMatch.activePlayer = p1Done < updatedMatch.rounds.length ? 'player1' : p2Done < updatedMatch.rounds.length ? 'player2' : null;
+    }
+
     const flatMatches = newBracket.flatMap(r => r.matches);
     const activeFlat = flatMatches.indexOf(newBracket[nextRound]?.matches[nextMatch]);
     const updates = {
@@ -956,20 +968,88 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                     ))}
 
                     {/* Winner / Manual override + Reset */}
-                    <div className="bk-mp-actions">
-                      <button className={`bk-mp-winner-btn ${currentBracketMatch.winner === 'player1' ? 'bk-mp-winner-btn--active' : ''}`}
-                        onClick={() => handleBracketManualWinner('player1')}>
-                        {currentBracketMatch.winner === 'player1' ? '👑 ' : ''}{currentBracketMatch.player1}
-                      </button>
-                      <button className={`bk-mp-winner-btn bk-mp-winner-btn--draw ${currentBracketMatch.winner === 'draw' ? 'bk-mp-winner-btn--active' : ''}`}
-                        onClick={() => handleBracketManualWinner('draw')}>
-                        🤝
-                      </button>
-                      <button className={`bk-mp-winner-btn ${currentBracketMatch.winner === 'player2' ? 'bk-mp-winner-btn--active' : ''}`}
-                        onClick={() => handleBracketManualWinner('player2')}>
-                        {currentBracketMatch.winner === 'player2' ? '👑 ' : ''}{currentBracketMatch.player2}
-                      </button>
-                    </div>
+                    {(() => {
+                      /* Compute multiplier (or result) totals per player across all 3 rounds */
+                      const isClassic = currentBracketMatch.type === 'bonus_bo3_classic';
+                      let p1Total = 0, p2Total = 0, p1Count = 0, p2Count = 0;
+                      for (const round of currentBracketMatch.rounds) {
+                        const r1 = isClassic ? calcRoundMultiplier(round.player1) : calcRoundResult(round.player1, currentBracketMatch.type);
+                        const r2 = isClassic ? calcRoundMultiplier(round.player2) : calcRoundResult(round.player2, currentBracketMatch.type);
+                        if (r1 !== null) { p1Total += r1; p1Count++; }
+                        if (r2 !== null) { p2Total += r2; p2Count++; }
+                      }
+                      const roundCount = currentBracketMatch.rounds.length;
+                      const allP1Done = p1Count === roundCount;
+                      const allP2Done = p2Count === roundCount;
+                      const allDone = allP1Done && allP2Done;
+                      const autoWinner = allDone ? (p1Total > p2Total ? 'player1' : p2Total > p1Total ? 'player2' : 'draw') : null;
+
+                      /* Active player turn: player1 first, then player2 */
+                      const activePlayer = !allP1Done ? 'player1' : !allP2Done ? 'player2' : null;
+
+                      return (
+                        <>
+                          {/* Multiplier sum display */}
+                          <div style={{
+                            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                            padding: '8px 12px', background: 'rgba(255,255,255,0.03)', borderRadius: 8,
+                            border: '1px solid rgba(255,255,255,0.06)', marginTop: 4,
+                          }}>
+                            <div style={{ textAlign: 'center', flex: 1 }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: 2 }}>
+                                {currentBracketMatch.player1}
+                              </div>
+                              <div style={{
+                                fontSize: 18, fontWeight: 800, fontFamily: "'Inter', monospace",
+                                color: allDone && autoWinner === 'player1' ? '#22c55e' : allDone && autoWinner === 'player2' ? '#ef4444' : '#facc15',
+                              }}>
+                                {p1Count > 0
+                                  ? (isClassic ? `${p1Total.toFixed(2)}x` : `${p1Total > 0 ? '+' : ''}${p1Total.toFixed(2)}${currency}`)
+                                  : '—'}
+                              </div>
+                              {activePlayer === 'player1' && !allDone && (
+                                <div style={{ fontSize: 8, color: '#818cf8', fontWeight: 700, marginTop: 2 }}>▶ PLAYING</div>
+                              )}
+                            </div>
+                            <div style={{ fontSize: 10, color: '#475569', fontWeight: 700 }}>VS</div>
+                            <div style={{ textAlign: 'center', flex: 1 }}>
+                              <div style={{ fontSize: 9, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', marginBottom: 2 }}>
+                                {currentBracketMatch.player2}
+                              </div>
+                              <div style={{
+                                fontSize: 18, fontWeight: 800, fontFamily: "'Inter', monospace",
+                                color: allDone && autoWinner === 'player2' ? '#22c55e' : allDone && autoWinner === 'player1' ? '#ef4444' : '#facc15',
+                              }}>
+                                {p2Count > 0
+                                  ? (isClassic ? `${p2Total.toFixed(2)}x` : `${p2Total > 0 ? '+' : ''}${p2Total.toFixed(2)}${currency}`)
+                                  : '—'}
+                              </div>
+                              {activePlayer === 'player2' && !allDone && (
+                                <div style={{ fontSize: 8, color: '#818cf8', fontWeight: 700, marginTop: 2 }}>▶ PLAYING</div>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Confirm Winner button */}
+                          {allDone && !currentBracketMatch.winner && (
+                            <button
+                              className="bk-mp-winner-btn bk-mp-winner-btn--active"
+                              style={{ width: '100%', marginTop: 6, padding: '10px 0', fontSize: 13 }}
+                              onClick={() => handleBracketManualWinner(autoWinner)}>
+                              ✅ Confirm Winner: {autoWinner === 'player1' ? currentBracketMatch.player1 : autoWinner === 'player2' ? currentBracketMatch.player2 : 'Draw'}
+                            </button>
+                          )}
+                          {currentBracketMatch.winner && (
+                            <div style={{
+                              textAlign: 'center', padding: '8px 0', fontSize: 13, fontWeight: 700,
+                              color: '#22c55e', marginTop: 4,
+                            }}>
+                              👑 Winner: {currentBracketMatch.winner === 'player1' ? currentBracketMatch.player1 : currentBracketMatch.winner === 'player2' ? currentBracketMatch.player2 : 'Draw'}
+                            </div>
+                          )}
+                        </>
+                      );
+                    })()}
                     <button className="bk-reset-match-btn" onClick={handleBracketResetMatch}>
                       🔄 Reset Match
                     </button>

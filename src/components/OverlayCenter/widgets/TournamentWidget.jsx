@@ -252,6 +252,13 @@ function TournamentWidget({ config, theme }) {
               ? { fontSize: 'clamp(13px, 2.4vw, 20px)', whiteSpace: 'nowrap' }
               : { fontSize: nameSize + 2, whiteSpace: 'nowrap' }),
           }}>{name}</span>
+          {match.activePlayer === playerKey && !match.winner && (
+            <span style={{
+              fontSize: minimal ? 'clamp(8px, 1.2vw, 10px)' : 8,
+              fontWeight: 800, color: '#818cf8', fontFamily,
+              letterSpacing: '0.5px', lineHeight: 1,
+            }}>▶ PLAYING</span>
+          )}
           {showSlotName && slotName && (
             <span style={{
               fontSize: minimal ? 'clamp(11px, 1.8vw, 15px)' : slotNameSize,
@@ -410,7 +417,13 @@ function TournamentWidget({ config, theme }) {
             textShadow: '0 1px 4px rgba(0,0,0,0.8)',
             whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
             flexShrink: 0, zIndex: 2,
-          }}>{name}</div>
+            display: 'flex', alignItems: 'center', gap: 6,
+          }}>
+            {name}
+            {match.activePlayer === playerKey && !match.winner && (
+              <span style={{ fontSize: 8, fontWeight: 800, color: '#818cf8', fontStyle: 'normal', letterSpacing: '0.5px' }}>▶ PLAYING</span>
+            )}
+          </div>
 
           {/* Fighter image — shows full image, no cropping */}
           <div style={{
@@ -688,7 +701,12 @@ function TournamentWidget({ config, theme }) {
               textTransform: 'uppercase', letterSpacing: '0.8px',
               whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
               textShadow: isWinner ? `0 0 8px ${esGreen}40` : `0 0 8px ${esCyan}30`,
-            }}>{name}</div>
+            }}>
+              {name}
+              {match.activePlayer === playerKey && !match.winner && (
+                <span style={{ fontSize: 'clamp(6px, 0.6vw, 8px)', color: '#818cf8', marginLeft: 4, fontStyle: 'normal' }}>▶ PLAYING</span>
+              )}
+            </div>
             {renderEsPips(match, playerKey)}
           </div>
 
@@ -1038,6 +1056,9 @@ function TournamentWidget({ config, theme }) {
               fontFamily: sbFont, whiteSpace: 'nowrap', overflow: 'hidden',
               textOverflow: 'ellipsis', flex: 1,
             }}>{name}</span>
+            {match.activePlayer === playerKey && !match.winner && (
+              <span style={{ fontSize: 8, fontWeight: 800, color: '#818cf8', letterSpacing: '0.5px' }}>▶ PLAYING</span>
+            )}
           </div>
 
           {/* Content: slot image + round columns */}

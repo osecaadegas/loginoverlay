@@ -182,13 +182,13 @@ export default function ShatterEffect({ imageUrl, side, onComplete, accentColor 
 
     const run = (srcImg) => {
       const shards = tessellate(cr.x, cr.y, cr.w, cr.h, 90);
-      const DURATION = 1400;
+      const DURATION = 3500;
       const t0 = performance.now();
 
       // Phase boundaries (normalised 0–1)
-      const P1 = 0.14;   // tension end   ~200 ms
-      const P2 = 0.36;   // crack end     ~300 ms
-      const P3 = 0.43;   // shatter point ~100 ms
+      const P1 = 0.10;   // tension end   ~350 ms
+      const P2 = 0.28;   // crack end     ~630 ms
+      const P3 = 0.34;   // shatter point ~210 ms
 
       const cardCx = cr.x + cr.w / 2;
       const cardCy = cr.y + cr.h / 2;
