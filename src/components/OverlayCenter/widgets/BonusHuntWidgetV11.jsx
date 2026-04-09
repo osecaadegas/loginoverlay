@@ -80,9 +80,6 @@ function BonusHuntWidgetV11({ config, theme }) {
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
 
-  const carouselCardW = 170, carouselGap = 10;
-  const carouselStep = carouselCardW + carouselGap;
-
   const rootStyle = {
     fontFamily,
     fontSize: `${fontSize}px`,
@@ -170,56 +167,7 @@ function BonusHuntWidgetV11({ config, theme }) {
         )}
       </div>
 
-      {/* ═══ 4. Horizontal 3D Carousel ═══ */}
-      <div className="bht11-carousel-wrap">
-        <div className={`bht11-carousel-track${isOpening ? ' bht11-carousel-track--opening' : ''}`}
-          style={isOpening
-            ? { transform: `translateX(calc(50% - ${carouselCardW / 2}px - ${currentIndex * carouselStep}px))` }
-            : { '--bht11-count': bonuses.length }}>
-          {(isOpening ? bonuses : [...bonuses, ...bonuses]).map((bonus, i) => {
-            const idx = isOpening ? i : i % bonuses.length;
-            const payout = Number(bonus.payout) || 0;
-            const bet = Number(bonus.betSize) || 0;
-            const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
-            const isSuper = bonus.isSuperBonus;
-            return (
-              <div key={`fc-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                className={`bht11-card${idx === currentIndex ? ' bht11-card--active' : ''}${bonus.opened ? ' bht11-card--opened' : ''}${isExtreme ? ' bht11-card--extreme' : ''}${isSuper && !isExtreme ? ' bht11-card--super' : ''}${isOpening && idx !== currentIndex ? ' bht11-card--dimmed' : ''}`}
-                style={isOpening && idx === currentIndex ? { '--bht11-current-bg': currentBonusColor, '--bht11-current-accent': currentBonusAccent } : undefined}>
-                <div className="bht11-card-top">
-                  <span className="bht11-card-name">{bonus.slotName || bonus.slot?.name}</span>
-                  <span className="bht11-card-bet">{currency}{bet.toFixed(2)}</span>
-                </div>
-                <div className="bht11-card-img-wrap">
-                  {bonus.slot?.image ? (
-                    <img src={bonus.slot.image} alt={bonus.slotName} className="bht11-card-img"
-                      onError={e => { e.target.style.display = 'none'; }} />
-                  ) : (
-                    <div className="bht11-card-img-ph">🎰</div>
-                  )}
-                  {isExtreme && <span className="bht11-card-badge bht11-card-badge--extreme">EXTREME</span>}
-                  {!isExtreme && isSuper && <span className="bht11-card-badge bht11-card-badge--super">SUPER</span>}
-                </div>
-                <div className="bht11-card-bottom">
-                  {bonus.opened ? (
-                    <>
-                      <span className="bht11-card-payout">{currency}{payout.toFixed(2)}</span>
-                      <span className="bht11-card-multi">{(bet > 0 ? payout / bet : 0).toFixed(1)}x</span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="bht11-card-status">PENDING</span>
-                      <span className="bht11-card-idx">#{idx + 1}</span>
-                    </>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* ═══ 5. 3D Rotating Card Stack ═══ */}
+      {/* ═══ 4. 3D Rotating Card Stack ═══ */}
       {bonuses.length > 0 && (
         <div className="bht11-stack-section">
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
