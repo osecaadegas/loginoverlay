@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>3D Carousel – Classic Bonus Hunt Style</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bht-header-bg: linear-gradient(160deg, #0f1a3c 0%, #0a1230 100%);
+    --bht-card-radius: 16px;
+    --bht-text: #fff;
+    --bht-muted: #7aa0d4;
+    --bht-list-bg: #0a0f23;
+    --bht-card-outline: rgba(255,255,255,0.08);
+    --bht-list-accent: #93c5fd;
+    --bht-header-accent: #60a5fa;
+    --bht-super-badge: #eab308;
+    --bht-extreme-badge: #ef4444;
+    --bht-total-pay-bg: #eab308;
+    --bht-total-pay-text: #fff;
+  }
+
+  body {
+    background: #050510;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 20px;
+  }
+
+  /* ─── Wrapper ─── */
+  .bhtc-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    background: var(--bht-header-bg);
+    border-radius: var(--bht-card-radius);
+    overflow: hidden;
+    width: 100%;
+    max-width: 900px;
+    border: 1px solid rgba(255,255,255,0.06);
+    box-shadow: 0 4px 24px rgba(0,0,0,0.5);
+  }
+
+  /* ─── Top Stats Bar ─── */
+  .bhtc-stats-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 14px;
+    background: rgba(0,0,0,0.35);
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .bhtc-bar-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .bhtc-icon-circle {
+    width: 32px; height: 32px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(96,165,250,0.15);
+    border: 2px solid var(--bht-header-accent);
+    box-shadow: 0 0 8px rgba(96,165,250,0.3);
+    color: var(--bht-header-accent);
+  }
+  .bhtc-bar-title {
+    font-size: 0.95em;
+    font-weight: 800;
+    color: var(--bht-text);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .bhtc-bar-subtitle {
+    font-size: 0.85em;
+    font-weight: 700;
+    color: var(--bht-muted);
+  }
+  .bhtc-bar-pills {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .bhtc-pill {
+    font-size: 0.72em;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    background: rgba(255,255,255,0.08);
+    color: var(--bht-text);
+    white-space: nowrap;
+    letter-spacing: 0.3px;
+  }
+  .bhtc-pill--super {
+    background: var(--bht-super-badge);
+    color: #fff;
+  }
+  .bhtc-pill--extreme {
+    background: var(--bht-extreme-badge);
+    color: #fff;
+  }
+  .bhtc-pill--payout {
+    background: linear-gradient(135deg, rgba(234,179,8,0.25), rgba(234,179,8,0.12));
+    border: 1px solid rgba(234,179,8,0.3);
+    color: var(--bht-total-pay-text);
+    font-weight: 800;
+  }
+
+  /* ─── Carousel Container ─── */
+  .bhtc-carousel-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, black 3%, black 92%, transparent 100%);
+    padding: 6px 0;
+    min-height: 200px;
+  }
+
+  /* ─── Carousel Track (infinite auto-scroll) ─── */
+  .bhtc-carousel-track {
+    display: flex;
+    gap: 10px;
+    will-change: transform;
+    animation: bhtc-slide var(--bhtc-duration, 40s) linear infinite;
+    height: 100%;
+  }
+  .bhtc-carousel-wrap:hover .bhtc-carousel-track {
+    animation-play-state: paused;
+  }
+
+  /* ─── Opening mode: smooth snap to current card ─── */
+  .bhtc-carousel-track--opening {
+    animation: none !important;
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  @keyframes bhtc-slide {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ─── Card ─── */
+  .bhtc-card {
+    flex: 0 0 180px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--bht-list-bg) 85%, transparent);
+    border: 1px solid var(--bht-card-outline);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.2s, box-shadow 0.2s, opacity 0.4s, filter 0.4s;
+  }
+  .bhtc-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.5);
+  }
+
+  /* Active card glow */
+  .bhtc-card--active {
+    border-color: var(--bhtc-current-accent, #facc15);
+    box-shadow: 0 0 14px rgba(250,204,21,0.35);
+    background: color-mix(in srgb, var(--bhtc-current-bg, var(--bht-list-bg)) 90%, transparent);
+    transform: scale(1);
+    opacity: 1;
+    filter: none;
+    z-index: 2;
+  }
+
+  /* Opened card */
+  .bhtc-card--opened { opacity: 0.8; }
+  .bhtc-card--opened .bhtc-card-img-wrap { filter: saturate(0.8) brightness(0.9); }
+
+  /* Extreme glow + blur */
+  .bhtc-card--extreme {
+    border-color: var(--bht-extreme-badge);
+    box-shadow: 0 0 16px rgba(239,68,68,0.45), 0 0 40px rgba(239,68,68,0.2), inset 0 0 12px rgba(239,68,68,0.1);
+  }
+  .bhtc-card--extreme .bhtc-card-img-wrap::after {
+    content: '';
+    position: absolute; inset: 0; z-index: 1;
+    background: radial-gradient(ellipse at center, rgba(239,68,68,0.18) 0%, transparent 70%);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    pointer-events: none;
+    transition: backdrop-filter 0.4s ease, -webkit-backdrop-filter 0.4s ease;
+  }
+  .bhtc-card--extreme.bhtc-card--active .bhtc-card-img-wrap::after {
+    backdrop-filter: blur(0px);
+    -webkit-backdrop-filter: blur(0px);
+    background: none;
+  }
+
+  /* Super glow */
+  .bhtc-card--super {
+    border-color: var(--bht-super-badge);
+    box-shadow: 0 0 10px rgba(234,179,8,0.3), inset 0 0 8px rgba(234,179,8,0.06);
+  }
+
+  /* Dimmed non-current cards during opening */
+  .bhtc-card--dimmed {
+    opacity: 0.35;
+    filter: brightness(0.6) saturate(0.5);
+    transform: scale(0.96);
+  }
+
+  /* Type badge overlay on image */
+  .bhtc-card-type-badge {
+    position: absolute; bottom: 4px; left: 4px;
+    font-size: 0.55em; font-weight: 800; text-transform: uppercase;
+    letter-spacing: 0.5px; padding: 2px 6px; border-radius: 4px;
+    color: #fff; pointer-events: none; z-index: 2;
+  }
+  .bhtc-card-type-badge--extreme {
+    background: var(--bht-extreme-badge);
+    box-shadow: 0 0 8px rgba(239,68,68,0.5);
+  }
+  .bhtc-card-type-badge--super {
+    background: var(--bht-super-badge);
+    box-shadow: 0 0 8px rgba(234,179,8,0.45);
+  }
+
+  /* Card sub-elements */
+  .bhtc-card-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px 8px;
+    background: rgba(0,0,0,0.45);
+    gap: 4px;
+    min-height: 28px;
+  }
+  .bhtc-card-slot-name {
+    font-size: 0.72em;
+    font-weight: 700;
+    color: var(--bht-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    flex: 1;
+    text-transform: uppercase;
+  }
+  .bhtc-card-bet {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: var(--bht-list-accent);
+    white-space: nowrap;
+  }
+  .bhtc-card-idx {
+    font-size: 0.7em;
+    color: rgba(255,255,255,0.4);
+    font-weight: 600;
+  }
+  .bhtc-card-img-wrap {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    min-height: 90px;
+  }
+  .bhtc-card-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+  .bhtc-card-img-placeholder {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1f3a, #0e1225);
+  }
+  .bhtc-card-bottom-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 4px 8px;
+    background: rgba(0,0,0,0.55);
+    min-height: 24px;
+  }
+  .bhtc-card-payout {
+    font-size: 0.7em;
+    font-weight: 700;
+    color: #4ade80;
+  }
+  .bhtc-card-multi {
+    font-size: 0.75em;
+    font-weight: 700;
+    color: #fbbf24;
+    background: rgba(0,0,0,0.4);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ─── Controls (demo only) ─── */
+  .demo-controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+  }
+  .demo-btn {
+    padding: 8px 18px;
+    border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 8px;
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  .demo-btn:hover { background: rgba(255,255,255,0.15); }
+  .demo-btn--active { background: #7c3aed; border-color: #7c3aed; }
+</style>
+</head>
+<body>
+
+<div style="width: 100%; max-width: 900px;">
+  <div class="bhtc-wrapper" id="carousel-root"></div>
+  <div class="demo-controls">
+    <button class="demo-btn" onclick="toggleOpening()">Toggle Opening Mode</button>
+    <button class="demo-btn" onclick="prevCard()">◀ Prev</button>
+    <button class="demo-btn" onclick="nextCard()">Next ▶</button>
+  </div>
+</div>
+
+<script>
+/**
+ * 3D Carousel – Classic Bonus Hunt Style
+ * Standalone version – no React/framework needed.
+ *
+ * USAGE:
+ *  1) Edit the `SLOTS` array below with your own data.
+ *  2) Open this HTML file in a browser or OBS browser source.
+ *  3) Call window.setOpeningMode(true/false) to toggle opening mode.
+ *  4) Call window.goToCard(index) to snap to a specific card.
+ */
+
+// ─── SAMPLE DATA — replace with your own slots ───
+const SLOTS = [
+  { name: 'Gates of Olympus', bet: 2.00, image: '', type: 'super', opened: false, payout: 0 },
+  { name: 'Sweet Bonanza', bet: 1.00, image: '', type: null, opened: true, payout: 45.60 },
+  { name: 'Wanted Dead or Wild', bet: 4.00, image: '', type: 'extreme', opened: false, payout: 0 },
+  { name: 'Big Bass Bonanza', bet: 0.50, image: '', type: null, opened: true, payout: 12.30 },
+  { name: 'Sugar Rush', bet: 1.00, image: '', type: 'super', opened: false, payout: 0 },
+  { name: 'Starlight Princess', bet: 2.00, image: '', type: null, opened: false, payout: 0 },
+  { name: 'The Dog House', bet: 0.80, image: '', type: null, opened: true, payout: 8.50 },
+  { name: 'Fruit Party', bet: 1.50, image: '', type: 'extreme', opened: false, payout: 0 },
+  { name: 'Book of Dead', bet: 1.00, image: '', type: null, opened: false, payout: 0 },
+  { name: 'Razor Shark', bet: 0.40, image: '', type: null, opened: true, payout: 22.80 },
+];
+
+const CARD_W = 180;
+const GAP = 10;
+const STEP = CARD_W + GAP;
+const CURRENCY = '€';
+
+let isOpening = false;
+let currentIndex = 0;
+
+// ─── Build HTML ───
+function render() {
+  const root = document.getElementById('carousel-root');
+  const superCount = SLOTS.filter(s => s.type === 'super').length;
+  const extremeCount = SLOTS.filter(s => s.type === 'extreme').length;
+  const totalPayout = SLOTS.reduce((s, b) => s + (b.payout || 0), 0);
+  const totalBet = SLOTS.reduce((s, b) => s + (b.bet || 0), 0);
+
+  // Cards: duplicate for infinite scroll (when not opening)
+  const cards = isOpening ? SLOTS : [...SLOTS, ...SLOTS];
+  const duration = SLOTS.length * 4;
+
+  root.innerHTML = `
+    <div class="bhtc-stats-bar">
+      <div class="bhtc-bar-left">
+        <div class="bhtc-icon-circle">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/>
+          </svg>
+        </div>
+        <span class="bhtc-bar-title">HUNT ${SLOTS.length}</span>
+      </div>
+      <div class="bhtc-bar-pills">
+        <span class="bhtc-pill">SLOTS ${SLOTS.length}</span>
+        ${superCount > 0 ? `<span class="bhtc-pill bhtc-pill--super">★ SUPER ${superCount}</span>` : ''}
+        ${extremeCount > 0 ? `<span class="bhtc-pill bhtc-pill--extreme">★ EXTREME ${extremeCount}</span>` : ''}
+        <span class="bhtc-pill">TARGET ${CURRENCY}${totalBet.toFixed(2)}</span>
+        <span class="bhtc-pill bhtc-pill--payout">PAYOUT ${CURRENCY}${totalPayout.toFixed(2)}</span>
+      </div>
+    </div>
+
+    <div class="bhtc-carousel-wrap">
+      <div class="bhtc-carousel-track${isOpening ? ' bhtc-carousel-track--opening' : ''}"
+           id="track"
+           style="${isOpening
+             ? `transform: translateX(calc(50% - ${CARD_W / 2}px - ${currentIndex * STEP}px));`
+             : `--bhtc-duration: ${duration}s;`}">
+        ${cards.map((slot, i) => {
+          const idx = isOpening ? i : i % SLOTS.length;
+          const multi = slot.bet > 0 && slot.payout > 0 ? (slot.payout / slot.bet).toFixed(1) : 0;
+          const isActive = isOpening && idx === currentIndex;
+          const isDimmed = isOpening && idx !== currentIndex;
+          const classes = [
+            'bhtc-card',
+            isActive ? 'bhtc-card--active' : '',
+            isDimmed ? 'bhtc-card--dimmed' : '',
+            slot.opened ? 'bhtc-card--opened' : '',
+            slot.type === 'extreme' ? 'bhtc-card--extreme' : '',
+            slot.type === 'super' ? 'bhtc-card--super' : '',
+          ].filter(Boolean).join(' ');
+          return `
+            <div class="${classes}">
+              <div class="bhtc-card-top-bar">
+                <span class="bhtc-card-slot-name">${slot.name}</span>
+                <span class="bhtc-card-bet">${slot.bet.toFixed(2)} ${CURRENCY}</span>
+                <span class="bhtc-card-idx">#${idx + 1}</span>
+              </div>
+              <div class="bhtc-card-img-wrap">
+                ${slot.image
+                  ? `<img src="${slot.image}" alt="${slot.name}" class="bhtc-card-img">`
+                  : `<div class="bhtc-card-img-placeholder"></div>`}
+                ${slot.type === 'extreme' ? '<span class="bhtc-card-type-badge bhtc-card-type-badge--extreme">EXTREME</span>' : ''}
+                ${slot.type === 'super' ? '<span class="bhtc-card-type-badge bhtc-card-type-badge--super">SUPER</span>' : ''}
+              </div>
+              ${slot.opened ? `
+                <div class="bhtc-card-bottom-bar">
+                  <span class="bhtc-card-payout">${slot.payout.toFixed(2)}</span>
+                  <span class="bhtc-card-multi">${multi}x</span>
+                </div>` : ''}
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ─── Public API ───
+window.setOpeningMode = function(enabled) {
+  isOpening = enabled;
+  render();
+};
+
+window.goToCard = function(idx) {
+  currentIndex = Math.max(0, Math.min(idx, SLOTS.length - 1));
+  if (isOpening) {
+    const track = document.getElementById('track');
+    if (track) {
+      track.style.transform = `translateX(calc(50% - ${CARD_W / 2}px - ${currentIndex * STEP}px))`;
+    }
+  }
+  render();
+};
+
+// ─── Demo controls ───
+function toggleOpening() {
+  isOpening = !isOpening;
+  render();
+  document.querySelectorAll('.demo-btn')[0].classList.toggle('demo-btn--active', isOpening);
+}
+
+function prevCard() {
+  if (!isOpening) { isOpening = true; render(); }
+  currentIndex = (currentIndex - 1 + SLOTS.length) % SLOTS.length;
+  render();
+}
+
+function nextCard() {
+  if (!isOpening) { isOpening = true; render(); }
+  currentIndex = (currentIndex + 1) % SLOTS.length;
+  render();
+}
+
+// Initial render
+render();
+</script>
+
+</body>
+</html>

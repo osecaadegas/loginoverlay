@@ -171,7 +171,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
           )}
 
           {/* ── Shared Colors (V1/V2/V3/V5/V6/V7/V10) ── */}
-          {['v1','v2','v3','v5_horizontal','v6_compact','v7_carousel','v10_spotlight'].includes(currentStyle) && (<>
+          {['v1','v2','v3','v5_horizontal','v6_compact','v7_carousel','v10_spotlight','v11_fever'].includes(currentStyle) && (<>
             <h4 className="nb-subtitle">Card Colors</h4>
             <div className="nb-color-grid">
               <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
@@ -215,7 +215,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               onChange={v => set('fontSize', v)} />
 
             {/* Dimensions — only for styles that use them */}
-            {['v1','v2','v5_horizontal','v6_compact','v7_carousel'].includes(currentStyle) && (<>
+            {['v1','v2','v5_horizontal','v6_compact','v7_carousel','v11_fever'].includes(currentStyle) && (<>
               <h4 className="nb-subtitle">Dimensions</h4>
               <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
                 onChange={v => set('widgetWidth', v)} />
