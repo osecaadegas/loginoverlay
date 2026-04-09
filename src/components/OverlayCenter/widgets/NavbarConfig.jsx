@@ -123,7 +123,6 @@ export default function NavbarConfig({ config, onChange }) {
     'cryptoUpColor', 'cryptoDownColor', 'fontFamily', 'fontSize',
     'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
     'brightness', 'contrast', 'saturation',
-    'shadowSize', 'shadowIntensity',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
     'showSocials', 'showStartBalance', 'showCasino',
     'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',

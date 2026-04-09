@@ -316,8 +316,22 @@ function AvatarModel({ url, state, flipModel, modelScale, breathing, sway, headM
     if (reaction && reaction !== lastReaction.current) {
       lastReaction.current = reaction;
       const rig = rigRef.current;
-      if (controllerRef.current && rig) {
-        controllerRef.current.triggerReaction('random', rig.behavior);
+      const clipPlayer = clipPlayerRef.current;
+
+      // Check if this reaction maps to a clip-based animation
+      const clipName = CLIP_REACTION_MAP[reaction];
+      if (clipName && clipPlayer) {
+        clipPlayer.play(clipName);
+      } else if (reaction === 'random') {
+        // 40% chance to play a clip-based reaction, 60% procedural
+        if (clipPlayer && Math.random() < 0.4) {
+          const randomClip = CLIP_NAMES[Math.floor(Math.random() * CLIP_NAMES.length)];
+          clipPlayer.play(randomClip);
+        } else if (controllerRef.current && rig) {
+          controllerRef.current.triggerReaction('random', rig.behavior);
+        }
+      } else if (controllerRef.current && rig) {
+        controllerRef.current.triggerReaction(reaction, rig.behavior);
       }
     }
   }, [reaction]);
