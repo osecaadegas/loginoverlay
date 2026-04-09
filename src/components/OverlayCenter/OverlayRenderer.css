@@ -6090,6 +6090,14 @@
 .bht11-count-bar--extreme .bht11-count-bar-label {
   color: var(--bht11-extreme-badge, #ef4444);
 }
+/* Super + Extreme side-by-side row */
+.bht11-count-bar-row {
+  display: flex;
+  gap: 6px;
+}
+.bht11-count-bar-row .bht11-count-bar {
+  flex: 1;
+}
 
 /* ── 4. Carousel ── */
 .bht11-carousel-wrap {
