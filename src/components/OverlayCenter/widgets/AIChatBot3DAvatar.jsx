@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree, useLoader } from '@react-three/fiber';
 import { useGLTF, Environment, Html } from '@react-three/drei';
 import { clone as skeletonClone } from 'three/examples/jsm/utils/SkeletonUtils.js';
 import { FBXLoader } from 'three/examples/jsm/loaders/FBXLoader.js';
+import { AnimationMixer } from 'three';
 
 import { resolveRig } from './avatar3d/rigMapper';
 import { createAnimationController } from './avatar3d/animationController';
@@ -64,17 +65,27 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
   const lastReaction = useRef(0);
   const primitiveRef = useRef();
 
-  const clonedScene = useMemo(() => processScene(fbxScene), [fbxScene]);
+  // Clone scene AND bake embedded idle animation into rest pose
+  const clonedScene = useMemo(() => {
+    const clone = processScene(fbxScene);
+
+    // Mixamo FBX files include an idle animation — bake its first frame
+    // so the avatar stands naturally instead of T-posing
+    if (fbxScene.animations?.length > 0) {
+      const mixer = new AnimationMixer(clone);
+      const clip = fbxScene.animations[0];
+      const action = mixer.clipAction(clip);
+      action.play();
+      mixer.update(0.5); // advance 0.5s into the idle anim
+      mixer.stopAllAction();
+      mixer.uncacheRoot(clone);
+      console.log('[3DAvatar-FBX] Baked idle animation frame:', clip.name, 'duration:', clip.duration.toFixed(2) + 's');
+    }
+
+    return clone;
+  }, [fbxScene]);
 
   useEffect(() => {
-    // Reset skeleton to bind pose before resolving rig
-    // (FBX models may load with animation pose baked into bones)
-    clonedScene.traverse((child) => {
-      if (child.isSkinnedMesh && child.skeleton) {
-        child.skeleton.pose();
-      }
-    });
-
     const rig = resolveRig(clonedScene, url);
     rigRef.current = rig;
     controllerRef.current = createAnimationController();
