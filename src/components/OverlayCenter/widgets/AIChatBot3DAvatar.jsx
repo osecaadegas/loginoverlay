@@ -64,47 +64,57 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
   const controllerRef = useRef(null);
   const lastReaction = useRef(0);
   const primitiveRef = useRef();
+  const bakedRef = useRef(false);
 
-  // Clone scene AND bake embedded idle animation into rest pose
-  const clonedScene = useMemo(() => {
-    const clone = processScene(fbxScene);
+  // Process FBX scene directly — NO skeletonClone.
+  // skeletonClone breaks Mixamo "mixamorig:" bone paths
+  // which prevents AnimationMixer from baking the idle frame.
+  const scene = useMemo(() => {
+    // Fix materials
+    fbxScene.traverse((child) => {
+      if (child.isMesh) {
+        const mats = Array.isArray(child.material) ? child.material : [child.material];
+        mats.forEach(m => {
+          if (m.map) { m.map.colorSpace = 'srgb'; m.map.needsUpdate = true; }
+          if (m.transparent && m.opacity === 0) m.opacity = 1;
+          m.needsUpdate = true;
+        });
+        child.castShadow = true;
+        child.receiveShadow = true;
+      }
+    });
 
-    // Mixamo FBX files include an idle animation — bake its first frame
-    // so the avatar stands naturally instead of T-posing
-    if (fbxScene.animations?.length > 0) {
-      const mixer = new AnimationMixer(clone);
+    // Bake embedded Mixamo idle animation into bone rest pose
+    if (!bakedRef.current && fbxScene.animations?.length > 0) {
+      bakedRef.current = true;
+      const mixer = new AnimationMixer(fbxScene);
       const clip = fbxScene.animations[0];
       const action = mixer.clipAction(clip);
       action.play();
-      mixer.update(0.5); // advance 0.5s into the idle anim
-      mixer.stopAllAction();
-      mixer.uncacheRoot(clone);
-      console.log('[3DAvatar-FBX] Baked idle animation frame:', clip.name, 'duration:', clip.duration.toFixed(2) + 's');
+      mixer.update(0); // init bindings
+      mixer.update(0.5); // advance into idle anim
+      action.stop();
+      mixer.uncacheRoot(fbxScene);
+      console.log('[3DAvatar-FBX] Baked idle frame:', clip.name,
+        '| tracks:', clip.tracks.length,
+        '| duration:', clip.duration.toFixed(2) + 's');
     }
 
-    return clone;
+    return fbxScene;
   }, [fbxScene]);
 
   useEffect(() => {
-    const rig = resolveRig(clonedScene, url);
+    const rig = resolveRig(scene, url);
     rigRef.current = rig;
     controllerRef.current = createAnimationController();
 
-    if (rig.needsArmDown) {
-      const { bones: b, restPose } = rig;
-      const rg = (bone, axis) => restPose[bone]?.[axis] ?? 0;
-      if (b.LeftArm) b.LeftArm.rotation.z = rg('LeftArm', 'z') + 1.1;
-      if (b.RightArm) b.RightArm.rotation.z = rg('RightArm', 'z') - 1.1;
-      if (b.LeftForeArm) b.LeftForeArm.rotation.z = rg('LeftForeArm', 'z') + 0.15;
-      if (b.RightForeArm) b.RightForeArm.rotation.z = rg('RightForeArm', 'z') - 0.15;
-    }
-
+    // Log bone detection
     console.log('[3DAvatar-FBX] Bones:', Object.keys(rig.bones).join(', ') || 'none');
     console.log('[3DAvatar-FBX] T-pose:', rig.needsArmDown);
     const allBoneNames = [];
-    clonedScene.traverse((c) => { if (c.isBone || c.type === 'Bone') allBoneNames.push(c.name); });
+    scene.traverse((c) => { if (c.isBone || c.type === 'Bone') allBoneNames.push(c.name); });
     console.log('[3DAvatar-FBX] All scene bones (' + allBoneNames.length + '):', allBoneNames.join(', '));
-  }, [clonedScene, url]);
+  }, [scene, url]);
 
   useEffect(() => {
     controllerRef.current?.setState(state);
@@ -139,7 +149,7 @@ function FBXAvatarModel({ url, state, flipModel, modelScale, breathing, sway, he
 
   return (
     <group ref={groupRef}>
-      <primitive ref={primitiveRef} object={clonedScene} scale={(modelScale || 1) * (getModelConfig(url)?.meta?.scale || 1)} rotation={[0, flipModel ? Math.PI : 0, 0]} />
+      <primitive ref={primitiveRef} object={scene} scale={(modelScale || 1) * (getModelConfig(url)?.meta?.scale || 1)} rotation={[0, flipModel ? Math.PI : 0, 0]} />
     </group>
   );
 }
