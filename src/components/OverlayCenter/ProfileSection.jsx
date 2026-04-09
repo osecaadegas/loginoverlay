@@ -214,7 +214,10 @@ export default function ProfileSection({ widgets, saveWidget }) {
             }
           }
 
-          // !sr handler
+          // !sr handler — skip if a slot_requests widget exists (it has its own IRC listener,
+          // or SE custom command handles it when SE is enabled)
+          const srWidget = widgets?.find(w => w.widget_type === 'slot_requests');
+          if (!srWidget) {
           const srMatch = line.match(/:(\w+)!\w+@[\w.]+\.tmi\.twitch\.tv PRIVMSG #\w+ :!sr (.+)/i);
           if (srMatch) {
             const requester = srMatch[1];
@@ -223,6 +226,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
               try { await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(user.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`); }
               catch (err) { console.error('[SlotRequest] IRC error', err); }
             }
+          }
           }
         }
       };
