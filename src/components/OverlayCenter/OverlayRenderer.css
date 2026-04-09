@@ -5932,11 +5932,14 @@
    Horizontal 3D carousel + vertical bonus list below
    ═══════════════════════════════════════════════════════════════ */
 
+/* ── V11 Fever Font ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 .bht11 {
   display: flex;
   flex-direction: column;
   gap: 0;
-  font-family: var(--bht11-font, 'Inter', sans-serif);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: linear-gradient(170deg, #0b1134 0%, #060a20 60%, #0a0e27 100%);
   border-radius: 20px;
   padding: 16px 14px;
@@ -5961,8 +5964,9 @@
 }
 .bht11-header-titles {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
 }
 .bht11-header-title {
   font-size: 1.2em;
@@ -5970,15 +5974,16 @@
   letter-spacing: 3px;
   text-transform: uppercase;
   color: var(--bht11-text, #fff);
+  line-height: 1.1;
 }
 .bht11-header-subtitle {
-  font-size: 0.65em;
+  font-size: 0.58em;
   font-weight: 600;
-  letter-spacing: 3px;
-  text-transform: lowercase;
+  letter-spacing: 4px;
+  text-transform: uppercase;
   color: var(--bht11-muted, #93c5fd);
-  font-style: italic;
-  opacity: 0.7;
+  opacity: 0.6;
+  line-height: 1;
 }
 
 /* ── 2. Stats Row (modern glassmorphism) ── */
