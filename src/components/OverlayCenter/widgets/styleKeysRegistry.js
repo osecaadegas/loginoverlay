@@ -57,7 +57,7 @@ export const NAVBAR_STYLE_KEYS = [
   'cryptoUpColor', 'cryptoDownColor',
   'fontFamily', 'fontSize',
   'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
-  'brightness', 'contrast', 'saturation', 'shadowSize', 'shadowIntensity',
+  'brightness', 'contrast', 'saturation',
   'custom_css',
 ];
 
