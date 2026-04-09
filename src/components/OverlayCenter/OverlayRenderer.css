@@ -6003,84 +6003,92 @@
   opacity: 0.7;
 }
 
-/* ── 2. Stats Row ── */
+/* ── 2. Stats Row (card boxes) ── */
 .bht11-stats-row {
   display: flex;
   gap: 8px;
   margin-bottom: 8px;
 }
-.bht11-stat-pill {
+.bht11-stat-card {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   background: rgba(15,21,53,0.85);
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 14px;
+  padding: 14px 16px;
   border: 1.5px solid rgba(96,165,250,0.18);
 }
-.bht11-stat-pill-icon {
-  font-size: 0.9em;
+.bht11-stat-card-icon {
+  font-size: 1.3em;
+  flex-shrink: 0;
 }
-.bht11-stat-pill-label {
-  font-size: 0.62em;
+.bht11-stat-card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.bht11-stat-card-label {
+  font-size: 0.6em;
   font-weight: 700;
   letter-spacing: 1.5px;
   color: var(--bht11-muted, #93c5fd);
   text-transform: uppercase;
 }
-.bht11-stat-pill-value {
-  font-size: 1.05em;
+.bht11-stat-card-value {
+  font-size: 1.25em;
+  font-weight: 900;
+  color: var(--bht11-stat-value, #ffffff);
+}
+
+/* ── 3. Count Bars (full-width stacked) ── */
+.bht11-counts-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.bht11-count-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(15,21,53,0.85);
+  border-radius: 12px;
+  padding: 10px 16px;
+  border: 1.5px solid rgba(96,165,250,0.18);
+}
+.bht11-count-bar-icon {
+  font-size: 1em;
+  flex-shrink: 0;
+}
+.bht11-count-bar-label {
+  font-size: 0.72em;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--bht11-muted, #93c5fd);
+}
+.bht11-count-bar-value {
+  font-size: 1.15em;
   font-weight: 900;
   color: var(--bht11-stat-value, #ffffff);
   margin-left: auto;
 }
-
-/* ── 3. Counts Row ── */
-.bht11-counts-row {
-  display: flex;
-  gap: 6px;
-  margin-bottom: 10px;
+/* Super bar */
+.bht11-count-bar--super {
+  border-color: rgba(234,179,8,0.5);
+  background: linear-gradient(90deg, rgba(234,179,8,0.18) 0%, rgba(234,179,8,0.04) 100%);
 }
-.bht11-count-pill {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-  background: rgba(15,21,53,0.85);
-  border-radius: 10px;
-  padding: 7px 8px;
-  border: 1.5px solid rgba(96,165,250,0.18);
-}
-.bht11-count-pill--super {
-  border-color: rgba(234,179,8,0.45);
-  background: rgba(234,179,8,0.06);
-}
-.bht11-count-pill--extreme {
-  border-color: rgba(239,68,68,0.45);
-  background: rgba(239,68,68,0.06);
-}
-.bht11-count-icon {
-  font-size: 0.8em;
-}
-.bht11-count-label {
-  font-size: 0.65em;
-  font-weight: 800;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--bht11-muted, #93c5fd);
-}
-.bht11-count-pill--super .bht11-count-label {
+.bht11-count-bar--super .bht11-count-bar-label {
   color: var(--bht11-super-badge, #eab308);
 }
-.bht11-count-pill--extreme .bht11-count-label {
-  color: var(--bht11-extreme-badge, #ef4444);
+/* Extreme bar */
+.bht11-count-bar--extreme {
+  border-color: rgba(239,68,68,0.5);
+  background: linear-gradient(90deg, rgba(239,68,68,0.18) 0%, rgba(239,68,68,0.04) 100%);
 }
-.bht11-count-value {
-  font-size: 1.1em;
-  font-weight: 900;
-  color: var(--bht11-stat-value, #ffffff);
+.bht11-count-bar--extreme .bht11-count-bar-label {
+  color: var(--bht11-extreme-badge, #ef4444);
 }
 
 /* ── 4. Carousel ── */

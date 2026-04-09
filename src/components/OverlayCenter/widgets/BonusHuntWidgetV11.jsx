@@ -132,37 +132,41 @@ function BonusHuntWidgetV11({ config, theme }) {
 
       {/* ═══ 2. Stats Row ═══ */}
       <div className="bht11-stats-row">
-        <div className="bht11-stat-pill">
-          <span className="bht11-stat-pill-icon">💰</span>
-          <span className="bht11-stat-pill-label">START</span>
-          <span className="bht11-stat-pill-value">{currency}{startMoney.toFixed(2)}</span>
+        <div className="bht11-stat-card">
+          <span className="bht11-stat-card-icon">💰</span>
+          <div className="bht11-stat-card-text">
+            <span className="bht11-stat-card-label">START</span>
+            <span className="bht11-stat-card-value">{currency}{startMoney.toFixed(2)}</span>
+          </div>
         </div>
-        <div className="bht11-stat-pill">
-          <span className="bht11-stat-pill-icon">📈</span>
-          <span className="bht11-stat-pill-label">BREAKEVEN</span>
-          <span className="bht11-stat-pill-value">{(c.bonusOpening ? stats.liveBE : stats.breakEven).toFixed(0)}x</span>
+        <div className="bht11-stat-card">
+          <span className="bht11-stat-card-icon">📈</span>
+          <div className="bht11-stat-card-text">
+            <span className="bht11-stat-card-label">BREAKEVEN</span>
+            <span className="bht11-stat-card-value">{(c.bonusOpening ? stats.liveBE : stats.breakEven).toFixed(0)}x</span>
+          </div>
         </div>
       </div>
 
-      {/* ═══ 3. Counts Row ═══ */}
-      <div className="bht11-counts-row">
-        <div className="bht11-count-pill">
-          <span className="bht11-count-icon">🎰</span>
-          <span className="bht11-count-label">BONUSES</span>
-          <span className="bht11-count-value">{bonuses.length}</span>
+      {/* ═══ 3. Counts ═══ */}
+      <div className="bht11-counts-col">
+        <div className="bht11-count-bar">
+          <span className="bht11-count-bar-icon">🎁</span>
+          <span className="bht11-count-bar-label">BONUSES</span>
+          <span className="bht11-count-bar-value">{bonuses.length}</span>
         </div>
         {stats.superCount > 0 && (
-          <div className="bht11-count-pill bht11-count-pill--super">
-            <span className="bht11-count-icon">⚡</span>
-            <span className="bht11-count-label">SUPER</span>
-            <span className="bht11-count-value">{stats.superCount}</span>
+          <div className="bht11-count-bar bht11-count-bar--super">
+            <span className="bht11-count-bar-icon">⚡</span>
+            <span className="bht11-count-bar-label">SUPER</span>
+            <span className="bht11-count-bar-value">{stats.superCount}</span>
           </div>
         )}
         {stats.extremeCount > 0 && (
-          <div className="bht11-count-pill bht11-count-pill--extreme">
-            <span className="bht11-count-icon">🔥</span>
-            <span className="bht11-count-label">EXTREME</span>
-            <span className="bht11-count-value">{stats.extremeCount}</span>
+          <div className="bht11-count-bar bht11-count-bar--extreme">
+            <span className="bht11-count-bar-icon">🔥</span>
+            <span className="bht11-count-bar-label">EXTREME</span>
+            <span className="bht11-count-bar-value">{stats.extremeCount}</span>
           </div>
         )}
       </div>
