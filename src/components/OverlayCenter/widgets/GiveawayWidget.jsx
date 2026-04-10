@@ -392,6 +392,78 @@ function GiveawayWidget({ config, widgetId }) {
     </div>
   );
 
+  /* ─── bh_stats — matches Bonus Hunt Stats widget ─── */
+  if (st === 'bh_stats') {
+    const bhBg = 'rgba(15, 23, 42, 0.9)';
+    const bhCard = 'rgba(255,255,255,0.04)';
+    const bhBorder = 'rgba(255,255,255,0.06)';
+    const bhAccent = '#818cf8';
+    const bhText = '#f1f5f9';
+    const bhMuted = '#64748b';
+    const bhFont = "'Poppins', sans-serif";
+    return (
+      <div style={{ width:'100%', height:'100%', fontFamily:bhFont, background:bhBg, color:bhText,
+        borderRadius:'clamp(6px,2cqmin,14px)', border:`1px solid ${bhBorder}`, display:'flex', flexDirection:'column',
+        overflow:'hidden', boxSizing:'border-box', containerType:'size', WebkitFontSmoothing:'antialiased' }}>
+        <style>{kf}</style>
+
+        {/* Header */}
+        <div style={{ display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
+          padding:'clamp(6px,3cqmin,14px) clamp(8px,3cqmin,16px)', flexShrink:0,
+          background:bhCard, borderBottom:`1px solid ${bhBorder}` }}>
+          <span style={{ fontSize:'clamp(14px,5cqmin,24px)' }}>🎁</span>
+          <span style={{ fontWeight:800, fontSize:'clamp(14px,5cqmin,22px)', letterSpacing:'0.03em', color:bhText }}>{title}</span>
+          {isActive && !isDone && (
+            <span style={{ marginLeft:'auto', background:bhAccent, color:'#fff', fontSize:'clamp(9px,2.5cqmin,12px)', fontWeight:700,
+              padding:'clamp(2px,0.6cqmin,4px) clamp(6px,2cqmin,12px)', borderRadius:99, letterSpacing:'0.06em',
+              animation:'ga-pulse 2s ease-in-out infinite' }}>LIVE</span>
+          )}
+        </div>
+
+        {/* Body */}
+        <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+          padding:'clamp(6px,3cqmin,14px)', gap:'clamp(6px,2.5cqmin,14px)', minHeight:0 }}>
+
+          {spinningWinner && !winner ? (
+            <SpinReel participants={participants} winnerName={spinningWinner} accentColor={bhAccent} textColor={bhText} mutedColor={bhMuted} />
+          ) : winner ? (
+            <>
+              <ConfettiBurst accentColor={bhAccent} count={50} />
+              <div style={{ animation:'ga-haptic 0.5s ease-out' }}>
+                <TrophyWinner winner={winner} accentColor={bhAccent} textColor={bhText} mutedColor={bhMuted} prize={prize}
+                  fontSize="clamp(20px,10cqmin,48px)" />
+              </div>
+            </>
+          ) : isActive && keyword ? (
+            <>
+              {prize && (
+                <div style={{ fontSize:'clamp(18px,8cqmin,36px)', fontWeight:800, textAlign:'center', lineHeight:1.1, color:bhText }}>{prize}</div>
+              )}
+              {/* Stat boxes row */}
+              <div style={{ display:'flex', gap:'clamp(4px,1.5cqmin,10px)', width:'100%', justifyContent:'center' }}>
+                <div style={{ background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(6px,2cqmin,10px) clamp(8px,2.5cqmin,14px)',
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:2, minWidth:0, flex:1 }}>
+                  <span style={{ fontSize:'clamp(8px,2.5cqmin,11px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Keyword</span>
+                  <span style={{ fontSize:'clamp(14px,5cqmin,24px)', fontWeight:800, color:bhAccent }}>!{keyword}</span>
+                </div>
+                <div style={{ background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(6px,2cqmin,10px) clamp(8px,2.5cqmin,14px)',
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:2, minWidth:0, flex:1 }}>
+                  <span style={{ fontSize:'clamp(8px,2.5cqmin,11px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Entries</span>
+                  <span style={{ fontSize:'clamp(14px,5cqmin,24px)', fontWeight:800, color:bhText }}>{count}</span>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize:'clamp(24px,10cqmin,48px)', opacity:0.3 }}>🎁</div>
+              <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:bhMuted }}>No active giveaway</div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   /* ─── v1 Classic Card ─── */
   if (st === 'v1') return (
     <div style={{ width:'100%', height:'100%', fontFamily, background:bgColor, color:textColor,

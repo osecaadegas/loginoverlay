@@ -155,6 +155,7 @@ registerWidget({
     { id: 'v3', icon: '💡', label: 'Neon' },
     { id: 'v4', icon: '✦', label: 'Minimal' },
     { id: 'metal', icon: '⚙️', label: 'Metal' },
+    { id: 'bh_stats', icon: '🎰', label: 'Hunt' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
@@ -249,6 +250,7 @@ registerWidget({
     { id: 'sidebar',    icon: '📌', label: 'Sidebar' },
     { id: 'cards',      icon: '🃏', label: 'Cards' },
     { id: 'metal',      icon: '⚙️', label: 'Metal' },
+    { id: 'bh_stats',   icon: '🎰', label: 'Hunt' },
   ],
   styleConfigKey: 'chatStyle',
   defaults: {

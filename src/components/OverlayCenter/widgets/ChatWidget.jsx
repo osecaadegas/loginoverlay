@@ -85,17 +85,18 @@ function ChatWidget({ config, theme }) {
   const maxMessages = c.maxMessages || 50;
   const chatStyle = c.chatStyle || 'classic';
   const isMetal = chatStyle === 'metal';
+  const isBH = chatStyle === 'bh_stats';
 
   /* Style config */
-  const textColor = isMetal ? '#d4d8e0' : (c.textColor || '#e2e8f0');
-  const headerBg = isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : (c.headerBg || 'rgba(30,41,59,0.5)');
-  const headerText = isMetal ? '#a8b0c0' : (c.headerText || '#94a3b8');
-  const fontFamily = c.fontFamily || "'Inter', sans-serif";
+  const textColor = isMetal ? '#d4d8e0' : isBH ? '#f1f5f9' : (c.textColor || '#e2e8f0');
+  const headerBg = isMetal ? 'linear-gradient(160deg, rgba(180,185,195,0.12) 0%, rgba(120,125,135,0.06) 100%)' : isBH ? 'rgba(255,255,255,0.04)' : (c.headerBg || 'rgba(30,41,59,0.5)');
+  const headerText = isMetal ? '#a8b0c0' : isBH ? '#64748b' : (c.headerText || '#94a3b8');
+  const fontFamily = isBH ? "'Poppins', sans-serif" : (c.fontFamily || "'Inter', sans-serif");
   const fontSize = c.fontSize || 15;
   const msgSpacing = c.msgSpacing ?? 2;
-  const borderRadius = c.borderRadius ?? (isMetal ? 10 : 12);
+  const borderRadius = c.borderRadius ?? (isMetal ? 10 : isBH ? 14 : 12);
   const borderWidth = c.borderWidth ?? 1;
-  const borderColor = isMetal ? 'rgba(200,210,225,0.18)' : (c.borderColor || 'rgba(51,65,85,0.5)');
+  const borderColor = isMetal ? 'rgba(200,210,225,0.18)' : isBH ? 'rgba(255,255,255,0.06)' : (c.borderColor || 'rgba(51,65,85,0.5)');
   const width = c.width || 350;
   const height = c.height || 500;
   const nameBold = c.nameBold ?? true;
@@ -112,15 +113,16 @@ function ChatWidget({ config, theme }) {
     sidebar: 'rgba(10,12,20,0.9)',
     cards: 'rgba(18,10,35,0.95)',
     metal: 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)',
+    bh_stats: 'rgba(15, 23, 42, 0.9)',
   };
   const bgColor = isMetal
     ? 'linear-gradient(145deg, #2a2d33 0%, #1a1c20 40%, #2e3238 100%)'
     : (c.bgColor || bgDefaults[chatStyle] || bgDefaults.classic);
 
   /* Which features each style shows */
-  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal') ? (c.showHeader !== false) : false;
+  const showHeader = (chatStyle === 'classic' || chatStyle === 'cards' || chatStyle === 'metal' || chatStyle === 'bh_stats') ? (c.showHeader !== false) : false;
   const showLegend = (chatStyle === 'classic') ? (c.showLegend !== false) : false;
-  const showBadges = (chatStyle === 'classic' || chatStyle === 'metal') ? (c.showBadges !== false) : false;
+  const showBadges = (chatStyle === 'classic' || chatStyle === 'metal' || chatStyle === 'bh_stats') ? (c.showBadges !== false) : false;
 
   const handleMessage = useCallback((msg) => {
     setMessages(prev => {
@@ -166,15 +168,20 @@ function ChatWidget({ config, theme }) {
     background: bgColor,
     border: isMetal
       ? '1px solid rgba(200,210,225,0.18)'
+      : isBH ? '1px solid rgba(255,255,255,0.06)'
       : (borderWidth && !isTransparent) ? `${borderWidth}px solid ${borderColor}` : 'none',
     borderRadius: isTransparent ? 0 : `${borderRadius}px`,
     fontFamily,
     fontSize: `${fontSize}px`,
-    color: isMetal ? '#d4d8e0' : textColor,
+    color: isBH ? '#f1f5f9' : isMetal ? '#d4d8e0' : textColor,
     display: 'flex',
     flexDirection: 'column',
     overflow: 'hidden',
     filter: filterStyle,
+    ...(isBH && {
+      WebkitFontSmoothing: 'antialiased',
+      MozOsxFontSmoothing: 'grayscale',
+    }),
     ...(isMetal && {
       boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
     }),
@@ -243,7 +250,36 @@ function ChatWidget({ config, theme }) {
         </div>
       )}
 
-      {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && (
+      {showHeader && chatStyle === 'bh_stats' && (
+        <div style={{
+          padding: '10px 14px',
+          background: 'rgba(255,255,255,0.04)',
+          borderBottom: '1px solid rgba(255,255,255,0.06)',
+          display: 'flex', alignItems: 'center', gap: 6,
+        }}>
+          <span style={{ fontSize: '1.1em' }}>💬</span>
+          <span style={{
+            fontSize: '0.88em', fontWeight: 800, letterSpacing: '0.03em',
+            color: '#f1f5f9',
+          }}>Live Chat</span>
+          <span style={{
+            marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 5,
+            fontSize: '0.7em', fontWeight: 700,
+            background: '#818cf8', color: '#fff',
+            borderRadius: 99, padding: '2px 10px',
+          }}>
+            <span style={{
+              width: 6, height: 6, borderRadius: '50%',
+              background: '#fff',
+              display: 'inline-block',
+              animation: 'ov-live-pulse 2s ease-in-out infinite',
+            }} />
+            LIVE
+          </span>
+        </div>
+      )}
+
+      {showHeader && chatStyle !== 'cards' && chatStyle !== 'metal' && chatStyle !== 'bh_stats' && (
         <div className="ov-chat-header" style={{ background: headerBg, color: headerText }}>
           <span className="ov-chat-header-title">Live Chat</span>
           <div className="ov-chat-header-badges">
@@ -433,6 +469,44 @@ function ChatWidget({ config, theme }) {
                     marginRight: 6,
                   }}>{msg.username}</span>
                   <span style={{ color: '#d4d8e0', textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{msg.message}</span>
+                </div>
+              </div>
+            );
+          }
+
+          /* ── Style: BH Stats — matches Bonus Hunt stats widget ── */
+          if (chatStyle === 'bh_stats') {
+            return (
+              <div key={msg.id} className="ov-chat-msg ov-chat-msg--bh-stats" style={{
+                padding: `${msgSpacing + 2}px ${msgPadH}px`,
+                animation: 'ov-float-in 0.3s ease-out',
+                display: 'flex', alignItems: 'flex-start', gap: 8,
+              }}>
+                {/* Avatar circle */}
+                <span style={{
+                  width: 24, height: 24, borderRadius: '50%', flexShrink: 0, marginTop: 1,
+                  background: 'rgba(255,255,255,0.04)',
+                  border: '1px solid rgba(255,255,255,0.06)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#818cf8', fontSize: '0.78em', fontWeight: 800,
+                }}>{msg.username.charAt(0).toUpperCase()}</span>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <span style={{
+                    color: '#818cf8', fontWeight: 700, fontSize: '0.88em',
+                    marginRight: 6,
+                  }}>{msg.username}</span>
+                  {showBadges && (
+                    <span style={{
+                      background: 'rgba(129,140,248,0.15)', color: '#818cf8',
+                      fontSize: '0.68em', fontWeight: 700, padding: '1px 5px',
+                      borderRadius: 4, marginRight: 4, verticalAlign: 'middle',
+                      textTransform: 'uppercase', letterSpacing: '0.06em',
+                    }}>{plt.icon}</span>
+                  )}
+                  <div style={{
+                    color: '#f1f5f9', wordBreak: 'break-word', lineHeight: 1.4,
+                    marginTop: 2, opacity: 0.92,
+                  }}>{msg.message}</div>
                 </div>
               </div>
             );
