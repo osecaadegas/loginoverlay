@@ -189,6 +189,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
     textTransform: 'uppercase',
     letterSpacing: isMetal ? '0.14em' : '0.1em',
     lineHeight: 1.1,
+    whiteSpace: 'nowrap',
     marginBottom: 1,
     ...(isMetal && {
       background: 'linear-gradient(90deg, #c8a060, #e8c080)',
@@ -198,7 +199,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
   };
 
   const valStyle = {
-    fontSize: `${fs * 1.15}px`,
+    fontSize: `${fs * 0.95}px`,
     fontWeight: 800,
     lineHeight: 1.2,
     whiteSpace: 'nowrap',
