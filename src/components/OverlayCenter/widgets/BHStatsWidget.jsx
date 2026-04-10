@@ -49,8 +49,8 @@ export default function BHStatsWidget({ config, allWidgets }) {
     let worst = null;
     for (const b of opened) {
       const multi = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
-      if (!best || multi > best.multi) best = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout, image: b.slot?.image || null };
-      if (!worst || multi < worst.multi) worst = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout, image: b.slot?.image || null };
+      if (!best || multi > best.multi) best = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout, betSize: b.betSize, image: b.slot?.image || null };
+      if (!worst || multi < worst.multi) worst = { name: b.slotName || b.slot?.name || '—', multi, payout: b.payout, betSize: b.betSize, image: b.slot?.image || null };
     }
 
     const avgBet = total > 0 ? totalBetAll / total : 0;
