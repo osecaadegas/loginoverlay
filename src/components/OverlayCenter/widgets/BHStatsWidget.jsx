@@ -165,10 +165,10 @@ export default function BHStatsWidget({ config, allWidgets }) {
     background: cardBg,
     border: metalBorder,
     borderRadius: Math.max(isMetal ? 6 : 8, (isMetal ? 8 : 12) * scale),
-    padding: `${Math.max(10, 12 * scale)}px ${Math.max(12, 14 * scale)}px`,
+    padding: `${Math.max(5, 7 * scale)}px ${Math.max(8, 10 * scale)}px`,
     display: 'flex',
     flexDirection: 'column',
-    gap: 4,
+    gap: 2,
     flex: 1,
     minWidth: 0,
     ...(isMetal && {
@@ -183,13 +183,13 @@ export default function BHStatsWidget({ config, allWidgets }) {
   };
 
   const labelStyle = {
-    fontSize: `${fs * 0.75}px`,
+    fontSize: `${fs * 0.6}px`,
     fontWeight: 700,
     color: mutedColor,
     textTransform: 'uppercase',
     letterSpacing: isMetal ? '0.14em' : '0.1em',
-    lineHeight: 1.2,
-    marginBottom: 2,
+    lineHeight: 1.1,
+    marginBottom: 1,
     ...(isMetal && {
       background: 'linear-gradient(90deg, #c8a060, #e8c080)',
       WebkitBackgroundClip: 'text',
@@ -198,9 +198,9 @@ export default function BHStatsWidget({ config, allWidgets }) {
   };
 
   const valStyle = {
-    fontSize: `${fs * 1.45}px`,
+    fontSize: `${fs * 1.15}px`,
     fontWeight: 800,
-    lineHeight: 1.25,
+    lineHeight: 1.2,
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
@@ -285,21 +285,21 @@ export default function BHStatsWidget({ config, allWidgets }) {
         </div>
       </div>
 
-      {/* ═══ Progress bar ═══ */}
-      <div style={{ ...statBoxStyle, flex: 'none' }}>
+      {/* ═══ Progress bar — floating ═══ */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 3, padding: `0 ${Math.max(2, 4 * scale)}px` }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span style={labelStyle}>Progress</span>
-          <span style={{ fontSize: `${fs * 0.78}px`, fontWeight: 700, color: textColor }}>
-            {stats.openedCount} / {stats.total} opened
+          <span style={{ ...labelStyle, marginBottom: 0 }}>Progress</span>
+          <span style={{ fontSize: `${fs * 0.6}px`, fontWeight: 700, color: textColor }}>
+            {stats.openedCount} / {stats.total}
           </span>
         </div>
         <div style={{
           width: '100%',
-          height: Math.max(10, 14 * scale),
+          height: Math.max(6, 8 * scale),
           background: progressBg,
           borderRadius: 99,
           overflow: 'hidden',
-          marginTop: 2,
+          boxShadow: `0 0 8px ${progressColor}33`,
         }}>
           <div style={{
             width: `${stats.progressPct}%`,
@@ -310,11 +310,12 @@ export default function BHStatsWidget({ config, allWidgets }) {
             borderRadius: 99,
             transition: 'width 0.6s cubic-bezier(0.33,1,0.68,1)',
             minWidth: stats.progressPct > 0 ? 4 : 0,
+            boxShadow: `0 0 6px ${progressColor}55`,
           }} />
         </div>
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 2 }}>
-          <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{stats.unopened} remaining</span>
-          <span style={{ fontSize: `${fs * 0.7}px`, color: mutedColor }}>{Math.round(stats.progressPct)}%</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: `${fs * 0.55}px`, color: mutedColor }}>{stats.unopened} remaining</span>
+          <span style={{ fontSize: `${fs * 0.55}px`, color: mutedColor }}>{Math.round(stats.progressPct)}%</span>
         </div>
       </div>
 
