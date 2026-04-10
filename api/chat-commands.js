@@ -192,38 +192,21 @@ async function handleSlotRequest(req, res) {
 
     if (existing && existing.length > 0) {
       const row = existing[0];
-      // 'denied' within last 30 seconds → another concurrent call already handled this
       const age = Date.now() - new Date(row.created_at).getTime();
+
+      // 'denied' within last 30 seconds → another concurrent call already handled this
       if (row.status === 'denied' && age < 30000) return res.status(200).send('ok');
       // Old denied row → clean it up and proceed
       if (row.status === 'denied') {
         await supabase.from('slot_requests').delete().eq('id', row.id);
       }
-      // 'pending' → already in queue — use insert+reconcile to send exactly 1 message
+      // 'pending' → already in queue
       if (row.status === 'pending') {
-        // Insert a 'denied' marker so concurrent calls see it and exit silently
-        const { data: marker, error: markerErr } = await supabase
-          .from('slot_requests')
-          .insert({ user_id, slot_name: resolvedName, requested_by: viewer, status: 'denied' })
-          .select('id, created_at')
-          .single();
-        if (markerErr) return res.status(200).send('ok');
-        // Reconcile: only the earliest denied marker sends the message
-        const { data: markers } = await supabase
-          .from('slot_requests')
-          .select('id, created_at')
-          .eq('user_id', user_id)
-          .ilike('slot_name', resolvedName)
-          .eq('status', 'denied')
-          .order('created_at', { ascending: true });
-        if (markers && markers.length > 1) {
-          if (marker.id !== markers[0].id) {
-            await supabase.from('slot_requests').delete().eq('id', marker.id);
-            return res.status(200).send('ok');
-          }
-          const loserIds = markers.slice(1).map(m => m.id);
-          await supabase.from('slot_requests').delete().in('id', loserIds);
-        }
+        // If the pending row was created < 5 seconds ago, this is a concurrent call
+        // from another widget instance picking up the same !sr — exit silently
+        if (age < 5000) return res.status(200).send('ok');
+
+        // Genuine duplicate: viewer typed !sr again for an already-queued slot
         const msg = fillTemplate(msgTemplates.duplicate, { slot: resolvedName, user: viewer, by: row.requested_by || '?' });
         return chatAndReply(msg);
       }
