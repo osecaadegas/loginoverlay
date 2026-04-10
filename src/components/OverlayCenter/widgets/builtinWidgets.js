@@ -639,6 +639,7 @@ registerWidget({
     showNumbers: true,
     twitchChannel: '',
     commandTrigger: '!sr',
+    srChatEnabled: true,
     maxQueueSize: 50,
     preventDuplicates: true,
     cooldownSeconds: 0,

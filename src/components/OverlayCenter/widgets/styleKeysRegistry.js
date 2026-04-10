@@ -128,7 +128,7 @@ export const SLOT_REQUESTS_STYLE_KEYS = [
   'bgColor', 'cardBg', 'borderColor',
   'commandTrigger', 'maxQueueSize', 'preventDuplicates', 'cooldownSeconds',
   'showRequester', 'showNumbers', 'maxDisplay', 'autoSpeed',
-  'srSeEnabled', 'srSeCost',
+  'srChatEnabled', 'srSeEnabled', 'srSeCost',
   'srMsgAccepted', 'srMsgAcceptedCost', 'srMsgNotEnough', 'srMsgDuplicate', 'srMsgRejected',
   'srMsgNoMatch', 'srMsgCooldown', 'srMsgQueueFull',
   'custom_css',

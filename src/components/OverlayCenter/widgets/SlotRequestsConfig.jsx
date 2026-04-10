@@ -9,7 +9,7 @@
  *   5. Display Options (show requester, show numbers, font, colors)
  *   6. Queue Management (list, mark played, reject/refund, clear all)
  */
-import React, { useEffect, useState, useCallback, useRef } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { makePerStyleSetters } from './shared/perStyleConfig';
@@ -72,9 +72,6 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const c = config || {};
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [ircStatus, setIrcStatus] = useState('off');
-  const wsRef = useRef(null);
-  const reconnectTimer = useRef(null);
   const [seConnected, setSeConnected] = useState(false);
 
   /* ── Check SE connection status ── */
@@ -119,42 +116,6 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const currentStyle = c.displayStyle || 'v1_minimal';
   const { set } = makePerStyleSetters(onChange, c, currentStyle, SLOT_REQUESTS_STYLE_KEYS);
 
-  /* ── IRC listener (status only — actual !sr handled by ProfileSection) ── */
-  useEffect(() => {
-    const raw = c.twitchChannel;
-    if (!raw || !user) { setIrcStatus('off'); return; }
-    const channel = raw.trim().toLowerCase().replace(/^#/, '');
-    if (!channel) { setIrcStatus('off'); return; }
-
-    let ws, alive = true;
-    const connect = () => {
-      if (!alive) return;
-      setIrcStatus('connecting');
-      ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-      wsRef.current = ws;
-      ws.onopen = () => {
-        ws.send('PASS SCHMOOPIIE');
-        ws.send('NICK justinfan' + Math.floor(Math.random() * 100000));
-        ws.send('JOIN #' + channel);
-      };
-      ws.onmessage = (event) => {
-        for (const line of event.data.split('\r\n')) {
-          if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
-          if (line.includes(' 366 ')) setIrcStatus('live');
-        }
-      };
-      ws.onclose = () => { if (alive) { setIrcStatus('off'); reconnectTimer.current = setTimeout(connect, 5000); } };
-      ws.onerror = () => ws.close();
-    };
-    const debounce = setTimeout(connect, 800);
-    return () => {
-      alive = false;
-      clearTimeout(debounce);
-      clearTimeout(reconnectTimer.current);
-      if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
-    };
-  }, [c.twitchChannel, user]);
-
   /* ── Actions ── */
   const markPlayed = async (id) => {
     await supabase.from('slot_requests').update({ status: 'played' }).eq('id', id);
@@ -185,37 +146,54 @@ export default function SlotRequestsConfig({ config, onChange }) {
     setLoading(false);
   };
 
-  const statusColors = { off: '#64748b', connecting: '#f59e0b', live: '#22c55e' };
-  const statusLabels = { off: 'Not connected', connecting: 'Connecting…', live: 'Listening to chat' };
   const cmdTrigger = c.commandTrigger || '!sr';
+  const chatEnabled = !!c.srChatEnabled;
+  const hasChannel = !!(c.twitchChannel || '').trim();
 
   return (
     <div style={S.section}>
 
       {/* ═══════════════════════════════════════════════
-          1. TWITCH CHANNEL
+          1. CHAT LISTENER + TWITCH CHANNEL
           ═══════════════════════════════════════════════ */}
       <div>
-        <p style={S.label}>📺 Twitch Channel</p>
-        <p style={S.hint}>Your Twitch channel name. The widget listens for <strong style={{ color: '#e2e8f0' }}>{cmdTrigger}</strong> commands automatically.</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: '#e2e8f0', cursor: 'pointer', marginBottom: 8 }}>
           <input
-            type="text"
-            value={c.twitchChannel || ''}
-            onChange={e => set('twitchChannel', e.target.value)}
-            placeholder="your_channel_name"
-            style={{ ...S.input, flex: 1 }}
+            type="checkbox"
+            checked={chatEnabled}
+            onChange={e => set('srChatEnabled', e.target.checked)}
           />
-          <div style={{ width: 8, height: 8, borderRadius: '50%', background: statusColors[ircStatus], flexShrink: 0 }}
-            title={statusLabels[ircStatus]} />
-        </div>
-        <p style={{ fontSize: '0.65rem', color: statusColors[ircStatus], margin: '4px 0 0', lineHeight: 1.3 }}>
-          {statusLabels[ircStatus]}
-        </p>
-        {ircStatus === 'live' && (
-          <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '2px 0 0', lineHeight: 1.3 }}>
-            Viewers type: <strong style={{ color: '#e2e8f0' }}>{cmdTrigger} Gates of Olympus</strong> — requests appear instantly
-          </p>
+          <span style={{ fontWeight: 700 }}>📺 Chat Listener {chatEnabled ? 'ON' : 'OFF'}</span>
+          <span style={{
+            width: 8, height: 8, borderRadius: '50%', flexShrink: 0,
+            background: chatEnabled && hasChannel ? '#22c55e' : '#64748b',
+          }} />
+        </label>
+        {chatEnabled ? (
+          <>
+            <p style={S.hint}>The widget listens for <strong style={{ color: '#e2e8f0' }}>{cmdTrigger}</strong> in your Twitch chat — even inside OBS.</p>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
+              <input
+                type="text"
+                value={c.twitchChannel || ''}
+                onChange={e => set('twitchChannel', e.target.value)}
+                placeholder="your_channel_name"
+                style={{ ...S.input, flex: 1 }}
+              />
+            </div>
+            {hasChannel && (
+              <p style={{ fontSize: '0.65rem', color: '#22c55e', margin: '4px 0 0', lineHeight: 1.3 }}>
+                ✓ Listening — viewers type: <strong style={{ color: '#e2e8f0' }}>{cmdTrigger} Gates of Olympus</strong>
+              </p>
+            )}
+            {!hasChannel && (
+              <p style={{ fontSize: '0.65rem', color: '#f59e0b', margin: '4px 0 0', lineHeight: 1.3 }}>
+                ⚠️ Enter your Twitch channel name above
+              </p>
+            )}
+          </>
+        ) : (
+          <p style={S.hint}>Turn on to listen for <strong style={{ color: '#e2e8f0' }}>{cmdTrigger}</strong> commands in Twitch chat.</p>
         )}
       </div>
 
