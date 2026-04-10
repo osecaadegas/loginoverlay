@@ -55,7 +55,6 @@ export default function SlotRequestsWidget({ config, userId }) {
   const chatEnabled = c.srChatEnabled !== false;
   const twitchChannel = (c.twitchChannel || '').trim().toLowerCase().replace(/^#/, '');
   const cmdTrigger = (c.commandTrigger || '!sr').trim().toLowerCase();
-  const srSeEnabled = !!c.srSeEnabled;
 
   useEffect(() => {
     if (!chatEnabled || !twitchChannel || !userId) {
@@ -84,15 +83,13 @@ export default function SlotRequestsWidget({ config, userId }) {
         for (const line of event.data.split('\r\n')) {
           if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
 
-          // Skip when SE custom command handles points-based requests
-          if (srSeEnabled) continue;
-
           const m = line.match(cmdRegex);
           if (m) {
             const requester = m[1];
             const slotName = m[2].trim();
             if (slotName) {
               try {
+                console.log('[SR-IRC] Matched:', requester, slotName);
                 await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userId)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`);
               } catch (err) {
                 console.error('[SR-IRC]', err);
@@ -115,7 +112,7 @@ export default function SlotRequestsWidget({ config, userId }) {
       clearTimeout(reconnectRef.current);
       if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
     };
-  }, [chatEnabled, twitchChannel, cmdTrigger, srSeEnabled, userId]);
+  }, [chatEnabled, twitchChannel, cmdTrigger, userId]);
 
   /* ── Cleanup ref ── */
   useEffect(() => {
