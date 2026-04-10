@@ -409,20 +409,20 @@ function GiveawayWidget({ config, widgetId }) {
 
         {/* Header */}
         <div style={{ display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
-          padding:'clamp(6px,3cqmin,14px) clamp(8px,3cqmin,16px)', flexShrink:0,
+          padding:'clamp(8px,2.5cqmin,12px) clamp(10px,3cqmin,16px)', flexShrink:0,
           background:bhCard, borderBottom:`1px solid ${bhBorder}` }}>
-          <span style={{ fontSize:'clamp(14px,5cqmin,24px)' }}>🎁</span>
-          <span style={{ fontWeight:800, fontSize:'clamp(14px,5cqmin,22px)', letterSpacing:'0.03em', color:bhText }}>{title}</span>
+          <span style={{ fontSize:'clamp(14px,4cqmin,20px)' }}>🎁</span>
+          <span style={{ fontWeight:800, fontSize:'clamp(14px,4cqmin,20px)', letterSpacing:'0.03em', color:bhText }}>{title}</span>
           {isActive && !isDone && (
-            <span style={{ marginLeft:'auto', background:bhAccent, color:'#fff', fontSize:'clamp(9px,2.5cqmin,12px)', fontWeight:700,
-              padding:'clamp(2px,0.6cqmin,4px) clamp(6px,2cqmin,12px)', borderRadius:99, letterSpacing:'0.06em',
+            <span style={{ marginLeft:'auto', background:bhAccent, color:'#fff', fontSize:'clamp(9px,2cqmin,11px)', fontWeight:700,
+              padding:'clamp(2px,0.5cqmin,4px) clamp(6px,1.5cqmin,10px)', borderRadius:99, letterSpacing:'0.06em',
               animation:'ga-pulse 2s ease-in-out infinite' }}>LIVE</span>
           )}
         </div>
 
-        {/* Body */}
+        {/* Body — compact, no over-stretch */}
         <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-          padding:'clamp(6px,3cqmin,14px)', gap:'clamp(6px,2.5cqmin,14px)', minHeight:0 }}>
+          padding:'clamp(8px,2.5cqmin,14px)', gap:'clamp(6px,2cqmin,12px)', minHeight:0, maxHeight:'100%' }}>
 
           {spinningWinner && !winner ? (
             <SpinReel participants={participants} winnerName={spinningWinner} accentColor={bhAccent} textColor={bhText} mutedColor={bhMuted} />
@@ -431,32 +431,32 @@ function GiveawayWidget({ config, widgetId }) {
               <ConfettiBurst accentColor={bhAccent} count={50} />
               <div style={{ animation:'ga-haptic 0.5s ease-out' }}>
                 <TrophyWinner winner={winner} accentColor={bhAccent} textColor={bhText} mutedColor={bhMuted} prize={prize}
-                  fontSize="clamp(20px,10cqmin,48px)" />
+                  fontSize="clamp(18px,7cqmin,36px)" />
               </div>
             </>
           ) : isActive && keyword ? (
             <>
               {prize && (
-                <div style={{ fontSize:'clamp(18px,8cqmin,36px)', fontWeight:800, textAlign:'center', lineHeight:1.1, color:bhText }}>{prize}</div>
+                <div style={{ fontSize:'clamp(15px,5cqmin,26px)', fontWeight:800, textAlign:'center', lineHeight:1.2, color:bhText }}>{prize}</div>
               )}
               {/* Stat boxes row */}
-              <div style={{ display:'flex', gap:'clamp(4px,1.5cqmin,10px)', width:'100%', justifyContent:'center' }}>
-                <div style={{ background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(6px,2cqmin,10px) clamp(8px,2.5cqmin,14px)',
-                  display:'flex', flexDirection:'column', alignItems:'center', gap:2, minWidth:0, flex:1 }}>
-                  <span style={{ fontSize:'clamp(8px,2.5cqmin,11px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Keyword</span>
-                  <span style={{ fontSize:'clamp(14px,5cqmin,24px)', fontWeight:800, color:bhAccent }}>!{keyword}</span>
+              <div style={{ display:'flex', gap:'clamp(6px,1.5cqmin,10px)', width:'100%', justifyContent:'center' }}>
+                <div style={{ background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(8px,2cqmin,12px) clamp(10px,2.5cqmin,16px)',
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:3, minWidth:0, flex:1 }}>
+                  <span style={{ fontSize:'clamp(9px,2cqmin,12px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Keyword</span>
+                  <span style={{ fontSize:'clamp(16px,4cqmin,22px)', fontWeight:800, color:bhAccent }}>!{keyword}</span>
                 </div>
-                <div style={{ background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(6px,2cqmin,10px) clamp(8px,2.5cqmin,14px)',
-                  display:'flex', flexDirection:'column', alignItems:'center', gap:2, minWidth:0, flex:1 }}>
-                  <span style={{ fontSize:'clamp(8px,2.5cqmin,11px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Entries</span>
-                  <span style={{ fontSize:'clamp(14px,5cqmin,24px)', fontWeight:800, color:bhText }}>{count}</span>
+                <div style={{ background:bhCard, border:`1px solid ${bhBorder}`, borderRadius:12, padding:'clamp(8px,2cqmin,12px) clamp(10px,2.5cqmin,16px)',
+                  display:'flex', flexDirection:'column', alignItems:'center', gap:3, minWidth:0, flex:1 }}>
+                  <span style={{ fontSize:'clamp(9px,2cqmin,12px)', fontWeight:700, color:bhMuted, textTransform:'uppercase', letterSpacing:'0.1em' }}>Entries</span>
+                  <span style={{ fontSize:'clamp(16px,4cqmin,22px)', fontWeight:800, color:bhText }}>{count}</span>
                 </div>
               </div>
             </>
           ) : (
             <>
-              <div style={{ fontSize:'clamp(24px,10cqmin,48px)', opacity:0.3 }}>🎁</div>
-              <div style={{ fontSize:'clamp(11px,3.5cqmin,16px)', color:bhMuted }}>No active giveaway</div>
+              <div style={{ fontSize:'clamp(20px,7cqmin,36px)', opacity:0.3 }}>🎁</div>
+              <div style={{ fontSize:'clamp(11px,2.5cqmin,14px)', color:bhMuted }}>No active giveaway</div>
             </>
           )}
         </div>

@@ -119,7 +119,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
   const fmtX = n => Math.round(Number(n || 0)) + 'x';
 
   const fs = fontSize * scale;
-  const gap = Math.max(6, 8 * scale);
+  const gap = Math.max(8, 10 * scale);
 
   const rootStyle = {
     width: '100%',
@@ -133,8 +133,8 @@ export default function BHStatsWidget({ config, allWidgets }) {
     overflow: 'hidden auto',
     display: 'flex',
     flexDirection: 'column',
-    padding: `${Math.max(10, 14 * scale)}px`,
-    gap: gap + 4,
+    padding: `${Math.max(12, 16 * scale)}px`,
+    gap: gap + 6,
     boxSizing: 'border-box',
     /* Sharper text rendering */
     WebkitFontSmoothing: 'antialiased',
@@ -157,10 +157,10 @@ export default function BHStatsWidget({ config, allWidgets }) {
     background: cardBg,
     border: metalBorder,
     borderRadius: Math.max(isMetal ? 6 : 8, (isMetal ? 8 : 12) * scale),
-    padding: `${Math.max(8, 10 * scale)}px ${Math.max(10, 12 * scale)}px`,
+    padding: `${Math.max(10, 12 * scale)}px ${Math.max(12, 14 * scale)}px`,
     display: 'flex',
     flexDirection: 'column',
-    gap: 3,
+    gap: 4,
     flex: 1,
     minWidth: 0,
     ...(isMetal && {
