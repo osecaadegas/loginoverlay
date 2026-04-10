@@ -124,7 +124,12 @@ function ChatWidget({ config, theme }) {
   const showLegend = (chatStyle === 'classic') ? (c.showLegend !== false) : false;
   const showBadges = (chatStyle === 'classic' || chatStyle === 'metal' || chatStyle === 'bh_stats') ? (c.showBadges !== false) : false;
 
+  /* Bots to hide from overlay chat */
+  const HIDDEN_BOTS = ['streamelements', 'nightbot', 'moobot'];
+
   const handleMessage = useCallback((msg) => {
+    // Filter out known bot messages
+    if (msg.username && HIDDEN_BOTS.includes(msg.username.toLowerCase())) return;
     setMessages(prev => {
       const next = [...prev, msg];
       return next.length > maxMessages ? next.slice(-maxMessages) : next;

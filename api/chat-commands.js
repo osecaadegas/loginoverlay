@@ -202,11 +202,13 @@ async function handleSlotRequest(req, res) {
       }
       // 'pending' → already in queue
       if (row.status === 'pending') {
-        // If the pending row was created < 5 seconds ago, this is a concurrent call
-        // from another widget instance picking up the same !sr — exit silently
-        if (age < 5000) return res.status(200).send('ok');
+        // If the pending row was created/last-notified < 30 seconds ago, exit silently.
+        // This prevents multiple overlay instances AND repeated !sr spam from flooding chat.
+        if (age < 30000) return res.status(200).send('ok');
 
         // Genuine duplicate: viewer typed !sr again for an already-queued slot
+        // Touch created_at so the next 30s window starts from NOW (prevents further spam)
+        await supabase.from('slot_requests').update({ created_at: new Date().toISOString() }).eq('id', row.id);
         const msg = fillTemplate(msgTemplates.duplicate, { slot: resolvedName, user: viewer, by: row.requested_by || '?' });
         return chatAndReply(msg);
       }
