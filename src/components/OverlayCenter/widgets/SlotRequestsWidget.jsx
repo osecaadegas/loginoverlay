@@ -20,6 +20,7 @@ export default function SlotRequestsWidget({ config, userId }) {
   const mountedRef = useRef(true);
   const wsRef = useRef(null);
   const reconnectRef = useRef(null);
+  const srDedup = useRef(new Map()); // key: "viewer|slot" → timestamp
 
   /* ── Fetch pending requests ── */
   const fetchRequests = useCallback(async () => {
@@ -88,6 +89,18 @@ export default function SlotRequestsWidget({ config, userId }) {
             const requester = m[1];
             const slotName = m[2].trim();
             if (slotName) {
+              // Dedup: skip if same viewer+slot was processed in last 15 seconds
+              const dedupKey = `${requester.toLowerCase()}|${slotName.toLowerCase()}`;
+              const now = Date.now();
+              if (srDedup.current.has(dedupKey) && now - srDedup.current.get(dedupKey) < 15000) {
+                console.log('[SR-IRC] Dedup skip:', dedupKey);
+                continue;
+              }
+              srDedup.current.set(dedupKey, now);
+              // Clean old entries every 50 entries
+              if (srDedup.current.size > 50) {
+                for (const [k, t] of srDedup.current) { if (now - t > 30000) srDedup.current.delete(k); }
+              }
               try {
                 console.log('[SR-IRC] Matched:', requester, slotName);
                 await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userId)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`);
