@@ -319,7 +319,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
       </div>
 
       {/* ═══ Best & Worst — side-by-side flip cards ═══ */}
-      <div style={{ display: 'flex', gap, minHeight: Math.max(100, 120 * scale) }}>
+      <div style={{ display: 'flex', gap, minHeight: Math.max(130, 160 * scale) }}>
         {/* ── Best card ── */}
         <div style={{ flex: 1, perspective: 600 }}>
           <div style={{
@@ -347,7 +347,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
               {/* Ribbon */}
               <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
-                textAlign: 'center', fontSize: `${Math.max(8, fs * 0.6)}px`, fontWeight: 800,
+                textAlign: 'center', fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800,
                 letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 0',
                 background: `linear-gradient(90deg, ${bestColor}dd, ${bestColor})`,
                 color: '#052e16',
@@ -356,50 +356,44 @@ export default function BHStatsWidget({ config, allWidgets }) {
               {stats.best && (
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
-                  padding: `${Math.max(14, 18 * scale)}px 6px ${Math.max(4, 6 * scale)}px`,
+                  padding: `${Math.max(12, 16 * scale)}px 6px ${Math.max(4, 6 * scale)}px`,
                   background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)',
                   textAlign: 'center',
                 }}>
                   <span style={{
-                    fontSize: `${Math.max(10, fs * 0.78)}px`, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
+                    fontSize: `${Math.max(9, fs * 0.7)}px`, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
                     textShadow: '0 1px 4px rgba(0,0,0,0.9)',
                   }}>{stats.best.name}</span>
                 </div>
               )}
             </div>
 
-            {/* BACK — stats */}
+            {/* BACK — stats stacked */}
             <div style={{
               position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
               borderRadius: Math.max(8, 12 * scale), overflow: 'hidden',
               background: cardBg, border: metalBorder,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: Math.max(4, 6 * scale), padding: Math.max(8, 10 * scale),
+              gap: Math.max(6, 8 * scale), padding: Math.max(8, 10 * scale),
               boxShadow: `inset 0 0 0 2px ${bestColor}`,
               ...(isMetal && { boxShadow: `${metalBoxShadow}, inset 0 0 0 2px ${bestColor}` }),
             }}>
               <span style={{
-                fontSize: `${Math.max(8, fs * 0.6)}px`, fontWeight: 800, color: bestColor,
+                fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800, color: bestColor,
                 letterSpacing: '0.1em', textTransform: 'uppercase',
               }}>↑ BEST</span>
-              <span style={{
-                ...valStyle, fontSize: `${fs * 0.95}px`, textAlign: 'center',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%',
-              }}>{stats.best?.name || '—'}</span>
-              <div style={{ display: 'flex', gap: Math.max(6, 10 * scale), alignItems: 'center' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ ...labelStyle, fontSize: `${fs * 0.6}px`, marginBottom: 1 }}>Payout</div>
-                  <div style={{ fontSize: `${fs * 1.15}px`, fontWeight: 800, color: bestColor }}>
-                    {stats.best ? `${currency}${fmt(stats.best.payout)}` : '—'}
-                  </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Payout</div>
+                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: bestColor, lineHeight: 1.2 }}>
+                  {stats.best ? `${currency}${fmt(stats.best.payout)}` : '—'}
                 </div>
-                <div style={{ width: 1, height: fs * 1.5, background: borderColor }} />
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ ...labelStyle, fontSize: `${fs * 0.6}px`, marginBottom: 1 }}>Multi</div>
-                  <div style={{ fontSize: `${fs * 1.15}px`, fontWeight: 800, color: '#fbbf24' }}>
-                    {stats.best ? `${stats.best.multi.toFixed(1)}x` : '—'}
-                  </div>
+              </div>
+              <div style={{ width: '60%', height: 1, background: borderColor }} />
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Multi</div>
+                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: '#fbbf24', lineHeight: 1.2 }}>
+                  {stats.best ? `${stats.best.multi.toFixed(1)}x` : '—'}
                 </div>
               </div>
             </div>
@@ -433,7 +427,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
               {/* Ribbon */}
               <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
-                textAlign: 'center', fontSize: `${Math.max(8, fs * 0.6)}px`, fontWeight: 800,
+                textAlign: 'center', fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800,
                 letterSpacing: '0.1em', textTransform: 'uppercase', padding: '2px 0',
                 background: `linear-gradient(90deg, ${worstColor}dd, ${worstColor})`,
                 color: '#450a0a',
@@ -442,50 +436,44 @@ export default function BHStatsWidget({ config, allWidgets }) {
               {stats.worst && (
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
-                  padding: `${Math.max(14, 18 * scale)}px 6px ${Math.max(4, 6 * scale)}px`,
+                  padding: `${Math.max(12, 16 * scale)}px 6px ${Math.max(4, 6 * scale)}px`,
                   background: 'linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 60%, transparent 100%)',
                   textAlign: 'center',
                 }}>
                   <span style={{
-                    fontSize: `${Math.max(10, fs * 0.78)}px`, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
+                    fontSize: `${Math.max(9, fs * 0.7)}px`, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
                     textShadow: '0 1px 4px rgba(0,0,0,0.9)',
                   }}>{stats.worst.name}</span>
                 </div>
               )}
             </div>
 
-            {/* BACK — stats */}
+            {/* BACK — stats stacked */}
             <div style={{
               position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
               borderRadius: Math.max(8, 12 * scale), overflow: 'hidden',
               background: cardBg, border: metalBorder,
               display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: Math.max(4, 6 * scale), padding: Math.max(8, 10 * scale),
+              gap: Math.max(6, 8 * scale), padding: Math.max(8, 10 * scale),
               boxShadow: `inset 0 0 0 2px ${worstColor}`,
               ...(isMetal && { boxShadow: `${metalBoxShadow}, inset 0 0 0 2px ${worstColor}` }),
             }}>
               <span style={{
-                fontSize: `${Math.max(8, fs * 0.6)}px`, fontWeight: 800, color: worstColor,
+                fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800, color: worstColor,
                 letterSpacing: '0.1em', textTransform: 'uppercase',
               }}>↓ WORST</span>
-              <span style={{
-                ...valStyle, fontSize: `${fs * 0.95}px`, textAlign: 'center',
-                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '100%',
-              }}>{stats.worst?.name || '—'}</span>
-              <div style={{ display: 'flex', gap: Math.max(6, 10 * scale), alignItems: 'center' }}>
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ ...labelStyle, fontSize: `${fs * 0.6}px`, marginBottom: 1 }}>Payout</div>
-                  <div style={{ fontSize: `${fs * 1.15}px`, fontWeight: 800, color: worstColor }}>
-                    {stats.worst ? `${currency}${fmt(stats.worst.payout)}` : '—'}
-                  </div>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Payout</div>
+                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: worstColor, lineHeight: 1.2 }}>
+                  {stats.worst ? `${currency}${fmt(stats.worst.payout)}` : '—'}
                 </div>
-                <div style={{ width: 1, height: fs * 1.5, background: borderColor }} />
-                <div style={{ textAlign: 'center' }}>
-                  <div style={{ ...labelStyle, fontSize: `${fs * 0.6}px`, marginBottom: 1 }}>Multi</div>
-                  <div style={{ fontSize: `${fs * 1.15}px`, fontWeight: 800, color: mutedColor }}>
-                    {stats.worst ? `${stats.worst.multi.toFixed(1)}x` : '—'}
-                  </div>
+              </div>
+              <div style={{ width: '60%', height: 1, background: borderColor }} />
+              <div style={{ textAlign: 'center' }}>
+                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Multi</div>
+                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: mutedColor, lineHeight: 1.2 }}>
+                  {stats.worst ? `${stats.worst.multi.toFixed(1)}x` : '—'}
                 </div>
               </div>
             </div>
