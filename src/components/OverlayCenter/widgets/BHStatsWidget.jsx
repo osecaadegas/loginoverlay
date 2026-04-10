@@ -127,7 +127,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
   const fmtX = n => Math.round(Number(n || 0)) + 'x';
 
   const fs = fontSize * scale;
-  const gap = Math.max(8, 10 * scale);
+  const gap = Math.max(5, 7 * scale);
 
   const rootStyle = {
     width: '100%',
@@ -141,8 +141,8 @@ export default function BHStatsWidget({ config, allWidgets }) {
     overflow: 'hidden auto',
     display: 'flex',
     flexDirection: 'column',
-    padding: `${Math.max(12, 16 * scale)}px`,
-    gap: gap + 6,
+    padding: `${Math.max(8, 10 * scale)}px`,
+    gap: gap + 3,
     boxSizing: 'border-box',
     /* Sharper text rendering */
     WebkitFontSmoothing: 'antialiased',
@@ -216,7 +216,7 @@ export default function BHStatsWidget({ config, allWidgets }) {
       {showTitle && (
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6,
-          paddingBottom: gap,
+          paddingBottom: Math.max(3, gap - 2),
           borderBottom: isMetal ? '1px solid rgba(200,210,225,0.18)' : `1px solid ${borderColor}`,
         }}>
           <span style={{ fontSize: fs * 1.3 }}>{isMetal ? '⚙️' : isGlass ? '🧊' : '📊'}</span>
