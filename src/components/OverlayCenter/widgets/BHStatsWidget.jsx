@@ -321,9 +321,9 @@ export default function BHStatsWidget({ config, allWidgets }) {
       </div>
 
       {/* ═══ Best & Worst — side-by-side flip cards ═══ */}
-      <div style={{ display: 'flex', gap, minHeight: Math.max(130, 160 * scale) }}>
+      <div style={{ display: 'flex', gap, minHeight: Math.max(130, 160 * scale), justifyContent: 'center' }}>
         {/* ── Best card ── */}
-        <div style={{ flex: 1, perspective: 600 }}>
+        <div style={{ flex: 1, maxWidth: Math.max(100, 130 * scale), perspective: 600 }}>
           <div style={{
             width: '100%', height: '100%', position: 'relative',
             transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1)',
@@ -346,7 +346,6 @@ export default function BHStatsWidget({ config, allWidgets }) {
                   <span style={{ fontSize: fs * 2.5, opacity: 0.25 }}>🎰</span>
                 </div>
               )}
-              {/* Ribbon */}
               <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
                 textAlign: 'center', fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800,
@@ -354,7 +353,6 @@ export default function BHStatsWidget({ config, allWidgets }) {
                 background: `linear-gradient(90deg, ${bestColor}dd, ${bestColor})`,
                 color: '#052e16',
               }}>↑ BEST</div>
-              {/* Bottom name overlay */}
               {stats.best && (
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
@@ -370,40 +368,36 @@ export default function BHStatsWidget({ config, allWidgets }) {
               )}
             </div>
 
-            {/* BACK — stats stacked */}
+            {/* BACK — stats rows with icons */}
             <div style={{
               position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
               borderRadius: Math.max(8, 12 * scale), overflow: 'hidden',
               background: cardBg, border: metalBorder,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: Math.max(6, 8 * scale), padding: Math.max(8, 10 * scale),
+              display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              gap: Math.max(4, 5 * scale), padding: `${Math.max(6, 8 * scale)}px ${Math.max(6, 8 * scale)}px`,
               boxShadow: `inset 0 0 0 2px ${bestColor}`,
               ...(isMetal && { boxShadow: `${metalBoxShadow}, inset 0 0 0 2px ${bestColor}` }),
             }}>
-              <span style={{
-                fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800, color: bestColor,
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-              }}>↑ BEST</span>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Payout</div>
-                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: bestColor, lineHeight: 1.2 }}>
-                  {stats.best ? `${currency}${fmt(stats.best.payout)}` : '—'}
+              {[
+                { icon: '💰', val: stats.best ? `${currency}${fmt(stats.best.payout)}` : '—', label: 'BEST WIN', color: bestColor },
+                { icon: '⚡', val: stats.best ? `${stats.best.multi.toFixed(1)}x` : '—', label: 'BEST MULTI', color: '#fbbf24' },
+                { icon: '🎰', val: stats.best ? `${currency}${fmt(stats.best.betSize || 0)}` : '—', label: 'BET SIZE', color: textColor },
+              ].map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: Math.max(4, 6 * scale) }}>
+                  <span style={{ fontSize: `${fs * 0.7}px`, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: `${fs * 0.82}px`, fontWeight: 800, color: r.color, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.val}</div>
+                    <div style={{ fontSize: `${fs * 0.45}px`, fontWeight: 700, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.1 }}>{r.label}</div>
+                  </div>
                 </div>
-              </div>
-              <div style={{ width: '60%', height: 1, background: borderColor }} />
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Multi</div>
-                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: '#fbbf24', lineHeight: 1.2 }}>
-                  {stats.best ? `${stats.best.multi.toFixed(1)}x` : '—'}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
 
         {/* ── Worst card ── */}
-        <div style={{ flex: 1, perspective: 600 }}>
+        <div style={{ flex: 1, maxWidth: Math.max(100, 130 * scale), perspective: 600 }}>
           <div style={{
             width: '100%', height: '100%', position: 'relative',
             transition: 'transform 0.8s cubic-bezier(0.4,0,0.2,1)',
@@ -426,7 +420,6 @@ export default function BHStatsWidget({ config, allWidgets }) {
                   <span style={{ fontSize: fs * 2.5, opacity: 0.25 }}>🎰</span>
                 </div>
               )}
-              {/* Ribbon */}
               <div style={{
                 position: 'absolute', top: 0, left: 0, right: 0, zIndex: 2,
                 textAlign: 'center', fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800,
@@ -434,7 +427,6 @@ export default function BHStatsWidget({ config, allWidgets }) {
                 background: `linear-gradient(90deg, ${worstColor}dd, ${worstColor})`,
                 color: '#450a0a',
               }}>↓ WORST</div>
-              {/* Bottom name overlay */}
               {stats.worst && (
                 <div style={{
                   position: 'absolute', bottom: 0, left: 0, right: 0, zIndex: 2,
@@ -450,34 +442,30 @@ export default function BHStatsWidget({ config, allWidgets }) {
               )}
             </div>
 
-            {/* BACK — stats stacked */}
+            {/* BACK — stats rows with icons */}
             <div style={{
               position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
               borderRadius: Math.max(8, 12 * scale), overflow: 'hidden',
               background: cardBg, border: metalBorder,
-              display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-              gap: Math.max(6, 8 * scale), padding: Math.max(8, 10 * scale),
+              display: 'flex', flexDirection: 'column', justifyContent: 'center',
+              gap: Math.max(4, 5 * scale), padding: `${Math.max(6, 8 * scale)}px ${Math.max(6, 8 * scale)}px`,
               boxShadow: `inset 0 0 0 2px ${worstColor}`,
               ...(isMetal && { boxShadow: `${metalBoxShadow}, inset 0 0 0 2px ${worstColor}` }),
             }}>
-              <span style={{
-                fontSize: `${Math.max(7, fs * 0.5)}px`, fontWeight: 800, color: worstColor,
-                letterSpacing: '0.1em', textTransform: 'uppercase',
-              }}>↓ WORST</span>
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Payout</div>
-                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: worstColor, lineHeight: 1.2 }}>
-                  {stats.worst ? `${currency}${fmt(stats.worst.payout)}` : '—'}
+              {[
+                { icon: '💰', val: stats.worst ? `${currency}${fmt(stats.worst.payout)}` : '—', label: 'WORST WIN', color: worstColor },
+                { icon: '⚡', val: stats.worst ? `${stats.worst.multi.toFixed(1)}x` : '—', label: 'WORST MULTI', color: mutedColor },
+                { icon: '🎰', val: stats.worst ? `${currency}${fmt(stats.worst.betSize || 0)}` : '—', label: 'BET SIZE', color: textColor },
+              ].map((r, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: Math.max(4, 6 * scale) }}>
+                  <span style={{ fontSize: `${fs * 0.7}px`, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
+                  <div style={{ minWidth: 0 }}>
+                    <div style={{ fontSize: `${fs * 0.82}px`, fontWeight: 800, color: r.color, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.val}</div>
+                    <div style={{ fontSize: `${fs * 0.45}px`, fontWeight: 700, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.1 }}>{r.label}</div>
+                  </div>
                 </div>
-              </div>
-              <div style={{ width: '60%', height: 1, background: borderColor }} />
-              <div style={{ textAlign: 'center' }}>
-                <div style={{ ...labelStyle, fontSize: `${fs * 0.55}px`, marginBottom: 2 }}>Multi</div>
-                <div style={{ fontSize: `${fs * 0.95}px`, fontWeight: 800, color: mutedColor, lineHeight: 1.2 }}>
-                  {stats.worst ? `${stats.worst.multi.toFixed(1)}x` : '—'}
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
