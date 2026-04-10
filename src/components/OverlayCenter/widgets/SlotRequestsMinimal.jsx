@@ -132,23 +132,33 @@ export default function SlotRequestsMinimal({ config, requests }) {
             key={r.id}
             className={`sr-min-row${newIds.has(r.id) ? ' sr-min-row--enter' : ''}`}
           >
-            {showNumbers && (
-              <span className="sr-min-row-idx">{i + 1}</span>
-            )}
-            <img
-              src={r.slot_image || FALLBACK_IMG}
-              alt=""
-              className="sr-min-row-img"
-              style={{ width: imgH, height: imgH }}
-              onError={e => { e.target.src = FALLBACK_IMG; }}
+            {/* Blurred full-width background image */}
+            <div
+              className="sr-min-row-bg"
+              style={{ backgroundImage: `url(${r.slot_image || FALLBACK_IMG})` }}
             />
-            <div className="sr-min-row-info">
-              <span className="sr-min-row-name" style={{ fontWeight: Number(fontWeight) }}>
-                {r.slot_name}
-              </span>
-              {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
-                <span className="sr-min-row-by">by {r.requested_by}</span>
+            <div className="sr-min-row-overlay" />
+
+            {/* Foreground content */}
+            <div className="sr-min-row-content">
+              {showNumbers && (
+                <span className="sr-min-row-idx">{i + 1}</span>
               )}
+              <img
+                src={r.slot_image || FALLBACK_IMG}
+                alt=""
+                className="sr-min-row-img"
+                style={{ width: imgH, height: imgH }}
+                onError={e => { e.target.src = FALLBACK_IMG; }}
+              />
+              <div className="sr-min-row-info">
+                <span className="sr-min-row-name" style={{ fontWeight: Number(fontWeight) }}>
+                  {r.slot_name}
+                </span>
+                {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
+                  <span className="sr-min-row-by">by {r.requested_by}</span>
+                )}
+              </div>
             </div>
           </div>
         ))}
