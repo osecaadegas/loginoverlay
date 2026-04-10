@@ -170,8 +170,8 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
             </button>
           )}
 
-          {/* ── Shared Colors (V1/V2/V3/V5/V6/V7/V10) ── */}
-          {['v1','v2','v3','v5_horizontal','v6_compact','v7_carousel','v10_spotlight','v11_fever'].includes(currentStyle) && (<>
+          {/* ── Shared Colors (V1/V3/V5/V6) ── */}
+          {['v1','v3','v5_horizontal','v6_compact','v11_fever'].includes(currentStyle) && (<>
             <h4 className="nb-subtitle">Card Colors</h4>
             <div className="nb-color-grid">
               <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
@@ -215,7 +215,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               onChange={v => set('fontSize', v)} />
 
             {/* Dimensions — only for styles that use them */}
-            {['v1','v2','v5_horizontal','v6_compact','v7_carousel','v11_fever'].includes(currentStyle) && (<>
+            {['v1','v5_horizontal','v6_compact','v11_fever'].includes(currentStyle) && (<>
               <h4 className="nb-subtitle">Dimensions</h4>
               <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
                 onChange={v => set('widgetWidth', v)} />
@@ -243,33 +243,6 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 220} min={80} max={400} step={10} unit="px"
                 onChange={v => set('slotImageHeight', v)} />
             </>)}
-          </>)}
-
-          {/* ── V4 Neon Colors ── */}
-          {currentStyle === 'v4_neon' && (<>
-            <h4 className="nb-subtitle">💡 Neon Colors</h4>
-            <div className="nb-color-grid">
-              <ColorPicker label="Accent" value={c.headerAccent || '#e8a020'} onChange={v => set('headerAccent', v)} />
-              <ColorPicker label="Background" value={c.headerColor || '#1a1a1e'} onChange={v => set('headerColor', v)} />
-              <ColorPicker label="Header BG" value={c.currentBonusColor || '#2a2a30'} onChange={v => set('currentBonusColor', v)} />
-              <ColorPicker label="Footer BG" value={c.summaryColor || '#2a2a30'} onChange={v => set('summaryColor', v)} />
-              <ColorPicker label="List BG" value={c.listCardColor || '#1a1a1e'} onChange={v => set('listCardColor', v)} />
-              <ColorPicker label="Row Name" value={c.listCardAccent || '#cccccc'} onChange={v => set('listCardAccent', v)} />
-              <ColorPicker label="Text" value={c.textColor || '#d4d4d8'} onChange={v => set('textColor', v)} />
-              <ColorPicker label="Stat Labels" value={c.mutedTextColor || '#666666'} onChange={v => set('mutedTextColor', v)} />
-              <ColorPicker label="Stat Values" value={c.statValueColor || '#e8a020'} onChange={v => set('statValueColor', v)} />
-              <ColorPicker label="Green (Win)" value={c.superBadgeColor || '#66bb6a'} onChange={v => set('superBadgeColor', v)} />
-              <ColorPicker label="Red (Loss)" value={c.extremeBadgeColor || '#ef5350'} onChange={v => set('extremeBadgeColor', v)} />
-            </div>
-            <h4 className="nb-subtitle">Typography</h4>
-            <label className="nb-field">
-              <span>Font</span>
-              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
-            </label>
-            <SliderField label="Font Size" value={c.fontSize ?? 12} min={8} max={22} step={1} unit="px"
-              onChange={v => set('fontSize', v)} />
           </>)}
 
           {/* ── V8 Card Stack ── */}
@@ -359,13 +332,6 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               <input type="checkbox" checked={c.v9ShowProgress !== false} onChange={e => set('v9ShowProgress', e.target.checked)} />
               Show Progress Bar
             </label>
-          </>)}
-
-          {/* ── V10 Metallic — dimensions (colors covered above) ── */}
-          {currentStyle === 'v10_spotlight' && (<>
-            <h4 className="nb-subtitle">Dimensions</h4>
-            <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
-              onChange={v => set('widgetWidth', v)} />
           </>)}
 
           {/* ── V3 Flip Card Back (only for Flip Card style) ── */}

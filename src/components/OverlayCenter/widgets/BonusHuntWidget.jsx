@@ -1,10 +1,7 @@
 import React, { useMemo, useRef, useState, useEffect, useCallback } from 'react';
-import BonusHuntWidgetV2 from './BonusHuntWidgetV2';
 import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
-import BonusHuntWidgetV4 from './BonusHuntWidgetV4';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
-import BonusHuntWidgetV10 from './BonusHuntWidgetV10';
 import BonusHuntWidgetV11 from './BonusHuntWidgetV11';
 
 function BonusHuntWidget({ config, theme }) {
@@ -36,10 +33,8 @@ function BonusHuntWidget({ config, theme }) {
 
   /* ─── Derived variables (must be before hooks that depend on them) ─── */
   const ds = c.displayStyle || 'v1';
-  const isNeonBH = ds === 'v4_neon';
   const isHorizontalBH = ds === 'v5_horizontal';
   const isCompactBH = ds === 'v6_compact';
-  const isCarousel = ds === 'v7_carousel';
   const bonuses = sortedConfig.bonuses || [];
   const currency = c.currency || '€';
   const startMoney = Number(c.startMoney) || 0;
@@ -108,20 +103,11 @@ function BonusHuntWidget({ config, theme }) {
   if (c.displayStyle === 'v3') {
     return <BonusHuntWidgetV3 config={sortedConfig} theme={theme} />;
   }
-  if (c.displayStyle === 'v2') {
-    return <BonusHuntWidgetV2 config={sortedConfig} theme={theme} />;
-  }
-  if (c.displayStyle === 'v4_neon') {
-    return <BonusHuntWidgetV4 config={sortedConfig} theme={theme} />;
-  }
   if (c.displayStyle === 'v8_card_stack') {
     return <BonusHuntWidgetV8 config={sortedConfig} theme={theme} />;
   }
   if (c.displayStyle === 'v9_hunt_board') {
     return <BonusHuntWidgetV9 config={sortedConfig} theme={theme} />;
-  }
-  if (c.displayStyle === 'v10_spotlight') {
-    return <BonusHuntWidgetV10 config={sortedConfig} theme={theme} />;
   }
   if (c.displayStyle === 'v11_fever') {
     return <BonusHuntWidgetV11 config={sortedConfig} theme={theme} />;
@@ -131,31 +117,31 @@ function BonusHuntWidget({ config, theme }) {
   const huntTitle = c.bonusOpening ? 'BONUS OPENING' : 'BONUS HUNT';
 
   /* ─── Custom style vars ─── */
-  const headerColor = c.headerColor || (isNeonBH ? '#050510' : '#1e3a8a');
-  const headerAccent = c.headerAccent || (isNeonBH ? '#00ffcc' : '#60a5fa');
-  const countCardColor = c.countCardColor || (isNeonBH ? '#080818' : '#1e3a8a');
-  const currentBonusColor = c.currentBonusColor || (isNeonBH ? '#001a10' : '#166534');
-  const currentBonusAccent = c.currentBonusAccent || (isNeonBH ? '#00ffcc' : '#86efac');
-  const listCardColor = c.listCardColor || (isNeonBH ? '#0a0520' : '#581c87');
-  const listCardAccent = c.listCardAccent || (isNeonBH ? '#bf77ff' : '#d8b4fe');
-  const summaryColor = c.summaryColor || (isNeonBH ? '#050510' : '#1e3a8a');
-  const totalPayColor = c.totalPayColor || (isNeonBH ? '#00ffcc' : '#eab308');
+  const headerColor = c.headerColor || '#1e3a8a';
+  const headerAccent = c.headerAccent || '#60a5fa';
+  const countCardColor = c.countCardColor || '#1e3a8a';
+  const currentBonusColor = c.currentBonusColor || '#166534';
+  const currentBonusAccent = c.currentBonusAccent || '#86efac';
+  const listCardColor = c.listCardColor || '#581c87';
+  const listCardAccent = c.listCardAccent || '#d8b4fe';
+  const summaryColor = c.summaryColor || '#1e3a8a';
+  const totalPayColor = c.totalPayColor || '#eab308';
   const totalPayText = c.totalPayText || '#ffffff';
   const superBadgeColor = c.superBadgeColor || '#eab308';
   const extremeBadgeColor = c.extremeBadgeColor || '#ef4444';
   const textColor = c.textColor || '#ffffff';
-  const mutedTextColor = c.mutedTextColor || (isNeonBH ? '#77ddbb' : '#93c5fd');
+  const mutedTextColor = c.mutedTextColor || '#93c5fd';
   const statValueColor = c.statValueColor || '#ffffff';
-  const cardOutlineColor = c.cardOutlineColor || (isNeonBH ? 'rgba(0,255,200,0.15)' : 'transparent');
-  const cardOutlineWidth = c.cardOutlineWidth ?? (isNeonBH ? 1 : 2);
+  const cardOutlineColor = c.cardOutlineColor || 'transparent';
+  const cardOutlineWidth = c.cardOutlineWidth ?? 2;
   const fontFamily = c.fontFamily || "'Inter', sans-serif";
-  const fontSize = c.fontSize ?? (isCompactBH ? 13 : isNeonBH ? 20 : 15);
+  const fontSize = c.fontSize ?? (isCompactBH ? 13 : 15);
   const cardRadius = c.cardRadius ?? (isCompactBH ? 8 : 16);
-  const cardGap = c.cardGap ?? (isCompactBH ? 3 : isNeonBH ? 14 : 12);
+  const cardGap = c.cardGap ?? (isCompactBH ? 3 : 12);
   const widgetWidth = c.widgetWidth ?? 400;
-  const cardPadding = c.cardPadding ?? (isCompactBH ? 4 : isNeonBH ? 16 : 14);
+  const cardPadding = c.cardPadding ?? (isCompactBH ? 4 : 14);
   const slotImageHeight = c.slotImageHeight ?? (isCompactBH ? 120 : 180);
-  const listMaxHeight = c.listMaxHeight ?? (isCompactBH ? 250 : isNeonBH ? 260 : 400);
+  const listMaxHeight = c.listMaxHeight ?? (isCompactBH ? 250 : 400);
   const brightness = c.brightness ?? 100;
   const contrast = c.contrast ?? 100;
   const saturation = c.saturation ?? 100;
@@ -165,8 +151,8 @@ function BonusHuntWidget({ config, theme }) {
     fontFamily,
     fontSize: `${fontSize}px`,
     width: '100%',
-    height: isNeonBH ? 'auto' : '100%',
-    overflow: isNeonBH ? 'visible' : 'hidden',
+    height: '100%',
+    overflow: 'hidden',
     gap: `${cardGap}px`,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
@@ -200,88 +186,9 @@ function BonusHuntWidget({ config, theme }) {
   /* Stop carousel only when actively in opening phase AND there's a bonus to open */
   const isOpening = !!c.bonusOpening && currentIndex >= 0;
 
-  const bhModeClass = isNeonBH ? ' oc-bonushunt--neon'
-    : isHorizontalBH ? ' oc-bonushunt--horizontal'
+  const bhModeClass = isHorizontalBH ? ' oc-bonushunt--horizontal'
     : isCompactBH ? ' oc-bonushunt--compact'
-    : isCarousel ? ' oc-bonushunt--carousel'
     : '';
-
-  /* ─── Carousel layout (v7_carousel) ─── */
-  if (isCarousel) {
-    const profit = stats.totalWin - startMoney;
-    const carouselCardW = 180, carouselGap = 10;
-    const carouselStep = carouselCardW + carouselGap;
-    const extremeCount = bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length;
-    return (
-      <div className="oc-widget-inner oc-bonushunt oc-bonushunt--carousel" style={rootStyle}>
-        <div className="bhtc-wrapper">
-          {/* ── Top stats bar ── */}
-          <div className="bhtc-stats-bar">
-            <div className="bhtc-bar-left">
-              {c.avatarUrl ? (
-                <img src={c.avatarUrl} alt="" className="bhtc-avatar"
-                  onError={e => { e.target.style.display = 'none'; }} />
-              ) : null}
-              <span className="bhtc-bar-title">HUNT {c.huntName || c.huntNumber || bonuses.length}</span>
-              {huntTitle && <span className="bhtc-bar-subtitle">· {huntTitle}</span>}
-            </div>
-            <div className="bhtc-bar-pills">
-              <span className="bhtc-pill">SLOTS {bonuses.length}</span>
-              {stats.superCount > 0 && <span className="bhtc-pill bhtc-pill--super">★ SUPER {stats.superCount}</span>}
-              {extremeCount > 0 && <span className="bhtc-pill bhtc-pill--extreme">★ EXTREME {extremeCount}</span>}
-              <span className="bhtc-pill">TARGET {currency}{startMoney.toFixed(2)}</span>
-              <span className="bhtc-pill" style={{ color: stats.breakEven >= 100 ? '#4ade80' : '#f87171' }}>BEx {stats.breakEven.toFixed(2)}</span>
-              <span className="bhtc-pill bhtc-pill--payout">PAYOUT {currency}{stats.totalWin.toFixed(2)}</span>
-            </div>
-          </div>
-
-          {/* ── Carousel below ── */}
-          <div className="bhtc-carousel-wrap">
-            <div className={`bhtc-carousel-track${isOpening ? ' bhtc-carousel-track--opening' : ''}`}
-              style={isOpening
-                ? { transform: `translateX(calc(50% - ${carouselCardW / 2}px - ${currentIndex * carouselStep}px))` }
-                : { '--bhtc-count': bonuses.length }}>
-              {(isOpening ? bonuses : [...bonuses, ...bonuses]).map((bonus, i) => {
-                const idx = isOpening ? i : i % bonuses.length;
-                const payout = Number(bonus.payout) || 0;
-                const bet = Number(bonus.betSize) || 0;
-                const multi = bet > 0 ? payout / bet : 0;
-                const isExtreme = bonus.isExtremeBonus || bonus.isExtreme;
-                const isSuper = bonus.isSuperBonus;
-                return (
-                  <div key={`car-${bonus.id || idx}-${i >= bonuses.length ? 'c' : 'o'}`}
-                    className={`bhtc-card${idx === currentIndex ? ' bhtc-card--active' : ''}${bonus.opened ? ' bhtc-card--opened' : ''}${isExtreme ? ' bhtc-card--extreme' : ''}${isSuper ? ' bhtc-card--super' : ''}${isOpening && idx !== currentIndex ? ' bhtc-card--dimmed' : ''}`}
-                    style={isOpening && idx === currentIndex ? { '--bhtc-current-bg': currentBonusColor, '--bhtc-current-accent': currentBonusAccent } : undefined}>
-                    <div className="bhtc-card-top-bar">
-                      <span className="bhtc-card-slot-name">{bonus.slotName || bonus.slot?.name}</span>
-                      <span className="bhtc-card-bet">{(bet).toFixed(2)} {currency}</span>
-                      <span className="bhtc-card-idx">#{idx + 1}</span>
-                    </div>
-                    <div className="bhtc-card-img-wrap">
-                      {bonus.slot?.image ? (
-                        <img src={bonus.slot.image} alt={bonus.slotName} className="bhtc-card-img"
-                          onError={e => { e.target.style.display = 'none'; }} />
-                      ) : (
-                        <div className="bhtc-card-img-placeholder" />
-                      )}
-                      {isExtreme && <span className="bhtc-card-type-badge bhtc-card-type-badge--extreme">EXTREME</span>}
-                      {!isExtreme && isSuper && <span className="bhtc-card-type-badge bhtc-card-type-badge--super">SUPER</span>}
-                    </div>
-                    {bonus.opened && (
-                      <div className="bhtc-card-bottom-bar">
-                        <span className="bhtc-card-payout">{payout.toFixed(2)}</span>
-                        <span className="bhtc-card-multi">{multi.toFixed(1)}x</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   /* ─── Horizontal layout (v5_horizontal) ─── */
   if (isHorizontalBH) {
