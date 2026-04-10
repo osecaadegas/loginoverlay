@@ -690,7 +690,7 @@
 }
 
 .bht-stat-box {
-  background: rgba(0,0,0,0.25);
+  background: transparent;
   border-radius: calc(var(--bht-card-radius, 16px) - 4px);
   padding: 5px 8px;
 }
