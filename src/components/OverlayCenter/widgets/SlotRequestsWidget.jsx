@@ -52,7 +52,7 @@ export default function SlotRequestsWidget({ config, userId }) {
   }, [fetchRequests, userId]);
 
   /* ── Twitch IRC listener — always-on when srChatEnabled ── */
-  const chatEnabled = !!c.srChatEnabled;
+  const chatEnabled = c.srChatEnabled !== false;
   const twitchChannel = (c.twitchChannel || '').trim().toLowerCase().replace(/^#/, '');
   const cmdTrigger = (c.commandTrigger || '!sr').trim().toLowerCase();
   const srSeEnabled = !!c.srSeEnabled;

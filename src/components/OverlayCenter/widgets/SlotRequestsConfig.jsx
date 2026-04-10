@@ -147,7 +147,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
   };
 
   const cmdTrigger = c.commandTrigger || '!sr';
-  const chatEnabled = !!c.srChatEnabled;
+  const chatEnabled = c.srChatEnabled !== false;
   const hasChannel = !!(c.twitchChannel || '').trim();
 
   return (
