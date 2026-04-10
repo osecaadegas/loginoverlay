@@ -368,30 +368,43 @@ export default function BHStatsWidget({ config, allWidgets }) {
               )}
             </div>
 
-            {/* BACK — stats rows with icons */}
+            {/* BACK — blurred image + stats */}
             <div style={{
               position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
               borderRadius: Math.max(8, 12 * scale), overflow: 'hidden',
-              background: cardBg, border: metalBorder,
-              display: 'flex', flexDirection: 'column', justifyContent: 'center',
-              gap: Math.max(4, 5 * scale), padding: `${Math.max(6, 8 * scale)}px ${Math.max(6, 8 * scale)}px`,
               boxShadow: `inset 0 0 0 2px ${bestColor}`,
               ...(isMetal && { boxShadow: `${metalBoxShadow}, inset 0 0 0 2px ${bestColor}` }),
             }}>
-              {[
-                { icon: '💰', val: stats.best ? `${currency}${fmt(stats.best.payout)}` : '—', label: 'BEST WIN', color: bestColor },
-                { icon: '⚡', val: stats.best ? `${stats.best.multi.toFixed(1)}x` : '—', label: 'BEST MULTI', color: '#fbbf24' },
-                { icon: '🎰', val: stats.best ? `${currency}${fmt(stats.best.betSize || 0)}` : '—', label: 'BET SIZE', color: textColor },
-              ].map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: Math.max(4, 6 * scale) }}>
-                  <span style={{ fontSize: `${fs * 0.7}px`, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: `${fs * 0.82}px`, fontWeight: 800, color: r.color, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.val}</div>
-                    <div style={{ fontSize: `${fs * 0.45}px`, fontWeight: 700, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.1 }}>{r.label}</div>
+              {/* Blurred bg image */}
+              {stats.best?.image && (
+                <img src={stats.best.image} alt="" style={{
+                  position: 'absolute', inset: 0, width: '100%', height: '100%',
+                  objectFit: 'cover', filter: 'blur(8px) brightness(0.35)', transform: 'scale(1.15)',
+                }} onError={e => { e.target.style.display = 'none'; }} />
+              )}
+              {/* Dark overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
+              {/* Stats content */}
+              <div style={{
+                position: 'relative', zIndex: 1, width: '100%', height: '100%',
+                display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                gap: Math.max(4, 5 * scale), padding: `${Math.max(6, 8 * scale)}px ${Math.max(6, 8 * scale)}px`,
+              }}>
+                {[
+                  { icon: '💰', val: stats.best ? `${currency}${fmt(stats.best.payout)}` : '—', label: 'BEST WIN', color: bestColor },
+                  { icon: '⚡', val: stats.best ? `${stats.best.multi.toFixed(1)}x` : '—', label: 'BEST MULTI', color: '#fbbf24' },
+                  { icon: '🎰', val: stats.best ? `${currency}${fmt(stats.best.betSize || 0)}` : '—', label: 'BET SIZE', color: textColor },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: Math.max(4, 6 * scale) }}>
+                    <span style={{ fontSize: `${fs * 0.7}px`, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: `${fs * 0.82}px`, fontWeight: 800, color: r.color, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>{r.val}</div>
+                      <div style={{ fontSize: `${fs * 0.45}px`, fontWeight: 700, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.1, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{r.label}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -442,30 +455,43 @@ export default function BHStatsWidget({ config, allWidgets }) {
               )}
             </div>
 
-            {/* BACK — stats rows with icons */}
+            {/* BACK — blurred image + stats */}
             <div style={{
               position: 'absolute', inset: 0, backfaceVisibility: 'hidden',
               transform: 'rotateY(180deg)',
               borderRadius: Math.max(8, 12 * scale), overflow: 'hidden',
-              background: cardBg, border: metalBorder,
-              display: 'flex', flexDirection: 'column', justifyContent: 'center',
-              gap: Math.max(4, 5 * scale), padding: `${Math.max(6, 8 * scale)}px ${Math.max(6, 8 * scale)}px`,
               boxShadow: `inset 0 0 0 2px ${worstColor}`,
               ...(isMetal && { boxShadow: `${metalBoxShadow}, inset 0 0 0 2px ${worstColor}` }),
             }}>
-              {[
-                { icon: '💰', val: stats.worst ? `${currency}${fmt(stats.worst.payout)}` : '—', label: 'WORST WIN', color: worstColor },
-                { icon: '⚡', val: stats.worst ? `${stats.worst.multi.toFixed(1)}x` : '—', label: 'WORST MULTI', color: mutedColor },
-                { icon: '🎰', val: stats.worst ? `${currency}${fmt(stats.worst.betSize || 0)}` : '—', label: 'BET SIZE', color: textColor },
-              ].map((r, i) => (
-                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: Math.max(4, 6 * scale) }}>
-                  <span style={{ fontSize: `${fs * 0.7}px`, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontSize: `${fs * 0.82}px`, fontWeight: 800, color: r.color, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{r.val}</div>
-                    <div style={{ fontSize: `${fs * 0.45}px`, fontWeight: 700, color: mutedColor, textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.1 }}>{r.label}</div>
+              {/* Blurred bg image */}
+              {stats.worst?.image && (
+                <img src={stats.worst.image} alt="" style={{
+                  position: 'absolute', inset: 0, width: '100%', height: '100%',
+                  objectFit: 'cover', filter: 'blur(8px) brightness(0.35)', transform: 'scale(1.15)',
+                }} onError={e => { e.target.style.display = 'none'; }} />
+              )}
+              {/* Dark overlay */}
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
+              {/* Stats content */}
+              <div style={{
+                position: 'relative', zIndex: 1, width: '100%', height: '100%',
+                display: 'flex', flexDirection: 'column', justifyContent: 'center',
+                gap: Math.max(4, 5 * scale), padding: `${Math.max(6, 8 * scale)}px ${Math.max(6, 8 * scale)}px`,
+              }}>
+                {[
+                  { icon: '💰', val: stats.worst ? `${currency}${fmt(stats.worst.payout)}` : '—', label: 'WORST WIN', color: worstColor },
+                  { icon: '⚡', val: stats.worst ? `${stats.worst.multi.toFixed(1)}x` : '—', label: 'WORST MULTI', color: mutedColor },
+                  { icon: '🎰', val: stats.worst ? `${currency}${fmt(stats.worst.betSize || 0)}` : '—', label: 'BET SIZE', color: textColor },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: Math.max(4, 6 * scale) }}>
+                    <span style={{ fontSize: `${fs * 0.7}px`, lineHeight: 1, flexShrink: 0 }}>{r.icon}</span>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: `${fs * 0.82}px`, fontWeight: 800, color: r.color, lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', textShadow: '0 1px 4px rgba(0,0,0,0.7)' }}>{r.val}</div>
+                      <div style={{ fontSize: `${fs * 0.45}px`, fontWeight: 700, color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: '0.08em', lineHeight: 1.1, textShadow: '0 1px 2px rgba(0,0,0,0.5)' }}>{r.label}</div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
           </div>
         </div>
