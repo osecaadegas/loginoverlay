@@ -47,7 +47,7 @@ export default async function handler(req, res) {
 /** Send a message to Twitch chat via the StreamElements bot */
 async function seBotSay(seChannelId, seJwtToken, message) {
   try {
-    await fetch(`https://api.streamelements.com/kappa/v2/bot/${seChannelId}/say`, {
+    const resp = await fetch(`https://api.streamelements.com/kappa/v2/bot/${seChannelId}/say`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${seJwtToken}`,
@@ -55,6 +55,10 @@ async function seBotSay(seChannelId, seJwtToken, message) {
       },
       body: JSON.stringify({ message }),
     });
+    if (!resp.ok) {
+      const body = await resp.text().catch(() => '');
+      console.error('[seBotSay] SE API returned', resp.status, body);
+    }
   } catch (err) {
     console.error('[seBotSay] Failed to send chat message:', err.message);
   }
@@ -163,18 +167,10 @@ async function handleSlotRequest(req, res) {
       seJwtToken = seConn.se_jwt_token;
     }
 
-    /** Helper: return API response text (SE custom command displays it in chat).
-     *  Do NOT also call seBotSay — that causes duplicate/spam messages because
-     *  SE already posts the HTTP response text as the command reply. */
-    const reply = (msg) => {
+    /** Send a single chat message via SE bot, then return HTTP response. */
+    const chatAndReply = async (msg) => {
+      if (seChannelId && seJwtToken) await seBotSay(seChannelId, seJwtToken, msg);
       return res.status(200).send(msg);
-    };
-
-    /** Send a single chat message via SE bot.
-     *  When SE is enabled, only the SE custom command calls this API (widget skips).
-     *  So there is exactly 1 call — safe to seBotSay without duplication. */
-    const chatOnce = (msg) => {
-      if (seChannelId && seJwtToken) seBotSay(seChannelId, seJwtToken, msg);
     };
 
     console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
@@ -229,8 +225,7 @@ async function handleSlotRequest(req, res) {
           await supabase.from('slot_requests').delete().in('id', loserIds);
         }
         const msg = fillTemplate(msgTemplates.duplicate, { slot: resolvedName, user: viewer, by: row.requested_by || '?' });
-        chatOnce(msg);
-        return reply(msg);
+        return chatAndReply(msg);
       }
     }
 
@@ -279,8 +274,7 @@ async function handleSlotRequest(req, res) {
         // No SE creds — mark denied (keeps row for dedup) and warn
         if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = '⚠️ StreamElements not configured. Ask the streamer to connect SE.';
-        chatOnce(msg);
-        return reply(msg);
+        return chatAndReply(msg);
       }
 
       const cleanViewer = viewer.replace(/^@/, '').trim().toLowerCase();
@@ -294,8 +288,7 @@ async function handleSlotRequest(req, res) {
       if (!pointsRes.ok) {
         if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = `❌ Could not check points for ${viewer}. Are you a follower?`;
-        chatOnce(msg);
-        return reply(msg);
+        return chatAndReply(msg);
       }
 
       const pointsData = await pointsRes.json();
@@ -305,8 +298,7 @@ async function handleSlotRequest(req, res) {
         // Not enough points — mark denied (NOT delete, so other concurrent calls see it)
         if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = fillTemplate(msgTemplates.notEnough, { user: viewer, cost: seCost, points: viewerPoints, slot: resolvedName });
-        chatOnce(msg);
-        return reply(msg);
+        return chatAndReply(msg);
       }
 
       // 2) Deduct points (negative amount)
@@ -321,20 +313,17 @@ async function handleSlotRequest(req, res) {
       if (!deductRes.ok) {
         if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = `❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`;
-        chatOnce(msg);
-        return reply(msg);
+        return chatAndReply(msg);
       }
 
       // Success with cost
       const msg = fillTemplate(msgTemplates.acceptedCost, { user: viewer, cost: seCost, slot: resolvedName });
-      chatOnce(msg);
-      return reply(msg);
+      return chatAndReply(msg);
     }
 
     // Success (free)
     const msg = fillTemplate(msgTemplates.accepted, { user: viewer, slot: resolvedName });
-    chatOnce(msg);
-    return reply(msg);
+    return chatAndReply(msg);
   } catch (err) {
     console.error('Slot request error:', err);
     return res.status(200).send('Something went wrong. Try again later.');
