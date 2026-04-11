@@ -1864,6 +1864,9 @@
   display: flex;
   align-items: center;
   gap: 6px;
+  width: 140px;
+  flex: 0 0 140px;
+  justify-content: center;
 }
 .oc-bonushunt--v12 .bht-flipback-stats {
   display: flex;
