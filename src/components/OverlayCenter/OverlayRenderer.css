@@ -1866,8 +1866,9 @@
   align-items: center;
   justify-content: center;
   gap: 1px;
-  min-width: 44px;
   flex: 1 1 0;
+  min-width: 0;
+  overflow: hidden;
 }
 .oc-bonushunt--v12 .bht-flipback-stat-label {
   font-size: 0.48em;
