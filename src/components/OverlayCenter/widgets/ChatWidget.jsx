@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
@@ -137,7 +138,9 @@ function ChatWidget({ config, theme }) {
   }, [maxMessages]);
 
   /* Connect to enabled platforms */
-  useTwitchChat(c.twitchEnabled ? c.twitchChannel : '', handleMessage, { parseRaids: true });
+  const autoChannel = useTwitchChannel();
+  const resolvedTwitchChannel = c.twitchChannel || autoChannel || '';
+  useTwitchChat(c.twitchEnabled ? resolvedTwitchChannel : '', handleMessage, { parseRaids: true });
   useYoutubeChat(
     c.youtubeEnabled ? c.youtubeVideoId : '',
     c.youtubeEnabled ? c.youtubeApiKey : '',
@@ -221,7 +224,7 @@ function ChatWidget({ config, theme }) {
             <span className="ov-cards-header-label">CHAT</span>
           </div>
           <span className="ov-cards-header-channel">
-            {c.twitchChannel ? c.twitchChannel.toUpperCase() : 'CHANNEL'}
+            {(c.twitchChannel || autoChannel) ? (c.twitchChannel || autoChannel).toUpperCase() : 'CHANNEL'}
           </span>
         </div>
       )}

@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useCallback, useState, useMemo } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { supabase } from '../../../config/supabaseClient';
 
 /* ─── Confetti burst generator ─── */
@@ -276,9 +277,11 @@ function GiveawayWidget({ config, widgetId }) {
 
   // Connect to chat platforms when keyword is set and no winner yet
   // Always listen if channel is configured — no need for isActive or enabled flags
-  const listenTwitch = !isDone && !!keyword && !!c.twitchChannel;
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const listenTwitch = !isDone && !!keyword && !!resolvedChannel;
   const listenKick   = !isDone && !!keyword && !!c.kickChannelId;
-  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleMessage);
+  useTwitchChat(listenTwitch ? resolvedChannel : '', handleMessage);
   useKickChat(listenKick ? c.kickChannelId : '', handleMessage);
 
   const kf = `

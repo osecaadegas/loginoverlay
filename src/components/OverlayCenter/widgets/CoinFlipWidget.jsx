@@ -8,6 +8,7 @@
  */
 import React, { useMemo, useRef, useEffect, useCallback, useState } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import useKickChat from '../../../hooks/useKickChat';
 import { supabase } from '../../../config/supabaseClient';
 
@@ -142,9 +143,11 @@ function CoinFlipWidget({ config, widgetId, userId }) {
   }, [chatBettingEnabled, minBet, maxBet, doInstantFlip]);
 
   /* Always listen for chat when betting is enabled */
-  const listenTwitch = chatBettingEnabled && !!c.twitchEnabled && !!c.twitchChannel;
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const listenTwitch = chatBettingEnabled && !!c.twitchEnabled && !!resolvedChannel;
   const listenKick   = chatBettingEnabled && !!c.kickEnabled   && !!c.kickChannelId;
-  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
+  useTwitchChat(listenTwitch ? resolvedChannel : '', handleChatMessage);
   useKickChat(listenKick ? c.kickChannelId : '', handleChatMessage);
 
   /* ═══ 3D COIN GEOMETRY ═══ */

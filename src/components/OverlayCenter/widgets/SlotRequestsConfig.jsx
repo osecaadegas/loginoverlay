@@ -13,6 +13,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { makePerStyleSetters } from './shared/perStyleConfig';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { SLOT_REQUESTS_STYLE_KEYS } from './styleKeysRegistry';
 
 const FONT_OPTIONS = [
@@ -148,7 +149,8 @@ export default function SlotRequestsConfig({ config, onChange }) {
 
   const cmdTrigger = c.commandTrigger || '!sr';
   const chatEnabled = c.srChatEnabled !== false;
-  const hasChannel = !!(c.twitchChannel || '').trim();
+  const autoChannel = useTwitchChannel();
+  const hasChannel = !!(c.twitchChannel || autoChannel).trim();
 
   return (
     <div style={S.section}>
@@ -172,23 +174,13 @@ export default function SlotRequestsConfig({ config, onChange }) {
         {chatEnabled ? (
           <>
             <p style={S.hint}>The widget listens for <strong style={{ color: '#e2e8f0' }}>{cmdTrigger}</strong> in your Twitch chat — even inside OBS.</p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              <input
-                type="text"
-                value={c.twitchChannel || ''}
-                onChange={e => set('twitchChannel', e.target.value)}
-                placeholder="your_channel_name"
-                style={{ ...S.input, flex: 1 }}
-              />
-            </div>
+            <p style={{ fontSize: '0.7rem', color: '#a78bfa', margin: '4px 0 0', lineHeight: 1.3 }}>
+              📺 Channel: <strong style={{ color: '#e2e8f0' }}>{c.twitchChannel || autoChannel || '—'}</strong>
+              <span style={{ color: '#64748b', marginLeft: 6 }}>(auto-detected from login)</span>
+            </p>
             {hasChannel && (
               <p style={{ fontSize: '0.65rem', color: '#22c55e', margin: '4px 0 0', lineHeight: 1.3 }}>
                 ✓ Listening — viewers type: <strong style={{ color: '#e2e8f0' }}>{cmdTrigger} Gates of Olympus</strong>
-              </p>
-            )}
-            {!hasChannel && (
-              <p style={{ fontSize: '0.65rem', color: '#f59e0b', margin: '4px 0 0', lineHeight: 1.3 }}>
-                ⚠️ Enter your Twitch channel name above
               </p>
             )}
           </>

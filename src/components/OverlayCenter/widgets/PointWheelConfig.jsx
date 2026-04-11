@@ -7,6 +7,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStreamElements } from '../../../context/StreamElementsContext';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import TabBar from './shared/TabBar';
 
 /* ── Default outer wheel segments (12 segments) ── */
@@ -122,17 +123,19 @@ export default function PointWheelConfig({ config, onChange }) {
   }, [chatBettingEnabled, gameStatus]);
 
   /* ── Connect chat platforms when entries are open ── */
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
   const chatActive = chatBettingEnabled && status === 'open';
-  useTwitchChat(chatActive && c.twitchEnabled ? c.twitchChannel : '', handleChatMessage);
+  useTwitchChat(chatActive && c.twitchEnabled ? resolvedChannel : '', handleChatMessage);
   useKickChat(chatActive && c.kickEnabled ? c.kickChannelId : '', handleChatMessage);
 
   const [chatStatus2, setChatStatus2] = useState({ twitch: false, kick: false });
   useEffect(() => {
     setChatStatus2({
-      twitch: chatActive && !!c.twitchEnabled && !!c.twitchChannel,
+      twitch: chatActive && !!c.twitchEnabled && !!resolvedChannel,
       kick: chatActive && !!c.kickEnabled && !!c.kickChannelId,
     });
-  }, [chatActive, c.twitchEnabled, c.twitchChannel, c.kickEnabled, c.kickChannelId]);
+  }, [chatActive, c.twitchEnabled, resolvedChannel, c.kickEnabled, c.kickChannelId]);
 
   /* ── Determine spin result with 70% no-payout chance ── */
   const computeSpinResult = () => {
@@ -591,9 +594,9 @@ export default function PointWheelConfig({ config, onChange }) {
               borderRadius: 8, padding: '8px 10px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.twitchChannel ? '#a855f7' : '#333' }} />
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#a855f7' : '#333' }} />
                 <span style={{ fontWeight: 600 }}>Twitch</span>
-                {c.twitchChannel && <span style={{ fontSize: 10, color: '#a855f7', marginLeft: 4 }}>{c.twitchChannel}</span>}
+                {resolvedChannel && <span style={{ fontSize: 10, color: '#a855f7', marginLeft: 4 }}>{resolvedChannel}</span>}
                 <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
                   <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} style={{ accentColor: '#a855f7' }} />
                   On
@@ -625,7 +628,7 @@ export default function PointWheelConfig({ config, onChange }) {
             </p>
           </div>
 
-          {!c.twitchChannel && !c.kickChannelId && chatBettingEnabled && (
+          {!resolvedChannel && !c.kickChannelId && chatBettingEnabled && (
             <p style={{ fontSize: 11, color: '#f59e0b', margin: '8px 0 0' }}>
               ⚠️ No platforms configured — set your Twitch/Kick channels in <b style={{ color: '#e2e8f0' }}>Profile</b> and click <b style={{ color: '#e2e8f0' }}>Sync All</b>.
             </p>

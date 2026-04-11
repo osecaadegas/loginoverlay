@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { GIVEAWAY_STYLE_KEYS } from './styleKeysRegistry';
@@ -86,16 +87,18 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
   }, [keyword]);
 
   // Connect to platforms when giveaway is active
-  useTwitchChat(isActive && c.twitchEnabled ? c.twitchChannel : '', handleMessage);
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  useTwitchChat(isActive && c.twitchEnabled ? resolvedChannel : '', handleMessage);
   useKickChat(isActive && c.kickEnabled ? c.kickChannelId : '', handleMessage);
 
   // Track connection status
   useEffect(() => {
     setChatStatus({
-      twitch: isActive && !!c.twitchEnabled && !!c.twitchChannel,
+      twitch: isActive && !!c.twitchEnabled && !!resolvedChannel,
       kick: isActive && !!c.kickEnabled && !!c.kickChannelId,
     });
-  }, [isActive, c.twitchEnabled, c.twitchChannel, c.kickEnabled, c.kickChannelId]);
+  }, [isActive, c.twitchEnabled, resolvedChannel, c.kickEnabled, c.kickChannelId]);
 
   // Draw a random winner
   const drawWinner = () => {
@@ -194,10 +197,10 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
             borderRadius: 8, padding: 10, marginBottom: 8,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.twitchChannel ? '#a855f7' : '#333' }} />
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#a855f7' : '#333' }} />
               <span style={{ fontWeight: 600, fontSize: 13 }}>Twitch</span>
-              {c.twitchChannel ? (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{c.twitchChannel}</span>
+              {resolvedChannel ? (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{resolvedChannel}</span>
               ) : (
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
               )}
@@ -222,7 +225,7 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
             </div>
           </div>
 
-          {!c.twitchChannel && !c.kickChannelId && (
+          {!resolvedChannel && !c.kickChannelId && (
             <p className="oc-config-hint" style={{ fontSize: 11, color: '#f59e0b' }}>
               ⚠️ No platforms configured — go to Profile and add your channels, then Sync.
             </p>

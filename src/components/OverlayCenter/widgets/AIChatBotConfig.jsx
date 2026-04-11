@@ -33,16 +33,6 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
       .catch(() => setAvatarList([]));
   }, []);
 
-  // Try to auto-fill twitch channel from other widgets
-  useEffect(() => {
-    if (!c.twitchChannel && allWidgets) {
-      for (const w of allWidgets) {
-        const ch = w.config?.twitchChannel;
-        if (ch) { set('twitchChannel', ch); break; }
-      }
-    }
-  }, []);
-
   const sectionStyle = {
     marginBottom: 16, padding: '12px 14px', borderRadius: 8,
     background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)',
@@ -363,13 +353,7 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
       <div style={sectionStyle}>
         <div style={headingStyle}>💬 Twitch Chat</div>
 
-        <label style={labelStyle}>Twitch Channel</label>
-        <input
-          value={c.twitchChannel || ''}
-          onChange={e => set('twitchChannel', e.target.value)}
-          placeholder="your_channel"
-          style={{ ...inputStyle, marginBottom: 10 }}
-        />
+        <p style={{ fontSize: 11, color: '#94a3b8', marginBottom: 10 }}>Twitch channel is auto-detected from your login.</p>
 
         <label style={labelStyle}>Trigger Command</label>
         <input

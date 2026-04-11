@@ -8,6 +8,7 @@
  */
 import React, { useEffect, useRef, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { supabase } from '../../../config/supabaseClient';
 
 function SaltyWordsWidget({ config, widgetId }) {
@@ -89,8 +90,10 @@ function SaltyWordsWidget({ config, widgetId }) {
     pendingRef.current[user] = idx;
   }, [chatBettingEnabled, status]);
 
-  const listenTwitch = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!c.twitchChannel;
-  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const listenTwitch = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!resolvedChannel;
+  useTwitchChat(listenTwitch ? resolvedChannel : '', handleChatMessage);
 
   return (
     <div className="cg-salty" style={{

@@ -7,6 +7,7 @@
  */
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 
 const FALLBACK_SR_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -95,20 +96,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const srChatEnabled = showSR && c.srChatEnabled !== false;
   const cmdTrigger = (c.commandTrigger || '!sr').trim().toLowerCase();
 
-  // Auto-resolve Twitch channel from auth metadata
-  const [twitchChannel, setTwitchChannel] = useState('');
-  useEffect(() => {
-    (async () => {
-      try {
-        const { data } = await supabase.auth.getUser();
-        const meta = data?.user?.user_metadata || {};
-        const ch = (meta.preferred_username || meta.user_name || meta.twitch_username || '').trim().toLowerCase();
-        if (ch) { setTwitchChannel(ch); return; }
-      } catch { /* ignore */ }
-      const ls = (localStorage.getItem('twitchChannel') || '').trim().toLowerCase();
-      if (ls) setTwitchChannel(ls);
-    })();
-  }, []);
+  // Auto-resolve Twitch channel from auth
+  const twitchChannel = useTwitchChannel();
 
   useEffect(() => {
     if (!srChatEnabled || !twitchChannel || !userId) {

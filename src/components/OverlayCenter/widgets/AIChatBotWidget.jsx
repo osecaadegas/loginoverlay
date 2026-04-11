@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, lazy, Suspense, Component } from 'react';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 
 const AIChatBot3DAvatar = lazy(() => import('./AIChatBot3DAvatar'));
 
@@ -187,7 +188,8 @@ function AIChatBotWidget({ config, allWidgets, widgetId }) {
   const apiKey = c.geminiApiKey || '';
   const model = aiProvider === 'groq' ? (c.groqModel || 'llama-3.3-70b-versatile') : (c.geminiModel || 'gemini-2.0-flash');
   const systemPrompt = c.systemPrompt || 'You are a fun and friendly stream chatbot. Keep answers short (1-2 sentences max).';
-  const twitchChannel = c.twitchChannel || '';
+  const autoChannel = useTwitchChannel();
+  const twitchChannel = c.twitchChannel || autoChannel || '';
   const triggerWord = c.triggerWord || '!ai';
   const ttsEnabled = c.ttsEnabled !== false;
   const ttsVoice = c.ttsVoice || '';

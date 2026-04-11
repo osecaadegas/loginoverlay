@@ -7,6 +7,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useStreamElements } from '../../../context/StreamElementsContext';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { COIN_FLIP_STYLE_KEYS } from './styleKeysRegistry';
@@ -63,9 +64,11 @@ export default function CoinFlipConfig({ config, onChange }) {
   /* ── Chat handler for config preview (noop – widget handles everything) ── */
   const handleChatMessage = useCallback(() => {}, []);
 
-  const chatActive = chatBettingEnabled && !!c.twitchEnabled && !!c.twitchChannel;
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const chatActive = chatBettingEnabled && !!c.twitchEnabled && !!resolvedChannel;
   const kickActive = chatBettingEnabled && !!c.kickEnabled && !!c.kickChannelId;
-  useTwitchChat(chatActive ? c.twitchChannel : '', handleChatMessage);
+  useTwitchChat(chatActive ? resolvedChannel : '', handleChatMessage);
   useKickChat(kickActive ? c.kickChannelId : '', handleChatMessage);
 
   const [chatStatus2, setChatStatus2] = useState({ twitch: false, kick: false });
@@ -235,9 +238,9 @@ export default function CoinFlipConfig({ config, onChange }) {
               borderRadius: 8, padding: '8px 10px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: c.twitchChannel ? '#a855f7' : '#333' }} />
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#a855f7' : '#333' }} />
                 <span style={{ fontWeight: 600 }}>Twitch</span>
-                {c.twitchChannel && <span style={{ fontSize: 10, color: '#a855f7', marginLeft: 4 }}>{c.twitchChannel}</span>}
+                {resolvedChannel && <span style={{ fontSize: 10, color: '#a855f7', marginLeft: 4 }}>{resolvedChannel}</span>}
                 <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
                   <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} style={{ accentColor: '#a855f7' }} />
                   On
@@ -268,7 +271,7 @@ export default function CoinFlipConfig({ config, onChange }) {
             </p>
           </div>
 
-          {!c.twitchChannel && !c.kickChannelId && chatBettingEnabled && (
+          {!resolvedChannel && !c.kickChannelId && chatBettingEnabled && (
             <p style={{ fontSize: 11, color: '#f59e0b', margin: '8px 0 0' }}>
               ⚠️ No platforms configured — set your Twitch/Kick channels in <b style={{ color: '#e2e8f0' }}>Profile</b> and click <b style={{ color: '#e2e8f0' }}>Sync All</b>.
             </p>

@@ -7,6 +7,7 @@
 import React, { useMemo, useRef, useEffect, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
 import useKickChat from '../../../hooks/useKickChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import { supabase } from '../../../config/supabaseClient';
 
 /* ── Default outer wheel segments (12) ── */
@@ -108,9 +109,11 @@ function PointWheelWidget({ config, widgetId }) {
     pendingJoinsRef.current[user] = { time: Date.now() };
   }, [chatBettingEnabled, status]);
 
-  const listenTwitch = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!c.twitchChannel;
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const listenTwitch = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!resolvedChannel;
   const listenKick   = chatBettingEnabled && status === 'open' && !!c.kickEnabled   && !!c.kickChannelId;
-  useTwitchChat(listenTwitch ? c.twitchChannel : '', handleChatMessage);
+  useTwitchChat(listenTwitch ? resolvedChannel : '', handleChatMessage);
   useKickChat(listenKick ? c.kickChannelId : '', handleChatMessage);
 
   /* ── Build conic gradients for wheel faces ── */

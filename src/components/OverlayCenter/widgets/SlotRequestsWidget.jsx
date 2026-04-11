@@ -9,6 +9,7 @@
  */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import SlotRequestsMinimal from './SlotRequestsMinimal';
 import SlotRequestsCardStack from './SlotRequestsCardStack';
 import SlotRequestsCompactOverlay from './SlotRequestsCompactOverlay';
@@ -54,7 +55,8 @@ export default function SlotRequestsWidget({ config, userId }) {
 
   /* ── Twitch IRC listener — always-on when srChatEnabled ── */
   const chatEnabled = c.srChatEnabled !== false;
-  const twitchChannel = (c.twitchChannel || '').trim().toLowerCase().replace(/^#/, '');
+  const autoChannel = useTwitchChannel();
+  const twitchChannel = (c.twitchChannel || autoChannel || '').trim().toLowerCase().replace(/^#/, '');
   const cmdTrigger = (c.commandTrigger || '!sr').trim().toLowerCase();
 
   useEffect(() => {

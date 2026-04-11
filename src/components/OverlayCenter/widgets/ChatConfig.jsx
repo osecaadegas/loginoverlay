@@ -3,6 +3,7 @@ import ColorPicker from './shared/ColorPicker';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { CHAT_STYLE_KEYS } from './styleKeysRegistry';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -23,6 +24,7 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
   const currentStyle = c.chatStyle || 'classic';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, CHAT_STYLE_KEYS);
   const [activeTab, setActiveTab] = useState('platforms');
+  const autoChannel = useTwitchChannel();
 
   // ─── Navbar sync ───
   const navbarConfig = (allWidgets || []).find(w => w.widget_type === 'navbar')?.config || null;
@@ -104,10 +106,10 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
           {/* Twitch */}
           <div className="ov-chat-cfg-platform">
             <label className="ov-chat-cfg-platform-header">
-              <span className="ov-chat-cfg-platform-dot" style={{ background: c.twitchChannel ? '#a855f7' : '#333' }} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: (c.twitchChannel || autoChannel) ? '#a855f7' : '#333' }} />
               <span>Twitch</span>
-              {c.twitchChannel ? (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{c.twitchChannel}</span>
+              {(c.twitchChannel || autoChannel) ? (
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{c.twitchChannel || autoChannel}</span>
               ) : (
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
               )}
@@ -140,7 +142,7 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
             </label>
           </div>
 
-          {!c.twitchChannel && !c.kickChannelId && !c.youtubeVideoId && (
+          {!(c.twitchChannel || autoChannel) && !c.kickChannelId && !c.youtubeVideoId && (
             <p className="oc-config-hint" style={{ fontSize: 11, color: '#f59e0b', marginTop: 4 }}>
               ⚠️ No platforms configured — go to Profile and add your channels, then Sync.
             </p>

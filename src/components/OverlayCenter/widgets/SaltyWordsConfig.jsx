@@ -5,6 +5,7 @@
  */
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import useTwitchChat from '../../../hooks/useTwitchChat';
+import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { SALTY_WORDS_STYLE_KEYS } from './styleKeysRegistry';
@@ -68,8 +69,10 @@ export default function SaltyWordsConfig({ config, onChange }) {
     pendingRef.current[user] = idx;
   }, [chatBettingEnabled, status]);
 
-  const chatActive = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!c.twitchChannel;
-  useTwitchChat(chatActive ? c.twitchChannel : '', handleChatMessage);
+  const autoChannel = useTwitchChannel();
+  const resolvedChannel = c.twitchChannel || autoChannel || '';
+  const chatActive = chatBettingEnabled && status === 'open' && !!c.twitchEnabled && !!resolvedChannel;
+  useTwitchChat(chatActive ? resolvedChannel : '', handleChatMessage);
 
   /* ── Word management ── */
   const addWord = () => {
@@ -178,8 +181,8 @@ export default function SaltyWordsConfig({ config, onChange }) {
             {status === 'open' && (
               <>
                 <p className="cg-config__hint">
-                  {chatBettingEnabled && c.twitchEnabled && c.twitchChannel
-                    ? `💬 Listening to #${c.twitchChannel} — viewers type a word to vote`
+                  {chatBettingEnabled && c.twitchEnabled && resolvedChannel
+                    ? `💬 Listening to #${resolvedChannel} — viewers type a word to vote`
                     : 'Click a word to select the winner:'}
                 </p>
                 <div className="cg-config__word-select">
@@ -252,17 +255,13 @@ export default function SaltyWordsConfig({ config, onChange }) {
                 <span>Twitch Chat</span>
               </label>
               {c.twitchEnabled && (
-                <label className="cg-config__field">
-                  <span>Twitch Channel</span>
-                  <input value={c.twitchChannel || ''} onChange={e => set('twitchChannel', e.target.value.toLowerCase().trim())}
-                    placeholder="your_channel" />
-                </label>
+                <p style={{ fontSize: 11, color: '#94a3b8', marginTop: 4 }}>Channel auto-detected from your login.</p>
               )}
 
               {chatActive && (
                 <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: '#4ade80', marginTop: 4 }}>
                   <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#4ade80', display: 'inline-block' }} />
-                  Connected to #{c.twitchChannel}
+                  Connected
                 </div>
               )}
             </>

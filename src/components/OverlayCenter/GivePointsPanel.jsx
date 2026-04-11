@@ -8,6 +8,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useStreamElements } from '../../context/StreamElementsContext';
 import useTwitchChat from '../../hooks/useTwitchChat';
+import useTwitchChannel from '../../hooks/useTwitchChannel';
 
 export default function GivePointsPanel({ allWidgets }) {
   /* ── StreamElements ── */
@@ -16,15 +17,8 @@ export default function GivePointsPanel({ allWidgets }) {
   const seAccount = seCtx?.seAccount;
   const seConnected = !!seAccount?.se_channel_id && !!seAccount?.se_jwt_token;
 
-  /* ── Twitch channel from any widget that has it configured ── */
-  const twitchChannel = (() => {
-    if (!allWidgets) return '';
-    for (const w of allWidgets) {
-      const ch = w.config?.twitchChannel;
-      if (ch) return ch;
-    }
-    return '';
-  })();
+  /* ── Twitch channel auto-detected from login ── */
+  const twitchChannel = useTwitchChannel();
 
   /* ── Track unique chatters (from Twitch IRC) ── */
   const chattersRef = useRef(new Map()); // username -> { displayName, lastSeen }
