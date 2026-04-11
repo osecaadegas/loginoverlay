@@ -341,7 +341,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: showSR ? '1 1 50%' : undefined, minHeight: 0, overflow: 'hidden' }}>
+        <div className="bht-card bht-list-card" style={{ flex: showSR ? '1 1 0' : undefined, minHeight: 0, maxHeight: showSR ? '50%' : undefined, overflow: 'hidden' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
@@ -488,7 +488,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Slot Requests Section ═══ */}
       {showSR && (
-        <div className="bht-card bht-v12-sr" style={{ flex: '1 1 50%', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="bht-card bht-v12-sr" style={{ flex: '1 1 0', minHeight: 0, maxHeight: '50%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div className="bht-v12-sr-header">
             <span className="bht-v12-sr-icon">🎰</span>
             <span className="bht-v12-sr-title">Slot Requests</span>
