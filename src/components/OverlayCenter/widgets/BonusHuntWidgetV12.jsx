@@ -309,45 +309,53 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             </div>
           </div>
           <div className="bht-fullflip-face bht-fullflip-back">
-            <div className="bht-fullflip-slots">
+            <div className="bht-flipback-layout">
+              {/* Left stats edge */}
+              <div className="bht-flipback-stats">
+                <div className="bht-flipback-stat-label">START</div>
+                <div className="bht-flipback-stat-val">{currency}{startMoney.toFixed(0)}</div>
+                <div className="bht-flipback-stat-label">SUPERS</div>
+                <div className="bht-flipback-stat-val">{stats.superCount}</div>
+                <div className="bht-flipback-stat-label">OPENED</div>
+                <div className="bht-flipback-stat-val">{stats.openedCount}/{bonuses.length}</div>
+              </div>
+              {/* Best slot — centered */}
               {stats.bestSlot ? (
-                <div className="bht-fullflip-slot bht-fullflip-slot--best">
-                  <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--best">↑ BEST</div>
+                <div className="bht-flipback-slot bht-flipback-slot--best">
                   {stats.bestSlot.slot?.image ? (
-                    <img src={stats.bestSlot.slot.image} alt="" className="bht-fullflip-slot-img"
+                    <img src={stats.bestSlot.slot.image} alt="" className="bht-flipback-slot-img"
                       onError={e => { e.target.style.display = 'none'; }} />
-                  ) : <div className="bht-fullflip-slot-img-placeholder">🎰</div>}
-                  <div className="bht-fullflip-slot-overlay">
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">WIN</span>
-                      <span className="bht-fullflip-slot-payout">{currency}{stats.bestSlot._payout.toFixed(0)}</span>
-                    </div>
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">MULTI</span>
-                      <span className="bht-fullflip-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span>
-                    </div>
+                  ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
+                  <div className="bht-flipback-slot-info">
+                    <span className="bht-flipback-slot-name">{stats.bestSlot.slot?.name || 'Best'}</span>
+                    <span className="bht-flipback-slot-val">{currency}{stats.bestSlot._payout.toFixed(0)}</span>
+                    <span className="bht-flipback-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span>
                   </div>
                 </div>
-              ) : <div className="bht-fullflip-slot bht-fullflip-slot--empty"><span className="bht-fullflip-slot-payout">—</span></div>}
+              ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
+              {/* Worst slot — centered */}
               {stats.worstSlot ? (
-                <div className="bht-fullflip-slot bht-fullflip-slot--worst">
-                  <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--worst">↓ WORST</div>
+                <div className="bht-flipback-slot bht-flipback-slot--worst">
                   {stats.worstSlot.slot?.image ? (
-                    <img src={stats.worstSlot.slot.image} alt="" className="bht-fullflip-slot-img"
+                    <img src={stats.worstSlot.slot.image} alt="" className="bht-flipback-slot-img"
                       onError={e => { e.target.style.display = 'none'; }} />
-                  ) : <div className="bht-fullflip-slot-img-placeholder">🎰</div>}
-                  <div className="bht-fullflip-slot-overlay">
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">WIN</span>
-                      <span className="bht-fullflip-slot-payout">{currency}{stats.worstSlot._payout.toFixed(0)}</span>
-                    </div>
-                    <div className="bht-fullflip-slot-stat">
-                      <span className="bht-fullflip-slot-label">MULTI</span>
-                      <span className="bht-fullflip-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span>
-                    </div>
+                  ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
+                  <div className="bht-flipback-slot-info">
+                    <span className="bht-flipback-slot-name">{stats.worstSlot.slot?.name || 'Worst'}</span>
+                    <span className="bht-flipback-slot-val">{currency}{stats.worstSlot._payout.toFixed(0)}</span>
+                    <span className="bht-flipback-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span>
                   </div>
                 </div>
-              ) : <div className="bht-fullflip-slot bht-fullflip-slot--empty"><span className="bht-fullflip-slot-payout">—</span></div>}
+              ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
+              {/* Right stats edge */}
+              <div className="bht-flipback-stats">
+                <div className="bht-flipback-stat-label">B.E.</div>
+                <div className="bht-flipback-stat-val" style={{ color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }}>{stats.liveBE.toFixed(0)}x</div>
+                <div className="bht-flipback-stat-label">AVG</div>
+                <div className="bht-flipback-stat-val" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(0)}x</div>
+                <div className="bht-flipback-stat-label">WIN</div>
+                <div className="bht-flipback-stat-val">{currency}{stats.totalWin.toFixed(0)}</div>
+              </div>
             </div>
           </div>
         </div>
