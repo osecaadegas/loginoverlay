@@ -10,27 +10,52 @@ let cachedGeo = null;
 
 async function getGeo() {
   if (cachedGeo) return cachedGeo;
+  const empty = { ip: null, country: null, countryCode: null, region: null, city: null };
+
+  // Try ipwho.is first (free, HTTPS, no key, generous limits)
+  try {
+    const res = await fetch('https://ipwho.is/');
+    if (res.ok) {
+      const d = await res.json();
+      if (d.success !== false) {
+        cachedGeo = {
+          ip: d.ip || null,
+          country: d.country || null,
+          countryCode: d.country_code || null,
+          region: d.region || null,
+          city: d.city || null,
+        };
+        return cachedGeo;
+      }
+    }
+  } catch { /* fall through */ }
+
+  // Fallback: ipapi.co
   try {
     const res = await fetch('https://ipapi.co/json/');
-    const data = await res.json();
-    cachedGeo = {
-      ip: data.ip || null,
-      country: data.country_name || null,
-      countryCode: data.country_code || null,
-      region: data.region || null,
-      city: data.city || null,
-    };
+    if (res.ok) {
+      const d = await res.json();
+      if (!d.error) {
+        cachedGeo = {
+          ip: d.ip || null,
+          country: d.country_name || null,
+          countryCode: d.country_code || null,
+          region: d.region || null,
+          city: d.city || null,
+        };
+        return cachedGeo;
+      }
+    }
+  } catch { /* fall through */ }
+
+  // Last resort: IP only
+  try {
+    const res = await fetch('https://api.ipify.org?format=json');
+    const d = await res.json();
+    cachedGeo = { ...empty, ip: d.ip };
     return cachedGeo;
   } catch {
-    // Fallback to just IP
-    try {
-      const res = await fetch('https://api.ipify.org?format=json');
-      const data = await res.json();
-      cachedGeo = { ip: data.ip, country: null, countryCode: null, region: null, city: null };
-      return cachedGeo;
-    } catch {
-      return { ip: null, country: null, countryCode: null, region: null, city: null };
-    }
+    return empty;
   }
 }
 
