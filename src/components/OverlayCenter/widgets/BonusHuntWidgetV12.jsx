@@ -58,6 +58,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
     const totalWin = openedBonuses.reduce((s, b) => s + (Number(b.payout) || 0), 0);
     const totalBetRemaining = Math.max(totalBetAll - totalBetOpened, 0);
     const superCount = bonuses.filter(b => b.isSuperBonus).length;
+    const extremeCount = bonuses.filter(b => b.isExtremeBonus || b.isExtreme).length;
     const target = Math.max(startMoney - stopLoss, 0);
     const remaining = Math.max(target - totalWin, 0);
     const liveBE = totalBetRemaining > 0 ? remaining / totalBetRemaining : 0;
@@ -70,7 +71,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       if (!bestSlot || multi > (bestSlot._multi || 0)) bestSlot = { ...b, _multi: multi, _payout: pay };
       if (!worstSlot || multi < (worstSlot._multi || Infinity)) worstSlot = { ...b, _multi: multi, _payout: pay };
     });
-    return { totalBetAll, totalWin, superCount, liveBE, avgMulti, openedCount: openedBonuses.length, bestSlot, worstSlot };
+    return { totalBetAll, totalWin, superCount, extremeCount, liveBE, avgMulti, openedCount: openedBonuses.length, bestSlot, worstSlot };
   }, [bonuses, startMoney, stopLoss]);
 
   /* ─── Stats flip (show front 20s → flip to back 10s → repeat) ─── */
@@ -307,6 +308,20 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                   <div className="bht-stat-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(0)}x</div>
                 </div>
               </div>
+              {(stats.superCount > 0 || stats.extremeCount > 0) && (
+                <div className="bht-badge-pills">
+                  {stats.superCount > 0 && (
+                    <span className="bht-badge-pill bht-badge-pill--super">
+                      {stats.superCount} SUPER{stats.superCount !== 1 ? 'S' : ''}
+                    </span>
+                  )}
+                  {stats.extremeCount > 0 && (
+                    <span className="bht-badge-pill bht-badge-pill--extreme">
+                      {stats.extremeCount} EXTREME{stats.extremeCount !== 1 ? 'S' : ''}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
           </div>
           <div className="bht-fullflip-face bht-fullflip-back">
