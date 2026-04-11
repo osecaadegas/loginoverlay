@@ -574,6 +574,9 @@ function TournamentWidget({ config, theme }) {
       ? otherMatches.filter(m => m.winner != null && m !== allMatches[shatterMatchIdx])
       : otherMatches.filter(m => m.winner != null);
 
+    /* ── Stable key for match transition animations ── */
+    const esMatchKey = currentMatch ? `${currentMatch.player1}|${currentMatch.player2}` : 'empty';
+
     /* Get cost/payment for a player (Bo3 sums all rounds) */
     const getVals = (match, pKey) => {
       if (!match?.rounds) return { cost: null, pay: null };
@@ -795,7 +798,7 @@ function TournamentWidget({ config, theme }) {
       const isCurrent = globalIdx === currentMatchIdx;
 
       return (
-        <div key={idx} style={{
+        <div key={`${match.player1}|${match.player2}`} style={{
           display: 'flex', alignItems: 'stretch', gap: 'clamp(3px, 0.5vw, 8px)',
           background: 'rgba(0,0,0,0.3)',
           border: `1px solid ${isCurrent ? esCyan : esBorder}`,
@@ -804,6 +807,7 @@ function TournamentWidget({ config, theme }) {
           backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
           transition: 'border-color 0.3s',
           minHeight: 'clamp(90px, 18vh, 160px)',
+          animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.07}s both`,
         }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             {renderEsCard(match, 'player1', false)}
@@ -825,13 +829,14 @@ function TournamentWidget({ config, theme }) {
       const p2 = match.player2 || 'TBD';
       const fs = 'clamp(8px, 1.2vw, 13px)';
       return (
-        <div key={idx} style={{
+        <div key={`${p1}|${p2}`} style={{
           display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 10px)',
           padding: 'clamp(2px, 0.3vw, 5px) clamp(6px, 0.8vw, 12px)',
           background: 'rgba(0,0,0,0.25)',
           border: `1px solid ${esBorder}`,
           borderRadius: 6,
           backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+          animation: `tw-done-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.06}s both`,
         }}>
           <span style={{
             flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 700, fontFamily: esFont,
@@ -912,7 +917,7 @@ function TournamentWidget({ config, theme }) {
             </div>
 
             {/* Match cards — same structure as overview matches */}
-            <div style={{
+            <div key={esMatchKey} style={{
               display: 'flex', alignItems: 'stretch',
               gap: 'clamp(3px, 0.5vw, 8px)',
               background: 'rgba(0,0,0,0.3)',
@@ -921,12 +926,16 @@ function TournamentWidget({ config, theme }) {
               position: 'relative', zIndex: 1, overflow: 'hidden',
               backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
               minHeight: 'clamp(90px, 18vh, 160px)',
+              animation: 'tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+              transformStyle: 'preserve-3d',
             }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-l 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both' }}>
                 {renderEsCard(currentMatch, 'player1', false)}
               </div>
-              {renderEsVs(true)}
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flexShrink: 0, animation: 'tw-vs-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both' }}>
+                {renderEsVs(true)}
+              </div>
+              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-r 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both' }}>
                 {renderEsCard(currentMatch, 'player2', false)}
               </div>
 
@@ -1581,7 +1590,7 @@ function TournamentWidget({ config, theme }) {
 
     /* ── Queued match row (3D perspective) ── */
     const renderQueuedMatch = (match, idx) => (
-      <div key={idx} style={{
+      <div key={`${match.player1}|${match.player2}`} style={{
         display: 'flex', alignItems: 'stretch', gap: 'clamp(1px, 0.2vw, 3px)',
         background: 'transparent',
         borderRadius: 10, padding: 'clamp(2px, 0.3vw, 4px)',
@@ -1608,13 +1617,14 @@ function TournamentWidget({ config, theme }) {
       const p2 = match.player2 || 'TBD';
       const fs = 'clamp(9px, 1.3vw, 14px)';
       return (
-        <div key={idx} style={{
+        <div key={`${p1}|${p2}`} style={{
           display: 'flex', alignItems: 'center', gap: 'clamp(4px, 0.6vw, 8px)',
           padding: 'clamp(2px, 0.35vw, 5px) clamp(6px, 0.8vw, 10px)',
           background: 'rgba(0,0,0,0.35)',
           border: `1px solid ${p1Won || p2Won ? `${gGreen}25` : gBorder}`,
           borderRadius: 6,
           backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
+          animation: `tw-done-enter 0.55s cubic-bezier(0.16, 1, 0.3, 1) ${idx * 0.06}s both`,
         }}>
           <span style={{
             flex: 1, textAlign: 'right', fontSize: fs, fontWeight: 800, fontFamily: gFont,
@@ -1649,6 +1659,9 @@ function TournamentWidget({ config, theme }) {
 
     const hasCurrentWinner = currentMatch?.winner != null;
     const isCurrentLive = !hasCurrentWinner;
+
+    /* ── Stable key for match transition animations ── */
+    const matchKey = currentMatch ? `${currentMatch.player1}|${currentMatch.player2}` : 'empty';
 
     /* ── Phase lookup by flat index: map each allMatches index → phase label ── */
     const phaseLabelByIdx = (() => {
@@ -1720,7 +1733,10 @@ function TournamentWidget({ config, theme }) {
             padding: 'clamp(3px, 0.5vw, 8px)',
           }}>
             {queuedWithPhase.map((item, i) => (
-              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+              <div key={`${item.match.player1}|${item.match.player2}`} style={{
+                display: 'flex', flexDirection: 'column', gap: 0,
+                animation: `tw-queued-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) ${i * 0.07}s both`,
+              }}>
                 {renderQueuedMatch(item.match, i)}
                 {/* Phase label — below the first match of each phase group */}
                 {item.showLabel && (
@@ -1818,19 +1834,23 @@ function TournamentWidget({ config, theme }) {
             </div>
 
             {/* Match cards */}
-            <div style={{
+            <div key={matchKey} style={{
               display: 'flex', alignItems: 'stretch',
               gap: 'clamp(3px, 0.5vw, 8px)',
               background: 'transparent',
               borderRadius: 12, padding: 'clamp(2px, 0.3vw, 4px)',
               position: 'relative', zIndex: 1, overflow: 'visible',
               minHeight: 'clamp(110px, 24vh, 200px)',
+              animation: 'tw-match-promote 0.9s cubic-bezier(0.16, 1, 0.3, 1) both',
+              transformStyle: 'preserve-3d',
             }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-l 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.08s both' }}>
                 {renderCard(currentMatch, 'player1', true, isGrandFinalMatch && currentMatch.winner === 'player1')}
               </div>
-              {renderVs(true, isCurrentLive)}
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ flexShrink: 0, animation: 'tw-vs-enter 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.12s both' }}>
+                {renderVs(true, isCurrentLive)}
+              </div>
+              <div style={{ flex: 1, minWidth: 0, animation: 'tw-card-enter-r 0.85s cubic-bezier(0.16, 1, 0.3, 1) 0.18s both' }}>
                 {renderCard(currentMatch, 'player2', true, isGrandFinalMatch && currentMatch.winner === 'player2')}
               </div>
 
@@ -2105,6 +2125,36 @@ function TournamentWidget({ config, theme }) {
           0%   { opacity: 0; transform: scale(0) rotate(-180deg); }
           60%  { opacity: 1; transform: scale(1.2) rotate(10deg); }
           100% { opacity: 1; transform: scale(1) rotate(0deg); }
+        }
+        /* ── Match transition animations (smooth 3D) ── */
+        @keyframes tw-match-promote {
+          0%   { opacity: 0; transform: perspective(800px) translateY(28px) translateZ(-40px) scale(0.9); filter: brightness(0.7) blur(1.5px); }
+          55%  { opacity: 1; transform: perspective(800px) translateY(-3px) translateZ(6px) scale(1.01); filter: brightness(1.04) blur(0); }
+          100% { opacity: 1; transform: perspective(800px) translateY(0) translateZ(0) scale(1); filter: brightness(1) blur(0); }
+        }
+        @keyframes tw-card-enter-l {
+          0%   { opacity: 0; transform: perspective(800px) translateX(-30px) rotateY(8deg) scale(0.88); }
+          60%  { opacity: 1; transform: perspective(800px) translateX(3px) rotateY(-1.5deg) scale(1.01); }
+          100% { opacity: 1; transform: perspective(800px) translateX(0) rotateY(0) scale(1); }
+        }
+        @keyframes tw-card-enter-r {
+          0%   { opacity: 0; transform: perspective(800px) translateX(30px) rotateY(-8deg) scale(0.88); }
+          60%  { opacity: 1; transform: perspective(800px) translateX(-3px) rotateY(1.5deg) scale(1.01); }
+          100% { opacity: 1; transform: perspective(800px) translateX(0) rotateY(0) scale(1); }
+        }
+        @keyframes tw-vs-enter {
+          0%   { opacity: 0; transform: scale(0.3) rotate(-25deg); }
+          55%  { opacity: 1; transform: scale(1.12) rotate(4deg); }
+          100% { opacity: 1; transform: scale(1) rotate(0); }
+        }
+        @keyframes tw-queued-enter {
+          0%   { opacity: 0; transform: perspective(600px) translateY(-16px) translateZ(-20px) scale(0.95); }
+          65%  { opacity: 1; transform: perspective(600px) translateY(2px) translateZ(2px) scale(1.005); }
+          100% { opacity: 1; transform: perspective(600px) translateY(0) translateZ(0) scale(1); }
+        }
+        @keyframes tw-done-enter {
+          0%   { opacity: 0; transform: translateY(-8px) translateX(-5px) scale(0.97); }
+          100% { opacity: 1; transform: translateY(0) translateX(0) scale(1); }
         }
       `}</style>
 
