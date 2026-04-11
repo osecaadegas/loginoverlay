@@ -1668,7 +1668,7 @@
 /* ── V12 modern: 3D carousel ── */
 .oc-bonushunt--v12 .bht-stack {
   height: 170px;
-  margin: 2px 0;
+  margin: -4px 0 2px;
 }
 .oc-bonushunt--v12 .bht-stack-card {
   width: 110px;
@@ -1937,7 +1937,7 @@
   border-radius: 10px;
   overflow: hidden;
   width: 80px;
-  height: 90px;
+  height: 110px;
 }
 .oc-bonushunt--v12 .bht-flipback-slot--best {
   border: 2px solid rgba(74,222,128,0.6);

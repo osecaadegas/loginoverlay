@@ -4791,17 +4791,19 @@ body.wm-resizing {
   min-width: 44px;
 }
 .bh-list-field--requester {
-  min-width: 50px;
-  max-width: 80px;
+  min-width: 70px;
+  max-width: 140px;
+  flex: 1 1 auto;
+  align-items: flex-start;
 }
 .bh-list-requester-val {
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: 13px;
+  font-weight: 600;
   color: #94a3b8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 80px;
+  max-width: 140px;
 }
 .bh-list-field-label {
   font-size: 9.6px;

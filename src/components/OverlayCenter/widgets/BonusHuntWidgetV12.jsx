@@ -313,12 +313,12 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
               <div className="bht-badge-pills">
                 {stats.superCount > 0 && (
                   <span className="bht-badge-pill bht-badge-pill--super">
-                    {stats.superCount} SUPER{stats.superCount !== 1 ? 'S' : ''}
+                    {stats.superCount} SUPER
                   </span>
                 )}
                 {stats.extremeCount > 0 && (
                   <span className="bht-badge-pill bht-badge-pill--extreme">
-                    {stats.extremeCount} EXTREME{stats.extremeCount !== 1 ? 'S' : ''}
+                    {stats.extremeCount} EXTREME
                   </span>
                 )}
               </div>
