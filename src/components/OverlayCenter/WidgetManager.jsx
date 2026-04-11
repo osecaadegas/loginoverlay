@@ -1095,7 +1095,19 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     }}
                   >
                     <span>{def?.icon} {w.label || def?.label}</span>
-                    <button className="wm-ctx-close" onClick={() => setCtxMenu(null)}>✕</button>
+                    <div className="wm-ctx-header-right">
+                      {w.widget_type === 'bonus_hunt' && (
+                        <button
+                          className={`wm-ctx-sr-pill ${w.config?.showSlotRequests === false ? '' : 'wm-ctx-sr-pill--on'}`}
+                          onClick={() => ctxUpdateConfig('showSlotRequests', w.config?.showSlotRequests === false ? true : false)}
+                          title={w.config?.showSlotRequests === false ? 'Enable Slot Requests' : 'Disable Slot Requests'}
+                        >
+                          <span className="wm-ctx-sr-pill-label">!SR</span>
+                          <span className="wm-ctx-sr-pill-track"><span className="wm-ctx-sr-pill-knob" /></span>
+                        </button>
+                      )}
+                      <button className="wm-ctx-close" onClick={() => setCtxMenu(null)}>✕</button>
+                    </div>
                   </div>
 
                   {/* Quick actions row */}
@@ -1112,13 +1124,6 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     <button className="wm-ctx-action-btn" onClick={() => ctxAction('back')} title="Send to Back">⬇️</button>
                     <button className="wm-ctx-action-btn" onClick={() => ctxAction('center')} title="Center">🎯</button>
                     <button className="wm-ctx-action-btn wm-ctx-action-btn--danger" onClick={() => ctxAction('delete')} title="Delete">🗑️</button>
-                    {w.widget_type === 'bonus_hunt' && (
-                      <button
-                        className={`wm-ctx-action-btn wm-ctx-sr-toggle ${w.config?.showSlotRequests === false ? '' : 'wm-ctx-sr-toggle--on'}`}
-                        onClick={() => ctxUpdateConfig('showSlotRequests', w.config?.showSlotRequests === false ? true : false)}
-                        title={w.config?.showSlotRequests === false ? 'Enable Slot Requests' : 'Disable Slot Requests'}
-                      >!SR</button>
-                    )}
                   </div>
 
                   <div className="wm-ctx-divider" />
