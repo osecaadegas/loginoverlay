@@ -226,32 +226,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
   /* ─── SR auto-scroll ─── */
   const srListRef = useRef(null);
-  useEffect(() => {
-    const el = srListRef.current;
-    if (!el || srRequests.length <= 3) return;
-    let raf, pos = 0, paused = false, last = 0;
-    const speed = 0.3;
-    const step = (ts) => {
-      if (!last) last = ts;
-      const dt = ts - last;
-      last = ts;
-      if (!paused && el.scrollHeight > el.clientHeight) {
-        pos += speed * (dt / 16.67);
-        const max = el.scrollHeight - el.clientHeight;
-        if (pos >= max) {
-          pos = max; el.scrollTop = pos; paused = true;
-          setTimeout(() => {
-            el.style.scrollBehavior = 'smooth';
-            el.scrollTop = 0; pos = 0;
-            setTimeout(() => { el.style.scrollBehavior = ''; paused = false; last = 0; }, 800);
-          }, 2500);
-        } else { el.scrollTop = pos; }
-      }
-      raf = requestAnimationFrame(step);
-    };
-    const timer = setTimeout(() => { pos = el.scrollTop; last = 0; raf = requestAnimationFrame(step); }, 1200);
-    return () => { clearTimeout(timer); if (raf) cancelAnimationFrame(raf); };
-  }, [srRequests.length]);
+  const srNeedsScroll = srRequests.length > 3;
+  const srScrollSpeed = 20;
 
   return (
     <div className="oc-widget-inner oc-bonushunt oc-bonushunt--v12" style={{ ...rootStyle, height: '100%' }}>
@@ -502,25 +478,30 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 <span className="bht-v12-sr-hint">Type <strong>{cmdTrigger} &lt;slot name&gt;</strong> in chat to request a slot</span>
               </div>
             ) : (
-              srRequests.map((r, i) => (
-                <div key={r.id} className="bht-v12-sr-row">
-                  <div className="bht-v12-sr-row-bg"
-                    style={{ backgroundImage: `url(${r.slot_image || FALLBACK_SR_IMG})` }} />
-                  <div className="bht-v12-sr-row-overlay" />
-                  <div className="bht-v12-sr-row-content">
-                    <span className="bht-v12-sr-row-idx">{i + 1}</span>
-                    <img src={r.slot_image || FALLBACK_SR_IMG} alt=""
-                      className="bht-v12-sr-row-img"
-                      onError={e => { e.target.src = FALLBACK_SR_IMG; }} />
-                    <div className="bht-v12-sr-row-info">
-                      <span className="bht-v12-sr-row-name">{r.slot_name}</span>
-                      {r.requested_by && r.requested_by !== 'anonymous' && (
-                        <span className="bht-v12-sr-row-by">by {r.requested_by}</span>
-                      )}
+              <div className={`sr-min-scroll-track${srNeedsScroll ? ' sr-min-scroll-track--animate' : ''}`}
+                style={srNeedsScroll ? { '--sr-scroll-duration': `${Math.max(8, srRequests.length * srScrollSpeed / 3)}s` } : undefined}>
+                {[...(srNeedsScroll ? [0, 1] : [0])].map(setIdx =>
+                  srRequests.map((r, i) => (
+                    <div key={`${setIdx}-${r.id}`} className="bht-v12-sr-row">
+                      <div className="bht-v12-sr-row-bg"
+                        style={{ backgroundImage: `url(${r.slot_image || FALLBACK_SR_IMG})` }} />
+                      <div className="bht-v12-sr-row-overlay" />
+                      <div className="bht-v12-sr-row-content">
+                        <span className="bht-v12-sr-row-idx">{i + 1}</span>
+                        <img src={r.slot_image || FALLBACK_SR_IMG} alt=""
+                          className="bht-v12-sr-row-img"
+                          onError={e => { e.target.src = FALLBACK_SR_IMG; }} />
+                        <div className="bht-v12-sr-row-info">
+                          <span className="bht-v12-sr-row-name">{r.slot_name}</span>
+                          {r.requested_by && r.requested_by !== 'anonymous' && (
+                            <span className="bht-v12-sr-row-by">by {r.requested_by}</span>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))
+                  ))
+                )}
+              </div>
             )}
           </div>
         </div>

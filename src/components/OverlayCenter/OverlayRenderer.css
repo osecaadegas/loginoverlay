@@ -1470,7 +1470,61 @@
   opacity: 0.8;
 }
 
-/* --- Bonus Hunt: V12 Classic+SR tighter layout --- */
+/* --- V12 modern stats --- */
+.oc-bonushunt--v12 .bht-header {
+  background: linear-gradient(160deg, rgba(15,23,42,0.95), rgba(30,58,138,0.85));
+  backdrop-filter: blur(12px);
+}
+.oc-bonushunt--v12 .bht-fullflip-front {
+  padding: 8px 10px;
+}
+.oc-bonushunt--v12 .bht-header-center {
+  margin-bottom: 6px;
+}
+.oc-bonushunt--v12 .bht-header-avatar {
+  width: 28px; height: 28px;
+  border-width: 1.5px;
+}
+.oc-bonushunt--v12 .bht-title {
+  font-size: 0.9em;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.oc-bonushunt--v12 .bht-flip-front {
+  gap: 0;
+  background: rgba(255,255,255,0.04);
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+  overflow: hidden;
+}
+.oc-bonushunt--v12 .bht-stat-box {
+  padding: 6px 4px;
+  text-align: center;
+  position: relative;
+}
+.oc-bonushunt--v12 .bht-stat-box + .bht-stat-box::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 20%; bottom: 20%;
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+}
+.oc-bonushunt--v12 .bht-stat-label {
+  font-size: 0.6em;
+  font-weight: 600;
+  letter-spacing: 1px;
+  opacity: 0.55;
+  margin-bottom: 1px;
+  justify-content: center;
+  text-shadow: none;
+}
+.oc-bonushunt--v12 .bht-stat-value {
+  font-size: 1.05em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.4);
+}
 .oc-bonushunt--v12 {
   gap: 3px !important;
 }
@@ -4384,13 +4438,25 @@
   text-align: center; line-height: 1.5;
 }
 .sr-min-list {
-  flex: 1; overflow-y: auto; overflow-x: hidden;
+  flex: 1; overflow: hidden;
   padding: 6px 8px;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255,255,255,0.08) transparent;
 }
 .sr-min-list::-webkit-scrollbar { width: 4px; }
 .sr-min-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
+
+/* ── Infinite scroll track ── */
+.sr-min-scroll-track {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.sr-min-scroll-track--animate {
+  animation: sr-infinite-scroll var(--sr-scroll-duration, 15s) linear infinite;
+}
+@keyframes sr-infinite-scroll {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
 .sr-min-empty {
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   gap: 6px; padding: 32px 10px; color: var(--sr-min-muted, #94a3b8);

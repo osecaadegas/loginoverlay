@@ -43,45 +43,9 @@ export default function SlotRequestsMinimal({ config, requests }) {
     return () => ro.disconnect();
   }, [manualSize]);
 
-  /* ── Auto-scroll for long lists ── */
-  useEffect(() => {
-    const el = listRef.current;
-    if (!el || requests.length <= 3) return;
-
-    let raf;
-    let pos = 0;
-    let paused = false;
-    let last = 0;
-    const speed = 0.3;
-
-    const step = (ts) => {
-      if (!last) last = ts;
-      const dt = ts - last;
-      last = ts;
-
-      if (!paused && el.scrollHeight > el.clientHeight) {
-        pos += speed * (dt / 16.67);
-        const max = el.scrollHeight - el.clientHeight;
-        if (pos >= max) {
-          pos = max;
-          el.scrollTop = pos;
-          paused = true;
-          setTimeout(() => {
-            el.style.scrollBehavior = 'smooth';
-            el.scrollTop = 0;
-            pos = 0;
-            setTimeout(() => { el.style.scrollBehavior = ''; paused = false; last = 0; }, 800);
-          }, 2500);
-        } else {
-          el.scrollTop = pos;
-        }
-      }
-      raf = requestAnimationFrame(step);
-    };
-
-    const timer = setTimeout(() => { pos = el.scrollTop; last = 0; raf = requestAnimationFrame(step); }, 1200);
-    return () => { clearTimeout(timer); if (raf) cancelAnimationFrame(raf); };
-  }, [requests.length]);
+  /* ── Auto-scroll: infinite seamless loop via CSS animation ── */
+  const needsScroll = requests.length > 3;
+  const scrollSpeed = 20; // seconds per full cycle
 
   /* ── Track new items for entrance animation ── */
   const newIds = useMemo(() => {
@@ -127,41 +91,45 @@ export default function SlotRequestsMinimal({ config, requests }) {
           </div>
         )}
 
-        {requests.map((r, i) => (
-          <div
-            key={r.id}
-            className={`sr-min-row${newIds.has(r.id) ? ' sr-min-row--enter' : ''}`}
-          >
-            {/* Blurred full-width background image */}
-            <div
-              className="sr-min-row-bg"
-              style={{ backgroundImage: `url(${r.slot_image || FALLBACK_IMG})` }}
-            />
-            <div className="sr-min-row-overlay" />
-
-            {/* Foreground content */}
-            <div className="sr-min-row-content">
-              {showNumbers && (
-                <span className="sr-min-row-idx">{i + 1}</span>
-              )}
-              <img
-                src={r.slot_image || FALLBACK_IMG}
-                alt=""
-                className="sr-min-row-img"
-                style={{ width: imgH, height: imgH }}
-                onError={e => { e.target.src = FALLBACK_IMG; }}
-              />
-              <div className="sr-min-row-info">
-                <span className="sr-min-row-name" style={{ fontWeight: Number(fontWeight) }}>
-                  {r.slot_name}
-                </span>
-                {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
-                  <span className="sr-min-row-by">by {r.requested_by}</span>
-                )}
-              </div>
-            </div>
+        {requests.length > 0 && (
+          <div className={`sr-min-scroll-track${needsScroll ? ' sr-min-scroll-track--animate' : ''}`}
+            style={needsScroll ? { '--sr-scroll-duration': `${Math.max(8, requests.length * scrollSpeed / 3)}s` } : undefined}>
+            {[...(needsScroll ? [0, 1] : [0])].map(setIdx =>
+              requests.map((r, i) => (
+                <div
+                  key={`${setIdx}-${r.id}`}
+                  className={`sr-min-row${setIdx === 0 && newIds.has(r.id) ? ' sr-min-row--enter' : ''}`}
+                >
+                  <div
+                    className="sr-min-row-bg"
+                    style={{ backgroundImage: `url(${r.slot_image || FALLBACK_IMG})` }}
+                  />
+                  <div className="sr-min-row-overlay" />
+                  <div className="sr-min-row-content">
+                    {showNumbers && (
+                      <span className="sr-min-row-idx">{i + 1}</span>
+                    )}
+                    <img
+                      src={r.slot_image || FALLBACK_IMG}
+                      alt=""
+                      className="sr-min-row-img"
+                      style={{ width: imgH, height: imgH }}
+                      onError={e => { e.target.src = FALLBACK_IMG; }}
+                    />
+                    <div className="sr-min-row-info">
+                      <span className="sr-min-row-name" style={{ fontWeight: Number(fontWeight) }}>
+                        {r.slot_name}
+                      </span>
+                      {showRequester && r.requested_by && r.requested_by !== 'anonymous' && (
+                        <span className="sr-min-row-by">by {r.requested_by}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
-        ))}
+        )}
       </div>
     </div>
   );
