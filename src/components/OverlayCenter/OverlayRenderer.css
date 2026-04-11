@@ -1676,21 +1676,21 @@
 }
 .oc-bonushunt--v12 .bht-stack-card-inner {
   border-radius: 12px;
-  border: 1.5px solid rgba(255,255,255,0.1);
+  border: 1.5px solid rgba(100,100,110,0.4);
   box-shadow: 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
   background: linear-gradient(180deg, rgba(38,40,46,0.6), rgba(28,30,34,0.7));
 }
 .oc-bonushunt--v12 .bht-stack-card--center .bht-stack-card-inner {
-  border-color: rgba(200,200,210,0.35);
-  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px 3px rgba(200,200,210,0.12), inset 0 1px 0 rgba(255,255,255,0.1);
+  border-color: rgba(140,140,150,0.45);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 12px 1px rgba(200,200,210,0.06), inset 0 1px 0 rgba(255,255,255,0.1);
 }
 .oc-bonushunt--v12 .bht-stack-card--super .bht-stack-card-inner {
-  border-color: rgba(234,179,8,0.45);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 16px 2px rgba(234,179,8,0.2);
+  border-color: rgba(234,179,8,0.55);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 8px 1px rgba(234,179,8,0.1);
 }
 .oc-bonushunt--v12 .bht-stack-card--extreme .bht-stack-card-inner {
-  border-color: rgba(239,68,68,0.5);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 16px 2px rgba(239,68,68,0.2);
+  border-color: rgba(239,68,68,0.6);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 8px 1px rgba(239,68,68,0.1);
 }
 .oc-bonushunt--v12 .bht-stack-card-img-wrap {
   border-radius: 10px 10px 0 0;
