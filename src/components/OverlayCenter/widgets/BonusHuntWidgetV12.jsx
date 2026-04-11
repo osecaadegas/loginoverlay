@@ -19,6 +19,27 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const stopLoss = Number(c.stopLoss) || 0;
   const showSR = c.showSlotRequests !== false;
 
+  /* ─── SR shatter animation state ─── */
+  const [srVisible, setSrVisible] = useState(showSR);
+  const [srAnim, setSrAnim] = useState('idle'); // idle | shattering | assembling
+  const srAnimTimer = useRef(null);
+
+  useEffect(() => {
+    if (showSR && !srVisible) {
+      // turning ON → assemble (reverse shatter)
+      setSrVisible(true);
+      setSrAnim('assembling');
+      clearTimeout(srAnimTimer.current);
+      srAnimTimer.current = setTimeout(() => setSrAnim('idle'), 700);
+    } else if (!showSR && srVisible) {
+      // turning OFF → shatter out
+      setSrAnim('shattering');
+      clearTimeout(srAnimTimer.current);
+      srAnimTimer.current = setTimeout(() => { setSrVisible(false); setSrAnim('idle'); }, 700);
+    }
+    return () => clearTimeout(srAnimTimer.current);
+  }, [showSR]);
+
   /* ─── Stats ─── */
   const stats = useMemo(() => {
     const totalBetAll = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
@@ -317,7 +338,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: showSR ? '3 1 0' : undefined, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="bht-card bht-list-card" style={{ flex: srVisible ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 0.6s ease' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
@@ -463,8 +484,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       )}
 
       {/* ═══ Slot Requests Section ═══ */}
-      {showSR && (
-        <div className="bht-card bht-v12-sr" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+      {srVisible && (
+        <div className={`bht-card bht-v12-sr bht-v12-sr--${srAnim}`}
+          style={{ flex: srAnim === 'shattering' ? '0 0 0px' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 0.6s ease' }}>
           <div className="bht-v12-sr-header">
             <span className="bht-v12-sr-icon">🎰</span>
             <span className="bht-v12-sr-title">Slot Requests</span>

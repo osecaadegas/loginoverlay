@@ -1470,6 +1470,82 @@
   opacity: 0.8;
 }
 
+/* ── SR card shatter / assemble animations ── */
+.bht-v12-sr--shattering {
+  animation: sr-shatter-card 0.7s ease-in forwards;
+}
+.bht-v12-sr--shattering .bht-v12-sr-header,
+.bht-v12-sr--shattering .bht-v12-sr-list {
+  animation: sr-shatter-content 0.5s ease-in forwards;
+}
+.bht-v12-sr--shattering .bht-v12-sr-row {
+  animation: sr-shatter-fragment 0.5s ease-in forwards;
+}
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(odd) {
+  --sr-frag-x: -40px; --sr-frag-rot: -12deg;
+}
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(even) {
+  --sr-frag-x: 40px; --sr-frag-rot: 12deg;
+}
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(1) { animation-delay: 0s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(2) { animation-delay: 0.04s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(3) { animation-delay: 0.08s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(4) { animation-delay: 0.12s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(5) { animation-delay: 0.16s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(6) { animation-delay: 0.2s; }
+
+@keyframes sr-shatter-card {
+  0%   { opacity: 1; transform: scale(1); }
+  60%  { opacity: 0.6; transform: scale(0.97); }
+  100% { opacity: 0; transform: scale(0.92); }
+}
+@keyframes sr-shatter-content {
+  0%   { opacity: 1; filter: blur(0); }
+  100% { opacity: 0; filter: blur(4px); }
+}
+@keyframes sr-shatter-fragment {
+  0%   { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--sr-frag-x, 30px), 20px) rotate(var(--sr-frag-rot, 10deg)) scale(0.7); }
+}
+
+/* Assemble — reverse of shatter */
+.bht-v12-sr--assembling {
+  animation: sr-assemble-card 0.7s ease-out forwards;
+}
+.bht-v12-sr--assembling .bht-v12-sr-header,
+.bht-v12-sr--assembling .bht-v12-sr-list {
+  animation: sr-assemble-content 0.5s ease-out 0.15s both;
+}
+.bht-v12-sr--assembling .bht-v12-sr-row {
+  animation: sr-assemble-fragment 0.5s ease-out both;
+}
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(odd) {
+  --sr-frag-x: -40px; --sr-frag-rot: -12deg;
+}
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(even) {
+  --sr-frag-x: 40px; --sr-frag-rot: 12deg;
+}
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(1) { animation-delay: 0.08s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(2) { animation-delay: 0.12s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(3) { animation-delay: 0.16s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(4) { animation-delay: 0.20s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(5) { animation-delay: 0.24s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(6) { animation-delay: 0.28s; }
+
+@keyframes sr-assemble-card {
+  0%   { opacity: 0; transform: scale(0.92); }
+  40%  { opacity: 0.6; transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+@keyframes sr-assemble-content {
+  0%   { opacity: 0; filter: blur(4px); }
+  100% { opacity: 1; filter: blur(0); }
+}
+@keyframes sr-assemble-fragment {
+  0%   { opacity: 0; transform: translate(var(--sr-frag-x, 30px), 20px) rotate(var(--sr-frag-rot, 10deg)) scale(0.7); }
+  100% { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
+}
+
 /* --- V12 modern stats --- */
 .oc-bonushunt--v12 .bht-header {
   background: linear-gradient(160deg, rgba(15,23,42,0.95), rgba(30,58,138,0.85));
