@@ -3,8 +3,9 @@ import BonusHuntWidgetV3 from './BonusHuntWidgetV3';
 import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
 import BonusHuntWidgetV11 from './BonusHuntWidgetV11';
+import BonusHuntWidgetV12 from './BonusHuntWidgetV12';
 
-function BonusHuntWidget({ config, theme }) {
+function BonusHuntWidget({ config, theme, userId }) {
   const c = config || {};
 
   /* ─── Sort bonuses (shared across ALL display styles) ─── */
@@ -111,6 +112,9 @@ function BonusHuntWidget({ config, theme }) {
   }
   if (c.displayStyle === 'v11_fever') {
     return <BonusHuntWidgetV11 config={sortedConfig} theme={theme} />;
+  }
+  if (c.displayStyle === 'v12_classic_sr') {
+    return <BonusHuntWidgetV12 config={sortedConfig} theme={theme} userId={userId} />;
   }
 
   /* ─── Dynamic title based on bonusOpening toggle ─── */

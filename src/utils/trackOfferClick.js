@@ -2,21 +2,35 @@
  * trackOfferClick.js — Logs every casino-offer click to Supabase.
  *
  * Captures: offer_id, casino_name, logged-in user_id, SE username,
- * IP address (via a free API), user-agent, and the page source.
+ * IP address + geo location (via a free API), user-agent, and the page source.
  */
 import { supabase } from '../config/supabaseClient';
 
-let cachedIp = null;
+let cachedGeo = null;
 
-async function getIp() {
-  if (cachedIp) return cachedIp;
+async function getGeo() {
+  if (cachedGeo) return cachedGeo;
   try {
-    const res = await fetch('https://api.ipify.org?format=json');
+    const res = await fetch('https://ipapi.co/json/');
     const data = await res.json();
-    cachedIp = data.ip;
-    return cachedIp;
+    cachedGeo = {
+      ip: data.ip || null,
+      country: data.country_name || null,
+      countryCode: data.country_code || null,
+      region: data.region || null,
+      city: data.city || null,
+    };
+    return cachedGeo;
   } catch {
-    return null;
+    // Fallback to just IP
+    try {
+      const res = await fetch('https://api.ipify.org?format=json');
+      const data = await res.json();
+      cachedGeo = { ip: data.ip, country: null, countryCode: null, region: null, city: null };
+      return cachedGeo;
+    } catch {
+      return { ip: null, country: null, countryCode: null, region: null, city: null };
+    }
   }
 }
 
@@ -28,8 +42,8 @@ async function getIp() {
  */
 export default async function trackOfferClick({ offerId, casinoName, pageSource = 'offers' }) {
   try {
-    const [ipResult, userResult] = await Promise.all([
-      getIp(),
+    const [geo, userResult] = await Promise.all([
+      getGeo(),
       supabase.auth.getUser(),
     ]);
 
@@ -51,7 +65,11 @@ export default async function trackOfferClick({ offerId, casinoName, pageSource 
       user_id: userId,
       se_username: seUsername,
       twitch_username: twitchUsername,
-      ip_address: ipResult || null,
+      ip_address: geo.ip || null,
+      country: geo.country || null,
+      country_code: geo.countryCode || null,
+      region: geo.region || null,
+      city: geo.city || null,
       user_agent: navigator.userAgent,
       page_source: pageSource,
     });

@@ -23,6 +23,7 @@ registerWidget({
     { id: 'v8_card_stack', icon: '🎴', label: 'Card Stack' },
     { id: 'v9_hunt_board', icon: '🎯', label: 'Hunt Board' },
     { id: 'v11_fever', icon: '🔥', label: 'Fever' },
+    { id: 'v12_classic_sr', icon: '📊🎰', label: 'Classic + Requests' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

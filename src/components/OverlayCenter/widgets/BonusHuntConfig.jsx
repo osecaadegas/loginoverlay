@@ -171,7 +171,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
           )}
 
           {/* ── Shared Colors (V1/V3/V5/V6) ── */}
-          {['v1','v3','v5_horizontal','v6_compact','v11_fever'].includes(currentStyle) && (<>
+          {['v1','v3','v5_horizontal','v6_compact','v11_fever','v12_classic_sr'].includes(currentStyle) && (<>
             <h4 className="nb-subtitle">Card Colors</h4>
             <div className="nb-color-grid">
               <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
@@ -215,7 +215,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               onChange={v => set('fontSize', v)} />
 
             {/* Dimensions — only for styles that use them */}
-            {['v1','v5_horizontal','v6_compact','v11_fever'].includes(currentStyle) && (<>
+            {['v1','v5_horizontal','v6_compact','v11_fever','v12_classic_sr'].includes(currentStyle) && (<>
               <h4 className="nb-subtitle">Dimensions</h4>
               <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
                 onChange={v => set('widgetWidth', v)} />
@@ -242,6 +242,33 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
                 onChange={v => set('cardRadius', v)} />
               <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 220} min={80} max={400} step={10} unit="px"
                 onChange={v => set('slotImageHeight', v)} />
+            </>)}
+          </>)}
+
+          {/* ── V12 Classic + Requests settings ── */}
+          {currentStyle === 'v12_classic_sr' && (<>
+            <h4 className="nb-subtitle">🎰 Slot Requests</h4>
+            <label className="nb-field" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <input type="checkbox" checked={c.showSlotRequests !== false}
+                onChange={e => set('showSlotRequests', e.target.checked)} />
+              <span>Show Slot Requests Panel</span>
+            </label>
+            {c.showSlotRequests !== false && (<>
+              <label className="nb-field" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <input type="checkbox" checked={c.srChatEnabled !== false}
+                  onChange={e => set('srChatEnabled', e.target.checked)} />
+                <span>Listen to Chat for !sr Commands</span>
+              </label>
+              <label className="nb-field">
+                <span>Twitch Channel</span>
+                <input type="text" value={c.twitchChannel || ''} placeholder="your_channel"
+                  onChange={e => set('twitchChannel', e.target.value)} />
+              </label>
+              <label className="nb-field">
+                <span>Command Trigger</span>
+                <input type="text" value={c.commandTrigger || '!sr'} placeholder="!sr"
+                  onChange={e => set('commandTrigger', e.target.value)} />
+              </label>
             </>)}
           </>)}
 

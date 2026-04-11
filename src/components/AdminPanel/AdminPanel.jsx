@@ -3604,6 +3604,7 @@ export default function AdminPanel() {
                   {/* Summary cards */}
                   {(() => {
                     const byOffer = {};
+                    const byCountry = {};
                     const uniqueIps = new Set();
                     const uniqueUsers = new Set();
                     const today = new Date().toISOString().slice(0, 10);
@@ -3615,8 +3616,11 @@ export default function AdminPanel() {
                       if (c.se_username) uniqueUsers.add(c.se_username);
                       else if (c.user_id) uniqueUsers.add(c.user_id);
                       if (c.created_at?.startsWith(today)) todayCount++;
+                      const geo = c.country || c.country_code || null;
+                      if (geo) byCountry[geo] = (byCountry[geo] || 0) + 1;
                     }
                     const sorted = Object.entries(byOffer).sort((a, b) => b[1] - a[1]);
+                    const sortedCountries = Object.entries(byCountry).sort((a, b) => b[1] - a[1]);
                     return (
                       <>
                         {/* Stats row */}
@@ -3650,6 +3654,25 @@ export default function AdminPanel() {
                             );
                           })}
                         </div>
+
+                        {/* Top Countries breakdown */}
+                        {sortedCountries.length > 0 && (
+                        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: 14, marginBottom: 16 }}>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>🌍 Clicks by Country</div>
+                          {sortedCountries.slice(0, 15).map(([country, count]) => {
+                            const pct = Math.round((count / offerClicks.length) * 100);
+                            return (
+                              <div key={country} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                                <span style={{ width: 130, fontSize: 12, color: '#e2e8f0', fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{country}</span>
+                                <div style={{ flex: 1, height: 8, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
+                                  <div style={{ width: `${pct}%`, height: '100%', background: '#22c55e', borderRadius: 99, minWidth: pct > 0 ? 4 : 0 }} />
+                                </div>
+                                <span style={{ fontSize: 11, color: '#94a3b8', fontWeight: 600, minWidth: 50, textAlign: 'right' }}>{count} ({pct}%)</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        )}
                       </>
                     );
                   })()}
@@ -3683,6 +3706,7 @@ export default function AdminPanel() {
                             <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Twitch</th>
                             <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>SE Name</th>
                             <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>IP Address</th>
+                            <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Location</th>
                             <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Source</th>
                             <th style={{ padding: '8px 12px', textAlign: 'left', color: '#64748b', fontWeight: 600 }}>Date & Time</th>
                           </tr>
@@ -3706,6 +3730,9 @@ export default function AdminPanel() {
                                   (c.twitch_username || '').toLowerCase().includes(q) ||
                                   (c.se_username || '').toLowerCase().includes(q) ||
                                   (c.ip_address || '').toLowerCase().includes(q) ||
+                                  (c.country || '').toLowerCase().includes(q) ||
+                                  (c.city || '').toLowerCase().includes(q) ||
+                                  (c.region || '').toLowerCase().includes(q) ||
                                   (c.user_agent || '').toLowerCase().includes(q) ||
                                   (c.page_source || '').toLowerCase().includes(q)
                                 );
@@ -3713,7 +3740,7 @@ export default function AdminPanel() {
                               return true;
                             });
                             if (filtered.length === 0) return (
-                              <tr><td colSpan={7} style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>No clicks match your filters</td></tr>
+                              <tr><td colSpan={8} style={{ padding: 20, textAlign: 'center', color: '#64748b' }}>No clicks match your filters</td></tr>
                             );
                             return filtered.slice(0, 500).map((click, idx) => {
                               const isExpanded = expandedClickId === click.id;
@@ -3738,6 +3765,9 @@ export default function AdminPanel() {
                                     <td style={{ padding: '6px 12px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 11 }}>
                                       {click.ip_address || '—'}
                                     </td>
+                                    <td style={{ padding: '6px 12px', color: '#e2e8f0', fontSize: 11 }}>
+                                      {click.city && click.country ? `${click.city}, ${click.country}` : click.country || click.country_code || '—'}
+                                    </td>
                                     <td style={{ padding: '6px 12px' }}>
                                       <span style={{
                                         padding: '2px 8px', borderRadius: 99, fontSize: 10, fontWeight: 600,
@@ -3752,7 +3782,7 @@ export default function AdminPanel() {
                                   </tr>
                                   {isExpanded && (
                                     <tr style={{ background: 'rgba(99,102,241,0.04)' }}>
-                                      <td colSpan={7} style={{ padding: '10px 20px 14px 36px' }}>
+                                      <td colSpan={8} style={{ padding: '10px 20px 14px 36px' }}>
                                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '8px 24px', fontSize: 11 }}>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Click ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.id}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Offer ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.offer_id}</span></div>
@@ -3760,6 +3790,9 @@ export default function AdminPanel() {
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Twitch: </span><span style={{ color: '#a78bfa' }}>{click.twitch_username || '—'}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>SE Username: </span><span style={{ color: '#818cf8' }}>{click.se_username || '—'}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>IP Address: </span><span style={{ color: '#f59e0b', fontFamily: 'monospace' }}>{click.ip_address || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Country: </span><span style={{ color: '#22c55e' }}>{click.country || '—'} {click.country_code ? `(${click.country_code})` : ''}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Region: </span><span style={{ color: '#94a3b8' }}>{click.region || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>City: </span><span style={{ color: '#94a3b8' }}>{click.city || '—'}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Page: </span><span style={{ color: '#94a3b8' }}>{click.page_source}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Exact Time: </span><span style={{ color: '#94a3b8' }}>{new Date(click.created_at).toISOString()}</span></div>
                                           <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#64748b', fontWeight: 600 }}>User Agent: </span><span style={{ color: '#64748b', fontSize: 10, wordBreak: 'break-all' }}>{click.user_agent || '—'}</span></div>
