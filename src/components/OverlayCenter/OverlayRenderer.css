@@ -1941,6 +1941,24 @@
   background: rgba(0,0,0,0.3);
 }
 
+/* ── V12 modern: list fade overlays (top & bottom) ── */
+.oc-bonushunt--v12 .bht-list-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 18px;
+  z-index: 5;
+  pointer-events: none;
+}
+.oc-bonushunt--v12 .bht-list-fade--top {
+  top: 0;
+  background: linear-gradient(to bottom, rgba(38,40,46,0.95) 0%, transparent 100%);
+}
+.oc-bonushunt--v12 .bht-list-fade--bottom {
+  bottom: 0;
+  background: linear-gradient(to top, rgba(38,40,46,0.95) 0%, transparent 100%);
+}
+
 /* ── V12 modern: global card styling ── */
 .oc-bonushunt--v12 {
   gap: 0 !important;

@@ -401,7 +401,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             );
           })()}
           {/* ── Vertical list rows (half-height) ── */}
-          <div className="bht-list-rows" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
+          <div className="bht-list-rows" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', position: 'relative' }}>
+            <div className="bht-list-fade bht-list-fade--top" />
+            <div className="bht-list-fade bht-list-fade--bottom" />
             {(() => {
               const itemH = 48, count = bonuses.length;
               const shouldScroll = count >= 4;
