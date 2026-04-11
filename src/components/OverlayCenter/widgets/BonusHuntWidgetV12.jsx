@@ -311,51 +311,41 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
           </div>
           <div className="bht-fullflip-face bht-fullflip-back">
             <div className="bht-flipback-layout">
-              {/* Left stats edge */}
+              {/* Best stats — left edge */}
               <div className="bht-flipback-stats">
-                <div className="bht-flipback-stat-label">START</div>
-                <div className="bht-flipback-stat-val">{currency}{startMoney.toFixed(0)}</div>
-                <div className="bht-flipback-stat-label">SUPERS</div>
-                <div className="bht-flipback-stat-val">{stats.superCount}</div>
-                <div className="bht-flipback-stat-label">OPENED</div>
-                <div className="bht-flipback-stat-val">{stats.openedCount}/{bonuses.length}</div>
+                <div className="bht-flipback-stat-label">PAYOUT</div>
+                <div className="bht-flipback-stat-val" style={{ color: '#4ade80' }}>{stats.bestSlot ? `${currency}${stats.bestSlot._payout.toFixed(0)}` : '—'}</div>
+                <div className="bht-flipback-stat-label">MULTI</div>
+                <div className="bht-flipback-stat-val">{stats.bestSlot ? `${stats.bestSlot._multi.toFixed(1)}x` : '—'}</div>
+                <div className="bht-flipback-stat-label">BET</div>
+                <div className="bht-flipback-stat-val">{stats.bestSlot ? `${currency}${(Number(stats.bestSlot.betSize) || 0).toFixed(2)}` : '—'}</div>
               </div>
-              {/* Best slot — centered */}
+              {/* Best slot image — centered */}
               {stats.bestSlot ? (
                 <div className="bht-flipback-slot bht-flipback-slot--best">
                   {stats.bestSlot.slot?.image ? (
                     <img src={stats.bestSlot.slot.image} alt="" className="bht-flipback-slot-img"
                       onError={e => { e.target.style.display = 'none'; }} />
                   ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
-                  <div className="bht-flipback-slot-info">
-                    <span className="bht-flipback-slot-name">{stats.bestSlot.slot?.name || 'Best'}</span>
-                    <span className="bht-flipback-slot-val">{currency}{stats.bestSlot._payout.toFixed(0)}</span>
-                    <span className="bht-flipback-slot-multi">{stats.bestSlot._multi.toFixed(1)}x</span>
-                  </div>
                 </div>
               ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
-              {/* Worst slot — centered */}
+              {/* Worst slot image — centered */}
               {stats.worstSlot ? (
                 <div className="bht-flipback-slot bht-flipback-slot--worst">
                   {stats.worstSlot.slot?.image ? (
                     <img src={stats.worstSlot.slot.image} alt="" className="bht-flipback-slot-img"
                       onError={e => { e.target.style.display = 'none'; }} />
                   ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
-                  <div className="bht-flipback-slot-info">
-                    <span className="bht-flipback-slot-name">{stats.worstSlot.slot?.name || 'Worst'}</span>
-                    <span className="bht-flipback-slot-val">{currency}{stats.worstSlot._payout.toFixed(0)}</span>
-                    <span className="bht-flipback-slot-multi">{stats.worstSlot._multi.toFixed(1)}x</span>
-                  </div>
                 </div>
               ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
-              {/* Right stats edge */}
+              {/* Worst stats — right edge */}
               <div className="bht-flipback-stats">
-                <div className="bht-flipback-stat-label">B.E.</div>
-                <div className="bht-flipback-stat-val" style={{ color: stats.liveBE >= 100 ? '#f87171' : '#4ade80' }}>{stats.liveBE.toFixed(0)}x</div>
-                <div className="bht-flipback-stat-label">AVG</div>
-                <div className="bht-flipback-stat-val" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(0)}x</div>
-                <div className="bht-flipback-stat-label">WIN</div>
-                <div className="bht-flipback-stat-val">{currency}{stats.totalWin.toFixed(0)}</div>
+                <div className="bht-flipback-stat-label">PAYOUT</div>
+                <div className="bht-flipback-stat-val" style={{ color: '#f87171' }}>{stats.worstSlot ? `${currency}${stats.worstSlot._payout.toFixed(0)}` : '—'}</div>
+                <div className="bht-flipback-stat-label">MULTI</div>
+                <div className="bht-flipback-stat-val">{stats.worstSlot ? `${stats.worstSlot._multi.toFixed(1)}x` : '—'}</div>
+                <div className="bht-flipback-stat-label">BET</div>
+                <div className="bht-flipback-stat-val">{stats.worstSlot ? `${currency}${(Number(stats.worstSlot.betSize) || 0).toFixed(2)}` : '—'}</div>
               </div>
             </div>
           </div>
