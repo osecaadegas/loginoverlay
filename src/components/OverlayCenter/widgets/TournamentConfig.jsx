@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { TOURNAMENT_STYLE_KEYS } from './styleKeysRegistry';
 import { getAllSlots, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
@@ -52,9 +52,16 @@ function SliderField({ label, value, onChange, min = 0, max = 100, step = 1, suf
 }
 
 /* ─── Numeric input with controlled value ─── */
-function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = {} }) {
+function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = {}, onNext }) {
   const [local, setLocal] = useState(value ?? '');
+  const committedRef = useRef(false);
   useEffect(() => { setLocal(value ?? ''); }, [value]);
+  const commit = () => {
+    if (committedRef.current) return;
+    committedRef.current = true;
+    const v = parseFloat(local);
+    onChange(isNaN(v) ? null : v);
+  };
   return (
     <label style={{ display: 'flex', alignItems: 'center', gap: 4, ...style }}>
       {prefix && <span style={{ fontSize: 11, color: '#94a3b8' }}>{prefix}</span>}
@@ -62,10 +69,13 @@ function NumInput({ value, onChange, placeholder = '0', prefix = '€', style = 
         type="number"
         step="any"
         value={local}
-        onChange={e => setLocal(e.target.value)}
-        onBlur={() => {
-          const v = parseFloat(local);
-          onChange(isNaN(v) ? null : v);
+        onChange={e => { setLocal(e.target.value); committedRef.current = false; }}
+        onBlur={commit}
+        onKeyDown={e => {
+          if (e.key === 'Enter') {
+            commit();
+            if (onNext) { e.preventDefault(); onNext(); }
+          }
         }}
         placeholder={placeholder}
         style={{ width: '100%' }}
@@ -265,6 +275,14 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   const bracketActiveMatch = c.bracketActiveMatch ?? 0;
   const bracketTypeConfig = c.bracketTypeConfig || { numSpins: 50, drawRule: 'no_point' };
 
+  /* ─── Refs to prevent stale-closure value swaps ─── */
+  const activeRoundRef = useRef(bracketActiveRound);
+  const activeMatchRef = useRef(bracketActiveMatch);
+  const bracketDataRef = useRef(bracketData);
+  useEffect(() => { activeRoundRef.current = bracketActiveRound; }, [bracketActiveRound]);
+  useEffect(() => { activeMatchRef.current = bracketActiveMatch; }, [bracketActiveMatch]);
+  useEffect(() => { bracketDataRef.current = bracketData; }, [bracketData]);
+
   /* Init bracket players when count changes */
   const [localBracketPlayers, setLocalBracketPlayers] = useState(() => {
     const arr = [];
@@ -421,21 +439,24 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     return null;
   };
 
-  const handleBracketRoundInput = (roundIdx, playerKey, field, value) => {
-    if (!currentBracketMatch) return;
+  const handleBracketRoundInput = (pinnedRound, pinnedMatch, roundIdx, playerKey, field, value) => {
+    /* Use pinned round/match from closure creation time to prevent stale value swaps */
+    const curData = bracketDataRef.current;
+    const curMatch = curData[pinnedRound]?.matches[pinnedMatch];
+    if (!curMatch) return;
     const { bracket: newBracket, matchCompleted } = updateBracketMatch(
-      bracketData, bracketActiveRound, bracketActiveMatch, roundIdx, playerKey, { [field]: value }, localBracketPlayers
+      curData, pinnedRound, pinnedMatch, roundIdx, playerKey, { [field]: value }, localBracketPlayers
     );
-    let nextRound = bracketActiveRound;
-    let nextMatch = bracketActiveMatch;
+    let nextRound = pinnedRound;
+    let nextMatch = pinnedMatch;
 
     if (matchCompleted) {
-      const next = findNextMatch(newBracket, bracketActiveRound, bracketActiveMatch);
+      const next = findNextMatch(newBracket, pinnedRound, pinnedMatch);
       if (next) { nextRound = next.round; nextMatch = next.match; }
     }
 
     /* Compute active player turn for overlay: player1 finishes all rounds first, then player2 */
-    const updatedMatch = newBracket[bracketActiveRound]?.matches[bracketActiveMatch];
+    const updatedMatch = newBracket[pinnedRound]?.matches[pinnedMatch];
     if (updatedMatch && !matchCompleted) {
       const isCls = updatedMatch.type === 'bonus_bo3_classic';
       let p1Done = 0, p2Done = 0;
@@ -460,7 +481,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
 
     // Track slot records when a match completes (bonus/bonus_bo3 only)
     if (matchCompleted && user?.id) {
-      const match = newBracket[bracketActiveRound]?.matches[bracketActiveMatch];
+      const match = newBracket[pinnedRound]?.matches[pinnedMatch];
       if (match && match.type !== 'spins') {
         const results = [];
         for (const round of match.rounds) {
@@ -494,38 +515,40 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   };
 
   /* Set bonusCost on ALL rounds at once for a given player (shared cost in BO3) */
-  const handleSharedBonusCost = (playerKey, value) => {
-    if (!currentBracketMatch) return;
-    let newBracket = bracketData.map(r => ({
+  const handleSharedBonusCost = (pinnedRound, pinnedMatch, playerKey, value) => {
+    const curData = bracketDataRef.current;
+    const curMatch = curData[pinnedRound]?.matches[pinnedMatch];
+    if (!curMatch) return;
+    let newBracket = curData.map(r => ({
       ...r,
       matches: r.matches.map(m => ({ ...m, rounds: m.rounds.map(rd => ({ ...rd, player1: { ...rd.player1 }, player2: { ...rd.player2 } })) })),
     }));
-    const match = newBracket[bracketActiveRound].matches[bracketActiveMatch];
+    const match = newBracket[pinnedRound].matches[pinnedMatch];
     for (const rd of match.rounds) {
       rd[playerKey].bonusCost = value;
     }
     // Recalculate round winners & match status
     const { bracket: recalced, matchCompleted } = updateBracketMatch(
-      newBracket, bracketActiveRound, bracketActiveMatch, 0, playerKey, { bonusCost: value }, localBracketPlayers
+      newBracket, pinnedRound, pinnedMatch, 0, playerKey, { bonusCost: value }, localBracketPlayers
     );
     // Ensure all rounds have the same cost (updateBracketMatch may have only updated round 0)
-    const recalcedMatch = recalced[bracketActiveRound].matches[bracketActiveMatch];
+    const recalcedMatch = recalced[pinnedRound].matches[pinnedMatch];
     for (const rd of recalcedMatch.rounds) {
       rd[playerKey].bonusCost = value;
     }
     // Re-run updateRoundData for each round to recalculate winners
     let finalBracket = recalced;
     for (let ri = 1; ri < recalcedMatch.rounds.length; ri++) {
-      const res = updateBracketMatch(finalBracket, bracketActiveRound, bracketActiveMatch, ri, playerKey, { bonusCost: value }, localBracketPlayers);
+      const res = updateBracketMatch(finalBracket, pinnedRound, pinnedMatch, ri, playerKey, { bonusCost: value }, localBracketPlayers);
       finalBracket = res.bracket;
     }
 
-    let nextRound = bracketActiveRound;
-    let nextMatch = bracketActiveMatch;
-    const finalMatch = finalBracket[bracketActiveRound]?.matches[bracketActiveMatch];
+    let nextRound = pinnedRound;
+    let nextMatch = pinnedMatch;
+    const finalMatch = finalBracket[pinnedRound]?.matches[pinnedMatch];
     const matchDone = finalMatch?.status === 'completed';
     if (matchDone) {
-      const next = findNextMatch(finalBracket, bracketActiveRound, bracketActiveMatch);
+      const next = findNextMatch(finalBracket, pinnedRound, pinnedMatch);
       if (next) { nextRound = next.round; nextMatch = next.match; }
     }
 
@@ -854,6 +877,22 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 const scoreboard = isBo3 ? getBoScoreboard(currentBracketMatch) : null;
                 const matchWinner = currentBracketMatch.winner ?? calcMatchWinner(currentBracketMatch);
 
+                /* Pin round/match at render time — these values are safe inside callbacks */
+                const pinR = bracketActiveRound;
+                const pinM = bracketActiveMatch;
+
+                /* Focus-next helper: advances to next number input in the panel */
+                const focusNextInput = (currentInput) => {
+                  const panel = currentInput?.closest('.bk-match-panel');
+                  if (!panel) return;
+                  const inputs = Array.from(panel.querySelectorAll('input[type="number"]'));
+                  const idx = inputs.indexOf(currentInput);
+                  if (idx >= 0 && idx < inputs.length - 1) {
+                    inputs[idx + 1].focus();
+                    inputs[idx + 1].select();
+                  }
+                };
+
                 return (
                   <div className="bk-match-panel">
                     <div className="bk-mp-header">
@@ -965,7 +1004,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                               <div className="bk-mp-input-wrap">
                                 <span className="bk-mp-input-prefix">€</span>
                                 <NumInput value={currentBracketMatch.rounds[0]?.player1?.bonusCost} prefix="" placeholder="0"
-                                  onChange={v => handleSharedBonusCost('player1', v)} />
+                                  onChange={v => handleSharedBonusCost(pinR, pinM, 'player1', v)}
+                                  onNext={() => focusNextInput(document.activeElement)} />
                               </div>
                             </label>
                           </div>
@@ -977,7 +1017,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                               <div className="bk-mp-input-wrap">
                                 <span className="bk-mp-input-prefix">€</span>
                                 <NumInput value={currentBracketMatch.rounds[0]?.player2?.bonusCost} prefix="" placeholder="0"
-                                  onChange={v => handleSharedBonusCost('player2', v)} />
+                                  onChange={v => handleSharedBonusCost(pinR, pinM, 'player2', v)}
+                                  onNext={() => focusNextInput(document.activeElement)} />
                               </div>
                             </label>
                           </div>
@@ -1003,7 +1044,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                                 <div className="bk-mp-input-wrap">
                                   <span className="bk-mp-input-prefix">{f.prefix}</span>
                                   <NumInput value={round.player1[f.key]} prefix="" placeholder="0"
-                                    onChange={v => handleBracketRoundInput(rIdx, 'player1', f.key, v)} />
+                                    onChange={v => handleBracketRoundInput(pinR, pinM, rIdx, 'player1', f.key, v)}
+                                    onNext={() => focusNextInput(document.activeElement)} />
                                 </div>
                               </label>
                             ))}
@@ -1029,7 +1071,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                                 <div className="bk-mp-input-wrap">
                                   <span className="bk-mp-input-prefix">{f.prefix}</span>
                                   <NumInput value={round.player2[f.key]} prefix="" placeholder="0"
-                                    onChange={v => handleBracketRoundInput(rIdx, 'player2', f.key, v)} />
+                                    onChange={v => handleBracketRoundInput(pinR, pinM, rIdx, 'player2', f.key, v)}
+                                    onNext={() => focusNextInput(document.activeElement)} />
                                 </div>
                               </label>
                             ))}
