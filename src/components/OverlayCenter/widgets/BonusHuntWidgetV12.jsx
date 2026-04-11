@@ -381,7 +381,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             );
           })()}
           {/* ── Vertical list rows (half-height) ── */}
-          <div className="bht-list-rows" style={showSR ? { maxHeight: 'calc(var(--bht-list-max-height, 400px) * 0.5)', overflow: 'hidden' } : undefined}>
+          <div className="bht-list-rows" style={showSR ? { maxHeight: 'calc(var(--bht-list-max-height, 400px) * 0.7)', overflow: 'hidden' } : undefined}>
             {(() => {
               const itemH = 48, count = bonuses.length;
               const shouldScroll = count >= 4;
@@ -479,7 +479,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Slot Requests Section ═══ */}
       {showSR && (
-        <div className="bht-card bht-v12-sr" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="bht-card bht-v12-sr" style={{ flex: '0 0 auto', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(var(--bht-list-max-height, 400px) * 0.3)' }}>
           <div className="bht-v12-sr-header">
             <span className="bht-v12-sr-icon">🎰</span>
             <span className="bht-v12-sr-title">Slot Requests</span>
@@ -490,8 +490,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
           <div className="bht-v12-sr-list" ref={srListRef}>
             {srRequests.length === 0 ? (
               <div className="bht-v12-sr-empty">
-                <span>No requests yet</span>
-                <span className="bht-v12-sr-hint">Viewers type {cmdTrigger} &lt;slot&gt;</span>
+                <span className="bht-v12-sr-hint">Type <strong>{cmdTrigger} &lt;slot name&gt;</strong> in chat to request a slot</span>
               </div>
             ) : (
               srRequests.map((r, i) => (

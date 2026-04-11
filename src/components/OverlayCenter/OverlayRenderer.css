@@ -1391,15 +1391,17 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 16px 8px;
+  padding: 12px 8px;
   color: var(--bht-muted, #93c5fd);
   font-size: 0.85em;
-  opacity: 0.7;
+  opacity: 0.85;
+  text-align: center;
 }
 .bht-v12-sr-hint {
-  font-size: 0.8em;
-  opacity: 0.6;
-  margin-top: 4px;
+  font-size: 0.85em;
+  opacity: 0.9;
+  line-height: 1.4;
+  color: var(--bht-text, #fff);
 }
 .bht-v12-sr-row {
   position: relative;
