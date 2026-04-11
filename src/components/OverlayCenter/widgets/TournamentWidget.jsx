@@ -1688,9 +1688,9 @@ function TournamentWidget({ config, theme }) {
     /* ── Group queued matches by phase, show divider label between phase groups ── */
     const queuedWithPhase = visibleQueued.map((m, i) => {
       const label = getMatchPhaseLabel(m);
-      const nextLabel = i < visibleQueued.length - 1 ? getMatchPhaseLabel(visibleQueued[i + 1]) : null;
-      // Show divider below this match when next match is a different phase
-      return { match: m, showLabel: label && nextLabel && label !== nextLabel ? nextLabel : null };
+      const prevLabel = i > 0 ? getMatchPhaseLabel(visibleQueued[i - 1]) : null;
+      // Show phase label above the first match of each new phase
+      return { match: m, showLabel: label && (i === 0 || label !== prevLabel) ? label : null };
     });
 
     return (
@@ -1721,18 +1721,18 @@ function TournamentWidget({ config, theme }) {
           }}>
             {queuedWithPhase.map((item, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {renderQueuedMatch(item.match, i)}
-                {/* Phase label — below the last match of each phase group */}
+                {/* Phase label — above the first match of each phase group */}
                 {item.showLabel && (
                   <div style={{
                     textAlign: 'center',
                     fontSize: 'clamp(8px, 1vw, 12px)', fontWeight: 800,
                     color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase',
                     letterSpacing: '2.5px', fontFamily: gFont,
-                    padding: 'clamp(4px, 0.6vw, 8px) 0 clamp(2px, 0.3vw, 4px)',
+                    padding: 'clamp(2px, 0.3vw, 4px) 0 clamp(4px, 0.6vw, 8px)',
                     textShadow: `0 0 10px ${gCyan}30`,
                   }}>— {item.showLabel} —</div>
                 )}
+                {renderQueuedMatch(item.match, i)}
               </div>
             ))}
           </div>
