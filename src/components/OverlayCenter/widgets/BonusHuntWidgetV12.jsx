@@ -22,23 +22,24 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   /* ─── SR phased animation state ─── */
   const [srVisible, setSrVisible] = useState(showSR);
   const [srAnim, setSrAnim] = useState('idle');
-  // OFF: idle → shatter-rows → slide-down → unmount
-  // ON:  mount → slide-up → assemble-rows → idle
+  // OFF: idle → shatter-rows → slide-down → unmount (bonus list expands)
+  // ON:  mount hidden → shrink-list (bonus list shrinks) → slide-up → assemble-rows → idle
   const srTimers = useRef([]);
   const clearSrTimers = () => { srTimers.current.forEach(clearTimeout); srTimers.current = []; };
 
   useEffect(() => {
     if (showSR && !srVisible) {
-      // turning ON → slide container up first, then assemble rows
+      // turning ON → mount hidden, bonus list shrinks first, then SR slides up, then rows assemble
       setSrVisible(true);
-      setSrAnim('slide-up');
+      setSrAnim('shrink-list');
       clearSrTimers();
       srTimers.current.push(
-        setTimeout(() => setSrAnim('assemble-rows'), 1200),
-        setTimeout(() => setSrAnim('idle'), 2600)
+        setTimeout(() => setSrAnim('slide-up'), 800),
+        setTimeout(() => setSrAnim('assemble-rows'), 2000),
+        setTimeout(() => setSrAnim('idle'), 3400)
       );
     } else if (!showSR && srVisible) {
-      // turning OFF → shatter rows first, then slide container down
+      // turning OFF → shatter rows first, then slide container down, bonus list expands
       setSrAnim('shatter-rows');
       clearSrTimers();
       srTimers.current.push(
@@ -363,7 +364,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: srVisible && srAnim !== 'slide-down' ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
+        <div className="bht-card bht-list-card" style={{ flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
@@ -512,7 +513,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       {srVisible && (
         <div className={`bht-card bht-v12-sr bht-v12-sr--${srAnim}`}
           style={{
-            flex: srAnim === 'slide-down' ? '0 0 0px' : '1 1 0',
+            flex: (srAnim === 'slide-down' || srAnim === 'shrink-list') ? '0 0 0px' : '1 1 0',
             minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column',
             transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)',
           }}>

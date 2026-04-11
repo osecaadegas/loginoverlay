@@ -1501,6 +1501,12 @@
   opacity: 0;
 }
 
+/* ─ Phase 0 ON: bonus list shrinks, SR stays hidden ─ */
+.bht-v12-sr--shrink-list {
+  opacity: 0;
+  pointer-events: none;
+}
+
 /* ─ Phase 1 ON: container slides up (rows hidden) ─ */
 .bht-v12-sr--slide-up {
   animation: sr-slide-up 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
@@ -1809,10 +1815,10 @@
 }
 .oc-bonushunt--v12 .bht-v12-sr-row {
   border-radius: 6px;
-  min-height: 32px;
+  min-height: 36px;
 }
 .oc-bonushunt--v12 .bht-v12-sr-row-content {
-  padding: 4px 8px;
+  padding: 2px 6px;
   gap: 6px;
 }
 .oc-bonushunt--v12 .bht-v12-sr-row-idx {
@@ -1820,8 +1826,8 @@
   opacity: 0.5;
 }
 .oc-bonushunt--v12 .bht-v12-sr-row-img {
-  width: 26px;
-  height: 26px;
+  width: 34px;
+  height: 34px;
   border-radius: 5px;
 }
 .oc-bonushunt--v12 .bht-v12-sr-row-name {
