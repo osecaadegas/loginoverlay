@@ -1975,7 +1975,7 @@
   left: 0;
   right: 0;
   height: 18px;
-  z-index: 5;
+  z-index: 10;
   pointer-events: none;
 }
 .oc-bonushunt--v12 .bht-list-fade--top {
@@ -4933,6 +4933,8 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: relative;
+  z-index: 1;
 }
 .sr-min-scroll-track--animate {
   animation: sr-infinite-scroll var(--sr-scroll-duration, 15s) linear infinite;

@@ -308,21 +308,21 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                   <div className="bht-stat-value" style={{ color: stats.avgMulti >= 100 ? '#4ade80' : '#f87171' }}>{stats.avgMulti.toFixed(0)}x</div>
                 </div>
               </div>
-              {(stats.superCount > 0 || stats.extremeCount > 0) && (
-                <div className="bht-badge-pills">
-                  {stats.superCount > 0 && (
-                    <span className="bht-badge-pill bht-badge-pill--super">
-                      {stats.superCount} SUPER{stats.superCount !== 1 ? 'S' : ''}
-                    </span>
-                  )}
-                  {stats.extremeCount > 0 && (
-                    <span className="bht-badge-pill bht-badge-pill--extreme">
-                      {stats.extremeCount} EXTREME{stats.extremeCount !== 1 ? 'S' : ''}
-                    </span>
-                  )}
-                </div>
-              )}
             </div>
+            {(stats.superCount > 0 || stats.extremeCount > 0) && (
+              <div className="bht-badge-pills">
+                {stats.superCount > 0 && (
+                  <span className="bht-badge-pill bht-badge-pill--super">
+                    {stats.superCount} SUPER{stats.superCount !== 1 ? 'S' : ''}
+                  </span>
+                )}
+                {stats.extremeCount > 0 && (
+                  <span className="bht-badge-pill bht-badge-pill--extreme">
+                    {stats.extremeCount} EXTREME{stats.extremeCount !== 1 ? 'S' : ''}
+                  </span>
+                )}
+              </div>
+            )}
           </div>
           <div className="bht-fullflip-face bht-fullflip-back">
             <div className="bht-flipback-layout">
