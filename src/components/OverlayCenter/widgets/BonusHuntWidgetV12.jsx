@@ -94,7 +94,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   const [carouselIdx, setCarouselIdx] = useState(0);
   useEffect(() => {
     if (bonuses.length < 2) return;
-    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 2500);
+    const id = setInterval(() => setCarouselIdx(i => (i + 1) % bonuses.length), 3500);
     return () => clearInterval(id);
   }, [bonuses.length]);
 
@@ -375,7 +375,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       {bonuses.length > 0 && (
         <div className="bht-card bht-list-card" style={{ flex: srVisible && srAnim !== 'slide-down' && srAnim !== 'shrink-list' ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s cubic-bezier(0.4, 0, 0.2, 1)' }}>
           {/* ── 3D Animated Card Carousel ── */}
-          <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
+          <div className={`bht-stack${isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
               const total = bonuses.length;
               if (total === 0) return null;
