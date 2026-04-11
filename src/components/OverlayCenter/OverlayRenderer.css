@@ -1470,75 +1470,84 @@
   opacity: 0.8;
 }
 
-/* ── SR card shatter / assemble animations ── */
-.bht-v12-sr--shattering {
-  animation: sr-shatter-card 1.4s ease-in forwards;
-}
-.bht-v12-sr--shattering .bht-v12-sr-header,
-.bht-v12-sr--shattering .bht-v12-sr-list {
-  animation: sr-shatter-content 1s ease-in forwards;
-}
-.bht-v12-sr--shattering .bht-v12-sr-row {
+/* ── SR card phased animations ── */
+
+/* ─ Phase 1 OFF: rows shatter out (container stays) ─ */
+.bht-v12-sr--shatter-rows .bht-v12-sr-row {
   animation: sr-shatter-fragment 1s ease-in forwards;
 }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(odd) {
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(odd) {
   --sr-frag-x: -40px; --sr-frag-rot: -12deg;
 }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(even) {
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(even) {
   --sr-frag-x: 40px; --sr-frag-rot: 12deg;
 }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(1) { animation-delay: 0s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(2) { animation-delay: 0.08s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(3) { animation-delay: 0.16s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(4) { animation-delay: 0.24s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(5) { animation-delay: 0.32s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(6) { animation-delay: 0.4s; }
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(1) { animation-delay: 0s; }
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(2) { animation-delay: 0.1s; }
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(3) { animation-delay: 0.2s; }
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(4) { animation-delay: 0.3s; }
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(5) { animation-delay: 0.4s; }
+.bht-v12-sr--shatter-rows .bht-v12-sr-row:nth-child(6) { animation-delay: 0.5s; }
+.bht-v12-sr--shatter-rows .bht-v12-sr-header {
+  animation: sr-shatter-content 0.8s ease-in 0.3s forwards;
+}
 
-@keyframes sr-shatter-card {
-  0%   { opacity: 1; transform: scale(1); }
-  60%  { opacity: 0.6; transform: scale(0.97); }
-  100% { opacity: 0; transform: scale(0.92); }
+/* ─ Phase 2 OFF: container slides down ─ */
+.bht-v12-sr--slide-down {
+  animation: sr-slide-down 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
-@keyframes sr-shatter-content {
-  0%   { opacity: 1; filter: blur(0); }
-  100% { opacity: 0; filter: blur(4px); }
+.bht-v12-sr--slide-down .bht-v12-sr-header,
+.bht-v12-sr--slide-down .bht-v12-sr-list {
+  opacity: 0;
 }
+
+/* ─ Phase 1 ON: container slides up (rows hidden) ─ */
+.bht-v12-sr--slide-up {
+  animation: sr-slide-up 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+.bht-v12-sr--slide-up .bht-v12-sr-header {
+  animation: sr-fade-in 0.8s ease-out 0.4s both;
+}
+.bht-v12-sr--slide-up .bht-v12-sr-row {
+  opacity: 0;
+}
+
+/* ─ Phase 2 ON: rows assemble into place ─ */
+.bht-v12-sr--assemble-rows .bht-v12-sr-row {
+  animation: sr-assemble-fragment 1s ease-out both;
+}
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(odd) {
+  --sr-frag-x: -40px; --sr-frag-rot: -12deg;
+}
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(even) {
+  --sr-frag-x: 40px; --sr-frag-rot: 12deg;
+}
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(1) { animation-delay: 0.05s; }
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(2) { animation-delay: 0.15s; }
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(3) { animation-delay: 0.25s; }
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(4) { animation-delay: 0.35s; }
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(5) { animation-delay: 0.45s; }
+.bht-v12-sr--assemble-rows .bht-v12-sr-row:nth-child(6) { animation-delay: 0.55s; }
+
+/* ── Keyframes ── */
 @keyframes sr-shatter-fragment {
   0%   { opacity: 1; transform: translate(0, 0) rotate(0) scale(1); }
   100% { opacity: 0; transform: translate(var(--sr-frag-x, 30px), 20px) rotate(var(--sr-frag-rot, 10deg)) scale(0.7); }
 }
-
-/* Assemble — reverse of shatter */
-.bht-v12-sr--assembling {
-  animation: sr-assemble-card 1.4s ease-out forwards;
+@keyframes sr-shatter-content {
+  0%   { opacity: 1; filter: blur(0); }
+  100% { opacity: 0; filter: blur(3px); }
 }
-.bht-v12-sr--assembling .bht-v12-sr-header,
-.bht-v12-sr--assembling .bht-v12-sr-list {
-  animation: sr-assemble-content 1s ease-out 0.3s both;
+@keyframes sr-slide-down {
+  0%   { opacity: 0.5; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(20px) scale(0.96); }
 }
-.bht-v12-sr--assembling .bht-v12-sr-row {
-  animation: sr-assemble-fragment 1s ease-out both;
+@keyframes sr-slide-up {
+  0%   { opacity: 0; transform: translateY(20px) scale(0.96); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(odd) {
-  --sr-frag-x: -40px; --sr-frag-rot: -12deg;
-}
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(even) {
-  --sr-frag-x: 40px; --sr-frag-rot: 12deg;
-}
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(1) { animation-delay: 0.15s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(2) { animation-delay: 0.25s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(3) { animation-delay: 0.35s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(4) { animation-delay: 0.45s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(5) { animation-delay: 0.55s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(6) { animation-delay: 0.65s; }
-
-@keyframes sr-assemble-card {
-  0%   { opacity: 0; transform: scale(0.92); }
-  40%  { opacity: 0.6; transform: scale(0.97); }
-  100% { opacity: 1; transform: scale(1); }
-}
-@keyframes sr-assemble-content {
-  0%   { opacity: 0; filter: blur(4px); }
+@keyframes sr-fade-in {
+  0%   { opacity: 0; filter: blur(3px); }
   100% { opacity: 1; filter: blur(0); }
 }
 @keyframes sr-assemble-fragment {
