@@ -341,7 +341,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: showSR ? '1 1 0' : undefined, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="bht-card bht-list-card" style={{ flex: showSR ? '3 1 0' : undefined, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
