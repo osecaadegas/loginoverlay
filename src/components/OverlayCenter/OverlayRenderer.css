@@ -547,7 +547,7 @@
 .bht-fullflip-container {
   position: relative;
   width: 100%;
-  transition: transform 0.8s cubic-bezier(0.4, 0.2, 0.2, 1);
+  transition: transform 1.4s cubic-bezier(0.25, 0.1, 0.25, 1);
   transform-style: preserve-3d;
 }
 .bht-fullflip-container--flipped {
@@ -1604,7 +1604,7 @@
 
 /* ── V12 modern: list card ── */
 .oc-bonushunt--v12 .bht-list-card {
-  background: linear-gradient(160deg, rgba(30,15,50,0.92), rgba(60,20,90,0.82));
+  background: linear-gradient(160deg, rgba(15,23,42,0.95), rgba(30,58,138,0.85));
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.06);
 }
@@ -1615,32 +1615,46 @@
   margin: 2px 0;
 }
 .oc-bonushunt--v12 .bht-stack-card {
-  width: 105px;
+  width: 110px;
   height: 160px;
 }
 .oc-bonushunt--v12 .bht-stack-card-inner {
-  border-radius: 10px;
-  border: 1px solid rgba(255,255,255,0.08);
-  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  border-radius: 12px;
+  border: 1.5px solid rgba(255,255,255,0.1);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06);
+  background: linear-gradient(180deg, rgba(15,23,42,0.6), rgba(0,0,0,0.7));
 }
 .oc-bonushunt--v12 .bht-stack-card--center .bht-stack-card-inner {
-  border-color: rgba(134,239,172,0.35);
-  box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 14px 2px rgba(134,239,172,0.15);
+  border-color: rgba(96,165,250,0.4);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 20px 3px rgba(96,165,250,0.18), inset 0 1px 0 rgba(255,255,255,0.1);
+}
+.oc-bonushunt--v12 .bht-stack-card--super .bht-stack-card-inner {
+  border-color: rgba(234,179,8,0.45);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 16px 2px rgba(234,179,8,0.2);
+}
+.oc-bonushunt--v12 .bht-stack-card--extreme .bht-stack-card-inner {
+  border-color: rgba(239,68,68,0.5);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 16px 2px rgba(239,68,68,0.2);
+}
+.oc-bonushunt--v12 .bht-stack-card-img-wrap {
+  border-radius: 10px 10px 0 0;
+  overflow: hidden;
 }
 .oc-bonushunt--v12 .bht-stack-card-info {
-  padding: 3px 5px;
-  background: rgba(0,0,0,0.65);
-  backdrop-filter: blur(6px);
+  padding: 4px 6px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.7), rgba(0,0,0,0.85));
+  backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(255,255,255,0.04);
 }
 .oc-bonushunt--v12 .bht-stack-card-name {
   font-size: 0.62em;
-  font-weight: 600;
+  font-weight: 700;
   letter-spacing: 0.3px;
 }
 .oc-bonushunt--v12 .bht-stack-card-bet {
   font-size: 0.58em;
   font-weight: 500;
-  opacity: 0.8;
+  opacity: 0.75;
 }
 .oc-bonushunt--v12 .bht-stack-card-multi {
   font-size: 0.58em;
@@ -1762,7 +1776,7 @@
 
 /* ── V12 modern: SR card ── */
 .oc-bonushunt--v12 .bht-v12-sr {
-  background: linear-gradient(160deg, rgba(30,15,50,0.92), rgba(60,20,90,0.82));
+  background: linear-gradient(160deg, rgba(15,23,42,0.95), rgba(30,58,138,0.85));
   backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.06);
 }
@@ -1811,41 +1825,68 @@
   opacity: 0.6;
 }
 
+/* ── V12 modern: flip transition ── */
+.oc-bonushunt--v12 .bht-fullflip-container {
+  transition: transform 1.6s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.oc-bonushunt--v12 .bht-header--fullflip {
+  perspective: 1200px;
+}
+
 /* ── V12 modern: flip back best/worst slots ── */
 .oc-bonushunt--v12 .bht-fullflip-slots {
-  gap: 3px;
-  padding: 3px;
+  gap: 4px;
+  padding: 4px;
 }
 .oc-bonushunt--v12 .bht-fullflip-slot {
-  border-radius: 8px;
-  background: rgba(0,0,0,0.45);
-  backdrop-filter: blur(6px);
+  border-radius: 10px;
+  background: linear-gradient(160deg, rgba(15,23,42,0.9), rgba(30,58,138,0.7));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.06);
 }
 .oc-bonushunt--v12 .bht-fullflip-slot--best {
-  box-shadow: inset 0 0 0 1.5px rgba(74,222,128,0.5), 0 0 10px rgba(74,222,128,0.2);
+  box-shadow: inset 0 0 0 1.5px rgba(74,222,128,0.4), 0 0 16px rgba(74,222,128,0.15), 0 4px 12px rgba(0,0,0,0.4);
 }
 .oc-bonushunt--v12 .bht-fullflip-slot--worst {
-  box-shadow: inset 0 0 0 1.5px rgba(248,113,113,0.5), 0 0 10px rgba(248,113,113,0.2);
+  box-shadow: inset 0 0 0 1.5px rgba(248,113,113,0.4), 0 0 16px rgba(248,113,113,0.15), 0 4px 12px rgba(0,0,0,0.4);
+}
+.oc-bonushunt--v12 .bht-fullflip-slot--empty {
+  background: linear-gradient(160deg, rgba(15,23,42,0.8), rgba(30,58,138,0.5));
+  border: 1px solid rgba(255,255,255,0.06);
 }
 .oc-bonushunt--v12 .bht-fullflip-slot-ribbon {
-  font-size: 0.58em;
-  letter-spacing: 0.12em;
-  padding: 1px 0;
+  font-size: 0.55em;
+  letter-spacing: 0.14em;
+  padding: 2px 0;
+}
+.oc-bonushunt--v12 .bht-fullflip-slot-ribbon--best {
+  background: linear-gradient(90deg, rgba(74,222,128,0.9), rgba(34,197,94,0.95));
+}
+.oc-bonushunt--v12 .bht-fullflip-slot-ribbon--worst {
+  background: linear-gradient(90deg, rgba(248,113,113,0.9), rgba(239,68,68,0.95));
 }
 .oc-bonushunt--v12 .bht-fullflip-slot-overlay {
-  padding: 12px 4px 4px;
-  gap: 8px;
+  padding: 14px 6px 6px;
+  gap: 10px;
+  background: linear-gradient(to top, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.5) 55%, transparent 100%);
 }
 .oc-bonushunt--v12 .bht-fullflip-slot-label {
-  font-size: 0.45em;
+  font-size: 0.42em;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  opacity: 0.55;
 }
 .oc-bonushunt--v12 .bht-fullflip-slot-payout {
-  font-size: 1.15em;
-  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+  font-size: 1.2em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 6px rgba(0,0,0,0.6);
 }
 .oc-bonushunt--v12 .bht-fullflip-slot-multi {
-  font-size: 0.95em;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+  font-size: 1em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.5);
 }
 
 /* ── V12 modern: global card styling ── */

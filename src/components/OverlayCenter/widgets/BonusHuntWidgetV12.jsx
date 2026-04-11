@@ -63,12 +63,20 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
     return { totalBetAll, totalWin, superCount, liveBE, avgMulti, openedCount: openedBonuses.length, bestSlot, worstSlot };
   }, [bonuses, startMoney, stopLoss]);
 
-  /* ─── Stats flip ─── */
+  /* ─── Stats flip (show front 20s → flip to back 10s → repeat) ─── */
   const [statsFlipped, setStatsFlipped] = useState(false);
   useEffect(() => {
     if (!c.bonusOpening) { setStatsFlipped(false); return; }
-    const id = setInterval(() => setStatsFlipped(f => !f), 30000);
-    return () => clearInterval(id);
+    let flipTimer, backTimer;
+    const cycle = () => {
+      setStatsFlipped(true);
+      backTimer = setTimeout(() => {
+        setStatsFlipped(false);
+        flipTimer = setTimeout(cycle, 20000);
+      }, 10000);
+    };
+    flipTimer = setTimeout(cycle, 20000);
+    return () => { clearTimeout(flipTimer); clearTimeout(backTimer); };
   }, [c.bonusOpening]);
 
   /* ─── Carousel ─── */
