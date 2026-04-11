@@ -1638,22 +1638,21 @@
   padding: 2px 0 4px;
 }
 .oc-bonushunt--v12 .bht-badge-pill {
-  font-size: 0.52em;
+  font-size: 0.58em;
   font-weight: 700;
   letter-spacing: 0.8px;
-  padding: 2px 8px;
+  padding: 2.5px 10px;
   border-radius: 20px;
   line-height: 1.4;
   text-transform: uppercase;
+  color: #fff;
 }
 .oc-bonushunt--v12 .bht-badge-pill--super {
   background: rgba(234,179,8,0.18);
-  color: var(--bht-super-badge, #eab308);
   border: 1px solid rgba(234,179,8,0.25);
 }
 .oc-bonushunt--v12 .bht-badge-pill--extreme {
   background: rgba(239,68,68,0.18);
-  color: var(--bht-extreme-badge, #ef4444);
   border: 1px solid rgba(239,68,68,0.25);
 }
 
