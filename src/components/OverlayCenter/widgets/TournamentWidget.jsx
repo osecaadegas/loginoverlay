@@ -1689,8 +1689,8 @@ function TournamentWidget({ config, theme }) {
     const queuedWithPhase = visibleQueued.map((m, i) => {
       const label = getMatchPhaseLabel(m);
       const prevLabel = i > 0 ? getMatchPhaseLabel(visibleQueued[i - 1]) : null;
-      // Show phase label above the first match of each new phase
-      return { match: m, showLabel: label && (i === 0 || label !== prevLabel) ? label : null };
+      // Show phase label below the first match of each new phase (skip the very first phase)
+      return { match: m, showLabel: label && prevLabel && label !== prevLabel ? label : null };
     });
 
     return (
