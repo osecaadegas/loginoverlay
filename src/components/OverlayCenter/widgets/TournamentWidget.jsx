@@ -1688,9 +1688,9 @@ function TournamentWidget({ config, theme }) {
     /* ── Group queued matches by phase, show divider label between phase groups ── */
     const queuedWithPhase = visibleQueued.map((m, i) => {
       const label = getMatchPhaseLabel(m);
-      const prevLabel = i > 0 ? getMatchPhaseLabel(visibleQueued[i - 1]) : null;
-      // Show phase label below the first match of each new phase (skip the very first phase)
-      return { match: m, showLabel: label && prevLabel && label !== prevLabel ? label : null };
+      const nextLabel = i < visibleQueued.length - 1 ? getMatchPhaseLabel(visibleQueued[i + 1]) : null;
+      // Show next phase label below the last match of each phase group (divider between phases)
+      return { match: m, showLabel: label && nextLabel && label !== nextLabel ? nextLabel : null };
     });
 
     return (
