@@ -2370,13 +2370,14 @@
 .bht3-flip-back-content {
   position: relative;
   z-index: 1;
-  padding: 16px 20px;
+  padding: 12px 14px;
   width: 100%;
   text-align: center;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  box-sizing: border-box;
 }
 
 .bht3-flip-back-provider-logo {
@@ -2432,12 +2433,12 @@
 .bht3-flip-back-stat {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 8px 6px;
+  border-radius: 8px;
+  padding: 5px 4px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 1px;
   transition: background 0.3s ease;
   backdrop-filter: blur(4px);
 }
