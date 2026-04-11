@@ -1857,7 +1857,7 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 6px 2px 6px 6px;
+  padding: 6px 4px;
   height: 100%;
 }
 .oc-bonushunt--v12 .bht-flipback-side {
@@ -1874,6 +1874,9 @@
   align-items: center;
   justify-content: center;
   gap: 1px;
+  width: 52px;
+  flex: 0 0 52px;
+  overflow: hidden;
 }
 .oc-bonushunt--v12 .bht-flipback-stat-label {
   font-size: 0.48em;
