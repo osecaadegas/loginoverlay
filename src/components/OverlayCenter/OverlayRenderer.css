@@ -1472,14 +1472,14 @@
 
 /* ── SR card shatter / assemble animations ── */
 .bht-v12-sr--shattering {
-  animation: sr-shatter-card 0.7s ease-in forwards;
+  animation: sr-shatter-card 1.4s ease-in forwards;
 }
 .bht-v12-sr--shattering .bht-v12-sr-header,
 .bht-v12-sr--shattering .bht-v12-sr-list {
-  animation: sr-shatter-content 0.5s ease-in forwards;
+  animation: sr-shatter-content 1s ease-in forwards;
 }
 .bht-v12-sr--shattering .bht-v12-sr-row {
-  animation: sr-shatter-fragment 0.5s ease-in forwards;
+  animation: sr-shatter-fragment 1s ease-in forwards;
 }
 .bht-v12-sr--shattering .bht-v12-sr-row:nth-child(odd) {
   --sr-frag-x: -40px; --sr-frag-rot: -12deg;
@@ -1488,11 +1488,11 @@
   --sr-frag-x: 40px; --sr-frag-rot: 12deg;
 }
 .bht-v12-sr--shattering .bht-v12-sr-row:nth-child(1) { animation-delay: 0s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(2) { animation-delay: 0.04s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(3) { animation-delay: 0.08s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(4) { animation-delay: 0.12s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(5) { animation-delay: 0.16s; }
-.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(6) { animation-delay: 0.2s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(2) { animation-delay: 0.08s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(3) { animation-delay: 0.16s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(4) { animation-delay: 0.24s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(5) { animation-delay: 0.32s; }
+.bht-v12-sr--shattering .bht-v12-sr-row:nth-child(6) { animation-delay: 0.4s; }
 
 @keyframes sr-shatter-card {
   0%   { opacity: 1; transform: scale(1); }
@@ -1510,14 +1510,14 @@
 
 /* Assemble — reverse of shatter */
 .bht-v12-sr--assembling {
-  animation: sr-assemble-card 0.7s ease-out forwards;
+  animation: sr-assemble-card 1.4s ease-out forwards;
 }
 .bht-v12-sr--assembling .bht-v12-sr-header,
 .bht-v12-sr--assembling .bht-v12-sr-list {
-  animation: sr-assemble-content 0.5s ease-out 0.15s both;
+  animation: sr-assemble-content 1s ease-out 0.3s both;
 }
 .bht-v12-sr--assembling .bht-v12-sr-row {
-  animation: sr-assemble-fragment 0.5s ease-out both;
+  animation: sr-assemble-fragment 1s ease-out both;
 }
 .bht-v12-sr--assembling .bht-v12-sr-row:nth-child(odd) {
   --sr-frag-x: -40px; --sr-frag-rot: -12deg;
@@ -1525,12 +1525,12 @@
 .bht-v12-sr--assembling .bht-v12-sr-row:nth-child(even) {
   --sr-frag-x: 40px; --sr-frag-rot: 12deg;
 }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(1) { animation-delay: 0.08s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(2) { animation-delay: 0.12s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(3) { animation-delay: 0.16s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(4) { animation-delay: 0.20s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(5) { animation-delay: 0.24s; }
-.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(6) { animation-delay: 0.28s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(1) { animation-delay: 0.15s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(2) { animation-delay: 0.25s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(3) { animation-delay: 0.35s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(4) { animation-delay: 0.45s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(5) { animation-delay: 0.55s; }
+.bht-v12-sr--assembling .bht-v12-sr-row:nth-child(6) { animation-delay: 0.65s; }
 
 @keyframes sr-assemble-card {
   0%   { opacity: 0; transform: scale(0.92); }

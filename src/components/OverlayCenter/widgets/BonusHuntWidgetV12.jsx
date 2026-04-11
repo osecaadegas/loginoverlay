@@ -30,12 +30,12 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       setSrVisible(true);
       setSrAnim('assembling');
       clearTimeout(srAnimTimer.current);
-      srAnimTimer.current = setTimeout(() => setSrAnim('idle'), 700);
+      srAnimTimer.current = setTimeout(() => setSrAnim('idle'), 1400);
     } else if (!showSR && srVisible) {
       // turning OFF → shatter out
       setSrAnim('shattering');
       clearTimeout(srAnimTimer.current);
-      srAnimTimer.current = setTimeout(() => { setSrVisible(false); setSrAnim('idle'); }, 700);
+      srAnimTimer.current = setTimeout(() => { setSrVisible(false); setSrAnim('idle'); }, 1400);
     }
     return () => clearTimeout(srAnimTimer.current);
   }, [showSR]);
@@ -338,7 +338,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: srVisible ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 0.6s ease' }}>
+        <div className="bht-card bht-list-card" style={{ flex: srVisible ? '3 1 0' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s ease' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
@@ -486,7 +486,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       {/* ═══ Slot Requests Section ═══ */}
       {srVisible && (
         <div className={`bht-card bht-v12-sr bht-v12-sr--${srAnim}`}
-          style={{ flex: srAnim === 'shattering' ? '0 0 0px' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 0.6s ease' }}>
+          style={{ flex: srAnim === 'shattering' ? '0 0 0px' : '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', transition: 'flex 1.2s ease' }}>
           <div className="bht-v12-sr-header">
             <span className="bht-v12-sr-icon">🎰</span>
             <span className="bht-v12-sr-title">Slot Requests</span>
