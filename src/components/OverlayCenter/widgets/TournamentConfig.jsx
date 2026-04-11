@@ -493,6 +493,56 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     setMulti(updates);
   };
 
+  /* Set bonusCost on ALL rounds at once for a given player (shared cost in BO3) */
+  const handleSharedBonusCost = (playerKey, value) => {
+    if (!currentBracketMatch) return;
+    let newBracket = bracketData.map(r => ({
+      ...r,
+      matches: r.matches.map(m => ({ ...m, rounds: m.rounds.map(rd => ({ ...rd, player1: { ...rd.player1 }, player2: { ...rd.player2 } })) })),
+    }));
+    const match = newBracket[bracketActiveRound].matches[bracketActiveMatch];
+    for (const rd of match.rounds) {
+      rd[playerKey].bonusCost = value;
+    }
+    // Recalculate round winners & match status
+    const { bracket: recalced, matchCompleted } = updateBracketMatch(
+      newBracket, bracketActiveRound, bracketActiveMatch, 0, playerKey, { bonusCost: value }, localBracketPlayers
+    );
+    // Ensure all rounds have the same cost (updateBracketMatch may have only updated round 0)
+    const recalcedMatch = recalced[bracketActiveRound].matches[bracketActiveMatch];
+    for (const rd of recalcedMatch.rounds) {
+      rd[playerKey].bonusCost = value;
+    }
+    // Re-run updateRoundData for each round to recalculate winners
+    let finalBracket = recalced;
+    for (let ri = 1; ri < recalcedMatch.rounds.length; ri++) {
+      const res = updateBracketMatch(finalBracket, bracketActiveRound, bracketActiveMatch, ri, playerKey, { bonusCost: value }, localBracketPlayers);
+      finalBracket = res.bracket;
+    }
+
+    let nextRound = bracketActiveRound;
+    let nextMatch = bracketActiveMatch;
+    const finalMatch = finalBracket[bracketActiveRound]?.matches[bracketActiveMatch];
+    const matchDone = finalMatch?.status === 'completed';
+    if (matchDone) {
+      const next = findNextMatch(finalBracket, bracketActiveRound, bracketActiveMatch);
+      if (next) { nextRound = next.round; nextMatch = next.match; }
+    }
+
+    const flatMatches = finalBracket.flatMap(r => r.matches);
+    const activeFlat = flatMatches.indexOf(finalBracket[nextRound]?.matches[nextMatch]);
+    const updates = {
+      bracketData: finalBracket,
+      bracketActiveRound: nextRound,
+      bracketActiveMatch: nextMatch,
+      data: { ...c.data, matches: flatMatches, currentMatchIdx: activeFlat >= 0 ? activeFlat : (c.data?.currentMatchIdx ?? 0) },
+    };
+    if (matchDone && getChampion(finalBracket)) {
+      updates.bracketPhase = 'completed';
+    }
+    setMulti(updates);
+  };
+
   const handleBracketManualWinner = (winner) => {
     if (!currentBracketMatch) return;
     const current = currentBracketMatch.winner;
@@ -903,15 +953,51 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                       </div>
                     )}
 
+                    {/* Shared Bonus Cost for BO3 (same cost across all rounds) */}
+                    {isBo3 && currentBracketMatch.type !== 'spins' && (
+                      <div className="bk-mp-round">
+                        <div className="bk-mp-round-label">Bonus Cost</div>
+                        <div className="bk-mp-round-grid">
+                          <div className="bk-mp-round-side">
+                            <div className="bk-mp-side-name">{currentBracketMatch.player1}</div>
+                            <label className="bk-mp-input-label">
+                              <span>Bonus Cost</span>
+                              <div className="bk-mp-input-wrap">
+                                <span className="bk-mp-input-prefix">€</span>
+                                <NumInput value={currentBracketMatch.rounds[0]?.player1?.bonusCost} prefix="" placeholder="0"
+                                  onChange={v => handleSharedBonusCost('player1', v)} />
+                              </div>
+                            </label>
+                          </div>
+                          <div className="bk-mp-round-vs">VS</div>
+                          <div className="bk-mp-round-side">
+                            <div className="bk-mp-side-name">{currentBracketMatch.player2}</div>
+                            <label className="bk-mp-input-label">
+                              <span>Bonus Cost</span>
+                              <div className="bk-mp-input-wrap">
+                                <span className="bk-mp-input-prefix">€</span>
+                                <NumInput value={currentBracketMatch.rounds[0]?.player2?.bonusCost} prefix="" placeholder="0"
+                                  onChange={v => handleSharedBonusCost('player2', v)} />
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Round inputs */}
-                    {currentBracketMatch.rounds.map((round, rIdx) => (
+                    {currentBracketMatch.rounds.map((round, rIdx) => {
+                      const roundFields = isBo3 && currentBracketMatch.type !== 'spins'
+                        ? inputFields.filter(f => f.key !== 'bonusCost')
+                        : inputFields;
+                      return (
                       <div key={rIdx} className="bk-mp-round">
                         {isBo3 && <div className="bk-mp-round-label">Round {rIdx + 1}</div>}
                         <div className="bk-mp-round-grid">
                           {/* Player 1 */}
                           <div className="bk-mp-round-side">
                             <div className="bk-mp-side-name">{currentBracketMatch.player1}</div>
-                            {inputFields.map(f => (
+                            {roundFields.map(f => (
                               <label key={`p1-${rIdx}-${f.key}`} className="bk-mp-input-label">
                                 <span>{f.label}</span>
                                 <div className="bk-mp-input-wrap">
@@ -937,7 +1023,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                           {/* Player 2 */}
                           <div className="bk-mp-round-side">
                             <div className="bk-mp-side-name">{currentBracketMatch.player2}</div>
-                            {inputFields.map(f => (
+                            {roundFields.map(f => (
                               <label key={`p2-${rIdx}-${f.key}`} className="bk-mp-input-label">
                                 <span>{f.label}</span>
                                 <div className="bk-mp-input-wrap">
@@ -965,7 +1051,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                           </div>
                         )}
                       </div>
-                    ))}
+                      );
+                    })}
 
                     {/* Winner / Manual override + Reset */}
                     {(() => {
