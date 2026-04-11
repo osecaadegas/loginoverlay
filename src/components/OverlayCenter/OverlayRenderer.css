@@ -1856,7 +1856,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 0;
   padding: 6px 4px;
   height: 100%;
 }
@@ -1867,7 +1867,7 @@
   justify-content: center;
   gap: 1px;
   min-width: 44px;
-  flex: 0 0 auto;
+  flex: 1 1 0;
 }
 .oc-bonushunt--v12 .bht-flipback-stat-label {
   font-size: 0.48em;
@@ -1890,10 +1890,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  width: 70px;
-  height: 70px;
+  width: 80px;
+  height: 90px;
 }
 .oc-bonushunt--v12 .bht-flipback-slot--best {
   border: 2px solid rgba(74,222,128,0.6);
@@ -1908,6 +1908,9 @@
   font-size: 0.8em;
   opacity: 0.4;
   background: rgba(0,0,0,0.2);
+}
+.oc-bonushunt--v12 .bht-flipback-spacer {
+  flex: 0 0 10px;
 }
 .oc-bonushunt--v12 .bht-flipback-slot-img {
   width: 100%;

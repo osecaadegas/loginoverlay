@@ -133,10 +133,11 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
 
   /* ── Current bonus (first unopened) ── */
   const currentBonus = useMemo(() => bonuses.find(b => !b.opened), [bonuses]);
-  /* Priority: bonus hunt slot (if bonus opening) → tournament current match slot → bonus hunt slot */
-  const slotName = (bonusOpening && currentBonus?.slotName)
-    ? currentBonus.slotName
-    : tournamentSlotName || currentBonus?.slotName || '';
+  /* Priority: search preview → bonus opening slot → tournament slot → bonus hunt slot */
+  const previewSlot = bhConfig.previewSlotName || '';
+  const slotName = previewSlot
+    || (bonusOpening && currentBonus?.slotName ? currentBonus.slotName : '')
+    || tournamentSlotName || currentBonus?.slotName || '';
 
   /* ── Slot info from DB (primary) or API (fallback) ── */
   const [slotInfo, setSlotInfo] = useState(null);
