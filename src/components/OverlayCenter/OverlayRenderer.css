@@ -2423,21 +2423,21 @@
 }
 
 .bht3-flip-back-stats {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
   width: 100%;
 }
 
 .bht3-flip-back-stat {
   background: rgba(0, 0, 0, 0.35);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 5px 10px;
+  border-radius: 10px;
+  padding: 8px 6px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
-  gap: 6px;
+  gap: 2px;
   transition: background 0.3s ease;
   backdrop-filter: blur(4px);
 }
@@ -2447,26 +2447,22 @@
 }
 
 .bht3-flip-back-stat-icon {
-  font-size: 12px;
-  line-height: 1;
-  flex-shrink: 0;
+  display: none;
 }
 
 .bht3-flip-back-stat-label {
-  font-size: 9px;
+  font-size: 8.3px;
   font-weight: 700;
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
-  letter-spacing: 0.08em;
-  flex-shrink: 0;
+  letter-spacing: 0.12em;
   text-shadow: 0 1px 2px rgba(0,0,0,0.5);
 }
 
 .bht3-flip-back-stat-val {
-  font-size: 13px;
+  font-size: 13.6px;
   font-weight: 800;
   color: #f1f5f9;
-  margin-left: auto;
   text-shadow: 0 1px 4px rgba(0,0,0,0.7);
 }
 

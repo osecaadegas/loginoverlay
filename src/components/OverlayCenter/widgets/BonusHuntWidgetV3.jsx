@@ -238,8 +238,7 @@ function BonusHuntWidgetV3({ config, theme }) {
                   <div className="bht3-flip-back-stats">
                     {c.flipShowRTP !== false && (
                     <div className="bht3-flip-back-stat">
-                      <span className="bht3-flip-back-stat-icon">📈</span>
-                      <span className="bht3-flip-back-stat-label">RTP</span>
+                      <span className="bht3-flip-back-stat-label">📈 RTP</span>
                       <span className="bht3-flip-back-stat-val">
                         {backBonus.slot?.rtp ? `${Number(backBonus.slot.rtp).toFixed(2)}%` : '—'}
                       </span>
@@ -247,8 +246,7 @@ function BonusHuntWidgetV3({ config, theme }) {
                     )}
                     {c.flipShowPotential !== false && (
                     <div className="bht3-flip-back-stat">
-                      <span className="bht3-flip-back-stat-icon">🏅</span>
-                      <span className="bht3-flip-back-stat-label">MAX WIN</span>
+                      <span className="bht3-flip-back-stat-label">🏅 MAX WIN</span>
                       <span className="bht3-flip-back-stat-val">
                         {backBonus.slot?.max_win_multiplier
                           ? `${Number(backBonus.slot.max_win_multiplier).toLocaleString()}x`
@@ -258,8 +256,7 @@ function BonusHuntWidgetV3({ config, theme }) {
                     )}
                     {c.flipShowVolatility !== false && (
                     <div className="bht3-flip-back-stat">
-                      <span className="bht3-flip-back-stat-icon">⚡</span>
-                      <span className="bht3-flip-back-stat-label">VOLATILITY</span>
+                      <span className="bht3-flip-back-stat-label">⚡ VOLATILITY</span>
                       <span className="bht3-flip-back-stat-val">
                         {fmtVol(backBonus.slot?.volatility)}
                       </span>
@@ -267,8 +264,7 @@ function BonusHuntWidgetV3({ config, theme }) {
                     )}
                     {c.flipShowBetSize !== false && (
                     <div className="bht3-flip-back-stat">
-                      <span className="bht3-flip-back-stat-icon">💰</span>
-                      <span className="bht3-flip-back-stat-label">BET SIZE</span>
+                      <span className="bht3-flip-back-stat-label">💰 BET SIZE</span>
                       <span className="bht3-flip-back-stat-val">
                         {currency}{fmt(backBonus.betSize)}
                       </span>
