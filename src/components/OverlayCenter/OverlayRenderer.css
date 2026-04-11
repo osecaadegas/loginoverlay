@@ -1621,7 +1621,8 @@
 .oc-bonushunt--v12 .bht-list-card {
   background: linear-gradient(160deg, rgba(15,23,42,0.98), rgba(30,58,138,0.95));
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 
 /* ── V12 modern: 3D carousel ── */
@@ -1767,7 +1768,8 @@
   background: linear-gradient(160deg, rgba(15,23,42,0.98), rgba(30,58,138,0.95));
   backdrop-filter: blur(14px);
   padding: 6px 10px;
-  border: 1px solid rgba(255,255,255,0.06);
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 .oc-bonushunt--v12 .bht-footer-label {
   font-size: 0.7em;
@@ -1793,7 +1795,8 @@
 .oc-bonushunt--v12 .bht-v12-sr {
   background: linear-gradient(160deg, rgba(15,23,42,0.98), rgba(30,58,138,0.95));
   backdrop-filter: blur(14px);
-  border: 1px solid rgba(255,255,255,0.06);
+  border: none;
+  border-top: 1px solid rgba(255,255,255,0.06);
 }
 .oc-bonushunt--v12 .bht-v12-sr-header {
   margin-bottom: 5px;
@@ -1964,11 +1967,21 @@
 
 /* ── V12 modern: global card styling ── */
 .oc-bonushunt--v12 {
-  gap: 3px !important;
+  gap: 0 !important;
 }
 .oc-bonushunt--v12 .bht-card {
   padding: 8px;
-  border-radius: 12px;
+  border-radius: 0;
+  box-shadow: none;
+  border: none;
+}
+/* Header: rounded top only */
+.oc-bonushunt--v12 .bht-header {
+  border-radius: 12px 12px 0 0;
+}
+/* Footer: rounded bottom only */
+.oc-bonushunt--v12 .bht-footer {
+  border-radius: 0 0 12px 12px;
 }
 .bht-list-row-requester {
   display: block;
