@@ -254,10 +254,10 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   }, [srRequests.length]);
 
   return (
-    <div className="oc-widget-inner oc-bonushunt oc-bonushunt--v12" style={rootStyle}>
+    <div className="oc-widget-inner oc-bonushunt oc-bonushunt--v12" style={{ ...rootStyle, height: '100%' }}>
 
       {/* ═══ Header — Classic full-card flip ═══ */}
-      <div className="bht-card bht-header bht-header--fullflip">
+      <div className="bht-card bht-header bht-header--fullflip" style={{ flex: '0 0 auto' }}>
         <div className={`bht-fullflip-container${statsFlipped ? ' bht-fullflip-container--flipped' : ''}`}>
           <div className="bht-fullflip-face bht-fullflip-front">
             <div className="bht-header-center">
@@ -341,7 +341,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: showSR ? '1 1 0' : undefined, minHeight: 0, maxHeight: showSR ? '50%' : undefined, overflow: 'hidden' }}>
+        <div className="bht-card bht-list-card" style={{ flex: showSR ? '1 1 0' : undefined, minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
@@ -384,7 +384,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             );
           })()}
           {/* ── Vertical list rows (half-height) ── */}
-          <div className="bht-list-rows" style={showSR ? { maxHeight: 'calc(var(--bht-list-max-height, 400px) * 0.5)', overflow: 'hidden' } : undefined}>
+          <div className="bht-list-rows" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden' }}>
             {(() => {
               const itemH = 48, count = bonuses.length;
               const shouldScroll = count >= 4;
@@ -488,7 +488,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Slot Requests Section ═══ */}
       {showSR && (
-        <div className="bht-card bht-v12-sr" style={{ flex: '1 1 0', minHeight: 0, maxHeight: '50%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <div className="bht-card bht-v12-sr" style={{ flex: '1 1 0', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div className="bht-v12-sr-header">
             <span className="bht-v12-sr-icon">🎰</span>
             <span className="bht-v12-sr-title">Slot Requests</span>
@@ -527,7 +527,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       )}
 
       {/* ═══ Total Pay Footer ═══ */}
-      <div className="bht-card bht-footer">
+      <div className="bht-card bht-footer" style={{ flex: '0 0 auto' }}>
         <div className="bht-footer-flip-wrap">
           <div className={`bht-footer-flip${statsFlipped ? ' bht-footer-flip--flipped' : ''}`}>
             <div className="bht-footer-flip-face bht-footer-flip-front">
