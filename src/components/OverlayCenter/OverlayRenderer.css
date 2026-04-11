@@ -1601,11 +1601,260 @@
   font-variant-numeric: tabular-nums;
   text-shadow: 0 1px 6px rgba(0,0,0,0.4);
 }
+
+/* ── V12 modern: list card ── */
+.oc-bonushunt--v12 .bht-list-card {
+  background: linear-gradient(160deg, rgba(30,15,50,0.92), rgba(60,20,90,0.82));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── V12 modern: 3D carousel ── */
+.oc-bonushunt--v12 .bht-stack {
+  height: 170px;
+  margin: 2px 0;
+}
+.oc-bonushunt--v12 .bht-stack-card {
+  width: 105px;
+  height: 160px;
+}
+.oc-bonushunt--v12 .bht-stack-card-inner {
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+}
+.oc-bonushunt--v12 .bht-stack-card--center .bht-stack-card-inner {
+  border-color: rgba(134,239,172,0.35);
+  box-shadow: 0 6px 24px rgba(0,0,0,0.6), 0 0 14px 2px rgba(134,239,172,0.15);
+}
+.oc-bonushunt--v12 .bht-stack-card-info {
+  padding: 3px 5px;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(6px);
+}
+.oc-bonushunt--v12 .bht-stack-card-name {
+  font-size: 0.62em;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+.oc-bonushunt--v12 .bht-stack-card-bet {
+  font-size: 0.58em;
+  font-weight: 500;
+  opacity: 0.8;
+}
+.oc-bonushunt--v12 .bht-stack-card-multi {
+  font-size: 0.58em;
+  font-weight: 700;
+}
+
+/* ── V12 modern: progress bar ── */
+.oc-bonushunt--v12 .bht-progress {
+  padding: 0 10px;
+  margin: 0 0 4px;
+}
+.oc-bonushunt--v12 .bht-progress-bar {
+  height: 6px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 3px;
+}
+.oc-bonushunt--v12 .bht-progress-fill {
+  border-radius: 3px;
+  background: linear-gradient(90deg, #22c55e, #34d399);
+}
+.oc-bonushunt--v12 .bht-progress-text {
+  font-size: 0.65em;
+  font-weight: 700;
+  opacity: 0.7;
+  text-shadow: none;
+}
+
+/* ── V12 modern: list rows ── */
+.oc-bonushunt--v12 .bht-list-rows {
+  margin-top: 0;
+}
+.oc-bonushunt--v12 .bht-list-row {
+  padding: 6px 5px;
+  gap: 4px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-radius: 6px;
+  margin: 0 2px;
+  transition: background 0.2s ease;
+}
+.oc-bonushunt--v12 .bht-list-row--active {
+  background: rgba(255,255,255,0.05);
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+.oc-bonushunt--v12 .bht-list-row--super {
+  background: rgba(234,179,8,0.06);
+}
+.oc-bonushunt--v12 .bht-list-row--extreme {
+  background: rgba(239,68,68,0.06);
+}
+.oc-bonushunt--v12 .bht-list-row-idx {
+  font-size: 0.65em;
+  font-weight: 700;
+  opacity: 0.6;
+  min-width: 14px;
+}
+.oc-bonushunt--v12 .bht-list-row-thumb {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+.oc-bonushunt--v12 .bht-list-row-name {
+  font-size: 0.75em;
+  font-weight: 600;
+  text-shadow: none;
+}
+.oc-bonushunt--v12 .bht-list-row-requester {
+  font-size: 0.58em;
+  opacity: 0.55;
+}
+.oc-bonushunt--v12 .bht-list-row-badge {
+  font-size: 0.52em;
+  padding: 0 5px;
+  border-radius: 3px;
+}
+.oc-bonushunt--v12 .bht-list-row-col-label {
+  font-size: 0.52em;
+  font-weight: 500;
+  letter-spacing: 0.5px;
+  opacity: 0.5;
+  text-shadow: none;
+}
+.oc-bonushunt--v12 .bht-list-row-col-val {
+  font-size: 0.72em;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  text-shadow: none;
+}
+.oc-bonushunt--v12 .bht-list-row-spacer {
+  height: 36px;
+}
+
+/* ── V12 modern: footer ── */
+.oc-bonushunt--v12 .bht-footer {
+  background: linear-gradient(160deg, rgba(15,23,42,0.95), rgba(30,58,138,0.85));
+  backdrop-filter: blur(12px);
+  padding: 6px 10px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.oc-bonushunt--v12 .bht-footer-label {
+  font-size: 0.7em;
+  font-weight: 600;
+  letter-spacing: 1.2px;
+  opacity: 0.6;
+  text-shadow: none;
+}
+.oc-bonushunt--v12 .bht-footer-value {
+  font-size: 1.1em;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 1px 8px color-mix(in srgb, var(--bht-total-pay-bg, #eab308) 25%, transparent);
+}
+.oc-bonushunt--v12 .bht-footer-flip-back .bht-footer-label {
+  font-size: 0.6em;
+}
+.oc-bonushunt--v12 .bht-footer-flip-back .bht-footer-value {
+  font-size: 0.95em;
+}
+
+/* ── V12 modern: SR card ── */
+.oc-bonushunt--v12 .bht-v12-sr {
+  background: linear-gradient(160deg, rgba(30,15,50,0.92), rgba(60,20,90,0.82));
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.oc-bonushunt--v12 .bht-v12-sr-header {
+  margin-bottom: 5px;
+  padding-bottom: 4px;
+  border-bottom-color: rgba(255,255,255,0.06);
+}
+.oc-bonushunt--v12 .bht-v12-sr-icon {
+  font-size: 0.9em;
+}
+.oc-bonushunt--v12 .bht-v12-sr-title {
+  font-size: 0.75em;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+.oc-bonushunt--v12 .bht-v12-sr-count {
+  font-size: 0.6em;
+  padding: 0 6px;
+  opacity: 0.9;
+}
+.oc-bonushunt--v12 .bht-v12-sr-row {
+  border-radius: 6px;
+  min-height: 32px;
+}
+.oc-bonushunt--v12 .bht-v12-sr-row-content {
+  padding: 4px 8px;
+  gap: 6px;
+}
+.oc-bonushunt--v12 .bht-v12-sr-row-idx {
+  font-size: 0.6em;
+  opacity: 0.5;
+}
+.oc-bonushunt--v12 .bht-v12-sr-row-img {
+  width: 26px;
+  height: 26px;
+  border-radius: 5px;
+}
+.oc-bonushunt--v12 .bht-v12-sr-row-name {
+  font-size: 0.72em;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+}
+.oc-bonushunt--v12 .bht-v12-sr-row-by {
+  font-size: 0.6em;
+  opacity: 0.6;
+}
+
+/* ── V12 modern: flip back best/worst slots ── */
+.oc-bonushunt--v12 .bht-fullflip-slots {
+  gap: 3px;
+  padding: 3px;
+}
+.oc-bonushunt--v12 .bht-fullflip-slot {
+  border-radius: 8px;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(6px);
+}
+.oc-bonushunt--v12 .bht-fullflip-slot--best {
+  box-shadow: inset 0 0 0 1.5px rgba(74,222,128,0.5), 0 0 10px rgba(74,222,128,0.2);
+}
+.oc-bonushunt--v12 .bht-fullflip-slot--worst {
+  box-shadow: inset 0 0 0 1.5px rgba(248,113,113,0.5), 0 0 10px rgba(248,113,113,0.2);
+}
+.oc-bonushunt--v12 .bht-fullflip-slot-ribbon {
+  font-size: 0.58em;
+  letter-spacing: 0.12em;
+  padding: 1px 0;
+}
+.oc-bonushunt--v12 .bht-fullflip-slot-overlay {
+  padding: 12px 4px 4px;
+  gap: 8px;
+}
+.oc-bonushunt--v12 .bht-fullflip-slot-label {
+  font-size: 0.45em;
+}
+.oc-bonushunt--v12 .bht-fullflip-slot-payout {
+  font-size: 1.15em;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.7);
+}
+.oc-bonushunt--v12 .bht-fullflip-slot-multi {
+  font-size: 0.95em;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
+}
+
+/* ── V12 modern: global card styling ── */
 .oc-bonushunt--v12 {
   gap: 3px !important;
 }
 .oc-bonushunt--v12 .bht-card {
   padding: 8px;
+  border-radius: 12px;
 }
 .bht-list-row-requester {
   display: block;
