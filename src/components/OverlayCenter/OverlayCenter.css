@@ -4790,6 +4790,19 @@ body.wm-resizing {
 .bh-list-field--mult {
   min-width: 44px;
 }
+.bh-list-field--requester {
+  min-width: 50px;
+  max-width: 80px;
+}
+.bh-list-requester-val {
+  font-size: 11.5px;
+  font-weight: 500;
+  color: #94a3b8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 80px;
+}
 .bh-list-field-label {
   font-size: 9.6px;
   color: #475569;

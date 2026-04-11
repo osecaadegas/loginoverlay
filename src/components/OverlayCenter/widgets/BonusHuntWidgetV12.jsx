@@ -441,13 +441,10 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                           </div>
                           <div className="bht-list-row-info">
                             <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                            {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
+                              <span className="bht-list-row-requester">by {bonus.requestedBy}</span>
+                            )}
                           </div>
-                          {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
-                            <div className="bht-list-row-requester-col">
-                              <span className="bht-list-row-requester-label">BY</span>
-                              <span className="bht-list-row-requester-name">{bonus.requestedBy}</span>
-                            </div>
-                          )}
                           <div className="bht-list-row-stats">
                             <div className="bht-list-row-col">
                               <span className="bht-list-row-col-label">WIN</span>
@@ -484,13 +481,10 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                     </div>
                     <div className="bht-list-row-info">
                       <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                      {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
+                        <span className="bht-list-row-requester">by {bonus.requestedBy}</span>
+                      )}
                     </div>
-                    {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
-                      <div className="bht-list-row-requester-col">
-                        <span className="bht-list-row-requester-label">BY</span>
-                        <span className="bht-list-row-requester-name">{bonus.requestedBy}</span>
-                      </div>
-                    )}
                     <div className="bht-list-row-stats">
                       <div className="bht-list-row-col">
                         <span className="bht-list-row-col-label">WIN</span>

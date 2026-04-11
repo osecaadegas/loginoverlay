@@ -1516,6 +1516,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     {bonus.slot?.provider && <span className="bh-list-provider">{bonus.slot.provider}</span>}
                   </div>
 
+                  {/* Requester */}
+                  {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
+                    <div className="bh-list-field bh-list-field--requester">
+                      <span className="bh-list-field-label">By</span>
+                      <span className="bh-list-field-value bh-list-requester-val">{bonus.requestedBy}</span>
+                    </div>
+                  )}
+
                   {/* Copy + Edit buttons */}
                   <button className="bh-list-icon-btn" title="Copy name" onClick={() => handleCopyName(bonus)}>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
