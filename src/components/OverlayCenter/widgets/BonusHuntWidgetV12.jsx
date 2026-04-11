@@ -329,8 +329,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                   ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
                 </div>
               ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
-              {/* Center spacer */}
-              <div className="bht-flipback-spacer" />
+              {/* Center divider */}
+              <div className="bht-flipback-divider" />
               {/* Worst slot image — centered */}
               {stats.worstSlot ? (
                 <div className="bht-flipback-slot bht-flipback-slot--worst">

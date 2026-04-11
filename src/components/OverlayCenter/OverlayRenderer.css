@@ -1909,8 +1909,12 @@
   opacity: 0.4;
   background: rgba(0,0,0,0.2);
 }
-.oc-bonushunt--v12 .bht-flipback-spacer {
-  flex: 0 0 10px;
+.oc-bonushunt--v12 .bht-flipback-divider {
+  flex: 0 0 1px;
+  align-self: stretch;
+  margin: 12px 8px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 1px;
 }
 .oc-bonushunt--v12 .bht-flipback-slot-img {
   width: 100%;
