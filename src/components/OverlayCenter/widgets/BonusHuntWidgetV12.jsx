@@ -93,8 +93,22 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
   /* ── SR IRC listener ── */
   const srChatEnabled = showSR && c.srChatEnabled !== false;
-  const twitchChannel = (c.twitchChannel || '').trim().toLowerCase().replace(/^#/, '');
   const cmdTrigger = (c.commandTrigger || '!sr').trim().toLowerCase();
+
+  // Auto-resolve Twitch channel from auth metadata
+  const [twitchChannel, setTwitchChannel] = useState('');
+  useEffect(() => {
+    (async () => {
+      try {
+        const { data } = await supabase.auth.getUser();
+        const meta = data?.user?.user_metadata || {};
+        const ch = (meta.preferred_username || meta.user_name || meta.twitch_username || '').trim().toLowerCase();
+        if (ch) { setTwitchChannel(ch); return; }
+      } catch { /* ignore */ }
+      const ls = (localStorage.getItem('twitchChannel') || '').trim().toLowerCase();
+      if (ls) setTwitchChannel(ls);
+    })();
+  }, []);
 
   useEffect(() => {
     if (!srChatEnabled || !twitchChannel || !userId) {

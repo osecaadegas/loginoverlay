@@ -259,11 +259,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
                   onChange={e => set('srChatEnabled', e.target.checked)} />
                 <span>Listen to Chat for !sr Commands</span>
               </label>
-              <label className="nb-field">
-                <span>Twitch Channel</span>
-                <input type="text" value={c.twitchChannel || ''} placeholder="your_channel"
-                  onChange={e => set('twitchChannel', e.target.value)} />
-              </label>
+              <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '2px 0 4px' }}>Twitch channel is auto-detected from your login.</p>
               <label className="nb-field">
                 <span>Command Trigger</span>
                 <input type="text" value={c.commandTrigger || '!sr'} placeholder="!sr"
