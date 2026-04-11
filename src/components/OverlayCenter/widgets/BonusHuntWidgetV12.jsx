@@ -254,7 +254,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   }, [srRequests.length]);
 
   return (
-    <div className="oc-widget-inner oc-bonushunt" style={rootStyle}>
+    <div className="oc-widget-inner oc-bonushunt oc-bonushunt--v12" style={rootStyle}>
 
       {/* ═══ Header — Classic full-card flip ═══ */}
       <div className="bht-card bht-header bht-header--fullflip">
@@ -339,9 +339,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
         </div>
       </div>
 
-      {/* ═══ Bonus List (half-height) ═══ */}
+      {/* ═══ Bonus List ═══ */}
       {bonuses.length > 0 && (
-        <div className="bht-card bht-list-card" style={{ flex: showSR ? '1 1 0' : undefined, minHeight: 0, overflow: 'hidden' }}>
+        <div className="bht-card bht-list-card" style={{ flex: showSR ? '1 1 50%' : undefined, minHeight: 0, overflow: 'hidden' }}>
           {/* ── 3D Animated Card Carousel ── */}
           <div className={`bht-stack${!isOpening ? ' bht-stack--spinning' : ''}`}>
             {(() => {
@@ -384,7 +384,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             );
           })()}
           {/* ── Vertical list rows (half-height) ── */}
-          <div className="bht-list-rows" style={showSR ? { maxHeight: 'calc(var(--bht-list-max-height, 400px) * 0.7)', overflow: 'hidden' } : undefined}>
+          <div className="bht-list-rows" style={showSR ? { maxHeight: 'calc(var(--bht-list-max-height, 400px) * 0.5)', overflow: 'hidden' } : undefined}>
             {(() => {
               const itemH = 48, count = bonuses.length;
               const shouldScroll = count >= 4;
@@ -407,6 +407,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                           </div>
                           <div className="bht-list-row-info">
                             <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                            {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
+                              <span className="bht-list-row-requester">by {bonus.requestedBy}</span>
+                            )}
                             {(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--extreme">EXTREME</span>}
                             {bonus.isSuperBonus && !(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--super">SUPER</span>}
                           </div>
@@ -446,6 +449,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                     </div>
                     <div className="bht-list-row-info">
                       <span className="bht-list-row-name">{bonus.slotName || bonus.slot?.name}</span>
+                      {bonus.requestedBy && bonus.requestedBy !== 'anonymous' && (
+                        <span className="bht-list-row-requester">by {bonus.requestedBy}</span>
+                      )}
                       {(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--extreme">EXTREME</span>}
                       {bonus.isSuperBonus && !(bonus.isExtremeBonus || bonus.isExtreme) && <span className="bht-list-row-badge bht-list-row-badge--super">SUPER</span>}
                     </div>
@@ -482,7 +488,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
 
       {/* ═══ Slot Requests Section ═══ */}
       {showSR && (
-        <div className="bht-card bht-v12-sr" style={{ flex: '0 0 auto', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', maxHeight: 'calc(var(--bht-list-max-height, 400px) * 0.3)' }}>
+        <div className="bht-card bht-v12-sr" style={{ flex: '1 1 50%', minHeight: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div className="bht-v12-sr-header">
             <span className="bht-v12-sr-icon">🎰</span>
             <span className="bht-v12-sr-title">Slot Requests</span>

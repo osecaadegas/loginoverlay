@@ -498,6 +498,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [selectedSlot, setSelectedSlot] = useState(null);
   const [isSuperBonus, setIsSuperBonus] = useState(false);
   const [isExtremeBonus, setIsExtremeBonus] = useState(false);
+  const [pendingRequester, setPendingRequester] = useState(null);
   const [showStatistics, setShowStatistics] = useState(c.showStatistics ?? true);
   const [animatedTracker, setAnimatedTracker] = useState(c.animatedTracker ?? true);
   const [bonusList, setBonusList] = useState(c.bonuses || []);
@@ -828,6 +829,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       opened: false,
       result: 0,
       payout: 0,
+      requestedBy: pendingRequester || null,
     };
     const updated = [...bonusList, newBonus];
     setBonusList(updated);
@@ -837,6 +839,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     setBetSize('');
     setIsSuperBonus(false);
     setIsExtremeBonus(false);
+    setPendingRequester(null);
   };
 
   const handleOpenBonus = (bonusId, result) => {
@@ -1105,6 +1108,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setSelectedSlot(null);
       setSlotSearch(req.slot_name);
     }
+    setPendingRequester(req.requested_by || null);
     handleDismissRequest(req.id);
   };
 

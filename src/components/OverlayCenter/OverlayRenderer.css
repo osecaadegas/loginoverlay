@@ -1470,6 +1470,26 @@
   opacity: 0.8;
 }
 
+/* --- Bonus Hunt: V12 Classic+SR tighter layout --- */
+.oc-bonushunt--v12 {
+  gap: 3px !important;
+}
+.oc-bonushunt--v12 .bht-card {
+  padding: 8px;
+}
+.bht-list-row-requester {
+  display: block;
+  font-size: 0.62em;
+  font-weight: 500;
+  color: var(--bht-muted, #93c5fd);
+  opacity: 0.75;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+
 
 /* --- Bonus Hunt: Horizontal (v5) --- */
 .oc-bonushunt--horizontal {
