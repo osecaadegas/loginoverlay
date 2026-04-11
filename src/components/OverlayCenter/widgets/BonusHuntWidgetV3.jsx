@@ -212,6 +212,12 @@ function BonusHuntWidgetV3({ config, theme }) {
                 ...(c.flipBackBorder ? { borderColor: `${c.flipBackBorder}33` } : {}),
                 ...backBorder,
               }}>
+                {/* Blurred slot image background */}
+                {backBonus.slot?.image && (
+                  <img src={backBonus.slot.image} alt="" className="bht3-flip-back-blur"
+                    onError={e => { e.target.style.display = 'none'; }} />
+                )}
+                <div className="bht3-flip-back-overlay" />
                 <div className="bht3-flip-back-content">
                   {c.flipShowProvider !== false && (
                   <div className="bht3-flip-back-provider-logo">
