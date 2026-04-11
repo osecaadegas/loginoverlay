@@ -1721,18 +1721,18 @@ function TournamentWidget({ config, theme }) {
           }}>
             {queuedWithPhase.map((item, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
-                {/* Phase label — above the first match of each phase group */}
+                {renderQueuedMatch(item.match, i)}
+                {/* Phase label — below the first match of each phase group */}
                 {item.showLabel && (
                   <div style={{
                     textAlign: 'center',
                     fontSize: 'clamp(8px, 1vw, 12px)', fontWeight: 800,
                     color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase',
                     letterSpacing: '2.5px', fontFamily: gFont,
-                    padding: 'clamp(2px, 0.3vw, 4px) 0 clamp(4px, 0.6vw, 8px)',
+                    padding: 'clamp(4px, 0.6vw, 8px) 0 clamp(2px, 0.3vw, 4px)',
                     textShadow: `0 0 10px ${gCyan}30`,
                   }}>— {item.showLabel} —</div>
                 )}
-                {renderQueuedMatch(item.match, i)}
               </div>
             ))}
           </div>
