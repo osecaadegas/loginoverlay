@@ -1385,6 +1385,7 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
+  position: relative;
 }
 .bht-v12-sr-empty {
   display: flex;

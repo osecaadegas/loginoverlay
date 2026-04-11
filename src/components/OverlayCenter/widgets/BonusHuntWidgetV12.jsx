@@ -536,6 +536,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             )}
           </div>
           <div className="bht-v12-sr-list" ref={srListRef}>
+            <div className="bht-list-fade bht-list-fade--top" />
             {srRequests.length === 0 ? (
               <div className="bht-v12-sr-empty">
                 <span className="bht-v12-sr-hint">Type <strong>{cmdTrigger} &lt;slot name&gt;</strong> in chat to request a slot</span>
@@ -566,6 +567,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 )}
               </div>
             )}
+            <div className="bht-list-fade bht-list-fade--bottom" />
           </div>
         </div>
       )}
