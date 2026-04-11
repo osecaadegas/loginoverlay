@@ -1857,7 +1857,7 @@
   align-items: center;
   justify-content: center;
   gap: 0;
-  padding: 6px 4px;
+  padding: 6px 2px 6px 6px;
   height: 100%;
 }
 .oc-bonushunt--v12 .bht-flipback-side {
