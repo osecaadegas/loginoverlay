@@ -840,6 +840,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     setIsSuperBonus(false);
     setIsExtremeBonus(false);
     setPendingRequester(null);
+    onChange({ ...config, bonuses: updated, previewSlotName: '' });
   };
 
   const handleOpenBonus = (bonusId, result) => {
@@ -1202,7 +1203,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               type="text"
               className="bh-search-input"
               value={selectedSlot ? selectedSlot.name : slotSearch}
-              onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); }}
+              onChange={e => { setSlotSearch(e.target.value); setSelectedSlot(null); setShowSuggestions(true); if (!e.target.value.trim()) onChange({ ...config, previewSlotName: '' }); }}
               onFocus={() => setShowSuggestions(true)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
               onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleAddBonus(); } }}
@@ -1215,7 +1216,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   filteredSlots.slice(0, 8).map(slot => (
                     <div key={slot.id} className="bh-suggestion-item"
                       onMouseDown={e => e.preventDefault()}
-                      onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); }}>
+                      onClick={() => { setSelectedSlot(slot); setSlotSearch(slot.name); setShowSuggestions(false); onChange({ ...config, previewSlotName: slot.name }); }}>
                       <img
                         src={slot.image || 'https://via.placeholder.com/36x36/1a1d23/9346ff?text=S'}
                         alt={slot.name}
