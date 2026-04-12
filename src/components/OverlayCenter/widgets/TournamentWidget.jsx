@@ -534,6 +534,7 @@ function TournamentWidget({ config, theme }) {
         display: 'flex',
         background: 'rgba(255,255,255,0.04)',
         borderTop: '1px solid rgba(255,255,255,0.06)',
+        borderRadius: large ? '0 0 10px 10px' : '0 0 8px 8px',
         overflow: 'hidden',
       }}>
         <div style={{
@@ -1172,6 +1173,7 @@ function TournamentWidget({ config, theme }) {
             display: 'flex', alignItems: 'center', padding: '3px 6px',
             background: 'rgba(255,255,255,0.04)', gap: 6,
             borderTop: '1px solid rgba(255,255,255,0.06)',
+            borderRadius: '0 0 10px 10px',
           }}>
             {/* Round win/loss indicators */}
             {isBo3 && scoreboard && (
