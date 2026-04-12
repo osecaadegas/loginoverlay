@@ -395,6 +395,129 @@ function GiveawayWidget({ config, widgetId }) {
     </div>
   );
 
+  /* ─── v12 — matches Bonus Hunt V12 style ─── */
+  if (st === 'v12') {
+    const v12Bg    = 'linear-gradient(160deg, rgba(38,40,46,0.97), rgba(52,54,62,0.95))';
+    const v12Card  = 'rgba(255,255,255,0.04)';
+    const v12Div   = 'rgba(255,255,255,0.06)';
+    const v12DivThin = 'rgba(255,255,255,0.08)';
+    const v12Text  = '#fff';
+    const v12Muted = '#93c5fd';
+    const v12Font  = fontFamily || "'Inter', sans-serif";
+    const v12Green = '#4ade80';
+
+    /* shared stat-box */
+    const statBox = (label, value, color = v12Text) => (
+      <div style={{ flex:1, textAlign:'center', padding:'clamp(5px,1.5cqmin,8px) clamp(3px,1cqmin,6px)', position:'relative' }}>
+        <div style={{
+          fontSize:'clamp(7px,2cqmin,10px)', fontWeight:600, color:v12Muted, opacity:0.55,
+          textTransform:'uppercase', letterSpacing:'1px', lineHeight:1, marginBottom:2,
+          textShadow:'none',
+        }}>{label}</div>
+        <div style={{
+          fontSize:'clamp(13px,4cqmin,20px)', fontWeight:800, color,
+          fontVariantNumeric:'tabular-nums', textShadow:'0 1px 6px rgba(0,0,0,0.4)', lineHeight:1.2,
+        }}>{value}</div>
+      </div>
+    );
+
+    /* thin vertical divider */
+    const vDiv = <div style={{ width:1, alignSelf:'stretch', margin:'20% 0', background:v12DivThin }} />;
+
+    return (
+      <div style={{ width:'100%', height:'100%', fontFamily:v12Font, background:v12Bg, color:v12Text,
+        borderRadius:12, backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)',
+        display:'flex', flexDirection:'column', overflow:'hidden', boxSizing:'border-box',
+        containerType:'size', WebkitFontSmoothing:'antialiased' }}>
+        <style>{kf}</style>
+
+        {/* ── Header ── */}
+        <div style={{ display:'flex', alignItems:'center', gap:'clamp(4px,1.5cqmin,8px)',
+          padding:'clamp(6px,2cqmin,10px) clamp(8px,2.5cqmin,14px)', flexShrink:0 }}>
+          <span style={{ fontSize:'clamp(14px,4cqmin,20px)' }}>🎁</span>
+          <span style={{
+            fontWeight:800, fontSize:'clamp(12px,3.5cqmin,18px)',
+            letterSpacing:'1.5px', textTransform:'uppercase', color:v12Text,
+          }}>{title}</span>
+          {isActive && !isDone && (
+            <span style={{
+              marginLeft:'auto',
+              background:'rgba(34,197,94,0.15)', color:v12Green,
+              fontSize:'clamp(8px,1.8cqmin,11px)', fontWeight:700,
+              padding:'clamp(2px,0.5cqmin,3px) clamp(6px,1.5cqmin,10px)',
+              borderRadius:20, letterSpacing:'0.8px', textTransform:'uppercase',
+              border:'1px solid rgba(34,197,94,0.25)',
+              animation:'ga-pulse 2s ease-in-out infinite',
+            }}>LIVE</span>
+          )}
+          {isDone && (
+            <span style={{
+              marginLeft:'auto',
+              background:'rgba(100,116,139,0.15)', color:'#94a3b8',
+              fontSize:'clamp(8px,1.8cqmin,11px)', fontWeight:700,
+              padding:'clamp(2px,0.5cqmin,3px) clamp(6px,1.5cqmin,10px)',
+              borderRadius:20, letterSpacing:'0.8px', textTransform:'uppercase',
+              border:'1px solid rgba(100,116,139,0.25)',
+            }}>ENDED</span>
+          )}
+        </div>
+
+        {/* ── Body ── */}
+        <div style={{
+          flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
+          padding:'0 clamp(6px,2cqmin,14px)', gap:'clamp(4px,1.5cqmin,10px)', minHeight:0,
+          borderTop:`1px solid ${v12Div}`,
+        }}>
+          {spinningWinner && !winner ? (
+            <SpinReel participants={participants} winnerName={spinningWinner} accentColor={v12Green} textColor={v12Text} mutedColor={v12Muted} />
+          ) : winner ? (
+            <>
+              <ConfettiBurst accentColor={v12Green} count={50} />
+              <div style={{ animation:'ga-haptic 0.5s ease-out' }}>
+                <TrophyWinner winner={winner} accentColor={v12Green} textColor={v12Text} mutedColor={v12Muted} prize={prize}
+                  fontSize="clamp(18px,8cqmin,40px)" />
+              </div>
+            </>
+          ) : isActive && keyword ? (
+            <>
+              {prize && (
+                <div style={{
+                  fontSize:'clamp(14px,6cqmin,28px)', fontWeight:800, textAlign:'center', lineHeight:1.1,
+                  color:v12Text, textShadow:'0 1px 6px rgba(0,0,0,0.4)',
+                }}>{prize}</div>
+              )}
+              <div style={{ display:'flex', alignItems:'baseline', gap:'clamp(3px,1cqmin,6px)' }}>
+                <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:v12Muted, opacity:0.55, fontWeight:600 }}>Type</span>
+                <span style={{
+                  fontSize:'clamp(16px,6cqmin,28px)', fontWeight:800, color:v12Text,
+                  textShadow:'0 1px 6px rgba(0,0,0,0.4)',
+                }}>!{keyword}</span>
+                <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:v12Muted, opacity:0.55, fontWeight:600 }}>to enter</span>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize:'clamp(20px,8cqmin,40px)', opacity:0.3 }}>🎁</div>
+              <div style={{ fontSize:'clamp(10px,2.5cqmin,14px)', color:v12Muted, opacity:0.55 }}>No active giveaway</div>
+            </>
+          )}
+        </div>
+
+        {/* ── Stats bar (V12 BH style) ── */}
+        <div style={{
+          display:'flex', background:v12Card,
+          borderTop:`1px solid ${v12Div}`, borderRadius:'0 0 12px 12px',
+          overflow:'hidden', flexShrink:0,
+        }}>
+          {statBox('Keyword', keyword ? `!${keyword}` : '—', accentColor)}
+          {vDiv}
+          {statBox('Entries', count, v12Text)}
+          {isDone && <>{vDiv}{statBox('Winner', winner || '—', v12Green)}</>}
+        </div>
+      </div>
+    );
+  }
+
   /* ─── bh_stats — matches Bonus Hunt Stats widget ─── */
   if (st === 'bh_stats') {
     const bhBg = 'rgba(15, 23, 42, 0.9)';

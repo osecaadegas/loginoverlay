@@ -23,6 +23,7 @@ const DISPLAY_STYLES = [
   { value: 'v1',    icon: '🖼️', label: 'Default' },
   { value: 'metal', icon: '⚙️', label: 'Metal' },
   { value: 'clean', icon: '✨', label: 'Clean' },
+  { value: 'v12',   icon: '💎', label: 'V12' },
 ];
 
 const FIT_OPTIONS = [

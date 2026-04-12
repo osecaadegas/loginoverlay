@@ -29,6 +29,7 @@ function ImageSlideshowWidget({ config, theme }) {
   const displayStyle = c.displayStyle || 'v1';
   const isMetal = displayStyle === 'metal';
   const isClean = displayStyle === 'clean';
+  const isV12  = displayStyle === 'v12';
 
   /* ── Video detection ── */
   const VIDEO_EXTS = /\.(mp4|webm|ogg|mov|m4v|avi|mkv)(\?|$)/i;
@@ -116,13 +117,20 @@ function ImageSlideshowWidget({ config, theme }) {
   const containerStyle = {
     width: '100%',
     height: '100%',
-    borderRadius: isClean ? 0 : `${borderRadius}px`,
-    border: isClean ? 'none' : (isMetal ? '1px solid rgba(200,210,225,0.18)' : `${borderWidth}px solid ${borderColor}`),
+    borderRadius: isClean ? 0 : isV12 ? 12 : `${borderRadius}px`,
+    border: isClean ? 'none' : isV12 ? 'none' : (isMetal ? '1px solid rgba(200,210,225,0.18)' : `${borderWidth}px solid ${borderColor}`),
     position: 'relative',
     overflow: 'hidden',
-    background: isClean ? 'transparent' : '#000',
+    background: isClean ? 'transparent' : isV12 ? 'linear-gradient(160deg, rgba(38,40,46,0.97), rgba(52,54,62,0.95))' : '#000',
     ...(isMetal && {
       boxShadow: '0 4px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.05)',
+    }),
+    ...(isV12 && {
+      outline: '1.5px solid rgba(100,100,110,0.5)',
+      outlineOffset: '-1.5px',
+      boxShadow: '0 6px 20px rgba(0,0,0,0.5), 0 0 6px 1px rgba(150,150,160,0.04)',
+      backdropFilter: 'blur(14px)',
+      WebkitBackdropFilter: 'blur(14px)',
     }),
   };
 
@@ -236,14 +244,16 @@ function ImageSlideshowWidget({ config, theme }) {
       {!isClean && showGradient && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 3,
-          background: isMetal
+          background: isV12
+            ? 'linear-gradient(to top, rgba(38,40,46,0.92), transparent 50%)'
+            : isMetal
             ? 'linear-gradient(to top, rgba(26,28,32,0.85), transparent 50%), linear-gradient(145deg, rgba(42,45,51,0.3), transparent 60%)'
             : `linear-gradient(to top, ${gradientColor}, transparent 60%)`,
           pointerEvents: 'none',
         }} />
       )}
 
-      {!isClean && isMetal && (
+      {!isClean && (isMetal || isV12) && (
         <div style={{
           position: 'absolute', inset: 0, zIndex: 3,
           background: 'linear-gradient(145deg, rgba(200,210,225,0.04), transparent 50%)',
@@ -253,13 +263,17 @@ function ImageSlideshowWidget({ config, theme }) {
 
       {!isClean && showCaption && (
         <div className="ov-slideshow-caption" style={{
-          fontFamily: captionFont,
-          fontSize: `${captionSize}px`,
-          color: isMetal ? '#d4d8e0' : captionColor,
+          fontFamily: isV12 ? "'Inter', sans-serif" : captionFont,
+          fontSize: isV12 ? `${Math.max(captionSize, 13)}px` : `${captionSize}px`,
+          color: isV12 ? '#fff' : isMetal ? '#d4d8e0' : captionColor,
           zIndex: 4,
-          ...(isMetal && {
+          ...((isMetal || isV12) && {
             textShadow: '0 1px 2px rgba(0,0,0,0.5)',
             letterSpacing: '0.08em',
+          }),
+          ...(isV12 && {
+            fontWeight: 700,
+            letterSpacing: '1px',
           }),
         }}>
           {c.caption}
@@ -268,9 +282,20 @@ function ImageSlideshowWidget({ config, theme }) {
 
       {!isClean && images.length > 1 && c.showDots && (
         <div className="ov-slideshow-dots" style={{ zIndex: 5 }}>
-          {images.map((_, i) => (
-            <span key={i} className={`ov-slideshow-dot ${i === safe(transitioning ? nextIdx : currentIdx) ? 'ov-slideshow-dot--active' : ''}`} />
-          ))}
+          {images.map((_, i) => {
+            const active = i === safe(transitioning ? nextIdx : currentIdx);
+            return (
+              <span key={i}
+                className={`ov-slideshow-dot ${active ? 'ov-slideshow-dot--active' : ''}`}
+                style={isV12 ? {
+                  background: active ? '#fff' : 'rgba(255,255,255,0.25)',
+                  width: active ? 8 : 6, height: active ? 8 : 6,
+                  transition: 'all 0.3s ease',
+                  boxShadow: active ? '0 0 6px rgba(255,255,255,0.3)' : 'none',
+                } : undefined}
+              />
+            );
+          })}
         </div>
       )}
     </div>

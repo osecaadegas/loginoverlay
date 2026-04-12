@@ -157,6 +157,7 @@ registerWidget({
     { id: 'v4', icon: '✦', label: 'Minimal' },
     { id: 'metal', icon: '⚙️', label: 'Metal' },
     { id: 'bh_stats', icon: '🎰', label: 'Hunt' },
+    { id: 'v12', icon: '💎', label: 'V12' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
@@ -337,6 +338,7 @@ registerWidget({
   styles: [
     { id: 'v1', icon: '🖼️', label: 'Classic' },
     { id: 'metal', icon: '⚙️', label: 'Metal' },
+    { id: 'v12', icon: '💎', label: 'V12' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {
