@@ -462,35 +462,11 @@ function TournamentWidget({ config, theme }) {
             )}
           </div>
 
-          {/* Bottom bar — bet/cost + end/payout values */}
-          <div style={{
-            display: 'flex', background: '#000',
-            borderTop: '2px solid rgba(255,255,255,0.08)',
-            minHeight: 22, flexShrink: 0,
-          }}>
-            {vals && vals.val1 !== null ? (
-              <div style={{
-                flex: 1, padding: '3px 4px', textAlign: 'center',
-                fontSize: 13, fontWeight: 700,
-                color: '#93c5fd', fontFamily,
-              }}>{currency}{vals.val1.toFixed(2)}</div>
-            ) : (
-              <div style={{ flex: 1, padding: '3px 4px', textAlign: 'center',
-                fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
-            )}
-            {vals && vals.val2 !== null ? (
-              <div style={{
-                flex: 1, padding: '3px 4px', textAlign: 'center',
-                borderLeft: '1px solid rgba(255,255,255,0.1)',
-                fontSize: 13, fontWeight: 700,
-                color: '#4ade80', fontFamily,
-              }}>{currency}{vals.val2.toFixed(2)}</div>
-            ) : (
-              <div style={{ flex: 1, padding: '3px 4px', textAlign: 'center',
-                borderLeft: '1px solid rgba(255,255,255,0.1)',
-                fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.25)', fontFamily }}>—</div>
-            )}
-          </div>
+          {/* Bottom bar — bet/cost + end/payout values (classic BH style) */}
+          {renderStatBar(
+            { cost: vals?.val1 ?? null, pay: vals?.val2 ?? null },
+            fontFamily, true
+          )}
         </div>
       );
     };
@@ -544,6 +520,60 @@ function TournamentWidget({ config, theme }) {
           overflow: 'auto',
         }}>
           {matches.map((match, idx) => renderArenaMatch(match, idx))}
+        </div>
+      </div>
+    );
+  };
+
+  /* ── Shared stats bar — matches classic bonus hunt V12 style ── */
+  const renderStatBar = (vals, font, large = false) => {
+    const payColor = vals.pay > (vals.cost || 0) ? '#4ade80' : '#f87171';
+    return (
+      <div style={{
+        position: 'relative', zIndex: 2,
+        display: 'flex',
+        background: 'rgba(255,255,255,0.04)',
+        borderTop: '1px solid rgba(255,255,255,0.06)',
+        overflow: 'hidden',
+      }}>
+        <div style={{
+          flex: 1, textAlign: 'center',
+          padding: large ? '6px 4px' : '4px 3px',
+        }}>
+          <div style={{
+            fontSize: large ? 'clamp(6px, 0.6vw, 8px)' : 'clamp(5px, 0.55vw, 7px)',
+            fontWeight: 600, color: '#93c5fd', opacity: 0.55,
+            textTransform: 'uppercase', letterSpacing: '1px', fontFamily: font,
+            lineHeight: 1, marginBottom: 1,
+          }}>Cost</div>
+          <div style={{
+            fontSize: large ? 'clamp(11px, 1.3vw, 14px)' : 'clamp(9px, 1vw, 12px)',
+            fontWeight: 800, color: '#fff', fontFamily: font,
+            fontVariantNumeric: 'tabular-nums',
+            textShadow: '0 1px 6px rgba(0,0,0,0.4)', lineHeight: 1.2,
+          }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
+        </div>
+        <div style={{
+          width: 1, alignSelf: 'stretch',
+          margin: '20% 0',
+          background: 'rgba(255,255,255,0.08)',
+        }} />
+        <div style={{
+          flex: 1, textAlign: 'center',
+          padding: large ? '6px 4px' : '4px 3px',
+        }}>
+          <div style={{
+            fontSize: large ? 'clamp(6px, 0.6vw, 8px)' : 'clamp(5px, 0.55vw, 7px)',
+            fontWeight: 600, color: '#93c5fd', opacity: 0.55,
+            textTransform: 'uppercase', letterSpacing: '1px', fontFamily: font,
+            lineHeight: 1, marginBottom: 1,
+          }}>Pay</div>
+          <div style={{
+            fontSize: large ? 'clamp(11px, 1.3vw, 14px)' : 'clamp(9px, 1vw, 12px)',
+            fontWeight: 800, color: payColor, fontFamily: font,
+            fontVariantNumeric: 'tabular-nums',
+            textShadow: '0 1px 6px rgba(0,0,0,0.4)', lineHeight: 1.2,
+          }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
         </div>
       </div>
     );
@@ -737,37 +767,8 @@ function TournamentWidget({ config, theme }) {
             </div>
           )}
 
-          {/* Stats bar — bottom */}
-          <div style={{
-            position: 'relative', zIndex: 2,
-            display: 'flex', background: 'rgba(0,0,0,0.85)',
-          }}>
-            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
-              <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#64748b',
-                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
-                lineHeight: 1,
-              }}>Cost</div>
-              <div style={{
-                fontSize: statFs, fontWeight: 900, color: esCyan, fontFamily: esFont,
-                textShadow: `0 0 6px ${esCyan}30`, lineHeight: 1.2,
-              }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
-            </div>
-            <div style={{ width: 1, background: esBorder }} />
-            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
-              <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#64748b',
-                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: esFont,
-                lineHeight: 1,
-              }}>Pay</div>
-              <div style={{
-                fontSize: statFs, fontWeight: 900, fontFamily: esFont, lineHeight: 1.2,
-                color: vals.pay > (vals.cost || 0) ? esGreen : esRed,
-                textShadow: vals.pay > (vals.cost || 0)
-                  ? `0 0 8px ${esGreen}40` : `0 0 6px ${esRed}30`,
-              }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
-            </div>
-          </div>
+          {/* Stats bar — bottom (classic BH style) */}
+          {renderStatBar(vals, esFont, large)}
         </div>
       );
     };
@@ -1131,12 +1132,15 @@ function TournamentWidget({ config, theme }) {
                       justifyContent: 'flex-end', width: '100%',
                     }}>
                       <span style={{
-                        fontSize: 'clamp(8px, 0.9vw, 10px)', fontWeight: 600,
-                        color: '#94a3b8', fontFamily: sbFont,
+                        fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 600,
+                        color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
+                        letterSpacing: '1px', fontFamily: sbFont,
                       }}>PAY</span>
                       <span style={{
-                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 700,
-                        color: sbPayCol, fontFamily: sbFont,
+                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 800,
+                        color: '#fff', fontFamily: sbFont,
+                        fontVariantNumeric: 'tabular-nums',
+                        textShadow: '0 1px 6px rgba(0,0,0,0.4)',
                       }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(2)}` : '—'}</span>
                     </div>
                     {/* MULTI */}
@@ -1145,12 +1149,16 @@ function TournamentWidget({ config, theme }) {
                       justifyContent: 'flex-end', width: '100%',
                     }}>
                       <span style={{
-                        fontSize: 'clamp(8px, 0.9vw, 10px)', fontWeight: 600,
-                        color: '#94a3b8', fontFamily: sbFont,
+                        fontSize: 'clamp(6px, 0.7vw, 8px)', fontWeight: 600,
+                        color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
+                        letterSpacing: '1px', fontFamily: sbFont,
                       }}>MULTI</span>
                       <span style={{
-                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 700,
-                        color: sbMultiCol, fontFamily: sbFont,
+                        fontSize: 'clamp(11px, 1.4vw, 15px)', fontWeight: 800,
+                        color: vals.multi !== null && vals.multi >= 1 ? '#4ade80' : '#f87171',
+                        fontFamily: sbFont,
+                        fontVariantNumeric: 'tabular-nums',
+                        textShadow: '0 1px 6px rgba(0,0,0,0.4)',
                       }}>{vals.multi !== null ? `${vals.multi.toFixed(2)}x` : '—'}</span>
                     </div>
                   </div>
@@ -1159,10 +1167,10 @@ function TournamentWidget({ config, theme }) {
             </div>
           </div>
 
-          {/* Bottom score bar: per-round indicators + totals */}
+          {/* Bottom score bar: per-round indicators + totals (classic BH style) */}
           <div style={{
             display: 'flex', alignItems: 'center', padding: '3px 6px',
-            background: 'rgba(0,0,0,0.5)', gap: 6,
+            background: 'rgba(255,255,255,0.04)', gap: 6,
             borderTop: '1px solid rgba(255,255,255,0.06)',
           }}>
             {/* Round win/loss indicators */}
@@ -1183,23 +1191,62 @@ function TournamentWidget({ config, theme }) {
 
             <div style={{ flex: 1 }} />
 
-            {/* Totals */}
+            {/* Totals — BH-style muted labels + clean values */}
             <div style={{
-              display: 'flex', alignItems: 'center', gap: 6,
+              display: 'flex', alignItems: 'center', gap: 8,
               fontSize: 'clamp(9px, 1vw, 12px)', fontFamily: sbFont,
             }}>
-              <span style={{ color: '#94a3b8' }}>
-                {currency}{totals.pay !== null ? totals.pay.toFixed(2) : '0.00'}
-              </span>
-              <span style={{
-                fontWeight: 700,
-                color: totals.multi !== null && totals.multi >= 1 ? sbWinCol : sbLoseCol,
-              }}>
-                {totals.multi !== null ? `${totals.multi.toFixed(2)}x` : '—'}
-              </span>
-              <span style={{ fontSize: 'clamp(9px, 1vw, 12px)', color: sbPayCol }}>
-                {currency}{(totals.pay !== null && totals.multi !== null) ? ((totals.pay / totals.multi) || 0).toFixed(0) : '0'}
-              </span>
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 600,
+                  color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
+                  letterSpacing: '1px', lineHeight: 1,
+                }}>Pay</div>
+                <div style={{
+                  fontWeight: 800, color: '#fff',
+                  fontVariantNumeric: 'tabular-nums',
+                  textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+                }}>
+                  {currency}{totals.pay !== null ? totals.pay.toFixed(2) : '0.00'}
+                </div>
+              </div>
+              <div style={{
+                width: 1, height: '60%', alignSelf: 'stretch',
+                margin: '4px 0', background: 'rgba(255,255,255,0.08)',
+              }} />
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 600,
+                  color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
+                  letterSpacing: '1px', lineHeight: 1,
+                }}>Multi</div>
+                <div style={{
+                  fontWeight: 800,
+                  fontVariantNumeric: 'tabular-nums',
+                  textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+                  color: totals.multi !== null && totals.multi >= 1 ? '#4ade80' : '#f87171',
+                }}>
+                  {totals.multi !== null ? `${totals.multi.toFixed(2)}x` : '—'}
+                </div>
+              </div>
+              <div style={{
+                width: 1, height: '60%', alignSelf: 'stretch',
+                margin: '4px 0', background: 'rgba(255,255,255,0.08)',
+              }} />
+              <div style={{ textAlign: 'center' }}>
+                <div style={{
+                  fontSize: 'clamp(5px, 0.55vw, 7px)', fontWeight: 600,
+                  color: '#93c5fd', opacity: 0.55, textTransform: 'uppercase',
+                  letterSpacing: '1px', lineHeight: 1,
+                }}>Cost</div>
+                <div style={{
+                  fontWeight: 800, color: '#fff',
+                  fontVariantNumeric: 'tabular-nums',
+                  textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+                }}>
+                  {currency}{(totals.pay !== null && totals.multi !== null) ? ((totals.pay / totals.multi) || 0).toFixed(0) : '0'}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -1502,39 +1549,8 @@ function TournamentWidget({ config, theme }) {
             </div>
           )}
 
-          {/* Cost / Payment stats bar — only on active match */}
-          {showStats && (
-          <div style={{
-            position: 'relative', zIndex: 2,
-            display: 'flex', background: 'rgba(0,0,0,0.85)',
-          }}>
-            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
-              <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#64748b',
-                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: gFont,
-                lineHeight: 1,
-              }}>Cost</div>
-              <div style={{
-                fontSize: statFs, fontWeight: 900, color: gCyan, fontFamily: gFont,
-                textShadow: `0 0 6px ${gCyan}30`, lineHeight: 1.2,
-              }}>{vals.cost !== null ? `${currency}${vals.cost.toFixed(0)}` : '—'}</div>
-            </div>
-            <div style={{ width: 1, background: gBorder }} />
-            <div style={{ flex: 1, textAlign: 'center', padding: large ? '4px 3px' : '2px 2px' }}>
-              <div style={{
-                fontSize: labelFs, fontWeight: 600, color: '#64748b',
-                textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: gFont,
-                lineHeight: 1,
-              }}>Pay</div>
-              <div style={{
-                fontSize: statFs, fontWeight: 900, fontFamily: gFont, lineHeight: 1.2,
-                color: vals.pay > (vals.cost || 0) ? gGreen : gRed,
-                textShadow: vals.pay > (vals.cost || 0)
-                  ? `0 0 8px ${gGreen}40` : `0 0 6px ${gRed}30`,
-              }}>{vals.pay !== null ? `${currency}${vals.pay.toFixed(0)}` : '—'}</div>
-            </div>
-          </div>
-          )}
+          {/* Cost / Payment stats bar — only on active match (classic BH style) */}
+          {showStats && renderStatBar(vals, gFont, large)}
         </div>
       );
     };
