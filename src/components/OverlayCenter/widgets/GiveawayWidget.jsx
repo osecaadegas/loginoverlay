@@ -428,7 +428,9 @@ function GiveawayWidget({ config, widgetId }) {
       <div style={{ width:'100%', height:'100%', fontFamily:v12Font, background:v12Bg, color:v12Text,
         borderRadius:12, backdropFilter:'blur(14px)', WebkitBackdropFilter:'blur(14px)',
         display:'flex', flexDirection:'column', overflow:'hidden', boxSizing:'border-box',
-        containerType:'size', WebkitFontSmoothing:'antialiased' }}>
+        containerType:'size', WebkitFontSmoothing:'antialiased',
+        border:'none', outline:'none', boxShadow:'none',
+      }}>
         <style>{kf}</style>
 
         {/* ── Header ── */}
@@ -465,7 +467,7 @@ function GiveawayWidget({ config, widgetId }) {
         {/* ── Body ── */}
         <div style={{
           flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center',
-          padding:'0 clamp(6px,2cqmin,14px)', gap:'clamp(4px,1.5cqmin,10px)', minHeight:0,
+          padding:'clamp(4px,1.5cqmin,10px) clamp(8px,2.5cqmin,16px)', gap:'clamp(6px,2cqmin,14px)', minHeight:0,
           borderTop:`1px solid ${v12Div}`,
         }}>
           {spinningWinner && !winner ? (
@@ -480,19 +482,45 @@ function GiveawayWidget({ config, widgetId }) {
             </>
           ) : isActive && keyword ? (
             <>
+              {/* Prize — prominent center piece */}
               {prize && (
                 <div style={{
-                  fontSize:'clamp(14px,6cqmin,28px)', fontWeight:800, textAlign:'center', lineHeight:1.1,
-                  color:v12Text, textShadow:'0 1px 6px rgba(0,0,0,0.4)',
+                  fontSize:'clamp(16px,7cqmin,34px)', fontWeight:800, textAlign:'center', lineHeight:1.15,
+                  color:v12Text, textShadow:'0 1px 8px rgba(0,0,0,0.5)',
                 }}>{prize}</div>
               )}
-              <div style={{ display:'flex', alignItems:'baseline', gap:'clamp(3px,1cqmin,6px)' }}>
-                <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:v12Muted, opacity:0.55, fontWeight:600 }}>Type</span>
+
+              {/* Keyword instruction — styled tag (single row) */}
+              <div style={{
+                display:'flex', alignItems:'center', gap:'clamp(4px,1.2cqmin,8px)',
+                background:v12Card, border:`1px solid ${v12Div}`, borderRadius:10,
+                padding:'clamp(4px,1.2cqmin,8px) clamp(8px,2.5cqmin,16px)',
+              }}>
                 <span style={{
-                  fontSize:'clamp(16px,6cqmin,28px)', fontWeight:800, color:v12Text,
-                  textShadow:'0 1px 6px rgba(0,0,0,0.4)',
+                  fontSize:'clamp(9px,2.5cqmin,13px)', fontWeight:600,
+                  color:v12Muted, opacity:0.55, letterSpacing:'0.5px',
+                }}>Type</span>
+                <span style={{
+                  fontSize:'clamp(14px,5cqmin,26px)', fontWeight:800, color:v12Text,
+                  textShadow:'0 1px 4px rgba(0,0,0,0.4)',
                 }}>!{keyword}</span>
-                <span style={{ fontSize:'clamp(10px,3cqmin,14px)', color:v12Muted, opacity:0.55, fontWeight:600 }}>to enter</span>
+                <span style={{
+                  fontSize:'clamp(9px,2.5cqmin,13px)', fontWeight:600,
+                  color:v12Muted, opacity:0.55, letterSpacing:'0.5px',
+                }}>to enter</span>
+              </div>
+
+              {/* Entries counter — prominent */}
+              <div style={{ display:'flex', alignItems:'center', gap:'clamp(3px,1cqmin,8px)' }}>
+                <span style={{ fontSize:'clamp(10px,3cqmin,16px)' }}>👥</span>
+                <span style={{
+                  fontSize:'clamp(18px,8cqmin,38px)', fontWeight:800, color:v12Text,
+                  fontVariantNumeric:'tabular-nums', textShadow:'0 1px 6px rgba(0,0,0,0.4)',
+                }}>{count}</span>
+                <span style={{
+                  fontSize:'clamp(9px,2.5cqmin,13px)', fontWeight:600,
+                  color:v12Muted, opacity:0.55,
+                }}>participant{count !== 1 ? 's' : ''}</span>
               </div>
             </>
           ) : (
@@ -509,7 +537,7 @@ function GiveawayWidget({ config, widgetId }) {
           borderTop:`1px solid ${v12Div}`, borderRadius:'0 0 12px 12px',
           overflow:'hidden', flexShrink:0,
         }}>
-          {statBox('Keyword', keyword ? `!${keyword}` : '—', accentColor)}
+          {statBox('Keyword', keyword ? `!${keyword}` : '—', v12Text)}
           {vDiv}
           {statBox('Entries', count, v12Text)}
           {isDone && <>{vDiv}{statBox('Winner', winner || '—', v12Green)}</>}
