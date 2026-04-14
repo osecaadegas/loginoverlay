@@ -1666,12 +1666,12 @@
 
 /* ── V12 modern: 3D carousel ── */
 .oc-bonushunt--v12 .bht-stack {
-  height: 170px;
+  height: 120px;
   margin: -4px 0 2px;
 }
 .oc-bonushunt--v12 .bht-stack-card {
-  width: 110px;
-  height: 160px;
+  width: 90px;
+  height: 110px;
 }
 .oc-bonushunt--v12 .bht-stack-card-inner {
   border-radius: 12px;
