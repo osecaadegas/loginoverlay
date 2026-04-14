@@ -229,7 +229,7 @@ function PredictionSection({ points, onRefresh }) {
     } catch {}
   }, []);
 
-  useEffect(() => { load(); const i = setInterval(load, 8000); return () => clearInterval(i); }, [load]);
+  useEffect(() => { load(); const i = setInterval(load, 30000); return () => clearInterval(i); }, [load]);
 
   const submit = async () => {
     if (!prediction || !multi) return;
@@ -302,7 +302,7 @@ function BetsSection({ points, onRefresh }) {
     } catch {}
   }, []);
 
-  useEffect(() => { load(); const i = setInterval(load, 8000); return () => clearInterval(i); }, [load]);
+  useEffect(() => { load(); const i = setInterval(load, 30000); return () => clearInterval(i); }, [load]);
 
   const bet = async (betId) => {
     const optId = selectedOption[betId];
@@ -384,7 +384,7 @@ function GiveawaySection({ points, onRefresh }) {
     } catch {}
   }, []);
 
-  useEffect(() => { load(); const i = setInterval(load, 10000); return () => clearInterval(i); }, [load]);
+  useEffect(() => { load(); const i = setInterval(load, 30000); return () => clearInterval(i); }, [load]);
 
   const enter = async (id) => {
     setLoading(true);

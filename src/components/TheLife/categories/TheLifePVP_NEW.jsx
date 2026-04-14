@@ -268,20 +268,20 @@ export default function TheLifePVP({
     loadBattleLogs();
     loadOnlinePlayers();
 
-    // Poll for chat updates every 5 seconds instead of Realtime
+    // Poll for chat updates every 15 seconds (reduced from 5s to save egress)
     const chatInterval = setInterval(() => {
       loadChat();
-    }, 5000);
+    }, 15000);
 
-    // Poll for battle logs every 10 seconds instead of Realtime
+    // Poll for battle logs every 30 seconds (reduced from 10s)
     const logsInterval = setInterval(() => {
       loadBattleLogs();
-    }, 10000);
+    }, 30000);
 
-    // Poll for online players every 20 seconds
+    // Poll for online players every 60 seconds (reduced from 20s)
     const refreshInterval = setInterval(() => {
       loadOnlinePlayers();
-    }, 20000);
+    }, 60000);
 
     return () => {
       clearInterval(chatInterval);

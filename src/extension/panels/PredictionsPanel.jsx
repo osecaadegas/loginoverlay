@@ -46,7 +46,7 @@ export default function PredictionsPanel({ points, onPointsChange }) {
 
   useEffect(() => {
     loadData();
-    const interval = setInterval(loadData, 10000);
+    const interval = setInterval(loadData, 30000);
     return () => clearInterval(interval);
   }, [loadData]);
 

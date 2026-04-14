@@ -702,23 +702,23 @@ export const useTheLifeData = (user) => {
           });
         }
       }
-    }, 15000);
+    }, 30000);
     
-    // Poll inventory every 10 seconds for faster updates when items are received
+    // Poll inventory every 30 seconds (reduced from 10s to save egress)
     const inventoryInterval = setInterval(() => {
       loadTheLifeInventory();
-    }, 10000);
+    }, 30000);
     
-    // Poll other data every 60 seconds (less critical)
+    // Poll other data every 120 seconds (less critical)
     const dataInterval = setInterval(() => {
       loadRobberies();
       loadCategoryInfo();
-    }, 60000);
+    }, 120000);
     
-    // Poll leaderboard every 30 seconds for responsive updates
+    // Poll leaderboard every 60 seconds (reduced from 30s)
     const leaderboardInterval = setInterval(() => {
       loadLeaderboard();
-    }, 30000);
+    }, 60000);
 
     return () => {
       clearInterval(playerInterval);

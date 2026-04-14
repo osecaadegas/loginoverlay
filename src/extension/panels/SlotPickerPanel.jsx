@@ -30,7 +30,7 @@ export default function SlotPickerPanel({ points, onPointsChange, config }) {
 
   useEffect(() => {
     loadSuggestions();
-    const interval = setInterval(loadSuggestions, 8000);
+    const interval = setInterval(loadSuggestions, 30000);
     return () => clearInterval(interval);
   }, [loadSuggestions]);
 

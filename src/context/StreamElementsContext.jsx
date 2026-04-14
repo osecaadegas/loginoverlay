@@ -494,9 +494,9 @@ export function StreamElementsProvider({ children }) {
       }
     };
 
-    // Check immediately and then every 10 seconds
+    // Check immediately and then every 60 seconds (reduced from 10s to save egress)
     checkRedemptions();
-    const interval = setInterval(checkRedemptions, 10000);
+    const interval = setInterval(checkRedemptions, 60000);
 
     return () => clearInterval(interval);
   }, [user?.id]);

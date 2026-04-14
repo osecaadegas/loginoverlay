@@ -30,7 +30,7 @@ export default function BetsPanel({ points, onPointsChange }) {
 
   useEffect(() => {
     loadBets();
-    const interval = setInterval(loadBets, 8000);
+    const interval = setInterval(loadBets, 30000);
     return () => clearInterval(interval);
   }, [loadBets]);
 

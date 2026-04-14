@@ -29,7 +29,7 @@ export default function GiveawayPanel({ points, onPointsChange }) {
 
   useEffect(() => {
     loadGiveaways();
-    const interval = setInterval(loadGiveaways, 8000);
+    const interval = setInterval(loadGiveaways, 30000);
     return () => clearInterval(interval);
   }, [loadGiveaways]);
 

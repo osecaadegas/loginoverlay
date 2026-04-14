@@ -15,7 +15,7 @@ import {
 // ============================================
 const CONFIG = {
   maxTablesPerPage: 10,
-  refreshInterval: 5000, // 5 seconds
+  refreshInterval: 30000, // 30 seconds (reduced from 5s, Realtime handles instant updates)
   defaultSeats: 6,
   actionTimeout: 30, // seconds
 };
