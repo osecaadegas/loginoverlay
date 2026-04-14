@@ -3821,15 +3821,25 @@ export default function AdminPanel() {
         onClose={closeOfferModal}
         onSave={async (formData) => {
           try {
+            // Parse game_providers from JSON string to array for JSONB column
+            const payload = { ...formData };
+            if (typeof payload.game_providers === 'string') {
+              try { payload.game_providers = JSON.parse(payload.game_providers); } catch { payload.game_providers = []; }
+            }
+            // Remove id/created_at from payload to avoid conflicts
+            const { id, created_at, updated_at, ...cleanPayload } = payload;
+
             if (editingOffer) {
-              await supabase
+              const { error } = await supabase
                 .from('casino_offers')
-                .update(formData)
+                .update(cleanPayload)
                 .eq('id', editingOffer.id);
+              if (error) throw error;
             } else {
-              await supabase
+              const { error } = await supabase
                 .from('casino_offers')
-                .insert([{ ...formData, created_by: (await supabase.auth.getUser()).data.user?.id }]);
+                .insert([{ ...cleanPayload, created_by: (await supabase.auth.getUser()).data.user?.id }]);
+              if (error) throw error;
             }
             closeOfferModal();
             loadOffers();
@@ -3839,10 +3849,15 @@ export default function AdminPanel() {
           }
         }}
         onDelete={async (offerId) => {
-          await supabase.from('casino_offers').delete().eq('id', offerId);
-          closeOfferModal();
-          loadOffers();
-          setSuccess('Offer deleted successfully!');
+          try {
+            const { error } = await supabase.from('casino_offers').delete().eq('id', offerId);
+            if (error) throw error;
+            closeOfferModal();
+            loadOffers();
+            setSuccess('Offer deleted successfully!');
+          } catch (err) {
+            setError('Failed to delete offer: ' + err.message);
+          }
         }}
         editingOffer={editingOffer}
         saving={loading}
