@@ -3821,24 +3821,35 @@ export default function AdminPanel() {
         onClose={closeOfferModal}
         onSave={async (formData) => {
           try {
+            // Only send known DB columns to avoid 400 errors from unknown fields
+            const ALLOWED_COLS = [
+              'casino_name','bonus_link','title','image_url','list_image_url',
+              'badge','badge_class','min_deposit','max_withdrawal','withdrawal_time',
+              'cashback','bonus_value','free_spins','game_providers','total_games',
+              'license','welcome_bonus','languages','established','live_support',
+              'details','deposit_methods','video_url','promo_code',
+              'crypto_friendly','vpn_friendly','is_premium','is_active','display_order',
+              'highlights'
+            ];
+            const payload = {};
+            for (const key of ALLOWED_COLS) {
+              if (key in formData) payload[key] = formData[key];
+            }
             // Parse game_providers from JSON string to array for JSONB column
-            const payload = { ...formData };
             if (typeof payload.game_providers === 'string') {
               try { payload.game_providers = JSON.parse(payload.game_providers); } catch { payload.game_providers = []; }
             }
-            // Remove id/created_at from payload to avoid conflicts
-            const { id, created_at, updated_at, ...cleanPayload } = payload;
 
             if (editingOffer) {
               const { error } = await supabase
                 .from('casino_offers')
-                .update(cleanPayload)
+                .update(payload)
                 .eq('id', editingOffer.id);
               if (error) throw error;
             } else {
               const { error } = await supabase
                 .from('casino_offers')
-                .insert([{ ...cleanPayload, created_by: (await supabase.auth.getUser()).data.user?.id }]);
+                .insert([{ ...payload, created_by: (await supabase.auth.getUser()).data.user?.id }]);
               if (error) throw error;
             }
             closeOfferModal();
