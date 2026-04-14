@@ -1648,12 +1648,12 @@
   color: #fff;
 }
 .oc-bonushunt--v12 .bht-badge-pill--super {
-  background: rgba(234,179,8,0.18);
-  border: 1px solid rgba(234,179,8,0.25);
+  background: color-mix(in srgb, var(--bht-super-badge, #eab308) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bht-super-badge, #eab308) 25%, transparent);
 }
 .oc-bonushunt--v12 .bht-badge-pill--extreme {
-  background: rgba(239,68,68,0.18);
-  border: 1px solid rgba(239,68,68,0.25);
+  background: color-mix(in srgb, var(--bht-extreme-badge, #ef4444) 18%, transparent);
+  border: 1px solid color-mix(in srgb, var(--bht-extreme-badge, #ef4444) 25%, transparent);
 }
 
 /* ── V12 modern: list card ── */
@@ -1686,12 +1686,12 @@
   box-shadow: 0 8px 32px rgba(0,0,0,0.6), 0 0 8px 2px rgba(200,200,210,0.05);
 }
 .oc-bonushunt--v12 .bht-stack-card--super .bht-stack-card-inner {
-  outline-color: rgba(234,179,8,0.7);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 6px 2px rgba(234,179,8,0.06);
+  outline-color: color-mix(in srgb, var(--bht-super-badge, #eab308) 70%, transparent);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 6px 2px color-mix(in srgb, var(--bht-super-badge, #eab308) 6%, transparent);
 }
 .oc-bonushunt--v12 .bht-stack-card--extreme .bht-stack-card-inner {
-  outline-color: rgba(239,68,68,0.7);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 6px 2px rgba(239,68,68,0.06);
+  outline-color: color-mix(in srgb, var(--bht-extreme-badge, #ef4444) 70%, transparent);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.5), 0 0 6px 2px color-mix(in srgb, var(--bht-extreme-badge, #ef4444) 6%, transparent);
 }
 .oc-bonushunt--v12 .bht-stack-card-img-wrap {
   border-radius: 10px 10px 0 0;
@@ -1756,10 +1756,10 @@
   border-bottom-color: rgba(255,255,255,0.06);
 }
 .oc-bonushunt--v12 .bht-list-row--super {
-  background: rgba(234,179,8,0.06);
+  background: color-mix(in srgb, var(--bht-super-badge, #eab308) 6%, transparent);
 }
 .oc-bonushunt--v12 .bht-list-row--extreme {
-  background: rgba(239,68,68,0.06);
+  background: color-mix(in srgb, var(--bht-extreme-badge, #ef4444) 6%, transparent);
 }
 .oc-bonushunt--v12 .bht-list-row-idx {
   font-size: 0.65em;
@@ -1988,11 +1988,11 @@
 }
 .oc-bonushunt--v12 .bht-list-fade--top {
   top: 0;
-  background: linear-gradient(to bottom, rgba(38,40,46,0.95) 0%, transparent 100%);
+  background: linear-gradient(to bottom, var(--bht-header-bg, rgba(38,40,46,0.95)) 0%, transparent 100%);
 }
 .oc-bonushunt--v12 .bht-list-fade--bottom {
   bottom: 0;
-  background: linear-gradient(to top, rgba(38,40,46,0.95) 0%, transparent 100%);
+  background: linear-gradient(to top, var(--bht-header-bg, rgba(38,40,46,0.95)) 0%, transparent 100%);
 }
 
 /* ── V12 modern: global card styling ── */
@@ -2007,7 +2007,7 @@
   border-radius: 0;
   box-shadow: none;
   border: none;
-  background: transparent !important;
+  background: transparent;
   backdrop-filter: none;
 }
 /* Header: rounded top only */

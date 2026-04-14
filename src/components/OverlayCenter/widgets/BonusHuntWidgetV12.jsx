@@ -238,6 +238,8 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
     height: '100%',
     overflow: 'hidden',
     gap: `${cardGap}px`,
+    background: `linear-gradient(160deg, ${headerColor}f8, ${headerColor}f0)`,
+    color: textColor,
     filter: (brightness !== 100 || contrast !== 100 || saturation !== 100)
       ? `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`
       : undefined,
