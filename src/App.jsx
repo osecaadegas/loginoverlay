@@ -35,6 +35,8 @@ import TermsOfService from './components/Legal/TermsOfService';
 import LoginPage from './components/Login/LoginPage';
 import CookieConsent from './components/CookieConsent/CookieConsent';
 import useGiveawayListener from './hooks/useGiveawayListener';
+import useSlotRequestListener from './hooks/useSlotRequestListener';
+import usePredictionListener from './hooks/usePredictionListener';
 // ThemesPage is now rendered inside OverlayControlCenter
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
@@ -280,6 +282,8 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
 function LayoutWrapper({ children }) {
   const location = useLocation();
   useGiveawayListener(); // persistent chat listener for giveaway keyword
+  useSlotRequestListener(); // persistent chat listener for !sr commands
+  usePredictionListener(); // persistent chat listener for !bet commands
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const isOverlayCenter = location.pathname === '/overlay-center';

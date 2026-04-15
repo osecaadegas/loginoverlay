@@ -1,9 +1,20 @@
 /**
- * PredictionsConfig.jsx — Streamer control panel for Predictions game.
- * Set question, two outcomes, open/close/lock/resolve predictions.
+ * PredictionsConfig.jsx — Streamer control panel for BH Predictions.
+ * Configure bracket options, open/lock/resolve predictions, manage SE-point bets.
  */
 import React, { useState } from 'react';
 import TabBar from './shared/TabBar';
+
+const DEFAULT_OPTIONS = [
+  { label: '0 - 299 - !bet 1' },
+  { label: '300 - 399 - !bet 2' },
+  { label: '400 - 499 - !bet 3' },
+  { label: '500 - 599 - !bet 4' },
+  { label: '600 - 699 - !bet 5' },
+  { label: '700 - 799 - !bet 6' },
+  { label: '800 - 899 - !bet 7' },
+  { label: '900 + - !bet 8' },
+];
 
 export default function PredictionsConfig({ config, onChange }) {
   const c = config || {};
@@ -12,49 +23,61 @@ export default function PredictionsConfig({ config, onChange }) {
   const [tab, setTab] = useState('game');
 
   const status = c.gameStatus || 'idle';
-  const betsA = c.betsA || 0;
-  const betsB = c.betsB || 0;
-  const total = betsA + betsB;
+  const options = c.options || DEFAULT_OPTIONS;
+  const bets = c.bets || {};
+  const betters = c.betters || {};
+  const totalPool = options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
+  const totalBetters = Object.keys(betters).length;
   const history = c.predHistory || [];
 
   /* ── Game actions ── */
   const openPrediction = () => setMulti({
-    gameStatus: 'open', winner: null, betsA: 0, betsB: 0,
+    gameStatus: 'open',
+    winnerOption: null,
+    bets: {},
+    betters: {},
     _openedAt: Date.now(),
+    options: options.length > 0 ? options : DEFAULT_OPTIONS,
   });
+
   const lockPrediction = () => set('gameStatus', 'locked');
-  const resolveA = () => {
+
+  const resolveWinner = (idx) => {
     const entry = {
       question: c.question || 'Prediction',
-      winner: c.optionA || 'Option A',
-      pool: total,
+      winner: options[idx]?.label || `Option ${idx + 1}`,
+      pool: totalPool,
+      betters: totalBetters,
       time: new Date().toLocaleTimeString(),
     };
     setMulti({
       gameStatus: 'result',
-      winner: 'a',
+      winnerOption: idx,
       predHistory: [entry, ...history].slice(0, 20),
     });
   };
-  const resolveB = () => {
-    const entry = {
-      question: c.question || 'Prediction',
-      winner: c.optionB || 'Option B',
-      pool: total,
-      time: new Date().toLocaleTimeString(),
-    };
-    setMulti({
-      gameStatus: 'result',
-      winner: 'b',
-      predHistory: [entry, ...history].slice(0, 20),
-    });
-  };
+
   const resetGame = () => setMulti({
-    gameStatus: 'idle', winner: null, betsA: 0, betsB: 0, _openedAt: null,
+    gameStatus: 'idle',
+    winnerOption: null,
+    bets: {},
+    betters: {},
+    _openedAt: null,
   });
+
+  /* ── Options management ── */
+  const addOption = () => set('options', [...options, { label: `Option ${options.length + 1}` }]);
+  const removeOption = (idx) => set('options', options.filter((_, i) => i !== idx));
+  const updateOption = (idx, label) => {
+    const updated = [...options];
+    updated[idx] = { ...updated[idx], label };
+    set('options', updated);
+  };
+  const loadDefaults = () => set('options', DEFAULT_OPTIONS);
 
   const tabs = [
     { id: 'game', label: '🎮 Game' },
+    { id: 'options', label: '📋 Options' },
     { id: 'style', label: '🎨 Style' },
     { id: 'history', label: '📜 History' },
   ];
@@ -67,25 +90,39 @@ export default function PredictionsConfig({ config, onChange }) {
       {tab === 'game' && (
         <div className="cg-config__section">
           <label className="cg-config__field">
-            <span>Question</span>
-            <input value={c.question || ''} onChange={e => set('question', e.target.value)} placeholder="Will I hit a bonus?" />
+            <span>Title / Question</span>
+            <input value={c.question || ''} onChange={e => set('question', e.target.value)} placeholder="Total do Bónus Hunt?" />
           </label>
+
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
             <label className="cg-config__field">
-              <span>Option A</span>
-              <input value={c.optionA || ''} onChange={e => set('optionA', e.target.value)} placeholder="Yes" />
+              <span>Fund Amount</span>
+              <input type="number" value={c.fundAmount || 0} onChange={e => set('fundAmount', parseInt(e.target.value) || 0)} min={0} />
             </label>
             <label className="cg-config__field">
-              <span>Option B</span>
-              <input value={c.optionB || ''} onChange={e => set('optionB', e.target.value)} placeholder="No" />
+              <span>Currency</span>
+              <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} placeholder="€" />
             </label>
           </div>
 
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <label className="cg-config__field">
+              <span>Timer (seconds)</span>
+              <input type="number" value={c.timerSeconds || 0} onChange={e => set('timerSeconds', parseInt(e.target.value) || 0)} min={0} />
+            </label>
+            <label className="cg-config__field">
+              <span>Chat Command</span>
+              <input value={c.commandTrigger || '!bet'} onChange={e => set('commandTrigger', e.target.value)} placeholder="!bet" />
+            </label>
+          </div>
+
+          {/* Twitch channel */}
           <label className="cg-config__field">
-            <span>Timer (seconds, 0 = no timer)</span>
-            <input type="number" value={c.timerSeconds || 0} onChange={e => set('timerSeconds', parseInt(e.target.value) || 0)} min={0} />
+            <span>Twitch Channel (leave empty for auto)</span>
+            <input value={c.twitchChannel || ''} onChange={e => set('twitchChannel', e.target.value)} placeholder="auto-detect" />
           </label>
 
+          {/* Status card */}
           <div className="cg-config__status-card">
             <div className="cg-config__status-row">
               <span className="cg-config__status-label">Status</span>
@@ -93,28 +130,35 @@ export default function PredictionsConfig({ config, onChange }) {
                 {status === 'idle' ? '⏸ Idle' : status === 'open' ? '🟢 Open' : status === 'locked' ? '🔒 Locked' : '🏆 Result'}
               </span>
             </div>
-            {(status !== 'idle') && (
+            {status !== 'idle' && (
               <>
                 <div className="cg-config__status-row">
-                  <span style={{ color: c.colorA || '#3b82f6' }}>{c.optionA || 'A'}</span>
-                  <span style={{ fontWeight: 700 }}>{betsA.toLocaleString()} pts</span>
-                </div>
-                <div className="cg-config__status-row">
-                  <span style={{ color: c.colorB || '#ef4444' }}>{c.optionB || 'B'}</span>
-                  <span style={{ fontWeight: 700 }}>{betsB.toLocaleString()} pts</span>
-                </div>
-                <div className="cg-config__status-row">
                   <span>Total Pool</span>
-                  <span style={{ fontWeight: 700, color: '#f59e0b' }}>{total.toLocaleString()} pts</span>
+                  <span style={{ fontWeight: 700, color: '#f59e0b' }}>{totalPool.toLocaleString()} pts</span>
                 </div>
+                <div className="cg-config__status-row">
+                  <span>Total Bets</span>
+                  <span style={{ fontWeight: 700 }}>{totalBetters}</span>
+                </div>
+                {options.map((opt, i) => {
+                  const amt = bets[`opt_${i}`] || 0;
+                  if (amt === 0) return null;
+                  return (
+                    <div key={i} className="cg-config__status-row" style={{ fontSize: '0.82rem' }}>
+                      <span>{opt.label}</span>
+                      <span style={{ fontWeight: 600 }}>{amt.toLocaleString()} pts</span>
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>
 
+          {/* Actions */}
           <div className="cg-config__actions">
             {status === 'idle' && (
               <button className="cg-config__btn cg-config__btn--primary" onClick={openPrediction}
-                disabled={!c.question || !c.optionA || !c.optionB}>
+                disabled={options.length < 2}>
                 🟢 Open Prediction
               </button>
             )}
@@ -130,19 +174,17 @@ export default function PredictionsConfig({ config, onChange }) {
             )}
             {status === 'locked' && (
               <>
-                <p className="cg-config__hint">Pick the winner:</p>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
-                  <button className="cg-config__btn cg-config__btn--primary" onClick={resolveA}
-                    style={{ background: c.colorA || '#3b82f6' }}>
-                    👑 {c.optionA || 'A'} Wins
-                  </button>
-                  <button className="cg-config__btn cg-config__btn--primary" onClick={resolveB}
-                    style={{ background: c.colorB || '#ef4444' }}>
-                    👑 {c.optionB || 'B'} Wins
-                  </button>
+                <p className="cg-config__hint">Pick the winning bracket:</p>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
+                  {options.map((opt, i) => (
+                    <button key={i} className="cg-config__btn cg-config__btn--primary" onClick={() => resolveWinner(i)}
+                      style={{ fontSize: '0.82rem', padding: '6px 10px' }}>
+                      👑 {opt.label}
+                    </button>
+                  ))}
                 </div>
-                <button className="cg-config__btn cg-config__btn--muted" onClick={resetGame}>
-                  🗑️ Cancel & Refund
+                <button className="cg-config__btn cg-config__btn--muted" onClick={resetGame} style={{ marginTop: 6 }}>
+                  🗑️ Cancel
                 </button>
               </>
             )}
@@ -155,25 +197,66 @@ export default function PredictionsConfig({ config, onChange }) {
         </div>
       )}
 
+      {/* ═══ OPTIONS TAB ═══ */}
+      {tab === 'options' && (
+        <div className="cg-config__section">
+          <p className="cg-config__hint">Configure the betting brackets. Viewers use <code>!bet &lt;number&gt; &lt;amount&gt;</code></p>
+          {options.map((opt, i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
+              <span style={{ color: '#9ca3af', fontSize: '0.82rem', minWidth: 20 }}>{i + 1}.</span>
+              <input
+                style={{ flex: 1, background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 6, padding: '6px 8px', color: '#e5e7eb', fontSize: '0.85rem' }}
+                value={opt.label}
+                onChange={e => updateOption(i, e.target.value)}
+                disabled={status !== 'idle'}
+              />
+              {status === 'idle' && options.length > 2 && (
+                <button onClick={() => removeOption(i)} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '1rem', padding: '2px 6px' }}>✕</button>
+              )}
+            </div>
+          ))}
+          {status === 'idle' && (
+            <div style={{ display: 'flex', gap: 6, marginTop: 8 }}>
+              <button className="cg-config__btn cg-config__btn--primary" onClick={addOption} style={{ fontSize: '0.82rem' }}>
+                + Add Option
+              </button>
+              <button className="cg-config__btn cg-config__btn--muted" onClick={loadDefaults} style={{ fontSize: '0.82rem' }}>
+                Load Defaults
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ═══ STYLE TAB ═══ */}
       {tab === 'style' && (
         <div className="cg-config__section">
           <div className="cg-config__color-row">
             <label className="cg-config__color">
-              <span>Accent</span>
-              <input type="color" value={c.accentColor || '#7c3aed'} onChange={e => set('accentColor', e.target.value)} />
+              <span>Background</span>
+              <input type="color" value={c.bgColor || '#1e3550'} onChange={e => set('bgColor', e.target.value)} />
             </label>
             <label className="cg-config__color">
-              <span>Option A</span>
-              <input type="color" value={c.colorA || '#3b82f6'} onChange={e => set('colorA', e.target.value)} />
+              <span>Header</span>
+              <input type="color" value={c.headerBg || '#2a4a6b'} onChange={e => set('headerBg', e.target.value)} />
             </label>
             <label className="cg-config__color">
-              <span>Option B</span>
-              <input type="color" value={c.colorB || '#ef4444'} onChange={e => set('colorB', e.target.value)} />
+              <span>Title</span>
+              <input type="color" value={c.headerText || '#e8d48b'} onChange={e => set('headerText', e.target.value)} />
+            </label>
+          </div>
+          <div className="cg-config__color-row">
+            <label className="cg-config__color">
+              <span>Bar BG</span>
+              <input type="color" value={c.barBg || '#3a5a7a'} onChange={e => set('barBg', e.target.value)} />
+            </label>
+            <label className="cg-config__color">
+              <span>Bar Fill</span>
+              <input type="color" value={c.barFill || '#c4a44a'} onChange={e => set('barFill', e.target.value)} />
             </label>
             <label className="cg-config__color">
               <span>Text</span>
-              <input type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)} />
+              <input type="color" value={c.textColor || '#c8d8e8'} onChange={e => set('textColor', e.target.value)} />
             </label>
           </div>
         </div>
@@ -190,7 +273,7 @@ export default function PredictionsConfig({ config, onChange }) {
                 <div key={i} className="cg-config__history-row">
                   <span style={{ flex: 1, fontSize: '0.82rem' }}>{h.question}</span>
                   <span style={{ fontWeight: 700, color: '#f59e0b' }}>👑 {h.winner}</span>
-                  <span className="cg-config__history-pool">{h.pool?.toLocaleString() || 0} pts</span>
+                  <span className="cg-config__history-pool">{h.pool?.toLocaleString() || 0} pts ({h.betters || 0} bets)</span>
                   <span className="cg-config__history-time">{h.time}</span>
                 </div>
               ))}

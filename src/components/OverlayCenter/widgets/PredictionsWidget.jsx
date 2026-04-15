@@ -1,35 +1,38 @@
 /**
- * PredictionsWidget.jsx — OBS overlay for Predictions community game.
- * Shows a prediction question with two outcomes and live vote/bet bars.
+ * PredictionsWidget.jsx — OBS overlay for Bonus Hunt Predictions.
+ *
+ * Viewers bet SE points on payout bracket outcomes via !bet <number> <amount>.
+ * Displays a title, countdown timer, fund total, and horizontal progress bars
+ * for each bracket option — styled like the classic dark-blue betting widget.
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 
 function PredictionsWidget({ config }) {
   const c = config || {};
-  const question = c.question || 'Who will win?';
-  const optionA = c.optionA || 'Option A';
-  const optionB = c.optionB || 'Option B';
-  const betsA = c.betsA || 0;
-  const betsB = c.betsB || 0;
-  const total = betsA + betsB;
-  const pctA = total > 0 ? Math.round((betsA / total) * 100) : 50;
-  const pctB = 100 - pctA;
+  const title = c.question || 'Total do Bónus Hunt?';
   const status = c.gameStatus || 'idle'; // idle | open | locked | result
-  const winner = c.winner || null; // 'a' | 'b' | null
-  const accent = c.accentColor || '#7c3aed';
-  const colorA = c.colorA || '#3b82f6';
-  const colorB = c.colorB || '#ef4444';
-  const font = c.fontFamily || "'Inter', sans-serif";
+  const winnerIdx = c.winnerOption ?? null;
+  const options = c.options || [];
+  const bets = c.bets || {};       // { opt_0: 1200, opt_1: 300, ... }
+  const betters = c.betters || {};  // { username: { option: idx, amount: n } }
   const timer = c.timerSeconds || 0;
+  const fund = c.fundAmount || 0;
+  const currency = c.currency || '€';
+  const font = c.fontFamily || "'Inter', sans-serif";
+  const headerBg = c.headerBg || '#2a4a6b';
+  const headerText = c.headerText || '#e8d48b';
+  const barBg = c.barBg || '#3a5a7a';
+  const barFill = c.barFill || '#c4a44a';
+  const textColor = c.textColor || '#c8d8e8';
+  const bgColor = c.bgColor || '#1e3550';
 
-  /* Countdown display */
+  /* Countdown */
   const [countdown, setCountdown] = useState(0);
   useEffect(() => {
     if (status !== 'open' || !c._openedAt || timer <= 0) { setCountdown(0); return; }
     const update = () => {
       const elapsed = Math.floor((Date.now() - c._openedAt) / 1000);
-      const remaining = Math.max(0, timer - elapsed);
-      setCountdown(remaining);
+      setCountdown(Math.max(0, timer - elapsed));
     };
     update();
     const iv = setInterval(update, 1000);
@@ -39,51 +42,69 @@ function PredictionsWidget({ config }) {
   const formatTime = (s) => {
     const m = Math.floor(s / 60);
     const sec = s % 60;
-    return m > 0 ? `${m}:${sec.toString().padStart(2, '0')}` : `${sec}s`;
+    return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  /* Calculate totals per option */
+  const totalPool = useMemo(() => {
+    return options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
+  }, [options, bets]);
+
+  const maxBet = useMemo(() => {
+    return Math.max(1, ...options.map((_, i) => bets[`opt_${i}`] || 0));
+  }, [options, bets]);
+
+  const totalBetters = Object.keys(betters).length;
+
+  if (status === 'idle') return null; // Don't show when idle
+
   return (
-    <div className="cg-predict" style={{ '--accent': accent, '--colorA': colorA, '--colorB': colorB, fontFamily: font }}>
-      {/* Status */}
-      <div className={`cg-predict__status cg-predict__status--${status}`}>
-        {status === 'idle' && '⏸ Waiting'}
-        {status === 'open' && (countdown > 0 ? `🟢 ${formatTime(countdown)} left` : '🟢 Bets Open')}
-        {status === 'locked' && '🔒 Locked'}
-        {status === 'result' && '🏆 Result!'}
+    <div className="bh-pred" style={{ fontFamily: font, '--bh-pred-bg': bgColor, '--bh-pred-header-bg': headerBg, '--bh-pred-header-text': headerText, '--bh-pred-bar-bg': barBg, '--bh-pred-bar-fill': barFill, '--bh-pred-text': textColor }}>
+      {/* Header */}
+      <div className="bh-pred__header">
+        <span className="bh-pred__title">{title} {fund > 0 ? `${fund}${currency}` : ''}</span>
+        {status === 'result' && <span className="bh-pred__trophy">🏆</span>}
       </div>
 
-      {/* Question */}
-      <div className="cg-predict__question">{question}</div>
-
-      {/* Two options side by side */}
-      <div className="cg-predict__options">
-        <div className={`cg-predict__option cg-predict__option--a ${winner === 'a' ? 'cg-predict__option--winner' : ''} ${winner === 'b' ? 'cg-predict__option--loser' : ''}`}>
-          <div className="cg-predict__option-bar" style={{ height: `${pctA}%`, background: colorA }} />
-          <div className="cg-predict__option-content">
-            <span className="cg-predict__option-label">{optionA}</span>
-            <span className="cg-predict__option-pct">{pctA}%</span>
-            <span className="cg-predict__option-pts">{betsA.toLocaleString()} pts</span>
-          </div>
-          {winner === 'a' && <div className="cg-predict__option-crown">👑</div>}
+      {/* Stats row: Timer + Fund */}
+      <div className="bh-pred__stats">
+        <div className="bh-pred__stat-box">
+          <span className="bh-pred__stat-val">
+            {status === 'open' && countdown > 0 ? formatTime(countdown) : status === 'open' ? 'OPEN' : status === 'locked' ? 'LOCKED' : 'RESULT'}
+          </span>
+          <span className="bh-pred__stat-label">Time</span>
         </div>
-
-        <div className="cg-predict__vs">VS</div>
-
-        <div className={`cg-predict__option cg-predict__option--b ${winner === 'b' ? 'cg-predict__option--winner' : ''} ${winner === 'a' ? 'cg-predict__option--loser' : ''}`}>
-          <div className="cg-predict__option-bar" style={{ height: `${pctB}%`, background: colorB }} />
-          <div className="cg-predict__option-content">
-            <span className="cg-predict__option-label">{optionB}</span>
-            <span className="cg-predict__option-pct">{pctB}%</span>
-            <span className="cg-predict__option-pts">{betsB.toLocaleString()} pts</span>
-          </div>
-          {winner === 'b' && <div className="cg-predict__option-crown">👑</div>}
+        <div className="bh-pred__stat-box">
+          <span className="bh-pred__stat-val">{totalBetters}</span>
+          <span className="bh-pred__stat-label">Bets</span>
         </div>
       </div>
 
-      {/* Pool total */}
-      {total > 0 && (
-        <div className="cg-predict__pool">
-          Pool: {total.toLocaleString()} pts
+      {/* Options list */}
+      <div className="bh-pred__options">
+        {options.map((opt, i) => {
+          const amount = bets[`opt_${i}`] || 0;
+          const pct = totalPool > 0 ? Math.round((amount / totalPool) * 100) : 0;
+          const barW = maxBet > 0 ? (amount / maxBet) * 100 : 0;
+          const isWinner = winnerIdx === i;
+          const isLoser = winnerIdx !== null && winnerIdx !== i;
+
+          return (
+            <div key={i} className={`bh-pred__option${isWinner ? ' bh-pred__option--winner' : ''}${isLoser ? ' bh-pred__option--loser' : ''}`}>
+              <span className="bh-pred__option-label">{opt.label || `Option ${i + 1}`}</span>
+              <div className="bh-pred__option-bar-wrap">
+                <div className="bh-pred__option-bar" style={{ width: `${barW}%` }} />
+                {pct > 0 && <span className="bh-pred__option-pct">{pct}%</span>}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Chat hint */}
+      {status === 'open' && (
+        <div className="bh-pred__hint">
+          Type <strong>{c.commandTrigger || '!bet'} &lt;number&gt; &lt;amount&gt;</strong> to bet
         </div>
       )}
     </div>

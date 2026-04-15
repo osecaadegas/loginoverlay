@@ -9,7 +9,6 @@
  */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
-import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import SlotRequestsMinimal from './SlotRequestsMinimal';
 import SlotRequestsCardStack from './SlotRequestsCardStack';
 import SlotRequestsCompactOverlay from './SlotRequestsCompactOverlay';
@@ -19,9 +18,6 @@ export default function SlotRequestsWidget({ config, userId }) {
   const maxDisplay = c.maxDisplay || 20;
   const [requests, setRequests] = useState([]);
   const mountedRef = useRef(true);
-  const wsRef = useRef(null);
-  const reconnectRef = useRef(null);
-  const srDedup = useRef(new Map()); // key: "viewer|slot" → timestamp
 
   /* ── Fetch pending requests ── */
   const fetchRequests = useCallback(async () => {
@@ -53,81 +49,8 @@ export default function SlotRequestsWidget({ config, userId }) {
     return () => { supabase.removeChannel(channel); };
   }, [fetchRequests, userId]);
 
-  /* ── Twitch IRC listener — always-on when srChatEnabled ── */
-  const chatEnabled = c.srChatEnabled !== false;
-  const autoChannel = useTwitchChannel();
-  const twitchChannel = (c.twitchChannel || autoChannel || '').trim().toLowerCase().replace(/^#/, '');
-  const cmdTrigger = (c.commandTrigger || '!sr').trim().toLowerCase();
-
-  useEffect(() => {
-    if (!chatEnabled || !twitchChannel || !userId) {
-      if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
-      return;
-    }
-
-    let alive = true;
-
-    // Build regex from command trigger: escape special chars, match rest of line
-    const escaped = cmdTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const cmdRegex = new RegExp(`:([\\w]+)![\\w]+@[\\w.]+\\.tmi\\.twitch\\.tv PRIVMSG #\\w+ :${escaped}\\s+(.+)`, 'i');
-
-    const connect = () => {
-      if (!alive) return;
-      const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-      wsRef.current = ws;
-
-      ws.onopen = () => {
-        ws.send('PASS SCHMOOPIIE');
-        ws.send('NICK justinfan' + Math.floor(Math.random() * 100000));
-        ws.send('JOIN #' + twitchChannel);
-      };
-
-      ws.onmessage = async (event) => {
-        for (const line of event.data.split('\r\n')) {
-          if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
-
-          const m = line.match(cmdRegex);
-          if (m) {
-            const requester = m[1];
-            const slotName = m[2].trim();
-            if (slotName) {
-              // Dedup: skip if same viewer+slot was processed in last 15 seconds
-              const dedupKey = `${requester.toLowerCase()}|${slotName.toLowerCase()}`;
-              const now = Date.now();
-              if (srDedup.current.has(dedupKey) && now - srDedup.current.get(dedupKey) < 15000) {
-                console.log('[SR-IRC] Dedup skip:', dedupKey);
-                continue;
-              }
-              srDedup.current.set(dedupKey, now);
-              // Clean old entries every 50 entries
-              if (srDedup.current.size > 50) {
-                for (const [k, t] of srDedup.current) { if (now - t > 30000) srDedup.current.delete(k); }
-              }
-              try {
-                console.log('[SR-IRC] Matched:', requester, slotName);
-                await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userId)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`);
-              } catch (err) {
-                console.error('[SR-IRC]', err);
-              }
-            }
-          }
-        }
-      };
-
-      ws.onclose = () => {
-        if (alive) { reconnectRef.current = setTimeout(connect, 5000); }
-      };
-      ws.onerror = () => ws.close();
-    };
-
-    const debounce = setTimeout(connect, 600);
-    return () => {
-      alive = false;
-      clearTimeout(debounce);
-      clearTimeout(reconnectRef.current);
-      if (wsRef.current) { wsRef.current.close(); wsRef.current = null; }
-    };
-  }, [chatEnabled, twitchChannel, cmdTrigger, userId]);
+  /* ── NOTE: Twitch IRC chat listener has been moved to useSlotRequestListener.js ── */
+  /* ── (app-level persistent hook) — no widget-scoped WebSocket needed anymore ── */
 
   /* ── Cleanup ref ── */
   useEffect(() => {

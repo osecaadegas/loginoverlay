@@ -7,7 +7,6 @@
  */
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
-import useTwitchChannel from '../../../hooks/useTwitchChannel';
 
 const FALLBACK_SR_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -101,9 +100,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   /* ─── Slot Requests data ─── */
   const [srRequests, setSrRequests] = useState([]);
   const srMounted = useRef(true);
-  const srWsRef = useRef(null);
-  const srReconnect = useRef(null);
-  const srDedup = useRef(new Map());
+
 
   const fetchSR = useCallback(async () => {
     if (!userId || !showSR) return;
@@ -132,65 +129,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
     return () => supabase.removeChannel(channel);
   }, [fetchSR, userId, showSR]);
 
-  /* ── SR IRC listener ── */
-  const srChatEnabled = showSR && c.srChatEnabled !== false;
-  const cmdTrigger = (c.commandTrigger || '!sr').trim().toLowerCase();
-
-  // Auto-resolve Twitch channel from auth
-  const twitchChannel = useTwitchChannel();
-
-  useEffect(() => {
-    if (!srChatEnabled || !twitchChannel || !userId) {
-      if (srWsRef.current) { srWsRef.current.close(); srWsRef.current = null; }
-      return;
-    }
-    let alive = true;
-    const escaped = cmdTrigger.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    const cmdRegex = new RegExp(`:([\\w]+)![\\w]+@[\\w.]+\\.tmi\\.twitch\\.tv PRIVMSG #\\w+ :${escaped}\\s+(.+)`, 'i');
-
-    const connect = () => {
-      if (!alive) return;
-      const ws = new WebSocket('wss://irc-ws.chat.twitch.tv:443');
-      srWsRef.current = ws;
-      ws.onopen = () => {
-        ws.send('PASS SCHMOOPIIE');
-        ws.send('NICK justinfan' + Math.floor(Math.random() * 100000));
-        ws.send('JOIN #' + twitchChannel);
-      };
-      ws.onmessage = async (event) => {
-        for (const line of event.data.split('\r\n')) {
-          if (line.startsWith('PING')) { ws.send('PONG :tmi.twitch.tv'); continue; }
-          const m = line.match(cmdRegex);
-          if (m) {
-            const requester = m[1];
-            const slotName = m[2].trim();
-            if (slotName) {
-              const dedupKey = `${requester.toLowerCase()}|${slotName.toLowerCase()}`;
-              const now = Date.now();
-              if (srDedup.current.has(dedupKey) && now - srDedup.current.get(dedupKey) < 15000) continue;
-              srDedup.current.set(dedupKey, now);
-              if (srDedup.current.size > 50) {
-                for (const [k, t] of srDedup.current) { if (now - t > 30000) srDedup.current.delete(k); }
-              }
-              try {
-                await fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(userId)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`);
-              } catch (err) { console.error('[V12-SR-IRC]', err); }
-            }
-          }
-        }
-      };
-      ws.onclose = () => { if (alive) srReconnect.current = setTimeout(connect, 5000); };
-      ws.onerror = () => ws.close();
-    };
-
-    const debounce = setTimeout(connect, 600);
-    return () => {
-      alive = false;
-      clearTimeout(debounce);
-      clearTimeout(srReconnect.current);
-      if (srWsRef.current) { srWsRef.current.close(); srWsRef.current = null; }
-    };
-  }, [srChatEnabled, twitchChannel, cmdTrigger, userId]);
+  /* ── NOTE: SR IRC listener moved to useSlotRequestListener.js (app-level) ── */
 
   useEffect(() => {
     srMounted.current = true;
