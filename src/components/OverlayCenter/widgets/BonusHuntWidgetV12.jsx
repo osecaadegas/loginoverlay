@@ -476,7 +476,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
             <div className="bht-list-fade bht-list-fade--top" />
             {srRequests.length === 0 ? (
               <div className="bht-v12-sr-empty">
-                <span className="bht-v12-sr-hint">Type <strong>{cmdTrigger} &lt;slot name&gt;</strong> in chat to request a slot</span>
+                <span className="bht-v12-sr-hint">Type <strong>{c.commandTrigger || '!sr'} &lt;slot name&gt;</strong> in chat to request a slot</span>
               </div>
             ) : (
               <div className={`sr-min-scroll-track${srNeedsScroll ? ' sr-min-scroll-track--animate' : ''}`}
