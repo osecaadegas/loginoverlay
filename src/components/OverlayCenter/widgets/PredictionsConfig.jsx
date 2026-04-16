@@ -3,6 +3,7 @@
  * Configure bracket options, open/lock/resolve predictions, manage SE-point bets.
  */
 import React, { useState } from 'react';
+import { useAuth } from '../../../context/AuthContext';
 import TabBar from './shared/TabBar';
 
 const DEFAULT_OPTIONS = [
@@ -16,7 +17,16 @@ const DEFAULT_OPTIONS = [
   { label: '900 + - !bet 8' },
 ];
 
+/** Fire-and-forget SE bot chat message */
+function seBotAnnounce(userId, message) {
+  if (!userId || !message) return;
+  fetch(`${window.location.origin}/api/chat-commands?cmd=pred-say&user_id=${encodeURIComponent(userId)}&message=${encodeURIComponent(message)}`)
+    .catch(err => console.error('[PredSay]', err));
+}
+
 export default function PredictionsConfig({ config, onChange }) {
+  const { user } = useAuth();
+  const userId = user?.id;
   const c = config || {};
   const set = (k, v) => onChange({ ...c, [k]: v });
   const setMulti = (obj) => onChange({ ...c, ...obj });
@@ -31,21 +41,33 @@ export default function PredictionsConfig({ config, onChange }) {
   const history = c.predHistory || [];
 
   /* ── Game actions ── */
-  const openPrediction = () => setMulti({
-    gameStatus: 'open',
-    winnerOption: null,
-    bets: {},
-    betters: {},
-    _openedAt: Date.now(),
-    options: options.length > 0 ? options : DEFAULT_OPTIONS,
-  });
+  const cmdTrigger = c.commandTrigger || '!bet';
 
-  const lockPrediction = () => set('gameStatus', 'locked');
+  const openPrediction = () => {
+    const opts = options.length > 0 ? options : DEFAULT_OPTIONS;
+    setMulti({
+      gameStatus: 'open',
+      winnerOption: null,
+      bets: {},
+      betters: {},
+      _openedAt: Date.now(),
+      options: opts,
+    });
+    // Build SE announce message
+    const bracketList = opts.map((o, i) => `${o.label.replace(/\s*-\s*!bet\s*\d+$/i, '')} → ${cmdTrigger} ${i + 1}`).join(' | ');
+    seBotAnnounce(userId, `🔮 PREDICTION OPEN: ${c.question || 'Prediction'} — ${bracketList} — Type ${cmdTrigger} <number> <amount> to bet!`);
+  };
+
+  const lockPrediction = () => {
+    set('gameStatus', 'locked');
+    seBotAnnounce(userId, `🔒 BETS LOCKED! ${totalBetters} bets in the pool (${totalPool.toLocaleString()} pts). Good luck!`);
+  };
 
   const resolveWinner = (idx) => {
+    const winLabel = (options[idx]?.label || `Option ${idx + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
     const entry = {
       question: c.question || 'Prediction',
-      winner: options[idx]?.label || `Option ${idx + 1}`,
+      winner: winLabel,
       pool: totalPool,
       betters: totalBetters,
       time: new Date().toLocaleTimeString(),
@@ -55,6 +77,7 @@ export default function PredictionsConfig({ config, onChange }) {
       winnerOption: idx,
       predHistory: [entry, ...history].slice(0, 20),
     });
+    seBotAnnounce(userId, `🏆 RESULT: ${winLabel} wins! Pool: ${totalPool.toLocaleString()} pts from ${totalBetters} bets.`);
   };
 
   const resetGame = () => setMulti({

@@ -38,7 +38,8 @@ export default async function handler(req, res) {
     case 'song':     return handleSongRequest(req, res);
     case 'award':    return handleAwardPoints(req, res);
     case 'spotify-refresh': return handleSpotifyRefresh(req, res);
-    default:         return res.status(400).json({ error: 'Unknown cmd. Use ?cmd=sr|sr-reject|song|award|spotify-refresh' });
+    case 'pred-say': return handlePredSay(req, res);
+    default:         return res.status(400).json({ error: 'Unknown cmd' });
   }
 }
 
@@ -637,4 +638,32 @@ async function handleSpotifyRefresh(req, res) {
     access_token: newAccessToken,
     expires_at: newExpiresAt,
   });
+}
+
+/* ─── Prediction SE Chat Announce (?cmd=pred-say&user_id=...&message=...) ─── */
+
+async function handlePredSay(req, res) {
+  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) {
+    return res.status(500).json({ error: 'Server config error' });
+  }
+
+  const { user_id, message } = req.query;
+  if (!user_id || !message) return res.status(400).json({ error: 'user_id and message required' });
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+  // Get SE credentials
+  const { data: seConn } = await supabase
+    .from('streamelements_connections')
+    .select('se_channel_id, se_jwt_token')
+    .eq('user_id', user_id)
+    .maybeSingle();
+
+  if (!seConn?.se_channel_id || !seConn?.se_jwt_token) {
+    return res.status(200).json({ ok: false, reason: 'No SE connection' });
+  }
+
+  await seBotSay(seConn.se_channel_id, seConn.se_jwt_token, message);
+  return res.status(200).json({ ok: true });
 }

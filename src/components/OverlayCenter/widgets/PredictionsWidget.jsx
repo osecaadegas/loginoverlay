@@ -1,20 +1,19 @@
 /**
  * PredictionsWidget.jsx — OBS overlay for Bonus Hunt Predictions.
  *
+ * 4×2 grid of bracket cards with vertical fill bars.
  * Viewers bet SE points on payout bracket outcomes via !bet <number> <amount>.
- * Displays a title, countdown timer, fund total, and horizontal progress bars
- * for each bracket option — styled like the classic dark-blue betting widget.
  */
 import React, { useState, useEffect, useMemo } from 'react';
 
 function PredictionsWidget({ config }) {
   const c = config || {};
   const title = c.question || 'Total do Bónus Hunt?';
-  const status = c.gameStatus || 'idle'; // idle | open | locked | result
+  const status = c.gameStatus || 'idle';
   const winnerIdx = c.winnerOption ?? null;
   const options = c.options || [];
-  const bets = c.bets || {};       // { opt_0: 1200, opt_1: 300, ... }
-  const betters = c.betters || {};  // { username: { option: idx, amount: n } }
+  const bets = c.bets || {};
+  const betters = c.betters || {};
   const timer = c.timerSeconds || 0;
   const fund = c.fundAmount || 0;
   const currency = c.currency || '€';
@@ -45,7 +44,6 @@ function PredictionsWidget({ config }) {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
-  /* Calculate totals per option */
   const totalPool = useMemo(() => {
     return options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
   }, [options, bets]);
@@ -56,7 +54,7 @@ function PredictionsWidget({ config }) {
 
   const totalBetters = Object.keys(betters).length;
 
-  if (status === 'idle') return null; // Don't show when idle
+  if (status === 'idle') return null;
 
   return (
     <div className="bh-pred" style={{ fontFamily: font, '--bh-pred-bg': bgColor, '--bh-pred-header-bg': headerBg, '--bh-pred-header-text': headerText, '--bh-pred-bar-bg': barBg, '--bh-pred-bar-fill': barFill, '--bh-pred-text': textColor }}>
@@ -66,7 +64,7 @@ function PredictionsWidget({ config }) {
         {status === 'result' && <span className="bh-pred__trophy">🏆</span>}
       </div>
 
-      {/* Stats row: Timer + Fund */}
+      {/* Stats row */}
       <div className="bh-pred__stats">
         <div className="bh-pred__stat-box">
           <span className="bh-pred__stat-val">
@@ -75,26 +73,35 @@ function PredictionsWidget({ config }) {
           <span className="bh-pred__stat-label">Time</span>
         </div>
         <div className="bh-pred__stat-box">
+          <span className="bh-pred__stat-val">{totalPool.toLocaleString()}</span>
+          <span className="bh-pred__stat-label">Pool</span>
+        </div>
+        <div className="bh-pred__stat-box">
           <span className="bh-pred__stat-val">{totalBetters}</span>
           <span className="bh-pred__stat-label">Bets</span>
         </div>
       </div>
 
-      {/* Options list */}
-      <div className="bh-pred__options">
+      {/* 4×2 Grid of bracket cards */}
+      <div className="bh-pred__grid">
         {options.map((opt, i) => {
           const amount = bets[`opt_${i}`] || 0;
           const pct = totalPool > 0 ? Math.round((amount / totalPool) * 100) : 0;
-          const barW = maxBet > 0 ? (amount / maxBet) * 100 : 0;
+          const fillH = maxBet > 0 ? (amount / maxBet) * 100 : 0;
           const isWinner = winnerIdx === i;
           const isLoser = winnerIdx !== null && winnerIdx !== i;
 
+          // Short label: strip the "- !bet N" part for display
+          const shortLabel = (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
+
           return (
-            <div key={i} className={`bh-pred__option${isWinner ? ' bh-pred__option--winner' : ''}${isLoser ? ' bh-pred__option--loser' : ''}`}>
-              <span className="bh-pred__option-label">{opt.label || `Option ${i + 1}`}</span>
-              <div className="bh-pred__option-bar-wrap">
-                <div className="bh-pred__option-bar" style={{ width: `${barW}%` }} />
-                {pct > 0 && <span className="bh-pred__option-pct">{pct}%</span>}
+            <div key={i} className={`bh-pred__card${isWinner ? ' bh-pred__card--winner' : ''}${isLoser ? ' bh-pred__card--loser' : ''}`}>
+              <div className="bh-pred__card-fill" style={{ height: `${fillH}%` }} />
+              <div className="bh-pred__card-content">
+                {isWinner && <span className="bh-pred__card-crown">👑</span>}
+                <span className="bh-pred__card-label">{shortLabel}</span>
+                <span className="bh-pred__card-pct">{pct}%</span>
+                <span className="bh-pred__card-cmd">!bet {i + 1}</span>
               </div>
             </div>
           );
