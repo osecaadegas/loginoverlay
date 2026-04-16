@@ -33,6 +33,7 @@ export default function PredictionsConfig({ config, onChange }) {
   const [tab, setTab] = useState('game');
 
   const status = c.gameStatus || 'idle';
+  const gridLayout = c.gridLayout || '4col';
   const options = c.options || DEFAULT_OPTIONS;
   const bets = c.bets || {};
   const betters = c.betters || {};
@@ -254,7 +255,12 @@ export default function PredictionsConfig({ config, onChange }) {
       {/* ═══ STYLE TAB ═══ */}
       {tab === 'style' && (
         <div className="cg-config__section">
-          <div className="cg-config__color-row">
+          <label className="cg-config__label">Grid Layout</label>
+          <select className="cg-config__select" value={gridLayout} onChange={e => set('gridLayout', e.target.value)}>
+            <option value="4col">4 Columns × 2 Rows</option>
+            <option value="2col">2 Columns × 4 Rows</option>
+          </select>
+          <div className="cg-config__color-row" style={{ marginTop: 8 }}>
             <label className="cg-config__color">
               <span>Background</span>
               <input type="color" value={c.bgColor || '#1e3550'} onChange={e => set('bgColor', e.target.value)} />

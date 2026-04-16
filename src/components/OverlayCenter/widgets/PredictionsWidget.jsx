@@ -82,8 +82,8 @@ function PredictionsWidget({ config }) {
         </div>
       </div>
 
-      {/* 4×2 Grid of bracket cards */}
-      <div className="bh-pred__grid">
+      {/* Grid of bracket cards */}
+      <div className={`bh-pred__grid${c.gridLayout === '2col' ? ' bh-pred__grid--2col' : ''}`}>
         {options.map((opt, i) => {
           const amount = bets[`opt_${i}`] || 0;
           const pct = totalPool > 0 ? Math.round((amount / totalPool) * 100) : 0;

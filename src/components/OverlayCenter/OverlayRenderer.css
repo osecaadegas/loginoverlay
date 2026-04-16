@@ -3670,12 +3670,16 @@
   letter-spacing: 1px; opacity: 0.6;
 }
 
-/* 2×4 grid */
+/* 4×2 grid (default) */
 .bh-pred__grid {
   flex: 1; display: grid;
-  grid-template-columns: repeat(2, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 6px; padding: 8px;
   overflow: hidden;
+}
+/* 2×4 grid variant */
+.bh-pred__grid--2col {
+  grid-template-columns: repeat(2, 1fr);
 }
 .bh-pred__card {
   position: relative; overflow: hidden;
