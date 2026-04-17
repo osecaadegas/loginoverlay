@@ -130,24 +130,29 @@ ALTER TABLE giveaway_winners ENABLE ROW LEVEL SECURITY;
 
 -- 1e. Recreate RLS policies (drop first to avoid duplicates)
 DROP POLICY IF EXISTS "Anyone can view active giveaways" ON giveaways;
+DROP POLICY IF EXISTS "Anyone can view giveaways" ON giveaways;
 DROP POLICY IF EXISTS "Admins can manage giveaways" ON giveaways;
+DROP POLICY IF EXISTS "Admins and premium can manage giveaways" ON giveaways;
 DROP POLICY IF EXISTS "Users can view all entries" ON giveaway_entries;
 DROP POLICY IF EXISTS "Users can create their own entries" ON giveaway_entries;
 DROP POLICY IF EXISTS "Users can update their own entries" ON giveaway_entries;
 DROP POLICY IF EXISTS "Anyone can view winners" ON giveaway_winners;
 DROP POLICY IF EXISTS "Admins can manage winners" ON giveaway_winners;
+DROP POLICY IF EXISTS "Admins and premium can manage winners" ON giveaway_winners;
 
-CREATE POLICY "Anyone can view active giveaways"
+-- SELECT: anyone can view all giveaways (active + completed)
+CREATE POLICY "Anyone can view giveaways"
     ON giveaways FOR SELECT
-    USING (is_active = true);
+    USING (true);
 
-CREATE POLICY "Admins can manage giveaways"
+-- ALL: admins and premium users can create/update/delete giveaways
+CREATE POLICY "Admins and premium can manage giveaways"
     ON giveaways FOR ALL
     USING (
         EXISTS (
             SELECT 1 FROM user_roles 
             WHERE user_id = auth.uid() 
-            AND role = 'admin'
+            AND role IN ('admin', 'premium')
             AND is_active = true
         )
     );
@@ -168,13 +173,14 @@ CREATE POLICY "Anyone can view winners"
     ON giveaway_winners FOR SELECT
     USING (true);
 
-CREATE POLICY "Admins can manage winners"
+-- ALL: admins and premium users can manage winners
+CREATE POLICY "Admins and premium can manage winners"
     ON giveaway_winners FOR ALL
     USING (
         EXISTS (
             SELECT 1 FROM user_roles 
             WHERE user_id = auth.uid() 
-            AND role = 'admin'
+            AND role IN ('admin', 'premium')
             AND is_active = true
         )
     );
@@ -424,7 +430,7 @@ WHERE tablename LIKE '%giveaway%'
 ORDER BY tablename, policyname;
 
 -- Expected: 11 policies total
--- giveaways:         2 (view active, admin manage)
+-- giveaways:         2 (view all, admin+premium manage)
 -- giveaway_entries:  3 (view all, create own, update own)
--- giveaway_winners:  2 (view all, admin manage)
+-- giveaway_winners:  2 (view all, admin+premium manage)
 -- user_giveaways:    4 (view/insert/update/delete own)
