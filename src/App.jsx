@@ -37,6 +37,7 @@ import CookieConsent from './components/CookieConsent/CookieConsent';
 import useGiveawayListener from './hooks/useGiveawayListener';
 import useSlotRequestListener from './hooks/useSlotRequestListener';
 import usePredictionListener from './hooks/usePredictionListener';
+import useAnalytics from './hooks/useAnalytics';
 // ThemesPage is now rendered inside OverlayControlCenter
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
@@ -48,6 +49,7 @@ const TheLifeJournal = lazy(() => import('./components/TheLife/pages/TheLifeJour
 const DailyWheelPage = lazy(() => import('./components/DailyWheel/DailyWheelPage'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
+const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -284,6 +286,7 @@ function LayoutWrapper({ children }) {
   useGiveawayListener(); // persistent chat listener for giveaway keyword
   useSlotRequestListener(); // persistent chat listener for !sr commands
   usePredictionListener(); // persistent chat listener for !bet commands
+  useAnalytics(); // page view tracking + user identification
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const isOverlayCenter = location.pathname === '/overlay-center';
@@ -422,6 +425,11 @@ function App() {
                 <Route path="/developer" element={
                   <ProtectedAdminRoute>
                     <DeveloperPage />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/analytics" element={
+                  <ProtectedAdminRoute>
+                    <AnalyticsDashboard />
                   </ProtectedAdminRoute>
                 } />
                 <Route path="/spotify-callback" element={<SpotifyCallback />} />

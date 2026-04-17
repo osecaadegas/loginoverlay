@@ -32,6 +32,7 @@ const ICONS = {
   logout: 'M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z',
   chevron: 'M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
   themes: 'M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9c.83 0 1.5-.67 1.5-1.5 0-.39-.15-.74-.39-1.01-.23-.26-.38-.61-.38-1-.01-.83.67-1.5 1.5-1.5H16c2.76 0 5-2.24 5-5 0-4.42-4.03-8-9-8zm-5.5 9c-.83 0-1.5-.67-1.5-1.5S5.67 9 6.5 9 8 9.67 8 10.5 7.33 12 6.5 12zm3-4C8.67 8 8 7.33 8 6.5S8.67 5 9.5 5s1.5.67 1.5 1.5S10.33 8 9.5 8zm5 0c-.83 0-1.5-.67-1.5-1.5S13.67 5 14.5 5s1.5.67 1.5 1.5S15.33 8 14.5 8zm3 4c-.83 0-1.5-.67-1.5-1.5S16.67 9 17.5 9s1.5.67 1.5 1.5-.67 1.5-1.5 1.5z',
+  analytics: 'M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z',
 };
 
 const TwitchIcon = () => (
@@ -191,6 +192,9 @@ export default function Sidebar({ className = '', onClose }) {
         )}
         {isAdmin && (
           <NavItem icon={ICONS.code} labelKey="nav_developer" label="Developer" path="/developer" />
+        )}
+        {isAdmin && (
+          <NavItem icon={ICONS.analytics} labelKey="nav_analytics" label="Analytics" path="/analytics" />
         )}
         {!isAdmin && (
           <NavItem icon={ICONS.premium} labelKey="nav_premium" label="Premium" path="/premium" />
