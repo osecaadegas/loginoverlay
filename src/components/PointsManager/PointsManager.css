@@ -1455,6 +1455,212 @@
   gap: 16px;
 }
 
+/* ============================================
+   RESPONSIVE - Tablet (≤1024px)
+   ============================================ */
+@media (max-width: 1024px) {
+  .points-manager {
+    padding: 24px 20px;
+  }
+
+  .pm-stats-row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .pm-modal-content-split {
+    grid-template-columns: 1fr;
+  }
+
+  .pm-panel-content-split {
+    grid-template-columns: 1fr;
+  }
+
+  .pm-preview-section {
+    order: -1;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - Mobile (≤768px)
+   ============================================ */
+@media (max-width: 768px) {
+  .points-manager {
+    padding: 16px 12px;
+  }
+
+  .pm-header h1 {
+    font-size: 1.35rem;
+  }
+
+  .pm-stats-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+
+  .pm-stat-card-top {
+    padding: 14px 16px;
+  }
+
+  .pm-stat-card-top .stat-value {
+    font-size: 1.35rem;
+  }
+
+  /* Tabs - horizontally scrollable */
+  .pm-tabs {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .pm-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .pm-tab {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+
+  /* Section headers stack on mobile */
+  .pm-users-header,
+  .pm-items-header,
+  .pm-redemptions-header,
+  .pm-games-header {
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 12px 14px;
+  }
+
+  /* Items grid single column */
+  .pm-items-grid {
+    grid-template-columns: 1fr;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  /* Modal full-width */
+  .pm-modal-overlay {
+    padding: 10px;
+    align-items: flex-end;
+  }
+
+  .pm-modal {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 85vh;
+  }
+
+  .pm-modal-redesigned {
+    width: 100%;
+    max-width: 100%;
+    max-height: 90vh;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .pm-modal-content-split {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  .pm-form-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  /* Table: ensure horizontal scroll works */
+  .pm-table th,
+  .pm-table td {
+    padding: 6px 10px;
+    font-size: 0.75rem;
+  }
+
+  /* Item actions stack */
+  .pm-item-actions {
+    flex-wrap: wrap;
+  }
+
+  .pm-edit-btn,
+  .pm-toggle-btn,
+  .pm-delete-btn {
+    flex: 1 1 calc(50% - 4px);
+    min-width: 0;
+  }
+
+  /* Pagination */
+  .pm-table-pagination {
+    padding: 12px 14px;
+    gap: 10px;
+  }
+
+  /* Slide-out panel */
+  .pm-panel-content-split {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+
+  /* Redemption info stack */
+  .pm-redemption-actions {
+    flex-wrap: wrap;
+  }
+
+  .pm-mod-actions {
+    flex-wrap: wrap;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - Small Mobile (≤480px)
+   ============================================ */
+@media (max-width: 480px) {
+  .points-manager {
+    padding: 12px 8px;
+  }
+
+  .pm-header h1 {
+    font-size: 1.15rem;
+  }
+
+  .pm-stats-row {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .pm-stat-card-top {
+    padding: 12px 14px;
+  }
+
+  .pm-stat-card-top .stat-value {
+    font-size: 1.15rem;
+  }
+
+  .pm-stat-card-top .stat-label {
+    font-size: 0.7rem;
+  }
+
+  .pm-tab {
+    padding: 7px 10px;
+    font-size: 0.75rem;
+  }
+
+  .pm-empty {
+    padding: 40px 20px;
+  }
+
+  .pm-modal-actions,
+  .pm-modal-actions-new {
+    flex-direction: column;
+  }
+
+  .pm-edit-btn,
+  .pm-toggle-btn,
+  .pm-delete-btn {
+    flex: 1 1 100%;
+  }
+}
+
 .pm-panel-preview-section {
   background: var(--pm-bg-secondary);
   border-radius: 12px;

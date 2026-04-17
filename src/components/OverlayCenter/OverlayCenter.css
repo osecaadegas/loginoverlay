@@ -3839,7 +3839,7 @@ body.wm-resizing {
   display: flex;
   flex-direction: column;
   gap: 5px;
-  max-height: 140px;
+  max-height: 240px;
   overflow-y: auto;
   flex: 1;
 }

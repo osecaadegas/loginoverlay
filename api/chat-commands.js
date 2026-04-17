@@ -35,6 +35,7 @@ export default async function handler(req, res) {
   switch (cmd) {
     case 'sr':       return handleSlotRequest(req, res);
     case 'sr-reject': return handleSlotReject(req, res);
+    case 'sr-clear-all': return handleSlotClearAll(req, res);
     case 'song':     return handleSongRequest(req, res);
     case 'award':    return handleAwardPoints(req, res);
     case 'spotify-refresh': return handleSpotifyRefresh(req, res);
@@ -492,6 +493,83 @@ async function handleSlotReject(req, res) {
   await supabase.from('slot_requests').delete().eq('id', request_id);
 
   return res.status(200).json({ success: true, refunded });
+}
+
+/* ─── Slot Request Clear All (?cmd=sr-clear-all) ─── */
+/* Refunds SE points for ALL pending requests, then deletes them */
+async function handleSlotClearAll(req, res) {
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(500).json({ error: 'Server config error' });
+
+  const { user_id } = req.body || {};
+  if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+  // 1) Fetch all pending requests
+  const { data: requests, error: reqErr } = await supabase
+    .from('slot_requests')
+    .select('id, slot_name, requested_by')
+    .eq('user_id', user_id)
+    .eq('status', 'pending');
+
+  if (reqErr || !requests || requests.length === 0) {
+    return res.status(200).json({ success: true, refunded: 0, total: 0 });
+  }
+
+  // 2) Load widget config (for SE cost)
+  const { data: widgetRow } = await supabase
+    .from('overlay_widgets')
+    .select('config')
+    .eq('user_id', user_id)
+    .eq('widget_type', 'slot_requests')
+    .single();
+  const wConfig = widgetRow?.config || {};
+  const seCost = parseInt(wConfig.srSeCost, 10) || 0;
+  const seEnabled = !!wConfig.srSeEnabled;
+
+  // 3) Load SE credentials
+  const { data: seConn } = await supabase
+    .from('streamelements_connections')
+    .select('se_channel_id, se_jwt_token')
+    .eq('user_id', user_id)
+    .single();
+  const seChannelId = seConn?.se_channel_id;
+  const seJwtToken = seConn?.se_jwt_token;
+
+  // 4) Refund points for each request if SE is enabled
+  let refundedCount = 0;
+  if (seEnabled && seCost > 0 && seChannelId && seJwtToken) {
+    // Group by viewer to batch refunds (one refund per unique viewer × cost)
+    const viewerCounts = {};
+    for (const r of requests) {
+      if (!r.requested_by || r.requested_by === 'anonymous') continue;
+      const viewer = r.requested_by.replace(/^@/, '').trim().toLowerCase();
+      viewerCounts[viewer] = (viewerCounts[viewer] || 0) + 1;
+    }
+
+    for (const [viewer, count] of Object.entries(viewerCounts)) {
+      const totalRefund = seCost * count;
+      try {
+        const refundRes = await fetch(
+          `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}/${totalRefund}`,
+          {
+            method: 'PUT',
+            headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' },
+          }
+        );
+        if (refundRes.ok) refundedCount += count;
+      } catch (err) {
+        console.error(`[sr-clear-all] Refund failed for ${viewer}:`, err.message);
+      }
+    }
+  }
+
+  // 5) Delete all pending requests
+  const ids = requests.map(r => r.id);
+  await supabase.from('slot_requests').delete().in('id', ids);
+
+  return res.status(200).json({ success: true, refunded: refundedCount, total: requests.length });
 }
 
 /* ─── Award Points (?cmd=award) ─── */

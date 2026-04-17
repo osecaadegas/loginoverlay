@@ -1095,9 +1095,21 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
   const handleClearAllRequests = async () => {
     if (!userId || slotRequests.length === 0) return;
-    const ids = slotRequests.map(r => r.id);
-    await supabase.from('slot_requests').update({ status: 'dismissed' }).in('id', ids);
-    setSlotRequests([]);
+    try {
+      // Call API to refund SE points for all pending requests, then delete them
+      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId }),
+      });
+      setSlotRequests([]);
+    } catch (err) {
+      console.error('[bh-clear-all] error:', err);
+      // Fallback: just dismiss without refund
+      const ids = slotRequests.map(r => r.id);
+      await supabase.from('slot_requests').update({ status: 'dismissed' }).in('id', ids);
+      setSlotRequests([]);
+    }
   };
 
   const handleAddToBH = (req) => {
@@ -1164,9 +1176,47 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               {slotRequests.length > 0 && (
                 <button className="bh-sr-queue-btn" onClick={handleClearAllRequests}
                   style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 4, cursor: 'pointer' }}
-                  title="Clear all requests">🗑️ Clear All</button>
+                  title="Clear all requests &amp; refund points">🗑️ Clear All</button>
               )}
             </div>
+
+            {/* Toggle buttons row */}
+            <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+              {/* Toggle: Show/Hide SR Widget on overlay */}
+              <button
+                onClick={() => onChange({ ...config, showSlotRequests: !(c.showSlotRequests !== false) })}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  padding: '5px 8px', fontSize: 10, fontWeight: 600, borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid',
+                  background: (c.showSlotRequests !== false) ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                  color: (c.showSlotRequests !== false) ? '#4ade80' : '#f87171',
+                  borderColor: (c.showSlotRequests !== false) ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+                }}
+                title={(c.showSlotRequests !== false) ? 'Hide slot requests widget on stream overlay' : 'Show slot requests widget on stream overlay'}
+              >
+                <span style={{ fontSize: 12 }}>{(c.showSlotRequests !== false) ? '👁️' : '🚫'}</span>
+                {(c.showSlotRequests !== false) ? 'Widget ON' : 'Widget OFF'}
+              </button>
+
+              {/* Toggle: Listen/Stop listening to !sr command */}
+              <button
+                onClick={() => onChange({ ...config, srChatEnabled: !(c.srChatEnabled !== false) })}
+                style={{
+                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
+                  padding: '5px 8px', fontSize: 10, fontWeight: 600, borderRadius: 6, cursor: 'pointer',
+                  border: '1px solid',
+                  background: (c.srChatEnabled !== false) ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
+                  color: (c.srChatEnabled !== false) ? '#4ade80' : '#f87171',
+                  borderColor: (c.srChatEnabled !== false) ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
+                }}
+                title={(c.srChatEnabled !== false) ? 'Stop listening for !sr commands in chat' : 'Start listening for !sr commands in chat'}
+              >
+                <span style={{ fontSize: 12 }}>{(c.srChatEnabled !== false) ? '📡' : '🔇'}</span>
+                {(c.srChatEnabled !== false) ? 'Listening' : 'Not Listening'}
+              </button>
+            </div>
+
             {slotRequests.length > 0 ? (
               <div className="bh-sr-queue-list">
                 {slotRequests.map(req => (

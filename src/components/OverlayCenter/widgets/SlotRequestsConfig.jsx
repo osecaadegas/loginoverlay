@@ -142,8 +142,20 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const clearAll = async () => {
     if (!user) return;
     setLoading(true);
-    await supabase.from('slot_requests').delete().eq('user_id', user.id).eq('status', 'pending');
-    setRequests([]);
+    try {
+      // Call API to refund SE points for all pending requests, then delete them
+      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: user.id }),
+      });
+      setRequests([]);
+    } catch (err) {
+      console.error('[sr-clear-all] error:', err);
+      // Fallback: just delete without refund
+      await supabase.from('slot_requests').delete().eq('user_id', user.id).eq('status', 'pending');
+      setRequests([]);
+    }
     setLoading(false);
   };
 
