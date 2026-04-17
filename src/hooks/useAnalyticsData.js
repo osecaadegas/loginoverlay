@@ -74,6 +74,10 @@ export function useAnalyticsData() {
   const fetchOffers = useCallback((params = {}) =>
     withLoading(() => adminFetch('offers', params)), [withLoading]);
 
+  // Offer detail (individual clicks with user/geo/IP)
+  const fetchOfferDetail = useCallback((params = {}) =>
+    withLoading(() => adminFetch('offer-detail', params)), [withLoading]);
+
   // Realtime
   const fetchRealtime = useCallback(() =>
     withLoading(() => adminFetch('realtime')), [withLoading]);
@@ -116,7 +120,7 @@ export function useAnalyticsData() {
   return {
     loading, error,
     fetchOverview, fetchVisitors, fetchVisitorDetail, fetchSessions,
-    fetchEvents, fetchOffers, fetchRealtime, fetchTraffic, fetchGeo,
+    fetchEvents, fetchOffers, fetchOfferDetail, fetchRealtime, fetchTraffic, fetchGeo,
     fetchFraud, fetchConfig, updateConfig, resolveFraud, deleteData,
     exportCSV, fetchFunnel,
   };

@@ -56,6 +56,7 @@ export default async function handler(req, res) {
       case 'sessions':    return await requireAdmin(req, res, supabase, handleSessions);
       case 'events':      return await requireAdmin(req, res, supabase, handleEvents);
       case 'offers':      return await requireAdmin(req, res, supabase, handleOffers);
+      case 'offer-detail': return await requireAdmin(req, res, supabase, handleOfferDetail);
       case 'realtime':    return await requireAdmin(req, res, supabase, handleRealtime);
       case 'traffic':     return await requireAdmin(req, res, supabase, handleTraffic);
       case 'geo':         return await requireAdmin(req, res, supabase, handleGeo);
@@ -704,6 +705,113 @@ async function handleOffers(req, res, supabase) {
     .sort((a, b) => b.total_clicks - a.total_clicks);
 
   return res.status(200).json({ offers: result, totalPageviews: totalPageviews || 0 });
+}
+
+// ── Offer Detail — individual click events with full user/geo/IP data ──
+async function handleOfferDetail(req, res, supabase) {
+  const { offer_id, since, limit = '100', offset = '0' } = req.query;
+  if (!offer_id) return res.status(400).json({ error: 'offer_id required' });
+
+  const sinceDate = since || new Date(Date.now() - 30 * 86400000).toISOString();
+  const lim = Math.min(parseInt(limit) || 100, 500);
+  const off = parseInt(offset) || 0;
+
+  // Get offer name
+  const { data: offerRow } = await supabase
+    .from('casino_offers')
+    .select('id, name, url, logo_url')
+    .eq('id', offer_id)
+    .single();
+
+  // Get click events with session + visitor data
+  const { data: clicks, count } = await supabase
+    .from('analytics_events')
+    .select(`
+      id, event_type, created_at, is_suspicious, ip_address, country, city, metadata, target_url,
+      session:analytics_sessions!session_id (
+        id, ip_address, browser, os, device_type, country, country_code, city, region, isp,
+        referrer, referrer_source, user_agent, risk_score, is_suspicious, started_at, duration_secs
+      ),
+      visitor:analytics_visitors!visitor_id (
+        id, twitch_id, twitch_username, twitch_avatar, fingerprint, first_seen_at, last_seen_at,
+        total_sessions, total_events, is_bot
+      )
+    `, { count: 'exact' })
+    .eq('offer_id', offer_id)
+    .in('event_type', ['offer_click', 'click'])
+    .gte('created_at', sinceDate)
+    .order('created_at', { ascending: false })
+    .range(off, off + lim - 1);
+
+  // Aggregate quick stats
+  const rows = clicks || [];
+  const uniqueVisitors = new Set(rows.map(r => r.visitor?.id)).size;
+  const uniqueIPs = new Set(rows.map(r => r.session?.ip_address || r.ip_address).filter(Boolean)).size;
+  const suspiciousCount = rows.filter(r => r.is_suspicious).length;
+  const countries = {};
+  rows.forEach(r => {
+    const c = r.session?.country || r.country || 'Unknown';
+    countries[c] = (countries[c] || 0) + 1;
+  });
+  const topCountries = Object.entries(countries)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10)
+    .map(([name, clicks]) => ({ name, clicks }));
+
+  // Clicks per hour for timeline chart
+  const hourBuckets = {};
+  rows.forEach(r => {
+    const h = r.created_at.slice(0, 13); // "2026-04-17T14"
+    hourBuckets[h] = (hourBuckets[h] || 0) + 1;
+  });
+  const timeline = Object.entries(hourBuckets)
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([hour, count]) => ({ hour: hour.slice(5) + ':00', clicks: count }));
+
+  return res.status(200).json({
+    offer: {
+      id: offer_id,
+      name: offerRow?.name || 'Unknown',
+      url: offerRow?.url || null,
+      logo_url: offerRow?.logo_url || null,
+    },
+    clicks: rows.map(r => ({
+      id: r.id,
+      event_type: r.event_type,
+      created_at: r.created_at,
+      is_suspicious: r.is_suspicious,
+      target_url: r.target_url,
+      ip_address: r.session?.ip_address || r.ip_address || null,
+      country: r.session?.country || r.country || null,
+      city: r.session?.city || r.city || null,
+      region: r.session?.region || null,
+      isp: r.session?.isp || null,
+      browser: r.session?.browser || null,
+      os: r.session?.os || null,
+      device_type: r.session?.device_type || null,
+      referrer_source: r.session?.referrer_source || null,
+      risk_score: r.session?.risk_score || 0,
+      session_duration: r.session?.duration_secs || null,
+      twitch_id: r.visitor?.twitch_id || null,
+      twitch_username: r.visitor?.twitch_username || null,
+      twitch_avatar: r.visitor?.twitch_avatar || null,
+      fingerprint: r.visitor?.fingerprint || null,
+      visitor_total_sessions: r.visitor?.total_sessions || 0,
+      visitor_total_events: r.visitor?.total_events || 0,
+      visitor_first_seen: r.visitor?.first_seen_at || null,
+      is_bot: r.visitor?.is_bot || false,
+      metadata: r.metadata || {},
+    })),
+    stats: {
+      totalClicks: count || rows.length,
+      uniqueVisitors,
+      uniqueIPs,
+      suspiciousCount,
+      topCountries,
+    },
+    timeline,
+    pagination: { total: count || rows.length, limit: lim, offset: off },
+  });
 }
 
 async function handleRealtime(req, res, supabase) {
