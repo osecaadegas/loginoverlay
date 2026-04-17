@@ -33,11 +33,11 @@ export default function OffersTab({ analytics, period }) {
           <div className="an-chart-card__body">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis dataKey="name" tick={{ fill: '#9ca3af', fontSize: 10 }} angle={-20} textAnchor="end" height={60} />
-                <YAxis tick={{ fill: '#9ca3af', fontSize: 11 }} />
-                <Tooltip contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 8 }} />
-                <Bar dataKey="clicks" stackId="a" fill="#22c55e" name="Clean Clicks" radius={[0, 0, 0, 0]} />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis dataKey="name" tick={{ fill: '#64748b', fontSize: 10 }} angle={-20} textAnchor="end" height={60} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} />
+                <YAxis tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} />
+                <Tooltip contentStyle={{ background: 'rgba(17,24,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }} cursor={{ fill: 'rgba(99,102,241,0.06)' }} />
+                <Bar dataKey="clicks" stackId="a" fill="#10b981" name="Clean Clicks" radius={[0, 0, 0, 0]} />
                 <Bar dataKey="suspicious" stackId="a" fill="#ef4444" name="Suspicious" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>

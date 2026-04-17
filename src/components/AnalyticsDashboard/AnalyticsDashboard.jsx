@@ -63,7 +63,10 @@ export default function AnalyticsDashboard() {
       {/* Header */}
       <div className="an-dash__header">
         <div className="an-dash__header-left">
-          <h1 className="an-dash__title">📈 Analytics Dashboard</h1>
+          <h1 className="an-dash__title">
+            <span className="an-dash__title-icon">📊</span>
+            Analytics Dashboard
+          </h1>
           <p className="an-dash__subtitle">Track visitors, clicks, and fraud in real-time</p>
         </div>
         <div className="an-dash__header-right">

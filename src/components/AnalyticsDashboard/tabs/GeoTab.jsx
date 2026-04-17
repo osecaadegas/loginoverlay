@@ -36,12 +36,12 @@ export default function GeoTab({ analytics, period }) {
           <div className="an-chart-card__body">
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={chartData} layout="vertical" margin={{ left: 140 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.06)" />
-                <XAxis type="number" tick={{ fill: '#9ca3af', fontSize: 11 }} />
-                <YAxis type="category" dataKey="name" tick={{ fill: '#9ca3af', fontSize: 12 }} width={130} />
-                <Tooltip contentStyle={{ background: '#1f2937', border: '1px solid #374151', borderRadius: 8 }} />
-                <Bar dataKey="sessions" fill="#6366f1" radius={[0, 4, 4, 0]} name="Sessions" />
-                <Bar dataKey="visitors" fill="#22c55e" radius={[0, 4, 4, 0]} name="Unique Visitors" />
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" />
+                <XAxis type="number" tick={{ fill: '#64748b', fontSize: 11 }} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} />
+                <YAxis type="category" dataKey="name" tick={{ fill: '#94a3b8', fontSize: 12 }} width={130} axisLine={false} tickLine={false} />
+                <Tooltip contentStyle={{ background: 'rgba(17,24,39,0.95)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 12, boxShadow: '0 8px 32px rgba(0,0,0,0.4)' }} cursor={{ fill: 'rgba(99,102,241,0.06)' }} />
+                <Bar dataKey="sessions" fill="#6366f1" radius={[0, 6, 6, 0]} name="Sessions" />
+                <Bar dataKey="visitors" fill="#10b981" radius={[0, 6, 6, 0]} name="Unique Visitors" />
               </BarChart>
             </ResponsiveContainer>
           </div>
