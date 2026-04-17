@@ -1229,7 +1229,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     <div className="bh-sr-queue-actions" style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                       <button className="bh-sr-queue-btn" onClick={e => { e.stopPropagation(); handleAddToBH(req); }} title="Add to Bonus Hunt"
                         style={{ fontSize: 10, padding: '3px 8px', background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 4, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>+ Add to BH</button>
-                      {srSeEnabled && <button className="bh-sr-queue-btn bh-sr-queue-btn--reject" onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund points" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>Points Back</button>}
+                      <button className="bh-sr-queue-btn bh-sr-queue-btn--reject" onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund points" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>Points Back</button>
                       <button className="bh-sr-queue-btn bh-sr-queue-btn--dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss" style={{ fontSize: 16, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>✕</button>
                     </div>
                   </div>
