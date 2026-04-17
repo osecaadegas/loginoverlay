@@ -40,19 +40,15 @@ export default function StreamElementsPanel() {
   }, []);
 
   const checkSeCredentials = async () => {
-    // Check if the current user has their own SE connection in the database
+    // Check if ANY user (the streamer) has SE credentials configured
     try {
-      const { data: { user: authUser } } = await supabase.auth.getUser();
-      if (authUser) {
-        const { data } = await supabase
-          .from('streamelements_connections')
-          .select('se_channel_id, se_jwt_token')
-          .eq('user_id', authUser.id)
-          .single();
-        setSeCredentialsConfigured(!!(data?.se_channel_id && data?.se_jwt_token));
-      } else {
-        setSeCredentialsConfigured(false);
-      }
+      const { data, error } = await supabase
+        .from('streamelements_connections')
+        .select('se_channel_id, se_jwt_token')
+        .not('se_channel_id', 'is', null)
+        .not('se_jwt_token', 'is', null)
+        .limit(1);
+      setSeCredentialsConfigured(!!(data && data.length > 0));
     } catch {
       setSeCredentialsConfigured(false);
     }
@@ -108,18 +104,29 @@ export default function StreamElementsPanel() {
 
       if (error) throw error;
       
-      // Fetch usernames separately from streamelements_connections
+      // Fetch usernames from SE connections + user_profiles as fallback
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(r => r.user_id))];
+        
+        // Try SE connections first
         const { data: seConnections } = await supabase
           .from('streamelements_connections')
           .select('user_id, se_username')
           .in('user_id', userIds);
         
-        // Map usernames to redemptions
+        // Fallback to user_profiles for anyone missing
+        const { data: profiles } = await supabase
+          .from('user_profiles')
+          .select('user_id, username, display_name')
+          .in('user_id', userIds);
+        
+        // Build username map: SE username > display_name > username > 'User'
         const usernameMap = {};
+        profiles?.forEach(p => {
+          usernameMap[p.user_id] = p.display_name || p.username;
+        });
         seConnections?.forEach(conn => {
-          usernameMap[conn.user_id] = conn.se_username;
+          if (conn.se_username) usernameMap[conn.user_id] = conn.se_username;
         });
         
         const enrichedData = data.map(redemption => ({

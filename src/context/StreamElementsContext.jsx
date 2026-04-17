@@ -81,18 +81,35 @@ export function StreamElementsProvider({ children }) {
         return;
       }
 
-      // Look up SE credentials from this user's own streamelements_connections row
+      // Look up SE credentials: first try this user's row, then find any streamer with credentials
+      let seChannelId = null;
+      let seJwtToken = null;
+      
       const { data: seRow } = await supabase
         .from('streamelements_connections')
         .select('se_channel_id, se_jwt_token')
         .eq('user_id', user.id)
         .single();
 
-      const seChannelId = seRow?.se_channel_id || null;
-      const seJwtToken = seRow?.se_jwt_token || null;
+      if (seRow?.se_channel_id && seRow?.se_jwt_token) {
+        seChannelId = seRow.se_channel_id;
+        seJwtToken = seRow.se_jwt_token;
+      } else {
+        // Fallback: find any configured streamer's credentials
+        const { data: streamerRow } = await supabase
+          .from('streamelements_connections')
+          .select('se_channel_id, se_jwt_token')
+          .not('se_channel_id', 'is', null)
+          .not('se_jwt_token', 'is', null)
+          .limit(1)
+          .single();
+        
+        seChannelId = streamerRow?.se_channel_id || null;
+        seJwtToken = streamerRow?.se_jwt_token || null;
+      }
 
       if (!seChannelId || !seJwtToken) {
-        console.log('⚠️ No SE credentials found. User needs to connect SE in Profile.');
+        console.log('⚠️ No SE credentials found. Streamer needs to configure SE.');
         setAutoConnecting(false);
         return;
       }
