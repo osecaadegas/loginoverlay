@@ -95,17 +95,24 @@ export function StreamElementsProvider({ children }) {
         seChannelId = seRow.se_channel_id;
         seJwtToken = seRow.se_jwt_token;
       } else {
-        // Fallback: find any configured streamer's credentials
-        const { data: streamerRow } = await supabase
-          .from('streamelements_connections')
-          .select('se_channel_id, se_jwt_token')
-          .not('se_channel_id', 'is', null)
-          .not('se_jwt_token', 'is', null)
-          .limit(1)
-          .single();
+        // Fallback: use the site admin's (streamer's) SE credentials
+        const { data: admins } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .eq('role', 'admin')
+          .eq('is_active', true)
+          .limit(1);
         
-        seChannelId = streamerRow?.se_channel_id || null;
-        seJwtToken = streamerRow?.se_jwt_token || null;
+        if (admins && admins.length > 0) {
+          const { data: adminSe } = await supabase
+            .from('streamelements_connections')
+            .select('se_channel_id, se_jwt_token')
+            .eq('user_id', admins[0].user_id)
+            .single();
+          
+          seChannelId = adminSe?.se_channel_id || null;
+          seJwtToken = adminSe?.se_jwt_token || null;
+        }
       }
 
       if (!seChannelId || !seJwtToken) {

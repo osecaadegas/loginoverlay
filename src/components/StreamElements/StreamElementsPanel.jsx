@@ -40,15 +40,25 @@ export default function StreamElementsPanel() {
   }, []);
 
   const checkSeCredentials = async () => {
-    // Check if ANY user (the streamer) has SE credentials configured
+    // Check if the site admin/streamer has SE credentials configured
     try {
-      const { data, error } = await supabase
-        .from('streamelements_connections')
-        .select('se_channel_id, se_jwt_token')
-        .not('se_channel_id', 'is', null)
-        .not('se_jwt_token', 'is', null)
+      const { data: admins } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'admin')
+        .eq('is_active', true)
         .limit(1);
-      setSeCredentialsConfigured(!!(data && data.length > 0));
+      
+      if (admins && admins.length > 0) {
+        const { data } = await supabase
+          .from('streamelements_connections')
+          .select('se_channel_id, se_jwt_token')
+          .eq('user_id', admins[0].user_id)
+          .single();
+        setSeCredentialsConfigured(!!(data?.se_channel_id && data?.se_jwt_token));
+      } else {
+        setSeCredentialsConfigured(false);
+      }
     } catch {
       setSeCredentialsConfigured(false);
     }
