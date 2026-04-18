@@ -81,7 +81,7 @@ export function StreamElementsProvider({ children }) {
         return;
       }
 
-      // Look up SE credentials: first try this user's row, then find any streamer with credentials
+      // Look up SE credentials: first try this user's own row, then get admin's via RPC
       let seChannelId = null;
       let seJwtToken = null;
       
@@ -95,23 +95,12 @@ export function StreamElementsProvider({ children }) {
         seChannelId = seRow.se_channel_id;
         seJwtToken = seRow.se_jwt_token;
       } else {
-        // Fallback: use the site admin's (streamer's) SE credentials
-        const { data: admins } = await supabase
-          .from('user_roles')
-          .select('user_id')
-          .eq('role', 'admin')
-          .eq('is_active', true)
-          .limit(1);
+        // Fallback: get admin's SE credentials via RPC (bypasses RLS)
+        const { data: streamerCreds } = await supabase.rpc('get_streamer_se_credentials');
         
-        if (admins && admins.length > 0) {
-          const { data: adminSe } = await supabase
-            .from('streamelements_connections')
-            .select('se_channel_id, se_jwt_token')
-            .eq('user_id', admins[0].user_id)
-            .single();
-          
-          seChannelId = adminSe?.se_channel_id || null;
-          seJwtToken = adminSe?.se_jwt_token || null;
+        if (streamerCreds && streamerCreds.length > 0) {
+          seChannelId = streamerCreds[0].channel_id;
+          seJwtToken = streamerCreds[0].jwt_token;
         }
       }
 
@@ -475,30 +464,18 @@ export function StreamElementsProvider({ children }) {
           console.log('[Redemptions] Latest redemption ID:', newest.id, 'vs last check:', lastCheck);
           
           if (newest.id !== lastCheck) {
-            // Try to get Twitch username from StreamElements connection first
-            const { data: seConnection } = await supabase
-              .from('streamelements_connections')
-              .select('se_username')
-              .eq('user_id', newest.user_id)
-              .single();
+            // Get username via RPC (bypasses RLS on streamelements_connections)
+            const { data: usernames } = await supabase.rpc('get_usernames_for_ids', {
+              p_user_ids: [newest.user_id]
+            });
             
-            // Fallback to user profile
-            const { data: profileData } = await supabase
-              .from('user_profiles')
-              .select('username, display_name')
-              .eq('user_id', newest.user_id)
-              .single();
-            
-            const twitchUsername = seConnection?.se_username || 
-                                  profileData?.username || 
-                                  profileData?.display_name || 
-                                  'Unknown';
+            const twitchUsername = usernames?.[0]?.username || 'Unknown';
             
             const itemName = newest.redemption_items?.name || 'Unknown Item';
             const cost = newest.redemption_items?.point_cost || newest.points_spent || 0;
             const imageUrl = newest.redemption_items?.image_url || null;
             
-            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username: twitchUsername, itemName, cost, imageUrl, seConnection, profileData });
+            console.log('[Redemptions] NEW REDEMPTION FOUND!', { username: twitchUsername, itemName, cost, imageUrl });
             
             setLatestRedemption({
               username: twitchUsername,

@@ -40,25 +40,11 @@ export default function StreamElementsPanel() {
   }, []);
 
   const checkSeCredentials = async () => {
-    // Check if the site admin/streamer has SE credentials configured
+    // Check if admin/streamer has SE credentials via RPC (bypasses RLS)
     try {
-      const { data: admins } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'admin')
-        .eq('is_active', true)
-        .limit(1);
-      
-      if (admins && admins.length > 0) {
-        const { data } = await supabase
-          .from('streamelements_connections')
-          .select('se_channel_id, se_jwt_token')
-          .eq('user_id', admins[0].user_id)
-          .single();
-        setSeCredentialsConfigured(!!(data?.se_channel_id && data?.se_jwt_token));
-      } else {
-        setSeCredentialsConfigured(false);
-      }
+      const { data, error } = await supabase.rpc('is_se_configured');
+      if (error) throw error;
+      setSeCredentialsConfigured(!!data);
     } catch {
       setSeCredentialsConfigured(false);
     }
@@ -114,29 +100,17 @@ export default function StreamElementsPanel() {
 
       if (error) throw error;
       
-      // Fetch usernames from SE connections + user_profiles as fallback
+      // Fetch usernames via RPC (bypasses RLS on streamelements_connections)
       if (data && data.length > 0) {
         const userIds = [...new Set(data.map(r => r.user_id))];
         
-        // Try SE connections first
-        const { data: seConnections } = await supabase
-          .from('streamelements_connections')
-          .select('user_id, se_username')
-          .in('user_id', userIds);
-        
-        // Fallback to user_profiles for anyone missing
-        const { data: profiles } = await supabase
-          .from('user_profiles')
-          .select('user_id, username, display_name')
-          .in('user_id', userIds);
-        
-        // Build username map: SE username > display_name > username > 'User'
-        const usernameMap = {};
-        profiles?.forEach(p => {
-          usernameMap[p.user_id] = p.display_name || p.username;
+        const { data: usernames } = await supabase.rpc('get_usernames_for_ids', {
+          p_user_ids: userIds
         });
-        seConnections?.forEach(conn => {
-          if (conn.se_username) usernameMap[conn.user_id] = conn.se_username;
+        
+        const usernameMap = {};
+        usernames?.forEach(u => {
+          usernameMap[u.user_id] = u.username;
         });
         
         const enrichedData = data.map(redemption => ({
