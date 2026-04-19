@@ -265,7 +265,7 @@ SELECT * FROM auto_spawn_dock_boats();
 
 -- Show currently active boats
 SELECT 
-  name,
+  the_life_dock_boats.name as boat_name,
   the_life_items.name as item,
   arrival_time,
   departure_time,
