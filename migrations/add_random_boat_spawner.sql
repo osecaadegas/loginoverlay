@@ -238,15 +238,13 @@ GRANT EXECUTE ON FUNCTION auto_spawn_dock_boats() TO authenticated, anon;
 -- ─── 5. Optional: PostgreSQL cron job (if pg_cron is available) ──
 
 -- NOTE: Supabase may not have pg_cron enabled by default.
--- If available, uncomment this to run auto-spawn every 12 hours:
+-- If available, uncomment these lines to run auto-spawn every 12 hours:
 
-/*
-SELECT cron.schedule(
-  'auto-spawn-dock-boats',     -- job name
-  '0 */12 * * *',              -- every 12 hours
-  $$SELECT auto_spawn_dock_boats()$$
-);
-*/
+-- SELECT cron.schedule(
+--   'auto-spawn-dock-boats',
+--   '0 */12 * * *',
+--   $$SELECT auto_spawn_dock_boats()$$
+-- );
 
 -- ─── 6. Initial spawn ─────────────────────────────────────────────
 
