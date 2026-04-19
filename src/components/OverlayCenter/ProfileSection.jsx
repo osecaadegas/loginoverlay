@@ -89,6 +89,112 @@ const S = {
   syncResult: { fontSize: '0.8rem', padding: '8px 14px', borderRadius: 10, textAlign: 'center', fontWeight: 600 },
 };
 
+/* ── ApiKeyCard sub-component ── */
+function ApiKeyCard({ user }) {
+  const [apiKey, setApiKey] = useState(null);
+  const [hasAccess, setHasAccess] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!user?.id) return;
+    (async () => {
+      // Check if user has API access
+      const { data: access } = await supabase
+        .from('streamer_api_access')
+        .select('is_active')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
+        .single();
+
+      setHasAccess(!!access);
+
+      if (access) {
+        const { data: key } = await supabase
+          .from('streamer_api_keys')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+        setApiKey(key);
+      }
+      setLoading(false);
+    })();
+  }, [user?.id]);
+
+  const generateKey = async () => {
+    const { data, error } = await supabase
+      .from('streamer_api_keys')
+      .upsert({
+        user_id: user.id,
+        label: 'My Website',
+        is_active: true,
+      }, { onConflict: 'user_id' })
+      .select()
+      .single();
+    if (!error) setApiKey(data);
+  };
+
+  const copyKey = () => {
+    if (apiKey?.api_key) {
+      navigator.clipboard.writeText(apiKey.api_key);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  if (loading) return null;
+
+  return (
+    <div style={S.card}>
+      <h3 style={S.cardTitle}>🔑 Website API</h3>
+      {!hasAccess ? (
+        <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+          API access not enabled for your account. Ask the site admin to grant you access from the Admin Panel → API Keys tab.
+        </p>
+      ) : !apiKey ? (
+        <div>
+          <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '0 0 8px', lineHeight: 1.5 }}>
+            Sync your bonus hunt data to your own website in real-time.
+          </p>
+          <button
+            style={{ ...S.btn, background: 'rgba(99,102,241,0.15)', color: '#818cf8', fontWeight: 700, width: '100%' }}
+            onClick={generateKey}
+          >
+            🔑 Generate API Key
+          </button>
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '8px 10px',
+            fontFamily: 'monospace', fontSize: '0.75rem', color: '#86efac',
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          }}>
+            <span>{apiKey.api_key.slice(0, 12)}...{apiKey.api_key.slice(-8)}</span>
+            <button onClick={copyKey} style={{
+              background: 'none', border: '1px solid rgba(255,255,255,0.1)',
+              color: '#e5e7eb', fontSize: '0.7rem', padding: '2px 8px', borderRadius: 4, cursor: 'pointer',
+            }}>
+              {copied ? '✓' : '📋'}
+            </button>
+          </div>
+          <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+            Add to your website: <code style={{ background: 'rgba(99,102,241,0.15)', padding: '1px 4px', borderRadius: 3, fontSize: '0.68rem', color: '#a5b4fc' }}>&lt;script src="{window.location.origin}/bonus-hunt-embed.js"&gt;</code>
+          </p>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 6,
+            fontSize: '0.72rem', color: apiKey.is_active ? '#4ade80' : '#f87171',
+          }}>
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: apiKey.is_active ? '#4ade80' : '#f87171' }} />
+            {apiKey.is_active ? 'Active' : 'Disabled'}
+            {apiKey.last_used_at && <span style={{ color: '#64748b' }}> • Last used {new Date(apiKey.last_used_at).toLocaleDateString()}</span>}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function ProfileSection({ widgets, saveWidget }) {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
@@ -703,6 +809,9 @@ export default function ProfileSection({ widgets, saveWidget }) {
               )}
             </div>
           </div>
+
+          {/* Website API Key card */}
+          <ApiKeyCard user={user} />
         </div>
       </div>
 

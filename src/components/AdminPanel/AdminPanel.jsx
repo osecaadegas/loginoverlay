@@ -8,6 +8,7 @@ import './AdminPanel.css';
 import './AdminPanel.new.css';
 import SeasonPassAdmin from './SeasonPassAdmin';
 import ExtensionAdmin from './ExtensionAdmin';
+import ApiKeysAdmin from './ApiKeysAdmin';
 import { CasinoOfferModal } from './modals';
 import { 
   SidePanel, 
@@ -39,7 +40,7 @@ import {
 } from './components';
 
 // Valid tab IDs for URL deep linking
-const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance', 'extension'];
+const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance', 'extension', 'apikeys'];
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -2984,6 +2985,7 @@ export default function AdminPanel() {
               { id: 'seasonpass', label: 'Season Pass', icon: '👑' },
               { id: 'guessbalance', label: 'Guess Balance', icon: '💰' },
               { id: 'extension', label: 'Extension', icon: '🔌' },
+              { id: 'apikeys', label: 'API Keys', icon: '🔑' },
             ].map(tab => (
               <option key={tab.id} value={tab.id}>
                 {tab.icon}  {tab.label}
@@ -7533,6 +7535,11 @@ export default function AdminPanel() {
       {/* Extension Tab */}
       {activeTab === 'extension' && (
         <ExtensionAdmin />
+      )}
+
+      {/* API Keys Tab */}
+      {activeTab === 'apikeys' && (
+        <ApiKeysAdmin />
       )}
     </div>
   );
