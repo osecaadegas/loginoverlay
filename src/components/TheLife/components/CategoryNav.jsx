@@ -8,7 +8,7 @@ import './CategoryNav.css';
 const CATEGORY_TABS = [
   { key: 'crimes',     label: 'Crimes',       icon: '🔫', img: '/thelife/categories/crimes.png' },
   { key: 'businesses', label: 'Business',      icon: '🏢', img: '/thelife/categories/businesses.png' },
-  { key: 'bank',       label: 'Bank',          icon: '🏦', img: '/thelife/categories/bank.png' },
+  { key: 'bank',       label: 'Bank',          icon: '🏦', img: '/thelife/categories/businesses.png' }, // Using businesses.png as temp placeholder
   { key: 'brothel',    label: 'Brothel',       icon: '💋', img: '/thelife/categories/brothel.png', restricted: true },
   { key: 'pvp',        label: 'PvP',           icon: '⚔️', img: '/thelife/categories/pvp.png', restricted: true },
   { key: 'highstakes', label: 'High Stakes',   icon: '🎰', img: '/thelife/categories/high-stakes.png', restricted: true },
