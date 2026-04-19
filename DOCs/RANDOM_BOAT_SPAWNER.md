@@ -2,7 +2,7 @@
 
 ## Overview
 The dock boat system now automatically spawns random boats every **3 days** with:
-- **Random drug/item** (prioritizes drugs, weapons, and special items)
+- **Random item** (prioritizes consumables, special items, and business rewards)
 - **Random schedule** (arrives 2-12 hours from spawn, stays 6-24 hours)
 - **Random capacity** (50-200 max shipments)
 - **Random boat name** from a pool of 15 names
@@ -95,11 +95,10 @@ const spawnBoat = async () => {
 
 ### Items
 Priority order for random selection:
-1. **Drugs** (cocaine, heroin, meth, etc.)
-2. **Weapons** (guns, ammo)
-3. **Special items** (rare items)
-4. **Consumables** (stim packs, food)
-5. **Any active item** (fallback)
+1. **Consumables** (stim packs, food, drugs)
+2. **Special items** (rare items)
+3. **Business rewards** (items from businesses)
+4. **Any item** (fallback)
 
 ## Boat Names
 Random selection from:
@@ -139,14 +138,14 @@ IF (last_spawn_time < NOW() - interval '1 day') ...
 IF (last_spawn_time < NOW() - interval '7 days') ...
 ```
 
-### Change Item Categories
+### Change Item Types
 Edit the `spawn_random_dock_boat()` function:
 ```sql
 -- Current priority
-WHERE category IN ('drug', 'weapon', 'special', 'consumable')
+WHERE type IN ('consumable', 'special', 'business_reward')
 
--- Add more categories
-WHERE category IN ('drug', 'weapon', 'special', 'consumable', 'armor', 'vehicle')
+-- Add more types
+WHERE type IN ('consumable', 'special', 'business_reward', 'other_type')
 ```
 
 ### Change Schedule Ranges

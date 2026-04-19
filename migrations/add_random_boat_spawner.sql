@@ -46,19 +46,17 @@ BEGIN
   v_boat_name := boat_names[1 + floor(random() * array_length(boat_names, 1))::int];
   
   -- Pick a random drug/item from the_life_items
-  -- Prioritize drugs and valuable items (categories: drug, weapon, special)
+  -- Prioritize consumables, special items, and business rewards
   SELECT id, name INTO v_item_id, v_item_name
   FROM the_life_items
-  WHERE category IN ('drug', 'weapon', 'special', 'consumable')
-    AND is_active = true
+  WHERE type IN ('consumable', 'special', 'business_reward')
   ORDER BY random()
   LIMIT 1;
   
-  -- If no items found, use any active item
+  -- If no items found, use any item
   IF v_item_id IS NULL THEN
     SELECT id, name INTO v_item_id, v_item_name
     FROM the_life_items
-    WHERE is_active = true
     ORDER BY random()
     LIMIT 1;
   END IF;
