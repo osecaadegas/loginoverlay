@@ -14,45 +14,63 @@ export default function ApiKeysAdmin() {
 
   const loadData = useCallback(async () => {
     setLoading(true);
+    setError('');
     try {
       // Load all API access grants
-      const { data: access } = await supabase
+      const { data: access, error: accessErr } = await supabase
         .from('streamer_api_access')
         .select('*')
         .order('granted_at', { ascending: false });
 
+      if (accessErr) {
+        console.error('Access error:', accessErr);
+        // Table might not exist yet - ignore
+      }
+
       // Load all API keys
-      const { data: keys } = await supabase
+      const { data: keys, error: keysErr } = await supabase
         .from('streamer_api_keys')
         .select('*')
         .order('created_at', { ascending: false });
+
+      if (keysErr) {
+        console.error('Keys error:', keysErr);
+        // Table might not exist yet - ignore
+      }
 
       // Load user profiles for display names
       const userIds = [...new Set([
         ...(access || []).map(a => a.user_id),
         ...(keys || []).map(k => k.user_id),
-      ])];
+      ])].filter(Boolean);
 
       let profiles = {};
       if (userIds.length > 0) {
-        const { data: profs } = await supabase
-          .from('user_profiles')
-          .select('user_id, username, display_name, avatar_url')
-          .in('user_id', userIds);
-        (profs || []).forEach(p => {
-          profiles[p.user_id] = p;
-        });
+        try {
+          const { data: profs, error: profErr } = await supabase
+            .from('user_profiles')
+            .select('user_id, username, display_name, avatar_url')
+            .in('user_id', userIds);
+          
+          if (!profErr && profs) {
+            profs.forEach(p => {
+              profiles[p.user_id] = p;
+            });
+          }
+        } catch (e) {
+          console.error('Profile fetch error:', e);
+        }
       }
 
       setAccessList((access || []).map(a => ({
         ...a,
-        profile: profiles[a.user_id] || {},
+        profile: profiles[a.user_id] || { username: 'Unknown', display_name: 'Unknown User' },
         key: (keys || []).find(k => k.user_id === a.user_id) || null,
       })));
       setApiKeys(keys || []);
     } catch (err) {
-      setError('Failed to load API data');
-      console.error(err);
+      console.error('loadData error:', err);
+      setError('Failed to load API data. Make sure the migration has been run.');
     }
     setLoading(false);
   }, []);
@@ -64,30 +82,58 @@ export default function ApiKeysAdmin() {
     setGrantSearch(query);
     if (query.length < 2) { setSearchResults([]); return; }
 
-    // Get premium user IDs first
-    const { data: premiumRoles } = await supabase
-      .from('user_roles')
-      .select('user_id')
-      .eq('role', 'premium')
-      .eq('is_active', true);
+    try {
+      // Get premium user IDs first
+      const { data: premiumRoles, error: rolesErr } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'premium')
+        .eq('is_active', true);
 
-    const premiumIds = (premiumRoles || []).map(r => r.user_id);
-    if (premiumIds.length === 0) { setSearchResults([]); return; }
+      if (rolesErr) {
+        console.error('Roles query error:', rolesErr);
+        setError('Failed to search premium users');
+        return;
+      }
 
-    // Fetch all premium user profiles
-    const { data } = await supabase
-      .from('user_profiles')
-      .select('user_id, username, display_name, avatar_url')
-      .in('user_id', premiumIds);
+      const premiumIds = (premiumRoles || []).map(r => r.user_id);
+      if (premiumIds.length === 0) { 
+        setSearchResults([]);
+        setError('No premium users found. Users need the "premium" role first.');
+        setTimeout(() => setError(''), 5000);
+        return; 
+      }
 
-    // Filter in JS (PostgREST can't combine .in() with .or())
-    const lowerQuery = query.toLowerCase();
-    const filtered = (data || []).filter(u => 
-      u.username?.toLowerCase().includes(lowerQuery) ||
-      u.display_name?.toLowerCase().includes(lowerQuery)
-    ).slice(0, 8);
+      // Fetch all premium user profiles
+      const { data, error: profErr } = await supabase
+        .from('user_profiles')
+        .select('user_id, username, display_name, avatar_url')
+        .in('user_id', premiumIds);
 
-    setSearchResults(filtered);
+      if (profErr) {
+        console.error('Profiles query error:', profErr);
+        setError('Failed to load user profiles');
+        return;
+      }
+
+      // Filter in JS (PostgREST can't combine .in() with .or())
+      const lowerQuery = query.toLowerCase();
+      const filtered = (data || []).filter(u => 
+        u.username?.toLowerCase().includes(lowerQuery) ||
+        u.display_name?.toLowerCase().includes(lowerQuery)
+      ).slice(0, 8);
+
+      setSearchResults(filtered);
+      
+      if (filtered.length === 0 && query.length >= 2) {
+        setError('No premium users found matching that search');
+        setTimeout(() => setError(''), 3000);
+      }
+    } catch (err) {
+      console.error('Search error:', err);
+      setError('Search failed');
+      setTimeout(() => setError(''), 3000);
+    }
   };
 
   // Grant API access to a user
@@ -170,9 +216,13 @@ export default function ApiKeysAdmin() {
       {/* ─── Grant Access ─── */}
       <div style={{ background: '#1e293b', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem', border: '1px solid #334155' }}>
         <h3 style={{ margin: '0 0 0.75rem', color: '#e5e7eb', fontSize: '1rem' }}>Grant API Access</h3>
+        <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
+          💡 Only users with the <strong style={{ color: '#a78bfa' }}>premium</strong> role can be granted API access. 
+          Assign the premium role in User Management first.
+        </p>
         <input
           type="text"
-          placeholder="Search by username..."
+          placeholder="Search premium users by username..."
           value={grantSearch}
           onChange={(e) => searchUsers(e.target.value)}
           style={{
