@@ -59,13 +59,26 @@ export default function ApiKeysAdmin() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Search users to grant access
+  // Search users to grant access — only premium users
   const searchUsers = async (query) => {
     setGrantSearch(query);
     if (query.length < 2) { setSearchResults([]); return; }
+
+    // Get premium user IDs first
+    const { data: premiumRoles } = await supabase
+      .from('user_roles')
+      .select('user_id')
+      .eq('role', 'premium')
+      .eq('is_active', true);
+
+    const premiumIds = (premiumRoles || []).map(r => r.user_id);
+    if (premiumIds.length === 0) { setSearchResults([]); return; }
+
+    // Search profiles only among premium users
     const { data } = await supabase
       .from('user_profiles')
       .select('user_id, username, display_name, avatar_url')
+      .in('user_id', premiumIds)
       .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
       .limit(8);
     setSearchResults(data || []);
