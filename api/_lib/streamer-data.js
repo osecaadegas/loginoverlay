@@ -143,37 +143,67 @@ async function handleBonusHunt(res, userId) {
   const totalWin = openedBonuses.reduce((sum, b) => sum + (parseFloat(b.result) || 0), 0);
   const totalCount = bonuses.length;
   const openedCount = openedBonuses.length;
+  const startAmount = parseFloat(config.startAmount || config.start_amount) || 0;
+  const stopLoss = parseFloat(config.stopLoss || config.stop_loss) || 0;
+  const profit = totalWin - totalBet;
 
   // Determine phase
   let phase = 'idle';
-  if (totalCount > 0 && openedCount === 0) phase = 'building';
+  if (totalCount > 0 && openedCount === 0) phase = 'hunting';
   else if (openedCount > 0 && openedCount < totalCount) phase = 'opening';
   else if (openedCount > 0 && openedCount === totalCount) phase = 'completed';
 
+  // Find best bonus
+  const bestBonus = openedBonuses.reduce((best, b) => {
+    const multi = b.bet && b.result ? parseFloat(b.result) / parseFloat(b.bet) : 0;
+    const bestMulti = best.bet && best.result ? parseFloat(best.result) / parseFloat(best.bet) : 0;
+    return multi > bestMulti ? b : best;
+  }, openedBonuses[0] || {});
+
+  const bestMulti = bestBonus?.bet && bestBonus?.result 
+    ? parseFloat(bestBonus.result) / parseFloat(bestBonus.bet) 
+    : 0;
+
   return res.json({
     active: widget.is_visible,
+    hunt_name: config.huntName || config.hunt_name || 'Bonus Hunt',
     phase,
-    hunt_name: config.huntName || config.hunt_name || null,
     currency: config.currency || '€',
-    start_amount: parseFloat(config.startAmount || config.start_amount) || 0,
-    stats: {
-      total_bonuses: totalCount,
-      opened: openedCount,
-      remaining: totalCount - openedCount,
-      total_bet: Math.round(totalBet * 100) / 100,
-      total_win: Math.round(totalWin * 100) / 100,
-      profit: Math.round((totalWin - totalBet) * 100) / 100,
-      avg_multi: totalBet > 0 ? Math.round((totalWin / totalBet) * 100) / 100 : 0,
-    },
-    bonuses: bonuses.map(b => ({
-      slot: b.slot || b.name || 'Unknown',
-      bet: parseFloat(b.bet) || 0,
-      result: b.result != null && b.result !== '' ? parseFloat(b.result) : null,
-      multi: b.bet && b.result ? Math.round((parseFloat(b.result) / parseFloat(b.bet)) * 100) / 100 : null,
-      image: b.image || b.img || null,
-      provider: b.provider || null,
-      is_super: b.isSuper || b.is_super || false,
-    })),
+    hunt_date: config.hunt_date || new Date().toISOString().split('T')[0],
+    start_money: Math.round(startAmount * 100) / 100,
+    stop_loss: Math.round(stopLoss * 100) / 100,
+    total_win: Math.round(totalWin * 100) / 100,
+    profit: Math.round(profit * 100) / 100,
+    bonus_count: totalCount,
+    bonuses_opened: openedCount,
+    avg_multi: totalBet > 0 ? Math.round((totalWin / totalBet) * 100) / 100 : 0,
+    best_multi: Math.round(bestMulti * 100) / 100,
+    best_slot_name: bestBonus?.slot || bestBonus?.name || null,
+    bonuses: bonuses.map(b => {
+      const betSize = parseFloat(b.bet) || 0;
+      const result = b.result != null && b.result !== '' ? parseFloat(b.result) : null;
+      const payout = result;
+      const multi = betSize && result ? result / betSize : null;
+
+      return {
+        slotName: b.slot || b.name || 'Unknown',
+        betSize: Math.round(betSize * 100) / 100,
+        opened: result !== null,
+        result,
+        payout,
+        multi: multi ? Math.round(multi * 100) / 100 : null,
+        isSuperBonus: b.isSuper || b.is_super || b.isSuperBonus || false,
+        isExtremeBonus: b.isExtreme || b.is_extreme || b.isExtremeBonus || false,
+        slot: {
+          name: b.slot || b.name || 'Unknown',
+          image: b.image || b.img || null,
+          provider: b.provider || null,
+          rtp: b.rtp ? parseFloat(b.rtp) : null,
+          volatility: b.volatility || null,
+          max_win_multiplier: b.max_win || b.maxWin || null,
+        }
+      };
+    }),
     updated_at: widget.updated_at,
   });
 }
@@ -192,20 +222,50 @@ async function handleBonusHuntHistory(res, userId, query) {
   if (error) throw error;
 
   return res.json({
-    hunts: (data || []).map(h => ({
-      id: h.id,
-      hunt_name: h.hunt_name,
-      currency: h.currency || '€',
-      start_money: h.start_money,
-      total_bet: h.total_bet,
-      total_win: h.total_win,
-      profit: h.profit,
-      bonus_count: h.bonus_count,
-      avg_multi: h.avg_multi,
-      best_multi: h.best_multi,
-      bonuses: h.bonuses || [],
-      created_at: h.created_at,
-    })),
+    hunts: (data || []).map(h => {
+      const bonuses = h.bonuses || [];
+      const bestBonus = bonuses.reduce((best, b) => {
+        const multi = b.bet && b.result ? b.result / b.bet : 0;
+        const bestMulti = best.bet && best.result ? best.result / best.bet : 0;
+        return multi > bestMulti ? b : best;
+      }, bonuses[0] || {});
+
+      return {
+        id: h.id,
+        hunt_name: h.hunt_name,
+        phase: 'completed',
+        currency: h.currency || '€',
+        hunt_date: h.hunt_date || h.created_at?.split('T')[0],
+        start_money: h.start_money,
+        stop_loss: h.stop_loss || 0,
+        total_win: h.total_win,
+        profit: h.profit,
+        bonus_count: h.bonus_count,
+        bonuses_opened: h.bonus_count,
+        avg_multi: h.avg_multi,
+        best_multi: h.best_multi,
+        best_slot_name: bestBonus?.slot || bestBonus?.name || null,
+        bonuses: bonuses.map(b => ({
+          slotName: b.slot || b.name || 'Unknown',
+          betSize: parseFloat(b.bet) || 0,
+          opened: true,
+          result: parseFloat(b.result) || 0,
+          payout: parseFloat(b.result) || 0,
+          multi: b.bet && b.result ? Math.round((b.result / b.bet) * 100) / 100 : null,
+          isSuperBonus: b.isSuper || b.is_super || b.isSuperBonus || false,
+          isExtremeBonus: b.isExtreme || b.is_extreme || b.isExtremeBonus || false,
+          slot: {
+            name: b.slot || b.name || 'Unknown',
+            image: b.image || b.img || null,
+            provider: b.provider || null,
+            rtp: b.rtp ? parseFloat(b.rtp) : null,
+            volatility: b.volatility || null,
+            max_win_multiplier: b.max_win || b.maxWin || null,
+          }
+        })),
+        created_at: h.created_at,
+      };
+    }),
     total: count || 0,
     limit,
     offset,

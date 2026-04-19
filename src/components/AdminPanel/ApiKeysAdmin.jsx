@@ -326,6 +326,45 @@ export default function ApiKeysAdmin() {
         }}>{`GET ${siteUrl}/api/streamer-data?key=YOUR_API_KEY&action=bonus_hunt
 
 Actions: bonus_hunt | bonus_hunt_history | overlay_state | widgets | profile`}</pre>
+
+        <p style={{ color: '#9ca3af', fontSize: '0.85rem', marginTop: '1rem', marginBottom: '0.5rem' }}>
+          Response format includes rich slot data:
+        </p>
+        <pre style={{
+          background: '#0f172a', padding: '0.75rem', borderRadius: 8,
+          color: '#a5b4fc', fontSize: '0.75rem', overflowX: 'auto', whiteSpace: 'pre-wrap',
+        }}>{`{
+  "hunt_name": "Bonus Hunt #42",
+  "phase": "opening",  // "hunting" | "opening" | "completed"
+  "currency": "€",
+  "hunt_date": "2026-04-19",
+  "start_money": 1000.00,
+  "stop_loss": 350.00,
+  "total_win": 4200.00,
+  "profit": 3200.00,
+  "bonus_count": 50,
+  "bonuses_opened": 50,
+  "avg_multi": 62.41,
+  "best_multi": 312.0,
+  "best_slot_name": "Gates of Olympus",
+  "bonuses": [{
+    "slotName": "Gates of Olympus",
+    "betSize": 7.47,
+    "opened": true,
+    "result": 2312.00,
+    "payout": 2312.00,
+    "isSuperBonus": false,
+    "isExtremeBonus": false,
+    "slot": {
+      "name": "Gates of Olympus",
+      "image": "https://...",
+      "provider": "Pragmatic Play",
+      "rtp": 96.5,
+      "volatility": "High",
+      "max_win_multiplier": 5000
+    }
+  }]
+}`}</pre>
       </div>
     </div>
   );
