@@ -38,6 +38,14 @@
       "destination": "/api/slot-ai?action=scrape"
     },
     {
+      "source": "/api/streamer-data",
+      "destination": "/api/chat-commands?cmd=streamer-data"
+    },
+    {
+      "source": "/api/image-search",
+      "destination": "/api/chat-commands?cmd=image-search"
+    },
+    {
       "source": "/api/(.*)",
       "destination": "/api/$1"
     },

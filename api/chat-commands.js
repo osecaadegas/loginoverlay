@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
+import streamerDataHandler from './_lib/streamer-data.js';
+import imageSearchHandler from './_lib/image-search.js';
 
 /**
  * /api/chat-commands — Unified chat command handler
@@ -40,6 +42,8 @@ export default async function handler(req, res) {
     case 'award':    return handleAwardPoints(req, res);
     case 'spotify-refresh': return handleSpotifyRefresh(req, res);
     case 'pred-say': return handlePredSay(req, res);
+    case 'streamer-data': return streamerDataHandler(req, res);
+    case 'image-search': return imageSearchHandler(req, res);
     default:         return res.status(400).json({ error: 'Unknown cmd' });
   }
 }
