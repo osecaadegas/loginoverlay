@@ -14,8 +14,28 @@ export default function TheLifeDocks({ player, setPlayer, setPlayerFromAction, t
 
   // Load boats on mount
   useEffect(() => {
+    autoSpawnBoats();
     loadBoats();
   }, []);
+
+  // Auto-spawn boats if needed (every 3 days)
+  async function autoSpawnBoats() {
+    try {
+      const { data, error } = await supabase.rpc('auto_spawn_dock_boats');
+      
+      if (error) {
+        console.error('Error auto-spawning boats:', error);
+        return;
+      }
+      
+      if (data && data.length > 0 && data[0].spawned) {
+        console.log('🚢 New boat spawned:', data[0].message);
+        setMessage({ type: 'success', text: data[0].message });
+      }
+    } catch (err) {
+      console.error('Auto-spawn error:', err);
+    }
+  }
 
   async function loadBoats() {
     setLoading(true);
