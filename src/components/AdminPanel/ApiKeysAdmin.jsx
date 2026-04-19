@@ -49,7 +49,7 @@ export default function ApiKeysAdmin() {
         try {
           const { data: profs, error: profErr } = await supabase
             .from('user_profiles')
-            .select('user_id, username, display_name, avatar_url')
+            .select('user_id, twitch_username, avatar_url')
             .in('user_id', userIds);
           
           if (!profErr && profs) {
@@ -64,7 +64,7 @@ export default function ApiKeysAdmin() {
 
       setAccessList((access || []).map(a => ({
         ...a,
-        profile: profiles[a.user_id] || { username: 'Unknown', display_name: 'Unknown User' },
+        profile: profiles[a.user_id] || { twitch_username: 'Unknown' },
         key: (keys || []).find(k => k.user_id === a.user_id) || null,
       })));
       setApiKeys(keys || []);
@@ -107,7 +107,7 @@ export default function ApiKeysAdmin() {
       // Fetch all premium user profiles
       const { data, error: profErr } = await supabase
         .from('user_profiles')
-        .select('user_id, username, display_name, avatar_url')
+        .select('user_id, twitch_username, avatar_url')
         .in('user_id', premiumIds);
 
       if (profErr) {
@@ -119,8 +119,7 @@ export default function ApiKeysAdmin() {
       // Filter in JS (PostgREST can't combine .in() with .or())
       const lowerQuery = query.toLowerCase();
       const filtered = (data || []).filter(u => 
-        u.username?.toLowerCase().includes(lowerQuery) ||
-        u.display_name?.toLowerCase().includes(lowerQuery)
+        u.twitch_username?.toLowerCase().includes(lowerQuery)
       ).slice(0, 8);
 
       setSearchResults(filtered);
@@ -222,7 +221,7 @@ export default function ApiKeysAdmin() {
         </p>
         <input
           type="text"
-          placeholder="Search premium users by username..."
+          placeholder="Search premium users by Twitch username..."
           value={grantSearch}
           onChange={(e) => searchUsers(e.target.value)}
           style={{
@@ -240,8 +239,8 @@ export default function ApiKeysAdmin() {
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                   {u.avatar_url && <img src={u.avatar_url} alt="" style={{ width: 24, height: 24, borderRadius: '50%' }} />}
-                  <span style={{ color: '#e5e7eb' }}>{u.display_name || u.username}</span>
-                  <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>@{u.username}</span>
+                  <span style={{ color: '#e5e7eb' }}>{u.twitch_username || 'Unknown'}</span>
+                  <span style={{ color: '#6b7280', fontSize: '0.8rem' }}>@{u.twitch_username || 'unknown'}</span>
                 </div>
                 <button
                   onClick={() => grantAccess(u.user_id)}
@@ -277,7 +276,7 @@ export default function ApiKeysAdmin() {
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                     {p.avatar_url && <img src={p.avatar_url} alt="" style={{ width: 32, height: 32, borderRadius: '50%' }} />}
                     <div>
-                      <div style={{ color: '#e5e7eb', fontWeight: 600 }}>{p.display_name || p.username || 'Unknown'}</div>
+                      <div style={{ color: '#e5e7eb', fontWeight: 600 }}>{p.twitch_username || 'Unknown'}</div>
                       <div style={{ color: '#6b7280', fontSize: '0.75rem' }}>
                         Granted {new Date(entry.granted_at).toLocaleDateString()}
                         {k?.last_used_at && ` • Last used ${new Date(k.last_used_at).toLocaleDateString()}`}
