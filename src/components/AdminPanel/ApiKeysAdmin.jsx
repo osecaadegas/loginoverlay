@@ -74,14 +74,20 @@ export default function ApiKeysAdmin() {
     const premiumIds = (premiumRoles || []).map(r => r.user_id);
     if (premiumIds.length === 0) { setSearchResults([]); return; }
 
-    // Search profiles only among premium users
+    // Fetch all premium user profiles
     const { data } = await supabase
       .from('user_profiles')
       .select('user_id, username, display_name, avatar_url')
-      .in('user_id', premiumIds)
-      .or(`username.ilike.%${query}%,display_name.ilike.%${query}%`)
-      .limit(8);
-    setSearchResults(data || []);
+      .in('user_id', premiumIds);
+
+    // Filter in JS (PostgREST can't combine .in() with .or())
+    const lowerQuery = query.toLowerCase();
+    const filtered = (data || []).filter(u => 
+      u.username?.toLowerCase().includes(lowerQuery) ||
+      u.display_name?.toLowerCase().includes(lowerQuery)
+    ).slice(0, 8);
+
+    setSearchResults(filtered);
   };
 
   // Grant API access to a user

@@ -342,18 +342,14 @@ async function handleSession(req, res, supabase) {
 
   if (!visitor) return res.status(500).json({ error: 'Failed to create visitor' });
 
-  // Increment total_sessions
+  // Increment total_sessions (best-effort, non-critical)
   await supabase.rpc('increment_field', {
     table_name: 'analytics_visitors',
     row_id: visitor.id,
     field_name: 'total_sessions',
     amount: 1,
   }).catch(() => {
-    // Fallback: manual update if RPC doesn't exist
-    supabase
-      .from('analytics_visitors')
-      .update({ total_sessions: supabase.raw('total_sessions + 1') })
-      .eq('id', visitor.id);
+    // If RPC doesn't exist, just skip increment (not critical)
   });
 
   // Create session
