@@ -9,13 +9,24 @@
 DROP POLICY IF EXISTS "Anyone can view active giveaways" ON giveaways;
 
 -- Create new policy that allows viewing:
--- 1. Active giveaways
--- 2. Recently ended giveaways (last 7 days) that have winners drawn
+-- 1. Admins/Moderators can see ALL giveaways (for creator panel)
+-- 2. Regular users can see active giveaways
+-- 3. Regular users can see recently ended giveaways (last 7 days) with winners
 CREATE POLICY "Anyone can view active or recent giveaways"
     ON giveaways FOR SELECT
     USING (
+        -- Admins and moderators can see everything
+        EXISTS (
+            SELECT 1 FROM user_roles 
+            WHERE user_id = auth.uid() 
+            AND role IN ('admin', 'moderator')
+            AND is_active = true
+        )
+        OR
+        -- Regular users can see active giveaways
         is_active = true 
         OR 
+        -- Regular users can see recently ended giveaways with winners
         (
             winners_drawn = true 
             AND ends_at >= NOW() - INTERVAL '7 days'
