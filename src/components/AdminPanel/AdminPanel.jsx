@@ -4,7 +4,6 @@ import { useAdmin } from '../../hooks/useAdmin';
 import { getAllUsers, updateUserRole, revokeUserAccess, deleteUser, MODERATOR_PERMISSIONS, getUserRoles, addUserRole, removeUserRole } from '../../utils/adminUtils';
 import { supabase } from '../../config/supabaseClient';
 import { DEPOSIT_METHODS } from '../../utils/depositMethods';
-import { formatIpAddress } from '../../utils/formatIpAddress';
 import './AdminPanel.css';
 import './AdminPanel.new.css';
 import SeasonPassAdmin from './SeasonPassAdmin';
@@ -3765,8 +3764,8 @@ export default function AdminPanel() {
                                     <td style={{ padding: '6px 12px', color: click.se_username ? '#818cf8' : '#4a5568' }}>
                                       {click.se_username || '—'}
                                     </td>
-                                    <td style={{ padding: '6px 12px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 11 }} title={click.ip_address || ''}>
-                                      {formatIpAddress(click.ip_address)}
+                                    <td style={{ padding: '6px 12px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 11 }}>
+                                      {click.ip_address || '—'}
                                     </td>
                                     <td style={{ padding: '6px 12px', color: '#e2e8f0', fontSize: 11 }}>
                                       {click.city && click.country ? `${click.city}, ${click.country}` : click.country || click.country_code || '—'}
