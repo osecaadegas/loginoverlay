@@ -3765,7 +3765,16 @@ export default function AdminPanel() {
                                       {click.se_username || '—'}
                                     </td>
                                     <td style={{ padding: '6px 12px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 11 }}>
-                                      {click.ip_address || '—'}
+                                      {click.ip_address ? (
+                                        <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                          <span>{click.ip_address}</span>
+                                          {click.ip_address.includes(':') ? (
+                                            <span title="IPv6 address (won't match affiliate dashboards)" style={{ padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 600, background: 'rgba(139,92,246,0.15)', color: '#c4b5fd' }}>IPv6</span>
+                                          ) : (
+                                            <span title="IPv4 address (matches affiliate dashboards)" style={{ padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 600, background: 'rgba(34,197,94,0.15)', color: '#86efac' }}>IPv4</span>
+                                          )}
+                                        </span>
+                                      ) : '—'}
                                     </td>
                                     <td style={{ padding: '6px 12px', color: '#e2e8f0', fontSize: 11 }}>
                                       {click.city && click.country ? `${click.city}, ${click.country}` : click.country || click.country_code || '—'}
