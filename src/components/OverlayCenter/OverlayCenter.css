@@ -5082,23 +5082,23 @@ body.wm-resizing {
 .bh-add-btn {
   min-height: 40px;
   padding: 0 18px;
-  border-radius: 14px;
+  border-radius: 10px;
   border: none;
-  background: linear-gradient(135deg, #10b981, #059669);
-  color: #041215;
+  background: linear-gradient(135deg, #2e3c52, #1e2a3a);
+  color: #dbe6f0;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
-  box-shadow: 0 10px 24px rgba(6, 182, 212, 0.18);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.3);
   letter-spacing: 0.02em;
 }
 
 .bh-add-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #34d399, #34d399);
+  background: linear-gradient(135deg, #3a4d68, #283448);
   transform: translateY(-1px);
-  box-shadow: 0 14px 30px rgba(52, 211, 153, 0.22);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.36);
 }
 
 .bh-add-btn:disabled {
@@ -5123,7 +5123,7 @@ body.wm-resizing {
 }
 
 .bh-option input[type="checkbox"] {
-  accent-color: #16a34a;
+  accent-color: #94a3b8;
   width: 14px;
   height: 14px;
 }
@@ -5152,14 +5152,14 @@ body.wm-resizing {
   transition: all 0.15s;
 }
 .bh-sort-btn:hover {
-  background: rgba(52, 211, 153, 0.08);
-  border-color: rgba(52, 211, 153, 0.22);
-  color: #e0f7f3;
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.22);
+  color: #dbe6f0;
 }
 .bh-sort-btn--active {
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.18), rgba(52, 211, 153, 0.12));
-  border-color: rgba(52, 211, 153, 0.28);
-  color: #e7fffb;
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #f0f4f8;
 }
 
 /* Bonus list */
@@ -5183,35 +5183,58 @@ body.wm-resizing {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.12);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
-  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  padding: 9px 12px 9px 15px;
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  background: rgba(10, 14, 24, 0.55);
+  transition: background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
   flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Left-edge state indicator stripe */
+.bh-list-item::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3px;
+  background: transparent;
+  transition: background 0.18s ease;
 }
 
 .bh-list-item:hover {
-  border-color: rgba(52, 211, 153, 0.2);
-  background: linear-gradient(180deg, rgba(52, 211, 153, 0.08), rgba(52, 211, 153, 0.04));
+  border-color: rgba(148, 163, 184, 0.2);
+  background: rgba(255, 255, 255, 0.04);
   transform: translateY(-1px);
-  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
 }
 
 .bh-list-item--super {
-  border-color: rgba(234, 179, 8, 0.2);
-  background: rgba(234, 179, 8, 0.03);
+  border-color: rgba(234, 179, 8, 0.18);
+  background: rgba(234, 179, 8, 0.025);
+}
+.bh-list-item--super::before {
+  background: rgba(234, 179, 8, 0.65);
 }
 
 .bh-list-item--extreme {
-  border-color: rgba(239, 68, 68, 0.25);
-  background: rgba(239, 68, 68, 0.04);
+  border-color: rgba(239, 68, 68, 0.2);
+  background: rgba(239, 68, 68, 0.03);
+}
+.bh-list-item--extreme::before {
+  background: rgba(239, 68, 68, 0.7);
 }
 
 .bh-list-item--opened {
-  opacity: 0.7;
-  border-color: rgba(34, 197, 94, 0.2);
-  background: rgba(34, 197, 94, 0.03);
+  opacity: 0.58;
+  border-color: rgba(100, 116, 139, 0.1);
+  background: rgba(8, 12, 20, 0.38);
+}
+.bh-list-item--opened::before {
+  background: rgba(148, 163, 184, 0.25);
 }
 
 /* --- Bonus Opening toggle --- */
@@ -5238,8 +5261,8 @@ body.wm-resizing {
   display: none;
 }
 .bh-compact-toggle--active {
-  border-color: rgba(52, 211, 153, 0.24);
-  background: linear-gradient(135deg, rgba(52, 211, 153, 0.12), rgba(52, 211, 153, 0.08));
+  border-color: rgba(148, 163, 184, 0.22);
+  background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.06));
 }
 .bh-compact-text {
   font-size: 12px;
@@ -5248,7 +5271,7 @@ body.wm-resizing {
   white-space: nowrap;
 }
 .bh-compact-toggle--active .bh-compact-text {
-  color: #dffef7;
+  color: #dbe6f0;
 }
 .bh-opening-switch {
   position: relative;
@@ -5271,11 +5294,11 @@ body.wm-resizing {
   transition: all 0.25s;
 }
 .bh-compact-toggle input:checked + .bh-opening-switch {
-  background: #22c55e;
+  background: #475569;
 }
 .bh-compact-toggle input:checked + .bh-opening-switch::after {
   left: 18px;
-  background: #ffffff;
+  background: #e2e8f0;
 }
 .bh-opening-text {
   font-size: 13.6px;
@@ -5285,7 +5308,7 @@ body.wm-resizing {
   transition: color 0.25s;
 }
 .bh-opening-toggle--active .bh-opening-text {
-  color: #22c55e;
+  color: #dbe6f0;
 }
 .bh-opening-hint {
   font-size: 11.2px;
@@ -5378,9 +5401,9 @@ body.wm-resizing {
   padding: 0;
 }
 .bh-list-icon-btn:hover {
-  color: #d7fffa;
-  background: rgba(52, 211, 153, 0.1);
-  border-color: rgba(52, 211, 153, 0.24);
+  color: #eef2f5;
+  background: rgba(148, 163, 184, 0.1);
+  border-color: rgba(148, 163, 184, 0.24);
 }
 
 /* --- Field columns (Bet, Payment, Mult) --- */
@@ -5430,19 +5453,19 @@ body.wm-resizing {
   font-style: italic;
 }
 .bh-list-field-mult {
-  color: #facc15;
+  color: #dbe6f0;
   font-weight: 700;
 }
 
 /* --- Payout input --- */
 .bh-list-payout-input {
-  width: 64px;
-  min-height: 34px;
-  padding: 5px 8px;
-  border-radius: 10px;
-  border: 1px solid rgba(52, 211, 153, 0.18);
-  background: rgba(6, 12, 18, 0.78);
-  color: #edf8f6;
+  width: 68px;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(6, 10, 18, 0.8);
+  color: #eef2f5;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -5450,8 +5473,8 @@ body.wm-resizing {
 }
 .bh-list-payout-input:focus {
   outline: none;
-  border-color: rgba(52, 211, 153, 0.45);
-  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+  border-color: rgba(148, 163, 184, 0.45);
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.08);
 }
 .bh-list-payout-input::placeholder {
   color: #334155;
@@ -5467,15 +5490,15 @@ body.wm-resizing {
 .bh-list-edit-input {
   flex: 1;
   padding: 4px 8px;
-  border-radius: 4px;
-  border: 1px solid rgba(22, 163, 74, 0.3);
-  background: rgba(15, 23, 42, 0.8);
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  background: rgba(10, 14, 26, 0.85);
   color: #e2e8f0;
   font-size: 12.5px;
 }
 .bh-list-edit-input:focus {
   outline: none;
-  border-color: rgba(22, 163, 74, 0.6);
+  border-color: rgba(148, 163, 184, 0.5);
 }
 .bh-list-edit-bet {
   max-width: 70px;
@@ -5495,11 +5518,11 @@ body.wm-resizing {
   transition: all 0.15s;
 }
 .bh-list-edit-save {
-  background: rgba(34, 197, 94, 0.15);
-  color: #22c55e;
+  background: rgba(148, 163, 184, 0.1);
+  color: #dbe6f0;
 }
 .bh-list-edit-save:hover {
-  background: rgba(34, 197, 94, 0.25);
+  background: rgba(148, 163, 184, 0.2);
 }
 .bh-list-edit-cancel {
   background: rgba(239, 68, 68, 0.1);
@@ -5510,20 +5533,26 @@ body.wm-resizing {
 }
 
 .bh-list-num {
-  font-size: 10.9px;
+  font-size: 10.4px;
   color: #6d8590;
-  min-width: 18px;
+  min-width: 22px;
+  text-align: center;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 5px;
+  padding: 2px 4px;
+  flex-shrink: 0;
 }
 
 .bh-list-img {
-  width: 48px;
-  height: 48px;
-  border-radius: 12px;
+  width: 44px;
+  height: 44px;
+  border-radius: 8px;
   object-fit: cover;
   flex-shrink: 0;
-  border: 1px solid rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
 }
 
 .bh-list-info {
@@ -5556,7 +5585,7 @@ body.wm-resizing {
 .bh-list-result {
   font-size: 12.5px;
   font-weight: 600;
-  color: #22c55e;
+  color: #dbe6f0;
   font-variant-numeric: tabular-nums;
 }
 
@@ -5565,19 +5594,25 @@ body.wm-resizing {
 }
 
 .bh-list-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
   background: transparent;
-  border: none;
-  padding: 6px 8px;
-  color: #6f8892;
+  padding: 0;
+  color: #64748b;
   cursor: pointer;
-  border-radius: 10px;
-  font-size: 12.5px;
   transition: all 0.15s;
+  flex-shrink: 0;
 }
 
 .bh-list-remove:hover {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.2);
 }
 
 @media (max-width: 1180px) {
