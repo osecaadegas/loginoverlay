@@ -37,6 +37,7 @@ import CookieConsent from './components/CookieConsent/CookieConsent';
 import useGiveawayListener from './hooks/useGiveawayListener';
 import useSlotRequestListener from './hooks/useSlotRequestListener';
 import usePredictionListener from './hooks/usePredictionListener';
+import useBetsListener from './hooks/useBetsListener';
 import useAnalytics from './hooks/useAnalytics';
 // ThemesPage is now rendered inside OverlayControlCenter
 
@@ -286,6 +287,7 @@ function LayoutWrapper({ children }) {
   useGiveawayListener(); // persistent chat listener for giveaway keyword
   useSlotRequestListener(); // persistent chat listener for !sr commands
   usePredictionListener(); // persistent chat listener for !bet commands
+  useBetsListener();        // persistent chat listener for Bets widget
   useAnalytics(); // page view tracking + user identification
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');

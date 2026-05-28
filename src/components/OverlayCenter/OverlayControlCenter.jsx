@@ -30,7 +30,7 @@ import './widgets/builtinWidgets';
 import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
 
 /* ── Generic WidgetPanel: replaces 14 identical panel wrappers ── */
-const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', slot_requests: 'slot-requests-page' };
+const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', slot_requests: 'slot-requests-page', bets: 'bets-page' };
 const PANEL_META = {
   widgets: {
     eyebrow: 'Overlay Builder',
@@ -66,6 +66,11 @@ const PANEL_META = {
     eyebrow: 'Community Tools',
     title: 'Slot Requests',
     description: 'Moderate viewer requests and keep the queue stream-ready at a glance.',
+  },
+  bets: {
+    eyebrow: 'Community Tools',
+    title: 'Bets',
+    description: 'Run live chat-powered bracket betting rounds with your viewers.',
   },
   library: {
     eyebrow: 'Management',
@@ -356,6 +361,18 @@ export default function OverlayControlCenter() {
               </div>
             </button>
 
+            {/* ─── Bets ─── */}
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'bets' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('bets'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">🎲</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Bets</span>
+                <span className="oc-sidebar-btn-desc">Chat bracket betting</span>
+              </div>
+            </button>
+
             <div className="oc-sidebar-divider-label">Management</div>
 
             {/* ─── Library ─── */}
@@ -512,7 +529,7 @@ export default function OverlayControlCenter() {
             />
           )}
           {/* Generic widget panels — resolved from registry */}
-          {['bonus_hunt','tournament','current_slot','slot_requests','bonus_buys'].includes(activePanel) && (
+          {['bonus_hunt','tournament','current_slot','slot_requests','bonus_buys','bets'].includes(activePanel) && (
             <WidgetPanel widgetType={activePanel} widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (

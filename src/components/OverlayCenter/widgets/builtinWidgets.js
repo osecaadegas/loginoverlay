@@ -612,6 +612,51 @@ registerWidget({
   },
 });
 
+// ─── BETS ──────────────────────────────────────────────
+import BetsWidget from './BetsWidget';
+import BetsConfig from './BetsConfig';
+registerWidget({
+  type: 'bets',
+  label: 'Bets',
+  icon: '🎲',
+  description: 'Run live chat bracket betting for your viewers',
+  category: 'casino',
+  component: BetsWidget,
+  configPanel: BetsConfig,
+  styles: [
+    { id: 'v1_list', icon: '📋', label: 'List' },
+    { id: 'v2_grid', icon: '⊞',  label: 'Grid' },
+  ],
+  styleConfigKey: 'displayStyle',
+  defaults: {
+    gameStatus:    'idle',
+    question:      'Place Your Bets',
+    currency:      '€',
+    fundAmount:    0,
+    timerSeconds:  120,
+    chatCommand:   '!bet',
+    twitchChannel: '',
+    seAnnounce:    true,
+    displayStyle:  'v1_list',
+    fontFamily:    "'Inter', sans-serif",
+    options: [
+      { label: '0 – 99' },
+      { label: '100 – 199' },
+      { label: '200 – 299' },
+      { label: '300 – 399' },
+      { label: '400 – 499' },
+      { label: '500 – 599' },
+      { label: '600 – 799' },
+      { label: '800 – 999' },
+      { label: '1000+' },
+    ],
+    bets:          {},
+    betters:       {},
+    winnerOption:  null,
+    betsHistory:   [],
+  },
+});
+
 // ─── 33. CONTAINER ─────────────────────────────────────
 import ContainerWidget from './ContainerWidget';
 import ContainerConfig from './ContainerConfig';
