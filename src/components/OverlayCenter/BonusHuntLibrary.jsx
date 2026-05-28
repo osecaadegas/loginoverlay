@@ -272,6 +272,11 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
     );
     return { total, totalProfit, totalBonuses, profitable, bestHunt };
   }, [hunts]);
+  const filteredCount = filtered.length;
+  const profitableRate = stats.total > 0 ? Math.round((stats.profitable / stats.total) * 100) : 0;
+  const libraryNote = hunts.length > 0
+    ? 'Review archived hunts, compare performance, download the raw JSON, and reload any session back onto the overlay in seconds.'
+    : 'Your archive is ready for the first saved hunt. Once a session is stored, it will appear here for review and replay.';
 
   // ── Render ──
   if (!user) {
@@ -285,17 +290,46 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
 
   return (
     <div className="bhl-panel" data-tour="library-page">
-      {/* ── Header ── */}
-      <div className="oc-panel-header">
-        <h2 className="oc-panel-title">📚 Bonus Hunt Library</h2>
-        <button className="oc-btn oc-btn--sm" onClick={loadHunts} title="Refresh library">
-          🔄 Refresh
-        </button>
-      </div>
+      <div className="bhl-page-shell">
+      <div className="bhl-page-hero">
+        <div className="bhl-page-hero-copy">
+          <span className="bhl-page-eyebrow">Archive Center</span>
+          <h2 className="bhl-page-title">Bonus Hunt library</h2>
+          <p className="bhl-page-subtitle">
+            Browse every saved session, compare results, and reopen any hunt from one cleaner premium archive surface.
+          </p>
+          <p className="bhl-page-note">{libraryNote}</p>
+        </div>
 
-      <p className="bhl-description">
-        Your private collection of saved bonus hunts. Search, review stats, or load any hunt back onto your overlay.
-      </p>
+        <div className="bhl-page-hero-side">
+          <button className="oc-btn oc-btn--sm bhl-page-refresh" onClick={loadHunts} title="Refresh library">
+            🔄 Refresh Library
+          </button>
+
+          <div className="bhl-page-metrics">
+            <div className="bhl-page-metric-card">
+              <span className="bhl-page-metric-label">Archive</span>
+              <strong className="bhl-page-metric-value">{stats.total}</strong>
+              <span className="bhl-page-metric-meta">{stats.totalBonuses} bonuses logged</span>
+            </div>
+            <div className="bhl-page-metric-card">
+              <span className="bhl-page-metric-label">Visible</span>
+              <strong className="bhl-page-metric-value">{filteredCount}</strong>
+              <span className="bhl-page-metric-meta">{searchQuery ? `Filtered by "${searchQuery}"` : 'Current library view'}</span>
+            </div>
+            <div className="bhl-page-metric-card">
+              <span className="bhl-page-metric-label">Profitability</span>
+              <strong className="bhl-page-metric-value">{profitableRate}%</strong>
+              <span className="bhl-page-metric-meta">{stats.profitable}/{stats.total || 0} profitable hunts</span>
+            </div>
+            <div className="bhl-page-metric-card">
+              <span className="bhl-page-metric-label">Top Session</span>
+              <strong className="bhl-page-metric-value bhl-page-metric-value--name">{stats.bestHunt?.hunt_name || 'No hunts yet'}</strong>
+              <span className="bhl-page-metric-meta">{stats.bestHunt ? `+${fmtNum(stats.bestHunt.profit)}` : 'Save a hunt to start ranking'}</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* ── Message banner ── */}
       {message && (
@@ -322,6 +356,15 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
         <>
           {/* ── Stats overview ── */}
           {hunts.length > 0 && (
+            <>
+            <div className="bhl-section-heading">
+              <div>
+                <span className="bhl-section-eyebrow">Collection Overview</span>
+                <h3 className="bhl-section-title">Track the archive health before diving into individual sessions</h3>
+              </div>
+              <span className="bhl-section-pill">{viewMode === 'grid' ? 'Grid view' : 'List view'}</span>
+            </div>
+
             <div className="bhl-stats-bar">
               <div className="bhl-stat-item">
                 <span className="bhl-stat-value">{stats.total}</span>
@@ -348,50 +391,66 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
                 </div>
               )}
             </div>
+            </>
           )}
 
           {/* ── Search + Sort + View controls ── */}
           {hunts.length > 0 && (
-            <div className="bhl-controls">
-              <div className="bhl-search-box">
-                <span className="bhl-search-icon">🔍</span>
-                <input
-                  className="bhl-search-input"
-                  type="text"
-                  placeholder="Search by hunt name or slot…"
-                  value={searchQuery}
-                  onChange={e => setSearchQuery(e.target.value)}
-                />
-                {searchQuery && (
-                  <button className="bhl-search-clear" onClick={() => setSearchQuery('')}>✕</button>
-                )}
+            <>
+            <div className="bhl-section-heading bhl-section-heading--compact">
+              <div>
+                <span className="bhl-section-eyebrow">Explorer</span>
+                <h3 className="bhl-section-title">Search, sort, and switch between scan modes</h3>
               </div>
-
-              <select className="bhl-sort-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
-                <option value="date-desc">Newest first</option>
-                <option value="date-asc">Oldest first</option>
-                <option value="profit-desc">Highest profit</option>
-                <option value="profit-asc">Lowest profit</option>
-                <option value="bonuses-desc">Most bonuses</option>
-              </select>
-
-              <div className="bhl-view-toggle">
-                <button
-                  className={`bhl-view-btn ${viewMode === 'grid' ? 'bhl-view-btn--active' : ''}`}
-                  onClick={() => setViewMode('grid')}
-                  title="Grid view"
-                >
-                  ▦
-                </button>
-                <button
-                  className={`bhl-view-btn ${viewMode === 'list' ? 'bhl-view-btn--active' : ''}`}
-                  onClick={() => setViewMode('list')}
-                  title="List view"
-                >
-                  ☰
-                </button>
-              </div>
+              <span className="bhl-section-pill">{filteredCount} visible</span>
             </div>
+
+            <div className="bhl-controls-card">
+              <div className="bhl-controls">
+                <div className="bhl-search-box">
+                  <span className="bhl-search-icon">🔍</span>
+                  <input
+                    className="bhl-search-input"
+                    type="text"
+                    placeholder="Search by hunt name or slot…"
+                    value={searchQuery}
+                    onChange={e => setSearchQuery(e.target.value)}
+                  />
+                  {searchQuery && (
+                    <button className="bhl-search-clear" onClick={() => setSearchQuery('')}>✕</button>
+                  )}
+                </div>
+
+                <select className="bhl-sort-select" value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                  <option value="date-desc">Newest first</option>
+                  <option value="date-asc">Oldest first</option>
+                  <option value="profit-desc">Highest profit</option>
+                  <option value="profit-asc">Lowest profit</option>
+                  <option value="bonuses-desc">Most bonuses</option>
+                </select>
+
+                <div className="bhl-view-toggle">
+                  <button
+                    className={`bhl-view-btn ${viewMode === 'grid' ? 'bhl-view-btn--active' : ''}`}
+                    onClick={() => setViewMode('grid')}
+                    title="Grid view"
+                  >
+                    ▦
+                  </button>
+                  <button
+                    className={`bhl-view-btn ${viewMode === 'list' ? 'bhl-view-btn--active' : ''}`}
+                    onClick={() => setViewMode('list')}
+                    title="List view"
+                  >
+                    ☰
+                  </button>
+                </div>
+              </div>
+              <p className="bhl-controls-note">
+                Load any archived hunt back onto the overlay, inspect every bonus result, or export a JSON backup directly from the hunt cards below.
+              </p>
+              </div>
+            </>
           )}
 
           {/* ── Search results count ── */}
@@ -422,6 +481,15 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
 
           {/* ── Hunt Cards ── */}
           {filtered.length > 0 && (
+            <>
+            <div className="bhl-section-heading bhl-section-heading--compact">
+              <div>
+                <span className="bhl-section-eyebrow">Sessions</span>
+                <h3 className="bhl-section-title">Open any hunt to inspect the full breakdown and take action</h3>
+              </div>
+              <span className="bhl-section-pill">{filtered.length} hunts</span>
+            </div>
+
             <div className={`bhl-hunt-grid ${viewMode === 'list' ? 'bhl-hunt-grid--list' : ''}`}>
               {filtered.map(hunt => {
                 const prof = Number(hunt.profit) || 0;
@@ -628,9 +696,11 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
                 );
               })}
             </div>
+            </>
           )}
         </>
       )}
+      </div>
     </div>
   );
 }

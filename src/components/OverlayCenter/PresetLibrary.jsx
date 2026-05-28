@@ -217,78 +217,144 @@ export default function PresetLibrary({
   const personalCount = (globalPresets || []).length;
   const sharedCount = (sharedPresets || []).length;
   const totalCount = personalCount + sharedCount;
+  const filteredCount = filtered.length;
+  const totalVisibleWidgets = allPresets.reduce(
+    (sum, preset) => sum + ((preset.snapshot || []).filter(s => s.is_visible !== false).length),
+    0
+  );
+  const largestPreset = allPresets.reduce((largest, preset) => {
+    const count = (preset.snapshot || []).filter(s => s.is_visible !== false).length;
+    if (!largest || count > largest.count) {
+      return { name: preset.name || 'Untitled', count };
+    }
+    return largest;
+  }, null);
+  const sharedRatio = totalCount > 0 ? Math.round((sharedCount / totalCount) * 100) : 0;
+  const pageNote = totalCount > 0
+    ? 'Preview live layout snapshots, keep a clean personal catalog, and promote the strongest presets into the shared gallery when they are stream-ready.'
+    : 'Save the current overlay state to start building a reusable preset library for fast scene swaps and experiments.';
 
   return (
     <div className="pl-page" data-tour="presets-page">
-      {/* Header */}
-      <div className="pl-header">
-        <div className="pl-header__top">
-          <h2 className="pl-header__title">💾 Preset Library</h2>
-          <span className="pl-header__count">{totalCount} preset{totalCount !== 1 ? 's' : ''}</span>
+      <div className="pl-page-shell">
+      <div className="pl-hero">
+        <div className="pl-hero__copy">
+          <span className="pl-hero__eyebrow">Layout Vault</span>
+          <h2 className="pl-hero__title">Preset library</h2>
+          <p className="pl-hero__subtitle">
+            Save overlay compositions, compare live previews, and switch between personal and shared broadcast setups from one polished gallery.
+          </p>
+          <p className="pl-hero__note">{pageNote}</p>
         </div>
-        <p className="pl-header__subtitle">
-          Browse, preview and load your overlay presets. Each card shows a live preview of how the overlay looks.
-        </p>
+
+        <div className="pl-hero__metrics">
+          <div className="pl-hero__metric-card">
+            <span className="pl-hero__metric-label">Catalog</span>
+            <strong className="pl-hero__metric-value">{totalCount}</strong>
+            <span className="pl-hero__metric-meta">{personalCount} personal, {sharedCount} shared</span>
+          </div>
+          <div className="pl-hero__metric-card">
+            <span className="pl-hero__metric-label">Visible</span>
+            <strong className="pl-hero__metric-value">{filteredCount}</strong>
+            <span className="pl-hero__metric-meta">{search ? `Matching "${search}"` : `Filter: ${filter}`}</span>
+          </div>
+          <div className="pl-hero__metric-card">
+            <span className="pl-hero__metric-label">Shared Mix</span>
+            <strong className="pl-hero__metric-value">{sharedRatio}%</strong>
+            <span className="pl-hero__metric-meta">Shared availability across the vault</span>
+          </div>
+          <div className="pl-hero__metric-card">
+            <span className="pl-hero__metric-label">Largest Layout</span>
+            <strong className="pl-hero__metric-value pl-hero__metric-value--name">{largestPreset?.name || 'No presets yet'}</strong>
+            <span className="pl-hero__metric-meta">{largestPreset ? `${largestPreset.count} visible widgets` : 'Save a preset to start ranking layouts'}</span>
+          </div>
+        </div>
       </div>
 
       {/* Save new preset */}
-      <div className="pl-save-bar">
-        <input
-          className="pl-save-bar__input"
-          type="text"
-          placeholder="Preset name…"
-          value={presetName || ''}
-          onChange={e => setPresetName?.(e.target.value)}
-          onKeyDown={e => { if (e.key === 'Enter') onSavePreset?.(); }}
-        />
-        <button
-          className="pl-save-bar__btn"
-          onClick={onSavePreset}
-          disabled={!(presetName || '').trim() || !widgets?.length}
-        >
-          ➕ Save New Preset
-        </button>
-        {presetMsg && <span className="pl-save-bar__msg">{presetMsg}</span>}
+      <div className="pl-section-heading">
+        <div>
+          <span className="pl-section-heading__eyebrow">Save & Snapshot</span>
+          <h3 className="pl-section-heading__title">Capture the current overlay into the preset vault</h3>
+        </div>
+        <span className="pl-section-heading__pill">{totalVisibleWidgets} widgets across all presets</span>
+      </div>
+
+      <div className="pl-save-card">
+        <div className="pl-save-bar">
+          <input
+            className="pl-save-bar__input"
+            type="text"
+            placeholder="Preset name…"
+            value={presetName || ''}
+            onChange={e => setPresetName?.(e.target.value)}
+            onKeyDown={e => { if (e.key === 'Enter') onSavePreset?.(); }}
+          />
+          <button
+            className="pl-save-bar__btn"
+            onClick={onSavePreset}
+            disabled={!(presetName || '').trim() || !widgets?.length}
+          >
+            ➕ Save New Preset
+          </button>
+          {presetMsg && <span className="pl-save-bar__msg">{presetMsg}</span>}
+        </div>
+        <p className="pl-save-card__note">
+          Save the current widget layout exactly as it stands, then reload it later from the gallery or share it globally when you want a default stack for the team.
+        </p>
       </div>
 
       {/* Toolbar */}
-      <div className="pl-toolbar">
-        <div className="pl-toolbar__search">
-          <span className="pl-toolbar__search-icon">🔍</span>
-          <input
-            className="pl-toolbar__search-input"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Search presets…"
-          />
+      <div className="pl-section-heading pl-section-heading--compact">
+        <div>
+          <span className="pl-section-heading__eyebrow">Explore</span>
+          <h3 className="pl-section-heading__title">Search the gallery, switch catalogs, and reorder what matters</h3>
         </div>
+        <span className="pl-section-heading__pill">{filteredCount} shown</span>
+      </div>
 
-        <div className="pl-toolbar__filters">
-          {[
-            { key: 'all', label: `All (${totalCount})` },
-            { key: 'personal', label: `Mine (${personalCount})` },
-            { key: 'shared', label: `Shared (${sharedCount})` },
-          ].map(f => (
-            <button
-              key={f.key}
-              className={`pl-toolbar__filter ${filter === f.key ? 'pl-toolbar__filter--active' : ''}`}
-              onClick={() => setFilter(f.key)}
-            >
-              {f.label}
-            </button>
-          ))}
+      <div className="pl-toolbar-card">
+        <div className="pl-toolbar">
+          <div className="pl-toolbar__search">
+            <span className="pl-toolbar__search-icon">🔍</span>
+            <input
+              className="pl-toolbar__search-input"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder="Search presets…"
+            />
+          </div>
+
+          <div className="pl-toolbar__filters">
+            {[
+              { key: 'all', label: `All (${totalCount})` },
+              { key: 'personal', label: `Mine (${personalCount})` },
+              { key: 'shared', label: `Shared (${sharedCount})` },
+            ].map(f => (
+              <button
+                key={f.key}
+                className={`pl-toolbar__filter ${filter === f.key ? 'pl-toolbar__filter--active' : ''}`}
+                onClick={() => setFilter(f.key)}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          <select
+            className="pl-toolbar__sort"
+            value={sortBy}
+            onChange={e => setSortBy(e.target.value)}
+          >
+            <option value="newest">Newest first</option>
+            <option value="oldest">Oldest first</option>
+            <option value="name">A → Z</option>
+            <option value="widgets">Most widgets</option>
+          </select>
         </div>
-
-        <select
-          className="pl-toolbar__sort"
-          value={sortBy}
-          onChange={e => setSortBy(e.target.value)}
-        >
-          <option value="newest">Newest first</option>
-          <option value="oldest">Oldest first</option>
-          <option value="name">A → Z</option>
-          <option value="widgets">Most widgets</option>
-        </select>
+        <p className="pl-toolbar-card__note">
+          Every preset card below keeps its live thumbnail, load flow, share controls, and delete controls exactly as before.
+        </p>
       </div>
 
       {/* Grid */}
@@ -301,22 +367,33 @@ export default function PresetLibrary({
           </p>
         </div>
       ) : (
-        <div className="pl-grid" data-tour="presets-shared">
-          {filtered.map((preset, idx) => (
-            <PresetCard
-              key={preset.id || preset.name || idx}
-              preset={preset}
-              type={preset._type}
-              theme={theme}
-              isAdmin={isAdmin}
-              onLoad={onLoadPreset}
-              onDelete={preset._type === 'personal' ? handleDeletePersonal : handleDeleteShared}
-              onShare={onSharePreset}
-              onUnshare={onUnsharePreset}
-            />
-          ))}
-        </div>
+        <>
+          <div className="pl-section-heading pl-section-heading--compact">
+            <div>
+              <span className="pl-section-heading__eyebrow">Gallery</span>
+              <h3 className="pl-section-heading__title">Browse visual snapshots and load the right layout in one click</h3>
+            </div>
+            <span className="pl-section-heading__pill">{sortBy}</span>
+          </div>
+
+          <div className="pl-grid" data-tour="presets-shared">
+            {filtered.map((preset, idx) => (
+              <PresetCard
+                key={preset.id || preset.name || idx}
+                preset={preset}
+                type={preset._type}
+                theme={theme}
+                isAdmin={isAdmin}
+                onLoad={onLoadPreset}
+                onDelete={preset._type === 'personal' ? handleDeletePersonal : handleDeleteShared}
+                onShare={onSharePreset}
+                onUnshare={onUnsharePreset}
+              />
+            ))}
+          </div>
+        </>
       )}
+      </div>
     </div>
   );
 }
