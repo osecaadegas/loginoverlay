@@ -6,7 +6,7 @@ const TEXTURES = {
   none: () => ({}),
 
   gradient: (c) => ({
-    background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#0f172a'}, ${c.color2 || '#1e293b'}, ${c.color3 || '#0f172a'})`,
+    background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#0f172a'}, ${c.color2 || '#2a3139'}, ${c.color3 || '#0f172a'})`,
   }),
 
   metallic: (c) => ({
@@ -15,26 +15,26 @@ const TEXTURES = {
   }),
 
   pearl: (c) => ({
-    background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#e8dff5'}, ${c.color2 || '#f0e6ff'}, ${c.color3 || '#dde4ff'}, ${c.color2 || '#f0e6ff'}, ${c.color1 || '#e8dff5'})`,
+    background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#d5dbe1'}, ${c.color2 || '#eef2f5'}, ${c.color3 || '#bcc4cc'}, ${c.color2 || '#eef2f5'}, ${c.color1 || '#d5dbe1'})`,
     backgroundSize: '300% 300%',
   }),
 
   gloss: (c) => ({
-    background: `linear-gradient(${c.gradientAngle ?? 180}deg, ${c.color1 || '#0f172a'} 0%, ${c.color2 || '#1e3a5f'} 40%, rgba(255,255,255,0.08) 50%, ${c.color2 || '#1e3a5f'} 60%, ${c.color1 || '#0f172a'} 100%)`,
+    background: `linear-gradient(${c.gradientAngle ?? 180}deg, ${c.color1 || '#0f172a'} 0%, ${c.color2 || '#39424d'} 40%, rgba(255,255,255,0.08) 50%, ${c.color2 || '#39424d'} 60%, ${c.color1 || '#0f172a'} 100%)`,
   }),
 
   chameleon: (c) => ({
-    background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#6366f1'}, ${c.color2 || '#06b6d4'}, ${c.color3 || '#a855f7'}, ${c.color1 || '#6366f1'})`,
+    background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#4d5662'}, ${c.color2 || '#8993a0'}, ${c.color3 || '#dbe2e8'}, ${c.color1 || '#4d5662'})`,
     backgroundSize: '600% 600%',
     animation: `bg-chameleon-shift ${c.animSpeed || 8}s ease infinite`,
   }),
 
   radial: (c) => ({
-    background: `radial-gradient(ellipse at center, ${c.color2 || '#1e3a5f'}, ${c.color1 || '#0f172a'})`,
+    background: `radial-gradient(ellipse at center, ${c.color2 || '#313842'}, ${c.color1 || '#0f172a'})`,
   }),
 
   conic: (c) => ({
-    background: `conic-gradient(from ${c.gradientAngle ?? 0}deg, ${c.color1 || '#0f172a'}, ${c.color2 || '#1e3a5f'}, ${c.color3 || '#6366f1'}, ${c.color1 || '#0f172a'})`,
+    background: `conic-gradient(from ${c.gradientAngle ?? 0}deg, ${c.color1 || '#0f172a'}, ${c.color2 || '#39424d'}, ${c.color3 || '#99a3ae'}, ${c.color1 || '#0f172a'})`,
   }),
 
   dots: (c) => ({
@@ -61,7 +61,7 @@ const TEXTURES = {
   }),
 
   vignette: (c) => ({
-    background: `radial-gradient(ellipse at center, ${c.color2 || '#1e293b'} 0%, ${c.color1 || '#000000'} 100%)`,
+    background: `radial-gradient(ellipse at center, ${c.color2 || '#2a3139'} 0%, ${c.color1 || '#000000'} 100%)`,
   }),
 
   carbon: (c) => ({
@@ -192,17 +192,17 @@ function BackgroundWidget({ config, theme }) {
       {bgMode === 'special' && displayStyle === 'aurora' && (
         <div className="oc-bg-layer oc-bg-aurora" style={{
           ...mediaStyle,
-          background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#0a0020'}, ${c.color2 || '#1a0040'}, ${c.color3 || '#002020'})`,
+          background: `linear-gradient(${c.gradientAngle ?? 135}deg, ${c.color1 || '#0d1117'}, ${c.color2 || '#232a33'}, ${c.color3 || '#141a20'})`,
         }}>
-          <div className="oc-bg-aurora-band oc-bg-aurora-1" style={{ '--aurora-c1': c.color2 || '#00ff88', '--aurora-c2': c.color3 || '#6366f1' }} />
-          <div className="oc-bg-aurora-band oc-bg-aurora-2" style={{ '--aurora-c1': c.color3 || '#a855f7', '--aurora-c2': c.color1 || '#06b6d4' }} />
-          <div className="oc-bg-aurora-band oc-bg-aurora-3" style={{ '--aurora-c1': c.color1 || '#22d3ee', '--aurora-c2': c.color2 || '#00ff88' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-1" style={{ '--aurora-c1': c.color2 || '#dbe2e8', '--aurora-c2': c.color3 || '#8f98a3' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-2" style={{ '--aurora-c1': c.color3 || '#bcc4cc', '--aurora-c2': c.color1 || '#6b7480' }} />
+          <div className="oc-bg-aurora-band oc-bg-aurora-3" style={{ '--aurora-c1': c.color1 || '#eef2f5', '--aurora-c2': c.color2 || '#dbe2e8' }} />
         </div>
       )}
 
       {bgMode === 'special' && displayStyle === 'matrix' && (
         <div className="oc-bg-layer oc-bg-matrix" style={{ ...mediaStyle, background: c.color1 || '#000800' }}>
-          <MatrixRain color={c.color2 || '#00ff41'} speed={c.animSpeed || 8} />
+          <MatrixRain color={c.color2 || '#dbe2e8'} speed={c.animSpeed || 8} />
         </div>
       )}
 
@@ -217,9 +217,9 @@ function BackgroundWidget({ config, theme }) {
           ...mediaStyle,
           background: c.color1 || '#0a0a2e',
         }}>
-          <div className="oc-bg-wave oc-bg-wave-1" style={{ '--wave-color': c.color2 || 'rgba(99,102,241,0.15)' }} />
-          <div className="oc-bg-wave oc-bg-wave-2" style={{ '--wave-color': c.color3 || 'rgba(168,85,247,0.1)' }} />
-          <div className="oc-bg-wave oc-bg-wave-3" style={{ '--wave-color': c.color2 || 'rgba(59,130,246,0.08)' }} />
+          <div className="oc-bg-wave oc-bg-wave-1" style={{ '--wave-color': c.color2 || 'rgba(219,226,232,0.15)' }} />
+          <div className="oc-bg-wave oc-bg-wave-2" style={{ '--wave-color': c.color3 || 'rgba(188,196,204,0.1)' }} />
+          <div className="oc-bg-wave oc-bg-wave-3" style={{ '--wave-color': c.color2 || 'rgba(143,152,163,0.08)' }} />
         </div>
       )}
 
@@ -228,8 +228,8 @@ function BackgroundWidget({ config, theme }) {
           ...mediaStyle,
           background: c.color1 || '#0a0a1a',
         }}>
-          <div className="oc-bg-geo-grid" style={{ '--geo-color': c.color2 || 'rgba(99,102,241,0.12)' }} />
-          <div className="oc-bg-geo-shapes" style={{ '--geo-accent': c.color3 || 'rgba(168,85,247,0.15)' }} />
+          <div className="oc-bg-geo-grid" style={{ '--geo-color': c.color2 || 'rgba(200,208,216,0.12)' }} />
+          <div className="oc-bg-geo-shapes" style={{ '--geo-accent': c.color3 || 'rgba(188,196,204,0.15)' }} />
         </div>
       )}
 

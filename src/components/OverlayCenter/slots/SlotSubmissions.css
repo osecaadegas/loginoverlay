@@ -2089,3 +2089,72 @@
   border-left-color: var(--ui-danger, #e08e8e) !important;
 }
 
+/* SILVER-ONLY SWEEP */
+.slot-manager-v2[data-tour="slots-page"],
+[data-tour="approvals-page"] {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(226, 232, 240, 0.06), transparent 22%),
+    radial-gradient(circle at 88% 0%, rgba(148, 163, 184, 0.05), transparent 18%),
+    linear-gradient(180deg, rgba(10, 13, 19, 0.99), rgba(15, 19, 26, 0.9)) !important;
+}
+
+.ss-form input:focus,
+.ss-form select:focus,
+.ss-form textarea:focus,
+.ss-image-row input:focus,
+.ss-url-input:focus,
+[data-tour="approvals-page"] .sa-edit-row input:focus,
+[data-tour="approvals-page"] .sa-edit-row select:focus,
+[data-tour="approvals-page"] .sa-deny-input:focus {
+  border-color: rgba(200, 208, 216, 0.32) !important;
+  box-shadow: 0 0 0 4px rgba(200, 208, 216, 0.12) !important;
+}
+
+.ss-add-btn,
+.ss-search-img-btn,
+.slot-manager-v2[data-tour="slots-page"] .sm-btn-primary,
+[data-tour="approvals-page"] .sa-approve-btn,
+[data-tour="approvals-page"] .sa-edit-save,
+[data-tour="approvals-page"] .sa-filter-btn--active {
+  background: linear-gradient(135deg, #5c6570 0%, #444c57 58%, #313843 100%) !important;
+  border-color: rgba(200, 208, 216, 0.24) !important;
+}
+
+.ss-url-bar {
+  background: rgba(226, 232, 240, 0.08) !important;
+  border: 1px dashed rgba(200, 208, 216, 0.22) !important;
+}
+
+.ss-url-label,
+.ss-url-spinner,
+[data-tour="approvals-page"] .sa-detail-toggle,
+[data-tour="approvals-page"] .sa-detail-toggle:hover,
+.ss-flash--success,
+.ss-badge--approved,
+[data-tour="approvals-page"] .ss-badge--approved,
+.ss-stat--approved .ss-stat-num,
+[data-tour="approvals-page"] .ss-card--approved {
+  color: #eef2f5 !important;
+}
+
+.ss-flash--success,
+.ss-badge--approved,
+[data-tour="approvals-page"] .ss-badge--approved {
+  background: rgba(219, 226, 232, 0.14) !important;
+  border-color: rgba(200, 208, 216, 0.24) !important;
+}
+
+.ss-badge--pending,
+[data-tour="approvals-page"] .ss-badge--pending {
+  background: rgba(188, 196, 204, 0.14) !important;
+  border-color: rgba(188, 196, 204, 0.24) !important;
+  color: #dbe2e8 !important;
+}
+
+.ss-card--approved,
+[data-tour="approvals-page"] .ss-card--approved,
+.ss-card--pending,
+[data-tour="approvals-page"] .ss-card--pending {
+  border-left-color: #a8b1bb !important;
+}
+

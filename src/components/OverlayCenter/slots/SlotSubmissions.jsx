@@ -23,10 +23,10 @@ const useDebounce = (value, delay) => {
    CONSTANTS
    ═══════════════════════════════════════════════════════════════════ */
 const VOLATILITY_OPTIONS = [
-  { value: 'low', label: 'Low', color: '#22c55e' },
-  { value: 'medium', label: 'Medium', color: '#eab308' },
-  { value: 'high', label: 'High', color: '#f97316' },
-  { value: 'very_high', label: 'Very High', color: '#ef4444' },
+  { value: 'low', label: 'Low', color: '#dbe2e8' },
+  { value: 'medium', label: 'Medium', color: '#c8d0d8' },
+  { value: 'high', label: 'High', color: '#aeb7c1' },
+  { value: 'very_high', label: 'Very High', color: '#8b96a1' },
 ];
 
 const FEATURE_OPTIONS = [
@@ -229,7 +229,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
           )}
           {imageResults.slice(0, 8).map((img, i) => (
             <button key={i} type="button" onClick={() => { set('image', img.url); setImageResults([]); }}
-              style={{ border: form.image === img.url ? '2px solid #a855f7' : '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 2, background: 'transparent', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
+              style={{ border: form.image === img.url ? '2px solid #dbe2e8' : '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 2, background: 'transparent', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
               <img src={img.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
             </button>
           ))}
@@ -239,7 +239,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
       {/* Features (collapsible) */}
       <details style={{ padding: '0 14px 8px' }}>
         <summary style={{ fontSize: '0.75rem', cursor: 'pointer', opacity: 0.6, userSelect: 'none', marginBottom: 6 }}>
-          Features {featCount > 0 && <span style={{ background: '#a855f7', color: '#fff', borderRadius: 8, padding: '1px 6px', fontSize: '0.65rem', marginLeft: 4 }}>{featCount}</span>}
+          Features {featCount > 0 && <span style={{ background: '#5c6570', color: '#fff', borderRadius: 8, padding: '1px 6px', fontSize: '0.65rem', marginLeft: 4 }}>{featCount}</span>}
         </summary>
         <div className="sm-feature-grid" style={{ paddingTop: 2 }}>
           {FEATURE_OPTIONS.map(feat => {

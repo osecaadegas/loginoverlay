@@ -13776,3 +13776,69 @@ body.wm-resizing {
   background: linear-gradient(90deg, #cfd7ff, #9babed, #6a7ca9) !important;
 }
 
+/* SILVER-ONLY SWEEP */
+:root {
+  --ui-accent: #c8d0d8;
+  --ui-accent-strong: #eef2f5;
+  --ui-accent-soft: rgba(200, 208, 216, 0.14);
+  --ui-success: #dbe2e8;
+  --ui-success-soft: rgba(219, 226, 232, 0.14);
+  --ui-warning: #bcc4cc;
+  --ui-warning-soft: rgba(188, 196, 204, 0.14);
+  --ui-info: #c7ced6;
+  --ui-info-soft: rgba(199, 206, 214, 0.14);
+  --ui-border-strong: rgba(200, 208, 216, 0.24);
+}
+
+.oc-page,
+[data-tour="bonus-hunt-page"],
+[data-tour="library-page"],
+[data-tour="tournament-page"],
+[data-tour="bonus-buys-page"],
+[data-tour="current-slot-page"],
+[data-tour="slot-requests-page"] {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(226, 232, 240, 0.06), transparent 22%),
+    radial-gradient(circle at 86% 0%, rgba(148, 163, 184, 0.05), transparent 18%),
+    linear-gradient(180deg, rgba(9, 12, 16, 0.99), rgba(15, 18, 24, 0.92)) !important;
+}
+
+.oc-sidebar-btn::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), rgba(148, 163, 184, 0.05)) !important;
+}
+
+.oc-sidebar-btn--active,
+.oc-sidebar-btn:hover,
+.oc-status-pill--live,
+.oc-toggle.is-on,
+.oc-preset-btn--active,
+.oc-style-chip--active,
+.oc-segmented-btn--active,
+.oc-link-pill:hover,
+.oc-link-pill--active {
+  background: linear-gradient(135deg, #5c6570 0%, #444c57 58%, #313843 100%) !important;
+  border-color: rgba(200, 208, 216, 0.24) !important;
+  color: #f8fafc !important;
+  box-shadow: 0 16px 36px rgba(8, 12, 20, 0.28) !important;
+}
+
+[data-tour="library-page"] .bhl-card-progress-fill,
+[data-tour="tournament-page"] .bk-progress-fill,
+[data-tour="bonus-buys-page"] .bb-admin-progress-fill,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-progress,
+[data-tour="slot-requests-page"] .sr-admin-status-dot {
+  background: linear-gradient(90deg, #eef2f5, #c7ced6, #8f98a3) !important;
+}
+
+.cg-config__tab--active,
+.cg-config__status-badge--open,
+.cg-config__status-badge--result,
+.cg-config__history-result--tails,
+.cg-config__history-win,
+.wm-card-badge--live {
+  background: rgba(219, 226, 232, 0.14) !important;
+  border-color: rgba(200, 208, 216, 0.24) !important;
+  color: #eef2f5 !important;
+  box-shadow: none !important;
+}
+

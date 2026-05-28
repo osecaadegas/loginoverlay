@@ -145,7 +145,7 @@ export default function GivePointsPanel({ allWidgets }) {
     fontWeight: 700,
     fontSize: 13,
     cursor: busy ? 'wait' : 'pointer',
-    background: busy ? '#334155' : '#6366f1',
+    background: busy ? '#3f4854' : '#5d6672',
     color: '#fff',
     opacity: busy ? 0.6 : 1,
     transition: 'background 0.2s',
@@ -153,9 +153,9 @@ export default function GivePointsPanel({ allWidgets }) {
   const chip = (active) => ({
     padding: '6px 14px',
     borderRadius: 99,
-    border: active ? '1px solid #818cf8' : '1px solid rgba(255,255,255,0.12)',
-    background: active ? 'rgba(99,102,241,0.15)' : 'transparent',
-    color: active ? '#a5b4fc' : '#94a3b8',
+    border: active ? '1px solid #c8d0d8' : '1px solid rgba(255,255,255,0.12)',
+    background: active ? 'rgba(226,232,240,0.12)' : 'transparent',
+    color: active ? '#eef2f5' : '#94a3b8',
     fontSize: 12,
     fontWeight: 600,
     cursor: 'pointer',
@@ -172,12 +172,12 @@ export default function GivePointsPanel({ allWidgets }) {
 
       {/* SE Connection status */}
       <div style={{ ...card, display: 'flex', alignItems: 'center', gap: 8 }}>
-        <span style={{ width: 8, height: 8, borderRadius: '50%', background: seConnected ? '#22c55e' : '#ef4444' }} />
-        <span style={{ fontSize: 12, color: seConnected ? '#86efac' : '#fca5a5' }}>
+        <span style={{ width: 8, height: 8, borderRadius: '50%', background: seConnected ? '#dbe2e8' : '#ef4444' }} />
+        <span style={{ fontSize: 12, color: seConnected ? '#eef2f5' : '#fca5a5' }}>
           StreamElements {seConnected ? `Connected (${seAccount?.se_username || seAccount?.se_channel_id})` : 'Not connected'}
         </span>
-        <span style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: chatConnected ? '#a855f7' : '#333' }} />
-        <span style={{ fontSize: 12, color: chatConnected ? '#c4b5fd' : '#64748b' }}>
+        <span style={{ marginLeft: 'auto', width: 8, height: 8, borderRadius: '50%', background: chatConnected ? '#bcc4cc' : '#333' }} />
+        <span style={{ fontSize: 12, color: chatConnected ? '#dbe2e8' : '#64748b' }}>
           {twitchChannel ? `Twitch: ${twitchChannel}` : 'No Twitch channel'}
           {chatConnected ? ` (${chatters.length} chatters)` : ''}
         </span>
@@ -238,9 +238,9 @@ export default function GivePointsPanel({ allWidgets }) {
                         style={{
                           padding: '3px 8px',
                           borderRadius: 4,
-                          border: targetUser.toLowerCase() === c.username ? '1px solid #818cf8' : '1px solid rgba(255,255,255,0.08)',
-                          background: targetUser.toLowerCase() === c.username ? 'rgba(99,102,241,0.15)' : 'rgba(255,255,255,0.03)',
-                          color: '#c4b5fd',
+                          border: targetUser.toLowerCase() === c.username ? '1px solid #c8d0d8' : '1px solid rgba(255,255,255,0.08)',
+                          background: targetUser.toLowerCase() === c.username ? 'rgba(226,232,240,0.12)' : 'rgba(255,255,255,0.03)',
+                          color: '#dbe2e8',
                           fontSize: 11,
                           cursor: 'pointer',
                           whiteSpace: 'nowrap',
@@ -274,7 +274,7 @@ export default function GivePointsPanel({ allWidgets }) {
                 {[100, 500, 1000, 5000, 10000].map(n => (
                   <button key={n} onClick={() => setAmount(String(n))} style={{
                     padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.08)',
-                    background: 'rgba(255,255,255,0.03)', color: '#86efac', fontSize: 11, cursor: 'pointer',
+                    background: 'rgba(255,255,255,0.03)', color: '#dbe2e8', fontSize: 11, cursor: 'pointer',
                   }}>+{n.toLocaleString()}</button>
                 ))}
               </div>
@@ -308,7 +308,7 @@ export default function GivePointsPanel({ allWidgets }) {
                     {[100, 500, 1000, 5000].map(n => (
                       <button key={n} onClick={() => setAmount(String(n))} style={{
                         padding: '3px 10px', borderRadius: 4, border: '1px solid rgba(255,255,255,0.08)',
-                        background: 'rgba(255,255,255,0.03)', color: '#86efac', fontSize: 11, cursor: 'pointer',
+                        background: 'rgba(255,255,255,0.03)', color: '#dbe2e8', fontSize: 11, cursor: 'pointer',
                       }}>+{n.toLocaleString()}</button>
                     ))}
                   </div>
@@ -319,7 +319,7 @@ export default function GivePointsPanel({ allWidgets }) {
                       {chatters.slice(0, 40).map(c => (
                         <span key={c.username} style={{
                           padding: '2px 6px', borderRadius: 3,
-                          background: 'rgba(255,255,255,0.04)', color: '#c4b5fd', fontSize: 10,
+                          background: 'rgba(255,255,255,0.04)', color: '#dbe2e8', fontSize: 10,
                         }}>{c.displayName}</span>
                       ))}
                       {chatters.length > 40 && <span style={{ fontSize: 10, color: '#64748b' }}>+{chatters.length - 40} more</span>}
@@ -337,7 +337,7 @@ export default function GivePointsPanel({ allWidgets }) {
                 <div style={{
                   width: `${(progress.done / progress.total) * 100}%`,
                   height: '100%',
-                  background: 'linear-gradient(90deg, #818cf8, #6366f1)',
+                  background: 'linear-gradient(90deg, #eef2f5, #c8d0d8, #8f98a3)',
                   borderRadius: 99,
                   transition: 'width 0.3s',
                 }} />
@@ -353,9 +353,9 @@ export default function GivePointsPanel({ allWidgets }) {
             <div style={{
               padding: '8px 12px',
               borderRadius: 6,
-              background: msg.type === 'ok' ? 'rgba(34,197,94,0.1)' : 'rgba(239,68,68,0.1)',
-              border: `1px solid ${msg.type === 'ok' ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
-              color: msg.type === 'ok' ? '#86efac' : '#fca5a5',
+              background: msg.type === 'ok' ? 'rgba(219,226,232,0.1)' : 'rgba(239,68,68,0.1)',
+              border: `1px solid ${msg.type === 'ok' ? 'rgba(219,226,232,0.2)' : 'rgba(239,68,68,0.2)'}`,
+              color: msg.type === 'ok' ? '#eef2f5' : '#fca5a5',
               fontSize: 12,
               marginTop: 8,
             }}>
