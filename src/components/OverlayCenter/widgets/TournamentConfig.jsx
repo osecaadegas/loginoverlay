@@ -194,7 +194,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         borderRadius: 14,
         borderWidth: 0,
         arenaAccent: '#eab308',
-        arenaWinColor: '#22c55e',
+        arenaWinColor: '#dbe2e8',
         arenaCardBg: '#1e1550',
         arenaCurrency: '$',
       },
@@ -242,7 +242,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         sbTextColor: '#ffffff',
         sbPayColor: '#e2e8f0',
         sbMultiColor: '#facc15',
-        sbWinColor: '#22c55e',
+        sbWinColor: '#dbe2e8',
         sbLoseColor: '#ef4444',
         sbTabBg: 'rgba(0,0,0,0.6)',
         sbTabActive: '#3b82f6',
@@ -1188,7 +1188,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                               </div>
                               <div style={{
                                 fontSize: 18, fontWeight: 800, fontFamily: "'Inter', monospace",
-                                color: allDone && autoWinner === 'player1' ? '#22c55e' : allDone && autoWinner === 'player2' ? '#ef4444' : '#facc15',
+                                color: allDone && autoWinner === 'player1' ? '#eef2f5' : allDone && autoWinner === 'player2' ? '#ef4444' : '#facc15',
                               }}>
                                 {p1Count > 0
                                   ? (isClassic ? `${p1Total.toFixed(2)}x` : `${p1Total > 0 ? '+' : ''}${p1Total.toFixed(2)}${currency}`)
@@ -1205,7 +1205,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                               </div>
                               <div style={{
                                 fontSize: 18, fontWeight: 800, fontFamily: "'Inter', monospace",
-                                color: allDone && autoWinner === 'player2' ? '#22c55e' : allDone && autoWinner === 'player1' ? '#ef4444' : '#facc15',
+                                color: allDone && autoWinner === 'player2' ? '#eef2f5' : allDone && autoWinner === 'player1' ? '#ef4444' : '#facc15',
                               }}>
                                 {p2Count > 0
                                   ? (isClassic ? `${p2Total.toFixed(2)}x` : `${p2Total > 0 ? '+' : ''}${p2Total.toFixed(2)}${currency}`)
@@ -1229,7 +1229,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                           {currentBracketMatch.winner && (
                             <div style={{
                               textAlign: 'center', padding: '8px 0', fontSize: 13, fontWeight: 700,
-                              color: '#22c55e', marginTop: 4,
+                              color: '#eef2f5', marginTop: 4,
                             }}>
                               👑 Winner: {currentBracketMatch.winner === 'player1' ? currentBracketMatch.player1 : currentBracketMatch.winner === 'player2' ? currentBracketMatch.player2 : 'Draw'}
                             </div>
@@ -1322,7 +1322,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               <div className="bk-details-body">
                 <div className="nb-color-grid">
                   <ColorPicker label="Accent" value={c.arenaAccent || '#eab308'} onChange={v => set('arenaAccent', v)} />
-                  <ColorPicker label="Winner" value={c.arenaWinColor || '#22c55e'} onChange={v => set('arenaWinColor', v)} />
+                  <ColorPicker label="Winner" value={c.arenaWinColor || '#dbe2e8'} onChange={v => set('arenaWinColor', v)} />
                   <ColorPicker label="Card BG" value={c.arenaCardBg || '#1e1550'} onChange={v => set('arenaCardBg', v)} />
                 </div>
                 <label className="nb-field" style={{ marginTop: 4 }}>
@@ -1365,7 +1365,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                   <ColorPicker label="Text" value={c.sbTextColor || '#ffffff'} onChange={v => set('sbTextColor', v)} />
                   <ColorPicker label="Pay Color" value={c.sbPayColor || '#e2e8f0'} onChange={v => set('sbPayColor', v)} />
                   <ColorPicker label="Multi Color" value={c.sbMultiColor || '#facc15'} onChange={v => set('sbMultiColor', v)} />
-                  <ColorPicker label="Win" value={c.sbWinColor || '#22c55e'} onChange={v => set('sbWinColor', v)} />
+                  <ColorPicker label="Win" value={c.sbWinColor || '#dbe2e8'} onChange={v => set('sbWinColor', v)} />
                   <ColorPicker label="Lose" value={c.sbLoseColor || '#ef4444'} onChange={v => set('sbLoseColor', v)} />
                   <ColorPicker label="Tab BG" value={c.sbTabBg || 'rgba(0,0,0,0.6)'} onChange={v => set('sbTabBg', v)} />
                   <ColorPicker label="Tab Active" value={c.sbTabActive || '#3b82f6'} onChange={v => set('sbTabActive', v)} />

@@ -179,8 +179,8 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               <ColorPicker label="Header Accent" value={c.headerAccent || '#60a5fa'} onChange={v => set('headerAccent', v)} />
               {currentStyle !== 'v3' && <>
                 <ColorPicker label="Count Card BG" value={c.countCardColor || '#1e3a8a'} onChange={v => set('countCardColor', v)} />
-                <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || '#166534'} onChange={v => set('currentBonusColor', v)} />
-                <ColorPicker label="Current Accent" value={c.currentBonusAccent || '#86efac'} onChange={v => set('currentBonusAccent', v)} />
+                <ColorPicker label="Current Bonus BG" value={c.currentBonusColor || '#334155'} onChange={v => set('currentBonusColor', v)} />
+                <ColorPicker label="Current Accent" value={c.currentBonusAccent || '#dbe2e8'} onChange={v => set('currentBonusAccent', v)} />
               </>}
               <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
               {currentStyle !== 'v3' &&
@@ -1020,7 +1020,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     </div>
                     <div className="bh-sr-queue-actions" style={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                       <button className="bh-sr-queue-btn" onClick={e => { e.stopPropagation(); handleAddToBH(req); }} title="Add to Bonus Hunt"
-                        style={{ fontSize: 10, padding: '3px 8px', background: 'rgba(34,197,94,0.15)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.3)', borderRadius: 4, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>+ Add to BH</button>
+                        style={{ fontSize: 10, padding: '3px 8px', background: 'rgba(226,232,240,0.12)', color: '#eef2f5', border: '1px solid rgba(200,208,216,0.24)', borderRadius: 4, cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap' }}>+ Add to BH</button>
                       <button className="bh-sr-queue-btn bh-sr-queue-btn--reject" onClick={e => { e.stopPropagation(); handleRejectRequest(req.id); }} title="Reject &amp; refund points" style={{ fontSize: 10, whiteSpace: 'nowrap' }}>Points Back</button>
                       <button className="bh-sr-queue-btn bh-sr-queue-btn--dismiss" onClick={e => { e.stopPropagation(); handleDismissRequest(req.id); }} title="Dismiss" style={{ fontSize: 16, width: 28, height: 28, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0 }}>✕</button>
                     </div>
@@ -1564,7 +1564,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
 
   if (total === 0) return null;
 
-  const profitColor = profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#cbd5e1';
+  const profitColor = profit > 0 ? '#eef2f5' : profit < 0 ? '#f87171' : '#cbd5e1';
 
   return createPortal(
     <div style={{
@@ -1583,7 +1583,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
       <StatChip label="Bonuses" value={`${openedCount} / ${total}`} mutedColor={mutedColor} />
       <StatChip label="Start" value={fmtV(start)} mutedColor={mutedColor} />
       <StatChip label="Total Bet" value={fmtV(totalBet)} mutedColor={mutedColor} />
-      <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#4ade80' : mutedColor} mutedColor={mutedColor} />
+      <StatChip label="Payout" value={fmtV(totalPayout)} color={totalPayout > 0 ? '#eef2f5' : mutedColor} mutedColor={mutedColor} />
       <StatChip label="Target" value={fmtV(target)} color={accentColor} mutedColor={mutedColor} />
       <StatChip label="Avg x" value={`${avgMulti.toFixed(2)}x`} mutedColor={mutedColor} />
       <StatChip label="BE x" value={`${liveBE.toFixed(2)}x`} color="#fbbf24" mutedColor={mutedColor} />
@@ -1591,7 +1591,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
       {openedCount > 0 && (
         <>
           <div style={{ width: 1, height: 24, background: `${accentColor}4d` }} />
-          <StatChip label="🏆 Best" value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + '…' : bestSlot} ${bestMulti.toFixed(1)}x`} color="#4ade80" mutedColor={mutedColor} />
+          <StatChip label="🏆 Best" value={`${bestSlot.length > 14 ? bestSlot.slice(0, 14) + '…' : bestSlot} ${bestMulti.toFixed(1)}x`} color="#eef2f5" mutedColor={mutedColor} />
           <StatChip label="💀 Worst" value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + '…' : worstSlot} ${worstMulti.toFixed(1)}x`} color="#f87171" mutedColor={mutedColor} />
         </>
       )}
