@@ -976,7 +976,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               <span className="bh-sr-queue-title">🎰 Requests <span className="bh-sr-queue-count">{slotRequests.length}</span></span>
               {slotRequests.length > 0 && (
                 <button className="bh-sr-queue-btn bh-sr-queue-btn--clear" onClick={handleClearAllRequests}
-                  title="Clear all requests &amp; refund points">🗑️ Clear All</button>
+                  title="Refund SE points to all pending users and remove from queue">↩ Refund All</button>
               )}
             </div>
 

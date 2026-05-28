@@ -556,9 +556,10 @@ export default function SlotRequestsConfig({ config, onChange }) {
           </div>
           <span className="sr-admin-card-chip">{queueCount} pending</span>
           {requests.length > 0 && (
-            <button className="sr-admin-btn sr-admin-btn--danger" style={{ ...S.btn }}
-              onClick={clearAll} disabled={loading}>
-              {loading ? '…' : 'Clear All'}
+            <button className="sr-admin-btn sr-admin-btn--warn" style={{ ...S.btn }}
+              onClick={clearAll} disabled={loading}
+              title={c.srSeEnabled ? 'Refund SE points to all pending users and remove them from the queue' : 'Remove all pending requests from the queue'}>
+              {loading ? '…' : (c.srSeEnabled ? '↩ Refund All' : '🗑️ Clear All')}
             </button>
           )}
         </div>
@@ -590,18 +591,19 @@ export default function SlotRequestsConfig({ config, onChange }) {
               className="sr-admin-btn sr-admin-btn--success"
               style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
               onClick={() => markPlayed(r.id)} title="Mark as played">✓</button>
-            {/* Reject & refund */}
-            {c.srSeEnabled && (
-              <button
-                className="sr-admin-btn sr-admin-btn--warn"
-                style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
-                onClick={() => rejectRequest(r.id)} title="Reject &amp; refund SE points">↩</button>
-            )}
-            {/* Remove */}
+            {/* Reject & refund — always shown; no-op if SE not connected */}
+            <button
+              className="sr-admin-btn sr-admin-btn--warn"
+              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
+              onClick={() => rejectRequest(r.id)}
+              title={c.srSeEnabled ? 'Reject &amp; refund SE points to this user' : 'Reject request (SE points not enabled)'}>
+              ↩ Refund
+            </button>
+            {/* Remove without refund */}
             <button
               className="sr-admin-btn sr-admin-btn--danger"
               style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
-              onClick={() => removeRequest(r.id)} title="Remove">✕</button>
+              onClick={() => removeRequest(r.id)} title="Remove without refund">✕</button>
             </div>
           </div>
         ))}
