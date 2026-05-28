@@ -26,7 +26,6 @@ const USER_DATA_KEYS = {
   background:         ['imageUrl', 'videoUrl'],
   raid_shoutout:      ['soundUrl', 'showClip', 'showGame', 'showViewers'],
   spotify_now_playing: ['spotify_access_token', 'spotify_refresh_token', 'spotify_expires_at', 'manualArtist', 'manualTrack', 'manualAlbumArt'],
-  single_slot:        ['slotName', 'provider', 'imageUrl', 'rtp', 'slotId', 'currency', 'averageMulti', 'bestMulti', 'totalBonuses', 'bestWin', 'lastBet', 'lastPay', 'lastMulti', 'lastWinIndex'],
   bonus_buys:         ['slotName', 'provider', 'imageUrl', 'bonuses', 'startMoney', 'betCost', 'plannedBonuses', 'sessionNumber'],
 };
 

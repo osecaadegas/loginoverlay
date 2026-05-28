@@ -673,44 +673,6 @@ registerWidget({
   },
 });
 
-// ─── 20. SINGLE SLOT ──────────────────────────────────
-import SingleSlotWidget from './SingleSlotWidget';
-import SingleSlotConfig from './SingleSlotConfig';
-registerWidget({
-  type: 'single_slot',
-  label: 'Single Slot',
-  icon: '🎰',
-  description: 'Display a single slot with personal stats, records and last win info',
-  category: 'casino',
-  component: SingleSlotWidget,
-  configPanel: SingleSlotConfig,
-  styles: [
-    { id: 'v1', icon: '🎰', label: 'Default' },
-    { id: 'v2_card', icon: '🃏', label: 'Card' },
-  ],
-  styleConfigKey: 'displayStyle',
-  defaults: {
-    slotName: '',
-    provider: '',
-    imageUrl: '',
-    rtp: '',
-    currency: '€',
-    accentColor: '#7c3aed',
-    bgColor: 'transparent',
-    textColor: '#ffffff',
-    mutedColor: '#94a3b8',
-    fontFamily: "'Inter', sans-serif",
-    averageMulti: 0,
-    bestMulti: 0,
-    totalBonuses: 0,
-    bestWin: 0,
-    lastBet: 0,
-    lastPay: 0,
-    lastMulti: 0,
-    lastWinIndex: 0,
-  },
-});
-
 // ─── 26b. BONUS HUNT STATS ────────────────────────────
 import BHStatsWidget from './BHStatsWidget';
 import BHStatsConfig from './BHStatsConfig';
@@ -781,48 +743,6 @@ registerWidget({
     textColor: '#ffffff',
     mutedColor: '#64748b',
     fontFamily: "'Inter', sans-serif",
-  },
-});
-
-// ─── 32. AI CHAT BOT ──────────────────────────────────
-import AIChatBotWidget from './AIChatBotWidget';
-import AIChatBotConfig from './AIChatBotConfig';
-registerWidget({
-  type: 'ai_chatbot',
-  label: 'AI Chat Bot',
-  icon: '🤖',
-  description: 'AI chatbot that responds to Twitch chat with TTS',
-  category: 'stream',
-  component: AIChatBotWidget,
-  configPanel: AIChatBotConfig,
-  defaults: {
-    geminiApiKey: '',
-    geminiModel: 'gemini-2.0-flash',
-    systemPrompt: 'You are a fun and friendly stream chatbot. Keep answers short (1-2 sentences max).',
-    botName: 'AI Bot',
-    botAvatar: '',
-    twitchChannel: '',
-    triggerWord: '!ai',
-    maxMessages: 20,
-    ttsEnabled: true,
-    ttsVoice: '',
-    ttsRate: 1,
-    ttsPitch: 1,
-    micEnabled: true,
-    streamerName: 'Streamer',
-    micLang: 'pt-PT',
-    avatar3dEnabled: false,
-    avatar3dUrl: '',
-    avatar3dSize: 300,
-    avatar3dPosition: 'top',
-    avatar3dParticles: true,
-    showHeader: true,
-    bgColor: '#0f172a',
-    textColor: '#e2e8f0',
-    accentColor: '#9146FF',
-    fontSize: 14,
-    width: 380,
-    height: 500,
   },
 });
 

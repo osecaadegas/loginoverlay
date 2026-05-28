@@ -381,16 +381,6 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
         ...sharedFont,
         ...sharedFilters,
       };
-    case 'single_slot':
-      return {
-        ...c,
-        bgColor:     nb.bgColor     || 'transparent',
-        accentColor: nb.accentColor || '#7c3aed',
-        textColor:   nb.textColor   || '#ffffff',
-        mutedColor:  nb.mutedColor  || '#94a3b8',
-        ...sharedFont,
-        ...sharedFilters,
-      };
     case 'slot_requests':
       return {
         ...c,

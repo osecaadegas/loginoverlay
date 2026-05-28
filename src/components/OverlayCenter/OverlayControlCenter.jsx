@@ -21,7 +21,6 @@ import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
-import ExtensionAdmin from '../AdminPanel/ExtensionAdmin';
 import GivePointsPanel from './GivePointsPanel';
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
@@ -31,7 +30,7 @@ import './widgets/builtinWidgets';
 import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
 
 /* ── Generic WidgetPanel: replaces 14 identical panel wrappers ── */
-const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', single_slot: 'single-slot-page', random_slot_picker: 'random-slot-page', slot_requests: 'slot-requests-page', coin_flip: 'coin-flip-page', salty_words: 'salty-words-page', predictions: 'predictions-page' };
+const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', random_slot_picker: 'random-slot-page', slot_requests: 'slot-requests-page', coin_flip: 'coin-flip-page', salty_words: 'salty-words-page', predictions: 'predictions-page' };
 
 function WidgetPanel({ widgetType, widgets, saveWidget, addWidget, loading }) {
   const def = getWidgetDef(widgetType);
@@ -83,7 +82,7 @@ export default function OverlayControlCenter() {
   const [collectionsOpen, setCollectionsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
-  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'single_slot', 'extension', 'ai_chatbot'];
+  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot'];
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
@@ -300,9 +299,6 @@ export default function OverlayControlCenter() {
               { key: 'tournament', icon: '🏆', label: 'Tournament', desc: 'Run slot battles' },
               { key: 'bonus_buys', icon: '🛒', label: 'Bonus Buys', desc: 'Track bonus buy sessions' },
               { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
-              { key: 'single_slot', icon: '🎰', label: 'Single Slot', desc: 'Slot stats & records' },
-              { key: 'extension', icon: '📺', label: 'Twitch Extension', desc: 'Manage viewer features' },
-              { key: 'ai_chatbot', icon: '🤖', label: 'AI Chat Bot', desc: 'AI chatbot with TTS' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -494,7 +490,7 @@ export default function OverlayControlCenter() {
             </div>
           )}
           {/* Generic widget panels — resolved from registry */}
-          {['bonus_hunt','tournament','current_slot','random_slot_picker','slot_requests','single_slot','bonus_buys','coin_flip','salty_words','predictions'].includes(activePanel) && (
+          {['bonus_hunt','tournament','current_slot','random_slot_picker','slot_requests','bonus_buys','coin_flip','salty_words','predictions'].includes(activePanel) && (
             <WidgetPanel widgetType={activePanel} widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (
@@ -528,9 +524,6 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'profile' && (
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />
-          )}
-          {activePanel === 'extension' && (
-            <ExtensionAdmin />
           )}
         </main>
       </div>

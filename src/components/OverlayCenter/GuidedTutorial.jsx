@@ -453,7 +453,6 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     tournament: 'Tournament',
     bonus_buys: 'Bonus Buys',
     current_slot: 'Current Slot',
-    single_slot: 'Single Slot',
     random_slot_picker: 'Random Slot',
     slot_requests: 'Slot Requests',
     coin_flip: 'Coin Flip',
