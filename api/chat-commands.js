@@ -167,6 +167,11 @@ async function handleSlotRequest(req, res) {
     const seEnabled = !!wConfig?.srSeEnabled;
     const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
+    // If the streamer has disabled the chat listener, reject new requests immediately
+    if (wConfig?.srChatEnabled === false) {
+      return res.status(200).send('Slot requests are currently paused.');
+    }
+
     // ── H2: Max queue size enforcement ──
     const maxQueueSize = parseInt(wConfig?.maxQueueSize, 10) || 50;
     const { count: queueCount } = await supabase

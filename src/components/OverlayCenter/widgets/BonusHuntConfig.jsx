@@ -998,7 +998,16 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               {/* Toggle: Listen/Stop listening to !sr command */}
               <button
                 className={`bh-sr-state-btn ${(c.srChatEnabled !== false) ? 'bh-sr-state-btn--on' : 'bh-sr-state-btn--off'}`}
-                onClick={() => onChange({ ...config, srChatEnabled: !(c.srChatEnabled !== false) })}
+                onClick={async () => {
+                  const next = !(c.srChatEnabled !== false);
+                  onChange({ ...config, srChatEnabled: next });
+                  // Also propagate to the slot_requests widget so the API respects the toggle
+                  if (srWidget?.id) {
+                    await supabase.from('overlay_widgets')
+                      .update({ config: { ...srConfig, srChatEnabled: next } })
+                      .eq('id', srWidget.id);
+                  }
+                }}
                 title={(c.srChatEnabled !== false) ? 'Stop listening for !sr commands in chat' : 'Start listening for !sr commands in chat'}
               >
                 <span className="bh-sr-state-icon">{(c.srChatEnabled !== false) ? '📡' : '🔇'}</span>
