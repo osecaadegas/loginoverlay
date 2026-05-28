@@ -19,12 +19,12 @@
   --oc-text-primary: #f4f7fb;
   --oc-text-secondary: #aab6c8;
   --oc-text-muted: #6d7a8d;
-  --oc-accent: #22c55e;
-  --oc-accent-light: #6ee7b7;
-  --oc-accent-cyan: #a7f3d0;
-  --oc-accent-glow: rgba(34, 197, 94, 0.14);
-  --oc-accent-glow-strong: rgba(34, 197, 94, 0.22);
-  --oc-accent-solid: #16a34a;
+  --oc-accent: #94a3b8;
+  --oc-accent-light: #b8c8d8;
+  --oc-accent-cyan: #d0dbe6;
+  --oc-accent-glow: rgba(148, 163, 184, 0.1);
+  --oc-accent-glow-strong: rgba(148, 163, 184, 0.18);
+  --oc-accent-solid: #64748b;
   --oc-green: #22c55e;
   --oc-green-glow: rgba(34, 197, 94, 0.16);
   --oc-danger: #ef4444;
@@ -249,13 +249,9 @@
 .oc-sidebar-title {
   font-size: 18px;
   font-weight: 700;
-  color: #fff;
+  color: #eef2f5;
   margin: 0;
   letter-spacing: -0.03em;
-  background: linear-gradient(135deg, #ffffff 0%, #d1fae5 46%, #d1fae5 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
 }
 
 .oc-sidebar-brand-text {
@@ -330,11 +326,11 @@
 }
 
 .oc-sidebar-btn--active {
-  background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(103, 232, 249, 0.08));
-  color: #ecfdf5;
+  background: rgba(148, 163, 184, 0.08);
+  color: #eef2f5;
   font-weight: 600;
-  border-color: rgba(110, 231, 183, 0.18);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 40px rgba(5, 150, 105, 0.12);
+  border-color: rgba(148, 163, 184, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .oc-sidebar-btn--active::before {
@@ -8915,7 +8911,7 @@ body.wm-resizing {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #fde68a;
+  color: #8ba4b8;
 }
 
 [data-tour="library-page"] .bhl-page-title,
@@ -9674,7 +9670,7 @@ body.wm-resizing {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #fcd34d;
+  color: #8ba4b8;
 }
 
 [data-tour="presets-page"] .pl-hero__title,
@@ -10743,7 +10739,7 @@ body.wm-resizing {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #7dd3fc;
+  color: #8ba4b8;
 }
 
 [data-tour="tournament-page"] .tm-page-title,
@@ -11365,7 +11361,7 @@ body.wm-resizing {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #a7f3d0;
+  color: #8ba4b8;
 }
 
 [data-tour="bonus-buys-page"] .bb-admin-title,
@@ -11978,7 +11974,7 @@ body.wm-resizing {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #fbbf24;
+  color: #8ba4b8;
 }
 
 [data-tour="current-slot-page"] .cs-page-title,
@@ -12458,7 +12454,7 @@ body.wm-resizing {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.14em;
-  color: #bbf7d0;
+  color: #8ba4b8;
 }
 
 [data-tour="slot-requests-page"] .sr-admin-title,
