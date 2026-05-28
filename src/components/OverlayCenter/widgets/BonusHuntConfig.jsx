@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { getAllSlots, DEFAULT_SLOT_IMAGE, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import { getMySubmissions, submitSlot } from '../../../services/pendingSlotService';
 import ColorPicker from './shared/ColorPicker';
@@ -889,31 +890,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       await saveBonusHuntToHistory(userId, record);
       // Auto-update per-user slot records
       try { await updateSlotRecordsFromHunt(userId, bonusList, name); } catch (e) { console.warn('Slot records update failed:', e); }
-      // Reset the hunt
-      setBonusList([]);
-      setStartMoney('');
-      setTargetMoney('');
-      setStopLoss('');
-      setHuntNumber('');
-      setCasinoName('');
-      setBonusOpening(false);
       setSaveHuntName('');
       setShowSaveConfirm(false);
-      // Reset auto-save state for next hunt
-      if (autoSaveTimerRef.current) clearTimeout(autoSaveTimerRef.current);
-      autoSaveTimerRef.current = null;
-      autoSaveFiredRef.current = false;
-      onChange({
-        ...config,
-        bonuses: [],
-        startMoney: 0,
-        targetMoney: 0,
-        stopLoss: 0,
-        casinoName: '',
-        bonusOpening: false,
-        huntActive: false,
-      });
-      setSaveHuntMsg('✅ Hunt saved to Library! Ready for a new hunt.');
+      setSaveHuntMsg('✅ Hunt saved to Library!');
       setTimeout(() => setSaveHuntMsg(''), 4000);
     } catch (err) {
       const msg = err?.message || '';
@@ -1560,7 +1539,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               <span className="bh-save-hunt-icon">📚</span>
               <div>
                 <span className="bh-save-hunt-title">Save Hunt to Library</span>
-                <span className="bh-save-hunt-desc">Archive this hunt and start fresh</span>
+                <span className="bh-save-hunt-desc">Save a snapshot to your hunt history</span>
               </div>
             </div>
 
@@ -1576,7 +1555,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   className="bh-save-hunt-btn"
                   onClick={() => setShowSaveConfirm(true)}
                 >
-                  💾 Save & Close Hunt
+                  💾 Save to Library
                 </button>
                 {!showResetConfirm ? (
                   <button
@@ -1620,7 +1599,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     onClick={handleSaveAndClose}
                     disabled={savingHunt}
                   >
-                    {savingHunt ? '⏳ Saving...' : '✅ Confirm Save & Reset'}
+                    {savingHunt ? '⏳ Saving...' : '✅ Confirm Save'}
                   </button>
                   <button
                     className="bh-save-hunt-cancel"
@@ -1696,7 +1675,7 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
 
   const profitColor = profit > 0 ? '#4ade80' : profit < 0 ? '#f87171' : '#cbd5e1';
 
-  return (
+  return createPortal(
     <div style={{
       position: 'fixed', top: 10, left: '50%', transform: 'translateX(-50%)', zIndex: 99999,
       background: bgColor,
@@ -1725,7 +1704,8 @@ function FloatingStatsFab({ bonusList, startMoney, targetMoney, stopLoss, curren
           <StatChip label="💀 Worst" value={`${worstSlot.length > 14 ? worstSlot.slice(0, 14) + '…' : worstSlot} ${worstMulti.toFixed(1)}x`} color="#f87171" mutedColor={mutedColor} />
         </>
       )}
-    </div>
+    </div>,
+    document.body
   );
 }
 
