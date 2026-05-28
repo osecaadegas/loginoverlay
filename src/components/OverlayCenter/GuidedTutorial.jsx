@@ -168,41 +168,11 @@ const STEPS = [
 
   /* ── Community Tools ── */
   {
-    target: '[data-tour="random-slot-page"]',
-    title: '21. Random Slot Picker 🎲',
-    body: 'Let your viewers pick a random slot for you to play! Spin the wheel and get a surprise slot suggestion from the database.',
-    position: 'float-top',
-    page: 'random_slot_picker',
-  },
-  {
     target: '[data-tour="slot-requests-page"]',
-    title: '22. Slot Requests 📋',
+    title: '21. Slot Requests 📋',
     body: 'Viewers can request slots via the !sr chat command. Manage the queue here — accept, skip, or clear requests.',
     position: 'float-top',
     page: 'slot_requests',
-  },
-
-  /* ── Community Games ── */
-  {
-    target: '[data-tour="coin-flip-page"]',
-    title: '23. Coin Flip 🪙',
-    body: 'A simple heads-or-tails betting game for your viewers. They place bets with their channel points and the winner takes it all.',
-    position: 'float-top',
-    page: 'coin_flip',
-  },
-  {
-    target: '[data-tour="salty-words-page"]',
-    title: '24. Salty Words 🧂',
-    body: 'A word-guessing betting game — viewers bet on hidden words. Great for filling downtime between bonus hunts.',
-    position: 'float-top',
-    page: 'salty_words',
-  },
-  {
-    target: '[data-tour="predictions-page"]',
-    title: '25. Predictions 🔮',
-    body: 'Create two-outcome predictions for your viewers. Will the bonus pay over 100x? Let them bet on it with their channel points!',
-    position: 'float-top',
-    page: 'predictions',
   },
 
   /* ── Collections ── */
@@ -453,11 +423,7 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     tournament: 'Tournament',
     bonus_buys: 'Bonus Buys',
     current_slot: 'Current Slot',
-    random_slot_picker: 'Random Slot',
     slot_requests: 'Slot Requests',
-    coin_flip: 'Coin Flip',
-    salty_words: 'Salty Words',
-    predictions: 'Predictions',
     library: 'Library',
     presets: 'Presets',
     slots: 'Submit Slots',

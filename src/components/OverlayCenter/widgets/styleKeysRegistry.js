@@ -73,12 +73,7 @@ export const CHAT_STYLE_KEYS = [
   'custom_css',
 ];
 
-/* ── Random Slot Picker ── */
-export const RANDOM_SLOT_PICKER_STYLE_KEYS = [
-  'accentColor', 'textColor', 'mutedColor', 'fontFamily', 'custom_css',
-];
 
-/* ── Image Slideshow ── */
 export const IMAGE_SLIDESHOW_STYLE_KEYS = [
   'borderRadius', 'borderWidth', 'borderColor', 'showGradient', 'gradientColor', 'showDots',
   'mediaFit', 'custom_css',
@@ -111,18 +106,7 @@ export const SPOTIFY_STYLE_KEYS = [
   'accentColor', 'custom_css',
 ];
 
-/* ── Coin Flip ── */
-export const COIN_FLIP_STYLE_KEYS = [
-  'headsColor', 'tailsColor', 'accentColor', 'textColor', 'headsImage', 'tailsImage',
-  'custom_css',
-];
 
-/* ── Salty Words ── */
-export const SALTY_WORDS_STYLE_KEYS = [
-  'accentColor', 'textColor', 'cardBg', 'custom_css',
-];
-
-/* ── Slot Requests ── */
 export const SLOT_REQUESTS_STYLE_KEYS = [
   'fontFamily', 'fontSize', 'fontWeight', 'accentColor', 'textColor', 'mutedColor',
   'bgColor', 'cardBg', 'borderColor',
@@ -157,13 +141,10 @@ const STYLE_KEYS_MAP = {
   giveaway: GIVEAWAY_STYLE_KEYS,
   navbar: NAVBAR_STYLE_KEYS,
   chat: CHAT_STYLE_KEYS,
-  random_slot_picker: RANDOM_SLOT_PICKER_STYLE_KEYS,
   image_slideshow: IMAGE_SLIDESHOW_STYLE_KEYS,
   rtp_stats: RTP_STATS_STYLE_KEYS,
   background: BACKGROUND_STYLE_KEYS,
   spotify_now_playing: SPOTIFY_STYLE_KEYS,
-  coin_flip: COIN_FLIP_STYLE_KEYS,
-  salty_words: SALTY_WORDS_STYLE_KEYS,
   slot_requests: SLOT_REQUESTS_STYLE_KEYS,
   single_slot: SINGLE_SLOT_STYLE_KEYS,
   bh_stats: BH_STATS_STYLE_KEYS,

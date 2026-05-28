@@ -21,7 +21,7 @@ import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
-import GivePointsPanel from './GivePointsPanel';
+
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
 
@@ -30,7 +30,7 @@ import './widgets/builtinWidgets';
 import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
 
 /* ── Generic WidgetPanel: replaces 14 identical panel wrappers ── */
-const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', random_slot_picker: 'random-slot-page', slot_requests: 'slot-requests-page', coin_flip: 'coin-flip-page', salty_words: 'salty-words-page', predictions: 'predictions-page' };
+const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', slot_requests: 'slot-requests-page' };
 
 function WidgetPanel({ widgetType, widgets, saveWidget, addWidget, loading }) {
   const def = getWidgetDef(widgetType);
@@ -76,7 +76,7 @@ export default function OverlayControlCenter() {
   } = useOverlay();
 
   const [activePanel, setActivePanel] = useState('widgets');
-  const [communityOpen, setCommunityOpen] = useState(false);
+
   const [streamerToolsOpen, setStreamerToolsOpen] = useState(false);
   const [communityToolsOpen, setCommunityToolsOpen] = useState(false);
   const [collectionsOpen, setCollectionsOpen] = useState(false);
@@ -86,9 +86,8 @@ export default function OverlayControlCenter() {
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
-  /* Auto-expand Community Tools when one of its children is active */
-  const communityToolsKeys = ['random_slot_picker', 'slot_requests'];
-  const isCommunityToolActive = communityToolsKeys.includes(activePanel);
+  /* Auto-expand Community Tools when slot_requests is active */
+  const isCommunityToolActive = activePanel === 'slot_requests';
   useEffect(() => { if (isCommunityToolActive) setCommunityToolsOpen(true); }, [isCommunityToolActive]);
 
   /* Auto-expand Collections when one of its children is active */
@@ -96,10 +95,7 @@ export default function OverlayControlCenter() {
   const isCollectionActive = collectionsKeys.includes(activePanel);
   useEffect(() => { if (isCollectionActive) setCollectionsOpen(true); }, [isCollectionActive]);
 
-  /* Auto-expand Community Games when one of its children is active */
-  const communityGameKeys = ['coin_flip', 'salty_words', 'predictions', 'give_points'];
-  const isCommunityGameActive = communityGameKeys.includes(activePanel);
-  useEffect(() => { if (isCommunityGameActive) setCommunityOpen(true); }, [isCommunityGameActive]);
+
 
   const [copyMsg, setCopyMsg] = useState('');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -326,7 +322,6 @@ export default function OverlayControlCenter() {
               <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: communityToolsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
             </button>
             {communityToolsOpen && [
-              { key: 'random_slot_picker', icon: '🎲', label: 'Random Slot', desc: 'Pick a random slot' },
               { key: 'slot_requests', icon: '📋', label: 'Slot Requests', desc: 'Chat !sr queue' },
             ].map(tab => (
               <button
@@ -342,36 +337,7 @@ export default function OverlayControlCenter() {
               </button>
             ))}
 
-            {/* ─── Community Games dropdown ─── */}
-            <button
-              className={`oc-sidebar-btn ${communityOpen || isCommunityGameActive ? 'oc-sidebar-btn--active' : ''}`}
-              onClick={() => setCommunityOpen(o => !o)}
-            >
-              <span className="oc-sidebar-btn-icon">🎮</span>
-              <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Community Games</span>
-                <span className="oc-sidebar-btn-desc">Interactive viewer games</span>
-              </div>
-              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: communityOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
-            </button>
-            {communityOpen && [
-              { key: 'coin_flip', icon: '🪙', label: 'Coin Flip', desc: 'Heads or tails betting' },
-              { key: 'salty_words', icon: '🧂', label: 'Salty Words', desc: 'Word betting game' },
-              { key: 'predictions', icon: '🔮', label: 'Predictions', desc: 'Two-outcome bets' },
-              { key: 'give_points', icon: '💰', label: 'Give Points', desc: 'Award points to viewers' },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                className={`oc-sidebar-btn oc-sidebar-btn--sub ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
-                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
-              >
-                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
-                <div className="oc-sidebar-btn-text">
-                  <span className="oc-sidebar-btn-label">{tab.label}</span>
-                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
-                </div>
-              </button>
-            ))}
+
 
             {/* ─── Collections dropdown ─── */}
             <div className="oc-sidebar-divider-label">Management</div>
@@ -484,13 +450,8 @@ export default function OverlayControlCenter() {
               overlayToken={instance?.overlay_token}
             />
           )}
-          {activePanel === 'give_points' && (
-            <div className="oc-panel-section">
-              <GivePointsPanel allWidgets={widgets} />
-            </div>
-          )}
           {/* Generic widget panels — resolved from registry */}
-          {['bonus_hunt','tournament','current_slot','random_slot_picker','slot_requests','bonus_buys','coin_flip','salty_words','predictions'].includes(activePanel) && (
+          {['bonus_hunt','tournament','current_slot','slot_requests','bonus_buys'].includes(activePanel) && (
             <WidgetPanel widgetType={activePanel} widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (
