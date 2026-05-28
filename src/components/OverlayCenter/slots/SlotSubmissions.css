@@ -1921,3 +1921,171 @@
   color: #cfd5dd !important;
 }
 
+/* -------------------------------------------------------
+   2026 DESIGN SYSTEM REBRAND
+   ------------------------------------------------------- */
+
+.slot-manager-v2[data-tour="slots-page"],
+[data-tour="approvals-page"] {
+  --ssm-surface: var(--ui-surface, rgba(18, 24, 32, 0.88));
+  --ssm-border: var(--ui-border-soft, rgba(148, 163, 184, 0.12));
+  --ssm-text: var(--ui-text-primary, #f4f7fb);
+  --ssm-muted: var(--ui-text-muted, #8a94a3);
+  --ssm-gold: var(--ui-warning, #d2ab73);
+  --ssm-cyan: var(--ui-accent, #91a0eb);
+  --ssm-green: var(--ui-success, #78c79a);
+  --sa-page-surface: var(--ui-surface, rgba(18, 24, 32, 0.88));
+  --sa-page-border: var(--ui-border-soft, rgba(148, 163, 184, 0.12));
+  --sa-page-text: var(--ui-text-primary, #f4f7fb);
+  --sa-page-muted: var(--ui-text-muted, #8a94a3);
+  --sa-page-gold: var(--ui-warning, #d2ab73);
+  --sa-page-green: var(--ui-success, #78c79a);
+  --sa-page-red: var(--ui-danger, #e08e8e);
+  --sa-page-cyan: var(--ui-accent, #91a0eb);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(145, 160, 235, 0.08), transparent 22%),
+    radial-gradient(circle at 88% 0%, rgba(255, 255, 255, 0.03), transparent 18%),
+    linear-gradient(180deg, rgba(10, 13, 19, 0.99), rgba(15, 19, 26, 0.9)) !important;
+}
+
+.ss-form,
+.ss-url-bar,
+.ss-img-search-panel,
+.ss-stat,
+.ss-card,
+[data-tour="approvals-page"] .ss-card,
+.slot-manager-v2[data-tour="slots-page"] .ssm-section-pill,
+[data-tour="approvals-page"] .sa-section-heading__pill,
+[data-tour="approvals-page"] .sa-pending-badge {
+  background: linear-gradient(180deg, rgba(22, 28, 37, 0.92), rgba(15, 20, 28, 0.88)) !important;
+  border: 1px solid var(--ui-border-soft, rgba(148, 163, 184, 0.12)) !important;
+  box-shadow: var(--ui-shadow-sm, 0 14px 32px rgba(3, 7, 18, 0.24)) !important;
+}
+
+.ss-form input,
+.ss-form select,
+.ss-form textarea,
+.ss-image-row input,
+.ss-url-input,
+[data-tour="approvals-page"] .sa-edit-row input,
+[data-tour="approvals-page"] .sa-edit-row select,
+[data-tour="approvals-page"] .sa-deny-input {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid var(--ui-border-soft, rgba(148, 163, 184, 0.12)) !important;
+  color: var(--ui-text-primary, #f4f7fb) !important;
+  border-radius: 10px !important;
+}
+
+.ss-form input:focus,
+.ss-form select:focus,
+.ss-form textarea:focus,
+.ss-image-row input:focus,
+.ss-url-input:focus,
+[data-tour="approvals-page"] .sa-edit-row input:focus,
+[data-tour="approvals-page"] .sa-edit-row select:focus,
+[data-tour="approvals-page"] .sa-deny-input:focus {
+  border-color: rgba(145, 160, 235, 0.38) !important;
+  box-shadow: 0 0 0 4px rgba(145, 160, 235, 0.12) !important;
+}
+
+.ss-form input::placeholder,
+.ss-form textarea::placeholder,
+.ss-url-input::placeholder,
+.ss-image-row input::placeholder {
+  color: var(--ui-text-muted, #8a94a3) !important;
+}
+
+.ss-add-btn,
+.ss-search-img-btn,
+.slot-manager-v2[data-tour="slots-page"] .sm-btn-primary,
+[data-tour="approvals-page"] .sa-approve-btn,
+[data-tour="approvals-page"] .sa-edit-save,
+[data-tour="approvals-page"] .sa-filter-btn--active {
+  background: linear-gradient(135deg, #5a6792 0%, #445071 58%, #303b55 100%) !important;
+  border-color: rgba(166, 176, 219, 0.28) !important;
+  color: #ffffff !important;
+  box-shadow: 0 16px 36px rgba(8, 12, 20, 0.28) !important;
+}
+
+.ss-search-btn,
+.sa-filter-btn,
+[data-tour="approvals-page"] .sa-edit-btn {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: var(--ui-border-soft, rgba(148, 163, 184, 0.12)) !important;
+  color: var(--ui-text-secondary, #c7d0da) !important;
+  box-shadow: none !important;
+}
+
+.ss-url-bar {
+  background: rgba(145, 160, 235, 0.08) !important;
+  border: 1px dashed rgba(145, 160, 235, 0.22) !important;
+}
+
+.ss-url-label,
+.ss-url-spinner,
+[data-tour="approvals-page"] .sa-detail-toggle,
+[data-tour="approvals-page"] .sa-detail-toggle:hover {
+  color: var(--ui-accent-strong, #d7defd) !important;
+}
+
+.ss-title,
+.ss-card-name,
+[data-tour="approvals-page"] .ss-card-name {
+  color: var(--ui-text-primary, #f4f7fb) !important;
+}
+
+.ss-subtitle,
+.ss-card-provider,
+.ss-card-meta,
+.ss-card-date,
+.ss-card-note,
+[data-tour="approvals-page"] .ss-card-provider,
+[data-tour="approvals-page"] .ss-card-meta,
+[data-tour="approvals-page"] .ss-card-date,
+[data-tour="approvals-page"] .ss-card-note {
+  color: var(--ui-text-muted, #8a94a3) !important;
+}
+
+.ss-flash--success,
+.ss-badge--approved,
+[data-tour="approvals-page"] .ss-badge--approved {
+  background: var(--ui-success-soft, rgba(120, 199, 154, 0.14)) !important;
+  border-color: rgba(120, 199, 154, 0.24) !important;
+  color: var(--ui-success, #78c79a) !important;
+}
+
+.ss-flash--error,
+.ss-badge--denied,
+[data-tour="approvals-page"] .ss-badge--denied {
+  background: var(--ui-danger-soft, rgba(224, 142, 142, 0.15)) !important;
+  border-color: rgba(224, 142, 142, 0.24) !important;
+  color: var(--ui-danger, #e08e8e) !important;
+}
+
+.ss-badge--pending,
+[data-tour="approvals-page"] .ss-badge--pending {
+  background: var(--ui-warning-soft, rgba(210, 171, 115, 0.15)) !important;
+  border-color: rgba(210, 171, 115, 0.24) !important;
+  color: var(--ui-warning, #d2ab73) !important;
+}
+
+.ss-stat--approved .ss-stat-num,
+[data-tour="approvals-page"] .ss-card--approved {
+  color: var(--ui-success, #78c79a) !important;
+}
+
+.ss-card--approved,
+[data-tour="approvals-page"] .ss-card--approved {
+  border-left-color: var(--ui-success, #78c79a) !important;
+}
+
+.ss-card--pending,
+[data-tour="approvals-page"] .ss-card--pending {
+  border-left-color: var(--ui-warning, #d2ab73) !important;
+}
+
+.ss-card--denied,
+[data-tour="approvals-page"] .ss-card--denied {
+  border-left-color: var(--ui-danger, #e08e8e) !important;
+}
+

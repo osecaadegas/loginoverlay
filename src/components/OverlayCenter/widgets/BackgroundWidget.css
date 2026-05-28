@@ -152,7 +152,7 @@
 
 /* ── Glimpse: pulse glow ── */
 .oc-fx-glimpse--pulse {
-  background: radial-gradient(ellipse at 50% 50%, var(--glimpse-color, #a855f7) 0%, transparent 70%);
+  background: radial-gradient(ellipse at 50% 50%, var(--glimpse-color, var(--ui-accent, #91a0eb)) 0%, transparent 70%);
   opacity: 0;
   animation: oc-fx-pulse var(--glimpse-dur, 5s) ease-in-out infinite;
 }
@@ -164,7 +164,7 @@
 
 /* ── Glimpse: flicker ── */
 .oc-fx-glimpse--flicker {
-  background: var(--glimpse-color, #fbbf24);
+  background: var(--glimpse-color, var(--ui-warning, #d2ab73));
   opacity: 0;
   animation: oc-fx-flicker var(--glimpse-dur, 1.5s) steps(2, end) infinite;
 }
@@ -198,19 +198,19 @@
 .oc-bg-aurora-1 {
   top: -20%;
   left: -30%;
-  background: linear-gradient(90deg, var(--aurora-c1, #00ff88), transparent, var(--aurora-c2, #6366f1));
+  background: linear-gradient(90deg, var(--aurora-c1, var(--ui-success, #78c79a)), transparent, var(--aurora-c2, var(--ui-accent, #91a0eb)));
   animation: oc-aurora-drift1 12s ease-in-out infinite alternate;
 }
 .oc-bg-aurora-2 {
   top: 10%;
   left: -10%;
-  background: linear-gradient(90deg, var(--aurora-c1, #a855f7), transparent, var(--aurora-c2, #06b6d4));
+  background: linear-gradient(90deg, var(--aurora-c1, var(--ui-accent, #91a0eb)), transparent, var(--aurora-c2, var(--ui-info, #7fa4d8)));
   animation: oc-aurora-drift2 15s ease-in-out infinite alternate;
 }
 .oc-bg-aurora-3 {
   top: 30%;
   left: -50%;
-  background: linear-gradient(90deg, var(--aurora-c1, #22d3ee), transparent, var(--aurora-c2, #00ff88));
+  background: linear-gradient(90deg, var(--aurora-c1, var(--ui-info, #7fa4d8)), transparent, var(--aurora-c2, var(--ui-success, #78c79a)));
   animation: oc-aurora-drift3 18s ease-in-out infinite alternate;
 }
 @keyframes oc-aurora-drift1 {
@@ -254,19 +254,19 @@
   opacity: 0.6;
 }
 .oc-bg-wave-1 {
-  background: var(--wave-color, rgba(99,102,241,0.15));
+  background: var(--wave-color, rgba(127, 164, 216, 0.14));
   bottom: -60%;
   left: -30%;
   animation: oc-wave-move 8s ease-in-out infinite;
 }
 .oc-bg-wave-2 {
-  background: var(--wave-color, rgba(168,85,247,0.1));
+  background: var(--wave-color, rgba(145, 160, 235, 0.1));
   bottom: -65%;
   left: -20%;
   animation: oc-wave-move 10s ease-in-out infinite reverse;
 }
 .oc-bg-wave-3 {
-  background: var(--wave-color, rgba(59,130,246,0.08));
+  background: var(--wave-color, rgba(127, 164, 216, 0.08));
   bottom: -55%;
   left: -40%;
   animation: oc-wave-move 12s ease-in-out infinite;
@@ -285,8 +285,8 @@
   position: absolute;
   inset: 0;
   background-image:
-    linear-gradient(var(--geo-color, rgba(99,102,241,0.12)) 1px, transparent 1px),
-    linear-gradient(90deg, var(--geo-color, rgba(99,102,241,0.12)) 1px, transparent 1px);
+    linear-gradient(var(--geo-color, rgba(127, 164, 216, 0.12)) 1px, transparent 1px),
+    linear-gradient(90deg, var(--geo-color, rgba(127, 164, 216, 0.12)) 1px, transparent 1px);
   background-size: 60px 60px;
   animation: oc-geo-grid-pulse 6s ease-in-out infinite;
 }
@@ -294,9 +294,9 @@
   position: absolute;
   inset: 0;
   background-image:
-    conic-gradient(from 45deg at 25% 35%, var(--geo-accent, rgba(168,85,247,0.15)) 0deg, transparent 60deg, transparent 360deg),
-    conic-gradient(from 135deg at 75% 65%, var(--geo-accent, rgba(168,85,247,0.15)) 0deg, transparent 60deg, transparent 360deg),
-    conic-gradient(from 225deg at 50% 80%, var(--geo-accent, rgba(168,85,247,0.1)) 0deg, transparent 45deg, transparent 360deg);
+    conic-gradient(from 45deg at 25% 35%, var(--geo-accent, rgba(145, 160, 235, 0.15)) 0deg, transparent 60deg, transparent 360deg),
+    conic-gradient(from 135deg at 75% 65%, var(--geo-accent, rgba(145, 160, 235, 0.15)) 0deg, transparent 60deg, transparent 360deg),
+    conic-gradient(from 225deg at 50% 80%, var(--geo-accent, rgba(145, 160, 235, 0.1)) 0deg, transparent 45deg, transparent 360deg);
   animation: oc-geo-shapes-rotate 20s linear infinite;
 }
 @keyframes oc-geo-grid-pulse {

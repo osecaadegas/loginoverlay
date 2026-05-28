@@ -114,6 +114,30 @@
   flex-direction: column;
 }
 
+/* --- 2026 surface rebrand --- */
+.or-canvas {
+  color: var(--ov-text, var(--ui-text-primary, #f4f7fb));
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.24);
+}
+
+.or-texture {
+  opacity: 0.08;
+  mix-blend-mode: soft-light;
+}
+
+.or-texture--grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+}
+
+.or-widget-inner {
+  background:
+    linear-gradient(180deg, rgba(var(--ov-bg-r, 16), var(--ov-bg-g, 20), var(--ov-bg-b, 28), 0.92), rgba(var(--ov-bg-r, 13), var(--ov-bg-g, 17), var(--ov-bg-b, 24), var(--ov-opacity, 0.86)));
+  outline: 1px solid rgba(148, 163, 184, 0.16);
+  outline-offset: -1px;
+}
+
 /* --- Entrance Animations --- */
 .or-anim-in--fade   { animation: or-fadeIn var(--ov-anim-speed, 0.4s) ease-out both; }
 

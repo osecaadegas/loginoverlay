@@ -13293,3 +13293,486 @@ body.wm-resizing {
   border-color: rgba(184, 192, 202, 0.18) !important;
 }
 
+/* -------------------------------------------------------
+   2026 DESIGN SYSTEM REBRAND
+   ------------------------------------------------------- */
+
+:root {
+  --ui-bg-primary: #0a0d13;
+  --ui-bg-secondary: #10151d;
+  --ui-bg-tertiary: #171d27;
+  --ui-surface: rgba(18, 24, 32, 0.88);
+  --ui-surface-strong: rgba(13, 18, 24, 0.96);
+  --ui-surface-soft: rgba(255, 255, 255, 0.045);
+  --ui-surface-hover: rgba(255, 255, 255, 0.06);
+  --ui-border-soft: rgba(148, 163, 184, 0.12);
+  --ui-border: rgba(148, 163, 184, 0.18);
+  --ui-border-strong: rgba(145, 160, 235, 0.22);
+  --ui-text-primary: #f4f7fb;
+  --ui-text-secondary: #c7d0da;
+  --ui-text-muted: #8a94a3;
+  --ui-accent: #91a0eb;
+  --ui-accent-strong: #d7defd;
+  --ui-accent-soft: rgba(145, 160, 235, 0.14);
+  --ui-success: #78c79a;
+  --ui-success-soft: rgba(120, 199, 154, 0.14);
+  --ui-warning: #d2ab73;
+  --ui-warning-soft: rgba(210, 171, 115, 0.15);
+  --ui-danger: #e08e8e;
+  --ui-danger-soft: rgba(224, 142, 142, 0.15);
+  --ui-info: #7fa4d8;
+  --ui-info-soft: rgba(127, 164, 216, 0.14);
+  --ui-shadow-sm: 0 14px 32px rgba(3, 7, 18, 0.24);
+  --ui-shadow-md: 0 24px 56px rgba(3, 7, 18, 0.34);
+  --ui-shadow-lg: 0 32px 84px rgba(3, 7, 18, 0.42);
+  --ui-radius-sm: 10px;
+  --ui-radius-md: 14px;
+  --ui-radius-lg: 18px;
+  --ui-radius-xl: 24px;
+  --ui-space-xs: 8px;
+  --ui-space-sm: 12px;
+  --ui-space-md: 16px;
+  --ui-space-lg: 20px;
+  --ui-space-xl: 24px;
+
+  --oc-bg-primary: var(--ui-bg-primary);
+  --oc-bg-secondary: var(--ui-bg-secondary);
+  --oc-bg-tertiary: var(--ui-bg-tertiary);
+  --oc-bg-surface: var(--ui-surface-soft);
+  --oc-bg-surface-hover: var(--ui-surface-hover);
+  --oc-bg-card: rgba(255, 255, 255, 0.038);
+  --oc-bg-card-strong: var(--ui-surface-strong);
+  --oc-border: var(--ui-border-soft);
+  --oc-border-hover: var(--ui-border);
+  --oc-text-primary: var(--ui-text-primary);
+  --oc-text-secondary: var(--ui-text-secondary);
+  --oc-text-muted: var(--ui-text-muted);
+  --oc-accent: var(--ui-accent);
+  --oc-accent-light: var(--ui-accent-strong);
+  --oc-accent-cyan: var(--ui-info);
+  --oc-accent-glow: var(--ui-accent-soft);
+  --oc-accent-glow-strong: rgba(145, 160, 235, 0.22);
+  --oc-accent-solid: #7384d4;
+  --oc-green: var(--ui-success);
+  --oc-green-glow: var(--ui-success-soft);
+  --oc-danger: var(--ui-danger);
+  --oc-danger-glow: var(--ui-danger-soft);
+  --oc-radius-sm: var(--ui-radius-sm);
+  --oc-radius-md: var(--ui-radius-md);
+  --oc-radius-lg: var(--ui-radius-lg);
+  --oc-radius-xl: var(--ui-radius-xl);
+  --oc-shadow-sm: var(--ui-shadow-sm);
+  --oc-shadow-md: var(--ui-shadow-md);
+  --oc-shadow-lg: var(--ui-shadow-lg);
+  --oc-shadow-glow: 0 0 0 1px rgba(145, 160, 235, 0.06), 0 20px 44px rgba(3, 7, 18, 0.28);
+}
+
+.oc-page {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(145, 160, 235, 0.08), transparent 20%),
+    radial-gradient(circle at 86% 0%, rgba(255, 255, 255, 0.032), transparent 18%),
+    linear-gradient(180deg, #0a0d13 0%, #10151d 48%, #0a0d12 100%) !important;
+  color: var(--ui-text-primary);
+  line-height: 1.45;
+}
+
+.oc-page::before {
+  background-size: 40px 40px;
+  opacity: 0.18;
+}
+
+.oc-layout {
+  gap: var(--ui-space-lg);
+  padding: 18px;
+}
+
+.oc-page optgroup {
+  color: var(--ui-text-secondary) !important;
+}
+
+.oc-page option:checked {
+  background-color: rgba(145, 160, 235, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.oc-page input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+.oc-page select,
+.oc-page textarea {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border: 1px solid var(--ui-border-soft) !important;
+  color: var(--ui-text-primary) !important;
+  border-radius: 12px !important;
+}
+
+.oc-page input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"])::placeholder,
+.oc-page textarea::placeholder {
+  color: var(--ui-text-muted) !important;
+}
+
+.oc-page input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+.oc-page select:focus,
+.oc-page textarea:focus {
+  border-color: rgba(145, 160, 235, 0.38) !important;
+  box-shadow: 0 0 0 4px rgba(145, 160, 235, 0.12) !important;
+}
+
+.oc-sidebar,
+.oc-main-shell,
+.oc-main-topbar,
+.oc-main-hero,
+.oc-welcome-card,
+.oc-empty-panel,
+.oc-theme-panel,
+.oc-preview-panel,
+.oc-panel-loading,
+.wm-picker-card,
+.wm-card,
+.wm-sidepanel,
+.wm-layout-panel,
+.wm-config-panel,
+.tm-modal,
+.tm-match-card,
+.gt-tooltip-summary-card,
+.bhl-panel,
+[data-tour="bonus-hunt-page"] .bh-panel-section,
+[data-tour="library-page"] .bhl-page-shell,
+[data-tour="library-page"] .bhl-page-metric-card,
+[data-tour="library-page"] .bhl-controls-card,
+[data-tour="library-page"] .bhl-stats-bar,
+[data-tour="library-page"] .bhl-card,
+[data-tour="library-page"] .bhl-empty-state,
+[data-tour="library-page"] .bhl-loading,
+[data-tour="presets-page"] .pl-card,
+[data-tour="presets-page"] .pl-save-bar,
+[data-tour="bonus-buys-page"] .bb-admin-card,
+[data-tour="bonus-buys-page"] .bb-admin-section,
+[data-tour="current-slot-page"] .cs-card,
+[data-tour="current-slot-page"] .cs-panel,
+[data-tour="slot-requests-page"] .sr-admin-card,
+[data-tour="slot-requests-page"] .sr-admin-queue-card {
+  background: linear-gradient(180deg, rgba(22, 28, 37, 0.92), rgba(15, 20, 28, 0.88)) !important;
+  border: 1px solid var(--ui-border-soft) !important;
+  box-shadow: var(--ui-shadow-sm) !important;
+}
+
+.oc-sidebar,
+.oc-main-topbar,
+.oc-main-hero,
+.oc-welcome-card,
+.oc-empty-panel,
+.oc-theme-panel,
+.oc-preview-panel,
+.wm-sidepanel,
+.tm-modal {
+  border-radius: var(--ui-radius-xl) !important;
+  backdrop-filter: blur(24px) saturate(110%);
+}
+
+.wm-picker-card,
+.wm-card,
+.wm-layout-panel,
+.wm-config-panel,
+.gt-tooltip-summary-card,
+.bhl-card,
+[data-tour="bonus-hunt-page"] .bh-panel-section,
+[data-tour="library-page"] .bhl-page-metric-card,
+[data-tour="library-page"] .bhl-controls-card,
+[data-tour="presets-page"] .pl-card,
+[data-tour="bonus-buys-page"] .bb-admin-card,
+[data-tour="bonus-buys-page"] .bb-admin-section,
+[data-tour="current-slot-page"] .cs-card,
+[data-tour="slot-requests-page"] .sr-admin-card,
+[data-tour="slot-requests-page"] .sr-admin-queue-card {
+  border-radius: var(--ui-radius-lg) !important;
+}
+
+.oc-sidebar {
+  background: linear-gradient(180deg, rgba(13, 18, 25, 0.96), rgba(10, 14, 20, 0.92)) !important;
+}
+
+.oc-sidebar-icon,
+.oc-main-status,
+.oc-status-pill,
+.wm-picker-card-icon,
+.wm-card-icon,
+.wm-sidepanel-icon,
+.rtp-stats-preview-badge {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.03)) !important;
+  border: 1px solid var(--ui-border-soft) !important;
+  color: var(--ui-accent-strong) !important;
+  box-shadow: none !important;
+}
+
+.oc-sidebar-title {
+  background: linear-gradient(135deg, #ffffff 0%, #e4eaf6 54%, #a8b6df 100%) !important;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.oc-sidebar-btn,
+.oc-sidebar-btn--sub {
+  background: rgba(255, 255, 255, 0.03) !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.oc-sidebar-btn::before {
+  background: linear-gradient(135deg, rgba(145, 160, 235, 0.08), rgba(127, 164, 216, 0.06)) !important;
+}
+
+.oc-sidebar-btn:hover,
+.oc-sidebar-btn--sub:hover {
+  background: rgba(255, 255, 255, 0.045) !important;
+  border-color: var(--ui-border-soft) !important;
+}
+
+.oc-sidebar-btn--active,
+.oc-status-pill--live,
+.oc-btn-primary,
+.oc-preset-btn--active,
+.oc-texture-btn--active,
+.oc-bg-mode-btn--active,
+.oc-bg-texture-btn--active,
+.wm-style-switcher-btn--active,
+.wm-ctx-style-btn--active,
+.nb-style-btn--active,
+.ov-chat-style-btn--active,
+[data-tour="bonus-hunt-page"] .nb-tab--active,
+[data-tour="tournament-page"] .nb-tab--active,
+[data-tour="current-slot-page"] .nb-tab--active,
+[data-tour="bonus-buys-page"] .bb-admin-tab--active,
+[data-tour="presets-page"] .pl-toolbar__filter--active,
+[data-tour="presets-page"] .pl-toolbar__filter--active:hover,
+[data-tour="library-page"] .bhl-view-btn--active,
+[data-tour="bonus-hunt-page"] .bh-add-btn,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-btn,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-confirm,
+[data-tour="bonus-hunt-page"] .bh-sort-btn--active,
+[data-tour="presets-page"] .pl-save-bar__btn,
+[data-tour="presets-page"] .pl-card__btn--load,
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn,
+[data-tour="current-slot-page"] .cs-sync-btn,
+[data-tour="slot-requests-page"] .sr-admin-btn--success,
+[data-tour="slot-requests-page"] .sr-admin-btn--warn {
+  background: linear-gradient(135deg, #5a6792 0%, #445071 58%, #303b55 100%) !important;
+  color: #ffffff !important;
+  border-color: rgba(166, 176, 219, 0.28) !important;
+  box-shadow: 0 16px 36px rgba(8, 12, 20, 0.28) !important;
+}
+
+.oc-btn-primary:hover,
+[data-tour="bonus-hunt-page"] .bh-add-btn:hover:not(:disabled),
+[data-tour="presets-page"] .pl-save-bar__btn:hover:not(:disabled),
+[data-tour="presets-page"] .pl-card__btn--load:hover,
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn:hover,
+[data-tour="current-slot-page"] .cs-sync-btn:hover,
+[data-tour="slot-requests-page"] .sr-admin-btn--success:hover,
+[data-tour="slot-requests-page"] .sr-admin-btn--warn:hover {
+  box-shadow: 0 20px 40px rgba(8, 12, 20, 0.3) !important;
+}
+
+.oc-sidebar-btn-label,
+.oc-main-title,
+.oc-panel-title,
+.wm-sidepanel-title,
+.wm-card-name,
+.wm-picker-card-name,
+[data-tour="library-page"] .bhl-page-title,
+[data-tour="library-page"] .bhl-section-title,
+[data-tour="presets-page"] .pl-page-title,
+[data-tour="tournament-page"] .tm-modal-header h2,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-title {
+  color: var(--ui-text-primary) !important;
+  letter-spacing: -0.02em;
+}
+
+.oc-sidebar-subtitle,
+.oc-sidebar-btn-desc,
+.oc-main-description,
+.oc-panel-subtitle,
+.wm-picker-card-desc,
+.wm-card-badge--off,
+.wm-card-arrow,
+.bhl-description,
+.oc-panel-loading,
+[data-tour="library-page"] .bhl-page-subtitle,
+[data-tour="library-page"] .bhl-page-note,
+[data-tour="library-page"] .bhl-controls-note,
+[data-tour="presets-page"] .pl-page-subtitle,
+[data-tour="bonus-buys-page"] .bb-admin-message,
+[data-tour="slot-requests-page"] .sr-admin-success-copy {
+  color: var(--ui-text-muted) !important;
+}
+
+.wm-card-badge,
+.wm-tile-layer-badge,
+.wm-tile-container-badge,
+.oc-twitch-badge,
+.bh-count,
+.bh-panel-label,
+[data-tour="bonus-buys-page"] .bb-admin-section-pill,
+[data-tour="bonus-buys-page"] .bb-admin-card-chip,
+[data-tour="current-slot-page"] .cs-section-pill,
+[data-tour="current-slot-page"] .cs-card-chip,
+[data-tour="slot-requests-page"] .sr-admin-card-chip,
+[data-tour="library-page"] .bhl-download-btn,
+[data-tour="presets-page"] .pl-card__badge--shared,
+[data-tour="presets-page"] .pl-card__badge--personal,
+[data-tour="presets-page"] .pl-card__btn--share {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.028)) !important;
+  border-color: var(--ui-border-soft) !important;
+  color: var(--ui-text-secondary) !important;
+}
+
+.cg-config__status-badge--idle,
+.wm-card-badge--off {
+  background: var(--ui-info-soft) !important;
+  color: var(--ui-text-secondary) !important;
+}
+
+.cg-config__status-badge--open,
+.cg-config__status-badge--result,
+.wm-card-badge--live {
+  background: var(--ui-success-soft) !important;
+  color: var(--ui-success) !important;
+}
+
+.cg-config__status-badge--flipping,
+.cg-config__status-badge--spinning {
+  background: var(--ui-warning-soft) !important;
+  color: var(--ui-warning) !important;
+}
+
+.cg-config__status-badge--locked {
+  background: var(--ui-danger-soft) !important;
+  color: var(--ui-danger) !important;
+}
+
+.oc-sidebar::-webkit-scrollbar-thumb,
+.wm-sidepanel-body::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.26);
+}
+
+[data-tour="bonus-hunt-page"],
+[data-tour="library-page"],
+[data-tour="presets-page"],
+[data-tour="tournament-page"],
+[data-tour="bonus-buys-page"],
+[data-tour="current-slot-page"],
+[data-tour="slot-requests-page"] {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(145, 160, 235, 0.08), transparent 24%),
+    radial-gradient(circle at 88% 0%, rgba(255, 255, 255, 0.028), transparent 18%),
+    linear-gradient(180deg, rgba(10, 13, 19, 0.99), rgba(15, 19, 26, 0.9)) !important;
+}
+
+[data-tour="bonus-hunt-page"]::before,
+[data-tour="library-page"]::before,
+[data-tour="presets-page"]::before,
+[data-tour="tournament-page"]::before,
+[data-tour="bonus-buys-page"]::before,
+[data-tour="current-slot-page"]::before,
+[data-tour="slot-requests-page"]::before {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.035), transparent 30%, transparent 70%, rgba(145, 160, 235, 0.05)) !important;
+}
+
+[data-tour="bonus-hunt-page"] {
+  --bh-accent: var(--ui-accent);
+  --bh-accent-strong: var(--ui-accent-strong);
+  --bh-accent-soft: var(--ui-accent-soft);
+  --bh-cyan-soft: var(--ui-info-soft);
+  --bh-danger-soft: var(--ui-danger-soft);
+  --bh-surface: var(--ui-surface);
+  --bh-surface-strong: var(--ui-surface-strong);
+  --bh-border: var(--ui-border-soft);
+  --bh-border-strong: var(--ui-border-strong);
+  --bh-text: var(--ui-text-primary);
+  --bh-muted: var(--ui-text-muted);
+  --bh-shadow: var(--ui-shadow-md);
+}
+
+[data-tour="library-page"] {
+  --bhl-page-surface: var(--ui-surface);
+  --bhl-page-surface-strong: var(--ui-surface-strong);
+  --bhl-page-border: var(--ui-border-soft);
+  --bhl-page-border-strong: rgba(210, 171, 115, 0.22);
+  --bhl-page-text: var(--ui-text-primary);
+  --bhl-page-muted: var(--ui-text-muted);
+  --bhl-page-amber: var(--ui-warning);
+  --bhl-page-cyan: var(--ui-accent);
+  --bhl-page-green: var(--ui-success);
+  --bhl-page-red: var(--ui-danger);
+}
+
+[data-tour="presets-page"] {
+  --pl-page-surface: var(--ui-surface);
+  --pl-page-surface-strong: var(--ui-surface-strong);
+  --pl-page-border: var(--ui-border-soft);
+  --pl-page-text: var(--ui-text-primary);
+  --pl-page-muted: var(--ui-text-muted);
+  --pl-page-gold: var(--ui-warning);
+  --pl-page-red: var(--ui-danger);
+  --pl-page-teal: var(--ui-accent);
+}
+
+[data-tour="tournament-page"] {
+  --tm-accent: var(--ui-accent);
+  --tm-cyan: var(--ui-info);
+  --tm-gold: var(--ui-warning);
+  --tm-surface: var(--ui-surface);
+  --tm-surface-strong: var(--ui-surface-strong);
+  --tm-border: var(--ui-border-soft);
+  --tm-border-strong: var(--ui-border-strong);
+  --tm-text: var(--ui-text-primary);
+  --tm-muted: var(--ui-text-muted);
+}
+
+[data-tour="bonus-buys-page"] {
+  --bb-surface: var(--ui-surface);
+  --bb-surface-strong: var(--ui-surface-strong);
+  --bb-border: var(--ui-border-soft);
+  --bb-border-strong: var(--ui-border-strong);
+  --bb-text: var(--ui-text-primary);
+  --bb-muted: var(--ui-text-muted);
+  --bb-accent: var(--ui-accent);
+  --bb-violet: var(--ui-info);
+  --bb-green: var(--ui-success);
+  --bb-red: var(--ui-danger);
+}
+
+[data-tour="current-slot-page"] {
+  --cs-surface: var(--ui-surface);
+  --cs-surface-strong: var(--ui-surface-strong);
+  --cs-border: var(--ui-border-soft);
+  --cs-border-strong: var(--ui-border-strong);
+  --cs-text: var(--ui-text-primary);
+  --cs-muted: var(--ui-text-muted);
+  --cs-accent: var(--ui-accent);
+  --cs-cyan: var(--ui-info);
+  --cs-green: var(--ui-success);
+  --cs-red: var(--ui-danger);
+}
+
+[data-tour="slot-requests-page"] {
+  --sr-admin-surface: var(--ui-surface);
+  --sr-admin-surface-strong: var(--ui-surface-strong);
+  --sr-admin-border: var(--ui-border-soft);
+  --sr-admin-border-strong: var(--ui-border-strong);
+  --sr-admin-text: var(--ui-text-primary);
+  --sr-admin-muted: var(--ui-text-muted);
+  --sr-admin-accent: var(--ui-accent);
+  --sr-admin-cyan: var(--ui-info);
+  --sr-admin-green: var(--ui-success);
+  --sr-admin-gold: var(--ui-warning);
+  --sr-admin-red: var(--ui-danger);
+}
+
+[data-tour="library-page"] .bhl-card-progress-fill,
+[data-tour="tournament-page"] .bk-progress-fill,
+[data-tour="bonus-buys-page"] .bb-admin-progress-fill,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-progress,
+[data-tour="slot-requests-page"] .sr-admin-status-dot {
+  background: linear-gradient(90deg, #cfd7ff, #9babed, #6a7ca9) !important;
+}
+
