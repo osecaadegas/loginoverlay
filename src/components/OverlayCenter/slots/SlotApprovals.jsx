@@ -102,18 +102,56 @@ export default function SlotApprovals() {
 
   const filtered = filter === 'all' ? slots : slots.filter(s => s.status === filter);
   const pendingCount = slots.filter(s => s.status === 'pending').length;
+  const approvedCount = slots.filter(s => s.status === 'approved').length;
+  const deniedCount = slots.filter(s => s.status === 'denied').length;
+  const filteredCount = filtered.length;
+  const approvalRate = slots.length > 0 ? Math.round((approvedCount / slots.length) * 100) : 0;
+  const pageNote = pendingCount > 0
+    ? 'Triage pending slot submissions, edit weak metadata before approval, and keep the shared slot catalog clean without leaving the review queue.'
+    : 'The queue is clear. Approved and denied submissions remain available here for quick audits and metadata corrections.';
+  const filterLabel = filter === 'all'
+    ? 'All submissions'
+    : filter === 'pending'
+      ? 'Pending queue'
+      : filter === 'approved'
+        ? 'Approved archive'
+        : 'Denied archive';
 
   return (
-    <div className="ss-page">
-      {/* Header */}
-      <div className="ss-header">
-        <div className="ss-header-left">
-          <h2 className="ss-title">🛡️ Slot Approvals</h2>
-          <p className="ss-subtitle">Review slot submissions from premium users.</p>
+    <div className="ss-page sa-page" data-tour="approvals-page">
+      <div className="sa-page-shell">
+      <div className="sa-page-hero">
+        <div className="sa-page-hero-copy">
+          <span className="sa-page-eyebrow">Moderation Desk</span>
+          <h2 className="sa-page-title">Slot approvals</h2>
+          <p className="sa-page-subtitle">
+            Review community submissions, refine metadata, and approve or deny additions from one sharper admin control surface.
+          </p>
+          <p className="sa-page-note">{pageNote}</p>
         </div>
-        {pendingCount > 0 && (
-          <span className="sa-pending-badge">{pendingCount} pending</span>
-        )}
+
+        <div className="sa-page-metrics">
+          <div className="sa-page-metric-card">
+            <span className="sa-page-metric-label">Backlog</span>
+            <strong className="sa-page-metric-value">{pendingCount}</strong>
+            <span className="sa-page-metric-meta">Submissions waiting for review</span>
+          </div>
+          <div className="sa-page-metric-card">
+            <span className="sa-page-metric-label">Approved</span>
+            <strong className="sa-page-metric-value">{approvedCount}</strong>
+            <span className="sa-page-metric-meta">Accepted into the live slot database</span>
+          </div>
+          <div className="sa-page-metric-card">
+            <span className="sa-page-metric-label">Denied</span>
+            <strong className="sa-page-metric-value">{deniedCount}</strong>
+            <span className="sa-page-metric-meta">Rejected with review notes when needed</span>
+          </div>
+          <div className="sa-page-metric-card">
+            <span className="sa-page-metric-label">Approval Rate</span>
+            <strong className="sa-page-metric-value">{approvalRate}%</strong>
+            <span className="sa-page-metric-meta">Across {slots.length} total submissions</span>
+          </div>
+        </div>
       </div>
 
       {/* Flash message */}
@@ -122,19 +160,40 @@ export default function SlotApprovals() {
       )}
 
       {/* Filter tabs */}
-      <div className="sa-filters">
-        {['pending', 'approved', 'denied', 'all'].map(f => (
-          <button
-            key={f}
-            className={`sa-filter-btn ${filter === f ? 'sa-filter-btn--active' : ''}`}
-            onClick={() => setFilter(f)}
-          >
-            {f === 'pending' ? `⏳ Pending (${slots.filter(s => s.status === 'pending').length})` :
-             f === 'approved' ? `✅ Approved (${slots.filter(s => s.status === 'approved').length})` :
-             f === 'denied' ? `❌ Denied (${slots.filter(s => s.status === 'denied').length})` :
-             `All (${slots.length})`}
-          </button>
-        ))}
+      <div className="sa-section-heading">
+        <div>
+          <span className="sa-section-heading__eyebrow">Review Filters</span>
+          <h3 className="sa-section-heading__title">Switch between backlog, approvals, and denials without leaving the queue</h3>
+        </div>
+        <span className="sa-section-heading__pill">{filterLabel}</span>
+      </div>
+
+      <div className="sa-filters-card">
+        <div className="sa-filters">
+          {['pending', 'approved', 'denied', 'all'].map(f => (
+            <button
+              key={f}
+              className={`sa-filter-btn ${filter === f ? 'sa-filter-btn--active' : ''}`}
+              onClick={() => setFilter(f)}
+            >
+              {f === 'pending' ? `⏳ Pending (${pendingCount})` :
+               f === 'approved' ? `✅ Approved (${approvedCount})` :
+               f === 'denied' ? `❌ Denied (${deniedCount})` :
+               `All (${slots.length})`}
+            </button>
+          ))}
+        </div>
+        <p className="sa-filters-note">
+          Pending submissions can be edited before approval, denied with an optional reason, or moved into the live database immediately when the data is ready.
+        </p>
+      </div>
+
+      <div className="sa-section-heading sa-section-heading--compact">
+        <div>
+          <span className="sa-section-heading__eyebrow">Queue</span>
+          <h3 className="sa-section-heading__title">Inspect each submission and take the next moderation action fast</h3>
+        </div>
+        <span className="sa-section-heading__pill">{filteredCount} shown</span>
       </div>
 
       {/* List */}
@@ -288,6 +347,7 @@ export default function SlotApprovals() {
           ))}
         </div>
       )}
+      </div>
     </div>
   );
 }
