@@ -59,8 +59,8 @@
 }
 
 .ss-flash--success {
-  background: rgba(74, 222, 128, 0.1);
-  border: 1px solid rgba(74, 222, 128, 0.3);
+  background: rgba(148, 163, 184, 0.1);
+  border: 1px solid rgba(148, 163, 184, 0.3);
   color: #b8c8d8;
 }
 
@@ -322,8 +322,8 @@
 }
 
 .ss-safety--safe {
-  background: rgba(74, 222, 128, 0.12);
-  border: 1px solid rgba(74, 222, 128, 0.25);
+  background: rgba(148, 163, 184, 0.12);
+  border: 1px solid rgba(148, 163, 184, 0.25);
   color: #b8c8d8;
 }
 
@@ -355,9 +355,9 @@
 }
 
 .ss-source--verified {
-  background: rgba(74, 222, 128, 0.1);
+  background: rgba(148, 163, 184, 0.1);
   color: #b8c8d8;
-  border: 1px solid rgba(74, 222, 128, 0.2);
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
 .ss-source--ai {
@@ -639,7 +639,7 @@
 }
 
 .ss-badge--pending  { background: rgba(148, 163, 184, 0.15); color: #8ba4b8; }
-.ss-badge--approved { background: rgba(74, 222, 128, 0.15); color: #b8c8d8; }
+.ss-badge--approved { background: rgba(148, 163, 184, 0.15); color: #b8c8d8; }
 .ss-badge--denied   { background: rgba(248, 113, 113, 0.15); color: #f87171; }
 
 .ss-card-note {
@@ -764,13 +764,13 @@
 }
 
 .sa-approve-btn {
-  background: rgba(74, 222, 128, 0.15);
+  background: rgba(148, 163, 184, 0.15);
   color: #b8c8d8;
-  border-color: rgba(74, 222, 128, 0.3);
+  border-color: rgba(148, 163, 184, 0.3);
 }
 
 .sa-approve-btn:hover:not(:disabled) {
-  background: rgba(74, 222, 128, 0.25);
+  background: rgba(148, 163, 184, 0.25);
 }
 
 .sa-approve-btn:disabled {
@@ -1597,7 +1597,7 @@
 }
 
 [data-tour="approvals-page"] .ss-card--approved {
-  border-left: 3px solid rgba(74, 222, 128, 0.42);
+  border-left: 3px solid rgba(148, 163, 184, 0.42);
 }
 
 [data-tour="approvals-page"] .ss-card--denied {
@@ -1637,7 +1637,7 @@
 }
 
 [data-tour="approvals-page"] .ss-badge--approved {
-  background: rgba(74, 222, 128, 0.14);
+  background: rgba(148, 163, 184, 0.14);
   color: #b8c8d8;
 }
 
@@ -1662,13 +1662,13 @@
 }
 
 [data-tour="approvals-page"] .sa-approve-btn {
-  background: rgba(74, 222, 128, 0.14);
+  background: rgba(148, 163, 184, 0.14);
   color: #b8c8d8;
-  border-color: rgba(74, 222, 128, 0.24);
+  border-color: rgba(148, 163, 184, 0.24);
 }
 
 [data-tour="approvals-page"] .sa-approve-btn:hover:not(:disabled) {
-  background: rgba(74, 222, 128, 0.22);
+  background: rgba(148, 163, 184, 0.22);
 }
 
 [data-tour="approvals-page"] .sa-deny-btn,
@@ -1707,13 +1707,13 @@
 }
 
 [data-tour="approvals-page"] .sa-edit-save {
-  background: rgba(74, 222, 128, 0.14);
+  background: rgba(148, 163, 184, 0.14);
   color: #b8c8d8;
-  border-color: rgba(74, 222, 128, 0.24);
+  border-color: rgba(148, 163, 184, 0.24);
 }
 
 [data-tour="approvals-page"] .sa-edit-save:hover:not(:disabled) {
-  background: rgba(74, 222, 128, 0.22);
+  background: rgba(148, 163, 184, 0.22);
 }
 
 [data-tour="approvals-page"] .ss-empty,
