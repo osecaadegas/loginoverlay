@@ -50,6 +50,16 @@ export default async function handler(req, res) {
 
 /* ─── Slot Request (?cmd=sr&slot=...&user_id=...&requester=...) ─── */
 
+/** Verify a Supabase JWT and return the user, or null on failure. */
+async function verifyJwt(supabase, req) {
+  const auth = (req.headers && req.headers.authorization) || '';
+  const token = auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
+  if (!token) return null;
+  const { data: { user }, error } = await supabase.auth.getUser(token);
+  if (error || !user) return null;
+  return user;
+}
+
 /** Send a message to Twitch chat via the StreamElements bot */
 async function seBotSay(seChannelId, seJwtToken, message) {
   try {
@@ -71,12 +81,14 @@ async function seBotSay(seChannelId, seJwtToken, message) {
 }
 
 async function handleSlotRequest(req, res) {
-  if (req.method !== 'GET') return res.status(405).json({ error: 'Method not allowed' });
+  if (req.method !== 'GET' && req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  const { slot, user_id, requester } = req.query;
+  // Support both GET (SE overlay) and POST (internal hook)
+  const params = req.method === 'POST' ? (req.body || {}) : req.query;
+  const { slot, user_id, requester } = params;
 
   // Support individual word params w1..w10 as fallback for SE (${querystring} doesn't resolve)
-  const slotParam = slot || buildFromWords(req.query);
+  const slotParam = slot || buildFromWords(req.method === 'GET' ? req.query : {});
 
   if (!slotParam || !slotParam.trim()) return res.status(200).send('Usage: !sr <slot name>');
   if (!user_id) return res.status(200).send('Missing streamer user_id');
@@ -90,6 +102,7 @@ async function handleSlotRequest(req, res) {
     // Look up the slot in the DB first (case-insensitive) to resolve the canonical name
     let resolvedName = rawName;
     let slotImage = null;
+    let dbMatchFound = false;
 
     // 1) Exact case-insensitive match
     const { data: exactMatch } = await supabase
@@ -101,6 +114,7 @@ async function handleSlotRequest(req, res) {
     if (exactMatch && exactMatch.length > 0) {
       resolvedName = exactMatch[0].name;
       slotImage = exactMatch[0].image || null;
+      dbMatchFound = true;
     } else {
       // 2) Substring match
       const { data: partialMatch } = await supabase
@@ -112,6 +126,7 @@ async function handleSlotRequest(req, res) {
       if (partialMatch && partialMatch.length > 0) {
         resolvedName = partialMatch[0].name;
         slotImage = partialMatch[0].image || null;
+        dbMatchFound = true;
       } else {
         // 3) Word-by-word fuzzy match — e.g. "gates olympus" matches "Gates of Olympus"
         //    Fetches multiple candidates and picks the best (highest word-overlap ratio, then shortest name)
@@ -134,6 +149,7 @@ async function handleSlotRequest(req, res) {
             scored.sort((a, b) => b.score - a.score || a.nameLen - b.nameLen);
             resolvedName = scored[0].name;
             slotImage = scored[0].image || null;
+            dbMatchFound = true;
           }
         }
       }
@@ -151,12 +167,63 @@ async function handleSlotRequest(req, res) {
     const seEnabled = !!wConfig?.srSeEnabled;
     const seCost = parseInt(wConfig?.srSeCost, 10) || 0;
 
+    // ── H2: Max queue size enforcement ──
+    const maxQueueSize = parseInt(wConfig?.maxQueueSize, 10) || 50;
+    const { count: queueCount } = await supabase
+      .from('slot_requests')
+      .select('id', { count: 'exact', head: true })
+      .eq('user_id', user_id)
+      .eq('status', 'pending');
+    if (queueCount !== null && queueCount >= maxQueueSize) {
+      const msgFull = wConfig?.srMsgQueueFull || '❌ {user}, the slot queue is full right now.';
+      const msg = msgFull.replace(/\{user\}/g, viewer);
+      if (seEnabled && seCost > 0) {
+        // load creds just for chat
+        const { data: seConnCheck } = await supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single();
+        if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token) await seBotSay(seConnCheck.se_channel_id, seConnCheck.se_jwt_token, msg);
+      }
+      return res.status(200).send(msg);
+    }
+
+    // ── H1: Per-viewer cooldown enforcement ──
+    const cooldownSecs = parseInt(wConfig?.cooldownSeconds, 10) || 0;
+    if (cooldownSecs > 0) {
+      const cutoff = new Date(Date.now() - cooldownSecs * 1000).toISOString();
+      const { data: recentReqs } = await supabase
+        .from('slot_requests')
+        .select('id')
+        .eq('user_id', user_id)
+        .ilike('requested_by', viewer)
+        .gt('created_at', cutoff)
+        .limit(1);
+      if (recentReqs && recentReqs.length > 0) {
+        const msgCool = wConfig?.srMsgCooldown || '⏳ {user}, please wait before requesting another slot.';
+        const msg = msgCool.replace(/\{user\}/g, viewer);
+        if (seEnabled && seCost > 0) {
+          const { data: seConnCheck } = await supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single();
+          if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token) await seBotSay(seConnCheck.se_channel_id, seConnCheck.se_jwt_token, msg);
+        }
+        return res.status(200).send(msg);
+      }
+    }
+
+    // ── H3: No-match rejection ──
+    if (!dbMatchFound) {
+      const msgNoMatch = wConfig?.srMsgNoMatch || '❌ {user}, could not find that slot. Please try again.';
+      const msg = msgNoMatch.replace(/\{user\}/g, viewer);
+      // Load SE creds for chat notification
+      const { data: seConnCheck } = await supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single();
+      if (seConnCheck?.se_channel_id && seConnCheck?.se_jwt_token) await seBotSay(seConnCheck.se_channel_id, seConnCheck.se_jwt_token, msg);
+      return res.status(200).send(msg);
+    }
+
     // Custom message templates (user-configurable from widget settings)
     const msgTemplates = {
       accepted: wConfig?.srMsgAccepted || '🎰 Added "{slot}" to the queue (requested by {user})',
       acceptedCost: wConfig?.srMsgAcceptedCost || '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)',
       notEnough: wConfig?.srMsgNotEnough || '❌ {user}, you need {cost} points to request a slot (you have {points}).',
       duplicate: wConfig?.srMsgDuplicate || '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!',
+      noMatch: wConfig?.srMsgNoMatch || '❌ {user}, could not find that slot. Please try again.',
     };
     const fillTemplate = (tpl, vars) => tpl.replace(/\{(\w+)\}/g, (_, k) => vars[k] ?? '');
 
@@ -432,6 +499,10 @@ async function handleSlotReject(req, res) {
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
 
+  // C1: Verify caller is authenticated as the correct user
+  const caller = await verifyJwt(supabase, req);
+  if (!caller || caller.id !== user_id) return res.status(403).json({ error: 'Forbidden' });
+
   // 1) Fetch the request to get slot info and requester
   const { data: sr, error: srErr } = await supabase
     .from('slot_requests')
@@ -509,6 +580,10 @@ async function handleSlotClearAll(req, res) {
   if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
 
   const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+  // C1: Verify caller is authenticated as the correct user
+  const caller = await verifyJwt(supabase, req);
+  if (!caller || caller.id !== user_id) return res.status(403).json({ error: 'Forbidden' });
 
   // 1) Fetch all pending requests
   const { data: requests, error: reqErr } = await supabase

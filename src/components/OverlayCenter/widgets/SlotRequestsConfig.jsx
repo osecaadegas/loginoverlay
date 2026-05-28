@@ -68,6 +68,39 @@ function ColorPicker({ label, value, onChange }) {
   );
 }
 
+/** Parse an rgba(...) or hex string into { hex, opacity }. */
+function splitRgba(val) {
+  const rgba = /rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/.exec(val || '');
+  if (rgba) {
+    const toHex = n => parseInt(n, 10).toString(16).padStart(2, '0');
+    return { hex: `#${toHex(rgba[1])}${toHex(rgba[2])}${toHex(rgba[3])}`, opacity: rgba[4] !== undefined ? parseFloat(rgba[4]) : 1 };
+  }
+  return { hex: val || '#000000', opacity: 1 };
+}
+function buildRgba(hex, opacity) {
+  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '#000000');
+  if (!m) return hex;
+  const [r, g, b] = [parseInt(m[1], 16), parseInt(m[2], 16), parseInt(m[3], 16)];
+  return opacity < 1 ? `rgba(${r},${g},${b},${opacity})` : `#${m[1]}${m[2]}${m[3]}`;
+}
+
+/** Color picker that supports both solid hex and rgba (shows hex input + opacity slider). */
+function RgbaColorPicker({ label, value, onChange }) {
+  const { hex, opacity } = splitRgba(value);
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.72rem', color: '#e2e8f0', flexWrap: 'wrap' }}>
+      <input type="color" value={hex}
+        onChange={e => onChange(buildRgba(e.target.value, opacity))}
+        style={{ width: 22, height: 22, border: 'none', background: 'none', cursor: 'pointer', padding: 0 }} />
+      <span style={{ minWidth: 50 }}>{label}</span>
+      <input type="range" min={0} max={1} step={0.05} value={opacity}
+        onChange={e => onChange(buildRgba(hex, parseFloat(e.target.value)))}
+        style={{ width: 50, accentColor: '#a78bfa' }} />
+      <span style={{ fontSize: '0.65rem', color: '#64748b', minWidth: 28 }}>{Math.round(opacity * 100)}%</span>
+    </div>
+  );
+}
+
 export default function SlotRequestsConfig({ config, onChange }) {
   const { user } = useAuth();
   const c = config || {};
@@ -108,7 +141,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
   useEffect(() => {
     if (!user) return;
     const channel = supabase
-      .channel('sr-config-rt')
+      .channel(`sr-config-rt-${user.id}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_requests' }, () => fetchQueue())
       .subscribe();
     return () => supabase.removeChannel(channel);
@@ -130,9 +163,11 @@ export default function SlotRequestsConfig({ config, onChange }) {
 
   const rejectRequest = async (id) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: JSON.stringify({ request_id: id, user_id: user.id, message_template: c.srMsgRejected || undefined }),
       });
       fetchQueue();
@@ -143,10 +178,12 @@ export default function SlotRequestsConfig({ config, onChange }) {
     if (!user) return;
     setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
       // Call API to refund SE points for all pending requests, then delete them
       await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: JSON.stringify({ user_id: user.id }),
       });
       setRequests([]);
@@ -401,9 +438,9 @@ export default function SlotRequestsConfig({ config, onChange }) {
           <ColorPicker label="Accent" value={c.accentColor || '#a78bfa'} onChange={v => set('accentColor', v)} />
           <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
           <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
-          <ColorPicker label="Background" value={c.bgColor || '#0f111c'} onChange={v => set('bgColor', v)} />
-          <ColorPicker label="Card BG" value={c.cardBg || '#1a1c2e'} onChange={v => set('cardBg', v)} />
-          <ColorPicker label="Border" value={c.borderColor || '#1e2030'} onChange={v => set('borderColor', v)} />
+          <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />
+          <RgbaColorPicker label="Card BG" value={c.cardBg || 'rgba(255,255,255,0.04)'} onChange={v => set('cardBg', v)} />
+          <RgbaColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.07)'} onChange={v => set('borderColor', v)} />
         </div>
       </div>
 

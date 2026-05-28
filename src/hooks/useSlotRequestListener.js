@@ -110,9 +110,12 @@ export default function useSlotRequestListener() {
       for (const [k, t] of dedupRef.current) { if (now - t > 30000) dedupRef.current.delete(k); }
     }
 
-    // Fire to the API
-    fetch(`${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(u.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`)
-      .catch(err => console.error('[SR-Listener]', err));
+    // Fire to the API — POST with JSON body to avoid sensitive data in query string
+    fetch(`${window.location.origin}/api/chat-commands?cmd=sr`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ user_id: u.id, requester, slot: slotName }),
+    }).catch(err => console.error('[SR-Listener]', err));
   }, []);
 
   // ── Connect to Twitch chat ──

@@ -7,6 +7,7 @@
  * requests with a smooth slide transition.
  */
 import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { hex2rgb } from './shared/colorUtils';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -27,10 +28,6 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
   const autoSpeed    = Number(c.autoSpeed) || 3000;
   const commandTrigger = c.commandTrigger || '!sr';
 
-  const hex2rgb = (hex) => {
-    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
-    return m ? `${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)}` : '167,139,250';
-  };
   const accentRgb = hex2rgb(accent);
   const total = requests.length;
 
@@ -39,6 +36,12 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
     if (total <= 0) return;
     setActiveIdx(p => (p + 1) % total);
   }, [total]);
+
+  /* Reset and restart the interval — called on manual navigation */
+  const resetInterval = useCallback(() => {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(advance, autoSpeed);
+  }, [advance, autoSpeed]);
 
   useEffect(() => {
     if (total <= 1) return;
@@ -92,7 +95,7 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
             <span className="sr-co-card-by">by {current.requested_by}</span>
           )}
         </div>
-        <span className="sr-co-card-idx">#{activeIdx + 1}</span>
+        <span className="sr-co-card-idx">{c.showNumbers !== false ? `#${activeIdx + 1}` : null}</span>
       </div>
 
       {/* ── Progress dots ── */}
@@ -102,7 +105,7 @@ export default function SlotRequestsCompactOverlay({ config, requests }) {
             <span
               key={i}
               className={`sr-co-dot${i === activeIdx ? ' sr-co-dot--active' : ''}`}
-              onClick={() => setActiveIdx(i)}
+              onClick={() => { setActiveIdx(i); resetInterval(); }}
             />
           ))}
         </div>

@@ -385,7 +385,7 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
       return {
         ...c,
         bgColor:     nb.bgColor     || 'transparent',
-        accentColor: nb.accentColor || '#f59e0b',
+        accentColor: nb.accentColor || '#a78bfa',
         textColor:   nb.textColor   || '#ffffff',
         mutedColor:  nb.mutedColor  || '#94a3b8',
         cardBg:      nb.bgColor ? `${nb.bgColor}0a` : 'rgba(255,255,255,0.04)',

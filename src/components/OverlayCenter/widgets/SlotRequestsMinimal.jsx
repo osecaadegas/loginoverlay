@@ -45,7 +45,8 @@ export default function SlotRequestsMinimal({ config, requests }) {
 
   /* ── Auto-scroll: infinite seamless loop via CSS animation ── */
   const needsScroll = requests.length > 3;
-  const scrollSpeed = 20; // seconds per full cycle
+  // scrollSecsPerItem: seconds added per item in the list; higher = slower scroll
+  const scrollSecsPerItem = 20;
 
   /* ── Track new items for entrance animation ── */
   const newIds = useMemo(() => {
@@ -93,7 +94,7 @@ export default function SlotRequestsMinimal({ config, requests }) {
 
         {requests.length > 0 && (
           <div className={`sr-min-scroll-track${needsScroll ? ' sr-min-scroll-track--animate' : ''}`}
-            style={needsScroll ? { '--sr-scroll-duration': `${Math.max(8, requests.length * scrollSpeed / 3)}s` } : undefined}>
+            style={needsScroll ? { '--sr-scroll-duration': `${Math.max(8, requests.length * scrollSecsPerItem / 3)}s` } : undefined}>
             {[...(needsScroll ? [0, 1] : [0])].map(setIdx =>
               requests.map((r, i) => (
                 <div

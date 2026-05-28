@@ -54,7 +54,6 @@ export default function SlotRequestsWidget({ config, userId }) {
 
   /* ── Cleanup ref ── */
   useEffect(() => {
-    mountedRef.current = true;
     return () => { mountedRef.current = false; };
   }, []);
 

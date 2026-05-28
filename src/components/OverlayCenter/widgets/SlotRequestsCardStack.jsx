@@ -6,6 +6,7 @@
  * Top marquee strip + 3D stage + stats bar.
  */
 import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { hex2rgb } from './shared/colorUtils';
 
 const FALLBACK_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -19,18 +20,15 @@ export default function SlotRequestsCardStack({ config, requests }) {
   const textColor    = c.textColor     || '#ffffff';
   const mutedColor   = c.mutedColor    || '#94a3b8';
   const containerBg  = c.bgColor       || 'rgba(15,17,28,0.82)';
-  const cardBg       = c.cardBg        || 'rgba(15,17,28,0.6)';
+  const cardBg       = c.cardBg        || 'rgba(255,255,255,0.04)';
   const showRequester = c.showRequester !== false;
+  const showNumbers   = c.showNumbers   !== false;
   const fontFamily   = c.fontFamily    || "'Inter', sans-serif";
   const fontSize     = c.fontSize      ? `${c.fontSize}px` : '15px';
   const fontWeight   = c.fontWeight    || '700';
   const autoSpeed    = Number(c.autoSpeed) || 4000;
   const commandTrigger = c.commandTrigger || '!sr';
 
-  const hex2rgb = (hex) => {
-    const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex || '');
-    return m ? `${parseInt(m[1], 16)},${parseInt(m[2], 16)},${parseInt(m[3], 16)}` : '167,139,250';
-  };
   const accentRgb = hex2rgb(accent);
   const total = requests.length;
 
@@ -39,6 +37,12 @@ export default function SlotRequestsCardStack({ config, requests }) {
     if (total <= 0) return;
     setActiveIdx(p => (p + 1) % total);
   }, [total]);
+
+  /* Reset and restart the interval — called on manual navigation */
+  const resetInterval = useCallback(() => {
+    clearInterval(timerRef.current);
+    timerRef.current = setInterval(advance, autoSpeed);
+  }, [advance, autoSpeed]);
 
   useEffect(() => {
     if (total <= 1) return;
@@ -133,7 +137,7 @@ export default function SlotRequestsCardStack({ config, requests }) {
                 <button
                   key={`${r.id}-${i >= total ? 'c' : 'o'}`}
                   className={`sr-cs-pill${isActive ? ' sr-cs-pill--active' : ''}`}
-                  onClick={() => setActiveIdx(idx)}
+                  onClick={() => { setActiveIdx(idx); resetInterval(); }}
                 >
                   <img
                     src={r.slot_image || FALLBACK_IMG}
@@ -168,7 +172,7 @@ export default function SlotRequestsCardStack({ config, requests }) {
                       />
                     </div>
                     <div className="sr-cs-card-gradient" />
-                    <div className="sr-cs-card-badge">#{idx + 1}</div>
+                    {showNumbers && <div className="sr-cs-card-badge">#{idx + 1}</div>}
                     <div className="sr-cs-card-info">
                       <div className="sr-cs-card-name" style={{ fontWeight: Number(fontWeight) }}>
                         {req.slot_name}

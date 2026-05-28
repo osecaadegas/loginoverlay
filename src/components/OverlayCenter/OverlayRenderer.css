@@ -5027,8 +5027,6 @@
   flex: 1; overflow: hidden;
   padding: 6px 8px;
 }
-.sr-min-list::-webkit-scrollbar { width: 4px; }
-.sr-min-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 2px; }
 
 /* ── Infinite scroll track ── */
 .sr-min-scroll-track {
@@ -5348,7 +5346,6 @@
    ═══════════════════════════════════════════════════════════════ */
 
 /* ── V11 Fever Font ── */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
 .bht11 {
   display: flex;
