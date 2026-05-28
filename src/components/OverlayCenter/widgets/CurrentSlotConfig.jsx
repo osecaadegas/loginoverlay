@@ -17,6 +17,7 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets, mode }
   const c = config || {};
   const currentStyle = c.displayStyle || 'v1';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, CURRENT_SLOT_STYLE_KEYS);
+  const currency = c.currency || '€';
 
   const [searchTerm, setSearchTerm] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -63,90 +64,233 @@ export default function CurrentSlotConfig({ config, onChange, allWidgets, mode }
       fontFamily: nb.fontFamily || "'Inter', sans-serif" });
   };
 
+  const styleLabels = {
+    v1: 'Classic',
+    v2: 'Neon',
+    v3: 'Minimal',
+    v4: 'Compact Bar',
+  };
+  const currentStyleLabel = styleLabels[currentStyle] || currentStyle;
+  const slotReady = Boolean(c.slotName);
+  const betSize = Number(c.betSize) || 0;
+  const selectedMeta = [c.provider, c.rtp ? `${c.rtp}% RTP` : null].filter(Boolean).join(' • ');
+  const heroInsight = slotReady
+    ? 'The slot is ready for the overlay. Update the manual fields below if you need to override the imported metadata before going live.'
+    : 'Pick a slot from the database or fill the fields manually so the overlay always shows the game you are currently playing.';
+  const searchStatus = searching ? 'Searching' : searchResults.length ? `${searchResults.length} matches` : 'Type 2+ letters';
+
   return (
-    <div className="nb-config">
+    <div className="nb-config cs-page">
+      <div className="cs-page-hero">
+        <div className="cs-page-hero-copy">
+          <span className="cs-page-eyebrow">Live Slot Banner</span>
+          <h3 className="cs-page-title">Current Slot control room</h3>
+          <p className="cs-page-subtitle">
+            Keep the active slot visible, polished, and ready to swap in seconds while you stream.
+          </p>
+          <p className="cs-page-note">{heroInsight}</p>
+        </div>
+
+        <div className="cs-page-hero-side">
+          <div className="cs-slot-card">
+            <div className="cs-slot-media">
+              {c.imageUrl ? (
+                <img className="cs-slot-image" src={c.imageUrl} alt="" />
+              ) : (
+                <div className="cs-slot-placeholder">🎰</div>
+              )}
+            </div>
+            <div className="cs-slot-copy">
+              <span className="cs-slot-label">Selected Slot</span>
+              <strong className="cs-slot-name">{c.slotName || 'Choose a slot to begin'}</strong>
+              <span className="cs-slot-meta">{selectedMeta || 'No provider or RTP assigned yet'}</span>
+            </div>
+          </div>
+
+          <div className="cs-page-metrics">
+            <div className="cs-page-metric-card">
+              <span className="cs-page-metric-label">Status</span>
+              <strong className="cs-page-metric-value">{slotReady ? 'Ready' : 'Idle'}</strong>
+              <span className="cs-page-metric-meta">{slotReady ? 'Widget content is populated' : 'Waiting for a slot selection'}</span>
+            </div>
+            <div className="cs-page-metric-card">
+              <span className="cs-page-metric-label">Style</span>
+              <strong className="cs-page-metric-value">{currentStyleLabel}</strong>
+              <span className="cs-page-metric-meta">Current display preset</span>
+            </div>
+            <div className="cs-page-metric-card">
+              <span className="cs-page-metric-label">Bet Size</span>
+              <strong className="cs-page-metric-value">{betSize > 0 ? `${currency}${betSize.toFixed(2)}` : 'Unset'}</strong>
+              <span className="cs-page-metric-meta">Shown on supported overlay styles</span>
+            </div>
+            <div className="cs-page-metric-card">
+              <span className="cs-page-metric-label">RTP</span>
+              <strong className="cs-page-metric-value">{c.rtp ? `${c.rtp}%` : 'Unset'}</strong>
+              <span className="cs-page-metric-meta">Manual override friendly</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {tabs.length > 1 && (
         <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} />
       )}
 
       {activeTab === 'content' && (
-        <div className="nb-section">
-          <h4 className="nb-subtitle">Search Slots Database</h4>
-          <div style={{ position: 'relative', marginBottom: 12 }}>
-            <input value={searchTerm} onChange={e => setSearchTerm(e.target.value)}
-              placeholder="🔍 Search slot by name..."
-              style={{ width: '100%', padding: '10px 12px', fontSize: 13, background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8, color: '#e2e8f0', boxSizing: 'border-box' }} />
-            {searching && <div style={{ position: 'absolute', right: 12, top: 10, fontSize: 11, color: '#94a3b8' }}>...</div>}
-            {searchResults.length > 0 && (
-              <div style={{ position: 'absolute', left: 0, right: 0, top: '100%', zIndex: 50,
-                background: '#1a1d2e', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 8,
-                maxHeight: 240, overflowY: 'auto', boxShadow: '0 8px 24px rgba(0,0,0,0.5)' }}>
-                {searchResults.map(slot => (
-                  <button key={slot.id} onClick={() => selectSlot(slot)} style={{
-                    width: '100%', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
-                    background: 'transparent', border: 'none', color: '#e2e8f0', cursor: 'pointer', textAlign: 'left', fontSize: 12 }}>
-                    {slot.image && <img src={slot.image} alt="" style={{ width: 36, height: 24, objectFit: 'cover', borderRadius: 4 }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{slot.name}</div>
-                      <div style={{ fontSize: 10, color: '#94a3b8' }}>{slot.provider}</div>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
+        <div className="nb-section cs-section">
+          <div className="cs-section-heading">
+            <div>
+              <span className="cs-section-eyebrow">Content Setup</span>
+              <h3 className="cs-section-title">Choose the active slot and fine-tune what the overlay shows</h3>
+            </div>
+            <span className="cs-section-pill">{slotReady ? 'Slot selected' : 'Waiting for slot'}</span>
           </div>
 
-          {c.slotName && (
-            <div style={{ background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-              borderRadius: 10, padding: 12, marginBottom: 12, display: 'flex', gap: 12, alignItems: 'center' }}>
-              {c.imageUrl && <img src={c.imageUrl} alt="" style={{ width: 60, height: 40, objectFit: 'cover', borderRadius: 6 }} />}
-              <div style={{ flex: 1 }}>
-                <div style={{ fontWeight: 700, fontSize: 14, color: '#e2e8f0' }}>{c.slotName}</div>
-                <div style={{ fontSize: 11, color: '#94a3b8' }}>{c.provider}</div>
+          <div className="cs-content-grid">
+            <div className="cs-card cs-card--search">
+              <div className="cs-card-header">
+                <h4 className="cs-card-title">Search slots database</h4>
+                <span className="cs-card-chip">{searchStatus}</span>
               </div>
-              <button onClick={() => setMulti({ slotName: '', provider: '', imageUrl: '', slotId: null })}
-                style={{ background: 'rgba(239,68,68,0.15)', color: '#f87171', border: 'none', borderRadius: 6, padding: '4px 8px', fontSize: 11, cursor: 'pointer' }}>✕</button>
-            </div>
-          )}
 
-          <h4 className="nb-subtitle">Manual Override</h4>
-          <label className="nb-field"><span>Slot Name</span>
-            <input value={c.slotName || ''} onChange={e => set('slotName', e.target.value)} placeholder="Sweet Bonanza" /></label>
-          <label className="nb-field"><span>Provider</span>
-            <input value={c.provider || ''} onChange={e => set('provider', e.target.value)} placeholder="Pragmatic Play" /></label>
-          <label className="nb-field"><span>Bet Size</span>
-            <input type="number" step="0.01" value={c.betSize || 0} onChange={e => set('betSize', +e.target.value)} /></label>
-          <label className="nb-field"><span>RTP (%)</span>
-            <input value={c.rtp || ''} onChange={e => set('rtp', e.target.value)} placeholder="96.50" /></label>
-          <label className="nb-field"><span>Image URL</span>
-            <input value={c.imageUrl || ''} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." /></label>
-          <label className="nb-field"><span>Currency</span>
-            <input value={c.currency || '€'} onChange={e => set('currency', e.target.value)} placeholder="€" style={{ width: 60 }} /></label>
+              <div className="cs-search-wrap">
+                <input
+                  className="cs-search-input"
+                  value={searchTerm}
+                  onChange={e => setSearchTerm(e.target.value)}
+                  placeholder="Search slot by name..."
+                />
+                {searching && <div className="cs-search-status">...</div>}
+                {searchResults.length > 0 && (
+                  <div className="cs-search-results">
+                    {searchResults.map(slot => (
+                      <button key={slot.id} type="button" onClick={() => selectSlot(slot)} className="cs-search-result">
+                        {slot.image && <img src={slot.image} alt="" className="cs-search-result-image" />}
+                        <div className="cs-search-result-copy">
+                          <div className="cs-search-result-title">{slot.name}</div>
+                          <div className="cs-search-result-meta">{slot.provider}</div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              <p className="cs-card-copy">
+                Pull slot art and provider metadata directly from the slots database, then adjust any field manually if the live banner needs a quick override.
+              </p>
+
+              {c.slotName && (
+                <div className="cs-selected-slot">
+                  {c.imageUrl ? <img src={c.imageUrl} alt="" className="cs-selected-slot-image" /> : <div className="cs-selected-slot-placeholder">🎰</div>}
+                  <div className="cs-selected-slot-copy">
+                    <div className="cs-selected-slot-name">{c.slotName}</div>
+                    <div className="cs-selected-slot-meta">{selectedMeta || 'Provider metadata pending'}</div>
+                  </div>
+                  <button
+                    type="button"
+                    className="cs-clear-btn"
+                    onClick={() => setMulti({ slotName: '', provider: '', imageUrl: '', slotId: null })}
+                  >
+                    Clear
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="cs-card cs-card--manual">
+              <div className="cs-card-header">
+                <h4 className="cs-card-title">Manual override</h4>
+                <span className="cs-card-chip">Editable fields</span>
+              </div>
+
+              <div className="cs-field-grid">
+                <label className="cs-field">
+                  <span className="cs-field-label">Slot Name</span>
+                  <input value={c.slotName || ''} onChange={e => set('slotName', e.target.value)} placeholder="Sweet Bonanza" />
+                </label>
+                <label className="cs-field">
+                  <span className="cs-field-label">Provider</span>
+                  <input value={c.provider || ''} onChange={e => set('provider', e.target.value)} placeholder="Pragmatic Play" />
+                </label>
+                <label className="cs-field">
+                  <span className="cs-field-label">Bet Size</span>
+                  <input type="number" step="0.01" value={c.betSize || 0} onChange={e => set('betSize', +e.target.value)} />
+                </label>
+                <label className="cs-field">
+                  <span className="cs-field-label">RTP (%)</span>
+                  <input value={c.rtp || ''} onChange={e => set('rtp', e.target.value)} placeholder="96.50" />
+                </label>
+                <label className="cs-field cs-field--full">
+                  <span className="cs-field-label">Image URL</span>
+                  <input value={c.imageUrl || ''} onChange={e => set('imageUrl', e.target.value)} placeholder="https://..." />
+                </label>
+                <label className="cs-field cs-field--compact">
+                  <span className="cs-field-label">Currency</span>
+                  <input value={currency} onChange={e => set('currency', e.target.value)} placeholder="€" />
+                </label>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
       {activeTab === 'style' && (
-        <div className="nb-section">
-          {nb && <button className="oc-btn-sync" onClick={syncFromNavbar} style={{
-            width: '100%', padding: '8px 12px', marginBottom: 10, background: 'rgba(147,70,255,0.15)',
-            color: '#c4b5fd', border: '1px solid rgba(147,70,255,0.3)', borderRadius: 8, fontSize: 12, fontWeight: 600, cursor: 'pointer' }}>
-            🔗 Sync Colors from Navbar</button>}
-          <h4 className="nb-subtitle">Colors</h4>
-          <label className="nb-field"><span>Background</span><input type="color" value={c.bgColor || '#13151e'} onChange={e => set('bgColor', e.target.value)} /></label>
-          <label className="nb-field"><span>Card BG</span><input type="color" value={c.cardBg || '#1a1d2e'} onChange={e => set('cardBg', e.target.value)} /></label>
-          <label className="nb-field"><span>Accent</span><input type="color" value={c.accentColor || '#f59e0b'} onChange={e => set('accentColor', e.target.value)} /></label>
-          <label className="nb-field"><span>Text</span><input type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)} /></label>
-          <label className="nb-field"><span>Muted</span><input type="color" value={c.mutedColor || '#94a3b8'} onChange={e => set('mutedColor', e.target.value)} /></label>
-          <label className="nb-field"><span>Border</span><input type="color" value={c.borderColor || '#1e293b'} onChange={e => set('borderColor', e.target.value)} /></label>
-          <h4 className="nb-subtitle">Typography</h4>
-          <label className="nb-field"><span>Font</span>
-            <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-              {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-            </select></label>
-          <h4 className="nb-subtitle">Custom CSS</h4>
-          <textarea className="oc-widget-css-input" value={c.custom_css || ''} onChange={e => set('custom_css', e.target.value)}
-            rows={4} placeholder="/* custom CSS */" spellCheck={false} />
+        <div className="nb-section cs-section">
+          <div className="cs-section-heading">
+            <div>
+              <span className="cs-section-eyebrow">Style Controls</span>
+              <h3 className="cs-section-title">Shape the current slot banner so it matches the rest of the overlay</h3>
+            </div>
+            <span className="cs-section-pill">{currentStyleLabel}</span>
+          </div>
+
+          <div className="cs-style-grid">
+            {nb && (
+              <div className="cs-card cs-card--sync">
+                <div className="cs-card-header">
+                  <h4 className="cs-card-title">Navbar sync</h4>
+                  <span className="cs-card-chip">Shared palette</span>
+                </div>
+                <p className="cs-card-copy">Import the navbar colors and typography to keep the current slot panel visually aligned with the rest of the overlay.</p>
+                <button type="button" className="cs-sync-btn" onClick={syncFromNavbar}>
+                  Sync Colors from Navbar
+                </button>
+              </div>
+            )}
+
+            <div className="cs-card cs-card--colors">
+              <div className="cs-card-header">
+                <h4 className="cs-card-title">Color palette</h4>
+                <span className="cs-card-chip">Live widget colors</span>
+              </div>
+              <div className="cs-color-grid">
+                <label className="cs-color-field"><span className="cs-field-label">Background</span><input className="cs-color-input" type="color" value={c.bgColor || '#13151e'} onChange={e => set('bgColor', e.target.value)} /></label>
+                <label className="cs-color-field"><span className="cs-field-label">Card BG</span><input className="cs-color-input" type="color" value={c.cardBg || '#1a1d2e'} onChange={e => set('cardBg', e.target.value)} /></label>
+                <label className="cs-color-field"><span className="cs-field-label">Accent</span><input className="cs-color-input" type="color" value={c.accentColor || '#f59e0b'} onChange={e => set('accentColor', e.target.value)} /></label>
+                <label className="cs-color-field"><span className="cs-field-label">Text</span><input className="cs-color-input" type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)} /></label>
+                <label className="cs-color-field"><span className="cs-field-label">Muted</span><input className="cs-color-input" type="color" value={c.mutedColor || '#94a3b8'} onChange={e => set('mutedColor', e.target.value)} /></label>
+                <label className="cs-color-field"><span className="cs-field-label">Border</span><input className="cs-color-input" type="color" value={c.borderColor || '#1e293b'} onChange={e => set('borderColor', e.target.value)} /></label>
+              </div>
+            </div>
+
+            <div className="cs-card cs-card--type">
+              <div className="cs-card-header">
+                <h4 className="cs-card-title">Typography & CSS</h4>
+                <span className="cs-card-chip">Advanced styling</span>
+              </div>
+              <label className="cs-field cs-field--full">
+                <span className="cs-field-label">Font</span>
+                <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+                  {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
+              </label>
+              <label className="cs-field cs-field--full">
+                <span className="cs-field-label">Custom CSS</span>
+                <textarea className="oc-widget-css-input cs-textarea" value={c.custom_css || ''} onChange={e => set('custom_css', e.target.value)} rows={4} placeholder="/* custom CSS */" spellCheck={false} />
+              </label>
+            </div>
+          </div>
         </div>
       )}
     </div>
