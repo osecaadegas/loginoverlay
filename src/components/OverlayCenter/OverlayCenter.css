@@ -2488,25 +2488,31 @@
   inset: 0;
   z-index: 10000;
   pointer-events: none;
+  isolation: isolate;
 }
 
 .gt-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.65);
+  background:
+    radial-gradient(circle at top, rgba(56, 189, 248, 0.08), transparent 28%),
+    radial-gradient(circle at bottom left, rgba(251, 191, 36, 0.09), transparent 32%),
+    rgba(2, 6, 12, 0.78);
+  backdrop-filter: blur(6px);
   pointer-events: all;
   z-index: 1;
 }
 .gt-backdrop--passthrough {
   pointer-events: none;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(2, 6, 12, 0.5);
 }
 
 .gt-spotlight {
   position: fixed;
   z-index: 2;
-  box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.65);
-  border: 2px solid rgba(110, 231, 183, 0.4);
+  box-shadow: 0 0 0 9999px rgba(2, 6, 12, 0.72);
+  border: 2px solid rgba(125, 211, 252, 0.46);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
   pointer-events: none;
   transition: all 0.35s ease;
 }
@@ -2514,92 +2520,190 @@
 .gt-tooltip {
   z-index: 3;
   pointer-events: all;
-  width: 360px;
+  width: 396px;
   max-width: calc(100vw - 32px);
-  background: linear-gradient(180deg, rgba(10, 15, 22, 0.96), rgba(14, 20, 28, 0.94));
-  border: 1px solid rgba(148, 163, 184, 0.14);
-  border-radius: 22px;
-  padding: 20px 22px;
-  box-shadow: 0 20px 64px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(110, 231, 183, 0.05);
+  background:
+    radial-gradient(circle at top left, rgba(251, 191, 36, 0.15), transparent 34%),
+    linear-gradient(180deg, rgba(10, 15, 22, 0.98), rgba(11, 17, 24, 0.94));
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+  padding: 22px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(125, 211, 252, 0.06);
   animation: gt-fadeIn 0.25s ease;
-  backdrop-filter: blur(18px);
+  backdrop-filter: blur(20px);
+  overflow: hidden;
+}
+
+.gt-tooltip::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 180px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(251, 191, 36, 0.55), transparent);
+}
+
+.gt-tooltip--waiting {
+  opacity: 0.98;
 }
 
 @keyframes gt-fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .gt-tooltip-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 10px;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.gt-tooltip-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
 }
 
 .gt-tooltip-step {
-  font-size: 9.9px;
+  font-size: 10px;
   font-weight: 700;
-  color: #d1fae5;
-  background: rgba(16, 185, 129, 0.12);
-  padding: 3px 10px;
-  border-radius: 10px;
-  letter-spacing: 0.3px;
+  color: #fef3c7;
+  background: rgba(251, 191, 36, 0.12);
+  border: 1px solid rgba(251, 191, 36, 0.16);
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+}
+
+.gt-tooltip-kind {
+  font-size: 10px;
+  font-weight: 700;
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.12);
+  border: 1px solid rgba(56, 189, 248, 0.16);
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .gt-tooltip-page {
-  font-size: 9.6px;
+  font-size: 10px;
   font-weight: 700;
-  color: #a5f3fc;
-  background: rgba(6, 182, 212, 0.1);
-  border: 1px solid rgba(103, 232, 249, 0.16);
-  padding: 2px 8px;
-  border-radius: 4px;
-  letter-spacing: 0.5px;
+  color: #d1fae5;
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.16);
+  padding: 4px 10px;
+  border-radius: 999px;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .gt-tooltip-skip {
-  font-size: 9.9px;
-  color: #94a3b8;
-  background: none;
-  border: none;
+  font-size: 10px;
+  color: #9fb2c3;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.12);
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 6px;
+  padding: 7px 10px;
+  border-radius: 999px;
   transition: all 0.15s ease;
+  white-space: nowrap;
 }
 
 .gt-tooltip-skip:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  color: #f8fafc;
+}
+
+.gt-tooltip-kicker {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.gt-tooltip-kicker-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #fcd34d;
+}
+
+.gt-tooltip-sync {
+  font-size: 10px;
+  font-weight: 700;
+  color: #bae6fd;
+  background: rgba(56, 189, 248, 0.1);
+  border: 1px solid rgba(56, 189, 248, 0.14);
+  padding: 4px 8px;
+  border-radius: 999px;
 }
 
 .gt-tooltip-title {
-  font-size: 15.2px;
+  font-size: 20px;
   font-weight: 800;
-  color: #f1f5f9;
-  margin: 0 0 6px;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
+  color: #f8fafc;
+  margin: 0 0 8px;
 }
 
 .gt-tooltip-body {
-  font-size: 11.8px;
-  color: #cbd5e1;
-  line-height: 1.55;
-  margin: 0 0 18px;
+  font-size: 12.8px;
+  color: #d5dde7;
+  line-height: 1.65;
+  margin: 0 0 16px;
+}
+
+.gt-tooltip-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.gt-tooltip-summary-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 11px 12px;
+  background: rgba(255, 255, 255, 0.045);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+}
+
+.gt-tooltip-summary-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #90a4b6;
+}
+
+.gt-tooltip-summary-value {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f8fafc;
 }
 
 .gt-tooltip-actions {
   display: flex;
   align-items: center;
   gap: 10px;
+  margin-bottom: 10px;
 }
 
 .gt-btn {
-  font-size: 11.5px;
+  font-size: 11.8px;
   font-weight: 700;
-  padding: 7px 16px;
-  border-radius: 10px;
+  padding: 8px 16px;
+  border-radius: 14px;
   cursor: pointer;
   border: none;
   transition: all 0.15s ease;
@@ -2608,12 +2712,13 @@
 
 .gt-btn--ghost {
   background: rgba(255, 255, 255, 0.06);
-  color: #94a3b8;
+  color: #b0bfcd;
+  border: 1px solid rgba(148, 163, 184, 0.14);
 }
 
 .gt-btn--ghost:hover:not(:disabled) {
   background: rgba(255, 255, 255, 0.1);
-  color: #e2e8f0;
+  color: #f8fafc;
 }
 
 .gt-btn--ghost:disabled {
@@ -2622,14 +2727,14 @@
 }
 
 .gt-btn--primary {
-  background: linear-gradient(135deg, #15803d, #10b981 58%, #0891b2);
-  color: #fff;
-  box-shadow: 0 12px 28px rgba(5, 150, 105, 0.22);
+  background: linear-gradient(135deg, #f59e0b, #f97316 62%, #38bdf8);
+  color: #09121b;
+  box-shadow: 0 14px 30px rgba(249, 115, 22, 0.22);
 }
 
 .gt-btn--primary:hover {
-  background: linear-gradient(135deg, #16a34a, #14b8a6 60%, #06b6d4);
-  box-shadow: 0 16px 34px rgba(5, 150, 105, 0.28);
+  background: linear-gradient(135deg, #fbbf24, #fb923c 60%, #67e8f9);
+  box-shadow: 0 18px 36px rgba(249, 115, 22, 0.28);
   transform: translateY(-1px);
 }
 
@@ -2644,24 +2749,64 @@
 
 .gt-progress-bar {
   width: 100%;
-  height: 4px;
-  border-radius: 4px;
+  height: 6px;
+  border-radius: 999px;
   background: rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
 .gt-progress-fill {
   height: 100%;
-  border-radius: 4px;
-  background: linear-gradient(90deg, #16a34a, #10b981, #67e8f9);
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f59e0b, #f97316, #67e8f9);
   transition: width 0.35s ease;
 }
 
-.gt-progress-label {
-  font-size: 9.3px;
-  color: #64748b;
+.gt-progress-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.gt-progress-label,
+.gt-progress-next {
+  font-size: 10px;
+  color: #8da2b6;
   font-weight: 600;
-  letter-spacing: 0.3px;
+  letter-spacing: 0.03em;
+}
+
+.gt-progress-next {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .gt-tooltip {
+    width: calc(100vw - 24px);
+    max-width: calc(100vw - 24px);
+    padding: 18px;
+  }
+
+  .gt-tooltip-header,
+  .gt-tooltip-kicker,
+  .gt-tooltip-actions,
+  .gt-progress-meta {
+    flex-wrap: wrap;
+  }
+
+  .gt-tooltip-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .gt-progress-next {
+    text-align: left;
+    white-space: normal;
+  }
 }
 
 /* -- Live slot � OBS-style drag & resize -- */

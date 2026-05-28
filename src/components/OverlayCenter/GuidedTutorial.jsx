@@ -6,7 +6,7 @@
  * Steps can specify a `page` field — the tour will auto-navigate between pages.
  * Persists completion in localStorage.
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEY = 'oc_tutorial_done';
 
@@ -205,13 +205,13 @@ const STEPS = [
     page: 'slots',
   },
 
-  /* ── Themes ── */
+  /* ── Admin review ── */
   {
-    target: null,
-    title: '30. Themes 🎨',
-    body: 'Browse and apply pre-made themes to completely change your overlay\'s look. Each theme updates colors, fonts, and styles across all your widgets at once.',
-    position: 'center',
-    page: 'theme',
+    target: '[data-tour="approvals-page"]',
+    title: '30. Approvals 🛡️',
+    body: 'Admins review submitted slots here. Audit the backlog, edit metadata before approval, and deny weak submissions without leaving the moderation queue.',
+    position: 'float-top',
+    page: 'approvals',
   },
 
   /* ── OBS setup ── */
@@ -262,8 +262,8 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     }
   }, [active, step]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  const TOOLTIP_W = 360; // matches CSS .gt-tooltip width
-  const TOOLTIP_H_EST = 200; // rough max height
+  const TOOLTIP_W = 396; // matches CSS .gt-tooltip width
+  const TOOLTIP_H_EST = 260; // rough max height
   const EDGE_PAD = 16; // min distance from viewport edge
 
   /* Position the tooltip relative to the target element */
@@ -415,7 +415,6 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
 
   if (!active || !current) return null;
 
-  /* Category label for current step */
   const pageLabels = {
     widgets: 'Widgets',
     profile: 'Profile',
@@ -427,9 +426,18 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
     library: 'Library',
     presets: 'Presets',
     slots: 'Submit Slots',
-    theme: 'Themes',
+    approvals: 'Approvals',
   };
   const pageLabel = pageLabels[current.page] || '';
+  const totalSteps = STEPS.length;
+  const progressPercent = Math.round(((step + 1) / totalSteps) * 100);
+  const nextStep = isLast ? null : STEPS[step + 1];
+  const nextPageLabel = nextStep ? pageLabels[nextStep.page] || 'Next Step' : '';
+  const stepKind = current.position === 'center'
+    ? 'Overview'
+    : current.position === 'float-top'
+      ? 'Page Focus'
+      : 'Spotlight';
 
   return (
     <div className="gt-overlay">
@@ -440,14 +448,35 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
       )}
 
       {/* Tooltip card */}
-      <div className="gt-tooltip" style={tooltipStyle}>
+      <div className={`gt-tooltip gt-tooltip--${current.position || 'bottom'}${waitingForPage ? ' gt-tooltip--waiting' : ''}`} style={tooltipStyle}>
         <div className="gt-tooltip-header">
-          <span className="gt-tooltip-step">{step + 1} / {STEPS.length}</span>
-          {pageLabel && <span className="gt-tooltip-page">{pageLabel}</span>}
+          <div className="gt-tooltip-badges">
+            <span className="gt-tooltip-step">{step + 1} / {totalSteps}</span>
+            <span className="gt-tooltip-kind">{stepKind}</span>
+            {pageLabel && <span className="gt-tooltip-page">{pageLabel}</span>}
+          </div>
           <button className="gt-tooltip-skip" onClick={handleSkip}>Skip tour ✕</button>
         </div>
+
+        <div className="gt-tooltip-kicker">
+          <span className="gt-tooltip-kicker-label">Overlay Center Tour</span>
+          {waitingForPage && <span className="gt-tooltip-sync">Loading page…</span>}
+        </div>
+
         <h3 className="gt-tooltip-title">{current.title}</h3>
         <p className="gt-tooltip-body">{current.body}</p>
+
+        <div className="gt-tooltip-summary">
+          <div className="gt-tooltip-summary-card">
+            <span className="gt-tooltip-summary-label">Current Focus</span>
+            <strong className="gt-tooltip-summary-value">{pageLabel || 'Overview'}</strong>
+          </div>
+          <div className="gt-tooltip-summary-card">
+            <span className="gt-tooltip-summary-label">Up Next</span>
+            <strong className="gt-tooltip-summary-value">{isLast ? 'Complete Tour' : nextPageLabel || 'Next Step'}</strong>
+          </div>
+        </div>
+
         <div className="gt-tooltip-actions">
           <button
             className="gt-btn gt-btn--ghost"
@@ -458,12 +487,17 @@ export default function GuidedTutorial({ active, onClose, goToPage }) {
           </button>
           <div className="gt-progress">
             <div className="gt-progress-bar">
-              <div className="gt-progress-fill" style={{ width: `${((step + 1) / STEPS.length) * 100}%` }} />
+              <div className="gt-progress-fill" style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
           <button className="gt-btn gt-btn--primary" onClick={handleNext}>
             {isLast ? 'Finish ✓' : 'Next →'}
           </button>
+        </div>
+
+        <div className="gt-progress-meta">
+          <span className="gt-progress-label">{progressPercent}% complete</span>
+          {!isLast && <span className="gt-progress-next">Next: {nextStep?.title}</span>}
         </div>
       </div>
     </div>

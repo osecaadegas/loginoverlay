@@ -426,7 +426,7 @@ export default function SlotSubmissions() {
 
   /* ── Render ── */
   return (
-    <div className="slot-manager-v2">
+    <div className="slot-manager-v2" data-tour="slots-page">
       {notification && <div className={`sm-toast ${notification.type}`}>{notification.message}</div>}
 
       {/* ── Toolbar ── */}
