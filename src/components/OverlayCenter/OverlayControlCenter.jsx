@@ -31,6 +31,68 @@ import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
 
 /* ── Generic WidgetPanel: replaces 14 identical panel wrappers ── */
 const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', slot_requests: 'slot-requests-page' };
+const PANEL_META = {
+  widgets: {
+    eyebrow: 'Overlay Builder',
+    title: 'Control Center',
+    description: 'Manage layout, styling, and live widget behavior from one premium dashboard.',
+  },
+  profile: {
+    eyebrow: 'Account',
+    title: 'Profile & Connections',
+    description: 'Review your identity, linked services, and channel-facing profile settings.',
+  },
+  bonus_hunt: {
+    eyebrow: 'Streamer Tools',
+    title: 'Bonus Hunt',
+    description: 'Tune the primary hunt experience, visuals, and on-stream stats.',
+  },
+  tournament: {
+    eyebrow: 'Streamer Tools',
+    title: 'Tournament',
+    description: 'Configure tournament overlays, standings, and competitive presentation.',
+  },
+  bonus_buys: {
+    eyebrow: 'Streamer Tools',
+    title: 'Bonus Buys',
+    description: 'Track buy sessions with a cleaner live control surface.',
+  },
+  current_slot: {
+    eyebrow: 'Streamer Tools',
+    title: 'Current Slot',
+    description: 'Set and present the currently featured slot with better visibility.',
+  },
+  slot_requests: {
+    eyebrow: 'Community Tools',
+    title: 'Slot Requests',
+    description: 'Moderate viewer requests and keep the queue stream-ready at a glance.',
+  },
+  library: {
+    eyebrow: 'Management',
+    title: 'Bonus Hunt Library',
+    description: 'Browse past sessions, saved runs, and reusable hunt data.',
+  },
+  presets: {
+    eyebrow: 'Management',
+    title: 'Layout Presets',
+    description: 'Save and restore complete overlay setups with fewer clicks.',
+  },
+  theme: {
+    eyebrow: 'Management',
+    title: 'Themes',
+    description: 'Apply polished visual systems across widgets and the live overlay.',
+  },
+  slots: {
+    eyebrow: 'Management',
+    title: 'Submit Slots',
+    description: 'Manage slot submissions in the same streamlined workspace.',
+  },
+  approvals: {
+    eyebrow: 'Management',
+    title: 'Approvals',
+    description: 'Review pending changes and submissions with clear visual priority.',
+  },
+};
 
 function WidgetPanel({ widgetType, widgets, saveWidget, addWidget, loading }) {
   const def = getWidgetDef(widgetType);
@@ -183,6 +245,7 @@ export default function OverlayControlCenter() {
     const base = window.location.origin;
     return `${base}/overlay/${instance.overlay_token}`;
   }, [instance]);
+  const panelMeta = PANEL_META[activePanel] || PANEL_META.widgets;
 
   const copyUrl = useCallback(() => {
     navigator.clipboard.writeText(overlayUrl).then(() => {
@@ -227,6 +290,13 @@ export default function OverlayControlCenter() {
       <div className="oc-layout">
         {/* ─── SIDEBAR NAV ─── */}
         <aside className={`oc-sidebar${sidebarOpen ? ' oc-sidebar--open' : ''}`}>
+          <div className="oc-sidebar-brand">
+            <span className="oc-sidebar-icon">◌</span>
+            <div className="oc-sidebar-brand-text">
+              <h1 className="oc-sidebar-title">Overlay Center</h1>
+              <p className="oc-sidebar-brand-subtitle">Premium streaming workspace</p>
+            </div>
+          </div>
           <nav className="oc-sidebar-nav">
             {/* ─── Home ─── */}
             <button
@@ -397,6 +467,20 @@ export default function OverlayControlCenter() {
 
         {/* ─── MAIN CONTENT ─── */}
         <main className="oc-main">
+          <div className="oc-main-shell">
+            <header className="oc-main-topbar">
+              <div className="oc-main-hero">
+                <span className="oc-main-eyebrow">{panelMeta.eyebrow}</span>
+                <h1 className="oc-main-title">{panelMeta.title}</h1>
+                <p className="oc-main-description">{panelMeta.description}</p>
+              </div>
+              <div className="oc-main-status">
+                <span className="oc-status-pill oc-status-pill--live">OBS Ready</span>
+                <span className="oc-status-pill">{widgets.length} widget{widgets.length === 1 ? '' : 's'}</span>
+                <span className="oc-status-pill">Theme: {theme?.style_preset || 'classic'}</span>
+              </div>
+            </header>
+
           {/* Quick-start steps for new users */}
           {activePanel === 'widgets' && widgets.length === 0 && (
             <div className="oc-welcome-card">
@@ -486,6 +570,7 @@ export default function OverlayControlCenter() {
           {activePanel === 'profile' && (
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />
           )}
+          </div>
         </main>
       </div>
 
