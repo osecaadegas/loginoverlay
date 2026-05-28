@@ -448,7 +448,6 @@ export default function OverlayControlCenter() {
           <div className="oc-main-shell">
             <header className="oc-main-topbar">
               <div className="oc-main-hero">
-                <span className="oc-main-eyebrow">{panelMeta.eyebrow}</span>
                 <h1 className="oc-main-title">{panelMeta.title}</h1>
                 <p className="oc-main-description">{panelMeta.description}</p>
               </div>
