@@ -3763,7 +3763,52 @@
 /* ═══════════════════════════════════════════════════════════════
    BETS WIDGET  —  .bets-ov
    Modern dark-glass bracket betting overlay (list + grid layouts)
+   Animations: entry stagger, leading pulse, winner celebration.
 ═══════════════════════════════════════════════════════════════ */
+
+/* ── Keyframes ── */
+@keyframes bets-open {
+  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
+}
+@keyframes bets-card-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.9); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+}
+@keyframes bets-lead-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(148,163,184,0), inset 0 0 0 1px rgba(148,163,184,0.15);
+    border-color: rgba(148,163,184,0.15);
+  }
+  50% {
+    box-shadow: 0 0 22px 4px rgba(148,163,184,0.28), inset 0 0 0 1px rgba(200,220,240,0.35);
+    border-color: rgba(200,220,240,0.5);
+  }
+}
+@keyframes bets-lead-row-pulse {
+  0%, 100% { background: rgba(148,163,184,0.04); border-left-color: rgba(148,163,184,0.2); }
+  50%       { background: rgba(148,163,184,0.10); border-left-color: rgba(200,220,240,0.5); }
+}
+@keyframes bets-winner-pop {
+  0%   { transform: scale(0.82); opacity: 0.4; }
+  55%  { transform: scale(1.07); }
+  80%  { transform: scale(0.97); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes bets-loser-dim {
+  from { opacity: 1; }
+  to   { opacity: 0.22; }
+}
+@keyframes bets-live-dot {
+  0%, 100% { opacity: 1;   transform: scale(1);    }
+  50%       { opacity: 0.4; transform: scale(0.65); }
+}
+@keyframes bets-hint-breathe {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 0.75; }
+}
+
+/* ── Root widget ── */
 .bets-ov {
   display: flex;
   flex-direction: column;
@@ -3775,6 +3820,7 @@
   border: 1px solid rgba(148,163,184,0.12);
   box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03);
   color: var(--bets-text, #d4dce8);
+  animation: bets-open 0.55s cubic-bezier(0.16,1,0.3,1) both;
 }
 
 /* ── Header ── */
@@ -3799,6 +3845,9 @@
 }
 .bets-ov__trophy { font-size: 1.1em; flex-shrink: 0; }
 .bets-ov__status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
   font-size: 0.68em;
   font-weight: 700;
   letter-spacing: 1px;
@@ -3810,6 +3859,17 @@
 .bets-ov__status--open   { background: rgba(148,163,184,0.15); color: #b8c8d8; }
 .bets-ov__status--locked { background: rgba(239,68,68,0.12);   color: #f87171; }
 .bets-ov__status--result { background: rgba(71,85,105,0.18);   color: #eef2f5; }
+
+/* pulsing live dot */
+.bets-ov__live-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #94a3b8;
+  flex-shrink: 0;
+  animation: bets-live-dot 1.4s ease-in-out infinite;
+}
 
 /* ── Stats row ── */
 .bets-ov__stats {
@@ -3834,9 +3894,7 @@
   color: #eef2f5;
   text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
-.bets-ov__stat-val--timer {
-  font-size: 1.0em;
-}
+.bets-ov__stat-val--timer { font-size: 1.0em; }
 .bets-ov__stat-lbl {
   font-size: 0.62em;
   font-weight: 600;
@@ -3860,14 +3918,22 @@
   gap: 3px;
   padding: 5px 6px;
   border-radius: 7px;
-  transition: background 0.2s;
+  border-left: 2px solid transparent;
+  transition: background 0.2s, border-color 0.2s;
+  animation: bets-card-in 0.38s cubic-bezier(0.16,1,0.3,1) both;
 }
 .bets-ov__row--win {
   background: rgba(148,163,184,0.08);
-  border: 1px solid rgba(148,163,184,0.2);
+  border-left-color: rgba(148,163,184,0.4);
+  animation: bets-card-in 0.55s cubic-bezier(0.34,1.56,0.64,1) both !important;
 }
-.bets-ov__row--lose { opacity: 0.4; }
-
+.bets-ov__row--lose {
+  animation: bets-loser-dim 0.5s ease-out both !important;
+}
+.bets-ov__row--leading {
+  animation: bets-card-in 0.38s cubic-bezier(0.16,1,0.3,1) both,
+             bets-lead-row-pulse 2s ease-in-out 0.5s infinite !important;
+}
 .bets-ov__row-meta {
   display: flex;
   align-items: baseline;
@@ -3911,15 +3977,14 @@
   transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
   max-width: 100%;
 }
-.bets-ov__row--win .bets-ov__row-fill {
-  background: linear-gradient(90deg, #94a3b8, #c8d6e2);
-}
+.bets-ov__row--win    .bets-ov__row-fill { background: linear-gradient(90deg, #94a3b8, #c8d6e2); }
+.bets-ov__row--leading .bets-ov__row-fill { background: linear-gradient(90deg, #b8c8d8, #dde8f0); }
 
 /* ── Grid layout ── */
 .bets-ov__grid {
   flex: 1;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--bets-cols, 4), 1fr);
   gap: 6px;
   padding: 8px;
   overflow: hidden;
@@ -3934,24 +3999,31 @@
   align-items: center;
   justify-content: flex-end;
   min-height: 80px;
-  transition: all 0.3s ease;
   border: 1px solid transparent;
+  animation: bets-card-in 0.42s cubic-bezier(0.16,1,0.3,1) both;
 }
 .bets-ov__card--win {
-  border-color: rgba(148,163,184,0.35);
-  box-shadow: 0 0 12px rgba(148,163,184,0.15);
+  animation: bets-winner-pop 0.65s cubic-bezier(0.34,1.56,0.64,1) both !important;
+  border-color: rgba(200,220,240,0.4) !important;
+  box-shadow: 0 0 20px rgba(148,163,184,0.25) !important;
 }
-.bets-ov__card--lose { opacity: 0.35; }
+.bets-ov__card--lose {
+  animation: bets-loser-dim 0.5s ease-out both !important;
+}
+.bets-ov__card--leading {
+  animation: bets-card-in 0.42s cubic-bezier(0.16,1,0.3,1) both,
+             bets-lead-pulse 1.9s ease-in-out 0.6s infinite !important;
+  z-index: 1;
+}
 .bets-ov__card-fill {
   position: absolute;
   left: 0; right: 0; bottom: 0;
   background: var(--bets-bar-fill, rgba(148,163,184,0.4));
   border-radius: 0 0 9px 9px;
-  transition: height 0.6s cubic-bezier(0.16,1,0.3,1);
+  transition: height 0.65s cubic-bezier(0.16,1,0.3,1);
 }
-.bets-ov__card--win .bets-ov__card-fill {
-  background: linear-gradient(180deg, rgba(148,163,184,0.5), rgba(200,214,226,0.7));
-}
+.bets-ov__card--win     .bets-ov__card-fill { background: linear-gradient(180deg, rgba(148,163,184,0.55), rgba(200,214,226,0.75)); }
+.bets-ov__card--leading .bets-ov__card-fill { background: linear-gradient(180deg, rgba(148,163,184,0.5), rgba(190,210,230,0.65)); }
 .bets-ov__card-body {
   position: relative;
   z-index: 1;
@@ -3989,11 +4061,12 @@
   text-align: center;
   padding: 5px 10px;
   font-size: 0.68em;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.45);
   background: rgba(0,0,0,0.1);
   border-top: 1px solid rgba(148,163,184,0.06);
+  animation: bets-hint-breathe 3s ease-in-out infinite;
 }
-.bets-ov__hint strong { color: rgba(255,255,255,0.55); }
+.bets-ov__hint strong { color: rgba(255,255,255,0.65); }
 
 /* ═══ end bets-ov ═══ */
 

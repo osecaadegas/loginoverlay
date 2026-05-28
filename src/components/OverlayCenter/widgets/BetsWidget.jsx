@@ -2,10 +2,17 @@
  * BetsWidget.jsx — OBS overlay for live chat bracket betting.
  *
  * Modern dark-glass aesthetic matching the bonus hunt widget family.
- * Renders a list of bracket options with horizontal fill bars.
- * Driven entirely by config saved in overlay_widgets (JSONB).
+ * Grid layout: 2 cols for ≤6 options (2×3 for 6), 3 cols for 7–9, 4 cols for 10+.
+ * Animations: entry stagger, leading-bet pulse, winner celebration.
  */
 import React, { useState, useEffect, useMemo } from 'react';
+
+/** Dynamic grid columns based on option count */
+function getGridCols(count) {
+  if (count <= 6) return 2;
+  if (count <= 9) return 3;
+  return 4;
+}
 
 function BetsWidget({ config }) {
   const c = config || {};
@@ -22,7 +29,6 @@ function BetsWidget({ config }) {
   const font       = c.fontFamily  || "'Inter', sans-serif";
   const layout     = c.displayStyle || 'v1_list';
 
-  // -- Configurable CSS vars with silver/neutral defaults --
   const bgColor     = c.bgColor     || 'rgba(10, 14, 20, 0.94)';
   const headerBg    = c.headerBg    || 'rgba(255,255,255,0.04)';
   const headerText  = c.headerText  || '#eef2f5';
@@ -60,12 +66,30 @@ function BetsWidget({ config }) {
   );
   const totalBetters = Object.keys(betters).length;
 
+  /* Leading card detection — pulses when clearly ahead */
+  const pcts = useMemo(
+    () => options.map((_, i) => totalPool > 0 ? Math.round((bets[`opt_${i}`] || 0) / totalPool * 100) : 0),
+    [options, bets, totalPool]
+  );
+  const leadingIdx = useMemo(() => {
+    if (status !== 'open' || totalPool === 0) return -1;
+    const maxPct = Math.max(...pcts);
+    if (maxPct < 25) return -1; // not dominant enough yet
+    const sorted = [...pcts].sort((a, b) => b - a);
+    const secondPct = sorted[1] ?? 0;
+    if (maxPct < secondPct + 15) return -1; // gap too small
+    return pcts.indexOf(maxPct);
+  }, [status, pcts, totalPool]);
+
   if (status === 'idle') return null;
 
   const statusLabel =
     status === 'open'   ? (countdown > 0 ? fmt(countdown) : 'OPEN') :
     status === 'locked' ? 'LOCKED' :
     status === 'result' ? 'RESULT' : '';
+
+  const isGrid = layout === 'v2_grid';
+  const gridCols = getGridCols(options.length);
 
   const cssVars = {
     fontFamily: font,
@@ -76,9 +100,8 @@ function BetsWidget({ config }) {
     '--bets-bar-fill':barFill,
     '--bets-text':    textColor,
     '--bets-accent':  accentColor,
+    '--bets-cols':    gridCols,
   };
-
-  const isGrid = layout === 'v2_grid';
 
   return (
     <div className={`bets-ov bets-ov--${status}${isGrid ? ' bets-ov--grid' : ''}`} style={cssVars}>
@@ -89,7 +112,7 @@ function BetsWidget({ config }) {
         </span>
         {status === 'result' && <span className="bets-ov__trophy">🏆</span>}
         <span className={`bets-ov__status bets-ov__status--${status}`}>
-          {status === 'open' && '●'} {statusLabel}
+          {status === 'open' && <span className="bets-ov__live-dot" />} {statusLabel}
         </span>
       </div>
 
@@ -117,17 +140,28 @@ function BetsWidget({ config }) {
 
       {/* ── Bracket options ── */}
       {isGrid ? (
-        /* Grid layout: cards with vertical fill bars */
         <div className="bets-ov__grid">
           {options.map((opt, i) => {
-            const amount  = bets[`opt_${i}`] || 0;
-            const pct     = totalPool > 0 ? Math.round((amount / totalPool) * 100) : 0;
-            const fillH   = maxBet > 0 ? (amount / maxBet) * 100 : 0;
-            const isWin   = winnerIdx === i;
-            const isLose  = winnerIdx !== null && winnerIdx !== i;
-            const label   = (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
+            const amount   = bets[`opt_${i}`] || 0;
+            const pct      = pcts[i];
+            const fillH    = maxBet > 0 ? (amount / maxBet) * 100 : 0;
+            const isWin    = winnerIdx === i;
+            const isLose   = winnerIdx !== null && winnerIdx !== i;
+            const isLead   = leadingIdx === i;
+            const label    = (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
+            const classes  = [
+              'bets-ov__card',
+              isWin  && 'bets-ov__card--win',
+              isLose && 'bets-ov__card--lose',
+              isLead && 'bets-ov__card--leading',
+            ].filter(Boolean).join(' ');
+
             return (
-              <div key={i} className={`bets-ov__card${isWin ? ' bets-ov__card--win' : ''}${isLose ? ' bets-ov__card--lose' : ''}`}>
+              <div
+                key={`${i}-${status}`}
+                className={classes}
+                style={{ animationDelay: `${i * 0.07}s` }}
+              >
                 <div className="bets-ov__card-fill" style={{ height: `${fillH}%` }} />
                 <div className="bets-ov__card-body">
                   {isWin && <span className="bets-ov__card-crown">👑</span>}
@@ -140,16 +174,26 @@ function BetsWidget({ config }) {
           })}
         </div>
       ) : (
-        /* List layout: horizontal bar rows (default) */
         <div className="bets-ov__list">
           {options.map((opt, i) => {
-            const amount  = bets[`opt_${i}`] || 0;
-            const pct     = totalPool > 0 ? Math.round((amount / totalPool) * 100) : 0;
+            const pct     = pcts[i];
             const isWin   = winnerIdx === i;
             const isLose  = winnerIdx !== null && winnerIdx !== i;
+            const isLead  = leadingIdx === i;
             const label   = (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
+            const classes = [
+              'bets-ov__row',
+              isWin  && 'bets-ov__row--win',
+              isLose && 'bets-ov__row--lose',
+              isLead && 'bets-ov__row--leading',
+            ].filter(Boolean).join(' ');
+
             return (
-              <div key={i} className={`bets-ov__row${isWin ? ' bets-ov__row--win' : ''}${isLose ? ' bets-ov__row--lose' : ''}`}>
+              <div
+                key={`${i}-${status}`}
+                className={classes}
+                style={{ animationDelay: `${i * 0.05}s` }}
+              >
                 <div className="bets-ov__row-meta">
                   <span className="bets-ov__row-cmd">{cmd} {i + 1}</span>
                   <span className="bets-ov__row-label">{isWin ? '👑 ' : ''}{label}</span>
@@ -175,3 +219,5 @@ function BetsWidget({ config }) {
 }
 
 export default BetsWidget;
+
+  
