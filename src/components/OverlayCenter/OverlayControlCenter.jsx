@@ -463,18 +463,6 @@ export default function OverlayControlCenter() {
         {/* ─── MAIN CONTENT ─── */}
         <main className="oc-main">
           <div className="oc-main-shell">
-            <header className="oc-main-topbar">
-              <div className="oc-main-hero">
-                <h1 className="oc-main-title">{panelMeta.title}</h1>
-                <p className="oc-main-description">{panelMeta.description}</p>
-              </div>
-              <div className="oc-main-status">
-                <span className="oc-status-pill oc-status-pill--live">OBS Ready</span>
-                <span className="oc-status-pill">{widgets.length} widget{widgets.length === 1 ? '' : 's'}</span>
-                <span className="oc-status-pill">Theme: {theme?.style_preset || 'classic'}</span>
-              </div>
-            </header>
-
           {/* Quick-start steps for new users */}
           {activePanel === 'widgets' && widgets.length === 0 && (
             <div className="oc-welcome-card">
