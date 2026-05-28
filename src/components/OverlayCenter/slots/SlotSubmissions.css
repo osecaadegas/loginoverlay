@@ -1818,3 +1818,106 @@
   outline: none;
 }
 
+/* -------------------------------------------------------
+   SILVER / CHARCOAL MIX TUNING
+   ------------------------------------------------------- */
+
+.slot-manager-v2[data-tour="slots-page"],
+[data-tour="approvals-page"] {
+  background:
+    radial-gradient(circle at top left, rgba(200, 206, 214, 0.07), transparent 30%),
+    radial-gradient(circle at top right, rgba(100, 116, 139, 0.06), transparent 34%),
+    linear-gradient(180deg, rgba(8, 12, 18, 0.99), rgba(8, 11, 16, 0.9));
+}
+
+.slot-manager-v2[data-tour="slots-page"] {
+  --ssm-gold: #d2d8e0;
+  --ssm-cyan: #8f99a6;
+  --ssm-green: #e7ebf0;
+}
+
+[data-tour="approvals-page"] {
+  --sa-page-gold: #d2d8e0;
+  --sa-page-green: #e7ebf0;
+  --sa-page-cyan: #8f99a6;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .ssm-section-pill,
+.slot-manager-v2[data-tour="slots-page"] .sm-btn-primary,
+[data-tour="approvals-page"] .sa-section-heading__pill,
+[data-tour="approvals-page"] .sa-pending-badge,
+[data-tour="approvals-page"] .sa-edit-btn,
+[data-tour="approvals-page"] .sa-approve-btn,
+[data-tour="approvals-page"] .sa-edit-save {
+  background: linear-gradient(135deg, #242c35 0%, #4a5563 58%, #7c8796 100%) !important;
+  color: #f4f7fb !important;
+  border-color: rgba(184, 192, 202, 0.18) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-btn-primary:hover,
+[data-tour="approvals-page"] .sa-edit-btn:hover,
+[data-tour="approvals-page"] .sa-approve-btn:hover:not(:disabled),
+[data-tour="approvals-page"] .sa-edit-save:hover:not(:disabled) {
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.3) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-search:focus-within,
+.slot-manager-v2[data-tour="slots-page"] .sm-dropdown-btn:focus,
+.slot-manager-v2[data-tour="slots-page"] .sm-pag-size:focus,
+[data-tour="approvals-page"] .sa-edit-row input:focus,
+[data-tour="approvals-page"] .sa-edit-row select:focus,
+[data-tour="approvals-page"] .sa-deny-input:focus {
+  border-color: rgba(184, 192, 202, 0.24) !important;
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.12) !important;
+}
+
+/* -------------------------------------------------------
+   FINAL NEUTRAL ACCENT CLEANUP
+   ------------------------------------------------------- */
+
+.slot-manager-v2[data-tour="slots-page"] .ss-add-btn,
+.slot-manager-v2[data-tour="slots-page"] .ss-add-btn:hover,
+[data-tour="approvals-page"] .sa-filter-btn--active,
+[data-tour="approvals-page"] .sa-filter-btn--active:hover,
+[data-tour="approvals-page"] .sa-approve-btn,
+[data-tour="approvals-page"] .sa-approve-btn:hover:not(:disabled),
+[data-tour="approvals-page"] .sa-edit-save,
+[data-tour="approvals-page"] .sa-edit-save:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(36, 44, 53, 0.92), rgba(74, 85, 99, 0.78)) !important;
+  border-color: rgba(184, 192, 202, 0.18) !important;
+  color: #edf1f5 !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24) !important;
+}
+
+[data-tour="approvals-page"] .sa-detail-toggle,
+[data-tour="approvals-page"] .sa-detail-toggle:hover {
+  background: none !important;
+  border: 0 !important;
+  color: #cfd5dd !important;
+  padding: 2px 0 !important;
+  box-shadow: none !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .ss-stat--approved .ss-stat-num,
+.slot-manager-v2[data-tour="slots-page"] .ss-badge--approved,
+[data-tour="approvals-page"] .ss-card-submitter,
+[data-tour="approvals-page"] .ss-badge--approved {
+  color: #e7ebf0 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .ss-card--approved,
+[data-tour="approvals-page"] .ss-card--approved {
+  border-left-color: #8f99a6 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .ss-badge--approved,
+[data-tour="approvals-page"] .ss-badge--approved {
+  background: rgba(148, 163, 184, 0.18) !important;
+  border-color: rgba(184, 192, 202, 0.18) !important;
+}
+
+[data-tour="approvals-page"] .ss-card-submitter {
+  color: #cfd5dd !important;
+}
+

@@ -13001,3 +13001,295 @@ body.wm-resizing {
   outline: none;
 }
 
+/* -------------------------------------------------------
+   SILVER / CHARCOAL MIX TUNING
+   ------------------------------------------------------- */
+
+:root {
+  --oc-accent: #b8c0ca;
+  --oc-accent-light: #eef2f6;
+  --oc-accent-cyan: #8f99a6;
+  --oc-accent-glow: rgba(184, 192, 202, 0.1);
+  --oc-accent-glow-strong: rgba(184, 192, 202, 0.16);
+  --oc-accent-solid: #7e8895;
+  --oc-green: #c7ced7;
+  --oc-green-glow: rgba(184, 192, 202, 0.12);
+  --oc-shadow-glow: 0 0 0 1px rgba(226, 232, 240, 0.04), 0 18px 56px rgba(71, 85, 105, 0.12);
+}
+
+.oc-page {
+  background:
+    radial-gradient(circle at top left, rgba(148, 163, 184, 0.06), transparent 24%),
+    radial-gradient(circle at top right, rgba(226, 232, 240, 0.035), transparent 20%),
+    linear-gradient(180deg, #05070b 0%, #0a0e13 46%, #06080c 100%);
+  background-image:
+    radial-gradient(ellipse 88% 58% at 50% -30%, rgba(184, 192, 202, 0.06), transparent 60%),
+    radial-gradient(ellipse 50% 50% at 100% 100%, rgba(100, 116, 139, 0.04), transparent 50%);
+}
+
+.oc-sidebar-icon {
+  background: linear-gradient(135deg, rgba(226, 232, 240, 0.1), rgba(100, 116, 139, 0.12));
+  border: 1px solid rgba(226, 232, 240, 0.1);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 10px 24px rgba(71, 85, 105, 0.14);
+}
+
+.oc-sidebar-title {
+  background: linear-gradient(135deg, #ffffff 0%, #edf1f5 42%, #bcc4ce 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.oc-sidebar-btn--active {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.92), rgba(51, 65, 85, 0.82));
+  color: #f8fafc;
+  border-color: rgba(184, 192, 202, 0.16);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 18px 40px rgba(15, 23, 42, 0.26);
+}
+
+.oc-status-pill--live {
+  background: linear-gradient(135deg, rgba(31, 41, 55, 0.9), rgba(71, 85, 105, 0.7));
+  border-color: rgba(184, 192, 202, 0.15);
+  color: #f8fafc;
+  box-shadow: 0 0 0 1px rgba(226, 232, 240, 0.04), 0 10px 24px rgba(15, 23, 42, 0.18);
+}
+
+.oc-btn-primary {
+  background: linear-gradient(135deg, #2a313b 0%, #4b5563 52%, #8f99a6 100%);
+  color: #f8fafc;
+  box-shadow: 0 14px 34px rgba(30, 41, 59, 0.28);
+}
+
+.oc-btn-primary:hover {
+  box-shadow: 0 18px 42px rgba(15, 23, 42, 0.32);
+}
+
+.oc-welcome-card {
+  background:
+    radial-gradient(circle at top right, rgba(226, 232, 240, 0.06), transparent 34%),
+    linear-gradient(135deg, rgba(100, 116, 139, 0.1) 0%, rgba(17, 24, 39, 0.82) 50%, rgba(75, 85, 99, 0.08) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.1);
+}
+
+.oc-welcome-step:hover {
+  border-color: rgba(184, 192, 202, 0.14);
+}
+
+.oc-welcome-step-num {
+  background: linear-gradient(135deg, #d7dde5 0%, #a7b0bb 52%, #667181 100%);
+  color: #0b0f14;
+  box-shadow: 0 10px 24px rgba(71, 85, 105, 0.22);
+}
+
+[data-tour="bonus-hunt-page"],
+[data-tour="library-page"],
+[data-tour="presets-page"],
+[data-tour="tournament-page"],
+[data-tour="bonus-buys-page"],
+[data-tour="current-slot-page"],
+[data-tour="slot-requests-page"] {
+  background:
+    radial-gradient(circle at top left, rgba(200, 206, 214, 0.07), transparent 30%),
+    radial-gradient(circle at top right, rgba(100, 116, 139, 0.06), transparent 34%),
+    linear-gradient(180deg, rgba(8, 12, 18, 0.99), rgba(8, 11, 16, 0.9));
+}
+
+[data-tour="bonus-hunt-page"]::before,
+[data-tour="library-page"]::before,
+[data-tour="presets-page"]::before,
+[data-tour="tournament-page"]::before,
+[data-tour="bonus-buys-page"]::before,
+[data-tour="current-slot-page"]::before,
+[data-tour="slot-requests-page"]::before {
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.035), transparent 28%, transparent 70%, rgba(184, 192, 202, 0.04));
+}
+
+[data-tour="bonus-hunt-page"] {
+  --bh-accent: #b8c0ca;
+  --bh-accent-strong: #8f99a6;
+  --bh-accent-soft: rgba(184, 192, 202, 0.13);
+  --bh-cyan-soft: rgba(143, 153, 166, 0.1);
+  --bh-border-strong: rgba(184, 192, 202, 0.16);
+}
+
+[data-tour="library-page"] {
+  --bhl-page-amber: #d2d8e0;
+  --bhl-page-cyan: #8f99a6;
+  --bhl-page-green: #e7ebf0;
+}
+
+[data-tour="presets-page"] {
+  --pl-page-gold: #d2d8e0;
+  --pl-page-teal: #8f99a6;
+}
+
+[data-tour="tournament-page"] {
+  --tm-accent: #b8c0ca;
+  --tm-cyan: #8f99a6;
+  --tm-gold: #e7ebf0;
+  --tm-border-strong: rgba(184, 192, 202, 0.16);
+}
+
+[data-tour="bonus-buys-page"] {
+  --bb-border-strong: rgba(184, 192, 202, 0.16);
+  --bb-accent: #b8c0ca;
+  --bb-violet: #8f99a6;
+  --bb-green: #e7ebf0;
+}
+
+[data-tour="current-slot-page"] {
+  --cs-border-strong: rgba(184, 192, 202, 0.16);
+  --cs-accent: #d2d8e0;
+  --cs-cyan: #8f99a6;
+  --cs-green: #e7ebf0;
+}
+
+[data-tour="slot-requests-page"] {
+  --sr-admin-accent: #b8c0ca;
+  --sr-admin-cyan: #8f99a6;
+  --sr-admin-green: #e7ebf0;
+  --sr-admin-gold: #d2d8e0;
+  --sr-admin-border-strong: rgba(184, 192, 202, 0.16);
+}
+
+[data-tour="bonus-hunt-page"] .nb-tab--active,
+[data-tour="tournament-page"] .nb-tab--active,
+[data-tour="current-slot-page"] .nb-tab--active,
+[data-tour="bonus-buys-page"] .bb-admin-tab--active,
+[data-tour="presets-page"] .pl-toolbar__filter--active,
+[data-tour="presets-page"] .pl-toolbar__filter--active:hover,
+[data-tour="library-page"] .bhl-view-btn--active,
+[data-tour="bonus-hunt-page"] .bh-add-btn,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-btn,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-confirm,
+[data-tour="bonus-hunt-page"] .bh-sort-btn--active,
+[data-tour="presets-page"] .pl-save-bar__btn,
+[data-tour="presets-page"] .pl-card__btn--load,
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn,
+[data-tour="current-slot-page"] .cs-sync-btn,
+[data-tour="slot-requests-page"] .sr-admin-btn--success,
+[data-tour="slot-requests-page"] .sr-admin-btn--warn {
+  background: linear-gradient(135deg, #242c35 0%, #4a5563 58%, #7c8796 100%) !important;
+  color: #f4f7fb !important;
+  border-color: rgba(184, 192, 202, 0.18) !important;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.24) !important;
+}
+
+[data-tour="bonus-hunt-page"] .bh-add-btn:hover:not(:disabled),
+[data-tour="presets-page"] .pl-save-bar__btn:hover:not(:disabled),
+[data-tour="presets-page"] .pl-card__btn--load:hover,
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn:hover,
+[data-tour="current-slot-page"] .cs-sync-btn:hover,
+[data-tour="slot-requests-page"] .sr-admin-btn--success:hover,
+[data-tour="slot-requests-page"] .sr-admin-btn--warn:hover {
+  box-shadow: 0 16px 34px rgba(15, 23, 42, 0.3) !important;
+}
+
+[data-tour="bonus-hunt-page"] .bh-count,
+[data-tour="bonus-buys-page"] .bb-admin-section-pill,
+[data-tour="bonus-buys-page"] .bb-admin-card-chip,
+[data-tour="current-slot-page"] .cs-section-pill,
+[data-tour="current-slot-page"] .cs-card-chip,
+[data-tour="slot-requests-page"] .sr-admin-card-chip,
+[data-tour="library-page"] .bhl-download-btn,
+[data-tour="presets-page"] .pl-card__badge--shared,
+[data-tour="presets-page"] .pl-card__badge--personal,
+[data-tour="presets-page"] .pl-card__btn--share {
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.48), rgba(31, 41, 55, 0.42)) !important;
+  color: #eef2f6 !important;
+  border-color: rgba(184, 192, 202, 0.16) !important;
+}
+
+[data-tour="library-page"] .bhl-card-progress-fill,
+[data-tour="tournament-page"] .bk-progress-fill,
+[data-tour="bonus-buys-page"] .bb-admin-progress-fill,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-progress,
+[data-tour="slot-requests-page"] .sr-admin-status-dot {
+  background: linear-gradient(90deg, #cfd5dd, #9fa8b3, #6b7280) !important;
+}
+
+[data-tour="bonus-hunt-page"] input:focus,
+[data-tour="bonus-hunt-page"] select:focus,
+[data-tour="bonus-hunt-page"] textarea:focus,
+[data-tour="library-page"] input:focus,
+[data-tour="library-page"] select:focus,
+[data-tour="presets-page"] input:focus,
+[data-tour="presets-page"] select:focus,
+[data-tour="tournament-page"] input:focus,
+[data-tour="tournament-page"] select:focus,
+[data-tour="current-slot-page"] input:focus,
+[data-tour="current-slot-page"] select:focus,
+[data-tour="bonus-buys-page"] input:focus,
+[data-tour="bonus-buys-page"] select:focus,
+[data-tour="slot-requests-page"] input:focus,
+[data-tour="slot-requests-page"] select:focus,
+[data-tour="bonus-hunt-page"] .bh-search-container:focus-within,
+[data-tour="library-page"] .bhl-search-box:focus-within,
+[data-tour="presets-page"] .pl-toolbar__search:focus-within,
+[data-tour="presets-page"] .pl-toolbar__sort:focus,
+[data-tour="current-slot-page"] .cs-search-wrap:focus-within {
+  border-color: rgba(184, 192, 202, 0.24) !important;
+  box-shadow: 0 0 0 4px rgba(100, 116, 139, 0.12) !important;
+}
+
+/* -------------------------------------------------------
+   FINAL NEUTRAL ACCENT CLEANUP
+   ------------------------------------------------------- */
+
+[data-tour="bonus-hunt-page"] .bh-compact-toggle--active {
+  border-color: rgba(184, 192, 202, 0.16) !important;
+  background: linear-gradient(135deg, rgba(51, 65, 85, 0.5), rgba(31, 41, 55, 0.42)) !important;
+}
+
+[data-tour="bonus-hunt-page"] .bh-compact-toggle--active .bh-compact-text,
+[data-tour="bonus-hunt-page"] .bh-opening-toggle--active .bh-opening-text,
+[data-tour="bonus-hunt-page"] .bh-panel-label,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-title,
+[data-tour="bonus-hunt-page"] .bh-gtb-message--success,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-icon {
+  color: #edf1f5 !important;
+}
+
+[data-tour="bonus-hunt-page"] .bh-compact-toggle input:checked + .bh-opening-switch {
+  background: #8f99a6 !important;
+}
+
+[data-tour="bonus-hunt-page"] .bh-compact-toggle input:checked + .bh-opening-switch::after {
+  background: #f8fafc !important;
+}
+
+[data-tour="bonus-hunt-page"] .bh-save-hunt-btn,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-btn:hover {
+  background: linear-gradient(135deg, rgba(36, 44, 53, 0.92), rgba(74, 85, 99, 0.78)) !important;
+  border-color: rgba(184, 192, 202, 0.18) !important;
+  color: #edf1f5 !important;
+}
+
+[data-tour="library-page"] .bhl-val--profit,
+[data-tour="library-page"] .bhl-pnl--profit,
+[data-tour="library-page"] .bhl-card-best-slot,
+[data-tour="library-page"] .bhl-bonus-item--opened,
+[data-tour="presets-page"] .pl-save-bar__msg,
+[data-tour="bonus-buys-page"] .bb-admin-metric-value--positive,
+[data-tour="bonus-buys-page"] .bb-admin-stat-value--positive,
+[data-tour="bonus-buys-page"] .bb-admin-summary-value--positive,
+[data-tour="bonus-buys-page"] .bb-admin-message,
+[data-tour="slot-requests-page"] .sr-admin-success-copy,
+[data-tour="slot-requests-page"] .sr-admin-queue-index,
+[data-tour="slot-requests-page"] .sr-admin-btn--success,
+[data-tour="slot-requests-page"] .sr-admin-btn--success:hover {
+  color: #e7ebf0 !important;
+}
+
+[data-tour="library-page"] .bhl-bonus-item--opened {
+  background: rgba(148, 163, 184, 0.12) !important;
+  border-color: rgba(184, 192, 202, 0.16) !important;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-message,
+[data-tour="slot-requests-page"] .sr-admin-btn--success,
+[data-tour="slot-requests-page"] .sr-admin-btn--success:hover {
+  background: linear-gradient(135deg, rgba(71, 85, 105, 0.46), rgba(31, 41, 55, 0.42)) !important;
+  border-color: rgba(184, 192, 202, 0.18) !important;
+}
+
