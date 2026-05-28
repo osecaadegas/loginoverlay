@@ -3977,10 +3977,76 @@ body.wm-resizing {
    Bonus Hunt Inline Config Panel
    ===================================================== */
 
+[data-tour="bonus-hunt-page"] {
+  --bh-accent: #2dd4bf;
+  --bh-accent-strong: #22c55e;
+  --bh-accent-soft: rgba(45, 212, 191, 0.16);
+  --bh-cyan-soft: rgba(34, 211, 238, 0.14);
+  --bh-danger-soft: rgba(248, 113, 113, 0.16);
+  --bh-surface: rgba(8, 14, 20, 0.62);
+  --bh-surface-strong: rgba(9, 17, 24, 0.9);
+  --bh-border: rgba(148, 163, 184, 0.16);
+  --bh-border-strong: rgba(45, 212, 191, 0.22);
+  --bh-text: #e6f4f1;
+  --bh-muted: #89a7b2;
+  --bh-shadow: 0 22px 60px rgba(0, 0, 0, 0.26);
+  position: relative;
+  border-radius: 28px;
+  padding: 18px;
+  background:
+    radial-gradient(circle at top left, rgba(45, 212, 191, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 34%),
+    linear-gradient(180deg, rgba(7, 12, 17, 0.96), rgba(7, 10, 15, 0.84));
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  box-shadow: var(--bh-shadow);
+  overflow: hidden;
+}
+
+[data-tour="bonus-hunt-page"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 26%, transparent 72%, rgba(45, 212, 191, 0.05));
+}
+
 .bh-config {
   display: flex;
   flex-direction: column;
+  gap: 14px;
+  position: relative;
+  z-index: 1;
+}
+
+.bh-config .nb-tabs {
   gap: 8px;
+  margin-bottom: 10px;
+  padding: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.028);
+  backdrop-filter: blur(18px);
+}
+
+.bh-config .nb-tab {
+  border-bottom: none;
+  border-radius: 14px;
+  padding: 11px 14px;
+  color: var(--bh-muted);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.bh-config .nb-tab:hover {
+  color: var(--bh-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.bh-config .nb-tab--active {
+  color: #071316;
+  border-bottom-color: transparent;
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.94), rgba(34, 211, 238, 0.92));
+  box-shadow: 0 10px 24px rgba(45, 212, 191, 0.18);
 }
 
 .bh-quick-row {
@@ -4008,28 +4074,170 @@ body.wm-resizing {
 /* Collapsible toggle button */
 /* Bonus Hunt panel � always visible, no dropdown */
 .bh-panel {
-  border: 1px solid rgba(147, 70, 255, 0.15);
-  border-radius: 12px;
-  background: rgba(12, 14, 22, 0.45);
-  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.02);
+  padding: 0;
   display: flex;
   flex-direction: column;
   gap: 16px;
-  margin-top: 6px;
+  margin-top: 2px;
 }
 
 .bh-panel-section {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+    var(--bh-surface);
+  border: 1px solid var(--bh-border);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+}
+
+.bh-panel-section--setup,
+.bh-panel-section--add,
+.bh-panel-section--list,
+.bh-panel-section--save {
+  position: relative;
+  overflow: hidden;
+}
+
+.bh-panel-section--setup::before,
+.bh-panel-section--add::before,
+.bh-panel-section--list::before,
+.bh-panel-section--save::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 160px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(45, 212, 191, 0.6), transparent);
+}
+
+.bh-page-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
+  gap: 16px;
+  padding: 24px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(45, 212, 191, 0.18), transparent 35%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+    rgba(7, 13, 18, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.bh-page-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.bh-page-eyebrow,
+.bh-section-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #7dd3fc;
+}
+
+.bh-page-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2vw, 2rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  color: #f6fffd;
+}
+
+.bh-page-subtitle {
+  margin: 0;
+  max-width: 56ch;
+  color: var(--bh-muted);
+  font-size: 13.2px;
+  line-height: 1.65;
+}
+
+.bh-page-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.bh-page-metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 14px 15px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  min-height: 92px;
+}
+
+.bh-page-metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8fb6c2;
+}
+
+.bh-page-metric-value {
+  font-size: 1.35rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #f7fffe;
+}
+
+.bh-page-metric-meta {
+  font-size: 11.2px;
+  color: var(--bh-muted);
+}
+
+.bh-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.bh-section-title {
+  margin: 6px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.18;
+  letter-spacing: -0.02em;
+  color: #f5fbfa;
+}
+
+.bh-section-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.16), rgba(34, 211, 238, 0.14));
+  border: 1px solid rgba(45, 212, 191, 0.26);
+  color: #b4fff2;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .bh-panel-label {
   font-size: 12px;
   font-weight: 700;
-  color: #94a3b8;
+  color: #b8d0d4;
   text-transform: uppercase;
-  letter-spacing: 0.6px;
+  letter-spacing: 0.08em;
   margin: 0;
   display: flex;
   align-items: center;
@@ -4038,50 +4246,55 @@ body.wm-resizing {
 
 .bh-count {
   font-size: 11.2px;
-  color: #64748b;
-  background: rgba(255, 255, 255, 0.06);
-  padding: 1px 7px;
-  border-radius: 10px;
+  color: #c6f7f1;
+  background: rgba(45, 212, 191, 0.12);
+  padding: 3px 8px;
+  border-radius: 999px;
   font-weight: 600;
+  border: 1px solid rgba(45, 212, 191, 0.16);
 }
 
 /* Settings row � Hunt # | Start | Stop Loss */
 .bh-settings-row {
   display: flex;
-  gap: 5px;
+  gap: 10px;
 }
 
 /* ─── Hunt Settings 50/50 Split ─── */
 .bh-hunt-split {
-  display: flex;
-  gap: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 1fr);
+  gap: 16px;
 }
 
 .bh-hunt-split-left {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding-right: 16px;
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 .bh-hunt-split-right {
-  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding-left: 16px;
+  gap: 8px;
+  padding: 16px;
   min-width: 0;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.02);
 }
 
 /* ─── Slot Requests Queue (inside Hunt Settings) ─── */
 .bh-sr-queue-title {
   font-size: 11.5px;
   font-weight: 700;
-  color: #94a3b8;
+  color: #d3eeea;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
   display: flex;
   align-items: center;
   gap: 6px;
@@ -4089,18 +4302,19 @@ body.wm-resizing {
 
 .bh-sr-queue-count {
   font-size: 10.5px;
-  color: #9346ff;
-  background: rgba(147, 70, 255, 0.15);
-  padding: 1px 7px;
-  border-radius: 8px;
+  color: #6ee7da;
+  background: rgba(45, 212, 191, 0.12);
+  padding: 3px 8px;
+  border-radius: 999px;
   font-weight: 700;
+  border: 1px solid rgba(45, 212, 191, 0.16);
 }
 
 .bh-sr-queue-empty {
   font-size: 11.5px;
-  color: #475569;
+  color: #5f7881;
   font-style: italic;
-  padding: 8px 0;
+  padding: 14px 0;
 }
 
 .bh-sr-queue-list {
@@ -4118,19 +4332,21 @@ body.wm-resizing {
 .bh-sr-queue-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 6px 10px;
-  background: rgba(147, 70, 255, 0.08);
-  border: 1px solid rgba(147, 70, 255, 0.2);
-  border-radius: 8px;
+  gap: 10px;
+  padding: 10px 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 14px;
   cursor: pointer;
-  transition: all 0.15s;
-  min-height: 44px;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+  min-height: 58px;
 }
 
 .bh-sr-queue-item:hover {
-  background: rgba(147, 70, 255, 0.18);
-  border-color: rgba(147, 70, 255, 0.5);
+  background: linear-gradient(180deg, rgba(45, 212, 191, 0.1), rgba(34, 211, 238, 0.06));
+  border-color: rgba(45, 212, 191, 0.24);
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
 
 .bh-sr-queue-img {
@@ -4152,8 +4368,8 @@ body.wm-resizing {
 
 .bh-sr-queue-name {
   font-size: 12.5px;
-  font-weight: 600;
-  color: #e2e8f0;
+  font-weight: 700;
+  color: #f0fbfa;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -4161,7 +4377,7 @@ body.wm-resizing {
 
 .bh-sr-queue-by {
   font-size: 10.5px;
-  color: #64748b;
+  color: #6f8a93;
 }
 
 .bh-sr-queue-actions {
@@ -4172,33 +4388,108 @@ body.wm-resizing {
 }
 
 .bh-sr-queue-btn {
-  border: none;
+  border: 1px solid rgba(148, 163, 184, 0.14);
   font-size: 10.5px;
   font-weight: 600;
   cursor: pointer;
-  padding: 4px 10px;
-  border-radius: 5px;
+  padding: 6px 10px;
+  border-radius: 999px;
   line-height: 1.2;
   transition: all 0.15s;
   white-space: nowrap;
+  background: rgba(255, 255, 255, 0.035);
+  color: #d9ecea;
+}
+
+.bh-sr-queue-btn--clear {
+  background: var(--bh-danger-soft);
+  color: #feb2b2;
+  border-color: rgba(248, 113, 113, 0.24);
 }
 
 .bh-sr-queue-btn--reject {
-  color: #fbbf24;
-  background: rgba(251, 191, 36, 0.12);
+  color: #f9c872;
+  background: rgba(251, 191, 36, 0.1);
 }
 .bh-sr-queue-btn--reject:hover {
-  background: rgba(251, 191, 36, 0.25);
-  color: #fcd34d;
+  background: rgba(251, 191, 36, 0.2);
+  color: #ffe199;
 }
 
 .bh-sr-queue-btn--dismiss {
-  color: #64748b;
+  color: #7d96a0;
   background: rgba(100, 116, 139, 0.1);
 }
 .bh-sr-queue-btn--dismiss:hover {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.15);
+}
+
+.bh-sr-state-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.bh-sr-state-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 16px;
+  cursor: pointer;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.03);
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.bh-sr-state-btn:hover {
+  transform: translateY(-1px);
+}
+
+.bh-sr-state-btn--on {
+  border-color: rgba(45, 212, 191, 0.22);
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.12), rgba(34, 211, 238, 0.08));
+}
+
+.bh-sr-state-btn--off {
+  border-color: rgba(248, 113, 113, 0.18);
+  background: linear-gradient(135deg, rgba(248, 113, 113, 0.1), rgba(127, 29, 29, 0.06));
+}
+
+.bh-sr-state-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+.bh-sr-state-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  text-align: left;
+}
+
+.bh-sr-state-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #9fb8c1;
+}
+
+.bh-sr-state-value {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f1f8f8;
 }
 
 .bh-input-group {
@@ -4221,23 +4512,27 @@ body.wm-resizing {
 
 .bh-input-group span {
   font-size: 10.9px;
-  color: #64748b;
-  font-weight: 500;
+  color: #84a2ab;
+  font-weight: 600;
+  letter-spacing: 0.02em;
 }
 
 .bh-input-group input {
-  padding: 5px 7px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: #edf8f6;
   font-size: 12.5px;
   width: 100%;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
 
 .bh-input-group input:focus {
   outline: none;
-  border-color: rgba(147, 70, 255, 0.4);
+  border-color: rgba(45, 212, 191, 0.4);
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
 }
 
 /* Search container */
@@ -4254,21 +4549,23 @@ body.wm-resizing {
 
 .bh-search-input {
   width: 100%;
-  padding: 5px 8px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 46px;
+  padding: 11px 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: #e7f5f3;
   font-size: 12.5px;
 }
 
 .bh-search-input:focus {
   outline: none;
-  border-color: rgba(147, 70, 255, 0.4);
+  border-color: rgba(45, 212, 191, 0.4);
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
 }
 
 .bh-search-input::placeholder {
-  color: #475569;
+  color: #5d7780;
 }
 
 /* Combined add row */
@@ -4285,26 +4582,28 @@ body.wm-resizing {
   left: 0;
   right: 0;
   z-index: 50;
-  background: #181b2a;
-  border: 1px solid rgba(147, 70, 255, 0.2);
-  border-radius: 0 0 8px 8px;
+  background: rgba(8, 14, 20, 0.96);
+  border: 1px solid rgba(45, 212, 191, 0.16);
+  border-radius: 18px;
   margin-top: 2px;
   max-height: 220px;
   overflow-y: auto;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.34);
+  padding: 4px;
 }
 
 .bh-suggestion-item {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 5px 8px;
+  padding: 8px 10px;
+  border-radius: 14px;
   cursor: pointer;
   transition: background 0.1s;
 }
 
 .bh-suggestion-item:hover {
-  background: rgba(147, 70, 255, 0.1);
+  background: rgba(45, 212, 191, 0.08);
 }
 
 .bh-suggestion-img {
@@ -4438,31 +4737,32 @@ body.wm-resizing {
 /* --- Submit Slot Button & Dropdown --- */
 .bh-submit-slot-btn {
   font-size: 10.5px;
-  font-weight: 500;
-  padding: 3px 8px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  font-weight: 600;
+  padding: 0 12px;
+  min-height: 40px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(255, 255, 255, 0.04);
-  color: #94a3b8;
+  color: #afc6cd;
   cursor: pointer;
   transition: all 0.2s;
 }
 .bh-submit-slot-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: #c4b5fd;
-  border-color: rgba(168, 85, 247, 0.3);
+  background: rgba(45, 212, 191, 0.08);
+  color: #dffaf7;
+  border-color: rgba(45, 212, 191, 0.2);
 }
 .bh-submit-slot-btn.active {
-  background: rgba(239, 68, 68, 0.15);
-  border-color: rgba(239, 68, 68, 0.4);
+  background: rgba(239, 68, 68, 0.14);
+  border-color: rgba(239, 68, 68, 0.28);
   color: #fca5a5;
 }
 
 .bh-submit-dropdown {
-  background: rgba(15, 15, 20, 0.7);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 8px;
-  padding: 8px 10px;
+  background: rgba(6, 12, 18, 0.76);
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 18px;
+  padding: 14px;
   margin-bottom: 6px;
   animation: bh-submit-slide 0.25s ease;
 }
@@ -4687,23 +4987,26 @@ body.wm-resizing {
 .bh-bet-field {
   width: 72px;
   flex-shrink: 0;
-  padding: 5px 7px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  min-height: 40px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(255, 255, 255, 0.04);
-  color: #e2e8f0;
+  color: #e8f7f4;
   font-size: 12.5px;
 }
 
 .bh-bet-field:focus {
   outline: none;
-  border-color: rgba(147, 70, 255, 0.4);
+  border-color: rgba(45, 212, 191, 0.4);
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
 }
 
 .bh-super-btn,
 .bh-extreme-btn {
-  padding: 4px 8px;
-  border-radius: 5px;
+  min-height: 40px;
+  padding: 0 12px;
+  border-radius: 14px;
   font-size: 10.9px;
   font-weight: 700;
   cursor: pointer;
@@ -4746,24 +5049,25 @@ body.wm-resizing {
 }
 
 .bh-add-btn {
-  padding: 6px 16px;
-  border-radius: 6px;
+  min-height: 40px;
+  padding: 0 18px;
+  border-radius: 14px;
   border: none;
-  background: linear-gradient(135deg, #a855f7, #7c3aed);
-  color: #fff;
+  background: linear-gradient(135deg, #14b8a6, #06b6d4);
+  color: #041215;
   font-size: 12.5px;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.15s;
   white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(124, 58, 237, 0.35);
+  box-shadow: 0 10px 24px rgba(6, 182, 212, 0.18);
   letter-spacing: 0.02em;
 }
 
 .bh-add-btn:hover:not(:disabled) {
-  background: linear-gradient(135deg, #b86dfa, #8b5cf6);
+  background: linear-gradient(135deg, #2dd4bf, #22d3ee);
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.45);
+  box-shadow: 0 14px 30px rgba(45, 212, 191, 0.22);
 }
 
 .bh-add-btn:disabled {
@@ -4797,41 +5101,41 @@ body.wm-resizing {
 .bh-sort-controls {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   margin-bottom: 8px;
   flex-wrap: wrap;
 }
 .bh-sort-label {
   font-size: 12px;
-  color: #94a3b8;
-  font-weight: 500;
+  color: #8ba6b0;
+  font-weight: 600;
 }
 .bh-sort-btn {
-  padding: 4px 10px;
-  border-radius: 6px;
-  border: 1px solid rgba(148, 163, 184, 0.2);
-  background: rgba(30, 41, 59, 0.5);
-  color: #94a3b8;
+  padding: 7px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.028);
+  color: #a9c0c8;
   font-size: 11.5px;
   cursor: pointer;
   transition: all 0.15s;
 }
 .bh-sort-btn:hover {
-  background: rgba(147, 70, 255, 0.15);
-  border-color: rgba(147, 70, 255, 0.3);
-  color: #c4b5fd;
+  background: rgba(45, 212, 191, 0.08);
+  border-color: rgba(45, 212, 191, 0.22);
+  color: #e0f7f3;
 }
 .bh-sort-btn--active {
-  background: rgba(147, 70, 255, 0.25);
-  border-color: #9346ff;
-  color: #e0d4ff;
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.18), rgba(34, 211, 238, 0.12));
+  border-color: rgba(45, 212, 191, 0.28);
+  color: #e7fffb;
 }
 
 /* Bonus list */
 .bh-list {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 8px;
   overflow-y: visible;
   padding-right: 2px;
 }
@@ -4847,18 +5151,20 @@ body.wm-resizing {
 .bh-list-item {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 8px;
-  border-radius: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.04);
-  background: rgba(255, 255, 255, 0.02);
-  transition: all 0.15s;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.02));
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
   flex-wrap: wrap;
 }
 
 .bh-list-item:hover {
-  border-color: rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(45, 212, 191, 0.2);
+  background: linear-gradient(180deg, rgba(45, 212, 191, 0.08), rgba(34, 211, 238, 0.04));
+  transform: translateY(-1px);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
 }
 
 .bh-list-item--super {
@@ -4881,18 +5187,18 @@ body.wm-resizing {
 /* --- Compact toggles row --- */
 .bh-toggles-row {
   display: flex;
-  gap: 6px;
-  margin-bottom: 10px;
+  gap: 10px;
+  margin-bottom: 12px;
 }
 .bh-compact-toggle {
   flex: 1;
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 7px 10px;
-  border-radius: 8px;
-  border: 1px solid rgba(100, 116, 139, 0.2);
-  background: rgba(15, 23, 42, 0.5);
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.03);
   cursor: pointer;
   user-select: none;
   transition: all 0.2s;
@@ -4901,17 +5207,17 @@ body.wm-resizing {
   display: none;
 }
 .bh-compact-toggle--active {
-  border-color: rgba(34, 197, 94, 0.4);
-  background: rgba(34, 197, 94, 0.06);
+  border-color: rgba(45, 212, 191, 0.24);
+  background: linear-gradient(135deg, rgba(45, 212, 191, 0.12), rgba(34, 211, 238, 0.08));
 }
 .bh-compact-text {
   font-size: 12px;
   font-weight: 600;
-  color: #94a3b8;
+  color: #9eb6bf;
   white-space: nowrap;
 }
 .bh-compact-toggle--active .bh-compact-text {
-  color: #4ade80;
+  color: #dffef7;
 }
 .bh-opening-switch {
   position: relative;
@@ -5031,19 +5337,19 @@ body.wm-resizing {
   justify-content: center;
   width: 26px;
   height: 26px;
-  border-radius: 5px;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 10px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
   background: rgba(255, 255, 255, 0.03);
-  color: #64748b;
+  color: #7f98a1;
   cursor: pointer;
   transition: all 0.15s;
   flex-shrink: 0;
   padding: 0;
 }
 .bh-list-icon-btn:hover {
-  color: #a78bfa;
-  background: rgba(147, 70, 255, 0.1);
-  border-color: rgba(147, 70, 255, 0.3);
+  color: #d7fffa;
+  background: rgba(45, 212, 191, 0.1);
+  border-color: rgba(45, 212, 191, 0.24);
 }
 
 /* --- Field columns (Bet, Payment, Mult) --- */
@@ -5075,7 +5381,7 @@ body.wm-resizing {
 }
 .bh-list-field-label {
   font-size: 9.6px;
-  color: #475569;
+  color: #68808a;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   font-weight: 600;
@@ -5084,7 +5390,7 @@ body.wm-resizing {
 .bh-list-field-value {
   font-size: 13.1px;
   font-weight: 600;
-  color: #e2e8f0;
+  color: #effaf9;
   font-variant-numeric: tabular-nums;
 }
 .bh-list-field-locked {
@@ -5100,11 +5406,12 @@ body.wm-resizing {
 /* --- Payout input --- */
 .bh-list-payout-input {
   width: 64px;
-  padding: 3px 6px;
-  border-radius: 4px;
-  border: 1px solid rgba(147, 70, 255, 0.25);
-  background: rgba(15, 23, 42, 0.8);
-  color: #e2e8f0;
+  min-height: 34px;
+  padding: 5px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(45, 212, 191, 0.18);
+  background: rgba(6, 12, 18, 0.78);
+  color: #edf8f6;
   font-size: 12.5px;
   font-variant-numeric: tabular-nums;
   text-align: center;
@@ -5112,8 +5419,8 @@ body.wm-resizing {
 }
 .bh-list-payout-input:focus {
   outline: none;
-  border-color: rgba(147, 70, 255, 0.6);
-  box-shadow: 0 0 0 2px rgba(147, 70, 255, 0.1);
+  border-color: rgba(45, 212, 191, 0.45);
+  box-shadow: 0 0 0 4px rgba(45, 212, 191, 0.08);
 }
 .bh-list-payout-input::placeholder {
   color: #334155;
@@ -5173,7 +5480,7 @@ body.wm-resizing {
 
 .bh-list-num {
   font-size: 10.9px;
-  color: #475569;
+  color: #6d8590;
   min-width: 18px;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
@@ -5182,9 +5489,10 @@ body.wm-resizing {
 .bh-list-img {
   width: 48px;
   height: 48px;
-  border-radius: 6px;
+  border-radius: 12px;
   object-fit: cover;
   flex-shrink: 0;
+  border: 1px solid rgba(148, 163, 184, 0.12);
 }
 
 .bh-list-info {
@@ -5197,8 +5505,8 @@ body.wm-resizing {
 
 .bh-list-name {
   font-size: 12.5px;
-  font-weight: 500;
-  color: #e2e8f0;
+  font-weight: 700;
+  color: #f0fbfa;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -5228,10 +5536,10 @@ body.wm-resizing {
 .bh-list-remove {
   background: transparent;
   border: none;
-  padding: 2px 5px;
-  color: #475569;
+  padding: 6px 8px;
+  color: #6f8892;
   cursor: pointer;
-  border-radius: 3px;
+  border-radius: 10px;
   font-size: 12.5px;
   transition: all 0.15s;
 }
@@ -5239,6 +5547,61 @@ body.wm-resizing {
 .bh-list-remove:hover {
   color: #ef4444;
   background: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 1180px) {
+  .bh-page-hero,
+  .bh-hunt-split {
+    grid-template-columns: 1fr;
+  }
+
+  .bh-page-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 860px) {
+  [data-tour="bonus-hunt-page"] {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  .bh-page-hero,
+  .bh-panel-section {
+    padding: 16px;
+  }
+
+  .bh-config .nb-tabs,
+  .bh-sr-state-grid,
+  .bh-toggles-row,
+  .bh-settings-row,
+  .bh-add-row,
+  .bh-save-hunt-actions {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+  }
+
+  .bh-page-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .bh-search-container.bh-search-half {
+    flex: 1 1 100%;
+    max-width: 100%;
+  }
+
+  .bh-bet-field,
+  .bh-add-btn,
+  .bh-super-btn,
+  .bh-extreme-btn,
+  .bh-submit-slot-btn {
+    width: 100%;
+  }
+
+  .bh-section-heading {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 /* =====================================================
@@ -9493,4 +9856,1233 @@ body.wm-resizing {
 @media (min-width: 700px) {
   .bk-setup { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
   .bk-start-area { grid-column: 1 / -1; }
+}
+
+/* -------------------------------------------------------
+   TOURNAMENT PAGE VISUAL OVERRIDES
+   ------------------------------------------------------- */
+
+[data-tour="tournament-page"] {
+  --tm-accent: #34d399;
+  --tm-cyan: #22d3ee;
+  --tm-gold: #fbbf24;
+  --tm-surface: rgba(8, 14, 19, 0.72);
+  --tm-surface-strong: rgba(7, 12, 17, 0.92);
+  --tm-border: rgba(148, 163, 184, 0.16);
+  --tm-border-strong: rgba(52, 211, 153, 0.22);
+  --tm-text: #ecfbf8;
+  --tm-muted: #88a6b0;
+  position: relative;
+  padding: 18px;
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(52, 211, 153, 0.1), transparent 35%),
+    linear-gradient(180deg, rgba(6, 12, 17, 0.97), rgba(6, 10, 15, 0.86));
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.28);
+}
+
+[data-tour="tournament-page"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.035), transparent 24%, transparent 74%, rgba(34, 211, 238, 0.05));
+}
+
+[data-tour="tournament-page"] .tm-page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+[data-tour="tournament-page"] .tm-page-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.95fr);
+  gap: 16px;
+  padding: 24px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.16), transparent 34%),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+    rgba(7, 13, 18, 0.82);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-tour="tournament-page"] .tm-page-hero-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-tour="tournament-page"] .tm-page-eyebrow,
+[data-tour="tournament-page"] .tm-section-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #7dd3fc;
+}
+
+[data-tour="tournament-page"] .tm-page-title,
+[data-tour="tournament-page"] .tm-section-title {
+  margin: 0;
+  color: #f4fffd;
+  letter-spacing: -0.03em;
+  line-height: 1.08;
+}
+
+[data-tour="tournament-page"] .tm-page-title {
+  font-size: clamp(1.55rem, 2vw, 2rem);
+}
+
+[data-tour="tournament-page"] .tm-page-subtitle,
+[data-tour="tournament-page"] .tm-tab-intro-copy {
+  margin: 0;
+  color: var(--tm-muted);
+  font-size: 13.2px;
+  line-height: 1.65;
+}
+
+[data-tour="tournament-page"] .tm-page-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+[data-tour="tournament-page"] .tm-page-metric-card {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  min-height: 92px;
+  padding: 14px 15px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+[data-tour="tournament-page"] .tm-page-metric-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: #8fb6c2;
+}
+
+[data-tour="tournament-page"] .tm-page-metric-value {
+  font-size: 1.35rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+  color: #f7fffe;
+}
+
+[data-tour="tournament-page"] .tm-page-metric-meta {
+  font-size: 11.2px;
+  color: var(--tm-muted);
+}
+
+[data-tour="tournament-page"] .tm-section-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 0 2px;
+}
+
+[data-tour="tournament-page"] .tm-section-title {
+  font-size: 18px;
+  margin-top: 6px;
+}
+
+[data-tour="tournament-page"] .tm-section-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.16), rgba(34, 211, 238, 0.14));
+  border: 1px solid rgba(52, 211, 153, 0.24);
+  color: #bafcee;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+[data-tour="tournament-page"] .tm-tab-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 18px 20px;
+  border-radius: 22px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.018));
+  border: 1px solid var(--tm-border);
+}
+
+[data-tour="tournament-page"] .nb-tabs {
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(18px);
+}
+
+[data-tour="tournament-page"] .nb-tab {
+  border-bottom: none;
+  border-radius: 14px;
+  padding: 11px 14px;
+  color: var(--tm-muted);
+  font-weight: 600;
+}
+
+[data-tour="tournament-page"] .nb-tab:hover {
+  color: var(--tm-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-tour="tournament-page"] .nb-tab--active {
+  color: #071316;
+  border-bottom-color: transparent;
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.94), rgba(34, 211, 238, 0.92));
+  box-shadow: 0 10px 24px rgba(34, 211, 238, 0.16);
+}
+
+[data-tour="tournament-page"] .nb-section,
+[data-tour="tournament-page"] .bk-card,
+[data-tour="tournament-page"] .bk-bracket-card,
+[data-tour="tournament-page"] .bk-match-panel,
+[data-tour="tournament-page"] .bk-details {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.02)),
+    var(--tm-surface);
+  border: 1px solid var(--tm-border);
+  border-radius: 22px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+}
+
+[data-tour="tournament-page"] .nb-section {
+  gap: 12px;
+  padding: 18px;
+}
+
+[data-tour="tournament-page"] .bk-card,
+[data-tour="tournament-page"] .bk-bracket-card,
+[data-tour="tournament-page"] .bk-match-panel {
+  position: relative;
+  overflow: hidden;
+  padding: 18px;
+}
+
+[data-tour="tournament-page"] .bk-card::before,
+[data-tour="tournament-page"] .bk-bracket-card::before,
+[data-tour="tournament-page"] .bk-match-panel::before,
+[data-tour="tournament-page"] .nb-section::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 160px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(52, 211, 153, 0.55), transparent);
+}
+
+[data-tour="tournament-page"] .nb-section,
+[data-tour="tournament-page"] .bk-card,
+[data-tour="tournament-page"] .bk-bracket-card,
+[data-tour="tournament-page"] .bk-match-panel {
+  position: relative;
+}
+
+[data-tour="tournament-page"] .bk-tab {
+  gap: 14px;
+}
+
+[data-tour="tournament-page"] .bk-card-title,
+[data-tour="tournament-page"] .bk-active-title,
+[data-tour="tournament-page"] .bk-mp-title,
+[data-tour="tournament-page"] .nb-subtitle {
+  color: #f4fffd;
+  letter-spacing: -0.02em;
+}
+
+[data-tour="tournament-page"] .bk-hint,
+[data-tour="tournament-page"] .oc-config-hint,
+[data-tour="tournament-page"] .bk-label {
+  color: var(--tm-muted);
+}
+
+[data-tour="tournament-page"] .bk-label,
+[data-tour="tournament-page"] .nb-subtitle {
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+[data-tour="tournament-page"] .tm-card-head {
+  margin-bottom: 12px;
+}
+
+[data-tour="tournament-page"] .bk-field {
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+[data-tour="tournament-page"] .bk-input,
+[data-tour="tournament-page"] .bk-mp-input-wrap input[type="number"],
+[data-tour="tournament-page"] .nb-field input,
+[data-tour="tournament-page"] .nb-field select,
+[data-tour="tournament-page"] .nb-preset-input,
+[data-tour="tournament-page"] .oc-widget-css-input {
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--tm-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+[data-tour="tournament-page"] .bk-input:focus,
+[data-tour="tournament-page"] .bk-mp-input-wrap input[type="number"]:focus,
+[data-tour="tournament-page"] .nb-field input:focus,
+[data-tour="tournament-page"] .nb-field select:focus,
+[data-tour="tournament-page"] .nb-preset-input:focus,
+[data-tour="tournament-page"] .oc-widget-css-input:focus {
+  border-color: rgba(52, 211, 153, 0.42);
+  box-shadow: 0 0 0 4px rgba(52, 211, 153, 0.08);
+  outline: none;
+}
+
+[data-tour="tournament-page"] .bk-type-grid {
+  gap: 10px;
+}
+
+[data-tour="tournament-page"] .bk-type-btn,
+[data-tour="tournament-page"] .bk-count-btn,
+[data-tour="tournament-page"] .oc-bg-mode-btn,
+[data-tour="tournament-page"] .nb-preset-load-btn,
+[data-tour="tournament-page"] .nb-preset-save-btn,
+[data-tour="tournament-page"] .nb-preset-pill__load,
+[data-tour="tournament-page"] .bk-reset-btn,
+[data-tour="tournament-page"] .bk-fill-btn,
+[data-tour="tournament-page"] .bk-slot-tag-btn,
+[data-tour="tournament-page"] .bk-slot-action-btn,
+[data-tour="tournament-page"] .bk-mp-winner-btn,
+[data-tour="tournament-page"] .bk-reset-match-btn {
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+[data-tour="tournament-page"] .bk-type-btn,
+[data-tour="tournament-page"] .bk-count-btn,
+[data-tour="tournament-page"] .oc-bg-mode-btn {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-tour="tournament-page"] .bk-type-btn:hover,
+[data-tour="tournament-page"] .bk-count-btn:hover,
+[data-tour="tournament-page"] .oc-bg-mode-btn:hover,
+[data-tour="tournament-page"] .bk-fill-btn:hover,
+[data-tour="tournament-page"] .bk-reset-btn:hover,
+[data-tour="tournament-page"] .bk-slot-tag-btn:hover,
+[data-tour="tournament-page"] .bk-slot-action-btn:hover,
+[data-tour="tournament-page"] .bk-mp-winner-btn:hover,
+[data-tour="tournament-page"] .bk-reset-match-btn:hover,
+[data-tour="tournament-page"] .nb-preset-load-btn:hover,
+[data-tour="tournament-page"] .nb-preset-save-btn:hover,
+[data-tour="tournament-page"] .nb-preset-pill__load:hover {
+  transform: translateY(-1px);
+}
+
+[data-tour="tournament-page"] .bk-type-btn--active,
+[data-tour="tournament-page"] .bk-count-btn--active,
+[data-tour="tournament-page"] .oc-bg-mode-btn--active {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.18), rgba(34, 211, 238, 0.12));
+  border-color: rgba(52, 211, 153, 0.28);
+  box-shadow: 0 10px 24px rgba(34, 211, 238, 0.12);
+}
+
+[data-tour="tournament-page"] .bk-type-name,
+[data-tour="tournament-page"] .bk-slot-locked-name,
+[data-tour="tournament-page"] .bk-mp-p-name,
+[data-tour="tournament-page"] .bk-mc-name {
+  color: #f1fcfb;
+}
+
+[data-tour="tournament-page"] .bk-type-desc,
+[data-tour="tournament-page"] .bk-mp-p-slot,
+[data-tour="tournament-page"] .bk-progress-info,
+[data-tour="tournament-page"] .bk-round-label,
+[data-tour="tournament-page"] .bk-mc-vs,
+[data-tour="tournament-page"] .bk-score-sep,
+[data-tour="tournament-page"] .bk-mp-input-prefix,
+[data-tour="tournament-page"] .bk-mp-input-label,
+[data-tour="tournament-page"] .bk-mp-round-vs,
+[data-tour="tournament-page"] .bk-badge--players,
+[data-tour="tournament-page"] .bk-badge--pending {
+  color: #7f9aa4;
+}
+
+[data-tour="tournament-page"] .bk-player-row,
+[data-tour="tournament-page"] .bk-slot-locked,
+[data-tour="tournament-page"] .bk-progress,
+[data-tour="tournament-page"] .bk-match-card,
+[data-tour="tournament-page"] .bk-mp-players,
+[data-tour="tournament-page"] .bk-mp-round,
+[data-tour="tournament-page"] .bk-details summary {
+  background: rgba(255, 255, 255, 0.03);
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+[data-tour="tournament-page"] .bk-player-row,
+[data-tour="tournament-page"] .bk-match-card,
+[data-tour="tournament-page"] .bk-slot-locked {
+  border-radius: 18px;
+}
+
+[data-tour="tournament-page"] .bk-player-row:hover,
+[data-tour="tournament-page"] .bk-match-card:hover,
+[data-tour="tournament-page"] .bk-slot-locked:hover {
+  border-color: rgba(52, 211, 153, 0.22);
+  background: linear-gradient(180deg, rgba(52, 211, 153, 0.08), rgba(34, 211, 238, 0.04));
+}
+
+[data-tour="tournament-page"] .bk-slot-dropdown {
+  background: rgba(7, 13, 18, 0.98);
+  border: 1px solid rgba(52, 211, 153, 0.18);
+  border-radius: 18px;
+  padding: 4px;
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.34);
+}
+
+[data-tour="tournament-page"] .bk-slot-option {
+  border-radius: 12px;
+}
+
+[data-tour="tournament-page"] .bk-slot-option:hover {
+  background: rgba(52, 211, 153, 0.1);
+}
+
+[data-tour="tournament-page"] .bk-start-btn,
+[data-tour="tournament-page"] .nb-preset-save-btn,
+[data-tour="tournament-page"] .nb-preset-load-btn,
+[data-tour="tournament-page"] .nb-preset-pill__load {
+  background: linear-gradient(135deg, #10b981, #06b6d4);
+  border-color: rgba(16, 185, 129, 0.28);
+  color: #041316;
+  box-shadow: 0 12px 28px rgba(6, 182, 212, 0.16);
+}
+
+[data-tour="tournament-page"] .bk-start-btn:hover,
+[data-tour="tournament-page"] .nb-preset-save-btn:hover,
+[data-tour="tournament-page"] .nb-preset-load-btn:hover,
+[data-tour="tournament-page"] .nb-preset-pill__load:hover {
+  box-shadow: 0 16px 34px rgba(16, 185, 129, 0.2);
+}
+
+[data-tour="tournament-page"] .bk-fill-btn {
+  background: rgba(251, 191, 36, 0.12);
+  border-color: rgba(251, 191, 36, 0.22);
+  color: #fcd66c;
+}
+
+[data-tour="tournament-page"] .bk-reset-btn,
+[data-tour="tournament-page"] .bk-reset-match-btn,
+[data-tour="tournament-page"] .nb-preset-pill__delete {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #fda4af;
+}
+
+[data-tour="tournament-page"] .bk-badge--type,
+[data-tour="tournament-page"] .bk-badge--live,
+[data-tour="tournament-page"] .bk-badge--done,
+[data-tour="tournament-page"] .bk-mp-winner-btn--active {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.16), rgba(34, 211, 238, 0.14));
+  border-color: rgba(52, 211, 153, 0.22);
+  color: #bcfff2;
+}
+
+[data-tour="tournament-page"] .bk-progress-track {
+  height: 8px;
+  border-radius: 999px;
+}
+
+[data-tour="tournament-page"] .bk-progress-fill {
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981, #22d3ee, #fbbf24);
+}
+
+[data-tour="tournament-page"] .bk-champion {
+  border-radius: 20px;
+  padding: 14px 18px;
+  justify-content: flex-start;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.14), rgba(16, 185, 129, 0.08));
+  border-color: rgba(251, 191, 36, 0.2);
+}
+
+[data-tour="tournament-page"] .bk-champion-name {
+  color: #ffe59a;
+}
+
+[data-tour="tournament-page"] .bk-bracket-scroll {
+  padding-bottom: 10px;
+}
+
+[data-tour="tournament-page"] .bk-round-label {
+  color: #8af5e2;
+  border-bottom-color: rgba(52, 211, 153, 0.16);
+}
+
+[data-tour="tournament-page"] .bk-match-card {
+  padding: 12px 13px;
+  gap: 3px;
+}
+
+[data-tour="tournament-page"] .bk-match-card--active {
+  background: linear-gradient(180deg, rgba(52, 211, 153, 0.16), rgba(34, 211, 238, 0.08)) !important;
+  border-color: rgba(52, 211, 153, 0.28) !important;
+  box-shadow: 0 12px 28px rgba(6, 182, 212, 0.12);
+}
+
+[data-tour="tournament-page"] .bk-mc-player--win,
+[data-tour="tournament-page"] .bk-score-win,
+[data-tour="tournament-page"] .bk-mp-result--pos,
+[data-tour="tournament-page"] .bk-mp-round-winner,
+[data-tour="tournament-page"] .bk-mc-winner-badge {
+  color: #8af5e2;
+}
+
+[data-tour="tournament-page"] .bk-mc-player--lose,
+[data-tour="tournament-page"] .bk-mp-result--neg {
+  color: #fda4af;
+}
+
+[data-tour="tournament-page"] .bk-mp-players {
+  padding: 12px 14px;
+  border-radius: 18px;
+}
+
+[data-tour="tournament-page"] .bk-mp-p {
+  border-radius: 16px;
+}
+
+[data-tour="tournament-page"] .bk-mp-p--win {
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.14), rgba(34, 211, 238, 0.08));
+  border-color: rgba(52, 211, 153, 0.22);
+}
+
+[data-tour="tournament-page"] .bk-mp-scoreboard {
+  padding: 10px 0 14px;
+  font-size: 26px;
+}
+
+[data-tour="tournament-page"] .bk-mp-round {
+  border-radius: 18px;
+}
+
+[data-tour="tournament-page"] .bk-mp-side-name {
+  color: #b9fff3;
+}
+
+[data-tour="tournament-page"] .bk-mp-result {
+  color: #fde68a;
+}
+
+[data-tour="tournament-page"] .bk-details {
+  overflow: hidden;
+}
+
+[data-tour="tournament-page"] .bk-details summary {
+  padding: 12px 14px;
+  color: #cff9f1;
+}
+
+[data-tour="tournament-page"] .bk-details-body {
+  padding: 10px 14px 14px;
+}
+
+[data-tour="tournament-page"] .oc-bg-mode-grid,
+[data-tour="tournament-page"] .nb-preset-save,
+[data-tour="tournament-page"] .nb-preset-list {
+  gap: 10px;
+}
+
+[data-tour="tournament-page"] .nb-preset-pill {
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+@media (max-width: 1180px) {
+  [data-tour="tournament-page"] .tm-page-hero,
+  [data-tour="tournament-page"] .bk-active-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  [data-tour="tournament-page"] {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  [data-tour="tournament-page"] .tm-page-hero,
+  [data-tour="tournament-page"] .nb-section,
+  [data-tour="tournament-page"] .bk-card,
+  [data-tour="tournament-page"] .bk-bracket-card,
+  [data-tour="tournament-page"] .bk-match-panel {
+    padding: 16px;
+  }
+
+  [data-tour="tournament-page"] .tm-page-metrics,
+  [data-tour="tournament-page"] .bk-type-grid,
+  [data-tour="tournament-page"] .bk-count-row,
+  [data-tour="tournament-page"] .bk-mp-round-grid,
+  [data-tour="tournament-page"] .bk-mp-players,
+  [data-tour="tournament-page"] .bk-active-header,
+  [data-tour="tournament-page"] .tm-section-heading,
+  [data-tour="tournament-page"] .tm-card-head,
+  [data-tour="tournament-page"] .nb-preset-save {
+    grid-template-columns: 1fr;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  [data-tour="tournament-page"] .bk-player-row,
+  [data-tour="tournament-page"] .bk-slot-locked,
+  [data-tour="tournament-page"] .bk-slot-locked-actions,
+  [data-tour="tournament-page"] .bk-slot-input-row {
+    flex-wrap: wrap;
+  }
+
+  [data-tour="tournament-page"] .bk-bracket-round {
+    min-width: 220px;
+  }
+
+  [data-tour="tournament-page"] .tm-section-pill {
+    align-self: flex-start;
+  }
+}
+
+/* -------------------------------------------------------
+   BONUS BUYS PAGE VISUAL OVERRIDES
+   ------------------------------------------------------- */
+
+[data-tour="bonus-buys-page"] {
+  --bb-surface: rgba(10, 13, 22, 0.86);
+  --bb-surface-strong: rgba(8, 11, 18, 0.95);
+  --bb-border: rgba(148, 163, 184, 0.14);
+  --bb-border-strong: rgba(96, 165, 250, 0.24);
+  --bb-text: #f3f8ff;
+  --bb-muted: #8da4c4;
+  --bb-accent: #60a5fa;
+  --bb-violet: #a78bfa;
+  --bb-green: #4ade80;
+  --bb-red: #f87171;
+  position: relative;
+  padding: 18px;
+  border-radius: 28px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.12), transparent 32%),
+    radial-gradient(circle at top right, rgba(167, 139, 250, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(8, 11, 18, 0.98), rgba(7, 10, 16, 0.88));
+  border: 1px solid rgba(148, 163, 184, 0.08);
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.28);
+}
+
+[data-tour="bonus-buys-page"]::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(140deg, rgba(255, 255, 255, 0.04), transparent 28%, transparent 70%, rgba(96, 165, 250, 0.06));
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-page {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(320px, 1fr);
+  gap: 16px;
+  padding: 24px;
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 34%),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015)),
+    rgba(9, 13, 22, 0.8);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-hero-copy,
+[data-tour="bonus-buys-page"] .bb-admin-hero-side,
+[data-tour="bonus-buys-page"] .bb-admin-slot-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-eyebrow,
+[data-tour="bonus-buys-page"] .bb-admin-section-eyebrow,
+[data-tour="bonus-buys-page"] .bb-admin-slot-label,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot-label,
+[data-tour="bonus-buys-page"] .bb-admin-stat-label,
+[data-tour="bonus-buys-page"] .bb-admin-metric-label,
+[data-tour="bonus-buys-page"] .bb-admin-note-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #93c5fd;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-title,
+[data-tour="bonus-buys-page"] .bb-admin-section-title,
+[data-tour="bonus-buys-page"] .bb-admin-slot-name,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot-name,
+[data-tour="bonus-buys-page"] .bb-admin-card-title {
+  margin: 0;
+  color: var(--bb-text);
+  letter-spacing: -0.03em;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-title {
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  line-height: 1.08;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-subtitle,
+[data-tour="bonus-buys-page"] .bb-admin-helper,
+[data-tour="bonus-buys-page"] .bb-admin-slot-meta,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot-meta,
+[data-tour="bonus-buys-page"] .bb-admin-insight-copy,
+[data-tour="bonus-buys-page"] .bb-admin-note-copy,
+[data-tour="bonus-buys-page"] .bb-admin-metric-meta,
+[data-tour="bonus-buys-page"] .bb-admin-progress-copy span {
+  margin: 0;
+  color: var(--bb-muted);
+  font-size: 12.6px;
+  line-height: 1.65;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-progress {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: auto;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-progress-track {
+  overflow: hidden;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa, #818cf8, #a78bfa);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-progress-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-progress-copy strong,
+[data-tour="bonus-buys-page"] .bb-admin-metric-value,
+[data-tour="bonus-buys-page"] .bb-admin-stat-value,
+[data-tour="bonus-buys-page"] .bb-admin-note-value,
+[data-tour="bonus-buys-page"] .bb-admin-summary-value {
+  color: #f8fbff;
+  font-weight: 800;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-slot-card,
+[data-tour="bonus-buys-page"] .bb-admin-metric-card,
+[data-tour="bonus-buys-page"] .bb-admin-card,
+[data-tour="bonus-buys-page"] .bb-admin-stat-card,
+[data-tour="bonus-buys-page"] .bb-admin-note-card,
+[data-tour="bonus-buys-page"] .bb-admin-search-result,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot,
+[data-tour="bonus-buys-page"] .bb-admin-empty {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.018)),
+    var(--bb-surface);
+  border: 1px solid var(--bb-border);
+  border-radius: 20px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-slot-card,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot {
+  display: grid;
+  grid-template-columns: 112px minmax(0, 1fr);
+  gap: 14px;
+  padding: 14px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-slot-media,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot-media {
+  overflow: hidden;
+  min-height: 92px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-slot-image,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-slot-placeholder,
+[data-tour="bonus-buys-page"] .bb-admin-selected-slot-placeholder {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-size: 2rem;
+  color: #dbeafe;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-metrics,
+[data-tour="bonus-buys-page"] .bb-admin-stats-grid,
+[data-tour="bonus-buys-page"] .bb-admin-color-grid,
+[data-tour="bonus-buys-page"] .bb-admin-field-grid--two {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-metric-card,
+[data-tour="bonus-buys-page"] .bb-admin-stat-card,
+[data-tour="bonus-buys-page"] .bb-admin-note-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 14px 15px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-metric-value,
+[data-tour="bonus-buys-page"] .bb-admin-stat-value {
+  font-size: 1.25rem;
+  line-height: 1;
+  letter-spacing: -0.03em;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-metric-value--positive,
+[data-tour="bonus-buys-page"] .bb-admin-stat-value--positive,
+[data-tour="bonus-buys-page"] .bb-admin-summary-value--positive {
+  color: var(--bb-green);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-metric-value--negative,
+[data-tour="bonus-buys-page"] .bb-admin-stat-value--negative,
+[data-tour="bonus-buys-page"] .bb-admin-summary-value--negative {
+  color: var(--bb-red);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-stat-value--accent,
+[data-tour="bonus-buys-page"] .bb-admin-summary-value--accent {
+  color: var(--bb-accent);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-tab {
+  flex: 1;
+  min-height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--bb-muted);
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-tab:hover {
+  color: var(--bb-text);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-tab--active {
+  color: #07111d;
+  background: linear-gradient(135deg, #60a5fa, #818cf8);
+  box-shadow: 0 10px 24px rgba(96, 165, 250, 0.18);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-section {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-section-heading,
+[data-tour="bonus-buys-page"] .bb-admin-card-header,
+[data-tour="bonus-buys-page"] .bb-admin-add-row,
+[data-tour="bonus-buys-page"] .bb-admin-summary-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-section-title {
+  font-size: 18px;
+  line-height: 1.15;
+  margin-top: 6px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-section-pill,
+[data-tour="bonus-buys-page"] .bb-admin-card-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(96, 165, 250, 0.16), rgba(167, 139, 250, 0.14));
+  border: 1px solid var(--bb-border-strong);
+  color: #dbeafe;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-setup-grid,
+[data-tour="bonus-buys-page"] .bb-admin-track-grid,
+[data-tour="bonus-buys-page"] .bb-admin-style-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+  gap: 14px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-track-main,
+[data-tour="bonus-buys-page"] .bb-admin-track-side {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-card {
+  position: relative;
+  padding: 18px;
+  overflow: hidden;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-card::before,
+[data-tour="bonus-buys-page"] .bb-admin-empty::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto auto 0;
+  width: 140px;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(96, 165, 250, 0.5), transparent);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-field-grid--two {
+  margin-top: 10px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-field-label {
+  display: block;
+  margin-bottom: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a5b9d6;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-field-input,
+[data-tour="bonus-buys-page"] .bb-admin-field-select {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--bb-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-field-input:focus,
+[data-tour="bonus-buys-page"] .bb-admin-field-select:focus {
+  outline: none;
+  border-color: rgba(96, 165, 250, 0.4);
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.08);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-results,
+[data-tour="bonus-buys-page"] .bb-admin-results-list,
+[data-tour="bonus-buys-page"] .bb-admin-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-results,
+[data-tour="bonus-buys-page"] .bb-admin-results-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 12px;
+  padding-right: 4px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-result {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px;
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: transform 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-result:hover,
+[data-tour="bonus-buys-page"] .bb-admin-search-result--active {
+  transform: translateY(-1px);
+  border-color: rgba(96, 165, 250, 0.26);
+  background: linear-gradient(180deg, rgba(96, 165, 250, 0.12), rgba(129, 140, 248, 0.08));
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-result-image {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-result-copy {
+  min-width: 0;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-result-title {
+  color: var(--bb-text);
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-search-result-meta,
+[data-tour="bonus-buys-page"] .bb-admin-result-cost {
+  color: var(--bb-muted);
+  font-size: 12px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn,
+[data-tour="bonus-buys-page"] .bb-admin-secondary-btn,
+[data-tour="bonus-buys-page"] .bb-admin-result-remove {
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  cursor: pointer;
+  transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn,
+[data-tour="bonus-buys-page"] .bb-admin-secondary-btn {
+  min-height: 42px;
+  padding: 0 14px;
+  font-weight: 700;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn {
+  background: linear-gradient(135deg, #60a5fa, #818cf8);
+  border-color: rgba(96, 165, 250, 0.24);
+  color: #06111d;
+  box-shadow: 0 12px 28px rgba(96, 165, 250, 0.18);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-secondary-btn {
+  background: rgba(255, 255, 255, 0.04);
+  color: #dbeafe;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-secondary-btn--danger,
+[data-tour="bonus-buys-page"] .bb-admin-result-remove {
+  background: rgba(248, 113, 113, 0.12);
+  border-color: rgba(248, 113, 113, 0.2);
+  color: #fda4af;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-primary-btn:hover,
+[data-tour="bonus-buys-page"] .bb-admin-secondary-btn:hover,
+[data-tour="bonus-buys-page"] .bb-admin-result-remove:hover {
+  transform: translateY(-1px);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-message {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.18);
+  color: #bbf7d0;
+  font-size: 12.5px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr auto auto;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  background: rgba(255, 255, 255, 0.03);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-row--profit {
+  border-color: rgba(74, 222, 128, 0.16);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-row--loss {
+  border-color: rgba(248, 113, 113, 0.16);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-index,
+[data-tour="bonus-buys-page"] .bb-admin-result-multi {
+  color: var(--bb-accent);
+  font-weight: 800;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-win {
+  justify-self: end;
+  font-weight: 700;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-row--profit .bb-admin-result-win {
+  color: var(--bb-green);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-row--loss .bb-admin-result-win {
+  color: var(--bb-red);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-result-remove {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-summary-row {
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.08);
+  color: var(--bb-muted);
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-summary-row--final {
+  border-bottom: 0;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-empty {
+  position: relative;
+  padding: 22px;
+  color: var(--bb-muted);
+  text-align: center;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-empty--compact {
+  padding: 18px;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-color-input {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+}
+
+[data-tour="bonus-buys-page"] .bb-admin-color-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+@media (max-width: 1180px) {
+  [data-tour="bonus-buys-page"] .bb-admin-hero,
+  [data-tour="bonus-buys-page"] .bb-admin-setup-grid,
+  [data-tour="bonus-buys-page"] .bb-admin-track-grid,
+  [data-tour="bonus-buys-page"] .bb-admin-style-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 860px) {
+  [data-tour="bonus-buys-page"] {
+    padding: 14px;
+    border-radius: 22px;
+  }
+
+  [data-tour="bonus-buys-page"] .bb-admin-hero,
+  [data-tour="bonus-buys-page"] .bb-admin-card,
+  [data-tour="bonus-buys-page"] .bb-admin-slot-card {
+    padding: 16px;
+  }
+
+  [data-tour="bonus-buys-page"] .bb-admin-tabs,
+  [data-tour="bonus-buys-page"] .bb-admin-progress-copy,
+  [data-tour="bonus-buys-page"] .bb-admin-section-heading,
+  [data-tour="bonus-buys-page"] .bb-admin-card-header,
+  [data-tour="bonus-buys-page"] .bb-admin-add-row,
+  [data-tour="bonus-buys-page"] .bb-admin-summary-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  [data-tour="bonus-buys-page"] .bb-admin-metrics,
+  [data-tour="bonus-buys-page"] .bb-admin-stats-grid,
+  [data-tour="bonus-buys-page"] .bb-admin-color-grid,
+  [data-tour="bonus-buys-page"] .bb-admin-field-grid--two,
+  [data-tour="bonus-buys-page"] .bb-admin-slot-card,
+  [data-tour="bonus-buys-page"] .bb-admin-selected-slot,
+  [data-tour="bonus-buys-page"] .bb-admin-result-row {
+    grid-template-columns: 1fr;
+  }
+
+  [data-tour="bonus-buys-page"] .bb-admin-section-pill,
+  [data-tour="bonus-buys-page"] .bb-admin-card-chip {
+    align-self: flex-start;
+  }
+
+  [data-tour="bonus-buys-page"] .bb-admin-result-win,
+  [data-tour="bonus-buys-page"] .bb-admin-result-multi {
+    justify-self: start;
+  }
 }

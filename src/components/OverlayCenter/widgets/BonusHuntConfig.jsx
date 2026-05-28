@@ -1013,11 +1013,52 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     handleDismissRequest(req.id);
   };
 
+  const openedCount = bonusList.filter(b => b.opened || Number(b.payout) > 0).length;
+
   return (
     <div className="bh-panel">
 
+      <div className="bh-page-hero">
+        <div className="bh-page-hero-copy">
+          <span className="bh-page-eyebrow">Live Session Control</span>
+          <h3 className="bh-page-title">Bonus Hunt command center</h3>
+          <p className="bh-page-subtitle">
+            Configure bankroll, triage viewer requests, add bonuses, and enter payouts from one focused stream-ready surface.
+          </p>
+        </div>
+        <div className="bh-page-metrics">
+          <div className="bh-page-metric-card">
+            <span className="bh-page-metric-label">Hunt</span>
+            <strong className="bh-page-metric-value">{huntNumber || 'Draft'}</strong>
+            <span className="bh-page-metric-meta">{casinoName || 'Casino not set'}</span>
+          </div>
+          <div className="bh-page-metric-card">
+            <span className="bh-page-metric-label">Bonuses</span>
+            <strong className="bh-page-metric-value">{bonusList.length}</strong>
+            <span className="bh-page-metric-meta">{openedCount} opened</span>
+          </div>
+          <div className="bh-page-metric-card">
+            <span className="bh-page-metric-label">Requests</span>
+            <strong className="bh-page-metric-value">{slotRequests.length}</strong>
+            <span className="bh-page-metric-meta">Viewer queue</span>
+          </div>
+          <div className="bh-page-metric-card">
+            <span className="bh-page-metric-label">Opening</span>
+            <strong className="bh-page-metric-value">{bonusOpening ? 'Live' : 'Locked'}</strong>
+            <span className="bh-page-metric-meta">{currency}{Number(startMoney) || 0} start</span>
+          </div>
+        </div>
+      </div>
+
       {/* ─── Hunt Settings ─── */}
-      <div className="bh-panel-section">
+      <div className="bh-panel-section bh-panel-section--setup">
+        <div className="bh-section-heading">
+          <div>
+            <span className="bh-section-eyebrow">Session Setup</span>
+            <h3 className="bh-section-title">Configure the hunt and manage incoming requests</h3>
+          </div>
+          <span className="bh-section-pill">Live Sync</span>
+        </div>
         {/* Casino name (optional) */}
         <div className="bh-settings-row" style={{ marginBottom: 8 }}>
           <label className="bh-input-group" style={{ flex: 1 }}>
@@ -1062,46 +1103,37 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
               <span className="bh-sr-queue-title">🎰 Requests <span className="bh-sr-queue-count">{slotRequests.length}</span></span>
               {slotRequests.length > 0 && (
-                <button className="bh-sr-queue-btn" onClick={handleClearAllRequests}
-                  style={{ fontSize: 10, padding: '2px 8px', background: 'rgba(239,68,68,0.15)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 4, cursor: 'pointer' }}
+                <button className="bh-sr-queue-btn bh-sr-queue-btn--clear" onClick={handleClearAllRequests}
                   title="Clear all requests &amp; refund points">🗑️ Clear All</button>
               )}
             </div>
 
             {/* Toggle buttons row */}
-            <div style={{ display: 'flex', gap: 6, marginBottom: 6 }}>
+            <div className="bh-sr-state-grid">
               {/* Toggle: Show/Hide SR Widget on overlay */}
               <button
+                className={`bh-sr-state-btn ${(c.showSlotRequests !== false) ? 'bh-sr-state-btn--on' : 'bh-sr-state-btn--off'}`}
                 onClick={() => onChange({ ...config, showSlotRequests: !(c.showSlotRequests !== false) })}
-                style={{
-                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                  padding: '5px 8px', fontSize: 10, fontWeight: 600, borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid',
-                  background: (c.showSlotRequests !== false) ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                  color: (c.showSlotRequests !== false) ? '#4ade80' : '#f87171',
-                  borderColor: (c.showSlotRequests !== false) ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
-                }}
                 title={(c.showSlotRequests !== false) ? 'Hide slot requests widget on stream overlay' : 'Show slot requests widget on stream overlay'}
               >
-                <span style={{ fontSize: 12 }}>{(c.showSlotRequests !== false) ? '👁️' : '🚫'}</span>
-                {(c.showSlotRequests !== false) ? 'Widget ON' : 'Widget OFF'}
+                <span className="bh-sr-state-icon">{(c.showSlotRequests !== false) ? '👁️' : '🚫'}</span>
+                <span className="bh-sr-state-copy">
+                  <span className="bh-sr-state-label">Widget</span>
+                  <span className="bh-sr-state-value">{(c.showSlotRequests !== false) ? 'Visible on stream' : 'Hidden from stream'}</span>
+                </span>
               </button>
 
               {/* Toggle: Listen/Stop listening to !sr command */}
               <button
+                className={`bh-sr-state-btn ${(c.srChatEnabled !== false) ? 'bh-sr-state-btn--on' : 'bh-sr-state-btn--off'}`}
                 onClick={() => onChange({ ...config, srChatEnabled: !(c.srChatEnabled !== false) })}
-                style={{
-                  flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-                  padding: '5px 8px', fontSize: 10, fontWeight: 600, borderRadius: 6, cursor: 'pointer',
-                  border: '1px solid',
-                  background: (c.srChatEnabled !== false) ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)',
-                  color: (c.srChatEnabled !== false) ? '#4ade80' : '#f87171',
-                  borderColor: (c.srChatEnabled !== false) ? 'rgba(34,197,94,0.3)' : 'rgba(239,68,68,0.3)',
-                }}
                 title={(c.srChatEnabled !== false) ? 'Stop listening for !sr commands in chat' : 'Start listening for !sr commands in chat'}
               >
-                <span style={{ fontSize: 12 }}>{(c.srChatEnabled !== false) ? '📡' : '🔇'}</span>
-                {(c.srChatEnabled !== false) ? 'Listening' : 'Not Listening'}
+                <span className="bh-sr-state-icon">{(c.srChatEnabled !== false) ? '📡' : '🔇'}</span>
+                <span className="bh-sr-state-copy">
+                  <span className="bh-sr-state-label">Chat Sync</span>
+                  <span className="bh-sr-state-value">{(c.srChatEnabled !== false) ? 'Listening for !sr' : 'Requests paused'}</span>
+                </span>
               </button>
             </div>
 
@@ -1131,7 +1163,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       </div>
 
       {/* ─── Add Bonus ─── */}
-      <div className="bh-panel-section">
+      <div className="bh-panel-section bh-panel-section--add">
+        <div className="bh-section-heading">
+          <div>
+            <span className="bh-section-eyebrow">Queue Builder</span>
+            <h3 className="bh-section-title">Search the slot database and add new entries quickly</h3>
+          </div>
+          <span className="bh-section-pill">Manual + !sr</span>
+        </div>
         <h4 className="bh-panel-label" style={{ margin: '0 0 4px 0' }}>Add Bonus</h4>
 
         {/* Row 1: Search */}
@@ -1326,7 +1365,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       </div>
 
       {/* ─── Bonus List ─── */}
-      <div className="bh-panel-section">
+      <div className="bh-panel-section bh-panel-section--list">
+        <div className="bh-section-heading">
+          <div>
+            <span className="bh-section-eyebrow">Opening Queue</span>
+            <h3 className="bh-section-title">Track order, payouts, and multipliers with better at-a-glance clarity</h3>
+          </div>
+          <span className="bh-section-pill">{openedCount}/{bonusList.length || 0} opened</span>
+        </div>
         {/* ── Bonus Opening + Auto-Tracker toggles ── */}
         <div className="bh-toggles-row">
           <label className={`bh-compact-toggle ${bonusOpening ? 'bh-compact-toggle--active' : ''}`}>
@@ -1526,7 +1572,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Save Hunt to Library & Start New ─── */}
       {bonusList.length > 0 && (
-        <div className="bh-panel-section">
+        <div className="bh-panel-section bh-panel-section--save">
           <div className="bh-save-hunt-section">
             <div className="bh-save-hunt-header">
               <span className="bh-save-hunt-icon">📚</span>

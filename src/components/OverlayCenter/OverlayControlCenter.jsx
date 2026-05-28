@@ -358,18 +358,6 @@ export default function OverlayControlCenter() {
 
             <div className="oc-sidebar-divider-label">Management</div>
 
-            {/* ─── Themes ─── */}
-            <button
-              className={`oc-sidebar-btn ${activePanel === 'theme' ? 'oc-sidebar-btn--active' : ''}`}
-              onClick={() => { setActivePanel('theme'); setSidebarOpen(false); }}
-            >
-              <span className="oc-sidebar-btn-icon">🎨</span>
-              <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Themes</span>
-                <span className="oc-sidebar-btn-desc">Change widget appearance</span>
-              </div>
-            </button>
-
             {/* ─── Library ─── */}
             <button
               className={`oc-sidebar-btn ${activePanel === 'library' ? 'oc-sidebar-btn--active' : ''}`}
@@ -530,9 +518,6 @@ export default function OverlayControlCenter() {
           )}
           {activePanel === 'library' && (
             <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />
-          )}
-          {activePanel === 'theme' && (
-            <ThemesPage onApply={syncThemeToWidgets} />
           )}
           {activePanel === 'presets' && (
             <PresetLibrary

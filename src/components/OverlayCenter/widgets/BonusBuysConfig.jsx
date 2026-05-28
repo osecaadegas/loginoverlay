@@ -2,7 +2,6 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
-import { configStyles } from './shared/configStyles';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BONUS_BUYS_STYLE_KEYS } from './styleKeysRegistry';
 
@@ -97,6 +96,28 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
   const avgMulti = filledBonuses.length > 0
     ? filledBonuses.reduce((sum, b) => sum + (betValue > 0 ? (Number(b.win) || 0) / betValue : 0), 0) / filledBonuses.length
     : 0;
+  const startMoney = Number(c.startMoney) || 0;
+  const completionPercent = plannedBonuses > 0 ? Math.min(100, (filledBonuses.length / plannedBonuses) * 100) : 0;
+  const bestWin = filledBonuses.reduce((max, b) => Math.max(max, Number(b.win) || 0), 0);
+  const bestMulti = betValue > 0 ? bestWin / betValue : 0;
+  const currentBankroll = startMoney + profitLoss;
+  const sessionStateLabel = !c.slotName
+    ? 'Pick a slot'
+    : filledBonuses.length >= plannedBonuses
+      ? 'Session complete'
+      : filledBonuses.length > 0
+        ? 'Session live'
+        : 'Ready to track';
+  const slotMeta = c.slotName
+    ? [c.provider, c.rtp ? `RTP ${c.rtp}%` : null].filter(Boolean).join(' • ')
+    : 'No slot selected yet';
+  const sessionInsight = !c.slotName
+    ? 'Pick a slot to unlock the live tracker and start the session.'
+    : filledBonuses.length === 0
+      ? 'The session is configured and ready. Add the first result to populate profitability and multiplier trends.'
+      : profitLoss >= 0
+        ? 'The run is above cost right now. Keep the average multiplier steady while the session is live.'
+        : 'The run is below cost at the moment. Use the summary to watch for a recovery hit before resetting.';
 
   const handleAddBonus = () => {
     if (!winInput && winInput !== '0') return;
@@ -139,16 +160,82 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
     setTimeout(() => setMessage(''), 3000);
   };
 
-  const S = configStyles('#3b82f6');
   const singlePage = mode === 'sidebar';
 
   return (
-    <div style={{ padding: 2 }}>
+    <div className="bb-admin-page" style={{ padding: 2 }}>
+      <div className="bb-admin-hero">
+        <div className="bb-admin-hero-copy">
+          <span className="bb-admin-eyebrow">Session Tracker</span>
+          <h3 className="bb-admin-title">Bonus buy command deck</h3>
+          <p className="bb-admin-subtitle">
+            Lock the slot, define the buy economics, and record every result from one clean premium control surface.
+          </p>
+
+          <div className="bb-admin-progress">
+            <div className="bb-admin-progress-track">
+              <span className="bb-admin-progress-fill" style={{ width: `${completionPercent}%` }} />
+            </div>
+            <div className="bb-admin-progress-copy">
+              <span>{sessionStateLabel}</span>
+              <strong>{filledBonuses.length}/{plannedBonuses} bonuses recorded</strong>
+            </div>
+          </div>
+        </div>
+
+        <div className="bb-admin-hero-side">
+          <div className="bb-admin-slot-card">
+            <div className="bb-admin-slot-media">
+              {c.imageUrl ? (
+                <img className="bb-admin-slot-image" src={c.imageUrl} alt="" />
+              ) : (
+                <div className="bb-admin-slot-placeholder">🛒</div>
+              )}
+            </div>
+            <div className="bb-admin-slot-body">
+              <span className="bb-admin-slot-label">Selected Slot</span>
+              <strong className="bb-admin-slot-name">{c.slotName || 'Choose a slot to begin'}</strong>
+              <span className="bb-admin-slot-meta">{slotMeta}</span>
+            </div>
+          </div>
+
+          <div className="bb-admin-metrics">
+            <div className="bb-admin-metric-card">
+              <span className="bb-admin-metric-label">Progress</span>
+              <strong className="bb-admin-metric-value">{filledBonuses.length}/{plannedBonuses}</strong>
+              <span className="bb-admin-metric-meta">{completionPercent.toFixed(0)}% of target</span>
+            </div>
+            <div className="bb-admin-metric-card">
+              <span className="bb-admin-metric-label">Profit</span>
+              <strong className={`bb-admin-metric-value ${profitLoss >= 0 ? 'bb-admin-metric-value--positive' : 'bb-admin-metric-value--negative'}`}>
+                {profitLoss >= 0 ? '+' : ''}{profitLoss.toFixed(2)}{currency}
+              </strong>
+              <span className="bb-admin-metric-meta">{filledBonuses.length} results captured</span>
+            </div>
+            <div className="bb-admin-metric-card">
+              <span className="bb-admin-metric-label">Average Multi</span>
+              <strong className="bb-admin-metric-value">{avgMulti.toFixed(2)}x</strong>
+              <span className="bb-admin-metric-meta">Best hit {bestMulti.toFixed(2)}x</span>
+            </div>
+            <div className="bb-admin-metric-card">
+              <span className="bb-admin-metric-label">Bankroll</span>
+              <strong className="bb-admin-metric-value">{currentBankroll.toFixed(2)}{currency}</strong>
+              <span className="bb-admin-metric-meta">Start money {startMoney.toFixed(2)}{currency}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Tab navigation — hidden when sidebar merges everything into one page */}
       {!singlePage && (
-        <div style={S.tabs}>
+        <div className="bb-admin-tabs">
           {tabs.map(t => (
-            <button key={t.id} style={S.tab(activeTab === t.id)} onClick={() => setActiveTab(t.id)}>
+            <button
+              key={t.id}
+              type="button"
+              className={`bb-admin-tab ${activeTab === t.id ? 'bb-admin-tab--active' : ''}`}
+              onClick={() => setActiveTab(t.id)}
+            >
               {t.label}
             </button>
           ))}
@@ -157,42 +244,76 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
 
       {/* ─── Setup ─── */}
       {(singlePage || activeTab === 'slot') && (
-        <div>
-          {/* Slot search */}
-          <div style={S.section}>
-            <label style={S.label}>Search Slot</label>
+        <div className="bb-admin-section">
+          <div className="bb-admin-section-heading">
+            <div>
+              <span className="bb-admin-section-eyebrow">Session Setup</span>
+              <h3 className="bb-admin-section-title">Pick the slot and define the economy for this bonus buy run</h3>
+            </div>
+            <span className="bb-admin-section-pill">{c.slotName ? 'Slot selected' : 'Waiting for slot'}</span>
+          </div>
+
+          <div className="bb-admin-setup-grid">
+            <div className="bb-admin-card bb-admin-card--search">
+              <div className="bb-admin-card-header">
+                <h4 className="bb-admin-card-title">Slot search</h4>
+                <span className="bb-admin-card-chip">{searching ? 'Searching' : searchResults.length ? `${searchResults.length} matches` : 'Database lookup'}</span>
+              </div>
+
+              <label className="bb-admin-field-label">Search Slot</label>
             <input
-              style={S.input}
+              className="bb-admin-field-input"
               placeholder="Type slot name..."
               value={searchTerm}
               onChange={e => setSearchTerm(e.target.value)}
             />
-            {searching && <div style={{ color: '#a0a0b4', fontSize: '0.75rem', marginTop: 4 }}>Searching...</div>}
+
+              {searching && <div className="bb-admin-helper">Searching...</div>}
+
+              {c.slotName && (
+                <div className="bb-admin-selected-slot">
+                  <div className="bb-admin-selected-slot-media">
+                    {c.imageUrl ? <img className="bb-admin-selected-slot-image" src={c.imageUrl} alt="" /> : <div className="bb-admin-selected-slot-placeholder">🎰</div>}
+                  </div>
+                  <div className="bb-admin-selected-slot-copy">
+                    <span className="bb-admin-selected-slot-label">Current slot</span>
+                    <strong className="bb-admin-selected-slot-name">{c.slotName}</strong>
+                    <span className="bb-admin-selected-slot-meta">{slotMeta}</span>
+                  </div>
+                </div>
+              )}
 
             {searchResults.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 4, marginTop: 8, maxHeight: 200, overflowY: 'auto' }}>
+                <div className="bb-admin-search-results">
                 {searchResults.map(slot => (
-                  <div key={slot.id} style={S.searchResult(c.slotId === slot.id)} onClick={() => selectSlot(slot)}>
-                    {slot.image && <img src={slot.image} alt="" style={{ width: 28, height: 28, borderRadius: 6, objectFit: 'cover' }} />}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: '0.8rem', color: '#fff', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{slot.name}</div>
-                      {slot.provider && <div style={{ fontSize: '0.7rem', color: '#a0a0b4' }}>{slot.provider}</div>}
-                    </div>
-                  </div>
+                    <button
+                      key={slot.id}
+                      type="button"
+                      className={`bb-admin-search-result ${c.slotId === slot.id ? 'bb-admin-search-result--active' : ''}`}
+                      onClick={() => selectSlot(slot)}
+                    >
+                      {slot.image && <img className="bb-admin-search-result-image" src={slot.image} alt="" />}
+                      <div className="bb-admin-search-result-copy">
+                        <div className="bb-admin-search-result-title">{slot.name}</div>
+                        {slot.provider && <div className="bb-admin-search-result-meta">{slot.provider}</div>}
+                      </div>
+                    </button>
                 ))}
               </div>
             )}
-          </div>
+            </div>
 
-          {/* Session settings */}
-          <div style={{ ...S.section, padding: 12, background: 'rgba(59,130,246,0.06)', borderRadius: 10, border: '1px solid rgba(59,130,246,0.15)' }}>
-            <label style={{ ...S.label, color: '#3b82f6' }}>🛒 Bonus Buy Settings</label>
+            <div className="bb-admin-card bb-admin-card--settings">
+              <div className="bb-admin-card-header">
+                <h4 className="bb-admin-card-title">Bonus buy settings</h4>
+                <span className="bb-admin-card-chip">Session #{c.sessionNumber || 1}</span>
+              </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
-              <div>
-                <label style={{ ...S.label, fontSize: '0.72rem' }}>Bet Value ({currency})</label>
+              <div className="bb-admin-field-grid bb-admin-field-grid--two">
+                <div>
+                  <label className="bb-admin-field-label">Bet Value ({currency})</label>
                 <input
-                  style={S.input}
+                    className="bb-admin-field-input"
                   type="number"
                   min="0"
                   step="0.01"
@@ -202,9 +323,9 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
                 />
               </div>
               <div>
-                <label style={{ ...S.label, fontSize: '0.72rem' }}>Bonus Cost ({currency})</label>
+                  <label className="bb-admin-field-label">Bonus Cost ({currency})</label>
                 <input
-                  style={S.input}
+                    className="bb-admin-field-input"
                   type="number"
                   min="0"
                   step="0.01"
@@ -215,11 +336,11 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
               </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
+              <div className="bb-admin-field-grid bb-admin-field-grid--two">
               <div>
-                <label style={{ ...S.label, fontSize: '0.72rem' }}>Planned Bonuses</label>
+                  <label className="bb-admin-field-label">Planned Bonuses</label>
                 <input
-                  style={S.input}
+                    className="bb-admin-field-input"
                   type="number"
                   min="1"
                   max="50"
@@ -228,13 +349,10 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
                   placeholder="5"
                 />
               </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
               <div>
-                <label style={{ ...S.label, fontSize: '0.72rem' }}>Start Money ({currency})</label>
+                  <label className="bb-admin-field-label">Start Money ({currency})</label>
                 <input
-                  style={S.input}
+                    className="bb-admin-field-input"
                   type="number"
                   min="0"
                   step="0.01"
@@ -243,16 +361,25 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
                   placeholder="0"
                 />
               </div>
+              </div>
+
+              <div className="bb-admin-field-grid bb-admin-field-grid--two">
               <div>
-                <label style={{ ...S.label, fontSize: '0.72rem' }}>Session #</label>
+                  <label className="bb-admin-field-label">Session #</label>
                 <input
-                  style={S.input}
+                    className="bb-admin-field-input"
                   type="number"
                   min="1"
                   value={c.sessionNumber || ''}
                   onChange={e => set('sessionNumber', e.target.value)}
                   placeholder="1"
                 />
+              </div>
+                <div className="bb-admin-note-card">
+                  <span className="bb-admin-note-label">Session note</span>
+                  <strong className="bb-admin-note-value">{sessionStateLabel}</strong>
+                  <span className="bb-admin-note-copy">Set the slot, buy cost, and planned count before going live.</span>
+                </div>
               </div>
             </div>
           </div>
@@ -261,40 +388,50 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
 
       {/* ─── Bonuses ─── */}
       {(singlePage || activeTab === 'bonuses') && (
-        <div>
+        <div className="bb-admin-section">
+          <div className="bb-admin-section-heading">
+            <div>
+              <span className="bb-admin-section-eyebrow">Session Tracker</span>
+              <h3 className="bb-admin-section-title">Capture each buy result and keep profitability visible while you stream</h3>
+            </div>
+            <span className="bb-admin-section-pill">{filledBonuses.length}/{plannedBonuses} tracked</span>
+          </div>
+
           {!c.slotName ? (
-            <div style={{ color: '#a0a0b4', fontSize: '0.82rem', textAlign: 'center', padding: 20 }}>
+            <div className="bb-admin-empty">
               Select a slot first in the Setup tab
             </div>
           ) : (
             <>
               {/* Quick stats */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6, marginBottom: 14 }}>
-                <div style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.68rem', color: '#a0a0b4', textTransform: 'uppercase' }}>Bonuses</div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#fff' }}>{filledBonuses.length}/{plannedBonuses}</div>
+              <div className="bb-admin-stats-grid">
+                <div className="bb-admin-stat-card">
+                  <div className="bb-admin-stat-label">Bonuses</div>
+                  <div className="bb-admin-stat-value">{filledBonuses.length}/{plannedBonuses}</div>
                 </div>
-                <div style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.68rem', color: '#a0a0b4', textTransform: 'uppercase' }}>Avg Multi</div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 800, color: '#3b82f6' }}>{avgMulti.toFixed(2)}x</div>
+                <div className="bb-admin-stat-card">
+                  <div className="bb-admin-stat-label">Avg Multi</div>
+                  <div className="bb-admin-stat-value bb-admin-stat-value--accent">{avgMulti.toFixed(2)}x</div>
                 </div>
-                <div style={{ padding: '8px', background: 'rgba(255,255,255,0.03)', borderRadius: 8, textAlign: 'center' }}>
-                  <div style={{ fontSize: '0.68rem', color: '#a0a0b4', textTransform: 'uppercase' }}>Profit</div>
-                  <div style={{ fontSize: '0.95rem', fontWeight: 800, color: profitLoss >= 0 ? '#4ade80' : '#f87171' }}>
+                <div className="bb-admin-stat-card">
+                  <div className="bb-admin-stat-label">Profit</div>
+                  <div className={`bb-admin-stat-value ${profitLoss >= 0 ? 'bb-admin-stat-value--positive' : 'bb-admin-stat-value--negative'}`}>
                     {profitLoss >= 0 ? '+' : ''}{profitLoss.toFixed(2)}{currency}
                   </div>
                 </div>
               </div>
 
-              {/* Add bonus */}
-              <div style={{ ...S.section, padding: 12, background: 'rgba(59,130,246,0.06)', borderRadius: 10, border: '1px solid rgba(59,130,246,0.15)' }}>
-                <label style={{ ...S.label, color: '#3b82f6' }}>
-                  ➕ Add Bonus #{filledBonuses.length + 1}
-                </label>
-                <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <div style={{ flex: 1 }}>
+              <div className="bb-admin-track-grid">
+                <div className="bb-admin-track-main">
+                  <div className="bb-admin-card bb-admin-card--add">
+                    <div className="bb-admin-card-header">
+                      <h4 className="bb-admin-card-title">Add Bonus #{filledBonuses.length + 1}</h4>
+                      <span className="bb-admin-card-chip">Live entry</span>
+                    </div>
+
+                    <div className="bb-admin-add-row">
                     <input
-                      style={S.input}
+                        className="bb-admin-field-input"
                       type="number"
                       step="0.01"
                       placeholder={`Win amount (${currency})`}
@@ -302,100 +439,118 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
                       onChange={e => setWinInput(e.target.value)}
                       onKeyDown={e => e.key === 'Enter' && handleAddBonus()}
                     />
-                  </div>
+                    
                   <button
-                    style={{ ...S.btn, background: '#3b82f6', color: '#fff', padding: '8px 14px', opacity: (!winInput && winInput !== '0') ? 0.5 : 1 }}
+                        type="button"
+                        className="bb-admin-primary-btn"
+                        style={{ opacity: (!winInput && winInput !== '0') ? 0.5 : 1 }}
                     onClick={handleAddBonus}
                     disabled={!winInput && winInput !== '0'}
                   >
-                    Add
+                        Add Result
                   </button>
-                </div>
-                {winInput !== '' && betValue > 0 && (
-                  <div style={{ fontSize: '0.75rem', color: '#a0a0b4', marginTop: 4 }}>
+                    </div>
+
+                    {winInput !== '' && betValue > 0 && (
+                      <div className="bb-admin-helper">
                     Multi: {(Number(winInput) / betValue).toFixed(2)}x
                     {Number(winInput) >= betCost ? ' ✅' : ' ❌'}
                     &nbsp;| Profit: {(Number(winInput) - betCost).toFixed(2)}{currency}
                   </div>
                 )}
-                {message && <div style={S.msg}>{message}</div>}
-              </div>
+                    {message && <div className="bb-admin-message">{message}</div>}
+                  </div>
 
-              {/* Bonus list */}
-              <div style={{ marginTop: 4 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
-                  <h4 style={{ color: '#fff', fontSize: '0.85rem', margin: 0 }}>
-                    🛒 Bonus Results ({filledBonuses.length})
-                  </h4>
+                  <div className="bb-admin-card bb-admin-card--results">
+                    <div className="bb-admin-card-header">
+                      <h4 className="bb-admin-card-title">Bonus Results ({filledBonuses.length})</h4>
                   {bonuses.length > 0 && (
                     <button
-                      style={{ ...S.btn, background: 'rgba(239,68,68,0.15)', color: '#f87171', fontSize: '0.72rem', padding: '4px 10px' }}
+                          type="button"
+                          className="bb-admin-secondary-btn bb-admin-secondary-btn--danger"
                       onClick={handleResetSession}
                     >
                       🔄 Reset
                     </button>
                   )}
-                </div>
+                    </div>
 
                 {bonuses.length === 0 ? (
-                  <div style={{ color: '#a0a0b4', fontSize: '0.8rem', textAlign: 'center', padding: '16px', background: 'rgba(255,255,255,0.02)', borderRadius: 8 }}>
+                      <div className="bb-admin-empty bb-admin-empty--compact">
                     No bonuses added yet. Enter a win amount above to start tracking!
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 4, maxHeight: 280, overflowY: 'auto' }}>
+                      <div className="bb-admin-results-list">
                     {bonuses.map((b, i) => {
                       const win = Number(b.win) || 0;
                       const multi = betValue > 0 ? win / betValue : 0;
                       const isProfit = win >= betCost;
                       return (
-                        <div key={b.id || i} style={{
-                          display: 'flex', alignItems: 'center', gap: 8,
-                          padding: '7px 10px', background: 'rgba(255,255,255,0.03)', borderRadius: 8,
-                          border: '1px solid rgba(255,255,255,0.06)', fontSize: '0.8rem',
-                        }}>
-                          <span style={{ color: '#3b82f6', fontWeight: 800, minWidth: 28 }}>#{i + 1}</span>
-                          <span style={{ color: '#a0a0b4', fontSize: '0.75rem' }}>{betCost.toFixed(2)}{currency}</span>
-                          <span style={{ flex: 1, textAlign: 'right', color: isProfit ? '#4ade80' : '#f87171', fontWeight: 700 }}>
+                            <div key={b.id || i} className={`bb-admin-result-row ${isProfit ? 'bb-admin-result-row--profit' : 'bb-admin-result-row--loss'}`}>
+                              <span className="bb-admin-result-index">#{i + 1}</span>
+                              <span className="bb-admin-result-cost">Cost {betCost.toFixed(2)}{currency}</span>
+                              <span className="bb-admin-result-win">
                             {win.toFixed(2)}{currency}
                           </span>
-                          <span style={{ color: '#3b82f6', fontWeight: 700, minWidth: 48, textAlign: 'right' }}>
+                              <span className="bb-admin-result-multi">
                             {multi.toFixed(2)}x
                           </span>
                           <button
-                            style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', padding: '2px 4px', fontSize: '0.75rem' }}
+                                type="button"
+                                className="bb-admin-result-remove"
                             onClick={() => handleRemoveBonus(i)}
                             title="Remove"
                           >✕</button>
-                        </div>
+                            </div>
                       );
                     })}
                   </div>
                 )}
-              </div>
-
-              {/* Summary */}
-              {filledBonuses.length > 0 && (
-                <div style={{ marginTop: 14, padding: 10, background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.08)' }}>
-                  <div style={S.statRow}>
-                    <span style={S.statLabel}>Total Cost</span>
-                    <span style={{ ...S.statValue, color: '#f87171' }}>{totalCost.toFixed(2)}{currency}</span>
-                  </div>
-                  <div style={S.statRow}>
-                    <span style={S.statLabel}>Total Won</span>
-                    <span style={{ ...S.statValue, color: '#4ade80' }}>{totalWin.toFixed(2)}{currency}</span>
-                  </div>
-                  <div style={S.statRow}>
-                    <span style={S.statLabel}>Average Multi</span>
-                    <span style={{ ...S.statValue, color: '#3b82f6' }}>{avgMulti.toFixed(2)}x</span>
-                  </div>
-                  <div style={{ ...S.statRow, borderBottom: 'none' }}>
-                    <span style={S.statLabel}>Profit / Loss</span>
-                    <span style={{ ...S.statValue, color: profitLoss >= 0 ? '#4ade80' : '#f87171' }}>
-                      {profitLoss >= 0 ? '+' : ''}{profitLoss.toFixed(2)}{currency}
-                    </span>
                   </div>
                 </div>
-              )}
+
+                <div className="bb-admin-track-side">
+                  <div className="bb-admin-card bb-admin-card--summary">
+                    <div className="bb-admin-card-header">
+                      <h4 className="bb-admin-card-title">Session Summary</h4>
+                      <span className="bb-admin-card-chip">Live totals</span>
+                    </div>
+
+                    <div className="bb-admin-summary-list">
+                      <div className="bb-admin-summary-row">
+                        <span>Total Cost</span>
+                        <strong className="bb-admin-summary-value bb-admin-summary-value--negative">{totalCost.toFixed(2)}{currency}</strong>
+                      </div>
+                      <div className="bb-admin-summary-row">
+                        <span>Total Won</span>
+                        <strong className="bb-admin-summary-value bb-admin-summary-value--positive">{totalWin.toFixed(2)}{currency}</strong>
+                      </div>
+                      <div className="bb-admin-summary-row">
+                        <span>Average Multi</span>
+                        <strong className="bb-admin-summary-value bb-admin-summary-value--accent">{avgMulti.toFixed(2)}x</strong>
+                      </div>
+                      <div className="bb-admin-summary-row">
+                        <span>Best Bonus</span>
+                        <strong className="bb-admin-summary-value">{bestWin.toFixed(2)}{currency}</strong>
+                      </div>
+                      <div className="bb-admin-summary-row bb-admin-summary-row--final">
+                        <span>Profit / Loss</span>
+                        <strong className={`bb-admin-summary-value ${profitLoss >= 0 ? 'bb-admin-summary-value--positive' : 'bb-admin-summary-value--negative'}`}>
+                          {profitLoss >= 0 ? '+' : ''}{profitLoss.toFixed(2)}{currency}
+                        </strong>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bb-admin-card bb-admin-card--insight">
+                    <div className="bb-admin-card-header">
+                      <h4 className="bb-admin-card-title">Run Insight</h4>
+                      <span className="bb-admin-card-chip">Stream note</span>
+                    </div>
+                    <p className="bb-admin-insight-copy">{sessionInsight}</p>
+                  </div>
+                </div>
+              </div>
             </>
           )}
         </div>
@@ -403,44 +558,74 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
 
       {/* ─── Style Tab ─── */}
       {activeTab === 'style' && (
-        <div>
-          {nb && (
-            <button
-              style={{ ...S.btn, background: 'rgba(255,255,255,0.06)', color: '#fff', width: '100%', marginBottom: 14 }}
-              onClick={syncFromNavbar}
-            >
-              🔗 Sync Colors from Navbar
-            </button>
-          )}
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 12 }}>
+        <div className="bb-admin-section">
+          <div className="bb-admin-section-heading">
             <div>
-              <label style={S.label}>Accent</label>
-              <input type="color" value={c.accentColor || '#3b82f6'} onChange={e => set('accentColor', e.target.value)}
-                style={{ width: '100%', height: 32, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
+              <span className="bb-admin-section-eyebrow">Visual System</span>
+              <h3 className="bb-admin-section-title">Tune the overlay colors and typography for the Bonus Buys widget</h3>
             </div>
-            <div>
-              <label style={S.label}>Background</label>
-              <input type="color" value={c.bgColor || '#0a0e1a'} onChange={e => set('bgColor', e.target.value)}
-                style={{ width: '100%', height: 32, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
-            </div>
-            <div>
-              <label style={S.label}>Text</label>
-              <input type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)}
-                style={{ width: '100%', height: 32, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
-            </div>
-            <div>
-              <label style={S.label}>Muted</label>
-              <input type="color" value={c.mutedColor || '#64748b'} onChange={e => set('mutedColor', e.target.value)}
-                style={{ width: '100%', height: 32, border: 'none', borderRadius: 8, cursor: 'pointer' }} />
-            </div>
+            <span className="bb-admin-section-pill">Style presets</span>
           </div>
 
-          <div style={S.section}>
-            <label style={S.label}>Font</label>
-            <select style={S.select} value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
+          <div className="bb-admin-style-grid">
+          {nb && (
+              <div className="bb-admin-card bb-admin-card--sync">
+                <div className="bb-admin-card-header">
+                  <h4 className="bb-admin-card-title">Navbar Sync</h4>
+                  <span className="bb-admin-card-chip">One click</span>
+                </div>
+                <p className="bb-admin-insight-copy">Pull the shared palette and font settings from the Navbar widget to keep the whole overlay consistent.</p>
+                <button
+                  type="button"
+                  className="bb-admin-secondary-btn"
+                  onClick={syncFromNavbar}
+                >
+                  🔗 Sync Colors from Navbar
+                </button>
+              </div>
+          )}
+
+            <div className="bb-admin-card bb-admin-card--colors">
+              <div className="bb-admin-card-header">
+                <h4 className="bb-admin-card-title">Color palette</h4>
+                <span className="bb-admin-card-chip">Live preview ready</span>
+              </div>
+
+              <div className="bb-admin-color-grid">
+                <div className="bb-admin-color-field">
+                  <label className="bb-admin-field-label">Accent</label>
+              <input type="color" value={c.accentColor || '#3b82f6'} onChange={e => set('accentColor', e.target.value)}
+                    className="bb-admin-color-input" />
+            </div>
+                <div className="bb-admin-color-field">
+                  <label className="bb-admin-field-label">Background</label>
+              <input type="color" value={c.bgColor || '#0a0e1a'} onChange={e => set('bgColor', e.target.value)}
+                    className="bb-admin-color-input" />
+            </div>
+                <div className="bb-admin-color-field">
+                  <label className="bb-admin-field-label">Text</label>
+              <input type="color" value={c.textColor || '#ffffff'} onChange={e => set('textColor', e.target.value)}
+                    className="bb-admin-color-input" />
+            </div>
+                <div className="bb-admin-color-field">
+                  <label className="bb-admin-field-label">Muted</label>
+              <input type="color" value={c.mutedColor || '#64748b'} onChange={e => set('mutedColor', e.target.value)}
+                    className="bb-admin-color-input" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bb-admin-card bb-admin-card--font">
+              <div className="bb-admin-card-header">
+                <h4 className="bb-admin-card-title">Typography</h4>
+                <span className="bb-admin-card-chip">Broadcast readable</span>
+              </div>
+              <label className="bb-admin-field-label">Font</label>
+              <select className="bb-admin-field-select" value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
               {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
             </select>
+              <div className="bb-admin-helper">Choose a typeface that stays readable in OBS at smaller widget widths.</div>
+            </div>
           </div>
         </div>
       )}

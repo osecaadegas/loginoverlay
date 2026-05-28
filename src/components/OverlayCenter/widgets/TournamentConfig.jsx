@@ -649,9 +649,48 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
              : allTabs;
 
   const currency = c.arenaCurrency || '€';
+  const readyPlayersCount = localBracketPlayers.filter(player => player.name.trim().length > 0).length;
+  const activeRoundLabel = bracketData[bracketActiveRound]?.label || 'Setup';
+  const activeMatchLabel = bracketPhase === 'setup'
+    ? `${readyPlayersCount}/${bracketPlayerCount} ready`
+    : bracketData[bracketActiveRound]?.matches?.length
+      ? `Match ${bracketActiveMatch + 1}/${bracketData[bracketActiveRound].matches.length}`
+      : 'Awaiting match';
 
   return (
-    <div className="bh-config">
+    <div className="bh-config tm-page">
+
+      <div className="tm-page-hero">
+        <div className="tm-page-hero-copy">
+          <span className="tm-page-eyebrow">Competitive Overlay</span>
+          <h3 className="tm-page-title">Tournament control room</h3>
+          <p className="tm-page-subtitle">
+            Seed players, assign slots, manage live rounds, and keep the bracket stream-ready from one premium control surface.
+          </p>
+        </div>
+        <div className="tm-page-metrics">
+          <div className="tm-page-metric-card">
+            <span className="tm-page-metric-label">Phase</span>
+            <strong className="tm-page-metric-value">{bracketPhase === 'setup' ? 'Setup' : bracketPhase === 'active' ? 'Live' : 'Done'}</strong>
+            <span className="tm-page-metric-meta">{activeRoundLabel}</span>
+          </div>
+          <div className="tm-page-metric-card">
+            <span className="tm-page-metric-label">Players</span>
+            <strong className="tm-page-metric-value">{bracketPlayerCount}</strong>
+            <span className="tm-page-metric-meta">{readyPlayersCount} ready to start</span>
+          </div>
+          <div className="tm-page-metric-card">
+            <span className="tm-page-metric-label">Matches</span>
+            <strong className="tm-page-metric-value">{bracketStats.total}</strong>
+            <span className="tm-page-metric-meta">{bracketStats.completed} completed</span>
+          </div>
+          <div className="tm-page-metric-card">
+            <span className="tm-page-metric-label">Focus</span>
+            <strong className="tm-page-metric-value">{activeMatchLabel}</strong>
+            <span className="tm-page-metric-meta">{c.bracketName || 'Tournament name pending'}</span>
+          </div>
+        </div>
+      </div>
 
       {/* Tab nav */}
       <TabBar tabs={tabs} active={activeTab} onChange={setActiveTab} style={{ marginTop: 4 }} />
@@ -660,9 +699,18 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       {activeTab === 'bracket' && (
         <div className="bk-tab">
           {bracketPhase === 'setup' && (
+            <>
+            <div className="tm-section-heading">
+              <div>
+                <span className="tm-section-eyebrow">Bracket Setup</span>
+                <h3 className="tm-section-title">Prepare the lineup, choose the format, and launch the tournament</h3>
+              </div>
+              <span className="tm-section-pill">{readyPlayersCount}/{bracketPlayerCount} ready</span>
+            </div>
+
             <div className="bk-setup">
               {/* ── Settings card ── */}
-              <div className="bk-card">
+              <div className="bk-card tm-card tm-card--setup">
                 <h4 className="bk-card-title">⚔️ Bracket Tournament</h4>
                 <p className="bk-hint">Single-elimination bracket. Players auto-seed into matchups.</p>
 
@@ -715,8 +763,8 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               </div>
 
               {/* ── Players card ── */}
-              <div className="bk-card">
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <div className="bk-card tm-card tm-card--players">
+                <div className="tm-card-head" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
                   <h4 className="bk-card-title" style={{ margin: 0 }}>👥 Players</h4>
                   <button className="bk-fill-btn" onClick={fillRandomPlayers}>🎲 Fill Random</button>
                 </div>
@@ -779,7 +827,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               </div>
 
               {/* ── Start button ── */}
-              <div className="bk-start-area">
+              <div className="bk-start-area tm-start-area">
                 <button className={`bk-start-btn ${!canStartBracket ? 'bk-start-btn--disabled' : ''}`}
                   onClick={startBracketTournament} disabled={!canStartBracket}>
                   🏆 Start Bracket Tournament
@@ -787,10 +835,19 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 {!canStartBracket && <p className="bk-hint" style={{ textAlign: 'center', marginTop: 6 }}>Fill in all player names to start</p>}
               </div>
             </div>
+            </>
           )}
 
           {(bracketPhase === 'active' || bracketPhase === 'completed') && (
             <div className="bk-active">
+              <div className="tm-section-heading tm-section-heading--active">
+                <div>
+                  <span className="tm-section-eyebrow">Match Operations</span>
+                  <h3 className="tm-section-title">Run the live bracket, enter outcomes, and move the tournament forward</h3>
+                </div>
+                <span className="tm-section-pill">{bracketStats.completed}/{bracketStats.total} complete</span>
+              </div>
+
               {/* ── Header ── */}
               <div className="bk-active-header">
                 <div>
@@ -827,7 +884,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               {/* ── Bracket tree + Match panel side-by-side ── */}
               <div className="bk-active-grid">
               {/* ── Bracket tree (horizontal scroll) ── */}
-              <div className="bk-bracket-card">
+              <div className="bk-bracket-card tm-card tm-card--bracket">
                 <div className="bk-bracket-scroll">
                   <div className="bk-bracket-rounds">
                     {bracketData.map((round, rIdx) => (
@@ -894,7 +951,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
                 };
 
                 return (
-                  <div className="bk-match-panel">
+                  <div className="bk-match-panel tm-card tm-card--match-panel">
                     <div className="bk-mp-header">
                       <h4 className="bk-mp-title">
                         {bracketData[bracketActiveRound]?.label} — Match {bracketActiveMatch + 1}/{bracketData[bracketActiveRound]?.matches.length}
@@ -1195,6 +1252,12 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       {/* ═══════ STYLE TAB ═══════ */}
       {activeTab === 'style' && (
         <div className="nb-section">
+          <div className="tm-tab-intro">
+            <span className="tm-section-eyebrow">Visual System</span>
+            <h3 className="tm-section-title">Tune the broadcast presentation for every tournament layout</h3>
+            <p className="tm-tab-intro-copy">Adjust layout mode, cards, typography, highlight colors, and overlay polish without changing tournament mechanics.</p>
+          </div>
+
           {/* Sync + Layout — always visible */}
           {navbarConfig && (
             <button className="nb-preset-load-btn" onClick={syncFromNavbar} style={{ marginBottom: 6, width: '100%' }}>
@@ -1401,6 +1464,12 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       {/* ═══════ PRESETS TAB ═══════ */}
       {activeTab === 'presets' && (
         <div className="nb-section">
+          <div className="tm-tab-intro">
+            <span className="tm-section-eyebrow">Preset Library</span>
+            <h3 className="tm-section-title">Save visual systems and reuse them across tournament formats</h3>
+            <p className="tm-tab-intro-copy">Keep built-in layouts close, store your own tournament looks, and load them instantly before going live.</p>
+          </div>
+
           <h4 className="nb-subtitle">Save Current Style</h4>
           <div className="nb-preset-save">
             <input className="nb-preset-input"
