@@ -1763,3 +1763,58 @@
   }
 }
 
+/* -------------------------------------------------------
+   NEUTRAL SILVER THEME OVERRIDES
+   ------------------------------------------------------- */
+
+.slot-manager-v2[data-tour="slots-page"],
+[data-tour="approvals-page"] {
+  background:
+    radial-gradient(circle at top left, rgba(200, 206, 214, 0.1), transparent 32%),
+    radial-gradient(circle at top right, rgba(148, 163, 184, 0.08), transparent 34%),
+    linear-gradient(180deg, rgba(8, 12, 18, 0.98), rgba(7, 10, 15, 0.9));
+}
+
+.slot-manager-v2[data-tour="slots-page"] {
+  --ssm-gold: #d5dae1;
+  --ssm-cyan: #a9b2be;
+  --ssm-green: #edf1f5;
+}
+
+[data-tour="approvals-page"] {
+  --sa-page-gold: #d5dae1;
+  --sa-page-green: #edf1f5;
+  --sa-page-cyan: #a9b2be;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .ssm-section-pill,
+.slot-manager-v2[data-tour="slots-page"] .sm-btn-primary,
+[data-tour="approvals-page"] .sa-section-heading__pill,
+[data-tour="approvals-page"] .sa-pending-badge,
+[data-tour="approvals-page"] .sa-edit-btn,
+[data-tour="approvals-page"] .sa-approve-btn,
+[data-tour="approvals-page"] .sa-edit-save {
+  background: linear-gradient(135deg, #eef2f6 0%, #ccd3dc 50%, #8f99a6 100%) !important;
+  color: #0b0f14 !important;
+  border-color: rgba(200, 206, 214, 0.26) !important;
+  box-shadow: 0 12px 28px rgba(148, 163, 184, 0.2) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-btn-primary:hover,
+[data-tour="approvals-page"] .sa-edit-btn:hover,
+[data-tour="approvals-page"] .sa-approve-btn:hover:not(:disabled),
+[data-tour="approvals-page"] .sa-edit-save:hover:not(:disabled) {
+  box-shadow: 0 16px 34px rgba(148, 163, 184, 0.24) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-search:focus-within,
+.slot-manager-v2[data-tour="slots-page"] .sm-dropdown-btn:focus,
+.slot-manager-v2[data-tour="slots-page"] .sm-pag-size:focus,
+[data-tour="approvals-page"] .sa-edit-row input:focus,
+[data-tour="approvals-page"] .sa-edit-row select:focus,
+[data-tour="approvals-page"] .sa-deny-input:focus {
+  border-color: rgba(200, 206, 214, 0.32) !important;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.12) !important;
+  outline: none;
+}
+
