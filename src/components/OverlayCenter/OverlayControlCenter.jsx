@@ -140,22 +140,11 @@ export default function OverlayControlCenter() {
   const [activePanel, setActivePanel] = useState('widgets');
 
   const [streamerToolsOpen, setStreamerToolsOpen] = useState(false);
-  const [communityToolsOpen, setCommunityToolsOpen] = useState(false);
-  const [collectionsOpen, setCollectionsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
   const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot'];
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
-
-  /* Auto-expand Community Tools when slot_requests is active */
-  const isCommunityToolActive = activePanel === 'slot_requests';
-  useEffect(() => { if (isCommunityToolActive) setCommunityToolsOpen(true); }, [isCommunityToolActive]);
-
-  /* Auto-expand Collections when one of its children is active */
-  const collectionsKeys = ['library', 'presets', 'slots', 'approvals', 'theme'];
-  const isCollectionActive = collectionsKeys.includes(activePanel);
-  useEffect(() => { if (isCollectionActive) setCollectionsOpen(true); }, [isCollectionActive]);
 
 
 
@@ -298,18 +287,6 @@ export default function OverlayControlCenter() {
             </div>
           </div>
           <nav className="oc-sidebar-nav">
-            {/* ─── Home ─── */}
-            <button
-              className="oc-sidebar-btn"
-              onClick={() => { navigate('/offers'); setSidebarOpen(false); }}
-            >
-              <span className="oc-sidebar-btn-icon">🏠</span>
-              <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Home</span>
-                <span className="oc-sidebar-btn-desc">Back to main site</span>
-              </div>
-            </button>
-
             {/* ─── Profile ─── */}
             <button
               className={`oc-sidebar-btn ${activePanel === 'profile' ? 'oc-sidebar-btn--active' : ''}`}
@@ -319,18 +296,6 @@ export default function OverlayControlCenter() {
               <div className="oc-sidebar-btn-text">
                 <span className="oc-sidebar-btn-label">Profile</span>
                 <span className="oc-sidebar-btn-desc">Identity & connected accounts</span>
-              </div>
-            </button>
-
-            {/* ─── Tutorial ─── */}
-            <button
-              className="oc-sidebar-btn"
-              onClick={() => { resetTutorial(); setShowTutorial(true); setSidebarOpen(false); setActivePanel('widgets'); }}
-            >
-              <span className="oc-sidebar-btn-icon">🎓</span>
-              <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Tutorial</span>
-                <span className="oc-sidebar-btn-desc">Guided walkthrough</span>
               </div>
             </button>
 
@@ -379,68 +344,93 @@ export default function OverlayControlCenter() {
               </button>
             ))}
 
-            {/* ─── Community Tools dropdown ─── */}
+            {/* ─── Slot Requests ─── */}
             <button
-              className={`oc-sidebar-btn ${communityToolsOpen || isCommunityToolActive ? 'oc-sidebar-btn--active' : ''}`}
-              onClick={() => setCommunityToolsOpen(o => !o)}
+              className={`oc-sidebar-btn ${activePanel === 'slot_requests' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('slot_requests'); setSidebarOpen(false); }}
             >
-              <span className="oc-sidebar-btn-icon">🧰</span>
+              <span className="oc-sidebar-btn-icon">📋</span>
               <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Community Tools</span>
-                <span className="oc-sidebar-btn-desc">Wheels & pickers</span>
+                <span className="oc-sidebar-btn-label">Slot Requests</span>
+                <span className="oc-sidebar-btn-desc">Chat !sr queue</span>
               </div>
-              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: communityToolsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
             </button>
-            {communityToolsOpen && [
-              { key: 'slot_requests', icon: '📋', label: 'Slot Requests', desc: 'Chat !sr queue' },
-            ].map(tab => (
-              <button
-                key={tab.key}
-                className={`oc-sidebar-btn oc-sidebar-btn--sub ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
-                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
-              >
-                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
-                <div className="oc-sidebar-btn-text">
-                  <span className="oc-sidebar-btn-label">{tab.label}</span>
-                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
-                </div>
-              </button>
-            ))}
 
-
-
-            {/* ─── Collections dropdown ─── */}
             <div className="oc-sidebar-divider-label">Management</div>
+
+            {/* ─── Themes ─── */}
             <button
-              className={`oc-sidebar-btn ${collectionsOpen || isCollectionActive ? 'oc-sidebar-btn--active' : ''}`}
-              onClick={() => setCollectionsOpen(o => !o)}
+              className={`oc-sidebar-btn ${activePanel === 'theme' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('theme'); setSidebarOpen(false); }}
             >
-              <span className="oc-sidebar-btn-icon">📦</span>
+              <span className="oc-sidebar-btn-icon">🎨</span>
               <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Collections</span>
-                <span className="oc-sidebar-btn-desc">Library, presets & slots</span>
+                <span className="oc-sidebar-btn-label">Themes</span>
+                <span className="oc-sidebar-btn-desc">Change widget appearance</span>
               </div>
-              <span style={{ marginLeft: 'auto', fontSize: '0.7rem', opacity: 0.5, transition: 'transform 0.2s', transform: collectionsOpen ? 'rotate(180deg)' : 'none' }}>▼</span>
             </button>
-            {collectionsOpen && [
-              { key: 'theme', icon: '🎨', label: 'Themes', desc: 'Change widget appearance' },
-              { key: 'library', icon: '📚', label: 'Library', desc: 'Saved bonus hunts' },
-              { key: 'presets', icon: '💾', label: 'Presets', desc: 'Save & load layouts' },
-              ...(isPremium || isAdmin ? [{ key: 'slots', icon: '🎰', label: 'Submit Slots', desc: 'Add new slot games' }] : []),
-              ...(isAdmin ? [{ key: 'approvals', icon: '🛡️', label: 'Approvals', desc: 'Review submissions' }] : []),
-            ].map(tab => (
+
+            {/* ─── Library ─── */}
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'library' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('library'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">📚</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Library</span>
+                <span className="oc-sidebar-btn-desc">Saved bonus hunts</span>
+              </div>
+            </button>
+
+            {/* ─── Presets ─── */}
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'presets' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('presets'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">💾</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Presets</span>
+                <span className="oc-sidebar-btn-desc">Save & load layouts</span>
+              </div>
+            </button>
+
+            {/* ─── Approvals (admin only) ─── */}
+            {isAdmin && (
               <button
-                key={tab.key}
-                className={`oc-sidebar-btn oc-sidebar-btn--sub ${activePanel === tab.key ? 'oc-sidebar-btn--active' : ''}`}
-                onClick={() => { setActivePanel(tab.key); setSidebarOpen(false); }}
+                className={`oc-sidebar-btn ${activePanel === 'approvals' ? 'oc-sidebar-btn--active' : ''}`}
+                onClick={() => { setActivePanel('approvals'); setSidebarOpen(false); }}
               >
-                <span className="oc-sidebar-btn-icon">{tab.icon}</span>
+                <span className="oc-sidebar-btn-icon">🛡️</span>
                 <div className="oc-sidebar-btn-text">
-                  <span className="oc-sidebar-btn-label">{tab.label}</span>
-                  <span className="oc-sidebar-btn-desc">{tab.desc}</span>
+                  <span className="oc-sidebar-btn-label">Approvals</span>
+                  <span className="oc-sidebar-btn-desc">Review submissions</span>
                 </div>
               </button>
-            ))}
+            )}
+
+            {/* ─── Tutorial ─── */}
+            <button
+              className="oc-sidebar-btn"
+              onClick={() => { resetTutorial(); setShowTutorial(true); setSidebarOpen(false); setActivePanel('widgets'); }}
+            >
+              <span className="oc-sidebar-btn-icon">🎓</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Tutorial</span>
+                <span className="oc-sidebar-btn-desc">Guided walkthrough</span>
+              </div>
+            </button>
+
+            {/* ─── Home ─── */}
+            <button
+              className="oc-sidebar-btn"
+              onClick={() => { navigate('/offers'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">🏠</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Home</span>
+                <span className="oc-sidebar-btn-desc">Back to main site</span>
+              </div>
+            </button>
 
           </nav>
 

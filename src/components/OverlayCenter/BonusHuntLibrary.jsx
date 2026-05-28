@@ -181,21 +181,60 @@ export default function BonusHuntLibrary({ widgets, onSaveWidget }) {
 
   // ── Download hunt as JSON ──
   const handleDownloadJSON = (hunt) => {
+    const bonuses = hunt.bonuses || [];
+    const opened = bonuses.filter(b => b.opened);
+
+    // Recompute all stats from the bonuses array for accuracy
+    const totalBet = bonuses.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const totalBetOpened = opened.reduce((s, b) => s + (Number(b.betSize) || 0), 0);
+    const totalWin = opened.reduce((s, b) => s + (Number(b.payout) || 0), 0);
+    const startMoney = Number(hunt.start_money) || 0;
+    const profit = totalWin - startMoney;
+
+    // Mean of per-slot multipliers (each bonus payout / its betSize)
+    const avgMultiPerSlot = opened.length > 0
+      ? opened.reduce((s, b) => s + ((Number(b.payout) || 0) / (Number(b.betSize) || 1)), 0) / opened.length
+      : 0;
+
+    // Overall multiplier (total win / total bet placed on opened bonuses)
+    const overallMulti = totalBetOpened > 0 ? totalWin / totalBetOpened : 0;
+
+    // Break-even multiplier needed across all bonuses to recover start_money
+    const breakEvenMulti = totalBet > 0 ? startMoney / totalBet : 0;
+
+    let bestMulti = 0, bestSlotName = '';
+    let worstMulti = opened.length > 0 ? Infinity : 0, worstSlotName = '';
+    opened.forEach(b => {
+      const m = (Number(b.payout) || 0) / (Number(b.betSize) || 1);
+      if (m > bestMulti) { bestMulti = m; bestSlotName = b.slotName || b.slot?.name || ''; }
+      if (m < worstMulti) { worstMulti = m; worstSlotName = b.slotName || b.slot?.name || ''; }
+    });
+    if (opened.length === 0) worstMulti = 0;
+
+    const roiPercent = startMoney > 0 ? (profit / startMoney) * 100 : 0;
+
+    const round2 = v => Math.round(v * 100) / 100;
+
     const data = {
       hunt_name: hunt.hunt_name,
       currency: hunt.currency || '€',
-      hunt_date: hunt.hunt_date || hunt.created_at,
-      start_money: hunt.start_money,
-      stop_loss: hunt.stop_loss,
-      total_bet: hunt.total_bet,
-      total_win: hunt.total_win,
-      profit: hunt.profit,
-      bonus_count: hunt.bonus_count,
-      bonuses_opened: hunt.bonuses_opened,
-      avg_multi: hunt.avg_multi,
-      best_multi: hunt.best_multi,
-      best_slot_name: hunt.best_slot_name,
-      bonuses: hunt.bonuses || [],
+      created_at: hunt.created_at,
+      start_money: startMoney,
+      stop_loss: Number(hunt.stop_loss) || 0,
+      bonus_count: bonuses.length,
+      bonuses_opened: opened.length,
+      total_bet: round2(totalBet),
+      total_win: round2(totalWin),
+      profit: round2(profit),
+      roi_percent: round2(roiPercent),
+      avg_multi: round2(avgMultiPerSlot),
+      overall_multi: round2(overallMulti),
+      break_even_multi: round2(breakEvenMulti),
+      best_multi: round2(bestMulti),
+      best_slot_name: bestSlotName,
+      worst_multi: round2(worstMulti),
+      worst_slot_name: worstSlotName,
+      bonuses,
     };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
