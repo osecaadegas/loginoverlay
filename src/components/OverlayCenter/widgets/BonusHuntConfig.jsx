@@ -1053,47 +1053,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   return (
     <div className="bh-panel">
 
-      <div className="bh-page-hero">
-        <div className="bh-page-hero-copy">
-          <span className="bh-page-eyebrow">Live Session Control</span>
-          <h3 className="bh-page-title">Bonus Hunt command center</h3>
-          <p className="bh-page-subtitle">
-            Configure bankroll, triage viewer requests, add bonuses, and enter payouts from one focused stream-ready surface.
-          </p>
-        </div>
-        <div className="bh-page-metrics">
-          <div className="bh-page-metric-card">
-            <span className="bh-page-metric-label">Hunt</span>
-            <strong className="bh-page-metric-value">{huntNumber || 'Draft'}</strong>
-            <span className="bh-page-metric-meta">{casinoName || 'Casino not set'}</span>
-          </div>
-          <div className="bh-page-metric-card">
-            <span className="bh-page-metric-label">Bonuses</span>
-            <strong className="bh-page-metric-value">{bonusList.length}</strong>
-            <span className="bh-page-metric-meta">{openedCount} opened</span>
-          </div>
-          <div className="bh-page-metric-card">
-            <span className="bh-page-metric-label">Requests</span>
-            <strong className="bh-page-metric-value">{slotRequests.length}</strong>
-            <span className="bh-page-metric-meta">Viewer queue</span>
-          </div>
-          <div className="bh-page-metric-card">
-            <span className="bh-page-metric-label">Opening</span>
-            <strong className="bh-page-metric-value">{bonusOpening ? 'Live' : 'Locked'}</strong>
-            <span className="bh-page-metric-meta">{currency}{Number(startMoney) || 0} start</span>
-          </div>
-        </div>
-      </div>
-
       {/* ─── Hunt Settings ─── */}
       <div className="bh-panel-section bh-panel-section--setup">
-        <div className="bh-section-heading">
-          <div>
-            <span className="bh-section-eyebrow">Session Setup</span>
-            <h3 className="bh-section-title">Configure the hunt and manage incoming requests</h3>
-          </div>
-          <span className="bh-section-pill">Live Sync</span>
-        </div>
         {/* Casino name (optional) */}
         <div className="bh-settings-row" style={{ marginBottom: 8 }}>
           <label className="bh-input-group" style={{ flex: 1 }}>
@@ -1199,13 +1160,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Add Bonus ─── */}
       <div className="bh-panel-section bh-panel-section--add">
-        <div className="bh-section-heading">
-          <div>
-            <span className="bh-section-eyebrow">Queue Builder</span>
-            <h3 className="bh-section-title">Search the slot database and add new entries quickly</h3>
-          </div>
-          <span className="bh-section-pill">Manual + !sr</span>
-        </div>
         <h4 className="bh-panel-label" style={{ margin: '0 0 4px 0' }}>Add Bonus</h4>
 
         {/* Row 1: Search */}
@@ -1401,13 +1355,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Bonus List ─── */}
       <div className="bh-panel-section bh-panel-section--list">
-        <div className="bh-section-heading">
-          <div>
-            <span className="bh-section-eyebrow">Opening Queue</span>
-            <h3 className="bh-section-title">Track order, payouts, and multipliers with better at-a-glance clarity</h3>
-          </div>
-          <span className="bh-section-pill">{openedCount}/{bonusList.length || 0} opened</span>
-        </div>
         {/* ── Bonus Opening + Auto-Tracker toggles ── */}
         <div className="bh-toggles-row">
           <label className={`bh-compact-toggle ${bonusOpening ? 'bh-compact-toggle--active' : ''}`}>
