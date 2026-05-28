@@ -16,14 +16,9 @@ registerWidget({
   component: BonusHuntWidget,
   configPanel: BonusHuntConfig,
   styles: [
-    { id: 'v1', icon: '📊', label: 'Classic' },
     { id: 'v3', icon: '🃏', label: 'Flip Card' },
     { id: 'v5_horizontal', icon: '↔️', label: 'Horizontal' },
-    { id: 'v6_compact', icon: '📐', label: 'Compact' },
-    { id: 'v8_card_stack', icon: '🎴', label: 'Card Stack' },
-    { id: 'v9_hunt_board', icon: '🎯', label: 'Hunt Board' },
     { id: 'v11_fever', icon: '🔥', label: 'Fever' },
-    { id: 'v12_classic_sr', icon: '📊🎰', label: 'Classic + Requests' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

@@ -24,7 +24,7 @@ const FONT_OPTIONS = [
 export default function BonusHuntConfig({ config, onChange, allWidgets, mode = 'full' }) {
   const c = config || {};
   const [activeTab, setActiveTab] = useState(mode === 'widget' ? 'style' : 'content');
-  const currentStyle = c.displayStyle || 'v1';
+  const currentStyle = c.displayStyle || 'v3';
   const { set, setMulti } = makePerStyleSetters(onChange, c, currentStyle, BONUS_HUNT_STYLE_KEYS);
 
   // Auth for history
@@ -171,7 +171,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
           )}
 
           {/* ── Shared Colors (V1/V3/V5/V6) ── */}
-          {['v1','v3','v5_horizontal','v6_compact','v11_fever','v12_classic_sr'].includes(currentStyle) && (<>
+          {['v3','v5_horizontal','v11_fever'].includes(currentStyle) && (<>
             <h4 className="nb-subtitle">Card Colors</h4>
             <div className="nb-color-grid">
               <ColorPicker label="Header BG" value={c.headerColor || '#1e3a8a'} onChange={v => set('headerColor', v)} />
@@ -215,7 +215,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               onChange={v => set('fontSize', v)} />
 
             {/* Dimensions — only for styles that use them */}
-            {['v1','v5_horizontal','v6_compact','v11_fever','v12_classic_sr'].includes(currentStyle) && (<>
+            {['v5_horizontal','v11_fever'].includes(currentStyle) && (<>
               <h4 className="nb-subtitle">Dimensions</h4>
               <SliderField label="Widget Width" value={c.widgetWidth ?? 400} min={200} max={800} step={10} unit="px"
                 onChange={v => set('widgetWidth', v)} />
@@ -243,118 +243,6 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               <SliderField label="Slot Image Height" value={c.slotImageHeight ?? 220} min={80} max={400} step={10} unit="px"
                 onChange={v => set('slotImageHeight', v)} />
             </>)}
-          </>)}
-
-          {/* ── V12 Classic + Requests settings ── */}
-          {currentStyle === 'v12_classic_sr' && (<>
-            <h4 className="nb-subtitle">🎰 Slot Requests</h4>
-            <label className="nb-field" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <input type="checkbox" checked={c.showSlotRequests !== false}
-                onChange={e => set('showSlotRequests', e.target.checked)} />
-              <span>Show Slot Requests Panel</span>
-            </label>
-            {c.showSlotRequests !== false && (<>
-              <label className="nb-field" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <input type="checkbox" checked={c.srChatEnabled !== false}
-                  onChange={e => set('srChatEnabled', e.target.checked)} />
-                <span>Listen to Chat for !sr Commands</span>
-              </label>
-              <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '2px 0 4px' }}>Twitch channel is auto-detected from your login.</p>
-              <label className="nb-field">
-                <span>Command Trigger</span>
-                <input type="text" value={c.commandTrigger || '!sr'} placeholder="!sr"
-                  onChange={e => set('commandTrigger', e.target.value)} />
-              </label>
-            </>)}
-          </>)}
-
-          {/* ── V8 Card Stack ── */}
-          {currentStyle === 'v8_card_stack' && (<>
-            <h4 className="nb-subtitle">🎴 Card Stack Colors</h4>
-            <div className="nb-color-grid">
-              <ColorPicker label="Accent" value={c.headerAccent || '#7c3aed'} onChange={v => set('headerAccent', v)} />
-              <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
-              <ColorPicker label="Muted Text" value={c.mutedTextColor || '#94a3b8'} onChange={v => set('mutedTextColor', v)} />
-              <ColorPicker label="Payout Color" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
-            </div>
-            <h4 className="nb-subtitle">Typography</h4>
-            <label className="nb-field">
-              <span>Font</span>
-              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
-            </label>
-            <h4 className="nb-subtitle">Card Dimensions</h4>
-            <SliderField label="Card Width" value={c.v8CardWidth ?? 180} min={100} max={400} step={5} unit="px"
-              onChange={v => set('v8CardWidth', v)} />
-            <SliderField label="Card Height" value={c.v8CardHeight ?? 260} min={140} max={500} step={5} unit="px"
-              onChange={v => set('v8CardHeight', v)} />
-            <SliderField label="Card Spacing" value={c.v8CardSpacing ?? 120} min={60} max={250} step={5} unit="px"
-              onChange={v => set('v8CardSpacing', v)} />
-            <SliderField label="Card Radius" value={c.v8CardRadius ?? 16} min={0} max={40} step={1} unit="px"
-              onChange={v => set('v8CardRadius', v)} />
-            <SliderField label="Name Font Size" value={c.v8NameFontSize ?? 14} min={8} max={32} step={1} unit="px"
-              onChange={v => set('v8NameFontSize', v)} />
-            <SliderField label="Stats Font Size" value={c.v8StatsFontSize ?? 13} min={8} max={28} step={1} unit="px"
-              onChange={v => set('v8StatsFontSize', v)} />
-            <SliderField label="Auto-Cycle Speed" value={c.v8AutoSpeed ?? 4000} min={1000} max={12000} step={500} unit="ms"
-              onChange={v => set('v8AutoSpeed', v)} />
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 8 }}>
-              <input type="checkbox" checked={c.v8ShowStats !== false} onChange={e => set('v8ShowStats', e.target.checked)} />
-              Show Stats Bar
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 2 }}>
-              <input type="checkbox" checked={c.v8ShowProgress !== false} onChange={e => set('v8ShowProgress', e.target.checked)} />
-              Show Progress Bar
-            </label>
-          </>)}
-
-          {/* ── V9 Hunt Board ── */}
-          {currentStyle === 'v9_hunt_board' && (<>
-            <h4 className="nb-subtitle">🎯 Hunt Board Colors</h4>
-            <div className="nb-color-grid">
-              <ColorPicker label="Accent" value={c.headerAccent || '#e844d0'} onChange={v => set('headerAccent', v)} />
-              <ColorPicker label="Main Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
-              <ColorPicker label="Muted Text" value={c.mutedTextColor || '#94a3b8'} onChange={v => set('mutedTextColor', v)} />
-              <ColorPicker label="Payout Color" value={c.totalPayColor || '#eab308'} onChange={v => set('totalPayColor', v)} />
-              <ColorPicker label="Container BG" value={c.v9ContainerBg || 'rgba(15,23,42,0.85)'} onChange={v => set('v9ContainerBg', v)} />
-            </div>
-            <h4 className="nb-subtitle">Typography</h4>
-            <label className="nb-field">
-              <span>Font</span>
-              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}>
-                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-              </select>
-            </label>
-            <h4 className="nb-subtitle">Card Dimensions</h4>
-            <SliderField label="Card Width" value={c.v9CardWidth ?? 160} min={100} max={400} step={5} unit="px"
-              onChange={v => set('v9CardWidth', v)} />
-            <SliderField label="Card Height" value={c.v9CardHeight ?? 230} min={140} max={500} step={5} unit="px"
-              onChange={v => set('v9CardHeight', v)} />
-            <SliderField label="Card Spacing" value={c.v9CardSpacing ?? 110} min={60} max={250} step={5} unit="px"
-              onChange={v => set('v9CardSpacing', v)} />
-            <SliderField label="Card Radius" value={c.v9CardRadius ?? 14} min={0} max={40} step={1} unit="px"
-              onChange={v => set('v9CardRadius', v)} />
-            <SliderField label="Container Radius" value={c.v9ContainerRadius ?? 18} min={0} max={40} step={1} unit="px"
-              onChange={v => set('v9ContainerRadius', v)} />
-            <SliderField label="Title Font Size" value={c.v9TitleFontSize ?? 18} min={10} max={36} step={1} unit="px"
-              onChange={v => set('v9TitleFontSize', v)} />
-            <SliderField label="Stats Font Size" value={c.v9StatsFontSize ?? 13} min={8} max={28} step={1} unit="px"
-              onChange={v => set('v9StatsFontSize', v)} />
-            <SliderField label="Auto-Cycle Speed" value={c.v9AutoSpeed ?? 4000} min={1000} max={12000} step={500} unit="ms"
-              onChange={v => set('v9AutoSpeed', v)} />
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 8 }}>
-              <input type="checkbox" checked={c.v9ShowHeader !== false} onChange={e => set('v9ShowHeader', e.target.checked)} />
-              Show Header
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 2 }}>
-              <input type="checkbox" checked={c.v9ShowStats !== false} onChange={e => set('v9ShowStats', e.target.checked)} />
-              Show Stats Grid
-            </label>
-            <label style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, cursor: 'pointer', marginTop: 2 }}>
-              <input type="checkbox" checked={c.v9ShowProgress !== false} onChange={e => set('v9ShowProgress', e.target.checked)} />
-              Show Progress Bar
-            </label>
           </>)}
 
           {/* ── V3 Flip Card Back (only for Flip Card style) ── */}
