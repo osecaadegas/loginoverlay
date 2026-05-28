@@ -1,14 +1,14 @@
-/* ═══════════════════════════════════════════════
-   SlotSubmissions.css — Shared styles for
+﻿/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
+   SlotSubmissions.css â€” Shared styles for
    SlotSubmissions + SlotApprovals panels
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ─── Page ─── */
+/* â”€â”€â”€ Page â”€â”€â”€ */
 .ss-page {
   padding: 0;
 }
 
-/* ─── Header ─── */
+/* â”€â”€â”€ Header â”€â”€â”€ */
 .ss-header {
   display: flex;
   align-items: center;
@@ -32,10 +32,10 @@
 
 .ss-add-btn {
   padding: 8px 16px;
-  border: 1px solid rgba(147, 70, 255, 0.3);
+  border: 1px solid rgba(22, 163, 74, 0.3);
   border-radius: 8px;
-  background: rgba(147, 70, 255, 0.1);
-  color: #c084fc;
+  background: rgba(22, 163, 74, 0.1);
+  color: #bbf7d0;
   font-size: 13.1px;
   font-weight: 600;
   cursor: pointer;
@@ -44,11 +44,11 @@
 }
 
 .ss-add-btn:hover {
-  background: rgba(147, 70, 255, 0.2);
-  border-color: rgba(147, 70, 255, 0.5);
+  background: rgba(22, 163, 74, 0.2);
+  border-color: rgba(22, 163, 74, 0.5);
 }
 
-/* ─── Flash ─── */
+/* â”€â”€â”€ Flash â”€â”€â”€ */
 .ss-flash {
   padding: 10px 14px;
   border-radius: 8px;
@@ -75,7 +75,7 @@
   to   { opacity: 1; transform: translateY(0); }
 }
 
-/* ─── Form ─── */
+/* â”€â”€â”€ Form â”€â”€â”€ */
 .ss-form {
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.06);
@@ -85,12 +85,12 @@
   animation: ssFadeIn 0.2s ease;
 }
 
-/* ─── URL Auto-fill Bar ─── */
+/* â”€â”€â”€ URL Auto-fill Bar â”€â”€â”€ */
 .ss-url-bar {
   margin-bottom: 14px;
   padding: 12px;
-  background: rgba(96, 165, 250, 0.06);
-  border: 1px dashed rgba(96, 165, 250, 0.2);
+  background: rgba(52, 211, 153, 0.06);
+  border: 1px dashed rgba(52, 211, 153, 0.2);
   border-radius: 8px;
 }
 
@@ -98,7 +98,7 @@
   display: block;
   font-size: 11.8px;
   font-weight: 600;
-  color: #60a5fa;
+  color: #34d399;
   margin-bottom: 6px;
 }
 
@@ -111,7 +111,7 @@
 .ss-url-input {
   flex: 1;
   padding: 7px 10px;
-  border: 1px solid rgba(96, 165, 250, 0.15);
+  border: 1px solid rgba(52, 211, 153, 0.15);
   border-radius: 6px;
   background: rgba(255, 255, 255, 0.04);
   color: var(--theme-border, #e2e8f0);
@@ -122,12 +122,12 @@
 }
 
 .ss-url-input:focus {
-  border-color: rgba(96, 165, 250, 0.4);
+  border-color: rgba(52, 211, 153, 0.4);
 }
 
 .ss-url-spinner {
   font-size: 12px;
-  color: #60a5fa;
+  color: #34d399;
   white-space: nowrap;
   animation: ssPulse 1.2s ease infinite;
 }
@@ -137,7 +137,7 @@
   50% { opacity: 0.4; }
 }
 
-/* ─── Image row (input + search buttons) ─── */
+/* â”€â”€â”€ Image row (input + search buttons) â”€â”€â”€ */
 .ss-image-row {
   display: flex;
   gap: 4px;
@@ -158,7 +158,7 @@
 }
 
 .ss-image-row input:focus {
-  border-color: rgba(147, 70, 255, 0.4);
+  border-color: rgba(22, 163, 74, 0.4);
 }
 
 .ss-search-btn {
@@ -178,8 +178,8 @@
 }
 
 .ss-search-btn:hover:not(:disabled) {
-  background: rgba(147, 70, 255, 0.15);
-  border-color: rgba(147, 70, 255, 0.3);
+  background: rgba(22, 163, 74, 0.15);
+  border-color: rgba(22, 163, 74, 0.3);
 }
 
 .ss-search-btn:disabled {
@@ -187,14 +187,14 @@
   cursor: not-allowed;
 }
 
-/* ─── Image Search Button ─── */
+/* â”€â”€â”€ Image Search Button â”€â”€â”€ */
 .ss-search-img-btn {
   flex-shrink: 0;
   padding: 7px 14px;
-  border: 1px solid rgba(139, 92, 246, 0.25);
+  border: 1px solid rgba(22, 163, 74, 0.25);
   border-radius: 6px;
-  background: rgba(139, 92, 246, 0.12);
-  color: #c4b5fd;
+  background: rgba(22, 163, 74, 0.12);
+  color: #bbf7d0;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
@@ -206,8 +206,8 @@
 }
 
 .ss-search-img-btn:hover:not(:disabled) {
-  background: rgba(139, 92, 246, 0.22);
-  border-color: rgba(139, 92, 246, 0.4);
+  background: rgba(22, 163, 74, 0.22);
+  border-color: rgba(22, 163, 74, 0.4);
   color: #e9ddff;
 }
 
@@ -216,19 +216,19 @@
   cursor: not-allowed;
 }
 
-/* ─── Image Search Panel ─── */
+/* â”€â”€â”€ Image Search Panel â”€â”€â”€ */
 .ss-img-search-panel {
   margin-top: 10px;
   padding: 14px;
   background: rgba(15, 23, 42, 0.6);
-  border: 1px solid rgba(139, 92, 246, 0.15);
+  border: 1px solid rgba(22, 163, 74, 0.15);
   border-radius: 10px;
   animation: ssFadeIn 0.25s ease;
 }
 
 .ss-img-search-loading {
   font-size: 12.5px;
-  color: #a78bfa;
+  color: #6ee7b7;
   text-align: center;
   padding: 12px 0;
   animation: ssPulse 1.2s ease infinite;
@@ -268,9 +268,9 @@
 }
 
 .ss-img-thumb:hover {
-  border-color: rgba(139, 92, 246, 0.5);
+  border-color: rgba(22, 163, 74, 0.5);
   transform: scale(1.04);
-  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.2);
+  box-shadow: 0 4px 16px rgba(22, 163, 74, 0.2);
 }
 
 .ss-img-thumb--selected {
@@ -288,11 +288,11 @@
   display: block;
   margin-top: 4px;
   font-size: 11.5px;
-  color: #60a5fa;
+  color: #34d399;
   animation: ssPulse 1.2s ease infinite;
 }
 
-/* ─── Image preview ─── */
+/* â”€â”€â”€ Image preview â”€â”€â”€ */
 .ss-image-preview-wrap {
   display: flex;
   flex-direction: column;
@@ -310,7 +310,7 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
-/* ─── Safety badge ─── */
+/* â”€â”€â”€ Safety badge â”€â”€â”€ */
 .ss-safety-badge {
   display: flex;
   align-items: center;
@@ -345,7 +345,7 @@
   opacity: 0.75;
 }
 
-/* ─── Source badge ─── */
+/* â”€â”€â”€ Source badge â”€â”€â”€ */
 .ss-source-badge {
   display: inline-block;
   padding: 3px 8px;
@@ -366,7 +366,7 @@
   border: 1px solid rgba(250, 204, 21, 0.2);
 }
 
-/* ─── Name row (input + AI button) ─── */
+/* â”€â”€â”€ Name row (input + AI button) â”€â”€â”€ */
 .ss-name-row {
   display: flex;
   gap: 4px;
@@ -389,7 +389,7 @@
 }
 
 .ss-name-row input:focus {
-  border-color: rgba(147, 70, 255, 0.4);
+  border-color: rgba(22, 163, 74, 0.4);
 }
 
 .ss-ai-btn {
@@ -462,7 +462,7 @@
 .ss-field input:focus,
 .ss-field select:focus,
 .ss-field textarea:focus {
-  border-color: rgba(147, 70, 255, 0.4);
+  border-color: rgba(22, 163, 74, 0.4);
 }
 
 .ss-field--wide {
@@ -488,7 +488,7 @@
   padding: 9px 20px;
   border: none;
   border-radius: 8px;
-  background: linear-gradient(135deg, #9146FF, #7c3aed);
+  background: linear-gradient(135deg, #9146FF, #15803d);
   color: #fff;
   font-size: 13.6px;
   font-weight: 600;
@@ -506,7 +506,7 @@
   cursor: not-allowed;
 }
 
-/* ─── Stats ─── */
+/* â”€â”€â”€ Stats â”€â”€â”€ */
 .ss-stats {
   display: flex;
   gap: 8px;
@@ -538,7 +538,7 @@
 .ss-stat--approved .ss-stat-num { color: #4ade80; }
 .ss-stat--denied .ss-stat-num { color: #f87171; }
 
-/* ─── List ─── */
+/* â”€â”€â”€ List â”€â”€â”€ */
 .ss-list {
   display: flex;
   flex-direction: column;
@@ -601,7 +601,7 @@
 
 .ss-card-submitter {
   font-size: 11.5px;
-  color: #a78bfa;
+  color: #6ee7b7;
   font-weight: 600;
   margin-top: 2px;
 }
@@ -654,7 +654,7 @@
   color: var(--theme-text-secondary, #a0a0b4);
 }
 
-/* ─── Empty / Loading ─── */
+/* â”€â”€â”€ Empty / Loading â”€â”€â”€ */
 .ss-empty, .ss-loading {
   display: flex;
   flex-direction: column;
@@ -672,11 +672,11 @@
   opacity: 0.5;
 }
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SlotApprovals-specific styles
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
-/* ─── Pending badge (header) ─── */
+/* â”€â”€â”€ Pending badge (header) â”€â”€â”€ */
 .sa-pending-badge {
   padding: 5px 12px;
   border-radius: 20px;
@@ -687,7 +687,7 @@
   border: 1px solid rgba(251, 191, 36, 0.3);
 }
 
-/* ─── Filter tabs ─── */
+/* â”€â”€â”€ Filter tabs â”€â”€â”€ */
 .sa-filters {
   display: flex;
   gap: 4px;
@@ -712,16 +712,16 @@
 }
 
 .sa-filter-btn--active {
-  background: rgba(147, 70, 255, 0.15);
-  border-color: rgba(147, 70, 255, 0.3);
-  color: #c084fc;
+  background: rgba(22, 163, 74, 0.15);
+  border-color: rgba(22, 163, 74, 0.3);
+  color: #bbf7d0;
 }
 
-/* ─── Detail toggle ─── */
+/* â”€â”€â”€ Detail toggle â”€â”€â”€ */
 .sa-detail-toggle {
   border: none;
   background: none;
-  color: #60a5fa;
+  color: #34d399;
   font-size: 11.5px;
   cursor: pointer;
   padding: 2px 0;
@@ -745,7 +745,7 @@
   margin: 0;
 }
 
-/* ─── Approve / Deny actions ─── */
+/* â”€â”€â”€ Approve / Deny actions â”€â”€â”€ */
 .sa-actions {
   display: flex;
   gap: 6px;
@@ -788,7 +788,7 @@
   background: rgba(248, 113, 113, 0.25);
 }
 
-/* ─── Deny form ─── */
+/* â”€â”€â”€ Deny form â”€â”€â”€ */
 .sa-deny-form {
   display: flex;
   gap: 4px;
@@ -840,21 +840,21 @@
   color: #fff;
 }
 
-/* ─── Admin Edit Form ─── */
+/* â”€â”€â”€ Admin Edit Form â”€â”€â”€ */
 .sa-edit-btn {
   padding: 6px 14px;
   border-radius: 8px;
-  border: 1px solid rgba(168, 85, 247, 0.3);
-  background: rgba(168, 85, 247, 0.12);
-  color: #c4b5fd;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
   font-size: 12.5px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.15s;
 }
 .sa-edit-btn:hover {
-  background: rgba(168, 85, 247, 0.25);
-  border-color: #a855f7;
+  background: rgba(34, 197, 94, 0.25);
+  border-color: #22c55e;
 }
 .sa-edit-form {
   display: flex;
@@ -887,7 +887,7 @@
 }
 .sa-edit-row input:focus,
 .sa-edit-row select:focus {
-  border-color: rgba(168, 85, 247, 0.5);
+  border-color: rgba(34, 197, 94, 0.5);
   outline: none;
 }
 .sa-edit-row-group {
@@ -930,7 +930,7 @@
   color: #fff;
 }
 
-/* ─── Responsive ─── */
+/* â”€â”€â”€ Responsive â”€â”€â”€ */
 @media (max-width: 640px) {
   .ss-card {
     flex-direction: column;
@@ -952,9 +952,9 @@
   }
 }
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SlotSubmissions page visual overrides
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 .slot-manager-v2[data-tour="slots-page"] {
   --ssm-surface: rgba(11, 15, 20, 0.9);
@@ -962,7 +962,7 @@
   --ssm-text: #f7fbff;
   --ssm-muted: #90a4b6;
   --ssm-gold: #fbbf24;
-  --ssm-cyan: #38bdf8;
+  --ssm-cyan: #34d399;
   --ssm-green: #86efac;
   position: relative;
   padding: 18px;
@@ -970,7 +970,7 @@
   overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(251, 191, 36, 0.14), transparent 32%),
-    radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 30%),
     linear-gradient(180deg, rgba(8, 12, 17, 0.98), rgba(9, 13, 18, 0.9));
   border: 1px solid rgba(148, 163, 184, 0.08);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.26);
@@ -1134,7 +1134,7 @@
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(56, 189, 248, 0.12));
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(52, 211, 153, 0.12));
   border: 1px solid rgba(251, 191, 36, 0.24);
   color: #fde68a;
   font-size: 11px;
@@ -1233,7 +1233,7 @@
 }
 
 .slot-manager-v2[data-tour="slots-page"] .sm-btn-primary {
-  background: linear-gradient(135deg, #f59e0b, #f97316 62%, #38bdf8);
+  background: linear-gradient(135deg, #f59e0b, #f97316 62%, #34d399);
   color: #09121b;
   border: none;
   box-shadow: 0 14px 30px rgba(249, 115, 22, 0.2);
@@ -1241,7 +1241,7 @@
 
 .slot-manager-v2[data-tour="slots-page"] .sm-btn-primary:hover,
 .slot-manager-v2[data-tour="slots-page"] .sm-btn-primary.active {
-  background: linear-gradient(135deg, #fbbf24, #fb923c 60%, #67e8f9);
+  background: linear-gradient(135deg, #fbbf24, #fb923c 60%, #a7f3d0);
 }
 
 .slot-manager-v2[data-tour="slots-page"] .sm-btn-ghost:hover,
@@ -1339,9 +1339,9 @@
   }
 }
 
-/* ═══════════════════════════════════════════════
+/* â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
    SlotApprovals page visual overrides
-   ═══════════════════════════════════════════════ */
+   â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• */
 
 [data-tour="approvals-page"] {
   --sa-page-surface: rgba(11, 15, 20, 0.9);
@@ -1351,14 +1351,14 @@
   --sa-page-gold: #fbbf24;
   --sa-page-green: #4ade80;
   --sa-page-red: #fb7185;
-  --sa-page-cyan: #38bdf8;
+  --sa-page-cyan: #34d399;
   position: relative;
   padding: 18px;
   border-radius: 28px;
   overflow: hidden;
   background:
     radial-gradient(circle at top left, rgba(251, 191, 36, 0.14), transparent 30%),
-    radial-gradient(circle at top right, rgba(56, 189, 248, 0.12), transparent 30%),
+    radial-gradient(circle at top right, rgba(52, 211, 153, 0.12), transparent 30%),
     linear-gradient(180deg, rgba(8, 12, 17, 0.98), rgba(9, 13, 18, 0.9));
   border: 1px solid rgba(148, 163, 184, 0.08);
   box-shadow: 0 24px 64px rgba(0, 0, 0, 0.26);
@@ -1518,7 +1518,7 @@
   min-height: 34px;
   padding: 0 12px;
   border-radius: 999px;
-  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(56, 189, 248, 0.12));
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.16), rgba(52, 211, 153, 0.12));
   border: 1px solid rgba(251, 191, 36, 0.24);
   color: #fde68a;
   font-size: 11px;
@@ -1616,7 +1616,7 @@
 }
 
 [data-tour="approvals-page"] .ss-card-submitter {
-  color: #93c5fd;
+  color: #a7f3d0;
 }
 
 [data-tour="approvals-page"] .ss-card-meta span {
@@ -1654,14 +1654,14 @@
 }
 
 [data-tour="approvals-page"] .sa-edit-btn {
-  background: rgba(56, 189, 248, 0.12);
-  color: #bae6fd;
-  border-color: rgba(56, 189, 248, 0.2);
+  background: rgba(52, 211, 153, 0.12);
+  color: #d1fae5;
+  border-color: rgba(52, 211, 153, 0.2);
 }
 
 [data-tour="approvals-page"] .sa-edit-btn:hover {
-  background: rgba(56, 189, 248, 0.2);
-  border-color: rgba(56, 189, 248, 0.32);
+  background: rgba(52, 211, 153, 0.2);
+  border-color: rgba(52, 211, 153, 0.32);
 }
 
 [data-tour="approvals-page"] .sa-approve-btn {
@@ -1762,3 +1762,4 @@
     align-self: flex-start;
   }
 }
+

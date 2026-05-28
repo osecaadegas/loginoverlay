@@ -616,110 +616,6 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     loadSlots();
   }, [userId]);
 
-  // Best-match: normalize, then pick the slot with the longest matching name
-  function bestSlotMatch(slotList, queryName) {
-    const norm = s => s.toLowerCase().replace(/[^a-z0-9]/g, '');
-    const q = norm(queryName);
-    if (!q) return null;
-    // Exact normalized match first
-    const exact = slotList.find(s => s.name && norm(s.name) === q);
-    if (exact) return exact;
-    // Fuzzy: collect all slots whose normalized name is contained in query or vice-versa
-    const candidates = slotList.filter(s => {
-      if (!s.name) return false;
-      const n = norm(s.name);
-      return n.length >= 3 && (q.includes(n) || n.includes(q));
-    });
-    if (!candidates.length) return null;
-    // Pick the one with the longest name (most specific)
-    return candidates.reduce((best, c) => (c.name.length > best.name.length ? c : best), candidates[0]);
-  }
-
-  /* ─── Auto-Tracker: listen for browser extension slot detections ─── */
-  const [autoTrackEnabled, setAutoTrackEnabled] = useState(c.autoTrackEnabled ?? false);
-  const [lastDetected, setLastDetected] = useState(null);
-
-  useEffect(() => {
-    if (!userId || !autoTrackEnabled) return;
-
-    const channel = supabase
-      .channel(`detected_slots:${userId}`)
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'detected_slots',
-        filter: `user_id=eq.${userId}`,
-      }, (payload) => {
-        const detected = payload.new;
-        if (!detected?.slot_name) return;
-
-        // Only process entries targeting bonus_hunt
-        const detectedTarget = detected.target || '';
-        const detectedName = detected.slot_name.toLowerCase().trim();
-        setLastDetected(detected.slot_name);
-
-        if (bonusOpening) {
-          // During opening: find matching unopened bonus and highlight it
-          setBonusList(prev => {
-            const matchIdx = prev.findIndex(b =>
-              !b.opened &&
-              !(Number(b.payout) > 0) &&
-              ((b.slotName || b.slot?.name || '').toLowerCase().trim().includes(detectedName) ||
-              detectedName.includes((b.slotName || b.slot?.name || '').toLowerCase().trim()))
-            );
-
-            if (matchIdx === -1) return prev;
-
-            const updated = prev.map((b, i) => {
-              if (i === matchIdx) return b;
-              return b;
-            });
-            return updated;
-          });
-        } else if (detectedTarget === 'bonus_hunt' && detected.bet_size > 0) {
-          // BH target with bet: auto-add directly to the bonus list
-          const currentSlots = slotsRef.current;
-          const matchSlot = bestSlotMatch(currentSlots, detected.slot_name);
-
-          const newBonus = {
-            id: Date.now(),
-            slot: matchSlot || { name: detected.slot_name, provider: detected.provider || '' },
-            slotName: matchSlot?.name || detected.slot_name,
-            betSize: Number(detected.bet_size),
-            isSuperBonus: !!detected.is_super_bonus,
-            isExtremeBonus: !!detected.is_extreme_bonus,
-            opened: false,
-            result: 0,
-            payout: 0,
-          };
-
-          setBonusList(prev => {
-            const updated = [...prev, newBonus];
-            // Save immediately (use setTimeout to avoid state race)
-            setTimeout(() => save(updated), 0);
-            return updated;
-          });
-        } else {
-          // Non-BH target or no bet: auto-fill the search input + bet size
-          const currentSlots = slotsRef.current;
-          const matchSlot = bestSlotMatch(currentSlots, detected.slot_name);
-          if (matchSlot) {
-            setSelectedSlot(matchSlot);
-            setSlotSearch(matchSlot.name);
-          } else {
-            setSelectedSlot(null);
-            setSlotSearch(detected.slot_name);
-          }
-          if (detected.bet_size != null && detected.bet_size > 0) {
-            setBetSize(String(detected.bet_size));
-          }
-        }
-      })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [userId, autoTrackEnabled, bonusOpening]);
-
   const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
     ? sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase())))
     : [];
@@ -732,13 +628,14 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       stopLoss: Number(stopLoss) || 0,
       huntNumber: huntNumber,
       casinoName: casinoName,
-      showStatistics, animatedTracker, bonusOpening, autoTrackEnabled,
+      showStatistics, animatedTracker, bonusOpening,
+      autoTrackEnabled: false,
       sortBy, sortDir,
       bonuses: list,
       huntActive: config?.huntActive ?? false,
       ...extras,
     });
-  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, casinoName, showStatistics, animatedTracker, bonusOpening, autoTrackEnabled, sortBy, sortDir, bonusList]);
+  }, [config, onChange, startMoney, targetMoney, stopLoss, huntNumber, casinoName, showStatistics, animatedTracker, bonusOpening, sortBy, sortDir, bonusList]);
 
   const handleAddBonus = () => {
     const betNum = Number(betSize);
@@ -1334,19 +1231,13 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Bonus List ─── */}
       <div className="bh-panel-section bh-panel-section--list">
-        {/* ── Bonus Opening + Auto-Tracker toggles ── */}
+        {/* ── Bonus Opening toggle ── */}
         <div className="bh-toggles-row">
           <label className={`bh-compact-toggle ${bonusOpening ? 'bh-compact-toggle--active' : ''}`}>
             <input type="checkbox" checked={bonusOpening}
               onChange={e => { setBonusOpening(e.target.checked); save(bonusList, { bonusOpening: e.target.checked }); }} />
             <span className="bh-opening-switch" />
             <span className="bh-compact-text">{bonusOpening ? '🎰 Opening' : '🔒 Opening'}</span>
-          </label>
-          <label className={`bh-compact-toggle ${autoTrackEnabled ? 'bh-compact-toggle--active' : ''}`}>
-            <input type="checkbox" checked={autoTrackEnabled}
-              onChange={e => { setAutoTrackEnabled(e.target.checked); save(bonusList, { autoTrackEnabled: e.target.checked }); }} />
-            <span className="bh-opening-switch" />
-            <span className="bh-compact-text">{autoTrackEnabled ? '🔗 Tracker' : '🔗 Tracker'}</span>
           </label>
         </div>
 
