@@ -408,6 +408,14 @@ export default function SlotSubmissions() {
   const hasFilters = providerFilter.length > 0 || volFilter.length > 0;
   const clearAllFilters = () => { setProviderFilter([]); setVolFilter([]); setSearchTerm(''); };
   const providerOptions = providers.map(p => ({ value: p, label: p }));
+  const activeFilterCount = providerFilter.length + volFilter.length + (searchTerm.trim() ? 1 : 0);
+  const visibleStart = totalCount === 0 ? 0 : (page - 1) * pageSize + 1;
+  const visibleEnd = totalCount === 0 ? 0 : Math.min(page * pageSize, totalCount);
+  const resultRangeLabel = loading ? 'Loading…' : totalCount > 0 ? `${visibleStart}-${visibleEnd}` : '0 results';
+  const pageModeLabel = showSubmit ? 'Submission open' : 'Catalog mode';
+  const heroNote = totalCount > 0
+    ? 'Browse the live slot catalog, narrow the list by provider and volatility, and open the inline submission flow when a missing game needs review.'
+    : 'No slots are visible in the current view. Adjust the filters or submit a missing game for approval from this same workspace.';
 
   /* ── Keyboard shortcuts ── */
   useEffect(() => {
@@ -427,105 +435,156 @@ export default function SlotSubmissions() {
   /* ── Render ── */
   return (
     <div className="slot-manager-v2" data-tour="slots-page">
-      {notification && <div className={`sm-toast ${notification.type}`}>{notification.message}</div>}
+      <div className="ssm-page-shell">
+        {notification && <div className={`sm-toast ${notification.type}`}>{notification.message}</div>}
 
-      {/* ── Toolbar ── */}
-      <div className="sm-toolbar">
-        <div className="sm-toolbar-left">
-          <div className="sm-search">
-            <svg className="sm-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
-            <input ref={searchRef} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search slots…" />
-            {searchTerm && <button className="sm-search-clear" onClick={() => setSearchTerm('')}>×</button>}
+        <div className="ssm-page-hero">
+          <div className="ssm-page-hero-copy">
+            <span className="ssm-page-eyebrow">Catalog Control</span>
+            <h2 className="ssm-page-title">Submit slots</h2>
+            <p className="ssm-page-subtitle">
+              Browse the live slot catalog, spot missing games, and send new submissions into the approval queue from one focused workspace.
+            </p>
+            <p className="ssm-page-note">{heroNote}</p>
           </div>
-          <DropdownFilter label="Provider" options={providerOptions} selected={providerFilter} onChange={setProviderFilter} />
-          <DropdownFilter label="Volatility" options={VOLATILITY_OPTIONS} selected={volFilter} onChange={setVolFilter} />
-          {hasFilters && <button className="sm-clear-filters" onClick={clearAllFilters}>Clear filters</button>}
-        </div>
-        <div className="sm-toolbar-right">
-          <span className="sm-count">{totalCount.toLocaleString()} slots</span>
-          <button className="sm-btn-ghost" onClick={() => setShowMySubmissions(true)}>My Submissions</button>
-          <button className={`sm-btn-primary${showSubmit ? ' active' : ''}`} onClick={() => setShowSubmit(s => !s)}>
-            {showSubmit ? '✕ Close' : '+ Submit Slot'}
-          </button>
-        </div>
-      </div>
 
-      {/* ── Submit Slot Dropdown ── */}
-      {showSubmit && (
-        <SubmitDropdown
-          providers={providers}
-          onClose={() => setShowSubmit(false)}
-          onSubmitted={() => { notify('Slot submitted for approval! 🎉'); setShowSubmit(false); }}
-        />
-      )}
-
-      {/* ── Table ── */}
-      <div className="sm-table-wrap">
-        {loading ? (
-          <div className="sm-empty"><div className="sm-spinner" /><p>Loading slots…</p></div>
-        ) : slots.length === 0 ? (
-          <div className="sm-empty">
-            <p className="sm-empty-icon">No slots found</p>
-            <p className="sm-empty-sub">Adjust search or filters.</p>
+          <div className="ssm-page-metrics">
+            <div className="ssm-page-metric-card">
+              <span className="ssm-page-metric-label">Catalog</span>
+              <strong className="ssm-page-metric-value">{totalCount}</strong>
+              <span className="ssm-page-metric-meta">Live slots in the current query</span>
+            </div>
+            <div className="ssm-page-metric-card">
+              <span className="ssm-page-metric-label">Providers</span>
+              <strong className="ssm-page-metric-value">{providers.length}</strong>
+              <span className="ssm-page-metric-meta">Known studios available for filtering</span>
+            </div>
+            <div className="ssm-page-metric-card">
+              <span className="ssm-page-metric-label">Visible Range</span>
+              <strong className="ssm-page-metric-value">{resultRangeLabel}</strong>
+              <span className="ssm-page-metric-meta">Page {page} of {totalPages || 1}</span>
+            </div>
+            <div className="ssm-page-metric-card">
+              <span className="ssm-page-metric-label">Filters</span>
+              <strong className="ssm-page-metric-value">{activeFilterCount}</strong>
+              <span className="ssm-page-metric-meta">{pageModeLabel}</span>
+            </div>
           </div>
-        ) : (
-          <table className="sm-table">
-            <thead>
-              <tr>
-                <th className="sm-th-img" />
-                <th className="sm-th-name" onClick={() => handleSort('name')}>Name <SortArrow col="name" /></th>
-                <th className="sm-th-prov" onClick={() => handleSort('provider')}>Provider <SortArrow col="provider" /></th>
-                <th className="sm-th-rtp" onClick={() => handleSort('rtp')}>RTP <SortArrow col="rtp" /></th>
-                <th className="sm-th-maxwin" onClick={() => handleSort('max_win_multiplier')}>Max Win <SortArrow col="max_win_multiplier" /></th>
-                <th className="sm-th-vol">Vol.</th>
-              </tr>
-            </thead>
-            <tbody>
-              {slots.map((slot, i) => (
-                <tr key={slot.id} className={`sm-row ${i % 2 ? 'odd' : ''}`}>
-                  <td className="sm-td-img">
-                    <img src={slot.image || DEFAULT_SLOT_IMAGE} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
-                  </td>
-                  <td className="sm-td-name">
-                    {slot.name}
-                    {slot.is_featured && <span className="sm-star" title="Featured">★</span>}
-                  </td>
-                  <td className="sm-td-prov">{slot.provider}</td>
-                  <td className="sm-td-rtp">{slot.rtp ? `${slot.rtp}%` : '—'}</td>
-                  <td className="sm-td-maxwin">{slot.max_win_multiplier ? `${Number(slot.max_win_multiplier).toLocaleString()}x` : '—'}</td>
-                  <td className="sm-td-vol"><VolBadge v={slot.volatility} /></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
-      </div>
-
-      {/* ── Pagination ── */}
-      {!loading && totalCount > 0 && (
-        <div className="sm-pagination">
-          <span className="sm-pag-info">
-            {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount}
-          </span>
-          <div className="sm-pag-controls">
-            <button disabled={page <= 1} onClick={() => setPage(1)}>«</button>
-            <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>‹</button>
-            <span>{page} / {totalPages}</span>
-            <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>›</button>
-            <button disabled={page >= totalPages} onClick={() => setPage(totalPages)}>»</button>
-          </div>
-          <select className="sm-pag-size" value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>
-            {PAGE_SIZES.map(s => <option key={s} value={s}>{s} / page</option>)}
-          </select>
         </div>
-      )}
 
-      {/* ── Panels ── */}
-      {showMySubmissions && <MySubmissionsPanel onClose={() => setShowMySubmissions(false)} />}
+        <div className="ssm-section-heading">
+          <div>
+            <span className="ssm-section-eyebrow">Explore & Submit</span>
+            <h3 className="ssm-section-title">Search the database, refine the list, and open the inline submission flow</h3>
+          </div>
+          <span className="ssm-section-pill">{pageModeLabel}</span>
+        </div>
 
-      {/* ── Shortcuts hint ── */}
-      <div className="sm-shortcuts">
-        <kbd>/</kbd> Search &nbsp; <kbd>N</kbd> New &nbsp; <kbd>Esc</kbd> Close
+        <div className="ssm-toolbar-card">
+          <div className="sm-toolbar">
+            <div className="sm-toolbar-left">
+              <div className="sm-search">
+                <svg className="sm-search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" /></svg>
+                <input ref={searchRef} value={searchTerm} onChange={e => setSearchTerm(e.target.value)} placeholder="Search slots…" />
+                {searchTerm && <button className="sm-search-clear" onClick={() => setSearchTerm('')}>×</button>}
+              </div>
+              <DropdownFilter label="Provider" options={providerOptions} selected={providerFilter} onChange={setProviderFilter} />
+              <DropdownFilter label="Volatility" options={VOLATILITY_OPTIONS} selected={volFilter} onChange={setVolFilter} />
+              {hasFilters && <button className="sm-clear-filters" onClick={clearAllFilters}>Clear filters</button>}
+            </div>
+            <div className="sm-toolbar-right">
+              <span className="sm-count">{totalCount.toLocaleString()} slots</span>
+              <button className="sm-btn-ghost" onClick={() => setShowMySubmissions(true)}>My Submissions</button>
+              <button className={`sm-btn-primary${showSubmit ? ' active' : ''}`} onClick={() => setShowSubmit(s => !s)}>
+                {showSubmit ? '✕ Close' : '+ Submit Slot'}
+              </button>
+            </div>
+          </div>
+
+          {showSubmit && (
+            <SubmitDropdown
+              providers={providers}
+              onClose={() => setShowSubmit(false)}
+              onSubmitted={() => { notify('Slot submitted for approval! 🎉'); setShowSubmit(false); }}
+            />
+          )}
+        </div>
+
+        <div className="ssm-section-heading ssm-section-heading--compact">
+          <div>
+            <span className="ssm-section-eyebrow">Live Catalog</span>
+            <h3 className="ssm-section-title">Scan the current database and verify what still needs submission</h3>
+          </div>
+          <span className="ssm-section-pill">{resultRangeLabel}</span>
+        </div>
+
+        <div className="ssm-results-card">
+          <div className="sm-table-wrap">
+            {loading ? (
+              <div className="sm-empty"><div className="sm-spinner" /><p>Loading slots…</p></div>
+            ) : slots.length === 0 ? (
+              <div className="sm-empty">
+                <p className="sm-empty-icon">No slots found</p>
+                <p className="sm-empty-sub">Adjust search or filters.</p>
+              </div>
+            ) : (
+              <table className="sm-table">
+                <thead>
+                  <tr>
+                    <th className="sm-th-img" />
+                    <th className="sm-th-name" onClick={() => handleSort('name')}>Name <SortArrow col="name" /></th>
+                    <th className="sm-th-prov" onClick={() => handleSort('provider')}>Provider <SortArrow col="provider" /></th>
+                    <th className="sm-th-rtp" onClick={() => handleSort('rtp')}>RTP <SortArrow col="rtp" /></th>
+                    <th className="sm-th-maxwin" onClick={() => handleSort('max_win_multiplier')}>Max Win <SortArrow col="max_win_multiplier" /></th>
+                    <th className="sm-th-vol">Vol.</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {slots.map((slot, i) => (
+                    <tr key={slot.id} className={`sm-row ${i % 2 ? 'odd' : ''}`}>
+                      <td className="sm-td-img">
+                        <img src={slot.image || DEFAULT_SLOT_IMAGE} alt="" loading="lazy" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+                      </td>
+                      <td className="sm-td-name">
+                        {slot.name}
+                        {slot.is_featured && <span className="sm-star" title="Featured">★</span>}
+                      </td>
+                      <td className="sm-td-prov">{slot.provider}</td>
+                      <td className="sm-td-rtp">{slot.rtp ? `${slot.rtp}%` : '—'}</td>
+                      <td className="sm-td-maxwin">{slot.max_win_multiplier ? `${Number(slot.max_win_multiplier).toLocaleString()}x` : '—'}</td>
+                      <td className="sm-td-vol"><VolBadge v={slot.volatility} /></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
+
+          {!loading && totalCount > 0 && (
+            <div className="sm-pagination">
+              <span className="sm-pag-info">
+                {(page - 1) * pageSize + 1}–{Math.min(page * pageSize, totalCount)} of {totalCount}
+              </span>
+              <div className="sm-pag-controls">
+                <button disabled={page <= 1} onClick={() => setPage(1)}>«</button>
+                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}>‹</button>
+                <span>{page} / {totalPages}</span>
+                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}>›</button>
+                <button disabled={page >= totalPages} onClick={() => setPage(totalPages)}>»</button>
+              </div>
+              <select className="sm-pag-size" value={pageSize} onChange={e => setPageSize(Number(e.target.value))}>
+                {PAGE_SIZES.map(s => <option key={s} value={s}>{s} / page</option>)}
+              </select>
+            </div>
+          )}
+
+          <div className="sm-shortcuts">
+            <kbd>/</kbd> Search &nbsp; <kbd>N</kbd> New &nbsp; <kbd>Esc</kbd> Close
+          </div>
+        </div>
+
+        {/* ── Panels ── */}
+        {showMySubmissions && <MySubmissionsPanel onClose={() => setShowMySubmissions(false)} />}
       </div>
     </div>
   );
