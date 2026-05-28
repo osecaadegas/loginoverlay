@@ -993,6 +993,23 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                   <span className="bh-sr-state-label">Widget</span>
                   <span className="bh-sr-state-value">{(c.showSlotRequests !== false) ? 'Visible on stream' : 'Hidden from stream'}</span>
                 </span>
+                {/* Toggle pill */}
+                <span style={{
+                  marginLeft: 'auto', flexShrink: 0,
+                  display: 'inline-flex', alignItems: 'center',
+                  width: 36, height: 20, borderRadius: 10, padding: '0 2px',
+                  background: (c.showSlotRequests !== false) ? 'rgba(34,197,94,0.55)' : 'rgba(248,113,113,0.35)',
+                  border: `1px solid ${(c.showSlotRequests !== false) ? 'rgba(34,197,94,0.5)' : 'rgba(248,113,113,0.35)'}`,
+                  transition: 'background 0.2s, border-color 0.2s',
+                }}>
+                  <span style={{
+                    width: 14, height: 14, borderRadius: '50%',
+                    background: (c.showSlotRequests !== false) ? '#22c55e' : '#f87171',
+                    transform: (c.showSlotRequests !== false) ? 'translateX(16px)' : 'translateX(0)',
+                    transition: 'transform 0.2s, background 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
+                  }} />
+                </span>
               </button>
 
               {/* Toggle: Listen/Stop listening to !sr command */}
@@ -1014,6 +1031,23 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <span className="bh-sr-state-copy">
                   <span className="bh-sr-state-label">Chat Sync</span>
                   <span className="bh-sr-state-value">{(c.srChatEnabled !== false) ? 'Listening for !sr' : 'Requests paused'}</span>
+                </span>
+                {/* Toggle pill */}
+                <span style={{
+                  marginLeft: 'auto', flexShrink: 0,
+                  display: 'inline-flex', alignItems: 'center',
+                  width: 36, height: 20, borderRadius: 10, padding: '0 2px',
+                  background: (c.srChatEnabled !== false) ? 'rgba(34,197,94,0.55)' : 'rgba(248,113,113,0.35)',
+                  border: `1px solid ${(c.srChatEnabled !== false) ? 'rgba(34,197,94,0.5)' : 'rgba(248,113,113,0.35)'}`,
+                  transition: 'background 0.2s, border-color 0.2s',
+                }}>
+                  <span style={{
+                    width: 14, height: 14, borderRadius: '50%',
+                    background: (c.srChatEnabled !== false) ? '#22c55e' : '#f87171',
+                    transform: (c.srChatEnabled !== false) ? 'translateX(16px)' : 'translateX(0)',
+                    transition: 'transform 0.2s, background 0.2s',
+                    boxShadow: '0 1px 3px rgba(0,0,0,0.35)',
+                  }} />
                 </span>
               </button>
             </div>
