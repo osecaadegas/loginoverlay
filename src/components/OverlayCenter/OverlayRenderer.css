@@ -2020,11 +2020,13 @@
 }
 
 /* ── V12 modern: global card styling ── */
+/* border-radius removed — slot clipPath handles rounding;
+   backdrop-filter + border-radius causes Chromium black-corner compositor issue */
 .oc-bonushunt--v12 {
   gap: 0 !important;
   background: linear-gradient(160deg, rgba(38,40,46,0.97), rgba(52,54,62,0.95));
   backdrop-filter: blur(14px);
-  border-radius: 12px;
+  border-radius: 0;
 }
 .oc-bonushunt--v12 .bht-card {
   padding: 8px;
@@ -3378,21 +3380,20 @@
 }
 
 /* --- Main card --- */
+/* border-radius and box-shadow removed from root — slot handles both */
 .rs-alert-card {
   position: relative;
   width: 100%;
   height: 100%;
   background: #000;
-  border-radius: var(--rs-radius, 12px);
+  border-radius: 0;
   overflow: hidden;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.6);
 }
 
 /* Clip-only variant: no extra chrome */
 .rs-alert-card--clip-only {
   background: transparent;
   border: none;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
 }
 
 /* --- Clip container (always visible, no expand/collapse) --- */
@@ -3655,11 +3656,11 @@
 .cg-predict__pool span { color: #a78bfa; font-weight: 700; }
 
 /* ── BH Predictions Widget (4×2 card grid) ── */
+/* border-radius and box-shadow removed from root — slot handles both */
 .bh-pred {
   display: flex; flex-direction: column;
   background: var(--bh-pred-bg, #1e3550);
-  border-radius: 16px; overflow: hidden;
-  box-shadow: 0 4px 24px rgba(0,0,0,0.45);
+  border-radius: 0; overflow: hidden;
   color: var(--bh-pred-text, #c8d8e8);
   width: 100%; height: 100%;
 }
@@ -3668,7 +3669,7 @@
   padding: 10px 14px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   border-bottom: 2px solid rgba(255,255,255,0.08);
-  border-radius: 16px 16px 0 0;
+  border-radius: 0;
 }
 .bh-pred__title {
   font-size: 1.05em; font-weight: 800; letter-spacing: 0.5px;
@@ -3809,16 +3810,18 @@
 }
 
 /* ── Root widget ── */
+/* border-radius and box-shadow removed — slot clipPath handles rounding,
+   slot drop-shadow filter handles outer shadow (avoids dark corner artifacts
+   on transparent OBS canvas). */
 .bets-ov {
   display: flex;
   flex-direction: column;
   width: 100%;
   height: 100%;
   background: var(--bets-bg, rgba(10,14,20,0.94));
-  border-radius: 14px;
+  border-radius: 0;
   overflow: hidden;
   border: 1px solid rgba(148,163,184,0.12);
-  box-shadow: 0 12px 40px rgba(0,0,0,0.55), 0 0 0 1px rgba(255,255,255,0.03);
   color: var(--bets-text, #d4dce8);
   animation: bets-open 0.55s cubic-bezier(0.16,1,0.3,1) both;
 }
@@ -4701,13 +4704,13 @@
 }
 
 /* ── Container ── */
+/* border-radius and box-shadow removed from root — slot handles both */
 .v9-container {
   width: 95%;
   max-width: 700px;
   background: var(--v9-container-bg, rgba(15,23,42,0.85));
-  border-radius: var(--v9-container-radius, 18px);
+  border-radius: 0;
   border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -5132,16 +5135,16 @@
   gap: 0 !important;
   height: 100%;
 }
+/* border-radius and box-shadow removed from root — slot handles both */
 .bhtc-wrapper {
   display: flex;
   flex-direction: column;
   gap: 0;
   background: var(--bht-header-bg, linear-gradient(160deg, #0f1a3c 0%, #0a1230 100%));
-  border-radius: var(--bht-card-radius, 16px);
+  border-radius: 0;
   overflow: hidden;
   height: 100%;
   border: 1px solid rgba(255,255,255,0.06);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.5);
 }
 .bhtc-stats-bar {
   display: flex;
@@ -5334,11 +5337,13 @@
 /* ===============================================================
    Slot Requests — Style 1: Modern Minimal  (.sr-min-*)
    =============================================================== */
+/* border-radius removed — slot clipPath handles rounding;
+   backdrop-filter + border-radius causes Chromium black-corner compositor issue */
 .sr-min-root {
   width: 100%; height: 100%;
   display: flex; flex-direction: column;
   background: var(--sr-min-bg, rgba(15,17,28,0.75));
-  border-radius: 14px;
+  border-radius: 0;
   overflow: hidden;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -5455,10 +5460,12 @@
   width: 100%; height: 100%;
   display: flex; align-items: stretch; justify-content: stretch;
 }
+/* border-radius removed — slot clipPath handles rounding;
+   backdrop-filter + border-radius causes Chromium black-corner compositor issue */
 .sr-cs-container {
   flex: 1; display: flex; flex-direction: column;
   background: var(--sr-cs-bg, rgba(15,17,28,0.82));
-  border-radius: 16px; overflow: hidden;
+  border-radius: 0; overflow: hidden;
   backdrop-filter: blur(14px);
   border: 1px solid rgba(255,255,255,0.06);
 }
@@ -5602,11 +5609,13 @@
 /* ===============================================================
    Slot Requests — Style 3: Compact Overlay  (.sr-co-*)
    =============================================================== */
+/* border-radius removed — slot clipPath handles rounding;
+   backdrop-filter + border-radius causes Chromium black-corner compositor issue */
 .sr-co-root {
   display: flex; align-items: center; gap: 10px;
   padding: 8px 14px;
   background: var(--sr-co-bg, rgba(15,17,28,0.8));
-  border-radius: 12px;
+  border-radius: 0;
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid rgba(255,255,255,0.06);
@@ -5682,13 +5691,14 @@
 
 /* ── V11 Fever Font ── */
 
+/* border-radius removed from root — slot clipPath handles rounding */
 .bht11 {
   display: flex;
   flex-direction: column;
   gap: 0;
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   background: linear-gradient(170deg, #0b1134 0%, #060a20 60%, #0a0e27 100%);
-  border-radius: 20px;
+  border-radius: 0;
   padding: 16px 14px;
   overflow: hidden;
   color: var(--bht11-text, #ffffff);
