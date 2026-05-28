@@ -1,41 +1,88 @@
 /**
  * BetsWidget.jsx — OBS overlay for live chat bracket betting.
  *
- * Modern dark-glass aesthetic matching the bonus hunt widget family.
- * Grid layout: 2 cols for ≤6 options (2×3 for 6), 3 cols for 7–9, 4 cols for 10+.
- * Animations: entry stagger, leading-bet pulse, winner celebration.
+ * Three themes: dark glass · grey · white
+ * Layouts: v1_list (horizontal bars) · v2_grid (vertical fill cards)
+ * Animations: entry stagger · bar shimmer · leading pulse · winner pop
  */
 import React, { useState, useEffect, useMemo } from 'react';
 
-/** Dynamic grid columns based on option count */
 function getGridCols(count) {
   if (count <= 6) return 2;
   if (count <= 9) return 3;
   return 4;
 }
 
-function BetsWidget({ config }) {
-  const c = config || {};
-  const title      = c.question    || 'Place Your Bets';
-  const status     = c.gameStatus  || 'idle';
-  const winnerIdx  = c.winnerOption ?? null;
-  const options    = c.options     || [];
-  const bets       = c.bets        || {};
-  const betters    = c.betters     || {};
-  const timer      = c.timerSeconds || 0;
-  const fund       = c.fundAmount  || 0;
-  const currency   = c.currency    || '€';
-  const cmd        = c.chatCommand || '!bet';
-  const font       = c.fontFamily  || "'Inter', sans-serif";
-  const layout     = c.displayStyle || 'v1_list';
+// Vibrant palette — one colour per bracket option (rainbow mode)
+const PALETTE = [
+  '#6366f1', // indigo
+  '#22c55e', // emerald
+  '#f97316', // orange
+  '#a855f7', // purple
+  '#06b6d4', // cyan
+  '#ef4444', // red
+  '#eab308', // yellow
+  '#ec4899', // pink
+  '#14b8a6', // teal
+  '#f59e0b', // amber
+];
 
-  const bgColor     = c.bgColor     || 'rgba(10, 14, 20, 0.94)';
-  const headerBg    = c.headerBg    || 'rgba(255,255,255,0.04)';
-  const headerText  = c.headerText  || '#eef2f5';
-  const barBg       = c.barBg       || 'rgba(255,255,255,0.06)';
-  const barFill     = c.barFill     || 'rgba(148,163,184,0.45)';
-  const textColor   = c.textColor   || '#d4dce8';
-  const accentColor = c.accentColor || '#b8c8d8';
+// Fallback CSS-var defaults per theme (used when config has no manual colour override)
+const THEME_PRESETS = {
+  dark: {
+    bgColor:     'rgba(10,14,20,0.94)',
+    headerBg:    'rgba(255,255,255,0.04)',
+    headerText:  '#eef2f5',
+    barBg:       'rgba(255,255,255,0.06)',
+    barFill:     '#6366f1',
+    textColor:   '#d4dce8',
+    accentColor: '#b8c8d8',
+  },
+  grey: {
+    bgColor:     'rgba(42,48,60,0.95)',
+    headerBg:    'rgba(255,255,255,0.07)',
+    headerText:  '#f1f5f9',
+    barBg:       'rgba(255,255,255,0.09)',
+    barFill:     '#6366f1',
+    textColor:   '#e2e8f0',
+    accentColor: '#cbd5e1',
+  },
+  white: {
+    bgColor:     'rgba(248,250,252,0.97)',
+    headerBg:    'rgba(15,23,42,0.04)',
+    headerText:  '#0f172a',
+    barBg:       'rgba(0,0,0,0.07)',
+    barFill:     '#6366f1',
+    textColor:   '#334155',
+    accentColor: '#475569',
+  },
+};
+
+function BetsWidget({ config }) {
+  const c            = config || {};
+  const title        = c.question      || 'Place Your Bets';
+  const status       = c.gameStatus    || 'idle';
+  const winnerIdx    = c.winnerOption  ?? null;
+  const options      = c.options       || [];
+  const bets         = c.bets          || {};
+  const betters      = c.betters       || {};
+  const timer        = c.timerSeconds  || 0;
+  const fund         = c.fundAmount    || 0;
+  const currency     = c.currency      || '€';
+  const cmd          = c.chatCommand   || '!bet';
+  const font         = c.fontFamily    || "'Inter', sans-serif";
+  const layout       = c.displayStyle  || 'v1_list';
+  const colorTheme   = c.colorTheme    || 'dark';
+  const barColorMode = c.barColorMode  || 'rainbow';
+
+  const preset      = THEME_PRESETS[colorTheme] || THEME_PRESETS.dark;
+  const bgColor     = c.bgColor     || preset.bgColor;
+  const headerBg    = c.headerBg    || preset.headerBg;
+  const headerText  = c.headerText  || preset.headerText;
+  const barBg       = c.barBg       || preset.barBg;
+  const barFill     = c.barFill     || preset.barFill;
+  const textColor   = c.textColor   || preset.textColor;
+  const accentColor = c.accentColor || preset.accentColor;
 
   /* Countdown timer */
   const [countdown, setCountdown] = useState(0);
@@ -52,8 +99,7 @@ function BetsWidget({ config }) {
 
   const fmt = (s) => {
     const m = Math.floor(s / 60);
-    const sec = s % 60;
-    return `${m}:${sec.toString().padStart(2, '0')}`;
+    return `${m}:${(s % 60).toString().padStart(2, '0')}`;
   };
 
   const totalPool = useMemo(
@@ -74,10 +120,9 @@ function BetsWidget({ config }) {
   const leadingIdx = useMemo(() => {
     if (status !== 'open' || totalPool === 0) return -1;
     const maxPct = Math.max(...pcts);
-    if (maxPct < 25) return -1; // not dominant enough yet
+    if (maxPct < 25) return -1;
     const sorted = [...pcts].sort((a, b) => b - a);
-    const secondPct = sorted[1] ?? 0;
-    if (maxPct < secondPct + 15) return -1; // gap too small
+    if (maxPct < (sorted[1] ?? 0) + 15) return -1;
     return pcts.indexOf(maxPct);
   }, [status, pcts, totalPool]);
 
@@ -88,23 +133,34 @@ function BetsWidget({ config }) {
     status === 'locked' ? 'LOCKED' :
     status === 'result' ? 'RESULT' : '';
 
-  const isGrid = layout === 'v2_grid';
+  const isGrid   = layout === 'v2_grid';
   const gridCols = getGridCols(options.length);
 
+  const getOptColor = (i) =>
+    barColorMode === 'rainbow' ? PALETTE[i % PALETTE.length] : barFill;
+
   const cssVars = {
-    fontFamily: font,
-    '--bets-bg':      bgColor,
-    '--bets-hdr-bg':  headerBg,
-    '--bets-hdr-txt': headerText,
-    '--bets-bar-bg':  barBg,
-    '--bets-bar-fill':barFill,
-    '--bets-text':    textColor,
-    '--bets-accent':  accentColor,
-    '--bets-cols':    gridCols,
+    fontFamily:        font,
+    '--bets-bg':       bgColor,
+    '--bets-hdr-bg':   headerBg,
+    '--bets-hdr-txt':  headerText,
+    '--bets-bar-bg':   barBg,
+    '--bets-bar-fill': barFill,
+    '--bets-text':     textColor,
+    '--bets-accent':   accentColor,
+    '--bets-cols':     gridCols,
   };
 
   return (
-    <div className={`bets-ov bets-ov--${status}${isGrid ? ' bets-ov--grid' : ''}`} style={cssVars}>
+    <div
+      className={[
+        'bets-ov',
+        `bets-ov--${status}`,
+        `bets-ov--theme-${colorTheme}`,
+        isGrid && 'bets-ov--grid',
+      ].filter(Boolean).join(' ')}
+      style={cssVars}
+    >
       {/* ── Header ── */}
       <div className="bets-ov__header">
         <span className="bets-ov__title">
@@ -112,33 +168,34 @@ function BetsWidget({ config }) {
         </span>
         {status === 'result' && <span className="bets-ov__trophy">🏆</span>}
         <span className={`bets-ov__status bets-ov__status--${status}`}>
-          {status === 'open' && <span className="bets-ov__live-dot" />} {statusLabel}
+          {status === 'open' && <span className="bets-ov__live-dot" />}
+          {statusLabel}
         </span>
       </div>
 
-      {/* ── Stats row ── */}
+      {/* ── Stats strip ── */}
       <div className="bets-ov__stats">
         <div className="bets-ov__stat">
           <span className="bets-ov__stat-val">{totalPool.toLocaleString()}</span>
-          <span className="bets-ov__stat-lbl">Pool</span>
+          <span className="bets-ov__stat-lbl">💰 Pool</span>
         </div>
         <div className="bets-ov__stat bets-ov__stat--center">
-          <span className="bets-ov__stat-val bets-ov__stat-val--timer">
+          <span className="bets-ov__stat-val">
             {status === 'open' && countdown > 0 ? fmt(countdown) :
              status === 'open' ? '∞' :
              status === 'locked' ? '🔒' : '🏆'}
           </span>
           <span className="bets-ov__stat-lbl">
-            {status === 'open' ? 'Timer' : 'Status'}
+            {status === 'open' ? '⏱ Timer' : 'Status'}
           </span>
         </div>
         <div className="bets-ov__stat">
           <span className="bets-ov__stat-val">{totalBetters}</span>
-          <span className="bets-ov__stat-lbl">Bets</span>
+          <span className="bets-ov__stat-lbl">👥 Bets</span>
         </div>
       </div>
 
-      {/* ── Bracket options ── */}
+      {/* ── Options ── */}
       {isGrid ? (
         <div className="bets-ov__grid">
           {options.map((opt, i) => {
@@ -149,6 +206,7 @@ function BetsWidget({ config }) {
             const isLose   = winnerIdx !== null && winnerIdx !== i;
             const isLead   = leadingIdx === i;
             const label    = (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
+            const optColor = getOptColor(i);
             const classes  = [
               'bets-ov__card',
               isWin  && 'bets-ov__card--win',
@@ -160,11 +218,12 @@ function BetsWidget({ config }) {
               <div
                 key={`${i}-${status}`}
                 className={classes}
-                style={{ animationDelay: `${i * 0.07}s` }}
+                style={{ animationDelay: `${i * 0.07}s`, '--opt-color': optColor }}
               >
                 <div className="bets-ov__card-fill" style={{ height: `${fillH}%` }} />
                 <div className="bets-ov__card-body">
                   {isWin && <span className="bets-ov__card-crown">👑</span>}
+                  <span className="bets-ov__card-num">{i + 1}</span>
                   <span className="bets-ov__card-label">{label}</span>
                   <span className="bets-ov__card-pct">{pct}%</span>
                   <span className="bets-ov__card-cmd">{cmd} {i + 1}</span>
@@ -176,12 +235,13 @@ function BetsWidget({ config }) {
       ) : (
         <div className="bets-ov__list">
           {options.map((opt, i) => {
-            const pct     = pcts[i];
-            const isWin   = winnerIdx === i;
-            const isLose  = winnerIdx !== null && winnerIdx !== i;
-            const isLead  = leadingIdx === i;
-            const label   = (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
-            const classes = [
+            const pct      = pcts[i];
+            const isWin    = winnerIdx === i;
+            const isLose   = winnerIdx !== null && winnerIdx !== i;
+            const isLead   = leadingIdx === i;
+            const label    = (opt.label || `Option ${i + 1}`).replace(/\s*-\s*!bet\s*\d+$/i, '');
+            const optColor = getOptColor(i);
+            const classes  = [
               'bets-ov__row',
               isWin  && 'bets-ov__row--win',
               isLose && 'bets-ov__row--lose',
@@ -192,10 +252,10 @@ function BetsWidget({ config }) {
               <div
                 key={`${i}-${status}`}
                 className={classes}
-                style={{ animationDelay: `${i * 0.05}s` }}
+                style={{ animationDelay: `${i * 0.05}s`, '--opt-color': optColor }}
               >
                 <div className="bets-ov__row-meta">
-                  <span className="bets-ov__row-cmd">{cmd} {i + 1}</span>
+                  <span className="bets-ov__row-num">{i + 1}</span>
                   <span className="bets-ov__row-label">{isWin ? '👑 ' : ''}{label}</span>
                   <span className="bets-ov__row-pct">{pct}%</span>
                 </div>
@@ -208,7 +268,7 @@ function BetsWidget({ config }) {
         </div>
       )}
 
-      {/* ── Chat hint when open ── */}
+      {/* ── Footer hint ── */}
       {status === 'open' && (
         <div className="bets-ov__hint">
           Type <strong>{cmd} &lt;number&gt;</strong> to bet

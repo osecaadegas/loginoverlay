@@ -1,4 +1,4 @@
-﻿/* =========================================================
+/* =========================================================
    OverlayRenderer.css ï¿½ OBS Browser Source Styles
    Transparent bg, 1920ï¿½1080 canvas, GPU-accelerated.
    All styles scoped to .or-canvas to avoid leaking globally.
@@ -3763,42 +3763,41 @@
 
 /* ═══════════════════════════════════════════════════════════════
    BETS WIDGET  —  .bets-ov
-   Modern dark-glass bracket betting overlay (list + grid layouts)
-   Animations: entry stagger, leading pulse, winner celebration.
+   Three themes: dark glass · grey · white
+   Layouts: v1_list (bars) · v2_grid (cards)
+   Animations: entry stagger · bar shimmer · leading pulse · winner pop
 ═══════════════════════════════════════════════════════════════ */
 
 /* ── Keyframes ── */
 @keyframes bets-open {
-  from { opacity: 0; transform: translateY(14px) scale(0.97); }
+  from { opacity: 0; transform: translateY(16px) scale(0.96); }
   to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 @keyframes bets-card-in {
-  from { opacity: 0; transform: translateY(10px) scale(0.9); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);   }
+  from { opacity: 0; transform: translateY(12px) scale(0.88); }
+  to   { opacity: 1; transform: translateY(0)    scale(1);    }
 }
 @keyframes bets-lead-pulse {
-  0%, 100% {
-    box-shadow: 0 0 0 0 rgba(148,163,184,0), inset 0 0 0 1px rgba(148,163,184,0.15);
-    border-color: rgba(148,163,184,0.15);
-  }
-  50% {
-    box-shadow: 0 0 22px 4px rgba(148,163,184,0.28), inset 0 0 0 1px rgba(200,220,240,0.35);
-    border-color: rgba(200,220,240,0.5);
-  }
+  0%, 100% { border-color: rgba(148,163,184,0.15); filter: drop-shadow(0 0 0px transparent); }
+  50%       { border-color: var(--opt-color, #6366f1); filter: drop-shadow(0 0 7px var(--opt-color, #6366f1)); }
 }
 @keyframes bets-lead-row-pulse {
-  0%, 100% { background: rgba(148,163,184,0.04); border-left-color: rgba(148,163,184,0.2); }
-  50%       { background: rgba(148,163,184,0.10); border-left-color: rgba(200,220,240,0.5); }
+  0%, 100% { background: rgba(148,163,184,0.04); border-left-color: rgba(148,163,184,0.25); }
+  50%       { background: rgba(99,102,241,0.07); border-left-color: var(--opt-color, #6366f1); }
 }
 @keyframes bets-winner-pop {
-  0%   { transform: scale(0.82); opacity: 0.4; }
-  55%  { transform: scale(1.07); }
-  80%  { transform: scale(0.97); }
-  100% { transform: scale(1);    opacity: 1; }
+  0%   { transform: scale(0.80); opacity: 0.3; }
+  55%  { transform: scale(1.08); opacity: 1;   }
+  80%  { transform: scale(0.97);               }
+  100% { transform: scale(1);                  }
+}
+@keyframes bets-winner-glow {
+  0%, 100% { filter: drop-shadow(0 0 3px var(--opt-color, #6366f1)); }
+  50%       { filter: drop-shadow(0 0 12px var(--opt-color, #6366f1)); }
 }
 @keyframes bets-loser-dim {
-  from { opacity: 1; }
-  to   { opacity: 0.22; }
+  from { opacity: 1;    filter: grayscale(0); }
+  to   { opacity: 0.22; filter: grayscale(1); }
 }
 @keyframes bets-live-dot {
   0%, 100% { opacity: 1;   transform: scale(1);    }
@@ -3806,13 +3805,15 @@
 }
 @keyframes bets-hint-breathe {
   0%, 100% { opacity: 0.45; }
-  50%       { opacity: 0.75; }
+  50%       { opacity: 0.8;  }
+}
+@keyframes bets-bar-shimmer {
+  0%   { transform: translateX(-200%); }
+  100% { transform: translateX(300%);  }
 }
 
-/* ── Root widget ── */
-/* border-radius and box-shadow removed — slot clipPath handles rounding,
-   slot drop-shadow filter handles outer shadow (avoids dark corner artifacts
-   on transparent OBS canvas). */
+/* ── Root ── */
+/* border-radius / box-shadow removed — slot clipPath + drop-shadow handle these */
 .bets-ov {
   display: flex;
   flex-direction: column;
@@ -3834,12 +3835,13 @@
   padding: 10px 14px 9px;
   background: var(--bets-hdr-bg, rgba(255,255,255,0.04));
   border-bottom: 1px solid rgba(148,163,184,0.08);
+  flex-shrink: 0;
 }
 .bets-ov__title {
   flex: 1;
-  font-size: 0.95em;
+  font-size: 0.92em;
   font-weight: 800;
-  letter-spacing: 0.4px;
+  letter-spacing: 0.3px;
   color: var(--bets-hdr-txt, #eef2f5);
   text-shadow: 0 1px 3px rgba(0,0,0,0.5);
   white-space: nowrap;
@@ -3851,104 +3853,113 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  font-size: 0.68em;
+  font-size: 0.66em;
   font-weight: 700;
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 20px;
   flex-shrink: 0;
 }
-.bets-ov__status--open   { background: rgba(148,163,184,0.15); color: #b8c8d8; }
-.bets-ov__status--locked { background: rgba(239,68,68,0.12);   color: #f87171; }
-.bets-ov__status--result { background: rgba(71,85,105,0.18);   color: #eef2f5; }
+.bets-ov__status--open   { background: rgba(99,102,241,0.18);  color: #a5b4fc; }
+.bets-ov__status--locked { background: rgba(239,68,68,0.14);   color: #f87171; }
+.bets-ov__status--result { background: rgba(34,197,94,0.14);   color: #4ade80; }
 
-/* pulsing live dot */
 .bets-ov__live-dot {
   display: inline-block;
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #94a3b8;
+  background: #a5b4fc;
   flex-shrink: 0;
   animation: bets-live-dot 1.4s ease-in-out infinite;
 }
 
-/* ── Stats row ── */
+/* ── Stats strip ── */
 .bets-ov__stats {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   border-bottom: 1px solid rgba(148,163,184,0.07);
+  flex-shrink: 0;
 }
 .bets-ov__stat {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1px;
-  padding: 7px 4px;
+  padding: 6px 4px;
 }
 .bets-ov__stat--center {
-  border-left: 1px solid rgba(148,163,184,0.07);
+  border-left:  1px solid rgba(148,163,184,0.07);
   border-right: 1px solid rgba(148,163,184,0.07);
 }
 .bets-ov__stat-val {
-  font-size: 1.1em;
+  font-size: 1.05em;
   font-weight: 800;
   color: #eef2f5;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+  text-shadow: 0 1px 3px rgba(0,0,0,0.35);
+  line-height: 1;
 }
-.bets-ov__stat-val--timer { font-size: 1.0em; }
 .bets-ov__stat-lbl {
-  font-size: 0.62em;
+  font-size: 0.6em;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.9px;
+  letter-spacing: 0.8px;
   opacity: 0.5;
 }
 
-/* ── List layout (default) ── */
+/* ── List layout ── */
 .bets-ov__list {
   flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1px;
-  padding: 6px 8px;
+  gap: 2px;
+  padding: 7px 8px;
   overflow: hidden;
 }
 .bets-ov__row {
   display: flex;
   flex-direction: column;
-  gap: 3px;
-  padding: 5px 6px;
-  border-radius: 7px;
-  border-left: 2px solid transparent;
-  transition: background 0.2s, border-color 0.2s;
+  gap: 4px;
+  padding: 5px 7px;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  transition: background 0.25s, border-color 0.25s;
   animation: bets-card-in 0.38s cubic-bezier(0.16,1,0.3,1) both;
 }
 .bets-ov__row--win {
-  background: rgba(148,163,184,0.08);
-  border-left-color: rgba(148,163,184,0.4);
-  animation: bets-card-in 0.55s cubic-bezier(0.34,1.56,0.64,1) both !important;
+  background: rgba(99,102,241,0.08);
+  border-left-color: var(--opt-color, rgba(148,163,184,0.4));
+  animation: bets-card-in 0.55s cubic-bezier(0.34,1.56,0.64,1) both,
+             bets-winner-glow 1.8s ease-in-out 0.6s infinite !important;
 }
 .bets-ov__row--lose {
-  animation: bets-loser-dim 0.5s ease-out both !important;
+  animation: bets-loser-dim 0.55s ease-out both !important;
 }
 .bets-ov__row--leading {
+  border-left-color: var(--opt-color, #6366f1);
   animation: bets-card-in 0.38s cubic-bezier(0.16,1,0.3,1) both,
              bets-lead-row-pulse 2s ease-in-out 0.5s infinite !important;
 }
 .bets-ov__row-meta {
   display: flex;
-  align-items: baseline;
-  gap: 6px;
+  align-items: center;
+  gap: 7px;
 }
-.bets-ov__row-cmd {
-  font-size: 0.65em;
-  font-weight: 700;
-  color: rgba(148,163,184,0.55);
-  letter-spacing: 0.4px;
+.bets-ov__row-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5px;
+  font-size: 0.68em;
+  font-weight: 800;
+  color: #fff;
+  background: var(--opt-color, rgba(148,163,184,0.45));
   flex-shrink: 0;
-  min-width: 36px;
+  letter-spacing: 0;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.4);
 }
 .bets-ov__row-label {
   flex: 1;
@@ -3962,26 +3973,38 @@
 .bets-ov__row-pct {
   font-size: 0.9em;
   font-weight: 900;
-  color: #eef2f5;
+  color: var(--opt-color, #eef2f5);
   flex-shrink: 0;
-  min-width: 36px;
+  min-width: 34px;
   text-align: right;
+  letter-spacing: -0.3px;
 }
 .bets-ov__row-bar {
-  height: 4px;
-  border-radius: 2px;
+  height: 7px;
+  border-radius: 4px;
   background: var(--bets-bar-bg, rgba(255,255,255,0.06));
   overflow: hidden;
+  position: relative;
 }
 .bets-ov__row-fill {
   height: 100%;
-  border-radius: 2px;
-  background: var(--bets-bar-fill, rgba(148,163,184,0.5));
-  transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
+  border-radius: 4px;
+  background: var(--opt-color, var(--bets-bar-fill, rgba(148,163,184,0.5)));
+  transition: width 0.65s cubic-bezier(0.16,1,0.3,1);
+  position: relative;
+  overflow: hidden;
   max-width: 100%;
 }
-.bets-ov__row--win    .bets-ov__row-fill { background: linear-gradient(90deg, #94a3b8, #c8d6e2); }
-.bets-ov__row--leading .bets-ov__row-fill { background: linear-gradient(90deg, #b8c8d8, #dde8f0); }
+/* Shimmer glare — only while betting is open */
+.bets-ov--open .bets-ov__row-fill::after {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 35%; height: 100%;
+  background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.42) 50%, transparent 100%);
+  animation: bets-bar-shimmer 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
 
 /* ── Grid layout ── */
 .bets-ov__grid {
@@ -4002,13 +4025,14 @@
   align-items: center;
   justify-content: flex-end;
   min-height: 80px;
-  border: 1px solid transparent;
+  border: 1px solid rgba(255,255,255,0.04);
+  border-top: 2px solid var(--opt-color, transparent);
   animation: bets-card-in 0.42s cubic-bezier(0.16,1,0.3,1) both;
 }
 .bets-ov__card--win {
-  animation: bets-winner-pop 0.65s cubic-bezier(0.34,1.56,0.64,1) both !important;
-  border-color: rgba(200,220,240,0.4) !important;
-  box-shadow: 0 0 20px rgba(148,163,184,0.25) !important;
+  animation: bets-winner-pop 0.65s cubic-bezier(0.34,1.56,0.64,1) both,
+             bets-winner-glow 1.8s ease-in-out 0.7s infinite !important;
+  border-color: var(--opt-color, rgba(200,220,240,0.4)) !important;
 }
 .bets-ov__card--lose {
   animation: bets-loser-dim 0.5s ease-out both !important;
@@ -4021,12 +4045,11 @@
 .bets-ov__card-fill {
   position: absolute;
   left: 0; right: 0; bottom: 0;
-  background: var(--bets-bar-fill, rgba(148,163,184,0.4));
+  background: linear-gradient(180deg, transparent 0%, var(--opt-color, rgba(148,163,184,0.4)) 100%);
   border-radius: 0 0 9px 9px;
   transition: height 0.65s cubic-bezier(0.16,1,0.3,1);
+  opacity: 0.65;
 }
-.bets-ov__card--win     .bets-ov__card-fill { background: linear-gradient(180deg, rgba(148,163,184,0.55), rgba(200,214,226,0.75)); }
-.bets-ov__card--leading .bets-ov__card-fill { background: linear-gradient(180deg, rgba(148,163,184,0.5), rgba(190,210,230,0.65)); }
 .bets-ov__card-body {
   position: relative;
   z-index: 1;
@@ -4034,29 +4057,43 @@
   flex-direction: column;
   align-items: center;
   gap: 2px;
-  padding: 6px 4px;
+  padding: 6px 4px 7px;
   width: 100%;
   text-align: center;
 }
 .bets-ov__card-crown { font-size: 1em; }
+.bets-ov__card-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  font-size: 0.72em;
+  font-weight: 800;
+  color: #fff;
+  background: var(--opt-color, rgba(148,163,184,0.5));
+  text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  margin-bottom: 1px;
+}
 .bets-ov__card-label {
-  font-size: 0.75em;
+  font-size: 0.72em;
   font-weight: 700;
   color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
   line-height: 1.15;
 }
 .bets-ov__card-pct {
   font-size: 1.15em;
   font-weight: 900;
-  color: #fff;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+  color: var(--opt-color, #fff);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.6);
 }
 .bets-ov__card-cmd {
-  font-size: 0.6em;
+  font-size: 0.58em;
   font-weight: 600;
-  color: rgba(255,255,255,0.38);
-  letter-spacing: 0.4px;
+  color: rgba(255,255,255,0.35);
+  letter-spacing: 0.3px;
 }
 
 /* ── Hint footer ── */
@@ -4065,13 +4102,57 @@
   padding: 5px 10px;
   font-size: 0.68em;
   color: rgba(255,255,255,0.45);
-  background: rgba(0,0,0,0.1);
-  border-top: 1px solid rgba(148,163,184,0.06);
+  background: rgba(0,0,0,0.12);
+  border-top: 1px solid rgba(148,163,184,0.07);
+  flex-shrink: 0;
   animation: bets-hint-breathe 3s ease-in-out infinite;
 }
-.bets-ov__hint strong { color: rgba(255,255,255,0.65); }
+.bets-ov__hint strong { color: rgba(255,255,255,0.68); }
+
+/* ── Grey theme ── */
+.bets-ov--theme-grey {
+  background: var(--bets-bg, rgba(42,48,60,0.95));
+  border-color: rgba(255,255,255,0.1);
+}
+.bets-ov--theme-grey .bets-ov__header    { border-bottom-color: rgba(255,255,255,0.08); }
+.bets-ov--theme-grey .bets-ov__stats     { border-bottom-color: rgba(255,255,255,0.07); }
+.bets-ov--theme-grey .bets-ov__stat--center { border-color: rgba(255,255,255,0.07); }
+.bets-ov--theme-grey .bets-ov__stat-val  { color: #fff; }
+
+/* ── White theme ── */
+.bets-ov--theme-white {
+  background: var(--bets-bg, rgba(248,250,252,0.97));
+  border-color: rgba(0,0,0,0.1);
+  color: var(--bets-text, #334155);
+}
+.bets-ov--theme-white .bets-ov__header   { border-bottom-color: rgba(0,0,0,0.08); }
+.bets-ov--theme-white .bets-ov__title    { text-shadow: none; }
+.bets-ov--theme-white .bets-ov__status--open   { background: rgba(99,102,241,0.1);  color: #6366f1; }
+.bets-ov--theme-white .bets-ov__status--locked { background: rgba(239,68,68,0.1);   color: #dc2626; }
+.bets-ov--theme-white .bets-ov__status--result { background: rgba(34,197,94,0.1);   color: #16a34a; }
+.bets-ov--theme-white .bets-ov__live-dot { background: #6366f1; }
+.bets-ov--theme-white .bets-ov__stats    { border-bottom-color: rgba(0,0,0,0.07); }
+.bets-ov--theme-white .bets-ov__stat--center { border-color: rgba(0,0,0,0.07); }
+.bets-ov--theme-white .bets-ov__stat-val { color: #0f172a; text-shadow: none; }
+.bets-ov--theme-white .bets-ov__stat-lbl { color: #64748b; opacity: 1; }
+.bets-ov--theme-white .bets-ov__row-label { color: #1e293b; }
+.bets-ov--theme-white .bets-ov__row-bar  { background: rgba(0,0,0,0.07); }
+.bets-ov--theme-white .bets-ov__row--win     { background: rgba(34,197,94,0.07); }
+.bets-ov--theme-white .bets-ov__row--leading { background: rgba(99,102,241,0.06); }
+.bets-ov--theme-white .bets-ov__card    { background: rgba(0,0,0,0.03); border-color: rgba(0,0,0,0.07); }
+.bets-ov--theme-white .bets-ov__card-label { color: #1e293b; text-shadow: none; }
+.bets-ov--theme-white .bets-ov__card-pct   { text-shadow: none; }
+.bets-ov--theme-white .bets-ov__card-cmd   { color: rgba(0,0,0,0.3); }
+.bets-ov--theme-white .bets-ov__card-fill  { opacity: 0.45; }
+.bets-ov--theme-white .bets-ov__hint {
+  background: rgba(0,0,0,0.04);
+  border-top-color: rgba(0,0,0,0.07);
+  color: rgba(0,0,0,0.45);
+}
+.bets-ov--theme-white .bets-ov__hint strong { color: rgba(0,0,0,0.65); }
 
 /* ═══ end bets-ov ═══ */
+
 
 .ov-chat-platform-badge {
   display: flex;

@@ -638,6 +638,8 @@ registerWidget({
     twitchChannel: '',
     seAnnounce:    true,
     displayStyle:  'v1_list',
+    colorTheme:    'dark',
+    barColorMode:  'rainbow',
     fontFamily:    "'Inter', sans-serif",
     options: [
       { label: '0 – 99' },
