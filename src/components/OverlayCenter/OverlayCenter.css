@@ -4541,7 +4541,7 @@ body.wm-resizing {
   max-width: 90px;
 }
 
-.bh-input-group span {
+.bh-input-group > span:not(.bh-section-pill) {
   font-size: 10.9px;
   color: #84a2ab;
   font-weight: 600;
