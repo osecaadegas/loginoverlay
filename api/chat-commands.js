@@ -537,21 +537,23 @@ async function handleSlotReject(req, res) {
   ]);
 
   const wConfig = widgetRes.data?.config || {};
-  const seEnabled = !!wConfig.srSeEnabled;
   const seChannelId = seConnRes.data?.se_channel_id;
   const seJwtToken = seConnRes.data?.se_jwt_token;
 
   // 3) Determine how many points to refund.
-  //    Use points_deducted stored on the row (set at request time) if available,
-  //    otherwise fall back to the current config cost.
-  const pointsToRefund = sr.points_deducted > 0
+  //    Prefer points_deducted stored on the row (recorded at request time).
+  //    Fall back to current config cost if the column isn't populated yet
+  //    (e.g. migration 1 hasn't been run, or request was created before this deploy).
+  const pointsToRefund = (sr.points_deducted > 0)
     ? sr.points_deducted
     : (parseInt(wConfig.srSeCost, 10) || 0);
 
-  // 4) Refund points if SE is enabled and there are points to return
+  // 4) Refund points — we check SE creds and whether there are points to return.
+  //    We do NOT gate on srSeEnabled: the streamer may have toggled SE off after
+  //    the request came in, but the points were already deducted and must be returned.
   let refunded = false;
   let refundFailed = false;
-  if (seEnabled && pointsToRefund > 0 && seChannelId && seJwtToken && sr.requested_by) {
+  if (pointsToRefund > 0 && seChannelId && seJwtToken && sr.requested_by) {
     const cleanViewer = sr.requested_by.replace(/^@/, '').trim().toLowerCase();
     try {
       const refundRes = await fetch(
@@ -587,16 +589,20 @@ async function handleSlotReject(req, res) {
     })
     .eq('id', request_id);
 
-  // 6) Send chat notification
+  // 6) Send chat notification — always fires if SE creds are present.
+  //    {refund} resolves to e.g. "500 points refunded!" or empty string if no points.
   if (seChannelId && seJwtToken) {
-    const defaultMsg = '🚫 {user}, your request for "{slot}" was rejected. {refund}';
+    const defaultMsg = refunded
+      ? '🚫 {user}, your request for "{slot}" was rejected. {refund}'
+      : '🚫 {user}, your request for "{slot}" was rejected.';
     const tpl = message_template || wConfig.srMsgRejected || defaultMsg;
     const refundText = refunded ? `${pointsToRefund} points refunded!` : '';
     const msg = tpl
       .replace(/\{user\}/g, sr.requested_by || '?')
       .replace(/\{slot\}/g, sr.slot_name || '?')
       .replace(/\{cost\}/g, String(pointsToRefund))
-      .replace(/\{refund\}/g, refundText);
+      .replace(/\{refund\}/g, refundText)
+      .trim();
     await seBotSay(seChannelId, seJwtToken, msg);
   }
 
