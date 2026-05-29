@@ -626,6 +626,7 @@ registerWidget({
   styles: [
     { id: 'v1_list', icon: '📋', label: 'List' },
     { id: 'v2_grid', icon: '⊞',  label: 'Grid' },
+    { id: 'v3_grid_2x3', icon: '▦', label: 'Grid 2x3' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

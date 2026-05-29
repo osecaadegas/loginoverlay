@@ -394,6 +394,7 @@ export default function BetsConfig({ config, onChange }) {
           >
             <option value="v1_list">List (horizontal bars)</option>
             <option value="v2_grid">Grid (vertical fill cards)</option>
+            <option value="v3_grid_2x3">Grid (2 rows × 3 columns)</option>
           </select>
 
           <label className="cg-config__label" style={{ marginTop: 8 }}>Font Family</label>

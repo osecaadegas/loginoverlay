@@ -2,12 +2,13 @@
  * BetsWidget.jsx — OBS overlay for live chat bracket betting.
  *
  * Three themes: dark glass · grey · white
- * Layouts: v1_list (horizontal bars) · v2_grid (vertical fill cards)
+ * Layouts: v1_list (horizontal bars) · v2_grid (vertical fill cards) · v3_grid_2x3 (wide 2x3 cards)
  * Animations: entry stagger · bar shimmer · leading pulse · winner pop
  */
 import React, { useState, useEffect, useMemo } from 'react';
 
-function getGridCols(count) {
+function getGridCols(count, layout) {
+  if (layout === 'v3_grid_2x3') return 3;
   if (count <= 6) return 2;
   if (count <= 9) return 3;
   return 4;
@@ -133,8 +134,9 @@ function BetsWidget({ config }) {
     status === 'locked' ? 'LOCKED' :
     status === 'result' ? 'RESULT' : '';
 
-  const isGrid   = layout === 'v2_grid';
-  const gridCols = getGridCols(options.length);
+  const isGrid2x3 = layout === 'v3_grid_2x3';
+  const isGrid    = layout === 'v2_grid' || isGrid2x3;
+  const gridCols  = getGridCols(options.length, layout);
 
   const getOptColor = (i) =>
     barColorMode === 'rainbow' ? PALETTE[i % PALETTE.length] : barFill;
@@ -158,6 +160,7 @@ function BetsWidget({ config }) {
         `bets-ov--${status}`,
         `bets-ov--theme-${colorTheme}`,
         isGrid && 'bets-ov--grid',
+        isGrid2x3 && 'bets-ov--grid-2x3',
       ].filter(Boolean).join(' ')}
       style={cssVars}
     >
@@ -222,11 +225,15 @@ function BetsWidget({ config }) {
               >
                 <div className="bets-ov__card-fill" style={{ height: `${fillH}%` }} />
                 <div className="bets-ov__card-body">
-                  {isWin && <span className="bets-ov__card-crown">👑</span>}
-                  <span className="bets-ov__card-num">{i + 1}</span>
+                  <div className="bets-ov__card-head">
+                    <span className="bets-ov__card-num">{i + 1}</span>
+                    <span className={`bets-ov__card-crown${isWin ? '' : ' bets-ov__card-crown--hidden'}`}>👑</span>
+                  </div>
                   <span className="bets-ov__card-label">{label}</span>
-                  <span className="bets-ov__card-pct">{pct}%</span>
-                  <span className="bets-ov__card-cmd">{cmd} {i + 1}</span>
+                  <div className="bets-ov__card-footer">
+                    <span className="bets-ov__card-pct">{pct}%</span>
+                    <span className="bets-ov__card-cmd">{cmd} {i + 1}</span>
+                  </div>
                 </div>
               </div>
             );
