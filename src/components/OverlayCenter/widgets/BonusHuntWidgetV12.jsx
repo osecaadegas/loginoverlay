@@ -100,10 +100,13 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
   /* ─── Slot Requests data ─── */
   const [srRequests, setSrRequests] = useState([]);
   const srMounted = useRef(true);
-
+  // Stale-fetch guard: discard results from in-flight fetches that started
+  // before a newer fetch already completed.
+  const srFetchSeqRef = useRef(0);
 
   const fetchSR = useCallback(async () => {
     if (!userId || !showSR) return;
+    const seq = ++srFetchSeqRef.current;
     const { data, error } = await supabase
       .from('slot_requests')
       .select('*')
@@ -111,16 +114,17 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
       .eq('status', 'pending')
       .order('created_at', { ascending: true })
       .limit(20);
+    if (seq !== srFetchSeqRef.current) return; // stale — discard
     if (!error && data && srMounted.current) setSrRequests(data);
   }, [userId, showSR]);
 
   useEffect(() => { fetchSR(); }, [fetchSR]);
 
-  /* ── SR Realtime ── */
+  /* ── SR Realtime — channel name is distinct from BonusHuntConfig's 'bh-sr-config-{id}' ── */
   useEffect(() => {
     if (!userId || !showSR) return;
     const channel = supabase
-      .channel(`bh-sr-${userId}`)
+      .channel(`bh-sr-widget-${userId}`)
       .on('postgres_changes', {
         event: '*', schema: 'public', table: 'slot_requests',
         filter: `user_id=eq.${userId}`,

@@ -849,7 +849,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       if (data) setSlotRequests(data);
     };
     load();
-    const chan = supabase.channel('bh-sr-' + userId)
+    const chan = supabase.channel('bh-sr-config-' + userId)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_requests', filter: `user_id=eq.${userId}` }, () => load())
       .subscribe();
     return () => { supabase.removeChannel(chan); };
@@ -867,26 +867,36 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   };
 
   const handleDismissRequest = async (id) => {
-    await supabase.from('slot_requests').update({ status: 'dismissed' }).eq('id', id);
+    // 'cancelled' = removed without refund (is in the status CHECK constraint)
+    const { error } = await supabase.from('slot_requests').update({ status: 'cancelled' }).eq('id', id);
+    if (error) console.error('[bh-dismiss] DB error:', error.message);
     setSlotRequests(prev => prev.filter(r => r.id !== id));
   };
 
   const srWidget = allWidgets?.find(w => w.widget_type === 'slot_requests');
   const srConfig = srWidget?.config || {};
-  const srSeEnabled = srConfig.srSeEnabled;
 
   const handleRejectRequest = async (id) => {
     try {
-      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const resp = await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: JSON.stringify({
           request_id: id,
           user_id: userId,
           message_template: srConfig.srMsgRejected || undefined,
         }),
       });
-      setSlotRequests(prev => prev.filter(r => r.id !== id));
+      if (!resp.ok && resp.status !== 409) {
+        console.error('[bh-reject] API error:', resp.status);
+      }
+      // Always re-fetch from DB — never trust optimistic local state
+      const { data } = await supabase
+        .from('slot_requests').select('id, slot_name, slot_image, requested_by, created_at')
+        .eq('user_id', userId).eq('status', 'pending').order('created_at', { ascending: true });
+      if (data) setSlotRequests(data);
     } catch (err) {
       console.error('[bh-reject] error:', err);
     }
@@ -895,19 +905,25 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const handleClearAllRequests = async () => {
     if (!userId || slotRequests.length === 0) return;
     try {
-      // Call API to refund SE points for all pending requests, then delete them
-      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+      const resp = await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: JSON.stringify({ user_id: userId }),
       });
-      setSlotRequests([]);
+      if (!resp.ok) console.error('[bh-clear-all] API error:', resp.status);
     } catch (err) {
       console.error('[bh-clear-all] error:', err);
-      // Fallback: just dismiss without refund
+      // API failed — cancel all locally without refund so they at least leave the list
       const ids = slotRequests.map(r => r.id);
-      await supabase.from('slot_requests').update({ status: 'dismissed' }).in('id', ids);
-      setSlotRequests([]);
+      await supabase.from('slot_requests').update({ status: 'cancelled' }).in('id', ids);
+    } finally {
+      // Always sync from DB truth
+      const { data } = await supabase
+        .from('slot_requests').select('id, slot_name, slot_image, requested_by, created_at')
+        .eq('user_id', userId).eq('status', 'pending').order('created_at', { ascending: true });
+      setSlotRequests(data || []);
     }
   };
 
