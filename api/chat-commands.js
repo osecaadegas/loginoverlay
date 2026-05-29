@@ -632,10 +632,10 @@ async function handleSlotClearAll(req, res) {
   const caller = await verifyJwt(supabase, req);
   if (!caller || caller.id !== user_id) return res.status(403).json({ error: 'Forbidden' });
 
-  // 1) Fetch all pending requests
+  // 1) Fetch all pending requests — include points_deducted so we refund exactly what was taken
   const { data: requests, error: reqErr } = await supabase
     .from('slot_requests')
-    .select('id, slot_name, requested_by')
+    .select('id, slot_name, requested_by, points_deducted')
     .eq('user_id', user_id)
     .eq('status', 'pending');
 
@@ -643,57 +643,61 @@ async function handleSlotClearAll(req, res) {
     return res.status(200).json({ success: true, refunded: 0, total: 0 });
   }
 
-  // 2) Load widget config (for SE cost)
-  const { data: widgetRow } = await supabase
-    .from('overlay_widgets')
-    .select('config')
-    .eq('user_id', user_id)
-    .eq('widget_type', 'slot_requests')
-    .single();
-  const wConfig = widgetRow?.config || {};
-  const seCost = parseInt(wConfig.srSeCost, 10) || 0;
-  const seEnabled = !!wConfig.srSeEnabled;
+  // 2) Load widget config and SE credentials in parallel
+  const [widgetRes, seConnRes] = await Promise.all([
+    supabase.from('overlay_widgets').select('config').eq('user_id', user_id).eq('widget_type', 'slot_requests').single(),
+    supabase.from('streamelements_connections').select('se_channel_id, se_jwt_token').eq('user_id', user_id).single(),
+  ]);
+  const wConfig = widgetRes.data?.config || {};
+  const fallbackCost = parseInt(wConfig.srSeCost, 10) || 0;
+  const seChannelId = seConnRes.data?.se_channel_id;
+  const seJwtToken = seConnRes.data?.se_jwt_token;
 
-  // 3) Load SE credentials
-  const { data: seConn } = await supabase
-    .from('streamelements_connections')
-    .select('se_channel_id, se_jwt_token')
-    .eq('user_id', user_id)
-    .single();
-  const seChannelId = seConn?.se_channel_id;
-  const seJwtToken = seConn?.se_jwt_token;
-
-  // 4) Refund points for each request if SE is enabled
+  // 3) Refund points — no longer gated on srSeEnabled.
+  //    Points were deducted at request time; we must always attempt to return them.
+  //    Group by viewer and sum their individual points_deducted values.
   let refundedCount = 0;
-  if (seEnabled && seCost > 0 && seChannelId && seJwtToken) {
-    // Group by viewer to batch refunds (one refund per unique viewer × cost)
-    const viewerCounts = {};
+  if (seChannelId && seJwtToken) {
+    // Build per-viewer refund totals using points_deducted stored on each row.
+    // Fall back to fallbackCost (current config) for rows inserted before this deploy.
+    const viewerTotals = {};
     for (const r of requests) {
       if (!r.requested_by || r.requested_by === 'anonymous') continue;
       const viewer = r.requested_by.replace(/^@/, '').trim().toLowerCase();
-      viewerCounts[viewer] = (viewerCounts[viewer] || 0) + 1;
+      const pts = (r.points_deducted > 0) ? r.points_deducted : fallbackCost;
+      if (pts > 0) viewerTotals[viewer] = (viewerTotals[viewer] || 0) + pts;
     }
 
-    for (const [viewer, count] of Object.entries(viewerCounts)) {
-      const totalRefund = seCost * count;
+    for (const [viewer, totalRefund] of Object.entries(viewerTotals)) {
       try {
         const refundRes = await fetch(
           `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}/${totalRefund}`,
-          {
-            method: 'PUT',
-            headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' },
-          }
+          { method: 'PUT', headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' } }
         );
-        if (refundRes.ok) refundedCount += count;
+        if (refundRes.ok) {
+          refundedCount++;
+          console.log(`[sr-clear-all] Refunded ${totalRefund} pts to ${viewer}`);
+        } else {
+          console.error(`[sr-clear-all] SE refund failed for ${viewer}:`, refundRes.status);
+        }
       } catch (err) {
-        console.error(`[sr-clear-all] Refund failed for ${viewer}:`, err.message);
+        console.error(`[sr-clear-all] Refund error for ${viewer}:`, err.message);
       }
     }
   }
 
-  // 5) Delete all pending requests
+  // 4) Soft-delete: mark rows as 'cancelled' (never hard-delete — preserves audit trail
+  //    and prevents unique index from allowing re-insertion of the same slot).
   const ids = requests.map(r => r.id);
-  await supabase.from('slot_requests').delete().in('id', ids);
+  await supabase.from('slot_requests').update({ status: 'cancelled' }).in('id', ids);
+
+  // 5) Send a single chat announcement if configured
+  if (seChannelId && seJwtToken) {
+    const defaultMsg = wConfig.srMsgClearAll || '🗑️ The slot request queue has been cleared. All points have been refunded!';
+    if (defaultMsg.trim()) {
+      await seBotSay(seChannelId, seJwtToken, defaultMsg);
+    }
+  }
 
   return res.status(200).json({ success: true, refunded: refundedCount, total: requests.length });
 }

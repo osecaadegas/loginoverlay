@@ -465,6 +465,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
           { key: 'srMsgNotEnough', label: 'Not enough points', def: '❌ {user}, you need {cost} points to request a slot (you have {points}).' },
           { key: 'srMsgDuplicate', label: 'Already in queue', def: '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!' },
           { key: 'srMsgRejected', label: 'Rejected (refund)', def: '🚫 {user}, your request for "{slot}" was rejected. {refund}' },
+          { key: 'srMsgClearAll', label: 'Queue cleared (sent once to chat)', def: '🗑️ The slot request queue has been cleared. All points have been refunded!' },
           { key: 'srMsgNoMatch', label: 'Slot not found', def: '❌ {user}, could not find that slot. Please try again.' },
           { key: 'srMsgCooldown', label: 'Cooldown active', def: '⏳ {user}, please wait before requesting another slot.' },
           { key: 'srMsgQueueFull', label: 'Queue full', def: '❌ {user}, the slot queue is full right now.' },
