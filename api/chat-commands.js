@@ -254,17 +254,17 @@ async function handleSlotRequest(req, res) {
     console.log('[SR] user_id:', user_id, 'seEnabled:', seEnabled, 'seCost:', seCost,
       'hasSeCreds:', !!(seChannelId && seJwtToken));
 
-    // ── Dedup: prevent concurrent calls from producing duplicate chat messages ──
-    // Multiple overlay instances may call simultaneously for the same !sr.
-    // We check for existing pending OR recently denied rows to avoid re-processing.
-
-    // Pre-check: if this slot is already queued or was recently denied, inform & exit
+    // ── Dedup: check for an existing pending row for this slot ──
+    // We only check 'pending' here. 'denied' rows are intentionally ignored —
+    // a denied row (failed points check) should NOT block a different viewer
+    // from requesting the same slot, and it must NOT cause fall-through insertion
+    // that resurrects the denied row as a new pending request.
     const { data: existing } = await supabase
       .from('slot_requests')
       .select('id, status, created_at, requested_by')
       .eq('user_id', user_id)
       .ilike('slot_name', resolvedName)
-      .in('status', ['pending', 'denied'])
+      .eq('status', 'pending')   // ← only block on pending, not denied
       .order('created_at', { ascending: false })
       .limit(1);
 
@@ -272,70 +272,21 @@ async function handleSlotRequest(req, res) {
       const row = existing[0];
       const age = Date.now() - new Date(row.created_at).getTime();
 
-      // 'denied' within last 30 seconds → another concurrent call already handled this
-      if (row.status === 'denied' && age < 30000) return res.status(200).send('ok');
-      // Old denied row → clean it up and proceed
-      if (row.status === 'denied') {
-        await supabase.from('slot_requests').delete().eq('id', row.id);
-      }
-      // 'pending' → already in queue
-      if (row.status === 'pending') {
-        // If the pending row was created/last-notified < 30 seconds ago, exit silently.
-        // This prevents multiple overlay instances AND repeated !sr spam from flooding chat.
-        if (age < 30000) return res.status(200).send('ok');
+      // Silent dedup for concurrent overlay instances (same viewer within 30s)
+      if (age < 30000) return res.status(200).send('ok');
 
-        // Genuine duplicate: viewer typed !sr again for an already-queued slot
-        // Touch created_at so the next 30s window starts from NOW (prevents further spam)
-        await supabase.from('slot_requests').update({ created_at: new Date().toISOString() }).eq('id', row.id);
-        const msg = fillTemplate(msgTemplates.duplicate, { slot: resolvedName, user: viewer, by: row.requested_by || '?' });
-        return chatAndReply(msg);
-      }
+      // Genuine duplicate: viewer typed !sr again for an already-queued slot
+      // Do NOT mutate created_at — preserves queue order
+      const msg = fillTemplate(msgTemplates.duplicate, { slot: resolvedName, user: viewer, by: row.requested_by || '?' });
+      return chatAndReply(msg);
     }
 
-    // Insert the request
-    const { data: inserted, error: insertErr } = await supabase
-      .from('slot_requests')
-      .insert({
-        user_id,
-        slot_name: resolvedName,
-        slot_image: slotImage,
-        requested_by: viewer,
-        status: 'pending',
-      })
-      .select('id, created_at')
-      .single();
-
-    if (insertErr) {
-      console.error('Insert error:', insertErr);
-      return res.status(200).send('ok');
-    }
-
-    // Post-insert reconciliation: if multiple rows exist, only the earliest wins.
-    const { data: dupes } = await supabase
-      .from('slot_requests')
-      .select('id, created_at')
-      .eq('user_id', user_id)
-      .eq('status', 'pending')
-      .ilike('slot_name', resolvedName)
-      .order('created_at', { ascending: true });
-
-    if (dupes && dupes.length > 1) {
-      const winnerId = dupes[0].id;
-      if (inserted.id !== winnerId) {
-        await supabase.from('slot_requests').delete().eq('id', inserted.id);
-        return res.status(200).send('ok');
-      }
-      const loserIds = dupes.slice(1).map(d => d.id);
-      await supabase.from('slot_requests').delete().in('id', loserIds);
-    }
-
-    // ── We are the winning call.  Handle SE points & chat message. ──
-    const insertedId = inserted?.id;
-
+    // ── Before inserting, check points (if SE is enabled with a cost) ──
+    // We do this BEFORE the INSERT so we never create a row that immediately
+    // needs to be set 'denied'. Denied rows from the old pattern were the
+    // source of the resurrection bug.
     if (seEnabled && seCost > 0) {
       if (!seChannelId || !seJwtToken) {
-        // No SE creds — mark denied (keeps row for dedup) and warn
-        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = '⚠️ StreamElements not configured. Ask the streamer to connect SE.';
         return chatAndReply(msg);
       }
@@ -349,7 +300,6 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!pointsRes.ok) {
-        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = `❌ Could not check points for ${viewer}. Are you a follower?`;
         return chatAndReply(msg);
       }
@@ -358,13 +308,11 @@ async function handleSlotRequest(req, res) {
       const viewerPoints = pointsData.points || 0;
 
       if (viewerPoints < seCost) {
-        // Not enough points — mark denied (NOT delete, so other concurrent calls see it)
-        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = fillTemplate(msgTemplates.notEnough, { user: viewer, cost: seCost, points: viewerPoints, slot: resolvedName });
         return chatAndReply(msg);
       }
 
-      // 2) Deduct points (negative amount)
+      // 2) Deduct points before inserting the row
       const deductRes = await fetch(
         `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${-seCost}`,
         {
@@ -374,17 +322,62 @@ async function handleSlotRequest(req, res) {
       );
 
       if (!deductRes.ok) {
-        if (insertedId) await supabase.from('slot_requests').update({ status: 'denied' }).eq('id', insertedId);
         const msg = `❌ Failed to deduct ${seCost} points from ${viewer}. Try again.`;
         return chatAndReply(msg);
       }
 
-      // Success with cost
+      // 3) Points successfully deducted — now insert the row with points_deducted recorded
+      const { data: inserted, error: insertErr } = await supabase
+        .from('slot_requests')
+        .insert({
+          user_id,
+          slot_name: resolvedName,
+          slot_image: slotImage,
+          requested_by: viewer,
+          status: 'pending',
+          points_deducted: seCost,
+        })
+        .select('id')
+        .single();
+
+      if (insertErr) {
+        // Unique index violation = concurrent call already inserted this slot.
+        // Points were already deducted — refund immediately.
+        console.error('[SR] Insert after deduct failed (likely race):', insertErr.code);
+        if (insertErr.code === '23505') {
+          // Refund the deducted points since we won't own the row
+          await fetch(
+            `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${seCost}`,
+            { method: 'PUT', headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' } }
+          ).catch(() => {});
+          console.warn('[SR] Refunded points for duplicate insert race:', viewer, resolvedName);
+        }
+        return res.status(200).send('ok');
+      }
+
+      console.log('[SR] Inserted with points_deducted:', seCost, 'id:', inserted?.id);
       const msg = fillTemplate(msgTemplates.acceptedCost, { user: viewer, cost: seCost, slot: resolvedName });
       return chatAndReply(msg);
     }
 
-    // Success (free)
+    // ── Free request (no SE cost) — insert directly ──
+    const { error: insertErr } = await supabase
+      .from('slot_requests')
+      .insert({
+        user_id,
+        slot_name: resolvedName,
+        slot_image: slotImage,
+        requested_by: viewer,
+        status: 'pending',
+        points_deducted: 0,
+      });
+
+    if (insertErr) {
+      if (insertErr.code === '23505') return res.status(200).send('ok'); // concurrent duplicate
+      console.error('[SR] Free insert error:', insertErr);
+      return res.status(200).send('ok');
+    }
+
     const msg = fillTemplate(msgTemplates.accepted, { user: viewer, slot: resolvedName });
     return chatAndReply(msg);
   } catch (err) {
@@ -508,71 +501,114 @@ async function handleSlotReject(req, res) {
   const caller = await verifyJwt(supabase, req);
   if (!caller || caller.id !== user_id) return res.status(403).json({ error: 'Forbidden' });
 
-  // 1) Fetch the request to get slot info and requester
-  const { data: sr, error: srErr } = await supabase
+  // 1) ATOMIC CLAIM — flip status from 'pending' → 'refunding' in a single UPDATE.
+  //    If 0 rows come back, another call already claimed this row (double-click, double-tab).
+  //    This is the only place we touch the row before side effects happen.
+  const { data: claimed, error: claimErr } = await supabase
     .from('slot_requests')
-    .select('*')
+    .update({ status: 'refunding' })
     .eq('id', request_id)
     .eq('user_id', user_id)
+    .eq('status', 'pending')   // ← only succeeds when row is still pending
+    .select('*')
     .single();
 
-  if (srErr || !sr) return res.status(404).json({ error: 'Request not found' });
+  if (claimErr || !claimed) {
+    // Row not found, not pending, or another concurrent call already claimed it.
+    console.warn('[sr-reject] Row not claimable (already processed?):', request_id);
+    return res.status(409).json({ error: 'Request already processed or not found' });
+  }
 
-  // 2) Load widget config (for SE cost)
-  const { data: widgetRow } = await supabase
-    .from('overlay_widgets')
-    .select('config')
-    .eq('user_id', user_id)
-    .eq('widget_type', 'slot_requests')
-    .single();
-  const wConfig = widgetRow?.config || {};
-  const seCost = parseInt(wConfig.srSeCost, 10) || 0;
+  const sr = claimed;
+
+  // 2) Load widget config and SE credentials in parallel
+  const [widgetRes, seConnRes] = await Promise.all([
+    supabase
+      .from('overlay_widgets')
+      .select('config')
+      .eq('user_id', user_id)
+      .eq('widget_type', 'slot_requests')
+      .single(),
+    supabase
+      .from('streamelements_connections')
+      .select('se_channel_id, se_jwt_token')
+      .eq('user_id', user_id)
+      .single(),
+  ]);
+
+  const wConfig = widgetRes.data?.config || {};
   const seEnabled = !!wConfig.srSeEnabled;
+  const seChannelId = seConnRes.data?.se_channel_id;
+  const seJwtToken = seConnRes.data?.se_jwt_token;
 
-  // 3) Load SE credentials
-  const { data: seConn } = await supabase
-    .from('streamelements_connections')
-    .select('se_channel_id, se_jwt_token')
-    .eq('user_id', user_id)
-    .single();
-  const seChannelId = seConn?.se_channel_id;
-  const seJwtToken = seConn?.se_jwt_token;
+  // 3) Determine how many points to refund.
+  //    Use points_deducted stored on the row (set at request time) if available,
+  //    otherwise fall back to the current config cost.
+  const pointsToRefund = sr.points_deducted > 0
+    ? sr.points_deducted
+    : (parseInt(wConfig.srSeCost, 10) || 0);
 
-  // 4) Refund points if SE enabled and cost > 0
+  // 4) Refund points if SE is enabled and there are points to return
   let refunded = false;
-  if (seEnabled && seCost > 0 && seChannelId && seJwtToken && sr.requested_by) {
+  let refundFailed = false;
+  if (seEnabled && pointsToRefund > 0 && seChannelId && seJwtToken && sr.requested_by) {
     const cleanViewer = sr.requested_by.replace(/^@/, '').trim().toLowerCase();
     try {
       const refundRes = await fetch(
-        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${seCost}`,
+        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${cleanViewer}/${pointsToRefund}`,
         {
           method: 'PUT',
           headers: { 'Authorization': `Bearer ${seJwtToken}`, 'Content-Type': 'application/json' },
         }
       );
-      refunded = refundRes.ok;
+      if (refundRes.ok) {
+        refunded = true;
+      } else {
+        refundFailed = true;
+        console.error('[sr-reject] SE refund returned', refundRes.status, 'for', cleanViewer);
+      }
     } catch (err) {
-      console.error('[sr-reject] Refund failed:', err.message);
+      refundFailed = true;
+      console.error('[sr-reject] Refund network error:', err.message);
     }
   }
 
-  // 5) Send chat message
+  // 5) Transition to terminal status.
+  //    On refund failure we keep the row as 'refund_failed' so the admin can retry
+  //    manually — we never silently delete a row where the refund didn't go through.
+  const terminalStatus = refundFailed ? 'refund_failed' : 'refunded';
+  await supabase
+    .from('slot_requests')
+    .update({
+      status: terminalStatus,
+      refunded_at: refunded ? new Date().toISOString() : null,
+      refunded_points: refunded ? pointsToRefund : null,
+      rejection_reason: refundFailed ? 'SE API refund failed' : null,
+    })
+    .eq('id', request_id);
+
+  // 6) Send chat notification
   if (seChannelId && seJwtToken) {
     const defaultMsg = '🚫 {user}, your request for "{slot}" was rejected. {refund}';
     const tpl = message_template || wConfig.srMsgRejected || defaultMsg;
-    const refundText = refunded ? `${seCost} points refunded!` : '';
+    const refundText = refunded ? `${pointsToRefund} points refunded!` : '';
     const msg = tpl
       .replace(/\{user\}/g, sr.requested_by || '?')
       .replace(/\{slot\}/g, sr.slot_name || '?')
-      .replace(/\{cost\}/g, String(seCost))
+      .replace(/\{cost\}/g, String(pointsToRefund))
       .replace(/\{refund\}/g, refundText);
     await seBotSay(seChannelId, seJwtToken, msg);
   }
 
-  // 6) Delete the request
-  await supabase.from('slot_requests').delete().eq('id', request_id);
+  if (refundFailed) {
+    return res.status(200).json({
+      success: false,
+      refunded: false,
+      error: 'Points refund failed — request marked as refund_failed for manual retry.',
+    });
+  }
 
-  return res.status(200).json({ success: true, refunded });
+  return res.status(200).json({ success: true, refunded, pointsRefunded: pointsToRefund });
 }
 
 /* ─── Slot Request Clear All (?cmd=sr-clear-all) ─── */

@@ -18,10 +18,13 @@ export default function SlotRequestsWidget({ config, userId }) {
   const maxDisplay = c.maxDisplay || 20;
   const [requests, setRequests] = useState([]);
   const mountedRef = useRef(true);
+  // Monotonic counter — stale in-flight fetches are silently discarded.
+  const fetchSeqRef = useRef(0);
 
-  /* ── Fetch pending requests ── */
+  /* ── Fetch pending requests (stale-result protected) ── */
   const fetchRequests = useCallback(async () => {
     if (!userId) return;
+    const seq = ++fetchSeqRef.current;
     const { data, error } = await supabase
       .from('slot_requests')
       .select('*')
@@ -29,6 +32,7 @@ export default function SlotRequestsWidget({ config, userId }) {
       .eq('status', 'pending')
       .order('created_at', { ascending: true })
       .limit(maxDisplay);
+    if (seq !== fetchSeqRef.current) return; // stale result — discard
     if (!error && data && mountedRef.current) setRequests(data);
   }, [userId, maxDisplay]);
 

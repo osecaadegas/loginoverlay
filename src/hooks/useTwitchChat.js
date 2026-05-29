@@ -96,7 +96,12 @@ export default function useTwitchChat(channel, onMessage, options = {}) {
     };
 
     ws.onclose = () => {
-      reconnectTimer.current = setTimeout(connect, 3000);
+      // Only schedule a reconnect if this is still the active connection.
+      // If the channel changed (effect re-ran) a new ws is already open —
+      // the old ws closing must not spawn a second concurrent connection.
+      if (wsRef.current === ws) {
+        reconnectTimer.current = setTimeout(connect, 3000);
+      }
     };
   }, [channel, onMessage, parseRaids]);
 

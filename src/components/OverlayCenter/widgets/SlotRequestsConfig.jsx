@@ -9,7 +9,7 @@
  *   5. Display Options (show requester, show numbers, font, colors)
  *   6. Queue Management (list, mark played, reject/refund, clear all)
  */
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
 import { makePerStyleSetters } from './shared/perStyleConfig';
@@ -107,6 +107,8 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [seConnected, setSeConnected] = useState(false);
+  // Monotonic counter — any fetchQueue result older than the latest is discarded.
+  const fetchSeqRef = useRef(0);
 
   /* ── Check SE connection status ── */
   useEffect(() => {
@@ -123,15 +125,18 @@ export default function SlotRequestsConfig({ config, onChange }) {
     })();
   }, [user?.id]);
 
-  /* ── Fetch queue ── */
+  /* ── Fetch queue (stale-result protected) ── */
   const fetchQueue = useCallback(async () => {
     if (!user) return;
+    const seq = ++fetchSeqRef.current;
     const { data } = await supabase
       .from('slot_requests')
       .select('*')
       .eq('user_id', user.id)
       .eq('status', 'pending')
       .order('created_at', { ascending: true });
+    // Discard if a newer fetch already completed while this one was in flight
+    if (seq !== fetchSeqRef.current) return;
     if (data) setRequests(data);
   }, [user]);
 
@@ -142,7 +147,8 @@ export default function SlotRequestsConfig({ config, onChange }) {
     if (!user) return;
     const channel = supabase
       .channel(`sr-config-rt-${user.id}`)
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_requests' }, () => fetchQueue())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'slot_requests',
+        filter: `user_id=eq.${user.id}` }, () => fetchQueue())
       .subscribe();
     return () => supabase.removeChannel(channel);
   }, [user, fetchQueue]);
@@ -150,50 +156,77 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const currentStyle = c.displayStyle || 'v1_minimal';
   const { set } = makePerStyleSetters(onChange, c, currentStyle, SLOT_REQUESTS_STYLE_KEYS);
 
+  // Track which request IDs are currently in-flight so the buttons are disabled
+  // until the server round-trip completes. This prevents double-click double-refund.
+  const [busyIds, setBusyIds] = useState(new Set());
+  const setBusy = (id) => setBusyIds(prev => new Set(prev).add(id));
+  const clearBusy = (id) => setBusyIds(prev => { const n = new Set(prev); n.delete(id); return n; });
+
   /* ── Actions ── */
   const markPlayed = async (id) => {
-    await supabase.from('slot_requests').update({ status: 'played' }).eq('id', id);
-    fetchQueue();
+    if (busyIds.has(id)) return;
+    setBusy(id);
+    try {
+      await supabase.from('slot_requests').update({ status: 'played' }).eq('id', id);
+      await fetchQueue();
+    } finally { clearBusy(id); }
   };
 
   const removeRequest = async (id) => {
-    await supabase.from('slot_requests').delete().eq('id', id);
-    fetchQueue();
+    if (busyIds.has(id)) return;
+    setBusy(id);
+    try {
+      await supabase.from('slot_requests').delete().eq('id', id);
+      await fetchQueue();
+    } finally { clearBusy(id); }
   };
 
   const rejectRequest = async (id) => {
+    if (busyIds.has(id)) return;
+    setBusy(id);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
+      const resp = await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: JSON.stringify({ request_id: id, user_id: user.id, message_template: c.srMsgRejected || undefined }),
       });
-      fetchQueue();
-    } catch (err) { console.error('[SR reject]', err); }
+      if (!resp.ok && resp.status !== 409) {
+        console.error('[SR reject] unexpected status:', resp.status);
+      }
+      await fetchQueue();
+    } catch (err) {
+      console.error('[SR reject]', err);
+    } finally { clearBusy(id); }
   };
 
   const clearAll = async () => {
-    if (!user) return;
+    if (!user || loading) return;
     setLoading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
       const token = session?.access_token;
-      // Call API to refund SE points for all pending requests, then delete them
-      await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
+      const resp = await fetch(`${window.location.origin}/api/chat-commands?cmd=sr-clear-all`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
         body: JSON.stringify({ user_id: user.id }),
       });
-      setRequests([]);
+      if (resp.ok) {
+        // API confirmed success — re-fetch to sync with DB truth
+        await fetchQueue();
+      } else {
+        console.error('[sr-clear-all] API error:', resp.status);
+        // Don't optimistically clear — let the user see the real state
+        await fetchQueue();
+      }
     } catch (err) {
       console.error('[sr-clear-all] error:', err);
-      // Fallback: just delete without refund
-      await supabase.from('slot_requests').delete().eq('user_id', user.id).eq('status', 'pending');
-      setRequests([]);
+      // Network failure — still refresh from DB so UI is accurate
+      await fetchQueue();
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const cmdTrigger = c.commandTrigger || '!sr';
@@ -590,19 +623,24 @@ export default function SlotRequestsConfig({ config, onChange }) {
             <button
               className="sr-admin-btn sr-admin-btn--success"
               style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
-              onClick={() => markPlayed(r.id)} title="Mark as played">✓</button>
+              disabled={busyIds.has(r.id)}
+              onClick={() => markPlayed(r.id)} title="Mark as played">
+              {busyIds.has(r.id) ? '…' : '✓'}
+            </button>
             {/* Reject & refund — always shown; no-op if SE not connected */}
             <button
               className="sr-admin-btn sr-admin-btn--warn"
-              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
+              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem', opacity: busyIds.has(r.id) ? 0.5 : 1 }}
+              disabled={busyIds.has(r.id)}
               onClick={() => rejectRequest(r.id)}
-              title={c.srSeEnabled ? 'Reject &amp; refund SE points to this user' : 'Reject request (SE points not enabled)'}>
-              ↩ Refund
+              title={c.srSeEnabled ? 'Reject & refund SE points to this user' : 'Reject request (SE points not enabled)'}>
+              {busyIds.has(r.id) ? '…' : '↩ Refund'}
             </button>
             {/* Remove without refund */}
             <button
               className="sr-admin-btn sr-admin-btn--danger"
-              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
+              style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem', opacity: busyIds.has(r.id) ? 0.5 : 1 }}
+              disabled={busyIds.has(r.id)}
               onClick={() => removeRequest(r.id)} title="Remove without refund">✕</button>
             </div>
           </div>

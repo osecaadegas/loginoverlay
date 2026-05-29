@@ -15,7 +15,11 @@ export default function useSlotRequestListener() {
   const { user } = useAuth();
   const [srConfig, setSrConfig] = useState(null);
   const autoChannel = useTwitchChannel();
-  const dedupRef = useRef(new Map());
+  // Use a Set of Twitch message IDs instead of a time-based Map.
+  // Every Twitch PRIVMSG carries a globally unique `id` tag.
+  // Two browser tabs receiving the same message get the same ID — only the
+  // first tab to POST it will win the DB unique index; the second is a no-op.
+  const seenMsgIds = useRef(new Set());
 
   // ── Load slot_requests widget config ──
   useEffect(() => {
@@ -55,8 +59,14 @@ export default function useSlotRequestListener() {
         table: 'overlay_widgets',
         filter: `user_id=eq.${user.id}`,
       }, (payload) => {
-        const row = payload.new;
+        // For DELETE events, payload.new is null — use payload.old or refetch
+        const row = payload.new || payload.old;
         if (!row || row.widget_type !== 'slot_requests') return;
+
+        if (payload.eventType === 'DELETE') {
+          setSrConfig(null);
+          return;
+        }
 
         if (row.config?.srChatEnabled !== false) {
           setSrConfig({
@@ -99,15 +109,16 @@ export default function useSlotRequestListener() {
     const requester = msg.username;
     if (!requester) return;
 
-    // Dedup: skip if same viewer+slot within 15s
-    const dedupKey = `${requester.toLowerCase()}|${slotName.toLowerCase()}`;
-    const now = Date.now();
-    if (dedupRef.current.has(dedupKey) && now - dedupRef.current.get(dedupKey) < 15000) return;
-    dedupRef.current.set(dedupKey, now);
-
-    // Clean old entries
-    if (dedupRef.current.size > 50) {
-      for (const [k, t] of dedupRef.current) { if (now - t > 30000) dedupRef.current.delete(k); }
+    // Primary dedup: Twitch message ID (same message in two tabs has the same ID)
+    const msgId = msg.id;
+    if (msgId) {
+      if (seenMsgIds.current.has(msgId)) return;
+      seenMsgIds.current.add(msgId);
+      // Keep the Set bounded — prune oldest half when it grows past 300 entries
+      if (seenMsgIds.current.size > 300) {
+        const arr = [...seenMsgIds.current];
+        seenMsgIds.current = new Set(arr.slice(-150));
+      }
     }
 
     // Fire to the API — POST with JSON body to avoid sensitive data in query string
