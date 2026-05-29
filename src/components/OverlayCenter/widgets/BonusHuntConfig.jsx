@@ -949,8 +949,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       <div className="bh-panel-section bh-panel-section--setup">
         {/* Casino name (optional) */}
         <div className="bh-settings-row" style={{ marginBottom: 8 }}>
-          <label className="bh-input-group" style={{ flex: 1 }}>
-            <span>🏛️ Casino (optional)</span>
+          <label className="bh-input-group bh-input-group--section" style={{ flex: 1 }}>
+            <span className="bh-section-pill">🏛️ Casino (optional)</span>
             <input type="text" value={casinoName}
               placeholder="e.g. Stake, Gamdom, Roobet…"
               onChange={e => setCasinoName(e.target.value)}
@@ -960,7 +960,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         <div className="bh-hunt-split">
           {/* Left half: Hunt Settings */}
           <div className="bh-hunt-split-left">
-            <h4 className="bh-panel-label">Hunt Settings</h4>
+            <h4 className="bh-section-pill">Hunt Settings</h4>
             <div className="bh-settings-row">
               <label className="bh-input-group bh-input-sm">
                 <span>Hunt #</span>
@@ -989,7 +989,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           {/* Right half: Slot Requests queue */}
           <div className="bh-hunt-split-right">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <span className="bh-sr-queue-title">🎰 Requests <span className="bh-sr-queue-count">{slotRequests.length}</span></span>
+              <span className="bh-section-pill">🎰 Requests <span className="bh-count">{slotRequests.length}</span></span>
               {slotRequests.length > 0 && (
                 <button className="bh-sr-queue-btn bh-sr-queue-btn--clear" onClick={handleClearAllRequests}
                   title="Refund SE points to all pending users and remove from queue">↩ Refund All</button>
@@ -1095,7 +1095,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
       {/* ─── Add Bonus ─── */}
       <div className="bh-panel-section bh-panel-section--add">
-        <h4 className="bh-panel-label" style={{ margin: '0 0 4px 0' }}>Add Bonus</h4>
+        <h4 className="bh-section-pill" style={{ margin: '0 0 4px 0' }}>Add Bonus</h4>
 
         {/* Row 1: Search */}
         <div className="bh-add-row">
@@ -1300,7 +1300,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
           </label>
         </div>
 
-        <h4 className="bh-panel-label">
+        <h4 className="bh-section-pill">
           Bonuses <span className="bh-count">{bonusList.length}</span>
         </h4>
 
