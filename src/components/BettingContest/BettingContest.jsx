@@ -93,7 +93,7 @@ function OutcomeBar({ outcome, totalPool, isWinner, userOutcomeId, onClick, disa
   );
 }
 
-function BetForm({ outcomes, totalPool, playerBalance, onBet, loading }) {
+function BetForm({ outcomes, totalPool, playerBalance, currencyMode, onBet, loading }) {
   const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [amount, setAmount]                   = useState('');
   const [error, setError]                     = useState('');
@@ -203,7 +203,8 @@ function BetForm({ outcomes, totalPool, playerBalance, onBet, loading }) {
 
       {playerBalance != null && (
         <p className="bc-bet-form__balance">
-          Balance: <strong>{formatPoints(playerBalance)} pts</strong>
+          {currencyMode === 'se_points' ? '⚡ SE Points:' : 'Balance:'}{' '}
+          <strong>{formatPoints(playerBalance)} pts</strong>
         </p>
       )}
     </form>
@@ -306,18 +307,35 @@ export default function BettingContest({ contestId, contest: contestProp, onBetP
 
   // ── Load player balance ────────────────────────────────────────────────
   const loadBalance = useCallback(async () => {
-    if (!user) return;
+    if (!user || !contest) return;
     try {
-      const { createClient } = await import('@supabase/supabase-js');
-      const { supabase }     = await import('../../config/supabaseClient');
-      const { data } = await supabase
-        .from('the_life_players')
-        .select('cash')
-        .eq('user_id', user.id)
-        .single();
-      setPlayerBalance(data?.cash ?? null);
+      if (contest.currency_mode === 'se_points') {
+        // Fetch SE points via the betting API (server holds SE credentials)
+        const { supabase } = await import('../../config/supabaseClient');
+        const { data: { session } } = await supabase.auth.getSession();
+        const token = session?.access_token;
+
+        const r = await fetch('/api/betting', {
+          method:  'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+          body: JSON.stringify({ action: 'get_se_balance', contestId: effectiveId }),
+        });
+        const d = await r.json();
+        setPlayerBalance(d.success ? d.balance : null);
+      } else {
+        const { supabase } = await import('../../config/supabaseClient');
+        const { data } = await supabase
+          .from('the_life_players')
+          .select('cash')
+          .eq('user_id', user.id)
+          .single();
+        setPlayerBalance(data?.cash ?? null);
+      }
     } catch {}
-  }, [user]);
+  }, [user, contest, effectiveId]);
 
   // ── Initial load ───────────────────────────────────────────────────────
   useEffect(() => {
@@ -489,6 +507,7 @@ export default function BettingContest({ contestId, contest: contestProp, onBetP
           outcomes={outcomes}
           totalPool={totalPool}
           playerBalance={playerBalance}
+          currencyMode={contest?.currency_mode ?? 'internal'}
           onBet={handleBet}
           loading={betLoading}
         />

@@ -212,11 +212,12 @@ function ContestCard({ contest, onLock, onResolve, onCancel, loading }) {
 // ── Create Contest Form ────────────────────────────────────────────────────────
 
 function CreateContestForm({ onCreate, loading }) {
-  const [title, setTitle]       = useState('');
-  const [question, setQuestion] = useState('');
-  const [outcomes, setOutcomes] = useState(['', '']);
-  const [locksAt, setLocksAt]   = useState('');
-  const [error, setError]       = useState('');
+  const [title, setTitle]             = useState('');
+  const [question, setQuestion]       = useState('');
+  const [outcomes, setOutcomes]       = useState(['', '']);
+  const [locksAt, setLocksAt]         = useState('');
+  const [currencyMode, setCurrencyMode] = useState('internal');
+  const [error, setError]             = useState('');
 
   function addOutcome() {
     if (outcomes.length < 10) setOutcomes(p => [...p, '']);
@@ -242,16 +243,18 @@ function CreateContestForm({ onCreate, loading }) {
 
     try {
       await onCreate({
-        title:    title.trim(),
-        question: question.trim(),
-        outcomes: filled.map(o => ({ label: o.trim() })),
-        locksAt:  locksAt || undefined,
+        title:        title.trim(),
+        question:     question.trim(),
+        outcomes:     filled.map(o => ({ label: o.trim() })),
+        locksAt:      locksAt || undefined,
+        currencyMode,
       });
       // Reset form
       setTitle('');
       setQuestion('');
       setOutcomes(['', '']);
       setLocksAt('');
+      setCurrencyMode('internal');
     } catch (err) {
       setError(err.message);
     }
@@ -335,6 +338,31 @@ function CreateContestForm({ onCreate, loading }) {
           onChange={e => setLocksAt(e.target.value)}
           min={new Date(Date.now() + 60_000).toISOString().slice(0, 16)}
         />
+      </div>
+
+      <div className="bap-field">
+        <label className="bap-label">Currency</label>
+        <div className="bap-currency-toggle">
+          <button
+            type="button"
+            className={`bap-currency-btn ${currencyMode === 'internal' ? 'bap-currency-btn--active' : ''}`}
+            onClick={() => setCurrencyMode('internal')}
+          >
+            🪙 The Life Points
+          </button>
+          <button
+            type="button"
+            className={`bap-currency-btn ${currencyMode === 'se_points' ? 'bap-currency-btn--active' : ''}`}
+            onClick={() => setCurrencyMode('se_points')}
+          >
+            ⚡ SE Points
+          </button>
+        </div>
+        {currencyMode === 'se_points' && (
+          <p className="bap-label--muted bap-field__hint">
+            StreamElements points will be deducted on bet and credited on win/refund.
+          </p>
+        )}
       </div>
 
       {error && <p className="bap-error" role="alert">{error}</p>}

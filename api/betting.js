@@ -19,6 +19,52 @@
 
 import { createClient } from '@supabase/supabase-js';
 
+// ─── StreamElements helpers ───────────────────────────────────────────────────
+const SE_BASE = 'https://api.streamelements.com/kappa/v2';
+
+/** Fetch SE credentials for a streamer from the streamelements_connections table. */
+async function seGetCreds(supabase, streamerId) {
+  const { data } = await supabase
+    .from('streamelements_connections')
+    .select('se_channel_id, se_jwt_token')
+    .eq('user_id', streamerId)
+    .single();
+  return data ?? null;
+}
+
+/** Fetch the Twitch username for a Supabase user. */
+async function getTwitchUsername(supabase, userId) {
+  const { data } = await supabase
+    .from('user_profiles')
+    .select('twitch_username')
+    .eq('user_id', userId)
+    .single();
+  return data?.twitch_username?.toLowerCase() ?? null;
+}
+
+/** Get a viewer's SE points balance. Throws on SE API failure. */
+async function seGetPoints(channelId, jwtToken, twitchUsername) {
+  const r = await fetch(
+    `${SE_BASE}/points/${channelId}/${encodeURIComponent(twitchUsername)}`,
+    { headers: { Authorization: `Bearer ${jwtToken}` } }
+  );
+  if (!r.ok) throw new Error(`SE points check failed (${r.status})`);
+  const d = await r.json();
+  return typeof d.points === 'number' ? d.points : 0;
+}
+
+/** Add SE points to a viewer (positive delta = add, negative = subtract). */
+async function seAdjustPoints(channelId, jwtToken, twitchUsername, delta) {
+  const r = await fetch(
+    `${SE_BASE}/points/${channelId}/${encodeURIComponent(twitchUsername)}/${delta}`,
+    {
+      method:  'PUT',
+      headers: { Authorization: `Bearer ${jwtToken}`, 'Content-Type': 'application/json' },
+    }
+  );
+  return r.ok;
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
@@ -74,6 +120,11 @@ export default async function handler(req, res) {
       case 'get_user_bets': {
         if (!user) return res.status(401).json({ error: 'Authentication required' });
         return handleGetUserBets(supabase, user, body, res);
+      }
+
+      case 'get_se_balance': {
+        if (!user) return res.status(401).json({ error: 'Authentication required' });
+        return handleGetSeBalance(supabase, user, body, res);
       }
 
       // ── ADMIN ONLY ─────────────────────────────────────────────────────
@@ -145,9 +196,9 @@ function computeLiveOdds(outcomes, totalPool) {
 }
 
 // ─── Action: create_contest ───────────────────────────────────────────────────
-// Body: { title, question, outcomes: [{label}], locksAt? }
+// Body: { title, question, outcomes: [{label}], locksAt?, currencyMode? }
 async function handleCreateContest(supabase, user, body, res) {
-  const { title, question, outcomes, locksAt } = body;
+  const { title, question, outcomes, locksAt, currencyMode = 'internal' } = body;
 
   // Validation
   if (!title?.trim())
@@ -176,16 +227,21 @@ async function handleCreateContest(supabase, user, body, res) {
       return res.status(400).json({ error: 'locks_at must be a future timestamp' });
   }
 
+  if (!['internal', 'se_points'].includes(currencyMode)) {
+    return res.status(400).json({ error: 'currencyMode must be "internal" or "se_points"' });
+  }
+
   // Create contest row
   const { data: contest, error: contestErr } = await supabase
     .from('betting_contests')
     .insert({
-      streamer_id: user.id,
-      title:       title.trim(),
-      question:    question.trim(),
-      status:      'open',
-      total_pool:  0,
-      locks_at:    locksAt ?? null,
+      streamer_id:   user.id,
+      title:         title.trim(),
+      question:      question.trim(),
+      status:        'open',
+      total_pool:    0,
+      currency_mode: currencyMode,
+      locks_at:      locksAt ?? null,
     })
     .select()
     .single();
@@ -255,12 +311,68 @@ async function handleLockContest(supabase, body, res) {
 
 // ─── Action: resolve_contest ──────────────────────────────────────────────────
 // Body: { contestId, winningOutcomeId }
-// Delegates to the atomic Postgres RPC that handles all math in one transaction.
 async function handleResolveContest(supabase, body, res) {
   const { contestId, winningOutcomeId } = body;
   if (!contestId)        return res.status(400).json({ error: 'contestId is required' });
   if (!winningOutcomeId) return res.status(400).json({ error: 'winningOutcomeId is required' });
 
+  // Determine currency mode
+  const { data: contestMeta } = await supabase
+    .from('betting_contests')
+    .select('currency_mode, streamer_id')
+    .eq('id', contestId)
+    .single();
+
+  // ── SE Points flow ──────────────────────────────────────────────────────────
+  if (contestMeta?.currency_mode === 'se_points') {
+    const { data, error } = await supabase.rpc('resolve_betting_contest_se', {
+      p_contest_id:         contestId,
+      p_winning_outcome_id: winningOutcomeId,
+    });
+
+    if (error) {
+      console.error('[betting] resolve_betting_contest_se RPC error:', error);
+      return res.status(500).json({ error: 'Resolution failed', details: error.message });
+    }
+    if (!data?.success) {
+      return res.status(400).json({ error: data?.error ?? 'Resolution failed' });
+    }
+
+    // Credit SE points to each winner
+    const winners = data.winners ?? [];
+    if (winners.length > 0) {
+      const creds = await seGetCreds(supabase, contestMeta.streamer_id);
+      if (creds?.se_channel_id && creds?.se_jwt_token) {
+        const userIds = winners.map(w => w.user_id);
+        const { data: profiles } = await supabase
+          .from('user_profiles')
+          .select('user_id, twitch_username')
+          .in('user_id', userIds);
+
+        const usernameMap = Object.fromEntries(
+          (profiles ?? []).map(p => [p.user_id, p.twitch_username?.toLowerCase()])
+        );
+
+        await Promise.allSettled(
+          winners.map(async w => {
+            const username = usernameMap[w.user_id];
+            if (!username) {
+              console.warn('[betting] resolve SE: no twitch_username for user', w.user_id);
+              return;
+            }
+            const ok = await seAdjustPoints(
+              creds.se_channel_id, creds.se_jwt_token, username, w.payout_amount
+            );
+            if (!ok) console.error('[betting] SE credit failed for', username, w.payout_amount);
+          })
+        );
+      }
+    }
+
+    return res.status(200).json(data);
+  }
+
+  // ── Internal cash flow ──────────────────────────────────────────────────────
   const { data, error } = await supabase.rpc('resolve_betting_contest', {
     p_contest_id:         contestId,
     p_winning_outcome_id: winningOutcomeId,
@@ -280,11 +392,66 @@ async function handleResolveContest(supabase, body, res) {
 
 // ─── Action: cancel_contest ───────────────────────────────────────────────────
 // Body: { contestId }
-// Full refund: all bet amounts returned to bettors' cash balance.
 async function handleCancelContest(supabase, body, res) {
   const { contestId } = body;
   if (!contestId) return res.status(400).json({ error: 'contestId is required' });
 
+  // Determine currency mode
+  const { data: contestMeta } = await supabase
+    .from('betting_contests')
+    .select('currency_mode, streamer_id')
+    .eq('id', contestId)
+    .single();
+
+  // ── SE Points flow ──────────────────────────────────────────────────────────
+  if (contestMeta?.currency_mode === 'se_points') {
+    const { data, error } = await supabase.rpc('cancel_betting_contest_se', {
+      p_contest_id: contestId,
+    });
+
+    if (error) {
+      console.error('[betting] cancel_betting_contest_se RPC error:', error);
+      return res.status(500).json({ error: 'Cancellation failed', details: error.message });
+    }
+    if (!data?.success) {
+      return res.status(400).json({ error: data?.error ?? 'Cancellation failed' });
+    }
+
+    // Refund SE points to each bettor
+    const refunds = data.refunds ?? [];
+    if (refunds.length > 0) {
+      const creds = await seGetCreds(supabase, contestMeta.streamer_id);
+      if (creds?.se_channel_id && creds?.se_jwt_token) {
+        const userIds = refunds.map(r => r.user_id);
+        const { data: profiles } = await supabase
+          .from('user_profiles')
+          .select('user_id, twitch_username')
+          .in('user_id', userIds);
+
+        const usernameMap = Object.fromEntries(
+          (profiles ?? []).map(p => [p.user_id, p.twitch_username?.toLowerCase()])
+        );
+
+        await Promise.allSettled(
+          refunds.map(async r => {
+            const username = usernameMap[r.user_id];
+            if (!username) {
+              console.warn('[betting] cancel SE: no twitch_username for user', r.user_id);
+              return;
+            }
+            const ok = await seAdjustPoints(
+              creds.se_channel_id, creds.se_jwt_token, username, r.amount
+            );
+            if (!ok) console.error('[betting] SE refund failed for', username, r.amount);
+          })
+        );
+      }
+    }
+
+    return res.status(200).json(data);
+  }
+
+  // ── Internal cash flow ──────────────────────────────────────────────────────
   const { data, error } = await supabase.rpc('cancel_betting_contest', {
     p_contest_id: contestId,
   });
@@ -303,7 +470,8 @@ async function handleCancelContest(supabase, body, res) {
 
 // ─── Action: place_bet ────────────────────────────────────────────────────────
 // Body: { contestId, outcomeId, amount }
-// Delegates to atomic Postgres RPC (SELECT FOR UPDATE prevents double-spend).
+// Branches on currency_mode: 'internal' uses the Postgres RPC (wallet deduction),
+// 'se_points' deducts via StreamElements API then records via SE-mode RPC.
 async function handlePlaceBet(supabase, user, body, res) {
   const { contestId, outcomeId, amount } = body;
 
@@ -315,6 +483,79 @@ async function handlePlaceBet(supabase, user, body, res) {
     return res.status(400).json({ error: 'amount must be a positive integer ≥ 1' });
   }
 
+  // Fetch contest to determine currency mode
+  const { data: contest, error: contestFetchErr } = await supabase
+    .from('betting_contests')
+    .select('currency_mode, streamer_id, status')
+    .eq('id', contestId)
+    .single();
+
+  if (contestFetchErr || !contest) {
+    return res.status(404).json({ error: 'Contest not found' });
+  }
+
+  // ── SE Points flow ──────────────────────────────────────────────────────────
+  if (contest.currency_mode === 'se_points') {
+    const creds = await seGetCreds(supabase, contest.streamer_id);
+    if (!creds?.se_channel_id || !creds?.se_jwt_token) {
+      return res.status(400).json({ error: 'StreamElements is not configured for this contest' });
+    }
+
+    const twitchUsername = await getTwitchUsername(supabase, user.id);
+    if (!twitchUsername) {
+      return res.status(400).json({
+        error: 'Twitch username not found — please reconnect your Twitch account.',
+      });
+    }
+
+    // Check SE balance
+    let sePoints;
+    try {
+      sePoints = await seGetPoints(creds.se_channel_id, creds.se_jwt_token, twitchUsername);
+    } catch (e) {
+      console.error('[betting] SE balance check failed:', e.message);
+      return res.status(400).json({
+        error: 'Could not check your StreamElements points. Are you a follower?',
+      });
+    }
+
+    if (sePoints < numAmount) {
+      return res.status(400).json({
+        error:    'Insufficient StreamElements points',
+        balance:  sePoints,
+        required: numAmount,
+      });
+    }
+
+    // Deduct SE points before writing to DB
+    const deducted = await seAdjustPoints(
+      creds.se_channel_id, creds.se_jwt_token, twitchUsername, -numAmount
+    );
+    if (!deducted) {
+      return res.status(400).json({ error: 'Failed to deduct StreamElements points. Try again.' });
+    }
+
+    // Record the bet in DB (no wallet touch)
+    const { data, error } = await supabase.rpc('place_betting_bet_se', {
+      p_user_id:    user.id,
+      p_contest_id: contestId,
+      p_outcome_id: outcomeId,
+      p_amount:     Math.floor(numAmount),
+    });
+
+    if (error || !data?.success) {
+      // DB write failed — refund SE points so the user isn't left short-changed
+      await seAdjustPoints(
+        creds.se_channel_id, creds.se_jwt_token, twitchUsername, numAmount
+      ).catch(() => {});
+      console.error('[betting] place_betting_bet_se failed, SE points refunded:', error?.message ?? data?.error);
+      return res.status(400).json({ error: data?.error ?? 'Failed to record bet' });
+    }
+
+    return res.status(200).json({ ...data, newBalance: sePoints - numAmount });
+  }
+
+  // ── Internal cash flow ──────────────────────────────────────────────────────
   const { data, error } = await supabase.rpc('place_betting_bet', {
     p_user_id:    user.id,
     p_contest_id: contestId,
@@ -346,7 +587,7 @@ async function handleGetContest(supabase, body, res) {
 
   const { data: contest, error: contestErr } = await supabase
     .from('betting_contests')
-    .select('id, title, question, status, total_pool, winning_outcome_id, starts_at, locks_at, resolved_at, created_at')
+    .select('id, title, question, status, total_pool, winning_outcome_id, currency_mode, streamer_id, starts_at, locks_at, resolved_at, created_at')
     .eq('id', contestId)
     .single();
 
@@ -381,7 +622,7 @@ async function handleListContests(supabase, body, res) {
 
   let query = supabase
     .from('betting_contests')
-    .select('id, title, question, status, total_pool, winning_outcome_id, starts_at, locks_at, resolved_at, created_at')
+    .select('id, title, question, status, total_pool, winning_outcome_id, currency_mode, starts_at, locks_at, resolved_at, created_at')
     .order('created_at', { ascending: false })
     .range(off, off + lim - 1);
 
@@ -480,4 +721,38 @@ async function handleGetUserBets(supabase, user, body, res) {
   }
 
   return res.status(200).json({ success: true, bets: data ?? [] });
+}
+
+// ─── Action: get_se_balance ───────────────────────────────────────────────────
+// Body: { contestId } — returns the user's SE points for the contest's channel.
+async function handleGetSeBalance(supabase, user, body, res) {
+  const { contestId } = body;
+  if (!contestId) return res.status(400).json({ error: 'contestId is required' });
+
+  const { data: contest } = await supabase
+    .from('betting_contests')
+    .select('currency_mode, streamer_id')
+    .eq('id', contestId)
+    .single();
+
+  if (!contest || contest.currency_mode !== 'se_points') {
+    return res.status(400).json({ error: 'Contest does not use SE points' });
+  }
+
+  const creds = await seGetCreds(supabase, contest.streamer_id);
+  if (!creds?.se_channel_id || !creds?.se_jwt_token) {
+    return res.status(400).json({ error: 'StreamElements not configured' });
+  }
+
+  const twitchUsername = await getTwitchUsername(supabase, user.id);
+  if (!twitchUsername) {
+    return res.status(400).json({ error: 'Twitch username not found — please reconnect.' });
+  }
+
+  try {
+    const points = await seGetPoints(creds.se_channel_id, creds.se_jwt_token, twitchUsername);
+    return res.status(200).json({ success: true, balance: points });
+  } catch (e) {
+    return res.status(400).json({ error: 'Could not fetch SE points. Are you a follower?' });
+  }
 }

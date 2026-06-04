@@ -563,6 +563,44 @@
   color: #a78bfa;
 }
 
+/* ── Currency toggle ─────────────────────────────────────────────────────── */
+.bap-currency-toggle {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.bap-currency-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.04);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--text-muted, #9494b0);
+  font-size: 0.82rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+}
+
+.bap-currency-btn:hover {
+  border-color: rgba(139,92,246,0.4);
+  color: #c4b5fd;
+}
+
+.bap-currency-btn--active {
+  background: rgba(139,92,246,0.15);
+  border-color: #7c3aed;
+  color: #c4b5fd;
+  font-weight: 600;
+}
+
+.bap-field__hint {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
 /* ── Payout verifier ─────────────────────────────────────────────────────── */
 .bap-verifier {
   margin-top: -8px;
