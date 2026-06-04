@@ -21,6 +21,9 @@ export default function useBetsListener() {
   const autoChannel = useTwitchChannel();
   const pendingBetsRef = useRef([]);
   const flushTimerRef = useRef(null);
+  // Track the timestamp of the most-recent config we've applied so a late-
+  // returning initial load never overwrites a fresher realtime event.
+  const configTimestampRef = useRef(0);
 
   // ── Load bets widget config & subscribe to changes ──
   useEffect(() => {
@@ -30,13 +33,16 @@ export default function useBetsListener() {
     async function load() {
       const { data } = await supabase
         .from('overlay_widgets')
-        .select('id, config')
+        .select('id, config, updated_at')
         .eq('user_id', user.id)
         .eq('widget_type', 'bets')
         .limit(1)
         .maybeSingle();
 
       if (cancelled) return;
+      const ts = data?.updated_at ? new Date(data.updated_at).getTime() : 0;
+      if (ts < configTimestampRef.current) return; // realtime already gave us newer data
+      configTimestampRef.current = ts;
       if (data?.config) {
         setBetsConfig({ widgetId: data.id, config: data.config });
       } else {
@@ -45,6 +51,9 @@ export default function useBetsListener() {
     }
 
     load();
+
+    // Polling fallback: re-sync every 10s in case a realtime event was missed
+    const pollTimer = setInterval(load, 10_000);
 
     const channel = supabase
       .channel(`bets-listener-${user.id}`)
@@ -56,12 +65,17 @@ export default function useBetsListener() {
       }, (payload) => {
         const row = payload.new;
         if (!row || row.widget_type !== 'bets') return;
-        if (row.config) setBetsConfig({ widgetId: row.id, config: row.config });
+        if (row.config) {
+          const ts = row.updated_at ? new Date(row.updated_at).getTime() : Date.now();
+          configTimestampRef.current = ts;
+          setBetsConfig({ widgetId: row.id, config: row.config });
+        }
       })
       .subscribe();
 
     return () => {
       cancelled = true;
+      clearInterval(pollTimer);
       supabase.removeChannel(channel);
     };
   }, [user]);
@@ -108,13 +122,17 @@ export default function useBetsListener() {
           betters[bet.username] = { option: optIdx, amount: bet.amount };
         }
 
-        await supabase
+        const { error: updateErr } = await supabase
           .from('overlay_widgets')
           .update({
             config: { ...cfg, bets, betters },
             updated_at: new Date().toISOString(),
           })
           .eq('id', wid);
+        if (updateErr) {
+          console.error('[BetsListener] flush UPDATE failed:', updateErr.message);
+          pendingBetsRef.current = [...batch, ...pendingBetsRef.current];
+        }
       } catch (err) {
         console.error('[BetsListener] flush failed:', err);
         pendingBetsRef.current = [...batch, ...pendingBetsRef.current];
