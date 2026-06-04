@@ -217,16 +217,35 @@ export default function PenaltyKingOverlay({ config = {} }) {
       `pk-phase-${animPhase}`,
     ].filter(Boolean).join(' ')}>
 
-      {/* Idle state */}
+      {/* Idle state – shows goal preview with standing GK */}
       {animPhase === 'idle' && (
         <div className="pk-idle">
-          <div className="pk-idle__ball">⚽</div>
-          <h1 className="pk-idle__title">PENALTY KING</h1>
+          <h1 className="pk-idle__title">⚽ PENALTY KING</h1>
           <p className="pk-idle__cmd">!remate [pontos] [spot 1-6]</p>
-          <div className="pk-idle__grid">
-            {[1,2,3,4,5,6].map(n => (
-              <div key={n} className="pk-idle__spot">{n}</div>
-            ))}
+
+          {/* Goal preview with GK */}
+          <div className="pk-idle__pitch">
+            <div className="pk-idle__goal">
+              <div className="pk-goal__crossbar" />
+              <div className="pk-goal__post pk-goal__post--left" />
+              <div className="pk-goal__post pk-goal__post--right" />
+              <div className="pk-idle__spots">
+                {[1,2,3,4,5,6].map(n => (
+                  <div key={n} className="pk-spot">
+                    <span className="pk-spot__label">{n}</span>
+                  </div>
+                ))}
+              </div>
+              {/* Standing goalkeeper */}
+              <div className="pk-gk pk-gk--idle">
+                <div className="pk-gk__head">😤</div>
+                <div className="pk-gk__torso">
+                  <span className="pk-gk__glove">🧤</span>
+                  <span className="pk-gk__label">GK</span>
+                  <span className="pk-gk__glove">🧤</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

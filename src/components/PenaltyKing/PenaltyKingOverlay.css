@@ -78,17 +78,38 @@
   margin-top: 4px;
 }
 
-.pk-idle__spot {
-  width: 36px;
-  height: 36px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid var(--pk-border);
-  border-radius: 6px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  color: var(--pk-muted);
+.pk-idle__pitch {
+  position: relative;
+  padding: 0 0 20px;
+}
+
+.pk-idle__goal {
+  position: relative;
+  width: 220px;
+  height: 130px;
+  border: 3px solid rgba(255,255,255,0.7);
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  background: rgba(255,255,255,0.04);
+  overflow: visible;
+  /* net */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 14px),
+    repeating-linear-gradient(90deg, rgba(255,255,255,0.05) 0px, rgba(255,255,255,0.05) 1px, transparent 1px, transparent 14px);
+}
+
+.pk-idle__spots {
+  position: absolute;
+  inset: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 3px;
+  z-index: 1;
+}
+
+.pk-gk--idle {
+  animation: pk-gk-idle-sway 2.5s ease-in-out infinite;
 }
 
 /* ── Game Layout ──────────────────────────────────────────── */
@@ -97,7 +118,7 @@
   background: var(--pk-bg);
   border: 1px solid var(--pk-border);
   border-radius: var(--pk-radius);
-  overflow: hidden;
+  overflow: visible;
   box-shadow: 0 8px 60px rgba(0,0,0,0.7);
   transition: box-shadow var(--pk-transition);
 }
@@ -649,6 +670,12 @@
 @keyframes pk-idle-spin {
   from { transform: rotate(0deg); }
   to   { transform: rotate(360deg); }
+}
+
+@keyframes pk-gk-idle-sway {
+  0%, 100% { transform: translateX(-50%) rotate(0deg); }
+  25%       { transform: translateX(-50%) rotate(-6deg); }
+  75%       { transform: translateX(-50%) rotate(6deg); }
 }
 
 @keyframes pk-pulse {
