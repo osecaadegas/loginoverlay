@@ -93,9 +93,10 @@ export default function Sidebar({ className = '', onClose }) {
   ];
 
   const gameLinks = [
-    { emoji: '🃏', labelKey: 'nav_blackjack', label: 'Blackjack', path: '/games/blackjack' },
-    { emoji: '💣', labelKey: 'nav_mines',     label: 'Mines',     path: '/games/mines' },
-    { emoji: '🔫', labelKey: 'nav_thelife',   label: 'The Life',  path: '/games/thelife' },
+    { emoji: '🃏', labelKey: 'nav_blackjack',    label: 'Blackjack',    path: '/games/blackjack' },
+    { emoji: '💣', labelKey: 'nav_mines',        label: 'Mines',        path: '/games/mines' },
+    { emoji: '⚽', labelKey: 'nav_penalty_king', label: 'Penalty King', path: '/games/penalty-king' },
+    { emoji: '🔫', labelKey: 'nav_thelife',      label: 'The Life',     path: '/games/thelife' },
   ];
 
   const webmodLinks = [

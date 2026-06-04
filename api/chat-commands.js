@@ -44,6 +44,9 @@ export default async function handler(req, res) {
     case 'pred-say': return handlePredSay(req, res);
     case 'streamer-data': return streamerDataHandler(req, res);
     case 'image-search': return imageSearchHandler(req, res);
+    case 'remate':   return handleRemate(req, res);
+    case 'cashout':  return handlePkCashout(req, res);
+    case 'continue': return handlePkContinue(req, res);
     default:         return res.status(400).json({ error: 'Unknown cmd' });
   }
 }
@@ -874,4 +877,103 @@ async function handlePredSay(req, res) {
 
   await seBotSay(seConn.se_channel_id, seConn.se_jwt_token, message);
   return res.status(200).json({ ok: true });
+}
+
+/* ─── Penalty King: !remate [points] [spot] ─────────────────────────────── */
+
+async function handleRemate(req, res) {
+  // SE triggers: GET with ?cmd=remate&user_id=...&requester=...&w1=[points]&w2=[spot]
+  const { user_id, requester } = req.query;
+  const w1 = req.query.w1 ?? '';
+  const w2 = req.query.w2 ?? '';
+
+  if (!user_id) return res.status(200).send('Missing user_id');
+
+  const wager = parseInt(w1, 10);
+  const spot  = parseInt(w2, 10);
+
+  if (!wager || wager < 1 || !spot || spot < 1 || spot > 6) {
+    return res.status(200).send(`@${requester || 'viewer'} Usage: !remate [pontos] [spot 1-6]`);
+  }
+
+  try {
+    const r = await fetch(
+      `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/penalty-king`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'start_game',
+          streamer_id: user_id,
+          player: (requester || '').toLowerCase().replace(/^@/, ''),
+          wager,
+          spot,
+        }),
+      }
+    );
+    const d = await r.json();
+    if (!d.success && d.message) return res.status(200).send(d.message);
+    return res.status(200).send('');
+  } catch (err) {
+    console.error('[handleRemate]', err.message);
+    return res.status(200).send('Server error — try again');
+  }
+}
+
+/* ─── Penalty King: !cashout ────────────────────────────────────────────── */
+
+async function handlePkCashout(req, res) {
+  const { user_id, requester } = req.query;
+  if (!user_id) return res.status(200).send('Missing user_id');
+
+  try {
+    const r = await fetch(
+      `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/penalty-king`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'cashout',
+          streamer_id: user_id,
+          player: (requester || '').toLowerCase().replace(/^@/, ''),
+        }),
+      }
+    );
+    const d = await r.json();
+    if (!d.success && d.message) return res.status(200).send(d.message);
+    return res.status(200).send('');
+  } catch (err) {
+    console.error('[handlePkCashout]', err.message);
+    return res.status(200).send('Server error — try again');
+  }
+}
+
+/* ─── Penalty King: !continue [spot] ────────────────────────────────────── */
+
+async function handlePkContinue(req, res) {
+  const { user_id, requester } = req.query;
+  const w1 = req.query.w1 ?? '';
+  if (!user_id) return res.status(200).send('Missing user_id');
+
+  try {
+    const r = await fetch(
+      `${req.headers['x-forwarded-proto'] ?? 'https'}://${req.headers.host}/api/penalty-king`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'continue_game',
+          streamer_id: user_id,
+          player: (requester || '').toLowerCase().replace(/^@/, ''),
+          spot: w1 ? parseInt(w1, 10) : null,
+        }),
+      }
+    );
+    const d = await r.json();
+    if (!d.success && d.message) return res.status(200).send(d.message);
+    return res.status(200).send('');
+  } catch (err) {
+    console.error('[handlePkContinue]', err.message);
+    return res.status(200).send('Server error — try again');
+  }
 }

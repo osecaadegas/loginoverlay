@@ -660,6 +660,22 @@ registerWidget({
   },
 });
 
+// ─── 34. PENALTY KING ──────────────────────────────────
+import PenaltyKingWidget from './PenaltyKingWidget';
+import PenaltyKingConfig from './PenaltyKingConfig';
+registerWidget({
+  type: 'penalty_king',
+  label: 'Penalty King',
+  icon: '⚽',
+  description: 'Football penalty shootout mini-game with cash-out mechanic',
+  category: 'games',
+  component: PenaltyKingWidget,
+  configPanel: PenaltyKingConfig,
+  defaults: {
+    streamer_id: '',
+  },
+});
+
 // ─── 33. CONTAINER ─────────────────────────────────────
 import ContainerWidget from './ContainerWidget';
 import ContainerConfig from './ContainerConfig';

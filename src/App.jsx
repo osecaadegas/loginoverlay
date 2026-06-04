@@ -51,6 +51,7 @@ const DailyWheelPage = lazy(() => import('./components/DailyWheel/DailyWheelPage
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
+const PenaltyKingPage = lazy(() => import('./components/PenaltyKing/PenaltyKingPage'));
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -393,6 +394,7 @@ function App() {
                 <Route path="/games/roulette" element={<div style={{ padding: '20px', color: '#fff' }}>Roulette - Coming Soon</div>} />
                 <Route path="/games/blackjack" element={<BlackjackPremium />} />
                 <Route path="/games/mines" element={<Mines />} />
+                <Route path="/games/penalty-king" element={<PenaltyKingPage />} />
                 <Route path="/games/thelife" element={<TheLife />} />
                 <Route path="/games/thelife/season-pass" element={<SeasonPass />} />
                 <Route path="/games/thelife/news" element={<TheLifeJournal />} />
