@@ -15,11 +15,7 @@ export default function useSlotRequestListener() {
   const { user } = useAuth();
   const [srConfig, setSrConfig] = useState(null);
   const autoChannel = useTwitchChannel();
-  // Use a Set of Twitch message IDs instead of a time-based Map.
-  // Every Twitch PRIVMSG carries a globally unique `id` tag.
-  // Two browser tabs receiving the same message get the same ID — only the
-  // first tab to POST it will win the DB unique index; the second is a no-op.
-  const seenMsgIds = useRef(new Set());
+  const dedupRef = useRef(new Map());
 
   // ── Load slot_requests widget config ──
   useEffect(() => {
@@ -59,14 +55,8 @@ export default function useSlotRequestListener() {
         table: 'overlay_widgets',
         filter: `user_id=eq.${user.id}`,
       }, (payload) => {
-        // For DELETE events, payload.new is null — use payload.old or refetch
-        const row = payload.new || payload.old;
+        const row = payload.new;
         if (!row || row.widget_type !== 'slot_requests') return;
-
-        if (payload.eventType === 'DELETE') {
-          setSrConfig(null);
-          return;
-        }
 
         if (row.config?.srChatEnabled !== false) {
           setSrConfig({
@@ -109,24 +99,21 @@ export default function useSlotRequestListener() {
     const requester = msg.username;
     if (!requester) return;
 
-    // Primary dedup: Twitch message ID (same message in two tabs has the same ID)
-    const msgId = msg.id;
-    if (msgId) {
-      if (seenMsgIds.current.has(msgId)) return;
-      seenMsgIds.current.add(msgId);
-      // Keep the Set bounded — prune oldest half when it grows past 300 entries
-      if (seenMsgIds.current.size > 300) {
-        const arr = [...seenMsgIds.current];
-        seenMsgIds.current = new Set(arr.slice(-150));
-      }
+    // Dedup: skip if same viewer+slot within 15s
+    const dedupKey = `${requester.toLowerCase()}|${slotName.toLowerCase()}`;
+    const now = Date.now();
+    if (dedupRef.current.has(dedupKey) && now - dedupRef.current.get(dedupKey) < 15000) return;
+    dedupRef.current.set(dedupKey, now);
+
+    // Clean old entries
+    if (dedupRef.current.size > 50) {
+      for (const [k, t] of dedupRef.current) { if (now - t > 30000) dedupRef.current.delete(k); }
     }
 
-    // Fire to the API — POST with JSON body to avoid sensitive data in query string
-    fetch(`${window.location.origin}/api/chat-commands?cmd=sr`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ user_id: u.id, requester, slot: slotName }),
-    }).catch(err => console.error('[SR-Listener]', err));
+    // Fire to the API via GET — cmd is a query param, handler reads req.query for GET
+    fetch(
+      `${window.location.origin}/api/chat-commands?cmd=sr&user_id=${encodeURIComponent(u.id)}&requester=${encodeURIComponent(requester)}&slot=${encodeURIComponent(slotName)}`
+    ).catch(err => console.error('[SR-Listener]', err));
   }, []);
 
   // ── Connect to Twitch chat ──
