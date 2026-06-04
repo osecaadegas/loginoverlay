@@ -21,7 +21,9 @@
 
 /* ── Root ─────────────────────────────────────────────────── */
 .pk-overlay {
-  position: fixed;
+  /* Fill the slot/canvas position — NOT fixed, so it stays inside its
+     DraggableSlot bounds and the drag-overlay covers 100% of it.        */
+  position: absolute;
   inset: 0;
   display: flex;
   align-items: center;
@@ -29,7 +31,7 @@
   font-family: 'Segoe UI', system-ui, sans-serif;
   font-size: 14px;
   color: var(--pk-text);
-  overflow: hidden;
+  overflow: visible;
   /* Transparent background for OBS - content has its own bg */
 }
 
