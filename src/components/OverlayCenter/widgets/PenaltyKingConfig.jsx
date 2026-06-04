@@ -1,38 +1,35 @@
+import { useEffect } from 'react';
+import { useAuth } from '../../../context/AuthContext';
+
 /**
  * Config panel for the Penalty King overlay widget.
- * Allows the streamer to link their Supabase user ID
- * so the overlay knows which game session to display.
+ * The streamer_id is auto-filled from the logged-in user — no manual input needed.
  */
 export default function PenaltyKingConfig({ config = {}, onChange }) {
-  function handleChange(key, value) {
-    if (onChange) onChange({ ...config, [key]: value });
-  }
+  const { user } = useAuth();
+
+  // Auto-inject the logged-in user's ID whenever it's available
+  useEffect(() => {
+    if (user?.id && config.streamer_id !== user.id) {
+      if (onChange) onChange({ ...config, streamer_id: user.id });
+    }
+  }, [user?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-        <label style={{ fontSize: '0.75rem', color: 'var(--theme-muted, #64748b)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          Streamer User ID
-        </label>
-        <input
-          type="text"
-          value={config.streamer_id ?? ''}
-          onChange={e => handleChange('streamer_id', e.target.value.trim())}
-          placeholder="Your Supabase user UUID"
-          style={{
-            background: 'rgba(255,255,255,0.06)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            borderRadius: '6px',
-            padding: '8px 10px',
-            color: 'inherit',
-            fontSize: '0.875rem',
-            width: '100%',
-            boxSizing: 'border-box',
-          }}
-        />
-        <span style={{ fontSize: '0.7rem', color: 'var(--theme-muted, #64748b)' }}>
-          Found in your Penalty King admin page under Streamer User ID.
-        </span>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '8px',
+        padding: '8px 10px',
+        background: 'rgba(34,197,94,0.1)',
+        border: '1px solid rgba(34,197,94,0.25)',
+        borderRadius: '6px',
+        fontSize: '0.78rem',
+        color: '#4ade80',
+      }}>
+        <span>✓</span>
+        <span>Linked to your account{user?.email ? ` (${user.email})` : ''}</span>
       </div>
     </div>
   );
