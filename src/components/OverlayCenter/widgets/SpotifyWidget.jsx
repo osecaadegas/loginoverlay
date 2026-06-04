@@ -90,6 +90,7 @@ function SpotifyWidget({ config, widgetId, userId }) {
     case 'wave':         return <WaveStyle data={data} c={c} />;
     case 'neon':         return <NeonStyle data={data} c={c} />;
     case 'metal':        return <MetalPlayer data={data} c={c} />;
+    case 'compact_bar':  return <CompactBar data={data} c={c} />;
     case 'album_card':
     default:             return <AlbumCard data={data} c={c} />;
   }
@@ -550,6 +551,127 @@ function MetalPlayer({ data, c }) {
             background: 'linear-gradient(to top, #606878, #a0aabb)',
             animation: data.isPlaying ? `spotifyEq ${0.4 + i * 0.15}s ease-in-out infinite alternate` : 'none',
             height: data.isPlaying ? undefined : 4,
+          }} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════════════════
+   STYLE 8: Compact Bar — teal card with progress bar & equalizer
+   Matches the "Still D.R.E." screenshot aesthetic.
+   ══════════════════════════════════════════════════════════ */
+function CompactBar({ data, c }) {
+  const accent = c.accentColor || SPOTIFY_GREEN;
+
+  // Local progress ticker — advances every second while playing
+  const [progress, setProgress] = useState(data.progressMs || 0);
+  const trackKey = data.track + data.artist;
+
+  useEffect(() => {
+    setProgress(data.progressMs || 0);
+  }, [trackKey, data.progressMs]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (!data.isPlaying) return;
+    const id = setInterval(() => {
+      setProgress(p => {
+        const next = p + 1000;
+        return data.durationMs > 0 ? Math.min(next, data.durationMs) : next;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [data.isPlaying, data.durationMs, trackKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const pct = data.durationMs > 0 ? Math.min(100, (progress / data.durationMs) * 100) : 0;
+  const fmt = (ms) => {
+    const s = Math.floor(ms / 1000);
+    return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}`;
+  };
+
+  return (
+    <div style={{
+      width: '100%', height: '100%',
+      display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px',
+      background: 'linear-gradient(135deg, #0a1f1f 0%, #0d2828 100%)',
+      borderRadius: 12,
+      border: `1px solid ${accent}22`,
+      boxShadow: `0 4px 20px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.03)`,
+      fontFamily: "'Inter', 'Segoe UI', sans-serif",
+      overflow: 'hidden',
+    }}>
+      {/* Album art + bottom icons */}
+      <div style={{ position: 'relative', flexShrink: 0 }}>
+        {data.albumArt ? (
+          <img src={data.albumArt} alt="" style={{
+            width: 44, height: 44, borderRadius: 7, objectFit: 'cover',
+            boxShadow: '0 2px 10px rgba(0,0,0,0.6)',
+            display: 'block',
+          }} />
+        ) : (
+          <div style={{
+            width: 44, height: 44, borderRadius: 7, background: '#1a3333',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20,
+          }}>🎵</div>
+        )}
+        {/* Spotify + listener icons */}
+        <div style={{ display: 'flex', gap: 3, marginTop: 3, alignItems: 'center' }}>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill={accent} style={{ opacity: 0.7 }}>
+            <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/>
+          </svg>
+          <svg width="9" height="9" viewBox="0 0 24 24" fill="rgba(255,255,255,0.25)">
+            <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/>
+          </svg>
+        </div>
+      </div>
+
+      {/* Track info + progress bar */}
+      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <div style={{
+          fontSize: 14, fontWeight: 700, color: '#fff',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          lineHeight: 1.2,
+        }}>{data.track}</div>
+        <div style={{
+          fontSize: 12, fontWeight: 500, color: accent,
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+          lineHeight: 1.2,
+        }}>{data.artist}</div>
+        {/* Progress bar row */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 3 }}>
+          <div style={{
+            flex: 1, height: 3, borderRadius: 2,
+            background: 'rgba(255,255,255,0.1)', position: 'relative', overflow: 'hidden',
+          }}>
+            <div style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0,
+              width: `${pct}%`, borderRadius: 2, background: accent,
+              transition: 'width 1s linear',
+            }} />
+          </div>
+          {data.durationMs > 0 && (
+            <span style={{
+              fontSize: 10, color: 'rgba(255,255,255,0.45)', flexShrink: 0,
+              fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace',
+            }}>
+              {fmt(progress)} / {fmt(data.durationMs)}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Equalizer bars */}
+      <div style={{
+        display: 'flex', alignItems: 'flex-end', gap: 2, height: 22, flexShrink: 0,
+      }}>
+        {[0, 1, 2, 3].map((_, i) => (
+          <div key={i} style={{
+            width: 3, borderRadius: 1.5, background: accent,
+            height: data.isPlaying ? undefined : [4, 7, 5, 3][i],
+            animation: data.isPlaying
+              ? `spotifyEq ${0.35 + i * 0.12}s ease-in-out infinite alternate`
+              : 'none',
           }} />
         ))}
       </div>

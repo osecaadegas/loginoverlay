@@ -257,12 +257,7 @@ export default function PenaltyKingOverlay({ config = {} }) {
               </div>
               {/* Standing goalkeeper */}
               <div className="pk-gk pk-gk--idle">
-                <div className="pk-gk__head">😤</div>
-                <div className="pk-gk__torso">
-                  <span className="pk-gk__glove">🧤</span>
-                  <span className="pk-gk__label">GK</span>
-                  <span className="pk-gk__glove">🧤</span>
-                </div>
+                <img src="/GoalWidget/Golie_start.png" alt="GK" className="pk-gk__img" />
               </div>
             </div>
           </div>
@@ -362,12 +357,7 @@ export default function PenaltyKingOverlay({ config = {} }) {
                   animPhase === 'goal' && 'pk-gk--beaten',
                   animPhase === 'saved' && 'pk-gk--saved',
                 ].filter(Boolean).join(' ')}>
-                  <div className="pk-gk__head">😤</div>
-                  <div className="pk-gk__torso">
-                    <span className="pk-gk__glove pk-gk__glove--l">🧤</span>
-                    <span className="pk-gk__label">GK</span>
-                    <span className="pk-gk__glove pk-gk__glove--r">🧤</span>
-                  </div>
+                  <img src="/GoalWidget/Golie_start.png" alt="GK" className="pk-gk__img" />
                 </div>
 
                 {/* Ball */}

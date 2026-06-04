@@ -478,6 +478,7 @@ registerWidget({
     { id: 'wave',         icon: '🌊', label: 'Wave' },
     { id: 'neon',         icon: '💡', label: 'Neon' },
     { id: 'metal',        icon: '⚙️', label: 'Metal' },
+    { id: 'compact_bar',  icon: '📻', label: 'Compact Bar' },
   ],
   styleConfigKey: 'displayStyle',
   defaults: {

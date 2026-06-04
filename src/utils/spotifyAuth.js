@@ -222,5 +222,7 @@ export async function fetchNowPlaying(accessToken) {
     track: data.item.name || 'Unknown',
     isPlaying: data.is_playing,
     albumArt: data.item.album?.images?.[0]?.url || '',
+    progressMs: data.progress_ms || 0,
+    durationMs: data.item.duration_ms || 0,
   };
 }
