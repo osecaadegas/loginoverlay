@@ -324,7 +324,12 @@ export default function PenaltyKingOverlay({ config = {} }) {
                   animPhase === 'goal' && 'pk-gk--beaten',
                   animPhase === 'saved' && 'pk-gk--saved',
                 ].filter(Boolean).join(' ')}>
-                  🧤
+                  <div className="pk-gk__head">😤</div>
+                  <div className="pk-gk__torso">
+                    <span className="pk-gk__glove pk-gk__glove--l">🧤</span>
+                    <span className="pk-gk__label">GK</span>
+                    <span className="pk-gk__glove pk-gk__glove--r">🧤</span>
+                  </div>
                 </div>
 
                 {/* Ball */}

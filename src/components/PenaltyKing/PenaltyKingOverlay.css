@@ -260,10 +260,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 14px 10px;
+  padding: 14px 10px 28px;
   background: radial-gradient(ellipse at bottom, #1a2e1a 0%, rgba(10,10,20,0) 80%);
   gap: 10px;
-  overflow: hidden;
+  overflow: visible;
 }
 
 /* Field lines */
@@ -404,14 +404,47 @@
 /* ── Goalkeeper ───────────────────────────────────────────── */
 .pk-gk {
   position: absolute;
-  bottom: -8px;
+  bottom: 6px;
   left: 50%;
   transform: translateX(-50%);
-  font-size: 2.8rem;
   z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
   transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   transform-origin: bottom center;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.9));
+}
+
+.pk-gk__head {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.pk-gk__torso {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  border-radius: 5px;
+  padding: 4px 5px;
+  border: 2px solid rgba(0,0,0,0.5);
+  min-width: 56px;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.3);
+}
+
+.pk-gk__label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #000;
+  letter-spacing: 0.1em;
+}
+
+.pk-gk__glove {
+  font-size: 0.95rem;
+  line-height: 1;
 }
 
 .pk-gk--dive-left {
@@ -431,11 +464,16 @@
 }
 
 .pk-gk--beaten {
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6)) opacity(0.5);
+  filter: drop-shadow(0 3px 8px rgba(0,0,0,0.9)) opacity(0.45);
+}
+
+.pk-gk--saved .pk-gk__torso {
+  background: linear-gradient(135deg, #4ade80, #16a34a);
+  box-shadow: 0 0 20px rgba(34, 197, 94, 0.8), 0 2px 6px rgba(0,0,0,0.6);
 }
 
 .pk-gk--saved {
-  filter: drop-shadow(0 0 12px rgba(34, 197, 94, 0.8));
+  filter: drop-shadow(0 0 14px rgba(34, 197, 94, 0.9));
   animation: pk-gk-saved-jump 0.5s ease-out;
 }
 
