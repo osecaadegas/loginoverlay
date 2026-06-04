@@ -33,7 +33,12 @@ export default async function handler(req, res) {
 
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  const params = req.method === 'POST' ? (req.body || {}) : req.query;
+  // For POST requests the body carries the payload, but cmd/action may still
+  // arrive as URL query params (e.g. ?cmd=sr-reject with JSON body).
+  // Merge both so neither placement breaks.
+  const params = req.method === 'POST'
+    ? { ...(req.query || {}), ...(req.body || {}) }
+    : req.query;
   const { cmd, action } = params;
 
   // ─── Penalty King game-state routes (overlay + admin page) ───────────────
