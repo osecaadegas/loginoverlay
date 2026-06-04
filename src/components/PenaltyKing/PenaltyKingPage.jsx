@@ -24,7 +24,7 @@ export default function PenaltyKingPage() {
   const fetchState = useCallback(async () => {
     if (!streamerId) return;
     try {
-      const r = await fetch(`/api/penalty-king?action=get_state&streamer_id=${streamerId}`);
+      const r = await fetch(`/api/chat-commands?action=get_state&streamer_id=${streamerId}`);
       const d = await r.json();
       if (d.success) {
         setSession(d.session);
@@ -37,7 +37,7 @@ export default function PenaltyKingPage() {
   const fetchLeaderboard = useCallback(async () => {
     if (!streamerId) return;
     try {
-      const r = await fetch(`/api/penalty-king?action=get_leaderboard&streamer_id=${streamerId}`);
+      const r = await fetch(`/api/chat-commands?action=get_leaderboard&streamer_id=${streamerId}`);
       const d = await r.json();
       if (d.success) setLeaderboard(d.leaderboard ?? []);
     } catch { /* ignore */ }
@@ -56,7 +56,7 @@ export default function PenaltyKingPage() {
     if (!window.confirm('Force-end the active game session? The player will NOT be refunded.')) return;
     setResetting(true);
     try {
-      const r = await fetch('/api/penalty-king', {
+      const r = await fetch('/api/chat-commands', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'admin_reset', streamer_id: streamerId }),

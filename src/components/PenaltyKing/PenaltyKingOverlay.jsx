@@ -42,7 +42,7 @@ export default function PenaltyKingOverlay({ config = {} }) {
     if (!streamer_id) return null;
     try {
       const r = await fetch(
-        `/api/penalty-king?action=get_state&streamer_id=${encodeURIComponent(streamer_id)}`
+        `/api/chat-commands?action=get_state&streamer_id=${encodeURIComponent(streamer_id)}`
       );
       if (!r.ok) return null;
       return await r.json();
@@ -54,7 +54,7 @@ export default function PenaltyKingOverlay({ config = {} }) {
   const revealShot = useCallback(async () => {
     if (!streamer_id) return;
     try {
-      await fetch('/api/penalty-king', {
+      await fetch('/api/chat-commands', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'reveal_shot', streamer_id }),
