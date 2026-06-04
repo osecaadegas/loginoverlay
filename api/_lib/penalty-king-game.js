@@ -86,20 +86,24 @@ export async function getState(supabase, params) {
 
   let session = await getActiveSession(supabase, streamer_id);
 
-  // Auto-reveal: stuck in shooting > 15 s
+  // Auto-reveal: stuck in shooting > 15 s — re-fetch after so response shape is always correct
   if (session?.status === 'shooting' && session.shot_at) {
     const ageMs = Date.now() - new Date(session.shot_at).getTime();
-    if (ageMs > 15000) return revealShot(supabase, { ...params, _auto: true });
+    if (ageMs > 15000) {
+      await revealShot(supabase, { ...params, _auto: true });
+      session = await getActiveSession(supabase, streamer_id);
+    }
   }
 
-  // Auto-cashout: decision window expired
+  // Auto-cashout: decision window expired — trigger then clear active session reference
   if (session?.status === 'waiting_decision' && session.decision_deadline) {
     if (Date.now() > new Date(session.decision_deadline).getTime()) {
-      return cashout(supabase, {
+      await cashout(supabase, {
         ...params,
         player: session.player_username,
         _auto: true,
       });
+      session = null;
     }
   }
 
@@ -331,7 +335,7 @@ export async function continueGame(supabase, params) {
   const spot    = rawSpot >= 1 && rawSpot <= 6 ? rawSpot : Math.ceil(Math.random() * 6);
 
   const { gkSpot, isGoal }  = computeShot(spot);
-  const nextShotNumber      = session.streak + 2;
+  const nextShotNumber      = session.streak + 1;
 
   const { data: updated } = await supabase
     .from('penalty_king_sessions')

@@ -32,10 +32,17 @@ export default function PenaltyKingOverlay({ config = {} }) {
   const [countdown, setCountdown] = useState(null);
   const [decisionSeconds, setDecisionSeconds] = useState(null);
 
-  const animatingRef   = useRef(false);
-  const lastShotAtRef  = useRef(null);
+  const animatingRef    = useRef(false);
+  const lastShotAtRef   = useRef(null);
   const lastRevealedRef = useRef(null);
   const decisionTimerRef = useRef(null);
+  const animPhaseRef    = useRef('idle');
+
+  // Keeps animPhaseRef in sync so non-React callbacks can read current phase
+  const setPhase = useCallback((p) => {
+    animPhaseRef.current = p;
+    setAnimPhase(p);
+  }, []);
 
   // ─── Fetch state ────────────────────────────────────────────
   const fetchState = useCallback(async () => {
@@ -84,51 +91,60 @@ export default function PenaltyKingOverlay({ config = {} }) {
     lastShotAtRef.current = session.shot_at;
 
     try {
-      setAnimPhase('announce');
+      setPhase('announce');
       await delay(ANIM_ANNOUNCE_MS);
 
       for (let i = 3; i >= 1; i--) {
         setCountdown(i);
-        setAnimPhase('countdown');
+        setPhase('countdown');
         await delay(ANIM_COUNTDOWN_MS);
       }
       setCountdown(null);
 
-      setAnimPhase('kick');
+      setPhase('kick');
       await delay(ANIM_KICK_MS);
 
-      setAnimPhase('dive');
+      setPhase('dive');
       await delay(ANIM_DIVE_MS);
 
       // Call API to finalize result
       await revealShot();
 
-      setAnimPhase(session.is_goal ? 'goal' : 'saved');
+      setPhase(session.is_goal ? 'goal' : 'saved');
       await delay(ANIM_RESULT_MS);
 
       if (session.is_goal) {
-        setAnimPhase('celebration');
+        setPhase('celebration');
         await delay(ANIM_CELEBRATION_MS);
       }
 
       // Re-fetch to get updated state
       const data = await fetchState();
-      if (data) {
+      if (data?.session?.status === 'waiting_decision') {
+        // Goal + player still needs to decide — update game data normally
         setGameData(data);
-        if (data.session?.status === 'waiting_decision') {
-          setAnimPhase('decision');
-          lastRevealedRef.current = data.session.id + data.session.streak;
-          startDecisionTimer(data.session.decision_deadline);
-        } else {
-          setAnimPhase('ended');
+        setPhase('decision');
+        lastRevealedRef.current = data.session.id + data.session.streak;
+        startDecisionTimer(data.session.decision_deadline);
+      } else if (data) {
+        // Miss (or game ended another way) — keep existing gameData so session
+        // info stays visible during the ended screen, then clear after delay
+        setPhase('ended');
+        animatingRef.current = false; // allow new game detection during ended display
+        await delay(4000);
+        if (animPhaseRef.current === 'ended') {
+          // Still showing ended screen (no new game started) — go idle
+          setGameData({ session: null, shots: [], multipliers: MULTIPLIERS });
+          setPhase('idle');
         }
+        return; // skip finally setting animatingRef again
       } else {
-        setAnimPhase('idle');
+        setPhase('idle');
       }
     } finally {
       animatingRef.current = false;
     }
-  }, [fetchState, revealShot, startDecisionTimer]);
+  }, [fetchState, revealShot, startDecisionTimer, setPhase]);
 
   // ─── Polling loop ────────────────────────────────────────────
   useEffect(() => {
@@ -140,14 +156,17 @@ export default function PenaltyKingOverlay({ config = {} }) {
       if (!mounted || !data) return;
       const { session } = data;
 
-      setGameData(data);
-
       if (!session) {
-        setAnimPhase('idle');
+        // Don't immediately clear during the ended display — runAnimation manages its own cleanup
+        if (animPhaseRef.current === 'ended') return;
+        setGameData(data);
+        setPhase('idle');
         stopDecisionTimer();
         animatingRef.current = false;
         return;
       }
+
+      setGameData(data);
 
       if (session.status === 'shooting' && !animatingRef.current) {
         // Detect new shot (different shot_at than last animated)
@@ -164,14 +183,14 @@ export default function PenaltyKingOverlay({ config = {} }) {
         const revealKey = session.id + session.streak;
         if (revealKey !== lastRevealedRef.current) {
           lastRevealedRef.current = revealKey;
-          setAnimPhase('decision');
+          setPhase('decision');
           startDecisionTimer(session.decision_deadline);
         }
         return;
       }
 
       if (session.status === 'ended' && !animatingRef.current) {
-        setAnimPhase('ended');
+        setPhase('ended');
         stopDecisionTimer();
       }
     }
@@ -183,10 +202,10 @@ export default function PenaltyKingOverlay({ config = {} }) {
       clearInterval(timer);
       stopDecisionTimer();
     };
-  }, [fetchState, runAnimation, startDecisionTimer, stopDecisionTimer]);
+  }, [fetchState, runAnimation, startDecisionTimer, stopDecisionTimer, setPhase]);
 
   // ─── Derived state ───────────────────────────────────────────
-  const { session, shots } = gameData;
+  const { session, shots = [] } = gameData; // shots defaults to [] to guard against non-standard responses
   const streak      = session?.streak ?? 0;
   const multIdx     = session?.multiplier_idx ?? 0;
   const multiplier  = getMultiplier(multIdx);
@@ -388,20 +407,21 @@ export default function PenaltyKingOverlay({ config = {} }) {
                 </div>
               )}
 
-              {/* Final ended screen */}
-              {animPhase === 'ended' && session.status === 'ended' && (
+              {/* Final ended screen — session.status can't be 'ended' via getActiveSession;
+                  use animPhase directly; session still holds last shooting data for display */}
+              {animPhase === 'ended' && (
                 <div className="pk-ended">
-                  {(session.final_payout ?? 0) > 0 ? (
+                  {(session?.final_payout ?? 0) > 0 ? (
                     <>
                       <div className="pk-ended__emoji">💰</div>
                       <div className="pk-ended__label">CASHED OUT</div>
-                      <div className="pk-ended__payout">{(session.final_payout ?? 0).toLocaleString()} pts</div>
+                      <div className="pk-ended__payout">{(session?.final_payout ?? 0).toLocaleString()} pts</div>
                     </>
                   ) : (
                     <>
                       <div className="pk-ended__emoji">😢</div>
                       <div className="pk-ended__label">SHOT SAVED</div>
-                      <div className="pk-ended__sublabel">Streak: {session.streak} goals</div>
+                      <div className="pk-ended__sublabel">Streak: {session?.streak ?? 0} goals</div>
                     </>
                   )}
                 </div>
