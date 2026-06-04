@@ -296,7 +296,8 @@ function LayoutWrapper({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
-  const showSidebar = location.pathname !== '/overlay' && 
+  const showSidebar = location.pathname !== '/' &&
+                      location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
                       !isWidgetRoute &&
                       !isOBSOverlay &&
