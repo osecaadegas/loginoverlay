@@ -71,39 +71,9 @@ export default function PricingPage() {
     }
   }, [success, canceled]);
 
-  const handleSubscribe = async (plan) => {
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-
-    setLoadingPlan(plan);
-    setMessage(null);
-
-    try {
-      const res = await fetch('/api/stripe/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          userId: user.id,
-          userEmail: user.email,
-          plan,
-        }),
-      });
-
-      const data = await res.json();
-
-      if (data.url) {
-        window.location.href = data.url;
-      } else {
-        setMessage({ type: 'error', text: data.error || 'Something went wrong.' });
-        setLoadingPlan(null);
-      }
-    } catch (err) {
-      console.error('Checkout error:', err);
-      setMessage({ type: 'error', text: 'Failed to start checkout. Please try again.' });
-      setLoadingPlan(null);
-    }
+  const handleSubscribe = async () => {
+    if (!user) { navigate('/login'); return; }
+    setMessage({ type: 'info', text: 'Online payments coming soon. Contact the admin to upgrade your plan.' });
   };
 
   const formatDate = (date) => {
@@ -191,7 +161,7 @@ export default function PricingPage() {
 
               <button
                 className={`pricing-card-btn ${plan.badge === 'BEST VALUE' ? 'pricing-card-btn--featured' : ''}`}
-                onClick={() => handleSubscribe(plan.months)}
+                onClick={() => handleSubscribe()}
                 disabled={loadingPlan !== null}
               >
                 {loadingPlan === plan.months ? (
@@ -214,14 +184,7 @@ export default function PricingPage() {
         {/* Info footer */}
         <div className="pricing-footer">
           <p className="pricing-footer-text">
-            Auto-renewing subscription — cancel anytime from your Stripe portal.
-          </p>
-          <p className="pricing-footer-secure">
-            <svg className="pricing-lock-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0110 0v4" />
-            </svg>
-            Secure payment powered by Stripe
+            Payment system coming soon. Contact the admin to get premium access.
           </p>
         </div>
       </div>

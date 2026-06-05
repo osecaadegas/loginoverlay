@@ -29,11 +29,13 @@ CREATE INDEX IF NOT EXISTS idx_api_keys_user ON streamer_api_keys(user_id);
 ALTER TABLE streamer_api_keys ENABLE ROW LEVEL SECURITY;
 
 -- Users can manage their own key
+DROP POLICY IF EXISTS "Users manage own API key" ON streamer_api_keys;
 CREATE POLICY "Users manage own API key"
   ON streamer_api_keys FOR ALL
   USING (auth.uid() = user_id);
 
 -- Admin can see all keys (for approval / revocation)
+DROP POLICY IF EXISTS "Admin can view all API keys" ON streamer_api_keys;
 CREATE POLICY "Admin can view all API keys"
   ON streamer_api_keys FOR SELECT
   USING (
@@ -46,6 +48,7 @@ CREATE POLICY "Admin can view all API keys"
   );
 
 -- Admin can update any key (activate/deactivate)
+DROP POLICY IF EXISTS "Admin can update all API keys" ON streamer_api_keys;
 CREATE POLICY "Admin can update all API keys"
   ON streamer_api_keys FOR UPDATE
   USING (
@@ -70,11 +73,13 @@ CREATE TABLE IF NOT EXISTS streamer_api_access (
 ALTER TABLE streamer_api_access ENABLE ROW LEVEL SECURITY;
 
 -- Users can read their own access status
+DROP POLICY IF EXISTS "Users see own API access" ON streamer_api_access;
 CREATE POLICY "Users see own API access"
   ON streamer_api_access FOR SELECT
   USING (auth.uid() = user_id);
 
 -- Admin full control
+DROP POLICY IF EXISTS "Admin manages API access" ON streamer_api_access;
 CREATE POLICY "Admin manages API access"
   ON streamer_api_access FOR ALL
   USING (

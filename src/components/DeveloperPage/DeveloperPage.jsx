@@ -90,7 +90,7 @@ function OverviewPanel() {
         <InfoCard title="Database" value="Supabase (PostgreSQL)" icon="🗄️" />
         <InfoCard title="Styling" value="Tailwind CSS + Custom CSS" icon="🎨" />
         <InfoCard title="Auth" value="Twitch · Discord · Google" icon="🔐" />
-        <InfoCard title="Payments" value="Stripe Subscriptions" icon="💳" />
+        <InfoCard title="Payments" value="Coming Soon" icon="💳" />
         <InfoCard title="Realtime" value="Supabase Realtime" icon="📡" />
         <InfoCard title="Domain" value="osecaadegas.pt" icon="🌐" />
       </div>
@@ -102,9 +102,6 @@ function OverviewPanel() {
         </a>
         <a href="https://vercel.com/dashboard" target="_blank" rel="noopener noreferrer" className="dev-link">
           Vercel Dashboard →
-        </a>
-        <a href="https://dashboard.stripe.com" target="_blank" rel="noopener noreferrer" className="dev-link">
-          Stripe Dashboard →
         </a>
         <a href="https://dev.twitch.tv/console" target="_blank" rel="noopener noreferrer" className="dev-link">
           Twitch Developer Console →
@@ -187,8 +184,6 @@ function RoutesPanel() {
 /* ── Environment Panel ── */
 function ApiPanel() {
   const endpoints = [
-    { method: 'POST', path: '/api/stripe/create-checkout', desc: 'Create Stripe subscription checkout session' },
-    { method: 'POST', path: '/api/stripe/webhook', desc: 'Stripe webhook (checkout, invoice, cancellation)' },
     { method: 'POST', path: '/api/blackjack', desc: 'Blackjack game server actions' },
     { method: 'POST', path: '/api/mines', desc: 'Mines game server actions' },
     { method: 'POST', path: '/api/thelife-wipe', desc: 'The Life season wipe' },
@@ -240,12 +235,6 @@ function EnvPanel() {
   ];
 
   const serverVars = [
-    { key: 'STRIPE_SECRET_KEY', desc: 'Stripe secret API key' },
-    { key: 'STRIPE_WEBHOOK_SECRET', desc: 'Stripe webhook signing secret' },
-    { key: 'STRIPE_PRICE_1M', desc: 'Stripe price ID — 1 month (€15)' },
-    { key: 'STRIPE_PRICE_3M', desc: 'Stripe price ID — 3 months (€40)' },
-    { key: 'STRIPE_PRICE_6M', desc: 'Stripe price ID — 6 months (€60)' },
-    { key: 'STRIPE_PRICE_12M', desc: 'Stripe price ID — 12 months (€120)' },
     { key: 'SUPABASE_SERVICE_ROLE_KEY', desc: 'Supabase service role key (server only)' },
     { key: 'SITE_URL', desc: 'Production URL for redirects' },
   ];
