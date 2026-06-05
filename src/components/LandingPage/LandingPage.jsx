@@ -284,16 +284,6 @@ export default function LandingPage() {
           <section className="lp-section">
             <h2 className="lp-section-h2">Choose Your Premium Plan</h2>
 
-            <div className="lp-billing-row">
-              <span className={!billingAnnual ? 'lp-bill-active' : ''}>Monthly</span>
-              <button className={`lp-toggle ${billingAnnual ? 'lp-toggle--on' : ''}`} onClick={() => setBillingAnnual(b => !b)}>
-                <div className="lp-toggle-knob" />
-              </button>
-              <span className={billingAnnual ? 'lp-bill-active' : ''}>
-                Annual <span className="lp-save-badge">Save up to 20%</span>
-              </span>
-            </div>
-
             <div className="lp-pricing-grid">
               {activePlans.map(plan => {
                 const showAnnual = billingAnnual && plan.priceAnnual;
