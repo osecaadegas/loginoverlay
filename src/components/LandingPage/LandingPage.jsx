@@ -57,60 +57,101 @@ function Counter({ end, suffix = '', prefix = '' }) {
   return <span ref={ref}>{prefix}{count.toLocaleString()}{suffix}</span>;
 }
 
-/* ─── Hero gaming mockup ─── */
+/* ─── Hero dashboard mockup ─── */
 function HeroGameMockup() {
   return (
-    <div className="lp-game-mockup">
-      {/* Glow effects */}
-      <div className="lp-gm-glow lp-gm-glow-1" />
-      <div className="lp-gm-glow lp-gm-glow-2" />
+    <div className="lp-hero-right">
+      {/* Lightning bolts */}
+      <div className="lp-lightning lp-lightning-1">⚡</div>
+      <div className="lp-lightning lp-lightning-2">⚡</div>
 
-      {/* Browser chrome */}
-      <div className="lp-gm-chrome">
-        <div className="lp-gm-dots"><span style={{ background: '#ef4444' }} /><span style={{ background: '#f59e0b' }} /><span style={{ background: '#10b981' }} /></div>
-        <span className="lp-gm-url">overlay.secaadegas.pt</span>
-        <div className="lp-live-badge">● LIVE</div>
-      </div>
+      {/* Floating 3D icons */}
+      <div className="lp-float-icon lp-float-rocket">🚀</div>
+      <div className="lp-float-icon lp-float-trophy">🏆</div>
+      <div className="lp-float-icon lp-float-heart">💜</div>
 
-      {/* Body */}
-      <div className="lp-gm-body">
-        {/* Left side - user info card */}
-        <div className="lp-gm-user-card">
-          <div className="lp-gm-avatar">🎮</div>
-          <div>
-            <div className="lp-gm-uname">Streamer</div>
-            <div className="lp-gm-ulvl">Pro Creator</div>
+      {/* Dashboard tablet */}
+      <div className="lp-dash-tablet">
+        {/* Top bar */}
+        <div className="lp-dash-topbar">
+          <div className="lp-dash-brand">
+            <span className="lp-dash-brand-icon">⬡</span>
+            <span className="lp-dash-brand-name">SecaAdegas</span>
+          </div>
+          <div className="lp-dash-topbar-right">
+            <span className="lp-dash-icon-btn">📅</span>
+            <span className="lp-dash-icon-btn">🔔</span>
+            <span className="lp-dash-live">▶ AO VIVO</span>
           </div>
         </div>
 
-        {/* Center slot machine */}
-        <div className="lp-gm-center">
-          <div className="lp-gm-slot-frame">
-            <div className="lp-gm-slot-header">JACKPOT SLOTS</div>
-            <div className="lp-gm-reels">
-              {['7', '🍒', '7'].map((r, i) => (
-                <div key={i} className="lp-gm-reel">
-                  <span>{r}</span>
-                </div>
-              ))}
-            </div>
-            <div className="lp-gm-spin-glow" />
-          </div>
-          {/* Coins */}
-          {[...Array(6)].map((_, i) => (
-            <div key={i} className={`lp-gm-coin lp-gm-coin-${i + 1}`}>💰</div>
-          ))}
-        </div>
-
-        {/* Revenue card overlay */}
-        <div className="lp-gm-revenue-card">
-          <div className="lp-gm-rev-label">Monthly Revenue</div>
-          <div className="lp-gm-rev-value">€ — —</div>
-          <div className="lp-gm-rev-trend">↑ Growing</div>
-          <div className="lp-gm-rev-chart">
-            {[30, 50, 40, 70, 55, 80, 90].map((h, i) => (
-              <div key={i} className="lp-gm-rev-bar" style={{ height: `${h}%` }} />
+        {/* Main area */}
+        <div className="lp-dash-body">
+          {/* Sidebar */}
+          <div className="lp-dash-sidebar">
+            {['Dashboard', 'Alertas', 'Chatbot', 'Metas', 'Giveaways', 'Lealdade', 'Analytics', 'Config.'].map((item, i) => (
+              <div key={item} className={`lp-dash-sitem${i === 0 ? ' lp-dash-sitem--on' : ''}`}>{item}</div>
             ))}
+          </div>
+
+          {/* Content */}
+          <div className="lp-dash-main">
+            {/* Stat cards */}
+            <div className="lp-dash-stats">
+              <div className="lp-dash-stat">
+                <div className="lp-dash-stat-lbl">Audiência</div>
+                <div className="lp-dash-stat-val">12.5K <span className="lp-dash-up">+28%</span></div>
+                <div className="lp-dash-stat-sub">vs última semana</div>
+                <div className="lp-dash-spark lp-dash-spark--purple" />
+              </div>
+              <div className="lp-dash-stat">
+                <div className="lp-dash-stat-lbl">Engajamento</div>
+                <div className="lp-dash-stat-val">8.9K <span className="lp-dash-up">+35%</span></div>
+                <div className="lp-dash-stat-sub">vs última semana</div>
+                <div className="lp-dash-spark lp-dash-spark--bars" />
+              </div>
+              <div className="lp-dash-stat">
+                <div className="lp-dash-stat-lbl">Receita</div>
+                <div className="lp-dash-stat-val">€4.7K <span className="lp-dash-up">+42%</span></div>
+                <div className="lp-dash-stat-sub">vs última semana</div>
+                <div className="lp-dash-spark lp-dash-spark--pink" />
+              </div>
+            </div>
+
+            {/* Bottom row */}
+            <div className="lp-dash-bottom">
+              <div className="lp-dash-goal">
+                <div className="lp-dash-goal-lbl">Meta de inscritos</div>
+                <div className="lp-dash-goal-val">8.750 <span>/ 10.000</span></div>
+                <div className="lp-dash-prog-track">
+                  <div className="lp-dash-prog-bar" style={{ width: '87%' }} />
+                </div>
+                <div className="lp-dash-goal-pct">87%</div>
+              </div>
+              <div className="lp-dash-alerts">
+                <div className="lp-dash-alerts-lbl">Alertas recentes</div>
+                {[
+                  { icon: '💜', text: 'Novo seguidor',    time: 'há 2m' },
+                  { icon: '💰', text: 'Doação recebida',  time: 'há 5m' },
+                  { icon: '✅', text: 'Novo inscrito',    time: 'há 7m' },
+                ].map(a => (
+                  <div key={a.text} className="lp-dash-alert-row">
+                    <span>{a.icon}</span>
+                    <span className="lp-dash-alert-text">{a.text}</span>
+                    <span className="lp-dash-alert-time">{a.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Trust strip */}
+            <div className="lp-dash-trust">
+              <span>⭐ Confiado por milhares de streamers</span>
+              <div className="lp-dash-avatars">
+                {['🧑', '👩', '🧔'].map((a, i) => <span key={i} className="lp-dash-av">{a}</span>)}
+              </div>
+              <span className="lp-dash-trust-count">+10k streamers ativos</span>
+            </div>
           </div>
         </div>
       </div>
@@ -183,27 +224,41 @@ export default function LandingPage() {
               <div className="lp-hero-copy">
                 <div className="lp-badge">
                   <span className="lp-badge-dot" />
-                  #1 OVERLAY &amp; PARTNERSHIP PLATFORM
+                  A PLATAFORMA COMPLETA PARA STREAMERS
                 </div>
                 <h1 className="lp-h1">
-                  <span className="lp-grad">Grow Your Stream</span><br />
-                  <span className="lp-grad">&amp; Earn More</span>
+                  Impulsione sua live<br />
+                  <span className="lp-grad">&amp; ganhe mais!</span>
                 </h1>
                 <p className="lp-hero-sub">
-                  Premium overlays, interactive widgets, affiliate partnerships
-                  and advanced tools to grow your audience and income.
+                  Ferramentas poderosas para crescer sua audiência,
+                  engajar sua comunidade e aumentar sua renda.
                 </p>
                 <div className="lp-hero-ctas">
-                  <button className="lp-btn-primary" onClick={() => navigate('/offers')}>
-                    Explore Partnerships
+                  <button className="lp-btn-primary" onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}>
+                    🚀 COMECE AGORA
                   </button>
-                  <button className="lp-btn-outline-hero" onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}>
-                    View Dashboard
+                  <button className="lp-btn-outline-hero" onClick={() => navigate('/offers')}>
+                    ▶ SAIBA MAIS
                   </button>
+                </div>
+                <div className="lp-hero-feats">
+                  <div className="lp-hero-feat">
+                    <span className="lp-hero-feat-icon">👥</span>
+                    <div><div className="lp-hero-feat-title">Mais audiência</div><div className="lp-hero-feat-sub">Cresça sua comunidade</div></div>
+                  </div>
+                  <div className="lp-hero-feat">
+                    <span className="lp-hero-feat-icon">📈</span>
+                    <div><div className="lp-hero-feat-title">Mais engajamento</div><div className="lp-hero-feat-sub">Interaja e retenha mais</div></div>
+                  </div>
+                  <div className="lp-hero-feat">
+                    <span className="lp-hero-feat-icon">💰</span>
+                    <div><div className="lp-hero-feat-title">Mais ganhos</div><div className="lp-hero-feat-sub">Monetize seu conteúdo</div></div>
+                  </div>
                 </div>
               </div>
 
-              {/* Right: gaming image */}
+              {/* Right: dashboard mockup */}
               <HeroGameMockup />
             </div>
           </section>
