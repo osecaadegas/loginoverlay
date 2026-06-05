@@ -208,6 +208,47 @@ export default function LandingPage() {
             </div>
           </section>
 
+          {/* ════ PRICING ════ */}
+          <section className="lp-section">
+            <h2 className="lp-section-h2">Choose Your Premium Plan</h2>
+
+            <div className="lp-billing-row">
+              <span className={!billingAnnual ? 'lp-bill-active' : ''}>Monthly</span>
+              <button className={`lp-toggle ${billingAnnual ? 'lp-toggle--on' : ''}`} onClick={() => setBillingAnnual(b => !b)}>
+                <div className="lp-toggle-knob" />
+              </button>
+              <span className={billingAnnual ? 'lp-bill-active' : ''}>
+                Annual <span className="lp-save-badge">Save up to 20%</span>
+              </span>
+            </div>
+
+            <div className="lp-pricing-grid">
+              {PRICING.map(plan => (
+                <div key={plan.id} className={`lp-price-card ${plan.highlight ? 'lp-price-card--hi' : ''}`}>
+                  {plan.badge && (
+                    <div className={`lp-price-badge lp-price-badge--${plan.badgeType}`}>{plan.badge}</div>
+                  )}
+                  <div className="lp-price-name">{plan.name}</div>
+                  <div className="lp-price-desc">{plan.desc}</div>
+                  <div className="lp-price-amount">
+                    <span className="lp-price-num">{plan.price}</span>
+                    <span className="lp-price-period">{plan.period}</span>
+                  </div>
+                  {plan.subPrice && <div className="lp-price-sub">{plan.subPrice}</div>}
+                  <ul className="lp-price-list">
+                    {plan.features.map(f => (
+                      <li key={f}><span className="lp-tick">✓</span>{f}</li>
+                    ))}
+                  </ul>
+                  <button
+                    className={plan.highlight ? 'lp-btn-primary lp-price-cta' : 'lp-btn-price-outline lp-price-cta'}
+                    onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}
+                  >{plan.cta}</button>
+                </div>
+              ))}
+            </div>
+          </section>
+
           {/* ════ FEATURED PARTNERS ════ */}
           <section className="lp-section">
             <div className="lp-section-top">
@@ -329,47 +370,6 @@ export default function LandingPage() {
                   })}
                 </div>
               )}
-            </div>
-          </section>
-
-          {/* ════ PRICING ════ */}
-          <section className="lp-section">
-            <h2 className="lp-section-h2">Choose Your Premium Plan</h2>
-
-            <div className="lp-billing-row">
-              <span className={!billingAnnual ? 'lp-bill-active' : ''}>Monthly</span>
-              <button className={`lp-toggle ${billingAnnual ? 'lp-toggle--on' : ''}`} onClick={() => setBillingAnnual(b => !b)}>
-                <div className="lp-toggle-knob" />
-              </button>
-              <span className={billingAnnual ? 'lp-bill-active' : ''}>
-                Annual <span className="lp-save-badge">Save up to 20%</span>
-              </span>
-            </div>
-
-            <div className="lp-pricing-grid">
-              {PRICING.map(plan => (
-                <div key={plan.id} className={`lp-price-card ${plan.highlight ? 'lp-price-card--hi' : ''}`}>
-                  {plan.badge && (
-                    <div className={`lp-price-badge lp-price-badge--${plan.badgeType}`}>{plan.badge}</div>
-                  )}
-                  <div className="lp-price-name">{plan.name}</div>
-                  <div className="lp-price-desc">{plan.desc}</div>
-                  <div className="lp-price-amount">
-                    <span className="lp-price-num">{plan.price}</span>
-                    <span className="lp-price-period">{plan.period}</span>
-                  </div>
-                  {plan.subPrice && <div className="lp-price-sub">{plan.subPrice}</div>}
-                  <ul className="lp-price-list">
-                    {plan.features.map(f => (
-                      <li key={f}><span className="lp-tick">✓</span>{f}</li>
-                    ))}
-                  </ul>
-                  <button
-                    className={plan.highlight ? 'lp-btn-primary lp-price-cta' : 'lp-btn-price-outline lp-price-cta'}
-                    onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}
-                  >{plan.cta}</button>
-                </div>
-              ))}
             </div>
           </section>
 
