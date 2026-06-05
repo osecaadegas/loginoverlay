@@ -3,14 +3,60 @@
  */
 
 /**
+ * Generate a full single-elimination bracket from a players array.
+ * Returns { rounds: [[matches], ...] }
+ */
+export function generateBracket(players = []) {
+  if (players.length < 2) return { rounds: [] };
+  const rounds = [];
+  let current = [];
+  for (let i = 0; i < Math.floor(players.length / 2); i++) {
+    current.push({
+      id: `r1-m${i}`,
+      round: 1,
+      player1: players[i * 2] || null,
+      player2: players[i * 2 + 1] || null,
+      winner: null,
+    });
+  }
+  rounds.push(current);
+  // Build subsequent empty rounds
+  while (current.length > 1) {
+    const next = [];
+    for (let i = 0; i < Math.floor(current.length / 2); i++) {
+      next.push({
+        id: `r${rounds.length + 1}-m${i}`,
+        round: rounds.length + 1,
+        player1: null,
+        player2: null,
+        winner: null,
+      });
+    }
+    rounds.push(next);
+    current = next;
+  }
+  return { rounds };
+}
+
+/**
+ * Update a match in the bracket and return a new bracket object.
+ */
+export function updateBracketMatch(bracket, matchId, updates) {
+  return {
+    ...bracket,
+    rounds: bracket.rounds.map(round =>
+      round.map(m => m.id === matchId ? { ...m, ...updates } : m)
+    ),
+  };
+}
+
+/**
  * Seed players into a single-elimination bracket.
  * Returns an array of match objects for round 1.
  */
 export function seedPlayers(players = []) {
-  const count = players.length;
-  if (count < 2) return [];
   const matches = [];
-  for (let i = 0; i < Math.floor(count / 2); i++) {
+  for (let i = 0; i < Math.floor(players.length / 2); i++) {
     matches.push({
       id: `m-${i}`,
       round: 1,
