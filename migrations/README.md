@@ -1,89 +1,47 @@
 # Migration Catalog
 
-This folder contains active schema history plus consolidated cleanup migrations for retired systems.
+The `migrations/` folder has been reduced to a numbered baseline that keeps only the active schema needed by the current app and the two explicit cleanup passes for older databases.
 
-The repository audit on 2026-06-05 removed old broad drop scripts because they were too risky and contradicted live runtime behavior. Cleanup is now split into targeted migrations.
+## Ordered baseline
 
-## Active runtime groups
+1. `001_core_auth_profiles.sql`
+	Core profiles, public avatar storage bucket, user roles, Twitch profile sync, and auth helper RPCs.
 
-### Core auth, admin, and profiles
+2. `002_overlay_runtime.sql`
+	Overlay instances, themes, widgets, runtime state, user overlay state, giveaways, tournaments, and shared presets.
 
-- `create_user_profiles.sql`
-- `add_admin_users_table.sql`
-- `add_admin_actions_table.sql`
-- `enable_multiple_roles.sql`
-- `fix_user_roles_simple.sql`
-- profile and role follow-up migrations
+3. `003_slots_ingestion_and_requests.sql`
+	Slots catalog, providers, pending slots, slot requests, ingestion cache/logs, user slot records, and slot modder access.
 
-### Overlay Control Center and overlay runtime
+4. `004_streamelements_inventory_and_api_access.sql`
+	Inventory, StreamElements connections, redemption items/history, points helpers, streamer API keys, and Spotify tokens.
 
-- `20260225_overlay_control_center.sql`
-- `create_user_overlay_system.sql`
-- `add_canvas_resolution.sql`
-- `add_metal_color_to_themes.sql`
-- `add_shared_overlay_presets.sql`
-- overlay/widget hardening and RLS fixes tied to current tables
+5. `005_offers_landing_and_stream_features.sql`
+	Casino offers, offer click tracking, landing page pricing/configuration, stream highlights, clip support, and shoutout alerts.
 
-### Slots, offers, and stream features
+6. `006_giveaways_and_daily_wheel.sql`
+	Public giveaways, profile backfill for giveaway users, giveaway visibility policy, daily wheel prizes, and daily wheel spins.
 
-- `create_slots_table.sql`
-- `enhance_slots_table.sql`
-- `add_slot_providers_and_extra_fields.sql`
-- `add_pending_slots.sql`
-- `add_slot_requests.sql`
-- `harden_slot_requests_*.sql`
-- `create_casino_offers.sql`
-- `add_casino_offers_*.sql`
-- `offer_click_tracking.sql`
-- `slot_ingestion_schema.sql`
+7. `007_guess_balance_and_bonus_hunt.sql`
+	Guess-the-balance sessions, guesses, slot votes, transfer passwords, moderator policy fixes, and bonus hunt history.
 
-### Community systems and integrations
+8. `008_betting_and_penalty_king.sql`
+	Betting contests, StreamElements betting mode/finalization RPCs, payouts, outcomes, and penalty king sessions/shots.
 
-- `create_giveaways.sql`
-- `fix_giveaway_tables.sql`
-- `add_betting_contests_final.sql`
-- `create_daily_wheel_system.sql`
-- `add_bonus_hunt_history.sql`
-- `add_bonus_hunt_sessions.sql`
-- `add_shoutout_alerts.sql`
-- `add_penalty_king.sql`
-- `STREAMELEMENTS_SETUP.sql`
-- `add_spotify_tokens.sql`
-- `analytics_system.sql`
-- `analytics_rpcs.sql`
+9. `009_analytics.sql`
+	Analytics tables, views, RPC helpers, and the compatibility `increment_field` RPC still used by the analytics API.
 
-### Landing page and streamer tooling
+10. `010_translation_and_localization.sql`
+	 Translation tables, supported languages, and profile language preference support.
 
-- `add_landing_page_customization.sql`
-- `add_landing_partner_controls.sql`
-- `add_streamer_api_keys.sql`
-- `create_stream_highlights.sql`
-- `add_clip_video_url.sql`
+11. `011_cleanup_legacy_dead_schema.sql`
+	 Drops verified dead Stripe/subscription, old overlay/widget, and retired game schema from older databases.
 
-## Mixed migrations intentionally kept
+12. `012_cleanup_retired_thelife_and_extension.sql`
+	 Drops retired The Life, season pass, and Twitch extension schema from older databases.
 
-Some older migrations still remain because they continue to support active schema even if they mention retired tables in comments or in legacy compatibility paths.
+## Notes
 
-- `add_betting_contests.sql`, `add_betting_contests_se_mode.sql`, and `add_betting_contests_final.sql`
-- `fix_giveaway_tables.sql`
-- `create_games_system.sql`
-- `add_twitch_id_auto_populate.sql` and `add_twitch_username_to_profiles.sql`
-
-## Retired system cleanup
-
-Use [20260605_remove_legacy_dead_schema.sql](./20260605_remove_legacy_dead_schema.sql) to remove verified dead schema from an existing database:
-
-- Stripe/payment and subscription tables/functions
-- old SaaS overlay tables such as `overlays`, `widgets`, `widget_state`, and `widget_types`
-- abandoned theme tables that depend on the old overlay schema
-- roulette, blackjack, and mines tables
-
-Use [20260605_remove_thelife_and_twitch_extension_schema.sql](./20260605_remove_thelife_and_twitch_extension_schema.sql) to remove retired The Life, season pass, and Twitch extension schema from an older database after code cleanup.
-
-The dedicated The Life and Twitch extension migration lineage was removed from this folder after retirement. If an older database still contains those objects, use the cleanup migration above instead of replaying deleted feature migrations.
-
-## Do not remove without code cleanup first
-
-- current overlay tables: `overlay_instances`, `overlay_widgets`, `overlay_themes`, `overlay_state`, `shared_overlay_presets`, `user_overlay_state`
-- current auth/profile tables and helpers: `user_profiles`, `user_roles`, `streamelements_connections`, Twitch OAuth/profile sync functions
-- active community tables: `betting_contests`, `giveaways`, `daily_wheel_prizes`, `bonus_hunt_sessions`, `slot_requests`, `shoutout_alerts`
+- The numbered files are the only migration files that should remain active going forward.
+- `011` and `012` are cleanup migrations for existing databases, not baseline schema required by a fresh install.
+- If a future change adds schema, continue the numbering with `013_...`, `014_...`, and so on.
