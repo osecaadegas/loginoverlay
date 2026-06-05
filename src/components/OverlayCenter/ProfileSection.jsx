@@ -202,6 +202,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
   const { user } = useAuth();
   const [saving, setSaving] = useState(false);
   const [syncMsg, setSyncMsg] = useState('');
+  const [platformSaved, setPlatformSaved] = useState(false);
 
   /* ── Profile state ── */
   const [profile, setProfile] = useState({
@@ -623,6 +624,17 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <label style={{ ...S.label, margin: 0, minWidth: 60 }}>Discord</label>
             <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.discordTag} onChange={e => set('discordTag', e.target.value)} placeholder="username#0000" />
           </div>
+
+          <button
+            style={{ ...S.btn, background: platformSaved ? 'rgba(219,226,232,0.15)' : 'rgba(255,255,255,0.07)', color: platformSaved ? '#dbe2e8' : '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', width: '100%', marginTop: 4 }}
+            onClick={async () => {
+              await saveProfileToDb();
+              setPlatformSaved(true);
+              setTimeout(() => setPlatformSaved(false), 2000);
+            }}
+          >
+            {platformSaved ? '✓ Saved' : '💾 Save'}
+          </button>
         </div>
 
         {/* Widget Sync (below Platforms) */}
