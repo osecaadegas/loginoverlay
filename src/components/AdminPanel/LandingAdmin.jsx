@@ -2,6 +2,35 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import './LandingAdmin.css';
 
+/* ─── Partner card mini-preview ─── */
+function CardPreview({ name, tag, tagColor, logoBg, accent, model, badges, imgUrl }) {
+  const tc = tagColor || '#0ea5e9';
+  const ac = accent   || '#0ea5e9';
+  return (
+    <div className="la-card-preview">
+      {tag && (
+        <div className="la-cp-tag" style={{ background: `${tc}22`, color: tc, border: `1px solid ${tc}44` }}>
+          {tag}
+        </div>
+      )}
+      <div className="la-cp-logo" style={{ background: logoBg || '#1e293b' }}>
+        {imgUrl
+          ? <img src={imgUrl} alt={name} style={{ maxWidth: '80%', maxHeight: '40px', objectFit: 'contain' }} />
+          : <span style={{ fontSize: '1.4rem' }}>🎰</span>}
+      </div>
+      <div className="la-cp-name">{name || 'Casino Name'}</div>
+      <div className="la-cp-model" style={{ color: ac }}>{model || 'Deal Type'}</div>
+      <div className="la-cp-badges">
+        {(badges || ['Feature 1', 'Feature 2']).map((b, i) => (
+          <div key={i} className="la-cp-badge">
+            <span style={{ color: ac }}>✓</span> {b}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 const EMPTY_PLAN = {
   name: '',
   description: '',
@@ -26,8 +55,18 @@ export default function LandingAdmin() {
   const [saving, setSaving]         = useState(false);
   const [msg, setMsg]               = useState(null);
 
-  useEffect(() => { loadPlans(); }, []);
+  // ── Partner cards state ──
+  const [offers, setOffers]           = useState([]);
+  const [offersLoading, setOffersLoading] = useState(false);
+  const [editingOffer, setEditingOffer]   = useState(null); // offer id being edited
+  const [offerForm, setOfferForm]        = useState({});
+  const [offerBadgesText, setOfferBadgesText] = useState('');
+  const [offerSaving, setOfferSaving]    = useState(false);
 
+  useEffect(() => { loadPlans(); loadOffers(); }, []);
+
+  // ── Pricing plans ──
+  const loadPlans = async () => {
   const loadPlans = async () => {
     setLoading(true);
     const { data } = await supabase
@@ -95,6 +134,61 @@ export default function LandingAdmin() {
     loadPlans();
   };
 
+  // ── Partner card helpers ──
+  const loadOffers = async () => {
+    setOffersLoading(true);
+    const { data } = await supabase
+      .from('casino_offers')
+      .select('id, casino_name, list_image_url, show_on_landing, landing_order, landing_tag, landing_tag_color, landing_model, landing_badges, landing_accent_color, landing_logo_bg')
+      .eq('is_active', true)
+      .order('landing_order', { ascending: true });
+    setOffers(data || []);
+    setOffersLoading(false);
+  };
+
+  const openEditOffer = (offer) => {
+    setEditingOffer(offer.id);
+    setOfferForm({
+      landing_tag:         offer.landing_tag         || '',
+      landing_tag_color:   offer.landing_tag_color   || '#0ea5e9',
+      landing_model:       offer.landing_model        || '',
+      landing_accent_color:offer.landing_accent_color || '#0ea5e9',
+      landing_logo_bg:     offer.landing_logo_bg      || '',
+      landing_order:       offer.landing_order        ?? 0,
+    });
+    const b = Array.isArray(offer.landing_badges) ? offer.landing_badges : [];
+    setOfferBadgesText(b.join('\n'));
+  };
+
+  const closeEditOffer = () => { setEditingOffer(null); setOfferForm({}); };
+
+  const setOF = (field, value) => setOfferForm(p => ({ ...p, [field]: value }));
+
+  const saveOffer = async () => {
+    setOfferSaving(true);
+    const badges = offerBadgesText.split('\n').map(s => s.trim()).filter(Boolean);
+    const { error } = await supabase.from('casino_offers').update({
+      ...offerForm,
+      landing_order:  parseInt(offerForm.landing_order) || 0,
+      landing_badges: badges,
+    }).eq('id', editingOffer);
+    setOfferSaving(false);
+    if (error) {
+      setMsg({ type: 'error', text: error.message });
+    } else {
+      setMsg({ type: 'success', text: 'Partner card updated.' });
+      closeEditOffer();
+      loadOffers();
+    }
+  };
+
+  const toggleShowOnLanding = async (offer) => {
+    await supabase.from('casino_offers')
+      .update({ show_on_landing: !offer.show_on_landing })
+      .eq('id', offer.id);
+    loadOffers();
+  };
+
   return (
     <div className="la-wrap">
       {msg && (
@@ -158,7 +252,141 @@ export default function LandingAdmin() {
         )}
       </div>
 
-      {/* ── Edit Modal ── */}
+      {/* ── Partner Cards ── */}
+      <div className="la-block">
+        <div className="la-block-header">
+          <div>
+            <h2 className="la-block-title">🤝 Featured Partner Cards</h2>
+            <p className="la-block-sub">Control which casino offers appear on the landing page and customise their card display.</p>
+          </div>
+        </div>
+
+        {offersLoading ? (
+          <div className="la-loading">Loading offers…</div>
+        ) : offers.length === 0 ? (
+          <div className="la-empty">No active casino offers found.</div>
+        ) : (
+          <div className="la-offers-list">
+            {offers.map(offer => {
+              const isEditing = editingOffer === offer.id;
+              const badges = Array.isArray(offer.landing_badges) ? offer.landing_badges : [];
+              return (
+                <div key={offer.id} className={`la-offer-row${isEditing ? ' la-offer-row--open' : ''}`}>
+                  {/* Row header */}
+                  <div className="la-offer-rowhead">
+                    <div className="la-offer-thumb">
+                      {offer.list_image_url
+                        ? <img src={offer.list_image_url} alt={offer.casino_name} />
+                        : <span>🎰</span>}
+                    </div>
+                    <div className="la-offer-info">
+                      <span className="la-offer-name">{offer.casino_name}</span>
+                      {offer.landing_tag && (
+                        <span className="la-offer-tag" style={{ background: `${offer.landing_tag_color || '#0ea5e9'}22`, color: offer.landing_tag_color || '#0ea5e9' }}>
+                          {offer.landing_tag}
+                        </span>
+                      )}
+                    </div>
+                    <div className="la-offer-actions">
+                      <label className="la-toggle" title="Show on landing page">
+                        <input
+                          type="checkbox"
+                          checked={!!offer.show_on_landing}
+                          onChange={() => toggleShowOnLanding(offer)}
+                        />
+                        <span className="la-toggle-track">
+                          <span className="la-toggle-thumb" />
+                        </span>
+                        <span className="la-toggle-label">{offer.show_on_landing ? 'Visible' : 'Hidden'}</span>
+                      </label>
+                      <button
+                        className={`la-btn-sm ${isEditing ? 'la-btn-sm--toggle' : 'la-btn-sm--edit'}`}
+                        onClick={() => isEditing ? closeEditOffer() : openEditOffer(offer)}
+                      >
+                        {isEditing ? 'Close' : 'Edit Card'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Inline editor */}
+                  {isEditing && (
+                    <div className="la-offer-editor">
+                      <div className="la-offer-editor-form">
+                        <div className="la-row">
+                          <div className="la-field">
+                            <label>Tag Label</label>
+                            <input value={offerForm.landing_tag} onChange={e => setOF('landing_tag', e.target.value)} placeholder="TOP PARTNER" />
+                          </div>
+                          <div className="la-field la-field--color">
+                            <label>Tag Color</label>
+                            <div className="la-color-row">
+                              <input type="color" value={offerForm.landing_tag_color || '#0ea5e9'} onChange={e => setOF('landing_tag_color', e.target.value)} />
+                              <input value={offerForm.landing_tag_color} onChange={e => setOF('landing_tag_color', e.target.value)} placeholder="#0ea5e9" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="la-row">
+                          <div className="la-field">
+                            <label>Deal / Model Text</label>
+                            <input value={offerForm.landing_model} onChange={e => setOF('landing_model', e.target.value)} placeholder="40% Rev Share" />
+                          </div>
+                          <div className="la-field la-field--color">
+                            <label>Accent Color</label>
+                            <div className="la-color-row">
+                              <input type="color" value={offerForm.landing_accent_color || '#0ea5e9'} onChange={e => setOF('landing_accent_color', e.target.value)} />
+                              <input value={offerForm.landing_accent_color} onChange={e => setOF('landing_accent_color', e.target.value)} placeholder="#0ea5e9" />
+                            </div>
+                          </div>
+                          <div className="la-field la-field--color">
+                            <label>Logo Background</label>
+                            <div className="la-color-row">
+                              <input type="color" value={offerForm.landing_logo_bg || '#1e293b'} onChange={e => setOF('landing_logo_bg', e.target.value)} />
+                              <input value={offerForm.landing_logo_bg} onChange={e => setOF('landing_logo_bg', e.target.value)} placeholder="#003366" />
+                            </div>
+                          </div>
+                        </div>
+                        <div className="la-row">
+                          <div className="la-field">
+                            <label>Feature Badges <span className="la-field-hint">(one per line)</span></label>
+                            <textarea
+                              rows={3}
+                              value={offerBadgesText}
+                              onChange={e => setOfferBadgesText(e.target.value)}
+                              placeholder={'CPA Available\nWeekly Payments\nFast Approval'}
+                            />
+                          </div>
+                          <div className="la-field la-field--sm">
+                            <label>Display Order</label>
+                            <input type="number" value={offerForm.landing_order} onChange={e => setOF('landing_order', e.target.value)} min="0" />
+                          </div>
+                        </div>
+                        <div className="la-offer-editor-footer">
+                          <button className="la-btn-cancel" onClick={closeEditOffer}>Cancel</button>
+                          <button className="la-btn-save" onClick={saveOffer} disabled={offerSaving}>
+                            {offerSaving ? 'Saving…' : 'Save Card'}
+                          </button>
+                        </div>
+                      </div>
+                      <CardPreview
+                        name={offer.casino_name}
+                        tag={offerForm.landing_tag}
+                        tagColor={offerForm.landing_tag_color}
+                        logoBg={offerForm.landing_logo_bg}
+                        accent={offerForm.landing_accent_color}
+                        model={offerForm.landing_model}
+                        badges={offerBadgesText.split('\n').map(s => s.trim()).filter(Boolean)}
+                        imgUrl={offer.list_image_url}
+                      />
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ── Edit Pricing Plan Modal ── */}
       {editing !== null && (
         <div className="la-modal-backdrop" onClick={e => e.target === e.currentTarget && closeEdit()}>
           <div className="la-modal">

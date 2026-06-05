@@ -172,9 +172,9 @@ export default function LandingPage() {
 
   useEffect(() => {
     if (!localStorage.getItem('ageVerified')) setShowAgeVerification(true);
-    supabase.from('casino_offers').select('*').eq('is_active', true)
-      .order('display_order', { ascending: true }).limit(5)
-      .then(({ data }) => { if (data) setCasinoOffers(data); });
+    supabase.from('casino_offers').select('*').eq('is_active', true).eq('show_on_landing', true)
+      .order('landing_order', { ascending: true })
+      .then(({ data }) => { if (data?.length) setCasinoOffers(data); });
     supabase.from('landing_pricing_plans').select('*').eq('is_active', true)
       .order('display_order', { ascending: true })
       .then(({ data }) => { if (data?.length) setPricingPlans(data); });
