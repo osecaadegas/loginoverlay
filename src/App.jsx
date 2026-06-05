@@ -6,7 +6,6 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { StreamElementsProvider } from './context/StreamElementsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
-import PointsManager from './components/PointsManager/PointsManager';
 import LandingPage from './components/LandingPage/LandingPage';
 import Sidebar from './components/Sidebar/Sidebar';
 import OffersPage from './components/OffersPage/OffersPage';
@@ -369,14 +368,12 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/offers" element={<OffersPage />} />
 
-                <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/premium" element={<PricingPage />} />
 
                 
                 {/* WebMod Routes - For admins and slot_modders */}
                 <Route path="/webmod/slot-manager" element={<SlotManagerPage />} />
-                <Route path="/webmod/points-manager" element={<PointsManager />} />
 
                 
                 <Route path="/admin" element={<AdminPanel />} />

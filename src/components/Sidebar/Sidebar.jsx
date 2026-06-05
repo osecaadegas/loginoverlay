@@ -92,7 +92,6 @@ export default function Sidebar({ className = '', onClose }) {
 
   const webmodLinks = [
     isSlotModder  && { emoji: '🎰', labelKey: 'nav_slot_manager',     label: 'Slot Manager',     path: '/webmod/slot-manager' },
-    isModerator   && { emoji: '🎁', labelKey: 'nav_points_manager',   label: 'Points Manager',   path: '/webmod/points-manager' },
     isAdmin       && { emoji: '✏️', labelKey: 'nav_edit_slots',       label: 'Edit Slots',        path: '/webmod/edit-slots' },
   ].filter(Boolean);
 
