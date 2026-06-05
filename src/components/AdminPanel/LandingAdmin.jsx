@@ -67,7 +67,6 @@ export default function LandingAdmin() {
 
   // ── Pricing plans ──
   const loadPlans = async () => {
-  const loadPlans = async () => {
     setLoading(true);
     const { data } = await supabase
       .from('landing_pricing_plans')
