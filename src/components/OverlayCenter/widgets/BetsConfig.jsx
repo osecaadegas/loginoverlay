@@ -428,6 +428,34 @@ export default function BetsConfig({ config, onChange }) {
             />
             <span>SE Bot announcements (open / lock / result)</span>
           </label>
+
+          {/* ── Chat Message Templates ── */}
+          <div style={{ marginTop: 14, padding: '10px 12px', background: 'rgba(16,185,129,0.07)', borderRadius: 8, border: '1px solid rgba(16,185,129,0.2)' }}>
+            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#6ee7b7', marginBottom: 4 }}>
+              💬 Chat Message Templates
+            </p>
+            <p style={{ fontSize: '0.72rem', color: '#94a3b8', marginBottom: 10 }}>
+              Available variables: <code style={{ color: '#c7d2fe' }}>{'{user}'}</code> <code style={{ color: '#c7d2fe' }}>{'{amount}'}</code> <code style={{ color: '#c7d2fe' }}>{'{option}'}</code> <code style={{ color: '#c7d2fe' }}>{'{balance}'}</code> <code style={{ color: '#c7d2fe' }}>{'{winners}'}</code> <code style={{ color: '#c7d2fe' }}>{'{total}'}</code>
+            </p>
+            {[
+              { key: 'betMsgPlaced',    label: '✅ Bet placed',              placeholder: '@{user} ✅ Bet of {amount} pts registered on {option}!' },
+              { key: 'betMsgPlacedSe', label: '✅ Bet placed (SE deduct)',   placeholder: '@{user} ✅ Bet of {amount} pts registered on {option}! Points deducted.' },
+              { key: 'betMsgNoPoints', label: '❌ Not enough points',         placeholder: '@{user} ❌ Not enough points — you have {balance} but tried to bet {amount}.' },
+              { key: 'betMsgAlreadyBet',label: '❌ Already bet',              placeholder: '@{user} ❌ You already placed a bet this round.' },
+              { key: 'betMsgNotOpen',  label: '❌ Bets not open',             placeholder: '@{user} ❌ Bets are not open right now.' },
+              { key: 'betMsgWinner',   label: '🏆 Winner announced',          placeholder: '🏆 BETS PAID OUT! {option} wins! {winners} winners — {total} pts distributed!' },
+            ].map(({ key, label, placeholder }) => (
+              <label key={key} className="cg-config__field" style={{ marginBottom: 6 }}>
+                <span style={{ fontSize: '0.75rem' }}>{label}</span>
+                <input
+                  value={c[key] || ''}
+                  onChange={e => set(key, e.target.value)}
+                  placeholder={placeholder}
+                  style={{ fontSize: '0.75rem' }}
+                />
+              </label>
+            ))}
+          </div>
         </div>
       )}
 

@@ -1027,10 +1027,11 @@ async function handleBetPayout(req, res) {
     // Announce result in chat
     const winLabel    = options[winnerIdx]?.label || `Option ${winnerIdx + 1}`;
     const totalPayout = succeeded.reduce((s, w) => s + w.payout, 0);
-    await seBotSay(
-      channelId, jwtToken,
-      `🏆 BETS PAID OUT! ${winLabel} wins! ${succeeded.length} winners — ${totalPayout.toLocaleString()} pts distributed!`
-    ).catch(() => {});
+    const winnerMsg   = (cfg.betMsgWinner || '🏆 BETS PAID OUT! {option} wins! {winners} winners — {total} pts distributed!')
+      .replace(/\{option\}/g,  winLabel)
+      .replace(/\{winners\}/g, String(succeeded.length))
+      .replace(/\{total\}/g,   totalPayout.toLocaleString());
+    await seBotSay(channelId, jwtToken, winnerMsg).catch(() => {});
 
     return res.status(200).json({
       ok:        true,
@@ -1173,8 +1174,18 @@ async function handleBet(req, res) {
 
     const cfg = widgetRow.config || {};
 
+    // ── Configurable message templates ──
+    const tpl = {
+      placed:     cfg.betMsgPlaced     || '@{user} ✅ Bet of {amount} pts registered on {option}!',
+      placedSe:   cfg.betMsgPlacedSe   || '@{user} ✅ Bet of {amount} pts registered on {option}! Points deducted.',
+      noPoints:   cfg.betMsgNoPoints   || '@{user} ❌ Not enough points — you have {balance} but tried to bet {amount}.',
+      alreadyBet: cfg.betMsgAlreadyBet || '@{user} ❌ You already placed a bet this round.',
+      notOpen:    cfg.betMsgNotOpen    || '@{user} ❌ Bets are not open right now.',
+    };
+    const fill = (t, vars) => t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
+
     if (cfg.gameStatus !== 'open') {
-      return res.status(200).send(`@${viewer} ❌ Bets are not open right now.`);
+      return res.status(200).send(fill(tpl.notOpen, { user: viewer }));
     }
 
     const options = cfg.options || [];
@@ -1189,7 +1200,7 @@ async function handleBet(req, res) {
     const betters = { ...(cfg.betters || {}) };
 
     if (betters[viewer]) {
-      return res.status(200).send(`@${viewer} ❌ You already placed a bet this round.`);
+      return res.status(200).send(fill(tpl.alreadyBet, { user: viewer }));
     }
 
     // ── Validate bet amount limits ──
@@ -1237,7 +1248,7 @@ async function handleBet(req, res) {
       const balance = pointsData.points ?? 0;
       if (balance < betAmount) {
         return res.status(200).send(
-          `@${viewer} ❌ Not enough points — you have ${balance} but tried to bet ${betAmount}.`
+          fill(tpl.noPoints, { user: viewer, balance, amount: betAmount })
         );
       }
 
@@ -1300,9 +1311,9 @@ async function handleBet(req, res) {
     }
 
     const optLabel = options[optionIndex]?.label || `Option ${optionNum}`;
-    const msg = seEnabled
-      ? `@${viewer} ✅ Bet of ${betAmount} pts registered on ${optLabel}! Points deducted.`
-      : `@${viewer} ✅ Bet of ${betAmount} registered on ${optLabel}!`;
+    const msg = fill(seEnabled ? tpl.placedSe : tpl.placed, {
+      user: viewer, amount: betAmount, option: optLabel
+    });
 
     if (seChannelId && seJwtToken) await seBotSay(seChannelId, seJwtToken, msg);
     return res.status(200).send(msg);
