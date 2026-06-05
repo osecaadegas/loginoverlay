@@ -42,12 +42,62 @@
 }
 .la-btn-add:hover { opacity: 0.85; }
 
-/* Plans grid */
-.la-plans-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 16px;
+/* Plans list (replaces old grid) */
+.la-plans-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
+.la-plan-row {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+.la-plan-row--inactive { opacity: 0.5; }
+.la-plan-row:has(.la-inline-form) { border-color: rgba(99,102,241,0.35); }
+
+.la-plan-row-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.la-plan-row-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+.la-plan-order-badge {
+  font-size: 0.65rem;
+  color: #475569;
+  background: rgba(255,255,255,0.05);
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+/* Inline edit form */
+.la-inline-form {
+  border-top: 1px solid rgba(255,255,255,0.07);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  background: rgba(0,0,0,0.15);
+}
+.la-inline-form-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 4px;
+}
+
+/* Keep old card selectors for any remnant references */
 .la-plan-card {
   background: rgba(255,255,255,0.03);
   border: 1px solid rgba(255,255,255,0.08);

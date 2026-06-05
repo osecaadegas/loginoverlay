@@ -82,14 +82,15 @@ export default function LandingAdmin() {
   const openNew = () => {
     setFormData({ ...EMPTY_PLAN });
     setFeaturesText('');
-    setEditing({});
+    setEditing('new');
   };
 
   const openEdit = (plan) => {
+    if (editing === plan.id) { setEditing(null); return; }
     setFormData({ ...plan });
     const feats = Array.isArray(plan.features) ? plan.features : [];
     setFeaturesText(feats.join('\n'));
-    setEditing(plan);
+    setEditing(plan.id);
   };
 
   const closeEdit = () => setEditing(null);
@@ -110,8 +111,8 @@ export default function LandingAdmin() {
     delete payload.created_at;
 
     let error;
-    if (editing?.id) {
-      ({ error } = await supabase.from('landing_pricing_plans').update(payload).eq('id', editing.id));
+    if (editing && editing !== 'new') {
+      ({ error } = await supabase.from('landing_pricing_plans').update(payload).eq('id', editing));
     } else {
       ({ error } = await supabase.from('landing_pricing_plans').insert(payload));
     }
@@ -214,42 +215,173 @@ export default function LandingAdmin() {
         ) : plans.length === 0 ? (
           <div className="la-empty">No pricing plans yet. Click "Add Plan" to create one.</div>
         ) : (
-          <div className="la-plans-grid">
+          <div className="la-plans-list">
             {plans.map(plan => (
-              <div
-                key={plan.id}
-                className={[
-                  'la-plan-card',
-                  plan.is_highlighted ? 'la-plan-card--hi' : '',
-                  !plan.is_active ? 'la-plan-card--inactive' : '',
-                ].join(' ')}
-              >
-                {plan.badge && (
-                  <div className={`la-plan-badge la-plan-badge--${plan.badge_type || 'default'}`}>
-                    {plan.badge}
+              <div key={plan.id} className={['la-plan-row', !plan.is_active ? 'la-plan-row--inactive' : ''].join(' ')}>
+                {/* ── Summary row ── */}
+                <div className="la-plan-row-header">
+                  <div className="la-plan-row-info">
+                    {plan.badge && <span className={`la-plan-badge la-plan-badge--${plan.badge_type || 'default'}`}>{plan.badge}</span>}
+                    <span className="la-plan-name">{plan.name}</span>
+                    <span className="la-plan-price">{plan.price}<span className="la-plan-period">{plan.period}</span></span>
+                    {plan.description && <span className="la-plan-desc">{plan.description}</span>}
+                    <span className="la-plan-order-badge">#{plan.display_order}</span>
+                  </div>
+                  <div className="la-plan-actions">
+                    <button className="la-btn-sm la-btn-sm--edit" onClick={() => openEdit(plan)}>
+                      {editing === plan.id ? '▲ Close' : '✏️ Edit'}
+                    </button>
+                    <button className="la-btn-sm la-btn-sm--toggle" onClick={() => toggleActive(plan)}>
+                      {plan.is_active ? 'Hide' : 'Show'}
+                    </button>
+                    <button className="la-btn-sm la-btn-sm--del" onClick={() => handleDelete(plan.id)}>🗑</button>
+                  </div>
+                </div>
+
+                {/* ── Inline edit form ── */}
+                {editing === plan.id && (
+                  <div className="la-inline-form">
+                    {/* period suggestions shared by both period fields */}
+                    <datalist id="period-suggestions">
+                      <option value="/month" />
+                      <option value="/6 months" />
+                      <option value="/half year" />
+                      <option value="/year" />
+                      <option value="/lifetime" />
+                    </datalist>
+
+                    <div className="la-row">
+                      <div className="la-field">
+                        <label>Plan Name *</label>
+                        <input value={formData.name} onChange={e => set('name', e.target.value)} placeholder="Starter" />
+                      </div>
+                      <div className="la-field la-field--sm">
+                        <label>Display Order</label>
+                        <input type="number" value={formData.display_order} onChange={e => set('display_order', parseInt(e.target.value) || 0)} min="0" />
+                      </div>
+                    </div>
+                    <div className="la-field">
+                      <label>Description</label>
+                      <input value={formData.description || ''} onChange={e => set('description', e.target.value)} placeholder="Perfect for new streamers" />
+                    </div>
+                    <div className="la-field-group-label">📅 Monthly billing</div>
+                    <div className="la-row">
+                      <div className="la-field">
+                        <label>Monthly Price *</label>
+                        <input value={formData.price} onChange={e => set('price', e.target.value)} placeholder="€15" />
+                      </div>
+                      <div className="la-field">
+                        <label>Period *</label>
+                        <input list="period-suggestions" value={formData.period} onChange={e => set('period', e.target.value)} placeholder="/month" />
+                      </div>
+                      <div className="la-field">
+                        <label>Sub-price line</label>
+                        <input value={formData.sub_price || ''} onChange={e => set('sub_price', e.target.value)} placeholder="e.g. billed monthly" />
+                      </div>
+                    </div>
+                    <div className="la-field-group-label">📆 Annual billing <span className="la-field-hint">(shown when Annual toggle is selected)</span></div>
+                    <div className="la-row">
+                      <div className="la-field">
+                        <label>Annual Price</label>
+                        <input value={formData.price_annual || ''} onChange={e => set('price_annual', e.target.value)} placeholder="€144" />
+                      </div>
+                      <div className="la-field">
+                        <label>Annual Period</label>
+                        <input list="period-suggestions" value={formData.period_annual || ''} onChange={e => set('period_annual', e.target.value)} placeholder="/year" />
+                      </div>
+                      <div className="la-field">
+                        <label>Annual sub-price</label>
+                        <input value={formData.sub_price_annual || ''} onChange={e => set('sub_price_annual', e.target.value)} placeholder="€12/month billed annually" />
+                      </div>
+                    </div>
+                    <div className="la-row">
+                      <div className="la-field">
+                        <label>Badge Text</label>
+                        <input value={formData.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="MOST POPULAR" />
+                      </div>
+                      <div className="la-field">
+                        <label>Badge Style</label>
+                        <select value={formData.badge_type || ''} onChange={e => set('badge_type', e.target.value)}>
+                          <option value="">None</option>
+                          <option value="popular">Purple — Popular</option>
+                          <option value="value">Orange — Best Value</option>
+                        </select>
+                      </div>
+                      <div className="la-field">
+                        <label>CTA Button</label>
+                        <input value={formData.cta || ''} onChange={e => set('cta', e.target.value)} placeholder="Get Started" />
+                      </div>
+                    </div>
+                    <div className="la-field">
+                      <label>Features <span className="la-field-hint">(one per line)</span></label>
+                      <textarea rows={5} value={featuresText} onChange={e => setFeaturesText(e.target.value)} placeholder={'All Overlay Center access\nBasic widgets & themes\nEmail support'} />
+                    </div>
+                    <div className="la-checks-row">
+                      <label className="la-check">
+                        <input type="checkbox" checked={formData.is_highlighted} onChange={e => set('is_highlighted', e.target.checked)} />
+                        Highlighted card
+                      </label>
+                      <label className="la-check">
+                        <input type="checkbox" checked={formData.is_active} onChange={e => set('is_active', e.target.checked)} />
+                        Active (visible)
+                      </label>
+                    </div>
+                    <div className="la-inline-form-footer">
+                      <button className="la-btn-cancel" onClick={closeEdit}>Cancel</button>
+                      <button className="la-btn-save" onClick={handleSave} disabled={saving}>
+                        {saving ? 'Saving…' : 'Save Plan'}
+                      </button>
+                    </div>
                   </div>
                 )}
-                <div className="la-plan-name">{plan.name}</div>
-                <div className="la-plan-desc">{plan.description}</div>
-                <div className="la-plan-price">
-                  {plan.price}<span className="la-plan-period">{plan.period}</span>
-                </div>
-                {plan.sub_price && <div className="la-plan-sub">{plan.sub_price}</div>}
-                <ul className="la-plan-feats">
-                  {(Array.isArray(plan.features) ? plan.features : []).map(f => (
-                    <li key={f}><span className="la-tick">✓</span>{f}</li>
-                  ))}
-                </ul>
-                <div className="la-plan-order">Order: {plan.display_order}</div>
-                <div className="la-plan-actions">
-                  <button className="la-btn-sm la-btn-sm--edit" onClick={() => openEdit(plan)}>Edit</button>
-                  <button className="la-btn-sm la-btn-sm--toggle" onClick={() => toggleActive(plan)}>
-                    {plan.is_active ? 'Hide' : 'Show'}
-                  </button>
-                  <button className="la-btn-sm la-btn-sm--del" onClick={() => handleDelete(plan.id)}>Delete</button>
-                </div>
               </div>
             ))}
+
+            {/* ── New plan inline form ── */}
+            {editing === 'new' && (
+              <div className="la-plan-row">
+                <div className="la-inline-form">
+                  <datalist id="period-suggestions">
+                    <option value="/month" />
+                    <option value="/6 months" />
+                    <option value="/half year" />
+                    <option value="/year" />
+                    <option value="/lifetime" />
+                  </datalist>
+                  <div className="la-row">
+                    <div className="la-field"><label>Plan Name *</label><input value={formData.name} onChange={e => set('name', e.target.value)} placeholder="Starter" /></div>
+                    <div className="la-field la-field--sm"><label>Display Order</label><input type="number" value={formData.display_order} onChange={e => set('display_order', parseInt(e.target.value) || 0)} min="0" /></div>
+                  </div>
+                  <div className="la-field"><label>Description</label><input value={formData.description || ''} onChange={e => set('description', e.target.value)} placeholder="For new streamers" /></div>
+                  <div className="la-field-group-label">📅 Monthly billing</div>
+                  <div className="la-row">
+                    <div className="la-field"><label>Monthly Price *</label><input value={formData.price} onChange={e => set('price', e.target.value)} placeholder="€15" /></div>
+                    <div className="la-field"><label>Period *</label><input list="period-suggestions" value={formData.period} onChange={e => set('period', e.target.value)} placeholder="/month" /></div>
+                    <div className="la-field"><label>Sub-price line</label><input value={formData.sub_price || ''} onChange={e => set('sub_price', e.target.value)} placeholder="billed monthly" /></div>
+                  </div>
+                  <div className="la-field-group-label">📆 Annual billing</div>
+                  <div className="la-row">
+                    <div className="la-field"><label>Annual Price</label><input value={formData.price_annual || ''} onChange={e => set('price_annual', e.target.value)} placeholder="€144" /></div>
+                    <div className="la-field"><label>Annual Period</label><input list="period-suggestions" value={formData.period_annual || ''} onChange={e => set('period_annual', e.target.value)} placeholder="/year" /></div>
+                    <div className="la-field"><label>Annual sub-price</label><input value={formData.sub_price_annual || ''} onChange={e => set('sub_price_annual', e.target.value)} placeholder="€12/month billed annually" /></div>
+                  </div>
+                  <div className="la-row">
+                    <div className="la-field"><label>Badge Text</label><input value={formData.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="MOST POPULAR" /></div>
+                    <div className="la-field"><label>Badge Style</label><select value={formData.badge_type || ''} onChange={e => set('badge_type', e.target.value)}><option value="">None</option><option value="popular">Purple — Popular</option><option value="value">Orange — Best Value</option></select></div>
+                    <div className="la-field"><label>CTA Button</label><input value={formData.cta || ''} onChange={e => set('cta', e.target.value)} placeholder="Get Started" /></div>
+                  </div>
+                  <div className="la-field"><label>Features <span className="la-field-hint">(one per line)</span></label><textarea rows={4} value={featuresText} onChange={e => setFeaturesText(e.target.value)} placeholder="Feature 1\nFeature 2" /></div>
+                  <div className="la-checks-row">
+                    <label className="la-check"><input type="checkbox" checked={formData.is_highlighted} onChange={e => set('is_highlighted', e.target.checked)} /> Highlighted card</label>
+                    <label className="la-check"><input type="checkbox" checked={formData.is_active} onChange={e => set('is_active', e.target.checked)} /> Active (visible)</label>
+                  </div>
+                  <div className="la-inline-form-footer">
+                    <button className="la-btn-cancel" onClick={closeEdit}>Cancel</button>
+                    <button className="la-btn-save" onClick={handleSave} disabled={saving}>{saving ? 'Saving…' : 'Save Plan'}</button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -388,113 +520,7 @@ export default function LandingAdmin() {
         )}
       </div>
 
-      {/* ── Edit Pricing Plan Modal ── */}
-      {editing !== null && (
-        <div className="la-modal-backdrop" onClick={e => e.target === e.currentTarget && closeEdit()}>
-          <div className="la-modal">
-            <div className="la-modal-header">
-              <h3>{editing?.id ? 'Edit Plan' : 'New Plan'}</h3>
-              <button className="la-modal-close" onClick={closeEdit}>✕</button>
-            </div>
 
-            <div className="la-modal-body">
-              <div className="la-row">
-                <div className="la-field">
-                  <label>Plan Name *</label>
-                  <input value={formData.name} onChange={e => set('name', e.target.value)} placeholder="Starter" />
-                </div>
-                <div className="la-field la-field--sm">
-                  <label>Display Order</label>
-                  <input type="number" value={formData.display_order} onChange={e => set('display_order', parseInt(e.target.value) || 0)} min="0" />
-                </div>
-              </div>
-
-              <div className="la-field">
-                <label>Description</label>
-                <input value={formData.description || ''} onChange={e => set('description', e.target.value)} placeholder="Perfect for new streamers" />
-              </div>
-
-              <div className="la-field-group-label">📅 Monthly billing</div>
-              <div className="la-row">
-                <div className="la-field">
-                  <label>Monthly Price *</label>
-                  <input value={formData.price} onChange={e => set('price', e.target.value)} placeholder="€15" />
-                </div>
-                <div className="la-field">
-                  <label>Period *</label>
-                  <input value={formData.period} onChange={e => set('period', e.target.value)} placeholder="/month" />
-                </div>
-                <div className="la-field">
-                  <label>Sub-price line</label>
-                  <input value={formData.sub_price || ''} onChange={e => set('sub_price', e.target.value)} placeholder="e.g. billed monthly" />
-                </div>
-              </div>
-              <div className="la-field-group-label">📆 Annual billing <span className="la-field-hint">(shown when Annual toggle is selected)</span></div>
-              <div className="la-row">
-                <div className="la-field">
-                  <label>Annual Price</label>
-                  <input value={formData.price_annual || ''} onChange={e => set('price_annual', e.target.value)} placeholder="€144" />
-                </div>
-                <div className="la-field">
-                  <label>Annual Period</label>
-                  <input value={formData.period_annual || ''} onChange={e => set('period_annual', e.target.value)} placeholder="/year" />
-                </div>
-                <div className="la-field">
-                  <label>Annual sub-price</label>
-                  <input value={formData.sub_price_annual || ''} onChange={e => set('sub_price_annual', e.target.value)} placeholder="€12/month billed annually" />
-                </div>
-              </div>
-
-              <div className="la-row">
-                <div className="la-field">
-                  <label>Badge Text</label>
-                  <input value={formData.badge || ''} onChange={e => set('badge', e.target.value)} placeholder="MOST POPULAR" />
-                </div>
-                <div className="la-field">
-                  <label>Badge Style</label>
-                  <select value={formData.badge_type || ''} onChange={e => set('badge_type', e.target.value)}>
-                    <option value="">None</option>
-                    <option value="popular">Purple — Popular</option>
-                    <option value="value">Orange — Best Value</option>
-                  </select>
-                </div>
-                <div className="la-field">
-                  <label>CTA Button</label>
-                  <input value={formData.cta || ''} onChange={e => set('cta', e.target.value)} placeholder="Get Started" />
-                </div>
-              </div>
-
-              <div className="la-field">
-                <label>Features <span className="la-field-hint">(one per line)</span></label>
-                <textarea
-                  rows={5}
-                  value={featuresText}
-                  onChange={e => setFeaturesText(e.target.value)}
-                  placeholder={'All Overlay Center access\nBasic widgets & themes\nEmail support'}
-                />
-              </div>
-
-              <div className="la-checks-row">
-                <label className="la-check">
-                  <input type="checkbox" checked={formData.is_highlighted} onChange={e => set('is_highlighted', e.target.checked)} />
-                  Highlighted card
-                </label>
-                <label className="la-check">
-                  <input type="checkbox" checked={formData.is_active} onChange={e => set('is_active', e.target.checked)} />
-                  Active (visible)
-                </label>
-              </div>
-            </div>
-
-            <div className="la-modal-footer">
-              <button className="la-btn-cancel" onClick={closeEdit}>Cancel</button>
-              <button className="la-btn-save" onClick={handleSave} disabled={saving}>
-                {saving ? 'Saving…' : 'Save Plan'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
