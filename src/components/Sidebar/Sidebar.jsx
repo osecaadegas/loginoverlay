@@ -167,7 +167,6 @@ export default function Sidebar({ className = '', onClose }) {
       <nav className="sb-nav">
         <NavItem icon={ICONS.home} labelKey={T.NAV_HOME} label="Home" path="/" />
         <NavItem icon={ICONS.partners} labelKey="nav_partners" label="Partners" path="/offers" />
-        <Dropdown icon={ICONS.games} labelKey={T.NAV_GAMES} label="Games" sectionKey="games" links={gameLinks} />
 
         {(isAdmin || isSlotModder || isModerator) && (
           <Dropdown icon={ICONS.webmod} labelKey="nav_webmod" label="WebMod" sectionKey="webmod" links={webmodLinks} />

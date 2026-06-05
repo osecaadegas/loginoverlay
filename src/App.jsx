@@ -34,12 +34,9 @@ import useAnalytics from './hooks/useAnalytics';
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
 const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'));
-const BlackjackPremium = lazy(() => import('./components/Blackjack/BlackjackPremium'));
-const Mines = lazy(() => import('./components/Mines/Mines'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
-const PenaltyKingPage = lazy(() => import('./components/PenaltyKing/PenaltyKingPage'));
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -372,11 +369,6 @@ function App() {
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/offers" element={<OffersPage />} />
 
-                <Route path="/games/dice" element={<div style={{ padding: '20px', color: '#fff' }}>Dice - Coming Soon</div>} />
-                <Route path="/games/roulette" element={<div style={{ padding: '20px', color: '#fff' }}>Roulette - Coming Soon</div>} />
-                <Route path="/games/blackjack" element={<BlackjackPremium />} />
-                <Route path="/games/mines" element={<Mines />} />
-                <Route path="/games/penalty-king" element={<PenaltyKingPage />} />
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/premium" element={<PricingPage />} />
