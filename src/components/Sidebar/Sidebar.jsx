@@ -84,14 +84,6 @@ export default function Sidebar({ className = '', onClose }) {
   };
 
   /* ── Dropdown link sets ── */
-  const communityLinks = [
-    { emoji: '🎡', labelKey: 'nav_daily_wheel',     label: 'Daily Wheel',       path: '/daily-wheel' },
-    { emoji: '💰', labelKey: 'nav_guess_balance',    label: 'Guess the Balance', path: '/guess-balance' },
-    { emoji: '🏆', labelKey: 'nav_tournaments',      label: 'Tournaments',       path: '/tournaments' },
-    { emoji: '🎁', labelKey: 'nav_giveaways',        label: 'Giveaways',         path: '/giveaways' },
-    { emoji: '🎟️', labelKey: 'nav_vouchers',         label: 'Vouchers',          path: '/vouchers' },
-  ];
-
   const gameLinks = [
     { emoji: '🃏', labelKey: 'nav_blackjack',    label: 'Blackjack',    path: '/games/blackjack' },
     { emoji: '💣', labelKey: 'nav_mines',        label: 'Mines',        path: '/games/mines' },
@@ -179,9 +171,6 @@ export default function Sidebar({ className = '', onClose }) {
       <nav className="sb-nav">
         <NavItem icon={ICONS.home} labelKey={T.NAV_HOME} label="Home" path="/" />
         <NavItem icon={ICONS.partners} labelKey="nav_partners" label="Partners" path="/offers" />
-        {user && <NavItem icon={ICONS.store} labelKey="nav_points_store" label="Points Store" path="/points" />}
-
-        <Dropdown icon={ICONS.community} labelKey="nav_community" label="Community" sectionKey="community" links={communityLinks} />
         <Dropdown icon={ICONS.games} labelKey={T.NAV_GAMES} label="Games" sectionKey="games" links={gameLinks} />
 
         {(isAdmin || isSlotModder || isModerator) && (
