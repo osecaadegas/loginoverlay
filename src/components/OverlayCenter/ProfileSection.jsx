@@ -825,7 +825,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).map(w => (
               <span key={w.id} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', textTransform: 'capitalize' }}>
-                {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : '🎁'} {w.widget_type.replace('_', ' ')}
+                {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : w.widget_type === 'bets' ? '🎲' : '🎁'} {w.widget_type.replace('_', ' ')}
               </span>
             ))}
             {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
@@ -910,71 +910,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
         </div>
       </div>
 
-      {/* ──── Twitch Extension Info ──── */}
-      <div data-tour="profile-twitch-ext" style={{
-        background: 'linear-gradient(135deg, #0f141a 0%, #171c23 100%)',
-        border: '1px solid rgba(200,208,216,0.2)',
-        borderRadius: 14,
-        padding: '20px 22px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 14,
-      }}>
-        <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#eef2f5', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-          📺 Twitch Extension
-        </h3>
-        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-          Your channel has a built-in Twitch Extension that lets viewers interact directly from your stream page — no extra setup needed from viewers.
-        </p>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10,
-            padding: '14px 16px',
-          }}>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>🎰 What viewers can do</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🔮 <strong style={{ color: '#e2e8f0' }}>Predictions</strong> — Bet on outcomes during your stream</span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎁 <strong style={{ color: '#e2e8f0' }}>Giveaways</strong> — Enter giveaways with one click</span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎲 <strong style={{ color: '#e2e8f0' }}>Mini-games</strong> — Play Blackjack and Mines to earn points</span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>📊 <strong style={{ color: '#e2e8f0' }}>Stats</strong> — See live session stats and leaderboards</span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🎡 <strong style={{ color: '#e2e8f0' }}>Daily Wheel</strong> — Spin once per day for bonus points</span>
-            </div>
-          </div>
-
-          <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10,
-            padding: '14px 16px',
-          }}>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>📋 Two display modes</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>📌 <strong style={{ color: '#eef2f5' }}>Panel</strong> — Shows below your stream as a tabbed panel with all features</span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>🖼️ <strong style={{ color: '#eef2f5' }}>Video Overlay</strong> — A floating "🎰 Interact" button on the stream video that slides open a side panel</span>
-            </div>
-          </div>
-
-          <div style={{
-            background: 'rgba(226,232,240,0.08)',
-            border: '1px solid rgba(200,208,216,0.2)',
-            borderRadius: 10,
-            padding: '14px 16px',
-          }}>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#eef2f5', margin: '0 0 8px 0' }}>⚙️ Streamer controls</h4>
-            <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-              Manage your extension from the <strong style={{ color: '#e2e8f0' }}>Admin Panel → Extension</strong> page. From there you can create predictions,
-              run giveaways, start betting pools, and configure all viewer-facing features. Points are tracked automatically per viewer.
-            </p>
-          </div>
-        </div>
-
-        <div style={{ background: 'rgba(226,232,240,0.08)', border: '1px solid rgba(200,208,216,0.2)', borderRadius: 8, padding: '8px 12px', fontSize: '0.72rem', color: '#dbe2e8' }}>
-          ✅ The extension works on <strong>any streamer's channel</strong> that installs it — all data is per-channel and auto-configured.
-        </div>
-      </div>
 
       {/* ──── OBS Setup Guide ──── */}
       <div data-tour="profile-obs-guide" style={{
