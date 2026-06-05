@@ -594,44 +594,82 @@ export default function ProfileSection({ widgets, saveWidget }) {
 
       {/* ──── Row 2: Two-column grid ──── */}
       <div style={S.grid}>
-        {/* LEFT — Platforms */}
-        <div style={S.card} data-tour="profile-platforms">
+        {/* LEFT — Platforms + Widget Sync + OBS Guide */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+        <div style={{ ...S.card, gap: 8 }} data-tour="profile-platforms">
           <h3 style={S.cardTitle}>🔗 Platforms</h3>
 
-          <div>
-            <div style={S.platRow}>
-              <div style={S.dot(!!profile.twitchUsername)} />
-              <label style={{ ...S.label, margin: 0, flex: 1 }}>Twitch</label>
-            </div>
-            <input style={{ ...S.input, marginTop: 4 }} value={profile.twitchUsername} onChange={e => set('twitchUsername', e.target.value)} placeholder="your_twitch_name" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={S.dot(!!profile.twitchUsername)} />
+            <label style={{ ...S.label, margin: 0, minWidth: 60 }}>Twitch</label>
+            <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.twitchUsername} onChange={e => set('twitchUsername', e.target.value)} placeholder="your_twitch_name" />
           </div>
 
-          <div>
-            <div style={S.platRow}>
-              <div style={S.dot(!!profile.kickChannel)} />
-              <label style={{ ...S.label, margin: 0, flex: 1 }}>Kick</label>
-            </div>
-            <input style={{ ...S.input, marginTop: 4 }} value={profile.kickChannel} onChange={e => set('kickChannel', e.target.value)} placeholder="your_kick_channel" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={S.dot(!!profile.kickChannel)} />
+            <label style={{ ...S.label, margin: 0, minWidth: 60 }}>Kick</label>
+            <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.kickChannel} onChange={e => set('kickChannel', e.target.value)} placeholder="your_kick_channel" />
           </div>
 
-          <div>
-            <div style={S.platRow}>
-              <div style={S.dot(!!profile.youtubeChannel)} />
-              <label style={{ ...S.label, margin: 0, flex: 1 }}>YouTube</label>
-            </div>
-            <div style={{ ...S.row2, marginTop: 4 }}>
-              <input style={S.input} value={profile.youtubeChannel} onChange={e => set('youtubeChannel', e.target.value)} placeholder="Video / Live ID" />
-              <input style={S.input} type="password" value={profile.youtubeApiKey} onChange={e => set('youtubeApiKey', e.target.value)} placeholder="API Key" />
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={S.dot(!!profile.youtubeChannel)} />
+            <label style={{ ...S.label, margin: 0, minWidth: 60 }}>YouTube</label>
+            <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.youtubeChannel} onChange={e => set('youtubeChannel', e.target.value)} placeholder="Video / Live ID" />
+            <input style={{ ...S.input, flex: 1, margin: 0 }} type="password" value={profile.youtubeApiKey} onChange={e => set('youtubeApiKey', e.target.value)} placeholder="API Key" />
           </div>
 
-          <div>
-            <div style={S.platRow}>
-              <div style={S.dot(!!profile.discordTag)} />
-              <label style={{ ...S.label, margin: 0, flex: 1 }}>Discord</label>
-            </div>
-            <input style={{ ...S.input, marginTop: 4 }} value={profile.discordTag} onChange={e => set('discordTag', e.target.value)} placeholder="username#0000" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={S.dot(!!profile.discordTag)} />
+            <label style={{ ...S.label, margin: 0, minWidth: 60 }}>Discord</label>
+            <input style={{ ...S.input, flex: 1, margin: 0 }} value={profile.discordTag} onChange={e => set('discordTag', e.target.value)} placeholder="username#0000" />
           </div>
+        </div>
+
+        {/* Widget Sync (below Platforms) */}
+        <div style={{ ...S.syncBar, borderRadius: 12 }} data-tour="profile-sync">
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+            <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#fff' }}>📡 Widget Sync</span>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).map(w => (
+                <span key={w.id} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', textTransform: 'capitalize' }}>
+                  {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : w.widget_type === 'bets' ? '🎲' : '🎁'} {w.widget_type.replace('_', ' ')}
+                </span>
+              ))}
+              {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
+                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Add widgets to enable sync</span>
+              )}
+            </div>
+          </div>
+          <button
+            style={{ ...S.btnSync, width: 'auto', padding: '10px 28px', opacity: saving ? 0.6 : 1 }}
+            onClick={handleSyncAll}
+            disabled={saving}
+          >
+            {saving ? '⏳ Syncing...' : '📡 Sync All'}
+          </button>
+        </div>
+
+        {syncMsg && (
+          <div style={{
+            ...S.syncResult,
+            background: syncMsg.startsWith('✅') ? 'rgba(219,226,232,0.08)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.08)' : 'rgba(188,196,204,0.08)',
+            color: syncMsg.startsWith('✅') ? '#eef2f5' : syncMsg.startsWith('❌') ? '#f87171' : '#dbe2e8',
+            border: `1px solid ${syncMsg.startsWith('✅') ? 'rgba(219,226,232,0.2)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.2)' : 'rgba(188,196,204,0.2)'}`,
+          }}>
+            {syncMsg}
+          </div>
+        )}
+
+        {/* OBS Browser Source Setup (below Widget Sync) */}
+        <div data-tour="profile-obs-guide" style={{ ...S.card }}>
+          <h3 style={S.cardTitle}>🖥️ OBS Browser Source Setup</h3>
+          <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
+            Add your overlay as a Browser Source in OBS. Go to <strong style={{ color: '#e2e8f0' }}>Overlay Center → Get Link</strong> and paste the URL into OBS. Recommended settings: <strong style={{ color: '#e2e8f0' }}>1920×1080</strong>, enable <strong style={{ color: '#e2e8f0' }}>Shutdown source when not visible</strong>.
+          </p>
+          <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+            If the overlay looks blurry, right-click the source in OBS → <strong style={{ color: '#94a3b8' }}>Transform → Edit Transform</strong> and make sure the size matches your canvas resolution exactly.
+          </p>
+        </div>
         </div>
 
         {/* RIGHT — Spotify + Preferences */}
@@ -829,98 +867,6 @@ export default function ProfileSection({ widgets, saveWidget }) {
               </span>
             ))}
             {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
-              <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Add widgets to enable sync</span>
-            )}
-          </div>
-        </div>
-        <button
-          style={{ ...S.btnSync, width: 'auto', padding: '10px 28px', opacity: saving ? 0.6 : 1 }}
-          onClick={handleSyncAll}
-          disabled={saving}
-        >
-          {saving ? '⏳ Syncing...' : '📡 Sync All'}
-        </button>
-      </div>
-
-      {syncMsg && (
-        <div style={{
-          ...S.syncResult,
-          background: syncMsg.startsWith('✅') ? 'rgba(219,226,232,0.08)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.08)' : 'rgba(188,196,204,0.08)',
-          color: syncMsg.startsWith('✅') ? '#eef2f5' : syncMsg.startsWith('❌') ? '#f87171' : '#dbe2e8',
-          border: `1px solid ${syncMsg.startsWith('✅') ? 'rgba(219,226,232,0.2)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.2)' : 'rgba(188,196,204,0.2)'}`,
-        }}>
-          {syncMsg}
-        </div>
-      )}
-
-      {/* ──── OBS Setup Guide ──── */}
-      <div data-tour="profile-obs-guide" style={{
-        background: 'rgba(226,232,240,0.06)',
-        border: '1px solid rgba(200,208,216,0.2)',
-        borderRadius: 14,
-        padding: '20px 22px',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 14,
-      }}>
-        <h3 style={{ fontSize: '0.92rem', fontWeight: 700, color: '#eef2f5', display: 'flex', alignItems: 'center', gap: 8, margin: 0 }}>
-          🖥️ OBS Browser Source Setup
-        </h3>
-        <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-          If your overlay looks blurry or low-resolution in OBS, check these settings:
-        </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10,
-            padding: '14px 16px',
-          }}>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>📋 Browser Source Properties</h4>
-            <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Right-click your browser source → <strong style={{ color: '#e2e8f0' }}>Properties</strong></li>
-              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Set <strong style={{ color: '#eef2f5' }}>Width: 1920</strong> and <strong style={{ color: '#eef2f5' }}>Height: 1080</strong></li>
-              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Make sure <strong style={{ color: '#e2e8f0' }}>"Custom CSS"</strong> doesn't override sizes</li>
-            </ol>
-          </div>
-          <div style={{
-            background: 'rgba(255,255,255,0.03)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: 10,
-            padding: '14px 16px',
-          }}>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#e2e8f0', margin: '0 0 8px 0' }}>⚙️ OBS Video Settings</h4>
-            <ol style={{ margin: 0, paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
-              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}>Go to <strong style={{ color: '#e2e8f0' }}>Settings → Video</strong></li>
-              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}><strong style={{ color: '#eef2f5' }}>Base (Canvas) Resolution</strong> → 1920×1080</li>
-              <li style={{ fontSize: '0.75rem', color: '#94a3b8', lineHeight: 1.5 }}><strong style={{ color: '#eef2f5' }}>Output (Scaled) Resolution</strong> → 1920×1080</li>
-            </ol>
-          </div>
-          <div style={{
-            background: 'rgba(226,232,240,0.06)',
-            border: '1px solid rgba(200,208,216,0.15)',
-            borderRadius: 10,
-            padding: '12px 16px',
-          }}>
-            <p style={{ fontSize: '0.75rem', color: '#dbe2e8', margin: 0, lineHeight: 1.5 }}>
-              ⚠️ If your browser source is set to a smaller size (e.g. 800×600) while your canvas is 1920×1080, OBS will scale the content down then stretch it back up — causing blurriness.
-            </p>
-          </div>
-          <div style={{
-            background: 'rgba(226,232,240,0.06)',
-            border: '1px solid rgba(200,208,216,0.15)',
-            borderRadius: 10,
-            padding: '14px 16px',
-          }}>
-            <h4 style={{ fontSize: '0.8rem', fontWeight: 700, color: '#eef2f5', margin: '0 0 6px 0' }}>✅ Quick Checklist</h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>☑️ Browser Source → <strong style={{ color: '#e2e8f0' }}>1920 × 1080</strong></span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>☑️ OBS Base Canvas → <strong style={{ color: '#e2e8f0' }}>1920 × 1080</strong></span>
-              <span style={{ fontSize: '0.75rem', color: '#94a3b8' }}>☑️ OBS Output Resolution → <strong style={{ color: '#e2e8f0' }}>1920 × 1080</strong></span>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
