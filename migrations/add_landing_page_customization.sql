@@ -39,7 +39,7 @@ CREATE POLICY "Public read active plans"
 
 CREATE POLICY "Admins manage plans"
   ON landing_pricing_plans FOR ALL
-  USING (EXISTS (SELECT 1 FROM admin_users WHERE user_id = auth.uid()));
+  USING (EXISTS (SELECT 1 FROM user_roles WHERE user_id = auth.uid() AND role IN ('admin', 'superadmin')));
 
 -- 4. Seed default plans
 INSERT INTO landing_pricing_plans
