@@ -373,14 +373,6 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* ════ TRUST BAR ════ */}
-          <section className="lp-trust">
-            <p className="lp-trust-lbl">Trusted by streamers worldwide</p>
-            <div className="lp-trust-logos">
-              {TRUST_LOGOS.map(n => <div key={n} className="lp-trust-logo">{n}</div>)}
-            </div>
-          </section>
-
           {/* ════ FOOTER ════ */}
           <footer className="lp-footer">
             <div className="lp-footer-left">
