@@ -19,7 +19,6 @@ import { useStreamElements } from './context/StreamElementsContext';
 import ProtectedAdminRoute from './components/ProtectedRoute/ProtectedAdminRoute';
 
 import ProfilePage from './components/ProfilePage/ProfilePage';
-import SeasonPass from './components/SeasonPass/SeasonPass';
 import SpotifyCallback from './components/SpotifyCallback';
 import DeveloperPage from './components/DeveloperPage/DeveloperPage';
 import PricingPage from './components/Pricing/PricingPage';
@@ -37,8 +36,6 @@ import useAnalytics from './hooks/useAnalytics';
 const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'));
 const BlackjackPremium = lazy(() => import('./components/Blackjack/BlackjackPremium'));
 const Mines = lazy(() => import('./components/Mines/Mines'));
-const TheLife = lazy(() => import('./components/TheLife/TheLifeNew'));
-const TheLifeJournal = lazy(() => import('./components/TheLife/pages/TheLifeJournal'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
@@ -380,9 +377,6 @@ function App() {
                 <Route path="/games/blackjack" element={<BlackjackPremium />} />
                 <Route path="/games/mines" element={<Mines />} />
                 <Route path="/games/penalty-king" element={<PenaltyKingPage />} />
-                <Route path="/games/thelife" element={<TheLife />} />
-                <Route path="/games/thelife/season-pass" element={<SeasonPass />} />
-                <Route path="/games/thelife/news" element={<TheLifeJournal />} />
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/premium" element={<PricingPage />} />
