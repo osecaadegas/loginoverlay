@@ -76,6 +76,7 @@ export default async function handler(req, res) {
     case 'pred-say': return handlePredSay(req, res);
     case 'streamer-data': return streamerDataHandler(req, res);
     case 'image-search': return imageSearchHandler(req, res);
+    case 'bet':      return handleBet(req, res);
     case 'remate':   return handleRemate(req, res);
     case 'cashout':  return handlePkCashout(req, res);
     case 'continue': return handlePkContinue(req, res);
@@ -983,6 +984,197 @@ async function handlePkContinue(req, res) {
     return res.status(200).send(result.message || (result.success ? '' : 'Error'));
   } catch (err) {
     console.error('[handlePkContinue]', err.message);
+    return res.status(200).send('Server error — try again');
+  }
+}
+
+/* ─── Bets — !bet <option> <amount> ─────────────────────────────────────────
+ *
+ * SE command URL:
+ *   https://<host>/api/chat-commands?cmd=bet&user_id=<USERID>&w1=${1}&w2=${2}&requester=${user.username}
+ *
+ * Where ${1} = option number (1-based), ${2} = amount.
+ *
+ * Widget config flags (set in BetsConfig → Chat tab):
+ *   betSeEnabled  – boolean, whether to deduct SE points for the bet amount
+ *   betMinAmount  – minimum bet (default 1)
+ *   betMaxAmount  – maximum bet per viewer (0 = no limit)
+ */
+async function handleBet(req, res) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY) return res.status(200).send('Server config error');
+
+  const params = req.method === 'POST' ? (req.body || {}) : req.query;
+
+  // Support both named params (option/amount) and positional SE words (w1/w2)
+  const { user_id, requester } = params;
+  const optionRaw = params.option || params.w1 || '';
+  const amountRaw = params.amount || params.w2 || '';
+
+  const viewer = ((requester || 'anonymous').replace(/^@/, '').trim().toLowerCase());
+
+  if (!user_id) return res.status(200).send('Missing user_id');
+
+  const optionNum = parseInt(optionRaw, 10);
+  const betAmount = parseInt(amountRaw, 10);
+
+  if (isNaN(optionNum) || optionNum < 1) {
+    return res.status(200).send(`@${viewer} ❌ Usage: !bet <option number> <amount>`);
+  }
+  if (isNaN(betAmount) || betAmount <= 0) {
+    return res.status(200).send(`@${viewer} ❌ Usage: !bet <option number> <amount>`);
+  }
+
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+
+  try {
+    // Load the bets widget config for this streamer
+    const { data: widgetRow } = await supabase
+      .from('overlay_widgets')
+      .select('id, config')
+      .eq('user_id', user_id)
+      .eq('widget_type', 'bets')
+      .limit(1)
+      .maybeSingle();
+
+    if (!widgetRow) return res.status(200).send('No bets widget found');
+
+    const cfg = widgetRow.config || {};
+
+    if (cfg.gameStatus !== 'open') {
+      return res.status(200).send(`@${viewer} ❌ Bets are not open right now.`);
+    }
+
+    const options = cfg.options || [];
+    const optionIndex = optionNum - 1; // convert 1-based to 0-based
+
+    if (optionIndex < 0 || optionIndex >= options.length) {
+      return res.status(200).send(
+        `@${viewer} ❌ Invalid option. Choose a number between 1 and ${options.length}.`
+      );
+    }
+
+    const betters = { ...(cfg.betters || {}) };
+
+    if (betters[viewer]) {
+      return res.status(200).send(`@${viewer} ❌ You already placed a bet this round.`);
+    }
+
+    // ── Validate bet amount limits ──
+    const minAmt = parseInt(cfg.betMinAmount, 10) || 1;
+    const maxAmt = parseInt(cfg.betMaxAmount, 10) || 0;
+    if (betAmount < minAmt) {
+      return res.status(200).send(`@${viewer} ❌ Minimum bet is ${minAmt}.`);
+    }
+    if (maxAmt > 0 && betAmount > maxAmt) {
+      return res.status(200).send(`@${viewer} ❌ Maximum bet is ${maxAmt}.`);
+    }
+
+    // ── SE points deduction (optional) ──
+    const seEnabled = !!cfg.betSeEnabled;
+    let seChannelId = null;
+    let seJwtToken = null;
+
+    if (seEnabled) {
+      const { data: seConn } = await supabase
+        .from('streamelements_connections')
+        .select('se_channel_id, se_jwt_token')
+        .eq('user_id', user_id)
+        .maybeSingle();
+
+      if (!seConn?.se_channel_id || !seConn?.se_jwt_token) {
+        return res.status(200).send(
+          `@${viewer} ❌ SE not configured — ask the streamer to connect StreamElements.`
+        );
+      }
+
+      seChannelId = seConn.se_channel_id;
+      seJwtToken = seConn.se_jwt_token;
+
+      // Check viewer has enough points
+      const pointsRes = await fetch(
+        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}`,
+        { headers: { Authorization: `Bearer ${seJwtToken}` } }
+      );
+      if (!pointsRes.ok) {
+        return res.status(200).send(
+          `@${viewer} ❌ Could not check points. Are you a follower?`
+        );
+      }
+      const pointsData = await pointsRes.json();
+      const balance = pointsData.points ?? 0;
+      if (balance < betAmount) {
+        return res.status(200).send(
+          `@${viewer} ❌ Not enough points — you have ${balance} but tried to bet ${betAmount}.`
+        );
+      }
+
+      // Deduct points
+      const deductRes = await fetch(
+        `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}/${-betAmount}`,
+        {
+          method: 'PUT',
+          headers: {
+            Authorization: `Bearer ${seJwtToken}`,
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+      if (!deductRes.ok) {
+        return res.status(200).send(
+          `@${viewer} ❌ Failed to deduct points. Try again.`
+        );
+      }
+    } else {
+      // Load SE creds anyway for chat announcements (best-effort)
+      const { data: seConn } = await supabase
+        .from('streamelements_connections')
+        .select('se_channel_id, se_jwt_token')
+        .eq('user_id', user_id)
+        .maybeSingle();
+      if (seConn) { seChannelId = seConn.se_channel_id; seJwtToken = seConn.se_jwt_token; }
+    }
+
+    // ── Record the bet in the widget config ──
+    const bets = { ...(cfg.bets || {}) };
+    const key = `opt_${optionIndex}`;
+    bets[key] = (bets[key] || 0) + betAmount;
+    betters[viewer] = { option: optionIndex, amount: betAmount };
+
+    const { error: updateErr } = await supabase
+      .from('overlay_widgets')
+      .update({
+        config: { ...cfg, bets, betters },
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', widgetRow.id);
+
+    if (updateErr) {
+      console.error('[handleBet] widget update error:', updateErr);
+      // If SE points were deducted, refund them
+      if (seEnabled && seChannelId && seJwtToken) {
+        await fetch(
+          `https://api.streamelements.com/kappa/v2/points/${seChannelId}/${viewer}/${betAmount}`,
+          {
+            method: 'PUT',
+            headers: {
+              Authorization: `Bearer ${seJwtToken}`,
+              'Content-Type': 'application/json',
+            },
+          }
+        ).catch(() => {});
+      }
+      return res.status(200).send(`@${viewer} ❌ Failed to register bet. Try again.`);
+    }
+
+    const optLabel = options[optionIndex]?.label || `Option ${optionNum}`;
+    const msg = seEnabled
+      ? `@${viewer} ✅ Bet of ${betAmount} pts registered on ${optLabel}! Points deducted.`
+      : `@${viewer} ✅ Bet of ${betAmount} registered on ${optLabel}!`;
+
+    if (seChannelId && seJwtToken) await seBotSay(seChannelId, seJwtToken, msg);
+    return res.status(200).send(msg);
+  } catch (err) {
+    console.error('[handleBet]', err.message);
     return res.status(200).send('Server error — try again');
   }
 }

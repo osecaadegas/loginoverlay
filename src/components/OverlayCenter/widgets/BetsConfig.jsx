@@ -346,6 +346,56 @@ export default function BetsConfig({ config, onChange }) {
             />
           </label>
 
+          {/* ── SE Command setup ── */}
+          <div style={{ marginTop: 12, padding: '10px 12px', background: 'rgba(99,102,241,0.08)', borderRadius: 8, border: '1px solid rgba(99,102,241,0.25)' }}>
+            <p style={{ fontSize: '0.8rem', fontWeight: 700, color: '#a5b4fc', marginBottom: 6 }}>
+              🔗 StreamElements Command (reliable chat listener)
+            </p>
+            <p style={{ fontSize: '0.75rem', color: '#94a3b8', marginBottom: 6 }}>
+              In SE, create a custom command <code>{chatCommand}</code> with this URL response:
+            </p>
+            <code style={{ display: 'block', fontSize: '0.7rem', wordBreak: 'break-all', color: '#c7d2fe', background: 'rgba(0,0,0,0.3)', padding: '6px 8px', borderRadius: 4 }}>
+              {`${window.location.origin}/api/chat-commands?cmd=bet&user_id=${userId || '<your-user-id>'}&w1=\${1}&w2=\${2}&requester=\${user.username}`}
+            </code>
+          </div>
+
+          {/* ── SE Points deduction ── */}
+          <label className="cg-config__field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 10 }}>
+            <input
+              type="checkbox"
+              checked={!!c.betSeEnabled}
+              onChange={e => set('betSeEnabled', e.target.checked)}
+              style={{ width: 16, height: 16, cursor: 'pointer' }}
+            />
+            <span>Deduct SE points equal to bet amount</span>
+          </label>
+          {c.betSeEnabled && (
+            <p className="cg-config__hint">
+              Requires SE connected. The viewer's typed amount will be deducted from their SE balance before the bet is recorded.
+            </p>
+          )}
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 8 }}>
+            <label className="cg-config__field">
+              <span>Min bet amount</span>
+              <input
+                type="number"
+                value={c.betMinAmount ?? 1}
+                onChange={e => set('betMinAmount', parseInt(e.target.value) || 1)}
+                min={1}
+              />
+            </label>
+            <label className="cg-config__field">
+              <span>Max bet (0 = no limit)</span>
+              <input
+                type="number"
+                value={c.betMaxAmount ?? 0}
+                onChange={e => set('betMaxAmount', parseInt(e.target.value) || 0)}
+                min={0}
+              />
+            </label>
+          </div>
+
           <label className="cg-config__field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
             <input
               type="checkbox"

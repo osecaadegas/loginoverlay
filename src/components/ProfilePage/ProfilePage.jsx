@@ -328,6 +328,104 @@ export default function ProfilePage() {
             </div>
           </div>
 
+          {/* ── Chat Bets (!bet) Setup Guide ── */}
+          <div className="settings-card" style={{ background: 'linear-gradient(135deg, #0f1a2e 0%, #0d1f35 100%)', border: '1px solid rgba(34,197,94,0.3)' }}>
+            <h3>🎲 Chat Bets — !bet Command Setup</h3>
+            <p style={{ fontSize: 13, color: '#94a3b8', marginBottom: 12 }}>
+              Let your viewers place bets via Twitch chat using <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 5px', borderRadius: 3 }}>!bet</code>.
+              This works through a StreamElements custom command that calls your overlay server — no browser tab needs to stay open.
+            </p>
+
+            <div style={{ background: 'rgba(0,0,0,0.3)', borderRadius: 10, padding: 14, marginBottom: 12 }}>
+              <h4 style={{ fontSize: 13, color: '#e2e8f0', marginBottom: 10 }}>Setup Guide</h4>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>1</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Open the Bets widget config</strong><br />
+                    Go to <strong>Overlay Center</strong> → find your <strong>Bets</strong> widget → open the <strong>💬 Chat</strong> tab. You can customise the command trigger (default <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>!bet</code>), set min/max amounts, and optionally enable SE points deduction.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>2</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Create a custom command in StreamElements</strong><br />
+                    Go to <strong>streamelements.com</strong> → <strong>Bot</strong> → <strong>Commands</strong> → <strong>Add Command</strong>.<br />
+                    Set the command to <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>!bet</code> (or your custom trigger) and paste this as the response:
+                  </div>
+                </div>
+
+                {/* Command URL block */}
+                <div style={{ marginLeft: 34 }}>
+                  <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(34,197,94,0.25)' }}>
+                    <code style={{
+                      flex: 1,
+                      display: 'block',
+                      fontSize: '0.68rem',
+                      wordBreak: 'break-all',
+                      color: '#86efac',
+                      background: 'rgba(0,0,0,0.4)',
+                      padding: '8px 10px',
+                      lineHeight: 1.6,
+                    }}>
+                      {`${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || '<your-user-id>'}&w1=\${1}&w2=\${2}&requester=\${user.username}`}
+                    </code>
+                    <button
+                      onClick={() => {
+                        const url = `${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || ''}&w1=\${1}&w2=\${2}&requester=\${user.username}`;
+                        navigator.clipboard.writeText(url).then(() => {
+                          setMessage({ type: 'success', text: '✅ !bet command URL copied to clipboard!' });
+                          setTimeout(() => setMessage({ type: '', text: '' }), 3000);
+                        });
+                      }}
+                      style={{
+                        background: 'rgba(34,197,94,0.15)',
+                        border: 'none',
+                        borderLeft: '1px solid rgba(34,197,94,0.25)',
+                        color: '#4ade80',
+                        cursor: 'pointer',
+                        padding: '0 12px',
+                        fontSize: 13,
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      📋 Copy
+                    </button>
+                  </div>
+                  <p style={{ fontSize: 11, color: '#64748b', marginTop: 5 }}>
+                    <code style={{ color: '#94a3b8' }}>${'{1}'}</code> = option number · <code style={{ color: '#94a3b8' }}>${'{2}'}</code> = amount · <code style={{ color: '#94a3b8' }}>${'{user.username}'}</code> = viewer name (SE placeholders)
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>3</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Configure the command in SE</strong><br />
+                    Set <strong>Cooldown</strong> to prevent spam (e.g. 5s). Leave <strong>User Level</strong> as Everyone. Make sure the command is <strong>Enabled</strong>.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#22c55e', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>4</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#e2e8f0' }}>Open bets in the Bets widget</strong><br />
+                    In the Overlay Center → Bets widget → <strong>🎮 Game</strong> tab, click <strong>🟢 Open Bets</strong>. Viewers can now type <code style={{ background: 'rgba(34,197,94,0.15)', padding: '1px 4px', borderRadius: 3, fontSize: 11 }}>!bet 5 1000</code> to bet 1000 points on bracket 5.
+                  </div>
+                </div>
+                <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+                  <span style={{ background: '#4ade80', color: '#000', borderRadius: '50%', width: 24, height: 24, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, fontWeight: 700, flexShrink: 0 }}>✓</span>
+                  <div style={{ fontSize: 12, color: '#cbd5e1', lineHeight: 1.5 }}>
+                    <strong style={{ color: '#4ade80' }}>Done!</strong><br />
+                    Every bet goes through the server — works even if your browser is closed. The overlay updates live via realtime. When a viewer bets they get an instant chat confirmation.
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ background: 'rgba(34,197,94,0.06)', border: '1px solid rgba(34,197,94,0.2)', borderRadius: 8, padding: 10, fontSize: 11, color: '#86efac' }}>
+              💡 <strong>SE Points deduction:</strong> In the Bets widget → <strong>💬 Chat</strong> tab, enable <em>"Deduct SE points equal to bet amount"</em> to automatically remove the viewer's SE loyalty points when they place a bet. Requires StreamElements to be connected in your overlay settings.
+            </div>
+          </div>
+
           <div className="inventory-card">
             <h3>🎒 Inventory</h3>
             <p className="inventory-subtitle">Your collected items and achievements</p>

@@ -52,6 +52,9 @@ const SYNC_MAP = {
     twitchUsername: 'twitchChannel',
     kickChannel: 'kickChannelId',
   },
+  bets: {
+    twitchUsername: 'twitchChannel',
+  },
 };
 
 const S = {
