@@ -6,25 +6,18 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { StreamElementsProvider } from './context/StreamElementsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
-import StreamElementsPanel from './components/StreamElements/StreamElementsPanel';
 import PointsManager from './components/PointsManager/PointsManager';
 import LandingPage from './components/LandingPage/LandingPage';
 import Sidebar from './components/Sidebar/Sidebar';
 import OffersPage from './components/OffersPage/OffersPage';
 import AboutPage from './components/AboutPage/AboutPage';
-import TournamentsPage from './components/TournamentsPage/TournamentsPage';
-import GuessBalancePage from './components/GuessBalancePage/GuessBalancePage';
-import GiveawaysPage from './components/GiveawaysPage/GiveawaysPage';
+
 import { checkUserAccess } from './utils/adminUtils';
-import GiveawayPanel from './components/GiveawayPanel/GiveawayPanel';
 import TwitchChat from './components/TwitchChat/TwitchChat';
 import SlotManagerPage from './components/SlotManager/SlotManagerPage';
-import GiveawayPage from './components/GiveawayPanel/GiveawayPage';
 import { useStreamElements } from './context/StreamElementsContext';
 import ProtectedAdminRoute from './components/ProtectedRoute/ProtectedAdminRoute';
-import VoucherManager from './components/VoucherManager/VoucherManager';
-import VoucherRedeemPage from './components/VoucherRedeemPage/VoucherRedeemPage';
-import GiveawayCreator from './components/GiveawayCreator/GiveawayCreator';
+
 import ProfilePage from './components/ProfilePage/ProfilePage';
 import SeasonPass from './components/SeasonPass/SeasonPass';
 import SpotifyCallback from './components/SpotifyCallback';
@@ -34,7 +27,6 @@ import PrivacyPolicy from './components/Legal/PrivacyPolicy';
 import TermsOfService from './components/Legal/TermsOfService';
 import LoginPage from './components/Login/LoginPage';
 import CookieConsent from './components/CookieConsent/CookieConsent';
-import useGiveawayListener from './hooks/useGiveawayListener';
 import useSlotRequestListener from './hooks/useSlotRequestListener';
 import usePredictionListener from './hooks/usePredictionListener';
 import useBetsListener from './hooks/useBetsListener';
@@ -47,7 +39,6 @@ const BlackjackPremium = lazy(() => import('./components/Blackjack/BlackjackPrem
 const Mines = lazy(() => import('./components/Mines/Mines'));
 const TheLife = lazy(() => import('./components/TheLife/TheLifeNew'));
 const TheLifeJournal = lazy(() => import('./components/TheLife/pages/TheLifeJournal'));
-const DailyWheelPage = lazy(() => import('./components/DailyWheel/DailyWheelPage'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
@@ -174,7 +165,6 @@ function AppContent({ isAdminOverlay = false }) {
         setShowBonusOpening(true);
       }} />}
       {showTournament && <TournamentPanel onClose={() => setShowTournament(false)} />}
-      {showGiveaway && <GiveawayPanel onClose={() => setShowGiveaway(false)} />}
       {showRandomSlot && <RandomSlotPicker onClose={() => setShowRandomSlot(false)} />}
       
       {/* Twitch Chat (only show if enabled in customization) */}
@@ -285,7 +275,6 @@ function ProtectedOverlay({ isAdminOverlay = false }) {
 // Layout wrapper to show sidebar on all pages except overlay and widget display routes
 function LayoutWrapper({ children }) {
   const location = useLocation();
-  useGiveawayListener(); // persistent chat listener for giveaway keyword
   useSlotRequestListener(); // persistent chat listener for !sr commands
   usePredictionListener(); // persistent chat listener for !bet commands
   useBetsListener();        // persistent chat listener for Bets widget
@@ -385,11 +374,7 @@ function App() {
               <Routes>
                 <Route path="/" element={<LandingPage />} />
                 <Route path="/offers" element={<OffersPage />} />
-                <Route path="/tournaments" element={<TournamentsPage />} />
-                <Route path="/guess-balance" element={<GuessBalancePage />} />
-                <Route path="/giveaways" element={<GiveawaysPage />} />
-                <Route path="/vouchers" element={<VoucherRedeemPage />} />
-                <Route path="/daily-wheel" element={<DailyWheelPage />} />
+
                 <Route path="/games/dice" element={<div style={{ padding: '20px', color: '#fff' }}>Dice - Coming Soon</div>} />
                 <Route path="/games/roulette" element={<div style={{ padding: '20px', color: '#fff' }}>Roulette - Coming Soon</div>} />
                 <Route path="/games/blackjack" element={<BlackjackPremium />} />
@@ -398,8 +383,6 @@ function App() {
                 <Route path="/games/thelife" element={<TheLife />} />
                 <Route path="/games/thelife/season-pass" element={<SeasonPass />} />
                 <Route path="/games/thelife/news" element={<TheLifeJournal />} />
-                <Route path="/points" element={<StreamElementsPanel />} />
-                <Route path="/streamelements" element={<StreamElementsPanel />} />
                 <Route path="/points-manager" element={<PointsManager />} />
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/premium" element={<PricingPage />} />
@@ -408,16 +391,7 @@ function App() {
                 {/* WebMod Routes - For admins and slot_modders */}
                 <Route path="/webmod/slot-manager" element={<SlotManagerPage />} />
                 <Route path="/webmod/points-manager" element={<PointsManager />} />
-                <Route path="/webmod/voucher-manager" element={
-                  <ProtectedAdminRoute>
-                    <VoucherManager />
-                  </ProtectedAdminRoute>
-                } />
-                <Route path="/webmod/giveaway-creator" element={
-                  <ProtectedAdminRoute>
-                    <GiveawayCreator />
-                  </ProtectedAdminRoute>
-                } />
+
                 
                 <Route path="/admin" element={<AdminPanel />} />
                 <Route path="/overlay-center" element={

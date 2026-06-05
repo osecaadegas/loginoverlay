@@ -94,9 +94,6 @@ export default function Sidebar({ className = '', onClose }) {
   const webmodLinks = [
     isSlotModder  && { emoji: '🎰', labelKey: 'nav_slot_manager',     label: 'Slot Manager',     path: '/webmod/slot-manager' },
     isModerator   && { emoji: '🎁', labelKey: 'nav_points_manager',   label: 'Points Manager',   path: '/webmod/points-manager' },
-    (isAdmin || isModerator) && { emoji: '🎯', labelKey: 'nav_guess_balance', label: 'Guess Balance', path: '/webmod/guess-balance' },
-    isAdmin       && { emoji: '🎟️', labelKey: 'nav_voucher_manager',  label: 'Voucher Manager',  path: '/webmod/voucher-manager' },
-    isAdmin       && { emoji: '🎁', labelKey: 'nav_giveaway_creator', label: 'Giveaway Creator',  path: '/webmod/giveaway-creator' },
     isAdmin       && { emoji: '✏️', labelKey: 'nav_edit_slots',       label: 'Edit Slots',        path: '/webmod/edit-slots' },
   ].filter(Boolean);
 
