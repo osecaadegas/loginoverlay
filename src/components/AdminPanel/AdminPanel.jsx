@@ -10,6 +10,7 @@ import SeasonPassAdmin from './SeasonPassAdmin';
 import ExtensionAdmin from './ExtensionAdmin';
 import ApiKeysAdmin from './ApiKeysAdmin';
 import { CasinoOfferModal } from './modals';
+import LandingAdmin from './LandingAdmin';
 import { 
   SidePanel, 
   StatsCard, 
@@ -40,7 +41,7 @@ import {
 } from './components';
 
 // Valid tab IDs for URL deep linking
-const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance', 'extension', 'apikeys'];
+const VALID_TABS = ['users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance', 'extension', 'apikeys', 'landing'];
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -3840,7 +3841,9 @@ export default function AdminPanel() {
               'license','welcome_bonus','languages','established','live_support',
               'details','deposit_methods','video_url','promo_code',
               'crypto_friendly','vpn_friendly','is_premium','is_active','display_order',
-              'highlights'
+              'highlights',
+              'landing_tag','landing_tag_color','landing_model','landing_badges',
+              'landing_accent_color','landing_logo_bg'
             ];
             const payload = {};
             for (const key of ALLOWED_COLS) {
@@ -7549,6 +7552,11 @@ export default function AdminPanel() {
       {/* API Keys Tab */}
       {activeTab === 'apikeys' && (
         <ApiKeysAdmin />
+      )}
+
+      {/* Landing Page Tab */}
+      {activeTab === 'landing' && (
+        <LandingAdmin />
       )}
     </div>
   );

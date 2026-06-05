@@ -81,7 +81,7 @@ function HeroGameMockup() {
           <div className="lp-dash-topbar-right">
             <span className="lp-dash-icon-btn">📅</span>
             <span className="lp-dash-icon-btn">🔔</span>
-            <span className="lp-dash-live">▶ AO VIVO</span>
+            <span className="lp-dash-live">▶ LIVE</span>
           </div>
         </div>
 
@@ -89,7 +89,7 @@ function HeroGameMockup() {
         <div className="lp-dash-body">
           {/* Sidebar */}
           <div className="lp-dash-sidebar">
-            {['Dashboard', 'Alertas', 'Chatbot', 'Metas', 'Giveaways', 'Lealdade', 'Analytics', 'Config.'].map((item, i) => (
+            {['Dashboard', 'Alerts', 'Chatbot', 'Goals', 'Giveaways', 'Loyalty', 'Analytics', 'Settings'].map((item, i) => (
               <div key={item} className={`lp-dash-sitem${i === 0 ? ' lp-dash-sitem--on' : ''}`}>{item}</div>
             ))}
           </div>
@@ -99,21 +99,21 @@ function HeroGameMockup() {
             {/* Stat cards */}
             <div className="lp-dash-stats">
               <div className="lp-dash-stat">
-                <div className="lp-dash-stat-lbl">Audiência</div>
+                <div className="lp-dash-stat-lbl">Audience</div>
                 <div className="lp-dash-stat-val">12.5K <span className="lp-dash-up">+28%</span></div>
-                <div className="lp-dash-stat-sub">vs última semana</div>
+                <div className="lp-dash-stat-sub">vs last week</div>
                 <div className="lp-dash-spark lp-dash-spark--purple" />
               </div>
               <div className="lp-dash-stat">
-                <div className="lp-dash-stat-lbl">Engajamento</div>
+                <div className="lp-dash-stat-lbl">Engagement</div>
                 <div className="lp-dash-stat-val">8.9K <span className="lp-dash-up">+35%</span></div>
-                <div className="lp-dash-stat-sub">vs última semana</div>
+                <div className="lp-dash-stat-sub">vs last week</div>
                 <div className="lp-dash-spark lp-dash-spark--bars" />
               </div>
               <div className="lp-dash-stat">
-                <div className="lp-dash-stat-lbl">Receita</div>
+                <div className="lp-dash-stat-lbl">Revenue</div>
                 <div className="lp-dash-stat-val">€4.7K <span className="lp-dash-up">+42%</span></div>
-                <div className="lp-dash-stat-sub">vs última semana</div>
+                <div className="lp-dash-stat-sub">vs last week</div>
                 <div className="lp-dash-spark lp-dash-spark--pink" />
               </div>
             </div>
@@ -121,19 +121,19 @@ function HeroGameMockup() {
             {/* Bottom row */}
             <div className="lp-dash-bottom">
               <div className="lp-dash-goal">
-                <div className="lp-dash-goal-lbl">Meta de inscritos</div>
-                <div className="lp-dash-goal-val">8.750 <span>/ 10.000</span></div>
+                <div className="lp-dash-goal-lbl">Subscriber goal</div>
+                <div className="lp-dash-goal-val">8,750 <span>/ 10,000</span></div>
                 <div className="lp-dash-prog-track">
                   <div className="lp-dash-prog-bar" style={{ width: '87%' }} />
                 </div>
                 <div className="lp-dash-goal-pct">87%</div>
               </div>
               <div className="lp-dash-alerts">
-                <div className="lp-dash-alerts-lbl">Alertas recentes</div>
+                <div className="lp-dash-alerts-lbl">Recent alerts</div>
                 {[
-                  { icon: '💜', text: 'Novo seguidor',    time: 'há 2m' },
-                  { icon: '💰', text: 'Doação recebida',  time: 'há 5m' },
-                  { icon: '✅', text: 'Novo inscrito',    time: 'há 7m' },
+                  { icon: '💜', text: 'New follower',       time: '2m ago' },
+                  { icon: '💰', text: 'Donation received',  time: '5m ago' },
+                  { icon: '✅', text: 'New subscriber',     time: '7m ago' },
                 ].map(a => (
                   <div key={a.text} className="lp-dash-alert-row">
                     <span>{a.icon}</span>
@@ -146,11 +146,11 @@ function HeroGameMockup() {
 
             {/* Trust strip */}
             <div className="lp-dash-trust">
-              <span>⭐ Confiado por milhares de streamers</span>
+              <span>⭐ Trusted by thousands of streamers</span>
               <div className="lp-dash-avatars">
                 {['🧑', '👩', '🧔'].map((a, i) => <span key={i} className="lp-dash-av">{a}</span>)}
               </div>
-              <span className="lp-dash-trust-count">+10k streamers ativos</span>
+              <span className="lp-dash-trust-count">+10k active streamers</span>
             </div>
           </div>
         </div>
@@ -164,6 +164,7 @@ export default function LandingPage() {
   const [showAuthModal, setShowAuthModal]             = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [casinoOffers, setCasinoOffers]               = useState([]);
+  const [pricingPlans, setPricingPlans]               = useState([]);
   const [activeFilter, setActiveFilter]               = useState('All');
   const [billingAnnual, setBillingAnnual]             = useState(true);
   const { user }                                      = useAuth();
@@ -174,6 +175,9 @@ export default function LandingPage() {
     supabase.from('casino_offers').select('*').eq('is_active', true)
       .order('display_order', { ascending: true }).limit(5)
       .then(({ data }) => { if (data) setCasinoOffers(data); });
+    supabase.from('landing_pricing_plans').select('*').eq('is_active', true)
+      .order('display_order', { ascending: true })
+      .then(({ data }) => { if (data?.length) setPricingPlans(data); });
   }, []);
 
   const handleOfferClick = (offer) => {
@@ -185,6 +189,23 @@ export default function LandingPage() {
   const partners = casinoOffers.length > 0
     ? casinoOffers.slice(0, 5).map((o, i) => ({ ...FEATURED_PARTNERS[i], ...o, _fp: FEATURED_PARTNERS[i] }))
     : FEATURED_PARTNERS;
+
+  // Normalize DB pricing plans to match static schema
+  const activePlans = pricingPlans.length > 0
+    ? pricingPlans.map(p => ({
+        id:        p.id,
+        name:      p.name,
+        price:     p.price,
+        period:    p.period,
+        badge:     p.badge,
+        badgeType: p.badge_type,
+        desc:      p.description,
+        subPrice:  p.sub_price,
+        features:  Array.isArray(p.features) ? p.features : [],
+        cta:       p.cta || 'Get Started',
+        highlight: p.is_highlighted,
+      }))
+    : PRICING;
 
   return (
     <>
@@ -217,36 +238,36 @@ export default function LandingPage() {
               <div className="lp-hero-copy">
                 <div className="lp-badge">
                   <span className="lp-badge-dot" />
-                  A PLATAFORMA COMPLETA PARA STREAMERS
+                  THE COMPLETE PLATFORM FOR STREAMERS
                 </div>
                 <h1 className="lp-h1">
-                  Impulsione sua live<br />
-                  <span className="lp-grad">&amp; ganhe mais!</span>
+                  Grow your stream<br />
+                  <span className="lp-grad">&amp; earn more!</span>
                 </h1>
                 <p className="lp-hero-sub">
-                  Ferramentas poderosas para crescer sua audiência,
-                  engajar sua comunidade e aumentar sua renda.
+                  Powerful tools to grow your audience, engage your
+                  community and increase your revenue.
                 </p>
                 <div className="lp-hero-ctas">
                   <button className="lp-btn-primary" onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}>
-                    🚀 COMECE AGORA
+                    🚀 GET STARTED
                   </button>
                   <button className="lp-btn-outline-hero" onClick={() => navigate('/offers')}>
-                    ▶ SAIBA MAIS
+                    ▶ LEARN MORE
                   </button>
                 </div>
                 <div className="lp-hero-feats">
                   <div className="lp-hero-feat">
                     <span className="lp-hero-feat-icon">👥</span>
-                    <div><div className="lp-hero-feat-title">Mais audiência</div><div className="lp-hero-feat-sub">Cresça sua comunidade</div></div>
+                    <div><div className="lp-hero-feat-title">More audience</div><div className="lp-hero-feat-sub">Grow your community</div></div>
                   </div>
                   <div className="lp-hero-feat">
                     <span className="lp-hero-feat-icon">📈</span>
-                    <div><div className="lp-hero-feat-title">Mais engajamento</div><div className="lp-hero-feat-sub">Interaja e retenha mais</div></div>
+                    <div><div className="lp-hero-feat-title">More engagement</div><div className="lp-hero-feat-sub">Interact and retain more</div></div>
                   </div>
                   <div className="lp-hero-feat">
                     <span className="lp-hero-feat-icon">💰</span>
-                    <div><div className="lp-hero-feat-title">Mais ganhos</div><div className="lp-hero-feat-sub">Monetize seu conteúdo</div></div>
+                    <div><div className="lp-hero-feat-title">More earnings</div><div className="lp-hero-feat-sub">Monetize your content</div></div>
                   </div>
                 </div>
               </div>
@@ -271,7 +292,7 @@ export default function LandingPage() {
             </div>
 
             <div className="lp-pricing-grid">
-              {PRICING.map(plan => (
+              {activePlans.map(plan => (
                 <div key={plan.id} className={`lp-price-card ${plan.highlight ? 'lp-price-card--hi' : ''}`}>
                   {plan.badge && (
                     <div className={`lp-price-badge lp-price-badge--${plan.badgeType}`}>{plan.badge}</div>
@@ -308,24 +329,36 @@ export default function LandingPage() {
 
             <div className="lp-partners-grid">
               {partners.map((p, i) => {
-                const fp   = p._fp || FEATURED_PARTNERS[i] || FEATURED_PARTNERS[0];
-                const name = p.casino_name || fp.name;
+                const fp       = p._fp || FEATURED_PARTNERS[i] || FEATURED_PARTNERS[0];
+                const name     = p.casino_name || fp.name;
+                const tag      = p.landing_tag        || fp.tag;
+                const tagColor = p.landing_tag_color  || fp.tagColor;
+                const logoBg   = p.landing_logo_bg    || fp.logoBg;
+                const accent   = p.landing_accent_color || fp.accent;
+                const model    = p.landing_model      || fp.model;
+                const badges   = (() => {
+                  if (p.landing_badges) {
+                    const b = Array.isArray(p.landing_badges) ? p.landing_badges : null;
+                    if (b?.length) return b;
+                  }
+                  return fp.badges;
+                })();
                 return (
-                  <div key={fp.id} className="lp-partner-card">
-                    <div className="lp-ptag" style={{ background: `${fp.tagColor}22`, color: fp.tagColor, border: `1px solid ${fp.tagColor}44` }}>
-                      {fp.tag}
+                  <div key={fp.id || i} className="lp-partner-card">
+                    <div className="lp-ptag" style={{ background: `${tagColor}22`, color: tagColor, border: `1px solid ${tagColor}44` }}>
+                      {tag}
                     </div>
-                    <div className="lp-plogo" style={{ background: fp.logoBg }}>
+                    <div className="lp-plogo" style={{ background: logoBg }}>
                       {p.list_image_url
                         ? <img src={p.list_image_url} alt={name} />
                         : <span style={{ fontSize: '1.6rem' }}>{fp.logo}</span>}
                     </div>
                     <div className="lp-pname">{name}</div>
-                    <div className="lp-pmodel" style={{ color: fp.accent }}>{fp.model}</div>
+                    <div className="lp-pmodel" style={{ color: accent }}>{model}</div>
                     <div className="lp-pchecks">
-                      {fp.badges.map(b => (
+                      {badges.map(b => (
                         <div key={b} className="lp-pcheck">
-                          <span className="lp-pcheck-tick" style={{ color: fp.accent }}>✓</span>
+                          <span className="lp-pcheck-tick" style={{ color: accent }}>✓</span>
                           {b}
                         </div>
                       ))}

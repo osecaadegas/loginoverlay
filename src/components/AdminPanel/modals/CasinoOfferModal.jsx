@@ -48,7 +48,13 @@ const EMPTY_FORM = {
   vpn_friendly: false,
   is_premium: false,
   is_active: true,
-  display_order: 0
+  display_order: 0,
+  landing_tag: '',
+  landing_tag_color: '',
+  landing_model: '',
+  landing_badges: '',
+  landing_accent_color: '',
+  landing_logo_bg: '',
 };
 
 export default function CasinoOfferModal({ 
@@ -96,7 +102,15 @@ export default function CasinoOfferModal({
           vpn_friendly: editingOffer.vpn_friendly || false,
           is_premium: editingOffer.is_premium || false,
           is_active: editingOffer.is_active !== false,
-          display_order: editingOffer.display_order || 0
+          display_order: editingOffer.display_order || 0,
+          landing_tag: editingOffer.landing_tag || '',
+          landing_tag_color: editingOffer.landing_tag_color || '',
+          landing_model: editingOffer.landing_model || '',
+          landing_badges: Array.isArray(editingOffer.landing_badges)
+            ? editingOffer.landing_badges.join('\n')
+            : (editingOffer.landing_badges || ''),
+          landing_accent_color: editingOffer.landing_accent_color || '',
+          landing_logo_bg: editingOffer.landing_logo_bg || '',
         });
       } else {
         setFormData({ ...EMPTY_FORM });
@@ -113,7 +127,14 @@ export default function CasinoOfferModal({
       alert('Please fill in all required fields (Casino Name, Title, Card Image URL)');
       return;
     }
-    onSave(formData);
+    // Convert landing_badges textarea (one per line) to JSON array
+    const payload = {
+      ...formData,
+      landing_badges: formData.landing_badges
+        ? formData.landing_badges.split('\n').map(s => s.trim()).filter(Boolean)
+        : [],
+    };
+    onSave(payload);
   };
 
   const handleBackdropClick = (e) => {
@@ -372,6 +393,45 @@ export default function CasinoOfferModal({
                 <span className="co-toggle-slider"></span>
                 <span className="co-toggle-label">₿ Crypto Friendly</span>
               </label>
+            </div>
+          </div>
+
+          {/* Landing Card Display */}
+          <div className="co-section">
+            <div className="co-section-title">🏠 Landing Card Display</div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Tag Label</label>
+                <input type="text" value={formData.landing_tag} onChange={e => handleChange('landing_tag', e.target.value)} placeholder="TOP PARTNER" />
+              </div>
+              <div className="co-field">
+                <label>Tag Color (hex)</label>
+                <input type="text" value={formData.landing_tag_color} onChange={e => handleChange('landing_tag_color', e.target.value)} placeholder="#0ea5e9" />
+              </div>
+            </div>
+            <div className="co-row">
+              <div className="co-field">
+                <label>Model / Deal Type</label>
+                <input type="text" value={formData.landing_model} onChange={e => handleChange('landing_model', e.target.value)} placeholder="40% Rev Share" />
+              </div>
+              <div className="co-field">
+                <label>Accent Color (hex)</label>
+                <input type="text" value={formData.landing_accent_color} onChange={e => handleChange('landing_accent_color', e.target.value)} placeholder="#0ea5e9" />
+              </div>
+              <div className="co-field">
+                <label>Logo Background</label>
+                <input type="text" value={formData.landing_logo_bg} onChange={e => handleChange('landing_logo_bg', e.target.value)} placeholder="#003366" />
+              </div>
+            </div>
+            <div className="co-field">
+              <label>Feature Badges <span style={{ fontWeight: 400, color: '#64748b' }}>(one per line)</span></label>
+              <textarea
+                rows={3}
+                value={formData.landing_badges}
+                onChange={e => handleChange('landing_badges', e.target.value)}
+                placeholder={'CPA Available\nWeekly Payments\nFast Approval'}
+                style={{ resize: 'vertical', fontFamily: 'inherit', fontSize: '0.82rem', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '7px 10px', color: '#e2e8f0', outline: 'none' }}
+              />
             </div>
           </div>
 
