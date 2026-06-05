@@ -833,6 +833,31 @@ export default function ProfileSection({ widgets, saveWidget }) {
               Find these in your <a href="https://streamelements.com/dashboard/account/channels" target="_blank" rel="noreferrer" style={{ color: '#dbe2e8' }}>SE Dashboard</a> → Account → Channels.
               <br />Each user must enter their own credentials. Saved per-account.
             </p>
+
+            {/* ── !bet command URL ── */}
+            <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(99,102,241,0.08)', borderRadius: 8, border: '1px solid rgba(99,102,241,0.25)' }}>
+              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#a5b4fc', margin: '0 0 4px' }}>
+                🔗 !bet Command URL
+              </p>
+              <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0 0 6px' }}>
+                In SE, create a custom command <code style={{ color: '#c7d2fe' }}>!bet</code> with this URL response:
+              </p>
+              <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(99,102,241,0.2)' }}>
+                <code style={{ flex: 1, display: 'block', fontSize: '0.65rem', wordBreak: 'break-all', color: '#c7d2fe', background: 'rgba(0,0,0,0.35)', padding: '7px 9px', lineHeight: 1.6 }}>
+                  {`${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || '<your-user-id>'}&w1=\${1}&w2=\${2}&requester=\${user.username}`}
+                </code>
+                <button
+                  style={{ background: 'rgba(99,102,241,0.2)', border: 'none', color: '#a5b4fc', padding: '0 12px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}
+                  onClick={() => {
+                    const url = `${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || ''}&w1=\${1}&w2=\${2}&requester=\${user.username}`;
+                    navigator.clipboard.writeText(url).catch(() => {});
+                  }}
+                >📋</button>
+              </div>
+              <p style={{ fontSize: '0.68rem', color: '#64748b', margin: '5px 0 0' }}>
+                <code style={{ color: '#818cf8' }}>{'${1}'}</code> = option · <code style={{ color: '#818cf8' }}>{'${2}'}</code> = amount · <code style={{ color: '#818cf8' }}>{'${user.username}'}</code> = viewer (SE placeholders)
+              </p>
+            </div>
           </div>
 
           {/* Preferences card */}
