@@ -172,7 +172,7 @@ export default function LandingPage() {
 
       <div className="lp-content">
 
-          {/* ════ HERO ════ */
+          {/* ════ HERO ════ */}
           <section className="lp-hero">
             <div className="lp-hero-orb lp-hero-orb-1" />
             <div className="lp-hero-orb lp-hero-orb-2" />
