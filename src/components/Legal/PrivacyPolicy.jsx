@@ -5,7 +5,7 @@ export default function PrivacyPolicy() {
     <div className="legal-page">
       <div className="legal-container">
         <h1 className="legal-title">Privacy Policy</h1>
-        <p className="legal-updated">Last updated: March 1, 2026</p>
+        <p className="legal-updated">Last updated: June 5, 2026</p>
 
         <section className="legal-section">
           <h2>1. Introduction</h2>
@@ -42,10 +42,9 @@ export default function PrivacyPolicy() {
 
           <h3>2.3 Payment Information</h3>
           <p>
-            When you purchase a premium subscription, payment processing is handled entirely by
-            <strong> Stripe</strong>. We do not store your credit card number, CVV, or full payment
-            details on our servers. We only receive confirmation of payment status and your
-            subscription details.
+            The Service does not currently process card payments directly inside the public app.
+            If paid services are enabled in the future, payment processing will be handled by an
+            external provider and this policy will be updated to reflect that flow.
           </p>
         </section>
 
@@ -55,7 +54,7 @@ export default function PrivacyPolicy() {
           <ul>
             <li>Provide, operate, and maintain our Service</li>
             <li>Manage your account and provide access to features</li>
-            <li>Process payments and manage subscriptions</li>
+            <li>Manage premium access or paid services when they are enabled</li>
             <li>Track points and community participation (via StreamElements)</li>
             <li>Communicate with you about your account or the Service</li>
             <li>Detect and prevent fraud or abuse</li>
@@ -79,7 +78,6 @@ export default function PrivacyPolicy() {
           <ul>
             <li><strong>Twitch (Amazon)</strong> — Authentication</li>
             <li><strong>Supabase</strong> — Database and authentication</li>
-            <li><strong>Stripe</strong> — Payment processing</li>
             <li><strong>StreamElements</strong> — Points and loyalty system</li>
             <li><strong>Vercel</strong> — Website hosting and analytics</li>
           </ul>

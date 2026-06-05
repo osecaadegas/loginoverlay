@@ -1,68 +1,74 @@
-# Documentation Index
+# Documentation Hub
 
-Welcome to the LoginOverlay documentation! This folder contains all guides and documentation for the project.
+This folder contains the current documentation set for osecaadegas.pt.
 
-## 📋 Table of Contents
+The docs were audited on 2026-06-05. Old Stripe payment guides, mines troubleshooting, and the original SaaS overlay subscription docs were removed because they no longer match the runtime code.
 
-### Setup & Configuration
-- [Admin Setup Guide](./ADMIN_SETUP_GUIDE.md) - How to set up admin accounts and permissions
-- [Authentication Setup Guide](./AUTHENTICATION_SETUP_GUIDE.md) - Configure authentication and user management
-- [OAuth Setup Guide](./OAUTH_SETUP_GUIDE.md) - Set up OAuth integrations
-- [Storage Setup](./STORAGE_SETUP.md) - Configure storage and database
-- [Get Service Role Key](./GET_SERVICE_ROLE_KEY.md) - Obtain and configure service role keys
+## Start here
 
-### Role System
-- [Role System Guide](./ROLE_SYSTEM_GUIDE.md) - Complete role management system
-- [Multiple Roles Setup](./MULTIPLE_ROLES_SETUP.md) - Configure multiple role support
-- [Visual Role Guide](./VISUAL_ROLE_GUIDE.md) - Visual guide to role management
-- [Slot Modder Guide](./SLOT_MODDER_GUIDE.md) - Guide for slot modder role
+- [QUICK_SETUP_GUIDE.md](./QUICK_SETUP_GUIDE.md) for local setup
+- [GO_LIVE_CHECKLIST.md](./GO_LIVE_CHECKLIST.md) for deployment readiness
+- [../migrations/README.md](../migrations/README.md) for the migration map and legacy cleanup boundary
 
-### Features & Integration
-- [Tournament Structure](./TOURNAMENT_STRUCTURE.md) - Tournament system documentation
-- [StreamElements Integration Guide](./STREAMELEMENTS_INTEGRATION_GUIDE.md) - Integrate with StreamElements
-- [Themes Documentation](./THEMES_DOCUMENTATION.md) - Customize themes and appearance
+## Platform setup
 
-### Migration & Updates
-- [Quick Start Migration](./QUICK_START_MIGRATION.md) - Quick migration guide
-- [Slot Migration Guide](./SLOT_MIGRATION_GUIDE.md) - Migrate slot data
-- [Session Changes](./SESSION_CHANGES.md) - Session management updates
+- [AUTHENTICATION_SETUP_GUIDE.md](./AUTHENTICATION_SETUP_GUIDE.md)
+- [OAUTH_SETUP_GUIDE.md](./OAUTH_SETUP_GUIDE.md)
+- [STORAGE_SETUP.md](./STORAGE_SETUP.md)
+- [GET_SERVICE_ROLE_KEY.md](./GET_SERVICE_ROLE_KEY.md)
+- [DEPENDENCIES.md](./DEPENDENCIES.md)
+- [DOMAIN_UPDATE_CHECKLIST.md](./DOMAIN_UPDATE_CHECKLIST.md)
+- [ONE_COM_DNS_SETUP.md](./ONE_COM_DNS_SETUP.md)
 
-### Development
-- [Reorganization Complete](./REORGANIZATION_COMPLETE.md) - Code reorganization details
-- [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md) - Pre-deployment verification
-- [Next Steps](./NEXT_STEPS.md) - Planned features and roadmap
+## Overlay, admin, and customization
 
-## 🚀 Quick Links
+- [WIDGET_SYSTEM_COMPLETE.md](./WIDGET_SYSTEM_COMPLETE.md)
+- [THEME_SYSTEM_COMPLETE.md](./THEME_SYSTEM_COMPLETE.md)
+- [THEMES_DOCUMENTATION.md](./THEMES_DOCUMENTATION.md)
+- [TRANSLATION_SYSTEM_GUIDE.md](./TRANSLATION_SYSTEM_GUIDE.md)
+- [ROLE_SYSTEM_GUIDE.md](./ROLE_SYSTEM_GUIDE.md)
+- [MULTIPLE_ROLES_SETUP.md](./MULTIPLE_ROLES_SETUP.md)
+- [VISUAL_ROLE_GUIDE.md](./VISUAL_ROLE_GUIDE.md)
+- [CUSTOM_MESSAGES_GUIDE.md](./CUSTOM_MESSAGES_GUIDE.md)
 
-### For Administrators
-1. Start with [Admin Setup Guide](./ADMIN_SETUP_GUIDE.md)
-2. Configure [Authentication](./AUTHENTICATION_SETUP_GUIDE.md)
-3. Set up [Roles](./ROLE_SYSTEM_GUIDE.md)
+## Stream and community systems
 
-### For Developers
-1. Review [Reorganization Complete](./REORGANIZATION_COMPLETE.md) for code structure
-2. Check [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md) before deploying
-3. See [Next Steps](./NEXT_STEPS.md) for planned features
+- [STREAMELEMENTS_INTEGRATION_GUIDE.md](./STREAMELEMENTS_INTEGRATION_GUIDE.md)
+- [TOURNAMENT_STRUCTURE.md](./TOURNAMENT_STRUCTURE.md)
+- [DAILY_WHEEL_SETUP.md](./DAILY_WHEEL_SETUP.md)
+- [STREAM_HIGHLIGHTS_GUIDE.md](./STREAM_HIGHLIGHTS_GUIDE.md)
+- [SLOT_MIGRATION_GUIDE.md](./SLOT_MIGRATION_GUIDE.md)
+- [SLOT_MODDER_GUIDE.md](./SLOT_MODDER_GUIDE.md)
 
-### For Content Creators
-1. Follow [StreamElements Integration Guide](./STREAMELEMENTS_INTEGRATION_GUIDE.md)
-2. Learn about [Tournaments](./TOURNAMENT_STRUCTURE.md)
-3. Customize with [Themes Documentation](./THEMES_DOCUMENTATION.md)
+## The Life and related systems
 
-## 📝 Contributing
+- [THE_LIFE_DESIGN_SYSTEM.md](./THE_LIFE_DESIGN_SYSTEM.md)
+- [THE_LIFE_ADMIN_GUIDE.md](./THE_LIFE_ADMIN_GUIDE.md)
+- [CATEGORY_INFO_SETUP.md](./CATEGORY_INFO_SETUP.md)
+- [CRIME_GAME_DESIGN.md](./CRIME_GAME_DESIGN.md)
+- [WORKER_SYSTEM_COMPLETE.md](./WORKER_SYSTEM_COMPLETE.md)
+- [INVENTORY_SYSTEM.md](./INVENTORY_SYSTEM.md)
+- [INVENTORY_SETUP_GUIDE.md](./INVENTORY_SETUP_GUIDE.md)
+- [NEWS_FEED_SYSTEM.md](./NEWS_FEED_SYSTEM.md)
+- [SEASON_WIPE_SYSTEM_GUIDE.md](./SEASON_WIPE_SYSTEM_GUIDE.md)
+- [PVP_SETUP_QUICK_START.md](./PVP_SETUP_QUICK_START.md)
+- [PVP_PRESENCE_SYSTEM.md](./PVP_PRESENCE_SYSTEM.md)
+- [PVP_CHAT_SETUP.md](./PVP_CHAT_SETUP.md)
+- [PVP_IMPROVEMENTS.md](./PVP_IMPROVEMENTS.md)
+- [RANDOM_BOAT_SPAWNER.md](./RANDOM_BOAT_SPAWNER.md)
+- [MOCK_PVP_USERS_GUIDE.md](./MOCK_PVP_USERS_GUIDE.md)
 
-When adding new documentation:
-1. Create your `.md` file in this folder
-2. Add it to the appropriate section in this index
-3. Update the main README if it's a major guide
-4. Use clear headings and examples
+## Operations and audits
 
-## 🔗 External Resources
+- [ANALYTICS_AUDIT_REPORT.md](./ANALYTICS_AUDIT_REPORT.md)
+- [PERFORMANCE_OPTIMIZATIONS.md](./PERFORMANCE_OPTIMIZATIONS.md)
+- [EGRESS_FIX_PLAN.md](./EGRESS_FIX_PLAN.md)
+- [EGRESS_FIX_COMPLETED.md](./EGRESS_FIX_COMPLETED.md)
+- [UX_UI_RESPONSIVE_AUDIT_2026.md](./UX_UI_RESPONSIVE_AUDIT_2026.md)
 
-- Main README: [../README.md](../README.md)
-- Issues & Bugs: Create an issue in the repository
-- Feature Requests: Check [Next Steps](./NEXT_STEPS.md) first
+## Removed as stale
 
----
-
-**Last Updated:** December 12, 2025
+- Stripe payment setup docs
+- Mines troubleshooting docs
+- Original SaaS overlay/subscription guides
+- Old project tracking notes that referenced removed or placeholder features

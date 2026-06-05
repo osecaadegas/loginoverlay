@@ -51,28 +51,27 @@ import { awardItemByName } from '../utils/inventoryUtils';
 await awardItemByName(user.id, 'Golden Trophy', 1);
 ```
 
-## Step 5: Integrate with Games
+## Step 5: Integrate with Features
 
-Add item rewards to your games:
+Add item rewards to the live systems you actually use:
 
-### Blackjack Example
+### Tournament Example
 ```javascript
-// In BlackjackPremium.jsx, after a win
+// After a tournament winner is resolved
 import { awardItemByName } from '../../utils/inventoryUtils';
 
-if (playerValue === 21 && playerHand.length === 2) {
-  // Blackjack achievement
-  await awardItemByName(user.id, 'Golden Trophy', 1);
+if (placement === 1) {
+  await awardItemByName(user.id, 'Champion Trophy', 1);
 }
 ```
 
-### Mines Example
+### Community Milestone Example
 ```javascript
-// In Mines.jsx, after successful cashout
+// Example: reward a trusted contributor milestone
 import { awardItemByName } from '../../utils/inventoryUtils';
 
-if (revealedCells.length >= 20) {
-  await awardItemByName(user.id, 'Lucky Charm', 1);
+if (approvedSlots >= 100) {
+  await awardItemByName(user.id, 'Slot Scout Badge', 1);
 }
 ```
 

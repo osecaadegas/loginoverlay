@@ -5,7 +5,7 @@ export default function TermsOfService() {
     <div className="legal-page">
       <div className="legal-container">
         <h1 className="legal-title">Terms of Service</h1>
-        <p className="legal-updated">Last updated: March 1, 2026</p>
+        <p className="legal-updated">Last updated: June 5, 2026</p>
 
         <section className="legal-section">
           <h2>1. Acceptance of Terms</h2>
@@ -46,24 +46,24 @@ export default function TermsOfService() {
         </section>
 
         <section className="legal-section">
-          <h2>4. Premium Subscriptions</h2>
-          <h3>4.1 Subscription Plans</h3>
+          <h2>4. Premium Access and Paid Services</h2>
+          <h3>4.1 Availability</h3>
           <p>
-            We offer premium subscriptions that grant access to the Overlay Control Center and
-            other premium features. Available plans include monthly, quarterly, semi-annual, and
-            annual options.
+            We may offer premium access to selected features such as the Overlay Control Center or
+            other paid services. Any paid access terms, duration, and scope will be presented at
+            the time of purchase or activation.
           </p>
 
           <h3>4.2 Billing</h3>
           <p>
-            Premium subscriptions are billed on a recurring basis according to the plan selected.
-            Payments are processed securely through <strong>Stripe</strong>. By subscribing, you
-            authorize us to charge your payment method on a recurring basis until you cancel.
+            If a paid plan or paid service is enabled, the applicable billing terms will be shown
+            before you complete the purchase. Where a third-party payment provider is used, that
+            checkout flow will govern the payment transaction itself.
           </p>
 
           <h3>4.3 Cancellation</h3>
           <p>
-            You may cancel your subscription at any time. Upon cancellation:
+            If a recurring paid plan is active, you may cancel it at any time. Upon cancellation:
           </p>
           <ul>
             <li>You will retain access until the end of your current billing period</li>
@@ -74,7 +74,8 @@ export default function TermsOfService() {
           <h3>4.4 Refunds</h3>
           <p>
             Refund requests may be considered on a case-by-case basis within 14 days of purchase,
-            in accordance with EU consumer protection laws. To request a refund, please contact us.
+            subject to the terms shown at checkout and applicable EU consumer protection laws.
+            To request a refund, please contact us.
           </p>
         </section>
 

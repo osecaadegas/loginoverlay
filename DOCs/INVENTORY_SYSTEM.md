@@ -116,19 +116,19 @@ VALUES ('New Item', 'Item description', 'item', '⚡', 'epic', true);
 
 ## Integration Examples
 
-### Award Item on Blackjack Win
+### Award Item on Tournament Win
 ```javascript
-// In BlackjackPremium.jsx
-if (playerWon && currentBet >= 100) {
-  await awardItemByName(user.id, 'Golden Trophy', 1);
+// After a tournament winner is resolved
+if (placement === 1) {
+  await awardItemByName(user.id, 'Champion Trophy', 1);
 }
 ```
 
-### Award Item on Mines Success
+### Award Item on Community Milestone
 ```javascript
-// In Mines.jsx
-if (revealedCells.length >= 20) {
-  await awardItemByName(user.id, 'Lucky Charm', 1);
+// Example: reward a user after a verified slot or community milestone
+if (approvedSlots >= 100) {
+  await awardItemByName(user.id, 'Slot Scout Badge', 1);
 }
 ```
 
