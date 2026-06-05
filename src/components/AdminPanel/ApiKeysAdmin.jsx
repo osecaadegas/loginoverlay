@@ -77,38 +77,17 @@ export default function ApiKeysAdmin() {
 
   useEffect(() => { loadData(); }, [loadData]);
 
-  // Search users to grant access — only premium users
+  // Search users to grant access — all users
   const searchUsers = async (query) => {
     setGrantSearch(query);
     if (query.length < 2) { setSearchResults([]); return; }
 
     try {
-      // Get premium user IDs first
-      const { data: premiumRoles, error: rolesErr } = await supabase
-        .from('user_roles')
-        .select('user_id')
-        .eq('role', 'premium')
-        .eq('is_active', true);
-
-      if (rolesErr) {
-        console.error('Roles query error:', rolesErr);
-        setError('Failed to search premium users');
-        return;
-      }
-
-      const premiumIds = (premiumRoles || []).map(r => r.user_id);
-      if (premiumIds.length === 0) { 
-        setSearchResults([]);
-        setError('No premium users found. Users need the "premium" role first.');
-        setTimeout(() => setError(''), 5000);
-        return; 
-      }
-
-      // Fetch all premium user profiles
       const { data, error: profErr } = await supabase
         .from('user_profiles')
         .select('user_id, twitch_username, avatar_url')
-        .in('user_id', premiumIds);
+        .ilike('twitch_username', `%${query}%`)
+        .limit(8);
 
       if (profErr) {
         console.error('Profiles query error:', profErr);
@@ -116,18 +95,7 @@ export default function ApiKeysAdmin() {
         return;
       }
 
-      // Filter in JS (PostgREST can't combine .in() with .or())
-      const lowerQuery = query.toLowerCase();
-      const filtered = (data || []).filter(u => 
-        u.twitch_username?.toLowerCase().includes(lowerQuery)
-      ).slice(0, 8);
-
-      setSearchResults(filtered);
-      
-      if (filtered.length === 0 && query.length >= 2) {
-        setError('No premium users found matching that search');
-        setTimeout(() => setError(''), 3000);
-      }
+      setSearchResults(data || []);
     } catch (err) {
       console.error('Search error:', err);
       setError('Search failed');
@@ -215,10 +183,6 @@ export default function ApiKeysAdmin() {
       {/* ─── Grant Access ─── */}
       <div style={{ background: '#1e293b', borderRadius: 12, padding: '1rem', marginBottom: '1.5rem', border: '1px solid #334155' }}>
         <h3 style={{ margin: '0 0 0.75rem', color: '#e5e7eb', fontSize: '1rem' }}>Grant API Access</h3>
-        <p style={{ color: '#9ca3af', fontSize: '0.8rem', marginBottom: '0.75rem' }}>
-          💡 Only users with the <strong style={{ color: '#a78bfa' }}>premium</strong> role can be granted API access. 
-          Assign the premium role in User Management first.
-        </p>
         <input
           type="text"
           placeholder="Search premium users by Twitch username..."
