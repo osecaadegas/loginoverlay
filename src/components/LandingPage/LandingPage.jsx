@@ -208,61 +208,6 @@ export default function LandingPage() {
             </div>
           </section>
 
-          {/* ════ STATS + ACCOUNT ROW ════ */}
-          <div className="lp-stats-row">
-            <div className="lp-stats-grid">
-              {[
-                { icon: '👥', end: 1250,  suffix: '+',  prefix: '',  label: 'Active Streamers'             },
-                { icon: '💶', end: 48000, suffix: '+',  prefix: '€', label: 'Affiliate Revenue Generated'  },
-                { icon: '🤝', end: 15,    suffix: '+',  prefix: '',  label: 'Partner Brands'               },
-                { icon: '🎧', end: 24,    suffix: '/7', prefix: '',  label: 'Premium Support'              },
-              ].map(s => (
-                <div key={s.label} className="lp-stat-item">
-                  <div className="lp-stat-icon-wrap">{s.icon}</div>
-                  <div>
-                    <div className="lp-stat-num"><Counter end={s.end} suffix={s.suffix} prefix={s.prefix} /></div>
-                    <div className="lp-stat-lbl">{s.label}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Your Account card */}
-            <div className="lp-acct-card">
-              <div className="lp-acct-title">Your Account</div>
-              <button
-                className="lp-acct-premium-btn"
-                onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}
-              >
-                <span className="lp-acct-crown">♛</span>
-                {user ? 'Premium Active' : 'Upgrade to Premium'}
-              </button>
-
-              {user && (
-                <>
-                  <div className="lp-acct-divider" />
-                  {[
-                    { icon: '🤝', label: 'Affiliate Status',  val: '—', c: '#6366f1' },
-                    { icon: '👥', label: 'Total Referrals',   val: '—', c: '#10b981' },
-                    { icon: '💶', label: 'Estimated Revenue', val: '—', c: '#f59e0b', bold: true },
-                  ].map(r => (
-                    <div key={r.label} className="lp-acct-row">
-                      <div className="lp-acct-row-icon" style={{ color: r.c }}>{r.icon}</div>
-                      <div className="lp-acct-row-body">
-                        <span className="lp-acct-row-lbl">{r.label}</span>
-                        <span className="lp-acct-row-val" style={r.bold ? { color: r.c } : {}}>{r.val}</span>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
-
-              <button className="lp-acct-dash-btn" onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}>
-                {user ? 'Go to Dashboard' : 'Sign In with Twitch'}
-              </button>
-            </div>
-          </div>
-
           {/* ════ FEATURED PARTNERS ════ */}
           <section className="lp-section">
             <div className="lp-section-top">
