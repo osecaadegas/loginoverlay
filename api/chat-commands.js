@@ -77,6 +77,7 @@ export default async function handler(req, res) {
     case 'streamer-data': return streamerDataHandler(req, res);
     case 'image-search': return imageSearchHandler(req, res);
     case 'bet':      return handleBet(req, res);
+    case 'bet-payout': return handleBetPayout(req, res);
     case 'remate':   return handleRemate(req, res);
     case 'cashout':  return handlePkCashout(req, res);
     case 'continue': return handlePkContinue(req, res);
@@ -912,6 +913,138 @@ async function handlePredSay(req, res) {
   return res.status(200).json({ ok: true });
 }
 
+
+
+/* ─── Bet Payout — called by BetsConfig when SE points mode is on ──────────── */
+// Query: ?cmd=bet-payout&user_id=...&winner_idx=...  (requires valid session JWT)
+async function handleBetPayout(req, res) {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_KEY)
+    return res.status(500).json({ error: 'Server config error' });
+
+  const params = req.method === 'POST' ? (req.body || {}) : req.query;
+  const { user_id, winner_idx } = params;
+
+  if (!user_id) return res.status(400).json({ error: 'Missing user_id' });
+
+  const winnerIdx = parseInt(winner_idx, 10);
+  if (isNaN(winnerIdx) || winnerIdx < 0)
+    return res.status(400).json({ error: 'Invalid winner_idx' });
+
+  // Require a valid session JWT to prevent spoofing
+  const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+  const authedUser = await verifyJwt(supabase, req);
+  if (!authedUser || authedUser.id !== user_id) {
+    return res.status(401).json({ error: 'Unauthorised' });
+  }
+
+  try {
+    // Load widget config from DB
+    const { data: widgetRow } = await supabase
+      .from('overlay_widgets')
+      .select('id, config')
+      .eq('user_id', user_id)
+      .eq('widget_type', 'bets')
+      .limit(1)
+      .maybeSingle();
+
+    if (!widgetRow) return res.status(404).json({ error: 'No bets widget found' });
+
+    const cfg = widgetRow.config || {};
+
+    // Only run when SE points mode is enabled
+    if (!cfg.betSeEnabled) {
+      return res.status(200).json({ ok: true, paid: 0, message: 'SE points mode not enabled — no payout needed' });
+    }
+
+    const { data: seConn } = await supabase
+      .from('streamelements_connections')
+      .select('se_channel_id, se_jwt_token')
+      .eq('user_id', user_id)
+      .maybeSingle();
+
+    if (!seConn?.se_channel_id || !seConn?.se_jwt_token)
+      return res.status(400).json({ error: 'SE not configured' });
+
+    const { se_channel_id: channelId, se_jwt_token: jwtToken } = seConn;
+
+    const options  = cfg.options  || [];
+    const bets     = cfg.bets     || {};
+    const betters  = cfg.betters  || {};
+
+    // ── Pari-mutuel payout math ──
+    // totalPool = sum of all bets across all options
+    const totalPool   = options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
+    const winningPool = bets[`opt_${winnerIdx}`] || 0;
+    const losingPool  = totalPool - winningPool;
+
+    if (totalPool === 0) {
+      return res.status(200).json({ ok: true, paid: 0, message: 'No bets in pool' });
+    }
+
+    // Collect winners (bettors who picked the winning option), sorted by amount desc
+    const winnerEntries = Object.entries(betters)
+      .filter(([, b]) => b.option === winnerIdx)
+      .sort(([, a], [, b]) => b.amount - a.amount);
+
+    if (winnerEntries.length === 0) {
+      return res.status(200).json({ ok: true, paid: 0, message: 'No winners on that option' });
+    }
+
+    // Compute each winner's payout
+    let totalPaid = 0;
+    const payouts = winnerEntries.map(([username, b]) => {
+      const userBet = b.amount;
+      const profit  = winningPool > 0 ? Math.floor((userBet / winningPool) * losingPool) : 0;
+      const payout  = userBet + profit;
+      totalPaid    += payout;
+      return { username, userBet, payout };
+    });
+
+    // Remainder from floor rounding → give to largest-bet winner
+    const remainder = totalPool - totalPaid;
+    if (remainder > 0) payouts[0].payout += remainder;
+
+    // ── Credit SE points to each winner ──
+    const results = await Promise.allSettled(
+      payouts.map(async ({ username, payout }) => {
+        const r = await fetch(
+          `https://api.streamelements.com/kappa/v2/points/${channelId}/${encodeURIComponent(username)}/${payout}`,
+          {
+            method:  'PUT',
+            headers: { Authorization: `Bearer ${jwtToken}`, 'Content-Type': 'application/json' },
+          }
+        );
+        if (!r.ok) throw new Error(`SE credit failed for ${username} (${r.status})`);
+        return { username, payout };
+      })
+    );
+
+    const succeeded = results.filter(r => r.status === 'fulfilled').map(r => r.value);
+    const failed    = results.filter(r => r.status === 'rejected').map(r => r.reason?.message);
+
+    if (failed.length > 0) console.error('[bet-payout] some credits failed:', failed);
+
+    // Announce result in chat
+    const winLabel    = options[winnerIdx]?.label || `Option ${winnerIdx + 1}`;
+    const totalPayout = succeeded.reduce((s, w) => s + w.payout, 0);
+    await seBotSay(
+      channelId, jwtToken,
+      `🏆 BETS PAID OUT! ${winLabel} wins! ${succeeded.length} winners — ${totalPayout.toLocaleString()} pts distributed!`
+    ).catch(() => {});
+
+    return res.status(200).json({
+      ok:        true,
+      paid:      succeeded.length,
+      totalPool,
+      winningPool,
+      succeeded,
+      failed,
+    });
+  } catch (err) {
+    console.error('[handleBetPayout]', err.message);
+    return res.status(500).json({ error: 'Server error', details: err.message });
+  }
+}
 
 /* ─── Penalty King — !remate [points] [spot] ────────────────────────────── */
 

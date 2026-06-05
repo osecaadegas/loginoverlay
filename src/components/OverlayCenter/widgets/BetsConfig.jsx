@@ -95,7 +95,7 @@ export default function BetsConfig({ config, onChange }) {
     );
   };
 
-  const resolveWinner = (idx) => {
+  const resolveWinner = async (idx) => {
     const winLabel = options[idx]?.label || `Option ${idx + 1}`;
     const entry = {
       question:  c.question || 'Bets',
@@ -110,6 +110,29 @@ export default function BetsConfig({ config, onChange }) {
       winnerOption: idx,
       betsHistory:  [entry, ...history].slice(0, 20),
     });
+
+    // If SE points mode is on, pay out winners server-side
+    if (c.betSeEnabled && userId) {
+      const { supabase } = await import('../../../config/supabaseClient');
+      const { data: { session } } = await supabase.auth.getSession();
+      fetch(
+        `${window.location.origin}/api/chat-commands?cmd=bet-payout&user_id=${encodeURIComponent(userId)}&winner_idx=${idx}`,
+        {
+          method: 'GET',
+          headers: session?.access_token
+            ? { Authorization: `Bearer ${session.access_token}` }
+            : {},
+        }
+      )
+        .then(r => r.json())
+        .then(d => {
+          if (!d.ok) console.error('[BetsPayout]', d.error);
+          else console.info(`[BetsPayout] ${d.paid} winners paid, total pool ${d.totalPool}`);
+        })
+        .catch(e => console.error('[BetsPayout]', e));
+      return; // announcement will be made by the API
+    }
+
     seBotAnnounce(
       userId,
       `🏆 RESULT: ${winLabel} wins! Pool: ${totalPool.toLocaleString()} pts from ${totalBetters} bets.`
