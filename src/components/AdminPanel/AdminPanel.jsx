@@ -6,7 +6,6 @@ import { supabase } from '../../config/supabaseClient';
 import { DEPOSIT_METHODS } from '../../utils/depositMethods';
 import './AdminPanel.css';
 import './AdminPanel.new.css';
-import ExtensionAdmin from './ExtensionAdmin';
 import ApiKeysAdmin from './ApiKeysAdmin';
 import { CasinoOfferModal } from './modals';
 import LandingAdmin from './LandingAdmin';
@@ -40,7 +39,7 @@ import {
 } from './components';
 
 // Valid tab IDs for URL deep linking
-const VALID_TABS = ['users', 'offers', 'extension', 'apikeys', 'landing'];
+const VALID_TABS = ['users', 'offers', 'apikeys', 'landing'];
 
 export default function AdminPanel() {
   const { isAdmin, loading: adminLoading } = useAdmin();
@@ -2979,7 +2978,6 @@ export default function AdminPanel() {
             {[
               { id: 'users',     label: 'User Management', icon: '👥' },
               { id: 'offers',    label: 'Casino Offers',    icon: '🎰' },
-              { id: 'extension', label: 'Extension',        icon: '🔌' },
               { id: 'apikeys',   label: 'API Keys',         icon: '🔑' },
               { id: 'landing',   label: 'Landing Page',     icon: '🏠' },
             ].map(tab => (
@@ -7534,11 +7532,6 @@ export default function AdminPanel() {
             </div>
           </SidePanel>
         </>
-      )}
-
-      {/* Extension Tab */}
-      {activeTab === 'extension' && (
-        <ExtensionAdmin />
       )}
 
       {/* API Keys Tab */}

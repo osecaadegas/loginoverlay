@@ -85,8 +85,6 @@ export default function Sidebar({ className = '', onClose }) {
 
   /* ── Dropdown link sets ── */
   const gameLinks = [
-    { emoji: '🃏', labelKey: 'nav_blackjack',    label: 'Blackjack',    path: '/games/blackjack' },
-    { emoji: '💣', labelKey: 'nav_mines',        label: 'Mines',        path: '/games/mines' },
     { emoji: '⚽', labelKey: 'nav_penalty_king', label: 'Penalty King', path: '/games/penalty-king' },
   ];
 
