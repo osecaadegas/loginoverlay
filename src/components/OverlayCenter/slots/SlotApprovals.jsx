@@ -267,9 +267,7 @@ export default function SlotApprovals() {
                   <>
                     <div className="ss-card-name">{s.name}</div>
                     <div className="ss-card-provider">{s.provider}</div>
-                    {s.se_username && (
-                      <div className="ss-card-submitter">👤 {s.se_username}</div>
-                    )}
+                    <div className="ss-card-submitter">👤 {s.se_username}</div>
                     <div className="ss-card-meta">
                       <span>RTP: {s.rtp}%</span>
                       <span>Vol: {s.volatility}</span>

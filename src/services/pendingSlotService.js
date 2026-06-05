@@ -48,6 +48,7 @@ export async function getPendingSlots() {
   const submitterIds = [...new Set((data || []).map(s => s.submitted_by).filter(Boolean))];
   let usernameMap = {};
   if (submitterIds.length > 0) {
+    // Primary: StreamElements username
     const { data: connections } = await supabase
       .from('streamelements_connections')
       .select('user_id, se_username')
@@ -55,11 +56,23 @@ export async function getPendingSlots() {
     if (connections) {
       connections.forEach(c => { usernameMap[c.user_id] = c.se_username; });
     }
+    // Fallback: twitch_username from user_profiles
+    const { data: profiles } = await supabase
+      .from('user_profiles')
+      .select('user_id, twitch_username')
+      .in('user_id', submitterIds);
+    if (profiles) {
+      profiles.forEach(p => {
+        if (!usernameMap[p.user_id] && p.twitch_username) {
+          usernameMap[p.user_id] = p.twitch_username;
+        }
+      });
+    }
   }
 
   return (data || []).map(s => ({
     ...s,
-    se_username: usernameMap[s.submitted_by] || null,
+    se_username: usernameMap[s.submitted_by] || `user:${String(s.submitted_by).substring(0, 8)}`,
   }));
 }
 
