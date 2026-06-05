@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../config/supabaseClient';
+import { CasinoOfferModal } from './modals';
 import './LandingAdmin.css';
 
 /* ─── Partner card mini-preview ─── */
@@ -49,6 +50,17 @@ const EMPTY_PLAN = {
   is_active: true,
 };
 
+const OFFER_ALLOWED_COLS = [
+  'casino_name', 'bonus_link', 'title', 'image_url', 'list_image_url',
+  'badge', 'badge_class', 'min_deposit', 'max_withdrawal', 'withdrawal_time',
+  'cashback', 'bonus_value', 'free_spins', 'game_providers', 'total_games',
+  'license', 'welcome_bonus', 'languages', 'established', 'live_support',
+  'details', 'deposit_methods', 'video_url', 'promo_code',
+  'crypto_friendly', 'vpn_friendly', 'is_premium', 'is_active', 'display_order',
+  'highlights', 'landing_tag', 'landing_tag_color', 'landing_model', 'landing_badges',
+  'landing_accent_color', 'landing_logo_bg', 'show_on_landing', 'landing_order',
+];
+
 export default function LandingAdmin() {
   const [plans, setPlans]           = useState([]);
   const [loading, setLoading]       = useState(false);
@@ -65,6 +77,9 @@ export default function LandingAdmin() {
   const [offerForm, setOfferForm]        = useState({});
   const [offerBadgesText, setOfferBadgesText] = useState('');
   const [offerSaving, setOfferSaving]    = useState(false);
+  const [showOfferModal, setShowOfferModal] = useState(false);
+  const [modalOffer, setModalOffer]         = useState(null);
+  const [modalSaving, setModalSaving]       = useState(false);
 
   useEffect(() => { loadPlans(); loadOffers(); }, []);
 
@@ -142,10 +157,17 @@ export default function LandingAdmin() {
     setOffersLoading(true);
     const { data } = await supabase
       .from('casino_offers')
-      .select('id, casino_name, list_image_url, show_on_landing, landing_order, landing_tag, landing_tag_color, landing_model, landing_badges, landing_accent_color, landing_logo_bg')
-      .eq('is_active', true)
-      .order('landing_order', { ascending: true });
-    setOffers(data || []);
+      .select('*');
+    const sorted = [...(data || [])].sort((a, b) => {
+      const landingDelta = Number(!!b.show_on_landing) - Number(!!a.show_on_landing);
+      if (landingDelta !== 0) return landingDelta;
+      const activeDelta = Number(!!b.is_active) - Number(!!a.is_active);
+      if (activeDelta !== 0) return activeDelta;
+      const landingOrderDelta = (a.landing_order ?? 9999) - (b.landing_order ?? 9999);
+      if (landingOrderDelta !== 0) return landingOrderDelta;
+      return (a.display_order ?? 9999) - (b.display_order ?? 9999);
+    });
+    setOffers(sorted);
     setOffersLoading(false);
   };
 
@@ -190,6 +212,77 @@ export default function LandingAdmin() {
       .update({ show_on_landing: !offer.show_on_landing })
       .eq('id', offer.id);
     loadOffers();
+  };
+
+  const toggleOfferActive = async (offer) => {
+    await supabase.from('casino_offers')
+      .update({ is_active: !offer.is_active })
+      .eq('id', offer.id);
+    loadOffers();
+  };
+
+  const openOfferModal = (offer = null) => {
+    setModalOffer(offer);
+    setShowOfferModal(true);
+  };
+
+  const closeOfferModal = () => {
+    setShowOfferModal(false);
+    setModalOffer(null);
+  };
+
+  const saveOfferModal = async (formData) => {
+    setModalSaving(true);
+    try {
+      const payload = {};
+      for (const key of OFFER_ALLOWED_COLS) {
+        if (key in formData) payload[key] = formData[key];
+      }
+
+      if (typeof payload.game_providers === 'string') {
+        try {
+          payload.game_providers = JSON.parse(payload.game_providers);
+        } catch {
+          payload.game_providers = [];
+        }
+      }
+
+      if (modalOffer) {
+        const { error } = await supabase
+          .from('casino_offers')
+          .update(payload)
+          .eq('id', modalOffer.id);
+        if (error) throw error;
+        setMsg({ type: 'success', text: 'Partner offer updated.' });
+      } else {
+        const { data: authData } = await supabase.auth.getUser();
+        const { error } = await supabase
+          .from('casino_offers')
+          .insert([{ ...payload, created_by: authData.user?.id || null }]);
+        if (error) throw error;
+        setMsg({ type: 'success', text: 'Partner offer created.' });
+      }
+
+      closeOfferModal();
+      loadOffers();
+    } catch (error) {
+      setMsg({ type: 'error', text: error.message || 'Failed to save partner offer.' });
+    } finally {
+      setModalSaving(false);
+    }
+  };
+
+  const deleteOfferModal = async (offerId) => {
+    if (!window.confirm('Delete this casino offer completely?')) return;
+    try {
+      const { error } = await supabase.from('casino_offers').delete().eq('id', offerId);
+      if (error) throw error;
+      setMsg({ type: 'success', text: 'Partner offer deleted.' });
+      closeOfferModal();
+      loadOffers();
+    } catch (error) {
+      setMsg({ type: 'error', text: error.message || 'Failed to delete partner offer.' });
+    }
   };
 
   return (
@@ -391,8 +484,11 @@ export default function LandingAdmin() {
         <div className="la-block-header">
           <div>
             <h2 className="la-block-title">🤝 Featured Partner Cards</h2>
-            <p className="la-block-sub">Control which casino offers appear on the landing page and customise their card display.</p>
+            <p className="la-block-sub">Add, edit, hide, disable, reorder, and remove the partner cards used on the landing page.</p>
           </div>
+          <button className="la-btn-add" onClick={() => openOfferModal()}>
+            + Add Partner
+          </button>
         </div>
 
         {offersLoading ? (
@@ -405,7 +501,15 @@ export default function LandingAdmin() {
               const isEditing = editingOffer === offer.id;
               const badges = Array.isArray(offer.landing_badges) ? offer.landing_badges : [];
               return (
-                <div key={offer.id} className={`la-offer-row${isEditing ? ' la-offer-row--open' : ''}`}>
+                <div
+                  key={offer.id}
+                  className={[
+                    'la-offer-row',
+                    isEditing ? 'la-offer-row--open' : '',
+                    !offer.is_active ? 'la-offer-row--inactive' : '',
+                    !offer.show_on_landing ? 'la-offer-row--hidden' : '',
+                  ].join(' ')}
+                >
                   {/* Row header */}
                   <div className="la-offer-rowhead">
                     <div className="la-offer-thumb">
@@ -420,6 +524,13 @@ export default function LandingAdmin() {
                           {offer.landing_tag}
                         </span>
                       )}
+                      <span className={`la-offer-status ${offer.is_active ? 'la-offer-status--active' : 'la-offer-status--inactive'}`}>
+                        {offer.is_active ? 'Offer active' : 'Offer disabled'}
+                      </span>
+                      <span className={`la-offer-status ${offer.show_on_landing ? 'la-offer-status--visible' : 'la-offer-status--hidden'}`}>
+                        {offer.show_on_landing ? 'Landing visible' : 'Landing hidden'}
+                      </span>
+                      <span className="la-plan-order-badge">Landing #{offer.landing_order ?? 0}</span>
                     </div>
                     <div className="la-offer-actions">
                       <label className="la-toggle" title="Show on landing page">
@@ -433,11 +544,28 @@ export default function LandingAdmin() {
                         </span>
                         <span className="la-toggle-label">{offer.show_on_landing ? 'Visible' : 'Hidden'}</span>
                       </label>
+                      <label className="la-toggle" title="Offer active state">
+                        <input
+                          type="checkbox"
+                          checked={!!offer.is_active}
+                          onChange={() => toggleOfferActive(offer)}
+                        />
+                        <span className="la-toggle-track">
+                          <span className="la-toggle-thumb" />
+                        </span>
+                        <span className="la-toggle-label">{offer.is_active ? 'Active' : 'Disabled'}</span>
+                      </label>
                       <button
                         className={`la-btn-sm ${isEditing ? 'la-btn-sm--toggle' : 'la-btn-sm--edit'}`}
                         onClick={() => isEditing ? closeEditOffer() : openEditOffer(offer)}
                       >
-                        {isEditing ? 'Close' : 'Edit Card'}
+                        {isEditing ? 'Close Card' : 'Landing Card'}
+                      </button>
+                      <button
+                        className="la-btn-sm la-btn-sm--edit"
+                        onClick={() => openOfferModal(offer)}
+                      >
+                        Full Edit
                       </button>
                     </div>
                   </div>
@@ -519,6 +647,15 @@ export default function LandingAdmin() {
           </div>
         )}
       </div>
+
+      <CasinoOfferModal
+        isOpen={showOfferModal}
+        onClose={closeOfferModal}
+        onSave={saveOfferModal}
+        onDelete={deleteOfferModal}
+        editingOffer={modalOffer}
+        saving={modalSaving}
+      />
 
 
     </div>

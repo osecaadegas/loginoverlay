@@ -274,6 +274,8 @@
   transition: border-color 0.2s;
 }
 .la-offer-row--open { border-color: rgba(139,92,246,0.4); }
+.la-offer-row--inactive { opacity: 0.72; }
+.la-offer-row--hidden { border-style: dashed; }
 
 .la-offer-rowhead {
   display: flex;
@@ -291,14 +293,35 @@
 }
 .la-offer-thumb img { width: 100%; height: 100%; object-fit: contain; }
 
-.la-offer-info { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.la-offer-info { flex: 1; display: flex; align-items: center; gap: 10px; min-width: 0; flex-wrap: wrap; }
 .la-offer-name { font-weight: 600; color: #e2e8f0; font-size: 0.9rem; }
 .la-offer-tag  {
   font-size: 0.68rem; font-weight: 700; letter-spacing: .04em;
   padding: 2px 7px; border-radius: 4px;
 }
 
-.la-offer-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.la-offer-status {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: .03em;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.la-offer-status--active,
+.la-offer-status--visible {
+  background: rgba(16,185,129,0.12);
+  color: #86efac;
+}
+
+.la-offer-status--inactive,
+.la-offer-status--hidden {
+  background: rgba(148,163,184,0.12);
+  color: #cbd5e1;
+}
+
+.la-offer-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; flex-wrap: wrap; justify-content: flex-end; }
 
 /* Toggle switch */
 .la-toggle { display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; }
@@ -315,7 +338,7 @@
   background: #fff; transition: transform 0.2s;
 }
 .la-toggle input:checked ~ .la-toggle-track .la-toggle-thumb { transform: translateX(16px); }
-.la-toggle-label { font-size: 0.78rem; color: #94a3b8; min-width: 42px; }
+.la-toggle-label { font-size: 0.78rem; color: #94a3b8; min-width: 58px; }
 
 /* Inline editor */
 .la-offer-editor {
