@@ -164,7 +164,6 @@ export default function LandingPage() {
   const [showAuthModal, setShowAuthModal]             = useState(false);
   const [showAgeVerification, setShowAgeVerification] = useState(false);
   const [casinoOffers, setCasinoOffers]               = useState([]);
-  const [clicks, setClicks]                           = useState(1000);
   const [activeFilter, setActiveFilter]               = useState('All');
   const [billingAnnual, setBillingAnnual]             = useState(true);
   const { user }                                      = useAuth();
@@ -181,12 +180,6 @@ export default function LandingPage() {
     if (!offer.bonus_link) return;
     trackOfferClick({ offerId: offer.id, casinoName: offer.casino_name, pageSource: 'landing' });
     window.open(offer.bonus_link, '_blank', 'noopener,noreferrer');
-  };
-
-  const earnings = {
-    cpa:      Math.round(clicks * 0.35),
-    revShare: Math.round(clicks * 0.58),
-    hybrid:   Math.round(clicks * 0.74),
   };
 
   const partners = casinoOffers.length > 0
@@ -359,72 +352,6 @@ export default function LandingPage() {
                   <div className="lp-feat-desc">{f.desc}</div>
                 </div>
               ))}
-            </div>
-          </section>
-
-          {/* ════ CALC + MARKETPLACE ════ */}
-          <section className="lp-section lp-two-col-wrap">
-
-            {/* Earnings calculator */}
-            <div className="lp-calc">
-              <h3 className="lp-calc-h3">Earnings Calculator</h3>
-              <p className="lp-calc-sub">See how much you can earn with our top partnerships</p>
-              <div className="lp-slider-header">
-                <span>Monthly Clicks</span>
-                <strong>{clicks.toLocaleString()}</strong>
-              </div>
-              <input
-                type="range" min="100" max="10000" step="100"
-                value={clicks}
-                onChange={e => setClicks(Number(e.target.value))}
-                className="lp-slider"
-                style={{ '--pct': `${((clicks - 100) / 9900) * 100}%` }}
-              />
-              <div className="lp-calc-result-header">Estimated Revenue</div>
-              <div className="lp-calc-cards">
-                {[
-                  { label: 'CPA',       val: earnings.cpa,      c: '#6366f1' },
-                  { label: 'Rev Share', val: earnings.revShare,  c: '#10b981' },
-                  { label: 'Hybrid',    val: earnings.hybrid,    c: '#f59e0b' },
-                ].map(r => (
-                  <div key={r.label} className="lp-calc-card">
-                    <div className="lp-calc-card-lbl">{r.label}</div>
-                    <div className="lp-calc-card-val" style={{ color: r.c }}>€{r.val.toLocaleString()}</div>
-                    <div className="lp-calc-card-sub">Estimated</div>
-                  </div>
-                ))}
-              </div>
-              <p className="lp-calc-note">*Estimates based on average conversion rates</p>
-            </div>
-
-            {/* Marketplace */}
-            <div className="lp-market">
-              <div className="lp-market-header">
-                <h3 className="lp-market-title">New Partnership Opportunities</h3>
-                <button className="lp-view-all" onClick={() => navigate('/offers')}>View all offers →</button>
-              </div>
-              {casinoOffers.length > 0 && (
-                <div className="lp-market-grid">
-                  {casinoOffers.slice(0, 3).map((o, i) => {
-                    const fp = FEATURED_PARTNERS[i] || FEATURED_PARTNERS[0];
-                    return (
-                      <div key={o.id || i} className="lp-market-card">
-                        <div className="lp-market-img" style={{ background: fp.logoBg }}>
-                          {o.list_image_url
-                            ? <img src={o.list_image_url} alt={o.casino_name} style={{ maxHeight: '52px', maxWidth: '80%', objectFit: 'contain' }} />
-                            : <span style={{ fontSize: '2.2rem' }}>{fp.logo}</span>}
-                          <div className="lp-market-new-badge">NEW</div>
-                        </div>
-                        <div className="lp-market-info">
-                          <div className="lp-market-name">{o.casino_name}</div>
-                          <div className="lp-market-model" style={{ color: fp.accent }}>{fp.model}</div>
-                          <button className="lp-market-apply" style={{ borderColor: fp.accent, color: fp.accent }} onClick={() => o.bonus_link ? handleOfferClick(o) : navigate('/offers')}>Apply Now</button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </section>
 
