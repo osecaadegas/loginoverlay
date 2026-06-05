@@ -855,18 +855,6 @@ export default function ProfileSection({ widgets, saveWidget }) {
           <ApiKeyCard user={user} />
         </div>
       </div>
-
-      {/* ──── Row 3: Sync bar ──── */}
-      <div style={S.syncBar} data-tour="profile-sync">
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#fff' }}>📡 Widget Sync</span>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).map(w => (
-              <span key={w.id} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', textTransform: 'capitalize' }}>
-                {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : w.widget_type === 'bets' ? '🎲' : '🎁'} {w.widget_type.replace('_', ' ')}
-              </span>
-            ))}
-            {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
     </div>
   );
 }
