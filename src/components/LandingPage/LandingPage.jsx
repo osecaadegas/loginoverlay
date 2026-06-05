@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { useStreamElements } from '../../context/StreamElementsContext';
 import { supabase } from '../../config/supabaseClient';
 import trackOfferClick from '../../utils/trackOfferClick';
 import AuthModal from '../Auth/AuthModal';
@@ -22,12 +23,6 @@ const FEATURES = [
   { icon: '📊', title: 'Advanced Analytics',  desc: 'Track performance and maximize your earnings',                       color: '#10b981', bg: 'rgba(16,185,129,0.12)'  },
   { icon: '🎧', title: 'Priority Support',     desc: 'Get help fast from our creator success team',                       color: '#f59e0b', bg: 'rgba(245,158,11,0.12)'  },
   { icon: '🔄', title: 'Constant Updates',     desc: 'New features & partners added every week',                          color: '#ec4899', bg: 'rgba(236,72,153,0.12)'  },
-];
-
-const MARKETPLACE = [
-  { name: 'Crypto Casino X', model: '30% Rev Share',  modelColor: '#f59e0b', desc: 'High converting crypto offers',        extra: '+ Exclusive bonuses', img: '🎲', color: '#f59e0b', imgBg: 'linear-gradient(135deg,#1a0d00,#3d2200)' },
-  { name: 'Sportsbook Pro',  model: 'CPA up to €120', modelColor: '#0ea5e9', desc: 'Premium sports traffic global GEOs',   extra: '',                    img: '⚽', color: '#0ea5e9', imgBg: 'linear-gradient(135deg,#000d1a,#001a33)' },
-  { name: 'Poker Network',   model: '25% Rev Share',  modelColor: '#a855f7', desc: 'Strong brand + loyal players',         extra: '+ weekly rakeback',   img: '🃏', color: '#a855f7', imgBg: 'linear-gradient(135deg,#0d0033,#1a0055)' },
 ];
 
 const PRICING = [
@@ -98,8 +93,8 @@ function HeroGameMockup() {
         <div className="lp-gm-user-card">
           <div className="lp-gm-avatar">🎮</div>
           <div>
-            <div className="lp-gm-uname">Número de Criador</div>
-            <div className="lp-gm-ulvl">Level 42 • Pro</div>
+            <div className="lp-gm-uname">Streamer</div>
+            <div className="lp-gm-ulvl">Pro Creator</div>
           </div>
         </div>
 
@@ -125,8 +120,8 @@ function HeroGameMockup() {
         {/* Revenue card overlay */}
         <div className="lp-gm-revenue-card">
           <div className="lp-gm-rev-label">Monthly Revenue</div>
-          <div className="lp-gm-rev-value">€1,250</div>
-          <div className="lp-gm-rev-trend">+34% vs last month</div>
+          <div className="lp-gm-rev-value">€ — —</div>
+          <div className="lp-gm-rev-trend">↑ Growing</div>
           <div className="lp-gm-rev-chart">
             {[30, 50, 40, 70, 55, 80, 90].map((h, i) => (
               <div key={i} className="lp-gm-rev-bar" style={{ height: `${h}%` }} />
@@ -149,6 +144,7 @@ export default function LandingPage() {
   const [activeNav, setActiveNav]                     = useState('home');
   const [sidebarOpen, setSidebarOpen]                 = useState(false);
   const { user }                                      = useAuth();
+  const { points, loading: pointsLoading }            = useStreamElements();
   const navigate                                      = useNavigate();
 
   useEffect(() => {
@@ -223,11 +219,11 @@ export default function LandingPage() {
                 : <span>🎮</span>}
             </div>
             <div className="lp-sb-pinfo">
-              <div className="lp-sb-pname">{user?.user_metadata?.display_name || 'osecaadegas95'}</div>
+              <div className="lp-sb-pname">{user?.user_metadata?.display_name || user?.user_metadata?.full_name || 'Guest User'}</div>
               <div className={`lp-sb-pstatus ${user ? 'lp-sb-pstatus--on' : ''}`}>
                 {user ? 'Premium Active' : 'Free Plan'}
               </div>
-              <div className="lp-sb-ppts">⚡ {user ? '40,166 pts' : '0 pts'}</div>
+              <div className="lp-sb-ppts">⚡ {user ? (pointsLoading ? '…' : `${(points || 0).toLocaleString()} pts`) : '0 pts'}</div>
             </div>
           </div>
 
@@ -360,23 +356,25 @@ export default function LandingPage() {
                 <span className="lp-acct-crown">♛</span>
                 {user ? 'Premium Active' : 'Upgrade to Premium'}
               </button>
-              <div className="lp-acct-expires">Expires: Dec 12, 2026</div>
 
-              <div className="lp-acct-divider" />
-
-              {[
-                { icon: '🤝', label: 'Affiliate Status',  val: '3 Active Deals',  c: '#6366f1' },
-                { icon: '👥', label: 'Total Referrals',   val: '124',             c: '#10b981' },
-                { icon: '💶', label: 'Estimated Revenue', val: '€782.45',         c: '#f59e0b', bold: true },
-              ].map(r => (
-                <div key={r.label} className="lp-acct-row">
-                  <div className="lp-acct-row-icon" style={{ color: r.c }}>{r.icon}</div>
-                  <div className="lp-acct-row-body">
-                    <span className="lp-acct-row-lbl">{r.label}</span>
-                    <span className="lp-acct-row-val" style={r.bold ? { color: r.c } : {}}>{r.val}</span>
-                  </div>
-                </div>
-              ))}
+              {user && (
+                <>
+                  <div className="lp-acct-divider" />
+                  {[
+                    { icon: '🤝', label: 'Affiliate Status',  val: '—', c: '#6366f1' },
+                    { icon: '👥', label: 'Total Referrals',   val: '—', c: '#10b981' },
+                    { icon: '💶', label: 'Estimated Revenue', val: '—', c: '#f59e0b', bold: true },
+                  ].map(r => (
+                    <div key={r.label} className="lp-acct-row">
+                      <div className="lp-acct-row-icon" style={{ color: r.c }}>{r.icon}</div>
+                      <div className="lp-acct-row-body">
+                        <span className="lp-acct-row-lbl">{r.label}</span>
+                        <span className="lp-acct-row-val" style={r.bold ? { color: r.c } : {}}>{r.val}</span>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              )}
 
               <button className="lp-acct-dash-btn" onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}>
                 {user ? 'Go to Dashboard' : 'Sign In with Twitch'}
@@ -483,23 +481,28 @@ export default function LandingPage() {
                 <h3 className="lp-market-title">New Partnership Opportunities</h3>
                 <button className="lp-view-all" onClick={() => navigate('/offers')}>View all offers →</button>
               </div>
-              <div className="lp-market-grid">
-                {MARKETPLACE.map(m => (
-                  <div key={m.name} className="lp-market-card">
-                    <div className="lp-market-img" style={{ background: m.imgBg }}>
-                      <span style={{ fontSize: '2.2rem' }}>{m.img}</span>
-                      <div className="lp-market-new-badge">NEW</div>
-                    </div>
-                    <div className="lp-market-info">
-                      <div className="lp-market-name">{m.name}</div>
-                      <div className="lp-market-model" style={{ color: m.modelColor }}>{m.model}</div>
-                      <div className="lp-market-desc">{m.desc}</div>
-                      {m.extra && <div className="lp-market-extra">{m.extra}</div>}
-                      <button className="lp-market-apply" style={{ borderColor: m.color, color: m.color }} onClick={() => navigate('/offers')}>Apply Now</button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              {casinoOffers.length > 0 && (
+                <div className="lp-market-grid">
+                  {casinoOffers.slice(0, 3).map((o, i) => {
+                    const fp = FEATURED_PARTNERS[i] || FEATURED_PARTNERS[0];
+                    return (
+                      <div key={o.id || i} className="lp-market-card">
+                        <div className="lp-market-img" style={{ background: fp.logoBg }}>
+                          {o.list_image_url
+                            ? <img src={o.list_image_url} alt={o.casino_name} style={{ maxHeight: '52px', maxWidth: '80%', objectFit: 'contain' }} />
+                            : <span style={{ fontSize: '2.2rem' }}>{fp.logo}</span>}
+                          <div className="lp-market-new-badge">NEW</div>
+                        </div>
+                        <div className="lp-market-info">
+                          <div className="lp-market-name">{o.casino_name}</div>
+                          <div className="lp-market-model" style={{ color: fp.accent }}>{fp.model}</div>
+                          <button className="lp-market-apply" style={{ borderColor: fp.accent, color: fp.accent }} onClick={() => o.bonus_link ? handleOfferClick(o) : navigate('/offers')}>Apply Now</button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </section>
 
@@ -556,7 +559,7 @@ export default function LandingPage() {
           <footer className="lp-footer">
             <div className="lp-footer-left">
               <span className="lp-footer-brand">SecaAdegas</span>
-              <span className="lp-footer-copy">© 2025 SecaAdegas All rights reserved.</span>
+              <span className="lp-footer-copy">© 2026 SecaAdegas All rights reserved.</span>
             </div>
             <div className="lp-footer-links">
               <button className="lp-footer-link">Privacy</button>
