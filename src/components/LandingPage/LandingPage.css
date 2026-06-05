@@ -304,7 +304,7 @@
 .lp-hero {
   position: relative;
   overflow: hidden;
-  padding: 52px 24px 48px;
+  padding: 52px 16px 48px;
   background: radial-gradient(ellipse 70% 60% at 60% 50%, rgba(99,58,220,0.22) 0%, transparent 70%),
               radial-gradient(ellipse 50% 50% at 80% 20%, rgba(168,85,247,0.12) 0%, transparent 60%),
               var(--bg);
@@ -326,8 +326,7 @@
   grid-template-columns: 1fr 1.15fr;
   gap: 40px;
   align-items: center;
-  max-width: 1400px;
-  margin: 0 auto;
+  width: 100%;
 }
 
 /* Badge */
@@ -624,7 +623,7 @@
 /* ══════════════════════════════════════
    SHARED SECTION
 ══════════════════════════════════════ */
-.lp-section { padding: 40px 24px; max-width: 1400px; margin: 0 auto; width: 100%; }
+.lp-section { padding: 40px 16px; width: 100%; }
 .lp-section-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
 .lp-section-h2 { font-size: 1.35rem; font-weight: 800; margin: 0 0 4px; letter-spacing: -0.01em; }
 .lp-section-h2--center { text-align: center; margin-bottom: 28px; }
