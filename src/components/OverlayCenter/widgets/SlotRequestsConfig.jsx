@@ -101,9 +101,10 @@ function RgbaColorPicker({ label, value, onChange }) {
   );
 }
 
-export default function SlotRequestsConfig({ config, onChange }) {
+export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) {
   const { user } = useAuth();
   const c = config || {};
+  const isSidebar = mode === 'sidebar';
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(false);
   const [seConnected, setSeConnected] = useState(false);
@@ -250,18 +251,73 @@ export default function SlotRequestsConfig({ config, onChange }) {
   const heroNote = queueCount
     ? `The queue is live with ${queueCount} pending request${queueCount === 1 ? '' : 's'}. Moderate the top picks and keep the overlay pacing aligned with chat activity.`
     : 'The queue is empty right now. Configure the listener, command rules, and display style so viewers can start requesting slots immediately.';
+  const sidebarSteps = [
+    {
+      key: 'listener',
+      title: 'Turn the listener on',
+      detail: chatEnabled
+        ? (hasChannel ? `Bound to ${c.twitchChannel || autoChannel}` : 'Listener is on, but no Twitch channel is bound yet')
+        : 'Enable chat listening so requests are accepted',
+      ready: chatEnabled && hasChannel,
+    },
+    {
+      key: 'command',
+      title: 'Confirm the command rules',
+      detail: `${cmdTrigger} • max ${queueLimit} • ${c.cooldownSeconds || 0}s cooldown`,
+      ready: true,
+    },
+    {
+      key: 'pricing',
+      title: pointsEnabled ? 'Charge StreamElements points' : 'Keep requests free',
+      detail: pointsEnabled
+        ? (seConnected ? `${c.srSeCost || 100} points per request` : 'Connect StreamElements in Profile before charging points')
+        : 'Viewers can request without spending points',
+      ready: !pointsEnabled || seConnected,
+    },
+  ];
+  const inlineFieldClass = `sr-admin-inline-field${isSidebar ? ' sr-admin-inline-field--stacked' : ''}`;
+  const messageTemplates = [
+    { key: 'srMsgAccepted', label: 'Success: accepted (free)', def: '🎰 Added "{slot}" to the queue (requested by {user})' },
+    { key: 'srMsgAcceptedCost', label: 'Success: accepted (with cost)', def: '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)' },
+    { key: 'srMsgNotEnough', label: 'Error: not enough points', def: '❌ {user}, you need {cost} points to request a slot (you have {points}).' },
+    { key: 'srMsgDuplicate', label: 'Error: already in queue', def: '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!' },
+    { key: 'srMsgRejected', label: 'Refund: rejected request', def: '🚫 {user}, your request for "{slot}" was rejected. {refund}' },
+    { key: 'srMsgClearAll', label: 'Refund: clear whole queue', def: '🗑️ The slot request queue has been cleared. All points have been refunded!' },
+    { key: 'srMsgNoMatch', label: 'Error: slot not found', def: '❌ {user}, could not find that slot. Please try again.' },
+    { key: 'srMsgCooldown', label: 'Error: cooldown active', def: '⏳ {user}, please wait before requesting another slot.' },
+    { key: 'srMsgQueueFull', label: 'Error: queue full', def: '❌ {user}, the slot queue is full right now.' },
+  ];
 
   return (
-    <div className="sr-admin-page">
+    <div className={`sr-admin-page${isSidebar ? ' sr-admin-page--sidebar' : ''}`}>
 
       <div className="sr-admin-hero">
         <div className="sr-admin-hero-copy">
           <span className="sr-admin-eyebrow">Community Queue</span>
           <h3 className="sr-admin-title">Slot requests control room</h3>
           <p className="sr-admin-subtitle">
-            Moderate chat-driven slot picks, enforce queue rules, and tune the on-stream request widget from one premium dashboard.
+            Set up the chat command, decide whether requests cost points, and manage the live queue without leaving this panel.
           </p>
           <p className="sr-admin-note">{heroNote}</p>
+          {isSidebar && (
+            <>
+              <div className="sr-admin-quickstart">
+                {sidebarSteps.map((step, index) => (
+                  <div key={step.key} className={`sr-admin-quickstep${step.ready ? ' sr-admin-quickstep--ready' : ''}`}>
+                    <span className="sr-admin-quickstep-index">{index + 1}</span>
+                    <div className="sr-admin-quickstep-copy">
+                      <strong>{step.title}</strong>
+                      <span>{step.detail}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="sr-admin-example">
+                <span className="sr-admin-example-label">Viewer example</span>
+                <code className="sr-admin-example-code">{`${cmdTrigger} Gates of Olympus`}</code>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="sr-admin-metrics">
@@ -297,7 +353,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <div className="sr-admin-card-header">
           <div>
             <span className="sr-admin-card-eyebrow">Listener</span>
-            <h4 className="sr-admin-card-title">Twitch chat hook</h4>
+            <h4 className="sr-admin-card-title">Twitch chat listener</h4>
           </div>
           <span className="sr-admin-card-chip">{listenerStateLabel}</span>
         </div>
@@ -313,19 +369,19 @@ export default function SlotRequestsConfig({ config, onChange }) {
         </label>
         {chatEnabled ? (
           <>
-            <p className="sr-admin-copy">The widget listens for <strong className="sr-admin-strong">{cmdTrigger}</strong> in your Twitch chat, including inside OBS browser sources.</p>
+            <p className="sr-admin-copy">When the listener is on, viewers can request slots by typing <strong className="sr-admin-strong">{cmdTrigger}</strong> in chat.</p>
             <p className="sr-admin-channel-line">
               📺 Channel: <strong style={{ color: '#e2e8f0' }}>{c.twitchChannel || autoChannel || '—'}</strong>
               <span className="sr-admin-copy-muted">(auto-detected from login)</span>
             </p>
             {hasChannel && (
               <p className="sr-admin-success-copy">
-                ✓ Listening — viewers type: <strong className="sr-admin-strong">{cmdTrigger} Gates of Olympus</strong>
+                ✓ Ready — viewers type: <strong className="sr-admin-strong">{`${cmdTrigger} Gates of Olympus`}</strong>
               </p>
             )}
           </>
         ) : (
-          <p className="sr-admin-copy">Turn it on to listen for <strong className="sr-admin-strong">{cmdTrigger}</strong> commands in Twitch chat.</p>
+          <p className="sr-admin-copy">Turn it on first. Until then, chat commands like <strong className="sr-admin-strong">{cmdTrigger}</strong> are ignored.</p>
         )}
       </div>
 
@@ -336,35 +392,46 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <div className="sr-admin-card-header">
           <div>
             <span className="sr-admin-card-eyebrow">Rules</span>
-            <h4 className="sr-admin-card-title">Command settings</h4>
+            <h4 className="sr-admin-card-title">Request command</h4>
           </div>
           <span className="sr-admin-card-chip">{cmdTrigger}</span>
         </div>
 
-        {/* Command trigger */}
-        <label className="sr-admin-inline-field">
-          <span className="sr-admin-inline-label">Trigger</span>
-          <input
-            type="text"
-            value={c.commandTrigger || '!sr'}
-            onChange={e => set('commandTrigger', e.target.value.trim() || '!sr')}
-            placeholder="!sr"
-            style={{ ...S.input, width: 80, fontWeight: 700 }}
-          />
-          <span className="sr-admin-inline-hint">command viewers type</span>
-        </label>
+        <div className="sr-admin-field-grid">
+          <label className={inlineFieldClass}>
+            <span className="sr-admin-inline-label">Trigger</span>
+            <input
+              type="text"
+              value={c.commandTrigger || '!sr'}
+              onChange={e => set('commandTrigger', e.target.value.trim() || '!sr')}
+              placeholder="!sr"
+              style={{ ...S.input, width: isSidebar ? '100%' : 80, fontWeight: 700 }}
+            />
+            <span className="sr-admin-inline-hint">What viewers type in chat</span>
+          </label>
 
-        {/* Max queue size */}
-        <label className="sr-admin-inline-field">
-          <span className="sr-admin-inline-label">Max queue</span>
-          <input
-            type="number" min={1} max={100}
-            value={c.maxQueueSize || 50}
-            onChange={e => set('maxQueueSize', Math.max(1, Math.min(100, +e.target.value)))}
-            style={{ ...S.input, width: 60 }}
-          />
-          <span className="sr-admin-inline-hint">max slots in queue</span>
-        </label>
+          <label className={inlineFieldClass}>
+            <span className="sr-admin-inline-label">Max queue</span>
+            <input
+              type="number" min={1} max={100}
+              value={c.maxQueueSize || 50}
+              onChange={e => set('maxQueueSize', Math.max(1, Math.min(100, +e.target.value)))}
+              style={{ ...S.input, width: isSidebar ? '100%' : 60 }}
+            />
+            <span className="sr-admin-inline-hint">How many requests can wait at once</span>
+          </label>
+
+          <label className={inlineFieldClass}>
+            <span className="sr-admin-inline-label">Cooldown</span>
+            <input
+              type="number" min={0} max={600}
+              value={c.cooldownSeconds || 0}
+              onChange={e => set('cooldownSeconds', Math.max(0, +e.target.value))}
+              style={{ ...S.input, width: isSidebar ? '100%' : 60 }}
+            />
+            <span className="sr-admin-inline-hint">Seconds a user must wait before the next request</span>
+          </label>
+        </div>
 
         {/* Duplicate prevention */}
         <label className="sr-admin-toggle sr-admin-toggle--compact">
@@ -378,18 +445,6 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <p className="sr-admin-copy sr-admin-copy--indented">
           Same slot can't be requested twice. Points won't be charged.
         </p>
-
-        {/* Cooldown */}
-        <label className="sr-admin-inline-field">
-          <span className="sr-admin-inline-label">Cooldown</span>
-          <input
-            type="number" min={0} max={600}
-            value={c.cooldownSeconds || 0}
-            onChange={e => set('cooldownSeconds', Math.max(0, +e.target.value))}
-            style={{ ...S.input, width: 60 }}
-          />
-          <span className="sr-admin-inline-hint">seconds between requests per user</span>
-        </label>
         <p className="sr-admin-copy">
           0 = no cooldown. Prevents spam by limiting how often a viewer can use {cmdTrigger}.
         </p>
@@ -402,7 +457,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <div className="sr-admin-card-header">
           <div>
             <span className="sr-admin-card-eyebrow">Economy</span>
-            <h4 className="sr-admin-card-title">StreamElements points</h4>
+            <h4 className="sr-admin-card-title">StreamElements pricing</h4>
           </div>
           <span className="sr-admin-card-chip">{seConnected ? 'Connected' : 'Disconnected'}</span>
         </div>
@@ -420,15 +475,15 @@ export default function SlotRequestsConfig({ config, onChange }) {
             <p className="sr-admin-copy">
               Each request costs SE points. If insufficient, the request is rejected — no charge.
             </p>
-            <label className="sr-admin-inline-field">
+            <label className={inlineFieldClass}>
               <span className="sr-admin-inline-label">Cost</span>
               <input
                 type="number" min={1} max={1000000}
                 value={c.srSeCost || 100}
                 onChange={e => set('srSeCost', Math.max(1, +e.target.value))}
-                style={{ ...S.input, width: 80, color: '#f59e0b', fontWeight: 700 }}
+                style={{ ...S.input, width: isSidebar ? '100%' : 80, color: '#f59e0b', fontWeight: 700 }}
               />
-              <span className="sr-admin-inline-hint">points</span>
+              <span className="sr-admin-inline-hint">Points charged per accepted request</span>
             </label>
             {!seConnected && (
               <p className="sr-admin-error-copy">
@@ -448,40 +503,66 @@ export default function SlotRequestsConfig({ config, onChange }) {
           4. CHAT MESSAGES
           ═══════════════════════════════════════════════ */}
       <div className="sr-admin-card sr-admin-card--messages">
-        <div className="sr-admin-card-header">
-          <div>
-            <span className="sr-admin-card-eyebrow">Automation</span>
-            <h4 className="sr-admin-card-title">Chat messages</h4>
-          </div>
-          <span className="sr-admin-card-chip">Templates</span>
-        </div>
-        <p className="sr-admin-copy">
-          Placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
-        </p>
-        <div className="sr-admin-message-list">
-        {[
-          { key: 'srMsgAccepted', label: 'Accepted (free)', def: '🎰 Added "{slot}" to the queue (requested by {user})' },
-          { key: 'srMsgAcceptedCost', label: 'Accepted (with cost)', def: '🎰 Added "{slot}" to the queue ({user} — {cost} points deducted)' },
-          { key: 'srMsgNotEnough', label: 'Not enough points', def: '❌ {user}, you need {cost} points to request a slot (you have {points}).' },
-          { key: 'srMsgDuplicate', label: 'Already in queue', def: '⚠️ {user}, "{slot}" is already in the queue (requested by {by}). No points taken!' },
-          { key: 'srMsgRejected', label: 'Rejected (refund)', def: '🚫 {user}, your request for "{slot}" was rejected. {refund}' },
-          { key: 'srMsgClearAll', label: 'Queue cleared (sent once to chat)', def: '🗑️ The slot request queue has been cleared. All points have been refunded!' },
-          { key: 'srMsgNoMatch', label: 'Slot not found', def: '❌ {user}, could not find that slot. Please try again.' },
-          { key: 'srMsgCooldown', label: 'Cooldown active', def: '⏳ {user}, please wait before requesting another slot.' },
-          { key: 'srMsgQueueFull', label: 'Queue full', def: '❌ {user}, the slot queue is full right now.' },
-        ].map(({ key, label, def }) => (
-          <div key={key} className="sr-admin-message-field">
-            <label className="sr-admin-message-label">{label}</label>
-            <input
-              type="text"
-              value={c[key] || def}
-              onChange={e => set(key, e.target.value)}
-              className="sr-admin-message-input"
-              style={S.inputFull}
-            />
-          </div>
-        ))}
-        </div>
+        {isSidebar ? (
+          <details className="sr-admin-disclosure">
+            <summary className="sr-admin-disclosure-summary">
+              <div className="sr-admin-disclosure-copy">
+                <span className="sr-admin-card-eyebrow">Automation</span>
+                <h4 className="sr-admin-card-title">Message templates</h4>
+                <p className="sr-admin-copy">Optional. Open this if you want custom chat replies for success, errors, and refunds.</p>
+              </div>
+              <span className="sr-admin-card-chip">Advanced</span>
+            </summary>
+            <div className="sr-admin-disclosure-body">
+              <p className="sr-admin-copy">
+                Available placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
+              </p>
+              <p className="sr-admin-copy">Tune what chat says for successful requests, queue errors, and refund actions.</p>
+              <div className="sr-admin-message-list">
+              {messageTemplates.map(({ key, label, def }) => (
+                <div key={key} className="sr-admin-message-field">
+                  <label className="sr-admin-message-label">{label}</label>
+                  <input
+                    type="text"
+                    value={c[key] || def}
+                    onChange={e => set(key, e.target.value)}
+                    className="sr-admin-message-input"
+                    style={S.inputFull}
+                  />
+                </div>
+              ))}
+              </div>
+            </div>
+          </details>
+        ) : (
+          <>
+            <div className="sr-admin-card-header">
+              <div>
+                <span className="sr-admin-card-eyebrow">Automation</span>
+                <h4 className="sr-admin-card-title">Message templates</h4>
+              </div>
+              <span className="sr-admin-card-chip">Templates</span>
+            </div>
+            <p className="sr-admin-copy">
+              Available placeholders: <strong className="sr-admin-placeholder">{'{slot}'}</strong> <strong className="sr-admin-placeholder">{'{user}'}</strong> <strong className="sr-admin-placeholder">{'{cost}'}</strong> <strong className="sr-admin-placeholder">{'{points}'}</strong> <strong className="sr-admin-placeholder">{'{by}'}</strong> <strong className="sr-admin-placeholder">{'{refund}'}</strong>
+            </p>
+            <p className="sr-admin-copy">Tune what chat says for successful requests, queue errors, and refund actions.</p>
+            <div className="sr-admin-message-list">
+            {messageTemplates.map(({ key, label, def }) => (
+              <div key={key} className="sr-admin-message-field">
+                <label className="sr-admin-message-label">{label}</label>
+                <input
+                  type="text"
+                  value={c[key] || def}
+                  onChange={e => set(key, e.target.value)}
+                  className="sr-admin-message-input"
+                  style={S.inputFull}
+                />
+              </div>
+            ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* ═══════════════════════════════════════════════
@@ -492,7 +573,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <div className="sr-admin-card-header">
           <div>
             <span className="sr-admin-card-eyebrow">Presentation</span>
-            <h4 className="sr-admin-card-title">Display options</h4>
+            <h4 className="sr-admin-card-title">Overlay behaviour</h4>
           </div>
           <span className="sr-admin-card-chip">{currentStyleLabel}</span>
         </div>
@@ -505,20 +586,20 @@ export default function SlotRequestsConfig({ config, onChange }) {
           <input type="checkbox" checked={c.showNumbers !== false} onChange={e => set('showNumbers', e.target.checked)} />
           Show queue numbers
         </label>
-        <label className="sr-admin-inline-field">
+        <label className={inlineFieldClass}>
           <span className="sr-admin-inline-label">Max display</span>
           <input
             type="number" min={1} max={50}
             value={c.maxDisplay || 20}
             onChange={e => set('maxDisplay', Math.max(1, +e.target.value))}
-            style={{ ...S.input, width: 50 }}
+            style={{ ...S.input, width: isSidebar ? '100%' : 50 }}
           />
-          <span className="sr-admin-inline-hint">requests shown on overlay</span>
+          <span className="sr-admin-inline-hint">How many requests appear on the overlay</span>
         </label>
 
         {/* Auto-cycle speed (for card stack / compact) */}
         {(currentStyle === 'v2_card_stack' || currentStyle === 'v3_compact') && (
-          <label className="sr-admin-inline-field">
+          <label className={inlineFieldClass}>
             <span className="sr-admin-inline-label">Cycle speed</span>
             <input type="range" min={1000} max={8000} step={500}
               value={c.autoSpeed || 4000}
@@ -531,50 +612,101 @@ export default function SlotRequestsConfig({ config, onChange }) {
 
       {/* Typography */}
       <div className="sr-admin-card sr-admin-card--theme">
-        <div className="sr-admin-card-header">
-          <div>
-            <span className="sr-admin-card-eyebrow">Visual System</span>
-            <h4 className="sr-admin-card-title">Typography & colors</h4>
-          </div>
-          <span className="sr-admin-card-chip">Overlay styling</span>
-        </div>
+        {isSidebar ? (
+          <details className="sr-admin-disclosure">
+            <summary className="sr-admin-disclosure-summary">
+              <div className="sr-admin-disclosure-copy">
+                <span className="sr-admin-card-eyebrow">Visual System</span>
+                <h4 className="sr-admin-card-title">Typography & colours</h4>
+                <p className="sr-admin-copy">Optional. Open this when you want to fine-tune the overlay look.</p>
+              </div>
+              <span className="sr-admin-card-chip">Advanced</span>
+            </summary>
+            <div className="sr-admin-disclosure-body">
+              <label className={inlineFieldClass}>
+                <span className="sr-admin-inline-label">Font</span>
+                <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}
+                  style={{ flex: 1, ...S.input }}>
+                  {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+                </select>
+              </label>
+              <label className={inlineFieldClass}>
+                <span className="sr-admin-inline-label">Size</span>
+                <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
+                  onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#a78bfa' }} />
+                <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{c.fontSize || 14}px</span>
+              </label>
+              <label className={inlineFieldClass}>
+                <span className="sr-admin-inline-label">Weight</span>
+                <select value={c.fontWeight || '600'} onChange={e => set('fontWeight', e.target.value)}
+                  style={{ flex: 1, ...S.input }}>
+                  <option value="400">Normal</option>
+                  <option value="600">Semi Bold</option>
+                  <option value="700">Bold</option>
+                  <option value="800">Extra Bold</option>
+                </select>
+              </label>
 
-        <label className="sr-admin-inline-field">
-          <span className="sr-admin-inline-label">Font</span>
-          <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}
-            style={{ flex: 1, ...S.input }}>
-            {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
-          </select>
-        </label>
-        <label className="sr-admin-inline-field">
-          <span className="sr-admin-inline-label">Size</span>
-          <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
-            onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#a78bfa' }} />
-          <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{c.fontSize || 14}px</span>
-        </label>
-        <label className="sr-admin-inline-field">
-          <span className="sr-admin-inline-label">Weight</span>
-          <select value={c.fontWeight || '600'} onChange={e => set('fontWeight', e.target.value)}
-            style={{ flex: 1, ...S.input }}>
-            <option value="400">Normal</option>
-            <option value="600">Semi Bold</option>
-            <option value="700">Bold</option>
-            <option value="800">Extra Bold</option>
-          </select>
-        </label>
+              <div className="sr-admin-color-block">
+                <p className="sr-admin-subheading">Colors</p>
+                <div className="sr-admin-color-list">
+                  <ColorPicker label="Accent" value={c.accentColor || '#a78bfa'} onChange={v => set('accentColor', v)} />
+                  <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
+                  <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
+                  <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />
+                  <RgbaColorPicker label="Card BG" value={c.cardBg || 'rgba(255,255,255,0.04)'} onChange={v => set('cardBg', v)} />
+                  <RgbaColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.07)'} onChange={v => set('borderColor', v)} />
+                </div>
+              </div>
+            </div>
+          </details>
+        ) : (
+          <>
+            <div className="sr-admin-card-header">
+              <div>
+                <span className="sr-admin-card-eyebrow">Visual System</span>
+                <h4 className="sr-admin-card-title">Typography & colours</h4>
+              </div>
+              <span className="sr-admin-card-chip">Overlay styling</span>
+            </div>
 
-      {/* Colors */}
-        <div className="sr-admin-color-block">
-        <p className="sr-admin-subheading">Colors</p>
-        <div className="sr-admin-color-list">
-          <ColorPicker label="Accent" value={c.accentColor || '#a78bfa'} onChange={v => set('accentColor', v)} />
-          <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
-          <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
-          <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />
-          <RgbaColorPicker label="Card BG" value={c.cardBg || 'rgba(255,255,255,0.04)'} onChange={v => set('cardBg', v)} />
-          <RgbaColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.07)'} onChange={v => set('borderColor', v)} />
-        </div>
-      </div>
+            <label className={inlineFieldClass}>
+              <span className="sr-admin-inline-label">Font</span>
+              <select value={c.fontFamily || "'Inter', sans-serif"} onChange={e => set('fontFamily', e.target.value)}
+                style={{ flex: 1, ...S.input }}>
+                {FONT_OPTIONS.map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
+              </select>
+            </label>
+            <label className={inlineFieldClass}>
+              <span className="sr-admin-inline-label">Size</span>
+              <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
+                onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#a78bfa' }} />
+              <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{c.fontSize || 14}px</span>
+            </label>
+            <label className={inlineFieldClass}>
+              <span className="sr-admin-inline-label">Weight</span>
+              <select value={c.fontWeight || '600'} onChange={e => set('fontWeight', e.target.value)}
+                style={{ flex: 1, ...S.input }}>
+                <option value="400">Normal</option>
+                <option value="600">Semi Bold</option>
+                <option value="700">Bold</option>
+                <option value="800">Extra Bold</option>
+              </select>
+            </label>
+
+            <div className="sr-admin-color-block">
+              <p className="sr-admin-subheading">Colors</p>
+              <div className="sr-admin-color-list">
+                <ColorPicker label="Accent" value={c.accentColor || '#a78bfa'} onChange={v => set('accentColor', v)} />
+                <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
+                <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
+                <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />
+                <RgbaColorPicker label="Card BG" value={c.cardBg || 'rgba(255,255,255,0.04)'} onChange={v => set('cardBg', v)} />
+                <RgbaColorPicker label="Border" value={c.borderColor || 'rgba(255,255,255,0.07)'} onChange={v => set('borderColor', v)} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
       </div>
       </div>
@@ -586,7 +718,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         <div className="sr-admin-card-header sr-admin-card-header--queue">
           <div>
             <span className="sr-admin-card-eyebrow">Moderation</span>
-            <h4 className="sr-admin-card-title">Queue management</h4>
+            <h4 className="sr-admin-card-title">Pending queue</h4>
           </div>
           <span className="sr-admin-card-chip">{queueCount} pending</span>
           {requests.length > 0 && (
@@ -599,7 +731,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
         </div>
 
         {requests.length === 0 && (
-          <p className="sr-admin-empty">No pending requests. Viewers type {cmdTrigger} in chat.</p>
+          <p className="sr-admin-empty">No pending requests yet. Once the listener is on, viewers can type <strong className="sr-admin-strong">{`${cmdTrigger} <slot name>`}</strong> in chat.</p>
         )}
 
         <div className="sr-admin-queue-list">
@@ -626,7 +758,7 @@ export default function SlotRequestsConfig({ config, onChange }) {
               style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem' }}
               disabled={busyIds.has(r.id)}
               onClick={() => markPlayed(r.id)} title="Mark as played">
-              {busyIds.has(r.id) ? '…' : '✓'}
+              {busyIds.has(r.id) ? '…' : 'Mark Played'}
             </button>
             {/* Reject & refund — always shown; no-op if SE not connected */}
             <button
@@ -635,14 +767,14 @@ export default function SlotRequestsConfig({ config, onChange }) {
               disabled={busyIds.has(r.id)}
               onClick={() => rejectRequest(r.id)}
               title={c.srSeEnabled ? 'Reject & refund SE points to this user' : 'Reject request (SE points not enabled)'}>
-              {busyIds.has(r.id) ? '…' : '↩ Refund'}
+              {busyIds.has(r.id) ? '…' : (c.srSeEnabled ? 'Reject + Refund' : 'Reject')}
             </button>
             {/* Remove without refund */}
             <button
               className="sr-admin-btn sr-admin-btn--danger"
               style={{ ...S.btn, padding: '4px 8px', fontSize: '0.7rem', opacity: busyIds.has(r.id) ? 0.5 : 1 }}
               disabled={busyIds.has(r.id)}
-              onClick={() => removeRequest(r.id)} title="Remove without refund">✕</button>
+              onClick={() => removeRequest(r.id)} title="Remove without refund">Remove</button>
             </div>
           </div>
         ))}

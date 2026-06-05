@@ -12457,6 +12457,10 @@ body.wm-resizing {
   gap: 14px;
 }
 
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar {
+  gap: 12px;
+}
+
 [data-tour="slot-requests-page"] .sr-admin-hero {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.95fr);
@@ -12521,6 +12525,87 @@ body.wm-resizing {
   margin-left: 26px;
 }
 
+[data-tour="slot-requests-page"] .sr-admin-quickstart {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-quickstep {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 10px;
+  align-items: start;
+  padding: 10px 12px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+[data-tour="slot-requests-page"] .sr-admin-quickstep--ready {
+  border-color: rgba(148, 163, 184, 0.18);
+  background: rgba(148, 163, 184, 0.08);
+}
+
+[data-tour="slot-requests-page"] .sr-admin-quickstep-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: rgba(148, 163, 184, 0.16);
+  color: #f7f4ff;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-quickstep-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-quickstep-copy strong {
+  color: var(--sr-admin-text);
+  font-size: 12.5px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-quickstep-copy span {
+  color: var(--sr-admin-muted);
+  font-size: 11.5px;
+  line-height: 1.5;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-example {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-example-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #8ba4b8;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-example-code {
+  display: block;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  background: rgba(8, 11, 19, 0.72);
+  color: #efe9ff;
+  font-size: 12px;
+  font-weight: 700;
+  word-break: break-word;
+}
+
 [data-tour="slot-requests-page"] .sr-admin-strong,
 [data-tour="slot-requests-page"] .sr-admin-placeholder {
   color: #efe9ff;
@@ -12553,6 +12638,13 @@ body.wm-resizing {
   display: grid;
   grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
   gap: 14px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-field-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
 }
 
 [data-tour="slot-requests-page"] .sr-admin-metrics {
@@ -12661,6 +12753,13 @@ body.wm-resizing {
   font-size: 13px;
 }
 
+[data-tour="slot-requests-page"] .sr-admin-inline-field--stacked {
+  align-items: stretch;
+  justify-content: flex-start;
+  gap: 7px;
+  margin-top: 0;
+}
+
 [data-tour="slot-requests-page"] .sr-admin-inline-hint {
   font-size: 11px;
 }
@@ -12691,6 +12790,38 @@ body.wm-resizing {
 
 [data-tour="slot-requests-page"] .sr-admin-message-input {
   border-radius: 14px !important;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-disclosure {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-disclosure-summary {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  cursor: pointer;
+  list-style: none;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-disclosure-summary::-webkit-details-marker {
+  display: none;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-disclosure-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-disclosure-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 14px;
 }
 
 [data-tour="slot-requests-page"] .sr-admin-color-block {
@@ -12774,7 +12905,33 @@ body.wm-resizing {
 [data-tour="slot-requests-page"] .sr-admin-queue-actions {
   display: inline-flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 6px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-hero {
+  padding: 18px;
+  gap: 14px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-grid--top,
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-grid--middle,
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-field-grid {
+  grid-template-columns: 1fr;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-card,
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-metric-card {
+  padding: 16px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-message-list {
+  gap: 10px;
+}
+
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-card-header,
+[data-tour="slot-requests-page"] .sr-admin-page--sidebar .sr-admin-card-header--queue {
+  align-items: flex-start;
 }
 
 @media (max-width: 1180px) {
