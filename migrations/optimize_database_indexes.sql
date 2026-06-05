@@ -20,29 +20,6 @@ CREATE INDEX IF NOT EXISTS idx_point_redemptions_user_id ON public.point_redempt
 -- Subscriptions
 CREATE INDEX IF NOT EXISTS idx_subscriptions_plan_id ON public.subscriptions(plan_id);
 
--- The Life - Business System
-CREATE INDEX IF NOT EXISTS idx_business_productions_reward_item_id ON public.the_life_business_productions(reward_item_id);
-CREATE INDEX IF NOT EXISTS idx_business_required_items_reward_item_id ON public.the_life_business_required_items(reward_item_id);
-CREATE INDEX IF NOT EXISTS idx_businesses_item_reward_id ON public.the_life_businesses(item_reward_id);
-CREATE INDEX IF NOT EXISTS idx_businesses_required_item_id ON public.the_life_businesses(required_item_id);
-CREATE INDEX IF NOT EXISTS idx_businesses_reward_item_id ON public.the_life_businesses(reward_item_id);
-
--- The Life - Crime & Drops
-CREATE INDEX IF NOT EXISTS idx_crime_drops_item_id ON public.the_life_crime_drops(item_id);
-
--- The Life - Dock System
-CREATE INDEX IF NOT EXISTS idx_dock_boats_item_id ON public.the_life_dock_boats(item_id);
-CREATE INDEX IF NOT EXISTS idx_dock_shipments_boat_id ON public.the_life_dock_shipments(boat_id);
-CREATE INDEX IF NOT EXISTS idx_dock_shipments_item_id ON public.the_life_dock_shipments(item_id);
-
--- The Life - Players
-CREATE INDEX IF NOT EXISTS idx_players_equipped_gear_id ON public.the_life_players(equipped_gear_id);
-CREATE INDEX IF NOT EXISTS idx_players_equipped_weapon_id ON public.the_life_players(equipped_weapon_id);
-
--- The Life - PVP & Robbery
-CREATE INDEX IF NOT EXISTS idx_pvp_logs_winner_id ON public.the_life_pvp_logs(winner_id);
-CREATE INDEX IF NOT EXISTS idx_robbery_history_robbery_id ON public.the_life_robbery_history(robbery_id);
-
 -- User System
 CREATE INDEX IF NOT EXISTS idx_user_themes_theme_preset_id ON public.user_themes(theme_preset_id);
 CREATE INDEX IF NOT EXISTS idx_voucher_codes_created_by ON public.voucher_codes(created_by);
@@ -88,9 +65,6 @@ DROP INDEX IF EXISTS presets_public_idx;
 DROP INDEX IF EXISTS events_user_id_idx;
 DROP INDEX IF EXISTS events_created_at_idx;
 
--- The Life - Players
-DROP INDEX IF EXISTS idx_the_life_players_cash;
-
 -- Tournaments
 DROP INDEX IF EXISTS idx_tournament_rounds_score;
 DROP INDEX IF EXISTS idx_tournament_rounds_tournament;
@@ -107,20 +81,6 @@ DROP INDEX IF EXISTS webhook_events_stripe_id_idx;
 DROP INDEX IF EXISTS webhook_events_processed_idx;
 DROP INDEX IF EXISTS webhook_events_created_at_idx;
 
--- The Life - Brothel System
-DROP INDEX IF EXISTS idx_brothel_workers_active;
-DROP INDEX IF EXISTS idx_player_brothel_workers_worker;
-
--- The Life - Business System
-DROP INDEX IF EXISTS idx_player_businesses_business;
-DROP INDEX IF EXISTS idx_business_productions_business;
-DROP INDEX IF EXISTS idx_business_productions_collected;
-DROP INDEX IF EXISTS idx_business_required_items_item;
-
--- The Life - Items
-DROP INDEX IF EXISTS idx_thelife_items_type;
-DROP INDEX IF EXISTS idx_thelife_items_resell_price;
-
 -- Payments
 DROP INDEX IF EXISTS payments_user_id_idx;
 DROP INDEX IF EXISTS payments_subscription_id_idx;
@@ -128,19 +88,6 @@ DROP INDEX IF EXISTS payments_created_at_idx;
 
 -- User Profiles
 DROP INDEX IF EXISTS idx_user_profiles_twitch_username;
-
--- The Life - PVP Chat
-DROP INDEX IF EXISTS idx_pvp_chat_player_id;
-DROP INDEX IF EXISTS idx_pvp_chat_user_id;
-
--- The Life - Inventory
-DROP INDEX IF EXISTS idx_player_inventory_equipped;
-
--- The Life - Dock
-DROP INDEX IF EXISTS idx_dock_shipments_player;
-
--- The Life - Store
-DROP INDEX IF EXISTS idx_store_items_active;
 
 -- Slot History
 DROP INDEX IF EXISTS idx_slot_history_provider;
@@ -183,7 +130,6 @@ DROP INDEX IF EXISTS widget_state_widget_id_idx;
 -- - redemption_items: Admins can manage redemption items
 -- - slot_history: Users can view/insert/update/delete own slot history
 -- - point_redemptions: Users can view/create their own redemptions, Allow authenticated users to read/update
--- - the_life_players: Users can view/insert/update own player data
 -- - game_sessions: Users can insert/view their own game sessions, Admins can view all
 -- - user_random_slot: Users can insert/update/view/delete their own random slot state
 -- - game_stats: Users can view/update/insert their own game stats
@@ -202,31 +148,14 @@ DROP INDEX IF EXISTS widget_state_widget_id_idx;
 -- - subscriptions: users can select own subscription
 -- - items: Admins can insert items
 -- - user_inventory: Users can view/insert/update own inventory
--- - the_life_robbery_history: Users can view/insert own robbery history
--- - the_life_drug_ops: Users can view/manage own drug ops
--- - the_life_brothels: Users can view/manage own brothel
--- - the_life_pvp_logs: Users can insert PvP logs
--- - the_life_brothel_workers: Admins can manage workers
--- - the_life_player_brothel_workers: Users can view/manage own hired workers
--- - the_life_businesses: Admins can manage businesses
 -- - stream_highlights: Admins can manage highlights
--- - the_life_robberies: Admins can manage robberies
 -- - daily_wheel_prizes: Admins can manage wheel prizes
 -- - daily_wheel_spins: Users can view/record/claim their own spins, Admins can view all
 -- - overlay_presets: users can manage own presets
 -- - overlay_events: users can select own events
--- - the_life_player_businesses: Users can view/manage own businesses
 -- - stripe_webhook_events: service role can manage webhook events
 -- - payments: users can view own payments
 -- - user_themes: Users can view/create/update/delete their own themes
--- - the_life_player_inventory: Players can view/manage own inventory
--- - the_life_business_productions: Players can view/manage own productions
--- - the_life_event_messages: Admins can manage event messages
--- - the_life_category_info: Allow admins to manage category info
--- - the_life_pvp_chat: Authenticated users can send messages
--- - the_life_pvp_presence: Users can update own presence
--- - the_life_items: Admins can manage TheLife items
--- - the_life_business_required_items: Admins can manage business required items
 -- - tournament_history: Users can view/insert/update/delete own tournament history
 -- - tournament_rounds: Users can view/insert/update own tournament rounds
 -- - daily_sessions: Users can view/insert/update own daily sessions
@@ -275,7 +204,6 @@ DROP INDEX IF EXISTS widget_state_widget_id_idx;
 -- - voucher_redemptions: 2 policies for anon/authenticated
 -- - user_profiles: 3 policies for anon/authenticated (multiple for INSERT/SELECT/UPDATE)
 -- - user_roles: 3-4 policies for anon/authenticated
--- - the_life_* tables: Many with 2-3 policies each
 --
 -- 📋 MANUAL REVIEW REQUIRED:
 -- Each table needs business logic review to consolidate policies correctly.

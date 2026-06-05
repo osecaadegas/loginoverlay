@@ -4,10 +4,9 @@
 --   * old SaaS overlay/widget-types schema
 --   * abandoned theme tables tied to the old overlay schema
 --   * abandoned roulette, blackjack, and mines tables
--- Explicitly not touched:
+-- Explicitly not touched in this migration:
 --   * current Overlay Control Center tables
---   * The Life tables
---   * Twitch extension tables
+--   * The Life / Twitch extension cleanup handled by 20260605_remove_thelife_and_twitch_extension_schema.sql
 --   * StreamElements, slots, betting, analytics, giveaways, offers
 
 ALTER PUBLICATION supabase_realtime DROP TABLE IF EXISTS overlays;

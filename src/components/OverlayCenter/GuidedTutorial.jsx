@@ -122,15 +122,8 @@ const STEPS = [
     page: 'profile',
   },
   {
-    target: '[data-tour="profile-twitch-ext"]',
-    title: '15. Twitch Extension 📺',
-    body: 'Your Twitch Extension lets viewers interact directly on your channel — predictions, giveaways, slot stats, and mini-games. It works automatically once installed on Twitch.',
-    position: 'top',
-    page: 'profile',
-  },
-  {
     target: '[data-tour="profile-obs-guide"]',
-    title: '16. OBS Setup Guide 🖥️',
+    title: '15. OBS Setup Guide 🖥️',
     body: 'Scroll down for a quick checklist to make your overlay pixel-perfect in OBS — browser source dimensions, canvas resolution, and common fixes for blurry overlays.',
     position: 'top',
     page: 'profile',
@@ -139,14 +132,14 @@ const STEPS = [
   /* ── Streamer Tools ── */
   {
     target: '[data-tour="bonus-hunt-page"]',
-    title: '17. Bonus Hunt 🎯',
+    title: '16. Bonus Hunt 🎯',
     body: 'This is where you run your bonus hunts! Add bonuses with name, bet, and slot info. Start the hunt, open bonuses, record results — the overlay widget updates in real-time for your viewers.',
     position: 'float-top',
     page: 'bonus_hunt',
   },
   {
     target: '[data-tour="tournament-page"]',
-    title: '18. Tournament 🏆',
+    title: '17. Tournament 🏆',
     body: 'Set up slot battles and tournaments here. Add players, assign slots, track scores, and run brackets. The Tournament widget on your overlay shows the leaderboard live.',
     position: 'float-top',
     page: 'tournament',

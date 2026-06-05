@@ -1,7 +1,7 @@
 -- ═══════════════════════════════════════════════════════════════════════════
 -- BETTING CONTESTS — STREAMELEMENTS POINTS MODE
 -- Adds currency_mode to contests and SE-mode RPCs that record bets/payouts
--- without touching the_life_players. Point debit/credit is handled in the
+-- without touching any internal wallet table. Point debit/credit is handled in the
 -- API layer via the SE HTTP API so the DB stays consistent.
 --
 -- Run this AFTER add_betting_contests.sql.
@@ -12,15 +12,15 @@
 -- ─── 1. CURRENCY MODE COLUMN ─────────────────────────────────────────────────
 
 ALTER TABLE betting_contests
-  ADD COLUMN IF NOT EXISTS currency_mode TEXT NOT NULL DEFAULT 'internal'
-    CHECK (currency_mode IN ('internal', 'se_points'));
+  ADD COLUMN IF NOT EXISTS currency_mode TEXT NOT NULL DEFAULT 'se_points'
+    CHECK (currency_mode = 'se_points');
 
 COMMENT ON COLUMN betting_contests.currency_mode IS
-  'internal = deduct from the_life_players.cash; se_points = deduct via StreamElements API';
+  'Only StreamElements-backed betting contests are supported.';
 
 
 -- ─── 2. RPC: PLACE BET (SE mode) ─────────────────────────────────────────────
--- Identical to place_betting_bet but skips the_life_players balance check and
+-- Identical to the legacy wallet-backed version but skips any internal balance check and
 -- deduction. The API has already verified and deducted SE points before calling
 -- this function.
 
@@ -113,8 +113,8 @@ $$;
 
 
 -- ─── 3. RPC: RESOLVE CONTEST (SE mode) ───────────────────────────────────────
--- Same pari-mutuel math as resolve_betting_contest but does NOT credit
--- the_life_players. Returns winners array so the API can credit SE points.
+-- Same pari-mutuel math as the legacy wallet-backed resolver but does NOT
+-- credit any internal wallet. Returns winners array so the API can credit SE points.
 
 DROP FUNCTION IF EXISTS resolve_betting_contest_se(UUID, UUID);
 
@@ -211,7 +211,7 @@ BEGIN
     v_winner_count   := v_winner_count   + 1;
     v_last_winner_id := v_bet.id;
 
-    -- Record settlement (no the_life_players credit — API handles SE points)
+    -- Record settlement; the API handles SE point crediting.
     UPDATE betting_contest_bets
     SET payout_amount = v_payout,
         profit        = v_profit,
@@ -279,7 +279,7 @@ $$;
 
 
 -- ─── 4. RPC: CANCEL CONTEST (SE mode) ────────────────────────────────────────
--- Same as cancel_betting_contest but does NOT credit the_life_players.
+-- Same as the legacy wallet-backed cancellation flow but does NOT credit an internal wallet.
 -- Returns refunds array so the API can refund SE points.
 
 DROP FUNCTION IF EXISTS cancel_betting_contest_se(UUID);

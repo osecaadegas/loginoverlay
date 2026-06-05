@@ -65,7 +65,7 @@ export default function Sidebar({ className = '', onClose }) {
       return;
     }
     supabase
-      .from('the_life_players')
+      .from('user_profiles')
       .select('avatar_url')
       .eq('user_id', user.id)
       .single()

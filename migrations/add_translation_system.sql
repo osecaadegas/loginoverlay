@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS translations (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   
   -- Source identification
-  source_table TEXT NOT NULL,        -- e.g., 'the_life_robberies', 'the_life_items', 'ui'
+  source_table TEXT NOT NULL,        -- e.g., 'casino_offers', 'slots', 'ui'
   source_id TEXT,                    -- ID of the record (null for UI strings)
   source_field TEXT NOT NULL,        -- e.g., 'name', 'description', 'button_text'
   
@@ -220,24 +220,6 @@ INSERT INTO translations (source_table, source_id, source_field, language_code, 
 ('ui', NULL, 'nav_logout', 'pt-PT', 'Logout', 'Sair', false, true),
 ('ui', NULL, 'nav_login', 'pt-PT', 'Login', 'Entrar', false, true),
 
--- The Life Game
-('ui', NULL, 'thelife_crimes', 'pt-PT', 'Crimes', 'Crimes', false, true),
-('ui', NULL, 'thelife_pvp', 'pt-PT', 'PVP', 'JvJ', false, true),
-('ui', NULL, 'thelife_businesses', 'pt-PT', 'Businesses', 'Negócios', false, true),
-('ui', NULL, 'thelife_brothel', 'pt-PT', 'Brothel', 'Bordel', false, true),
-('ui', NULL, 'thelife_bank', 'pt-PT', 'Bank', 'Banco', false, true),
-('ui', NULL, 'thelife_jail', 'pt-PT', 'Jail', 'Prisão', false, true),
-('ui', NULL, 'thelife_hospital', 'pt-PT', 'Hospital', 'Hospital', false, true),
-('ui', NULL, 'thelife_market', 'pt-PT', 'Black Market', 'Mercado Negro', false, true),
-('ui', NULL, 'thelife_docks', 'pt-PT', 'Docks', 'Docas', false, true),
-('ui', NULL, 'thelife_inventory', 'pt-PT', 'Inventory', 'Inventário', false, true),
-('ui', NULL, 'thelife_leaderboard', 'pt-PT', 'Leaderboard', 'Classificação', false, true),
-('ui', NULL, 'thelife_profile', 'pt-PT', 'Profile', 'Perfil', false, true),
-('ui', NULL, 'thelife_skills', 'pt-PT', 'Skills', 'Habilidades', false, true),
-('ui', NULL, 'thelife_highstakes', 'pt-PT', 'High Stakes', 'Apostas Altas', false, true),
-('ui', NULL, 'thelife_news', 'pt-PT', 'News', 'Notícias', false, true),
-('ui', NULL, 'thelife_syndicate', 'pt-PT', 'The Syndicate', 'O Sindicato', false, true),
-
 -- Common Actions
 ('ui', NULL, 'action_buy', 'pt-PT', 'Buy', 'Comprar', false, true),
 ('ui', NULL, 'action_sell', 'pt-PT', 'Sell', 'Vender', false, true),
@@ -383,10 +365,6 @@ INSERT INTO translations (source_table, source_id, source_field, language_code, 
 ('ui', NULL, 'label_faq', 'pt-PT', 'FAQ', 'Perguntas Frequentes', false, true),
 
 -- Messages
-('ui', NULL, 'msg_not_enough_cash', 'pt-PT', 'Not enough cash!', 'Dinheiro insuficiente!', false, true),
-('ui', NULL, 'msg_not_enough_stamina', 'pt-PT', 'Not enough stamina!', 'Energia insuficiente!', false, true),
-('ui', NULL, 'msg_in_jail', 'pt-PT', 'You are in jail!', 'Estás na prisão!', false, true),
-('ui', NULL, 'msg_in_hospital', 'pt-PT', 'You are in hospital!', 'Estás no hospital!', false, true),
 ('ui', NULL, 'msg_success', 'pt-PT', 'Success!', 'Sucesso!', false, true),
 ('ui', NULL, 'msg_error', 'pt-PT', 'An error occurred', 'Ocorreu um erro', false, true),
 ('ui', NULL, 'msg_welcome', 'pt-PT', 'Welcome!', 'Bem-vindo!', false, true),
@@ -421,22 +399,6 @@ INSERT INTO translations (source_table, source_id, source_field, language_code, 
 ('ui', NULL, 'msg_you_lost', 'pt-PT', 'You lost!', 'Perdeste!', false, true),
 ('ui', NULL, 'msg_draw', 'pt-PT', 'Draw!', 'Empate!', false, true),
 
--- News/Journal
-('ui', NULL, 'news_title', 'pt-PT', 'The Underground Chronicle', 'A Crónica Subterrânea', false, true),
-('ui', NULL, 'news_subtitle', 'pt-PT', 'Your Trusted Source for Street Intelligence', 'A Tua Fonte de Confiança para Informação das Ruas', false, true),
-('ui', NULL, 'news_all', 'pt-PT', 'All Stories', 'Todas as Notícias', false, true),
-('ui', NULL, 'news_rankings', 'pt-PT', 'Power Rankings', 'Classificações', false, true),
-('ui', NULL, 'news_fightclub', 'pt-PT', 'Fight Club', 'Clube da Luta', false, true),
-('ui', NULL, 'news_crimebeat', 'pt-PT', 'Crime Beat', 'Notícias do Crime', false, true),
-('ui', NULL, 'news_harbor', 'pt-PT', 'Harbor News', 'Notícias do Porto', false, true),
-('ui', NULL, 'news_vice', 'pt-PT', 'Vice', 'Vícios', false, true),
-('ui', NULL, 'news_markets', 'pt-PT', 'Markets', 'Mercados', false, true),
-('ui', NULL, 'news_risingstars', 'pt-PT', 'Rising Stars', 'Estrelas em Ascensão', false, true),
-('ui', NULL, 'news_breaking', 'pt-PT', 'Breaking News', 'Última Hora', false, true),
-('ui', NULL, 'news_latest', 'pt-PT', 'Latest', 'Mais Recentes', false, true),
-('ui', NULL, 'news_trending', 'pt-PT', 'Trending', 'Em Destaque', false, true),
-('ui', NULL, 'news_read_more', 'pt-PT', 'Read More', 'Ler Mais', false, true),
-
 -- Sidebar Navigation
 ('ui', NULL, 'nav_partners', 'pt-PT', 'Partners', 'Parceiros', false, true),
 ('ui', NULL, 'nav_points_store', 'pt-PT', 'Points Store', 'Loja de Pontos', false, true),
@@ -448,7 +410,6 @@ INSERT INTO translations (source_table, source_id, source_field, language_code, 
 ('ui', NULL, 'nav_daily_wheel', 'pt-PT', 'Daily Wheel', 'Roda Diária', false, true),
 ('ui', NULL, 'nav_blackjack', 'pt-PT', 'Blackjack', 'Blackjack', false, true),
 ('ui', NULL, 'nav_mines', 'pt-PT', 'Mines', 'Minas', false, true),
-('ui', NULL, 'nav_thelife', 'pt-PT', 'The Life', 'A Vida', false, true),
 ('ui', NULL, 'nav_webmod', 'pt-PT', 'WebMod', 'WebMod', false, true),
 ('ui', NULL, 'nav_slot_manager', 'pt-PT', 'Slot Manager', 'Gestor de Slots', false, true),
 ('ui', NULL, 'nav_points_manager', 'pt-PT', 'Points Manager', 'Gestor de Pontos', false, true),

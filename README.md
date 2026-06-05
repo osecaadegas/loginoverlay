@@ -7,7 +7,7 @@ Community streaming platform built with React, Vite, Supabase, and Vercel server
 - Overlay Control Center and OBS-facing overlay renderer
 - Slots, slot requests, betting, giveaways, tournaments, bonus hunt tracking
 - StreamElements, Twitch auth, Spotify, analytics, shoutouts, admin tooling
-- The Life systems and Twitch extension surfaces are still present in code and schema
+- The Life and Twitch extension were retired from runtime. Older databases can remove their schema with the cleanup migrations in `migrations/`.
 
 ## Development
 
@@ -38,4 +38,7 @@ Most useful entry points:
 
 The repository contains both active schema history and older legacy migrations. The current authoritative migration map is in [migrations/README.md](./migrations/README.md).
 
-Legacy Stripe/subscription, old SaaS overlay, roulette, blackjack, and mines cleanup is consolidated in [migrations/20260605_remove_legacy_dead_schema.sql](./migrations/20260605_remove_legacy_dead_schema.sql).
+Legacy cleanup is consolidated in:
+
+- [migrations/20260605_remove_legacy_dead_schema.sql](./migrations/20260605_remove_legacy_dead_schema.sql) for old Stripe/subscription, abandoned overlay, roulette, blackjack, and mines schema
+- [migrations/20260605_remove_thelife_and_twitch_extension_schema.sql](./migrations/20260605_remove_thelife_and_twitch_extension_schema.sql) for retired The Life and Twitch extension schema on older databases

@@ -26,10 +26,6 @@
   ],
   "rewrites": [
     {
-      "source": "/api/twitch-ext-admin",
-      "destination": "/api/twitch-ext"
-    },
-    {
       "source": "/api/spotify-refresh",
       "destination": "/api/chat-commands?cmd=spotify-refresh"
     },

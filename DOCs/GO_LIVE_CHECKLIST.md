@@ -28,14 +28,13 @@ Use this checklist before shipping a production build.
 
 - [ ] StreamElements commands and points access were tested if enabled
 - [ ] Spotify auth and refresh flow were tested if enabled
-- [ ] Twitch extension endpoints and secrets were tested if enabled
 - [ ] Offer tracking and analytics events were verified
 
 ## Community systems
 
-- [ ] Betting, giveaways, tournaments, slot requests, and shoutouts were tested if you use them
-- [ ] The Life systems were tested if they remain in your release scope
+- [ ] Betting, giveaways, tournaments, slot requests, shoutouts, and daily wheel were tested if you use them
 - [ ] Disabled or out-of-scope systems are not linked from your rollout docs
+- [ ] Retired The Life and Twitch extension routes, secrets, and admin surfaces are absent from the release
 
 ## Security and operations
 

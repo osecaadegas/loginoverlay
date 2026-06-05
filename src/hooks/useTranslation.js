@@ -174,7 +174,6 @@ export const T = {
   NAV_DAILY_WHEEL: 'nav_daily_wheel',
   NAV_BLACKJACK: 'nav_blackjack',
   NAV_MINES: 'nav_mines',
-  NAV_THELIFE: 'nav_thelife',
   NAV_WEBMOD: 'nav_webmod',
   NAV_SLOT_MANAGER: 'nav_slot_manager',
   NAV_POINTS_MANAGER: 'nav_points_manager',
@@ -184,24 +183,6 @@ export const T = {
   NAV_ADMIN_PANEL: 'nav_admin_panel',
   LOGIN_WITH_TWITCH: 'login_with_twitch',
   LOGOUT: 'nav_logout',
-
-  // The Life Game
-  THELIFE_CRIMES: 'thelife_crimes',
-  THELIFE_PVP: 'thelife_pvp',
-  THELIFE_BUSINESSES: 'thelife_businesses',
-  THELIFE_BROTHEL: 'thelife_brothel',
-  THELIFE_BANK: 'thelife_bank',
-  THELIFE_JAIL: 'thelife_jail',
-  THELIFE_HOSPITAL: 'thelife_hospital',
-  THELIFE_MARKET: 'thelife_market',
-  THELIFE_DOCKS: 'thelife_docks',
-  THELIFE_INVENTORY: 'thelife_inventory',
-  THELIFE_LEADERBOARD: 'thelife_leaderboard',
-  THELIFE_PROFILE: 'thelife_profile',
-  THELIFE_SKILLS: 'thelife_skills',
-  THELIFE_HIGHSTAKES: 'thelife_highstakes',
-  THELIFE_NEWS: 'thelife_news',
-  THELIFE_SYNDICATE: 'thelife_syndicate',
 
   // Actions
   ACTION_BUY: 'action_buy',
@@ -247,24 +228,8 @@ export const T = {
   LABEL_LOADING: 'label_loading',
 
   // Messages
-  MSG_NOT_ENOUGH_CASH: 'msg_not_enough_cash',
-  MSG_NOT_ENOUGH_STAMINA: 'msg_not_enough_stamina',
-  MSG_IN_JAIL: 'msg_in_jail',
-  MSG_IN_HOSPITAL: 'msg_in_hospital',
   MSG_SUCCESS: 'msg_success',
-  MSG_ERROR: 'msg_error',
-
-  // News/Journal
-  NEWS_TITLE: 'news_title',
-  NEWS_SUBTITLE: 'news_subtitle',
-  NEWS_ALL: 'news_all',
-  NEWS_RANKINGS: 'news_rankings',
-  NEWS_FIGHTCLUB: 'news_fightclub',
-  NEWS_CRIMEBEAT: 'news_crimebeat',
-  NEWS_HARBOR: 'news_harbor',
-  NEWS_VICE: 'news_vice',
-  NEWS_MARKETS: 'news_markets',
-  NEWS_RISINGSTARS: 'news_risingstars'
+  MSG_ERROR: 'msg_error'
 };
 
 export default useTranslation;

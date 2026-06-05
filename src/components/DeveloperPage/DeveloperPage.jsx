@@ -134,9 +134,6 @@ function RoutesPanel() {
     { path: '/premium', desc: 'Premium subscription tiers', access: 'Public' },
     { path: '/privacy', desc: 'Privacy policy (GDPR)', access: 'Public' },
     { path: '/terms', desc: 'Terms of service', access: 'Public' },
-    { path: '/games/thelife', desc: 'The Life RPG', access: 'User' },
-    { path: '/games/thelife/season-pass', desc: 'Season pass store', access: 'User' },
-    { path: '/games/thelife/news', desc: 'The Life journal / news', access: 'User' },
     { path: '/games/dice', desc: 'Dice (coming soon)', access: 'User' },
     { path: '/games/roulette', desc: 'Roulette (coming soon)', access: 'User' },
     { path: '/points', desc: 'StreamElements points panel', access: 'User' },
@@ -182,7 +179,6 @@ function RoutesPanel() {
 /* ── Environment Panel ── */
 function ApiPanel() {
   const endpoints = [
-    { method: 'POST', path: '/api/thelife-wipe', desc: 'The Life season wipe' },
     { method: 'POST', path: '/api/auto-draw-winners', desc: 'Auto-draw giveaway winners' },
     { method: 'GET',  path: '/api/clip-video', desc: 'Clip video proxy' },
     { method: 'GET',  path: '/api/image-search', desc: 'Image search proxy' },

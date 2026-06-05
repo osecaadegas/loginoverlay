@@ -198,7 +198,7 @@ function computeLiveOdds(outcomes, totalPool) {
 // ─── Action: create_contest ───────────────────────────────────────────────────
 // Body: { title, question, outcomes: [{label}], locksAt?, currencyMode? }
 async function handleCreateContest(supabase, user, body, res) {
-  const { title, question, outcomes, locksAt, currencyMode = 'internal' } = body;
+  const { title, question, outcomes, locksAt, currencyMode = 'se_points' } = body;
 
   // Validation
   if (!title?.trim())
@@ -227,8 +227,8 @@ async function handleCreateContest(supabase, user, body, res) {
       return res.status(400).json({ error: 'locks_at must be a future timestamp' });
   }
 
-  if (!['internal', 'se_points'].includes(currencyMode)) {
-    return res.status(400).json({ error: 'currencyMode must be "internal" or "se_points"' });
+  if (currencyMode !== 'se_points') {
+    return res.status(400).json({ error: 'Only "se_points" contests are supported.' });
   }
 
   // Create contest row
@@ -372,22 +372,9 @@ async function handleResolveContest(supabase, body, res) {
     return res.status(200).json(data);
   }
 
-  // ── Internal cash flow ──────────────────────────────────────────────────────
-  const { data, error } = await supabase.rpc('resolve_betting_contest', {
-    p_contest_id:         contestId,
-    p_winning_outcome_id: winningOutcomeId,
+  return res.status(410).json({
+    error: 'Legacy internal-point contests are no longer supported. Create a new SE points contest instead.',
   });
-
-  if (error) {
-    console.error('[betting] resolve_betting_contest RPC error:', error);
-    return res.status(500).json({ error: 'Resolution failed', details: error.message });
-  }
-
-  if (!data?.success) {
-    return res.status(400).json({ error: data?.error ?? 'Resolution failed' });
-  }
-
-  return res.status(200).json(data);
 }
 
 // ─── Action: cancel_contest ───────────────────────────────────────────────────
@@ -451,27 +438,14 @@ async function handleCancelContest(supabase, body, res) {
     return res.status(200).json(data);
   }
 
-  // ── Internal cash flow ──────────────────────────────────────────────────────
-  const { data, error } = await supabase.rpc('cancel_betting_contest', {
-    p_contest_id: contestId,
+  return res.status(410).json({
+    error: 'Legacy internal-point contests are no longer supported. Create a new SE points contest instead.',
   });
-
-  if (error) {
-    console.error('[betting] cancel_betting_contest RPC error:', error);
-    return res.status(500).json({ error: 'Cancellation failed', details: error.message });
-  }
-
-  if (!data?.success) {
-    return res.status(400).json({ error: data?.error ?? 'Cancellation failed' });
-  }
-
-  return res.status(200).json(data);
 }
 
 // ─── Action: place_bet ────────────────────────────────────────────────────────
 // Body: { contestId, outcomeId, amount }
-// Branches on currency_mode: 'internal' uses the Postgres RPC (wallet deduction),
-// 'se_points' deducts via StreamElements API then records via SE-mode RPC.
+// Only StreamElements-backed contests are supported.
 async function handlePlaceBet(supabase, user, body, res) {
   const { contestId, outcomeId, amount } = body;
 
@@ -555,28 +529,9 @@ async function handlePlaceBet(supabase, user, body, res) {
     return res.status(200).json({ ...data, newBalance: sePoints - numAmount });
   }
 
-  // ── Internal cash flow ──────────────────────────────────────────────────────
-  const { data, error } = await supabase.rpc('place_betting_bet', {
-    p_user_id:    user.id,
-    p_contest_id: contestId,
-    p_outcome_id: outcomeId,
-    p_amount:     Math.floor(numAmount),
+  return res.status(410).json({
+    error: 'Legacy internal-point contests are no longer supported. Create a new SE points contest instead.',
   });
-
-  if (error) {
-    console.error('[betting] place_betting_bet RPC error:', error);
-    return res.status(500).json({ error: 'Failed to place bet', details: error.message });
-  }
-
-  if (!data?.success) {
-    return res.status(400).json({
-      error:    data?.error    ?? 'Failed to place bet',
-      balance:  data?.balance  ?? undefined,
-      required: data?.required ?? undefined,
-    });
-  }
-
-  return res.status(200).json(data);
 }
 
 // ─── Action: get_contest ──────────────────────────────────────────────────────

@@ -93,7 +93,7 @@ function OutcomeBar({ outcome, totalPool, isWinner, userOutcomeId, onClick, disa
   );
 }
 
-function BetForm({ outcomes, totalPool, playerBalance, currencyMode, onBet, loading }) {
+function BetForm({ outcomes, totalPool, playerBalance, onBet, loading }) {
   const [selectedOutcome, setSelectedOutcome] = useState(null);
   const [amount, setAmount]                   = useState('');
   const [error, setError]                     = useState('');
@@ -203,7 +203,7 @@ function BetForm({ outcomes, totalPool, playerBalance, currencyMode, onBet, load
 
       {playerBalance != null && (
         <p className="bc-bet-form__balance">
-          {currencyMode === 'se_points' ? '⚡ SE Points:' : 'Balance:'}{' '}
+          ⚡ SE Points:{' '}
           <strong>{formatPoints(playerBalance)} pts</strong>
         </p>
       )}
@@ -309,31 +309,27 @@ export default function BettingContest({ contestId, contest: contestProp, onBetP
   const loadBalance = useCallback(async () => {
     if (!user || !contest) return;
     try {
-      if (contest.currency_mode === 'se_points') {
-        // Fetch SE points via the betting API (server holds SE credentials)
-        const { supabase } = await import('../../config/supabaseClient');
-        const { data: { session } } = await supabase.auth.getSession();
-        const token = session?.access_token;
-
-        const r = await fetch('/api/betting', {
-          method:  'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token ? { Authorization: `Bearer ${token}` } : {}),
-          },
-          body: JSON.stringify({ action: 'get_se_balance', contestId: effectiveId }),
-        });
-        const d = await r.json();
-        setPlayerBalance(d.success ? d.balance : null);
-      } else {
-        const { supabase } = await import('../../config/supabaseClient');
-        const { data } = await supabase
-          .from('the_life_players')
-          .select('cash')
-          .eq('user_id', user.id)
-          .single();
-        setPlayerBalance(data?.cash ?? null);
+      if (contest.currency_mode !== 'se_points') {
+        setPlayerBalance(null);
+        setError('This legacy betting contest uses removed internal points and can no longer accept bets.');
+        return;
       }
+
+      // Fetch SE points via the betting API (server holds SE credentials)
+      const { supabase } = await import('../../config/supabaseClient');
+      const { data: { session } } = await supabase.auth.getSession();
+      const token = session?.access_token;
+
+      const r = await fetch('/api/betting', {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({ action: 'get_se_balance', contestId: effectiveId }),
+      });
+      const d = await r.json();
+      setPlayerBalance(d.success ? d.balance : null);
     } catch {}
   }, [user, contest, effectiveId]);
 
@@ -427,11 +423,12 @@ export default function BettingContest({ contestId, contest: contestProp, onBetP
   const isOpen          = contest.status === 'open';
   const isResolved      = contest.status === 'resolved';
   const isCancelled     = contest.status === 'cancelled';
+  const usesSePoints    = contest.currency_mode === 'se_points';
   const winningOutcome  = isResolved
     ? outcomes.find(o => o.id === contest.winning_outcome_id)
     : null;
 
-  const canBet = isOpen && user && !userBet;
+  const canBet = isOpen && usesSePoints && user && !userBet;
 
   return (
     <div className={`bc-container ${compact ? 'bc-container--compact' : ''}`}>
@@ -473,6 +470,12 @@ export default function BettingContest({ contestId, contest: contestProp, onBetP
         </div>
       )}
 
+      {!usesSePoints && (
+        <div className="bc-notice bc-notice--cancelled">
+          This contest uses a removed legacy currency mode and is now read-only.
+        </div>
+      )}
+
       {/* User's existing bet */}
       {userBet && (
         <UserBetSummary
@@ -507,7 +510,6 @@ export default function BettingContest({ contestId, contest: contestProp, onBetP
           outcomes={outcomes}
           totalPool={totalPool}
           playerBalance={playerBalance}
-          currencyMode={contest?.currency_mode ?? 'internal'}
           onBet={handleBet}
           loading={betLoading}
         />

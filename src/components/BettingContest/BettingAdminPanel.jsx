@@ -216,7 +216,6 @@ function CreateContestForm({ onCreate, loading }) {
   const [question, setQuestion]       = useState('');
   const [outcomes, setOutcomes]       = useState(['', '']);
   const [locksAt, setLocksAt]         = useState('');
-  const [currencyMode, setCurrencyMode] = useState('internal');
   const [error, setError]             = useState('');
 
   function addOutcome() {
@@ -247,14 +246,13 @@ function CreateContestForm({ onCreate, loading }) {
         question:     question.trim(),
         outcomes:     filled.map(o => ({ label: o.trim() })),
         locksAt:      locksAt || undefined,
-        currencyMode,
+        currencyMode: 'se_points',
       });
       // Reset form
       setTitle('');
       setQuestion('');
       setOutcomes(['', '']);
       setLocksAt('');
-      setCurrencyMode('internal');
     } catch (err) {
       setError(err.message);
     }
@@ -343,26 +341,13 @@ function CreateContestForm({ onCreate, loading }) {
       <div className="bap-field">
         <label className="bap-label">Currency</label>
         <div className="bap-currency-toggle">
-          <button
-            type="button"
-            className={`bap-currency-btn ${currencyMode === 'internal' ? 'bap-currency-btn--active' : ''}`}
-            onClick={() => setCurrencyMode('internal')}
-          >
-            🪙 The Life Points
-          </button>
-          <button
-            type="button"
-            className={`bap-currency-btn ${currencyMode === 'se_points' ? 'bap-currency-btn--active' : ''}`}
-            onClick={() => setCurrencyMode('se_points')}
-          >
+          <button type="button" className="bap-currency-btn bap-currency-btn--active" disabled>
             ⚡ SE Points
           </button>
         </div>
-        {currencyMode === 'se_points' && (
-          <p className="bap-label--muted bap-field__hint">
-            StreamElements points will be deducted on bet and credited on win/refund.
-          </p>
-        )}
+        <p className="bap-label--muted bap-field__hint">
+          StreamElements points will be deducted on bet and credited on win/refund.
+        </p>
       </div>
 
       {error && <p className="bap-error" role="alert">{error}</p>}

@@ -1,14 +1,8 @@
 # Migration Catalog
 
-This folder contains a mix of active schema history and older legacy migrations.
+This folder contains active schema history plus consolidated cleanup migrations for retired systems.
 
-The repository audit on 2026-06-05 found an important boundary:
-
-- The Life schema is still active in code and admin flows.
-- Twitch extension schema is still active in serverless code.
-- Old Stripe/subscription, widget-types, roulette, blackjack, and mines schema is not part of the current runtime.
-
-Because of that, the old broad drop scripts were removed. They were too risky and contradicted the current codebase.
+The repository audit on 2026-06-05 removed old broad drop scripts because they were too risky and contradicted live runtime behavior. Cleanup is now split into targeted migrations.
 
 ## Active runtime groups
 
@@ -58,32 +52,24 @@ Because of that, the old broad drop scripts were removed. They were too risky an
 - `analytics_system.sql`
 - `analytics_rpcs.sql`
 
-### The Life runtime
+### Landing page and streamer tooling
 
-- `create_the_life_game.sql`
-- `add_thelife_inventory_system.sql`
-- business, crime, pvp, dock, wipe, category, and security follow-up migrations
+- `add_landing_page_customization.sql`
+- `add_landing_partner_controls.sql`
+- `add_streamer_api_keys.sql`
+- `create_stream_highlights.sql`
+- `add_clip_video_url.sql`
 
-### Twitch extension runtime
+## Mixed migrations intentionally kept
 
-- `create_twitch_extension_system.sql`
-- extension-related follow-up migrations that still back the EBS endpoints
+Some older migrations still remain because they continue to support active schema even if they mention retired tables in comments or in legacy compatibility paths.
 
-## Historical legacy migrations still kept for lineage
+- `add_betting_contests.sql`, `add_betting_contests_se_mode.sql`, and `add_betting_contests_final.sql`
+- `fix_giveaway_tables.sql`
+- `create_games_system.sql`
+- `add_twitch_id_auto_populate.sql` and `add_twitch_username_to_profiles.sql`
 
-These remain in the repo because other older migrations still reference them, but they are not the current source of truth for runtime behavior:
-
-- `create_saas_overlay_system.sql`
-- `create_stripe_integration.sql`
-- `create_overlays_table.sql`
-- `create_widget_settings.sql`
-- `seed_widget_types.sql`
-- `delete_all_widget_types.sql`
-- `enable_auto_trial.sql`
-- `add_theme_system.sql`
-- abandoned game migrations such as roulette, blackjack, and mines
-
-## Legacy cleanup
+## Retired system cleanup
 
 Use [20260605_remove_legacy_dead_schema.sql](./20260605_remove_legacy_dead_schema.sql) to remove verified dead schema from an existing database:
 
@@ -92,8 +78,12 @@ Use [20260605_remove_legacy_dead_schema.sql](./20260605_remove_legacy_dead_schem
 - abandoned theme tables that depend on the old overlay schema
 - roulette, blackjack, and mines tables
 
+Use [20260605_remove_thelife_and_twitch_extension_schema.sql](./20260605_remove_thelife_and_twitch_extension_schema.sql) to remove retired The Life, season pass, and Twitch extension schema from an older database after code cleanup.
+
+The dedicated The Life and Twitch extension migration lineage was removed from this folder after retirement. If an older database still contains those objects, use the cleanup migration above instead of replaying deleted feature migrations.
+
 ## Do not remove without code cleanup first
 
-- Any `the_life_*` schema
-- `ext_*` Twitch extension schema
 - current overlay tables: `overlay_instances`, `overlay_widgets`, `overlay_themes`, `overlay_state`, `shared_overlay_presets`, `user_overlay_state`
+- current auth/profile tables and helpers: `user_profiles`, `user_roles`, `streamelements_connections`, Twitch OAuth/profile sync functions
+- active community tables: `betting_contests`, `giveaways`, `daily_wheel_prizes`, `bonus_hunt_sessions`, `slot_requests`, `shoutout_alerts`

@@ -7,7 +7,7 @@
 - Supabase project
 - Twitch developer app for authentication
 - StreamElements account if you want points/chat integrations
-- Optional: Spotify credentials, Twitch extension secrets, Vercel deployment target
+- Optional: Spotify credentials and your deployment target
 
 ## 1. Install dependencies
 
@@ -22,7 +22,7 @@ Before running the app, make sure the project has valid environment variables an
 - Supabase URL, anon key, and service role key
 - Twitch OAuth
 - StreamElements integration
-- Optional providers used by your deployment such as Spotify or Twitch extension secrets
+- Optional providers used by your deployment such as Spotify
 
 Use these guides as needed:
 
@@ -41,6 +41,7 @@ Instead:
 1. Use [../migrations/README.md](../migrations/README.md) to identify the active schema groups you need.
 2. Apply the active migrations required for your environment.
 3. Only run [../migrations/20260605_remove_legacy_dead_schema.sql](../migrations/20260605_remove_legacy_dead_schema.sql) if you intentionally want to remove dead Stripe/subscription, abandoned old overlay, roulette, blackjack, and mines tables from an existing database.
+4. Only run [../migrations/20260605_remove_thelife_and_twitch_extension_schema.sql](../migrations/20260605_remove_thelife_and_twitch_extension_schema.sql) if your database still contains retired The Life or Twitch extension schema.
 
 ## 4. Start the app
 
@@ -62,6 +63,5 @@ npm run build
 
 ## 6. Optional system checks
 
-- If you use The Life systems, validate those routes and admin panels explicitly.
-- If you use the Twitch extension backend, validate its secrets and EBS endpoints explicitly.
-- If you do not use those systems, leave them out of your rollout until their code is removed too.
+- Validate only the active systems in your release scope.
+- Keep retired The Life and Twitch extension schema, routes, and secrets out of fresh environments unless you are migrating an older database for cleanup.

@@ -117,20 +117,20 @@ For user-generated or database content:
 ```jsx
 import { useDynamicTranslation } from '../hooks/useTranslation';
 
-function CrimesList({ crimes }) {
-  const items = crimes.map(c => ({
-    text: c.name,
-    sourceTable: 'the_life_robberies',
-    sourceId: c.id,
-    sourceField: 'name'
+function OffersList({ offers }) {
+  const items = offers.map(offer => ({
+    text: offer.title,
+    sourceTable: 'casino_offers',
+    sourceId: offer.id,
+    sourceField: 'title'
   }));
   
   const { getTranslation, isLoading } = useDynamicTranslation(items);
   
   return (
     <ul>
-      {crimes.map(crime => (
-        <li key={crime.id}>{getTranslation(crime.name)}</li>
+      {offers.map(offer => (
+        <li key={offer.id}>{getTranslation(offer.title)}</li>
       ))}
     </ul>
   );
@@ -167,26 +167,6 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 | `nav_logout` | Logout | Sair |
 | `nav_login` | Login | Entrar |
 
-### The Life Game
-| Key | English | Portuguese |
-|-----|---------|------------|
-| `thelife_crimes` | Crimes | Crimes |
-| `thelife_pvp` | PVP | PVP |
-| `thelife_businesses` | Businesses | Negócios |
-| `thelife_brothel` | Brothel | Bordel |
-| `thelife_bank` | Bank | Banco |
-| `thelife_jail` | Jail | Prisão |
-| `thelife_hospital` | Hospital | Hospital |
-| `thelife_market` | Black Market | Mercado Negro |
-| `thelife_docks` | Docks | Docas |
-| `thelife_inventory` | Inventory | Inventário |
-| `thelife_leaderboard` | Leaderboard | Classificação |
-| `thelife_profile` | Profile | Perfil |
-| `thelife_skills` | Skills | Habilidades |
-| `thelife_highstakes` | High Stakes | Apostas Altas |
-| `thelife_news` | News | Notícias |
-| `thelife_syndicate` | The Syndicate | O Sindicato |
-
 ### Actions
 | Key | English | Portuguese |
 |-----|---------|------------|
@@ -207,6 +187,8 @@ import LanguageSwitcher from '../components/LanguageSwitcher';
 | `label_health` | Health | Vida |
 | `label_stamina` | Stamina | Energia |
 | `label_loading` | Loading... | Carregando... |
+
+Keep this list aligned with active runtime features. When a subsystem is retired, remove its translation keys from the constants, migrations, and docs together.
 
 ## Adding a New Language
 
