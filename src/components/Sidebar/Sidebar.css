@@ -11,7 +11,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: rgba(14, 17, 23, 0.97);
+  background: rgba(8, 11, 20, 0.98);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border-right: 1px solid rgba(255, 255, 255, 0.06);

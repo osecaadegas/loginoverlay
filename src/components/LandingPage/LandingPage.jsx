@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { useStreamElements } from '../../context/StreamElementsContext';
 import { supabase } from '../../config/supabaseClient';
 import trackOfferClick from '../../utils/trackOfferClick';
 import AuthModal from '../Auth/AuthModal';
@@ -32,20 +31,6 @@ const PRICING = [
 ];
 
 const FILTERS = ['All', 'Casino', 'Sports', 'Crypto', 'Poker', 'Trading'];
-
-const NAV_ITEMS = [
-  { icon: '🏠', label: 'Home',             key: 'home',        path: '/',        badge: null  },
-  { icon: '🤝', label: 'Partners',         key: 'partners',    path: '/offers',  badge: null  },
-  { icon: '⭐', label: 'Affiliate Offers', key: 'affiliates',  path: '/offers',  badge: 'NEW' },
-  { icon: '💎', label: 'Points Store',     key: 'points',      path: '/',        badge: null  },
-  { icon: '👥', label: 'Community',        key: 'community',   path: '/',        badge: null  },
-  { icon: '🖥', label: 'Overlay Center',   key: 'overlay',     path: '/overlay', badge: null  },
-  { icon: '🎮', label: 'Games',            key: 'games',       path: '/overlay', badge: null  },
-  { icon: '⊞',  label: 'Widgets',          key: 'widgets',     path: '/overlay', badge: null  },
-  { icon: '📊', label: 'Analytics',        key: 'analytics',   path: '/overlay', badge: null  },
-  { icon: '📚', label: 'Resources',        key: 'resources',   path: '/',        badge: null  },
-  { icon: '⚙️', label: 'Settings',         key: 'settings',    path: '/overlay', badge: null  },
-];
 
 const TRUST_LOGOS = ['KICK', 'Twitch', 'YouTube', 'Stake', 'BC.GAME', 'Rollbit', 'Duelbits', 'Sportsbet.io'];
 
@@ -141,10 +126,7 @@ export default function LandingPage() {
   const [clicks, setClicks]                           = useState(1000);
   const [activeFilter, setActiveFilter]               = useState('All');
   const [billingAnnual, setBillingAnnual]             = useState(true);
-  const [activeNav, setActiveNav]                     = useState('home');
-  const [sidebarOpen, setSidebarOpen]                 = useState(false);
   const { user }                                      = useAuth();
-  const { points, loading: pointsLoading }            = useStreamElements();
   const navigate                                      = useNavigate();
 
   useEffect(() => {
@@ -170,13 +152,6 @@ export default function LandingPage() {
     ? casinoOffers.slice(0, 5).map((o, i) => ({ ...FEATURED_PARTNERS[i], ...o, _fp: FEATURED_PARTNERS[i] }))
     : FEATURED_PARTNERS;
 
-  const handleNav = (item) => {
-    setActiveNav(item.key);
-    setSidebarOpen(false);
-    if (item.path === '/overlay' && !user) { setShowAuthModal(true); return; }
-    if (item.path !== '/') navigate(item.path);
-  };
-
   return (
     <>
       {/* Age Gate */}
@@ -195,103 +170,9 @@ export default function LandingPage() {
         </div>
       )}
 
-      {sidebarOpen && <div className="lp-backdrop" onClick={() => setSidebarOpen(false)} />}
+      <div className="lp-content">
 
-      <div className="lp-layout">
-
-        {/* ═══════════ SIDEBAR ═══════════ */}
-        <aside className={`lp-sidebar ${sidebarOpen ? 'lp-sidebar--open' : ''}`}>
-
-          {/* Logo */}
-          <div className="lp-sb-logo">
-            <div className="lp-sb-logo-mark">S</div>
-            <div className="lp-sb-logo-text">
-              <span className="lp-sb-logo-top">SECA</span>
-              <span className="lp-sb-logo-bot">ADEGAS</span>
-            </div>
-          </div>
-
-          {/* Profile */}
-          <div className="lp-sb-profile">
-            <div className="lp-sb-ava">
-              {user?.user_metadata?.avatar_url
-                ? <img src={user.user_metadata.avatar_url} alt="" />
-                : <span>🎮</span>}
-            </div>
-            <div className="lp-sb-pinfo">
-              <div className="lp-sb-pname">{user?.user_metadata?.display_name || user?.user_metadata?.full_name || 'Guest User'}</div>
-              <div className={`lp-sb-pstatus ${user ? 'lp-sb-pstatus--on' : ''}`}>
-                {user ? 'Premium Active' : 'Free Plan'}
-              </div>
-              <div className="lp-sb-ppts">⚡ {user ? (pointsLoading ? '…' : `${(points || 0).toLocaleString()} pts`) : '0 pts'}</div>
-            </div>
-          </div>
-
-          {/* Nav */}
-          <nav className="lp-sb-nav">
-            {NAV_ITEMS.map(item => (
-              <button
-                key={item.key}
-                className={`lp-sb-item ${activeNav === item.key ? 'lp-sb-item--on' : ''}`}
-                onClick={() => handleNav(item)}
-              >
-                <span className="lp-sb-item-icon">{item.icon}</span>
-                <span className="lp-sb-item-label">{item.label}</span>
-                {item.badge && <span className="lp-sb-badge">{item.badge}</span>}
-              </button>
-            ))}
-          </nav>
-
-          {/* Earn More promo */}
-          <div className="lp-sb-promo">
-            <div className="lp-sb-promo-title">EARN MORE</div>
-            <p className="lp-sb-promo-desc">Unlock exclusive partnerships and boost your revenue.</p>
-            <button className="lp-sb-promo-btn" onClick={() => navigate('/offers')}>Explore Offers</button>
-          </div>
-
-          {/* Bottom */}
-          <div className="lp-sb-bottom">
-            <div className="lp-sb-langs">
-              <button className="lp-sb-lang lp-sb-lang--on">🌐 EN</button>
-              <button className="lp-sb-lang">🇵🇹 PT</button>
-            </div>
-            <div className="lp-sb-socials">
-              <a href="https://www.twitch.tv/osecaadegas95" target="_blank" rel="noopener noreferrer" className="lp-sb-soc lp-sb-soc--twitch">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M11.571 4.714h1.715v5.143H11.57zm4.715 0H18v5.143h-1.714zM6 0L1.714 4.286v15.428h5.143V24l4.286-4.286h3.428L22.286 12V0zm14.571 11.143l-3.428 3.428h-3.429l-3 3v-3H6.857V1.714h13.714Z"/></svg>
-              </a>
-              <a href="https://www.youtube.com/@osecaadegas" target="_blank" rel="noopener noreferrer" className="lp-sb-soc lp-sb-soc--yt">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-              </a>
-              <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="lp-sb-soc lp-sb-soc--ig">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/></svg>
-              </a>
-              <a href="https://discord.gg/4yZ3F2Pk4z" target="_blank" rel="noopener noreferrer" className="lp-sb-soc lp-sb-soc--dc">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="14" height="14"><path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/></svg>
-              </a>
-            </div>
-          </div>
-        </aside>
-
-        {/* ═══════════ CONTENT AREA ═══════════ */}
-        <div className="lp-content">
-
-          {/* Top header bar */}
-          <header className="lp-header">
-            <button className="lp-hamburger" onClick={() => setSidebarOpen(o => !o)}>
-              <span /><span /><span />
-            </button>
-            <div className="lp-header-right">
-              <button className="lp-header-icon">🔔</button>
-              <button className="lp-header-icon">✉️</button>
-              <div className="lp-header-avatar">
-                {user?.user_metadata?.avatar_url
-                  ? <img src={user.user_metadata.avatar_url} alt="" />
-                  : <span>🎮</span>}
-              </div>
-            </div>
-          </header>
-
-          {/* ════ HERO ════ */}
+          {/* ════ HERO ════ */
           <section className="lp-hero">
             <div className="lp-hero-orb lp-hero-orb-1" />
             <div className="lp-hero-orb lp-hero-orb-2" />
@@ -567,7 +448,6 @@ export default function LandingPage() {
             </div>
           </footer>
 
-        </div>
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}
