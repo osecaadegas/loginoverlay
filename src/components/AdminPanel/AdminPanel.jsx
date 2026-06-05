@@ -6,7 +6,6 @@ import { supabase } from '../../config/supabaseClient';
 import { DEPOSIT_METHODS } from '../../utils/depositMethods';
 import './AdminPanel.css';
 import './AdminPanel.new.css';
-import SeasonPassAdmin from './SeasonPassAdmin';
 import ExtensionAdmin from './ExtensionAdmin';
 import ApiKeysAdmin from './ApiKeysAdmin';
 import { CasinoOfferModal } from './modals';
@@ -6600,10 +6599,7 @@ export default function AdminPanel() {
         </>
       )}
 
-      {/* Season Pass Management Tab */}
-      {activeTab === 'seasonpass' && (
-        <SeasonPassAdmin />
-      )}
+      {/* Season Pass tab removed */}
 
       {/* Guess Balance Management Tab */}
       {activeTab === 'guessbalance' && (
