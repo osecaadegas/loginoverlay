@@ -283,6 +283,17 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   useEffect(() => { activeMatchRef.current = bracketActiveMatch; }, [bracketActiveMatch]);
   useEffect(() => { bracketDataRef.current = bracketData; }, [bracketData]);
 
+  /* ─── Persist setup state: sync localBracketPlayers → widget config on change ─── */
+  const persistPlayersRef = useRef(null);
+  useEffect(() => {
+    if (bracketPhase !== 'setup') return;
+    clearTimeout(persistPlayersRef.current);
+    persistPlayersRef.current = setTimeout(() => {
+      set('bracketPlayers', localBracketPlayers);
+    }, 600);
+    return () => clearTimeout(persistPlayersRef.current);
+  }, [localBracketPlayers, bracketPhase]); // eslint-disable-line react-hooks/exhaustive-deps
+
   /* Init bracket players when count changes */
   const [localBracketPlayers, setLocalBracketPlayers] = useState(() => {
     const arr = [];
