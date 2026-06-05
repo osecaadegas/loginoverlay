@@ -25,9 +25,9 @@ const FEATURES = [
 ];
 
 const PRICING = [
-  { id: 'starter', name: 'Starter',      price: '€15',  period: '/month',    badge: null,           badgeType: null,      desc: 'Perfect for new streamers',    subPrice: null,           features: ['All Overlay Center access', 'Basic widgets & themes', 'Email support', 'Regular updates'],                        cta: 'Get Started', highlight: false },
-  { id: 'creator', name: 'Creator',      price: '€60',  period: '/6 months', badge: 'MOST POPULAR', badgeType: 'popular', desc: 'For growing content creators', subPrice: '€10,00 /month', features: ['All Starter features', 'Advanced widgets', 'Priority support', 'Early access to new features'],               cta: 'Choose Plan', highlight: true  },
-  { id: 'pro',     name: 'Professional', price: '€120', period: '/year',      badge: 'BEST VALUE',   badgeType: 'value',   desc: 'For full-time streamers',      subPrice: '€10,00 /month', features: ['All Creator features', 'Exclusive partnerships', 'Custom branding', 'Dedicated account manager'],              cta: 'Choose Plan', highlight: false },
+  { id: 'starter', name: 'Starter',      price: '€15',  period: '/month',    priceAnnual: '€144', periodAnnual: '/year',  subPriceAnnual: '€12/month billed annually',  badge: null,           badgeType: null,      desc: 'Perfect for new streamers',    subPrice: null,            features: ['All Overlay Center access', 'Basic widgets & themes', 'Email support', 'Regular updates'],                        cta: 'Get Started', highlight: false },
+  { id: 'creator', name: 'Creator',      price: '€60',  period: '/6 months', priceAnnual: '€96',  periodAnnual: '/year',  subPriceAnnual: '€8/month billed annually',   badge: 'MOST POPULAR', badgeType: 'popular', desc: 'For growing content creators', subPrice: '€10,00 /month', features: ['All Starter features', 'Advanced widgets', 'Priority support', 'Early access to new features'],               cta: 'Choose Plan', highlight: true  },
+  { id: 'pro',     name: 'Professional', price: '€180', period: '/year',      priceAnnual: '€144', periodAnnual: '/year',  subPriceAnnual: '€12/month billed annually',  badge: 'BEST VALUE',   badgeType: 'value',   desc: 'For full-time streamers',      subPrice: '€15,00 /month', features: ['All Creator features', 'Exclusive partnerships', 'Custom branding', 'Dedicated account manager'],              cta: 'Choose Plan', highlight: false },
 ];
 
 const FILTERS = ['All', 'Casino', 'Sports', 'Crypto', 'Poker', 'Trading'];
@@ -193,17 +193,20 @@ export default function LandingPage() {
   // Normalize DB pricing plans to match static schema
   const activePlans = pricingPlans.length > 0
     ? pricingPlans.map(p => ({
-        id:        p.id,
-        name:      p.name,
-        price:     p.price,
-        period:    p.period,
-        badge:     p.badge,
-        badgeType: p.badge_type,
-        desc:      p.description,
-        subPrice:  p.sub_price,
-        features:  Array.isArray(p.features) ? p.features : [],
-        cta:       p.cta || 'Get Started',
-        highlight: p.is_highlighted,
+        id:             p.id,
+        name:           p.name,
+        price:          p.price,
+        period:         p.period,
+        subPrice:       p.sub_price,
+        priceAnnual:    p.price_annual    || null,
+        periodAnnual:   p.period_annual   || null,
+        subPriceAnnual: p.sub_price_annual || null,
+        badge:          p.badge,
+        badgeType:      p.badge_type,
+        desc:           p.description,
+        features:       Array.isArray(p.features) ? p.features : [],
+        cta:            p.cta || 'Get Started',
+        highlight:      p.is_highlighted,
       }))
     : PRICING;
 
@@ -292,29 +295,35 @@ export default function LandingPage() {
             </div>
 
             <div className="lp-pricing-grid">
-              {activePlans.map(plan => (
-                <div key={plan.id} className={`lp-price-card ${plan.highlight ? 'lp-price-card--hi' : ''}`}>
-                  {plan.badge && (
-                    <div className={`lp-price-badge lp-price-badge--${plan.badgeType}`}>{plan.badge}</div>
-                  )}
-                  <div className="lp-price-name">{plan.name}</div>
-                  <div className="lp-price-desc">{plan.desc}</div>
-                  <div className="lp-price-amount">
-                    <span className="lp-price-num">{plan.price}</span>
-                    <span className="lp-price-period">{plan.period}</span>
+              {activePlans.map(plan => {
+                const showAnnual = billingAnnual && plan.priceAnnual;
+                const displayPrice    = showAnnual ? plan.priceAnnual    : plan.price;
+                const displayPeriod   = showAnnual ? (plan.periodAnnual  || plan.period) : plan.period;
+                const displaySubPrice = showAnnual ? plan.subPriceAnnual : plan.subPrice;
+                return (
+                  <div key={plan.id} className={`lp-price-card ${plan.highlight ? 'lp-price-card--hi' : ''}`}>
+                    {plan.badge && (
+                      <div className={`lp-price-badge lp-price-badge--${plan.badgeType}`}>{plan.badge}</div>
+                    )}
+                    <div className="lp-price-name">{plan.name}</div>
+                    <div className="lp-price-desc">{plan.desc}</div>
+                    <div className="lp-price-amount">
+                      <span className="lp-price-num">{displayPrice}</span>
+                      <span className="lp-price-period">{displayPeriod}</span>
+                    </div>
+                    {displaySubPrice && <div className="lp-price-sub">{displaySubPrice}</div>}
+                    <ul className="lp-price-list">
+                      {plan.features.map(f => (
+                        <li key={f}><span className="lp-tick">✓</span>{f}</li>
+                      ))}
+                    </ul>
+                    <button
+                      className={plan.highlight ? 'lp-btn-primary lp-price-cta' : 'lp-btn-price-outline lp-price-cta'}
+                      onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}
+                    >{plan.cta}</button>
                   </div>
-                  {plan.subPrice && <div className="lp-price-sub">{plan.subPrice}</div>}
-                  <ul className="lp-price-list">
-                    {plan.features.map(f => (
-                      <li key={f}><span className="lp-tick">✓</span>{f}</li>
-                    ))}
-                  </ul>
-                  <button
-                    className={plan.highlight ? 'lp-btn-primary lp-price-cta' : 'lp-btn-price-outline lp-price-cta'}
-                    onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}
-                  >{plan.cta}</button>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 

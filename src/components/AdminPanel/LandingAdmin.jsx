@@ -37,6 +37,9 @@ const EMPTY_PLAN = {
   price: '',
   period: '',
   sub_price: '',
+  price_annual: '',
+  period_annual: '',
+  sub_price_annual: '',
   badge: '',
   badge_type: '',
   features: [],
@@ -411,9 +414,10 @@ export default function LandingAdmin() {
                 <input value={formData.description || ''} onChange={e => set('description', e.target.value)} placeholder="Perfect for new streamers" />
               </div>
 
+              <div className="la-field-group-label">📅 Monthly billing</div>
               <div className="la-row">
                 <div className="la-field">
-                  <label>Price *</label>
+                  <label>Monthly Price *</label>
                   <input value={formData.price} onChange={e => set('price', e.target.value)} placeholder="€15" />
                 </div>
                 <div className="la-field">
@@ -422,7 +426,22 @@ export default function LandingAdmin() {
                 </div>
                 <div className="la-field">
                   <label>Sub-price line</label>
-                  <input value={formData.sub_price || ''} onChange={e => set('sub_price', e.target.value)} placeholder="€10,00 /month" />
+                  <input value={formData.sub_price || ''} onChange={e => set('sub_price', e.target.value)} placeholder="e.g. billed monthly" />
+                </div>
+              </div>
+              <div className="la-field-group-label">📆 Annual billing <span className="la-field-hint">(shown when Annual toggle is selected)</span></div>
+              <div className="la-row">
+                <div className="la-field">
+                  <label>Annual Price</label>
+                  <input value={formData.price_annual || ''} onChange={e => set('price_annual', e.target.value)} placeholder="€144" />
+                </div>
+                <div className="la-field">
+                  <label>Annual Period</label>
+                  <input value={formData.period_annual || ''} onChange={e => set('period_annual', e.target.value)} placeholder="/year" />
+                </div>
+                <div className="la-field">
+                  <label>Annual sub-price</label>
+                  <input value={formData.sub_price_annual || ''} onChange={e => set('sub_price_annual', e.target.value)} placeholder="€12/month billed annually" />
                 </div>
               </div>
 

@@ -201,6 +201,18 @@
 .la-btn-save:disabled { opacity: 0.5; cursor: not-allowed; }
 .la-btn-save:hover:not(:disabled) { opacity: 0.88; }
 
+/* Field group label */
+.la-field-group-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding: 4px 0 2px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  margin-bottom: 2px;
+}
+
 /* ─── Partner Cards ─── */
 .la-offers-list { display: flex; flex-direction: column; gap: 8px; }
 
