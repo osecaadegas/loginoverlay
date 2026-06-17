@@ -1064,7 +1064,8 @@ If you don't know this slot, return: { "found": false }`;
     const provSafe = isProviderSafe(result.provider);
     if (provSafe === true) result.twitch_safe = true;
 
-    // â”€â”€ Step 4: Cross-match with DB before inserting â”€â”€
+    // Step 4: Cross-match with DB before returning.
+    // This lookup route is read-only; catalog writes go through ?action=ingest.
     // The slot might already exist under its OFFICIAL name (different from what user typed)
     if (result.name && result.provider) {
       const supabase = getSupabase();
@@ -1073,21 +1074,8 @@ If you don't know this slot, return: { "found": false }`;
           const crossMatch = await searchSlotsDB(result.name);
 
           if (crossMatch && crossMatch._dbId) {
-            // Already in DB â€” only update fields that are missing
-            console.log(`[slot-ai] Cross-match: "${result.name}" already in DB (id ${crossMatch._dbId}), updating missing fields...`);
-            const updates = {};
-            if (!crossMatch.rtp && result.rtp) updates.rtp = result.rtp;
-            if (!crossMatch.max_win_multiplier && result.max_win_multiplier) updates.max_win_multiplier = result.max_win_multiplier;
-            if (!crossMatch.volatility && result.volatility) updates.volatility = result.volatility;
-            if (!crossMatch.theme && result.theme) updates.theme = result.theme;
-            if ((!crossMatch.features || crossMatch.features.length === 0) && result.features?.length) updates.features = result.features;
-
-            if (Object.keys(updates).length > 0) {
-              const { error: updErr } = await supabase.from('slots').update(updates).eq('id', crossMatch._dbId);
-              if (updErr) console.warn('[slot-ai] Cross-match update failed:', updErr.message);
-              else console.log(`[slot-ai] âœ… Updated "${result.name}" with missing fields:`, Object.keys(updates));
-            }
-
+            // Already in DB: merge lookup data with stored values.
+            console.log(`[slot-ai] Cross-match: "${result.name}" already in DB (id ${crossMatch._dbId}), returning merged lookup data...`);
             // Merge: prefer newly found data, fall back to existing DB data
             result.rtp = result.rtp || crossMatch.rtp;
             result.max_win_multiplier = result.max_win_multiplier || crossMatch.max_win_multiplier;
@@ -1095,31 +1083,13 @@ If you don't know this slot, return: { "found": false }`;
             result.theme = result.theme || crossMatch.theme;
             if (!result.features?.length && crossMatch.features?.length) result.features = crossMatch.features;
 
-            result.source = result.source === 'google_ai' ? 'google_ai_saved' : 'gemini_ai_saved';
+            result.source = result.source === 'google_ai' ? 'google_ai_matched' : 'gemini_ai_matched';
           } else {
-            // Not in DB at all â€” insert the full slot
-            console.log(`[slot-ai] Cross-match: "${result.name}" NOT in DB, inserting new slot...`);
-            const { error: insErr } = await supabase
-              .from('slots')
-              .insert({
-                name: result.name,
-                provider: result.provider,
-                rtp: result.rtp || null,
-                volatility: result.volatility || null,
-                max_win_multiplier: result.max_win_multiplier || null,
-                theme: result.theme || null,
-                features: result.features?.length ? result.features : null,
-                status: 'live',
-              });
-            if (insErr) {
-              console.warn('[slot-ai] DB insert skipped:', insErr.message);
-            } else {
-              console.log(`[slot-ai] âœ… Added "${result.name}" by ${result.provider} to slots DB`);
-              result.source = result.source.includes('google') ? 'google_ai_saved' : 'gemini_ai_saved';
-            }
+            console.log(`[slot-ai] Cross-match: "${result.name}" not in DB, returning lookup data without inserting.`);
+            result.source = result.source.includes('google') ? 'google_ai_preview' : 'gemini_ai_preview';
           }
         } catch (e) {
-          console.error('[slot-ai] Cross-match/insert error:', e);
+          console.error('[slot-ai] Cross-match error:', e);
         }
       }
     }

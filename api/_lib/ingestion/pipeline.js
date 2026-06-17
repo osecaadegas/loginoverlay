@@ -39,7 +39,7 @@ import {
   writeModerationLog,
   writeSourceReferences,
 } from './db.js';
-import { CONFIDENCE_THRESHOLD } from './config.js';
+import { CONFIDENCE_THRESHOLD, DEFAULT_INGESTION_SLOT_IMAGE } from './config.js';
 
 /**
  * @typedef {object} PipelineResult
@@ -173,9 +173,9 @@ export async function ingestSlot(input, context = {}) {
 
     if (!options.skipImage) {
       imageResult = await findSafeImage(validated.name, validated.provider);
-      if (imageResult.url) {
+      if (imageResult.url && imageResult.status === 'safe') {
         validated.image = imageResult.url;
-        validated.image_safety_status = imageResult.status; // 'safe' | 'quarantined' | 'not_found'
+        validated.image_safety_status = imageResult.status;
       }
 
       if (imageResult.status === 'quarantined') {
@@ -189,6 +189,12 @@ export async function ingestSlot(input, context = {}) {
           flagged_reasons: ['ai_image_safety_check_failed'],
         });
       }
+    }
+
+    if (!validated.image) {
+      validated.image = DEFAULT_INGESTION_SLOT_IMAGE;
+      validated.image_safety_status = 'not_found';
+      warnings.push('No verified image found; using the default slot image');
     }
 
     // ── Step 9: Confidence gate ───────────────────────────────────

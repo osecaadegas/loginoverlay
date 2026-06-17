@@ -194,6 +194,23 @@ export function normalizeReleaseYear(raw) {
 }
 
 /**
+ * Normalize feature metadata to the JSON array used by the slots table.
+ * @param {any} raw
+ * @returns {string[]}
+ */
+export function normalizeFeatures(raw) {
+  if (!raw) return [];
+  const values = Array.isArray(raw)
+    ? raw
+    : String(raw).split(/[,;|]/);
+
+  return values
+    .map(v => String(v).trim())
+    .filter(Boolean)
+    .slice(0, 20);
+}
+
+/**
  * Check if a provider is safe for Twitch streaming.
  * @param {string} provider
  * @returns {boolean}
@@ -286,7 +303,7 @@ export function validateSlotData(raw, inputName) {
 
   // String fields
   const theme = raw.theme ? String(raw.theme).trim().substring(0, 200) : null;
-  const features = raw.features ? String(raw.features).trim().substring(0, 500) : null;
+  const features = normalizeFeatures(raw.features);
 
   // Twitch safety
   const providerSafe = isProviderSafe(provider);
@@ -311,6 +328,7 @@ export function validateSlotData(raw, inputName) {
     max_win_multiplier,
     theme,
     features,
+    image: raw.image || null,
     release_year,
     twitch_safe,
 

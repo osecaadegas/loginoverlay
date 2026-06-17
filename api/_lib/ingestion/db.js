@@ -20,6 +20,7 @@ import {
   CACHE_TTL_HOURS,
   RATE_LIMIT_WINDOW_MINUTES,
   RATE_LIMIT_MAX_REQUESTS,
+  DEFAULT_INGESTION_SLOT_IMAGE,
 } from './config.js';
 
 // ─── Supabase Client ────────────────────────────────────────────────
@@ -72,7 +73,7 @@ export async function verifyAdmin(authHeader) {
     .eq('is_active', true);
 
   const roleNames = (userRoles || []).map(r => r.role);
-  const ADMIN_ROLES = ['admin', 'superadmin', 'super_admin', 'owner'];
+  const ADMIN_ROLES = ['admin', 'superadmin', 'super_admin', 'owner', 'slot_modder'];
   const hasAdminRole = roleNames.some(r => ADMIN_ROLES.includes(r.toLowerCase()));
 
   // Fallback: user_metadata.role
@@ -318,7 +319,7 @@ export async function upsertSlot(slot) {
       rtp: slot.rtp,
       volatility: slot.volatility,
       max_win_multiplier: slot.max_win_multiplier,
-      image: slot.image || null,
+      image: slot.image || DEFAULT_INGESTION_SLOT_IMAGE,
       theme: slot.theme || null,
       features: slot.features || null,
       status: 'live',

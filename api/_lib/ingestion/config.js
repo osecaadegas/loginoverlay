@@ -27,6 +27,9 @@ export const MAX_WIN_CEILING = 1_000_000;
 /** Engine version stamped on every ingested slot. */
 export const INGESTION_VERSION = '2.0.0';
 
+/** Safe placeholder used when no verified cover image is found. */
+export const DEFAULT_INGESTION_SLOT_IMAGE = 'https://i.imgur.com/8E3ucNx.png';
+
 // ─── Rate Limiting ──────────────────────────────────────────────────
 
 /** Rate limit window in minutes. */
