@@ -310,6 +310,10 @@ async function runWithOptionalColumnFallback(operation, payload, requiredColumns
   throw internalError(`${failureMessage}: schema fallback exhausted`, { ...details, removed_columns: removedColumns });
 }
 
+function normalizeVolatilityForDb(volatility) {
+  return volatility && volatility !== 'unknown' ? volatility : null;
+}
+
 /**
  * Insert or update a slot in the database.
  * Uses name + provider as the uniqueness key (case-insensitive).
@@ -334,7 +338,7 @@ export async function upsertSlot(slot) {
     // Update with new data (merge — don't overwrite good data with nulls)
     const updates = {};
     if (slot.rtp != null)                updates.rtp = slot.rtp;
-    if (slot.volatility)                 updates.volatility = slot.volatility;
+    if (normalizeVolatilityForDb(slot.volatility)) updates.volatility = normalizeVolatilityForDb(slot.volatility);
     if (slot.max_win_multiplier != null) updates.max_win_multiplier = slot.max_win_multiplier;
     if (slot.image)                      updates.image = slot.image;
     if (slot.theme)                      updates.theme = slot.theme;
@@ -369,7 +373,7 @@ export async function upsertSlot(slot) {
       name: slot.name,
       provider: slot.provider,
       rtp: slot.rtp,
-      volatility: slot.volatility,
+      volatility: normalizeVolatilityForDb(slot.volatility),
       max_win_multiplier: slot.max_win_multiplier,
       image: slot.image || DEFAULT_INGESTION_SLOT_IMAGE,
       theme: slot.theme || null,
