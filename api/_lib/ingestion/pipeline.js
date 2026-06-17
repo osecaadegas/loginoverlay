@@ -276,6 +276,56 @@ export async function ingestSlot(input, context = {}) {
   } catch (err) {
     // ── Error handling ────────────────────────────────────────────
     const classified = classifyError(err);
+
+    if (classified.type === 'ai_error' && /rate limited|429/i.test(classified.message)) {
+      const { name, provider } = validateInput(input);
+      const nameCheck = checkContentSafety(name);
+      const providerCheck = provider ? checkContentSafety(provider) : { blocked: false };
+
+      if (!nameCheck.blocked && !providerCheck.blocked) {
+        const fallbackSlot = {
+          name,
+          provider: provider || 'Unknown',
+          image: DEFAULT_INGESTION_SLOT_IMAGE,
+          rtp: null,
+          volatility: 'unknown',
+          max_win_multiplier: null,
+          theme: null,
+          features: [],
+          twitch_safe: true,
+          confidence_score: 0,
+          image_safety_status: 'not_found',
+          moderation_status: 'manual_review',
+          source_citations: [],
+          ingestion_version: 'gemini-rate-limit-fallback',
+        };
+        const { id, isNew } = await upsertSlot(fallbackSlot);
+        const duration_ms = pipelineTimer.end({ name, action: 'fallback_insert' });
+
+        logEntry.status = 'completed';
+        logEntry.source = 'manual_fallback';
+        logEntry.confidence_score = 0;
+        logEntry.result_slot_id = id;
+        logEntry.duration_ms = duration_ms;
+        logEntry.metadata.fallback_reason = classified.message;
+        writeIngestionLog(logEntry);
+
+        logger.warn('pipeline.gemini_rate_limit_fallback', { name, provider, slot_id: id });
+
+        return {
+          ok: true,
+          action: isNew ? 'fallback_inserted' : 'fallback_updated',
+          slot: { id, ...fallbackSlot },
+          confidence: 0,
+          source: 'manual_fallback',
+          needsReview: true,
+          image: { status: 'not_found', reason: 'Gemini rate limited; default image used' },
+          warnings: ['Gemini is rate limited, so a basic slot was added without AI stats.'],
+          duration_ms,
+        };
+      }
+    }
+
     const duration_ms = pipelineTimer.end({ name: input?.name, error: classified.type });
 
     logEntry.status = 'failed';
