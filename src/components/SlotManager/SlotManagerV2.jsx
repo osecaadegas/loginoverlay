@@ -2,6 +2,7 @@
 import { supabase } from '../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
+import { getErrorMessage } from '../../utils/errorUtils';
 import './SlotManagerV2.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -463,7 +464,7 @@ const ProviderManager = memo(({ onClose }) => {
       setEditing(null);
       load();
     } catch (err) {
-      alert('Error: ' + err.message);
+      alert('Error: ' + getErrorMessage(err, 'Could not save provider.'));
     } finally {
       setSaving(false);
     }
@@ -670,7 +671,7 @@ const SlotManagerV2 = () => {
       await Promise.all([loadSlots(), loadProviders()]);
     } catch (e) {
       console.error('handleSave:', e);
-      notify(e.message, 'error');
+      notify(getErrorMessage(e, 'Could not save slot.'), 'error');
     }
   }, [isNewSlot, loadSlots, loadProviders, notify]);
 
@@ -682,7 +683,7 @@ const SlotManagerV2 = () => {
       setEditorSlot(null);
       loadSlots();
     } catch (e) {
-      notify(e.message, 'error');
+      notify(getErrorMessage(e, 'Could not delete slot.'), 'error');
     }
   }, [loadSlots, notify]);
 
@@ -695,7 +696,7 @@ const SlotManagerV2 = () => {
       notify(`${selectedIds.size} deleted`);
       clearSelection();
       loadSlots();
-    } catch (e) { notify(e.message, 'error'); }
+    } catch (e) { notify(getErrorMessage(e, 'Could not delete slots.'), 'error'); }
   }, [selectedIds, loadSlots, clearSelection, notify]);
 
   const bulkStatus = useCallback(async (status) => {
@@ -705,7 +706,7 @@ const SlotManagerV2 = () => {
       notify(`${selectedIds.size} → ${status}`);
       clearSelection();
       loadSlots();
-    } catch (e) { notify(e.message, 'error'); }
+    } catch (e) { notify(getErrorMessage(e, 'Could not update slots.'), 'error'); }
   }, [selectedIds, loadSlots, clearSelection, notify]);
 
   const bulkFeature = useCallback(async (featured) => {
@@ -715,7 +716,7 @@ const SlotManagerV2 = () => {
       notify(`${selectedIds.size} ${featured ? 'featured' : 'unfeatured'}`);
       clearSelection();
       loadSlots();
-    } catch (e) { notify(e.message, 'error'); }
+    } catch (e) { notify(getErrorMessage(e, 'Could not update slots.'), 'error'); }
   }, [selectedIds, loadSlots, clearSelection, notify]);
 
   /* ── Bulk stat check (scrape RTP / Max Win / Volatility) ─── */
@@ -858,7 +859,7 @@ const SlotManagerV2 = () => {
       refreshStatCheckCount();
     } catch (e) {
       console.error('bulkStatCheck:', e);
-      notify(e.message, 'error');
+      notify(getErrorMessage(e, 'Could not check slot stats.'), 'error');
     } finally {
       setStatCheckRunning(false);
     }

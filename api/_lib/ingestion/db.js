@@ -264,6 +264,45 @@ export async function checkDuplicate(name, provider) {
 
 // ─── Slot Upsert ────────────────────────────────────────────────────
 
+function getMissingColumn(error) {
+  const text = [error?.message, error?.details, error?.hint, error?.code]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    text.match(/'([^']+)'\s+column/)?.[1] ||
+    text.match(/column\s+"([^"]+)"/)?.[1] ||
+    text.match(/Could not find the '([^']+)'/)?.[1] ||
+    null
+  );
+}
+
+async function runWithOptionalColumnFallback(operation, payload, requiredColumns, failureMessage, details = {}) {
+  const remaining = { ...payload };
+  const removedColumns = [];
+
+  for (let attempt = 0; attempt < Object.keys(payload).length + 1; attempt++) {
+    const { data, error } = await operation(remaining);
+    if (!error) return { data, removedColumns };
+
+    const missingColumn = getMissingColumn(error);
+    if (
+      missingColumn &&
+      Object.prototype.hasOwnProperty.call(remaining, missingColumn) &&
+      !requiredColumns.includes(missingColumn)
+    ) {
+      logger.warn('db.schema_missing_optional_column', { column: missingColumn, operation: failureMessage });
+      delete remaining[missingColumn];
+      removedColumns.push(missingColumn);
+      continue;
+    }
+
+    throw internalError(`${failureMessage}: ${error.message}`, { ...details, removed_columns: removedColumns });
+  }
+
+  throw internalError(`${failureMessage}: schema fallback exhausted`, { ...details, removed_columns: removedColumns });
+}
+
 /**
  * Insert or update a slot in the database.
  * Uses name + provider as the uniqueness key (case-insensitive).
@@ -303,7 +342,13 @@ export async function upsertSlot(slot) {
     updates.ai_extracted_at = new Date().toISOString();
 
     if (Object.keys(updates).length > 0) {
-      await sb.from('slots').update(updates).eq('id', existing.id);
+      await runWithOptionalColumnFallback(
+        payload => sb.from('slots').update(payload).eq('id', existing.id),
+        updates,
+        [],
+        'Failed to update slot',
+        { slot_name: slot.name, slot_id: existing.id }
+      );
     }
 
     timer.end({ slot_name: slot.name, action: 'update' });
@@ -311,9 +356,9 @@ export async function upsertSlot(slot) {
   }
 
   // Insert new slot
-  const { data: inserted, error } = await sb
-    .from('slots')
-    .insert({
+  const { data: inserted } = await runWithOptionalColumnFallback(
+    payload => sb.from('slots').insert(payload).select('id').single(),
+    {
       name: slot.name,
       provider: slot.provider,
       rtp: slot.rtp,
@@ -331,13 +376,11 @@ export async function upsertSlot(slot) {
       source_citations: slot.source_citations || [],
       ai_extracted_at: new Date().toISOString(),
       ingestion_version: slot.ingestion_version,
-    })
-    .select('id')
-    .single();
-
-  if (error) {
-    throw internalError(`Failed to insert slot: ${error.message}`, { slot_name: slot.name });
-  }
+    },
+    ['name', 'provider', 'image'],
+    'Failed to insert slot',
+    { slot_name: slot.name }
+  );
 
   timer.end({ slot_name: slot.name, action: 'insert' });
   return { id: inserted.id, isNew: true };

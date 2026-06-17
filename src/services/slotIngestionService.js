@@ -1,4 +1,5 @@
 import { supabase } from '../config/supabaseClient';
+import { getErrorMessage } from '../utils/errorUtils';
 
 export async function ingestSlotToDatabase(slotData) {
   const name = String(slotData?.name || '').trim();
@@ -33,7 +34,10 @@ export async function ingestSlotToDatabase(slotData) {
   const payload = await response.json().catch(() => ({}));
 
   if (!response.ok || payload.ok === false) {
-    const message = payload.message || payload.error || payload.details?.message || `Ingestion failed (${response.status})`;
+    const message = getErrorMessage(
+      payload.message ?? payload.error ?? payload.details?.message ?? payload.details ?? payload,
+      `Ingestion failed (${response.status})`
+    );
     throw new Error(message);
   }
 

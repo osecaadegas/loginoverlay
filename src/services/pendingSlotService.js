@@ -2,6 +2,11 @@
  * pendingSlotService.js — CRUD for the pending_slots approval queue.
  */
 import { supabase } from '../config/supabaseClient';
+import { getErrorMessage } from '../utils/errorUtils';
+
+function throwSlotError(error, fallback) {
+  if (error) throw new Error(getErrorMessage(error, fallback));
+}
 
 /* ─── Submit a new slot (premium user) ─── */
 export async function submitSlot(userId, slotData) {
@@ -19,7 +24,7 @@ export async function submitSlot(userId, slotData) {
     .select()
     .single();
 
-  if (error) throw error;
+  throwSlotError(error, 'Failed to submit slot.');
   return data;
 }
 
@@ -31,7 +36,7 @@ export async function getMySubmissions(userId) {
     .eq('submitted_by', userId)
     .order('submitted_at', { ascending: false });
 
-  if (error) throw error;
+  throwSlotError(error, 'Failed to load slot submissions.');
   return data || [];
 }
 
@@ -42,7 +47,7 @@ export async function getPendingSlots() {
     .select('*')
     .order('submitted_at', { ascending: false });
 
-  if (error) throw error;
+  throwSlotError(error, 'Failed to load pending slots.');
 
   // Fetch SE usernames for all unique submitters
   const submitterIds = [...new Set((data || []).map(s => s.submitted_by).filter(Boolean))];
@@ -85,7 +90,7 @@ export async function approveSlot(pendingId, adminId) {
     .eq('id', pendingId)
     .single();
 
-  if (fetchErr) throw fetchErr;
+  throwSlotError(fetchErr, 'Failed to load pending slot.');
 
   // 2. Insert into the real slots table
   const { error: insertErr } = await supabase
@@ -101,7 +106,7 @@ export async function approveSlot(pendingId, adminId) {
       created_by: pending.submitted_by,
     });
 
-  if (insertErr) throw insertErr;
+  throwSlotError(insertErr, 'Failed to add slot to the database.');
 
   // 3. Mark as approved
   const { error: updateErr } = await supabase
@@ -113,7 +118,7 @@ export async function approveSlot(pendingId, adminId) {
     })
     .eq('id', pendingId);
 
-  if (updateErr) throw updateErr;
+  throwSlotError(updateErr, 'Failed to mark slot as approved.');
 }
 
 /* ─── Deny a slot (admin) ─── */
@@ -128,7 +133,7 @@ export async function denySlot(pendingId, adminId, note = '') {
     })
     .eq('id', pendingId);
 
-  if (error) throw error;
+  throwSlotError(error, 'Failed to deny slot.');
 }
 
 /* ─── Update a pending slot (admin edit before approve/deny) ─── */
@@ -146,5 +151,5 @@ export async function updatePendingSlot(pendingId, fields) {
     .update(allowed)
     .eq('id', pendingId);
 
-  if (error) throw error;
+  throwSlotError(error, 'Failed to update pending slot.');
 }

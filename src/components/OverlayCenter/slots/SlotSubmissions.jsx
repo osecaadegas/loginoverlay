@@ -9,6 +9,7 @@ import { submitSlot, getMySubmissions } from '../../../services/pendingSlotServi
 import { supabase } from '../../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../utils/slotImageSearch';
+import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
 import '../../SlotManager/SlotManagerV2.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -155,7 +156,8 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
       onSubmitted();
       onClose();
     } catch (e) {
-      alert(e.message?.includes('duplicate') ? 'A slot with this name already exists or is pending.' : `Error: ${e.message}`);
+      const message = getErrorMessage(e, 'Could not submit slot.');
+      alert(isDuplicateError(message) ? 'A slot with this name already exists or is pending.' : `Error: ${message}`);
     } finally {
       setSaving(false);
     }

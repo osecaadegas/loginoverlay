@@ -13,6 +13,7 @@ import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
+import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -593,7 +594,8 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setShowSubmitSlot(false);
       alert('Slot submitted for approval! You can now use it in your bonus hunt.');
     } catch (e) {
-      alert(e.message?.includes('duplicate') ? 'Slot already exists or pending.' : `Error: ${e.message}`);
+      const message = getErrorMessage(e, 'Could not add slot.');
+      alert(isDuplicateError(message) ? 'Slot already exists or pending.' : `Error: ${message}`);
     } finally {
       setSubmitSaving(false);
     }
