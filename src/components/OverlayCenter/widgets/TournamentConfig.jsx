@@ -283,6 +283,15 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   useEffect(() => { activeMatchRef.current = bracketActiveMatch; }, [bracketActiveMatch]);
   useEffect(() => { bracketDataRef.current = bracketData; }, [bracketData]);
 
+  /* Init bracket players when count changes */
+  const [localBracketPlayers, setLocalBracketPlayers] = useState(() => {
+    const arr = [];
+    for (let i = 0; i < bracketPlayerCount; i++) {
+      arr.push(bracketPlayers[i] || { id: `p${i}`, name: '', twitchUsername: '', slot: { name: '', image: null } });
+    }
+    return arr;
+  });
+
   /* ─── Persist setup state: sync localBracketPlayers → widget config on change ─── */
   const persistPlayersRef = useRef(null);
   useEffect(() => {
@@ -293,15 +302,6 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     }, 600);
     return () => clearTimeout(persistPlayersRef.current);
   }, [localBracketPlayers, bracketPhase]); // eslint-disable-line react-hooks/exhaustive-deps
-
-  /* Init bracket players when count changes */
-  const [localBracketPlayers, setLocalBracketPlayers] = useState(() => {
-    const arr = [];
-    for (let i = 0; i < bracketPlayerCount; i++) {
-      arr.push(bracketPlayers[i] || { id: `p${i}`, name: '', twitchUsername: '', slot: { name: '', image: null } });
-    }
-    return arr;
-  });
 
   useEffect(() => {
     if (bracketPhase !== 'setup') return;
