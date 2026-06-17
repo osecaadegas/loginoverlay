@@ -120,12 +120,17 @@ export async function cacheGet(key) {
 
     if (!data) return null;
 
-    // Increment hit count (fire-and-forget)
-    sb.from('ingestion_cache')
-      .update({ hit_count: (data.hit_count || 0) + 1 })
-      .eq('id', data.id)
-      .then(() => {})
-      .catch(() => {});
+    // Increment hit count without blocking the cache hit response.
+    void (async () => {
+      try {
+        await sb
+          .from('ingestion_cache')
+          .update({ hit_count: (data.hit_count || 0) + 1 })
+          .eq('id', data.id);
+      } catch {
+        // Cache counters should never block ingestion.
+      }
+    })();
 
     logger.debug('cache.hit', { key });
     return data.response;
@@ -198,12 +203,14 @@ export async function checkRateLimit(identifier, endpoint = 'ingest-slot') {
       .eq('id', existing.id);
   } else {
     // Create new window entry
-    await sb
+    const { error } = await sb
       .from('api_rate_limits')
-      .insert({ identifier, endpoint, window_start: windowStart, request_count: 1 })
-      .catch(() => {
-        // Handle race condition — another request may have created the row
-      });
+      .insert({ identifier, endpoint, window_start: windowStart, request_count: 1 });
+
+    // Handle race condition: another request may have created the row.
+    if (error) {
+      logger.debug('rate_limit.create_skipped', { identifier, endpoint, error: error.message });
+    }
   }
 }
 
