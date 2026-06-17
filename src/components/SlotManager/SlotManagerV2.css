@@ -881,6 +881,28 @@
   height: 100%;
   object-fit: cover;
 }
+.slot-manager-v2 .sm-img-google-link {
+  width: 120px;
+  min-height: 80px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px dashed #58a6ff;
+  background: rgba(88, 166, 255, 0.08);
+  color: #c9d1d9;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+.slot-manager-v2 .sm-img-google-link:hover {
+  border-color: #79c0ff;
+  background: rgba(88, 166, 255, 0.16);
+  color: #fff;
+}
 
 /* Feature grid */
 .slot-manager-v2 .sm-feature-grid {

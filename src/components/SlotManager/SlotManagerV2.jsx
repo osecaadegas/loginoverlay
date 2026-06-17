@@ -1,6 +1,7 @@
 ﻿import { useState, useEffect, useCallback, useRef, memo } from 'react';
 import { supabase } from '../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../utils/slotUtils';
+import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../utils/slotImageSearch';
 import './SlotManagerV2.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -112,6 +113,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
   const [tab, setTab] = useState('basic');
   const [imgResults, setImgResults] = useState([]);
   const [imgSearching, setImgSearching] = useState(false);
+  const [imgSearchMeta, setImgSearchMeta] = useState(null);
   const [scrapedImages, setScrapedImages] = useState([]);
   const [scrapeLoading, setScrapeLoading] = useState(false);
   const nameRef = useRef(null);
@@ -121,6 +123,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
     setForm(slot || {});
     setTab('basic');
     setImgResults([]);
+    setImgSearchMeta(null);
     setScrapedImages([]);
     scrapeRef.current = '';
     if (isNew) setTimeout(() => nameRef.current?.focus(), 100);
@@ -159,14 +162,28 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const searchImages = async () => {
-    const q = `${form.name || ''} ${form.provider || ''} slot stake`.trim();
-    if (!q || q === 'slot stake') return;
+    const name = (form.name || '').trim();
+    const provider = (form.provider || '').trim();
+    if (!name && !provider) return;
+    const fallbackMeta = {
+      googleUrl: buildGoogleSlotImageSearchUrl({ name, provider }),
+      totalResults: 0,
+    };
     setImgSearching(true);
     setImgResults([]);
+    setImgSearchMeta(fallbackMeta);
     try {
-      const res = await fetch(`/api/image-search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(buildSlotImageSearchUrl({ name, provider }));
       const data = await res.json();
-      if (res.ok && data.images?.length) setImgResults(data.images);
+      if (res.ok) {
+        setImgResults(data.images || []);
+        setImgSearchMeta({
+          googleUrl: data.googleUrl || fallbackMeta.googleUrl,
+          bingUrl: data.bingUrl,
+          query: data.query,
+          totalResults: data.images?.length || 0,
+        });
+      }
     } catch { /* noop */ }
     setImgSearching(false);
   };
@@ -243,7 +260,7 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
                   </button>
                 </div>
               </label>
-              {imgResults.length > 0 && (
+              {(imgResults.length > 0 || imgSearchMeta?.googleUrl) && (
                 <div className="sm-img-results">
                   {imgResults.slice(0, 8).map((img, i) => (
                     <button key={i} type="button"
@@ -252,6 +269,11 @@ const EditorPanel = memo(({ slot, onClose, onSave, onDelete, providers, isNew })
                       <img src={img.thumb} alt="" />
                     </button>
                   ))}
+                  {imgSearchMeta?.googleUrl && (
+                    <a className="sm-img-google-link" href={imgSearchMeta.googleUrl} target="_blank" rel="noreferrer">
+                      Open Google Images
+                    </a>
+                  )}
                 </div>
               )}
               {scrapeLoading && (

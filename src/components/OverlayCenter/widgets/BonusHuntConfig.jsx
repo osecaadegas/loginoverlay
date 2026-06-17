@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { getAllSlots, DEFAULT_SLOT_IMAGE, invalidateCache, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
+import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../utils/slotImageSearch';
 import { getMySubmissions, submitSlot } from '../../../services/pendingSlotService';
 import { ingestSlotToDatabase, slotFromIngestionResult } from '../../../services/slotIngestionService';
 import ColorPicker from './shared/ColorPicker';
@@ -455,6 +456,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
     try { return JSON.parse(localStorage.getItem('bh_submitImages')) || []; } catch { return []; }
   });
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
+  const [imageSearchMeta, setImageSearchMeta] = useState(null);
   const [imageShowCount, setImageShowCount] = useState(10);
 
   // Slot requests queue
@@ -469,17 +471,29 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
 
   const searchSlotImages = async (nameOverride, providerOverride) => {
-    const n = nameOverride || submitForm.name || '';
-    const p = providerOverride || submitForm.provider || '';
-    const q = `${p} ${n} slot game ${prettyImage ? 'artwork' : 'cover'}`.trim();
-    if (!q || q === 'slot') return;
+    const n = (typeof nameOverride === 'string' ? nameOverride : submitForm.name || '').trim();
+    const p = (typeof providerOverride === 'string' ? providerOverride : submitForm.provider || '').trim();
+    if (!n && !p) return;
+    const fallbackMeta = {
+      googleUrl: buildGoogleSlotImageSearchUrl({ name: n, provider: p, pretty: prettyImage }),
+      totalResults: 0,
+    };
     setSubmitImageSearching(true);
     setSubmitImageResults([]);
+    setImageSearchMeta(fallbackMeta);
     setImageShowCount(10);
     try {
-      const res = await fetch(`/api/image-search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(buildSlotImageSearchUrl({ name: n, provider: p, pretty: prettyImage }));
       const data = await res.json();
-      if (res.ok && data.images?.length) setSubmitImageResults(data.images);
+      if (res.ok) {
+        setSubmitImageResults(data.images || []);
+        setImageSearchMeta({
+          googleUrl: data.googleUrl || fallbackMeta.googleUrl,
+          bingUrl: data.bingUrl,
+          query: data.query,
+          totalResults: data.images?.length || 0,
+        });
+      }
     } catch { /* noop */ }
     setSubmitImageSearching(false);
   };
@@ -537,6 +551,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         setSlotSearch(refreshedSlot.name);
         setSubmitForm({});
         setSubmitImageResults([]);
+        setImageSearchMeta(null);
         setScrapedImages([]);
         setShowSubmitSlot(false);
         setImageShowCount(10);
@@ -573,6 +588,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       setSlots([...liveSlots, ...unique]);
       setSubmitForm({});
       setSubmitImageResults([]);
+      setImageSearchMeta(null);
       setScrapedImages([]);
       setShowSubmitSlot(false);
       alert('Slot submitted for approval! You can now use it in your bonus hunt.');
@@ -1239,18 +1255,18 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <span>Image {!isSlotModder && <em>*</em>}</span>
                 <div style={{ display: 'flex', gap: 4 }}>
                   <input style={{ flex: 1, fontSize: '0.68rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="URL or search →" />
-                  <button type="button" className="bh-submit-search-btn" onClick={searchSlotImages} disabled={!submitForm.name || submitImageSearching}>
+                  <button type="button" className="bh-submit-search-btn" onClick={() => searchSlotImages()} disabled={!submitForm.name || submitImageSearching}>
                     {submitImageSearching ? '⏳' : '🔍'}
                   </button>
                   {userAvatar && (
-                    <button type="button" className="bh-submit-search-btn" title="Use my stream logo" onClick={() => { setField('image', userAvatar); setSubmitImageResults([]); }}>
+                    <button type="button" className="bh-submit-search-btn" title="Use my stream logo" onClick={() => { setField('image', userAvatar); setSubmitImageResults([]); setImageSearchMeta(null); }}>
                       📷
                     </button>
                   )}
                 </div>
               </label>
             </div>
-            {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0) && (<>
+            {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (<>
               <div className="bh-submit-images">
                 {submitForm.image && (
                   <img src={submitForm.image} alt="" className="bh-submit-preview" onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
@@ -1279,16 +1295,26 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                     Show more
                   </button>
                 )}
+                {imageSearchMeta?.googleUrl && submitImageResults.length === 0 && !submitImageSearching && (
+                  <a className="bh-google-images-link" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
+                    Open Google Images
+                  </a>
+                )}
               </div>
               <div className="bh-image-toolbar">
                 <button type="button" className={`bh-pretty-toggle${prettyImage ? ' active' : ''}`}
                   onClick={() => setPrettyImage(p => !p)}>
                   {prettyImage ? '✨ Pretty Image: ON' : '✨ Pretty Image: OFF'}
                 </button>
+                {imageSearchMeta?.googleUrl && submitImageResults.length > 0 && (
+                  <a className="bh-google-images-link bh-google-images-link--small" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
+                    Open Google Images
+                  </a>
+                )}
               </div>
             </>)}
             <div className="bh-submit-actions">
-              <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setScrapedImages([]); setImageShowCount(10); setPrettyImage(false); }}>Cancel</button>
+              <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setImageSearchMeta(null); setScrapedImages([]); setImageShowCount(10); setPrettyImage(false); }}>Cancel</button>
               <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
                 {submitSaving ? 'Submitting...' : (isSlotModder ? 'Add to Database' : 'Submit for Approval')}
               </button>

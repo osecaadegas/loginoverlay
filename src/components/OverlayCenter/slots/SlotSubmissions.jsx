@@ -8,6 +8,7 @@ import { useAuth } from '../../../context/AuthContext';
 import { submitSlot, getMySubmissions } from '../../../services/pendingSlotService';
 import { supabase } from '../../../config/supabaseClient';
 import { DEFAULT_SLOT_IMAGE } from '../../../utils/slotUtils';
+import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../utils/slotImageSearch';
 import '../../SlotManager/SlotManagerV2.css';
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -96,6 +97,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
   const [saving, setSaving] = useState(false);
   const [imageResults, setImageResults] = useState([]);
   const [imageSearching, setImageSearching] = useState(false);
+  const [imageSearchMeta, setImageSearchMeta] = useState(null);
   const [expanded, setExpanded] = useState(false);
   const nameRef = useRef(null);
   const wrapRef = useRef(null);
@@ -105,14 +107,28 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
   const searchImages = async () => {
-    const q = `${form.name || ''} ${form.provider || ''} slot`.trim();
-    if (!q || q === 'slot') return;
+    const name = (form.name || '').trim();
+    const provider = (form.provider || '').trim();
+    if (!name && !provider) return;
+    const fallbackMeta = {
+      googleUrl: buildGoogleSlotImageSearchUrl({ name, provider }),
+      totalResults: 0,
+    };
     setImageSearching(true);
     setImageResults([]);
+    setImageSearchMeta(fallbackMeta);
     try {
-      const res = await fetch(`/api/image-search?q=${encodeURIComponent(q)}`);
+      const res = await fetch(buildSlotImageSearchUrl({ name, provider }));
       const data = await res.json();
-      if (res.ok && data.images?.length) setImageResults(data.images);
+      if (res.ok) {
+        setImageResults(data.images || []);
+        setImageSearchMeta({
+          googleUrl: data.googleUrl || fallbackMeta.googleUrl,
+          bingUrl: data.bingUrl,
+          query: data.query,
+          totalResults: data.images?.length || 0,
+        });
+      }
     } catch { /* noop */ }
     setImageSearching(false);
   };
@@ -222,7 +238,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
       </div>
 
       {/* Image results + preview row */}
-      {(imageResults.length > 0 || form.image) && (
+      {(imageResults.length > 0 || form.image || imageSearchMeta?.googleUrl) && (
         <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {form.image && (
             <img src={form.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(168,85,247,0.4)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
@@ -233,6 +249,11 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
               <img src={img.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
             </button>
           ))}
+          {imageSearchMeta?.googleUrl && (
+            <a className="sm-img-google-link" href={imageSearchMeta.googleUrl} target="_blank" rel="noreferrer">
+              Open Google Images
+            </a>
+          )}
         </div>
       )}
 
