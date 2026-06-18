@@ -1,0 +1,15 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /analytics
+Disallow: /api/
+Disallow: /developer
+Disallow: /login
+Disallow: /overlay
+Disallow: /overlay-center
+Disallow: /profile
+Disallow: /spotify-callback
+Disallow: /webmod
+Disallow: /widgets
+
+Sitemap: https://osecaadegas.pt/sitemap.xml

@@ -29,6 +29,7 @@ import useSlotRequestListener from './hooks/useSlotRequestListener';
 import usePredictionListener from './hooks/usePredictionListener';
 import useBetsListener from './hooks/useBetsListener';
 import useAnalytics from './hooks/useAnalytics';
+import { applyRouteSeo } from './utils/seo';
 // ThemesPage is now rendered inside OverlayControlCenter
 
 /* ── Lazy-loaded heavy routes (code-split) ── */
@@ -277,6 +278,10 @@ function LayoutWrapper({ children }) {
   const isOverlayCenter = location.pathname === '/overlay-center';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+
+  useEffect(() => {
+    applyRouteSeo(location.pathname);
+  }, [location.pathname]);
 
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
