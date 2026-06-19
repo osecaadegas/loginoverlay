@@ -97,6 +97,55 @@ export default async function handler(req, res) {
   }
 }
 
+function mapHistoryBonus(b) {
+  const betSize = parseFloat(b.betSize ?? b.bet ?? b.buy) || 0;
+  const result = b.result != null && b.result !== '' ? parseFloat(b.result) : null;
+  const payout = b.payout != null && b.payout !== '' ? parseFloat(b.payout) : result;
+  const opened = Boolean(b.opened || b.isOpened || result !== null);
+  const multi = betSize && payout ? payout / betSize : null;
+
+  return {
+    slotName: b.slotName || b.slot?.name || b.name || 'Unknown',
+    betSize: Math.round(betSize * 100) / 100,
+    opened,
+    result,
+    payout,
+    multi: multi ? Math.round(multi * 100) / 100 : null,
+    isSuperBonus: b.isSuperBonus || b.isSuper || b.is_super || false,
+    isExtremeBonus: b.isExtremeBonus || b.isExtreme || b.is_extreme || false,
+    slot: {
+      name: b.slot?.name || b.slotName || b.name || 'Unknown',
+      image: b.slot?.image || b.image || b.img || null,
+      provider: b.slot?.provider || b.provider || null,
+      rtp: b.slot?.rtp ?? (b.rtp ? parseFloat(b.rtp) : null),
+      volatility: b.slot?.volatility || b.volatility || null,
+      max_win_multiplier: b.slot?.max_win_multiplier || b.slot?.maxWin || b.max_win || b.maxWin || null,
+    },
+  };
+}
+
+function historyToCurrentResponse(hunt) {
+  const bonuses = hunt.bonuses || [];
+  return {
+    active: true,
+    hunt_name: hunt.hunt_name,
+    phase: 'completed',
+    currency: hunt.currency || '€',
+    hunt_date: hunt.hunt_date || hunt.created_at?.split('T')[0],
+    start_money: hunt.start_money || 0,
+    stop_loss: hunt.stop_loss || 0,
+    total_win: hunt.total_win || 0,
+    profit: hunt.profit || 0,
+    bonus_count: hunt.bonus_count ?? bonuses.length,
+    bonuses_opened: hunt.bonuses_opened ?? bonuses.filter(b => b.opened || b.isOpened || b.result != null).length,
+    avg_multi: hunt.avg_multi || 0,
+    best_multi: hunt.best_multi || 0,
+    best_slot_name: hunt.best_slot_name || null,
+    bonuses: bonuses.map(mapHistoryBonus),
+    updated_at: hunt.created_at,
+  };
+}
+
 async function handleBonusHunt(res, userId) {
   const { data: widgets } = await supabase
     .from('overlay_widgets')
@@ -105,11 +154,24 @@ async function handleBonusHunt(res, userId) {
     .eq('widget_type', 'bonus_hunt')
     .limit(1);
 
+  const { data: latestHistory } = await supabase
+    .from('bonus_hunt_history')
+    .select('*')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
   if (!widgets || widgets.length === 0) {
+    if (latestHistory) return res.json(historyToCurrentResponse(latestHistory));
     return res.json({ active: false, message: 'No bonus hunt configured.' });
   }
 
   const widget = widgets[0];
+  if (latestHistory && new Date(latestHistory.created_at) > new Date(widget.updated_at || 0)) {
+    return res.json(historyToCurrentResponse(latestHistory));
+  }
+
   const config = widget.config || {};
   const bonuses = config.bonuses || [];
 
