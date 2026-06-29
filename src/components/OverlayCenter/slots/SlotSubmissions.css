@@ -600,10 +600,29 @@
 }
 
 .ss-card-submitter {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
   font-size: 11.5px;
   color: #b8c8d8;
   font-weight: 600;
   margin-top: 2px;
+}
+
+.ss-card-submitter-label {
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-weight: 500;
+}
+
+.ss-card-submitter-name {
+  color: #e7ebf0;
+  font-weight: 700;
+}
+
+.ss-card-submitter-handle {
+  color: var(--theme-text-secondary, #a0a0b4);
+  font-weight: 500;
 }
 
 .ss-card-meta {

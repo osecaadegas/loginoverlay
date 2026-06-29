@@ -8,6 +8,100 @@ function throwSlotError(error, fallback) {
   if (error) throw new Error(getErrorMessage(error, fallback));
 }
 
+function cleanSubmitterName(value) {
+  if (typeof value !== 'string') return '';
+  const trimmed = value.trim();
+  if (!trimmed) return '';
+  if (/^user:[a-f0-9-]+$/i.test(trimmed)) return '';
+  return trimmed;
+}
+
+function emailName(email) {
+  if (typeof email !== 'string' || !email.includes('@')) return '';
+  return email.split('@')[0]?.trim() || '';
+}
+
+function authUserName(user) {
+  const meta = user?.user_metadata || {};
+  return cleanSubmitterName(
+    meta.full_name ||
+    meta.name ||
+    meta.display_name ||
+    meta.preferred_username ||
+    meta.user_name ||
+    meta.twitch_username ||
+    emailName(user?.email)
+  );
+}
+
+async function getSubmitterProfiles(submitterIds) {
+  const names = {};
+  const handles = {};
+  const sources = {};
+
+  const setName = (userId, name, source, handle = '') => {
+    if (!userId) return;
+    const cleanName = cleanSubmitterName(name);
+    const cleanHandle = cleanSubmitterName(handle);
+    if (cleanHandle && !handles[userId] && cleanHandle !== cleanName) {
+      handles[userId] = cleanHandle;
+    }
+    if (!cleanName || names[userId]) return;
+    names[userId] = cleanName;
+    sources[userId] = source;
+  };
+
+  const profileSelects = [
+    'user_id, display_name, username, twitch_display_name, twitch_username',
+    'user_id, twitch_display_name, twitch_username',
+    'user_id, twitch_username',
+  ];
+
+  for (const select of profileSelects) {
+    const { data, error } = await supabase
+      .from('user_profiles')
+      .select(select)
+      .in('user_id', submitterIds);
+
+    if (error) continue;
+    (data || []).forEach(profile => {
+      setName(
+        profile.user_id,
+        profile.display_name || profile.twitch_display_name || profile.username || profile.twitch_username,
+        'profile',
+        profile.twitch_username || profile.username
+      );
+    });
+    break;
+  }
+
+  const { data: connections } = await supabase
+    .from('streamelements_connections')
+    .select('user_id, se_username')
+    .in('user_id', submitterIds);
+
+  (connections || []).forEach(connection => {
+    setName(connection.user_id, connection.se_username, 'streamelements', connection.se_username);
+  });
+
+  const { data: authUsers, error: authError } = await supabase.rpc('get_all_auth_users');
+  if (!authError) {
+    (authUsers || [])
+      .filter(authUser => submitterIds.includes(authUser.id))
+      .forEach(authUser => {
+        const meta = authUser.user_metadata || {};
+        setName(
+          authUser.id,
+          authUserName(authUser),
+          'account',
+          meta.preferred_username || meta.user_name || meta.twitch_username || emailName(authUser.email)
+        );
+      });
+  }
+
+  return { names, handles, sources };
+}
+
 /* ─── Submit a new slot (premium user) ─── */
 export async function submitSlot(userId, slotData) {
   const { data, error } = await supabase
@@ -49,35 +143,17 @@ export async function getPendingSlots() {
 
   throwSlotError(error, 'Failed to load pending slots.');
 
-  // Fetch SE usernames for all unique submitters
   const submitterIds = [...new Set((data || []).map(s => s.submitted_by).filter(Boolean))];
-  let usernameMap = {};
-  if (submitterIds.length > 0) {
-    // Primary: StreamElements username
-    const { data: connections } = await supabase
-      .from('streamelements_connections')
-      .select('user_id, se_username')
-      .in('user_id', submitterIds);
-    if (connections) {
-      connections.forEach(c => { usernameMap[c.user_id] = c.se_username; });
-    }
-    // Fallback: twitch_username from user_profiles
-    const { data: profiles } = await supabase
-      .from('user_profiles')
-      .select('user_id, twitch_username')
-      .in('user_id', submitterIds);
-    if (profiles) {
-      profiles.forEach(p => {
-        if (!usernameMap[p.user_id] && p.twitch_username) {
-          usernameMap[p.user_id] = p.twitch_username;
-        }
-      });
-    }
-  }
+  const submitters = submitterIds.length > 0
+    ? await getSubmitterProfiles(submitterIds)
+    : { names: {}, handles: {}, sources: {} };
 
   return (data || []).map(s => ({
     ...s,
-    se_username: usernameMap[s.submitted_by] || `user:${String(s.submitted_by).substring(0, 8)}`,
+    submitter_name: submitters.names[s.submitted_by] || 'Unknown user',
+    submitter_handle: submitters.handles[s.submitted_by] || '',
+    submitter_source: submitters.sources[s.submitted_by] || 'unknown',
+    se_username: submitters.names[s.submitted_by] || 'Unknown user',
   }));
 }
 

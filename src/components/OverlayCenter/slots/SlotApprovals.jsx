@@ -267,7 +267,13 @@ export default function SlotApprovals() {
                   <>
                     <div className="ss-card-name">{s.name}</div>
                     <div className="ss-card-provider">{s.provider}</div>
-                    <div className="ss-card-submitter">👤 {s.se_username}</div>
+                    <div className="ss-card-submitter">
+                      <span className="ss-card-submitter-label">Added by</span>
+                      <span className="ss-card-submitter-name">{s.submitter_name || s.se_username || 'Unknown user'}</span>
+                      {s.submitter_handle && s.submitter_handle !== (s.submitter_name || s.se_username) && (
+                        <span className="ss-card-submitter-handle">@{String(s.submitter_handle).replace(/^@/, '')}</span>
+                      )}
+                    </div>
                     <div className="ss-card-meta">
                       <span>RTP: {s.rtp}%</span>
                       <span>Vol: {s.volatility}</span>
