@@ -14920,6 +14920,10 @@ body.wm-resizing {
   border-bottom: 1px solid var(--oc-border);
 }
 
+.oc-command-header--no-url {
+  grid-template-columns: 1fr;
+}
+
 .oc-command-header__copy {
   min-width: 0;
 }

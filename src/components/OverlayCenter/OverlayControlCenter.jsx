@@ -33,6 +33,7 @@ import { getAllWidgetDefs, getWidgetDef } from './widgets/widgetRegistry';
 
 /* ── Generic WidgetPanel: replaces 14 identical panel wrappers ── */
 const PANEL_TOUR = { bonus_hunt: 'bonus-hunt-page', tournament: 'tournament-page', bonus_buys: 'bonus-buys-page', current_slot: 'current-slot-page', slot_requests: 'slot-requests-page', bets: 'bets-page' };
+const WIDGET_PANEL_KEYS = Object.keys(PANEL_TOUR);
 const PANEL_META = {
   widgets: {
     eyebrow: 'Overlay Builder',
@@ -149,7 +150,7 @@ export default function OverlayControlCenter() {
   const [streamerToolsOpen, setStreamerToolsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
-  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'slot_requests', 'bets'];
+  const streamerToolsKeys = WIDGET_PANEL_KEYS;
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
@@ -244,13 +245,43 @@ export default function OverlayControlCenter() {
   const panelMeta = PANEL_META[activePanel] || PANEL_META.widgets;
   const visibleWidgetCount = useMemo(() => (widgets || []).filter(w => w.is_visible !== false).length, [widgets]);
   const canvasLabel = `${theme?.canvas_width || 1920}x${theme?.canvas_height || 1080}`;
+  const activePanelWidget = useMemo(() => {
+    if (!WIDGET_PANEL_KEYS.includes(activePanel)) return null;
+    return (widgets || []).find(widget => widget.widget_type === activePanel) || null;
+  }, [activePanel, widgets]);
+  const obsUrlContext = useMemo(() => {
+    if (!overlayUrl) return null;
+
+    if (activePanel === 'widgets') {
+      return {
+        label: 'Full Overlay OBS URL',
+        value: overlayUrl,
+        copyLabel: 'Copy full URL',
+        mobileLabel: 'Copy Full OBS Link',
+        allowRegen: true,
+      };
+    }
+
+    if (WIDGET_PANEL_KEYS.includes(activePanel) && activePanelWidget?.id) {
+      return {
+        label: `${panelMeta.title} Widget OBS URL`,
+        value: `${overlayUrl}?widget=${activePanelWidget.id}`,
+        copyLabel: 'Copy widget URL',
+        mobileLabel: 'Copy Widget OBS Link',
+        allowRegen: false,
+      };
+    }
+
+    return null;
+  }, [activePanel, activePanelWidget?.id, overlayUrl, panelMeta.title]);
 
   const copyUrl = useCallback(() => {
-    navigator.clipboard.writeText(overlayUrl).then(() => {
+    if (!obsUrlContext?.value) return;
+    navigator.clipboard.writeText(obsUrlContext.value).then(() => {
       setCopyMsg('Copied!');
       setTimeout(() => setCopyMsg(''), 2000);
     });
-  }, [overlayUrl]);
+  }, [obsUrlContext?.value]);
 
   if (!user) {
     return (
@@ -469,7 +500,7 @@ export default function OverlayControlCenter() {
         {/* ─── MAIN CONTENT ─── */}
         <main className="oc-main">
           <div className="oc-main-shell">
-          <div className="oc-command-header">
+          <div className={`oc-command-header${obsUrlContext ? '' : ' oc-command-header--no-url'}`}>
             <div className="oc-command-header__copy">
               <span className="oc-main-eyebrow">{panelMeta.eyebrow}</span>
               <h2 className="oc-main-title">{panelMeta.title}</h2>
@@ -479,19 +510,24 @@ export default function OverlayControlCenter() {
                 <StatusBadge tone="neutral">{widgets.length} installed</StatusBadge>
                 <StatusBadge tone="neutral">{canvasLabel}</StatusBadge>
                 <StatusBadge tone={isPremium ? 'active' : 'neutral'}>{isPremium ? 'Premium' : 'Standard'}</StatusBadge>
+                {WIDGET_PANEL_KEYS.includes(activePanel) && !activePanelWidget && (
+                  <StatusBadge tone="setup">Add widget for OBS URL</StatusBadge>
+                )}
               </div>
             </div>
-            <CopyField
-              className="oc-command-header__copyfield"
-              label="OBS Browser Source URL"
-              value={overlayUrl}
-              onCopy={copyUrl}
-              copied={!!copyMsg}
-              copyLabel="Copy"
-              copiedLabel={copyMsg || 'Copied'}
-              onRegen={regenToken}
-              regenLabel="New URL"
-            />
+            {obsUrlContext && (
+              <CopyField
+                className="oc-command-header__copyfield"
+                label={obsUrlContext.label}
+                value={obsUrlContext.value}
+                onCopy={copyUrl}
+                copied={!!copyMsg}
+                copyLabel={obsUrlContext.copyLabel}
+                copiedLabel={copyMsg || 'Copied'}
+                onRegen={obsUrlContext.allowRegen ? regenToken : undefined}
+                regenLabel="New full URL"
+              />
+            )}
           </div>
 
           {/* Quick-start steps for new users */}
@@ -537,7 +573,7 @@ export default function OverlayControlCenter() {
             />
           )}
           {/* Generic widget panels — resolved from registry */}
-          {['bonus_hunt','tournament','current_slot','slot_requests','bonus_buys','bets'].includes(activePanel) && (
+          {WIDGET_PANEL_KEYS.includes(activePanel) && (
             <WidgetPanel widgetType={activePanel} widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (
@@ -597,9 +633,11 @@ export default function OverlayControlCenter() {
           {activePanel === 'profile' && (
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />
           )}
-          <button type="button" className="oc-mobile-obs-action oc-ui-btn oc-ui-btn--primary" onClick={copyUrl}>
-            {copyMsg || 'Copy OBS Link'}
-          </button>
+          {obsUrlContext && (
+            <button type="button" className="oc-mobile-obs-action oc-ui-btn oc-ui-btn--primary" onClick={copyUrl}>
+              {copyMsg || obsUrlContext.mobileLabel}
+            </button>
+          )}
           </div>
         </main>
       </div>
