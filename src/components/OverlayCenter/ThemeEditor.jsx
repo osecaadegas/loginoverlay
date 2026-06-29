@@ -3,6 +3,7 @@
  * All updates persist to DB & reflect in OBS overlay via realtime.
  */
 import React, { useState, useCallback, useRef, useEffect } from 'react';
+import { MetricCard, PreviewPanel, SectionHeader, StatusBadge } from './ui';
 
 const PRESETS = {
   glass: { opacity: 0.85, blur_intensity: 14, shadow_strength: 0.4, glow_intensity: 0.3, bg_texture: 'none', border_radius: 14 },
@@ -39,11 +40,39 @@ export default function ThemeEditor({ theme, onSave }) {
     onSave({ ...p, style_preset: name });
   }, [onSave]);
 
+  const activePreset = draft.style_preset || 'custom';
+  const canvasLabel = `${draft.canvas_width || 1920}x${draft.canvas_height || 1080}`;
+
   return (
-    <div className="oc-theme-panel">
-      <div className="oc-panel-header">
-        <h2 className="oc-panel-title">🎨 Theme & Customization</h2>
+    <div className="oc-theme-panel oc-theme-panel--modern">
+      <SectionHeader
+        eyebrow="Fine Tune"
+        title="Advanced theme controls"
+        description="Shape the overlay system without changing the product palette. Colors stay available for expert overrides, but layout, type, motion, and canvas come first."
+        pill={<StatusBadge tone="active">Palette preserved</StatusBadge>}
+      />
+
+      <div className="oc-theme-summary-grid">
+        <MetricCard label="Preset" value={activePreset} meta="Current surface treatment" />
+        <MetricCard label="Canvas" value={canvasLabel} meta="OBS browser-source size" />
+        <MetricCard label="Motion" value={`${draft.animation_speed ?? 1}x`} meta="Global animation speed" />
       </div>
+
+      <PreviewPanel title="Theme preview" subtitle="Quick surface check before the changes hit OBS.">
+        <div className="oc-theme-preview-card" style={{
+          '--preview-bg': draft.secondary_color || draft.primary_color || 'var(--oc-bg-card)',
+          '--preview-accent': draft.accent_color || 'var(--oc-accent-light)',
+          '--preview-text': draft.text_color || 'var(--oc-text-primary)',
+          '--preview-radius': `${draft.border_radius ?? 14}px`,
+          '--preview-opacity': draft.opacity ?? 0.85,
+        }}>
+          <div className="oc-theme-preview-card__bar" />
+          <div className="oc-theme-preview-card__body">
+            <strong>Overlay card</strong>
+            <span>Typography, radius, blur, shadow, and motion apply across widgets.</span>
+          </div>
+        </div>
+      </PreviewPanel>
 
       {/* Presets */}
       <section className="oc-theme-section">
@@ -61,28 +90,9 @@ export default function ThemeEditor({ theme, onSave }) {
         </div>
       </section>
 
-      {/* Colors */}
-      <section className="oc-theme-section">
-        <h3 className="oc-theme-section-title">Colors</h3>
-        <div className="oc-color-grid">
-          {[
-            { key: 'primary_color', label: 'Primary' },
-            { key: 'secondary_color', label: 'Secondary' },
-            { key: 'accent_color', label: 'Accent' },
-            { key: 'text_color', label: 'Text' },
-          ].map(c => (
-            <label key={c.key} className="oc-color-field">
-              <input type="color" value={draft[c.key] || '#ffffff'} onChange={e => update(c.key, e.target.value)} />
-              <span>{c.label}</span>
-              <code>{draft[c.key]}</code>
-            </label>
-          ))}
-        </div>
-      </section>
-
       {/* Sliders */}
       <section className="oc-theme-section">
-        <h3 className="oc-theme-section-title">Visual Effects</h3>
+        <h3 className="oc-theme-section-title">Surface, Motion & Shape</h3>
         <div className="oc-slider-grid">
           {[
             { key: 'opacity', label: 'Opacity', min: 0, max: 1, step: 0.05 },
@@ -121,7 +131,7 @@ export default function ThemeEditor({ theme, onSave }) {
 
       {/* Texture */}
       <section className="oc-theme-section">
-        <h3 className="oc-theme-section-title">Background</h3>
+        <h3 className="oc-theme-section-title">Background Texture</h3>
         <div className="oc-texture-row">
           {['none', 'dots', 'grid', 'noise', 'diagonal'].map(t => (
             <button
@@ -133,6 +143,27 @@ export default function ThemeEditor({ theme, onSave }) {
           ))}
         </div>
       </section>
+
+      <details className="oc-theme-section oc-theme-advanced">
+        <summary className="oc-theme-advanced__summary">
+          <span>Advanced color controls</span>
+          <em>Expert overrides only</em>
+        </summary>
+        <div className="oc-color-grid">
+          {[
+            { key: 'primary_color', label: 'Primary' },
+            { key: 'secondary_color', label: 'Secondary' },
+            { key: 'accent_color', label: 'Accent' },
+            { key: 'text_color', label: 'Text' },
+          ].map(c => (
+            <label key={c.key} className="oc-color-field">
+              <input type="color" value={draft[c.key] || '#ffffff'} onChange={e => update(c.key, e.target.value)} />
+              <span>{c.label}</span>
+              <code>{draft[c.key]}</code>
+            </label>
+          ))}
+        </div>
+      </details>
 
       {/* Canvas Resolution */}
       <section className="oc-theme-section">
@@ -155,8 +186,11 @@ export default function ThemeEditor({ theme, onSave }) {
       </section>
 
       {/* Custom CSS */}
-      <section className="oc-theme-section">
-        <h3 className="oc-theme-section-title">Custom CSS</h3>
+      <details className="oc-theme-section oc-theme-advanced">
+        <summary className="oc-theme-advanced__summary">
+          <span>Custom CSS</span>
+          <em>Advanced overrides</em>
+        </summary>
         <textarea
           className="oc-custom-css"
           rows={5}
@@ -164,7 +198,7 @@ export default function ThemeEditor({ theme, onSave }) {
           onChange={e => update('custom_css', e.target.value)}
           placeholder=".oc-widget-inner { /* your overrides */ }"
         />
-      </section>
+      </details>
     </div>
   );
 }

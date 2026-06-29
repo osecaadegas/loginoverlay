@@ -492,10 +492,13 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
 export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove, availableWidgets, overlayToken }) {
   const { user } = useAuth();
   const [editingId, setEditingId] = useState(null);
+  const [sidePanelTab, setSidePanelTab] = useState('configure');
   const [showPreview, setShowPreview] = useState(false);
   const [selectedPreviewId, setSelectedPreviewId] = useState(null);
   const [syncMsg, setSyncMsg] = useState('');
   const [copiedId, setCopiedId] = useState(null);
+  const [widgetSearch, setWidgetSearch] = useState('');
+  const [widgetCategory, setWidgetCategory] = useState('all');
   const previewRef = useRef(null);
   const [ctxMenu, setCtxMenu] = useState(null);  // { x, y, widget }
   const [ctxHoverSel, setCtxHoverSel] = useState(null); // CSS selector being hovered in Element Styles
@@ -504,6 +507,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
   /* ── Drag-to-reorder z-index state ── */
   const [dragId, setDragId] = useState(null);
   const [dragOverId, setDragOverId] = useState(null);
+
+  useEffect(() => {
+    if (editingId) setSidePanelTab('configure');
+  }, [editingId]);
 
   const CANVAS_W = theme?.canvas_width || 1920;
   const CANVAS_H = theme?.canvas_height || 1080;
@@ -672,12 +679,31 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     });
   }, [overlayToken]);
 
-  const categories = getWidgetsByCategory();
+  const categories = useMemo(() => getWidgetsByCategory(), []);
   const allDefs = useMemo(() => Object.values(categories).flat(), [categories]);
 
   /* Derive which types the user has added */
   const activeTypes = useMemo(() => new Set((widgets || []).map(w => w.widget_type)), [widgets]);
   const inactiveDefs = useMemo(() => allDefs.filter(d => !activeTypes.has(d.type)), [allDefs, activeTypes]);
+  const categoryEntries = useMemo(() => Object.entries(categories).map(([key, defs]) => ({
+    key,
+    label: key.charAt(0).toUpperCase() + key.slice(1),
+    count: defs.filter(def => !activeTypes.has(def.type)).length,
+  })).filter(entry => entry.count > 0), [categories, activeTypes]);
+  const filteredInactiveDefs = useMemo(() => {
+    const q = widgetSearch.trim().toLowerCase();
+    return inactiveDefs.filter(def => {
+      const categoryMatch = widgetCategory === 'all' || (def.category || 'general') === widgetCategory;
+      const searchMatch = !q || [def.label, def.description, def.type, def.category].filter(Boolean).some(value => String(value).toLowerCase().includes(q));
+      return categoryMatch && searchMatch;
+    });
+  }, [inactiveDefs, widgetCategory, widgetSearch]);
+  const inactiveByCategory = useMemo(() => filteredInactiveDefs.reduce((acc, def) => {
+    const key = def.category || 'general';
+    if (!acc[key]) acc[key] = [];
+    acc[key].push(def);
+    return acc;
+  }, {}), [filteredInactiveDefs]);
 
   const handleToggle = useCallback((widget) => {
     onSave({ ...widget, is_visible: !widget.is_visible });
@@ -1617,6 +1643,14 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                         {isContainerChild && <span className="wm-tile-container-badge" title="Inside a container">📦</span>}
                       </span>
                       {def?.description && <span className="wm-tile-desc">{def.description}</span>}
+                      <span className="wm-tile-badges">
+                        <span className={`wm-tile-badge ${isVisible ? 'wm-tile-badge--live' : 'wm-tile-badge--hidden'}`}>
+                          {isVisible ? 'Live' : 'Hidden'}
+                        </span>
+                        {w.config?._locked && <span className="wm-tile-badge">Locked</span>}
+                        {w.config?._previewHidden && <span className="wm-tile-badge">Preview hidden</span>}
+                        {def?.category && <span className="wm-tile-badge">{def.category}</span>}
+                      </span>
                     </div>
                   </div>
                   <div className="wm-tile-quick-icons">
@@ -1641,7 +1675,18 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                       <button className="wm-tile-btn wm-tile-btn--arrow" onClick={() => handleMoveLayer(w.id, 1)} disabled={idx === sortedWidgets.length - 1} title="Move front (higher layer)">▶</button>
                     </div>
                     <div className="wm-tile-actions-right">
-                      <button className="wm-tile-btn" data-tour="tile-gear" onClick={() => setEditingId(editingId === w.id ? null : w.id)} title="Settings">⚙️</button>
+                      <button
+                        className="wm-tile-btn"
+                        data-tour="tile-gear"
+                        onClick={() => {
+                          const nextId = editingId === w.id ? null : w.id;
+                          setEditingId(nextId);
+                          if (nextId) setSidePanelTab('configure');
+                        }}
+                        title="Settings"
+                      >
+                        ⚙️
+                      </button>
                       <button className="wm-tile-btn wm-tile-btn--danger" onClick={() => onRemove(w.id)} title="Delete">🗑️</button>
                     </div>
                   </div>
@@ -1658,25 +1703,76 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
           <h3 className="wm-section-title wm-section-title--inactive">
             <span className="wm-section-dot wm-section-dot--inactive" />
             Available Widgets
-            <span className="wm-section-count">{inactiveDefs.length}</span>
+            <span className="wm-section-count">{filteredInactiveDefs.length}/{inactiveDefs.length}</span>
           </h3>
-          <div className="wm-tile-grid">
-            {inactiveDefs.map(def => (
-              <div
-                key={def.type}
-                className="wm-tile wm-tile--inactive"
-                onClick={() => handleAdd(def.type)}
-                title="Click to add this widget"
+          <div className="wm-library-toolbar">
+            <label className="wm-library-search">
+              <span>Search</span>
+              <input
+                value={widgetSearch}
+                onChange={e => setWidgetSearch(e.target.value)}
+                placeholder="Find widgets, alerts, games, stream tools..."
+              />
+            </label>
+            <div className="wm-library-categories" aria-label="Widget categories">
+              <button
+                type="button"
+                className={`wm-library-chip ${widgetCategory === 'all' ? 'wm-library-chip--active' : ''}`}
+                onClick={() => setWidgetCategory('all')}
               >
-                <span className="wm-tile-icon">{def.icon}</span>
-                <div className="wm-tile-text">
-                  <span className="wm-tile-name">{def.label}</span>
-                  {def.description && <span className="wm-tile-desc">{def.description}</span>}
-                </div>
-                <span className="wm-tile-add">+ Add</span>
-              </div>
-            ))}
+                All <span>{inactiveDefs.length}</span>
+              </button>
+              {categoryEntries.map(cat => (
+                <button
+                  key={cat.key}
+                  type="button"
+                  className={`wm-library-chip ${widgetCategory === cat.key ? 'wm-library-chip--active' : ''}`}
+                  onClick={() => setWidgetCategory(cat.key)}
+                >
+                  {cat.label} <span>{cat.count}</span>
+                </button>
+              ))}
+            </div>
           </div>
+
+          {filteredInactiveDefs.length === 0 ? (
+            <div className="wm-empty-library">
+              <strong>No widgets match this filter</strong>
+              <span>Try another category or clear the search to browse the full add-on library.</span>
+            </div>
+          ) : (
+            <div className="wm-library-groups">
+              {Object.entries(inactiveByCategory).map(([cat, defs]) => (
+                <div className="wm-library-group" key={cat}>
+                  <div className="wm-library-group__header">
+                    <span>{cat.charAt(0).toUpperCase() + cat.slice(1)}</span>
+                    <em>{defs.length} available</em>
+                  </div>
+                  <div className="wm-tile-grid">
+                    {defs.map(def => (
+                      <div
+                        key={def.type}
+                        className="wm-tile wm-tile--inactive"
+                        onClick={() => handleAdd(def.type)}
+                        title="Click to add this widget"
+                      >
+                        <span className="wm-tile-icon">{def.icon}</span>
+                        <div className="wm-tile-text">
+                          <span className="wm-tile-name">{def.label}</span>
+                          {def.description && <span className="wm-tile-desc">{def.description}</span>}
+                          <span className="wm-tile-badges">
+                            <span className="wm-tile-badge">{def.category || 'general'}</span>
+                            {def.styles?.length > 0 && <span className="wm-tile-badge">{def.styles.length} styles</span>}
+                          </span>
+                        </div>
+                        <span className="wm-tile-add">+ Add</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 
@@ -1686,6 +1782,13 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
         if (!w) return null;
         const def = getWidgetDef(w.widget_type);
         const ConfigPanel = def?.configPanel;
+        const sideTabs = [
+          { id: 'configure', label: 'Configure', disabled: !ConfigPanel },
+          { id: 'layout', label: 'Layout' },
+          { id: 'motion', label: 'Motion' },
+          { id: 'obs', label: 'OBS Link', disabled: !overlayToken },
+        ];
+        const activeSidePanelTab = sidePanelTab === 'configure' && !ConfigPanel ? 'layout' : sidePanelTab;
         return (
           <>
             <div className="wm-sidepanel-backdrop" onClick={() => setEditingId(null)} />
@@ -1698,10 +1801,24 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 <button className="wm-sidepanel-close" onClick={() => setEditingId(null)}>✕</button>
               </div>
 
+              <div className="wm-sidepanel-tabs" role="tablist" aria-label="Widget editor sections">
+                {sideTabs.map(tab => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    className={`wm-sidepanel-tab ${activeSidePanelTab === tab.id ? 'wm-sidepanel-tab--active' : ''}`}
+                    onClick={() => !tab.disabled && setSidePanelTab(tab.id)}
+                    disabled={tab.disabled}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
               <div className="wm-sidepanel-body">
                 {/* OBS URL */}
-                {overlayToken && (
-                  <details className="wm-obs-details">
+                {activeSidePanelTab === 'obs' && overlayToken && (
+                  <details className="wm-obs-details" open>
                     <summary className="wm-obs-summary">
                       🔗 OBS Browser Source URL <span className="wm-obs-hint">(for this widget only)</span>
                     </summary>
@@ -1721,14 +1838,56 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 )}
 
                 {/* Widget Config Panel */}
-                {ConfigPanel && (
+                {activeSidePanelTab === 'configure' && ConfigPanel && (
                   <div className="wm-config-panel">
                     <ConfigPanel config={w.config} onChange={cfg => handleConfigChange(w, cfg)} allWidgets={widgets}
                       mode="widget" />
                   </div>
                 )}
 
+                {activeSidePanelTab === 'layout' && (
+                  <div className="wm-layout-panel wm-layout-panel--precision">
+                    <div className="wm-sidepanel-note">
+                      These values update the OBS canvas position. Drag in Live Preview for fast placement, then fine-tune here.
+                    </div>
+                    <div className="wm-precision-grid">
+                      <label className="wm-animation-field">
+                        <span className="wm-slider-label">X position</span>
+                        <input type="number" min={0} value={Math.round(w.position_x || 0)} onChange={e => handlePositionChange(w, 'position_x', Math.max(0, +e.target.value))} />
+                      </label>
+                      <label className="wm-animation-field">
+                        <span className="wm-slider-label">Y position</span>
+                        <input type="number" min={0} value={Math.round(w.position_y || 0)} onChange={e => handlePositionChange(w, 'position_y', Math.max(0, +e.target.value))} />
+                      </label>
+                      <label className="wm-animation-field">
+                        <span className="wm-slider-label">Width</span>
+                        <input type="number" min={20} value={Math.round(w.width || 0)} onChange={e => handlePositionChange(w, 'width', Math.max(20, +e.target.value))} />
+                      </label>
+                      <label className="wm-animation-field">
+                        <span className="wm-slider-label">Height</span>
+                        <input type="number" min={20} value={Math.round(w.height || 0)} onChange={e => handlePositionChange(w, 'height', Math.max(20, +e.target.value))} />
+                      </label>
+                      <label className="wm-animation-field">
+                        <span className="wm-slider-label">Layer</span>
+                        <input type="number" min={1} value={w.z_index || 1} onChange={e => handlePositionChange(w, 'z_index', Math.max(1, +e.target.value))} />
+                      </label>
+                    </div>
+                    <div className="wm-sidepanel-toggles">
+                      <button className={`wm-sidepanel-toggle ${w.is_visible !== false ? 'wm-sidepanel-toggle--on' : ''}`} onClick={() => handleToggle(w)}>
+                        {w.is_visible !== false ? 'Visible on stream' : 'Hidden from stream'}
+                      </button>
+                      <button className={`wm-sidepanel-toggle ${w.config?._locked ? 'wm-sidepanel-toggle--on' : ''}`} onClick={() => onSave({ ...w, config: { ...w.config, _locked: !w.config?._locked } })}>
+                        {w.config?._locked ? 'Position locked' : 'Lock position'}
+                      </button>
+                      <button className={`wm-sidepanel-toggle ${w.config?._previewHidden ? 'wm-sidepanel-toggle--on' : ''}`} onClick={() => onSave({ ...w, config: { ...w.config, _previewHidden: !w.config?._previewHidden } })}>
+                        {w.config?._previewHidden ? 'Hidden in preview' : 'Show in preview'}
+                      </button>
+                    </div>
+                  </div>
+                )}
+
                 {/* ── Animations (all widgets) ── */}
+                {activeSidePanelTab === 'motion' && (
                 <div className="wm-layout-panel">
                   <label className="wm-animation-field">
                     <span className="wm-slider-label">🎬 Entrance Animation</span>
@@ -1802,6 +1961,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                     </select>
                   </label>
                 </div>
+                )}
               </div>
             </div>
           </>

@@ -7,6 +7,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../../context/AuthContext';
 import TabBar from './shared/TabBar';
+import { MetricCard, SectionHeader, SetupChecklist, StatusBadge } from '../ui';
 
 // Hex colour presets per theme (applied when user selects a theme from the dropdown)
 const THEME_PRESETS_CONFIG = {
@@ -66,6 +67,26 @@ export default function BetsConfig({ config, onChange }) {
   const chatCommand = c.chatCommand || '!bet';
   const totalPool   = options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
   const totalBetters = Object.keys(betters).length;
+  const setupItems = [
+    {
+      key: 'question',
+      title: 'Set the bet question',
+      detail: c.question || 'Add the title viewers will see on stream',
+      ready: !!(c.question || '').trim(),
+    },
+    {
+      key: 'brackets',
+      title: 'Confirm brackets',
+      detail: `${options.length} bracket${options.length === 1 ? '' : 's'} configured`,
+      ready: options.length >= 2,
+    },
+    {
+      key: 'chat',
+      title: 'Chat command ready',
+      detail: `Viewers type ${chatCommand} <number>`,
+      ready: !!chatCommand,
+    },
+  ];
 
   /* ── Game actions ── */
   const openBets = () => {
@@ -166,7 +187,22 @@ export default function BetsConfig({ config, onChange }) {
   ];
 
   return (
-    <div className="cg-config">
+    <div className="cg-config cg-config--modern">
+      <div className="cg-config__hero">
+        <SectionHeader
+          eyebrow="Live Betting"
+          title="Bets control room"
+          description="Open a chat-powered betting round, lock entries, resolve the winning bracket, and keep the overlay state obvious before it hits OBS."
+          pill={<StatusBadge tone={status === 'open' ? 'live' : status === 'idle' ? 'neutral' : 'active'}>{status}</StatusBadge>}
+        />
+        <div className="cg-config__metrics">
+          <MetricCard label="Pool" value={totalPool.toLocaleString()} meta={`${totalBetters} viewer${totalBetters === 1 ? '' : 's'} in this round`} />
+          <MetricCard label="Brackets" value={options.length} meta="Available betting outcomes" />
+          <MetricCard label="Command" value={chatCommand} meta={c.twitchChannel || 'Uses profile channel when available'} />
+        </div>
+        <SetupChecklist items={setupItems} title="Round readiness" />
+      </div>
+
       <TabBar tabs={tabs} active={tab} onChange={setTab} variant="cg" />
 
       {/* ═══ GAME TAB ═══ */}
