@@ -17,12 +17,10 @@ import { themeMap } from '../../data/appThemes';
 // OverlayPreview removed — live preview is now inside WidgetManager
 import GuidedTutorial, { isTutorialDone, resetTutorial } from './GuidedTutorial';
 import BonusHuntLibrary from './BonusHuntLibrary';
-import OverlayAssetLibrary from './OverlayAssetLibrary';
 import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
-import { CopyField, StatusBadge } from './ui';
 
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
@@ -76,8 +74,8 @@ const PANEL_META = {
   },
   library: {
     eyebrow: 'Management',
-    title: 'Library',
-    description: 'Browse widgets, overlay tools, saved hunts, presets, and reusable streamer assets.',
+    title: 'Bonus Hunt Library',
+    description: 'Browse past sessions, saved runs, and reusable hunt data.',
   },
   presets: {
     eyebrow: 'Management',
@@ -149,7 +147,7 @@ export default function OverlayControlCenter() {
   const [streamerToolsOpen, setStreamerToolsOpen] = useState(false);
 
   /* Auto-expand Streamer Tools when one of its children is active */
-  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot', 'slot_requests', 'bets'];
+  const streamerToolsKeys = ['bonus_hunt', 'tournament', 'bonus_buys', 'current_slot'];
   const isStreamerToolActive = streamerToolsKeys.includes(activePanel);
   useEffect(() => { if (isStreamerToolActive) setStreamerToolsOpen(true); }, [isStreamerToolActive]);
 
@@ -242,8 +240,6 @@ export default function OverlayControlCenter() {
     return `${base}/overlay/${instance.overlay_token}`;
   }, [instance]);
   const panelMeta = PANEL_META[activePanel] || PANEL_META.widgets;
-  const visibleWidgetCount = useMemo(() => (widgets || []).filter(w => w.is_visible !== false).length, [widgets]);
-  const canvasLabel = `${theme?.canvas_width || 1920}x${theme?.canvas_height || 1080}`;
 
   const copyUrl = useCallback(() => {
     navigator.clipboard.writeText(overlayUrl).then(() => {
@@ -339,8 +335,6 @@ export default function OverlayControlCenter() {
               { key: 'tournament', icon: '🏆', label: 'Tournament', desc: 'Run slot battles' },
               { key: 'bonus_buys', icon: '🛒', label: 'Bonus Buys', desc: 'Track bonus buy sessions' },
               { key: 'current_slot', icon: '🎰', label: 'Current Slot', desc: 'Set active slot' },
-              { key: 'slot_requests', icon: '📋', label: 'Slot Requests', desc: 'Chat !sr queue' },
-              { key: 'bets', icon: '🎲', label: 'Bets', desc: 'Chat bracket betting' },
             ].map(tab => (
               <button
                 key={tab.key}
@@ -355,6 +349,30 @@ export default function OverlayControlCenter() {
               </button>
             ))}
 
+            {/* ─── Slot Requests ─── */}
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'slot_requests' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('slot_requests'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">📋</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Slot Requests</span>
+                <span className="oc-sidebar-btn-desc">Chat !sr queue</span>
+              </div>
+            </button>
+
+            {/* ─── Bets ─── */}
+            <button
+              className={`oc-sidebar-btn ${activePanel === 'bets' ? 'oc-sidebar-btn--active' : ''}`}
+              onClick={() => { setActivePanel('bets'); setSidebarOpen(false); }}
+            >
+              <span className="oc-sidebar-btn-icon">🎲</span>
+              <div className="oc-sidebar-btn-text">
+                <span className="oc-sidebar-btn-label">Bets</span>
+                <span className="oc-sidebar-btn-desc">Chat bracket betting</span>
+              </div>
+            </button>
+
             <div className="oc-sidebar-divider-label">Management</div>
 
             {/* ─── Library ─── */}
@@ -365,7 +383,7 @@ export default function OverlayControlCenter() {
               <span className="oc-sidebar-btn-icon">📚</span>
               <div className="oc-sidebar-btn-text">
                 <span className="oc-sidebar-btn-label">Library</span>
-                <span className="oc-sidebar-btn-desc">Assets, hunts & presets</span>
+                <span className="oc-sidebar-btn-desc">Saved bonus hunts</span>
               </div>
             </button>
 
@@ -380,30 +398,6 @@ export default function OverlayControlCenter() {
                 <span className="oc-sidebar-btn-desc">Save & load layouts</span>
               </div>
             </button>
-
-            <button
-              className={`oc-sidebar-btn ${activePanel === 'theme' ? 'oc-sidebar-btn--active' : ''}`}
-              onClick={() => { setActivePanel('theme'); setSidebarOpen(false); }}
-            >
-              <span className="oc-sidebar-btn-icon">🎨</span>
-              <div className="oc-sidebar-btn-text">
-                <span className="oc-sidebar-btn-label">Themes</span>
-                <span className="oc-sidebar-btn-desc">Style system & canvas</span>
-              </div>
-            </button>
-
-            {(isPremium || isAdmin) && (
-              <button
-                className={`oc-sidebar-btn ${activePanel === 'slots' ? 'oc-sidebar-btn--active' : ''}`}
-                onClick={() => { setActivePanel('slots'); setSidebarOpen(false); }}
-              >
-                <span className="oc-sidebar-btn-icon">🎰</span>
-                <div className="oc-sidebar-btn-text">
-                  <span className="oc-sidebar-btn-label">Slot Database</span>
-                  <span className="oc-sidebar-btn-desc">Browse & submit slots</span>
-                </div>
-              </button>
-            )}
 
             {/* ─── Approvals (admin only) ─── */}
             {isAdmin && (
@@ -469,31 +463,6 @@ export default function OverlayControlCenter() {
         {/* ─── MAIN CONTENT ─── */}
         <main className="oc-main">
           <div className="oc-main-shell">
-          <div className="oc-command-header">
-            <div className="oc-command-header__copy">
-              <span className="oc-main-eyebrow">{panelMeta.eyebrow}</span>
-              <h2 className="oc-main-title">{panelMeta.title}</h2>
-              <p className="oc-main-description">{panelMeta.description}</p>
-              <div className="oc-command-header__meta">
-                <StatusBadge tone={visibleWidgetCount > 0 ? 'live' : 'neutral'}>{visibleWidgetCount} live</StatusBadge>
-                <StatusBadge tone="neutral">{widgets.length} installed</StatusBadge>
-                <StatusBadge tone="neutral">{canvasLabel}</StatusBadge>
-                <StatusBadge tone={isPremium ? 'active' : 'neutral'}>{isPremium ? 'Premium' : 'Standard'}</StatusBadge>
-              </div>
-            </div>
-            <CopyField
-              className="oc-command-header__copyfield"
-              label="OBS Browser Source URL"
-              value={overlayUrl}
-              onCopy={copyUrl}
-              copied={!!copyMsg}
-              copyLabel="Copy"
-              copiedLabel={copyMsg || 'Copied'}
-              onRegen={regenToken}
-              regenLabel="New URL"
-            />
-          </div>
-
           {/* Quick-start steps for new users */}
           {activePanel === 'widgets' && widgets.length === 0 && (
             <div className="oc-welcome-card">
@@ -526,6 +495,17 @@ export default function OverlayControlCenter() {
           )}
 
           {activePanel === 'widgets' && (
+            <div className="oc-obs-url-bar" data-tour="obs-url">
+              <label className="oc-obs-url-label">OBS Browser Source URL</label>
+              <div className="oc-obs-url-row">
+                <input readOnly value={overlayUrl} className="oc-obs-url-input" onClick={copyUrl} title="Click to copy" />
+                <button className="oc-obs-url-copy" onClick={copyUrl}>{copyMsg || '📋'}</button>
+                <button className="oc-obs-url-regen" onClick={regenToken} title="Generate new URL (invalidates old one)">🔄</button>
+              </div>
+            </div>
+          )}
+
+          {activePanel === 'widgets' && (
             <WidgetManager
               widgets={widgets}
               theme={theme}
@@ -541,29 +521,7 @@ export default function OverlayControlCenter() {
             <WidgetPanel widgetType={activePanel} widgets={widgets} saveWidget={saveWidget} addWidget={addWidget} loading={loading} />
           )}
           {activePanel === 'library' && (
-            <OverlayAssetLibrary
-              widgets={widgets}
-              onAddWidget={addWidget}
-              onOpenPanel={setActivePanel}
-              huntArchive={<BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />}
-              presetLibrary={(
-                <PresetLibrary
-                  widgets={widgets}
-                  theme={theme}
-                  isAdmin={isAdmin}
-                  globalPresets={globalPresets}
-                  sharedPresets={sharedPresets}
-                  onLoadPreset={loadGlobalPreset}
-                  onDeletePreset={deleteGlobalPreset}
-                  onSharePreset={sharePreset}
-                  onUnsharePreset={unsharePreset}
-                  onSavePreset={saveGlobalPreset}
-                  presetName={presetName}
-                  setPresetName={setPresetName}
-                  presetMsg={presetMsg}
-                />
-              )}
-            />
+            <BonusHuntLibrary widgets={widgets} onSaveWidget={saveWidget} />
           )}
           {activePanel === 'presets' && (
             <PresetLibrary
@@ -588,18 +546,9 @@ export default function OverlayControlCenter() {
           {activePanel === 'approvals' && isAdmin && (
             <SlotApprovals />
           )}
-          {activePanel === 'theme' && (
-            <div className="oc-theme-workspace">
-              <ThemesPage onApply={syncThemeToWidgets} />
-              <ThemeEditor theme={theme} onSave={saveTheme} />
-            </div>
-          )}
           {activePanel === 'profile' && (
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />
           )}
-          <button type="button" className="oc-mobile-obs-action oc-ui-btn oc-ui-btn--primary" onClick={copyUrl}>
-            {copyMsg || 'Copy OBS Link'}
-          </button>
           </div>
         </main>
       </div>

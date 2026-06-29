@@ -5,7 +5,6 @@ import useTwitchChannel from '../../../hooks/useTwitchChannel';
 import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { GIVEAWAY_STYLE_KEYS } from './styleKeysRegistry';
-import { MetricCard, SectionHeader, SetupChecklist, StatusBadge } from '../ui';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -72,27 +71,6 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
 
   const keyword = (c.keyword || '').toLowerCase().trim();
   const isActive = !!c.isActive && !!keyword;
-  const platformCount = Number(!!chatStatus.twitch) + Number(!!chatStatus.kick);
-  const setupItems = [
-    {
-      key: 'prize',
-      title: 'Add a prize',
-      detail: c.prize || 'Set what the winner receives',
-      ready: !!(c.prize || '').trim(),
-    },
-    {
-      key: 'keyword',
-      title: 'Choose a chat keyword',
-      detail: keyword ? `Viewers type !${keyword}` : 'Add the keyword without the ! prefix',
-      ready: !!keyword,
-    },
-    {
-      key: 'platform',
-      title: 'Connect a chat platform',
-      detail: platformCount ? `${platformCount} live platform${platformCount === 1 ? '' : 's'}` : 'Enable Twitch or Kick before going live',
-      ready: platformCount > 0,
-    },
-  ];
 
   // Chat message handler — check for keyword match
   const handleMessage = useCallback((msg) => {
@@ -163,22 +141,7 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
   ];
 
   return (
-    <div className="nb-config nb-config--modern">
-      <div className="nb-config__hero">
-        <SectionHeader
-          eyebrow="Community Reward"
-          title="Giveaway control room"
-          description="Set the prize, watch chat entries, draw a winner, and keep the on-stream state obvious before the giveaway goes live."
-          pill={<StatusBadge tone={isActive ? 'live' : 'neutral'}>{isActive ? 'Live' : 'Not live'}</StatusBadge>}
-        />
-        <div className="nb-config__metrics">
-          <MetricCard label="Entries" value={participants.length} meta={c.winner ? `Winner: ${c.winner}` : 'Current participant list'} />
-          <MetricCard label="Keyword" value={keyword ? `!${keyword}` : 'Not set'} meta="Viewer entry command" />
-          <MetricCard label="Platforms" value={platformCount} meta="Connected chat listeners" />
-        </div>
-        <SetupChecklist items={setupItems} title="Giveaway readiness" />
-      </div>
-
+    <div className="nb-config">
       <TabBar tabs={TABS} active={activeTab} onChange={setActiveTab} />
 
       {/* ═══════ SETUP TAB ═══════ */}
