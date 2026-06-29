@@ -9,9 +9,9 @@ import './AdminPanel.new.css';
 import ApiKeysAdmin from './ApiKeysAdmin';
 import { CasinoOfferModal } from './modals';
 import LandingAdmin from './LandingAdmin';
-import { 
-  SidePanel, 
-  StatsCard, 
+import {
+  SidePanel,
+  StatsCard,
   StatsGrid,
   ConfirmButton,
   StickyToolbar,
@@ -46,7 +46,7 @@ export default function AdminPanel() {
   const navigate = useNavigate();
   const location = useLocation();
   const [searchParams, setSearchParams] = useSearchParams();
-  
+
   // Pending confirmation state (replaces confirm() dialogs)
   const [pendingAction, setPendingAction] = useState(null);
   const [users, setUsers] = useState([]);
@@ -64,17 +64,17 @@ export default function AdminPanel() {
   const [expandedClickId, setExpandedClickId] = useState(null);
   const [clickFilter, setClickFilter] = useState('');
   const [clickDateFilter, setClickDateFilter] = useState('all'); // 'all' | 'today' | '7d' | '30d'
-  
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 10;
-  
+
   // Get initial tab from URL or default to 'users'
   const getInitialTab = () => {
     const tabFromUrl = searchParams.get('tab');
     return VALID_TABS.includes(tabFromUrl) ? tabFromUrl : 'users';
   };
-  
+
   // Offer Card Builder State
   const [activeTab, setActiveTab] = useState(getInitialTab); // 'users', 'offers', 'thelife', 'wheel', 'wipe', 'seasonpass', 'guessbalance'
   const [offers, setOffers] = useState([]);
@@ -109,7 +109,7 @@ export default function AdminPanel() {
   const [editingPrize, setEditingPrize] = useState(null);
   const [prizeFormData, setPrizeFormData] = useState({
     label: '',
-    icon: '­ƒÄü',
+    icon: '🎁',
     color: '#1a1a1a',
     text_color: '#ffffff',
     se_points: 0,
@@ -215,7 +215,7 @@ export default function AdminPanel() {
   const loadUsers = async () => {
     setLoading(true);
     const { data, error } = await getAllUsers();
-    
+
     if (error) {
       setError('Failed to load users: ' + error.message);
     } else {
@@ -227,9 +227,9 @@ export default function AdminPanel() {
   const handleRoleChange = async (userId, role, expiresAt, moderatorPermissions = null) => {
     setError('');
     setSuccess('');
-    
+
     const { error } = await updateUserRole(userId, role, expiresAt, moderatorPermissions);
-    
+
     if (error) {
       setError('Failed to update role: ' + error.message);
     } else {
@@ -242,9 +242,9 @@ export default function AdminPanel() {
   const handleRevokeAccess = async (userId) => {
     setError('');
     setSuccess('');
-    
+
     const { error } = await revokeUserAccess(userId);
-    
+
     if (error) {
       setError('Failed to revoke access: ' + error.message);
     } else {
@@ -256,9 +256,9 @@ export default function AdminPanel() {
   const handleDeleteUser = async (userId) => {
     setError('');
     setSuccess('');
-    
+
     const { error } = await deleteUser(userId);
-    
+
     if (error) {
       setError('Failed to delete user: ' + error.message);
     } else {
@@ -278,21 +278,21 @@ export default function AdminPanel() {
 
   const handleAddRole = async () => {
     if (!editingUser || !editingUser.newRole) return;
-    
+
     setError('');
     setSuccess('');
-    
+
     let expiresAt = null;
     if (editingUser.newRoleExpiryDays && editingUser.newRoleExpiryDays > 0) {
       const date = new Date();
       date.setDate(date.getDate() + parseInt(editingUser.newRoleExpiryDays));
       expiresAt = date.toISOString();
     }
-    
+
     const moderatorPerms = editingUser.newRole === 'moderator' ? editingUser.newRoleModeratorPermissions : null;
-    
+
     const { error } = await addUserRole(editingUser.id, editingUser.newRole, expiresAt, moderatorPerms);
-    
+
     if (error) {
       setError('Failed to add role: ' + error.message);
     } else {
@@ -309,12 +309,12 @@ export default function AdminPanel() {
 
   const handleRemoveRole = async (roleToRemove) => {
     if (!editingUser) return;
-    
+
     setError('');
     setSuccess('');
-    
+
     const { error } = await removeUserRole(editingUser.id, roleToRemove);
-    
+
     if (error) {
       setError('Failed to remove role: ' + error.message);
     } else {
@@ -325,7 +325,7 @@ export default function AdminPanel() {
 
   const toggleModeratorPermission = (permission) => {
     if (!editingUser) return;
-    
+
     setEditingUser({
       ...editingUser,
       newRoleModeratorPermissions: {
@@ -336,13 +336,13 @@ export default function AdminPanel() {
   };
 
   // ===== OFFER CARD MANAGEMENT FUNCTIONS =====
-  
+
   const loadOffers = async () => {
     const { data, error } = await supabase
       .from('casino_offers')
       .select('*')
       .order('display_order', { ascending: true });
-    
+
     if (error) {
       console.error('Error loading offers:', error);
     } else {
@@ -518,7 +518,7 @@ export default function AdminPanel() {
       setEditingPrize(null);
       setPrizeFormData({
         label: '',
-        icon: '­ƒÄü',
+        icon: '🎁',
         color: '#1a1a1a',
         text_color: '#ffffff',
         se_points: 0,
@@ -616,7 +616,7 @@ export default function AdminPanel() {
           .range(page * pageSize, (page + 1) * pageSize - 1);
 
         if (error) throw error;
-        
+
         if (data && data.length > 0) {
           allSlots = [...allSlots, ...data];
           page++;
@@ -764,7 +764,7 @@ export default function AdminPanel() {
     setSlotSearchQuery('');
     setNewSlotBetValue(1.00);
     setNewSlotIsSuper(false);
-    
+
     if (session) {
       setEditingGuessSession(session);
       setGuessSessionFormData({
@@ -855,7 +855,7 @@ export default function AdminPanel() {
       const startVal = parseFloat(guessSessionFormData.start_value) || 0;
       const finalBal = guessSessionFormData.final_balance ? parseFloat(guessSessionFormData.final_balance) : null;
       const totalBets = sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
-      
+
       // BE Multiplier = (Final Balance / Start Value) / Total Bets
       let beMultiplier = 1.0;
       if (startVal > 0 && totalBets > 0 && finalBal) {
@@ -877,7 +877,7 @@ export default function AdminPanel() {
       };
 
       let sessionId;
-      
+
       if (editingGuessSession) {
         const result = await supabase
           .from('guess_balance_sessions')
@@ -885,7 +885,7 @@ export default function AdminPanel() {
           .eq('id', editingGuessSession.id);
         if (result.error) throw result.error;
         sessionId = editingGuessSession.id;
-        
+
         // Delete existing slots and re-insert (simpler than tracking changes)
         await supabase
           .from('guess_balance_slots')
@@ -915,18 +915,18 @@ export default function AdminPanel() {
           multiplier: slot.multiplier ? parseFloat(slot.multiplier) : null,
           display_order: index
         }));
-        
+
         const { error: slotsError } = await supabase
           .from('guess_balance_slots')
           .insert(slotsToInsert);
-        
+
         if (slotsError) throw slotsError;
       }
 
       setSuccess(`Session ${editingGuessSession ? 'updated' : 'created'} successfully with ${sessionSlotsInModal.length} slots!`);
       setShowGuessBalanceModal(false);
       loadGuessBalanceSessions();
-      
+
       // Refresh slots view if this session is selected
       if (selectedSessionForSlots?.id === sessionId) {
         loadGuessBalanceSlots(sessionId);
@@ -1037,7 +1037,7 @@ export default function AdminPanel() {
       setSuccess(`Slot ${editingSlot ? 'updated' : 'added'} successfully!`);
       setShowSlotModal(false);
       loadGuessBalanceSlots(selectedSessionForSlots.id);
-      
+
       // Update amount expended on session
       const totalBets = [...guessBalanceSlots, ...(editingSlot ? [] : [slotData])]
         .reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0);
@@ -1104,7 +1104,7 @@ export default function AdminPanel() {
   // Save current slot result and move to next
   const saveSlotResult = async (slot, autoAdvance = true) => {
     if (!slot || !slot.id) return;
-    
+
     try {
       const { error } = await supabase
         .from('guess_balance_slots')
@@ -1115,9 +1115,9 @@ export default function AdminPanel() {
         .eq('id', slot.id);
 
       if (error) throw error;
-      
+
       showNotification('Slot result saved!', 'success');
-      
+
       // Move to next slot if autoAdvance and there are more slots
       if (autoAdvance && guessBalanceSlots && guessBalanceSlots.length > 0) {
         if (currentSlotIndex < guessBalanceSlots.length - 1) {
@@ -1212,7 +1212,7 @@ export default function AdminPanel() {
 
       setTransferPassword(plainPassword);
       setShowTransferPassword(true);
-      setSuccess('Transfer password generated! It expires in 24 hours. Copy it now ÔÇö you won\'t see it again.');
+      setSuccess('Transfer password generated! It expires in 24 hours. Copy it now — you won\'t see it again.');
       loadActiveTransferPassword();
     } catch (err) {
       setError('Failed to generate password: ' + err.message);
@@ -1253,7 +1253,7 @@ export default function AdminPanel() {
   return (
     <div className="admin-panel admin-panel-modern">
       <div className="admin-header">
-        <h1>­ƒøí´©Å Admin Panel</h1>
+        <h1>🛡️ Admin Panel</h1>
       </div>
 
       {error && <div className="alert alert-error">{error}</div>}
@@ -1268,10 +1268,10 @@ export default function AdminPanel() {
             onChange={(e) => handleTabChange(e.target.value)}
           >
             {[
-              { id: 'users',     label: 'User Management', icon: '­ƒæÑ' },
-              { id: 'offers',    label: 'Casino Offers',    icon: '­ƒÄ░' },
-              { id: 'apikeys',   label: 'API Keys',         icon: '­ƒöæ' },
-              { id: 'landing',   label: 'Landing Page',     icon: '­ƒÅá' },
+              { id: 'users',     label: 'User Management', icon: '👥' },
+              { id: 'offers',    label: 'Casino Offers',    icon: '🎰' },
+              { id: 'apikeys',   label: 'API Keys',         icon: '🔑' },
+              { id: 'landing',   label: 'Landing Page',     icon: '🏠' },
             ].map(tab => (
               <option key={tab.id} value={tab.id}>
                 {tab.icon}  {tab.label}
@@ -1288,40 +1288,40 @@ export default function AdminPanel() {
       {activeTab === 'users' && (
         <>
           <StatsGrid columns={6}>
-            <StatsCard 
-              icon="­ƒæÑ" 
-              value={users.length} 
-              label="Total Users" 
+            <StatsCard
+              icon="👥"
+              value={users.length}
+              label="Total Users"
               color="primary"
             />
-            <StatsCard 
-              icon="­ƒøí´©Å" 
-              value={users.filter(u => u.roles?.some(r => r.role === 'admin')).length} 
-              label="Admins" 
+            <StatsCard
+              icon="🛡️"
+              value={users.filter(u => u.roles?.some(r => r.role === 'admin')).length}
+              label="Admins"
               color="error"
             />
-            <StatsCard 
-              icon="­ƒÄ░" 
-              value={users.filter(u => u.roles?.some(r => r.role === 'slot_modder')).length} 
-              label="Slot Modders" 
+            <StatsCard
+              icon="🎰"
+              value={users.filter(u => u.roles?.some(r => r.role === 'slot_modder')).length}
+              label="Slot Modders"
               color="warning"
             />
-            <StatsCard 
-              icon="ÔÜö´©Å" 
-              value={users.filter(u => u.roles?.some(r => r.role === 'moderator')).length} 
-              label="Moderators" 
+            <StatsCard
+              icon="⚠️"
+              value={users.filter(u => u.roles?.some(r => r.role === 'moderator')).length}
+              label="Moderators"
               color="info"
             />
-            <StatsCard 
-              icon="­ƒææ" 
-              value={users.filter(u => u.roles?.some(r => r.role === 'premium')).length} 
-              label="Premium" 
+            <StatsCard
+              icon="💎"
+              value={users.filter(u => u.roles?.some(r => r.role === 'premium')).length}
+              label="Premium"
               color="warning"
             />
-            <StatsCard 
-              icon="Ô£ô" 
-              value={users.filter(u => u.is_active).length} 
-              label="Active Users" 
+            <StatsCard
+              icon="✅"
+              value={users.filter(u => u.is_active).length}
+              label="Active Users"
               color="success"
             />
           </StatsGrid>
@@ -1353,30 +1353,30 @@ export default function AdminPanel() {
                     </button>
                   )}
                 </div>
-                
+
                 {/* Filter Pills */}
                 <div className="filter-pills">
-                  <button 
+                  <button
                     className={`filter-pill ${!roleFilter ? 'active' : ''}`}
                     onClick={() => setRoleFilter(null)}
                   >
                     All
                   </button>
-                  <button 
+                  <button
                     className={`filter-pill ${roleFilter === 'admin' ? 'active' : ''}`}
                     onClick={() => setRoleFilter(roleFilter === 'admin' ? null : 'admin')}
                   >
                     <span className="pill-dot admin"></span>
                     Admins
                   </button>
-                  <button 
+                  <button
                     className={`filter-pill ${roleFilter === 'premium' ? 'active' : ''}`}
                     onClick={() => setRoleFilter(roleFilter === 'premium' ? null : 'premium')}
                   >
                     <span className="pill-dot premium"></span>
                     Premium
                   </button>
-                  <button 
+                  <button
                     className={`filter-pill ${roleFilter === 'slot_modder' ? 'active' : ''}`}
                     onClick={() => setRoleFilter(roleFilter === 'slot_modder' ? null : 'slot_modder')}
                   >
@@ -1385,17 +1385,17 @@ export default function AdminPanel() {
                   </button>
                 </div>
               </div>
-              
+
               <div className="toolbar-right">
                 <span className="results-count">
                   {(() => {
                     const filtered = users.filter(user => {
                       if (!userSearch && !roleFilter) return true;
                       const search = userSearch.toLowerCase();
-                      const matchesSearch = !userSearch || 
+                      const matchesSearch = !userSearch ||
                         user.email?.toLowerCase().includes(search) ||
                         user.provider_username?.toLowerCase().includes(search);
-                      const matchesRole = !roleFilter || 
+                      const matchesRole = !roleFilter ||
                         user.roles?.some(r => r.role === roleFilter);
                       return matchesSearch && matchesRole;
                     });
@@ -1422,11 +1422,11 @@ export default function AdminPanel() {
                     .filter(user => {
                       if (!userSearch && !roleFilter) return true;
                       const search = userSearch.toLowerCase();
-                      const matchesSearch = !userSearch || 
+                      const matchesSearch = !userSearch ||
                         user.email?.toLowerCase().includes(search) ||
                         user.provider?.toLowerCase().includes(search) ||
                         user.provider_username?.toLowerCase().includes(search);
-                      const matchesRole = !roleFilter || 
+                      const matchesRole = !roleFilter ||
                         user.roles?.some(r => r.role === roleFilter);
                       return matchesSearch && matchesRole;
                     })
@@ -1434,8 +1434,8 @@ export default function AdminPanel() {
                     .map(user => {
                       const significantRoles = user.roles?.filter(r => r.role !== 'user') || [];
                       return (
-                        <tr 
-                          key={user.id} 
+                        <tr
+                          key={user.id}
                           className={`table-row ${selectedUserId === user.id ? 'selected' : ''} ${!user.is_active ? 'inactive' : ''}`}
                         >
                           <td className="col-user">
@@ -1465,15 +1465,15 @@ export default function AdminPanel() {
                               {significantRoles.length > 0 ? (
                                 significantRoles.map((roleObj, idx) => (
                                   <span key={idx} className={`role-tag role-${roleObj.role}`}>
-                                    {roleObj.role === 'admin' && '­ƒøí´©Å'}
-                                    {roleObj.role === 'premium' && 'Ô¡É'}
-                                    {roleObj.role === 'slot_modder' && '­ƒÄ░'}
-                                    {roleObj.role === 'moderator' && '­ƒöº'}
+                                    {roleObj.role === 'admin' && '🛡️'}
+                                    {roleObj.role === 'premium' && '⭐'}
+                                    {roleObj.role === 'slot_modder' && '🎰'}
+                                    {roleObj.role === 'moderator' && '🔧'}
                                     {roleObj.role.replace('_', ' ')}
                                   </span>
                                 ))
                               ) : (
-                                <span className="role-tag role-none">ÔÇö</span>
+                                <span className="role-tag role-none">—</span>
                               )}
                             </div>
                           </td>
@@ -1485,11 +1485,11 @@ export default function AdminPanel() {
                           </td>
                           <td className="col-date">
                             <span className="date-text">
-                              {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'ÔÇö'}
+                              {user.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'}
                             </span>
                           </td>
                           <td className="col-actions">
-                            <button 
+                            <button
                               className="btn-row-action"
                               onClick={() => {
                                 setSelectedUserId(user.id);
@@ -1508,15 +1508,15 @@ export default function AdminPanel() {
                     })}
                 </tbody>
               </table>
-              
+
               {/* Empty State */}
               {users.filter(user => {
                 if (!userSearch && !roleFilter) return true;
                 const search = userSearch.toLowerCase();
-                const matchesSearch = !userSearch || 
+                const matchesSearch = !userSearch ||
                   user.email?.toLowerCase().includes(search) ||
                   user.provider_username?.toLowerCase().includes(search);
-                const matchesRole = !roleFilter || 
+                const matchesRole = !roleFilter ||
                   user.roles?.some(r => r.role === roleFilter);
                 return matchesSearch && matchesRole;
               }).length === 0 && (
@@ -1535,23 +1535,23 @@ export default function AdminPanel() {
               const filteredUsers = users.filter(user => {
                 if (!userSearch && !roleFilter) return true;
                 const search = userSearch.toLowerCase();
-                const matchesSearch = !userSearch || 
+                const matchesSearch = !userSearch ||
                   user.email?.toLowerCase().includes(search) ||
                   user.provider_username?.toLowerCase().includes(search);
-                const matchesRole = !roleFilter || 
+                const matchesRole = !roleFilter ||
                   user.roles?.some(r => r.role === roleFilter);
                 return matchesSearch && matchesRole;
               });
               const totalPages = Math.ceil(filteredUsers.length / usersPerPage);
               const startItem = (currentPage - 1) * usersPerPage + 1;
               const endItem = Math.min(currentPage * usersPerPage, filteredUsers.length);
-              
+
               if (filteredUsers.length <= usersPerPage) return null;
-              
+
               return (
                 <div className="pagination-bar">
                   <span className="pagination-text">
-                    Showing {startItem}ÔÇô{endItem} of {filteredUsers.length}
+                    Showing {startItem}–{endItem} of {filteredUsers.length}
                   </span>
                   <div className="pagination-controls">
                     <button
@@ -1563,7 +1563,7 @@ export default function AdminPanel() {
                         <path d="m15 18-6-6 6-6"/>
                       </svg>
                     </button>
-                    
+
                     {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                       let pageNum;
                       if (totalPages <= 5) {
@@ -1585,7 +1585,7 @@ export default function AdminPanel() {
                         </button>
                       );
                     })}
-                    
+
                     <button
                       onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                       disabled={currentPage >= totalPages}
@@ -1634,7 +1634,7 @@ export default function AdminPanel() {
                         <span className="dot"></span>
                         {editingUser.is_active ? 'Active' : 'Inactive'}
                       </span>
-                      <span className="meta-separator">ÔÇó</span>
+                      <span className="meta-separator">•</span>
                       <span>Joined {editingUser.created_at ? new Date(editingUser.created_at).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Unknown'}</span>
                     </div>
                   </div>
@@ -1649,10 +1649,10 @@ export default function AdminPanel() {
                     {(editingUser.roles || []).filter(r => r.role !== 'user').map((roleObj, idx) => (
                       <div key={idx} className={`role-chip role-${roleObj.role}`}>
                         <span className="role-chip-icon">
-                          {roleObj.role === 'admin' && '­ƒøí´©Å'}
-                          {roleObj.role === 'premium' && 'Ô¡É'}
-                          {roleObj.role === 'slot_modder' && '­ƒÄ░'}
-                          {roleObj.role === 'moderator' && '­ƒöº'}
+                          {roleObj.role === 'admin' && '🛡️'}
+                          {roleObj.role === 'premium' && '⭐'}
+                          {roleObj.role === 'slot_modder' && '🎰'}
+                          {roleObj.role === 'moderator' && '🔧'}
                         </span>
                         <span className="role-chip-name">{roleObj.role.replace('_', ' ')}</span>
                         {roleObj.access_expires_at && (
@@ -1660,7 +1660,7 @@ export default function AdminPanel() {
                             {new Date(roleObj.access_expires_at).toLocaleDateString()}
                           </span>
                         )}
-                        <button 
+                        <button
                           className="role-chip-remove"
                           onClick={() => handleRemoveRole(roleObj.role)}
                         >
@@ -1682,16 +1682,16 @@ export default function AdminPanel() {
                     <h4>Add Role</h4>
                   </div>
                   <div className="add-role-form">
-                    <select 
+                    <select
                       value={editingUser.newRole || ''}
                       onChange={(e) => setEditingUser({...editingUser, newRole: e.target.value, newRoleModeratorPermissions: {}})}
                       className="role-select"
                     >
                       <option value="">Select a role...</option>
-                      <option value="premium">Ô¡É Premium</option>
-                      <option value="slot_modder">­ƒÄ░ Slot Modder</option>
-                      <option value="moderator">­ƒöº Moderator</option>
-                      <option value="admin">­ƒøí´©Å Admin</option>
+                      <option value="premium">⭐ Premium</option>
+                      <option value="slot_modder">🎰 Slot Modder</option>
+                      <option value="moderator">🔧 Moderator</option>
+                      <option value="admin">🛡️ Admin</option>
                     </select>
 
                     {editingUser.newRole === 'moderator' && (
@@ -1714,8 +1714,8 @@ export default function AdminPanel() {
 
                     {editingUser.newRole && (
                       <div className="add-role-actions">
-                        <input 
-                          type="number" 
+                        <input
+                          type="number"
                           placeholder="Expires in (days)"
                           value={editingUser.newRoleExpiryDays || ''}
                           onChange={(e) => setEditingUser({...editingUser, newRoleExpiryDays: e.target.value})}
@@ -1736,14 +1736,14 @@ export default function AdminPanel() {
                     <h4>Danger Zone</h4>
                   </div>
                   <div className="danger-buttons">
-                    <button 
+                    <button
                       className="btn-danger secondary"
                       onClick={() => handleRevokeAccess(editingUser.id)}
                       disabled={!editingUser.is_active}
                     >
                       Revoke Access
                     </button>
-                    <button 
+                    <button
                       className="btn-danger primary"
                       onClick={() => {
                         if (window.confirm('Permanently delete this user? This cannot be undone.')) {
@@ -1776,14 +1776,14 @@ export default function AdminPanel() {
                     padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                     background: offerSubTab === 'cards' ? '#6366f1' : 'rgba(255,255,255,0.08)', color: offerSubTab === 'cards' ? '#fff' : '#94a3b8',
                   }}
-                >­ƒôª Cards</button>
+                >📰 Cards</button>
                 <button
                   onClick={() => { setOfferSubTab('analytics'); if (offerClicks.length === 0) loadOfferClicks(); }}
                   style={{
                     padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
                     background: offerSubTab === 'analytics' ? '#6366f1' : 'rgba(255,255,255,0.08)', color: offerSubTab === 'analytics' ? '#fff' : '#94a3b8',
                   }}
-                >­ƒôè Click Analytics</button>
+                >📊 Click Analytics</button>
               </div>
               {offerSubTab === 'cards' && (
                 <>
@@ -1796,19 +1796,19 @@ export default function AdminPanel() {
                     />
                   </div>
                   <button onClick={() => openOfferModal()} className="btn-create-offer">
-                    Ô×ò Create New Offer
+                    ➕ Create New Offer
                   </button>
                 </>
               )}
               {offerSubTab === 'analytics' && (
                 <button onClick={loadOfferClicks} className="btn-create-offer" style={{ fontSize: 12 }}>
-                  ­ƒöä Refresh
+                  🔄 Refresh
                 </button>
               )}
             </div>
           </div>
 
-          {/* ÔöÇÔöÇ CARDS SUB-TAB ÔöÇÔöÇ */}
+          {/* ── CARDS SUB-TAB ── */}
           {offerSubTab === 'cards' && (
             <>
               <div className="offers-grid">
@@ -1838,24 +1838,24 @@ export default function AdminPanel() {
                   <h3>{offer.casino_name}</h3>
                   <p className="offer-title">{offer.title}</p>
                   <div className="offer-stats">
-                    <span>­ƒÆ░ {offer.min_deposit}</span>
-                    <span>­ƒÆ© {offer.cashback}</span>
-                    <span>­ƒÄü {offer.bonus_value}</span>
+                    <span>💰 {offer.min_deposit}</span>
+                    <span>💸 {offer.cashback}</span>
+                    <span>🎁 {offer.bonus_value}</span>
                   </div>
                   <div className="offer-admin-actions">
-                    <button 
+                    <button
                       onClick={() => openOfferModal(offer)}
                       className="btn-edit-offer"
                       title="Edit offer"
                     >
-                      Ô£Å´©Å Edit
+                      ✏️ Edit
                     </button>
-                    <button 
+                    <button
                       onClick={() => toggleOfferActive(offer.id, offer.is_active)}
                       className={`btn-toggle-offer ${offer.is_active ? 'active' : ''}`}
                       title={offer.is_active ? 'Deactivate' : 'Activate'}
                     >
-                      {offer.is_active ? '­ƒæü´©Å Active' : '­ƒÜ½ Inactive'}
+                      {offer.is_active ? '👁️ Active' : '❌ Inactive'}
                     </button>
                     <ConfirmButton
                       onConfirm={() => deleteOffer(offer.id)}
@@ -1864,7 +1864,7 @@ export default function AdminPanel() {
                       title="Delete offer"
                       variant="danger"
                     >
-                      ­ƒùæ´©Å
+                      🗑️
                     </ConfirmButton>
                   </div>
                 </div>
@@ -1880,11 +1880,11 @@ export default function AdminPanel() {
             </>
           )}
 
-          {/* ÔöÇÔöÇ ANALYTICS SUB-TAB ÔöÇÔöÇ */}
+          {/* ── ANALYTICS SUB-TAB ── */}
           {offerSubTab === 'analytics' && (
             <div style={{ marginTop: 16 }}>
               {clicksLoading ? (
-                <p style={{ color: '#94a3b8', textAlign: 'center', padding: 40 }}>Loading click dataÔÇª</p>
+                <p style={{ color: '#94a3b8', textAlign: 'center', padding: 40 }}>Loading click data…</p>
               ) : offerClicks.length === 0 ? (
                 <p style={{ color: '#94a3b8', textAlign: 'center', padding: 40 }}>No clicks recorded yet. Clicks will appear here once viewers start clicking offer cards.</p>
               ) : (
@@ -1946,7 +1946,7 @@ export default function AdminPanel() {
                         {/* Top Countries breakdown */}
                         {sortedCountries.length > 0 && (
                         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, padding: 14, marginBottom: 16 }}>
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>­ƒîì Clicks by Country</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 8 }}>🌍 Clicks by Country</div>
                           {sortedCountries.slice(0, 15).map(([country, count]) => {
                             const pct = Math.round((count / offerClicks.length) * 100);
                             return (
@@ -1965,7 +1965,7 @@ export default function AdminPanel() {
                     );
                   })()}
 
-                  {/* Click log table ÔÇö full audit detail */}
+                  {/* Click log table — full audit detail */}
                   <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 8, overflow: 'hidden' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 14px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexWrap: 'wrap', gap: 8 }}>
                       <div style={{ fontSize: 11, fontWeight: 700, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>Full Click History ({offerClicks.length} total)</div>
@@ -2042,13 +2042,13 @@ export default function AdminPanel() {
                                     onClick={() => setExpandedClickId(isExpanded ? null : click.id)}
                                     style={{ borderBottom: '1px solid rgba(255,255,255,0.03)', cursor: 'pointer', background: isExpanded ? 'rgba(99,102,241,0.06)' : idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.015)' }}
                                   >
-                                    <td style={{ padding: '6px 8px', color: '#64748b', fontSize: 10 }}>{isExpanded ? 'Ôû╝' : 'ÔûÂ'}</td>
-                                    <td style={{ padding: '6px 12px', color: '#e2e8f0', fontWeight: 600 }}>{click.casino_name || 'ÔÇö'}</td>
+                                    <td style={{ padding: '6px 8px', color: '#64748b', fontSize: 10 }}>{isExpanded ? '▼' : '▶'}</td>
+                                    <td style={{ padding: '6px 12px', color: '#e2e8f0', fontWeight: 600 }}>{click.casino_name || '—'}</td>
                                     <td style={{ padding: '6px 12px', color: click.twitch_username ? '#a78bfa' : '#4a5568' }}>
-                                      {click.twitch_username || (isLoggedIn ? 'ÔÇö' : <span style={{ color: '#ef4444', fontSize: 10 }}>not logged in</span>)}
+                                      {click.twitch_username || (isLoggedIn ? '—' : <span style={{ color: '#ef4444', fontSize: 10 }}>not logged in</span>)}
                                     </td>
                                     <td style={{ padding: '6px 12px', color: click.se_username ? '#818cf8' : '#4a5568' }}>
-                                      {click.se_username || 'ÔÇö'}
+                                      {click.se_username || '—'}
                                     </td>
                                     <td style={{ padding: '6px 12px', color: '#94a3b8', fontFamily: 'monospace', fontSize: 11 }}>
                                       {click.ip_address ? (
@@ -2060,10 +2060,10 @@ export default function AdminPanel() {
                                             <span title="IPv4 address (matches affiliate dashboards)" style={{ padding: '2px 6px', borderRadius: 4, fontSize: 9, fontWeight: 600, background: 'rgba(34,197,94,0.15)', color: '#86efac' }}>IPv4</span>
                                           )}
                                         </span>
-                                      ) : 'ÔÇö'}
+                                      ) : '—'}
                                     </td>
                                     <td style={{ padding: '6px 12px', color: '#e2e8f0', fontSize: 11 }}>
-                                      {click.city && click.country ? `${click.city}, ${click.country}` : click.country || click.country_code || 'ÔÇö'}
+                                      {click.city && click.country ? `${click.city}, ${click.country}` : click.country || click.country_code || '—'}
                                     </td>
                                     <td style={{ padding: '6px 12px' }}>
                                       <span style={{
@@ -2084,15 +2084,15 @@ export default function AdminPanel() {
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Click ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.id}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Offer ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.offer_id}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>User ID: </span><span style={{ color: '#94a3b8', fontFamily: 'monospace', fontSize: 10 }}>{click.user_id || 'Anonymous'}</span></div>
-                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Twitch: </span><span style={{ color: '#a78bfa' }}>{click.twitch_username || 'ÔÇö'}</span></div>
-                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>SE Username: </span><span style={{ color: '#818cf8' }}>{click.se_username || 'ÔÇö'}</span></div>
-                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>IP Address: </span><span style={{ color: '#f59e0b', fontFamily: 'monospace' }}>{click.ip_address || 'ÔÇö'}</span></div>
-                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Country: </span><span style={{ color: '#22c55e' }}>{click.country || 'ÔÇö'} {click.country_code ? `(${click.country_code})` : ''}</span></div>
-                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Region: </span><span style={{ color: '#94a3b8' }}>{click.region || 'ÔÇö'}</span></div>
-                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>City: </span><span style={{ color: '#94a3b8' }}>{click.city || 'ÔÇö'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Twitch: </span><span style={{ color: '#a78bfa' }}>{click.twitch_username || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>SE Username: </span><span style={{ color: '#818cf8' }}>{click.se_username || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>IP Address: </span><span style={{ color: '#f59e0b', fontFamily: 'monospace' }}>{click.ip_address || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Country: </span><span style={{ color: '#22c55e' }}>{click.country || '—'} {click.country_code ? `(${click.country_code})` : ''}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>Region: </span><span style={{ color: '#94a3b8' }}>{click.region || '—'}</span></div>
+                                          <div><span style={{ color: '#64748b', fontWeight: 600 }}>City: </span><span style={{ color: '#94a3b8' }}>{click.city || '—'}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Page: </span><span style={{ color: '#94a3b8' }}>{click.page_source}</span></div>
                                           <div><span style={{ color: '#64748b', fontWeight: 600 }}>Exact Time: </span><span style={{ color: '#94a3b8' }}>{new Date(click.created_at).toISOString()}</span></div>
-                                          <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#64748b', fontWeight: 600 }}>User Agent: </span><span style={{ color: '#64748b', fontSize: 10, wordBreak: 'break-all' }}>{click.user_agent || 'ÔÇö'}</span></div>
+                                          <div style={{ gridColumn: '1 / -1' }}><span style={{ color: '#64748b', fontWeight: 600 }}>User Agent: </span><span style={{ color: '#64748b', fontSize: 10, wordBreak: 'break-all' }}>{click.user_agent || '—'}</span></div>
                                         </div>
                                       </td>
                                     </tr>
@@ -2178,7 +2178,7 @@ export default function AdminPanel() {
         <>
           <div className="admin-section">
             <div className="section-header">
-              <h2>­ƒÄí Daily Wheel Prizes</h2>
+              <h2>🎡 Daily Wheel Prizes</h2>
               <button onClick={() => openPrizeModal()} className="btn-add">
                 + Add Prize
               </button>
@@ -2198,9 +2198,9 @@ export default function AdminPanel() {
                   <div className="prize-details">
                     <h3 style={{ color: prize.text_color }}>{prize.label}</h3>
                     <div className="prize-stats">
-                      <span>­ƒÆ░ {prize.se_points} SE Points</span>
-                      <span>­ƒÄ▓ Probability: {prize.probability}</span>
-                      <span>­ƒôè Order: {prize.display_order}</span>
+                      <span>💰 {prize.se_points} SE Points</span>
+                      <span>🎲 Probability: {prize.probability}</span>
+                      <span>📊 Order: {prize.display_order}</span>
                     </div>
                     <div className="prize-colors">
                       <span>BG: {prize.color}</span>
@@ -2208,14 +2208,14 @@ export default function AdminPanel() {
                     </div>
                   </div>
                   <div className="prize-actions">
-                    <button 
-                      onClick={() => togglePrizeActive(prize.id, prize.is_active)} 
+                    <button
+                      onClick={() => togglePrizeActive(prize.id, prize.is_active)}
                       className={`btn-toggle ${prize.is_active ? 'active' : 'inactive'}`}
                     >
-                      {prize.is_active ? 'Ô£ô Active' : 'Ô£ù Inactive'}
+                      {prize.is_active ? '✅ Active' : '❌ Inactive'}
                     </button>
                     <button onClick={() => openPrizeModal(prize)} className="btn-edit">
-                      Ô£Å´©Å Edit
+                      ✏️ Edit
                     </button>
                     <ConfirmButton
                       onConfirm={() => deletePrize(prize.id)}
@@ -2223,7 +2223,7 @@ export default function AdminPanel() {
                       className="btn-delete"
                       variant="danger"
                     >
-                      ­ƒùæ´©Å Delete
+                      🗑️ Delete
                     </ConfirmButton>
                   </div>
                 </div>
@@ -2264,7 +2264,7 @@ export default function AdminPanel() {
                       type="text"
                       value={prizeFormData.icon}
                       onChange={(e) => setPrizeFormData({...prizeFormData, icon: e.target.value})}
-                      placeholder="­ƒÆ░"
+                      placeholder="💰"
                       required
                     />
                     <small>Use a single emoji character</small>
@@ -2357,7 +2357,7 @@ export default function AdminPanel() {
                   {/* Preview */}
                   <div className="form-group">
                     <label>Preview</label>
-                    <div className="prize-preview-box" style={{ 
+                    <div className="prize-preview-box" style={{
                       backgroundColor: prizeFormData.color,
                       color: prizeFormData.text_color,
                       padding: '20px',
@@ -2398,7 +2398,7 @@ export default function AdminPanel() {
         <>
           <div className="guess-balance-admin-section">
             <div className="section-header">
-              <h2>­ƒÆ░ Guess the Balance Sessions</h2>
+              <h2>💰 Guess the Balance Sessions</h2>
               <button className="btn-primary" onClick={() => openGuessSessionModal()}>
                 + New Session
               </button>
@@ -2407,7 +2407,7 @@ export default function AdminPanel() {
             {/* Transfer Password Section */}
             <div className="gtb-transfer-section">
               <div className="gtb-transfer-header">
-                <h3>­ƒöæ Bonus Hunt Transfer Password</h3>
+                <h3>🔑 Bonus Hunt Transfer Password</h3>
                 <p className="gtb-transfer-desc">
                   Generate a password to allow transferring bonuses from the Overlay Bonus Hunt tracker into a new GTB session.
                 </p>
@@ -2417,18 +2417,18 @@ export default function AdminPanel() {
                 {activeTransferPassword ? (
                   <div className="gtb-transfer-active">
                     <span className="gtb-transfer-status gtb-transfer-status--active">
-                      Ô£à Active password exists
+                      ✅ Active password exists
                     </span>
                     <span className="gtb-transfer-expires">
                       Expires: {new Date(activeTransferPassword.expires_at).toLocaleString()}
                     </span>
                     <div className="gtb-transfer-actions">
-                      <button 
+                      <button
                         className="btn-primary"
                         onClick={generateTransferPassword}
                         disabled={transferPasswordLoading}
                       >
-                        ­ƒöä Regenerate
+                        🔄 Regenerate
                       </button>
                       <ConfirmButton
                         onConfirm={revokeTransferPassword}
@@ -2436,7 +2436,7 @@ export default function AdminPanel() {
                         className="btn-delete"
                         variant="danger"
                       >
-                        ­ƒùæ´©Å Revoke
+                        🗑️ Revoke
                       </ConfirmButton>
                     </div>
                   </div>
@@ -2445,12 +2445,12 @@ export default function AdminPanel() {
                     <span className="gtb-transfer-status gtb-transfer-status--none">
                       No active password
                     </span>
-                    <button 
+                    <button
                       className="btn-primary"
                       onClick={generateTransferPassword}
                       disabled={transferPasswordLoading}
                     >
-                      {transferPasswordLoading ? 'ÔÅ│ Generating...' : '­ƒöÉ Generate Password'}
+                      {transferPasswordLoading ? '⏳ Generating...' : '🔐 Generate Password'}
                     </button>
                   </div>
                 )}
@@ -2461,7 +2461,7 @@ export default function AdminPanel() {
                     <div className="gtb-transfer-password-box">
                       <span className="gtb-transfer-password-label">Your transfer password:</span>
                       <code className="gtb-transfer-password-value">{transferPassword}</code>
-                      <button 
+                      <button
                         className="btn-copy"
                         onClick={() => {
                           navigator.clipboard.writeText(transferPassword);
@@ -2469,17 +2469,17 @@ export default function AdminPanel() {
                         }}
                         title="Copy to clipboard"
                       >
-                        ­ƒôï Copy
+                        📋 Copy
                       </button>
                     </div>
                     <p className="gtb-transfer-warning">
-                      ÔÜá´©Å Copy this password now! It will not be shown again. Use it in the Bonus Hunt tracker to send bonuses to GTB.
+                      ⚠️ Copy this password now! It will not be shown again. Use it in the Bonus Hunt tracker to send bonuses to GTB.
                     </p>
-                    <button 
+                    <button
                       className="btn-secondary gtb-transfer-dismiss"
                       onClick={() => { setShowTransferPassword(false); setTransferPassword(''); }}
                     >
-                      I've copied it ÔÇö dismiss
+                      I've copied it — dismiss
                     </button>
                   </div>
                 )}
@@ -2495,36 +2495,36 @@ export default function AdminPanel() {
               ) : (
                 <div className="sessions-grid">
                   {guessBalanceSessions.map(session => (
-                    <div 
-                      key={session.id} 
+                    <div
+                      key={session.id}
                       className={`session-card ${selectedSessionForSlots?.id === session.id ? 'selected' : ''} ${session.status}`}
                       onClick={() => selectSessionForSlots(session)}
                     >
                       <div className="session-card-header">
                         <h3>{session.title}</h3>
                         <span className={`status-badge ${session.status}`}>
-                          {session.status === 'active' ? '­ƒƒó Active' : 
-                           session.status === 'completed' ? 'Ô£à Completed' : 'ÔØî Cancelled'}
+                          {session.status === 'active' ? '🟢 Active' :
+                           session.status === 'completed' ? '✅ Completed' : '🚫 Cancelled'}
                         </span>
                       </div>
-                      
+
                       {session.casino_brand && (
                         <div className="casino-info">
                           {session.casino_image_url && (
                             <img src={session.casino_image_url} alt={session.casino_brand} className="casino-logo-small" />
                           )}
-                          <span>­ƒÅø´©Å {session.casino_brand}</span>
+                          <span>🏰 {session.casino_brand}</span>
                         </div>
                       )}
 
                       <div className="session-stats">
                         <div className="stat">
                           <span className="label">Start:</span>
-                          <span className="value">Ôé¼{parseFloat(session.start_value || 0).toFixed(2)}</span>
+                          <span className="value">€{parseFloat(session.start_value || 0).toFixed(2)}</span>
                         </div>
                         <div className="stat">
                           <span className="label">Expended:</span>
-                          <span className="value">Ôé¼{parseFloat(session.amount_expended || 0).toFixed(2)}</span>
+                          <span className="value">€{parseFloat(session.amount_expended || 0).toFixed(2)}</span>
                         </div>
                         <div className="stat">
                           <span className="label">BE x:</span>
@@ -2533,41 +2533,41 @@ export default function AdminPanel() {
                         {session.final_balance !== null && (
                           <div className="stat highlight">
                             <span className="label">Final:</span>
-                            <span className="value">Ôé¼{parseFloat(session.final_balance || 0).toFixed(2)}</span>
+                            <span className="value">€{parseFloat(session.final_balance || 0).toFixed(2)}</span>
                           </div>
                         )}
                       </div>
 
                       <div className="session-flags">
                         <span className={`flag ${session.is_guessing_open ? 'active' : ''}`}>
-                          {session.is_guessing_open ? 'Ô£à Guessing Open' : 'ÔÅ©´©Å Guessing Closed'}
+                          {session.is_guessing_open ? '✅ Guessing Open' : '🔒 Guessing Closed'}
                         </span>
                         <span className={`flag ${session.reveal_answer ? 'revealed' : ''}`}>
-                          {session.reveal_answer ? '­ƒæü´©Å Answer Revealed' : '­ƒöÆ Hidden'}
+                          {session.reveal_answer ? '👁️ Answer Revealed' : '🔒 Hidden'}
                         </span>
                       </div>
 
                       <div className="session-actions">
                         <button className="btn-edit" onClick={(e) => { e.stopPropagation(); openGuessSessionModal(session); }}>
-                          Ô£Å´©Å Edit
+                          ✏️ Edit
                         </button>
-                        <button 
-                          className="btn-results" 
+                        <button
+                          className="btn-results"
                           onClick={(e) => { e.stopPropagation(); openSlotResultsModal(session); }}
                         >
-                          ­ƒÄ» Enter Results
+                          🎯 Enter Results
                         </button>
-                        <button 
-                          className="btn-view-guesses" 
+                        <button
+                          className="btn-view-guesses"
                           onClick={(e) => { e.stopPropagation(); openGuessesModal(session); }}
                         >
-                          ­ƒÆ¡ Guesses
+                          💡 Guesses
                         </button>
-                        <button 
-                          className="btn-view-votes" 
+                        <button
+                          className="btn-view-votes"
                           onClick={(e) => { e.stopPropagation(); openVotesModal(session); }}
                         >
-                          ­ƒù│´©Å Votes
+                          🗳️ Votes
                         </button>
                         {session.status === 'active' && session.final_balance && (
                           <ConfirmButton
@@ -2577,7 +2577,7 @@ export default function AdminPanel() {
                             onClick={(e) => e.stopPropagation()}
                             variant="warning"
                           >
-                            ­ƒÅå End & Calculate Winner
+                            🏆 End & Calculate Winner
                           </ConfirmButton>
                         )}
                         <ConfirmButton
@@ -2587,7 +2587,7 @@ export default function AdminPanel() {
                           onClick={(e) => e.stopPropagation()}
                           variant="danger"
                         >
-                          ­ƒùæ´©Å Delete
+                          🗑️ Delete
                         </ConfirmButton>
                       </div>
                     </div>
@@ -2600,7 +2600,7 @@ export default function AdminPanel() {
             {selectedSessionForSlots && (
               <div className="slots-management-section">
                 <div className="section-header">
-                  <h3>­ƒÄ░ Slots for: {selectedSessionForSlots.title}</h3>
+                  <h3>🎰 Slots for: {selectedSessionForSlots.title}</h3>
                   <button className="btn-primary" onClick={() => openSlotModal()}>
                     + Add Slot
                   </button>
@@ -2615,37 +2615,37 @@ export default function AdminPanel() {
                     guessBalanceSlots.map((slot, index) => (
                       <div key={slot.id} className={`slot-admin-card ${slot.is_super ? 'super' : ''}`}>
                         <div className="slot-number">#{index + 1}</div>
-                        
+
                         {slot.slot_image_url ? (
                           <img src={slot.slot_image_url} alt={slot.slot_name} className="slot-admin-image" />
                         ) : (
-                          <div className="slot-image-placeholder">­ƒÄ░</div>
+                          <div className="slot-image-placeholder">🎰</div>
                         )}
 
                         <div className="slot-admin-info">
                           <h4>{slot.slot_name}</h4>
                           {slot.provider && <span className="provider">{slot.provider}</span>}
                           <div className="slot-stats">
-                            <span>Bet: Ôé¼{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
-                            {slot.is_super && <span className="super-tag">Ô¡É SUPER</span>}
+                            <span>Bet: €{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
+                            {slot.is_super && <span className="super-tag">⭐ SUPER</span>}
                           </div>
                           {slot.bonus_win !== null && (
                             <div className="slot-results">
-                              <span>Win: Ôé¼{parseFloat(slot.bonus_win || 0).toFixed(2)}</span>
+                              <span>Win: €{parseFloat(slot.bonus_win || 0).toFixed(2)}</span>
                               {slot.multiplier && <span>{slot.multiplier}x</span>}
                             </div>
                           )}
                         </div>
 
                         <div className="slot-admin-actions">
-                          <button className="btn-edit-small" onClick={() => openSlotModal(slot)}>Ô£Å´©Å</button>
+                          <button className="btn-edit-small" onClick={() => openSlotModal(slot)}>✏️</button>
                           <ConfirmButton
                             onConfirm={() => deleteSlot(slot.id)}
                             confirmText="?"
                             className="btn-delete-small"
                             variant="danger"
                           >
-                            ­ƒùæ´©Å
+                            🗑️
                           </ConfirmButton>
                         </div>
                       </div>
@@ -2680,7 +2680,7 @@ export default function AdminPanel() {
                   {/* Transfer Password Quick Access */}
                   <div className="gtb-sidepanel-transfer">
                     <div className="gtb-sidepanel-transfer-header">
-                      <span>­ƒöæ Transfer Password</span>
+                      <span>🔑 Transfer Password</span>
                       {activeTransferPassword ? (
                         <span className="gtb-sp-badge gtb-sp-badge--active">Active</span>
                       ) : (
@@ -2697,7 +2697,7 @@ export default function AdminPanel() {
                         onClick={generateTransferPassword}
                         disabled={transferPasswordLoading}
                       >
-                        {transferPasswordLoading ? 'ÔÅ│...' : activeTransferPassword ? '­ƒöä Regenerate' : '­ƒöÉ Generate'}
+                        {transferPasswordLoading ? '⏳...' : activeTransferPassword ? '🔄 Regenerate' : '🔐 Generate'}
                       </button>
                       {activeTransferPassword && (
                         <button
@@ -2705,7 +2705,7 @@ export default function AdminPanel() {
                           className="btn-delete"
                           onClick={revokeTransferPassword}
                         >
-                          ­ƒùæ´©Å Revoke
+                          🗑️ Revoke
                         </button>
                       )}
                     </div>
@@ -2719,7 +2719,7 @@ export default function AdminPanel() {
                             navigator.clipboard.writeText(transferPassword);
                             setSuccess('Password copied!');
                           }}
-                        >­ƒôï</button>
+                        >📋</button>
                         <button
                           type="button"
                           className="btn-secondary"
@@ -2764,10 +2764,10 @@ export default function AdminPanel() {
                     />
                   </div>
 
-                  <div className="form-section-title">­ƒÆÁ Money Settings</div>
+                  <div className="form-section-title">💵 Money Settings</div>
                   <div className="form-row two-cols">
                     <div className="form-group">
-                      <label>Start Value (Ôé¼)</label>
+                      <label>Start Value (€)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -2777,7 +2777,7 @@ export default function AdminPanel() {
                       />
                     </div>
                     <div className="form-group">
-                      <label>Final Balance (Ôé¼)</label>
+                      <label>Final Balance (€)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -2790,7 +2790,7 @@ export default function AdminPanel() {
                   </div>
                   <div className="form-row two-cols">
                     <div className="form-group">
-                      <label>Amount Expended (Ôé¼)</label>
+                      <label>Amount Expended (€)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -2822,7 +2822,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="form-section-title">­ƒÅø´©Å Casino Info</div>
+                  <div className="form-section-title">🏰 Casino Info</div>
                   <div className="form-row">
                     <div className="form-group">
                       <label>Casino Brand</label>
@@ -2844,7 +2844,7 @@ export default function AdminPanel() {
                     </div>
                   </div>
 
-                  <div className="form-section-title">ÔÜÖ´©Å Settings</div>
+                  <div className="form-section-title">⚙️ Settings</div>
                   <div className="form-row checkboxes">
                     <label className="checkbox-label">
                       <input
@@ -2865,8 +2865,8 @@ export default function AdminPanel() {
                   </div>
 
                   {/* Slot Selection Section */}
-                  <div className="form-section-title">­ƒÄ░ Add Slots</div>
-                  
+                  <div className="form-section-title">🎰 Add Slots</div>
+
                   {/* Slot Search & Add Controls */}
                   <div className="slot-picker-section">
                     <div className="slot-picker-controls">
@@ -2882,7 +2882,7 @@ export default function AdminPanel() {
                       </div>
                       <div className="slot-picker-row">
                         <div className="form-group bet-group">
-                          <label>Bet Value (Ôé¼)</label>
+                          <label>Bet Value (€)</label>
                           <input
                             type="number"
                             step="0.01"
@@ -2899,7 +2899,7 @@ export default function AdminPanel() {
                               checked={newSlotIsSuper}
                               onChange={(e) => setNewSlotIsSuper(e.target.checked)}
                             />
-                            <span>Ô¡É Super</span>
+                            <span>⭐ Super</span>
                           </label>
                         </div>
                       </div>
@@ -2909,15 +2909,15 @@ export default function AdminPanel() {
                     {slotSearchQuery && (
                       <div className="slot-catalog-results">
                         <div className="catalog-debug" style={{fontSize: '0.75rem', color: '#6b7280', marginBottom: '8px'}}>
-                          Searching in {slotCatalog.length} slots ÔÇó Found {filteredSlotCatalog.length} matches
+                          Searching in {slotCatalog.length} slots • Found {filteredSlotCatalog.length} matches
                         </div>
                         {filteredSlotCatalog.length === 0 ? (
                           <div className="no-results">No slots found matching "{slotSearchQuery}"</div>
                         ) : (
                           <div className="slot-catalog-grid">
                             {filteredSlotCatalog.slice(0, 20).map((slot) => (
-                              <div 
-                                key={slot.id} 
+                              <div
+                                key={slot.id}
                                 className="slot-catalog-item"
                                 onClick={() => addSlotToSession(slot)}
                               >
@@ -2939,9 +2939,9 @@ export default function AdminPanel() {
                   <div className="session-slots-list">
                     <div className="slots-list-header">
                       <span>Added Slots ({sessionSlotsInModal.length})</span>
-                      <span className="total-bets">Total Bets: Ôé¼{sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0).toFixed(2)}</span>
+                      <span className="total-bets">Total Bets: €{sessionSlotsInModal.reduce((sum, s) => sum + (parseFloat(s.bet_value) || 0), 0).toFixed(2)}</span>
                     </div>
-                    
+
                     {sessionSlotsInModal.length === 0 ? (
                       <div className="no-slots-added">
                         <p>No slots added yet. Search and add slots above.</p>
@@ -2954,16 +2954,16 @@ export default function AdminPanel() {
                             {slot.slot_image_url ? (
                               <img src={slot.slot_image_url} alt={slot.slot_name} className="added-slot-image" />
                             ) : (
-                              <div className="added-slot-placeholder">­ƒÄ░</div>
+                              <div className="added-slot-placeholder">🎰</div>
                             )}
                             <div className="added-slot-info">
                               <span className="added-slot-name">{slot.slot_name}</span>
                               <span className="added-slot-provider">{slot.provider}</span>
                             </div>
-                            <span className="added-slot-bet">Ôé¼{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
-                            {slot.is_super && <span className="super-badge">Ô¡É</span>}
-                            <button 
-                              type="button" 
+                            <span className="added-slot-bet">€{parseFloat(slot.bet_value || 0).toFixed(2)}</span>
+                            {slot.is_super && <span className="super-badge">⭐</span>}
+                            <button
+                              type="button"
                               className="remove-slot-btn"
                               onClick={() => removeSlotFromSession(index)}
                             >
@@ -3035,7 +3035,7 @@ export default function AdminPanel() {
 
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Bet Value (Ôé¼)</label>
+                      <label>Bet Value (€)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -3062,14 +3062,14 @@ export default function AdminPanel() {
                         checked={slotFormData.is_super}
                         onChange={(e) => setSlotFormData({...slotFormData, is_super: e.target.checked})}
                       />
-                      <span>Ô¡É Is Super/Bonus Slot</span>
+                      <span>⭐ Is Super/Bonus Slot</span>
                     </label>
                   </div>
 
-                  <div className="form-section-title">­ƒÅå Results (optional - fill when bonus opens)</div>
+                  <div className="form-section-title">🏆 Results (optional - fill when bonus opens)</div>
                   <div className="form-row">
                     <div className="form-group">
-                      <label>Bonus Win (Ôé¼)</label>
+                      <label>Bonus Win (€)</label>
                       <input
                         type="number"
                         step="0.01"
@@ -3096,17 +3096,17 @@ export default function AdminPanel() {
           <SidePanel
             isOpen={showSlotResultsModal && guessBalanceSlots && guessBalanceSlots.length > 0}
             onClose={() => setShowSlotResultsModal(false)}
-            title="­ƒÄ» Enter Slot Results"
+            title="🎯 Enter Slot Results"
             size="large"
             footer={
               <>
-                <button 
+                <button
                   className="btn-save-result"
                   onClick={() => saveSlotResult(guessBalanceSlots[currentSlotIndex])}
                 >
-                  ­ƒÆ¥ Save & Continue
+                  💾 Save & Continue
                 </button>
-                <button 
+                <button
                   className="btn-save-all"
                   onClick={async () => {
                     for (const slot of guessBalanceSlots) {
@@ -3118,7 +3118,7 @@ export default function AdminPanel() {
                     setShowSlotResultsModal(false);
                   }}
                 >
-                  Ô£à Save All & Close
+                  ✅ Save All & Close
                 </button>
               </>
             }
@@ -3128,8 +3128,8 @@ export default function AdminPanel() {
                   <div className="slot-results-progress">
                     <span>Slot {currentSlotIndex + 1} of {guessBalanceSlots.length}</span>
                     <div className="progress-bar">
-                      <div 
-                        className="progress-fill" 
+                      <div
+                        className="progress-fill"
                         style={{ width: `${((currentSlotIndex + 1) / guessBalanceSlots.length) * 100}%` }}
                       />
                     </div>
@@ -3142,27 +3142,27 @@ export default function AdminPanel() {
                   {(() => {
                     const currentSlot = guessBalanceSlots[currentSlotIndex];
                     if (!currentSlot) return null;
-                    
+
                     return (
                       <div className="current-slot-display">
                         <div className="slot-image-large">
                           {currentSlot.slot_image_url ? (
                             <img src={currentSlot.slot_image_url} alt={currentSlot.slot_name} />
                           ) : (
-                            <div className="no-image-large">­ƒÄ░</div>
+                            <div className="no-image-large">🎰</div>
                           )}
-                          {currentSlot.is_super && <span className="super-badge-large">Ô¡É SUPER</span>}
+                          {currentSlot.is_super && <span className="super-badge-large">⭐ SUPER</span>}
                         </div>
-                        
+
                         <div className="slot-info-large">
                           <h3>{currentSlot.slot_name}</h3>
                           {currentSlot.provider && <p className="slot-provider">{currentSlot.provider}</p>}
-                          <p className="slot-bet">Bet: Ôé¼{currentSlot.bet_value || '0.00'}</p>
+                          <p className="slot-bet">Bet: €{currentSlot.bet_value || '0.00'}</p>
                         </div>
 
                         <div className="result-inputs">
                           <div className="input-group">
-                            <label>­ƒÆ░ Bonus Win (Ôé¼)</label>
+                            <label>💰 Bonus Win (€)</label>
                             <input
                               type="number"
                               step="0.01"
@@ -3190,7 +3190,7 @@ export default function AdminPanel() {
                           </div>
                           {currentSlot.bet_value && currentSlot.bonus_win && (
                             <div className="auto-multiplier">
-                              ­ƒôè Multiplier: {(parseFloat(currentSlot.bonus_win) / parseFloat(currentSlot.bet_value)).toFixed(2)}x
+                              📊 Multiplier: {(parseFloat(currentSlot.bonus_win) / parseFloat(currentSlot.bet_value)).toFixed(2)}x
                             </div>
                           )}
                         </div>
@@ -3200,14 +3200,14 @@ export default function AdminPanel() {
 
                   {/* Navigation */}
                   <div className="slot-results-navigation">
-                    <button 
-                      className="btn-nav" 
+                    <button
+                      className="btn-nav"
                       onClick={() => goToSlot(currentSlotIndex - 1)}
                       disabled={currentSlotIndex === 0}
                     >
-                      ÔåÉ Previous
+                      ← Previous
                     </button>
-                    
+
                     <div className="slot-dots">
                       {guessBalanceSlots.map((slot, idx) => (
                         <button
@@ -3219,12 +3219,12 @@ export default function AdminPanel() {
                       ))}
                     </div>
 
-                    <button 
-                      className="btn-nav" 
+                    <button
+                      className="btn-nav"
                       onClick={() => goToSlot(currentSlotIndex + 1)}
                       disabled={currentSlotIndex === guessBalanceSlots.length - 1}
                     >
-                      Next ÔåÆ
+                      Next →
                     </button>
                   </div>
                 </div>
@@ -3234,7 +3234,7 @@ export default function AdminPanel() {
           <SidePanel
             isOpen={showGuessesModal}
             onClose={() => setShowGuessesModal(false)}
-            title={`­ƒÆ¡ Player Guesses - ${selectedSessionForSlots?.title || ''}`}
+            title={`💡 Player Guesses - ${selectedSessionForSlots?.title || ''}`}
             size="large"
           >
             <div className="guesses-list-container">
@@ -3263,9 +3263,9 @@ export default function AdminPanel() {
                           <tr key={guess.id} className={guess.is_winner ? 'winner-row' : ''}>
                             <td>{index + 1}</td>
                             <td>{guess.display_name || 'Anonymous'}</td>
-                            <td className="guess-amount">Ôé¼{parseFloat(guess.guessed_balance).toFixed(2)}</td>
+                            <td className="guess-amount">€{parseFloat(guess.guessed_balance).toFixed(2)}</td>
                             <td className="guess-time">{new Date(guess.guessed_at).toLocaleString()}</td>
-                            <td>{guess.is_winner ? '­ƒÅå Winner!' : '-'}</td>
+                            <td>{guess.is_winner ? '🏆 Winner!' : '-'}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -3280,7 +3280,7 @@ export default function AdminPanel() {
           <SidePanel
             isOpen={showVotesModal}
             onClose={() => setShowVotesModal(false)}
-            title={`­ƒù│´©Å Slot Votes - ${selectedSessionForSlots?.title || ''}`}
+            title={`🗳️ Slot Votes - ${selectedSessionForSlots?.title || ''}`}
             size="large"
           >
             <div className="votes-list-container">
@@ -3292,8 +3292,8 @@ export default function AdminPanel() {
                 <>
                   <div className="votes-summary">
                     <span className="total-votes">Total: {sessionVotes.length} votes</span>
-                    <span className="best-votes">­ƒæì Best: {sessionVotes.filter(v => v.vote_type === 'best').length}</span>
-                    <span className="worst-votes">­ƒæÄ Worst: {sessionVotes.filter(v => v.vote_type === 'worst').length}</span>
+                    <span className="best-votes">👍 Best: {sessionVotes.filter(v => v.vote_type === 'best').length}</span>
+                    <span className="worst-votes">👎 Worst: {sessionVotes.filter(v => v.vote_type === 'worst').length}</span>
                   </div>
                   <div className="votes-table-wrapper">
                     <table className="votes-table">
@@ -3313,7 +3313,7 @@ export default function AdminPanel() {
                             <td>{vote.display_name || 'Anonymous'}</td>
                             <td className="slot-name">{vote.slot_name}</td>
                             <td className={`vote-type ${vote.vote_type}`}>
-                              {vote.vote_type === 'best' ? '­ƒæì Best' : '­ƒæÄ Worst'}
+                              {vote.vote_type === 'best' ? '👍 Best' : '👎 Worst'}
                             </td>
                             <td className="vote-time">{new Date(vote.voted_at).toLocaleString()}</td>
                           </tr>
