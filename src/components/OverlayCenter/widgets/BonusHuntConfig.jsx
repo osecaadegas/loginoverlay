@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { getAllSlots, DEFAULT_SLOT_IMAGE, invalidateCache, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
+import { getAllSlots, DEFAULT_SLOT_IMAGE, sortSlotsByProviderPriority } from '../../../utils/slotUtils';
 import { buildGoogleSlotImageSearchUrl, buildSlotImageSearchUrl } from '../../../utils/slotImageSearch';
 import { getMySubmissions, submitSlot } from '../../../services/pendingSlotService';
-import { ingestSlotToDatabase, slotFromIngestionResult } from '../../../services/slotIngestionService';
 import ColorPicker from './shared/ColorPicker';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
-import { useAdmin } from '../../../hooks/useAdmin';
 import { getBonusHuntHistory, saveBonusHuntToHistory, deleteBonusHuntHistory } from '../../../services/overlayService';
 import { updateSlotRecordsFromHunt } from '../../../services/slotRecordService';
 import TabBar from './shared/TabBar';
@@ -416,7 +414,6 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
 /* ─── Inline Dropdown Panel (replaces old modal) ─── */
 function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelCurrency, allWidgets }) {
   const c = config || {};
-  const { isSlotModder } = useAdmin();
   const [startMoney, setStartMoney] = useState(c.startMoney || '');
   const [targetMoney, setTargetMoney] = useState(c.targetMoney || '');
   const [stopLoss, setStopLoss] = useState(c.stopLoss || '');
@@ -459,6 +456,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   const [submitImageSearching, setSubmitImageSearching] = useState(false);
   const [imageSearchMeta, setImageSearchMeta] = useState(null);
   const [imageShowCount, setImageShowCount] = useState(10);
+  const [submitScrapeLoading, setSubmitScrapeLoading] = useState(false);
 
   // Slot requests queue
   const [slotRequests, setSlotRequests] = useState([]);
@@ -470,6 +468,33 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   useEffect(() => { localStorage.setItem('bh_submitImages', JSON.stringify(submitImageResults)); }, [submitImageResults]);
 
   const setField = (k, v) => setSubmitForm(p => ({ ...p, [k]: v }));
+
+  const hydratePendingSlotList = useCallback(async (createdSubmission = null) => {
+    const [allSlots, myPending] = await Promise.all([
+      getAllSlots(),
+      userId ? getMySubmissions(userId) : Promise.resolve([]),
+    ]);
+    const liveSlots = allSlots || [];
+    const submissionRows = createdSubmission
+      ? [createdSubmission, ...(myPending || []).filter(p => p.id !== createdSubmission.id)]
+      : (myPending || []);
+    const pendingAsSlots = submissionRows
+      .filter(p => p.status === 'pending')
+      .map(p => ({
+        id: `pending_${p.id}`,
+        name: p.name,
+        provider: p.provider,
+        image: p.image,
+        rtp: p.rtp,
+        volatility: p.volatility,
+        max_win_multiplier: p.max_win_multiplier,
+        _isPending: true,
+      }));
+    const liveNames = new Set(liveSlots.map(s => s.name?.toLowerCase()));
+    const uniquePending = pendingAsSlots.filter(p => !liveNames.has(p.name?.toLowerCase()));
+    setSlots([...liveSlots, ...uniquePending]);
+    return uniquePending;
+  }, [userId]);
 
   const searchSlotImages = async (nameOverride, providerOverride) => {
     const n = (typeof nameOverride === 'string' ? nameOverride : submitForm.name || '').trim();
@@ -513,56 +538,63 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
   }, [submitForm.name, submitForm.provider, showSubmitSlot, prettyImage]);
 
   const [scrapedImages, setScrapedImages] = useState([]);
+  const submitScrapeRef = useRef('');
+
+  useEffect(() => {
+    const n = (submitForm.name || '').trim();
+    if (!showSubmitSlot || !n || n.length < 3) return;
+    if (n === submitScrapeRef.current) return;
+    submitScrapeRef.current = n;
+
+    const timer = setTimeout(async () => {
+      setSubmitScrapeLoading(true);
+      try {
+        const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(n)}`);
+        if (res.ok) {
+          const { info } = await res.json();
+          if (info) {
+            const images = info.images || (info.image ? [info.image] : []);
+            setScrapedImages(images);
+            setSubmitForm(prev => ({
+              ...prev,
+              ...(info.provider && !prev.provider ? { provider: info.provider } : {}),
+              ...(info.rtp && !prev.rtp ? { rtp: String(info.rtp) } : {}),
+              ...(info.volatility && !prev.volatility ? { volatility: info.volatility } : {}),
+              ...(info.max_win_multiplier && !prev.max_win_multiplier ? { max_win_multiplier: String(info.max_win_multiplier) } : {}),
+              ...(info.image && !prev.image ? { image: info.image } : {}),
+            }));
+          } else {
+            setScrapedImages([]);
+          }
+        } else {
+          setScrapedImages([]);
+        }
+      } catch {
+        setScrapedImages([]);
+      } finally {
+        setSubmitScrapeLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [submitForm.name, showSubmitSlot]);
 
   const handleSlotSubmit = async () => {
-    const directIngest = !!isSlotModder;
-
     if (!submitForm.name?.trim()) {
       return alert('Slot name is required.');
     }
 
-    if (!directIngest && (!submitForm.provider?.trim() || !submitForm.image?.trim() || !submitForm.rtp || !submitForm.volatility || !submitForm.max_win_multiplier)) {
-      return alert('Name, Provider, Image URL, RTP, Volatility, and Max Win are required for approval.');
+    if (!userId) {
+      return alert('You must be logged in to submit a slot.');
+    }
+
+    if (!submitForm.provider?.trim() || !submitForm.image?.trim()) {
+      return alert('Name, Provider, and Image URL are required for approval.');
     }
 
     setSubmitSaving(true);
     try {
-      if (directIngest) {
-        const result = await ingestSlotToDatabase({
-          name: submitForm.name,
-          provider: submitForm.provider,
-        });
-        const ingestedSlot = slotFromIngestionResult(result);
-        if (!ingestedSlot) throw new Error('The ingestion engine did not return a usable slot.');
-
-        invalidateCache();
-        const allSlots = await getAllSlots();
-        const refreshedSlot = (allSlots || []).find(s =>
-          String(s.id) === String(ingestedSlot.id) ||
-          (s.name || '').toLowerCase() === ingestedSlot.name.toLowerCase()
-        ) || ingestedSlot;
-
-        if ((allSlots || []).some(s => String(s.id) === String(refreshedSlot.id))) {
-          setSlots(allSlots || []);
-        } else {
-          setSlots([...(allSlots || []), refreshedSlot]);
-        }
-
-        setSelectedSlot(refreshedSlot);
-        setSlotSearch(refreshedSlot.name);
-        setSubmitForm({});
-        setSubmitImageResults([]);
-        setImageSearchMeta(null);
-        setScrapedImages([]);
-        setShowSubmitSlot(false);
-        setImageShowCount(10);
-        alert(result.action === 'duplicate'
-          ? 'Slot already exists in the database and is now selected.'
-          : 'Slot added to the database and selected for this hunt.');
-        return;
-      }
-
-      await submitSlot(userId, {
+      const createdSubmission = await submitSlot(userId, {
         name: submitForm.name.trim(),
         provider: submitForm.provider.trim(),
         image: submitForm.image.trim(),
@@ -570,29 +602,25 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
         volatility: submitForm.volatility || null,
         max_win_multiplier: submitForm.max_win_multiplier ? parseFloat(submitForm.max_win_multiplier) : null,
       });
-      // Refresh slots to include the new pending one
-      const [allSlots, myPending] = await Promise.all([
-        getAllSlots(),
-        getMySubmissions(userId),
-      ]);
-      const liveSlots = allSlots || [];
-      const pendingAsSlots = (myPending || [])
-        .filter(p => p.status === 'pending')
-        .map(p => ({
-          id: `pending_${p.id}`,
-          name: p.name, provider: p.provider, image: p.image,
-          rtp: p.rtp, volatility: p.volatility,
-          max_win_multiplier: p.max_win_multiplier, _isPending: true,
-        }));
-      const liveNames = new Set(liveSlots.map(s => s.name?.toLowerCase()));
-      const unique = pendingAsSlots.filter(p => !liveNames.has(p.name?.toLowerCase()));
-      setSlots([...liveSlots, ...unique]);
+      const pendingSlots = await hydratePendingSlotList(createdSubmission);
+      const selectedPending = pendingSlots.find(s => s.id === `pending_${createdSubmission.id}`) || {
+        id: `pending_${createdSubmission.id}`,
+        name: createdSubmission.name,
+        provider: createdSubmission.provider,
+        image: createdSubmission.image,
+        rtp: createdSubmission.rtp,
+        volatility: createdSubmission.volatility,
+        max_win_multiplier: createdSubmission.max_win_multiplier,
+        _isPending: true,
+      };
+      setSelectedSlot(selectedPending);
+      setSlotSearch(selectedPending.name);
       setSubmitForm({});
       setSubmitImageResults([]);
       setImageSearchMeta(null);
       setScrapedImages([]);
       setShowSubmitSlot(false);
-      alert('Slot submitted for approval! You can now use it in your bonus hunt.');
+      alert('Slot submitted for approval and selected for this hunt.');
     } catch (e) {
       const message = getErrorMessage(e, 'Could not add slot.');
       alert(isDuplicateError(message) ? 'Slot already exists or pending.' : `Error: ${message}`);
@@ -641,7 +669,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
       }
     };
     loadSlots();
-  }, [userId]);
+  }, [userId, hydratePendingSlotList]);
 
   const filteredSlots = slotSearch.trim().length > 0 && slots.length > 0
     ? sortSlotsByProviderPriority(slots.filter(s => s?.name?.toLowerCase().includes(slotSearch.toLowerCase())))
@@ -1231,7 +1259,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <input value={submitForm.name || ''} onChange={e => setField('name', e.target.value)} placeholder="Sweet Bonanza" />
               </label>
               <label className="bh-submit-field">
-                <span>Provider {!isSlotModder && <em>*</em>}</span>
+                <span>Provider <em>*</em></span>
                 <input list="bh-prov-list" value={submitForm.provider || ''} onChange={e => setField('provider', e.target.value)} placeholder="Pragmatic Play" />
                 <datalist id="bh-prov-list">{slotProviders.map(p => <option key={p} value={p} />)}</datalist>
               </label>
@@ -1254,7 +1282,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 <input type="number" value={submitForm.max_win_multiplier || ''} onChange={e => setField('max_win_multiplier', e.target.value || null)} placeholder="10000" />
               </label>
               <label className="bh-submit-field">
-                <span>Image {!isSlotModder && <em>*</em>}</span>
+                <span>Image <em>*</em></span>
                 <div style={{ display: 'flex', gap: 4 }}>
                   <input style={{ flex: 1, fontSize: '0.68rem' }} value={submitForm.image || ''} onChange={e => setField('image', e.target.value)} placeholder="URL or search →" />
                   <button type="button" className="bh-submit-search-btn" onClick={() => searchSlotImages()} disabled={!submitForm.name || submitImageSearching}>
@@ -1268,6 +1296,9 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
                 </div>
               </label>
             </div>
+            {submitScrapeLoading && (
+              <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 0 8px' }}>Auto-fetching slot info...</p>
+            )}
             {(submitImageResults.length > 0 || submitForm.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (<>
               <div className="bh-submit-images">
                 {submitForm.image && (
@@ -1318,7 +1349,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
             <div className="bh-submit-actions">
               <button className="bh-submit-cancel" onClick={() => { setShowSubmitSlot(false); setSubmitForm({}); setSubmitImageResults([]); setImageSearchMeta(null); setScrapedImages([]); setImageShowCount(10); setPrettyImage(false); }}>Cancel</button>
               <button className="bh-submit-save" onClick={handleSlotSubmit} disabled={submitSaving}>
-                {submitSaving ? 'Submitting...' : (isSlotModder ? 'Add to Database' : 'Submit for Approval')}
+                {submitSaving ? 'Submitting...' : 'Submit for Approval'}
               </button>
             </div>
           </div>

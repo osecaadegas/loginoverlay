@@ -40,6 +40,9 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 12. `012_cleanup_retired_thelife_and_extension.sql`
 	 Drops retired The Life, season pass, and Twitch extension schema from older databases.
 
+13. `013_pending_slot_submission_repair.sql`
+	 Repairs pending slot submissions by allowing incomplete scraped metadata and aligning approval queue policies with admin/superadmin roles.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.

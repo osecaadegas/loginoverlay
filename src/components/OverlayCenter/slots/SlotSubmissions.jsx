@@ -99,17 +99,21 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
   const [imageResults, setImageResults] = useState([]);
   const [imageSearching, setImageSearching] = useState(false);
   const [imageSearchMeta, setImageSearchMeta] = useState(null);
+  const [scrapedImages, setScrapedImages] = useState([]);
+  const [scrapeLoading, setScrapeLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const nameRef = useRef(null);
   const wrapRef = useRef(null);
+  const scrapeRef = useRef('');
+  const autoImageRef = useRef('');
 
   useEffect(() => { setTimeout(() => { setExpanded(true); nameRef.current?.focus(); }, 30); }, []);
 
   const set = (k, v) => setForm(p => ({ ...p, [k]: v }));
 
-  const searchImages = async () => {
-    const name = (form.name || '').trim();
-    const provider = (form.provider || '').trim();
+  const searchImages = async (nameOverride, providerOverride) => {
+    const name = (typeof nameOverride === 'string' ? nameOverride : form.name || '').trim();
+    const provider = (typeof providerOverride === 'string' ? providerOverride : form.provider || '').trim();
     if (!name && !provider) return;
     const fallbackMeta = {
       googleUrl: buildGoogleSlotImageSearchUrl({ name, provider }),
@@ -134,6 +138,56 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
     setImageSearching(false);
   };
 
+  useEffect(() => {
+    const name = (form.name || '').trim();
+    if (!name || name.length < 3) return;
+    if (name === scrapeRef.current) return;
+    scrapeRef.current = name;
+
+    const timer = setTimeout(async () => {
+      setScrapeLoading(true);
+      try {
+        const res = await fetch(`/api/fetch-slot-info?name=${encodeURIComponent(name)}`);
+        if (res.ok) {
+          const { info } = await res.json();
+          if (info) {
+            const images = info.images || (info.image ? [info.image] : []);
+            setScrapedImages(images);
+            setForm(prev => ({
+              ...prev,
+              ...(info.provider && !prev.provider ? { provider: info.provider } : {}),
+              ...(info.rtp && !prev.rtp ? { rtp: String(info.rtp) } : {}),
+              ...(info.volatility && !prev.volatility ? { volatility: info.volatility } : {}),
+              ...(info.max_win_multiplier && !prev.max_win_multiplier ? { max_win_multiplier: String(info.max_win_multiplier) } : {}),
+              ...(info.image && !prev.image ? { image: info.image } : {}),
+            }));
+          } else {
+            setScrapedImages([]);
+          }
+        } else {
+          setScrapedImages([]);
+        }
+      } catch {
+        setScrapedImages([]);
+      } finally {
+        setScrapeLoading(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [form.name]);
+
+  useEffect(() => {
+    const name = (form.name || '').trim();
+    const provider = (form.provider || '').trim();
+    if (!name || !provider) return;
+    const key = `${name}|${provider}`;
+    if (key === autoImageRef.current) return;
+    autoImageRef.current = key;
+    const timer = setTimeout(() => searchImages(name, provider), 450);
+    return () => clearTimeout(timer);
+  }, [form.name, form.provider]);
+
   const toggleFeat = (feat) => {
     const cur = Array.isArray(form.features) ? form.features : [];
     set('features', cur.includes(feat) ? cur.filter(f => f !== feat) : [...cur, feat]);
@@ -153,6 +207,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
         volatility: form.volatility || null,
         max_win_multiplier: form.max_win_multiplier ? parseFloat(form.max_win_multiplier) : null,
       });
+      setScrapedImages([]);
       onSubmitted();
       onClose();
     } catch (e) {
@@ -240,11 +295,21 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
       </div>
 
       {/* Image results + preview row */}
-      {(imageResults.length > 0 || form.image || imageSearchMeta?.googleUrl) && (
+      {scrapeLoading && (
+        <p style={{ fontSize: 11, color: '#94a3b8', margin: '0 14px 8px' }}>Auto-fetching slot info...</p>
+      )}
+
+      {(imageResults.length > 0 || form.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (
         <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {form.image && (
             <img src={form.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(168,85,247,0.4)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
           )}
+          {scrapedImages.slice(0, 8).map((url, i) => (
+            <button key={`scraped-${i}`} type="button" onClick={() => set('image', url)}
+              style={{ border: form.image === url ? '2px solid #dbe2e8' : '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 2, background: 'transparent', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
+              <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
+            </button>
+          ))}
           {imageResults.slice(0, 8).map((img, i) => (
             <button key={i} type="button" onClick={() => { set('image', img.url); setImageResults([]); }}
               style={{ border: form.image === img.url ? '2px solid #dbe2e8' : '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: 2, background: 'transparent', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
