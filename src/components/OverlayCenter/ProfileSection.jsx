@@ -62,32 +62,32 @@ const S = {
   /* top identity strip */
   identity: {
     display: 'flex', alignItems: 'center', gap: 20, padding: '18px 22px',
-    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14,
+    background: 'linear-gradient(150deg, rgba(36,16,74,0.78), rgba(18,3,43,0.9))', border: '1px solid rgba(194,92,255,0.28)', borderRadius: 22,
   },
-  avatar: { width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(200,208,216,0.3)', flexShrink: 0 },
-  avatarPlaceholder: { width: 64, height: 64, borderRadius: '50%', background: 'rgba(200,208,216,0.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '3px solid rgba(200,208,216,0.24)', flexShrink: 0 },
+  avatar: { width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,72,190,0.38)', flexShrink: 0 },
+  avatarPlaceholder: { width: 64, height: 64, borderRadius: '50%', background: 'rgba(240,68,183,0.16)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 26, border: '3px solid rgba(255,72,190,0.32)', flexShrink: 0 },
   identityFields: { display: 'flex', flex: 1, gap: 12, flexWrap: 'wrap', minWidth: 0 },
   /* grid for middle section */
   grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 },
   /* cards used in the grid */
   card: {
-    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 14, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12,
+    background: 'linear-gradient(150deg, rgba(36,16,74,0.78), rgba(18,3,43,0.9))', border: '1px solid rgba(194,92,255,0.28)',
+    borderRadius: 22, padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12,
   },
-  cardTitle: { fontSize: '0.88rem', fontWeight: 700, color: '#fff', display: 'flex', alignItems: 'center', gap: 8, margin: 0 },
+  cardTitle: { fontSize: '0.88rem', fontWeight: 850, color: '#fff7ff', display: 'flex', alignItems: 'center', gap: 8, margin: 0 },
   /* form elements */
-  label: { display: 'block', fontSize: '0.72rem', color: '#94a3b8', fontWeight: 600, marginBottom: 3, textTransform: 'uppercase', letterSpacing: '0.04em' },
-  input: { width: '100%', padding: '8px 11px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#fff', fontSize: '0.82rem', boxSizing: 'border-box' },
+  label: { display: 'block', fontSize: '0.72rem', color: '#39f5d3', fontWeight: 800, marginBottom: 3, textTransform: 'uppercase', letterSpacing: 0 },
+  input: { width: '100%', padding: '8px 11px', background: 'rgba(18,3,43,0.88)', border: '1px solid rgba(194,92,255,0.3)', borderRadius: 16, color: '#fff7ff', fontSize: '0.82rem', boxSizing: 'border-box' },
   row2: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 },
   /* platform compact row */
   platRow: { display: 'flex', alignItems: 'center', gap: 10 },
-  dot: (on) => ({ width: 7, height: 7, borderRadius: '50%', background: on ? '#dbe2e8' : '#333', flexShrink: 0 }),
+  dot: (on) => ({ width: 7, height: 7, borderRadius: '50%', background: on ? '#39f5d3' : '#8d78b7', flexShrink: 0, boxShadow: on ? '0 0 16px rgba(57,245,211,0.36)' : 'none' }),
   /* buttons */
-  btn: { padding: '8px 14px', borderRadius: 8, border: 'none', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 600, transition: 'all 0.15s' },
-  btnSync: { background: 'linear-gradient(135deg, #5c6570 0%, #444c57 58%, #313843 100%)', color: '#fff', width: '100%', padding: '12px 16px', fontSize: '0.88rem', borderRadius: 10, border: 'none', cursor: 'pointer', fontWeight: 700 },
+  btn: { padding: '8px 14px', borderRadius: 999, border: '1px solid rgba(194,92,255,0.34)', cursor: 'pointer', fontSize: '0.82rem', fontWeight: 800, transition: 'all 0.15s' },
+  btnSync: { background: 'linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%)', color: '#fff7ff', width: '100%', padding: '12px 16px', fontSize: '0.88rem', borderRadius: 999, border: '1px solid rgba(255,72,190,0.5)', cursor: 'pointer', fontWeight: 850 },
   syncBar: {
     display: 'flex', alignItems: 'center', gap: 14, padding: '14px 20px',
-    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 14,
+    background: 'linear-gradient(150deg, rgba(36,16,74,0.78), rgba(18,3,43,0.9))', border: '1px solid rgba(194,92,255,0.28)', borderRadius: 22,
   },
   syncResult: { fontSize: '0.8rem', padding: '8px 14px', borderRadius: 10, textAlign: 'center', fontWeight: 600 },
 };
@@ -151,16 +151,16 @@ function ApiKeyCard({ user }) {
     <div style={S.card}>
       <h3 style={S.cardTitle}>🔑 Website API</h3>
       {!hasAccess ? (
-        <p style={{ fontSize: '0.78rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
+        <p style={{ fontSize: '0.78rem', color: '#c9b8e8', margin: 0, lineHeight: 1.5 }}>
           API access not enabled for your account. Ask the site admin to grant you access from the Admin Panel → API Keys tab.
         </p>
       ) : !apiKey ? (
         <div>
-          <p style={{ fontSize: '0.78rem', color: '#94a3b8', margin: '0 0 8px', lineHeight: 1.5 }}>
+          <p style={{ fontSize: '0.78rem', color: '#c9b8e8', margin: '0 0 8px', lineHeight: 1.5 }}>
             Sync your bonus hunt data to your own website in real-time.
           </p>
           <button
-            style={{ ...S.btn, background: 'rgba(226,232,240,0.12)', color: '#eef2f5', fontWeight: 700, width: '100%' }}
+            style={{ ...S.btn, background: 'linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%)', color: '#fff7ff', fontWeight: 800, width: '100%' }}
             onClick={generateKey}
           >
             🔑 Generate API Key
@@ -169,28 +169,28 @@ function ApiKeyCard({ user }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{
-            background: 'rgba(0,0,0,0.3)', borderRadius: 8, padding: '8px 10px',
-            fontFamily: 'monospace', fontSize: '0.75rem', color: '#dbe2e8',
+            background: 'rgba(13,2,31,0.86)', borderRadius: 16, padding: '8px 10px',
+            fontFamily: 'monospace', fontSize: '0.75rem', color: '#fff7ff',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
             <span>{apiKey.api_key.slice(0, 12)}...{apiKey.api_key.slice(-8)}</span>
             <button onClick={copyKey} style={{
-              background: 'none', border: '1px solid rgba(255,255,255,0.1)',
-              color: '#e5e7eb', fontSize: '0.7rem', padding: '2px 8px', borderRadius: 4, cursor: 'pointer',
+              background: 'rgba(36,16,74,0.58)', border: '1px solid rgba(194,92,255,0.34)',
+              color: '#39f5d3', fontSize: '0.7rem', padding: '2px 8px', borderRadius: 999, cursor: 'pointer',
             }}>
               {copied ? '✓' : '📋'}
             </button>
           </div>
-          <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
-            Add to your website: <code style={{ background: 'rgba(226,232,240,0.12)', padding: '1px 4px', borderRadius: 3, fontSize: '0.68rem', color: '#eef2f5' }}>&lt;script src="{window.location.origin}/bonus-hunt-embed.js"&gt;</code>
+          <p style={{ fontSize: '0.72rem', color: '#c9b8e8', margin: 0, lineHeight: 1.5 }}>
+            Add to your website: <code style={{ background: 'rgba(36,16,74,0.72)', padding: '1px 6px', borderRadius: 999, fontSize: '0.68rem', color: '#fff7ff', border: '1px solid rgba(194,92,255,0.28)' }}>&lt;script src="{window.location.origin}/bonus-hunt-embed.js"&gt;</code>
           </p>
           <div style={{
             display: 'flex', alignItems: 'center', gap: 6,
-            fontSize: '0.72rem', color: apiKey.is_active ? '#dbe2e8' : '#f87171',
+            fontSize: '0.72rem', color: apiKey.is_active ? '#39f5d3' : '#ff8ab8',
           }}>
-            <div style={{ width: 6, height: 6, borderRadius: '50%', background: apiKey.is_active ? '#dbe2e8' : '#f87171' }} />
+            <div style={{ width: 6, height: 6, borderRadius: '50%', background: apiKey.is_active ? '#39f5d3' : '#ff4f8b' }} />
             {apiKey.is_active ? 'Active' : 'Disabled'}
-            {apiKey.last_used_at && <span style={{ color: '#64748b' }}> • Last used {new Date(apiKey.last_used_at).toLocaleDateString()}</span>}
+            {apiKey.last_used_at && <span style={{ color: '#8d78b7' }}> • Last used {new Date(apiKey.last_used_at).toLocaleDateString()}</span>}
           </div>
         </div>
       )}
@@ -352,12 +352,12 @@ export default function ProfileSection({ widgets, saveWidget }) {
   /* ── Count connected platforms ── */
   const connectedPlatforms = useMemo(() => {
     const list = [];
-    if (profile.twitchUsername) list.push({ name: 'Twitch', user: profile.twitchUsername, color: '#dbe2e8' });
-    if (profile.kickChannel) list.push({ name: 'Kick', user: profile.kickChannel, color: '#c8d0d8' });
-    if (profile.youtubeChannel) list.push({ name: 'YouTube', user: profile.youtubeChannel, color: '#eef2f5' });
-    if (profile.discordTag) list.push({ name: 'Discord', user: profile.discordTag, color: '#bcc4cc' });
-    if (profile.spotify_access_token) list.push({ name: 'Spotify', user: 'Connected', color: '#d6dde4' });
-    if (profile.seChannelId && profile.seJwtToken) list.push({ name: 'StreamElements', user: 'Connected', color: '#b2bac3' });
+    if (profile.twitchUsername) list.push({ name: 'Twitch', user: profile.twitchUsername, color: '#8b5cf6' });
+    if (profile.kickChannel) list.push({ name: 'Kick', user: profile.kickChannel, color: '#ffb84d' });
+    if (profile.youtubeChannel) list.push({ name: 'YouTube', user: profile.youtubeChannel, color: '#f044b7' });
+    if (profile.discordTag) list.push({ name: 'Discord', user: profile.discordTag, color: '#8b5cf6' });
+    if (profile.spotify_access_token) list.push({ name: 'Spotify', user: 'Connected', color: '#39f5d3' });
+    if (profile.seChannelId && profile.seJwtToken) list.push({ name: 'StreamElements', user: 'Connected', color: '#ffb84d' });
     return list;
   }, [profile]);
 
@@ -568,7 +568,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
   const providerBadge = authProvider === 'twitch' ? '🟣 Twitch' : authProvider === 'google' ? '🔵 Google' : authProvider === 'discord' ? '🟣 Discord' : '📧 Email';
 
   return (
-    <div style={S.page}>
+    <div className="oc-profile-page" style={S.page}>
       {/* ──── Row 1: Identity strip ──── */}
       <div style={S.identity} data-tour="profile-identity">
         {profile.avatarUrl ? (
@@ -590,7 +590,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <input style={S.input} value={profile.avatarUrl} onChange={e => set('avatarUrl', e.target.value)} placeholder="https://..." />
           </div>
         </div>
-        <span style={{ fontSize: '0.7rem', color: '#64748b', whiteSpace: 'nowrap', flexShrink: 0 }}>{providerBadge}</span>
+        <span style={{ fontSize: '0.7rem', color: '#c9b8e8', whiteSpace: 'nowrap', flexShrink: 0 }}>{providerBadge}</span>
       </div>
 
       {/* ──── Row 2: Two-column grid ──── */}
@@ -626,7 +626,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
           </div>
 
           <button
-            style={{ ...S.btn, background: platformSaved ? 'rgba(219,226,232,0.15)' : 'rgba(255,255,255,0.07)', color: platformSaved ? '#dbe2e8' : '#94a3b8', border: '1px solid rgba(255,255,255,0.1)', width: '100%', marginTop: 4 }}
+            style={{ ...S.btn, background: platformSaved ? 'rgba(57,245,211,0.16)' : 'rgba(36,16,74,0.58)', color: platformSaved ? '#39f5d3' : '#c9b8e8', border: '1px solid rgba(194,92,255,0.34)', width: '100%', marginTop: 4 }}
             onClick={async () => {
               await saveProfileToDb();
               setPlatformSaved(true);
@@ -643,12 +643,12 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#fff' }}>📡 Widget Sync</span>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
               {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).map(w => (
-                <span key={w.id} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 6, background: 'rgba(255,255,255,0.05)', color: '#94a3b8', textTransform: 'capitalize' }}>
+                <span key={w.id} style={{ fontSize: '0.7rem', padding: '2px 8px', borderRadius: 999, background: 'rgba(36,16,74,0.58)', color: '#39f5d3', border: '1px solid rgba(194,92,255,0.28)', textTransform: 'capitalize' }}>
                   {w.widget_type === 'navbar' ? '📊' : w.widget_type === 'chat' ? '💬' : w.widget_type === 'spotify_now_playing' ? '🎵' : w.widget_type === 'bets' ? '🎲' : '🎁'} {w.widget_type.replace('_', ' ')}
                 </span>
               ))}
               {(widgets || []).filter(w => SYNC_MAP[w.widget_type]).length === 0 && (
-                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>Add widgets to enable sync</span>
+                <span style={{ fontSize: '0.72rem', color: '#c9b8e8' }}>Add widgets to enable sync</span>
               )}
             </div>
           </div>
@@ -664,9 +664,9 @@ export default function ProfileSection({ widgets, saveWidget }) {
         {syncMsg && (
           <div style={{
             ...S.syncResult,
-            background: syncMsg.startsWith('✅') ? 'rgba(219,226,232,0.08)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.08)' : 'rgba(188,196,204,0.08)',
-            color: syncMsg.startsWith('✅') ? '#eef2f5' : syncMsg.startsWith('❌') ? '#f87171' : '#dbe2e8',
-            border: `1px solid ${syncMsg.startsWith('✅') ? 'rgba(219,226,232,0.2)' : syncMsg.startsWith('❌') ? 'rgba(239,68,68,0.2)' : 'rgba(188,196,204,0.2)'}`,
+            background: syncMsg.startsWith('✅') ? 'rgba(57,245,211,0.08)' : syncMsg.startsWith('❌') ? 'rgba(240,68,183,0.1)' : 'rgba(255,184,77,0.1)',
+            color: syncMsg.startsWith('✅') ? '#39f5d3' : syncMsg.startsWith('❌') ? '#ff8ab8' : '#ffb84d',
+            border: `1px solid ${syncMsg.startsWith('✅') ? 'rgba(57,245,211,0.24)' : syncMsg.startsWith('❌') ? 'rgba(240,68,183,0.24)' : 'rgba(255,184,77,0.24)'}`,
           }}>
             {syncMsg}
           </div>
@@ -675,11 +675,11 @@ export default function ProfileSection({ widgets, saveWidget }) {
         {/* OBS Browser Source Setup (below Widget Sync) */}
         <div data-tour="profile-obs-guide" style={{ ...S.card }}>
           <h3 style={S.cardTitle}>🖥️ OBS Browser Source Setup</h3>
-          <p style={{ fontSize: '0.75rem', color: '#94a3b8', margin: 0, lineHeight: 1.5 }}>
-            Add your overlay as a Browser Source in OBS. Go to <strong style={{ color: '#e2e8f0' }}>Overlay Center → Get Link</strong> and paste the URL into OBS. Recommended settings: <strong style={{ color: '#e2e8f0' }}>1920×1080</strong>, enable <strong style={{ color: '#e2e8f0' }}>Shutdown source when not visible</strong>.
+          <p style={{ fontSize: '0.75rem', color: '#c9b8e8', margin: 0, lineHeight: 1.5 }}>
+            Add your overlay as a Browser Source in OBS. Go to <strong style={{ color: '#39f5d3' }}>Overlay Center → Get Link</strong> and paste the URL into OBS. Recommended settings: <strong style={{ color: '#39f5d3' }}>1920×1080</strong>, enable <strong style={{ color: '#39f5d3' }}>Shutdown source when not visible</strong>.
           </p>
-          <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.5 }}>
-            If the overlay looks blurry, right-click the source in OBS → <strong style={{ color: '#94a3b8' }}>Transform → Edit Transform</strong> and make sure the size matches your canvas resolution exactly.
+          <p style={{ fontSize: '0.72rem', color: '#c9b8e8', margin: 0, lineHeight: 1.5 }}>
+            If the overlay looks blurry, right-click the source in OBS → <strong style={{ color: '#39f5d3' }}>Transform → Edit Transform</strong> and make sure the size matches your canvas resolution exactly.
           </p>
         </div>
         </div>
@@ -691,7 +691,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <h3 style={S.cardTitle}>🎵 Spotify</h3>
             <div style={S.platRow}>
               <div style={S.dot(!!profile.spotify_access_token)} />
-              <span style={{ fontSize: '0.82rem', color: profile.spotify_access_token ? '#dbe2e8' : '#64748b', fontWeight: 600, flex: 1 }}>
+              <span style={{ fontSize: '0.82rem', color: profile.spotify_access_token ? '#39f5d3' : '#c9b8e8', fontWeight: 600, flex: 1 }}>
                 {profile.spotify_access_token ? 'Connected' : 'Not connected'}
               </span>
               {profile.spotify_access_token ? (
@@ -700,7 +700,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
                 </button>
               ) : (
                 <button
-                  style={{ ...S.btn, background: 'linear-gradient(135deg, #5c6570 0%, #444c57 58%, #313843 100%)', color: '#fff', opacity: spotifyLoading ? 0.6 : 1 }}
+                  style={{ ...S.btn, background: 'linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%)', color: '#fff7ff', opacity: spotifyLoading ? 0.6 : 1 }}
                   onClick={connectSpotify}
                   disabled={spotifyLoading}
                 >
@@ -709,26 +709,26 @@ export default function ProfileSection({ widgets, saveWidget }) {
               )}
             </div>
             {spotifyError && <p style={{ fontSize: '0.74rem', color: '#f87171', margin: 0 }}>{spotifyError}</p>}
-            <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
+            <p style={{ fontSize: '0.72rem', color: '#c9b8e8', margin: 0, lineHeight: 1.4 }}>
               Connecting here auto-syncs to your Navbar &amp; Spotify widgets.
             </p>
             {/* Song Request chat listener status */}
             {user && profile.twitchUsername && (
-              <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(226,232,240,0.08)', borderRadius: 10, border: '1px solid rgba(200,208,216,0.2)' }}>
-                <p style={{ fontSize: '0.74rem', color: '#eef2f5', fontWeight: 700, margin: '0 0 6px' }}>🎶 Chat Song Requests</p>
+              <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(57,245,211,0.08)', borderRadius: 16, border: '1px solid rgba(57,245,211,0.22)' }}>
+                <p style={{ fontSize: '0.74rem', color: '#fff7ff', fontWeight: 700, margin: '0 0 6px' }}>🎶 Chat Song Requests</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: songIrcStatus === 'live' ? '#dbe2e8' : songIrcStatus === 'connecting' ? '#bcc4cc' : '#64748b' }} />
-                  <span style={{ fontSize: '0.72rem', color: songIrcStatus === 'live' ? '#dbe2e8' : songIrcStatus === 'connecting' ? '#bcc4cc' : '#64748b', fontWeight: 600 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: songIrcStatus === 'live' ? '#39f5d3' : songIrcStatus === 'connecting' ? '#ffb84d' : '#8d78b7' }} />
+                  <span style={{ fontSize: '0.72rem', color: songIrcStatus === 'live' ? '#39f5d3' : songIrcStatus === 'connecting' ? '#ffb84d' : '#c9b8e8', fontWeight: 600 }}>
                     {songIrcStatus === 'live' ? `Listening to #${profile.twitchUsername}` : songIrcStatus === 'connecting' ? 'Connecting…' : 'Not connected'}
                   </span>
                 </div>
                 {songIrcStatus === 'live' && (
-                  <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '4px 0 0', lineHeight: 1.4 }}>
-                    Viewers type <strong style={{ color: '#e2e8f0' }}>!song Blinding Lights</strong> in chat to queue songs on Spotify
+                  <p style={{ fontSize: '0.65rem', color: '#c9b8e8', margin: '4px 0 0', lineHeight: 1.4 }}>
+                    Viewers type <strong style={{ color: '#39f5d3' }}>!song Blinding Lights</strong> in chat to queue songs on Spotify
                   </p>
                 )}
                 {songIrcStatus === 'off' && profile.twitchUsername && (
-                  <p style={{ fontSize: '0.65rem', color: '#64748b', margin: '4px 0 0', lineHeight: 1.4 }}>
+                  <p style={{ fontSize: '0.65rem', color: '#c9b8e8', margin: '4px 0 0', lineHeight: 1.4 }}>
                     Will auto-connect when Spotify is linked and Twitch username is set
                   </p>
                 )}
@@ -736,17 +736,17 @@ export default function ProfileSection({ widgets, saveWidget }) {
             )}
             {/* Slot Request chat listener status */}
             {user && profile.twitchUsername && (
-              <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(226,232,240,0.08)', borderRadius: 10, border: '1px solid rgba(200,208,216,0.2)' }}>
-                <p style={{ fontSize: '0.74rem', color: '#eef2f5', fontWeight: 700, margin: '0 0 6px' }}>🎰 Chat Slot Requests</p>
+              <div style={{ marginTop: 8, padding: '10px 12px', background: 'rgba(57,245,211,0.08)', borderRadius: 16, border: '1px solid rgba(57,245,211,0.22)' }}>
+                <p style={{ fontSize: '0.74rem', color: '#fff7ff', fontWeight: 700, margin: '0 0 6px' }}>🎰 Chat Slot Requests</p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: srIrcStatus === 'live' ? '#dbe2e8' : srIrcStatus === 'connecting' ? '#bcc4cc' : '#64748b' }} />
-                  <span style={{ fontSize: '0.72rem', color: srIrcStatus === 'live' ? '#dbe2e8' : srIrcStatus === 'connecting' ? '#bcc4cc' : '#64748b', fontWeight: 600 }}>
+                  <div style={{ width: 8, height: 8, borderRadius: '50%', background: srIrcStatus === 'live' ? '#39f5d3' : srIrcStatus === 'connecting' ? '#ffb84d' : '#8d78b7' }} />
+                  <span style={{ fontSize: '0.72rem', color: srIrcStatus === 'live' ? '#39f5d3' : srIrcStatus === 'connecting' ? '#ffb84d' : '#c9b8e8', fontWeight: 600 }}>
                     {srIrcStatus === 'live' ? `Listening to #${profile.twitchUsername}` : srIrcStatus === 'connecting' ? 'Connecting…' : 'Not connected'}
                   </span>
                 </div>
                 {srIrcStatus === 'live' && (
-                  <p style={{ fontSize: '0.65rem', color: '#94a3b8', margin: '4px 0 0', lineHeight: 1.4 }}>
-                    Viewers type <strong style={{ color: '#e2e8f0' }}>!sr Gates of Olympus</strong> in chat to request slots
+                  <p style={{ fontSize: '0.65rem', color: '#c9b8e8', margin: '4px 0 0', lineHeight: 1.4 }}>
+                    Viewers type <strong style={{ color: '#39f5d3' }}>!sr Gates of Olympus</strong> in chat to request slots
                   </p>
                 )}
               </div>
@@ -758,7 +758,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
             <h3 style={S.cardTitle}>🎮 StreamElements</h3>
             <div style={S.platRow}>
               <div style={S.dot(!!(profile.seChannelId && profile.seJwtToken))} />
-              <span style={{ fontSize: '0.82rem', color: (profile.seChannelId && profile.seJwtToken) ? '#dbe2e8' : '#64748b', fontWeight: 600, flex: 1 }}>
+              <span style={{ fontSize: '0.82rem', color: (profile.seChannelId && profile.seJwtToken) ? '#39f5d3' : '#c9b8e8', fontWeight: 600, flex: 1 }}>
                 {(profile.seChannelId && profile.seJwtToken) ? 'Connected' : 'Not connected'}
               </span>
               {(profile.seChannelId && profile.seJwtToken) && (
@@ -784,7 +784,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
               <input style={S.input} type="password" value={profile.seJwtToken} onChange={e => set('seJwtToken', e.target.value)} placeholder="Your SE JWT Token" />
             </div>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button style={{ ...S.btn, background: 'rgba(226,232,240,0.12)', color: '#eef2f5', fontSize: '0.76rem', padding: '6px 16px', flex: 1, fontWeight: 700 }}
+              <button style={{ ...S.btn, background: 'rgba(240,68,183,0.18)', color: '#fff7ff', fontSize: '0.76rem', padding: '6px 16px', flex: 1, fontWeight: 800 }}
                 disabled={seSaving || !profile.seChannelId || !profile.seJwtToken}
                 onClick={async () => {
                   setSeSaving(true);
@@ -808,7 +808,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
                 {seSaving ? '⏳ Saving...' : '💾 Save Credentials'}
               </button>
               {(profile.seChannelId && profile.seJwtToken) && (
-                <button style={{ ...S.btn, background: 'rgba(200,208,216,0.12)', color: '#dbe2e8', fontSize: '0.76rem', padding: '6px 12px' }}
+                <button style={{ ...S.btn, background: 'rgba(139,92,246,0.18)', color: '#39f5d3', fontSize: '0.76rem', padding: '6px 12px' }}
                   onClick={async () => {
                     setSeTestMsg('⏳ Testing...');
                     try {
@@ -828,34 +828,34 @@ export default function ProfileSection({ widgets, saveWidget }) {
                 </button>
               )}
             </div>
-            {seTestMsg && <p style={{ fontSize: '0.74rem', color: seTestMsg.startsWith('✅') ? '#dbe2e8' : seTestMsg.startsWith('❌') ? '#f87171' : '#bcc4cc', margin: 0, fontWeight: 600 }}>{seTestMsg}</p>}
-            <p style={{ fontSize: '0.72rem', color: '#64748b', margin: 0, lineHeight: 1.4 }}>
-              Find these in your <a href="https://streamelements.com/dashboard/account/channels" target="_blank" rel="noreferrer" style={{ color: '#dbe2e8' }}>SE Dashboard</a> → Account → Channels.
+            {seTestMsg && <p style={{ fontSize: '0.74rem', color: seTestMsg.startsWith('✅') ? '#39f5d3' : seTestMsg.startsWith('❌') ? '#ff8ab8' : '#ffb84d', margin: 0, fontWeight: 600 }}>{seTestMsg}</p>}
+            <p style={{ fontSize: '0.72rem', color: '#c9b8e8', margin: 0, lineHeight: 1.4 }}>
+              Find these in your <a href="https://streamelements.com/dashboard/account/channels" target="_blank" rel="noreferrer" style={{ color: '#39f5d3' }}>SE Dashboard</a> → Account → Channels.
               <br />Each user must enter their own credentials. Saved per-account.
             </p>
 
             {/* ── !bet command URL ── */}
-            <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(99,102,241,0.08)', borderRadius: 8, border: '1px solid rgba(99,102,241,0.25)' }}>
-              <p style={{ fontSize: '0.78rem', fontWeight: 700, color: '#a5b4fc', margin: '0 0 4px' }}>
+            <div style={{ marginTop: 10, padding: '10px 12px', background: 'rgba(139,92,246,0.12)', borderRadius: 16, border: '1px solid rgba(194,92,255,0.28)' }}>
+              <p style={{ fontSize: '0.78rem', fontWeight: 800, color: '#39f5d3', margin: '0 0 4px' }}>
                 🔗 !bet Command URL
               </p>
-              <p style={{ fontSize: '0.72rem', color: '#94a3b8', margin: '0 0 6px' }}>
-                In SE, create a custom command <code style={{ color: '#c7d2fe' }}>!bet</code> with this URL response:
+              <p style={{ fontSize: '0.72rem', color: '#c9b8e8', margin: '0 0 6px' }}>
+                In SE, create a custom command <code style={{ color: '#39f5d3' }}>!bet</code> with this URL response:
               </p>
-              <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: 6, overflow: 'hidden', border: '1px solid rgba(99,102,241,0.2)' }}>
-                <code style={{ flex: 1, display: 'block', fontSize: '0.65rem', wordBreak: 'break-all', color: '#c7d2fe', background: 'rgba(0,0,0,0.35)', padding: '7px 9px', lineHeight: 1.6 }}>
+              <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(194,92,255,0.3)' }}>
+                <code style={{ flex: 1, display: 'block', fontSize: '0.65rem', wordBreak: 'break-all', color: '#fff7ff', background: 'rgba(13,2,31,0.86)', padding: '7px 9px', lineHeight: 1.6 }}>
                   {`${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || '<your-user-id>'}&w1=\${1}&w2=\${2}&requester=\${user.username}`}
                 </code>
                 <button
-                  style={{ background: 'rgba(99,102,241,0.2)', border: 'none', color: '#a5b4fc', padding: '0 12px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 700, flexShrink: 0 }}
+                  style={{ background: 'rgba(240,68,183,0.22)', border: 'none', color: '#fff7ff', padding: '0 12px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 800, flexShrink: 0 }}
                   onClick={() => {
                     const url = `${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || ''}&w1=\${1}&w2=\${2}&requester=\${user.username}`;
                     navigator.clipboard.writeText(url).catch(() => {});
                   }}
                 >📋</button>
               </div>
-              <p style={{ fontSize: '0.68rem', color: '#64748b', margin: '5px 0 0' }}>
-                <code style={{ color: '#818cf8' }}>{'${1}'}</code> = option · <code style={{ color: '#818cf8' }}>{'${2}'}</code> = amount · <code style={{ color: '#818cf8' }}>{'${user.username}'}</code> = viewer (SE placeholders)
+              <p style={{ fontSize: '0.68rem', color: '#c9b8e8', margin: '5px 0 0' }}>
+                <code style={{ color: '#39f5d3' }}>{'${1}'}</code> = option · <code style={{ color: '#39f5d3' }}>{'${2}'}</code> = amount · <code style={{ color: '#39f5d3' }}>{'${user.username}'}</code> = viewer (SE placeholders)
               </p>
             </div>
           </div>
@@ -883,7 +883,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
                 </span>
               ))}
               {connectedPlatforms.length === 0 && (
-                <span style={{ fontSize: '0.72rem', color: '#64748b' }}>No platforms connected yet</span>
+                <span style={{ fontSize: '0.72rem', color: '#c9b8e8' }}>No platforms connected yet</span>
               )}
             </div>
           </div>

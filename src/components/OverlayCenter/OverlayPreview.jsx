@@ -74,7 +74,7 @@ export default function OverlayPreview({ widgets, theme }) {
         margin: '0 auto',
         borderRadius: 10,
         overflow: 'hidden',
-        border: '1px solid rgba(255,255,255,0.08)',
+        border: '1px solid rgba(194,92,255,0.28)',
         position: 'relative',
         background: '#0f0f1a',
       }}>
@@ -93,7 +93,7 @@ export default function OverlayPreview({ widgets, theme }) {
             <div style={{
               position: 'absolute', inset: 0,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: 'rgba(255,255,255,0.25)', fontSize: 18, fontFamily: 'Inter, sans-serif',
+              color: 'rgba(201,184,232,0.55)', fontSize: 18, fontFamily: 'Inter, sans-serif',
             }}>
               No visible widgets
             </div>

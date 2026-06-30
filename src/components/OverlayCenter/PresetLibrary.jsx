@@ -70,7 +70,7 @@ const PresetThumbnail = memo(function PresetThumbnail({ snapshot, theme }) {
           <div style={{
             position: 'absolute', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            color: 'rgba(255,255,255,0.2)', fontSize: 32, fontFamily: 'Inter, sans-serif',
+            color: 'rgba(201,184,232,0.45)', fontSize: 32, fontFamily: 'Inter, sans-serif',
           }}>
             Empty
           </div>

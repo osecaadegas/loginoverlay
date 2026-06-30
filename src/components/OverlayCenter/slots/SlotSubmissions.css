@@ -2174,3 +2174,272 @@
   border-left-color: #a8b1bb !important;
 }
 
+/* =====================================================
+   Overlay Center slots/approvals cosmic audit
+   Final override after legacy silver-only page sweeps.
+   ===================================================== */
+.slot-manager-v2[data-tour="slots-page"],
+[data-tour="approvals-page"] {
+  --ssm-surface: rgba(36, 16, 74, 0.72) !important;
+  --ssm-border: rgba(194, 92, 255, 0.28) !important;
+  --ssm-text: #fff7ff !important;
+  --ssm-muted: #c9b8e8 !important;
+  --ssm-gold: #ffb84d !important;
+  --ssm-cyan: #39f5d3 !important;
+  --ssm-green: #39f5d3 !important;
+  --sa-page-surface: rgba(36, 16, 74, 0.72) !important;
+  --sa-page-border: rgba(194, 92, 255, 0.28) !important;
+  --sa-page-text: #fff7ff !important;
+  --sa-page-muted: #c9b8e8 !important;
+  --sa-page-gold: #ffb84d !important;
+  --sa-page-green: #39f5d3 !important;
+  --sa-page-red: #ff4f8b !important;
+  --sa-page-cyan: #39f5d3 !important;
+  padding: 0 !important;
+  color: #fff7ff !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"]::before,
+[data-tour="approvals-page"]::before {
+  display: none !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .ssm-page-shell,
+[data-tour="approvals-page"] .sa-page-shell {
+  display: flex;
+  flex-direction: column;
+  gap: 18px !important;
+  width: 100%;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ssm-page-hero, .ssm-toolbar-card, .ssm-results-card),
+[data-tour="approvals-page"] :is(.sa-page-hero, .sa-filters-card, .ss-loading, .ss-empty, .ss-flash) {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.16), transparent 34%),
+    radial-gradient(circle at 100% 10%, rgba(57, 245, 211, 0.1), transparent 28%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.8), rgba(18, 3, 43, 0.9)) !important;
+  border: 1px solid rgba(194, 92, 255, 0.28) !important;
+  border-radius: 28px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(255, 72, 190, 0.08),
+    0 22px 70px rgba(3, 0, 12, 0.48) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ssm-page-hero, .ssm-toolbar-card, .ssm-results-card),
+[data-tour="approvals-page"] :is(.sa-page-hero, .sa-filters-card) {
+  padding: 22px !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(
+  .ssm-page-metric-card,
+  .sm-table-wrap,
+  .sm-pagination,
+  .sm-shortcuts,
+  .ss-submit-dropdown,
+  .sm-editor,
+  .sm-dropdown-menu,
+  .ss-form,
+  .ss-url-bar,
+  .ss-img-search-panel,
+  .ss-stat,
+  .ss-card
+),
+[data-tour="approvals-page"] :is(
+  .sa-page-metric-card,
+  .ss-card,
+  .sa-deny-form,
+  .sa-edit-form,
+  .ss-card-meta span
+) {
+  background:
+    radial-gradient(circle at 14% 0%, rgba(240, 68, 183, 0.1), transparent 34%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.72), rgba(18, 3, 43, 0.86)) !important;
+  border: 1px solid rgba(194, 92, 255, 0.26) !important;
+  border-radius: 22px !important;
+  color: #fff7ff !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 16px 44px rgba(3, 0, 12, 0.36) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ssm-page-title, .ssm-section-title, .ssm-page-metric-value, .sm-td-name, .sm-editor-head h3),
+[data-tour="approvals-page"] :is(.sa-page-title, .sa-section-heading__title, .sa-page-metric-value, .ss-title, .ss-card-name) {
+  color: #fff7ff !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ssm-page-title),
+[data-tour="approvals-page"] :is(.sa-page-title) {
+  font-size: 36px !important;
+  line-height: 1.08 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ssm-page-eyebrow, .ssm-section-eyebrow, .ssm-page-metric-label, .sm-field span, .ss-url-label),
+[data-tour="approvals-page"] :is(.sa-page-eyebrow, .sa-section-heading__eyebrow, .sa-page-metric-label, .sa-edit-row label) {
+  color: #39f5d3 !important;
+  font-size: 10.5px !important;
+  font-weight: 850 !important;
+  text-transform: uppercase;
+  letter-spacing: 0 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ssm-page-subtitle, .ssm-page-note, .ssm-page-metric-meta, .sm-table td, .sm-pag-info, .sm-shortcuts, .ss-subtitle, .ss-card-provider, .ss-card-meta, .ss-card-date, .ss-card-note),
+[data-tour="approvals-page"] :is(.sa-page-subtitle, .sa-page-note, .sa-page-metric-meta, .sa-filters-note, .ss-subtitle, .ss-card-provider, .ss-card-meta, .ss-card-date, .ss-card-note, .sa-details) {
+  color: #c9b8e8 !important;
+  line-height: 1.58 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(
+  .ssm-section-pill,
+  .sm-badge,
+  .sm-vol,
+  .sm-count,
+  .ss-source-badge,
+  .ss-safety-badge
+),
+[data-tour="approvals-page"] :is(
+  .sa-section-heading__pill,
+  .sa-pending-badge,
+  .ss-badge
+) {
+  min-height: 30px !important;
+  padding: 0 12px !important;
+  border-radius: 999px !important;
+  color: #fff7ff !important;
+  background:
+    linear-gradient(135deg, rgba(240, 68, 183, 0.2), rgba(139, 92, 246, 0.16)),
+    rgba(27, 10, 58, 0.72) !important;
+  border: 1px solid rgba(255, 72, 190, 0.38) !important;
+  box-shadow: 0 0 18px rgba(240, 68, 183, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.sm-search, .sm-dropdown-btn, .sm-pag-size, .sm-field input, .sm-field select, .sm-field textarea, .ss-url-input, .ss-image-row input, .sa-deny-input),
+[data-tour="approvals-page"] :is(.sa-edit-row input, .sa-edit-row select, .sa-deny-input) {
+  min-height: 42px !important;
+  border-radius: 16px !important;
+  color: #fff7ff !important;
+  background: linear-gradient(180deg, rgba(18, 3, 43, 0.9), rgba(27, 10, 58, 0.78)) !important;
+  border: 1px solid rgba(194, 92, 255, 0.3) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.sm-search input, .sm-field input, .sm-field textarea, .ss-url-input, .ss-image-row input)::placeholder,
+[data-tour="approvals-page"] :is(.sa-edit-row input, .sa-deny-input)::placeholder {
+  color: rgba(201, 184, 232, 0.55) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.sm-search:focus-within, .sm-dropdown-btn:focus, .sm-pag-size:focus, .sm-field input:focus, .sm-field select:focus, .sm-field textarea:focus, .ss-url-input:focus, .ss-image-row input:focus),
+[data-tour="approvals-page"] :is(.sa-edit-row input:focus, .sa-edit-row select:focus, .sa-deny-input:focus) {
+  border-color: rgba(255, 72, 190, 0.58) !important;
+  box-shadow: 0 0 0 4px rgba(240, 68, 183, 0.16), 0 0 24px rgba(139, 92, 246, 0.14) !important;
+  outline: none !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.sm-btn-primary, .ss-add-btn, .ss-search-img-btn, .ss-submit-btn, .sm-img-search-btn),
+[data-tour="approvals-page"] :is(.sa-filter-btn--active, .sa-approve-btn, .sa-edit-save, .sa-edit-btn) {
+  min-height: 42px !important;
+  border-radius: 999px !important;
+  color: #fff7ff !important;
+  background: linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%) !important;
+  border: 1px solid rgba(255, 72, 190, 0.56) !important;
+  box-shadow: 0 0 26px rgba(240, 68, 183, 0.28), 0 16px 36px rgba(95, 24, 124, 0.34) !important;
+  font-weight: 850 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.sm-btn-ghost, .sm-btn-sm, .sm-clear-filters, .sm-pag-controls button, .sm-search-btn, .sa-filter-btn),
+[data-tour="approvals-page"] :is(.sa-filter-btn, .sa-deny-cancel, .sa-edit-cancel) {
+  min-height: 38px !important;
+  border-radius: 999px !important;
+  color: #c9b8e8 !important;
+  background: rgba(36, 16, 74, 0.58) !important;
+  border: 1px solid rgba(194, 92, 255, 0.34) !important;
+}
+
+[data-tour="approvals-page"] :is(.sa-deny-btn, .sa-deny-confirm),
+.slot-manager-v2[data-tour="slots-page"] :is(.sm-btn-danger, .sm-row-btn.danger) {
+  color: #ffd8e6 !important;
+  background: linear-gradient(135deg, rgba(120, 18, 48, 0.78), rgba(240, 68, 183, 0.18)) !important;
+  border: 1px solid rgba(255, 79, 139, 0.42) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-table {
+  border-collapse: separate !important;
+  border-spacing: 0 8px !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-table thead th {
+  color: #39f5d3 !important;
+  border-bottom: 0 !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  text-transform: uppercase;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-row td {
+  background: rgba(18, 3, 43, 0.68) !important;
+  border-top: 1px solid rgba(194, 92, 255, 0.22) !important;
+  border-bottom: 1px solid rgba(194, 92, 255, 0.22) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-row td:first-child {
+  border-left: 1px solid rgba(194, 92, 255, 0.22) !important;
+  border-radius: 16px 0 0 16px !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-row td:last-child {
+  border-right: 1px solid rgba(194, 92, 255, 0.22) !important;
+  border-radius: 0 16px 16px 0 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .sm-row:hover td,
+[data-tour="approvals-page"] .ss-card:hover {
+  background: rgba(43, 18, 92, 0.8) !important;
+  border-color: rgba(255, 72, 190, 0.36) !important;
+  box-shadow: 0 0 26px rgba(240, 68, 183, 0.12) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ss-flash--success, .ss-badge--approved, .ss-stat--approved .ss-stat-num),
+[data-tour="approvals-page"] :is(.ss-badge--approved, .sa-page-metric-value) {
+  color: #39f5d3 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ss-badge--pending),
+[data-tour="approvals-page"] :is(.ss-badge--pending) {
+  color: #ffb84d !important;
+  border-color: rgba(255, 184, 77, 0.35) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ss-badge--denied),
+[data-tour="approvals-page"] :is(.ss-badge--denied, .sa-deny-btn, .sa-deny-confirm) {
+  color: #ff8ab8 !important;
+  border-color: rgba(255, 79, 139, 0.36) !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] :is(.ss-card--approved, .ss-card--pending),
+[data-tour="approvals-page"] :is(.ss-card--approved, .ss-card--pending) {
+  border-left-color: #39f5d3 !important;
+}
+
+.slot-manager-v2[data-tour="slots-page"] .ss-card--denied,
+[data-tour="approvals-page"] .ss-card--denied {
+  border-left-color: #ff4f8b !important;
+}
+
+@media (max-width: 860px) {
+  .slot-manager-v2[data-tour="slots-page"] :is(.ssm-page-hero, .ssm-toolbar-card, .ssm-results-card),
+  [data-tour="approvals-page"] :is(.sa-page-hero, .sa-filters-card, .ss-card) {
+    padding: 16px !important;
+    border-radius: 24px !important;
+  }
+
+  .slot-manager-v2[data-tour="slots-page"] .ssm-page-title,
+  [data-tour="approvals-page"] .sa-page-title {
+    font-size: 28px !important;
+  }
+}
+

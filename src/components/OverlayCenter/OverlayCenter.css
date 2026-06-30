@@ -7,36 +7,36 @@
 
 /* --- CSS Custom Properties --- */
 :root {
-  --oc-bg-primary: #07090d;
-  --oc-bg-secondary: #0d1117;
-  --oc-bg-tertiary: #121821;
-  --oc-bg-surface: rgba(255, 255, 255, 0.045);
-  --oc-bg-surface-hover: rgba(255, 255, 255, 0.075);
-  --oc-bg-card: rgba(255, 255, 255, 0.032);
-  --oc-bg-card-strong: rgba(17, 24, 39, 0.82);
-  --oc-border: rgba(148, 163, 184, 0.14);
-  --oc-border-hover: rgba(148, 163, 184, 0.26);
-  --oc-text-primary: #f4f7fb;
-  --oc-text-secondary: #aab6c8;
-  --oc-text-muted: #6d7a8d;
-  --oc-accent: #94a3b8;
-  --oc-accent-light: #b8c8d8;
-  --oc-accent-cyan: #d0dbe6;
-  --oc-accent-glow: rgba(148, 163, 184, 0.1);
-  --oc-accent-glow-strong: rgba(148, 163, 184, 0.18);
-  --oc-accent-solid: #64748b;
-  --oc-green: #94a3b8;
-  --oc-green-glow: rgba(148, 163, 184, 0.16);
-  --oc-danger: #ef4444;
-  --oc-danger-glow: rgba(239, 68, 68, 0.1);
+  --oc-bg-primary: #080014;
+  --oc-bg-secondary: #0d021f;
+  --oc-bg-tertiary: #12032b;
+  --oc-bg-surface: rgba(36, 16, 74, 0.66);
+  --oc-bg-surface-hover: rgba(43, 18, 92, 0.78);
+  --oc-bg-card: rgba(27, 10, 58, 0.72);
+  --oc-bg-card-strong: rgba(18, 3, 43, 0.9);
+  --oc-border: rgba(194, 92, 255, 0.28);
+  --oc-border-hover: rgba(255, 72, 190, 0.4);
+  --oc-text-primary: #fff7ff;
+  --oc-text-secondary: #c9b8e8;
+  --oc-text-muted: #8d78b7;
+  --oc-accent: #f044b7;
+  --oc-accent-light: #ff7ad8;
+  --oc-accent-cyan: #39f5d3;
+  --oc-accent-glow: rgba(240, 68, 183, 0.18);
+  --oc-accent-glow-strong: rgba(139, 92, 246, 0.28);
+  --oc-accent-solid: #8b5cf6;
+  --oc-green: #39f5d3;
+  --oc-green-glow: rgba(57, 245, 211, 0.16);
+  --oc-danger: #ff4f8b;
+  --oc-danger-glow: rgba(255, 79, 139, 0.16);
   --oc-radius-sm: 10px;
   --oc-radius-md: 14px;
   --oc-radius-lg: 22px;
   --oc-radius-xl: 28px;
-  --oc-shadow-sm: 0 10px 30px rgba(0, 0, 0, 0.18);
-  --oc-shadow-md: 0 24px 80px rgba(0, 0, 0, 0.34);
-  --oc-shadow-lg: 0 32px 120px rgba(0, 0, 0, 0.44);
-  --oc-shadow-glow: 0 0 0 1px rgba(148, 163, 184, 0.06), 0 18px 56px rgba(148, 163, 184, 0.12);
+  --oc-shadow-sm: 0 18px 44px rgba(3, 0, 12, 0.44);
+  --oc-shadow-md: 0 28px 80px rgba(3, 0, 12, 0.55);
+  --oc-shadow-lg: 0 40px 130px rgba(3, 0, 12, 0.68);
+  --oc-shadow-glow: 0 0 0 1px rgba(255, 72, 190, 0.16), 0 0 28px rgba(240, 68, 183, 0.18), 0 24px 70px rgba(8, 0, 20, 0.56);
   --oc-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --oc-transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --oc-sidebar-width: 316px;
@@ -17421,6 +17421,1081 @@ body.wm-resizing {
   [data-tour="library-page"] .bhl-page-hero,
   [data-tour="presets-page"] .pl-hero,
   .oc-ui-hero {
+    padding: 16px !important;
+  }
+}
+
+/* =====================================================
+   Overlay Center full system audit
+   Final visual normalizer across every admin page family.
+   ===================================================== */
+.oc-page {
+  --oc-audit-bg: #080014;
+  --oc-audit-bg-2: #0d021f;
+  --oc-audit-bg-3: #12032b;
+  --oc-audit-panel: rgba(36, 16, 74, 0.7);
+  --oc-audit-panel-strong: rgba(24, 7, 55, 0.92);
+  --oc-audit-card: rgba(27, 10, 58, 0.78);
+  --oc-audit-card-hover: rgba(43, 18, 92, 0.88);
+  --oc-audit-border: rgba(194, 92, 255, 0.28);
+  --oc-audit-border-hot: rgba(255, 72, 190, 0.4);
+  --oc-audit-text: #fff7ff;
+  --oc-audit-muted: #c9b8e8;
+  --oc-audit-soft: #8d78b7;
+  --oc-audit-pink: #f044b7;
+  --oc-audit-violet: #8b5cf6;
+  --oc-audit-teal: #39f5d3;
+  --oc-audit-amber: #ffb84d;
+  --oc-audit-danger: #ff4f8b;
+  --oc-audit-radius-lg: 28px;
+  --oc-audit-radius-md: 22px;
+  --oc-audit-radius-sm: 16px;
+  --oc-audit-page-gap: 18px;
+  --oc-audit-card-gap: 14px;
+  --oc-audit-panel-pad: 22px;
+  --oc-audit-card-pad: 18px;
+}
+
+.oc-page,
+.oc-page :is(input, select, textarea, button) {
+  font-family: 'Manrope', 'Inter', 'Segoe UI', system-ui, sans-serif !important;
+}
+
+.oc-page :is(
+  h1, h2, h3, h4, h5, h6,
+  .oc-main-title,
+  .oc-panel-title,
+  .oc-theme-section-title,
+  .oc-theme-preview-card__body strong,
+  .wm-page-title,
+  .wm-section-title,
+  .wm-card-name,
+  .wm-picker-card-name,
+  .wm-sidepanel-title,
+  .nb-subtitle,
+  .cg-config__hero h3,
+  .bh-panel-title,
+  .bh-save-hunt-title,
+  .bh-history-name,
+  .bhl-page-title,
+  .bhl-section-title,
+  .pl-page-title,
+  .pl-section-heading__title,
+  .tm-page-title,
+  .tm-section-title,
+  .bk-card-title,
+  .bk-active-title,
+  .bb-admin-title,
+  .bb-admin-section-title,
+  .bb-admin-card-title,
+  .cs-card-title,
+  .cs-selected-slot-name,
+  .sr-admin-title,
+  .sr-admin-card-title
+) {
+  color: var(--oc-audit-text) !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+  line-height: 1.14 !important;
+}
+
+.oc-page :is(
+  .oc-main-title,
+  .oc-ui-hero__title,
+  .pl-hero__title,
+  .bhl-page-title,
+  .tm-page-title,
+  .bb-admin-title,
+  .cs-page-title,
+  .sr-admin-page-title
+) {
+  font-size: 36px !important;
+}
+
+.oc-page :is(
+  p,
+  .oc-main-description,
+  .oc-panel-subtitle,
+  .oc-sidebar-brand-subtitle,
+  .oc-sidebar-btn-desc,
+  .wm-page-desc,
+  .wm-picker-card-desc,
+  .wm-card-badge--off,
+  .wm-sidepanel-note,
+  .oc-config-hint,
+  .cg-config__hint,
+  .nb-field > span,
+  .bh-panel-copy,
+  .bh-save-hunt-desc,
+  .bh-history-date,
+  .bhl-description,
+  .bhl-page-subtitle,
+  .bhl-page-note,
+  .pl-page-subtitle,
+  .tm-page-subtitle,
+  .bb-admin-subtitle,
+  .bb-admin-helper,
+  .cs-card-copy,
+  .cs-selected-slot-meta,
+  .sr-admin-copy,
+  .sr-admin-copy-muted,
+  .sr-admin-inline-hint
+) {
+  color: var(--oc-audit-muted) !important;
+  line-height: 1.58 !important;
+}
+
+.oc-page :is(
+  .oc-main-eyebrow,
+  .oc-ui-eyebrow,
+  .oc-ui-section-header__eyebrow,
+  .oc-ui-copyfield__label,
+  .oc-ui-asset-card__category,
+  .oc-sidebar-divider-label,
+  .wm-picker-group-title,
+  .wm-layout-heading,
+  .wm-slider-label,
+  .wm-style-switcher-label,
+  .wm-ctx-section-title,
+  .wm-ctx-input-label,
+  .wm-ctx-slider-label,
+  .oc-theme-section-title,
+  .oc-slider-label,
+  .nb-subtitle,
+  .nb-slider-label,
+  .nb-color-label,
+  .cg-config__field > span,
+  .cg-config__color > span,
+  .bh-panel-label,
+  .bh-sort-label,
+  .bh-list-field-label,
+  .bh-history-stat-label,
+  .bhl-page-eyebrow,
+  .bhl-section-eyebrow,
+  .bhl-detail-label,
+  .pl-section-heading__eyebrow,
+  .tm-page-eyebrow,
+  .tm-section-eyebrow,
+  .bk-label,
+  .bk-mp-input-label,
+  .bb-admin-eyebrow,
+  .bb-admin-section-eyebrow,
+  .bb-admin-field-label,
+  .bb-admin-slot-label,
+  .bb-admin-metric-label,
+  .cs-section-pill,
+  .sr-admin-eyebrow,
+  .sr-admin-card-eyebrow,
+  .sr-admin-inline-label
+) {
+  color: var(--oc-audit-teal) !important;
+  font-size: 10.5px !important;
+  font-weight: 850 !important;
+  text-transform: uppercase;
+  letter-spacing: 0 !important;
+}
+
+.oc-page :is(
+  .oc-sidebar,
+  .oc-command-header,
+  .oc-welcome-card,
+  .oc-auth-wall,
+  .oc-loading,
+  .oc-empty-panel,
+  .oc-panel-loading,
+  .oc-theme-panel,
+  .oc-theme-panel--modern,
+  .oc-preview-panel,
+  .oc-ui-hero,
+  .oc-ui-toolbar,
+  .oc-ui-filterbar,
+  .oc-ui-copyfield,
+  .oc-ui-checklist,
+  .oc-ui-preview-panel,
+  .oc-ui-empty,
+  .wm-library-toolbar,
+  .wm-empty-library,
+  .wm-sidepanel,
+  .wm-layout-panel,
+  .wm-config-panel,
+  .wm-picker-card,
+  .wm-card,
+  .wm-sidepanel-note,
+  .cg-config__hero,
+  .cg-config__section,
+  .cg-config__status-card,
+  .nb-config--modern,
+  .nb-config__hero,
+  .nb-section,
+  .oc-theme-section,
+  .oc-theme-preview-card,
+  .bhl-panel,
+  .bhl-page-hero,
+  .bhl-page-metric-card,
+  .bhl-controls,
+  .bhl-stats-bar,
+  .bhl-card,
+  .bhl-detail-box,
+  .bhl-empty-state,
+  .pl-hero,
+  .pl-hero__metric-card,
+  .pl-save-card,
+  .pl-toolbar-card,
+  .pl-card,
+  .pl-empty,
+  .bk-card,
+  .bk-bracket-card,
+  .bk-match-card,
+  .bk-match-panel,
+  .tm-page-hero,
+  .tm-page-metric-card,
+  .tm-section,
+  .tm-modal,
+  .tm-match-card,
+  .tm-match-inline,
+  .tm-player-entry,
+  .bb-admin-hero,
+  .bb-admin-card,
+  .bb-admin-slot-card,
+  .bb-admin-metric-card,
+  .bb-admin-stat-card,
+  .bb-admin-note-card,
+  .bb-admin-selected-slot,
+  .bb-admin-empty,
+  .cs-card,
+  .cs-panel,
+  .cs-slot-card,
+  .cs-page-metric-card,
+  .cs-selected-slot,
+  .sr-admin-card,
+  .sr-admin-metric-card,
+  .sr-admin-queue-card,
+  .sr-admin-empty,
+  .oal-tab-panel,
+  .oc-ui-asset-card,
+  .oc-ui-metric,
+  .oc-ui-skeleton-card
+) {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.12), transparent 34%),
+    radial-gradient(circle at 100% 14%, rgba(57, 245, 211, 0.08), transparent 28%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.78), rgba(18, 3, 43, 0.9)) !important;
+  border-color: var(--oc-audit-border) !important;
+  color: var(--oc-audit-text) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(255, 72, 190, 0.08),
+    0 22px 70px rgba(3, 0, 12, 0.48) !important;
+}
+
+.oc-page :is(
+  .oc-sidebar,
+  .oc-command-header,
+  .oc-welcome-card,
+  .oc-auth-wall,
+  .oc-loading,
+  .oc-ui-hero,
+  .pl-hero,
+  .bhl-page-hero,
+  .tm-page-hero,
+  .bb-admin-hero,
+  .cs-page-hero,
+  .sr-admin-hero
+) {
+  border-radius: var(--oc-audit-radius-lg) !important;
+  padding: var(--oc-audit-panel-pad) !important;
+}
+
+.oc-page :is(
+  .oc-theme-section,
+  .oc-ui-metric,
+  .oc-ui-asset-card,
+  .wm-picker-card,
+  .wm-card,
+  .wm-layout-panel,
+  .wm-config-panel,
+  .wm-sidepanel-note,
+  .cg-config__status-card,
+  .nb-section,
+  .bh-panel-section,
+  .bh-list-item,
+  .bh-history-card,
+  .bh-history-stat-box,
+  .bhl-card,
+  .bhl-detail-box,
+  .pl-card,
+  .pl-save-card,
+  .pl-toolbar-card,
+  .bk-card,
+  .bk-match-card,
+  .bk-match-panel,
+  .tm-match-card,
+  .tm-match-inline,
+  .tm-player-entry,
+  .bb-admin-card,
+  .bb-admin-slot-card,
+  .bb-admin-selected-slot,
+  .bb-admin-metric-card,
+  .bb-admin-stat-card,
+  .bb-admin-note-card,
+  .cs-card,
+  .cs-slot-card,
+  .cs-selected-slot,
+  .sr-admin-card,
+  .sr-admin-metric-card,
+  .sr-admin-queue-card
+) {
+  border-radius: var(--oc-audit-radius-md) !important;
+  padding: var(--oc-audit-card-pad) !important;
+}
+
+.oc-page :is(
+  .oc-theme-section:hover,
+  .oc-ui-asset-card:hover,
+  .wm-picker-card:hover,
+  .wm-card:hover,
+  .bh-list-item:hover,
+  .bh-history-card:hover,
+  .bhl-card:hover,
+  .pl-card:hover,
+  .bk-card:hover,
+  .bk-match-card:hover,
+  .bb-admin-card:hover,
+  .bb-admin-search-result:hover,
+  .cs-card:hover,
+  .cs-search-result:hover,
+  .sr-admin-card:hover,
+  .sr-admin-queue-row:hover
+) {
+  transform: translateY(-2px) !important;
+  border-color: var(--oc-audit-border-hot) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 34px rgba(240, 68, 183, 0.16),
+    0 28px 80px rgba(3, 0, 12, 0.56) !important;
+}
+
+.oc-page :is(
+  .oc-sidebar-btn,
+  .oc-ui-chip,
+  .wm-library-chip,
+  .wm-sidepanel-tab,
+  .wm-sidepanel-toggle,
+  .cg-config__tab,
+  .nb-tab,
+  .nb-style-btn,
+  .oc-preset-btn,
+  .oc-texture-btn,
+  .oc-bg-mode-btn,
+  .oc-bg-texture-btn,
+  .wm-style-switcher-btn,
+  .wm-ctx-style-btn,
+  .bh-sort-btn,
+  .bh-compact-toggle,
+  .bh-opening-switch,
+  .bh-sr-state-btn,
+  .tm-format-btn,
+  .tm-winner-btn,
+  .bk-type-btn,
+  .bk-count-btn,
+  .bk-mp-winner-btn,
+  .pl-toolbar__filter,
+  .bhl-view-btn,
+  .oal-tab,
+  .bb-admin-tab
+) {
+  background: rgba(36, 16, 74, 0.54) !important;
+  border-color: rgba(194, 92, 255, 0.28) !important;
+  color: var(--oc-audit-muted) !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.oc-page :is(
+  .oc-sidebar-btn--active,
+  .oc-status-pill--live,
+  .oc-ui-chip--active,
+  .oc-ui-btn--primary,
+  .oc-btn--primary,
+  .oc-btn-primary,
+  .oc-toggle--on,
+  .oc-preset-btn--active,
+  .oc-style-chip--active,
+  .oc-segmented-btn--active,
+  .oc-texture-btn--active,
+  .oc-bg-mode-btn--active,
+  .oc-bg-texture-btn--active,
+  .wm-style-switcher-btn--active,
+  .wm-ctx-style-btn--active,
+  .wm-library-chip--active,
+  .wm-sidepanel-tab--active,
+  .wm-sidepanel-toggle--on,
+  .cg-config__btn--primary,
+  .cg-config__tab--active,
+  .nb-tab--active,
+  .nb-style-btn--active,
+  .bk-type-btn--active,
+  .bk-count-btn--active,
+  .bk-mp-winner-btn--active,
+  .pl-save-bar__btn,
+  .pl-card__btn--load,
+  .pl-toolbar__filter--active,
+  .bhl-view-btn--active,
+  .bh-add-btn,
+  .bh-save-hunt-btn,
+  .bh-save-hunt-confirm,
+  .bh-sort-btn--active,
+  .bh-compact-toggle--active,
+  .bh-opening-toggle--active,
+  .bb-admin-primary-btn,
+  .bb-admin-tab--active,
+  .cs-sync-btn,
+  .sr-admin-btn--success,
+  .sr-admin-btn--warn,
+  .oal-tab--active
+) {
+  color: #fff7ff !important;
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.2), transparent 28%),
+    linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%) !important;
+  border-color: rgba(255, 72, 190, 0.56) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 72, 190, 0.18),
+    0 0 26px rgba(240, 68, 183, 0.34),
+    0 16px 36px rgba(95, 24, 124, 0.38) !important;
+}
+
+.oc-page :is(
+  .oc-glow-button,
+  .oc-ui-btn,
+  .oc-btn,
+  .oc-btn-primary,
+  .oc-sidebar-url-copy,
+  .oc-sidebar-preset-save-btn,
+  .oc-sidebar-preset-load,
+  .cg-config__btn,
+  .nb-preset-save-btn,
+  .nb-preset-load-btn,
+  .nb-preset-pill__load,
+  .nb-preset-pill__share,
+  .bk-start-btn,
+  .bk-slot-action-btn,
+  .bk-fill-btn,
+  .bk-reset-btn,
+  .pl-card__btn,
+  .bhl-download-btn,
+  .bh-submit-slot-btn,
+  .bh-submit-search-btn,
+  .bh-submit-save,
+  .bh-submit-cancel,
+  .bh-google-images-link,
+  .bb-admin-primary-btn,
+  .bb-admin-secondary-btn,
+  .bb-admin-result-remove,
+  .cs-sync-btn,
+  .sr-admin-btn
+) {
+  min-height: 42px !important;
+  border-radius: 999px !important;
+  font-size: 12.5px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+.oc-page :is(
+  .oc-glow-button--secondary,
+  .oc-ui-btn--ghost,
+  .oc-btn,
+  .bb-admin-secondary-btn,
+  .pl-card__btn,
+  .bhl-download-btn,
+  .cg-config__btn--muted,
+  .nb-preset-load-btn,
+  .bh-submit-cancel,
+  .bk-reset-btn,
+  .sr-admin-btn:not(.sr-admin-btn--success):not(.sr-admin-btn--warn):not(.sr-admin-btn--danger)
+) {
+  color: var(--oc-audit-muted) !important;
+  background: rgba(36, 16, 74, 0.58) !important;
+  border-color: rgba(194, 92, 255, 0.34) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.oc-page :is(
+  .oc-btn--danger,
+  .nb-preset-pill__delete,
+  .wm-icon-btn--danger,
+  .wm-ctx-action-btn--danger,
+  .bh-list-remove,
+  .bk-slot-action-btn--delete,
+  .pl-card__btn--delete,
+  .bb-admin-danger-btn,
+  .bb-admin-result-remove,
+  .sr-admin-btn--danger
+) {
+  color: #ffd8e6 !important;
+  background: linear-gradient(135deg, rgba(120, 18, 48, 0.78), rgba(240, 68, 183, 0.18)) !important;
+  border-color: rgba(255, 79, 139, 0.42) !important;
+}
+
+.oc-page :is(
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+  select,
+  textarea,
+  .oc-dark-input,
+  .oc-sidebar-resolution-select,
+  .oc-sidebar-url-input,
+  .oc-sidebar-preset-input,
+  .oc-config-field input,
+  .oc-config-field select,
+  .oc-config-field textarea,
+  .oc-widget-css-input,
+  .wm-obs-input,
+  .wm-slider-num,
+  .wm-animation-field,
+  .wm-ctx-select,
+  .wm-ctx-adv-input,
+  .wm-ctx-adv-combo-select,
+  .wm-ctx-adv-combo-input,
+  .wm-ctx-els-target-select,
+  .wm-library-search input,
+  .wm-precision-grid input,
+  .cg-config__field input,
+  .cg-config__field select,
+  .cg-config__add-row input,
+  .cg-config__word-input,
+  .nb-field input,
+  .nb-field select,
+  .nb-field textarea,
+  .nb-preset-input,
+  .bh-input-group input,
+  .bh-input-group select,
+  .bh-input-group textarea,
+  .bh-search-input,
+  .bh-submit-field input,
+  .bh-submit-field select,
+  .bh-list-payout-input,
+  .bh-list-edit-input,
+  .bh-gtb-input,
+  .tm-player-input,
+  .tm-slot-input,
+  .tm-setup-input,
+  .tm-slot-input-inline,
+  .bk-input,
+  .bk-mp-input-wrap input,
+  .bhl-search-input,
+  .bhl-sort-select,
+  .pl-save-bar__input,
+  .pl-toolbar__search-input,
+  .pl-toolbar__sort,
+  .bb-admin-field-input,
+  .bb-admin-field-select,
+  .cs-search-input,
+  .cs-field input,
+  .cs-field select,
+  .cs-textarea,
+  .sr-admin-message-input
+) {
+  background: linear-gradient(180deg, rgba(18, 3, 43, 0.9), rgba(27, 10, 58, 0.78)) !important;
+  border: 1px solid rgba(194, 92, 255, 0.3) !important;
+  border-radius: 16px !important;
+  color: var(--oc-audit-text) !important;
+  min-height: 42px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  color-scheme: dark;
+}
+
+.oc-page :is(input, textarea)::placeholder {
+  color: rgba(201, 184, 232, 0.55) !important;
+}
+
+.oc-page :is(
+  input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+  select:focus,
+  textarea:focus,
+  .oc-sidebar-resolution-select:focus,
+  .wm-library-search:focus-within,
+  .cg-config__field input:focus,
+  .cg-config__field select:focus,
+  .nb-field input:focus,
+  .nb-field select:focus,
+  .nb-field textarea:focus,
+  .bh-search-container:focus-within,
+  .pl-toolbar__search:focus-within,
+  .bhl-search-box:focus-within,
+  .bb-admin-field-input:focus,
+  .bb-admin-field-select:focus,
+  .cs-search-input:focus,
+  .sr-admin-message-input:focus
+) {
+  border-color: rgba(255, 72, 190, 0.58) !important;
+  background: linear-gradient(180deg, rgba(36, 16, 74, 0.92), rgba(18, 3, 43, 0.86)) !important;
+  box-shadow: 0 0 0 4px rgba(240, 68, 183, 0.16), 0 0 24px rgba(139, 92, 246, 0.14) !important;
+  outline: none !important;
+}
+
+.oc-page :is(
+  .oc-neon-badge,
+  .oc-ui-status,
+  .oc-ui-section-header__pill,
+  .oc-status-pill,
+  .wm-card-badge,
+  .wm-tile-badge,
+  .wm-tile-layer-badge,
+  .wm-tile-container-badge,
+  .oc-twitch-badge,
+  .bh-count,
+  .bh-panel-label,
+  .bh-pending-badge,
+  .bh-list-super-badge,
+  .bh-list-extreme-badge,
+  .bh-history-stat-pill,
+  .bhl-section-pill,
+  .pl-section-heading__pill,
+  .pl-card__badge,
+  .bb-admin-section-pill,
+  .bb-admin-card-chip,
+  .cs-card-chip,
+  .sr-admin-card-chip,
+  .bk-badge,
+  .tm-section-pill
+) {
+  min-height: 30px !important;
+  border-radius: 999px !important;
+  padding: 0 12px !important;
+  color: #fff7ff !important;
+  background:
+    linear-gradient(135deg, rgba(240, 68, 183, 0.2), rgba(139, 92, 246, 0.16)),
+    rgba(27, 10, 58, 0.72) !important;
+  border: 1px solid rgba(255, 72, 190, 0.38) !important;
+  box-shadow: 0 0 18px rgba(240, 68, 183, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.07) !important;
+  font-size: 11px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+.oc-page :is(
+  .oc-neon-badge--live,
+  .oc-neon-badge--success,
+  .oc-neon-badge--active,
+  .oc-ui-status--live,
+  .oc-ui-status--success,
+  .oc-ui-status--active,
+  .wm-card-badge--live,
+  .wm-tile-badge--live,
+  .bb-admin-stat-value--positive,
+  .bb-admin-summary-value--positive,
+  .bb-admin-metric-value--positive,
+  .bhl-val--profit,
+  .bh-history-val--profit,
+  .bk-badge--live,
+  .cs-selected-slot-placeholder,
+  .sr-admin-success-copy
+) {
+  color: var(--oc-audit-teal) !important;
+  border-color: rgba(57, 245, 211, 0.38) !important;
+}
+
+.oc-page :is(
+  .oc-neon-badge--setup,
+  .oc-neon-badge--warning,
+  .oc-ui-status--warning,
+  .oc-ui-status--setup,
+  .bh-list-super-badge,
+  .bk-badge--pending
+) {
+  color: #ffe7ba !important;
+  border-color: rgba(255, 184, 77, 0.42) !important;
+  background: linear-gradient(135deg, rgba(255, 184, 77, 0.18), rgba(255, 122, 47, 0.12)) !important;
+}
+
+.oc-page :is(
+  .oc-neon-badge--danger,
+  .oc-ui-status--danger,
+  .oc-ui-status--inactive,
+  .bb-admin-stat-value--negative,
+  .bb-admin-summary-value--negative,
+  .bb-admin-metric-value--negative,
+  .bhl-val--loss,
+  .bh-history-val--loss,
+  .cg-config__status-badge--locked
+) {
+  color: #ffc1d8 !important;
+  border-color: rgba(255, 79, 139, 0.38) !important;
+  background: linear-gradient(135deg, rgba(255, 79, 139, 0.18), rgba(240, 68, 183, 0.1)) !important;
+}
+
+.oc-page :is(
+  .bh-list-item,
+  .bhl-bonus-item,
+  .cg-config__history-row,
+  .bk-player-row,
+  .bk-slot-locked,
+  .bb-admin-result-row,
+  .bb-admin-search-result,
+  .cs-search-result,
+  .sr-admin-request-row,
+  .sr-admin-queue-row,
+  .oc-theme-preview-card__body,
+  .nb-preset-pill,
+  .nb-preset-card
+) {
+  background: rgba(18, 3, 43, 0.68) !important;
+  border-color: rgba(194, 92, 255, 0.24) !important;
+  color: var(--oc-audit-text) !important;
+}
+
+.oc-page :is(
+  .bb-admin-progress-track,
+  .bhl-card-progress,
+  .bk-progress,
+  .bk-progress-track,
+  .bh-save-hunt-progress-track
+) {
+  background: rgba(13, 2, 31, 0.86) !important;
+  border: 1px solid rgba(194, 92, 255, 0.2) !important;
+  box-shadow: inset 0 1px 8px rgba(0, 0, 0, 0.32) !important;
+}
+
+.oc-page :is(
+  .bb-admin-progress-fill,
+  .bhl-card-progress-fill,
+  .bk-progress-fill,
+  .bh-save-hunt-progress,
+  .oc-toggle--on .oc-toggle-thumb,
+  .wm-toggle--on .wm-toggle-slider,
+  .wm-sidepanel-toggle--on .wm-ctx-sr-pill-track
+) {
+  background: linear-gradient(90deg, #39f5d3 0%, #8b5cf6 46%, #f044b7 100%) !important;
+  box-shadow: 0 0 24px rgba(57, 245, 211, 0.18), 0 0 26px rgba(240, 68, 183, 0.18) !important;
+}
+
+.oc-page :is(.oc-ui-empty, .wm-empty-library, .bhl-empty-state, .pl-empty, .bb-admin-empty, .sr-admin-empty, .oc-empty-panel) {
+  text-align: center !important;
+  padding: 28px !important;
+  border-radius: var(--oc-audit-radius-md) !important;
+}
+
+.oc-page :is(.oc-ui-empty__icon, .bhl-empty-icon, .oc-empty-icon) {
+  color: var(--oc-audit-amber) !important;
+  filter: drop-shadow(0 0 18px rgba(255, 184, 77, 0.24));
+}
+
+.oc-page :is(.tm-modal-overlay, .wm-sidepanel-backdrop) {
+  background: rgba(8, 0, 20, 0.72) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+.oc-page :is(.tm-modal, .wm-sidepanel, .wm-ctx-menu) {
+  border-radius: 28px !important;
+  border-color: rgba(255, 72, 190, 0.42) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.18), transparent 34%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.94), rgba(13, 2, 31, 0.96)) !important;
+}
+
+.oc-theme-workspace,
+.oc-page :is(
+  .bb-admin-page,
+  .sr-admin-page,
+  .cs-page,
+  .tm-page,
+  .pl-page-shell,
+  .bhl-page-shell,
+  .oal-page,
+  .bh-config,
+  .nb-config,
+  .cg-config
+) {
+  gap: var(--oc-audit-page-gap) !important;
+}
+
+.oc-page :is(
+  .bb-admin-section,
+  .sr-admin-section,
+  .cs-section,
+  .tm-section,
+  .bh-section,
+  .bh-panel,
+  .oal-section
+) {
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+.oc-page :is(
+  .bb-admin-setup-grid,
+  .bb-admin-track-grid,
+  .bb-admin-style-grid,
+  .sr-admin-grid,
+  .cs-grid,
+  .tm-setup-grid,
+  .bk-active-grid,
+  .bh-hunt-split,
+  .bhl-hunt-grid,
+  .pl-grid,
+  .wm-picker-grid,
+  .wm-tile-grid,
+  .oc-ui-card-grid,
+  .oc-theme-summary-grid,
+  .cg-config__metrics,
+  .nb-config__metrics
+) {
+  gap: var(--oc-audit-page-gap) !important;
+}
+
+@media (max-width: 900px) {
+  .oc-page :is(.oc-main-title, .oc-ui-hero__title, .pl-hero__title, .bhl-page-title, .tm-page-title, .bb-admin-title, .cs-page-title, .sr-admin-page-title) {
+    font-size: 30px !important;
+  }
+
+  .oc-page :is(.oc-command-header, .oc-ui-hero, .pl-hero, .bhl-page-hero, .tm-page-hero, .bb-admin-hero, .cs-page-hero, .sr-admin-hero) {
+    padding: 18px !important;
+    border-radius: 24px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .oc-page {
+    --oc-audit-panel-pad: 16px;
+    --oc-audit-card-pad: 14px;
+    --oc-audit-page-gap: 14px;
+  }
+
+  .oc-page :is(.oc-main-title, .oc-ui-hero__title, .pl-hero__title, .bhl-page-title, .tm-page-title, .bb-admin-title, .cs-page-title, .sr-admin-page-title) {
+    font-size: 26px !important;
+  }
+}
+
+/* Profile page uses legacy inline style objects, so scope the audit overrides tightly. */
+.oc-profile-page {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--oc-audit-page-gap) !important;
+}
+
+.oc-profile-page > div,
+.oc-profile-page [data-tour],
+.oc-profile-page [style*="rgba(255,255,255,0.03)"],
+.oc-profile-page [style*="rgba(255,255,255,0.04)"],
+.oc-profile-page [style*="rgba(255,255,255,0.05)"],
+.oc-profile-page [style*="rgba(226,232,240,0.08)"],
+.oc-profile-page [style*="rgba(99,102,241,0.08)"] {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.12), transparent 34%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.76), rgba(18, 3, 43, 0.88)) !important;
+  border: 1px solid rgba(194, 92, 255, 0.28) !important;
+  border-radius: 22px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 18px 54px rgba(3, 0, 12, 0.42) !important;
+}
+
+.oc-profile-page [data-tour] {
+  padding: 18px !important;
+}
+
+.oc-profile-page h2,
+.oc-profile-page h3,
+.oc-profile-page [style*="color: '#fff'"],
+.oc-profile-page [style*="color: '#e2e8f0'"],
+.oc-profile-page [style*="color: '#eef2f5'"],
+.oc-profile-page [style*="color: '#dbe2e8'"] {
+  color: #fff7ff !important;
+  font-weight: 850 !important;
+  letter-spacing: 0 !important;
+}
+
+.oc-profile-page label,
+.oc-profile-page [style*="color: '#94a3b8'"] {
+  color: #39f5d3 !important;
+  letter-spacing: 0 !important;
+}
+
+.oc-profile-page p,
+.oc-profile-page [style*="color: '#64748b'"],
+.oc-profile-page [style*="color: '#bcc4cc'"] {
+  color: #c9b8e8 !important;
+  line-height: 1.58 !important;
+}
+
+.oc-profile-page input,
+.oc-profile-page select,
+.oc-profile-page textarea,
+.oc-profile-page [style*="rgba(255,255,255,0.06)"] {
+  background: linear-gradient(180deg, rgba(18, 3, 43, 0.9), rgba(27, 10, 58, 0.78)) !important;
+  border: 1px solid rgba(194, 92, 255, 0.3) !important;
+  border-radius: 16px !important;
+  color: #fff7ff !important;
+  min-height: 42px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.oc-profile-page input:focus,
+.oc-profile-page select:focus,
+.oc-profile-page textarea:focus {
+  border-color: rgba(255, 72, 190, 0.58) !important;
+  box-shadow: 0 0 0 4px rgba(240, 68, 183, 0.16), 0 0 24px rgba(139, 92, 246, 0.14) !important;
+  outline: none !important;
+}
+
+.oc-profile-page button:not([class*="wm-"]) {
+  min-height: 38px !important;
+  border-radius: 999px !important;
+  font-size: 12.5px !important;
+  font-weight: 850 !important;
+  color: #fff7ff !important;
+  background: linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%) !important;
+  border: 1px solid rgba(255, 72, 190, 0.5) !important;
+  box-shadow: 0 0 22px rgba(240, 68, 183, 0.24), 0 14px 30px rgba(3, 0, 12, 0.34) !important;
+}
+
+.oc-profile-page button[style*="248,113,113"],
+.oc-profile-page [style*="#f87171"] {
+  color: #ffd8e6 !important;
+  background: linear-gradient(135deg, rgba(120, 18, 48, 0.78), rgba(240, 68, 183, 0.18)) !important;
+  border-color: rgba(255, 79, 139, 0.42) !important;
+}
+
+.oc-profile-page [style*="#dbe2e8"],
+.oc-profile-page [style*="219,226,232"],
+.oc-profile-page [style*="200,208,216"] {
+  border-color: rgba(57, 245, 211, 0.3) !important;
+}
+
+.oc-profile-page span[style*="borderRadius: 6"],
+.oc-profile-page span[style*="borderRadius: 8"],
+.oc-profile-page code {
+  border-radius: 999px !important;
+  color: #fff7ff !important;
+  background: rgba(36, 16, 74, 0.58) !important;
+  border: 1px solid rgba(194, 92, 255, 0.28) !important;
+}
+
+.oc-profile-page a,
+.oc-profile-page strong {
+  color: #39f5d3 !important;
+}
+
+/* Admin-only inline style normalizer for older widget config panels. */
+.oc-page :is(
+  .oc-panel-section,
+  .oc-main-shell,
+  .oc-theme-workspace,
+  .oc-profile-page,
+  .slot-manager-v2[data-tour="slots-page"],
+  [data-tour="approvals-page"]
+) [style*="letter-spacing"] {
+  letter-spacing: 0 !important;
+}
+
+.oc-page :is(
+  .oc-panel-section,
+  .oc-main-shell,
+  .oc-theme-workspace,
+  .oc-profile-page,
+  .slot-manager-v2[data-tour="slots-page"],
+  [data-tour="approvals-page"]
+) :is(
+  [style*="color: rgb(148, 163, 184)"],
+  [style*="color: #94a3b8"],
+  [style*="color: rgb(100, 116, 139)"],
+  [style*="color: #64748b"],
+  [style*="color: rgb(71, 85, 105)"],
+  [style*="color: #475569"],
+  [style*="color: rgb(188, 196, 204)"],
+  [style*="color: #bcc4cc"]
+) {
+  color: #c9b8e8 !important;
+}
+
+.oc-page :is(
+  .oc-panel-section,
+  .oc-main-shell,
+  .oc-theme-workspace,
+  .oc-profile-page,
+  .slot-manager-v2[data-tour="slots-page"],
+  [data-tour="approvals-page"]
+) :is(
+  [style*="color: rgb(226, 232, 240)"],
+  [style*="color: #e2e8f0"],
+  [style*="color: rgb(238, 242, 245)"],
+  [style*="color: #eef2f5"],
+  [style*="color: rgb(219, 226, 232)"],
+  [style*="color: #dbe2e8"]
+) {
+  color: #fff7ff !important;
+}
+
+.oc-page :is(
+  .oc-panel-section,
+  .oc-main-shell,
+  .oc-theme-workspace,
+  .oc-profile-page,
+  .slot-manager-v2[data-tour="slots-page"],
+  [data-tour="approvals-page"]
+) :is(
+  [style*="background: rgba(255, 255, 255"],
+  [style*="background:rgba(255,255,255"],
+  [style*="background: rgba(226, 232, 240"],
+  [style*="background:rgba(226,232,240"],
+  [style*="background: rgba(200, 208, 216"],
+  [style*="background:rgba(200,208,216"],
+  [style*="background: rgba(99, 102, 241"],
+  [style*="background:rgba(99,102,241"]
+) {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.12), transparent 34%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.72), rgba(18, 3, 43, 0.86)) !important;
+}
+
+.oc-page :is(
+  .oc-panel-section,
+  .oc-main-shell,
+  .oc-theme-workspace,
+  .oc-profile-page,
+  .slot-manager-v2[data-tour="slots-page"],
+  [data-tour="approvals-page"]
+) :is(
+  [style*="border: 1px solid rgba(255, 255, 255"],
+  [style*="border:1px solid rgba(255,255,255"],
+  [style*="border: 1px solid rgba(226, 232, 240"],
+  [style*="border:1px solid rgba(226,232,240"],
+  [style*="border: 1px solid rgba(200, 208, 216"],
+  [style*="border:1px solid rgba(200,208,216"],
+  [style*="border: 1px solid rgba(99, 102, 241"],
+  [style*="border:1px solid rgba(99,102,241"]
+) {
+  border-color: rgba(194, 92, 255, 0.3) !important;
+}
+
+.oc-page :is(
+  .oc-panel-section,
+  .oc-main-shell,
+  .oc-theme-workspace,
+  .oc-profile-page,
+  .slot-manager-v2[data-tour="slots-page"],
+  [data-tour="approvals-page"]
+) :is(
+  [style*="#5c6570"],
+  [style*="#444c57"],
+  [style*="#313843"],
+  [style*="rgb(92, 101, 112)"],
+  [style*="rgb(68, 76, 87)"],
+  [style*="rgb(49, 56, 67)"]
+) {
+  background: linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%) !important;
+  color: #fff7ff !important;
+  border-color: rgba(255, 72, 190, 0.48) !important;
+}
+
+@media (max-width: 860px) {
+  .oc-profile-page {
+    gap: 14px !important;
+  }
+
+  .oc-profile-page > div,
+  .oc-profile-page [data-tour] {
     padding: 16px !important;
   }
 }

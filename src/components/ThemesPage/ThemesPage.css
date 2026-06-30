@@ -15,15 +15,17 @@
 
 .themes-header h1 {
   font-size: 1.6rem;
-  font-weight: 700;
-  color: #e2e8f0;
+  font-weight: 850;
+  color: #fff7ff;
   margin: 0 0 4px;
+  letter-spacing: 0;
 }
 
 .themes-header p {
-  color: #94a3b8;
+  color: #c9b8e8;
   margin: 0;
   font-size: 0.85rem;
+  line-height: 1.55;
 }
 
 /* ── Grid — 5 cards, 3 cols on desktop ── */
@@ -44,23 +46,25 @@
 /* ── Theme Card ── */
 .theme-card {
   position: relative;
-  border-radius: 14px;
-  border: 2px solid rgba(255,255,255,0.06);
+  border-radius: 22px;
+  border: 1px solid rgba(194, 92, 255, 0.28);
   overflow: hidden;
   cursor: pointer;
   transition: transform 0.22s, box-shadow 0.22s, border-color 0.22s;
-  background: rgba(255,255,255,0.03);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.12), transparent 34%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.78), rgba(18, 3, 43, 0.9));
 }
 
 .theme-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-  border-color: var(--card-primary, rgba(255,255,255,0.15));
+  transform: translateY(-2px);
+  box-shadow: 0 0 34px rgba(240, 68, 183, 0.16), 0 28px 80px rgba(3, 0, 12, 0.56);
+  border-color: rgba(255, 72, 190, 0.42);
 }
 
 .theme-card--active {
-  border-color: var(--card-primary, #a78bfa);
-  box-shadow: 0 0 0 1px var(--card-primary, #a78bfa), 0 8px 28px rgba(0,0,0,0.4);
+  border-color: rgba(255, 72, 190, 0.58);
+  box-shadow: 0 0 0 1px rgba(255, 72, 190, 0.22), 0 0 30px rgba(240, 68, 183, 0.28), 0 24px 70px rgba(3, 0, 12, 0.52);
 }
 
 /* ── Swatch preview ── */
@@ -123,14 +127,15 @@
 
 .theme-card__name {
   font-size: 0.95rem;
-  font-weight: 700;
-  color: #f1f5f9;
+  font-weight: 850;
+  color: #fff7ff;
+  letter-spacing: 0;
 }
 
 .theme-card__desc {
   font-size: 0.75rem;
-  color: #94a3b8;
-  line-height: 1.35;
+  color: #c9b8e8;
+  line-height: 1.55;
 }
 
 /* ── Active checkmark ── */
@@ -141,38 +146,42 @@
   width: 26px;
   height: 26px;
   border-radius: 50%;
-  background: var(--card-primary, #a78bfa);
+  background: linear-gradient(135deg, #f044b7 0%, #8b5cf6 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000;
+  color: #fff7ff;
   font-size: 15px;
   font-weight: 800;
   z-index: 2;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.4);
+  box-shadow: 0 0 22px rgba(240, 68, 183, 0.34);
 }
 
 /* ═══════════════════
    Metallic colour picker
    ═══════════════════ */
 .metal-picker {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 14px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.12), transparent 34%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.78), rgba(18, 3, 43, 0.9));
+  border: 1px solid rgba(194, 92, 255, 0.28);
+  border-radius: 22px;
   padding: 22px 24px 26px;
 }
 
 .metal-picker__title {
   margin: 0 0 4px;
   font-size: 1rem;
-  font-weight: 700;
-  color: #e2e8f0;
+  font-weight: 850;
+  color: #fff7ff;
+  letter-spacing: 0;
 }
 
 .metal-picker__hint {
   margin: 0 0 16px;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: #c9b8e8;
+  line-height: 1.55;
 }
 
 .metal-picker__grid {
@@ -185,8 +194,8 @@
 .metal-swatch {
   width: 82px;
   height: 52px;
-  border-radius: 10px;
-  border: 2px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  border: 2px solid rgba(194, 92, 255, 0.28);
   background: var(--swatch-bg, #333);
   cursor: pointer;
   display: flex;
@@ -198,21 +207,140 @@
 }
 
 .metal-swatch:hover {
-  transform: scale(1.08);
-  border-color: rgba(255,255,255,0.3);
+  transform: scale(1.04);
+  border-color: rgba(255, 72, 190, 0.48);
 }
 
 .metal-swatch--active {
-  border-color: #fff;
-  box-shadow: 0 0 12px rgba(255,255,255,0.25);
-  transform: scale(1.08);
+  border-color: rgba(255, 72, 190, 0.48);
+  box-shadow: 0 0 24px rgba(240, 68, 183, 0.24);
+  transform: scale(1.04);
 }
 
 .metal-swatch__label {
   font-size: 0.6rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: rgba(255,255,255,0.85);
+  letter-spacing: 0;
+  color: #fff7ff;
   text-shadow: 0 1px 3px rgba(0,0,0,0.7);
+}
+
+/* =====================================================
+   Overlay Center theme page cosmic audit
+   Keeps this standalone page consistent inside the dashboard.
+   ===================================================== */
+.oc-page .themes-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  color: #fff7ff;
+}
+
+.oc-page .themes-header {
+  margin-bottom: 18px;
+}
+
+.oc-page .themes-header h1 {
+  color: #fff7ff;
+  font-size: 32px;
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: 0;
+}
+
+.oc-page .themes-header p {
+  color: #c9b8e8;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.oc-page .themes-grid {
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.oc-page .theme-card,
+.oc-page .metal-picker {
+  border-radius: 22px;
+  border: 1px solid rgba(194, 92, 255, 0.28);
+  background:
+    radial-gradient(circle at 12% 0%, rgba(240, 68, 183, 0.12), transparent 34%),
+    radial-gradient(circle at 100% 10%, rgba(57, 245, 211, 0.08), transparent 28%),
+    linear-gradient(150deg, rgba(36, 16, 74, 0.78), rgba(18, 3, 43, 0.9));
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(255, 72, 190, 0.08),
+    0 22px 70px rgba(3, 0, 12, 0.46);
+}
+
+.oc-page .theme-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 72, 190, 0.42);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 34px rgba(240, 68, 183, 0.16),
+    0 28px 80px rgba(3, 0, 12, 0.56);
+}
+
+.oc-page .theme-card--active {
+  border-color: rgba(255, 72, 190, 0.58);
+  box-shadow:
+    0 0 0 1px rgba(255, 72, 190, 0.22),
+    0 0 30px rgba(240, 68, 183, 0.28),
+    0 24px 70px rgba(3, 0, 12, 0.52);
+}
+
+.oc-page .theme-card__swatch {
+  height: 118px;
+  border-bottom: 1px solid rgba(194, 92, 255, 0.18);
+}
+
+.oc-page .theme-card__mockup {
+  border-radius: 16px;
+  box-shadow: 0 16px 36px rgba(3, 0, 12, 0.36), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.oc-page .theme-card__info {
+  padding: 16px;
+}
+
+.oc-page .theme-card__name,
+.oc-page .metal-picker__title {
+  color: #fff7ff;
+  font-weight: 850;
+  letter-spacing: 0;
+}
+
+.oc-page .theme-card__desc,
+.oc-page .metal-picker__hint {
+  color: #c9b8e8;
+  line-height: 1.55;
+}
+
+.oc-page .theme-card__check {
+  color: #fff7ff;
+  background: linear-gradient(135deg, #f044b7 0%, #8b5cf6 100%);
+  box-shadow: 0 0 22px rgba(240, 68, 183, 0.34);
+}
+
+.oc-page .metal-picker {
+  padding: 20px;
+}
+
+.oc-page .metal-swatch {
+  border-color: rgba(194, 92, 255, 0.28);
+  box-shadow: 0 14px 30px rgba(3, 0, 12, 0.34);
+}
+
+.oc-page .metal-swatch:hover,
+.oc-page .metal-swatch--active {
+  border-color: rgba(255, 72, 190, 0.48);
+  box-shadow: 0 0 24px rgba(240, 68, 183, 0.24);
+}
+
+.oc-page .metal-swatch__label {
+  letter-spacing: 0;
+  color: #fff7ff;
 }

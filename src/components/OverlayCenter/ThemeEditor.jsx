@@ -168,7 +168,7 @@ export default function ThemeEditor({ theme, onSave }) {
       {/* Canvas Resolution */}
       <section className="oc-theme-section">
         <h3 className="oc-theme-section-title">Canvas Resolution</h3>
-        <p className="oc-config-hint" style={{ marginBottom: 8, fontSize: 11, color: '#94a3b8' }}>
+        <p className="oc-config-hint" style={{ marginBottom: 8, fontSize: 11, color: '#c9b8e8' }}>
           Match this to your OBS Browser Source size.
         </p>
         <div className="oc-texture-row">
