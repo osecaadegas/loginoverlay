@@ -22,7 +22,7 @@ import PresetLibrary from './PresetLibrary';
 import SlotSubmissions from './slots/SlotSubmissions';
 import SlotApprovals from './slots/SlotApprovals';
 import ProfileSection from './ProfileSection';
-import { CopyField, StatusBadge } from './ui';
+import { CopyField, CosmicCard, CosmicPanel, GlowButton, NeonBadge } from './ui';
 
 import './OverlayCenter.css';
 import './OverlayRenderer.css';
@@ -118,9 +118,9 @@ function WidgetPanel({ widgetType, widgets, saveWidget, addWidget, loading }) {
       <div className="oc-empty-panel">
         <h2>{icon} {label}</h2>
         <p>No {label} widget found. Add one to get started.</p>
-        <button className="oc-btn-primary" onClick={() => addWidget(widgetType)}>
+        <GlowButton className="oc-btn-primary" onClick={() => addWidget(widgetType)}>
           + Add {label} Widget
-        </button>
+        </GlowButton>
       </div>
     );
   }
@@ -286,10 +286,10 @@ export default function OverlayControlCenter() {
   if (!user) {
     return (
       <div className="oc-page">
-        <div className="oc-auth-wall">
+        <CosmicPanel as="div" tone="hero" className="oc-auth-wall">
           <h2>🔒 Login Required</h2>
           <p>Sign in to access your Overlay Control Center.</p>
-        </div>
+        </CosmicPanel>
       </div>
     );
   }
@@ -297,10 +297,10 @@ export default function OverlayControlCenter() {
   if (loading) {
     return (
       <div className="oc-page">
-        <div className="oc-loading">
+        <CosmicPanel as="div" tone="hero" className="oc-loading">
           <div className="oc-spinner" />
           <p>Loading your overlay…</p>
-        </div>
+        </CosmicPanel>
       </div>
     );
   }
@@ -500,18 +500,18 @@ export default function OverlayControlCenter() {
         {/* ─── MAIN CONTENT ─── */}
         <main className="oc-main">
           <div className="oc-main-shell">
-          <div className={`oc-command-header${obsUrlContext ? '' : ' oc-command-header--no-url'}`}>
+          <CosmicPanel as="div" tone="header" className={`oc-command-header${obsUrlContext ? '' : ' oc-command-header--no-url'}`}>
             <div className="oc-command-header__copy">
               <span className="oc-main-eyebrow">{panelMeta.eyebrow}</span>
               <h2 className="oc-main-title">{panelMeta.title}</h2>
               <p className="oc-main-description">{panelMeta.description}</p>
               <div className="oc-command-header__meta">
-                <StatusBadge tone={visibleWidgetCount > 0 ? 'live' : 'neutral'}>{visibleWidgetCount} live</StatusBadge>
-                <StatusBadge tone="neutral">{widgets.length} installed</StatusBadge>
-                <StatusBadge tone="neutral">{canvasLabel}</StatusBadge>
-                <StatusBadge tone={isPremium ? 'active' : 'neutral'}>{isPremium ? 'Premium' : 'Standard'}</StatusBadge>
+                <NeonBadge tone={visibleWidgetCount > 0 ? 'live' : 'neutral'}>{visibleWidgetCount} live</NeonBadge>
+                <NeonBadge tone="neutral">{widgets.length} installed</NeonBadge>
+                <NeonBadge tone="teal">{canvasLabel}</NeonBadge>
+                <NeonBadge tone={isPremium ? 'active' : 'neutral'}>{isPremium ? 'Premium' : 'Standard'}</NeonBadge>
                 {WIDGET_PANEL_KEYS.includes(activePanel) && !activePanelWidget && (
-                  <StatusBadge tone="setup">Add widget for OBS URL</StatusBadge>
+                  <NeonBadge tone="setup">Add widget for OBS URL</NeonBadge>
                 )}
               </div>
             </div>
@@ -528,11 +528,11 @@ export default function OverlayControlCenter() {
                 regenLabel="New full URL"
               />
             )}
-          </div>
+          </CosmicPanel>
 
           {/* Quick-start steps for new users */}
           {activePanel === 'widgets' && widgets.length === 0 && (
-            <div className="oc-welcome-card">
+            <CosmicCard as="div" accent="pink" className="oc-welcome-card">
               <h2 className="oc-welcome-title">Welcome to your Overlay Center! 🎉</h2>
               <p className="oc-welcome-sub">Get your stream overlay running in 3 easy steps:</p>
               <div className="oc-welcome-steps">
@@ -558,7 +558,7 @@ export default function OverlayControlCenter() {
                   </div>
                 </div>
               </div>
-            </div>
+            </CosmicCard>
           )}
 
           {activePanel === 'widgets' && (
@@ -634,9 +634,9 @@ export default function OverlayControlCenter() {
             <ProfileSection widgets={widgets} saveWidget={saveWidget} />
           )}
           {obsUrlContext && (
-            <button type="button" className="oc-mobile-obs-action oc-ui-btn oc-ui-btn--primary" onClick={copyUrl}>
+            <GlowButton type="button" className="oc-mobile-obs-action oc-ui-btn oc-ui-btn--primary" onClick={copyUrl}>
               {copyMsg || obsUrlContext.mobileLabel}
-            </button>
+            </GlowButton>
           )}
           </div>
         </main>

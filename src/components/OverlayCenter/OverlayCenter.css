@@ -15435,3 +15435,1388 @@ body.wm-resizing {
   }
 }
 
+/* =====================================================
+   Premium psychedelic broadcast dashboard
+   Final Overlay Center theme layer.
+   ===================================================== */
+:root {
+  --ui-bg-primary: #080014;
+  --ui-bg-secondary: #0d021f;
+  --ui-bg-tertiary: #12032b;
+  --ui-surface: rgba(36, 16, 74, 0.68);
+  --ui-surface-soft: rgba(27, 10, 58, 0.6);
+  --ui-surface-strong: rgba(24, 7, 55, 0.86);
+  --ui-surface-hover: rgba(43, 18, 92, 0.84);
+  --ui-border-soft: rgba(194, 92, 255, 0.28);
+  --ui-border: rgba(255, 72, 190, 0.35);
+  --ui-border-strong: rgba(255, 72, 190, 0.52);
+  --ui-text-primary: #fff7ff;
+  --ui-text-secondary: #c9b8e8;
+  --ui-text-muted: #8d78b7;
+  --ui-accent: #f044b7;
+  --ui-accent-strong: #ff7ad8;
+  --ui-accent-soft: rgba(240, 68, 183, 0.16);
+  --ui-success: #39f5d3;
+  --ui-success-soft: rgba(57, 245, 211, 0.15);
+  --ui-warning: #ffb84d;
+  --ui-warning-soft: rgba(255, 184, 77, 0.16);
+  --ui-danger: #ff4f8b;
+  --ui-danger-soft: rgba(255, 79, 139, 0.16);
+  --ui-info: #8b5cf6;
+  --ui-info-soft: rgba(139, 92, 246, 0.18);
+  --ui-shadow-sm: 0 18px 44px rgba(3, 0, 12, 0.44);
+  --ui-shadow-md: 0 28px 80px rgba(3, 0, 12, 0.55);
+  --ui-shadow-lg: 0 40px 130px rgba(3, 0, 12, 0.68);
+  --ui-radius-sm: 14px;
+  --ui-radius-md: 20px;
+  --ui-radius-lg: 26px;
+  --ui-radius-xl: 32px;
+
+  --oc-bg-primary: #080014;
+  --oc-bg-secondary: #0d021f;
+  --oc-bg-tertiary: #12032b;
+  --oc-bg-surface: rgba(36, 16, 74, 0.66);
+  --oc-bg-surface-hover: rgba(43, 18, 92, 0.86);
+  --oc-bg-card: rgba(27, 10, 58, 0.72);
+  --oc-bg-card-strong: rgba(24, 7, 55, 0.9);
+  --oc-border: rgba(194, 92, 255, 0.28);
+  --oc-border-hover: rgba(255, 72, 190, 0.44);
+  --oc-text-primary: #fff7ff;
+  --oc-text-secondary: #c9b8e8;
+  --oc-text-muted: #8d78b7;
+  --oc-accent: #f044b7;
+  --oc-accent-light: #ff7ad8;
+  --oc-accent-cyan: #39f5d3;
+  --oc-accent-glow: rgba(240, 68, 183, 0.18);
+  --oc-accent-glow-strong: rgba(139, 92, 246, 0.28);
+  --oc-accent-solid: #8b5cf6;
+  --oc-green: #39f5d3;
+  --oc-green-glow: rgba(57, 245, 211, 0.16);
+  --oc-danger: #ff4f8b;
+  --oc-danger-glow: rgba(255, 79, 139, 0.16);
+  --oc-amber: #ffb84d;
+  --oc-orange: #ff7a2f;
+  --oc-radius-sm: 14px;
+  --oc-radius-md: 20px;
+  --oc-radius-lg: 26px;
+  --oc-radius-xl: 32px;
+  --oc-shadow-sm: 0 18px 44px rgba(3, 0, 12, 0.44);
+  --oc-shadow-md: 0 28px 80px rgba(3, 0, 12, 0.55);
+  --oc-shadow-lg: 0 40px 130px rgba(3, 0, 12, 0.68);
+  --oc-shadow-glow: 0 0 0 1px rgba(255, 72, 190, 0.16), 0 0 28px rgba(240, 68, 183, 0.18), 0 24px 70px rgba(8, 0, 20, 0.56);
+  --oc-cosmic-panel:
+    linear-gradient(145deg, rgba(43, 18, 92, 0.72), rgba(27, 10, 58, 0.74) 46%, rgba(13, 2, 31, 0.88)),
+    radial-gradient(circle at 10% 0%, rgba(255, 72, 190, 0.16), transparent 34%),
+    radial-gradient(circle at 94% 12%, rgba(57, 245, 211, 0.1), transparent 28%);
+  --oc-cosmic-panel-strong:
+    linear-gradient(145deg, rgba(43, 18, 92, 0.88), rgba(24, 7, 55, 0.9) 48%, rgba(8, 0, 20, 0.94)),
+    radial-gradient(circle at 8% 0%, rgba(240, 68, 183, 0.22), transparent 32%),
+    radial-gradient(circle at 100% 18%, rgba(139, 92, 246, 0.2), transparent 34%);
+  --oc-cosmic-border: rgba(194, 92, 255, 0.28);
+  --oc-cosmic-border-hot: rgba(255, 72, 190, 0.38);
+  --oc-glow-pink: 0 0 22px rgba(240, 68, 183, 0.35);
+  --oc-glow-violet: 0 0 28px rgba(139, 92, 246, 0.32);
+  --oc-glow-teal: 0 0 22px rgba(57, 245, 211, 0.24);
+}
+
+@keyframes oc-cosmic-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(18px, -14px, 0) scale(1.035); }
+}
+
+@keyframes oc-neon-pulse {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(255, 72, 190, 0.2), 0 0 18px rgba(240, 68, 183, 0.22); }
+  50% { box-shadow: 0 0 0 1px rgba(255, 72, 190, 0.34), 0 0 30px rgba(240, 68, 183, 0.38); }
+}
+
+@keyframes oc-badge-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.oc-page {
+  min-height: 100vh;
+  color: var(--oc-text-primary) !important;
+  background:
+    radial-gradient(circle at 12% -8%, rgba(240, 68, 183, 0.24), transparent 30%),
+    radial-gradient(circle at 82% 4%, rgba(57, 245, 211, 0.14), transparent 24%),
+    radial-gradient(circle at 52% 118%, rgba(139, 92, 246, 0.26), transparent 38%),
+    linear-gradient(145deg, #080014 0%, #0d021f 42%, #12032b 100%) !important;
+  isolation: isolate;
+  overflow-x: hidden;
+}
+
+.oc-page::before,
+.oc-page::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+.oc-page::before {
+  z-index: 0;
+  opacity: 0.72;
+  filter: blur(18px) saturate(120%);
+  background:
+    radial-gradient(ellipse 42% 34% at 16% 18%, rgba(255, 72, 190, 0.2), transparent 62%),
+    radial-gradient(ellipse 32% 26% at 80% 14%, rgba(57, 245, 211, 0.14), transparent 62%),
+    radial-gradient(ellipse 34% 38% at 72% 80%, rgba(139, 92, 246, 0.2), transparent 62%),
+    conic-gradient(from 220deg at 24% 72%, rgba(255, 184, 77, 0.08), transparent 18%, rgba(240, 68, 183, 0.08), transparent 42%);
+  animation: oc-cosmic-drift 18s ease-in-out infinite;
+}
+
+.oc-page::after {
+  z-index: 0;
+  opacity: 0.19;
+  mix-blend-mode: screen;
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.22) 0 1px, transparent 1px),
+    radial-gradient(circle at 72% 64%, rgba(255, 255, 255, 0.16) 0 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+  background-size: 73px 73px, 97px 97px, 44px 44px, 44px 44px;
+}
+
+.oc-layout,
+.oc-hamburger,
+.oc-sidebar-backdrop {
+  position: relative;
+  z-index: 1;
+}
+
+.oc-layout {
+  gap: 24px !important;
+  padding: 22px !important;
+}
+
+.oc-page *,
+.oc-page *::before,
+.oc-page *::after {
+  box-sizing: border-box;
+}
+
+.oc-page :is(h1, h2, h3, h4, h5, h6, .oc-main-title, .oc-ui-hero__title, .pl-hero__title, .bhl-page-title, .tm-page-title, .bb-admin-title, .cs-page-title, .sr-admin-page-title, .wm-card-name, .wm-picker-card-name) {
+  letter-spacing: 0 !important;
+}
+
+.oc-main-title {
+  font-size: 42px !important;
+  line-height: 1.04 !important;
+  color: var(--oc-text-primary) !important;
+  text-shadow: 0 0 34px rgba(240, 68, 183, 0.2);
+}
+
+.oc-ui-hero__title,
+.pl-hero__title,
+.bhl-page-title,
+.tm-page-title,
+.bb-admin-title,
+.cs-page-title,
+.sr-admin-page-title {
+  font-size: 34px !important;
+  line-height: 1.08 !important;
+}
+
+.oc-main-description,
+.oc-ui-hero__description,
+.oc-ui-hero__note,
+.oc-ui-section-header__description,
+.pl-page-subtitle,
+.bhl-page-subtitle,
+.tm-page-subtitle,
+.bb-admin-subtitle,
+.cs-page-subtitle,
+.sr-admin-page-subtitle {
+  color: var(--oc-text-secondary) !important;
+}
+
+.oc-cosmic-panel,
+.oc-cosmic-card,
+.oc-sidebar,
+.oc-main-shell,
+.oc-command-header,
+.oc-welcome-card,
+.oc-auth-wall,
+.oc-loading,
+.oc-empty-panel,
+.oc-panel-loading,
+.oc-theme-panel,
+.oc-preview-panel,
+.oc-ui-hero,
+.oc-ui-filterbar,
+.oc-ui-copyfield,
+.oc-ui-checklist,
+.oc-ui-preview-panel,
+.oc-ui-empty,
+.wm-library-toolbar,
+.wm-empty-library,
+.wm-sidepanel,
+.wm-layout-panel,
+.wm-config-panel,
+.wm-picker-card,
+.wm-card,
+.wm-sidepanel-note,
+.cg-config__hero,
+.nb-config__hero,
+.cg-config__status-card,
+.nb-section,
+.tm-modal,
+.gt-tooltip-summary-card,
+.bhl-panel,
+.bhl-page-hero,
+.bhl-page-metric-card,
+.bhl-controls-card,
+.bhl-stats-bar,
+.bhl-card,
+.bhl-empty-state,
+.pl-hero,
+.pl-hero__metric-card,
+.pl-save-card,
+.pl-toolbar-card,
+.pl-card,
+.pl-empty,
+.bk-card,
+.bk-bracket-card,
+.bk-match-card,
+.tm-page-hero,
+.tm-page-metric-card,
+.bb-admin-hero,
+.bb-admin-card,
+.bb-admin-section,
+.bb-admin-slot-card,
+.bb-admin-metric-card,
+.bb-admin-stat-card,
+.bb-admin-note-card,
+.bb-admin-selected-slot,
+.bb-admin-empty,
+.cs-card,
+.cs-panel,
+.cs-slot-card,
+.cs-page-metric-card,
+.cs-selected-slot,
+.sr-admin-card,
+.sr-admin-metric-card,
+.sr-admin-queue-card,
+.sr-admin-empty,
+.oc-ui-asset-card,
+.oc-ui-metric,
+.oc-ui-skeleton-card {
+  background: var(--oc-cosmic-panel) !important;
+  border: 1px solid var(--oc-cosmic-border) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    inset 0 -18px 60px rgba(8, 0, 20, 0.2),
+    var(--oc-shadow-sm) !important;
+  backdrop-filter: blur(24px) saturate(130%);
+}
+
+.oc-cosmic-panel,
+.oc-sidebar,
+.oc-main-shell,
+.oc-command-header,
+.oc-welcome-card,
+.oc-auth-wall,
+.oc-loading,
+.oc-ui-hero,
+.pl-hero,
+.bhl-page-hero,
+.tm-page-hero,
+.bb-admin-hero {
+  border-radius: 32px !important;
+}
+
+.oc-cosmic-card,
+.oc-empty-panel,
+.oc-theme-panel,
+.oc-preview-panel,
+.oc-ui-filterbar,
+.oc-ui-copyfield,
+.oc-ui-checklist,
+.oc-ui-preview-panel,
+.oc-ui-empty,
+.wm-picker-card,
+.wm-card,
+.wm-sidepanel,
+.wm-layout-panel,
+.wm-config-panel,
+.bhl-card,
+.pl-card,
+.bk-card,
+.bk-bracket-card,
+.bk-match-card,
+.bb-admin-card,
+.bb-admin-section,
+.bb-admin-slot-card,
+.cs-card,
+.cs-panel,
+.cs-slot-card,
+.sr-admin-card,
+.sr-admin-queue-card,
+.oc-ui-asset-card,
+.oc-ui-metric {
+  border-radius: 24px !important;
+}
+
+.oc-main-shell {
+  position: relative;
+  overflow: hidden;
+  min-height: calc(100vh - 44px) !important;
+  padding: 24px 30px 30px !important;
+  background:
+    linear-gradient(160deg, rgba(27, 10, 58, 0.58), rgba(13, 2, 31, 0.74)),
+    radial-gradient(circle at 18% 0%, rgba(240, 68, 183, 0.14), transparent 34%) !important;
+  border-color: rgba(194, 92, 255, 0.3) !important;
+  box-shadow: var(--oc-shadow-lg), 0 0 0 1px rgba(255, 72, 190, 0.08) !important;
+}
+
+.oc-main-shell::before {
+  content: '';
+  position: absolute;
+  width: 420px;
+  height: 420px;
+  right: -150px;
+  top: -180px;
+  pointer-events: none;
+  border-radius: 44% 56% 62% 38%;
+  background:
+    radial-gradient(circle, rgba(240, 68, 183, 0.28), transparent 62%),
+    conic-gradient(from 110deg, rgba(57, 245, 211, 0.16), rgba(139, 92, 246, 0.2), rgba(255, 184, 77, 0.1), rgba(57, 245, 211, 0.16));
+  filter: blur(8px);
+  opacity: 0.54;
+  z-index: 0;
+  animation: oc-cosmic-drift 22s ease-in-out infinite reverse;
+}
+
+.oc-main-shell > * {
+  position: relative;
+  z-index: 1;
+}
+
+.oc-cosmic-panel,
+.oc-cosmic-card,
+.oc-ui-asset-card,
+.wm-card,
+.wm-picker-card,
+.bhl-card,
+.pl-card,
+.bk-card,
+.bb-admin-card,
+.cs-card,
+.sr-admin-card {
+  transition: transform var(--oc-transition), border-color var(--oc-transition), box-shadow var(--oc-transition), background var(--oc-transition);
+}
+
+.oc-cosmic-card:hover,
+.oc-ui-asset-card:hover,
+.wm-card:hover,
+.wm-picker-card:hover,
+.bhl-card:hover,
+.pl-card:hover,
+.bk-card:hover,
+.bk-match-card:hover,
+.bb-admin-card:hover,
+.bb-admin-slot-card:hover,
+.cs-card:hover,
+.cs-slot-card:hover,
+.sr-admin-card:hover,
+.sr-admin-queue-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--oc-cosmic-border-hot) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 0 0 1px rgba(255, 72, 190, 0.12),
+    0 0 34px rgba(240, 68, 183, 0.18),
+    0 26px 80px rgba(3, 0, 12, 0.62) !important;
+}
+
+.oc-sidebar {
+  position: sticky;
+  background:
+    linear-gradient(180deg, rgba(27, 10, 58, 0.86), rgba(13, 2, 31, 0.92)),
+    radial-gradient(circle at 50% -10%, rgba(240, 68, 183, 0.2), transparent 34%) !important;
+  border-color: rgba(194, 92, 255, 0.32) !important;
+  box-shadow: 0 28px 90px rgba(3, 0, 12, 0.58), 0 0 40px rgba(139, 92, 246, 0.12) !important;
+}
+
+.oc-sidebar-brand {
+  border-bottom-color: rgba(194, 92, 255, 0.2) !important;
+}
+
+.oc-sidebar-icon,
+.oc-ui-asset-card__icon,
+.wm-picker-card-icon,
+.wm-card-icon,
+.wm-sidepanel-icon,
+.oc-ui-metric__icon,
+.oc-ui-empty__icon {
+  color: #fff7ff !important;
+  background:
+    radial-gradient(circle at 35% 20%, rgba(255, 255, 255, 0.18), transparent 30%),
+    linear-gradient(135deg, rgba(240, 68, 183, 0.62), rgba(139, 92, 246, 0.76)) !important;
+  border-color: rgba(255, 72, 190, 0.45) !important;
+  box-shadow: var(--oc-glow-pink) !important;
+}
+
+.oc-sidebar-title,
+.oc-panel-title,
+.oc-ui-hero__title,
+.oc-ui-section-header__title,
+.wm-card-name,
+.wm-picker-card-name,
+.bhl-page-title,
+.bhl-section-title,
+.pl-page-title,
+.pl-section-heading__title,
+.tm-page-title,
+.tm-section-title,
+.bb-admin-title,
+.bb-admin-card-title,
+.cs-card-title,
+.cs-selected-slot-name,
+.sr-admin-card-title {
+  color: var(--oc-text-primary) !important;
+  background: none !important;
+  -webkit-text-fill-color: var(--oc-text-primary) !important;
+}
+
+.oc-sidebar-brand-subtitle,
+.oc-sidebar-divider-label,
+.oc-sidebar-url-label,
+.oc-sidebar-user {
+  color: var(--oc-text-muted) !important;
+}
+
+.oc-sidebar-btn,
+.oc-sidebar-btn--sub {
+  min-height: 58px;
+  border-radius: 20px !important;
+  background: rgba(36, 16, 74, 0.38) !important;
+  border: 1px solid rgba(194, 92, 255, 0.12) !important;
+  color: var(--oc-text-secondary) !important;
+}
+
+.oc-sidebar-btn::before {
+  width: 4px !important;
+  background: linear-gradient(180deg, #f044b7, #8b5cf6, #39f5d3) !important;
+  box-shadow: 0 0 18px rgba(240, 68, 183, 0.48);
+}
+
+.oc-sidebar-btn:hover,
+.oc-sidebar-btn--active {
+  color: var(--oc-text-primary) !important;
+  background:
+    linear-gradient(135deg, rgba(240, 68, 183, 0.18), rgba(139, 92, 246, 0.16)),
+    rgba(43, 18, 92, 0.7) !important;
+  border-color: rgba(255, 72, 190, 0.38) !important;
+  box-shadow: 0 14px 34px rgba(240, 68, 183, 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.oc-sidebar-btn-desc,
+.oc-panel-subtitle,
+.wm-picker-card-desc,
+.wm-card-badge--off,
+.wm-card-arrow,
+.bhl-description,
+.bhl-page-note,
+.pl-page-subtitle,
+.bb-admin-message,
+.sr-admin-success-copy {
+  color: var(--oc-text-muted) !important;
+}
+
+.oc-sidebar-resolution-select,
+.oc-page select,
+.oc-page option,
+.oc-page optgroup {
+  background-color: #160733 !important;
+  color: var(--oc-text-primary) !important;
+}
+
+.oc-page option:checked {
+  background-color: #2b125c !important;
+  color: var(--oc-text-primary) !important;
+}
+
+.oc-hamburger {
+  background: rgba(27, 10, 58, 0.82) !important;
+  border-color: rgba(255, 72, 190, 0.34) !important;
+  box-shadow: 0 0 26px rgba(240, 68, 183, 0.18) !important;
+}
+
+.oc-hamburger-bar {
+  background: var(--oc-text-primary) !important;
+}
+
+.oc-sidebar-backdrop,
+.tm-modal-overlay {
+  background: rgba(8, 0, 20, 0.7) !important;
+  backdrop-filter: blur(14px);
+}
+
+.oc-command-header {
+  align-items: stretch !important;
+  margin-bottom: 24px !important;
+  padding: 22px !important;
+  border-bottom: 0 !important;
+}
+
+.oc-main-eyebrow,
+.oc-ui-eyebrow,
+.oc-ui-section-header__eyebrow,
+.oc-ui-asset-card__category,
+.oc-ui-copyfield__label,
+.oc-ui-checklist__title,
+.bhl-page-eyebrow,
+.bhl-section-eyebrow,
+.pl-section-heading__eyebrow,
+.tm-page-eyebrow,
+.tm-section-eyebrow,
+.bb-admin-eyebrow,
+.bb-admin-section-eyebrow,
+.bb-admin-slot-label,
+.cs-section-pill,
+.sr-admin-card-eyebrow {
+  color: var(--oc-accent-cyan) !important;
+  background: linear-gradient(135deg, rgba(57, 245, 211, 0.12), rgba(139, 92, 246, 0.1)) !important;
+  border: 1px solid rgba(57, 245, 211, 0.22) !important;
+  box-shadow: 0 0 18px rgba(57, 245, 211, 0.1);
+  letter-spacing: 0.08em !important;
+  border-radius: 999px;
+  padding: 7px 11px;
+}
+
+.oc-neon-badge,
+.oc-ui-status,
+.oc-ui-section-header__pill,
+.oc-status-pill,
+.wm-card-badge,
+.wm-tile-badge,
+.wm-tile-layer-badge,
+.wm-tile-container-badge,
+.oc-twitch-badge,
+.bh-count,
+.bh-panel-label,
+.bhl-section-pill,
+.pl-section-heading__pill,
+.pl-card__badge,
+.bb-admin-section-pill,
+.bb-admin-card-chip,
+.cs-card-chip,
+.sr-admin-card-chip,
+.bk-badge--type,
+.bk-badge--live,
+.bk-badge--done,
+.tm-section-pill {
+  min-height: 28px;
+  color: var(--oc-text-secondary) !important;
+  background:
+    linear-gradient(120deg, rgba(36, 16, 74, 0.78), rgba(139, 92, 246, 0.16), rgba(36, 16, 74, 0.78)) !important;
+  background-size: 200% 100% !important;
+  border: 1px solid rgba(194, 92, 255, 0.3) !important;
+  border-radius: 999px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.oc-neon-badge--live,
+.oc-neon-badge--success,
+.oc-neon-badge--active,
+.oc-ui-status--live,
+.oc-ui-status--success,
+.oc-ui-status--active,
+.wm-card-badge--live,
+.wm-tile-badge--live {
+  color: #eafffb !important;
+  border-color: rgba(57, 245, 211, 0.42) !important;
+  background: linear-gradient(135deg, rgba(57, 245, 211, 0.2), rgba(139, 92, 246, 0.14)) !important;
+  box-shadow: var(--oc-glow-teal) !important;
+}
+
+.oc-neon-badge--setup,
+.oc-neon-badge--warning,
+.oc-ui-status--warning,
+.oc-ui-status--setup {
+  color: #ffe7ba !important;
+  border-color: rgba(255, 184, 77, 0.42) !important;
+  background: linear-gradient(135deg, rgba(255, 184, 77, 0.18), rgba(255, 122, 47, 0.12)) !important;
+}
+
+.oc-neon-badge--teal {
+  color: #eafffb !important;
+  border-color: rgba(57, 245, 211, 0.4) !important;
+}
+
+.oc-neon-badge--danger,
+.oc-ui-status--danger,
+.oc-ui-status--inactive {
+  color: #ffc1d8 !important;
+  border-color: rgba(255, 79, 139, 0.38) !important;
+  background: linear-gradient(135deg, rgba(255, 79, 139, 0.18), rgba(240, 68, 183, 0.1)) !important;
+}
+
+.oc-command-header__meta .oc-neon-badge:first-child {
+  animation: oc-badge-shimmer 5s linear infinite;
+}
+
+.oc-glow-button,
+.oc-ui-btn,
+.oc-btn,
+.oc-btn-primary,
+.oc-sidebar-url-copy,
+.oc-sidebar-preset-save-btn,
+.oc-sidebar-preset-load,
+.wm-sidepanel-toggle,
+.wm-library-chip,
+.wm-sidepanel-tab,
+.cg-config__btn,
+.nb-preset-save-btn,
+.nb-preset-load-btn,
+.nb-preset-pill__load,
+.bk-start-btn,
+.bk-type-btn,
+.bk-count-btn,
+.bk-mp-winner-btn,
+.pl-save-bar__btn,
+.pl-card__btn,
+.pl-toolbar__filter,
+.bhl-view-btn,
+.bhl-download-btn,
+.bh-add-btn,
+.bh-save-hunt-btn,
+.bh-save-hunt-confirm,
+.bh-sort-btn,
+.bb-admin-primary-btn,
+.bb-admin-secondary-btn,
+.cs-sync-btn,
+.sr-admin-btn,
+.oal-tab {
+  border-radius: 999px !important;
+  border: 1px solid rgba(194, 92, 255, 0.3) !important;
+  background: rgba(36, 16, 74, 0.58) !important;
+  color: var(--oc-text-secondary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+  transition: transform var(--oc-transition), border-color var(--oc-transition), box-shadow var(--oc-transition), background var(--oc-transition), color var(--oc-transition);
+}
+
+.oc-glow-button--primary,
+.oc-ui-btn--primary,
+.oc-btn--primary,
+.oc-btn-primary,
+.oc-status-pill--live,
+.oc-toggle--on,
+.oc-toggle.is-on,
+.oc-preset-btn--active,
+.oc-style-chip--active,
+.oc-segmented-btn--active,
+.oc-texture-btn--active,
+.oc-bg-mode-btn--active,
+.oc-bg-texture-btn--active,
+.wm-style-switcher-btn--active,
+.wm-ctx-style-btn--active,
+.wm-library-chip--active,
+.wm-sidepanel-tab--active,
+.wm-sidepanel-toggle--on,
+.cg-config__btn--primary,
+.cg-config__tab--active,
+.nb-tab--active,
+.nb-style-btn--active,
+.ov-chat-style-btn--active,
+.bk-type-btn--active,
+.bk-count-btn--active,
+.bk-mp-winner-btn--active,
+.pl-save-bar__btn,
+.pl-card__btn--load,
+.pl-toolbar__filter--active,
+.bhl-view-btn--active,
+.bh-add-btn,
+.bh-save-hunt-btn,
+.bh-save-hunt-confirm,
+.bb-admin-primary-btn,
+.bb-admin-tab--active,
+.cs-sync-btn,
+.sr-admin-btn--success,
+.sr-admin-btn--warn,
+.oal-tab--active {
+  color: #fff7ff !important;
+  background:
+    linear-gradient(135deg, #f044b7 0%, #b84cff 48%, #8b5cf6 100%) !important;
+  border-color: rgba(255, 72, 190, 0.58) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 72, 190, 0.18),
+    0 0 26px rgba(240, 68, 183, 0.34),
+    0 16px 36px rgba(95, 24, 124, 0.38) !important;
+}
+
+.oc-glow-button--secondary,
+.oc-ui-btn--ghost,
+.oc-btn:not(.oc-btn--primary):not(.oc-btn--danger),
+.bb-admin-secondary-btn {
+  color: var(--oc-text-secondary) !important;
+  background: rgba(36, 16, 74, 0.42) !important;
+  border-color: rgba(194, 92, 255, 0.32) !important;
+}
+
+.oc-glow-button:hover:not(:disabled),
+.oc-ui-btn:hover:not(:disabled),
+.oc-btn:hover:not(:disabled),
+.oc-btn-primary:hover:not(:disabled),
+.wm-library-chip:hover,
+.wm-sidepanel-tab:hover:not(:disabled),
+.wm-sidepanel-toggle:hover,
+.cg-config__btn:hover:not(:disabled),
+.pl-card__btn:hover,
+.pl-toolbar__filter:hover,
+.bhl-view-btn:hover,
+.bhl-download-btn:hover,
+.bh-add-btn:hover:not(:disabled),
+.bh-save-hunt-btn:hover:not(:disabled),
+.bh-save-hunt-confirm:hover:not(:disabled),
+.bb-admin-primary-btn:hover,
+.bb-admin-secondary-btn:hover,
+.cs-sync-btn:hover,
+.sr-admin-btn:hover,
+.oal-tab:hover {
+  color: #fff7ff !important;
+  transform: translateY(-1px);
+  border-color: rgba(255, 72, 190, 0.5) !important;
+  box-shadow:
+    0 0 0 1px rgba(255, 72, 190, 0.18),
+    0 0 26px rgba(240, 68, 183, 0.28),
+    0 16px 36px rgba(3, 0, 12, 0.36) !important;
+}
+
+.oc-glow-button--primary:hover:not(:disabled),
+.oc-ui-btn--primary:hover:not(:disabled),
+.oc-btn-primary:hover:not(:disabled),
+.pl-save-bar__btn:hover:not(:disabled),
+.pl-card__btn--load:hover,
+.bb-admin-primary-btn:hover,
+.cs-sync-btn:hover,
+.sr-admin-btn--success:hover,
+.sr-admin-btn--warn:hover {
+  animation: oc-neon-pulse 2.8s ease-in-out infinite;
+}
+
+.oc-btn--danger,
+.pl-card__btn--delete,
+.bhl-confirm-row .oc-btn--danger,
+.bb-admin-danger-btn,
+.sr-admin-btn--danger {
+  color: #ffd8e6 !important;
+  background: linear-gradient(135deg, rgba(120, 18, 48, 0.78), rgba(240, 68, 183, 0.18)) !important;
+  border-color: rgba(255, 79, 139, 0.42) !important;
+}
+
+.oc-btn--danger:hover,
+.pl-card__btn--delete:hover,
+.bb-admin-danger-btn:hover,
+.sr-admin-btn--danger:hover {
+  box-shadow: 0 0 26px rgba(255, 79, 139, 0.3), 0 16px 34px rgba(70, 0, 24, 0.34) !important;
+}
+
+.oc-page input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]),
+.oc-page select,
+.oc-page textarea,
+.oc-dark-input,
+.oc-sidebar-resolution-select,
+.oc-sidebar-url-input,
+.oc-sidebar-preset-input,
+.oc-config-field input,
+.oc-config-field select,
+.oc-config-field textarea,
+.wm-obs-input,
+.wm-slider-num,
+.wm-animation-field select,
+.wm-ctx-select,
+.wm-ctx-adv-input,
+.wm-ctx-adv-combo-select,
+.wm-ctx-adv-combo-input,
+.wm-ctx-els-target-select,
+.wm-library-search input,
+.wm-precision-grid input,
+.cg-config__field > input,
+.cg-config__field > select,
+.cg-config__add-row > input,
+.cg-config__word-input,
+.nb-field > input,
+.nb-field > select,
+.nb-preset-input,
+.bh-input-group input,
+.bh-search-input,
+.bh-submit-field input,
+.bh-submit-field select,
+.bh-list-payout-input,
+.bh-list-edit-input,
+.bh-gtb-input,
+.tm-player-input,
+.tm-slot-input,
+.tm-setup-input,
+.tm-slot-input-inline,
+.tm-match-inline-inputs input,
+.bk-input,
+.bk-mp-input-wrap input[type="number"],
+.bhl-search-input,
+.bhl-sort-select,
+.pl-save-bar__input,
+.pl-toolbar__search-input,
+.pl-toolbar__sort,
+.bb-admin-field-input,
+.bb-admin-field-select,
+.cs-search-input,
+.cs-field input,
+.cs-field select,
+.cs-textarea,
+.sr-admin-message-input {
+  background:
+    linear-gradient(180deg, rgba(18, 3, 43, 0.9), rgba(27, 10, 58, 0.78)) !important;
+  border: 1px solid rgba(194, 92, 255, 0.3) !important;
+  border-radius: 16px !important;
+  color: var(--oc-text-primary) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+}
+
+.oc-page input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"])::placeholder,
+.oc-page textarea::placeholder,
+.bhl-search-input::placeholder,
+.pl-save-bar__input::placeholder,
+.pl-toolbar__search-input::placeholder,
+.bh-search-input::placeholder,
+.bh-gtb-input::placeholder,
+.tm-setup-input::placeholder {
+  color: rgba(201, 184, 232, 0.55) !important;
+}
+
+.oc-page input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
+.oc-page select:focus,
+.oc-page textarea:focus,
+.oc-dark-input:focus,
+.oc-sidebar-resolution-select:focus,
+.oc-sidebar-url-box:focus-within,
+.oc-ui-filterbar__search:focus-within,
+.oc-ui-copyfield__row:focus-within,
+.wm-library-search:focus-within,
+.wm-precision-grid input:focus,
+.cg-config__field > input:focus,
+.cg-config__field > select:focus,
+.nb-field > input:focus,
+.nb-field > select:focus,
+.nb-preset-input:focus,
+.bh-input-group input:focus,
+.bh-search-input:focus,
+.bh-submit-field input:focus,
+.bh-submit-field select:focus,
+.bh-list-payout-input:focus,
+.bh-list-edit-input:focus,
+.bh-gtb-input:focus,
+.tm-player-input:focus,
+.tm-slot-input:focus,
+.tm-setup-input:focus,
+.bk-input:focus,
+.bk-mp-input-wrap input[type="number"]:focus,
+.bhl-search-input:focus,
+.bhl-sort-select:focus,
+.pl-save-bar__input:focus,
+.pl-toolbar__search-input:focus,
+.pl-toolbar__sort:focus,
+.bb-admin-field-input:focus,
+.bb-admin-field-select:focus,
+.cs-search-input:focus,
+.cs-field input:focus,
+.cs-field select:focus,
+.cs-textarea:focus,
+.sr-admin-message-input:focus {
+  outline: none !important;
+  border-color: rgba(255, 72, 190, 0.58) !important;
+  background: linear-gradient(180deg, rgba(36, 16, 74, 0.92), rgba(18, 3, 43, 0.86)) !important;
+  box-shadow: 0 0 0 4px rgba(240, 68, 183, 0.16), 0 0 24px rgba(139, 92, 246, 0.14) !important;
+}
+
+.oc-page input[type="checkbox"],
+.oc-page input[type="radio"] {
+  accent-color: #f044b7 !important;
+}
+
+.oc-page input[type="color"],
+.nb-color-field input[type="color"],
+.nb-color-item input[type="color"],
+.cg-config__color > input[type="color"],
+.oc-color-field input[type="color"],
+.bb-admin-color-input,
+.cs-color-input {
+  border-color: rgba(194, 92, 255, 0.34) !important;
+  background: rgba(18, 3, 43, 0.86) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 0 18px rgba(139, 92, 246, 0.12) !important;
+}
+
+.oc-page input[type="range"] {
+  accent-color: #f044b7;
+}
+
+.oc-toggle,
+.bh-opening-switch {
+  background: rgba(141, 120, 183, 0.28) !important;
+  border: 1px solid rgba(194, 92, 255, 0.28) !important;
+}
+
+.oc-toggle--on,
+.oc-toggle.is-on,
+.bh-compact-toggle input:checked + .bh-opening-switch,
+.bh-opening-toggle--active .bh-opening-switch {
+  background: linear-gradient(135deg, #f044b7, #8b5cf6) !important;
+  box-shadow: 0 0 22px rgba(240, 68, 183, 0.34) !important;
+}
+
+.oc-ui-filterbar,
+.wm-library-toolbar,
+.oal-tabs,
+.pl-toolbar-card,
+.bhl-controls-card {
+  gap: 12px !important;
+  padding: 14px !important;
+}
+
+.oc-ui-filterbar__search,
+.oc-ui-copyfield__row,
+.wm-library-search,
+.pl-toolbar__search,
+.bhl-search-box,
+.oc-sidebar-url-box {
+  background: rgba(18, 3, 43, 0.68) !important;
+  border: 1px solid rgba(194, 92, 255, 0.28) !important;
+  border-radius: 18px !important;
+}
+
+.oc-ui-chip,
+.wm-library-chip,
+.pl-toolbar__filter,
+.bhl-view-btn,
+.oal-tab,
+.nb-tab,
+.cg-config__tab,
+.bb-admin-tab {
+  background: rgba(36, 16, 74, 0.52) !important;
+  border-color: rgba(194, 92, 255, 0.25) !important;
+  color: var(--oc-text-secondary) !important;
+}
+
+.oc-ui-chip--active,
+.wm-library-chip--active,
+.pl-toolbar__filter--active,
+.bhl-view-btn--active,
+.oal-tab--active,
+.nb-tab--active,
+.cg-config__tab--active,
+.bb-admin-tab--active {
+  color: #fff7ff !important;
+  background: linear-gradient(135deg, rgba(240, 68, 183, 0.34), rgba(139, 92, 246, 0.34)) !important;
+  border-color: rgba(255, 72, 190, 0.48) !important;
+}
+
+.oc-ui-metric,
+.pl-hero__metric-card,
+.bhl-page-metric-card,
+.tm-page-metric-card,
+.bb-admin-metric-card,
+.bb-admin-stat-card,
+.cs-page-metric-card,
+.sr-admin-metric-card,
+.bhl-stat-item,
+.bhl-detail-box {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(57, 245, 211, 0.1), transparent 38%),
+    linear-gradient(145deg, rgba(36, 16, 74, 0.8), rgba(18, 3, 43, 0.84)) !important;
+  border-color: rgba(57, 245, 211, 0.24) !important;
+}
+
+.oc-ui-metric__value,
+.pl-hero__metric-value,
+.bhl-page-metric-value,
+.tm-page-metric-value,
+.bb-admin-metric-value,
+.bb-admin-stat-value,
+.cs-page-metric-value,
+.sr-admin-metric-value,
+.bhl-stat-value {
+  color: #fff7ff !important;
+  text-shadow: 0 0 22px rgba(57, 245, 211, 0.14);
+}
+
+.oc-ui-metric__label,
+.pl-hero__metric-label,
+.bhl-page-metric-label,
+.tm-page-metric-label,
+.bb-admin-metric-label,
+.bb-admin-stat-label,
+.cs-page-metric-label,
+.sr-admin-metric-label,
+.bhl-stat-label,
+.bhl-detail-label {
+  color: var(--oc-accent-cyan) !important;
+  letter-spacing: 0.08em !important;
+}
+
+.oc-ui-asset-card__preview,
+.pl-card__preview,
+.wm-picker-card::before,
+.wm-card::before,
+.bhl-card-progress,
+.bb-admin-selected-slot-media,
+.cs-selected-slot-image,
+.cs-selected-slot-placeholder {
+  background:
+    radial-gradient(circle at 22% 8%, rgba(240, 68, 183, 0.22), transparent 42%),
+    linear-gradient(145deg, rgba(18, 3, 43, 0.88), rgba(43, 18, 92, 0.58)) !important;
+  border-color: rgba(194, 92, 255, 0.24) !important;
+}
+
+.oc-ui-asset-card__meta span,
+.wm-tile-badge,
+.pl-card__widget-count,
+.bhl-card-meta span,
+.bhl-bonus-item,
+.bb-admin-card-chip,
+.cs-card-chip,
+.sr-admin-card-chip {
+  background: rgba(18, 3, 43, 0.62) !important;
+  border-color: rgba(194, 92, 255, 0.24) !important;
+  color: var(--oc-text-muted) !important;
+}
+
+.oc-ui-empty,
+.wm-empty-library,
+.bhl-empty-state,
+.pl-empty,
+.bb-admin-empty,
+.sr-admin-empty,
+.oc-empty-panel {
+  border-style: solid !important;
+  text-align: center;
+  background:
+    radial-gradient(circle at 50% 0%, rgba(255, 184, 77, 0.12), transparent 36%),
+    var(--oc-cosmic-panel) !important;
+}
+
+.oc-ui-empty__title,
+.bhl-empty-title,
+.pl-empty__title,
+.oc-empty-panel h2 {
+  color: var(--oc-text-primary) !important;
+}
+
+.oc-ui-empty__text,
+.bhl-empty-text,
+.pl-empty__text,
+.oc-empty-panel p {
+  color: var(--oc-text-secondary) !important;
+}
+
+.oc-spinner {
+  border-color: rgba(194, 92, 255, 0.22) !important;
+  border-top-color: #f044b7 !important;
+  box-shadow: 0 0 24px rgba(240, 68, 183, 0.24);
+}
+
+[data-tour="bonus-hunt-page"],
+[data-tour="library-page"],
+[data-tour="presets-page"],
+[data-tour="tournament-page"],
+[data-tour="bonus-buys-page"],
+[data-tour="current-slot-page"],
+[data-tour="slot-requests-page"] {
+  background:
+    radial-gradient(circle at 10% 0%, rgba(240, 68, 183, 0.14), transparent 32%),
+    radial-gradient(circle at 92% 10%, rgba(57, 245, 211, 0.1), transparent 30%),
+    linear-gradient(180deg, rgba(18, 3, 43, 0.5), rgba(8, 0, 20, 0.24)) !important;
+}
+
+[data-tour="bonus-hunt-page"] {
+  --bh-accent: #f044b7 !important;
+  --bh-accent-strong: #ff7ad8 !important;
+  --bh-accent-soft: rgba(240, 68, 183, 0.16) !important;
+  --bh-cyan-soft: rgba(57, 245, 211, 0.14) !important;
+  --bh-danger-soft: rgba(255, 79, 139, 0.16) !important;
+  --bh-surface: rgba(36, 16, 74, 0.72) !important;
+  --bh-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --bh-border: rgba(194, 92, 255, 0.28) !important;
+  --bh-border-strong: rgba(255, 72, 190, 0.4) !important;
+  --bh-text: #fff7ff !important;
+  --bh-muted: #c9b8e8 !important;
+}
+
+[data-tour="library-page"] {
+  --bhl-page-surface: rgba(36, 16, 74, 0.72) !important;
+  --bhl-page-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --bhl-page-border: rgba(194, 92, 255, 0.28) !important;
+  --bhl-page-border-strong: rgba(255, 184, 77, 0.34) !important;
+  --bhl-page-text: #fff7ff !important;
+  --bhl-page-muted: #c9b8e8 !important;
+  --bhl-page-amber: #ffb84d !important;
+  --bhl-page-cyan: #39f5d3 !important;
+  --bhl-page-green: #39f5d3 !important;
+  --bhl-page-red: #ff4f8b !important;
+}
+
+[data-tour="presets-page"] {
+  --pl-page-surface: rgba(36, 16, 74, 0.72) !important;
+  --pl-page-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --pl-page-border: rgba(194, 92, 255, 0.28) !important;
+  --pl-page-text: #fff7ff !important;
+  --pl-page-muted: #c9b8e8 !important;
+  --pl-page-gold: #ffb84d !important;
+  --pl-page-red: #ff4f8b !important;
+  --pl-page-teal: #39f5d3 !important;
+}
+
+[data-tour="tournament-page"] {
+  --tm-accent: #f044b7 !important;
+  --tm-cyan: #39f5d3 !important;
+  --tm-gold: #ffb84d !important;
+  --tm-surface: rgba(36, 16, 74, 0.72) !important;
+  --tm-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --tm-border: rgba(194, 92, 255, 0.28) !important;
+  --tm-border-strong: rgba(255, 72, 190, 0.4) !important;
+  --tm-text: #fff7ff !important;
+  --tm-muted: #c9b8e8 !important;
+}
+
+[data-tour="bonus-buys-page"] {
+  --bb-surface: rgba(36, 16, 74, 0.72) !important;
+  --bb-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --bb-border: rgba(194, 92, 255, 0.28) !important;
+  --bb-border-strong: rgba(255, 72, 190, 0.4) !important;
+  --bb-text: #fff7ff !important;
+  --bb-muted: #c9b8e8 !important;
+  --bb-accent: #f044b7 !important;
+  --bb-violet: #8b5cf6 !important;
+  --bb-green: #39f5d3 !important;
+  --bb-red: #ff4f8b !important;
+}
+
+[data-tour="current-slot-page"] {
+  --cs-surface: rgba(36, 16, 74, 0.72) !important;
+  --cs-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --cs-border: rgba(194, 92, 255, 0.28) !important;
+  --cs-border-strong: rgba(255, 72, 190, 0.4) !important;
+  --cs-text: #fff7ff !important;
+  --cs-muted: #c9b8e8 !important;
+  --cs-accent: #f044b7 !important;
+  --cs-cyan: #39f5d3 !important;
+  --cs-green: #39f5d3 !important;
+  --cs-red: #ff4f8b !important;
+}
+
+[data-tour="slot-requests-page"] {
+  --sr-admin-surface: rgba(36, 16, 74, 0.72) !important;
+  --sr-admin-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --sr-admin-border: rgba(194, 92, 255, 0.28) !important;
+  --sr-admin-border-strong: rgba(255, 72, 190, 0.4) !important;
+  --sr-admin-text: #fff7ff !important;
+  --sr-admin-muted: #c9b8e8 !important;
+  --sr-admin-accent: #f044b7 !important;
+  --sr-admin-cyan: #39f5d3 !important;
+  --sr-admin-green: #39f5d3 !important;
+  --sr-admin-gold: #ffb84d !important;
+  --sr-admin-red: #ff4f8b !important;
+}
+
+[data-tour="library-page"] .bhl-card-progress-fill,
+[data-tour="tournament-page"] .bk-progress-fill,
+[data-tour="bonus-buys-page"] .bb-admin-progress-fill,
+[data-tour="bonus-hunt-page"] .bh-save-hunt-progress,
+[data-tour="slot-requests-page"] .sr-admin-status-dot {
+  background: linear-gradient(90deg, #39f5d3, #8b5cf6, #f044b7, #ffb84d) !important;
+  box-shadow: 0 0 24px rgba(240, 68, 183, 0.24) !important;
+}
+
+.bh-list-item,
+.bhl-bonus-item,
+.cg-config__history-row,
+.bk-player-row,
+.bk-slot-locked,
+.bb-admin-result-row,
+.bb-admin-search-result,
+.cs-search-result,
+.sr-admin-request-row,
+.sr-admin-queue-row,
+.oc-page table tbody tr {
+  background: rgba(18, 3, 43, 0.58) !important;
+  border-color: rgba(194, 92, 255, 0.22) !important;
+}
+
+.bh-list-item:hover,
+.bhl-bonus-item:hover,
+.cg-config__history-row:hover,
+.bk-player-row:hover,
+.bk-slot-locked:hover,
+.bb-admin-result-row:hover,
+.bb-admin-search-result:hover,
+.cs-search-result:hover,
+.sr-admin-request-row:hover,
+.sr-admin-queue-row:hover,
+.oc-page table tbody tr:hover {
+  background: linear-gradient(135deg, rgba(240, 68, 183, 0.14), rgba(57, 245, 211, 0.08)) !important;
+  border-color: rgba(255, 72, 190, 0.35) !important;
+}
+
+.tm-modal {
+  background: var(--oc-cosmic-panel-strong) !important;
+  border-color: rgba(255, 72, 190, 0.44) !important;
+  border-radius: 30px !important;
+  box-shadow: var(--oc-shadow-lg), 0 0 42px rgba(240, 68, 183, 0.22) !important;
+}
+
+.tm-modal-header {
+  border-bottom-color: rgba(194, 92, 255, 0.22) !important;
+}
+
+.tm-modal-close {
+  background: rgba(36, 16, 74, 0.72) !important;
+  border-color: rgba(255, 72, 190, 0.32) !important;
+  color: var(--oc-text-primary) !important;
+}
+
+.tm-modal-close:hover {
+  background: rgba(240, 68, 183, 0.18) !important;
+  color: #fff7ff !important;
+}
+
+.gt-tooltip-summary-card {
+  border-color: rgba(57, 245, 211, 0.24) !important;
+}
+
+.oc-sidebar::-webkit-scrollbar-thumb,
+.oc-main::-webkit-scrollbar-thumb,
+.wm-sidepanel-body::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(240, 68, 183, 0.54), rgba(139, 92, 246, 0.42)) !important;
+  border-radius: 999px;
+}
+
+.oc-page a {
+  color: #39f5d3;
+}
+
+.oc-page a:hover {
+  color: #ff7ad8;
+}
+
+@media (max-width: 1180px) {
+  .oc-layout {
+    gap: 16px !important;
+    padding: 16px !important;
+  }
+
+  .oc-main-shell {
+    padding: 22px !important;
+  }
+}
+
+@media (max-width: 980px) {
+  .oc-main-title {
+    font-size: 34px !important;
+  }
+
+  .oc-ui-hero__title,
+  .pl-hero__title,
+  .bhl-page-title,
+  .tm-page-title,
+  .bb-admin-title,
+  .cs-page-title,
+  .sr-admin-page-title {
+    font-size: 30px !important;
+  }
+
+  .oc-command-header {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .oc-layout {
+    padding: 72px 12px 16px !important;
+  }
+
+  .oc-main-shell {
+    min-height: auto !important;
+    padding: 16px !important;
+    border-radius: 24px !important;
+  }
+
+  .oc-sidebar {
+    width: calc(100vw - 24px) !important;
+    height: calc(100vh - 24px) !important;
+    border-radius: 24px !important;
+  }
+
+  .oc-command-header,
+  .oc-welcome-card,
+  .oc-ui-hero,
+  .pl-hero,
+  .bhl-page-hero,
+  .tm-page-hero,
+  .bb-admin-hero {
+    border-radius: 24px !important;
+    padding: 16px !important;
+  }
+
+  .oc-main-title {
+    font-size: 30px !important;
+  }
+
+  .oc-ui-hero__title,
+  .pl-hero__title,
+  .bhl-page-title,
+  .tm-page-title,
+  .bb-admin-title,
+  .cs-page-title,
+  .sr-admin-page-title {
+    font-size: 26px !important;
+  }
+
+  .oc-ui-btn,
+  .oc-glow-button,
+  .oc-btn,
+  .oc-btn-primary,
+  .pl-card__btn,
+  .bhl-download-btn,
+  .sr-admin-btn {
+    min-height: 42px;
+    width: auto;
+  }
+
+  .oc-ui-copyfield__row,
+  .oc-ui-asset-card__actions,
+  .pl-save-bar,
+  .pl-toolbar,
+  .bhl-controls,
+  .bb-admin-card-header,
+  .cs-card-header,
+  .sr-admin-card-header {
+    align-items: stretch !important;
+    flex-direction: column !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-page::before,
+  .oc-neon-badge,
+  .oc-glow-button--primary:hover,
+  .oc-ui-btn--primary:hover,
+  .oc-btn-primary:hover {
+    animation: none !important;
+  }
+
+  .oc-cosmic-card:hover,
+  .oc-ui-asset-card:hover,
+  .wm-card:hover,
+  .wm-picker-card:hover,
+  .bhl-card:hover,
+  .pl-card:hover,
+  .bk-card:hover,
+  .bb-admin-card:hover,
+  .cs-card:hover,
+  .sr-admin-card:hover {
+    transform: none !important;
+  }
+}
+

@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { DarkInput, GlowButton } from './CosmicPrimitives';
 
 export default function CopyField({
   label,
@@ -30,14 +31,14 @@ export default function CopyField({
     <div className={`oc-ui-copyfield${className ? ` ${className}` : ''}`}>
       {label && <label className="oc-ui-copyfield__label">{label}</label>}
       <div className="oc-ui-copyfield__row">
-        <input readOnly value={value || ''} onClick={handleCopy} title="Click to copy" />
-        <button type="button" className="oc-ui-btn oc-ui-btn--primary" onClick={handleCopy}>
+        <DarkInput readOnly value={value || ''} onClick={handleCopy} title="Click to copy" className="oc-ui-copyfield__input" />
+        <GlowButton type="button" className="oc-ui-btn oc-ui-btn--primary" onClick={handleCopy}>
           {isCopied ? copiedLabel : copyLabel}
-        </button>
+        </GlowButton>
         {onRegen && (
-          <button type="button" className="oc-ui-btn oc-ui-btn--ghost" onClick={onRegen} title="Generate a new OBS URL">
+          <GlowButton type="button" variant="secondary" className="oc-ui-btn oc-ui-btn--ghost" onClick={onRegen} title="Generate a new OBS URL">
             {regenLabel}
-          </button>
+          </GlowButton>
         )}
       </div>
     </div>
