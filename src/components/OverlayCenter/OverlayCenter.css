@@ -39,7 +39,7 @@
   --oc-shadow-glow: 0 0 0 1px rgba(200, 208, 216, 0.16), 0 0 28px rgba(148, 163, 184, 0.18), 0 24px 70px rgba(0, 0, 0, 0.56);
   --oc-transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   --oc-transition-slow: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  --oc-sidebar-width: 316px;
+  --oc-sidebar-width: 280px;
 }
 
 /* --- Global dark dropdown / option styling --- */
@@ -91,7 +91,9 @@
 }
 
 .oc-layout {
-  display: flex;
+  display: grid;
+  grid-template-columns: var(--oc-sidebar-width) minmax(0, 1fr);
+  align-items: start;
   min-height: 100vh;
   overflow: hidden;
   gap: 24px;
@@ -18497,6 +18499,198 @@ body.wm-resizing {
   .oc-profile-page > div,
   .oc-profile-page [data-tour] {
     padding: 16px !important;
+  }
+}
+
+/* =====================================================
+   Docked Widget Inspector App Shell
+   Keeps widget settings connected to the dashboard instead of
+   dimming the page with a desktop modal overlay.
+   ===================================================== */
+.oc-widgets-panel {
+  --wm-inspector-width: clamp(360px, 26vw, 460px);
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 0;
+  align-items: start;
+  gap: 0;
+  min-width: 0;
+  overflow: hidden;
+  transition:
+    grid-template-columns 280ms ease-out,
+    gap 280ms ease-out;
+}
+
+.oc-widgets-panel--inspector-open {
+  grid-template-columns: minmax(0, 1fr) var(--wm-inspector-width);
+  gap: 18px;
+}
+
+.wm-content-pane {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.oc-widgets-panel .wm-page-header,
+.oc-widgets-panel .wm-section,
+.oc-widgets-panel .wm-live-preview,
+.oc-widgets-panel .wm-library-toolbar,
+.oc-widgets-panel .wm-library-groups {
+  min-width: 0;
+}
+
+.oc-widgets-panel .wm-tile-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+}
+
+.oc-widgets-panel--inspector-open .wm-tile-grid {
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
+}
+
+.oc-widgets-panel .wm-page-header {
+  align-items: stretch;
+}
+
+.oc-widgets-panel--inspector-open .wm-page-header-actions {
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.oc-page .wm-sidepanel-backdrop {
+  display: none !important;
+}
+
+.oc-page .wm-sidepanel {
+  position: sticky !important;
+  top: 20px !important;
+  right: auto !important;
+  grid-column: 2;
+  width: 100% !important;
+  max-width: none !important;
+  min-width: 0;
+  height: calc(100vh - 40px) !important;
+  max-height: calc(100vh - 40px) !important;
+  opacity: 0;
+  transform: translateX(12px);
+  pointer-events: none;
+  z-index: 2 !important;
+  overflow: hidden;
+  animation: none !important;
+  border-radius: 26px 0 0 26px !important;
+  border: 1px solid rgba(200, 208, 216, 0.3) !important;
+  border-right: 0 !important;
+  background:
+    radial-gradient(circle at 14% 0%, rgba(148, 163, 184, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(15, 20, 27, 0.96), rgba(9, 13, 18, 0.94)) !important;
+  box-shadow: -18px 0 50px rgba(0, 0, 0, 0.28), inset 1px 0 0 rgba(255, 255, 255, 0.035) !important;
+  backdrop-filter: none !important;
+  transition:
+    opacity 260ms ease-out,
+    transform 260ms ease-out,
+    border-color 260ms ease-out,
+    box-shadow 260ms ease-out;
+}
+
+.oc-widgets-panel--inspector-open .wm-sidepanel,
+.oc-page .wm-sidepanel--open {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.oc-page .wm-sidepanel-header {
+  min-height: 68px;
+  padding: 18px 20px !important;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.oc-page .wm-sidepanel-title {
+  min-width: 0;
+  line-height: 1.25;
+}
+
+.oc-page .wm-sidepanel-body {
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: 18px !important;
+}
+
+.oc-page .wm-sidepanel-tabs {
+  padding: 10px 12px !important;
+}
+
+@media (max-width: 1200px) {
+  .oc-widgets-panel {
+    --wm-inspector-width: clamp(340px, 34vw, 420px);
+  }
+
+  .oc-widgets-panel--inspector-open {
+    gap: 14px;
+  }
+
+  .oc-widgets-panel--inspector-open .wm-page-header {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 900px) {
+  .oc-widgets-panel,
+  .oc-widgets-panel--inspector-open {
+    display: block;
+    overflow: visible;
+  }
+
+  .oc-page .wm-sidepanel-backdrop {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 900 !important;
+    background: rgba(0, 0, 0, 0.52) !important;
+    backdrop-filter: none !important;
+    animation: wm-fadeBackdrop 180ms ease-out;
+  }
+
+  .oc-page .wm-sidepanel {
+    position: fixed !important;
+    top: 0 !important;
+    right: 0 !important;
+    bottom: auto !important;
+    width: min(420px, 92vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 24px 0 0 24px !important;
+    border-right: 0 !important;
+    opacity: 0;
+    transform: translateX(100%);
+    z-index: 901 !important;
+    box-shadow: -20px 0 60px rgba(0, 0, 0, 0.44) !important;
+  }
+
+  .oc-widgets-panel--inspector-open .wm-sidepanel,
+  .oc-page .wm-sidepanel--open {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .oc-layout {
+    display: block;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .oc-sidebar {
+    width: 300px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .oc-widgets-panel,
+  .oc-page .wm-sidepanel,
+  .oc-page .wm-sidepanel-backdrop {
+    animation: none !important;
+    transition: none !important;
   }
 }
 

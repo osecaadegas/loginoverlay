@@ -900,8 +900,27 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     setTimeout(() => setSyncMsg(''), 3000);
   }, [widgets, onSave]);
 
+  const editingWidget = useMemo(
+    () => (editingId ? widgets.find(x => x.id === editingId) || null : null),
+    [editingId, widgets]
+  );
+  const editingDef = useMemo(
+    () => (editingWidget ? getWidgetDef(editingWidget.widget_type) : null),
+    [editingWidget]
+  );
+  const SidePanelConfig = editingDef?.configPanel;
+  const sidePanelTabs = useMemo(() => ([
+    { id: 'configure', label: 'Configure', disabled: !SidePanelConfig },
+    { id: 'layout', label: 'Layout' },
+    { id: 'motion', label: 'Motion' },
+    { id: 'obs', label: 'OBS Link', disabled: !overlayToken },
+  ]), [SidePanelConfig, overlayToken]);
+  const activeSidePanelTab = sidePanelTab === 'configure' && !SidePanelConfig ? 'layout' : sidePanelTab;
+  const isSidePanelOpen = Boolean(editingWidget);
+
   return (
-    <div className="oc-widgets-panel">
+    <div className={`oc-widgets-panel${isSidePanelOpen ? ' oc-widgets-panel--inspector-open' : ''}`}>
+      <div className="wm-content-pane">
       {/* ──── Page Header ──── */}
       <div className="wm-page-header">
         <div className="wm-page-header-text">
@@ -1777,22 +1796,18 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
       )}
 
       {/* ──── Side Panel Editor ──── */}
-      {editingId && (() => {
-        const w = widgets.find(x => x.id === editingId);
-        if (!w) return null;
-        const def = getWidgetDef(w.widget_type);
-        const ConfigPanel = def?.configPanel;
-        const sideTabs = [
-          { id: 'configure', label: 'Configure', disabled: !ConfigPanel },
-          { id: 'layout', label: 'Layout' },
-          { id: 'motion', label: 'Motion' },
-          { id: 'obs', label: 'OBS Link', disabled: !overlayToken },
-        ];
-        const activeSidePanelTab = sidePanelTab === 'configure' && !ConfigPanel ? 'layout' : sidePanelTab;
-        return (
-          <>
-            <div className="wm-sidepanel-backdrop" onClick={() => setEditingId(null)} />
-            <div className="wm-sidepanel">
+      </div>
+
+      {/* Docked Side Panel Editor */}
+      {isSidePanelOpen && <div className="wm-sidepanel-backdrop" onClick={() => setEditingId(null)} />}
+      <aside className={`wm-sidepanel${isSidePanelOpen ? ' wm-sidepanel--open' : ''}`} aria-hidden={!isSidePanelOpen}>
+        {editingWidget && (() => {
+          const w = editingWidget;
+          const def = editingDef;
+          const ConfigPanel = SidePanelConfig;
+          const sideTabs = sidePanelTabs;
+          return (
+            <>
               <div className="wm-sidepanel-header">
                 <div className="wm-sidepanel-title">
                   <span className="wm-sidepanel-icon">{def?.icon || '📦'}</span>
@@ -1963,10 +1978,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 </div>
                 )}
               </div>
-            </div>
-          </>
-        );
-      })()}
+            </>
+          );
+        })()}
+      </aside>
     </div>
   );
 }
