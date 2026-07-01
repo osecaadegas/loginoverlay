@@ -10,7 +10,7 @@ export default function TermsOfService() {
         <section className="legal-section">
           <h2>1. Acceptance of Terms</h2>
           <p>
-            By accessing and using <strong>https://www.osecaadegas.pt</strong> (the "Service"),
+            By accessing and using <strong>https://streamerscenter.com</strong> (the "Service"),
             you accept and agree to be bound by these Terms of Service. If you do not agree to
             these terms, please do not use the Service.
           </p>
@@ -19,7 +19,7 @@ export default function TermsOfService() {
         <section className="legal-section">
           <h2>2. Description of Service</h2>
           <p>
-            osecaadegas.pt is a streaming community platform that provides entertainment features
+            Streamers Center is a streaming community platform that provides entertainment features
             including, but not limited to:
           </p>
           <ul>
@@ -97,7 +97,7 @@ export default function TermsOfService() {
           <h2>6. Intellectual Property</h2>
           <p>
             All content, features, and functionality of the Service — including but not limited to
-            text, graphics, logos, icons, software, and design — are owned by osecaadegas.pt and
+            text, graphics, logos, icons, software, and design — are owned by Streamers Center and
             are protected by copyright and other intellectual property laws.
           </p>
           <p>
@@ -140,7 +140,7 @@ export default function TermsOfService() {
         <section className="legal-section">
           <h2>10. Limitation of Liability</h2>
           <p>
-            To the maximum extent permitted by law, osecaadegas.pt shall not be liable for any
+            To the maximum extent permitted by law, Streamers Center shall not be liable for any
             indirect, incidental, special, consequential, or punitive damages resulting from your
             use of or inability to use the Service.
           </p>
@@ -179,8 +179,7 @@ export default function TermsOfService() {
             If you have any questions about these Terms of Service, please contact us:
           </p>
           <ul>
-            <li>Website: <strong>https://www.osecaadegas.pt</strong></li>
-            <li>Discord: <strong>https://discord.gg/4yZ3F2Pk4z</strong></li>
+            <li>Website: <strong>https://streamerscenter.com</strong></li>
           </ul>
         </section>
       </div>

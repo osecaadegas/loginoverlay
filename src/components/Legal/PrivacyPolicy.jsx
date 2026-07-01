@@ -10,12 +10,12 @@ export default function PrivacyPolicy() {
         <section className="legal-section">
           <h2>1. Introduction</h2>
           <p>
-            Welcome to osecaadegas.pt ("we", "us", "our"). We are committed to protecting your
+            Welcome to Streamers Center ("we", "us", "our"). We are committed to protecting your
             personal information and your right to privacy. This Privacy Policy explains what
             information we collect, how we use it, and what rights you have in relation to it.
           </p>
           <p>
-            By using our website at <strong>https://www.osecaadegas.pt</strong> (the "Service"),
+            By using our website at <strong>https://streamerscenter.com</strong> (the "Service"),
             you agree to the collection and use of information in accordance with this policy.
           </p>
         </section>
@@ -146,8 +146,7 @@ export default function PrivacyPolicy() {
             please contact us:
           </p>
           <ul>
-            <li>Website: <strong>https://www.osecaadegas.pt</strong></li>
-            <li>Discord: <strong>https://discord.gg/4yZ3F2Pk4z</strong></li>
+            <li>Website: <strong>https://streamerscenter.com</strong></li>
           </ul>
         </section>
       </div>

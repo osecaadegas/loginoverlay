@@ -76,7 +76,7 @@ function HeroGameMockup() {
         <div className="lp-dash-topbar">
           <div className="lp-dash-brand">
             <span className="lp-dash-brand-icon">⬡</span>
-            <span className="lp-dash-brand-name">SecaAdegas</span>
+            <span className="lp-dash-brand-name">Streamers Center</span>
           </div>
           <div className="lp-dash-topbar-right">
             <span className="lp-dash-icon-btn">📅</span>
@@ -373,7 +373,7 @@ export default function LandingPage() {
 
           {/* ════ WHY CHOOSE ════ */}
           <section className="lp-section">
-            <h2 className="lp-section-h2 lp-section-h2--center">Why Top Creators Choose SecaAdegas</h2>
+            <h2 className="lp-section-h2 lp-section-h2--center">Why Top Creators Choose Streamers Center</h2>
             <div className="lp-features-grid">
               {FEATURES.map(f => (
                 <div key={f.title} className="lp-feat-card">
@@ -390,8 +390,8 @@ export default function LandingPage() {
           {/* ════ FOOTER ════ */}
           <footer className="lp-footer">
             <div className="lp-footer-left">
-              <span className="lp-footer-brand">SecaAdegas</span>
-              <span className="lp-footer-copy">© 2026 SecaAdegas All rights reserved.</span>
+              <span className="lp-footer-brand">Streamers Center</span>
+              <span className="lp-footer-copy">© 2026 Streamers Center All rights reserved.</span>
             </div>
             <div className="lp-footer-links">
               <button className="lp-footer-link">Privacy</button>

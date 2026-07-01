@@ -16,11 +16,11 @@ Twitch OAuth provider is not properly configured in Supabase.
 2. Find your existing app OR click **"Register Your Application"**
 
 #### If creating new app:
-- **Name**: `osecaadegas Stream Overlay`
+- **Name**: `Streamers Center`
 - **OAuth Redirect URLs**: Add BOTH of these:
   ```
   https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
-  https://osecaadegas.pt/
+  https://streamerscenter.com/
   ```
 - **Category**: `Website Integration`
 - **Client Type**: `Confidential`
@@ -31,7 +31,7 @@ Twitch OAuth provider is not properly configured in Supabase.
 - Under **"OAuth Redirect URLs"**, make sure you have:
   ```
   https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
-  https://osecaadegas.pt/
+  https://streamerscenter.com/
   ```
 - If missing, click **"+ Add URL"** for each one
 - Click **"Save"**
@@ -72,7 +72,7 @@ https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
 
 ### Step 5: Update Your Website Redirect
 
-Your current code redirects to: `https://osecaadegas.pt/`
+Your current code redirects to: `https://streamerscenter.com/`
 
 Make sure this URL is also added to Twitch OAuth Redirect URLs (already in Step 1).
 
@@ -81,7 +81,7 @@ Make sure this URL is also added to Twitch OAuth Redirect URLs (already in Step 
 ## Testing
 
 1. Clear your browser cache/cookies
-2. Go to https://osecaadegas.pt/login
+2. Go to https://streamerscenter.com/login
 3. Click **"Continue with Twitch"**
 4. You should be redirected to Twitch
 5. Authorize the app
@@ -124,7 +124,7 @@ Make sure this URL is also added to Twitch OAuth Redirect URLs (already in Step 
 ## Current Configuration
 
 **Supabase URL:** `https://dkfllpjfrhdfvtbltrsy.supabase.co`
-**Your Website:** `https://osecaadegas.pt`
+**Your Website:** `https://streamerscenter.com`
 **Required Callback:** `https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback`
 
 **Auth Code Location:** `src/context/AuthContext.jsx` (lines 74-81)

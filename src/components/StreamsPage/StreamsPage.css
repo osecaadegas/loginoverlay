@@ -47,6 +47,37 @@
   border: none;
 }
 
+.streams-empty-embed {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px;
+  text-align: center;
+  color: #f8fafc;
+  background:
+    radial-gradient(circle at 50% 15%, rgba(99, 102, 241, 0.18), transparent 38%),
+    #0b1020;
+}
+
+.streams-empty-embed strong {
+  font-size: 1rem;
+}
+
+.streams-empty-embed span {
+  max-width: 340px;
+  color: #94a3b8;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+
+.streams-empty-embed--chat {
+  background: #18181b;
+}
+
 /* Chat */
 .streams-chat {
   display: flex;

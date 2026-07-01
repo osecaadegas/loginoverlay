@@ -1,72 +1,165 @@
-# Domain Update Checklist for osecaadegas.pt
+# Domain Update Checklist for Streamers Center
 
-Your new domain: **https://osecaadegas.pt** (or https://www.osecaadegas.pt)
+Primary domain: **https://streamerscenter.com**
 
-## ✅ Completed
-- [x] Domain added to Vercel
-- [x] SSL certificate active
-- [x] DNS configured
+Optional www alias: **https://www.streamerscenter.com**
 
-## 🔧 Required Updates
+## Code references already updated
 
-### 1. Supabase URL Configuration
-Go to: Supabase Dashboard → Authentication → URL Configuration
+- Static SEO metadata in `index.html`
+- Client-side route SEO in `src/utils/seo.js`
+- Public sitemap in `public/sitemap.xml`
+- Robots sitemap pointer in `public/robots.txt`
+- Legal website references in Privacy Policy and Terms
+- Twitch embed parent domains in `src/components/StreamsPage/StreamsPage.jsx`
+- Raid shoutout clip embed fallback in `api/raid-shoutout.js`
+- Example deployment env values in `.env.example`
 
-**Site URL:**
+## Required dashboard updates
+
+### 1. Vercel domains
+
+Go to Vercel Project -> Settings -> Domains.
+
+Add:
+
+```text
+streamerscenter.com
+www.streamerscenter.com
 ```
-https://osecaadegas.pt
+
+Set the preferred redirect direction. Recommended:
+
+```text
+www.streamerscenter.com -> streamerscenter.com
 ```
 
-**Redirect URLs (Add all of these):**
+### 2. DNS provider
+
+At your DNS provider, point the domain to Vercel.
+
+Typical Vercel DNS setup:
+
+```text
+A     @      76.76.21.21
+CNAME www    cname.vercel-dns.com
 ```
-https://osecaadegas.pt/**
-https://www.osecaadegas.pt/**
+
+Wait for Vercel to show valid DNS and active SSL.
+
+### 3. Supabase auth URLs
+
+Go to Supabase Dashboard -> Authentication -> URL Configuration.
+
+Site URL:
+
+```text
+https://streamerscenter.com
+```
+
+Redirect URLs:
+
+```text
+https://streamerscenter.com/**
+https://www.streamerscenter.com/**
 https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
 ```
 
-### 2. Twitch Developer Console
-Go to: https://dev.twitch.tv/console/apps
+Keep the Supabase callback URL because Twitch/Discord/Google auth flows return through Supabase.
 
-**Keep ONLY this OAuth Redirect URL:**
-```
+### 4. OAuth app dashboards
+
+Check each provider used for login.
+
+Twitch Developer Console:
+
+```text
 https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
 ```
 
-**Remove these (not needed):**
-- ❌ https://osecaadegas.pt/auth/callback
-- ❌ https://osecaadegas.pt
+Discord Developer Portal:
 
-### 3. Fix user_profiles RLS (400 errors)
-Run the SQL migration: `migrations/fix_user_profiles_rls.sql`
+```text
+https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
+```
 
-This will fix the 400 errors when loading profiles.
+Google Cloud Console:
 
-### 4. Clear Browser Cache
-After all changes, do a hard refresh:
-- Chrome/Edge: `Ctrl + Shift + Delete` → Clear cached images and files
-- Or use `Ctrl + F5` for hard refresh
+```text
+https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
+```
 
-### 5. Verify Twitch Embed Parent
-The Twitch embeds automatically use `window.location.hostname`, so they should work with your new domain. If you see issues, add your domain to Twitch's allowed parents in their developer console.
+If a provider also has allowed origins, add:
 
-## 🔍 Troubleshooting "Not Secure" Warning
+```text
+https://streamerscenter.com
+https://www.streamerscenter.com
+```
 
-If you still see "Not Secure" after the above:
+### 5. Vercel environment variables
 
-1. **Check Console (F12)** - Look for mixed content warnings
-2. **Verify all external resources use HTTPS:**
-   - Twitch player: ✅ Uses HTTPS
-   - StreamElements API: ✅ Uses HTTPS
-   - Unsplash images: ✅ Uses HTTPS
-   - Supabase: ✅ Uses HTTPS
+Set these production values:
 
-3. **Check database images** - If you added any casino offers, items, or images manually in the admin panel, make sure they use `https://` URLs, not `http://`
+```text
+OVERLAY_DOMAIN=streamerscenter.com
+VITE_EBS_URL=https://streamerscenter.com
+```
 
-4. **Browser extensions** - Disable them temporarily to see if one is injecting HTTP content
+Keep existing Supabase, Twitch, StreamElements, Spotify, and Discord secrets unchanged unless those apps are also being replaced.
 
-## 📝 No Code Changes Needed
+### 6. Twitch embeds and OBS URLs
 
-Your app already uses environment variables and relative URLs, so no code changes are required for the domain change. Everything is configured through:
-- Vercel environment variables (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY)
-- Supabase dashboard settings
-- Twitch developer console settings
+Twitch embed parents must include the deployed hostname:
+
+```text
+streamerscenter.com
+www.streamerscenter.com
+localhost
+```
+
+Existing OBS browser-source URLs using the old domain should be replaced with the new domain:
+
+```text
+https://streamerscenter.com/overlay/<overlay-token>
+```
+
+Widget-only OBS URLs follow the same pattern:
+
+```text
+https://streamerscenter.com/overlay/<overlay-token>?widget=<widget-id>
+```
+
+### 7. Search and saved links
+
+After deploy:
+
+- Submit `https://streamerscenter.com/sitemap.xml` in Google Search Console.
+- Add a 301 redirect from the old domain to the new domain if you keep the old domain.
+- Update any saved OBS browser sources, StreamElements commands, browser bookmarks, and external references you still control.
+
+### 8. Remaining account links in code
+
+The public social footer links were removed. If the Twitch stream channel or repository changes later, update these files:
+
+```text
+src/components/StreamsPage/StreamsPage.jsx      Twitch player/channel
+src/components/DeveloperPage/DeveloperPage.jsx  GitHub repository quick link
+```
+
+Do this only once the replacement stream channel/repository exists, so the current live functionality does not turn into a broken destination.
+
+## Smoke test
+
+After DNS and deploy are live, test:
+
+```text
+https://streamerscenter.com
+https://streamerscenter.com/login
+https://streamerscenter.com/offers
+https://streamerscenter.com/privacy
+https://streamerscenter.com/terms
+https://streamerscenter.com/overlay-center
+https://streamerscenter.com/overlay/<overlay-token>
+```
+
+Then hard refresh the browser and update any old saved links.

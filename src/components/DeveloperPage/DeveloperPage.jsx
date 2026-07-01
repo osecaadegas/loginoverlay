@@ -92,7 +92,7 @@ function OverviewPanel() {
         <InfoCard title="Auth" value="Twitch · Discord · Google" icon="🔐" />
         <InfoCard title="Payments" value="Coming Soon" icon="💳" />
         <InfoCard title="Realtime" value="Supabase Realtime" icon="📡" />
-        <InfoCard title="Domain" value="osecaadegas.pt" icon="🌐" />
+        <InfoCard title="Domain" value="streamerscenter.com" icon="🌐" />
       </div>
 
       <h3 className="dev-section-title">Quick Links</h3>
@@ -111,9 +111,6 @@ function OverviewPanel() {
         </a>
         <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener noreferrer" className="dev-link">
           Google Cloud Console →
-        </a>
-        <a href="https://github.com/osecaadegas/loginoverlay" target="_blank" rel="noopener noreferrer" className="dev-link">
-          GitHub Repository →
         </a>
       </div>
     </div>

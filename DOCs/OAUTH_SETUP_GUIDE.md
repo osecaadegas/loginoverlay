@@ -23,7 +23,7 @@ The login modal now has "Continue with Google" and "Continue with Twitch" button
 1. Go to **Google Cloud Console**: https://console.cloud.google.com
 2. Create a new project (or select existing one)
    - Click dropdown at top → **"New Project"**
-   - Name it: `Stream Overlay Login`
+   - Name it: `Streamers Center Login`
    - Click **"Create"**
 
 ### Step 2: Enable Google+ API
@@ -40,7 +40,7 @@ The login modal now has "Continue with Google" and "Continue with Twitch" button
    - Click **"CONFIGURE CONSENT SCREEN"**
    - Choose **"External"** → Click **"Create"**
    - Fill in:
-     - App name: `Stream Overlay`
+     - App name: `Streamers Center`
      - User support email: Your email
      - Developer contact: Your email
    - Click **"Save and Continue"** (skip scopes, test users)
@@ -48,10 +48,10 @@ The login modal now has "Continue with Google" and "Continue with Twitch" button
 
 4. Now create OAuth Client ID:
    - Application type: **"Web application"**
-   - Name: `Stream Overlay Login`
+   - Name: `Streamers Center Login`
    - **Authorized JavaScript origins**: Add these:
      ```
-     https://loginoverlay.vercel.app
+     https://streamerscenter.com
      http://localhost:5173
      ```
    - **Authorized redirect URIs**: Add this (GET IT FROM SUPABASE):
@@ -87,11 +87,11 @@ The login modal now has "Continue with Google" and "Continue with Twitch" button
 
 ### Step 2: Fill Application Details
 
-1. **Name**: `Stream Overlay Login`
+1. **Name**: `Streamers Center Login`
 2. **OAuth Redirect URLs**: Add these (one at a time):
    ```
    https://dkfllpjfrhdfvtbltrsy.supabase.co/auth/v1/callback
-   https://loginoverlay.vercel.app
+   https://streamerscenter.com
    ```
 3. **Category**: Choose **"Website Integration"**
 4. **Client Type**: **"Confidential"**
@@ -125,7 +125,7 @@ The login modal now has "Continue with Google" and "Continue with Twitch" button
 - Check: https://vercel.com/dashboard
 
 ### 2. Test Google Login
-1. Go to https://loginoverlay.vercel.app
+1. Go to https://streamerscenter.com
 2. Click **"Login / Sign Up"**
 3. Click **"Continue with Google"**
 4. You should be redirected to Google

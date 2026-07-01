@@ -31,25 +31,12 @@
 }
 
 /* ── Logo ── */
-.sb-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px 16px 12px;
-  flex-shrink: 0;
-}
-.sb-logo__img {
-  max-height: 48px;
-  width: auto;
-  object-fit: contain;
-}
-
 /* ── User card ── */
 .sb-user {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin: 0 12px 8px;
+  margin: 16px 12px 8px;
   padding: 10px 12px;
   border-radius: 12px;
   background: rgba(255, 255, 255, 0.04);
@@ -94,7 +81,7 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  margin: 0 12px 8px;
+  margin: 16px 12px 8px;
   padding: 11px 16px;
   background: linear-gradient(135deg, #9146FF, #7c3aed);
   color: #fff;
@@ -272,33 +259,6 @@
   font-size: 12px;
   border-radius: 8px;
 }
-
-/* Social links */
-.sb-socials {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 6px;
-}
-.sb-social {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 7px 4px;
-  border-radius: 8px;
-  text-decoration: none;
-  font-size: 0.65rem;
-  font-weight: 600;
-  color: #fff;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.sb-social:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
-}
-.sb-social--twitch    { background: linear-gradient(135deg, #9146FF, #772CE8); }
-.sb-social--youtube   { background: linear-gradient(135deg, #FF0000, #CC0000); }
-.sb-social--instagram { background: linear-gradient(45deg, #f09433, #dc2743, #bc1888); }
-.sb-social--discord   { background: linear-gradient(135deg, #5865F2, #4752C4); }
 
 /* Legal links */
 .sb-legal {

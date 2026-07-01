@@ -549,7 +549,7 @@ Respects `prefers-reduced-motion`:
 - Premium SaaS quality
 
 **Deployed:**
-- Live at: https://www.osecaadegas.pt
+- Live at: https://streamerscenter.com
 - Themes tab: Active
 - Widgets tab: Integrated
 - Database: Migrated

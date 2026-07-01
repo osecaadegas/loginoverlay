@@ -135,11 +135,6 @@ export default function Sidebar({ className = '', onClose }) {
 
   return (
     <aside className={`sb ${className}`}>
-      {/* Logo */}
-      <div className="sb-logo">
-        <img src="/secalogo.png" alt="Logo" className="sb-logo__img" />
-      </div>
-
       {/* User area */}
       {user ? (
         <div className="sb-user" onClick={() => go('/profile')}>
@@ -203,19 +198,6 @@ export default function Sidebar({ className = '', onClose }) {
       <div className="sb-footer">
         <div className="sb-lang">
           <LanguageSwitcher variant="inline" showLabel={true} />
-        </div>
-        <div className="sb-socials">
-          {[
-            { href: 'https://www.twitch.tv/osecaadegas95', label: 'Twitch',    cls: 'sb-social--twitch' },
-            { href: 'https://www.youtube.com/@osecaadegas', label: 'YouTube',   cls: 'sb-social--youtube' },
-            { href: 'https://www.instagram.com/osecaadegas/', label: 'Instagram', cls: 'sb-social--instagram' },
-            { href: 'https://discord.gg/4yZ3F2Pk4z',       label: 'Discord',   cls: 'sb-social--discord' },
-          ].map((s) => (
-            <a key={s.label} href={s.href} target="_blank" rel="noopener noreferrer"
-               className={`sb-social ${s.cls}`} title={s.label}>
-              {s.label}
-            </a>
-          ))}
         </div>
         <div className="sb-legal">
           <a href="/privacy" className="sb-legal-link">Privacy</a>

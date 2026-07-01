@@ -12,4 +12,4 @@ Disallow: /spotify-callback
 Disallow: /webmod
 Disallow: /widgets
 
-Sitemap: https://osecaadegas.pt/sitemap.xml
+Sitemap: https://streamerscenter.com/sitemap.xml

@@ -1,6 +1,6 @@
 # Documentation Hub
 
-This folder contains the current documentation set for osecaadegas.pt.
+This folder contains the current documentation set for Streamers Center.
 
 The docs were audited on 2026-06-05. Old Stripe payment guides, mines troubleshooting, original SaaS overlay subscription docs, and retired The Life/Twitch extension guides were removed because they no longer match the runtime code.
 

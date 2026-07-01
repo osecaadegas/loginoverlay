@@ -1,6 +1,6 @@
-const SITE_URL = 'https://osecaadegas.pt';
-const DEFAULT_TITLE = 'O Seca Adegas - Overlays e ferramentas para streamers';
-const DEFAULT_DESCRIPTION = 'O Seca Adegas ajuda streamers de casino a gerir overlays, bonus hunts, pedidos de slots, torneios, giveaways e ferramentas para comunidades iGaming.';
+const SITE_URL = 'https://streamerscenter.com';
+const DEFAULT_TITLE = 'Streamers Center - Overlays and tools for streamers';
+const DEFAULT_DESCRIPTION = 'Streamers Center helps casino streamers manage overlays, bonus hunts, slot requests, tournaments, giveaways and iGaming community tools.';
 const DEFAULT_IMAGE = `${SITE_URL}/Hero.png`;
 
 const SEO_BY_PATH = {
@@ -9,20 +9,20 @@ const SEO_BY_PATH = {
     description: DEFAULT_DESCRIPTION,
   },
   '/offers': {
-    title: 'Ofertas de casino para streamers | O Seca Adegas',
-    description: 'Explora ofertas e parcerias de casino organizadas para comunidades iGaming e streamers.',
+    title: 'Casino offers for streamers | Streamers Center',
+    description: 'Explore casino offers and partnerships organized for iGaming communities and streamers.',
   },
   '/premium': {
-    title: 'Premium para streamers | O Seca Adegas',
-    description: 'Ferramentas premium para streamers: overlays, bonus hunts, widgets e gestão da comunidade.',
+    title: 'Premium for streamers | Streamers Center',
+    description: 'Premium streamer tools: overlays, bonus hunts, widgets and community management.',
   },
   '/privacy': {
-    title: 'Politica de Privacidade | O Seca Adegas',
-    description: 'Como o O Seca Adegas recolhe, usa e protege dados dos utilizadores.',
+    title: 'Privacy Policy | Streamers Center',
+    description: 'How Streamers Center collects, uses and protects user data.',
   },
   '/terms': {
-    title: 'Termos de Servico | O Seca Adegas',
-    description: 'Termos e condicoes de utilizacao da plataforma O Seca Adegas.',
+    title: 'Terms of Service | Streamers Center',
+    description: 'Terms and conditions for using the Streamers Center platform.',
   },
 };
 
@@ -63,7 +63,7 @@ export function applyRouteSeo(pathname) {
   const noindex = NOINDEX_PREFIXES.some((prefix) => pathname === prefix || pathname.startsWith(`${prefix}/`));
   const canonical = `${SITE_URL}${pathname === '/' ? '/' : pathname}`;
 
-  document.title = noindex ? `${route.title} | Area privada` : route.title;
+  document.title = noindex ? `${route.title} | Private area` : route.title;
   upsertMeta('meta[name="description"]', { name: 'description', content: route.description });
   upsertMeta('meta[name="robots"]', {
     name: 'robots',

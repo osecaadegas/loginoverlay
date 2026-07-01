@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import './StreamsPage.css';
 
-const TWITCH_CHANNEL = 'osecaadegas95';
-const TWITCH_PARENTS = 'www.osecaadegas.pt&parent=osecaadegas.pt&parent=localhost';
+const TWITCH_CHANNEL = (import.meta.env.VITE_TWITCH_CHANNEL || '').trim();
+const TWITCH_PARENTS = 'www.streamerscenter.com&parent=streamerscenter.com&parent=localhost';
 
 export default function StreamsPage() {
   const [highlights, setHighlights] = useState([]);
@@ -34,11 +34,18 @@ export default function StreamsPage() {
           <div className="streams-player-row">
             {/* Twitch Player */}
             <div className="streams-video">
-              <iframe
-                src={`https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${TWITCH_PARENTS}`}
-                allowFullScreen
-                title="Twitch Stream"
-              />
+              {TWITCH_CHANNEL ? (
+                <iframe
+                  src={`https://player.twitch.tv/?channel=${TWITCH_CHANNEL}&parent=${TWITCH_PARENTS}`}
+                  allowFullScreen
+                  title="Twitch Stream"
+                />
+              ) : (
+                <div className="streams-empty-embed">
+                  <strong>Stream not configured</strong>
+                  <span>Set VITE_TWITCH_CHANNEL to enable the live player.</span>
+                </div>
+              )}
             </div>
 
             {/* Twitch Chat */}
@@ -48,10 +55,17 @@ export default function StreamsPage() {
                 <span className="streams-chat-badge"><i className="fa-solid fa-users" /></span>
               </div>
               <div className="streams-chat-embed">
-                <iframe
-                  src={`https://www.twitch.tv/embed/${TWITCH_CHANNEL}/chat?parent=${TWITCH_PARENTS}&darkpopout`}
-                  title="Twitch Chat"
-                />
+                {TWITCH_CHANNEL ? (
+                  <iframe
+                    src={`https://www.twitch.tv/embed/${TWITCH_CHANNEL}/chat?parent=${TWITCH_PARENTS}&darkpopout`}
+                    title="Twitch Chat"
+                  />
+                ) : (
+                  <div className="streams-empty-embed streams-empty-embed--chat">
+                    <strong>Chat not configured</strong>
+                    <span>Add a stream channel to enable chat.</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -248,7 +248,7 @@ export default function CasinoOfferModal({
               </div>
               <div className="co-field">
                 <label>Promo Code</label>
-                <input type="text" value={formData.promo_code} onChange={e => handleChange('promo_code', e.target.value)} placeholder="SECA100" />
+                <input type="text" value={formData.promo_code} onChange={e => handleChange('promo_code', e.target.value)} placeholder="SC100" />
               </div>
             </div>
           </div>

@@ -234,7 +234,7 @@ export default async function handler(req, res) {
       raider_game: channel?.game_name || null,
       clip_id: clip?.id || null,
       clip_url: clip?.url || null,
-      clip_embed_url: clip ? `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${process.env.OVERLAY_DOMAIN || 'localhost'}` : null,
+      clip_embed_url: clip ? `https://clips.twitch.tv/embed?clip=${clip.id}&parent=${process.env.OVERLAY_DOMAIN || 'streamerscenter.com'}` : null,
       clip_thumbnail_url: clip?.thumbnail_url || null,
       clip_video_url: clipVideoUrl,
       clip_title: clip?.title || null,

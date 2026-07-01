@@ -1,4 +1,4 @@
-# osecaadegas.pt
+# Streamers Center
 
 Community streaming platform built with React, Vite, Supabase, and Vercel serverless APIs.
 
