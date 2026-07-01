@@ -74,7 +74,7 @@ export default function OverlayPreview({ widgets, theme }) {
         margin: '0 auto',
         borderRadius: 10,
         overflow: 'hidden',
-        border: '1px solid rgba(194,92,255,0.28)',
+        border: '1px solid rgba(148,163,184,0.28)',
         position: 'relative',
         background: '#0f0f1a',
       }}>

@@ -25,10 +25,10 @@ const useDebounce = (value, delay) => {
    CONSTANTS
    ═══════════════════════════════════════════════════════════════════ */
 const VOLATILITY_OPTIONS = [
-  { value: 'low', label: 'Low', color: '#39f5d3' },
-  { value: 'medium', label: 'Medium', color: '#ffb84d' },
-  { value: 'high', label: 'High', color: '#ff7a2f' },
-  { value: 'very_high', label: 'Very High', color: '#f044b7' },
+  { value: 'low', label: 'Low', color: '#d0dbe6' },
+  { value: 'medium', label: 'Medium', color: '#b8c8d8' },
+  { value: 'high', label: 'High', color: '#94a3b8' },
+  { value: 'very_high', label: 'Very High', color: '#94a3b8' },
 ];
 
 const FEATURE_OPTIONS = [
@@ -234,16 +234,16 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
         opacity: expanded ? 1 : 0,
         overflow: 'hidden',
         transition: 'max-height 0.35s cubic-bezier(0.4,0,0.2,1), opacity 0.25s ease',
-        background: 'linear-gradient(150deg, rgba(36,16,74,0.78), rgba(18,3,43,0.9))',
+        background: 'linear-gradient(150deg, rgba(17,24,39,0.78), rgba(13,17,23,0.9))',
         borderRadius: 22,
-        border: '1px solid rgba(194,92,255,0.28)',
+        border: '1px solid rgba(148,163,184,0.28)',
         marginBottom: 8,
       }}
       onKeyDown={onKey}
     >
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 8px', borderBottom: '1px solid rgba(194,92,255,0.22)' }}>
-        <span style={{ fontWeight: 850, fontSize: '0.85rem', opacity: 1, color: '#fff7ff' }}>Submit New Slot</span>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px 8px', borderBottom: '1px solid rgba(148,163,184,0.22)' }}>
+        <span style={{ fontWeight: 850, fontSize: '0.85rem', opacity: 1, color: '#f4f7fb' }}>Submit New Slot</span>
         <button className="sm-btn-close" onClick={onClose} style={{ width: 24, height: 24, padding: 0 }}>
           <svg width="12" height="12" viewBox="0 0 14 14"><path d="M1 1l12 12M13 1L1 13" stroke="currentColor" strokeWidth="2" strokeLinecap="round" /></svg>
         </button>
@@ -296,23 +296,23 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
 
       {/* Image results + preview row */}
       {scrapeLoading && (
-        <p style={{ fontSize: 11, color: '#c9b8e8', margin: '0 14px 8px' }}>Auto-fetching slot info...</p>
+        <p style={{ fontSize: 11, color: '#aab6c8', margin: '0 14px 8px' }}>Auto-fetching slot info...</p>
       )}
 
       {(imageResults.length > 0 || form.image || scrapedImages.length > 0 || imageSearchMeta?.googleUrl) && (
         <div style={{ padding: '0 14px 8px', display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
           {form.image && (
-            <img src={form.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(168,85,247,0.4)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
+            <img src={form.image} alt="" style={{ width: 90, height: 90, borderRadius: 8, objectFit: 'cover', border: '2px solid rgba(148,163,184,0.4)' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
           )}
           {scrapedImages.slice(0, 8).map((url, i) => (
             <button key={`scraped-${i}`} type="button" onClick={() => set('image', url)}
-              style={{ border: form.image === url ? '2px solid #f044b7' : '1px solid rgba(194,92,255,0.28)', borderRadius: 12, padding: 2, background: 'rgba(18,3,43,0.58)', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
+              style={{ border: form.image === url ? '2px solid #94a3b8' : '1px solid rgba(148,163,184,0.28)', borderRadius: 12, padding: 2, background: 'rgba(13,17,23,0.58)', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
               <img src={url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
             </button>
           ))}
           {imageResults.slice(0, 8).map((img, i) => (
             <button key={i} type="button" onClick={() => { set('image', img.url); setImageResults([]); }}
-              style={{ border: form.image === img.url ? '2px solid #f044b7' : '1px solid rgba(194,92,255,0.28)', borderRadius: 12, padding: 2, background: 'rgba(18,3,43,0.58)', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
+              style={{ border: form.image === img.url ? '2px solid #94a3b8' : '1px solid rgba(148,163,184,0.28)', borderRadius: 12, padding: 2, background: 'rgba(13,17,23,0.58)', cursor: 'pointer', width: 90, height: 90, overflow: 'hidden', flexShrink: 0 }}>
               <img src={img.thumb} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} />
             </button>
           ))}
@@ -327,7 +327,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
       {/* Features (collapsible) */}
       <details style={{ padding: '0 14px 8px' }}>
         <summary style={{ fontSize: '0.75rem', cursor: 'pointer', opacity: 0.6, userSelect: 'none', marginBottom: 6 }}>
-          Features {featCount > 0 && <span style={{ background: 'linear-gradient(135deg, #f044b7, #8b5cf6)', color: '#fff7ff', borderRadius: 999, padding: '1px 7px', fontSize: '0.65rem', marginLeft: 4 }}>{featCount}</span>}
+          Features {featCount > 0 && <span style={{ background: 'linear-gradient(135deg, #94a3b8, #64748b)', color: '#f4f7fb', borderRadius: 999, padding: '1px 7px', fontSize: '0.65rem', marginLeft: 4 }}>{featCount}</span>}
         </summary>
         <div className="sm-feature-grid" style={{ paddingTop: 2 }}>
           {FEATURE_OPTIONS.map(feat => {
@@ -338,7 +338,7 @@ const SubmitDropdown = memo(({ providers, onClose, onSubmitted }) => {
       </details>
 
       {/* Footer */}
-      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '8px 16px 12px', borderTop: '1px solid rgba(194,92,255,0.22)' }}>
+      <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, padding: '8px 16px 12px', borderTop: '1px solid rgba(148,163,184,0.22)' }}>
         <button className="sm-btn-ghost" onClick={onClose}>Cancel</button>
         <button className="sm-btn-primary" onClick={save} disabled={saving}>
           {saving ? 'Submitting…' : '📤 Submit for Approval'}
@@ -383,7 +383,7 @@ const MySubmissionsPanel = memo(({ onClose }) => {
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               {subs.map(s => (
-                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(18,3,43,0.68)', borderRadius: 16, border: '1px solid rgba(194,92,255,0.24)' }}>
+                <div key={s.id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', background: 'rgba(13,17,23,0.68)', borderRadius: 16, border: '1px solid rgba(148,163,184,0.24)' }}>
                   <img src={s.image || DEFAULT_SLOT_IMAGE} alt="" style={{ width: 40, height: 40, borderRadius: 6, objectFit: 'cover' }} onError={e => (e.target.src = DEFAULT_SLOT_IMAGE)} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontWeight: 600, fontSize: '0.82rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{s.name}</div>
