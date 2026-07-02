@@ -234,10 +234,10 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
             borderRadius: 8, padding: 10, marginBottom: 8,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#a855f7' : '#333' }} />
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#64748b' : '#333' }} />
               <span style={{ fontWeight: 600, fontSize: 13 }}>Twitch</span>
               {resolvedChannel ? (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{resolvedChannel}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b', fontWeight: 600 }}>{resolvedChannel}</span>
               ) : (
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
               )}
@@ -297,7 +297,7 @@ export default function GiveawayConfig({ config, onChange, allWidgets }) {
               background: '#9346ff22', border: '1px solid #9346ff55', borderRadius: 8,
               padding: '10px 14px', marginBottom: 8, textAlign: 'center',
             }}>
-              <div style={{ fontSize: 10, color: '#a78bfa', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>🎉 Winner</div>
+              <div style={{ fontSize: 10, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.08em', fontWeight: 600 }}>🎉 Winner</div>
               <div style={{ fontSize: 18, fontWeight: 800, color: '#c4b5fd', marginTop: 2 }}>{c.winner}</div>
               <button
                 onClick={() => set('winner', '')}

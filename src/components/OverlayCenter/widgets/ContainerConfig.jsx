@@ -20,7 +20,7 @@ const S = {
   },
   btn: {
     padding: '5px 10px', fontSize: '0.75rem', fontWeight: 600, borderRadius: 6,
-    border: '1px solid rgba(139,92,246,0.4)', background: 'rgba(139,92,246,0.15)',
+    border: '1px solid rgba(148,163,184,0.34)', background: 'rgba(148,163,184,0.14)',
     color: '#c4b5fd', cursor: 'pointer',
   },
   btnDanger: {
@@ -119,8 +119,8 @@ export default function ContainerConfig({ config, onChange, allWidgets }) {
               key={l}
               style={{
                 ...S.btn,
-                background: (c.layout || 'vertical') === l ? 'rgba(139,92,246,0.35)' : 'rgba(139,92,246,0.1)',
-                borderColor: (c.layout || 'vertical') === l ? 'rgba(139,92,246,0.7)' : 'rgba(139,92,246,0.3)',
+                background: (c.layout || 'vertical') === l ? 'rgba(148,163,184,0.28)' : 'rgba(148,163,184,0.12)',
+                borderColor: (c.layout || 'vertical') === l ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.24)',
               }}
               onClick={() => set('layout', l)}
             >
@@ -168,8 +168,8 @@ export default function ContainerConfig({ config, onChange, allWidgets }) {
                 style={{
                   ...S.btn,
                   fontSize: '0.7rem', padding: '3px 8px',
-                  background: (c.alignItems || 'stretch') === a ? 'rgba(139,92,246,0.35)' : 'rgba(139,92,246,0.08)',
-                  borderColor: (c.alignItems || 'stretch') === a ? 'rgba(139,92,246,0.7)' : 'rgba(139,92,246,0.2)',
+                  background: (c.alignItems || 'stretch') === a ? 'rgba(148,163,184,0.28)' : 'rgba(148,163,184,0.1)',
+                  borderColor: (c.alignItems || 'stretch') === a ? 'rgba(148,163,184,0.5)' : 'rgba(148,163,184,0.2)',
                 }}
                 onClick={() => set('alignItems', a)}
               >

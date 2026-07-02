@@ -19,11 +19,11 @@ const PALETTE = [
   '#6366f1', // indigo
   '#22c55e', // emerald
   '#f97316', // orange
-  '#a855f7', // purple
+  '#64748b', // slate
   '#06b6d4', // cyan
   '#ef4444', // red
   '#eab308', // yellow
-  '#ec4899', // pink
+  '#64748b', // pink
   '#14b8a6', // teal
   '#f59e0b', // amber
 ];
@@ -286,5 +286,3 @@ function BetsWidget({ config }) {
 }
 
 export default BetsWidget;
-
-  

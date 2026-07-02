@@ -5,7 +5,7 @@ import useTwitchChannel from '../../../hooks/useTwitchChannel';
 
 /* ─── Platform helpers ─── */
 const PLATFORM_META = {
-  twitch:  { label: 'Twitch',  icon: 'T', color: '#a855f7' },
+  twitch:  { label: 'Twitch',  icon: 'T', color: '#64748b' },
   youtube: { label: 'YouTube', icon: 'Y', color: '#ef4444' },
   kick:    { label: 'Kick',    icon: 'K', color: '#22c55e' },
 };
@@ -557,7 +557,7 @@ function ChatWidget({ config, theme }) {
 /* ─── Raid message (shared across styles) ─── */
 function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
   const raidBg = c.raidBgColor || '#7c3aed';
-  const raidBorder = c.raidBorderColor || '#a855f7';
+  const raidBorder = c.raidBorderColor || '#64748b';
   const raidText = c.raidTextColor || '#ffffff';
   const showAvatar = c.showRaidAvatar !== false;
 
@@ -568,13 +568,13 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
         animation: 'ov-cards-slide-in 0.35s ease-out',
       }}>
         <div className="ov-cards-msg-header">
-          <span className="ov-cards-username" style={{ color: '#d8b4fe' }}>@{msg.username}</span>
+          <span className="ov-cards-username" style={{ color: '#cbd5e1' }}>@{msg.username}</span>
           <div className="ov-cards-badges">
             <span className="ov-cards-badge" style={{ background: '#7c3aed' }}>
               <span className="ov-cards-badge-icon">⚔️</span> RAID
             </span>
             {msg.raidViewers > 0 && (
-              <span className="ov-cards-badge" style={{ background: 'rgba(124,58,237,0.5)' }}>
+              <span className="ov-cards-badge" style={{ background: 'rgba(100,116,139,0.5)' }}>
                 👥 {msg.raidViewers}
               </span>
             )}
@@ -592,13 +592,13 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
       }}>
         <div style={{
           display: 'inline-flex', flexDirection: 'column',
-          background: 'rgba(124,58,237,0.55)', borderRadius: 16,
+          background: 'rgba(100,116,139,0.55)', borderRadius: 16,
           padding: '8px 14px', maxWidth: '90%', backdropFilter: 'blur(4px)',
           border: '1px solid rgba(168,85,247,0.5)',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 2 }}>
-            <span style={{ fontSize: '0.75em', fontWeight: 700, color: '#d8b4fe' }}>⚔️ RAID</span>
-            <span style={{ fontWeight: 700, color: '#e9d5ff' }}>{msg.username}</span>
+            <span style={{ fontSize: '0.75em', fontWeight: 700, color: '#cbd5e1' }}>⚔️ RAID</span>
+            <span style={{ fontWeight: 700, color: '#e2e8f0' }}>{msg.username}</span>
             {msg.raidViewers > 0 && <span style={{ fontSize: '0.8em', color: '#c4b5fd' }}>👥 {msg.raidViewers}</span>}
           </div>
           <span style={{ color: '#f5f3ff' }}>{msg.message}</span>
@@ -612,13 +612,13 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
       <div className="ov-chat-msg ov-chat-raid" style={{
         padding: `${msgSpacing + 2}px ${msgPadH}px`,
         fontFamily: "'Fira Code', monospace",
-        background: 'rgba(124,58,237,0.15)', borderLeft: '3px solid #a855f7',
+        background: 'rgba(148,163,184,0.16)', borderLeft: '3px solid #64748b',
         animation: 'ov-slide-left 0.25s ease-out',
       }}>
-        <span style={{ color: '#d8b4fe' }}>⚔️ [RAID]</span>
-        <span style={{ color: '#e9d5ff', fontWeight: 700, marginLeft: 6 }}>{msg.username}</span>
+        <span style={{ color: '#cbd5e1' }}>⚔️ [RAID]</span>
+        <span style={{ color: '#e2e8f0', fontWeight: 700, marginLeft: 6 }}>{msg.username}</span>
         <span style={{ color: '#c4b5fd', marginLeft: 6 }}>{msg.message}</span>
-        {msg.raidViewers > 0 && <span style={{ color: '#a78bfa', marginLeft: 6 }}>({msg.raidViewers})</span>}
+        {msg.raidViewers > 0 && <span style={{ color: '#94a3b8', marginLeft: 6 }}>({msg.raidViewers})</span>}
       </div>
     );
   }
@@ -627,12 +627,12 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
     return (
       <div className="ov-chat-msg ov-chat-raid" style={{
         padding: `${msgSpacing + 3}px ${msgPadH}px`,
-        borderLeft: '3px solid #a855f7', background: 'rgba(124,58,237,0.12)',
+        borderLeft: '3px solid #64748b', background: 'rgba(148,163,184,0.14)',
         animation: 'ov-slide-left 0.3s ease-out',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-          <span style={{ fontSize: '0.7em', fontWeight: 800, color: '#d8b4fe' }}>⚔️ RAID</span>
-          <span style={{ fontWeight: 700, color: '#e9d5ff' }}>{msg.username}</span>
+          <span style={{ fontSize: '0.7em', fontWeight: 800, color: '#cbd5e1' }}>⚔️ RAID</span>
+          <span style={{ fontWeight: 700, color: '#e2e8f0' }}>{msg.username}</span>
           {msg.raidViewers > 0 && <span style={{ fontSize: '0.8em', color: '#c4b5fd' }}>👥 {msg.raidViewers}</span>}
         </div>
         <span style={{ color: '#f5f3ff', paddingLeft: 1 }}>{msg.message}</span>
@@ -658,7 +658,7 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
           <span style={{
-            background: '#a855f733', color: '#d8b4fe', padding: '1px 6px',
+            background: '#64748b33', color: '#cbd5e1', padding: '1px 6px',
             borderRadius: '4px', fontSize: '0.75em', fontWeight: 700,
             letterSpacing: '0.05em', textTransform: 'uppercase',
           }}>⚔️ RAID</span>
@@ -670,7 +670,7 @@ function RaidMessage({ msg, chatStyle, msgSpacing, msgPadH, c }) {
       </div>
       {msg.raidViewers > 0 && (
         <span style={{
-          background: '#a855f744', color: '#e9d5ff', padding: '2px 8px',
+          background: '#64748b44', color: '#e2e8f0', padding: '2px 8px',
           borderRadius: '12px', fontSize: '0.8em', fontWeight: 700, whiteSpace: 'nowrap', flexShrink: 0,
         }}>👥 {msg.raidViewers}</span>
       )}

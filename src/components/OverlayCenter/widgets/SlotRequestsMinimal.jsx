@@ -17,7 +17,7 @@ export default function SlotRequestsMinimal({ config, requests }) {
   const prevCountRef = useRef(requests.length);
 
   /* ── Config ── */
-  const accent       = c.accentColor   || '#a78bfa';
+  const accent       = c.accentColor   || '#94a3b8';
   const textColor    = c.textColor     || '#ffffff';
   const mutedColor   = c.mutedColor    || '#94a3b8';
   const bgColor      = c.bgColor       || 'rgba(15,17,28,0.75)';

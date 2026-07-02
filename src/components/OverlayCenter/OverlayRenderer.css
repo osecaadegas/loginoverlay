@@ -3576,7 +3576,7 @@
 .cg-salty__status--idle { background: rgba(100,116,139,0.2); color: #94a3b8; }
 .cg-salty__status--open { background: rgba(34,197,94,0.15); color: #4ade80; }
 .cg-salty__status--reveal { background: rgba(245,158,11,0.15); color: #fbbf24; }
-.cg-salty__status--result { background: rgba(124,58,237,0.15); color: #a78bfa; }
+.cg-salty__status--result { background: rgba(148,163,184,0.16); color: #94a3b8; }
 .cg-salty__grid { display: flex; flex-direction: column; gap: 6px; }
 .cg-salty__word {
   position: relative; overflow: hidden; border-radius: 8px; padding: 10px 14px;
@@ -3590,7 +3590,7 @@
 }
 .cg-salty__word--dimmed { opacity: 0.35; }
 .cg-salty__word-bar {
-  position: absolute; left: 0; top: 0; bottom: 0; background: rgba(124,58,237,0.12);
+  position: absolute; left: 0; top: 0; bottom: 0; background: rgba(148,163,184,0.14);
   border-radius: 8px; transition: width 0.6s cubic-bezier(0.16,1,0.3,1);
 }
 .cg-salty__word-text { position: relative; z-index: 1; font-size: 14px; font-weight: 700; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
@@ -3599,12 +3599,12 @@
   position: absolute; right: 10px; top: 50%; transform: translateY(-50%); z-index: 2; font-size: 14px;
 }
 .cg-salty__word-meta { position: relative; z-index: 1; display: flex; align-items: center; gap: 10px; font-size: 13px; color: #94a3b8; text-shadow: 0 1px 3px rgba(0,0,0,0.5); }
-.cg-salty__word-pct { font-weight: 700; color: #a78bfa; }
+.cg-salty__word-pct { font-weight: 700; color: #94a3b8; }
 .cg-salty__pool {
   text-align: center; font-size: 13px; color: #64748b; padding-top: 4px;
   border-top: 1px solid rgba(255,255,255,0.06);
 }
-.cg-salty__pool span { color: #a78bfa; font-weight: 700; }
+.cg-salty__pool span { color: #94a3b8; font-weight: 700; }
 .cg-salty__empty { text-align: center; color: #475569; font-size: 13px; padding: 20px 0; }
 
 /* --- Predictions Widget --- */
@@ -3616,7 +3616,7 @@
 .cg-predict__status--idle { background: rgba(100,116,139,0.2); color: #94a3b8; }
 .cg-predict__status--open { background: rgba(34,197,94,0.15); color: #4ade80; }
 .cg-predict__status--locked { background: rgba(239,68,68,0.15); color: #f87171; }
-.cg-predict__status--result { background: rgba(124,58,237,0.15); color: #a78bfa; }
+.cg-predict__status--result { background: rgba(148,163,184,0.16); color: #94a3b8; }
 .cg-predict__question {
   font-size: 14px; font-weight: 700; text-align: center; padding: 4px 0;
   text-shadow: 0 1px 4px rgba(0,0,0,0.4);
@@ -3654,7 +3654,7 @@
   text-align: center; font-size: 13px; color: #64748b; padding-top: 4px;
   border-top: 1px solid rgba(255,255,255,0.06);
 }
-.cg-predict__pool span { color: #a78bfa; font-weight: 700; }
+.cg-predict__pool span { color: #94a3b8; font-weight: 700; }
 
 /* ── BH Predictions Widget (4×2 card grid) ── */
 /* border-radius and box-shadow removed from root — slot handles both */
@@ -4440,7 +4440,7 @@
 }
 .ov-cards-msg--raid {
   border-color: rgba(168,85,247,0.4);
-  background: rgba(124,58,237,0.12);
+  background: rgba(148,163,184,0.14);
   box-shadow: 0 0 12px rgba(168,85,247,0.1);
 }
 
@@ -4505,7 +4505,7 @@
   display: inline-block;
   font-size: 0.75em;
   font-weight: 700;
-  color: #d8b4fe;
+  color: #cbd5e1;
   background: rgba(168,85,247,0.18);
   padding: 1px 6px;
   border-radius: 8px;
@@ -5496,7 +5496,7 @@
 .sr-min-header-title { flex: 1; font-size: 1em; letter-spacing: 0.02em; }
 .sr-min-header-count {
   font-size: 0.8em; font-weight: 900;
-  background: var(--sr-min-accent, #a78bfa);
+  background: var(--sr-min-accent, #94a3b8);
   color: #000; padding: 2px 8px;
   border-radius: 20px; min-width: 24px;
   text-align: center; line-height: 1.5;
@@ -5567,7 +5567,7 @@
 }
 .sr-min-row-idx {
   font-size: 0.78em; font-weight: 800;
-  color: var(--sr-min-accent, #a78bfa);
+  color: var(--sr-min-accent, #94a3b8);
   min-width: 22px; text-align: center;
 }
 .sr-min-row-img {
@@ -5640,8 +5640,8 @@
 }
 .sr-cs-pill:hover { background: rgba(255,255,255,0.1); }
 .sr-cs-pill--active {
-  background: rgba(var(--sr-cs-accent-rgb, 167,139,250), 0.15);
-  border-color: rgba(var(--sr-cs-accent-rgb, 167,139,250), 0.4);
+  background: rgba(var(--sr-cs-accent-rgb, 148,163,184), 0.15);
+  border-color: rgba(var(--sr-cs-accent-rgb, 148,163,184), 0.4);
 }
 .sr-cs-pill-thumb { width: 20px; height: 20px; border-radius: 4px; object-fit: cover; }
 .sr-cs-pill-name {
@@ -5652,7 +5652,7 @@
 .sr-cs-strip-count {
   position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
   font-size: 0.7em; font-weight: 800;
-  background: var(--sr-cs-accent, #a78bfa); color: #000;
+  background: var(--sr-cs-accent, #94a3b8); color: #000;
   padding: 2px 7px; border-radius: 20px; z-index: 2;
 }
 
@@ -5680,8 +5680,8 @@
   position: relative;
 }
 .sr-cs-card--active {
-  border-color: rgba(var(--sr-cs-accent-rgb, 167,139,250), 0.35);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(var(--sr-cs-accent-rgb, 167,139,250), 0.12);
+  border-color: rgba(var(--sr-cs-accent-rgb, 148,163,184), 0.35);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.5), 0 0 30px rgba(var(--sr-cs-accent-rgb, 148,163,184), 0.12);
 }
 .sr-cs-card-img-wrap {
   position: absolute; inset: 0;
@@ -5697,7 +5697,7 @@
   position: absolute; top: 8px; left: 8px;
   font-size: 0.68em; font-weight: 800;
   padding: 2px 7px; border-radius: 6px;
-  background: var(--sr-cs-accent, #a78bfa); color: #000;
+  background: var(--sr-cs-accent, #94a3b8); color: #000;
   z-index: 2;
   animation: sr-cs-badge-pulse 2s ease-in-out infinite;
 }
@@ -5722,7 +5722,7 @@
 .sr-cs-card-ring {
   position: absolute; inset: -3px;
   border-radius: 16px;
-  border: 2px solid rgba(var(--sr-cs-accent-rgb, 167,139,250), 0.5);
+  border: 2px solid rgba(var(--sr-cs-accent-rgb, 148,163,184), 0.5);
   animation: sr-cs-ring-pulse 2s ease-in-out infinite;
   pointer-events: none; z-index: 3;
 }
@@ -5767,7 +5767,7 @@
 .sr-co-badge {
   position: absolute; top: -6px; right: -6px;
   font-size: 0.68em; font-weight: 900;
-  background: var(--sr-co-accent, #a78bfa); color: #000;
+  background: var(--sr-co-accent, #94a3b8); color: #000;
   padding: 2px 7px; border-radius: 20px;
   min-width: 20px; text-align: center;
   line-height: 1.4; z-index: 2;
@@ -5806,7 +5806,7 @@
 }
 .sr-co-card-idx {
   font-size: 0.72em; font-weight: 800;
-  color: var(--sr-co-accent, #a78bfa);
+  color: var(--sr-co-accent, #94a3b8);
   flex-shrink: 0;
 }
 .sr-co-dots {
@@ -5818,7 +5818,7 @@
   cursor: pointer; transition: background 0.2s, transform 0.2s;
 }
 .sr-co-dot--active {
-  background: var(--sr-co-accent, #a78bfa);
+  background: var(--sr-co-accent, #94a3b8);
   transform: scale(1.3);
 }
 

@@ -162,7 +162,7 @@ export default function CoinFlipConfig({ config, onChange }) {
           </button>
 
           <p style={{ fontSize: 10, color: '#64748b', margin: '8px 0 0', lineHeight: 1.5 }}>
-            Chat commands: <b style={{ color: '#facc15' }}>!bet heads 500</b>, <b style={{ color: '#60a5fa' }}>!tails 100</b>, <b style={{ color: '#a78bfa' }}>!flip heads</b>, <b style={{ color: '#a78bfa' }}>!cf tails</b>
+            Chat commands: <b style={{ color: '#facc15' }}>!bet heads 500</b>, <b style={{ color: '#60a5fa' }}>!tails 100</b>, <b style={{ color: '#94a3b8' }}>!flip heads</b>, <b style={{ color: '#94a3b8' }}>!cf tails</b>
           </p>
         </div>
       )}
@@ -203,10 +203,10 @@ export default function CoinFlipConfig({ config, onChange }) {
             <input type="checkbox" checked={!!c.pointPayoutsEnabled}
               onChange={e => set('pointPayoutsEnabled', e.target.checked)}
               disabled={!seConnected}
-              style={{ accentColor: '#a855f7' }}
+              style={{ accentColor: '#64748b' }}
             />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-              <span style={{ fontWeight: 600, fontSize: 13, color: c.pointPayoutsEnabled && seConnected ? '#a855f7' : '#94a3b8' }}>
+              <span style={{ fontWeight: 600, fontSize: 13, color: c.pointPayoutsEnabled && seConnected ? '#64748b' : '#94a3b8' }}>
                 {c.pointPayoutsEnabled && seConnected ? '● SE Point Payouts On' : '○ SE Point Payouts Off'}
               </span>
               <span style={{ fontSize: 10, color: '#64748b' }}>
@@ -238,11 +238,11 @@ export default function CoinFlipConfig({ config, onChange }) {
               borderRadius: 8, padding: '8px 10px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12 }}>
-                <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#a855f7' : '#333' }} />
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: resolvedChannel ? '#64748b' : '#333' }} />
                 <span style={{ fontWeight: 600 }}>Twitch</span>
-                {resolvedChannel && <span style={{ fontSize: 10, color: '#a855f7', marginLeft: 4 }}>{resolvedChannel}</span>}
+                {resolvedChannel && <span style={{ fontSize: 10, color: '#64748b', marginLeft: 4 }}>{resolvedChannel}</span>}
                 <label style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 4, fontSize: 11 }}>
-                  <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} style={{ accentColor: '#a855f7' }} />
+                  <input type="checkbox" checked={!!c.twitchEnabled} onChange={e => set('twitchEnabled', e.target.checked)} style={{ accentColor: '#64748b' }} />
                   On
                 </label>
               </div>
@@ -267,7 +267,7 @@ export default function CoinFlipConfig({ config, onChange }) {
 
             {/* Profile link */}
             <p style={{ fontSize: 10, color: '#64748b', margin: '4px 0 0', lineHeight: 1.4 }}>
-              🔗 Twitch &amp; Kick channels are managed in <b style={{ color: '#a78bfa' }}>Profile</b>. Click <b style={{ color: '#a78bfa' }}>Sync All</b> to update.
+              🔗 Twitch &amp; Kick channels are managed in <b style={{ color: '#94a3b8' }}>Profile</b>. Click <b style={{ color: '#94a3b8' }}>Sync All</b> to update.
             </p>
           </div>
 

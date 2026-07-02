@@ -324,7 +324,7 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
           </div>
 
           {/* Add result manually */}
-          <div style={{ ...S.section, padding: 12, background: 'rgba(124,58,237,0.06)', borderRadius: 10, border: '1px solid rgba(124,58,237,0.15)' }}>
+          <div style={{ ...S.section, padding: 12, background: 'rgba(148,163,184,0.08)', borderRadius: 10, border: '1px solid rgba(148,163,184,0.16)' }}>
             <label style={{ ...S.label, color: '#7c3aed' }}>➕ Add Result</label>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 8 }}>
               <input style={S.input} type="number" placeholder={`Bet (${currency})`} value={manualBet} onChange={e => setManualBet(e.target.value)} />

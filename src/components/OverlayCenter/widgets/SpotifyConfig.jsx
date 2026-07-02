@@ -35,7 +35,7 @@ export default function SpotifyConfig({ config, onChange }) {
               {isConnected ? 'Spotify Connected' : 'Spotify Not Connected'}
             </span>
             <span style={{ fontSize: 10, color: '#64748b' }}>
-              Managed in <b style={{ color: '#a78bfa' }}>Profile</b>
+              Managed in <b style={{ color: '#94a3b8' }}>Profile</b>
             </span>
           </div>
 

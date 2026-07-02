@@ -79,8 +79,8 @@ export default function BHStatsWidget({ config, allWidgets }) {
     : (c.cardBg || 'rgba(255,255,255,0.04)');
   const textColor = isMetal ? '#d4d4d8' : (c.textColor || '#f1f5f9');
   const mutedColor = isMetal ? '#666666' : isGlass ? '#a1a8b8' : (c.mutedColor || '#64748b');
-  const accentColor = isMetal ? '#e8a020' : isGlass ? '#a78bfa' : (c.accentColor || '#818cf8');
-  const progressColor = isMetal ? '#e8a020' : isGlass ? '#a78bfa' : (c.progressColor || '#22c55e');
+  const accentColor = isMetal ? '#e8a020' : isGlass ? '#94a3b8' : (c.accentColor || '#818cf8');
+  const progressColor = isMetal ? '#e8a020' : isGlass ? '#94a3b8' : (c.progressColor || '#22c55e');
   const progressBg = isMetal ? 'rgba(255,255,255,0.06)' : isGlass ? 'rgba(255,255,255,0.1)' : (c.progressBgColor || 'rgba(255,255,255,0.08)');
   const bestColor = isMetal ? '#66bb6a' : (c.bestColor || '#22c55e');
   const worstColor = isMetal ? '#ef5350' : (c.worstColor || '#f87171');

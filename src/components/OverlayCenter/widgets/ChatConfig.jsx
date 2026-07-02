@@ -106,10 +106,10 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
           {/* Twitch */}
           <div className="ov-chat-cfg-platform">
             <label className="ov-chat-cfg-platform-header">
-              <span className="ov-chat-cfg-platform-dot" style={{ background: (c.twitchChannel || autoChannel) ? '#a855f7' : '#333' }} />
+              <span className="ov-chat-cfg-platform-dot" style={{ background: (c.twitchChannel || autoChannel) ? '#64748b' : '#333' }} />
               <span>Twitch</span>
               {(c.twitchChannel || autoChannel) ? (
-                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#a855f7', fontWeight: 600 }}>{c.twitchChannel || autoChannel}</span>
+                <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b', fontWeight: 600 }}>{c.twitchChannel || autoChannel}</span>
               ) : (
                 <span style={{ marginLeft: 'auto', fontSize: 11, color: '#64748b' }}>Set in Profile</span>
               )}
@@ -212,7 +212,7 @@ export default function ChatConfig({ config, onChange, allWidgets }) {
           </p>
           <div className="nb-color-grid">
             <ColorPicker label="Raid BG" value={c.raidBgColor || '#7c3aed'} onChange={v => set('raidBgColor', v)} />
-            <ColorPicker label="Raid Border" value={c.raidBorderColor || '#a855f7'} onChange={v => set('raidBorderColor', v)} />
+            <ColorPicker label="Raid Border" value={c.raidBorderColor || '#64748b'} onChange={v => set('raidBorderColor', v)} />
             <ColorPicker label="Raid Text" value={c.raidTextColor || '#ffffff'} onChange={v => set('raidTextColor', v)} />
           </div>
           <label className="ov-chat-cfg-platform-header" style={{ gap: 8, marginTop: 6 }}>

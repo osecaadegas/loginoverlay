@@ -5,7 +5,7 @@ import React, { useRef, useEffect } from 'react';
  *
  * Styles:
  *   v1         – Dark blue (default)
- *   v2_neon    – Neon green/purple glow
+ *   v2_neon    – Neon green/slate glow
  *   v3_minimal – Clean light with subtle borders
  *
  * Uses `cqi` (container inline / width) for all sizing so text stays

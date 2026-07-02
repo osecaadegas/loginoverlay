@@ -367,8 +367,8 @@ export default function RaidShoutoutConfig({ config, onChange, allWidgets }) {
           </div>
 
           <div style={{
-            padding: 12, borderRadius: 8, background: 'rgba(145,70,255,0.08)',
-            border: '1px solid rgba(145,70,255,0.2)', fontSize: 12, color: '#c4b5fd',
+            padding: 12, borderRadius: 8, background: 'rgba(148,163,184,0.1)',
+            border: '1px solid rgba(148,163,184,0.22)', fontSize: 12, color: '#cbd5e1',
           }}>
             <strong>StreamElements Custom Command:</strong>
             <pre style={{

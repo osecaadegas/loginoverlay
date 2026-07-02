@@ -169,7 +169,7 @@ function ApiKeyCard({ user }) {
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <div style={{
-            background: 'rgba(13,2,31,0.86)', borderRadius: 16, padding: '8px 10px',
+            background: 'rgba(8,11,16,0.86)', borderRadius: 16, padding: '8px 10px',
             fontFamily: 'monospace', fontSize: '0.75rem', color: '#f4f7fb',
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           }}>
@@ -843,7 +843,7 @@ export default function ProfileSection({ widgets, saveWidget }) {
                 In SE, create a custom command <code style={{ color: '#d0dbe6' }}>!bet</code> with this URL response:
               </p>
               <div style={{ display: 'flex', alignItems: 'stretch', borderRadius: 14, overflow: 'hidden', border: '1px solid rgba(148,163,184,0.3)' }}>
-                <code style={{ flex: 1, display: 'block', fontSize: '0.65rem', wordBreak: 'break-all', color: '#f4f7fb', background: 'rgba(13,2,31,0.86)', padding: '7px 9px', lineHeight: 1.6 }}>
+                <code style={{ flex: 1, display: 'block', fontSize: '0.65rem', wordBreak: 'break-all', color: '#f4f7fb', background: 'rgba(8,11,16,0.86)', padding: '7px 9px', lineHeight: 1.6 }}>
                   {`${window.location.origin}/api/chat-commands?cmd=bet&user_id=${user?.id || '<your-user-id>'}&w1=\${1}&w2=\${2}&requester=\${user.username}`}
                 </code>
                 <button

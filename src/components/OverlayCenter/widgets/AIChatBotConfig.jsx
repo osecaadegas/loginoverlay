@@ -560,7 +560,7 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
           const pillStyle = (active) => ({
             padding: '4px 10px', borderRadius: 12, border: 'none', cursor: 'pointer', fontSize: 10, fontWeight: 600,
             background: active ? `${accent}30` : 'rgba(255,255,255,0.04)',
-            color: active ? '#a78bfa' : '#64748b',
+            color: active ? '#94a3b8' : '#64748b',
             transition: 'all 0.15s',
           });
 
@@ -742,7 +742,7 @@ export default function AIChatBotConfig({ config, onChange, allWidgets }) {
                 }}
                 style={{
                   padding: '6px 14px', borderRadius: 6, border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                  background: 'rgba(145,70,255,0.15)', color: '#a78bfa',
+                  background: 'rgba(148,163,184,0.16)', color: '#94a3b8',
                 }}
               >▶ Test Voice</button>
             </>

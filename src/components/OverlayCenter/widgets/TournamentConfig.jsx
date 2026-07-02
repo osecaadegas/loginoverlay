@@ -216,7 +216,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
         cardGap: 6,
         eliminatedOpacity: 0.35,
         esCyan: '#00e5ff',
-        esPurple: '#a855f7',
+        esPurple: '#64748b',
         esGold: '#fbbf24',
         esBg: '#030712',
         esCardBg: 'rgba(15,23,42,0.75)',
@@ -1354,7 +1354,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
               <div className="bk-details-body">
                 <div className="nb-color-grid">
                   <ColorPicker label="Cyan" value={c.esCyan || '#00e5ff'} onChange={v => set('esCyan', v)} />
-                  <ColorPicker label="Purple" value={c.esPurple || '#a855f7'} onChange={v => set('esPurple', v)} />
+                  <ColorPicker label="Slate" value={c.esPurple || '#64748b'} onChange={v => set('esPurple', v)} />
                   <ColorPicker label="Gold" value={c.esGold || '#fbbf24'} onChange={v => set('esGold', v)} />
                   <ColorPicker label="Background" value={c.esBg || '#030712'} onChange={v => set('esBg', v)} />
                   <ColorPicker label="Card BG" value={c.esCardBg || 'rgba(15,23,42,0.75)'} onChange={v => set('esCardBg', v)} />

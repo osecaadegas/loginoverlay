@@ -585,7 +585,7 @@ function TournamentWidget({ config, theme }) {
      ═══════════════════════════════════════════════════════════════ */
   const renderEsports = () => {
     const esCyan   = c.esCyan   || '#00e5ff';
-    const esPurple = c.esPurple || '#a855f7';
+    const esPurple = c.esPurple || '#64748b';
     const esGold   = c.esGold   || '#fbbf24';
     const esBg     = c.esBg     || '#030712';
     const esCardBg = c.esCardBg || 'rgba(15,23,42,0.75)';
@@ -1303,7 +1303,7 @@ function TournamentWidget({ config, theme }) {
      ═══════════════════════════════════════════════════════════════ */
   const renderGrid = () => {
     const gCyan   = c.esCyan   || '#00e5ff';
-    const gPurple = c.esPurple || '#a855f7';
+    const gPurple = c.esPurple || '#64748b';
     const gGold   = c.esGold   || '#fbbf24';
     const gBg     = c.esBg     || '#030712';
     const gBorder = c.esBorder || 'rgba(0,229,255,0.18)';

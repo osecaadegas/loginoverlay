@@ -1,7 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import streamerDataHandler from './_lib/streamer-data.js';
 import imageSearchHandler from './_lib/image-search.js';
-import * as pk from './_lib/penalty-king-game.js';
 
 /**
  * /api/chat-commands — Unified chat command handler
@@ -39,32 +38,7 @@ export default async function handler(req, res) {
   const params = req.method === 'POST'
     ? { ...(req.query || {}), ...(req.body || {}) }
     : req.query;
-  const { cmd, action } = params;
-
-  // ─── Penalty King game-state routes (overlay + admin page) ───────────────
-  if (!cmd && action) {
-    const supabase = createClient(
-      process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
-    try {
-      let result;
-      switch (action) {
-        case 'get_state':       result = await pk.getState(supabase, params);       break;
-        case 'start_game':      result = await pk.startGame(supabase, params);      break;
-        case 'reveal_shot':     result = await pk.revealShot(supabase, params);     break;
-        case 'cashout':         result = await pk.cashout(supabase, params);        break;
-        case 'continue_game':   result = await pk.continueGame(supabase, params);   break;
-        case 'admin_reset':     result = await pk.adminReset(supabase, params);     break;
-        case 'get_leaderboard': result = await pk.getLeaderboard(supabase, params); break;
-        default: return res.status(400).json({ error: `Unknown action: ${action}` });
-      }
-      return res.json(result);
-    } catch (err) {
-      console.error('[penalty-king]', err.message);
-      return res.status(500).json({ error: err.message });
-    }
-  }
+  const { cmd } = params;
 
   switch (cmd) {
     case 'sr':       return handleSlotRequest(req, res);
@@ -78,9 +52,6 @@ export default async function handler(req, res) {
     case 'image-search': return imageSearchHandler(req, res);
     case 'bet':      return handleBet(req, res);
     case 'bet-payout': return handleBetPayout(req, res);
-    case 'remate':   return handleRemate(req, res);
-    case 'cashout':  return handlePkCashout(req, res);
-    case 'continue': return handlePkContinue(req, res);
     default:         return res.status(400).json({ error: 'Unknown cmd' });
   }
 }
@@ -1044,81 +1015,6 @@ async function handleBetPayout(req, res) {
   } catch (err) {
     console.error('[handleBetPayout]', err.message);
     return res.status(500).json({ error: 'Server error', details: err.message });
-  }
-}
-
-/* ─── Penalty King — !remate [points] [spot] ────────────────────────────── */
-
-async function handleRemate(req, res) {
-  const { user_id, requester } = req.query;
-  const wager = parseInt(req.query.w1, 10);
-  const spot  = parseInt(req.query.w2, 10);
-
-  if (!user_id) return res.status(200).send('Missing user_id');
-  if (!wager || wager < 1 || !spot || spot < 1 || spot > 6) {
-    return res.status(200).send(`@${requester || 'viewer'} Usage: !remate [pontos] [spot 1-6]`);
-  }
-
-  try {
-    const supabase = createClient(
-      process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
-    const result = await pk.startGame(supabase, {
-      streamer_id: user_id,
-      player: (requester || '').toLowerCase().replace(/^@/, ''),
-      wager,
-      spot,
-    });
-    return res.status(200).send(result.message || (result.success ? '' : 'Error'));
-  } catch (err) {
-    console.error('[handleRemate]', err.message);
-    return res.status(200).send('Server error — try again');
-  }
-}
-
-/* ─── Penalty King — !cashout ────────────────────────────────────────────── */
-
-async function handlePkCashout(req, res) {
-  const { user_id, requester } = req.query;
-  if (!user_id) return res.status(200).send('Missing user_id');
-
-  try {
-    const supabase = createClient(
-      process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
-    const result = await pk.cashout(supabase, {
-      streamer_id: user_id,
-      player: (requester || '').toLowerCase().replace(/^@/, ''),
-    });
-    return res.status(200).send(result.message || (result.success ? '' : 'Error'));
-  } catch (err) {
-    console.error('[handlePkCashout]', err.message);
-    return res.status(200).send('Server error — try again');
-  }
-}
-
-/* ─── Penalty King — !continue [spot] ───────────────────────────────────── */
-
-async function handlePkContinue(req, res) {
-  const { user_id, requester } = req.query;
-  if (!user_id) return res.status(200).send('Missing user_id');
-
-  try {
-    const supabase = createClient(
-      process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL,
-      process.env.SUPABASE_SERVICE_ROLE_KEY
-    );
-    const result = await pk.continueGame(supabase, {
-      streamer_id: user_id,
-      player: (requester || '').toLowerCase().replace(/^@/, ''),
-      spot: req.query.w1 ? parseInt(req.query.w1, 10) : null,
-    });
-    return res.status(200).send(result.message || (result.success ? '' : 'Error'));
-  } catch (err) {
-    console.error('[handlePkContinue]', err.message);
-    return res.status(200).send('Server error — try again');
   }
 }
 

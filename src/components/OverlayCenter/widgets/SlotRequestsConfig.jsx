@@ -95,7 +95,7 @@ function RgbaColorPicker({ label, value, onChange }) {
       <span style={{ minWidth: 50 }}>{label}</span>
       <input type="range" min={0} max={1} step={0.05} value={opacity}
         onChange={e => onChange(buildRgba(hex, parseFloat(e.target.value)))}
-        style={{ width: 50, accentColor: '#a78bfa' }} />
+        style={{ width: 50, accentColor: '#94a3b8' }} />
       <span style={{ fontSize: '0.65rem', color: '#64748b', minWidth: 28 }}>{Math.round(opacity * 100)}%</span>
     </div>
   );
@@ -604,7 +604,7 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
             <input type="range" min={1000} max={8000} step={500}
               value={c.autoSpeed || 4000}
               onChange={e => set('autoSpeed', +e.target.value)}
-              style={{ flex: 1, accentColor: '#a78bfa' }} />
+              style={{ flex: 1, accentColor: '#94a3b8' }} />
             <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{((c.autoSpeed || 4000) / 1000).toFixed(1)}s</span>
           </label>
         )}
@@ -633,7 +633,7 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
               <label className={inlineFieldClass}>
                 <span className="sr-admin-inline-label">Size</span>
                 <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
-                  onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#a78bfa' }} />
+                  onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#94a3b8' }} />
                 <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{c.fontSize || 14}px</span>
               </label>
               <label className={inlineFieldClass}>
@@ -650,7 +650,7 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
               <div className="sr-admin-color-block">
                 <p className="sr-admin-subheading">Colors</p>
                 <div className="sr-admin-color-list">
-                  <ColorPicker label="Accent" value={c.accentColor || '#a78bfa'} onChange={v => set('accentColor', v)} />
+                  <ColorPicker label="Accent" value={c.accentColor || '#94a3b8'} onChange={v => set('accentColor', v)} />
                   <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
                   <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
                   <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />
@@ -680,7 +680,7 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
             <label className={inlineFieldClass}>
               <span className="sr-admin-inline-label">Size</span>
               <input type="range" min={8} max={24} step={1} value={c.fontSize || 14}
-                onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#a78bfa' }} />
+                onChange={e => set('fontSize', +e.target.value)} style={{ flex: 1, accentColor: '#94a3b8' }} />
               <span className="sr-admin-inline-hint sr-admin-inline-hint--fixed">{c.fontSize || 14}px</span>
             </label>
             <label className={inlineFieldClass}>
@@ -697,7 +697,7 @@ export default function SlotRequestsConfig({ config, onChange, mode = 'full' }) 
             <div className="sr-admin-color-block">
               <p className="sr-admin-subheading">Colors</p>
               <div className="sr-admin-color-list">
-                <ColorPicker label="Accent" value={c.accentColor || '#a78bfa'} onChange={v => set('accentColor', v)} />
+                <ColorPicker label="Accent" value={c.accentColor || '#94a3b8'} onChange={v => set('accentColor', v)} />
                 <ColorPicker label="Text" value={c.textColor || '#ffffff'} onChange={v => set('textColor', v)} />
                 <ColorPicker label="Muted" value={c.mutedColor || '#94a3b8'} onChange={v => set('mutedColor', v)} />
                 <RgbaColorPicker label="Background" value={c.bgColor || 'rgba(15,17,28,0.75)'} onChange={v => set('bgColor', v)} />

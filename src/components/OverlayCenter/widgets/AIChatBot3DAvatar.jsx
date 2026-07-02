@@ -600,7 +600,7 @@ export default function AIChatBot3DAvatar({
 
         <ambientLight intensity={0.6} />
         <directionalLight position={[2, 3, 2]} intensity={1.2} castShadow />
-        <directionalLight position={[-1, 2, -1]} intensity={0.4} color="#8b5cf6" />
+        <directionalLight position={[-1, 2, -1]} intensity={0.4} color="#94a3b8" />
         <pointLight position={[0, 1, 2]} intensity={0.3} color={accentColor} />
 
         <React.Suspense fallback={

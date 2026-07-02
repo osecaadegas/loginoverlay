@@ -186,7 +186,7 @@ export default function BonusHuntConfig({ config, onChange, allWidgets, mode = '
               </>}
               <ColorPicker label="Slot List BG" value={c.listCardColor || '#581c87'} onChange={v => set('listCardColor', v)} />
               {currentStyle !== 'v3' &&
-                <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#d8b4fe'} onChange={v => set('listCardAccent', v)} />
+                <ColorPicker label="Slot List Accent" value={c.listCardAccent || '#cbd5e1'} onChange={v => set('listCardAccent', v)} />
               }
               <ColorPicker label="Summary BG" value={c.summaryColor || '#1e3a8a'} onChange={v => set('summaryColor', v)} />
               <ColorPicker label="Card Outline" value={c.cardOutlineColor || 'transparent'} onChange={v => set('cardOutlineColor', v)} />

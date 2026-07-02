@@ -106,8 +106,8 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
   /* ─── Built-in quick-start presets ─── */
   const quickPresets = [
     { name: 'Dark Gradient', values: { bgMode: 'texture', textureType: 'gradient', color1: '#0f172a', color2: '#1e293b', color3: '#0f172a', gradientAngle: 135 } },
-    { name: 'Purple Haze', values: { bgMode: 'texture', textureType: 'gradient', color1: '#1a0533', color2: '#6366f1', color3: '#1a0533', gradientAngle: 135 } },
-    { name: 'Neon Chameleon', values: { bgMode: 'texture', textureType: 'chameleon', color1: '#6366f1', color2: '#06b6d4', color3: '#a855f7', animSpeed: 8 } },
+    { name: 'Slate Haze', values: { bgMode: 'texture', textureType: 'gradient', color1: '#0d1117', color2: '#475569', color3: '#111827', gradientAngle: 135 } },
+    { name: 'Neon Chameleon', values: { bgMode: 'texture', textureType: 'chameleon', color1: '#6366f1', color2: '#06b6d4', color3: '#64748b', animSpeed: 8 } },
     { name: 'Metallic Dark', values: { bgMode: 'texture', textureType: 'metallic', color1: '#111111', color2: '#333333' } },
     { name: 'Pearl White', values: { bgMode: 'texture', textureType: 'pearl', color1: '#e8e0f0', color2: '#f5f0ff', color3: '#e0e8ff' } },
     { name: 'Glossy Blue', values: { bgMode: 'texture', textureType: 'gloss', color1: '#0a0f1e', color2: '#1e3a8a' } },
@@ -121,12 +121,12 @@ export default function BackgroundConfig({ config, onChange, allWidgets }) {
     { name: '❄️ Snowfall', values: { fxParticles: 'snow', fxParticleColor: '#ffffff', fxParticleCount: 40, fxParticleSpeed: 40, fxParticleSize: 50 } },
     { name: '🌧️ Rain', values: { fxParticles: 'rain', fxParticleColor: '#94a3b8', fxParticleCount: 50, fxParticleSpeed: 70, fxParticleSize: 30 } },
     { name: '✨ Fireflies', values: { fxParticles: 'fireflies', fxParticleColor: '#fbbf24', fxParticleCount: 15, fxParticleSpeed: 30, fxParticleSize: 40 } },
-    { name: '🔮 Orbs', values: { fxParticles: 'orbs', fxParticleColor: '#a855f7', fxParticleCount: 20, fxParticleSpeed: 35, fxParticleSize: 50 } },
+    { name: '🔮 Orbs', values: { fxParticles: 'orbs', fxParticleColor: '#64748b', fxParticleCount: 20, fxParticleSpeed: 35, fxParticleSize: 50 } },
     { name: '💫 Bokeh', values: { fxParticles: 'bokeh', fxParticleColor: '#f59e0b', fxParticleCount: 12, fxParticleSpeed: 25, fxParticleSize: 60 } },
     { name: '🌫️ Light Fog', values: { fxFog: 'light', fxFogColor: '#1e293b' } },
     { name: '💨 Heavy Smoke', values: { fxFog: 'heavy', fxFogColor: '#000000' } },
     { name: '🔦 Sweep', values: { fxGlimpse: 'sweep', fxGlimpseColor: '#ffffff', fxGlimpseSpeed: 50 } },
-    { name: '💜 Pulse Glow', values: { fxGlimpse: 'pulse', fxGlimpseColor: '#a855f7', fxGlimpseSpeed: 40 } },
+    { name: 'Pulse Glow', values: { fxGlimpse: 'pulse', fxGlimpseColor: '#64748b', fxGlimpseSpeed: 40 } },
     { name: '⚡ Flicker', values: { fxGlimpse: 'flicker', fxGlimpseColor: '#fbbf24', fxGlimpseSpeed: 70 } },
   ];
 

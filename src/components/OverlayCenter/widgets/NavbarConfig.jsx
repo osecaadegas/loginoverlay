@@ -479,7 +479,7 @@ export default function NavbarConfig({ config, onChange }) {
               }}>
                 <div style={{
                   fontSize: 11, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase',
-                  color: zone === 'left' ? '#60a5fa' : zone === 'center' ? '#a78bfa' : '#34d399',
+                  color: zone === 'left' ? '#60a5fa' : zone === 'center' ? '#94a3b8' : '#34d399',
                   marginBottom: 6, paddingBottom: 4, borderBottom: '1px solid rgba(255,255,255,0.06)',
                 }}>
                   {zone === 'left' ? '← Left Zone' : zone === 'center' ? '◆ Center Zone' : '→ Right Zone'}
@@ -498,7 +498,7 @@ export default function NavbarConfig({ config, onChange }) {
                     <div style={{ display: 'flex', gap: 3 }}>
                       {[
                         { z: 'left', label: 'L', color: '#60a5fa' },
-                        { z: 'center', label: 'C', color: '#a78bfa' },
+                        { z: 'center', label: 'C', color: '#94a3b8' },
                         { z: 'right', label: 'R', color: '#34d399' },
                       ].map(({ z, label, color }) => (
                         <button key={z} type="button"

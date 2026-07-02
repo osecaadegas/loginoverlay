@@ -528,7 +528,7 @@ registerWidget({
     srMsgNoMatch: '❌ {user}, could not find that slot. Please try again.',
     srMsgCooldown: '⏳ {user}, please wait before requesting another slot.',
     srMsgQueueFull: '❌ {user}, the slot queue is full right now.',
-    accentColor: '#a78bfa',
+    accentColor: '#94a3b8',
     textColor: '#ffffff',
     mutedColor: '#94a3b8',
     bgColor: 'rgba(15,17,28,0.75)',

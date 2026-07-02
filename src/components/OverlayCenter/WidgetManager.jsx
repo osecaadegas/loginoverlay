@@ -385,7 +385,7 @@ export function buildSyncedConfig(widgetType, currentConfig, nb) {
       return {
         ...c,
         bgColor:     nb.bgColor     || 'transparent',
-        accentColor: nb.accentColor || '#a78bfa',
+        accentColor: nb.accentColor || '#94a3b8',
         textColor:   nb.textColor   || '#ffffff',
         mutedColor:  nb.mutedColor  || '#94a3b8',
         cardBg:      nb.bgColor ? `${nb.bgColor}0a` : 'rgba(255,255,255,0.04)',
@@ -690,6 +690,14 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
     label: key.charAt(0).toUpperCase() + key.slice(1),
     count: defs.filter(def => !activeTypes.has(def.type)).length,
   })).filter(entry => entry.count > 0), [categories, activeTypes]);
+  const handleWidgetSearchChange = (value) => {
+    setWidgetSearch(value);
+    if (value.trim()) setWidgetCategory('all');
+  };
+  const clearWidgetFilters = () => {
+    setWidgetSearch('');
+    setWidgetCategory('all');
+  };
   const filteredInactiveDefs = useMemo(() => {
     const q = widgetSearch.trim().toLowerCase();
     return inactiveDefs.filter(def => {
@@ -1033,7 +1041,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                 ))}
                 {/* Element highlight overlay when hovering selectors */}
                 {ctxHoverSel && ctxMenu && (
-                  <style>{`${ctxHoverSel.split(',').map(s => `#wm-el-${ctxMenu.widget.id} ${s.trim()}`).join(',')}{outline:2px solid #a78bfa !important;background:rgba(139,92,246,0.12) !important;box-shadow:0 0 12px rgba(139,92,246,0.35) !important;transition:outline 0.15s,background 0.15s,box-shadow 0.15s !important;}`}</style>
+                  <style>{`${ctxHoverSel.split(',').map(s => `#wm-el-${ctxMenu.widget.id} ${s.trim()}`).join(',')}{outline:2px solid #cbd5e1 !important;background:rgba(148,163,184,0.14) !important;box-shadow:0 0 12px rgba(148,163,184,0.28) !important;transition:outline 0.15s,background 0.15s,box-shadow 0.15s !important;}`}</style>
                 )}
                 {/* Exiting widgets — kept in DOM for exit animation */}
                 {exitingWidgets.map(w => (
@@ -1355,7 +1363,7 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           { group: 'Box Model', props: [
                             { p: 'padding',        label: 'Padding',        ph: '0px',  type: 'presets', opts: ['0px','2px','4px','6px','8px','10px','12px','16px','20px','24px','32px','4px 8px','8px 16px','12px 24px'] },
                             { p: 'margin',         label: 'Margin',         ph: '0px',  type: 'presets', opts: ['0px','2px','4px','8px','12px','16px','24px','auto','0 auto','4px 8px','8px 16px'] },
-                            { p: 'border',         label: 'Border',         ph: 'none', type: 'presets', opts: ['none','1px solid #fff','1px solid rgba(255,255,255,0.2)','2px solid #8b5cf6','2px dashed #f59e0b','1px solid #333','2px solid #ef4444','3px double #8b5cf6'] },
+                            { p: 'border',         label: 'Border',         ph: 'none', type: 'presets', opts: ['none','1px solid #fff','1px solid rgba(255,255,255,0.2)','2px solid #94a3b8','2px dashed #f59e0b','1px solid #333','2px solid #ef4444','3px double #94a3b8'] },
                             { p: 'border-radius',  label: 'Border Radius',  ph: '0px',  type: 'presets', opts: ['0px','2px','4px','6px','8px','10px','12px','16px','20px','24px','50%','9999px'] },
                             { p: 'box-sizing',     label: 'Box Sizing',     ph: 'border-box', type: 'select', opts: ['border-box','content-box'] },
                             { p: 'overflow',       label: 'Overflow',       ph: 'hidden', type: 'select', opts: ['visible','hidden','scroll','auto','clip'] },
@@ -1370,12 +1378,12 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                             { p: 'text-align',       label: 'Text Align',       ph: 'left',   type: 'select', opts: ['left','center','right','justify'] },
                             { p: 'text-transform',   label: 'Text Transform',   ph: 'none',   type: 'select', opts: ['none','uppercase','lowercase','capitalize'] },
                             { p: 'text-decoration',  label: 'Text Decoration',  ph: 'none',   type: 'select', opts: ['none','underline','line-through','overline','underline wavy'] },
-                            { p: 'text-shadow',      label: 'Text Shadow',      ph: 'none',   type: 'presets', opts: ['none','1px 1px 2px rgba(0,0,0,0.5)','0 0 4px rgba(139,92,246,0.6)','0 0 8px #8b5cf6','2px 2px 0 #000','0 0 10px #fff, 0 0 20px #8b5cf6','0 0 6px #f59e0b','0 2px 4px rgba(0,0,0,0.8)'] },
+                            { p: 'text-shadow',      label: 'Text Shadow',      ph: 'none',   type: 'presets', opts: ['none','1px 1px 2px rgba(0,0,0,0.5)','0 0 4px rgba(148,163,184,0.55)','0 0 8px #94a3b8','2px 2px 0 #000','0 0 10px #fff, 0 0 20px #94a3b8','0 0 6px #f59e0b','0 2px 4px rgba(0,0,0,0.8)'] },
                             { p: 'word-spacing',     label: 'Word Spacing',     ph: '0px',    type: 'presets', opts: ['0px','1px','2px','4px','8px','12px','-1px','-2px'] },
                           ]},
                           { group: 'Colors', props: [
                             { p: 'color',            label: 'Text Color',       ph: '#ffffff',     type: 'color' },
-                            { p: 'background',       label: 'Background',       ph: 'transparent', type: 'presets', opts: ['transparent','none','#0f172a','#1e293b','rgba(0,0,0,0.5)','rgba(0,0,0,0.8)','rgba(15,23,42,0.9)','rgba(139,92,246,0.15)','linear-gradient(135deg, #1a1b2e, #2d1b69)','linear-gradient(135deg, #0f172a, #1e293b)','linear-gradient(to right, #8b5cf6, #ec4899)','linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))'] },
+                            { p: 'background',       label: 'Background',       ph: 'transparent', type: 'presets', opts: ['transparent','none','#0f172a','#1e293b','rgba(0,0,0,0.5)','rgba(0,0,0,0.8)','rgba(15,23,42,0.9)','rgba(148,163,184,0.14)','linear-gradient(135deg, #0f172a, #334155)','linear-gradient(135deg, #0f172a, #1e293b)','linear-gradient(to right, #475569, #94a3b8)','linear-gradient(to bottom, transparent, rgba(0,0,0,0.8))'] },
                             { p: 'background-color', label: 'BG Color',         ph: 'transparent', type: 'color' },
                             { p: 'opacity',          label: 'Opacity',          ph: '1',           type: 'presets', opts: ['0','0.1','0.2','0.3','0.4','0.5','0.6','0.7','0.8','0.9','1'] },
                           ]},
@@ -1392,8 +1400,8 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                             { p: 'filter',           label: 'Filter',          ph: 'none', type: 'presets', opts: ['none','blur(1px)','blur(2px)','blur(4px)','brightness(0.5)','brightness(1.2)','brightness(1.5)','contrast(1.5)','contrast(2)','grayscale(1)','grayscale(0.5)','sepia(1)','sepia(0.5)','saturate(1.5)','saturate(2)','hue-rotate(90deg)','hue-rotate(180deg)','invert(1)','drop-shadow(0 4px 8px rgba(0,0,0,0.5))'] },
                             { p: 'backdrop-filter',  label: 'Backdrop Filter', ph: 'none', type: 'presets', opts: ['none','blur(4px)','blur(8px)','blur(12px)','blur(16px)','blur(24px)','blur(8px) brightness(0.8)','blur(12px) saturate(1.5)','blur(16px) brightness(1.1)'] },
                             { p: 'mix-blend-mode',   label: 'Blend Mode',      ph: 'normal', type: 'select', opts: ['normal','multiply','screen','overlay','darken','lighten','color-dodge','color-burn','hard-light','soft-light','difference','exclusion','hue','saturation','color','luminosity'] },
-                            { p: 'box-shadow',       label: 'Box Shadow',      ph: 'none', type: 'presets', opts: ['none','0 2px 4px rgba(0,0,0,0.3)','0 4px 8px rgba(0,0,0,0.4)','0 8px 16px rgba(0,0,0,0.5)','0 4px 12px rgba(139,92,246,0.3)','0 0 8px rgba(139,92,246,0.5)','0 0 16px rgba(139,92,246,0.6)','inset 0 2px 4px rgba(0,0,0,0.3)','inset 0 0 8px rgba(139,92,246,0.3)','0 0 0 2px #8b5cf6','0 0 0 2px #f59e0b','0 20px 40px rgba(0,0,0,0.6)'] },
-                            { p: 'outline',          label: 'Outline',         ph: 'none', type: 'presets', opts: ['none','1px solid #fff','2px solid #8b5cf6','2px dashed #f59e0b','2px dotted #ef4444','3px solid rgba(139,92,246,0.5)'] },
+                            { p: 'box-shadow',       label: 'Box Shadow',      ph: 'none', type: 'presets', opts: ['none','0 2px 4px rgba(0,0,0,0.3)','0 4px 8px rgba(0,0,0,0.4)','0 8px 16px rgba(0,0,0,0.5)','0 4px 12px rgba(148,163,184,0.24)','0 0 8px rgba(148,163,184,0.36)','0 0 16px rgba(148,163,184,0.42)','inset 0 2px 4px rgba(0,0,0,0.3)','inset 0 0 8px rgba(148,163,184,0.24)','0 0 0 2px #94a3b8','0 0 0 2px #f59e0b','0 20px 40px rgba(0,0,0,0.6)'] },
+                            { p: 'outline',          label: 'Outline',         ph: 'none', type: 'presets', opts: ['none','1px solid #fff','2px solid #94a3b8','2px dashed #f59e0b','2px dotted #ef4444','3px solid rgba(148,163,184,0.42)'] },
                             { p: 'cursor',           label: 'Cursor',          ph: 'default', type: 'select', opts: ['default','pointer','crosshair','move','text','wait','help','not-allowed','grab','grabbing','zoom-in','zoom-out'] },
                           ]},
                           { group: 'Transitions', props: [
@@ -1519,10 +1527,10 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
                           { p: 'background',     label: 'BG',       type: 'color' },
                           { p: 'text-transform', label: 'Case',     type: 'select', opts: ['none','uppercase','lowercase','capitalize'] },
                           { p: 'letter-spacing', label: 'Spacing',  type: 'presets', opts: ['-1px','0px','0.5px','1px','2px','3px','4px'] },
-                          { p: 'text-shadow',    label: 'Shadow',   type: 'presets', opts: ['none','1px 1px 2px rgba(0,0,0,0.5)','0 0 6px rgba(139,92,246,0.6)','0 0 10px #8b5cf6','2px 2px 0 #000'] },
+                          { p: 'text-shadow',    label: 'Shadow',   type: 'presets', opts: ['none','1px 1px 2px rgba(0,0,0,0.5)','0 0 6px rgba(148,163,184,0.55)','0 0 10px #94a3b8','2px 2px 0 #000'] },
                           { p: 'padding',        label: 'Padding',  type: 'presets', opts: ['0px','2px','4px','8px','12px','16px','24px'] },
                           { p: 'border-radius',  label: 'Radius',   type: 'presets', opts: ['0px','4px','8px','12px','16px','50%','9999px'] },
-                          { p: 'border',         label: 'Border',   type: 'presets', opts: ['none','1px solid #fff','1px solid rgba(255,255,255,0.15)','2px solid #8b5cf6'] },
+                          { p: 'border',         label: 'Border',   type: 'presets', opts: ['none','1px solid #fff','1px solid rgba(255,255,255,0.15)','2px solid #94a3b8'] },
                           { p: 'opacity',        label: 'Opacity',  type: 'presets', opts: ['0','0.3','0.5','0.7','0.8','0.9','1'] },
                         ];
                         const activeTargets = Object.keys(elCSS);
@@ -1728,10 +1736,27 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
             <label className="wm-library-search">
               <span>Search</span>
               <input
+                type="search"
                 value={widgetSearch}
-                onChange={e => setWidgetSearch(e.target.value)}
+                onChange={e => handleWidgetSearchChange(e.target.value)}
+                onKeyDown={e => {
+                  if (e.key === 'Escape' && widgetSearch) clearWidgetFilters();
+                }}
+                aria-label="Search available widgets"
+                autoComplete="off"
                 placeholder="Find widgets, alerts, games, stream tools..."
               />
+              {widgetSearch && (
+                <button
+                  type="button"
+                  className="wm-library-search__clear"
+                  onClick={clearWidgetFilters}
+                  aria-label="Clear widget search"
+                  title="Clear search"
+                >
+                  x
+                </button>
+              )}
             </label>
             <div className="wm-library-categories" aria-label="Widget categories">
               <button
@@ -1758,6 +1783,9 @@ export default function WidgetManager({ widgets, theme, onAdd, onSave, onRemove,
             <div className="wm-empty-library">
               <strong>No widgets match this filter</strong>
               <span>Try another category or clear the search to browse the full add-on library.</span>
+              <button type="button" className="wm-empty-library__reset" onClick={clearWidgetFilters}>
+                Clear filters
+              </button>
             </div>
           ) : (
             <div className="wm-library-groups">

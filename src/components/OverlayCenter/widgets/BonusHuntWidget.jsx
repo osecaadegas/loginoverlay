@@ -127,7 +127,7 @@ function BonusHuntWidget({ config, theme, userId }) {
   const currentBonusColor = c.currentBonusColor || '#166534';
   const currentBonusAccent = c.currentBonusAccent || '#86efac';
   const listCardColor = c.listCardColor || '#581c87';
-  const listCardAccent = c.listCardAccent || '#d8b4fe';
+  const listCardAccent = c.listCardAccent || '#cbd5e1';
   const summaryColor = c.summaryColor || '#1e3a8a';
   const totalPayColor = c.totalPayColor || '#eab308';
   const totalPayText = c.totalPayText || '#ffffff';

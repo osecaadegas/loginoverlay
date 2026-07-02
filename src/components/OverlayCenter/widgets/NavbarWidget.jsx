@@ -393,7 +393,7 @@ function NavbarWidget({ config, widgetId, userId }) {
                   ? `linear-gradient(to right, ${textColor}, ${accentColor}, ${textColor})`
                   : isRetro
                   ? `linear-gradient(to right, ${accentColor}, ${ctaColor}, ${accentColor})`
-                  : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #ec4899, #a855f7)`),
+                  : (c.nameGradient || `linear-gradient(to right, ${accentColor}, #94a3b8, #64748b)`),
                 WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent',
                 fontSize: fontSize * 1.2, fontWeight: (isMetal || isRetro) ? 700 : 700,
                 letterSpacing: isMetal ? '0.22em' : isRetro ? '0.12em' : '0.18em', textTransform: 'uppercase',
@@ -734,7 +734,7 @@ function CryptoCoin({ coin, price, fontSize, bgColor, cryptoUpColor, cryptoDownC
       ) : (
         <div style={{
           width: logoSize, height: logoSize, borderRadius: '50%',
-          background: `linear-gradient(135deg, #6366f1, #a855f7)`,
+          background: `linear-gradient(135deg, #6366f1, #64748b)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: fontSize * 0.9, fontWeight: 900, color: '#fff',
         }}>

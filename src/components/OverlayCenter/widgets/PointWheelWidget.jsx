@@ -403,7 +403,7 @@ function PointWheelWidget({ config, widgetId }) {
       { multi: 0, label: '0x', color: '#050510' },
       { multi: 1, label: '1x', color: '#22d3ee' },
       { multi: 0, label: '0x', color: '#080818' },
-      { multi: 2, label: '2x', color: '#a78bfa' },
+      { multi: 2, label: '2x', color: '#94a3b8' },
       { multi: 0, label: '0x', color: '#050510' },
       { multi: 3, label: '3x', color: '#fb923c' },
       { multi: 0, label: '0x', color: '#080818' },
@@ -411,7 +411,7 @@ function PointWheelWidget({ config, widgetId }) {
     ];
     const nOuter = `conic-gradient(from 0deg, ${buildConic(neonOuter)})`;
     const nInner = `conic-gradient(from 0deg, ${buildConic(neonInner)})`;
-    const glowColor = '#a855f7';
+    const glowColor = '#64748b';
 
     return (
       <div style={containerBase}>
@@ -499,13 +499,13 @@ function PointWheelWidget({ config, widgetId }) {
   if (st === 'v3') {
     const minOuter = [
       { multi: 0,  label: '0x',  color: '#e2e8f0' },
-      { multi: 1,  label: '1x',  color: '#a78bfa' },
+      { multi: 1,  label: '1x',  color: '#94a3b8' },
       { multi: 0,  label: '0x',  color: '#f1f5f9' },
       { multi: 2,  label: '2x',  color: '#60a5fa' },
       { multi: 0,  label: '0x',  color: '#e2e8f0' },
       { multi: 5,  label: '5x',  color: '#fbbf24' },
       { multi: 0,  label: '0x',  color: '#f1f5f9' },
-      { multi: 1,  label: '1x',  color: '#a78bfa' },
+      { multi: 1,  label: '1x',  color: '#94a3b8' },
       { multi: 0,  label: '0x',  color: '#e2e8f0' },
       { multi: 10, label: '10x', color: '#f87171' },
       { multi: 0,  label: '0x',  color: '#f1f5f9' },

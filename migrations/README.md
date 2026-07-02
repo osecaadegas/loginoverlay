@@ -25,8 +25,8 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 7. `007_guess_balance_and_bonus_hunt.sql`
 	Guess-the-balance sessions, guesses, slot votes, transfer passwords, moderator policy fixes, and bonus hunt history.
 
-8. `008_betting_and_penalty_king.sql`
-	Betting contests, StreamElements betting mode/finalization RPCs, payouts, outcomes, and penalty king sessions/shots.
+8. `008_betting.sql`
+	Betting contests, StreamElements betting mode/finalization RPCs, payouts, and outcomes.
 
 9. `009_analytics.sql`
 	Analytics tables, views, RPC helpers, and the compatibility `increment_field` RPC still used by the analytics API.
@@ -43,8 +43,11 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 13. `013_pending_slot_submission_repair.sql`
 	 Repairs pending slot submissions by allowing incomplete scraped metadata and aligning approval queue policies with admin/superadmin roles.
 
+14. `014_cleanup_penalty_king.sql`
+	 Drops retired mini-game tables from older databases.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.
-- `011` and `012` are cleanup migrations for existing databases, not baseline schema required by a fresh install.
-- If a future change adds schema, continue the numbering with `013_...`, `014_...`, and so on.
+- `011`, `012`, and `014` are cleanup migrations for existing databases, not baseline schema required by a fresh install.
+- If a future change adds schema, continue the numbering with `015_...`, `016_...`, and so on.

@@ -3439,7 +3439,7 @@ body.wm-resizing {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.wm-ctx-adv-row--active .wm-ctx-adv-label { color: rgba(200,180,255,0.85); }
+.wm-ctx-adv-row--active .wm-ctx-adv-label { color: rgba(203, 213, 225, 0.88); }
 .wm-ctx-adv-input {
   flex: 1;
   background: rgba(255,255,255,0.05);
@@ -7502,7 +7502,7 @@ body.wm-resizing {
   display: inline-block;
   font-size: 0.75em;
   font-weight: 700;
-  color: #d8b4fe;
+  color: #cbd5e1;
   background: rgba(148,163,184,0.18);
   padding: 1px 6px;
   border-radius: 8px;
@@ -15447,7 +15447,7 @@ body.wm-resizing {
   --ui-bg-tertiary: #121821;
   --ui-surface: rgba(17, 24, 39, 0.68);
   --ui-surface-soft: rgba(15, 20, 27, 0.6);
-  --ui-surface-strong: rgba(24, 7, 55, 0.86);
+  --ui-surface-strong: rgba(13, 17, 23, 0.9);
   --ui-surface-hover: rgba(31, 41, 55, 0.84);
   --ui-border-soft: rgba(148, 163, 184, 0.28);
   --ui-border: rgba(200, 208, 216, 0.35);
@@ -15480,7 +15480,7 @@ body.wm-resizing {
   --oc-bg-surface: rgba(17, 24, 39, 0.66);
   --oc-bg-surface-hover: rgba(31, 41, 55, 0.86);
   --oc-bg-card: rgba(15, 20, 27, 0.72);
-  --oc-bg-card-strong: rgba(24, 7, 55, 0.9);
+  --oc-bg-card-strong: rgba(13, 17, 23, 0.92);
   --oc-border: rgba(148, 163, 184, 0.28);
   --oc-border-hover: rgba(200, 208, 216, 0.44);
   --oc-text-primary: #f4f7fb;
@@ -15507,11 +15507,11 @@ body.wm-resizing {
   --oc-shadow-lg: 0 40px 130px rgba(0, 0, 0, 0.68);
   --oc-shadow-glow: 0 0 0 1px rgba(200, 208, 216, 0.16), 0 0 28px rgba(148, 163, 184, 0.18), 0 24px 70px rgba(0, 0, 0, 0.56);
   --oc-cosmic-panel:
-    linear-gradient(145deg, rgba(31, 41, 55, 0.72), rgba(15, 20, 27, 0.74) 46%, rgba(13, 2, 31, 0.88)),
+    linear-gradient(145deg, rgba(31, 41, 55, 0.72), rgba(15, 20, 27, 0.78) 46%, rgba(8, 11, 16, 0.9)),
     radial-gradient(circle at 10% 0%, rgba(200, 208, 216, 0.16), transparent 34%),
     radial-gradient(circle at 94% 12%, rgba(208, 219, 230, 0.1), transparent 28%);
   --oc-cosmic-panel-strong:
-    linear-gradient(145deg, rgba(31, 41, 55, 0.88), rgba(24, 7, 55, 0.9) 48%, rgba(0, 0, 0, 0.94)),
+    linear-gradient(145deg, rgba(31, 41, 55, 0.88), rgba(13, 17, 23, 0.94) 48%, rgba(0, 0, 0, 0.94)),
     radial-gradient(circle at 8% 0%, rgba(148, 163, 184, 0.22), transparent 32%),
     radial-gradient(circle at 100% 18%, rgba(148, 163, 184, 0.2), transparent 34%);
   --oc-cosmic-border: rgba(148, 163, 184, 0.28);
@@ -15766,7 +15766,7 @@ body.wm-resizing {
   min-height: calc(100vh - 44px) !important;
   padding: 24px 30px 30px !important;
   background:
-    linear-gradient(160deg, rgba(15, 20, 27, 0.58), rgba(13, 2, 31, 0.74)),
+    linear-gradient(160deg, rgba(15, 20, 27, 0.58), rgba(8, 11, 16, 0.76)),
     radial-gradient(circle at 18% 0%, rgba(148, 163, 184, 0.14), transparent 34%) !important;
   border-color: rgba(148, 163, 184, 0.3) !important;
   box-shadow: var(--oc-shadow-lg), 0 0 0 1px rgba(200, 208, 216, 0.08) !important;
@@ -15835,7 +15835,7 @@ body.wm-resizing {
 .oc-sidebar {
   position: sticky;
   background:
-    linear-gradient(180deg, rgba(15, 20, 27, 0.86), rgba(13, 2, 31, 0.92)),
+    linear-gradient(180deg, rgba(15, 20, 27, 0.86), rgba(8, 11, 16, 0.92)),
     radial-gradient(circle at 50% -10%, rgba(148, 163, 184, 0.2), transparent 34%) !important;
   border-color: rgba(148, 163, 184, 0.32) !important;
   box-shadow: 0 28px 90px rgba(0, 0, 0, 0.58), 0 0 40px rgba(148, 163, 184, 0.12) !important;
@@ -16285,7 +16285,7 @@ body.wm-resizing {
 .bh-search-input::placeholder,
 .bh-gtb-input::placeholder,
 .tm-setup-input::placeholder {
-  color: rgba(201, 184, 232, 0.55) !important;
+  color: rgba(148, 163, 184, 0.66) !important;
 }
 
 .oc-page input:not([type="range"]):not([type="checkbox"]):not([type="radio"]):not([type="color"]):focus,
@@ -16539,7 +16539,7 @@ body.wm-resizing {
   --bh-cyan-soft: rgba(208, 219, 230, 0.14) !important;
   --bh-danger-soft: rgba(239, 68, 68, 0.16) !important;
   --bh-surface: rgba(17, 24, 39, 0.72) !important;
-  --bh-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --bh-surface-strong: rgba(13, 17, 23, 0.92) !important;
   --bh-border: rgba(148, 163, 184, 0.28) !important;
   --bh-border-strong: rgba(200, 208, 216, 0.4) !important;
   --bh-text: #f4f7fb !important;
@@ -16548,7 +16548,7 @@ body.wm-resizing {
 
 [data-tour="library-page"] {
   --bhl-page-surface: rgba(17, 24, 39, 0.72) !important;
-  --bhl-page-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --bhl-page-surface-strong: rgba(13, 17, 23, 0.92) !important;
   --bhl-page-border: rgba(148, 163, 184, 0.28) !important;
   --bhl-page-border-strong: rgba(200, 208, 216, 0.34) !important;
   --bhl-page-text: #f4f7fb !important;
@@ -16561,7 +16561,7 @@ body.wm-resizing {
 
 [data-tour="presets-page"] {
   --pl-page-surface: rgba(17, 24, 39, 0.72) !important;
-  --pl-page-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --pl-page-surface-strong: rgba(13, 17, 23, 0.92) !important;
   --pl-page-border: rgba(148, 163, 184, 0.28) !important;
   --pl-page-text: #f4f7fb !important;
   --pl-page-muted: #aab6c8 !important;
@@ -16575,7 +16575,7 @@ body.wm-resizing {
   --tm-cyan: #d0dbe6 !important;
   --tm-gold: #b8c8d8 !important;
   --tm-surface: rgba(17, 24, 39, 0.72) !important;
-  --tm-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --tm-surface-strong: rgba(13, 17, 23, 0.92) !important;
   --tm-border: rgba(148, 163, 184, 0.28) !important;
   --tm-border-strong: rgba(200, 208, 216, 0.4) !important;
   --tm-text: #f4f7fb !important;
@@ -16584,7 +16584,7 @@ body.wm-resizing {
 
 [data-tour="bonus-buys-page"] {
   --bb-surface: rgba(17, 24, 39, 0.72) !important;
-  --bb-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --bb-surface-strong: rgba(13, 17, 23, 0.92) !important;
   --bb-border: rgba(148, 163, 184, 0.28) !important;
   --bb-border-strong: rgba(200, 208, 216, 0.4) !important;
   --bb-text: #f4f7fb !important;
@@ -16597,7 +16597,7 @@ body.wm-resizing {
 
 [data-tour="current-slot-page"] {
   --cs-surface: rgba(17, 24, 39, 0.72) !important;
-  --cs-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --cs-surface-strong: rgba(13, 17, 23, 0.92) !important;
   --cs-border: rgba(148, 163, 184, 0.28) !important;
   --cs-border-strong: rgba(200, 208, 216, 0.4) !important;
   --cs-text: #f4f7fb !important;
@@ -16610,7 +16610,7 @@ body.wm-resizing {
 
 [data-tour="slot-requests-page"] {
   --sr-admin-surface: rgba(17, 24, 39, 0.72) !important;
-  --sr-admin-surface-strong: rgba(24, 7, 55, 0.9) !important;
+  --sr-admin-surface-strong: rgba(13, 17, 23, 0.92) !important;
   --sr-admin-border: rgba(148, 163, 184, 0.28) !important;
   --sr-admin-border-strong: rgba(200, 208, 216, 0.4) !important;
   --sr-admin-text: #f4f7fb !important;
@@ -17114,7 +17114,7 @@ body.wm-resizing {
   background:
     radial-gradient(circle at 12% 6%, rgba(148, 163, 184, 0.2), transparent 34%),
     radial-gradient(circle at 92% 0%, rgba(208, 219, 230, 0.14), transparent 30%),
-    linear-gradient(145deg, rgba(17, 24, 39, 0.78), rgba(13, 2, 31, 0.9)) !important;
+    linear-gradient(145deg, rgba(17, 24, 39, 0.78), rgba(8, 11, 16, 0.9)) !important;
   border-color: rgba(200, 208, 216, 0.34) !important;
 }
 
@@ -17209,7 +17209,7 @@ body.wm-resizing {
 [data-tour="library-page"] .bhl-card-progress,
 [data-tour="tournament-page"] .bk-progress,
 .bh-save-hunt-progress-track {
-  background: rgba(13, 2, 31, 0.86) !important;
+  background: rgba(8, 11, 16, 0.86) !important;
   border: 1px solid rgba(148, 163, 184, 0.2) !important;
   box-shadow: inset 0 1px 8px rgba(0, 0, 0, 0.32) !important;
 }
@@ -17436,7 +17436,7 @@ body.wm-resizing {
   --oc-audit-bg-2: #0d1117;
   --oc-audit-bg-3: #121821;
   --oc-audit-panel: rgba(17, 24, 39, 0.7);
-  --oc-audit-panel-strong: rgba(24, 7, 55, 0.92);
+  --oc-audit-panel-strong: rgba(13, 17, 23, 0.94);
   --oc-audit-card: rgba(15, 20, 27, 0.78);
   --oc-audit-card-hover: rgba(31, 41, 55, 0.88);
   --oc-audit-border: rgba(148, 163, 184, 0.28);
@@ -18008,7 +18008,7 @@ body.wm-resizing {
 }
 
 .oc-page :is(input, textarea)::placeholder {
-  color: rgba(201, 184, 232, 0.55) !important;
+  color: rgba(148, 163, 184, 0.66) !important;
 }
 
 .oc-page :is(
@@ -18154,7 +18154,7 @@ body.wm-resizing {
   .bk-progress-track,
   .bh-save-hunt-progress-track
 ) {
-  background: rgba(13, 2, 31, 0.86) !important;
+  background: rgba(8, 11, 16, 0.86) !important;
   border: 1px solid rgba(148, 163, 184, 0.2) !important;
   box-shadow: inset 0 1px 8px rgba(0, 0, 0, 0.32) !important;
 }
@@ -18193,7 +18193,7 @@ body.wm-resizing {
   border-color: rgba(200, 208, 216, 0.42) !important;
   background:
     radial-gradient(circle at 12% 0%, rgba(148, 163, 184, 0.18), transparent 34%),
-    linear-gradient(150deg, rgba(17, 24, 39, 0.94), rgba(13, 2, 31, 0.96)) !important;
+    linear-gradient(150deg, rgba(17, 24, 39, 0.94), rgba(8, 11, 16, 0.96)) !important;
 }
 
 .oc-theme-workspace,
@@ -18830,6 +18830,255 @@ body.wm-resizing {
   .oc-page .wm-toggle,
   .oc-page .wm-toggle-slider {
     transition: none !important;
+  }
+}
+
+/* =====================================================
+   Neutral graphite widget controls
+   Removes the remaining old color cast from the widget page
+   and makes search/dropdown controls behave like controls.
+   ===================================================== */
+.oc-page {
+  --oc-cosmic-panel:
+    linear-gradient(145deg, rgba(17, 24, 39, 0.84), rgba(13, 17, 23, 0.94) 48%, rgba(7, 10, 14, 0.98)) !important;
+  --oc-cosmic-panel-strong:
+    linear-gradient(145deg, rgba(24, 31, 42, 0.92), rgba(13, 17, 23, 0.98)) !important;
+  --oc-cosmic-border: rgba(148, 163, 184, 0.26) !important;
+  --oc-cosmic-border-hot: rgba(203, 213, 225, 0.4) !important;
+  --oc-glow-pink: 0 0 22px rgba(148, 163, 184, 0.22) !important;
+  --oc-glow-violet: 0 0 26px rgba(100, 116, 139, 0.26) !important;
+  --oc-audit-panel-strong: rgba(13, 17, 23, 0.94) !important;
+  --oc-audit-violet: #64748b !important;
+}
+
+.oc-page .oc-widgets-panel,
+.oc-page .wm-content-pane {
+  background: transparent !important;
+}
+
+.oc-page :is(.wm-section, .wm-library-group) {
+  background:
+    radial-gradient(circle at 18% 0%, rgba(148, 163, 184, 0.08), transparent 32%),
+    linear-gradient(180deg, rgba(12, 17, 24, 0.9), rgba(8, 11, 16, 0.96)) !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 24px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 48px rgba(0, 0, 0, 0.28) !important;
+}
+
+.oc-page .wm-library-group {
+  padding: 16px !important;
+}
+
+.oc-page .wm-tile {
+  background:
+    radial-gradient(circle at 12% 0%, rgba(148, 163, 184, 0.08), transparent 32%),
+    linear-gradient(145deg, rgba(17, 24, 39, 0.86), rgba(8, 11, 16, 0.96)) !important;
+  border-color: rgba(148, 163, 184, 0.24) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 14px 34px rgba(0, 0, 0, 0.24) !important;
+}
+
+.oc-page .wm-tile:hover {
+  border-color: rgba(203, 213, 225, 0.38) !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(203, 213, 225, 0.1), transparent 32%),
+    linear-gradient(145deg, rgba(24, 31, 42, 0.9), rgba(10, 14, 20, 0.98)) !important;
+}
+
+.oc-page .wm-tile-name,
+.oc-page .wm-section-title,
+.oc-page .wm-library-group__header {
+  color: #f4f7fb !important;
+}
+
+.oc-page .wm-tile-desc,
+.oc-page .wm-library-group__header em {
+  color: #8f9bae !important;
+}
+
+.oc-page .wm-library-toolbar {
+  display: grid !important;
+  grid-template-columns: minmax(260px, 1fr) auto;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px !important;
+  background:
+    linear-gradient(180deg, rgba(17, 24, 39, 0.88), rgba(10, 14, 20, 0.94)) !important;
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  border-radius: 22px !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 14px 34px rgba(0, 0, 0, 0.28) !important;
+}
+
+.oc-page .wm-library-search {
+  position: relative;
+  min-height: 48px !important;
+  min-width: 0 !important;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center !important;
+  gap: 10px !important;
+  padding: 0 12px !important;
+  background: rgba(7, 10, 14, 0.76) !important;
+  border: 1px solid rgba(148, 163, 184, 0.32) !important;
+  border-radius: 18px !important;
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.42) !important;
+  cursor: text;
+}
+
+.oc-page .wm-library-search span {
+  color: #94a3b8 !important;
+  flex: 0 0 auto;
+}
+
+.oc-page .wm-library-search input,
+.oc-page .wm-library-search input[type="search"] {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #f8fafc !important;
+  outline: none !important;
+  appearance: textfield;
+  -webkit-appearance: none;
+}
+
+.oc-page .wm-library-search input::-webkit-search-cancel-button {
+  display: none;
+}
+
+.oc-page .wm-library-search:focus-within {
+  border-color: rgba(226, 232, 240, 0.58) !important;
+  background: rgba(10, 14, 20, 0.88) !important;
+  box-shadow:
+    0 0 0 4px rgba(148, 163, 184, 0.15),
+    inset 0 1px 4px rgba(0, 0, 0, 0.38) !important;
+}
+
+.oc-page .wm-library-search__clear {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  background: rgba(30, 41, 59, 0.72);
+  color: #cbd5e1;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.oc-page .wm-library-search__clear:hover {
+  color: #ffffff;
+  border-color: rgba(226, 232, 240, 0.46);
+  background: rgba(51, 65, 85, 0.86);
+}
+
+.oc-page .wm-library-categories {
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.oc-page .wm-library-chip {
+  min-height: 38px !important;
+  background: rgba(15, 23, 42, 0.64) !important;
+  border-color: rgba(148, 163, 184, 0.28) !important;
+  color: #cbd5e1 !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.oc-page .wm-library-chip:hover,
+.oc-page .wm-library-chip--active {
+  background: linear-gradient(180deg, rgba(100, 116, 139, 0.72), rgba(51, 65, 85, 0.82)) !important;
+  border-color: rgba(226, 232, 240, 0.46) !important;
+  color: #ffffff !important;
+}
+
+.oc-page .wm-library-chip span {
+  color: #dbe2ea !important;
+}
+
+.oc-page .wm-empty-library__reset {
+  align-self: center;
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  background: rgba(30, 41, 59, 0.72);
+  color: #f4f7fb;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.oc-page .wm-empty-library__reset:hover {
+  background: rgba(51, 65, 85, 0.88);
+  border-color: rgba(226, 232, 240, 0.46);
+}
+
+.oc-page :is(input, textarea)::placeholder,
+.oc-page :is(.bhl-search-input, .pl-save-bar__input, .pl-toolbar__search-input, .bh-search-input, .bh-gtb-input, .tm-setup-input)::placeholder {
+  color: rgba(148, 163, 184, 0.66) !important;
+}
+
+.oc-page :is(select, .wm-ctx-select, select.wm-ctx-adv-input, select.wm-ctx-adv-combo-select, .bhl-sort-select, .pl-toolbar__sort, .bb-admin-field-select, .cs-field select) {
+  background-color: #0d1117 !important;
+  background-image: linear-gradient(180deg, rgba(17, 24, 39, 0.96), rgba(10, 14, 20, 0.94)) !important;
+  border-color: rgba(148, 163, 184, 0.34) !important;
+  color: #f4f7fb !important;
+  cursor: pointer;
+  color-scheme: dark;
+}
+
+.oc-page :is(select, .wm-ctx-select, select.wm-ctx-adv-input, select.wm-ctx-adv-combo-select, .bhl-sort-select, .pl-toolbar__sort, .bb-admin-field-select, .cs-field select):focus {
+  border-color: rgba(226, 232, 240, 0.56) !important;
+  box-shadow: 0 0 0 4px rgba(148, 163, 184, 0.15) !important;
+}
+
+.oc-page :is(option, optgroup) {
+  background-color: #111827 !important;
+  color: #f4f7fb !important;
+}
+
+.oc-page option:checked {
+  background-color: #334155 !important;
+  color: #ffffff !important;
+}
+
+.oc-page .wm-ctx-els-dropdown[open] {
+  z-index: 80;
+}
+
+.oc-page .wm-ctx-els-dropdown-list {
+  z-index: 1200 !important;
+  background: #0b1017 !important;
+  border-color: rgba(148, 163, 184, 0.34) !important;
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.52) !important;
+}
+
+.oc-page .wm-ctx-els-dropdown-item:hover {
+  background: rgba(51, 65, 85, 0.78) !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 900px) {
+  .oc-page .wm-library-toolbar {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .oc-page .wm-library-categories {
+    justify-content: flex-start;
   }
 }
 
