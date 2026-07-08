@@ -12,7 +12,6 @@ const DEFAULT_SECTION_LAYOUT = [
   { id: 'nowPlaying', zone: 'center' },
   { id: 'crypto', zone: 'right' },
   { id: 'cta', zone: 'right' },
-  { id: 'socials', zone: 'right' },
   { id: 'balance', zone: 'right' },
   { id: 'casino', zone: 'right' },
 ];
@@ -24,7 +23,6 @@ const SECTION_LABELS = {
   nowPlaying: '🎵 Now Playing',
   crypto: '📈 Crypto',
   cta: '📢 CTA',
-  socials: '@ Socials',
   balance: '💰 Balance',
   casino: '🎰 Casino',
 };
@@ -76,8 +74,8 @@ export default function NavbarConfig({ config, onChange }) {
 
 
   // ─── Section layout helpers ───
-  const sectionLayout = c.sectionLayout || DEFAULT_SECTION_LAYOUT;
-  const setLayout = (newLayout) => set('sectionLayout', newLayout);
+  const sectionLayout = (c.sectionLayout || DEFAULT_SECTION_LAYOUT).filter(s => s.id !== 'socials');
+  const setLayout = (newLayout) => set('sectionLayout', newLayout.filter(s => s.id !== 'socials'));
 
   const setSectionZone = (sectionId, newZone) => {
     const updated = sectionLayout.map(s => s.id === sectionId ? { ...s, zone: newZone } : s);
@@ -124,11 +122,10 @@ export default function NavbarConfig({ config, onChange }) {
     'barHeight', 'borderWidth', 'borderRadius', 'maxWidth',
     'brightness', 'contrast', 'saturation',
     'showAvatar', 'showClock', 'showNowPlaying', 'showCrypto', 'showCTA',
-    'showSocials', 'showStartBalance', 'showCasino',
+    'showStartBalance', 'showCasino',
     'cryptoDisplayMode', 'ctaText', 'motto', 'badgeImage',
     'avatarSize', 'badgeSize',
     'displayStyle', 'musicDisplayStyle',
-    'socialTwitter', 'socialInstagram', 'socialKick', 'socialTiktok', 'socialYoutube', 'socialFacebook', 'socialTelegram',
     'startBalance', 'balanceCurrency',
     'casinoName', 'casinoLogoUrl',
     'sectionLayout',
@@ -258,10 +255,6 @@ export default function NavbarConfig({ config, onChange }) {
             <span>Show CTA Badge</span>
           </label>
           <label className="nb-toggle-row">
-            <input type="checkbox" checked={!!c.showSocials} onChange={e => set('showSocials', e.target.checked)} />
-            <span>Show Socials</span>
-          </label>
-          <label className="nb-toggle-row">
             <input type="checkbox" checked={!!c.showStartBalance} onChange={e => set('showStartBalance', e.target.checked)} />
             <span>Show Start Balance</span>
           </label>
@@ -275,42 +268,6 @@ export default function NavbarConfig({ config, onChange }) {
               <span>CTA Text</span>
               <input value={c.ctaText || ''} onChange={e => set('ctaText', e.target.value)} placeholder="Be Gamble Aware!" />
             </label>
-          )}
-
-          {/* ─── Socials ─── */}
-          {c.showSocials && (
-            <>
-              <h4 className="nb-subtitle" style={{ marginTop: 14 }}>@ Socials</h4>
-              <p className="oc-config-hint" style={{ margin: '0 0 6px' }}>Add your social handles — they'll show on the navbar.</p>
-              <label className="nb-field">
-                <span>Twitter / X</span>
-                <input value={c.socialTwitter || ''} onChange={e => set('socialTwitter', e.target.value)} placeholder="@username" />
-              </label>
-              <label className="nb-field">
-                <span>Instagram</span>
-                <input value={c.socialInstagram || ''} onChange={e => set('socialInstagram', e.target.value)} placeholder="@username" />
-              </label>
-              <label className="nb-field">
-                <span>Kick</span>
-                <input value={c.socialKick || ''} onChange={e => set('socialKick', e.target.value)} placeholder="@username" />
-              </label>
-              <label className="nb-field">
-                <span>TikTok</span>
-                <input value={c.socialTiktok || ''} onChange={e => set('socialTiktok', e.target.value)} placeholder="@username" />
-              </label>
-              <label className="nb-field">
-                <span>YouTube</span>
-                <input value={c.socialYoutube || ''} onChange={e => set('socialYoutube', e.target.value)} placeholder="@channel" />
-              </label>
-              <label className="nb-field">
-                <span>Facebook</span>
-                <input value={c.socialFacebook || ''} onChange={e => set('socialFacebook', e.target.value)} placeholder="@page" />
-              </label>
-              <label className="nb-field">
-                <span>Telegram</span>
-                <input value={c.socialTelegram || ''} onChange={e => set('socialTelegram', e.target.value)} placeholder="@group" />
-              </label>
-            </>
           )}
 
           {/* ─── Start ─── */}

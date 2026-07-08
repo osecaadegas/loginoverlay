@@ -43,7 +43,6 @@ const DEFAULT_SECTION_LAYOUT = [
   { id: 'nowPlaying', zone: 'center' },
   { id: 'crypto', zone: 'right' },
   { id: 'cta', zone: 'right' },
-  { id: 'socials', zone: 'right' },
   { id: 'balance', zone: 'right' },
   { id: 'casino', zone: 'right' },
 ];
@@ -97,8 +96,6 @@ function NavbarWidget({ config, widgetId, userId }) {
   const [nowPlaying, setNowPlaying] = useState(null);
   const [cryptoIndex, setCryptoIndex] = useState(0);
   const [cryptoFading, setCryptoFading] = useState(false);
-  const [socialIndex, setSocialIndex] = useState(0);
-  const [socialFading, setSocialFading] = useState(false);
   const spotifyTokenRef = useRef(c.spotify_access_token);
   const spotifyExpiresRef = useRef(c.spotify_expires_at);
 
@@ -132,28 +129,6 @@ function NavbarWidget({ config, widgetId, userId }) {
     }, interval);
     return () => clearInterval(id);
   }, [cryptoMode, activeCoins.length]);
-
-  // Socials cycling — one at a time with fade
-  const activeSocials = [
-    c.socialTwitter   && { logo: '/socials/twitter.png',   handle: c.socialTwitter },
-    c.socialInstagram && { logo: '/socials/instagram.png', handle: c.socialInstagram },
-    c.socialKick      && { logo: null, kickIcon: true,     handle: c.socialKick },
-    c.socialTiktok    && { logo: '/socials/tik-tok.png',   handle: c.socialTiktok },
-    c.socialYoutube   && { logo: '/socials/youtube.png',   handle: c.socialYoutube },
-    c.socialFacebook  && { logo: '/socials/facebook.png',  handle: c.socialFacebook },
-    c.socialTelegram  && { logo: '/socials/telegram.png',  handle: c.socialTelegram },
-  ].filter(Boolean);
-  useEffect(() => {
-    if (!c.showSocials || activeSocials.length <= 1) return;
-    const id = setInterval(() => {
-      setSocialFading(true);
-      setTimeout(() => {
-        setSocialIndex(prev => (prev + 1) % activeSocials.length);
-        setSocialFading(false);
-      }, 400);
-    }, 3500);
-    return () => clearInterval(id);
-  }, [c.showSocials, activeSocials.length]);
 
   // Spotify "Now Playing" polling
   // Poll whenever musicSource is spotify and we have tokens — showNowPlaying only gates the UI display
@@ -344,7 +319,7 @@ function NavbarWidget({ config, widgetId, userId }) {
   };
 
   /* ─── Dynamic section layout ─── */
-  const layout = c.sectionLayout || DEFAULT_SECTION_LAYOUT;
+  const layout = (c.sectionLayout || DEFAULT_SECTION_LAYOUT).filter(s => s.id !== 'socials');
   const getZoneSections = (zone) => layout.filter(s => s.zone === zone);
 
   const renderSection = (sectionId) => {
@@ -552,44 +527,7 @@ function NavbarWidget({ config, widgetId, userId }) {
       }
 
       case 'socials': {
-        if (!c.showSocials || !activeSocials.length) return null;
-        const safeIdx = socialIndex % activeSocials.length;
-        const current = activeSocials[safeIdx];
-        const logoSize = barHeight * 0.52;
-        return (
-          <div style={{ position: 'relative', minWidth: 110, overflow: 'hidden', flexShrink: 0 }}>
-            <div style={{
-              display: 'flex', alignItems: 'center', gap: 10,
-              opacity: socialFading ? 0 : 1,
-              transition: 'opacity 0.4s ease',
-              willChange: 'opacity',
-              backfaceVisibility: 'hidden',
-            }}>
-              {current.logo ? (
-                <img src={current.logo} alt="" style={{
-                  width: logoSize, height: logoSize,
-                  objectFit: 'contain', flexShrink: 0,
-                  filter: 'drop-shadow(0 0 4px rgba(255,255,255,0.15))',
-                  imageRendering: 'auto',
-                  backfaceVisibility: 'hidden',
-                }} />
-              ) : (
-                <span style={{
-                  width: logoSize, height: logoSize,
-                  borderRadius: '50%', background: '#53fc18',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: logoSize * 0.5, fontWeight: 900, color: '#000',
-                  flexShrink: 0,
-                }}>K</span>
-              )}
-              <span style={{
-                fontSize: fontSize * 1.2, fontWeight: 700,
-                color: textColor, letterSpacing: '0.04em',
-                whiteSpace: 'nowrap', textShadow,
-              }}>{current.handle}</span>
-            </div>
-          </div>
-        );
+        return null;
       }
 
       case 'balance': {

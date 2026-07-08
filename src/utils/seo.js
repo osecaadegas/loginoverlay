@@ -75,7 +75,4 @@ export function applyRouteSeo(pathname) {
   upsertMeta('meta[property="og:description"]', { property: 'og:description', content: route.description });
   upsertMeta('meta[property="og:url"]', { property: 'og:url', content: canonical });
   upsertMeta('meta[property="og:image"]', { property: 'og:image', content: DEFAULT_IMAGE });
-  upsertMeta('meta[name="twitter:title"]', { name: 'twitter:title', content: route.title });
-  upsertMeta('meta[name="twitter:description"]', { name: 'twitter:description', content: route.description });
-  upsertMeta('meta[name="twitter:image"]', { name: 'twitter:image', content: DEFAULT_IMAGE });
 }
