@@ -309,7 +309,7 @@ export default function LandingPage() {
                     </ul>
                     <button
                       className={plan.highlight ? 'lp-btn-primary lp-price-cta' : 'lp-btn-price-outline lp-price-cta'}
-                      onClick={() => user ? navigate('/overlay') : setShowAuthModal(true)}
+                      onClick={() => user ? navigate('/premium') : setShowAuthModal(true)}
                     >{plan.cta}</button>
                   </div>
                 );

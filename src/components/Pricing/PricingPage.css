@@ -122,10 +122,32 @@
 }
 
 .pricing-active-extend {
-  width: 100%;
   margin: 4px 0 0;
   color: #9ca3af;
   font-size: 0.85rem;
+}
+
+.pricing-manage-btn {
+  margin-left: auto;
+  padding: 10px 14px;
+  border: 1px solid rgba(0, 225, 255, 0.28);
+  border-radius: 10px;
+  background: rgba(0, 225, 255, 0.08);
+  color: #00e1ff;
+  font-size: 0.86rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background 0.2s ease;
+}
+
+.pricing-manage-btn:hover:not(:disabled) {
+  background: rgba(0, 225, 255, 0.14);
+  border-color: rgba(0, 225, 255, 0.5);
+}
+
+.pricing-manage-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
 }
 
 /* ── Plan grid ── */
@@ -375,6 +397,15 @@
 
   .pricing-card {
     padding: 28px 20px 24px;
+  }
+
+  .pricing-active-banner {
+    align-items: stretch;
+  }
+
+  .pricing-manage-btn {
+    width: 100%;
+    margin-left: 0;
   }
 
   .pricing-card-amount {

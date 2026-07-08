@@ -5,7 +5,7 @@ export default function PrivacyPolicy() {
     <div className="legal-page">
       <div className="legal-container">
         <h1 className="legal-title">Privacy Policy</h1>
-        <p className="legal-updated">Last updated: June 5, 2026</p>
+        <p className="legal-updated">Last updated: July 8, 2026</p>
 
         <section className="legal-section">
           <h2>1. Introduction</h2>
@@ -42,9 +42,9 @@ export default function PrivacyPolicy() {
 
           <h3>2.3 Payment Information</h3>
           <p>
-            The Service does not currently process card payments directly inside the public app.
-            If paid services are enabled in the future, payment processing will be handled by an
-            external provider and this policy will be updated to reflect that flow.
+            Premium subscription payments are processed by Stripe. We do not store full card
+            numbers on our servers. We store billing identifiers, subscription status, plan
+            metadata, and related account information needed to manage premium access.
           </p>
         </section>
 
@@ -80,6 +80,7 @@ export default function PrivacyPolicy() {
             <li><strong>Supabase</strong> — Database and authentication</li>
             <li><strong>StreamElements</strong> — Points and loyalty system</li>
             <li><strong>Vercel</strong> — Website hosting and analytics</li>
+            <li><strong>Stripe</strong> - Payment processing and subscription management</li>
           </ul>
           <p>
             Each of these services has their own privacy policy governing how they handle your data.

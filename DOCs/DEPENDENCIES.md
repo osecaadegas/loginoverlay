@@ -24,5 +24,5 @@ npm install
 
 ## Notes from the 2026-06-05 audit
 
-- Stripe dependencies were removed from the active dependency list because the repository no longer has a live Stripe integration path.
-- If a future payment flow is reintroduced, add its runtime packages together with the API handlers, migrations, legal text, and documentation in the same change.
+- Stripe recurring billing is implemented through the Stripe REST API from Vercel functions, so there is no `stripe` npm package in the active dependency list.
+- Payment-related changes should keep the API handlers, migrations, environment variables, legal text, and documentation in the same change.

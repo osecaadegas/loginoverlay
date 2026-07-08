@@ -46,6 +46,9 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 14. `014_cleanup_penalty_king.sql`
 	 Drops retired mini-game tables from older databases.
 
+15. `015_stripe_subscriptions.sql`
+	 Adds Stripe customer/subscription tracking, webhook idempotency, and source-aware premium role rows for recurring billing.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.

@@ -23,17 +23,26 @@ export function usePremium() {
           .select('role, is_active, access_expires_at')
           .eq('user_id', user.id)
           .eq('role', 'premium')
-          .eq('is_active', true)
-          .maybeSingle();
+          .eq('is_active', true);
 
         if (error) throw error;
 
-        if (data) {
-          /* Check if access hasn't expired */
-          const expires = data.access_expires_at ? new Date(data.access_expires_at) : null;
-          const active = !expires || expires > new Date();
-          setIsPremium(active);
-          setPremiumUntil(expires);
+        const now = new Date();
+        const activeRows = (data || []).filter((row) => {
+          const expires = row.access_expires_at ? new Date(row.access_expires_at) : null;
+          return !expires || expires > now;
+        });
+
+        if (activeRows.length > 0) {
+          const noExpiry = activeRows.some((row) => !row.access_expires_at);
+          const latestExpiry = noExpiry
+            ? null
+            : activeRows
+                .map((row) => new Date(row.access_expires_at))
+                .sort((a, b) => b.getTime() - a.getTime())[0];
+
+          setIsPremium(true);
+          setPremiumUntil(latestExpiry);
         } else {
           setIsPremium(false);
           setPremiumUntil(null);

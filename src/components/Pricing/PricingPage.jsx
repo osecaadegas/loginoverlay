@@ -2,11 +2,12 @@ import { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { usePremium } from '../../hooks/usePremium';
+import { supabase } from '../../config/supabaseClient';
 import './PricingPage.css';
 
 const PLANS = [
   {
-    id: 1,
+    id: 'monthly',
     months: 1,
     label: '1 Month',
     price: '15.00',
@@ -14,7 +15,7 @@ const PLANS = [
     badge: null,
   },
   {
-    id: 3,
+    id: 'quarterly',
     months: 3,
     label: '3 Months',
     price: '40.00',
@@ -22,7 +23,7 @@ const PLANS = [
     badge: null,
   },
   {
-    id: 6,
+    id: 'semiannual',
     months: 6,
     label: '6 Months',
     price: '60.00',
@@ -30,7 +31,7 @@ const PLANS = [
     badge: 'POPULAR',
   },
   {
-    id: 12,
+    id: 'annual',
     months: 12,
     label: '12 Months',
     price: '120.00',
@@ -52,6 +53,7 @@ export default function PricingPage() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const [loadingPlan, setLoadingPlan] = useState(null);
+  const [manageLoading, setManageLoading] = useState(false);
   const [message, setMessage] = useState(null);
 
   const success = searchParams.get('success') === 'true';
@@ -71,9 +73,80 @@ export default function PricingPage() {
     }
   }, [success, canceled]);
 
-  const handleSubscribe = async () => {
+  const getAccessToken = async () => {
+    const { data, error } = await supabase.auth.getSession();
+    if (error) throw error;
+    return data.session?.access_token || null;
+  };
+
+  const redirectToBillingPortal = async ({ silentNotFound = false } = {}) => {
+    const token = await getAccessToken();
+    if (!token) throw new Error('Please sign in before managing your subscription.');
+
+    const response = await fetch('/api/create-billing-portal-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      if (silentNotFound && response.status === 404) return false;
+      throw new Error(data.error || 'Could not open the billing portal.');
+    }
+
+    window.location.href = data.url;
+    return true;
+  };
+
+  const handleManageSubscription = async () => {
     if (!user) { navigate('/login'); return; }
-    setMessage({ type: 'info', text: 'Online payments coming soon. Contact the admin to upgrade your plan.' });
+
+    setManageLoading(true);
+    setMessage(null);
+    try {
+      await redirectToBillingPortal();
+    } catch (error) {
+      setMessage({ type: 'error', text: error.message });
+    } finally {
+      setManageLoading(false);
+    }
+  };
+
+  const handleSubscribe = async (plan) => {
+    if (!user) { navigate('/login'); return; }
+
+    setLoadingPlan(plan.id);
+    setMessage(null);
+    try {
+      if (isPremium) {
+        const openedPortal = await redirectToBillingPortal({ silentNotFound: true });
+        if (openedPortal) return;
+      }
+
+      const token = await getAccessToken();
+      if (!token) throw new Error('Please sign in again before subscribing.');
+
+      const response = await fetch('/api/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ planId: plan.id }),
+      });
+
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data.error || 'Could not start checkout.');
+
+      window.location.href = data.url;
+    } catch (error) {
+      setMessage({ type: 'error', text: error.message });
+    } finally {
+      setLoadingPlan(null);
+    }
   };
 
   const formatDate = (date) => {
@@ -121,8 +194,16 @@ export default function PricingPage() {
               )}
             </div>
             <p className="pricing-active-extend">
-              Purchase again to extend your premium access
+              Manage billing, update payment details, or cancel from the customer portal.
             </p>
+            <button
+              type="button"
+              className="pricing-manage-btn"
+              onClick={handleManageSubscription}
+              disabled={manageLoading || loadingPlan !== null}
+            >
+              {manageLoading ? 'Opening...' : 'Manage Subscription'}
+            </button>
           </div>
         )}
 
@@ -161,10 +242,10 @@ export default function PricingPage() {
 
               <button
                 className={`pricing-card-btn ${plan.badge === 'BEST VALUE' ? 'pricing-card-btn--featured' : ''}`}
-                onClick={() => handleSubscribe()}
-                disabled={loadingPlan !== null}
+                onClick={() => handleSubscribe(plan)}
+                disabled={loadingPlan !== null || manageLoading}
               >
-                {loadingPlan === plan.months ? (
+                {loadingPlan === plan.id ? (
                   <span className="pricing-btn-loading">
                     <span className="pricing-spinner" />
                     Processing...
@@ -172,7 +253,7 @@ export default function PricingPage() {
                 ) : !user ? (
                   'Sign in to Subscribe'
                 ) : isPremium ? (
-                  'Extend Premium'
+                  'Manage or Change Plan'
                 ) : (
                   'Get Premium'
                 )}
@@ -184,7 +265,7 @@ export default function PricingPage() {
         {/* Info footer */}
         <div className="pricing-footer">
           <p className="pricing-footer-text">
-            Payment system coming soon. Contact the admin to get premium access.
+            Secure recurring billing is handled by Stripe. You can manage or cancel your subscription from the customer portal.
           </p>
         </div>
       </div>
