@@ -4,6 +4,7 @@ import BonusHuntWidgetV8 from './BonusHuntWidgetV8';
 import BonusHuntWidgetV9 from './BonusHuntWidgetV9';
 import BonusHuntWidgetV11 from './BonusHuntWidgetV11';
 import BonusHuntWidgetV12 from './BonusHuntWidgetV12';
+import SlotImage from './SlotImage';
 
 function BonusHuntWidget({ config, theme, userId }) {
   const c = config || {};
@@ -283,8 +284,7 @@ function BonusHuntWidget({ config, theme, userId }) {
                   </div>
                   <div className="bhtc-card-img-wrap">
                     {bonus.slot?.image ? (
-                      <img src={bonus.slot.image} alt={bonus.slotName} className="bhtc-card-img"
-                        onError={e => { e.target.style.display = 'none'; }} />
+                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bhtc-card-img" />
                     ) : (
                       <div className="bhtc-card-img-placeholder" />
                     )}
@@ -404,8 +404,7 @@ function BonusHuntWidget({ config, theme, userId }) {
                 <div className="bht-fullflip-slot bht-fullflip-slot--best">
                   <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--best">↑ BEST</div>
                   {stats.bestSlot.slot?.image ? (
-                    <img src={stats.bestSlot.slot.image} alt="" className="bht-fullflip-slot-img"
-                      onError={e => { e.target.style.display = 'none'; }} />
+                    <SlotImage src={stats.bestSlot.slot.image} alt={stats.bestSlot.slotName || stats.bestSlot.slot?.name} className="bht-fullflip-slot-img" />
                   ) : (
                     <div className="bht-fullflip-slot-img-placeholder">🎰</div>
                   )}
@@ -430,8 +429,7 @@ function BonusHuntWidget({ config, theme, userId }) {
                 <div className="bht-fullflip-slot bht-fullflip-slot--worst">
                   <div className="bht-fullflip-slot-ribbon bht-fullflip-slot-ribbon--worst">↓ WORST</div>
                   {stats.worstSlot.slot?.image ? (
-                    <img src={stats.worstSlot.slot.image} alt="" className="bht-fullflip-slot-img"
-                      onError={e => { e.target.style.display = 'none'; }} />
+                    <SlotImage src={stats.worstSlot.slot.image} alt={stats.worstSlot.slotName || stats.worstSlot.slot?.name} className="bht-fullflip-slot-img" />
                   ) : (
                     <div className="bht-fullflip-slot-img-placeholder">🎰</div>
                   )}
@@ -464,9 +462,8 @@ function BonusHuntWidget({ config, theme, userId }) {
           <div className={`bht-cpt-current${(currentBonus.isExtremeBonus || currentBonus.isExtreme) ? ' bht-cpt-current--extreme' : ''}${currentBonus.isSuperBonus ? ' bht-cpt-current--super' : ''}`}>
             <div className="bht-cpt-current-img-wrap">
               {currentBonus.slot?.image && (
-                <img src={currentBonus.slot.image} alt={currentBonus.slotName}
-                  className="bht-cpt-current-img"
-                  onError={e => { e.target.style.display = 'none'; }} />
+                <SlotImage src={currentBonus.slot.image} alt={currentBonus.slotName || currentBonus.slot?.name}
+                  className="bht-cpt-current-img" />
               )}
               {(currentBonus.isExtremeBonus || currentBonus.isExtreme) && <div className="bht-cpt-blood-drip" />}
             </div>
@@ -509,9 +506,8 @@ function BonusHuntWidget({ config, theme, userId }) {
                       className={`bht-cpt-card${idx === currentIndex ? ' bht-cpt-card--active' : ''}${bonus.opened ? ' bht-cpt-card--opened' : ''}${isSuper ? ' bht-cpt-card--super' : ''}${isExtreme ? ' bht-cpt-card--extreme' : ''}`}>
                       <div className="bht-cpt-card-img-wrap">
                         {bonus.slot?.image ? (
-                          <img src={bonus.slot.image} alt={bonus.slotName}
-                            className="bht-cpt-card-img"
-                            onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
+                          <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name}
+                            className="bht-cpt-card-img" />
                         ) : (
                           <div className="bht-cpt-card-img-ph" />
                         )}
@@ -579,8 +575,7 @@ function BonusHuntWidget({ config, theme, userId }) {
                         <div className="bht-stack-card-inner">
                           <div className="bht-stack-card-img-wrap">
                             {bonus.slot?.image ? (
-                              <img src={bonus.slot.image} alt={bonus.slotName} className="bht-stack-card-img"
-                                onError={e => { e.target.style.display = 'none'; }} />
+                              <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-stack-card-img" />
                             ) : <div className="bht-stack-card-img-ph" />}
                           </div>
                         </div>
@@ -621,8 +616,7 @@ function BonusHuntWidget({ config, theme, userId }) {
                               <span className="bht-list-row-idx">{i + 1}</span>
                               <div className="bht-list-row-thumb">
                                 {bonus.slot?.image ? (
-                                  <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
-                                    onError={e => { e.target.style.display = 'none'; }} />
+                                  <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
                                 ) : <div className="bht-list-row-img-ph" />}
                               </div>
                               <div className="bht-list-row-info">
@@ -661,8 +655,7 @@ function BonusHuntWidget({ config, theme, userId }) {
                         <span className="bht-list-row-idx">{idx + 1}</span>
                         <div className="bht-list-row-thumb">
                           {bonus.slot?.image ? (
-                            <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
-                              onError={e => { e.target.style.display = 'none'; }} />
+                            <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
                           ) : <div className="bht-list-row-img-ph" />}
                         </div>
                         <div className="bht-list-row-info">

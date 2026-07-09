@@ -1,27 +1,51 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import { findUserSlotRecord, getSlotIdentity, recordMatchesSlot } from '../../../services/slotRecordService';
 
 /* ─── Fetch slot info from the database (slots table) ─── */
-async function fetchSlotFromDB(name) {
-  if (!name) return null;
-  const normalized = name.trim();
+async function fetchSlotFromDB(slotRef) {
+  const slot = getSlotIdentity(slotRef);
+  if (!slot.name && !slot.id) return null;
 
   try {
-    // 1. Exact match (case-insensitive via ilike)
+    if (slot.id) {
+      const { data, error } = await supabase
+        .from('slots')
+        .select('id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
+        .eq('id', slot.id)
+        .limit(1)
+        .single();
+
+      if (!error && data) return { ...data, source: 'database', confidence: 'exact' };
+    }
+
+    if (slot.name && slot.provider) {
+      const { data, error } = await supabase
+        .from('slots')
+        .select('id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
+        .ilike('name', slot.name)
+        .ilike('provider', slot.provider)
+        .limit(1)
+        .single();
+
+      if (!error && data) return { ...data, source: 'database', confidence: 'high' };
+    }
+
+    // Exact match (case-insensitive via ilike)
     let { data, error } = await supabase
       .from('slots')
-      .select('name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
-      .ilike('name', normalized)
+      .select('id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
+      .ilike('name', slot.name)
       .limit(1)
       .single();
 
     if (!error && data) return { ...data, source: 'database', confidence: 'high' };
 
-    // 2. Fuzzy match (contains)
+    // Fuzzy match (contains) is metadata-only fallback, never used for PB lookup.
     ({ data, error } = await supabase
       .from('slots')
-      .select('name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
-      .ilike('name', `%${normalized}%`)
+      .select('id, name, provider, image, rtp, volatility, max_win_multiplier, reels, min_bet, max_bet, features')
+      .ilike('name', `%${slot.name}%`)
       .limit(1)
       .single());
 
@@ -134,10 +158,48 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   /* ── Current bonus (first unopened) ── */
   const currentBonus = useMemo(() => bonuses.find(b => !b.opened), [bonuses]);
   /* Priority: search preview → bonus opening slot → tournament slot → bonus hunt slot */
-  const previewSlot = bhConfig.previewSlotName || '';
-  const slotName = previewSlot
-    || (bonusOpening && currentBonus?.slotName ? currentBonus.slotName : '')
-    || tournamentSlotName || currentBonus?.slotName || '';
+  const currentBonusSlot = useMemo(() => {
+    if (!currentBonus) return null;
+    return getSlotIdentity({
+      slotId: currentBonus.slot?.id || currentBonus.slot_id || currentBonus.slotId,
+      slotName: currentBonus.slotName || currentBonus.slot?.name,
+      provider: currentBonus.slot?.provider || currentBonus.provider,
+      imageUrl: currentBonus.slot?.image || currentBonus.imageUrl,
+      slot: currentBonus.slot,
+    });
+  }, [currentBonus]);
+
+  const activeSlot = useMemo(() => {
+    const previewName = bhConfig.previewSlotName || '';
+    if (previewName) return getSlotIdentity({ slotName: previewName });
+    if (bonusOpening && currentBonusSlot?.name) return currentBonusSlot;
+    if (tournamentSlotName) return getSlotIdentity({ slotName: tournamentSlotName });
+    if (currentBonusSlot?.name) return currentBonusSlot;
+    return getSlotIdentity({});
+  }, [bhConfig.previewSlotName, bonusOpening, currentBonusSlot, tournamentSlotName]);
+
+  const slotName = activeSlot.name || '';
+  const slotKey = `${activeSlot.id || ''}|${activeSlot.provider || ''}|${slotName}`;
+  const localSlotInfo = useMemo(() => {
+    if (!slotName) return null;
+    if (currentBonus?.slot && recordMatchesSlot({ slot_id: currentBonus.slot.id, slot_name: currentBonus.slot.name || currentBonus.slotName, slot_provider: currentBonus.slot.provider }, activeSlot)) {
+      return {
+        ...currentBonus.slot,
+        id: currentBonus.slot.id || activeSlot.id || null,
+        name: currentBonus.slot.name || slotName,
+        provider: currentBonus.slot.provider || activeSlot.provider || '',
+        image: currentBonus.slot.image || activeSlot.image || '',
+        source: 'selected_bonus',
+      };
+    }
+    return {
+      id: activeSlot.id || null,
+      name: slotName,
+      provider: activeSlot.provider || '',
+      image: activeSlot.image || '',
+      source: 'selected_slot',
+    };
+  }, [activeSlot, currentBonus, slotName]);
 
   /* ── Slot info from DB (primary) or API (fallback) ── */
   const [slotInfo, setSlotInfo] = useState(null);
@@ -145,14 +207,21 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const lastSlotRef = useRef('');
 
   useEffect(() => {
-    if (!slotName || slotName === lastSlotRef.current) return;
-    lastSlotRef.current = slotName;
+    if (!slotName) {
+      lastSlotRef.current = '';
+      setSlotInfo(null);
+      setLoading(false);
+      return;
+    }
+    if (slotKey === lastSlotRef.current) return;
+    lastSlotRef.current = slotKey;
     let cancelled = false;
+    setSlotInfo(localSlotInfo);
 
     async function lookup() {
       setLoading(true);
       // 1. Try database first
-      const dbResult = await fetchSlotFromDB(slotName);
+      const dbResult = await fetchSlotFromDB(activeSlot);
       if (!cancelled && dbResult) {
         setSlotInfo(dbResult);
         setLoading(false);
@@ -168,7 +237,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
 
     lookup();
     return () => { cancelled = true; };
-  }, [slotName]);
+  }, [activeSlot, localSlotInfo, slotKey, slotName]);
 
   /* ── Best win for this slot (from user_slot_records) ── */
   const [bestWinData, setBestWinData] = useState(null);
@@ -177,20 +246,35 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const configBestWin = useMemo(() => {
     if (!slotName) return null;
     // Check own widget config first (persisted by dashboard fetch)
-    if (c._cachedBestWin?.slotName === slotName && c._cachedBestWin?.best_win) {
-      return { best_win: c._cachedBestWin.best_win, best_multiplier: c._cachedBestWin.best_multiplier || 0 };
+    const cached = c._cachedBestWin;
+    const cachedRecord = cached ? {
+      slot_id: cached.slotId || cached.slot_id || null,
+      slot_name: cached.slotName,
+      slot_provider: cached.provider || cached.slot_provider || null,
+    } : null;
+    const cachedIsExactEnough = cachedRecord
+      && recordMatchesSlot(cachedRecord, activeSlot)
+      && !(activeSlot.id && !cachedRecord.slot_id && activeSlot.provider && !cachedRecord.slot_provider);
+    if (cached?.best_win && cachedIsExactEnough) {
+      return { best_win: cached.best_win, best_multiplier: cached.best_multiplier || 0 };
     }
     // Fallback: check single_slot widgets
     if (!allWidgets) return null;
-    const ssWidget = allWidgets.find(w =>
-      (w.widget_type === 'single_slot' || w.widget_type === 'current_slot') &&
-      w.config?.slotName === slotName && w.config?.bestWin
-    );
+    const ssWidget = allWidgets.find(w => {
+      if ((w.widget_type !== 'single_slot' && w.widget_type !== 'current_slot') || !w.config?.bestWin) return false;
+      const widgetRecord = {
+        slot_id: w.config.slotId || null,
+        slot_name: w.config.slotName,
+        slot_provider: w.config.provider || null,
+      };
+      return recordMatchesSlot(widgetRecord, activeSlot)
+        && !(activeSlot.id && !widgetRecord.slot_id && activeSlot.provider && !widgetRecord.slot_provider);
+    });
     if (ssWidget?.config?.bestWin) {
       return { best_win: ssWidget.config.bestWin, best_multiplier: ssWidget.config.bestMulti || 0 };
     }
     return null;
-  }, [slotName, c._cachedBestWin, allWidgets]);
+  }, [activeSlot, allWidgets, c._cachedBestWin, slotName]);
 
   // Persist bestWin to widget config so OBS can read it (OBS has no auth → can't query DB)
   const persistRef = useRef('');
@@ -198,32 +282,44 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   configRef.current = c;
   useEffect(() => {
     if (!bestWinData || !widgetId || !slotName) return;
-    const key = `${slotName}:${bestWinData.best_win}:${bestWinData.best_multiplier}`;
+    const key = `${slotKey}:${bestWinData.best_win}:${bestWinData.best_multiplier}`;
     if (persistRef.current === key) return; // already persisted
     persistRef.current = key;
     const latest = configRef.current;
     supabase
       .from('overlay_widgets')
-      .update({ config: { ...latest, _cachedBestWin: { slotName, best_win: bestWinData.best_win, best_multiplier: bestWinData.best_multiplier } } })
+      .update({
+        config: {
+          ...latest,
+          _cachedBestWin: {
+            slotId: activeSlot.id || null,
+            slotName,
+            provider: activeSlot.provider || null,
+            best_win: bestWinData.best_win,
+            best_multiplier: bestWinData.best_multiplier,
+          },
+        },
+      })
       .eq('id', widgetId)
       .then(); // fire-and-forget
-  }, [bestWinData, widgetId, slotName]);
+  }, [activeSlot, bestWinData, slotKey, widgetId, slotName]);
 
   // Fetch best win on slot change + subscribe to realtime updates
   useEffect(() => {
     if (!slotName || !userId) { setBestWinData(null); return; }
     let cancelled = false;
+    setBestWinData(null);
 
     async function fetchBestWin() {
       try {
-        const { data } = await supabase
-          .from('user_slot_records')
-          .select('best_win, best_multiplier')
-          .eq('user_id', userId)
-          .eq('slot_name', slotName)
-          .maybeSingle();
-        if (!cancelled && data) setBestWinData(data);
+        const data = await findUserSlotRecord(userId, activeSlot, 'slot_id, slot_name, slot_provider, best_win, best_multiplier');
+        if (!cancelled) {
+          setBestWinData(data && recordMatchesSlot(data, activeSlot)
+            ? { best_win: data.best_win, best_multiplier: data.best_multiplier }
+            : null);
+        }
       } catch {
+        if (!cancelled) setBestWinData(null);
         // DB fetch failed (e.g. RLS in OBS) — configBestWin fallback will be used
       }
     }
@@ -232,7 +328,7 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
 
     // Subscribe to changes so bestWin updates live when a new result is recorded
     const channel = supabase
-      .channel(`bestwin_${userId}_${slotName}`)
+      .channel(`bestwin_${userId}_${slotKey}`)
       .on('postgres_changes', {
         event: '*',
         schema: 'public',
@@ -240,14 +336,14 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
         filter: `user_id=eq.${userId}`,
       }, (payload) => {
         const rec = payload.new;
-        if (rec && rec.slot_name === slotName) {
+        if (recordMatchesSlot(rec, activeSlot)) {
           setBestWinData({ best_win: rec.best_win, best_multiplier: rec.best_multiplier });
         }
       })
       .subscribe();
 
     return () => { cancelled = true; supabase.removeChannel(channel); };
-  }, [slotName, userId]);
+  }, [activeSlot, slotKey, slotName, userId]);
 
   /* ── Style config ── */
   const displayStyle = c.displayStyle || 'v1';
@@ -286,9 +382,10 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
   const bestWinIconColor = c.bestWinIconColor || '#22c55e';
   const spinnerColor = c.spinnerColor || '#60a5fa';
   const previewMode = c.previewMode === true;
+  const currency = bhConfig.currency || c.currency || '€';
 
   /* ── Determine what to display ── */
-  const isLive = bonusOpening && !!currentBonus;
+  const isLive = !!slotName;
 
   /* ── Demo data for preview / empty state ── */
   const demoSlotName = 'SWEET BONANZA';
@@ -302,10 +399,12 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
 
   const displaySlotName = isLive ? slotName : (showDemoData ? demoSlotName : '—');
   const displayProvider = isLive
-    ? (slotInfo?.provider || currentBonus?.slot?.provider || '')
+    ? (slotInfo?.provider || activeSlot.provider || currentBonus?.slot?.provider || '')
     : (showDemoData ? demoProvider : '');
-  const displayInfo = isLive ? slotInfo : (showDemoData ? demoInfo : null);
-  const displayBestWin = isLive ? (bestWinData || configBestWin) : (showDemoData ? demoBestWin : null);
+  const displayInfo = isLive ? (slotInfo || localSlotInfo) : (showDemoData ? demoInfo : null);
+  const scopedBestWinData = bestWinData && recordMatchesSlot(bestWinData, activeSlot) ? bestWinData : null;
+  const displayBestWin = isLive ? (scopedBestWinData || configBestWin) : (showDemoData ? demoBestWin : null);
+  const bestWinEmptyText = isLive ? 'No personal best yet' : '-';
 
   const styleClass = isVertical ? ' rtp-stats-bar--vertical'
     : isNeon ? ' rtp-stats-bar--neon'
@@ -416,6 +515,15 @@ function RtpStatsWidget({ config, theme, allWidgets, userId, widgetId }) {
                 {displayBestWin?.best_win
                   ? `€${Number(displayBestWin.best_win).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                   : '—'}
+                {displayBestWin?.best_multiplier
+                  ? ` (${Number(displayBestWin.best_multiplier).toLocaleString()}x)`
+                  : ''}
+              </span>
+              <span className="rtp-stats-value rtp-stats-value--bestwin-current">
+                <span className="rtp-stats-label">BEST WIN </span>
+                {displayBestWin?.best_win
+                  ? `${currency}${Number(displayBestWin.best_win).toLocaleString('en', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+                  : bestWinEmptyText}
                 {displayBestWin?.best_multiplier
                   ? ` (${Number(displayBestWin.best_multiplier).toLocaleString()}x)`
                   : ''}

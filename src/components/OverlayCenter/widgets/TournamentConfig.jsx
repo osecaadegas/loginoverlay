@@ -333,7 +333,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
   const [bkEditingSlot, setBkEditingSlot] = useState({});
 
   const handleBkSlotSelect = (idx, slot) => {
-    updateBracketPlayer(idx, 'slot', { name: slot.name, image: slot.image || slot.image_url || null });
+    updateBracketPlayer(idx, 'slot', { id: slot.id || null, name: slot.name, provider: slot.provider || '', image: slot.image || slot.image_url || null });
     setBkSlotSearches(prev => ({ ...prev, [idx]: '' }));
     setBkShowSuggestions(prev => ({ ...prev, [idx]: false }));
     setBkEditingSlot(prev => ({ ...prev, [idx]: false }));
@@ -373,7 +373,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
       ...p,
       name: shuffled[i % shuffled.length],
       slot: randomSlots[i]
-        ? { name: randomSlots[i].name, image: randomSlots[i].image || randomSlots[i].image_url || null }
+        ? { id: randomSlots[i].id || null, name: randomSlots[i].name, provider: randomSlots[i].provider || '', image: randomSlots[i].image || randomSlots[i].image_url || null }
         : p.slot,
     }));
     setLocalBracketPlayers(filled);
@@ -500,7 +500,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
           if (match.slot1?.name && round.player1?.bonusPayout != null) {
             results.push({
               slotName: match.slot1.name,
-              slot: { name: match.slot1.name, image: match.slot1.image },
+              slot: { id: match.slot1.id || null, name: match.slot1.name, provider: match.slot1.provider || '', image: match.slot1.image },
               betSize: Number(round.player1.bonusCost) || 0,
               payout: Number(round.player1.bonusPayout) || 0,
               opened: true,
@@ -509,7 +509,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
           if (match.slot2?.name && round.player2?.bonusPayout != null) {
             results.push({
               slotName: match.slot2.name,
-              slot: { name: match.slot2.name, image: match.slot2.image },
+              slot: { id: match.slot2.id || null, name: match.slot2.name, provider: match.slot2.provider || '', image: match.slot2.image },
               betSize: Number(round.player2.bonusCost) || 0,
               payout: Number(round.player2.bonusPayout) || 0,
               opened: true,
@@ -633,7 +633,7 @@ export default function TournamentConfig({ config, onChange, allWidgets, mode = 
     }));
     newBracket[bracketActiveRound].matches[bracketActiveMatch] = {
       ...newBracket[bracketActiveRound].matches[bracketActiveMatch],
-      [slotKey]: { name: slot.name, image: slot.image || slot.image_url || null },
+      [slotKey]: { id: slot.id || null, name: slot.name, provider: slot.provider || '', image: slot.image || slot.image_url || null },
     };
     const flatMatches = newBracket.flatMap(r => r.matches);
     const activeFlat = flatMatches.indexOf(newBracket[bracketActiveRound]?.matches[bracketActiveMatch]);

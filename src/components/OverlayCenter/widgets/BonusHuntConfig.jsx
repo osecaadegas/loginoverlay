@@ -12,6 +12,7 @@ import TabBar from './shared/TabBar';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { BONUS_HUNT_STYLE_KEYS } from './styleKeysRegistry';
 import { getErrorMessage, isDuplicateError } from '../../../utils/errorUtils';
+import SlotImage from './SlotImage';
 
 const FONT_OPTIONS = [
   { value: "'Inter', sans-serif", label: 'Inter' },
@@ -1127,7 +1128,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
               <div className="bh-sr-queue-list">
                 {slotRequests.map(req => (
                   <div key={req.id} className="bh-sr-queue-item" onClick={() => handlePickRequest(req)} title={`Click to search "${req.slot_name}"`}>
-                    {req.slot_image && <img src={req.slot_image} alt="" className="bh-sr-queue-img" onError={e => { e.target.style.display = 'none'; }} />}
+                    <SlotImage src={req.slot_image} alt={req.slot_name} className="bh-sr-queue-img" />
                     <div className="bh-sr-queue-info">
                       <span className="bh-sr-queue-name">{req.slot_name}</span>
                       <span className="bh-sr-queue-by">by {req.requested_by}</span>
@@ -1443,8 +1444,7 @@ function BonusHuntPanel({ config, onChange, userId, userAvatar, currency: panelC
 
               {/* Slot image */}
               {bonus.slot?.image && (
-                <img src={bonus.slot.image} alt={bonus.slotName} className="bh-list-img"
-                  onError={e => { e.target.style.display = 'none'; }} />
+                <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bh-list-img" />
               )}
 
               {/* Name + provider — or inline edit */}

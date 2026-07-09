@@ -1,5 +1,6 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { getProviderImage } from '../../../utils/gameProviders';
+import SlotImage from './SlotImage';
 
 /**
  * BonusHuntWidgetV3 — Style 3: Flip Card
@@ -188,8 +189,7 @@ function BonusHuntWidgetV3({ config, theme }) {
                 {frontIsSuper && <div className="bht3-flip-super-badge">⭐ SUPER</div>}
                 {frontIsExtreme && <div className="bht3-flip-extreme-badge">🔥 EXTREME</div>}
                 {frontBonus.slot?.image ? (
-                  <img src={frontBonus.slot.image} alt={frontBonus.slotName} className="bht3-flip-img"
-                    onError={e => { e.target.style.display = 'none'; }} />
+                  <SlotImage src={frontBonus.slot.image} alt={frontBonus.slotName || frontBonus.slot?.name} className="bht3-flip-img" />
                 ) : (
                   <div className="bht3-flip-placeholder">🎰</div>
                 )}
@@ -214,8 +214,7 @@ function BonusHuntWidgetV3({ config, theme }) {
               }}>
                 {/* Blurred slot image background */}
                 {backBonus.slot?.image && (
-                  <img src={backBonus.slot.image} alt="" className="bht3-flip-back-blur"
-                    onError={e => { e.target.style.display = 'none'; }} />
+                  <SlotImage src={backBonus.slot.image} alt={backBonus.slotName || backBonus.slot?.name} className="bht3-flip-back-blur" />
                 )}
                 <div className="bht3-flip-back-overlay" />
                 <div className="bht3-flip-back-content">

@@ -6,6 +6,7 @@
  * Fully customisable via config panel (font, colors, layout).
  */
 import React, { useMemo, useRef, useEffect, useState } from 'react';
+import SlotImage from './SlotImage';
 
 export default function BHStatsWidget({ config, allWidgets }) {
   const c = config || {};
@@ -338,9 +339,9 @@ export default function BHStatsWidget({ config, allWidgets }) {
               boxShadow: stats.best ? `inset 0 0 0 2px ${bestColor}, 0 0 12px rgba(74,222,128,0.25)` : metalBoxShadow,
             }}>
               {stats.best?.image ? (
-                <img src={stats.best.image} alt="" style={{
-                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                }} onError={e => { e.target.style.display = 'none'; }} />
+                <SlotImage src={stats.best.image} alt={stats.best.name} style={{
+                  width: '100%', height: '100%', objectFit: 'contain', display: 'block',
+                }} />
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: fs * 2.5, opacity: 0.25 }}>🎰</span>
@@ -378,10 +379,10 @@ export default function BHStatsWidget({ config, allWidgets }) {
             }}>
               {/* Blurred bg image */}
               {stats.best?.image && (
-                <img src={stats.best.image} alt="" style={{
+                <SlotImage src={stats.best.image} alt={stats.best.name} style={{
                   position: 'absolute', inset: 0, width: '100%', height: '100%',
                   objectFit: 'cover', filter: 'blur(8px) brightness(0.35)', transform: 'scale(1.15)',
-                }} onError={e => { e.target.style.display = 'none'; }} />
+                }} />
               )}
               {/* Dark overlay */}
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />
@@ -423,9 +424,9 @@ export default function BHStatsWidget({ config, allWidgets }) {
               boxShadow: stats.worst ? `inset 0 0 0 2px ${worstColor}, 0 0 12px rgba(248,113,113,0.25)` : metalBoxShadow,
             }}>
               {stats.worst?.image ? (
-                <img src={stats.worst.image} alt="" style={{
-                  width: '100%', height: '100%', objectFit: 'cover', display: 'block',
-                }} onError={e => { e.target.style.display = 'none'; }} />
+                <SlotImage src={stats.worst.image} alt={stats.worst.name} style={{
+                  width: '100%', height: '100%', objectFit: 'contain', display: 'block',
+                }} />
               ) : (
                 <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                   <span style={{ fontSize: fs * 2.5, opacity: 0.25 }}>🎰</span>
@@ -463,10 +464,10 @@ export default function BHStatsWidget({ config, allWidgets }) {
             }}>
               {/* Blurred bg image */}
               {stats.worst?.image && (
-                <img src={stats.worst.image} alt="" style={{
+                <SlotImage src={stats.worst.image} alt={stats.worst.name} style={{
                   position: 'absolute', inset: 0, width: '100%', height: '100%',
                   objectFit: 'cover', filter: 'blur(8px) brightness(0.35)', transform: 'scale(1.15)',
-                }} onError={e => { e.target.style.display = 'none'; }} />
+                }} />
               )}
               {/* Dark overlay */}
               <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)' }} />

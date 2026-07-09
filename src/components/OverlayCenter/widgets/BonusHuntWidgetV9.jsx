@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import SlotImage from './SlotImage';
 
 /**
  * V9 — Hunt Board  (fully rebuilt)
@@ -211,8 +212,7 @@ function BonusHuntWidgetV9({ config }) {
 
                     <div className="v9-card-img-wrap">
                       {image ? (
-                        <img src={image} alt={slotName} className="v9-card-img"
-                          onError={e => { e.target.style.display = 'none'; }} />
+                        <SlotImage src={image} alt={slotName} className="v9-card-img" />
                       ) : (
                         <div className="v9-card-img-ph">🎰</div>
                       )}

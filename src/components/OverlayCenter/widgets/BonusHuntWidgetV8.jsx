@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import SlotImage from './SlotImage';
 
 /**
  * V8 — Card Stack  (fully rebuilt)
@@ -186,8 +187,7 @@ function BonusHuntWidgetV8({ config }) {
                   {/* Image */}
                   <div className="v8-card-img-wrap">
                     {image ? (
-                      <img src={image} alt={slotName} className="v8-card-img"
-                        onError={e => { e.target.style.display = 'none'; }} />
+                      <SlotImage src={image} alt={slotName} className="v8-card-img" />
                     ) : (
                       <div className="v8-card-img-ph">🎰</div>
                     )}

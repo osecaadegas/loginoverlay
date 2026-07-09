@@ -5,6 +5,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../config/supabaseClient';
+import { findUserSlotRecord } from '../services/slotRecordService';
 import {
   getOrCreateInstance,
   getTheme,
@@ -106,12 +107,11 @@ export function useOverlay() {
         // Also fetch user slot records so bestWin/averageMulti/etc reach OBS
         try {
           const resolvedName = slotData?.name || detected.slot_name;
-          const { data: rec } = await supabase
-            .from('user_slot_records')
-            .select('*')
-            .eq('user_id', user.id)
-            .eq('slot_name', resolvedName)
-            .maybeSingle();
+          const rec = await findUserSlotRecord(user.id, {
+            slotId: slotData?.id || null,
+            slotName: resolvedName,
+            provider: slotData?.provider || detected.provider || '',
+          });
           if (rec) {
             update.averageMulti = Math.round((rec.average_multi || 0) * 10) / 10;
             update.bestMulti = Math.round((rec.best_multiplier || 0) * 10) / 10;
@@ -141,7 +141,13 @@ export function useOverlay() {
               upsertWidget(user.id, merged).catch(() => {});
             } else if (w.widget_type === 'rtp_stats' && update.bestWin) {
               // Also cache bestWin into rtp_stats config so OBS can read it (no auth → RLS blocks direct DB query)
-              const cached = { slotName: update.slotName, best_win: update.bestWin, best_multiplier: update.bestMulti || 0 };
+              const cached = {
+                slotId: update.slotId || null,
+                slotName: update.slotName,
+                provider: update.provider || null,
+                best_win: update.bestWin,
+                best_multiplier: update.bestMulti || 0,
+              };
               const merged = { ...w, config: { ...w.config, _cachedBestWin: cached } };
               updated.push(merged);
               upsertWidget(user.id, merged).catch(() => {});

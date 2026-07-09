@@ -531,8 +531,9 @@
   width: 36px;
   height: 36px;
   border-radius: 6px;
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
+  background: rgba(0,0,0,0.35);
 }
 .bht-flip-slot-info {
   display: flex;
@@ -647,9 +648,10 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   object-position: center;
   display: block;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08), rgba(0,0,0,0.45));
 }
 .bht-fullflip-slot-img-placeholder {
   position: absolute;
@@ -1106,8 +1108,9 @@
 .bht-stack-card-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .bht-stack-card-img-ph {
   width: 100%;
@@ -1209,8 +1212,9 @@
 .bht-list-row-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .bht-list-row-img-ph {
   width: 100%;
@@ -1316,8 +1320,9 @@
 .bht-bonus-card-img {
   width: 100%;
   height: var(--bht-slot-img-height, 180px);
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
   filter: saturate(1.15) brightness(1.05);
 }
 .bht-bonus-card-img--super {
@@ -1481,8 +1486,9 @@
   width: 32px;
   height: 32px;
   border-radius: 6px;
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
+  background: rgba(0,0,0,0.35);
   box-shadow: 0 2px 8px rgba(0,0,0,0.4);
 }
 .bht-v12-sr-row-info {
@@ -1989,8 +1995,9 @@
 .oc-bonushunt--v12 .bht-flipback-slot-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .oc-bonushunt--v12 .bht-flipback-slot-placeholder {
   width: 100%;
@@ -2256,8 +2263,9 @@
 .bht-cpt-current-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .bht-cpt-current-info {
   flex: 1;
@@ -2357,8 +2365,9 @@
 .bht-cpt-card-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .bht-cpt-card-img-ph {
   width: 100%;
@@ -2899,8 +2908,9 @@
 .bht3-flip-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: radial-gradient(circle at center, rgba(255,255,255,0.08), rgba(0,0,0,0.45));
 }
 
 /* â”€â”€ Light sweep on super / extreme front face â”€â”€ */
@@ -3327,8 +3337,9 @@
   width: 36px;
   height: 36px;
   border-radius: 6px;
-  object-fit: cover;
+  object-fit: contain;
   flex-shrink: 0;
+  background: rgba(0,0,0,0.28);
 }
 
 .bht3-stats-slot-info {
@@ -4580,8 +4591,9 @@
 }
 .v8-card-img {
   width: 100%; height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .v8-card-img-ph {
   width: 100%; height: 100%;
@@ -4946,8 +4958,9 @@
 }
 .v9-card-img {
   width: 100%; height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .v9-card-img-ph {
   width: 100%; height: 100%;
@@ -5443,8 +5456,9 @@
 .bhtc-card-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   display: block;
+  background: rgba(0,0,0,0.28);
 }
 .bhtc-card-img-placeholder {
   width: 100%;
@@ -6103,7 +6117,8 @@
 .bht11-card-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: rgba(0,0,0,0.28);
 }
 .bht11-card-img-ph {
   font-size: 3em;
@@ -6260,7 +6275,8 @@
 .bht11-list-row-img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: rgba(0,0,0,0.28);
 }
 .bht11-list-row-img-ph {
   width: 100%;

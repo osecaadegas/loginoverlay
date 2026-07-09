@@ -132,7 +132,7 @@ export default function BonusBuysConfig({ config, onChange, allWidgets, mode }) 
     if (user?.id && c.slotName) {
       updateSlotRecordsFromHunt(user.id, [{
         slotName: c.slotName,
-        slot: { name: c.slotName, provider: c.provider || '', image: c.imageUrl || '' },
+        slot: { id: c.slotId || null, name: c.slotName, provider: c.provider || '', image: c.imageUrl || '' },
         betSize: betValue,
         payout: win,
         opened: true,

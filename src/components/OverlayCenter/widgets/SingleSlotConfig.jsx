@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../../config/supabaseClient';
 import { useAuth } from '../../../context/AuthContext';
+import { findUserSlotRecord } from '../../../services/slotRecordService';
 import { configStyles } from './shared/configStyles';
 import { makePerStyleSetters } from './shared/perStyleConfig';
 import { SINGLE_SLOT_STYLE_KEYS } from './styleKeysRegistry';
@@ -60,26 +61,24 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
   }, [searchTerm, searchSlots]);
 
   // Load user records for selected slot
-  const loadRecords = useCallback(async (slotName) => {
+  const loadRecords = useCallback(async (slotRef) => {
+    const slotName = slotRef?.slotName || slotRef?.name || '';
     if (!user || !slotName) return;
     setLoadingRecords(true);
     try {
       // Load aggregate record
-      const { data: rec } = await supabase
-        .from('user_slot_records')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('slot_name', slotName)
-        .maybeSingle();
+      const rec = await findUserSlotRecord(user.id, slotRef);
 
       setRecords(rec || null);
 
       // Load recent results
-      const { data: results } = await supabase
+      let resultsQuery = supabase
         .from('user_slot_results')
         .select('*')
         .eq('user_id', user.id)
-        .eq('slot_name', slotName)
+        .eq('slot_name', slotName);
+      if (slotRef.provider) resultsQuery = resultsQuery.ilike('slot_provider', slotRef.provider);
+      const { data: results } = await resultsQuery
         .order('created_at', { ascending: false })
         .limit(10);
 
@@ -106,8 +105,8 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
 
   // Re-load when slot changes
   useEffect(() => {
-    if (c.slotName) loadRecords(c.slotName);
-  }, [c.slotName, loadRecords]);
+    if (c.slotName) loadRecords({ slotId: c.slotId, slotName: c.slotName, provider: c.provider });
+  }, [c.slotId, c.slotName, c.provider, loadRecords]);
 
   const selectSlot = (slot) => {
     setMulti({
@@ -162,12 +161,11 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
       });
 
       // Upsert aggregate record
-      const { data: existing } = await supabase
-        .from('user_slot_records')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('slot_name', c.slotName)
-        .maybeSingle();
+      const existing = await findUserSlotRecord(user.id, {
+        slotId: c.slotId || null,
+        slotName: c.slotName,
+        provider: c.provider || '',
+      });
 
       if (existing) {
         const newTotal = (existing.total_bonuses || 0) + 1;
@@ -188,6 +186,9 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
             last_bet_size: bet,
             last_payout: pay,
             last_multi: multi,
+            slot_id: c.slotId || existing.slot_id || null,
+            slot_provider: c.provider || existing.slot_provider,
+            slot_image: c.imageUrl || existing.slot_image,
             updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id);
@@ -216,7 +217,7 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
       setTimeout(() => setMessage(''), 3000);
 
       // Reload records
-      await loadRecords(c.slotName);
+      await loadRecords({ slotId: c.slotId, slotName: c.slotName, provider: c.provider });
     } catch (err) {
       const msg = err?.message || '';
       if (msg.includes('42P01')) {
@@ -426,7 +427,7 @@ export default function SingleSlotConfig({ config, onChange, allWidgets, mode })
 
               <button
                 style={{ ...S.btn, background: 'rgba(255,255,255,0.06)', color: '#a0a0b4', width: '100%', marginTop: 12 }}
-                onClick={() => loadRecords(c.slotName)}
+                onClick={() => loadRecords({ slotId: c.slotId, slotName: c.slotName, provider: c.provider })}
               >
                 🔄 Refresh Records
               </button>

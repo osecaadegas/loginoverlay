@@ -7,6 +7,7 @@
  */
 import React, { useMemo, useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../../../config/supabaseClient';
+import SlotImage from './SlotImage';
 
 const FALLBACK_SR_IMG = 'https://i.imgur.com/8E3ucNx.png';
 
@@ -284,8 +285,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 {stats.bestSlot ? (
                   <div className="bht-flipback-slot bht-flipback-slot--best">
                     {stats.bestSlot.slot?.image ? (
-                      <img src={stats.bestSlot.slot.image} alt="" className="bht-flipback-slot-img"
-                        onError={e => { e.target.style.display = 'none'; }} />
+                      <SlotImage src={stats.bestSlot.slot.image} alt={stats.bestSlot.slotName || stats.bestSlot.slot?.name} className="bht-flipback-slot-img" />
                     ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
                   </div>
                 ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
@@ -297,8 +297,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                 {stats.worstSlot ? (
                   <div className="bht-flipback-slot bht-flipback-slot--worst">
                     {stats.worstSlot.slot?.image ? (
-                      <img src={stats.worstSlot.slot.image} alt="" className="bht-flipback-slot-img"
-                        onError={e => { e.target.style.display = 'none'; }} />
+                      <SlotImage src={stats.worstSlot.slot.image} alt={stats.worstSlot.slotName || stats.worstSlot.slot?.name} className="bht-flipback-slot-img" />
                     ) : <div className="bht-flipback-slot-placeholder">🎰</div>}
                   </div>
                 ) : <div className="bht-flipback-slot bht-flipback-slot--empty">—</div>}
@@ -336,8 +335,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                     <div className="bht-stack-card-inner">
                       <div className="bht-stack-card-img-wrap">
                         {bonus.slot?.image ? (
-                          <img src={bonus.slot.image} alt={bonus.slotName} className="bht-stack-card-img"
-                            onError={e => { e.target.style.display = 'none'; }} />
+                          <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-stack-card-img" />
                         ) : <div className="bht-stack-card-img-ph" />}
                       </div>
                     </div>
@@ -380,8 +378,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                           <span className="bht-list-row-idx">{i + 1}</span>
                           <div className="bht-list-row-thumb">
                             {bonus.slot?.image ? (
-                              <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
-                                onError={e => { e.target.style.display = 'none'; }} />
+                              <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
                             ) : <div className="bht-list-row-img-ph" />}
                           </div>
                           <div className="bht-list-row-info">
@@ -420,8 +417,7 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                     <span className="bht-list-row-idx">{idx + 1}</span>
                     <div className="bht-list-row-thumb">
                       {bonus.slot?.image ? (
-                        <img src={bonus.slot.image} alt={bonus.slotName} className="bht-list-row-img"
-                          onError={e => { e.target.style.display = 'none'; }} />
+                        <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-list-row-img" />
                       ) : <div className="bht-list-row-img-ph" />}
                     </div>
                     <div className="bht-list-row-info">
@@ -493,9 +489,9 @@ export default function BonusHuntWidgetV12({ config, theme, userId }) {
                       <div className="bht-v12-sr-row-overlay" />
                       <div className="bht-v12-sr-row-content">
                         <span className="bht-v12-sr-row-idx">{i + 1}</span>
-                        <img src={r.slot_image || FALLBACK_SR_IMG} alt=""
+                        <SlotImage src={r.slot_image || FALLBACK_SR_IMG} alt={r.slot_name}
                           className="bht-v12-sr-row-img"
-                          onError={e => { e.target.src = FALLBACK_SR_IMG; }} />
+                        />
                         <div className="bht-v12-sr-row-info">
                           <span className="bht-v12-sr-row-name">{r.slot_name}</span>
                           {r.requested_by && r.requested_by !== 'anonymous' && (

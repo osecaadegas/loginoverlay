@@ -4,6 +4,76 @@
  */
 import { supabase } from '../config/supabaseClient';
 
+function cleanText(value) {
+  return (value ?? '').toString().trim();
+}
+
+function normaliseText(value) {
+  return cleanText(value).replace(/\s+/g, ' ').toLowerCase();
+}
+
+function escapeIlikePattern(value) {
+  return cleanText(value).replace(/[\\%_]/g, '\\$&');
+}
+
+export function getSlotIdentity(slotLike = {}) {
+  const nested = slotLike.slot || {};
+  return {
+    id: cleanText(slotLike.slotId || slotLike.slot_id || nested.id || nested.slot_id),
+    name: cleanText(slotLike.slotName || slotLike.slot_name || slotLike.name || nested.name || nested.slotName),
+    provider: cleanText(slotLike.provider || slotLike.slot_provider || nested.provider || nested.slot_provider),
+    image: cleanText(slotLike.imageUrl || slotLike.slot_image || slotLike.image || nested.image || nested.imageUrl || nested.slot_image),
+  };
+}
+
+export function recordMatchesSlot(record, slotLike = {}) {
+  const slot = getSlotIdentity(slotLike);
+  if (!record || (!slot.id && !slot.name)) return false;
+  if (slot.id && record.slot_id) return record.slot_id === slot.id;
+  if (slot.name && normaliseText(record.slot_name) !== normaliseText(slot.name)) return false;
+  if (slot.provider && record.slot_provider) {
+    return normaliseText(record.slot_provider) === normaliseText(slot.provider);
+  }
+  return true;
+}
+
+export async function findUserSlotRecord(userId, slotLike = {}, columns = '*') {
+  const slot = getSlotIdentity(slotLike);
+  if (!userId || (!slot.id && !slot.name)) return null;
+
+  const base = () => supabase
+    .from('user_slot_records')
+    .select(columns)
+    .eq('user_id', userId);
+
+  if (slot.id) {
+    const { data, error } = await base()
+      .eq('slot_id', slot.id)
+      .limit(1)
+      .maybeSingle();
+    if (!error && data) return data;
+  }
+
+  if (slot.name && slot.provider) {
+    const { data, error } = await base()
+      .ilike('slot_name', escapeIlikePattern(slot.name))
+      .ilike('slot_provider', escapeIlikePattern(slot.provider))
+      .limit(1)
+      .maybeSingle();
+    if (!error && data) return data;
+  }
+
+  if (slot.name) {
+    const { data, error } = await base()
+      .ilike('slot_name', escapeIlikePattern(slot.name))
+      .order('updated_at', { ascending: false })
+      .limit(2);
+    if (!error && data?.length === 1) return data[0];
+  }
+
+  return null;
+}
+
 /**
  * Process all opened bonuses from a hunt and update per-user slot records.
  * @param {string} userId
@@ -17,7 +87,8 @@ export async function updateSlotRecordsFromHunt(userId, bonuses, huntName) {
   if (opened.length === 0) return;
 
   for (const bonus of opened) {
-    const slotName = bonus.slotName || bonus.slot?.name;
+    const slotIdentity = getSlotIdentity(bonus);
+    const slotName = slotIdentity.name;
     if (!slotName) continue;
 
     const bet = Number(bonus.betSize) || 0;
@@ -29,7 +100,7 @@ export async function updateSlotRecordsFromHunt(userId, bonuses, huntName) {
       await supabase.from('user_slot_results').insert({
         user_id: userId,
         slot_name: slotName,
-        slot_provider: bonus.slot?.provider || null,
+        slot_provider: slotIdentity.provider || null,
         bet_size: bet,
         payout: pay,
         multiplier: multi,
@@ -38,12 +109,7 @@ export async function updateSlotRecordsFromHunt(userId, bonuses, huntName) {
       });
 
       // 2. Upsert aggregate record
-      const { data: existing } = await supabase
-        .from('user_slot_records')
-        .select('*')
-        .eq('user_id', userId)
-        .eq('slot_name', slotName)
-        .maybeSingle();
+      const existing = await findUserSlotRecord(userId, slotIdentity);
 
       if (existing) {
         const newTotal = (existing.total_bonuses || 0) + 1;
@@ -65,18 +131,19 @@ export async function updateSlotRecordsFromHunt(userId, bonuses, huntName) {
             last_bet_size: bet,
             last_payout: pay,
             last_multi: multi,
-            slot_provider: bonus.slot?.provider || existing.slot_provider,
-            slot_image: bonus.slot?.image || existing.slot_image,
+            slot_id: slotIdentity.id || existing.slot_id || null,
+            slot_provider: slotIdentity.provider || existing.slot_provider,
+            slot_image: slotIdentity.image || existing.slot_image,
             updated_at: new Date().toISOString(),
           })
           .eq('id', existing.id);
       } else {
         await supabase.from('user_slot_records').insert({
           user_id: userId,
-          slot_id: bonus.slot?.id || null,
+          slot_id: slotIdentity.id || null,
           slot_name: slotName,
-          slot_provider: bonus.slot?.provider || null,
-          slot_image: bonus.slot?.image || null,
+          slot_provider: slotIdentity.provider || null,
+          slot_image: slotIdentity.image || null,
           total_bonuses: 1,
           total_wagered: bet,
           total_won: pay,

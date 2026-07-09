@@ -1,4 +1,5 @@
 import React, { useMemo, useState, useEffect, useCallback } from 'react';
+import SlotImage from './SlotImage';
 
 /**
  * BonusHuntWidgetV11 — "Fever"
@@ -185,8 +186,7 @@ function BonusHuntWidgetV11({ config, theme }) {
                     <div className="bht-stack-card-inner">
                       <div className="bht-stack-card-img-wrap">
                         {bonus.slot?.image ? (
-                          <img src={bonus.slot.image} alt={bonus.slotName} className="bht-stack-card-img"
-                            onError={e => { e.target.style.display = 'none'; }} />
+                          <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name} className="bht-stack-card-img" />
                         ) : <div className="bht-stack-card-img-ph" />}
                       </div>
                     </div>
@@ -231,9 +231,8 @@ function BonusHuntWidgetV11({ config, theme }) {
                   className={`bht-cpt-card${idx === currentIndex ? ' bht-cpt-card--active' : ''}${bonus.opened ? ' bht-cpt-card--opened' : ''}${isSuper ? ' bht-cpt-card--super' : ''}${isExtreme ? ' bht-cpt-card--extreme' : ''}`}>
                   <div className="bht-cpt-card-img-wrap">
                     {bonus.slot?.image ? (
-                      <img src={bonus.slot.image} alt={bonus.slotName}
-                        className="bht-cpt-card-img"
-                        onError={e => { e.target.src = ''; e.target.style.display = 'none'; }} />
+                      <SlotImage src={bonus.slot.image} alt={bonus.slotName || bonus.slot?.name}
+                        className="bht-cpt-card-img" />
                     ) : (
                       <div className="bht-cpt-card-img-ph" />
                     )}
