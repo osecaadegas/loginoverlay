@@ -36,9 +36,9 @@ function bonusTypeLabel(value) {
 function SummaryStrip({ stats, currency }) {
   const items = [
     ['Net deposited', formatMoney(stats.netDeposited, currency), 'Deposits minus withdrawals'],
-    ['Break even', formatMoney(stats.breakEven, currency), 'Same as net deposited'],
-    ['Remaining', formatMoney(stats.remainingBreakEven, currency), 'Needed to break even'],
-    ['Profit / Loss', formatSignedMoney(stats.profitLoss, currency), 'Current balance + withdrawals - deposits'],
+    ['Break even', formatMoney(stats.breakEven, currency), 'Target from net deposits'],
+    ['Remaining', formatMoney(stats.remainingBreakEven, currency), 'Target minus opened payouts'],
+    ['Profit / Loss', formatSignedMoney(stats.profitLoss, currency), 'Opened payouts minus target'],
     ['Total payout', formatMoney(stats.totalPayout, currency), 'Opened bonuses only'],
     ['Average needed', formatMoney(stats.requiredAveragePayout, currency), `${formatMultiplier(stats.requiredAverageMultiplier)} required`],
   ];
@@ -643,7 +643,7 @@ export default function PlayerBonusHuntDetail() {
           <div>
             <span className={`pbh-pill pbh-pill--${hunt.status}`}>{hunt.status}</span>
             <h2>Accounting</h2>
-            <p>Break Even = Net Deposited. Profit/Loss = Current Balance + Withdrawals - Deposits.</p>
+            <p>Break Even target = Net Deposited. Profit/Loss = opened payouts minus that target.</p>
           </div>
           <div className="pbh-actions">
             {hunt.status !== 'completed' && (

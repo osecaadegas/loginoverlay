@@ -192,13 +192,13 @@ export default function PlayerBonusHuntDashboard() {
               <StatCard label="Withdrawals" value={formatMoney(stats.totalWithdrawals, currency)} />
               <StatCard label="Total spent" value={formatMoney(stats.totalSpent, currency)} title="Sum of all bonus costs." />
               <StatCard label="Current balance" value={formatMoney(stats.currentBalance, currency)} />
-              <StatCard label="Break even" value={formatMoney(stats.breakEven, currency)} title="Net Deposited = Total Deposits - Total Withdrawals." />
-              <StatCard label="Remaining" value={formatMoney(stats.remainingBreakEven, currency)} detail="to break even" />
+              <StatCard label="Break even" value={formatMoney(stats.breakEven, currency)} title="Target = max(Net Deposited, 0)." />
+              <StatCard label="Remaining" value={formatMoney(stats.remainingBreakEven, currency)} detail="target minus payouts" />
               <StatCard
                 label="Profit / Loss"
                 value={formatSignedMoney(stats.profitLoss, currency)}
                 tone={stats.profitLoss >= 0 ? 'positive' : 'negative'}
-                title="Current Balance + Total Withdrawals - Total Deposits."
+                title="Opened payouts minus break-even target."
               />
               <StatCard label="Total payout" value={formatMoney(stats.totalPayout, currency)} />
               <StatCard label="Bonuses" value={`${stats.openedBonuses}/${stats.totalBonuses}`} detail={`${stats.remainingBonuses} remaining`} />

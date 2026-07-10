@@ -25,7 +25,7 @@ const hunt = {
 };
 
 assert.equal(calculateNetDeposited(hunt), 525);
-assert.equal(calculateProfitLoss(hunt), -225);
+assert.equal(calculateProfitLoss(hunt, []), -525);
 
 const bonuses = [
   { id: 'b1', hunt_id: 'hunt-1', slot_name: 'Alpha', provider_name: 'A', bonus_cost: 50, bet_size: 1, payout: 200, status: 'opened' },
@@ -35,12 +35,13 @@ const bonuses = [
 ];
 
 assert.equal(calculateBonusMultiplier(bonuses[0]), 200);
-assert.equal(calculateRequiredAveragePayout(hunt, bonuses), 112.5);
-assert.equal(calculateRequiredAverageMultiplier(hunt, bonuses), 75);
+assert.equal(calculateRequiredAveragePayout(hunt, bonuses), 162.5);
+assert.equal(calculateRequiredAverageMultiplier(hunt, bonuses), 108.33);
 
 const stats = calculateHuntStatistics(hunt, bonuses);
 assert.equal(stats.breakEven, 525);
-assert.equal(stats.remainingBreakEven, 225);
+assert.equal(stats.remainingBreakEven, 325);
+assert.equal(stats.profitLoss, -325);
 assert.equal(stats.totalPayout, 200);
 assert.equal(stats.totalSpent, 210);
 assert.equal(stats.openedBonuses, 2);
@@ -49,6 +50,14 @@ assert.equal(stats.bestWin.slot_name, 'Alpha');
 assert.equal(stats.worstWin.slot_name, 'Beta');
 assert.equal(stats.bestMultiplier, 200);
 assert.equal(stats.averagePayout, 100);
+
+const screenshotLikeStats = calculateHuntStatistics(
+  { currency: 'EUR', starting_deposit: 100, additional_deposits: 0, initial_withdrawal: 0, total_withdrawals: 0, current_balance: 0 },
+  [{ id: 'b5', slot_name: 'Winner', bet_size: 1, bonus_cost: 0, payout: 150, status: 'opened' }]
+);
+assert.equal(screenshotLikeStats.breakEven, 100);
+assert.equal(screenshotLikeStats.remainingBreakEven, 0);
+assert.equal(screenshotLikeStats.profitLoss, 50);
 
 const library = calculateLibraryStatistics([{ ...hunt, name: 'Main' }], bonuses);
 assert.equal(library.totalsByCurrency.EUR.totalDeposited, 600);
