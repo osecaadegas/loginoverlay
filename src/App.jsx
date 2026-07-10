@@ -281,7 +281,7 @@ function LayoutWrapper({ children }) {
   useAnalytics(); // page view tracking + user identification
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
-  const isOverlayCenter = location.pathname === '/overlay-center';
+  const isOverlayCenter = location.pathname.startsWith('/overlay-center');
   const isLandingRoute = location.pathname === '/' || location.pathname === '/player' || location.pathname === '/streamer';
   const isUtilityRoute = location.pathname === '/login' || location.pathname === '/spotify-callback';
   const showTopNavigation = !isLandingRoute && !isWidgetRoute && !isOBSOverlay && !isOverlayCenter && !isUtilityRoute;
@@ -353,7 +353,7 @@ function App() {
                     <AdminPanel />
                   </ProtectedAdminRoute>
                 } />
-                <Route path="/overlay-center" element={
+                <Route path="/overlay-center/*" element={
                   <ProtectedAdminRoute allowPremium allowModerator redirectTo="/premium">
                     <OverlayControlCenter />
                   </ProtectedAdminRoute>

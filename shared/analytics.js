@@ -40,6 +40,19 @@ export const ANALYTICS_EVENTS = {
   STREAMER_OVERLAY_OPENED: 'streamer_overlay_opened',
   STREAMER_PREMIUM_VIEWED: 'streamer_premium_viewed',
   STREAMER_PREMIUM_CHECKOUT_STARTED: 'streamer_premium_checkout_started',
+
+  OVERLAY_SETUP_STARTED: 'overlay_setup_started',
+  OVERLAY_SETUP_STEP_COMPLETED: 'overlay_setup_step_completed',
+  OVERLAY_SETUP_COMPLETED: 'overlay_setup_completed',
+  OVERLAY_TOOL_OPENED: 'overlay_tool_opened',
+  OVERLAY_TOOL_ENABLED: 'overlay_tool_enabled',
+  OVERLAY_TOOL_DISABLED: 'overlay_tool_disabled',
+  OVERLAY_TOOL_CONFIGURED: 'overlay_tool_configured',
+  OVERLAY_PREVIEW_CONNECTED: 'overlay_preview_connected',
+  OVERLAY_PREVIEW_POPPED_OUT: 'overlay_preview_popped_out',
+  OBS_URL_COPIED: 'obs_url_copied',
+  TUTORIAL_COMPLETED: 'tutorial_completed',
+  TUTORIAL_SKIPPED: 'tutorial_skipped',
 };
 
 export const LEGACY_EVENT_NAME_MAP = {
