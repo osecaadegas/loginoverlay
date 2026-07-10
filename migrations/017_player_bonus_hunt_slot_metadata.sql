@@ -17,6 +17,20 @@ ALTER TABLE public.player_hunt_bonuses
   ADD COLUMN IF NOT EXISTS slot_features JSONB NOT NULL DEFAULT '[]'::jsonb;
 
 ALTER TABLE public.player_hunt_bonuses
+  ADD COLUMN IF NOT EXISTS bonus_type TEXT NOT NULL DEFAULT 'normal';
+
+UPDATE public.player_hunt_bonuses
+SET bonus_type = 'normal'
+WHERE bonus_type IS NULL OR bonus_type = '';
+
+ALTER TABLE public.player_hunt_bonuses
+  DROP CONSTRAINT IF EXISTS player_hunt_bonuses_bonus_type_check;
+
+ALTER TABLE public.player_hunt_bonuses
+  ADD CONSTRAINT player_hunt_bonuses_bonus_type_check
+  CHECK (bonus_type IN ('normal', 'super', 'supreme'));
+
+ALTER TABLE public.player_hunt_bonuses
   DROP CONSTRAINT IF EXISTS player_hunt_bonuses_slot_volatility_check;
 
 ALTER TABLE public.player_hunt_bonuses
@@ -53,6 +67,7 @@ SELECT
   b.slot_max_win_multiplier,
   b.slot_theme,
   b.slot_features,
+  b.bonus_type,
   b.bonus_cost,
   b.bet_size,
   b.payout,

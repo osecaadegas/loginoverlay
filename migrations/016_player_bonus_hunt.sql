@@ -109,6 +109,7 @@ CREATE TABLE IF NOT EXISTS public.player_hunt_bonuses (
   slot_max_win_multiplier NUMERIC(10,2),
   slot_theme TEXT,
   slot_features JSONB NOT NULL DEFAULT '[]'::jsonb,
+  bonus_type TEXT NOT NULL DEFAULT 'normal',
   bonus_cost NUMERIC(14,2) NOT NULL DEFAULT 0,
   bet_size NUMERIC(14,2) NOT NULL DEFAULT 0,
   payout NUMERIC(14,2) NOT NULL DEFAULT 0,
@@ -122,6 +123,7 @@ CREATE TABLE IF NOT EXISTS public.player_hunt_bonuses (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   deleted_at TIMESTAMPTZ,
   CONSTRAINT player_hunt_bonuses_status_check CHECK (status IN ('unopened', 'opened')),
+  CONSTRAINT player_hunt_bonuses_bonus_type_check CHECK (bonus_type IN ('normal', 'super', 'supreme')),
   CONSTRAINT player_hunt_bonuses_slot_volatility_check CHECK (
     slot_volatility IS NULL OR slot_volatility IN ('low', 'medium', 'high', 'very_high')
   ),
@@ -221,6 +223,7 @@ SELECT
   b.slot_max_win_multiplier,
   b.slot_theme,
   b.slot_features,
+  b.bonus_type,
   b.bonus_cost,
   b.bet_size,
   b.payout,

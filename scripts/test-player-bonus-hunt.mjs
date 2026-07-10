@@ -63,6 +63,8 @@ assert.equal(isSubscriptionEntitled({ status: 'canceled', current_period_end: '2
 
 assert.equal(normalizeHuntPayload({ name: 'H', currency: 'EUR', starting_deposit: 1 }).currency, 'EUR');
 assert.equal(normalizeBonusPayload({ slot_name: 'S', bet_size: 2, payout: 10 }).multiplier, 5);
+assert.equal(normalizeBonusPayload({ slot_name: 'S', bonus_type: 'supreme' }).bonus_type, 'supreme');
+assert.throws(() => normalizeBonusPayload({ slot_name: 'S', bonus_type: 'mega' }), /Bonus type is invalid/);
 const normalizedSlotMeta = normalizeBonusPayload({
   slot_name: 'Gates of Olympus',
   provider_name: 'Pragmatic Play',

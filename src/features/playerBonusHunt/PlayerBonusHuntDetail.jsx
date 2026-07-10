@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Archive, CheckCircle2, Edit2, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
+import { Archive, ArrowRight, CheckCircle2, CircleDollarSign, Edit2, Plus, Save, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
 import BonusForm from './BonusForm';
 import SlotThumb from './SlotThumb';
 import {
@@ -16,6 +16,22 @@ import {
 } from './playerBonusHuntService';
 import { formatDate, formatMaxWin, formatMoney, formatMultiplier, formatRtp, formatSignedMoney, formatVolatility } from './format';
 import './PlayerBonusHunt.css';
+
+const BONUS_TYPE_OPTIONS = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'super', label: 'Super' },
+  { value: 'supreme', label: 'Supreme' },
+];
+
+const BONUS_TYPE_ORDER = {
+  normal: 0,
+  super: 1,
+  supreme: 2,
+};
+
+function bonusTypeLabel(value) {
+  return BONUS_TYPE_OPTIONS.find((option) => option.value === value)?.label || 'Normal';
+}
 
 function SummaryStrip({ stats, currency }) {
   const items = [
@@ -39,10 +55,59 @@ function SummaryStrip({ stats, currency }) {
   );
 }
 
-function BonusRow({ bonus, currency, onEdit, onDelete }) {
-  const profit = Number(bonus.profit_loss || 0);
+function BonusTypePill({ type }) {
+  const value = type || 'normal';
+  return <span className={`pbh-type-pill pbh-type-pill--${value}`}>{bonusTypeLabel(value)}</span>;
+}
+
+function PayoutInput({ bonus, value, saving, onChange, onSave, onKeyDown }) {
+  const isDirty = value !== (bonus.status === 'opened' ? String(bonus.payout ?? '') : '');
   return (
-    <tr>
+    <div className="pbh-payout-cell">
+      <input
+        className="pbh-payout-input"
+        type="number"
+        min="0"
+        step="0.01"
+        inputMode="decimal"
+        value={value}
+        data-payout-id={bonus.id}
+        onChange={(event) => onChange(bonus.id, event.target.value)}
+        onBlur={(event) => onSave(bonus, event.target.value)}
+        onKeyDown={(event) => onKeyDown(event, bonus)}
+        placeholder="0.00"
+      />
+      <button
+        type="button"
+        className="pbh-icon-btn pbh-icon-btn--compact"
+        onMouseDown={(event) => event.preventDefault()}
+        onClick={() => onSave(bonus, value)}
+        disabled={saving || !isDirty}
+        title="Save payout"
+      >
+        <Save size={15} />
+      </button>
+    </div>
+  );
+}
+
+function BonusRow({
+  bonus,
+  currency,
+  phase,
+  payoutValue,
+  payoutSaving,
+  onPayoutChange,
+  onPayoutSave,
+  onPayoutKeyDown,
+  onEdit,
+  onDelete,
+}) {
+  const isOpening = phase === 'opening';
+  const profit = Number(bonus.profit_loss || 0);
+  const hasResult = bonus.status === 'opened';
+  return (
+    <tr className={hasResult ? 'pbh-row--opened' : ''}>
       <td>
         <div className="pbh-slot-cell">
           <SlotThumb src={bonus.slot_image_url} name={bonus.slot_name} size="sm" />
@@ -52,19 +117,40 @@ function BonusRow({ bonus, currency, onEdit, onDelete }) {
           </div>
         </div>
       </td>
-      <td>{bonus.provider_name || '-'}</td>
-      <td>{formatRtp(bonus.slot_rtp)}</td>
-      <td>{formatMaxWin(bonus.slot_max_win_multiplier)}</td>
-      <td>{formatVolatility(bonus.slot_volatility)}</td>
-      <td>{formatMoney(bonus.bonus_cost, currency)}</td>
-      <td>{formatMoney(bonus.bet_size, currency)}</td>
-      <td>{formatMoney(bonus.payout, currency)}</td>
-      <td>{formatMultiplier(bonus.multiplier)}</td>
-      <td className={profit >= 0 ? 'pbh-positive' : 'pbh-negative'}>{formatSignedMoney(profit, currency)}</td>
-      <td><span className={`pbh-pill pbh-pill--${bonus.status}`}>{bonus.status}</span></td>
+      {isOpening ? (
+        <>
+          <td><BonusTypePill type={bonus.bonus_type} /></td>
+          <td>{formatMoney(bonus.bonus_cost, currency)}</td>
+          <td>{formatMoney(bonus.bet_size, currency)}</td>
+          <td>
+            <PayoutInput
+              bonus={bonus}
+              value={payoutValue}
+              saving={payoutSaving}
+              onChange={onPayoutChange}
+              onSave={onPayoutSave}
+              onKeyDown={onPayoutKeyDown}
+            />
+          </td>
+          <td>{hasResult ? formatMultiplier(bonus.multiplier) : '-'}</td>
+          <td className={hasResult ? (profit >= 0 ? 'pbh-positive' : 'pbh-negative') : ''}>
+            {hasResult ? formatSignedMoney(profit, currency) : '-'}
+          </td>
+        </>
+      ) : (
+        <>
+          <td>{bonus.provider_name || '-'}</td>
+          <td><BonusTypePill type={bonus.bonus_type} /></td>
+          <td>{formatRtp(bonus.slot_rtp)}</td>
+          <td>{formatMaxWin(bonus.slot_max_win_multiplier)}</td>
+          <td>{formatVolatility(bonus.slot_volatility)}</td>
+          <td>{formatMoney(bonus.bonus_cost, currency)}</td>
+          <td>{formatMoney(bonus.bet_size, currency)}</td>
+        </>
+      )}
       <td>
         <div className="pbh-actions">
-          <button className="pbh-icon-btn" onClick={() => onEdit(bonus)} title="Edit bonus"><Edit2 size={16} /></button>
+          <button className="pbh-icon-btn" onClick={() => onEdit(bonus)} title="Edit bonus setup"><Edit2 size={16} /></button>
           <button className="pbh-icon-btn pbh-icon-btn--danger" onClick={() => onDelete(bonus.id)} title="Delete bonus"><Trash2 size={16} /></button>
         </div>
       </td>
@@ -72,31 +158,63 @@ function BonusRow({ bonus, currency, onEdit, onDelete }) {
   );
 }
 
-function BonusCard({ bonus, currency, onEdit, onDelete }) {
+function BonusCard({
+  bonus,
+  currency,
+  phase,
+  payoutValue,
+  payoutSaving,
+  onPayoutChange,
+  onPayoutSave,
+  onPayoutKeyDown,
+  onEdit,
+  onDelete,
+}) {
+  const isOpening = phase === 'opening';
   const profit = Number(bonus.profit_loss || 0);
+  const hasResult = bonus.status === 'opened';
   return (
-    <article className="pbh-bonus-card">
+    <article className={`pbh-bonus-card ${hasResult ? 'pbh-bonus-card--opened' : ''}`}>
       <div className="pbh-bonus-card__top">
         <SlotThumb src={bonus.slot_image_url} name={bonus.slot_name} />
         <div>
-          <span className={`pbh-pill pbh-pill--${bonus.status}`}>{bonus.status}</span>
+          <BonusTypePill type={bonus.bonus_type} />
           <h3>{bonus.slot_name}</h3>
           <p>{bonus.provider_name || 'Unknown provider'}</p>
         </div>
       </div>
       <div className="pbh-bonus-card__grid">
-        <span>Provider <strong>{bonus.provider_name || '-'}</strong></span>
-        <span>RTP <strong>{formatRtp(bonus.slot_rtp)}</strong></span>
-        <span>Max win <strong>{formatMaxWin(bonus.slot_max_win_multiplier)}</strong></span>
-        <span>Volatility <strong>{formatVolatility(bonus.slot_volatility)}</strong></span>
+        {!isOpening && (
+          <>
+            <span>Provider <strong>{bonus.provider_name || '-'}</strong></span>
+            <span>RTP <strong>{formatRtp(bonus.slot_rtp)}</strong></span>
+            <span>Max win <strong>{formatMaxWin(bonus.slot_max_win_multiplier)}</strong></span>
+            <span>Volatility <strong>{formatVolatility(bonus.slot_volatility)}</strong></span>
+          </>
+        )}
         <span>Cost <strong>{formatMoney(bonus.bonus_cost, currency)}</strong></span>
         <span>Bet <strong>{formatMoney(bonus.bet_size, currency)}</strong></span>
-        <span>Payout <strong>{formatMoney(bonus.payout, currency)}</strong></span>
-        <span>Multi <strong>{formatMultiplier(bonus.multiplier)}</strong></span>
-        <span className={profit >= 0 ? 'pbh-positive' : 'pbh-negative'}>Result <strong>{formatSignedMoney(profit, currency)}</strong></span>
+        {isOpening && (
+          <>
+            <span className="pbh-bonus-card__payout">Payout
+              <PayoutInput
+                bonus={bonus}
+                value={payoutValue}
+                saving={payoutSaving}
+                onChange={onPayoutChange}
+                onSave={onPayoutSave}
+                onKeyDown={onPayoutKeyDown}
+              />
+            </span>
+            <span>Multi <strong>{hasResult ? formatMultiplier(bonus.multiplier) : '-'}</strong></span>
+            <span className={hasResult ? (profit >= 0 ? 'pbh-positive' : 'pbh-negative') : ''}>
+              Result <strong>{hasResult ? formatSignedMoney(profit, currency) : '-'}</strong>
+            </span>
+          </>
+        )}
       </div>
       <div className="pbh-actions">
-        <button className="pbh-btn pbh-btn--secondary" onClick={() => onEdit(bonus)}>Edit</button>
+        <button className="pbh-btn pbh-btn--secondary" onClick={() => onEdit(bonus)}>Edit setup</button>
         <button className="pbh-btn pbh-btn--danger" onClick={() => onDelete(bonus.id)}>Delete</button>
       </div>
     </article>
@@ -114,11 +232,9 @@ function slotToDraft(slot) {
     slot_max_win_multiplier: slot.max_win_multiplier ?? null,
     slot_theme: slot.theme || '',
     slot_features: Array.isArray(slot.features) ? slot.features : [],
+    bonus_type: 'normal',
     bonus_cost: '',
     bet_size: '',
-    payout: '',
-    status: 'unopened',
-    notes: '',
   };
 }
 
@@ -183,15 +299,15 @@ function SlotCatalogSuggestions({ slots, loading, error, query, onAdd, onCustom 
   );
 }
 
-function QuickBonusEditor({ draft, setDraft, currency, saving, onSubmit, onCancel }) {
+function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
   const set = (key, value) => setDraft((prev) => ({ ...prev, [key]: value }));
   const submit = (event) => {
     event.preventDefault();
     onSubmit({
       ...draft,
+      bonus_type: draft.bonus_type || 'normal',
       bonus_cost: Number(draft.bonus_cost || 0),
       bet_size: Number(draft.bet_size || 0),
-      payout: Number(draft.payout || 0),
     });
   };
 
@@ -226,22 +342,14 @@ function QuickBonusEditor({ draft, setDraft, currency, saving, onSubmit, onCance
           <input type="number" min="0" step="0.01" value={draft.bet_size ?? ''} onChange={(event) => set('bet_size', event.target.value)} />
         </label>
         <label className="pbh-field">
-          <span>Payout</span>
-          <input type="number" min="0" step="0.01" value={draft.payout ?? ''} onChange={(event) => set('payout', event.target.value)} />
-        </label>
-        <label className="pbh-field">
-          <span>Status</span>
-          <select value={draft.status || 'unopened'} onChange={(event) => set('status', event.target.value)}>
-            <option value="unopened">Unopened</option>
-            <option value="opened">Opened</option>
+          <span>Type</span>
+          <select value={draft.bonus_type || 'normal'} onChange={(event) => set('bonus_type', event.target.value)}>
+            <option value="normal">Normal</option>
+            <option value="super">Super</option>
+            <option value="supreme">Supreme</option>
           </select>
         </label>
       </div>
-
-      <label className="pbh-field pbh-field--wide">
-        <span>Notes</span>
-        <textarea value={draft.notes || ''} onChange={(event) => set('notes', event.target.value)} rows={2} maxLength={1200} />
-      </label>
 
       <div className="pbh-form__actions pbh-form__actions--split">
         <button type="button" className="pbh-btn pbh-btn--ghost" onClick={onCancel}>Cancel</button>
@@ -266,9 +374,12 @@ export default function PlayerBonusHuntDetail() {
   const [slotSearch, setSlotSearch] = useState('');
   const [listSearch, setListSearch] = useState('');
   const [sort, setSort] = useState('position');
+  const [bonusPhase, setBonusPhase] = useState('hunt');
   const [huntForm, setHuntForm] = useState(null);
   const [draftBonus, setDraftBonus] = useState(null);
   const [quickSaving, setQuickSaving] = useState(false);
+  const [payoutDrafts, setPayoutDrafts] = useState({});
+  const [savingPayoutId, setSavingPayoutId] = useState(null);
   const [showListOptions, setShowListOptions] = useState(false);
   const [catalogResults, setCatalogResults] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
@@ -319,6 +430,14 @@ export default function PlayerBonusHuntDetail() {
   const bonuses = hunt?.bonuses || [];
   const stats = hunt?.stats || {};
   const currency = stats.currency || hunt?.currency || 'EUR';
+  useEffect(() => {
+    const next = {};
+    for (const bonus of hunt?.bonuses || []) {
+      next[bonus.id] = bonus.status === 'opened' ? String(bonus.payout ?? '') : '';
+    }
+    setPayoutDrafts(next);
+  }, [hunt?.id, hunt?.bonuses]);
+
   const providers = useMemo(() => [...new Set(bonuses.map((bonus) => bonus.provider_name).filter(Boolean))].sort(), [bonuses]);
   const filteredBonuses = useMemo(() => {
     let rows = [...bonuses];
@@ -334,7 +453,10 @@ export default function PlayerBonusHuntDetail() {
     const sorters = {
       position: (a, b) => Number(a.position || 0) - Number(b.position || 0),
       slot: (a, b) => String(a.slot_name).localeCompare(String(b.slot_name)),
+      provider: (a, b) => String(a.provider_name || '').localeCompare(String(b.provider_name || '')),
+      type: (a, b) => (BONUS_TYPE_ORDER[a.bonus_type || 'normal'] ?? 0) - (BONUS_TYPE_ORDER[b.bonus_type || 'normal'] ?? 0),
       cost: (a, b) => Number(b.bonus_cost || 0) - Number(a.bonus_cost || 0),
+      bet: (a, b) => Number(b.bet_size || 0) - Number(a.bet_size || 0),
       payout: (a, b) => Number(b.payout || 0) - Number(a.payout || 0),
       multiplier: (a, b) => Number(b.multiplier || 0) - Number(a.multiplier || 0),
       profit: (a, b) => Number(b.profit_loss || 0) - Number(a.profit_loss || 0),
@@ -399,8 +521,56 @@ export default function PlayerBonusHuntDetail() {
     }
   };
 
+  const setPayoutDraft = (bonusId, value) => {
+    setPayoutDrafts((prev) => ({ ...prev, [bonusId]: value }));
+  };
+
+  const saveOpeningPayout = async (bonus, nextValue) => {
+    const raw = String(nextValue ?? payoutDrafts[bonus.id] ?? '').trim();
+    const currentRaw = bonus.status === 'opened' ? String(bonus.payout ?? '') : '';
+    if (raw === currentRaw) return;
+
+    const payload = { bonusId: bonus.id };
+    if (raw === '') {
+      payload.payout = 0;
+      payload.status = 'unopened';
+    } else {
+      const payout = Number(raw);
+      if (!Number.isFinite(payout) || payout < 0) {
+        setError('Payout must be zero or greater.');
+        return;
+      }
+      payload.payout = payout;
+      payload.status = 'opened';
+    }
+
+    setError('');
+    setSavingPayoutId(bonus.id);
+    try {
+      await updateBonus(payload);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setSavingPayoutId(null);
+    }
+  };
+
+  const handlePayoutKeyDown = (event, bonus) => {
+    if (event.key === 'Escape') {
+      setPayoutDraft(bonus.id, bonus.status === 'opened' ? String(bonus.payout ?? '') : '');
+      return;
+    }
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    const inputs = Array.from(document.querySelectorAll('.pbh-payout-input'));
+    const index = inputs.indexOf(event.currentTarget);
+    event.currentTarget.blur();
+    window.setTimeout(() => inputs[index + 1]?.focus(), 0);
+  };
+
   const removeBonus = async (bonusId) => {
-    if (!window.confirm('Delete this bonus result?')) return;
+    if (!window.confirm('Delete this bonus?')) return;
     setError('');
     try {
       await deleteBonus(bonusId);
@@ -538,8 +708,8 @@ export default function PlayerBonusHuntDetail() {
         <section className="pbh-panel">
           <div className="pbh-section-head">
             <div>
-              <h2>Edit bonus</h2>
-              <p>Slot image, provider, RTP, max win, and volatility are pulled from the existing slot library when available.</p>
+              <h2>Edit bonus setup</h2>
+              <p>Change the slot, provider, type, cost, or bet size. Payouts are entered in bonus opening.</p>
             </div>
           </div>
           <BonusForm
@@ -554,27 +724,29 @@ export default function PlayerBonusHuntDetail() {
       <section className="pbh-panel">
         <div className="pbh-section-head">
           <div>
-            <h2>Bonuses</h2>
-            <p>{stats.openedBonuses || 0} opened of {stats.totalBonuses || 0}. {formatMoney(stats.remainingBreakEven, currency)} remaining to break even.</p>
+            <h2>{bonusPhase === 'opening' ? 'Bonus opening' : 'Bonus hunt'}</h2>
+            <p>
+              {bonusPhase === 'opening'
+                ? `${stats.openedBonuses || 0} opened of ${stats.totalBonuses || 0}. Enter payouts only when the bonus has been opened.`
+                : `${stats.totalBonuses || 0} bonuses added. Add slots, type, cost, and bet size before opening.`}
+            </p>
           </div>
-        </div>
-
-        <div className="pbh-bonus-workbench">
-          <div className="pbh-add-slot-row">
-            <label className="pbh-add-slot-search">
-              <span>Add a slot</span>
-              <div className="pbh-searchbox">
-                <Search size={16} />
-                <input
-                  value={slotSearch}
-                  onChange={(event) => {
-                    setSlotSearch(event.target.value);
-                    setDraftBonus(null);
-                  }}
-                  placeholder="Type 3 letters, slot name, or provider"
-                />
-              </div>
-            </label>
+          <div className="pbh-actions">
+            <button
+              type="button"
+              className={bonusPhase === 'opening' ? 'pbh-btn pbh-btn--ghost' : 'pbh-btn pbh-btn--primary'}
+              onClick={() => {
+                setBonusPhase((phase) => (phase === 'opening' ? 'hunt' : 'opening'));
+                setDraftBonus(null);
+              }}
+              disabled={bonuses.length === 0}
+            >
+              {bonusPhase === 'opening' ? (
+                <>Back to hunt setup</>
+              ) : (
+                <><ArrowRight size={17} /> Proceed to bonus opening</>
+              )}
+            </button>
             <button
               type="button"
               className={`pbh-btn ${listOptionsActive ? 'pbh-btn--secondary' : 'pbh-btn--ghost'}`}
@@ -583,27 +755,61 @@ export default function PlayerBonusHuntDetail() {
               <SlidersHorizontal size={17} /> List options
             </button>
           </div>
+        </div>
 
-          {!draftBonus && (
-            <SlotCatalogSuggestions
-              slots={catalogResults}
-              loading={catalogLoading}
-              error={catalogError}
-              query={slotSearch}
-              onAdd={addSuggestedSlot}
-              onCustom={addTypedSlot}
-            />
-          )}
+        <div className="pbh-bonus-workbench">
+          {bonusPhase === 'hunt' ? (
+            <>
+              <div className="pbh-add-slot-row">
+                <label className="pbh-add-slot-search">
+                  <span>Add a slot</span>
+                  <div className="pbh-searchbox">
+                    <Search size={16} />
+                    <input
+                      value={slotSearch}
+                      onChange={(event) => {
+                        setSlotSearch(event.target.value);
+                        setDraftBonus(null);
+                      }}
+                      placeholder="Type 3 letters, slot name, or provider"
+                    />
+                  </div>
+                </label>
+              </div>
 
-          {draftBonus && (
-            <QuickBonusEditor
-              draft={draftBonus}
-              setDraft={setDraftBonus}
-              currency={currency}
-              saving={quickSaving}
-              onSubmit={saveQuickBonus}
-              onCancel={() => setDraftBonus(null)}
-            />
+              {!draftBonus && (
+                <SlotCatalogSuggestions
+                  slots={catalogResults}
+                  loading={catalogLoading}
+                  error={catalogError}
+                  query={slotSearch}
+                  onAdd={addSuggestedSlot}
+                  onCustom={addTypedSlot}
+                />
+              )}
+
+              {draftBonus && (
+                <QuickBonusEditor
+                  draft={draftBonus}
+                  setDraft={setDraftBonus}
+                  saving={quickSaving}
+                  onSubmit={saveQuickBonus}
+                  onCancel={() => setDraftBonus(null)}
+                />
+              )}
+            </>
+          ) : (
+            <div className="pbh-opening-panel">
+              <CircleDollarSign size={22} />
+              <div>
+                <strong>Enter payouts per row</strong>
+                <span>Leave a payout empty to keep it pending. Type 0 to save a real zero-payout bonus.</span>
+              </div>
+              <div className="pbh-opening-panel__meta">
+                <strong>{stats.openedBonuses || 0}/{stats.totalBonuses || 0}</strong>
+                <span>{formatMoney(stats.remainingBreakEven, currency)} remaining</span>
+              </div>
+            </div>
           )}
 
           {showListOptions && (
@@ -612,8 +818,8 @@ export default function PlayerBonusHuntDetail() {
                 <input value={listSearch} onChange={(event) => setListSearch(event.target.value)} placeholder="Filter saved bonuses" />
                 <select value={filter} onChange={(event) => setFilter(event.target.value)}>
                   <option value="all">All</option>
-                  <option value="opened">Opened</option>
-                  <option value="unopened">Unopened</option>
+                  <option value="opened">With payout</option>
+                  <option value="unopened">Still to open</option>
                   <option value="profitable">Profitable</option>
                   <option value="losing">Losing</option>
                 </select>
@@ -624,7 +830,10 @@ export default function PlayerBonusHuntDetail() {
                 <select value={sort} onChange={(event) => setSort(event.target.value)}>
                   <option value="position">Added order</option>
                   <option value="slot">Slot name</option>
+                  <option value="provider">Provider</option>
+                  <option value="type">Type</option>
                   <option value="cost">Cost</option>
+                  <option value="bet">Bet size</option>
                   <option value="payout">Payout</option>
                   <option value="multiplier">Multiplier</option>
                   <option value="profit">Profit</option>
@@ -646,31 +855,65 @@ export default function PlayerBonusHuntDetail() {
             <div className="pbh-table-wrap">
               <table className="pbh-table">
                 <thead>
-                  <tr>
-                    <th>Slot</th>
-                    <th>Provider</th>
-                    <th>RTP</th>
-                    <th>Max win</th>
-                    <th>Volatility</th>
-                    <th>Cost</th>
-                    <th>Bet</th>
-                    <th>Payout</th>
-                    <th>Multi</th>
-                    <th>Result</th>
-                    <th>Status</th>
-                    <th>Actions</th>
-                  </tr>
+                  {bonusPhase === 'opening' ? (
+                    <tr>
+                      <th>Slot</th>
+                      <th>Type</th>
+                      <th>Cost</th>
+                      <th>Bet</th>
+                      <th>Payout</th>
+                      <th>Multi</th>
+                      <th>Result</th>
+                      <th>Actions</th>
+                    </tr>
+                  ) : (
+                    <tr>
+                      <th>Slot</th>
+                      <th>Provider</th>
+                      <th>Type</th>
+                      <th>RTP</th>
+                      <th>Max win</th>
+                      <th>Volatility</th>
+                      <th>Cost</th>
+                      <th>Bet</th>
+                      <th>Actions</th>
+                    </tr>
+                  )}
                 </thead>
                 <tbody>
                   {filteredBonuses.map((bonus) => (
-                    <BonusRow key={bonus.id} bonus={bonus} currency={currency} onEdit={setEditingBonus} onDelete={removeBonus} />
+                    <BonusRow
+                      key={bonus.id}
+                      bonus={bonus}
+                      currency={currency}
+                      phase={bonusPhase}
+                      payoutValue={payoutDrafts[bonus.id] ?? ''}
+                      payoutSaving={savingPayoutId === bonus.id}
+                      onPayoutChange={setPayoutDraft}
+                      onPayoutSave={saveOpeningPayout}
+                      onPayoutKeyDown={handlePayoutKeyDown}
+                      onEdit={setEditingBonus}
+                      onDelete={removeBonus}
+                    />
                   ))}
                 </tbody>
               </table>
             </div>
             <div className="pbh-card-list">
               {filteredBonuses.map((bonus) => (
-                <BonusCard key={bonus.id} bonus={bonus} currency={currency} onEdit={setEditingBonus} onDelete={removeBonus} />
+                <BonusCard
+                  key={bonus.id}
+                  bonus={bonus}
+                  currency={currency}
+                  phase={bonusPhase}
+                  payoutValue={payoutDrafts[bonus.id] ?? ''}
+                  payoutSaving={savingPayoutId === bonus.id}
+                  onPayoutChange={setPayoutDraft}
+                  onPayoutSave={saveOpeningPayout}
+                  onPayoutKeyDown={handlePayoutKeyDown}
+                  onEdit={setEditingBonus}
+                  onDelete={removeBonus}
+                />
               ))}
             </div>
           </>

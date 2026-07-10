@@ -8,6 +8,11 @@ import { formatMoney } from './format';
 import './PlayerBonusHunt.css';
 
 const today = new Date().toISOString().slice(0, 10);
+const bonusTypeLabel = (value) => ({
+  normal: 'Normal',
+  super: 'Super',
+  supreme: 'Supreme',
+}[value] || 'Normal');
 
 export default function PlayerBonusHuntNew() {
   const navigate = useNavigate();
@@ -141,9 +146,9 @@ export default function PlayerBonusHuntNew() {
                 <SlotThumb src={bonus.slot_image_url} name={bonus.slot_name} size="sm" />
                 <div>
                   <strong>{bonus.slot_name}</strong>
-                  <span>{bonus.provider_name || 'Unknown provider'}</span>
+                  <span>{bonus.provider_name || 'Unknown provider'} - {bonusTypeLabel(bonus.bonus_type)}</span>
                 </div>
-                <span>{formatMoney(bonus.bonus_cost, form.currency)}</span>
+                <span>{formatMoney(bonus.bonus_cost, form.currency)} - Bet {formatMoney(bonus.bet_size, form.currency)}</span>
                 <button className="pbh-icon-btn pbh-icon-btn--danger" onClick={() => removeBonus(index)} title="Remove bonus">
                   <Trash2 size={16} />
                 </button>

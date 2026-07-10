@@ -3,6 +3,7 @@ export const PLAYER_PLAN_CODE = 'player_monthly';
 
 export const HUNT_STATUSES = ['active', 'completed', 'archived'];
 export const BONUS_STATUSES = ['unopened', 'opened'];
+export const BONUS_TYPES = ['normal', 'super', 'supreme'];
 
 export const SUPPORTED_CURRENCIES = [
   'EUR', 'USD', 'GBP', 'CAD', 'AUD', 'BRL', 'NOK', 'SEK', 'DKK', 'PLN',
@@ -290,6 +291,14 @@ function normalizeSlotFeatures(value) {
   return [];
 }
 
+function normalizeBonusType(value) {
+  const normalized = String(value || 'normal').trim().toLowerCase();
+  if (!BONUS_TYPES.includes(normalized)) {
+    throw new ValidationError('Bonus type is invalid');
+  }
+  return normalized;
+}
+
 export function normalizeHuntPayload(input = {}, { partial = false } = {}) {
   const payload = {};
   const maybe = (key) => Object.prototype.hasOwnProperty.call(input, key);
@@ -329,6 +338,7 @@ export function normalizeBonusPayload(input = {}, { partial = false } = {}) {
   if (!partial || maybe('slot_max_win_multiplier')) payload.slot_max_win_multiplier = assertOptionalNumber(input.slot_max_win_multiplier, 'Slot max win');
   if (!partial || maybe('slot_theme')) payload.slot_theme = assertText(input.slot_theme, 'Slot theme', { max: 120 });
   if (!partial || maybe('slot_features')) payload.slot_features = normalizeSlotFeatures(input.slot_features);
+  if (!partial || maybe('bonus_type')) payload.bonus_type = normalizeBonusType(input.bonus_type);
   if (!partial || maybe('bonus_cost')) payload.bonus_cost = assertMoney(input.bonus_cost, 'Bonus cost');
   if (!partial || maybe('bet_size')) payload.bet_size = assertMoney(input.bet_size, 'Bet size');
   if (!partial || maybe('payout')) payload.payout = assertMoney(input.payout, 'Payout');

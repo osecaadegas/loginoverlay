@@ -501,7 +501,7 @@ async function handleExport(req, res, supabase, user) {
   }
 
   const rows = [
-    ['Hunt', 'Date', 'Casino', 'Currency', 'Slot', 'Provider', 'Slot RTP', 'Slot max win', 'Slot volatility', 'Cost', 'Bet', 'Payout', 'Multiplier', 'Profit/Loss', 'Status', 'Notes'],
+    ['Hunt', 'Date', 'Casino', 'Currency', 'Slot', 'Provider', 'Bonus type', 'Slot RTP', 'Slot max win', 'Slot volatility', 'Cost', 'Bet', 'Payout', 'Multiplier', 'Profit/Loss'],
     ...bonuses.map((bonus) => {
       const hunt = hunts.find((h) => h.id === bonus.hunt_id) || {};
       return [
@@ -511,6 +511,7 @@ async function handleExport(req, res, supabase, user) {
         hunt.currency || '',
         bonus.slot_name,
         bonus.provider_name || '',
+        bonus.bonus_type || 'normal',
         bonus.slot_rtp || '',
         bonus.slot_max_win_multiplier || '',
         bonus.slot_volatility || '',
@@ -519,8 +520,6 @@ async function handleExport(req, res, supabase, user) {
         bonus.payout,
         bonus.multiplier || '',
         bonus.profit_loss,
-        bonus.status,
-        bonus.notes || '',
       ];
     }),
   ];

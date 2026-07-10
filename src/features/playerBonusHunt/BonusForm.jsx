@@ -13,11 +13,9 @@ const EMPTY = {
   slot_max_win_multiplier: null,
   slot_theme: '',
   slot_features: [],
+  bonus_type: 'normal',
   bonus_cost: '',
   bet_size: '',
-  payout: '',
-  status: 'unopened',
-  notes: '',
 };
 
 export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = 'Save bonus' }) {
@@ -85,12 +83,19 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
 
   const submit = (event) => {
     event.preventDefault();
+    const setupFields = { ...form };
+    delete setupFields.opened_at;
+    delete setupFields.payout;
+    delete setupFields.multiplier;
+    delete setupFields.profit_loss;
+    delete setupFields.status;
+    delete setupFields.notes;
     onSubmit({
-      ...form,
-      slot_name: form.slot_name || slotQuery,
-      bonus_cost: Number(form.bonus_cost || 0),
-      bet_size: Number(form.bet_size || 0),
-      payout: Number(form.payout || 0),
+      ...setupFields,
+      slot_name: setupFields.slot_name || slotQuery,
+      bonus_type: setupFields.bonus_type || 'normal',
+      bonus_cost: Number(setupFields.bonus_cost || 0),
+      bet_size: Number(setupFields.bet_size || 0),
     });
   };
 
@@ -152,19 +157,12 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
         <input type="number" min="0" step="0.01" value={form.bet_size ?? ''} onChange={(event) => set('bet_size', event.target.value)} />
       </label>
       <label className="pbh-field">
-        <span>Payout</span>
-        <input type="number" min="0" step="0.01" value={form.payout ?? ''} onChange={(event) => set('payout', event.target.value)} />
-      </label>
-      <label className="pbh-field">
-        <span>Status</span>
-        <select value={form.status || 'unopened'} onChange={(event) => set('status', event.target.value)}>
-          <option value="unopened">Unopened</option>
-          <option value="opened">Opened</option>
+        <span>Type</span>
+        <select value={form.bonus_type || 'normal'} onChange={(event) => set('bonus_type', event.target.value)}>
+          <option value="normal">Normal</option>
+          <option value="super">Super</option>
+          <option value="supreme">Supreme</option>
         </select>
-      </label>
-      <label className="pbh-field pbh-field--wide">
-        <span>Notes</span>
-        <textarea value={form.notes || ''} onChange={(event) => set('notes', event.target.value)} rows={3} maxLength={1200} />
       </label>
       <div className="pbh-form__actions">
         {onCancel && <button type="button" className="pbh-btn pbh-btn--ghost" onClick={onCancel}>Cancel</button>}
