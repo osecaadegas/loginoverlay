@@ -204,20 +204,38 @@
   transition: grid-template-columns 920ms var(--lp-ease);
 }
 
-.lp-gateway--active-player {
-  grid-template-columns: minmax(0, 1.58fr) minmax(0, 1fr);
-}
-
-.lp-gateway--active-streamer {
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1.58fr);
-}
-
 .lp-gateway--selecting-player {
   grid-template-columns: minmax(0, 1fr) minmax(0, 0fr);
 }
 
 .lp-gateway--selecting-streamer {
   grid-template-columns: minmax(0, 0fr) minmax(0, 1fr);
+}
+
+.lp-streamer-path-gateway--selecting-deals {
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0fr);
+}
+
+.lp-streamer-path-gateway--selecting-overlays {
+  grid-template-columns: minmax(0, 0fr) minmax(0, 1fr);
+}
+
+.lp-gateway--selecting-player .lp-audience-panel--streamer,
+.lp-gateway--selecting-streamer .lp-audience-panel--player,
+.lp-streamer-path-gateway--selecting-deals .lp-streamer-path-panel--overlays,
+.lp-streamer-path-gateway--selecting-overlays .lp-streamer-path-panel--deals {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.lp-gateway--selecting-player .lp-audience-panel--streamer,
+.lp-streamer-path-gateway--selecting-deals .lp-streamer-path-panel--overlays {
+  transform: translate3d(10%, 0, 0);
+}
+
+.lp-gateway--selecting-streamer .lp-audience-panel--player,
+.lp-streamer-path-gateway--selecting-overlays .lp-streamer-path-panel--deals {
+  transform: translate3d(-10%, 0, 0);
 }
 
 .lp-audience-divider {
@@ -232,16 +250,10 @@
   transition: left 920ms var(--lp-ease), opacity 500ms ease;
 }
 
-.lp-gateway--active-player .lp-audience-divider {
-  left: 61.2%;
-}
-
-.lp-gateway--active-streamer .lp-audience-divider {
-  left: 38.8%;
-}
-
 .lp-gateway--selecting-player .lp-audience-divider,
-.lp-gateway--selecting-streamer .lp-audience-divider {
+.lp-gateway--selecting-streamer .lp-audience-divider,
+.lp-streamer-path-gateway--selecting-deals .lp-audience-divider,
+.lp-streamer-path-gateway--selecting-overlays .lp-audience-divider {
   opacity: 0;
 }
 
@@ -268,7 +280,7 @@
   cursor: pointer;
   overflow: hidden;
   isolation: isolate;
-  transition: filter 320ms ease, opacity 320ms ease, padding 920ms var(--lp-ease);
+  transition: filter 320ms ease, opacity 320ms ease, transform 760ms var(--lp-ease), padding 920ms var(--lp-ease);
 }
 
 .lp-audience-panel::before {
@@ -309,12 +321,13 @@
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03) 0 1px, transparent 1px 18px);
 }
 
-.lp-audience-panel.is-active .lp-audience-panel__shade,
+.lp-audience-panel.is-previewed .lp-audience-panel__shade,
+.lp-audience-panel.is-selecting .lp-audience-panel__shade,
 .lp-audience-panel:focus-visible .lp-audience-panel__shade {
   opacity: 0.36;
 }
 
-.lp-audience-panel.is-inactive {
+.lp-audience-panel.is-dimmed {
   filter: saturate(0.62) brightness(0.72);
 }
 
@@ -338,7 +351,8 @@
   transition: transform 480ms var(--lp-ease);
 }
 
-.lp-audience-panel.is-active .lp-audience-panel__content {
+.lp-audience-panel.is-previewed .lp-audience-panel__content,
+.lp-audience-panel.is-selecting .lp-audience-panel__content {
   transform: translate3d(0, -8px, 0);
 }
 
@@ -410,7 +424,8 @@
   transition: transform 280ms ease, opacity 280ms ease;
 }
 
-.lp-audience-panel.is-active .lp-panel-explore {
+.lp-audience-panel.is-previewed .lp-panel-explore,
+.lp-audience-panel.is-selecting .lp-panel-explore {
   opacity: 1;
   transform: translate3d(7px, 0, 0);
 }
@@ -428,7 +443,7 @@
   transition: max-width 520ms var(--lp-ease);
 }
 
-.lp-gateway .lp-audience-panel.is-active .lp-preview {
+.lp-gateway .lp-audience-panel.is-selecting .lp-preview {
   max-width: 500px;
 }
 
@@ -436,7 +451,8 @@
   transform: perspective(1200px) rotateY(5deg) rotateX(2deg);
 }
 
-.lp-audience-panel.is-active .lp-audience-panel__preview {
+.lp-audience-panel.is-previewed .lp-audience-panel__preview,
+.lp-audience-panel.is-selecting .lp-audience-panel__preview {
   transform: perspective(1200px) rotateY(0) rotateX(0) translate3d(0, -12px, 0) scale(1.035);
 }
 
@@ -509,7 +525,7 @@
   margin-top: 12px;
 }
 
-.lp-audience-panel.is-active .lp-player-preview__grid,
+.lp-audience-panel.is-selecting .lp-player-preview__grid,
 .lp-selected .lp-player-preview__grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -540,7 +556,7 @@
   gap: 8px;
 }
 
-.lp-audience-panel.is-active .lp-preview-table,
+.lp-audience-panel.is-selecting .lp-preview-table,
 .lp-selected .lp-preview-table {
   display: grid;
 }
@@ -673,7 +689,7 @@
   margin-top: 12px;
 }
 
-.lp-audience-panel.is-active .lp-streamer-preview__dock,
+.lp-audience-panel.is-selecting .lp-streamer-preview__dock,
 .lp-selected .lp-streamer-preview__dock {
   display: grid;
 }
@@ -689,6 +705,110 @@
   border: 1px solid rgba(255, 255, 255, 0.08);
   font-size: 0.78rem;
   font-weight: 850;
+}
+
+.lp-streamer-path-panel--deals::before {
+  background:
+    linear-gradient(135deg, rgba(45, 212, 191, 0.13), rgba(251, 191, 36, 0.12) 44%, rgba(7, 11, 18, 0.5)),
+    linear-gradient(180deg, #08131b, #070b12);
+}
+
+.lp-streamer-path-panel--overlays::before {
+  background:
+    linear-gradient(225deg, rgba(139, 92, 246, 0.26), rgba(56, 189, 248, 0.12) 44%, rgba(7, 11, 18, 0.52)),
+    linear-gradient(180deg, #0b0d1c, #070b12);
+}
+
+.lp-streamer-path-panel .lp-eyebrow {
+  color: #c4b5fd;
+}
+
+.lp-streamer-path-panel--deals .lp-eyebrow {
+  color: var(--lp-player);
+}
+
+.lp-panel-cta--streamer-path {
+  color: #fff;
+  background: linear-gradient(135deg, var(--lp-streamer), #ec4899);
+}
+
+.lp-streamer-path-panel--deals .lp-panel-cta--streamer-path {
+  color: #061018;
+  background: linear-gradient(135deg, var(--lp-player), #d9f99d);
+}
+
+.lp-preview--deals {
+  display: grid;
+  gap: 10px;
+  padding: 16px;
+}
+
+.lp-deals-preview__header,
+.lp-deals-preview__row {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.lp-deals-preview__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 15px;
+  color: #c9f7ef;
+}
+
+.lp-deals-preview__header span,
+.lp-deals-preview__row em {
+  color: var(--lp-muted);
+}
+
+.lp-deals-preview__header strong {
+  color: var(--lp-player-good);
+}
+
+.lp-deals-preview__row {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  min-height: 70px;
+  padding: 12px;
+}
+
+.lp-deals-preview__row > span {
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 950;
+}
+
+.lp-deals-preview__row div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lp-deals-preview__row strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lp-deals-preview__row em {
+  font-style: normal;
+  font-size: 0.78rem;
+}
+
+.lp-deals-preview__row small {
+  font-size: 0.68rem;
+  font-weight: 900;
 }
 
 .lp-age-overlay {
@@ -1338,16 +1458,6 @@
     transition: grid-template-rows 820ms var(--lp-ease);
   }
 
-  .lp-gateway--active-player {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1.38fr) minmax(0, 1fr);
-  }
-
-  .lp-gateway--active-streamer {
-    grid-template-columns: 1fr;
-    grid-template-rows: minmax(0, 1fr) minmax(0, 1.38fr);
-  }
-
   .lp-gateway--selecting-player {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 1fr) minmax(0, 0fr);
@@ -1356,6 +1466,26 @@
   .lp-gateway--selecting-streamer {
     grid-template-columns: 1fr;
     grid-template-rows: minmax(0, 0fr) minmax(0, 1fr);
+  }
+
+  .lp-streamer-path-gateway--selecting-deals {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 1fr) minmax(0, 0fr);
+  }
+
+  .lp-streamer-path-gateway--selecting-overlays {
+    grid-template-columns: 1fr;
+    grid-template-rows: minmax(0, 0fr) minmax(0, 1fr);
+  }
+
+  .lp-gateway--selecting-player .lp-audience-panel--streamer,
+  .lp-streamer-path-gateway--selecting-deals .lp-streamer-path-panel--overlays {
+    transform: translate3d(0, 10%, 0);
+  }
+
+  .lp-gateway--selecting-streamer .lp-audience-panel--player,
+  .lp-streamer-path-gateway--selecting-overlays .lp-streamer-path-panel--deals {
+    transform: translate3d(0, -10%, 0);
   }
 
   .lp-audience-divider {
@@ -1367,16 +1497,6 @@
     height: 1px;
     transform: translateY(-50%);
     transition: top 820ms var(--lp-ease), opacity 400ms ease;
-  }
-
-  .lp-gateway--active-player .lp-audience-divider {
-    left: 0;
-    top: 58%;
-  }
-
-  .lp-gateway--active-streamer .lp-audience-divider {
-    left: 0;
-    top: 42%;
   }
 
   .lp-audience-divider span {
@@ -1391,6 +1511,10 @@
   }
 
   .lp-audience-panel--streamer {
+    padding-top: 24px;
+  }
+
+  .lp-streamer-path-panel--overlays {
     padding-top: 24px;
   }
 

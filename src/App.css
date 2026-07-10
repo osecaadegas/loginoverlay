@@ -21,6 +21,7 @@ body.sidebar-open {
 
 .app-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
   position: relative;
   background: transparent;
@@ -57,14 +58,14 @@ body.sidebar-open {
 /* Tablet: sidebar margin */
 @media (min-width: 769px) and (max-width: 1024px) {
   .main-content {
-    margin-left: 240px;
+    margin-left: 0;
   }
 }
 
 /* Desktop: sidebar margin */
 @media (min-width: 1025px) {
   .main-content {
-    margin-left: 260px;
+    margin-left: 0;
   }
 }
 

@@ -77,6 +77,26 @@ const PLAYER_STATS = [
   { label: 'Highest multi', value: '1,200x', tone: 'positive' },
 ];
 
+const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
+const SELECTION_DELAY_MS = 840;
+const STREAMER_PATH_DELAY_MS = 760;
+
+function rememberAudience(user, audience) {
+  localStorage.setItem(AUDIENCE_STORAGE_KEY, audience);
+
+  if (!user) return;
+
+  supabase.auth.updateUser({
+    data: { selected_experience: audience },
+  })
+    .then(({ error }) => {
+      if (error) console.warn('[LandingPage] Failed to persist audience preference:', error);
+    })
+    .catch((error) => {
+      console.warn('[LandingPage] Failed to persist audience preference:', error);
+    });
+}
+
 function useReducedMotion() {
   const [reduced, setReduced] = useState(false);
 
@@ -228,7 +248,7 @@ function StreamerPreview({ expanded = false }) {
   );
 }
 
-function AudiencePanel({ audience, active, inactive, selecting, onPreview, onClearPreview, onSelect }) {
+function AudiencePanel({ audience, previewed, dimmed, selecting, locked, onPreview, onClearPreview, onSelect }) {
   const isPlayer = audience === 'player';
   const label = isPlayer ? 'PLAYER' : 'STREAMER';
   const title = isPlayer
@@ -246,16 +266,17 @@ function AudiencePanel({ audience, active, inactive, selecting, onPreview, onCle
       className={[
         'lp-audience-panel',
         `lp-audience-panel--${audience}`,
-        active ? 'is-active' : '',
-        inactive ? 'is-inactive' : '',
+        previewed ? 'is-previewed' : '',
+        dimmed ? 'is-dimmed' : '',
         selecting ? 'is-selecting' : '',
       ].filter(Boolean).join(' ')}
-      onMouseEnter={() => onPreview(audience)}
-      onMouseLeave={onClearPreview}
-      onFocus={() => onPreview(audience)}
-      onBlur={onClearPreview}
+      onMouseEnter={() => !locked && onPreview(audience)}
+      onMouseLeave={() => !locked && onClearPreview()}
+      onFocus={() => !locked && onPreview(audience)}
+      onBlur={() => !locked && onClearPreview()}
       onClick={() => onSelect(audience)}
       aria-label={cta}
+      disabled={locked && !selecting}
     >
       <span className="lp-audience-panel__shade" />
       <span className="lp-audience-panel__content">
@@ -271,20 +292,19 @@ function AudiencePanel({ audience, active, inactive, selecting, onPreview, onCle
         </span>
       </span>
       <span className="lp-audience-panel__preview">
-        <Preview expanded={active || selecting} />
+        <Preview expanded={selecting} />
       </span>
     </button>
   );
 }
 
 function AudienceGateway({ previewAudience, selectingAudience, onPreview, onClearPreview, onSelect }) {
-  const activeAudience = selectingAudience || previewAudience;
+  const locked = !!selectingAudience;
 
   return (
     <section
       className={[
         'lp-gateway',
-        activeAudience ? `lp-gateway--active-${activeAudience}` : '',
         selectingAudience ? `lp-gateway--selecting-${selectingAudience}` : '',
       ].filter(Boolean).join(' ')}
       aria-labelledby="audience-selector-heading"
@@ -294,9 +314,10 @@ function AudienceGateway({ previewAudience, selectingAudience, onPreview, onClea
       </h1>
       <AudiencePanel
         audience="player"
-        active={activeAudience === 'player'}
-        inactive={activeAudience === 'streamer'}
+        previewed={previewAudience === 'player'}
+        dimmed={previewAudience === 'streamer'}
         selecting={selectingAudience === 'player'}
+        locked={locked}
         onPreview={onPreview}
         onClearPreview={onClearPreview}
         onSelect={onSelect}
@@ -306,9 +327,122 @@ function AudienceGateway({ previewAudience, selectingAudience, onPreview, onClea
       </div>
       <AudiencePanel
         audience="streamer"
-        active={activeAudience === 'streamer'}
-        inactive={activeAudience === 'player'}
+        previewed={previewAudience === 'streamer'}
+        dimmed={previewAudience === 'player'}
         selecting={selectingAudience === 'streamer'}
+        locked={locked}
+        onPreview={onPreview}
+        onClearPreview={onClearPreview}
+        onSelect={onSelect}
+      />
+    </section>
+  );
+}
+
+function DealsPreview() {
+  return (
+    <div className="lp-preview lp-preview--deals" aria-hidden="true">
+      <div className="lp-deals-preview__header">
+        <span>Partner opportunities</span>
+        <strong>5 live offers</strong>
+      </div>
+      {FEATURED_PARTNERS.slice(0, 3).map((partner) => (
+        <div key={partner.id} className="lp-deals-preview__row">
+          <span style={{ background: partner.logoBg }}>{partner.logo}</span>
+          <div>
+            <strong>{partner.name}</strong>
+            <em>{partner.model}</em>
+          </div>
+          <small style={{ color: partner.accent }}>{partner.tag}</small>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function StreamerPathPanel({ path, previewed, dimmed, selecting, locked, onPreview, onClearPreview, onSelect }) {
+  const isDeals = path === 'deals';
+  const label = isDeals ? 'DEALS' : 'OVERLAYS';
+  const title = isDeals ? 'Find deals for your stream' : 'Build your stream experience';
+  const description = isDeals
+    ? 'Explore casino partnerships, streamer offers and available collaboration opportunities.'
+    : 'Manage overlays, bonus hunts, slot requests, tournaments, giveaways and viewer interactions.';
+  const cta = isDeals ? 'Explore Deals' : 'Open Overlay Center';
+  const Preview = isDeals ? DealsPreview : StreamerPreview;
+
+  return (
+    <button
+      type="button"
+      className={[
+        'lp-audience-panel',
+        'lp-streamer-path-panel',
+        `lp-streamer-path-panel--${path}`,
+        previewed ? 'is-previewed' : '',
+        dimmed ? 'is-dimmed' : '',
+        selecting ? 'is-selecting' : '',
+      ].filter(Boolean).join(' ')}
+      onMouseEnter={() => !locked && onPreview(path)}
+      onMouseLeave={() => !locked && onClearPreview()}
+      onFocus={() => !locked && onPreview(path)}
+      onBlur={() => !locked && onClearPreview()}
+      onClick={() => onSelect(path)}
+      aria-label={cta}
+      disabled={locked && !selecting}
+    >
+      <span className="lp-audience-panel__shade" />
+      <span className="lp-audience-panel__content">
+        <span className="lp-eyebrow">{label}</span>
+        <span className="lp-audience-panel__title">{title}</span>
+        <span className="lp-audience-panel__desc">{description}</span>
+        <span className="lp-panel-cta lp-panel-cta--streamer-path">
+          {cta}
+          <ArrowRight size={18} />
+        </span>
+        <span className="lp-panel-explore">
+          Select <ChevronsRight size={16} />
+        </span>
+      </span>
+      <span className="lp-audience-panel__preview">
+        <Preview expanded={selecting} />
+      </span>
+    </button>
+  );
+}
+
+function StreamerPathGateway({ previewPath, selectingPath, onPreview, onClearPreview, onSelect }) {
+  const locked = !!selectingPath;
+
+  return (
+    <section
+      className={[
+        'lp-gateway',
+        'lp-streamer-path-gateway',
+        selectingPath ? `lp-streamer-path-gateway--selecting-${selectingPath}` : '',
+      ].filter(Boolean).join(' ')}
+      aria-labelledby="streamer-path-heading"
+    >
+      <h1 id="streamer-path-heading" className="lp-sr-only">
+        Choose Streamers Center streamer deals or overlays
+      </h1>
+      <StreamerPathPanel
+        path="deals"
+        previewed={previewPath === 'deals'}
+        dimmed={previewPath === 'overlays'}
+        selecting={selectingPath === 'deals'}
+        locked={locked}
+        onPreview={onPreview}
+        onClearPreview={onClearPreview}
+        onSelect={onSelect}
+      />
+      <div className="lp-audience-divider" aria-hidden="true">
+        <span />
+      </div>
+      <StreamerPathPanel
+        path="overlays"
+        previewed={previewPath === 'overlays'}
+        dimmed={previewPath === 'deals'}
+        selecting={selectingPath === 'overlays'}
+        locked={locked}
         onPreview={onPreview}
         onClearPreview={onClearPreview}
         onSelect={onSelect}
@@ -594,6 +728,8 @@ export default function LandingPage({ mode = 'selector' }) {
   const [pricingPlans, setPricingPlans] = useState([]);
   const [previewAudience, setPreviewAudience] = useState(null);
   const [selectingAudience, setSelectingAudience] = useState(null);
+  const [previewStreamerPath, setPreviewStreamerPath] = useState(null);
+  const [selectingStreamerPath, setSelectingStreamerPath] = useState(null);
   const [switchingAudience, setSwitchingAudience] = useState(null);
   const { user } = useAuth();
   const { isPremium } = usePremium();
@@ -646,6 +782,7 @@ export default function LandingPage({ mode = 'selector' }) {
   useEffect(() => {
     return () => {
       setSelectingAudience(null);
+      setSelectingStreamerPath(null);
       setSwitchingAudience(null);
     };
   }, [location.pathname]);
@@ -676,7 +813,7 @@ export default function LandingPage({ mode = 'selector' }) {
   };
 
   const navigateAudience = (audience, delay) => {
-    const route = audience === 'player' ? '/player' : '/streamer';
+    const route = audience === 'player' ? '/player/bonus-hunt' : '/streamer';
     window.setTimeout(() => {
       navigate(route, { state: { fromAudienceSelector: true } });
     }, delay);
@@ -685,13 +822,16 @@ export default function LandingPage({ mode = 'selector' }) {
   const selectAudience = (audience) => {
     if (selectingAudience) return;
     setSelectingAudience(audience);
+    setPreviewAudience(null);
+    rememberAudience(user, audience);
     trackEvent(`audience_${audience}_selected`, { route: location.pathname });
-    navigateAudience(audience, reducedMotion ? 0 : 900);
+    navigateAudience(audience, reducedMotion ? 0 : SELECTION_DELAY_MS);
   };
 
   const switchAudience = (audience) => {
     if (audience === activeAudience || switchingAudience) return;
     setSwitchingAudience(audience);
+    rememberAudience(user, audience);
     trackEvent('audience_switched', { from: activeAudience, to: audience });
     navigateAudience(audience, reducedMotion ? 0 : 420);
   };
@@ -703,11 +843,30 @@ export default function LandingPage({ mode = 'selector' }) {
 
   const startPlayerTrial = () => {
     trackEvent('player_cta_clicked', { route: location.pathname });
-    if (!user) {
-      openAuth();
-      return;
-    }
-    navigate('/player/subscription');
+    rememberAudience(user, 'player');
+    navigate('/player/bonus-hunt');
+  };
+
+  const previewStreamerChoice = (path) => {
+    if (selectingStreamerPath) return;
+    setPreviewStreamerPath(path);
+    trackEvent(`audience_streamer_${path}_previewed`, { route: location.pathname });
+  };
+
+  const clearStreamerChoice = () => {
+    if (!selectingStreamerPath) setPreviewStreamerPath(null);
+  };
+
+  const selectStreamerPath = (path) => {
+    if (selectingStreamerPath) return;
+    setSelectingStreamerPath(path);
+    setPreviewStreamerPath(null);
+    rememberAudience(user, 'streamer');
+    const route = path === 'deals' ? '/offers' : '/overlay-center';
+    trackEvent(`audience_streamer_${path}_selected`, { route: location.pathname, destination: route });
+    window.setTimeout(() => {
+      navigate(route, { state: { fromAudienceSelector: true } });
+    }, reducedMotion ? 0 : STREAMER_PATH_DELAY_MS);
   };
 
   const startStreamer = () => {
@@ -769,16 +928,16 @@ export default function LandingPage({ mode = 'selector' }) {
         ) : mode === 'player' ? (
           <PlayerLanding headingRef={headingRef} onPrimaryCta={startPlayerTrial} user={user} />
         ) : (
-          <StreamerLanding
-            headingRef={headingRef}
-            pricingPlans={pricingPlans}
-            partners={partners}
-            onStreamerCta={startStreamer}
-            onOfferClick={handleOfferClick}
+          <StreamerPathGateway
+            previewPath={previewStreamerPath}
+            selectingPath={selectingStreamerPath}
+            onPreview={previewStreamerChoice}
+            onClearPreview={clearStreamerChoice}
+            onSelect={selectStreamerPath}
           />
         )}
 
-        {mode !== 'selector' && <Footer />}
+        {mode === 'player' && <Footer />}
       </div>
 
       {showAuthModal && <AuthModal onClose={() => setShowAuthModal(false)} />}

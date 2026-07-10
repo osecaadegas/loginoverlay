@@ -1,31 +1,40 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './LoginPage.css';
 
 export default function LoginPage() {
   const { user, signInWithTwitch, signInWithGoogle, signInWithDiscord } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(null);
   const [error, setError] = useState('');
+  const returnTo = useMemo(() => {
+    const fromState = location.state?.from;
+    const fromQuery = new URLSearchParams(location.search).get('redirectTo');
+    const candidate = fromState || fromQuery || '/';
+    return typeof candidate === 'string' && candidate.startsWith('/') ? candidate : '/';
+  }, [location.search, location.state]);
 
-  // If already logged in, redirect home
-  if (user) {
-    navigate('/');
-    return null;
-  }
+  useEffect(() => {
+    if (user) navigate(returnTo, { replace: true });
+  }, [navigate, returnTo, user]);
 
   const handleLogin = async (provider, signInFn) => {
     setError('');
     setLoading(provider);
     try {
-      const { error } = await signInFn();
+      const { error } = await signInFn(returnTo);
       if (error) throw error;
     } catch (err) {
       setError(err.message || 'Login failed. Please try again.');
       setLoading(null);
     }
   };
+
+  if (user) {
+    return null;
+  }
 
   return (
     <div className="login-page">

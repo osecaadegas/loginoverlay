@@ -3,6 +3,8 @@ import { supabase } from '../config/supabaseClient';
 
 
 const AuthContext = createContext({});
+const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
+const VALID_EXPERIENCES = new Set(['player', 'streamer']);
 
 export const useAuth = () => {
   const context = useContext(AuthContext);
@@ -17,8 +19,28 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const syncExperiencePreference = async (authUser) => {
+      if (!authUser) return;
+      try {
+        const storedExperience = localStorage.getItem(AUDIENCE_STORAGE_KEY);
+        const profileExperience = authUser.user_metadata?.selected_experience;
+
+        if (VALID_EXPERIENCES.has(storedExperience) && storedExperience !== profileExperience) {
+          await supabase.auth.updateUser({ data: { selected_experience: storedExperience } });
+          return;
+        }
+
+        if (!storedExperience && VALID_EXPERIENCES.has(profileExperience)) {
+          localStorage.setItem(AUDIENCE_STORAGE_KEY, profileExperience);
+        }
+      } catch (error) {
+        console.warn('[Auth] Failed to sync selected experience:', error);
+      }
+    };
+
     // Check active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      await syncExperiencePreference(session?.user);
       setUser(session?.user ?? null);
       setLoading(false);
       
@@ -27,6 +49,9 @@ export const AuthProvider = ({ children }) => {
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      if (_event === 'SIGNED_IN' && session?.user) {
+        await syncExperiencePreference(session.user);
+      }
       setUser(session?.user ?? null);
       
       if (_event === 'SIGNED_IN' && session?.user) {
@@ -60,31 +85,36 @@ export const AuthProvider = ({ children }) => {
     return { error };
   };
 
-  const signInWithGoogle = async () => {
+  const getOAuthRedirectTo = (returnTo = '/') => {
+    const safeReturnTo = typeof returnTo === 'string' && returnTo.startsWith('/') ? returnTo : '/';
+    return `${window.location.origin}/login?redirectTo=${encodeURIComponent(safeReturnTo)}`;
+  };
+
+  const signInWithGoogle = async (returnTo = '/') => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo: getOAuthRedirectTo(returnTo)
       }
     });
     return { data, error };
   };
 
-  const signInWithTwitch = async () => {
+  const signInWithTwitch = async (returnTo = '/') => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'twitch',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo: getOAuthRedirectTo(returnTo)
       }
     });
     return { data, error };
   };
 
-  const signInWithDiscord = async () => {
+  const signInWithDiscord = async (returnTo = '/') => {
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'discord',
       options: {
-        redirectTo: `${window.location.origin}/`
+        redirectTo: getOAuthRedirectTo(returnTo)
       }
     });
     return { data, error };

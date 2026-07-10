@@ -16,7 +16,7 @@ export default function ProtectedPlayerRoute({ children }) {
   }
 
   if (!user) {
-    return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+    return <Navigate to="/login" replace state={{ from: `${location.pathname}${location.search}` }} />;
   }
 
   if (!entitled) {
@@ -24,7 +24,7 @@ export default function ProtectedPlayerRoute({ children }) {
       <Navigate
         to="/player/subscription"
         replace
-        state={{ from: location.pathname, reason: error || 'Player Bonus Hunt access is required.' }}
+        state={{ from: `${location.pathname}${location.search}`, reason: error || 'Player Bonus Hunt access is required.' }}
       />
     );
   }

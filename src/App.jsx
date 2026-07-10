@@ -7,7 +7,7 @@ import { StreamElementsProvider } from './context/StreamElementsContext';
 import { LanguageProvider } from './contexts/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import LandingPage from './components/LandingPage/LandingPage';
-import Sidebar from './components/Sidebar/Sidebar';
+import TopNavigation from './components/Navigation/TopNavigation';
 import OffersPage from './components/OffersPage/OffersPage';
 import AboutPage from './components/AboutPage/AboutPage';
 
@@ -282,86 +282,18 @@ function LayoutWrapper({ children }) {
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const isOverlayCenter = location.pathname === '/overlay-center';
-  const isPublicLandingRoute = location.pathname === '/' || location.pathname === '/player' || location.pathname === '/streamer';
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const isLandingRoute = location.pathname === '/' || location.pathname === '/player' || location.pathname === '/streamer';
+  const isUtilityRoute = location.pathname === '/login' || location.pathname === '/spotify-callback';
+  const showTopNavigation = !isLandingRoute && !isWidgetRoute && !isOBSOverlay && !isOverlayCenter && !isUtilityRoute;
 
   useEffect(() => {
     applyRouteSeo(location.pathname);
   }, [location.pathname]);
 
-  const showSidebar = location.pathname !== '/overlay' && 
-                      location.pathname !== '/admin-overlay' && 
-                      !isPublicLandingRoute &&
-                      !isWidgetRoute &&
-                      !isOBSOverlay &&
-                      !isOverlayCenter;
-
-  // Detect screen size changes
-  useEffect(() => {
-    const handleResize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      
-      // Auto-close sidebar when switching to desktop
-      if (!mobile && sidebarOpen) {
-        setSidebarOpen(false);
-      }
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, [sidebarOpen]);
-
-  // Prevent body scroll when sidebar open on mobile
-  useEffect(() => {
-    if (isMobile && sidebarOpen) {
-      document.body.classList.add('sidebar-open');
-    } else {
-      document.body.classList.remove('sidebar-open');
-    }
-    return () => document.body.classList.remove('sidebar-open');
-  }, [sidebarOpen, isMobile]);
-
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
-  const closeSidebar = () => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    }
-  };
-
   return (
     <div className="app-layout">
-      {showSidebar && (
-        <>
-          {/* Mobile toggle button */}
-          {isMobile && (
-            <button 
-              className="sidebar-toggle-btn touch-target" 
-              onClick={toggleSidebar}
-              aria-label={sidebarOpen ? 'Close menu' : 'Open menu'}
-            >
-              {sidebarOpen ? '✕' : '☰'}
-            </button>
-          )}
-          
-          {/* Sidebar with open state */}
-          <Sidebar className={sidebarOpen ? 'open' : ''} onClose={closeSidebar} />
-          
-          {/* Backdrop overlay - mobile only */}
-          {isMobile && sidebarOpen && (
-            <div 
-              className="sidebar-backdrop visible" 
-              onClick={closeSidebar}
-              aria-hidden="true"
-            />
-          )}
-        </>
-      )}
-      <div className={`main-content ${showSidebar ? '' : 'main-content--no-sidebar'}`}>
+      {showTopNavigation && <TopNavigation />}
+      <div className="main-content main-content--no-sidebar">
         {children}
       </div>
     </div>
@@ -409,12 +341,20 @@ function App() {
 
                 
                 {/* WebMod Routes - For admins and slot_modders */}
-                <Route path="/webmod/slot-manager" element={<SlotManagerPage />} />
+                <Route path="/webmod/slot-manager" element={
+                  <ProtectedAdminRoute allowSlotModder redirectTo="/offers">
+                    <SlotManagerPage />
+                  </ProtectedAdminRoute>
+                } />
 
                 
-                <Route path="/admin" element={<AdminPanel />} />
-                <Route path="/overlay-center" element={
+                <Route path="/admin" element={
                   <ProtectedAdminRoute>
+                    <AdminPanel />
+                  </ProtectedAdminRoute>
+                } />
+                <Route path="/overlay-center" element={
+                  <ProtectedAdminRoute allowPremium allowModerator redirectTo="/premium">
                     <OverlayControlCenter />
                   </ProtectedAdminRoute>
                 } />
