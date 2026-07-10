@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { Archive, CheckCircle2, Edit2, Plus, Trash2 } from 'lucide-react';
+import { Archive, CheckCircle2, Edit2, Plus, Search, SlidersHorizontal, Trash2 } from 'lucide-react';
 import BonusForm from './BonusForm';
 import SlotThumb from './SlotThumb';
 import {
@@ -122,20 +122,23 @@ function slotToDraft(slot) {
   };
 }
 
-function SlotCatalogSuggestions({ slots, loading, error, query, onAdd }) {
+function SlotCatalogSuggestions({ slots, loading, error, query, onAdd, onCustom }) {
   if (query.trim().length < 3) return null;
   return (
-    <div className="pbh-catalog-suggestions">
-      <div className="pbh-catalog-suggestions__head">
-        <div>
-          <strong>Slot database suggestions</strong>
-          <span>Results are ordered by match, provider priority, then slot name.</span>
+      <div className="pbh-catalog-suggestions">
+        <div className="pbh-catalog-suggestions__head">
+          <div>
+            <strong>Slot database</strong>
+            <span>Pick a slot to pull image, provider, RTP, max win, and volatility into this hunt.</span>
+          </div>
+          {loading ? <small>Searching...</small> : <button className="pbh-btn pbh-btn--ghost" onClick={onCustom}>Use typed name</button>}
         </div>
-        {loading && <small>Searching...</small>}
-      </div>
       {error && <div className="pbh-alert pbh-alert--error">{error}</div>}
       {!loading && !error && slots.length === 0 ? (
-        <div className="pbh-catalog-empty">No slot database matches for "{query}".</div>
+        <div className="pbh-catalog-empty">
+          <span>No slot database matches for "{query}".</span>
+          <button className="pbh-btn pbh-btn--ghost" onClick={onCustom}>Use typed name</button>
+        </div>
       ) : (
         <div className="pbh-table-wrap">
           <table className="pbh-table pbh-catalog-table">
@@ -168,7 +171,7 @@ function SlotCatalogSuggestions({ slots, loading, error, query, onAdd }) {
                   <td>{formatVolatility(slot.volatility)}</td>
                   <td>{slot.theme || '-'}</td>
                   <td>
-                    <button className="pbh-btn pbh-btn--secondary" onClick={() => onAdd(slot)}>Add</button>
+                    <button className="pbh-btn pbh-btn--secondary" onClick={() => onAdd(slot)}>Select</button>
                   </td>
                 </tr>
               ))}
@@ -180,6 +183,76 @@ function SlotCatalogSuggestions({ slots, loading, error, query, onAdd }) {
   );
 }
 
+function QuickBonusEditor({ draft, setDraft, currency, saving, onSubmit, onCancel }) {
+  const set = (key, value) => setDraft((prev) => ({ ...prev, [key]: value }));
+  const submit = (event) => {
+    event.preventDefault();
+    onSubmit({
+      ...draft,
+      bonus_cost: Number(draft.bonus_cost || 0),
+      bet_size: Number(draft.bet_size || 0),
+      payout: Number(draft.payout || 0),
+    });
+  };
+
+  return (
+    <form className="pbh-quick-bonus" onSubmit={submit}>
+      <div className="pbh-quick-bonus__slot">
+        <SlotThumb src={draft.slot_image_url} name={draft.slot_name} />
+        <div>
+          <strong>{draft.slot_name}</strong>
+          <span>{draft.provider_name || 'Unknown provider'}</span>
+        </div>
+      </div>
+
+      <div className="pbh-selected-slot-meta">
+        <span>RTP <strong>{formatRtp(draft.slot_rtp)}</strong></span>
+        <span>Max win <strong>{formatMaxWin(draft.slot_max_win_multiplier)}</strong></span>
+        <span>Volatility <strong>{formatVolatility(draft.slot_volatility)}</strong></span>
+        <span>Theme <strong>{draft.slot_theme || '-'}</strong></span>
+      </div>
+
+      <div className="pbh-quick-bonus__fields">
+        <label className="pbh-field">
+          <span>Provider</span>
+          <input value={draft.provider_name || ''} onChange={(event) => set('provider_name', event.target.value)} placeholder="Optional" />
+        </label>
+        <label className="pbh-field">
+          <span>Bonus cost</span>
+          <input type="number" min="0" step="0.01" value={draft.bonus_cost ?? ''} onChange={(event) => set('bonus_cost', event.target.value)} />
+        </label>
+        <label className="pbh-field">
+          <span>Bet size</span>
+          <input type="number" min="0" step="0.01" value={draft.bet_size ?? ''} onChange={(event) => set('bet_size', event.target.value)} />
+        </label>
+        <label className="pbh-field">
+          <span>Payout</span>
+          <input type="number" min="0" step="0.01" value={draft.payout ?? ''} onChange={(event) => set('payout', event.target.value)} />
+        </label>
+        <label className="pbh-field">
+          <span>Status</span>
+          <select value={draft.status || 'unopened'} onChange={(event) => set('status', event.target.value)}>
+            <option value="unopened">Unopened</option>
+            <option value="opened">Opened</option>
+          </select>
+        </label>
+      </div>
+
+      <label className="pbh-field pbh-field--wide">
+        <span>Notes</span>
+        <textarea value={draft.notes || ''} onChange={(event) => set('notes', event.target.value)} rows={2} maxLength={1200} />
+      </label>
+
+      <div className="pbh-form__actions pbh-form__actions--split">
+        <button type="button" className="pbh-btn pbh-btn--ghost" onClick={onCancel}>Cancel</button>
+        <button type="submit" className="pbh-btn pbh-btn--primary" disabled={saving}>
+          <Plus size={17} /> {saving ? 'Adding...' : 'Add bonus'}
+        </button>
+      </div>
+    </form>
+  );
+}
+
 export default function PlayerBonusHuntDetail() {
   const { huntId } = useParams();
   const navigate = useNavigate();
@@ -187,14 +260,16 @@ export default function PlayerBonusHuntDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
-  const [showBonusForm, setShowBonusForm] = useState(false);
   const [editingBonus, setEditingBonus] = useState(null);
   const [filter, setFilter] = useState('all');
   const [provider, setProvider] = useState('');
-  const [search, setSearch] = useState('');
+  const [slotSearch, setSlotSearch] = useState('');
+  const [listSearch, setListSearch] = useState('');
   const [sort, setSort] = useState('position');
   const [huntForm, setHuntForm] = useState(null);
   const [draftBonus, setDraftBonus] = useState(null);
+  const [quickSaving, setQuickSaving] = useState(false);
+  const [showListOptions, setShowListOptions] = useState(false);
   const [catalogResults, setCatalogResults] = useState([]);
   const [catalogLoading, setCatalogLoading] = useState(false);
   const [catalogError, setCatalogError] = useState('');
@@ -218,7 +293,7 @@ export default function PlayerBonusHuntDetail() {
   }, [huntId]);
 
   useEffect(() => {
-    const q = search.trim();
+    const q = slotSearch.trim();
     if (q.length < 3) {
       setCatalogResults([]);
       setCatalogError('');
@@ -239,7 +314,7 @@ export default function PlayerBonusHuntDetail() {
       }
     }, 250);
     return () => clearTimeout(timer);
-  }, [search]);
+  }, [slotSearch]);
 
   const bonuses = hunt?.bonuses || [];
   const stats = hunt?.stats || {};
@@ -252,8 +327,8 @@ export default function PlayerBonusHuntDetail() {
     if (filter === 'profitable') rows = rows.filter((bonus) => Number(bonus.profit_loss || 0) >= 0 && bonus.status === 'opened');
     if (filter === 'losing') rows = rows.filter((bonus) => Number(bonus.profit_loss || 0) < 0 && bonus.status === 'opened');
     if (provider) rows = rows.filter((bonus) => bonus.provider_name === provider);
-    if (search.trim()) {
-      const q = search.trim().toLowerCase();
+    if (listSearch.trim()) {
+      const q = listSearch.trim().toLowerCase();
       rows = rows.filter((bonus) => `${bonus.slot_name} ${bonus.provider_name || ''}`.toLowerCase().includes(q));
     }
     const sorters = {
@@ -267,7 +342,7 @@ export default function PlayerBonusHuntDetail() {
       worst: (a, b) => Number(a.payout || 0) - Number(b.payout || 0),
     };
     return rows.sort(sorters[sort] || sorters.position);
-  }, [bonuses, filter, provider, search, sort]);
+  }, [bonuses, filter, provider, listSearch, sort]);
 
   const saveHunt = async () => {
     setError('');
@@ -302,10 +377,25 @@ export default function PlayerBonusHuntDetail() {
       else await addBonus({ ...payload, huntId });
       setEditingBonus(null);
       setDraftBonus(null);
-      setShowBonusForm(false);
       await load();
     } catch (err) {
       setError(err.message);
+    }
+  };
+
+  const saveQuickBonus = async (payload) => {
+    setError('');
+    setQuickSaving(true);
+    try {
+      await addBonus({ ...payload, huntId });
+      setDraftBonus(null);
+      setSlotSearch('');
+      setCatalogResults([]);
+      await load();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setQuickSaving(false);
     }
   };
 
@@ -345,11 +435,18 @@ export default function PlayerBonusHuntDetail() {
   const addSuggestedSlot = (slot) => {
     setEditingBonus(null);
     setDraftBonus(slotToDraft(slot));
-    setShowBonusForm(true);
-    window.requestAnimationFrame(() => {
-      document.querySelector('.pbh-bonus-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    });
+    setSlotSearch(slot.name || slotSearch);
+    setCatalogResults([]);
   };
+
+  const addTypedSlot = () => {
+    const name = slotSearch.trim();
+    if (!name) return;
+    setEditingBonus(null);
+    setDraftBonus(slotToDraft({ name }));
+  };
+
+  const listOptionsActive = filter !== 'all' || provider || listSearch.trim() || sort !== 'position';
 
   if (loading) return <main className="pbh-page"><div className="pbh-skeleton pbh-skeleton--hero" /></main>;
   if (error && !hunt) return <main className="pbh-page"><div className="pbh-alert pbh-alert--error">{error}</div></main>;
@@ -365,9 +462,6 @@ export default function PlayerBonusHuntDetail() {
         <div className="pbh-header__actions">
           <Link to="/player/bonus-hunt" className="pbh-btn pbh-btn--ghost">Dashboard</Link>
           <button className="pbh-btn pbh-btn--ghost" onClick={() => downloadPlayerExport({ type: 'bonuses', start: hunt.hunt_date, end: hunt.hunt_date, period: 'custom' })}>Export</button>
-          <button className="pbh-btn pbh-btn--primary" onClick={() => setShowBonusForm(true)}>
-            <Plus size={17} /> Add bonus
-          </button>
         </div>
       </header>
 
@@ -440,19 +534,19 @@ export default function PlayerBonusHuntDetail() {
         </div>
       </section>
 
-      {(showBonusForm || editingBonus) && (
+      {editingBonus && (
         <section className="pbh-panel">
           <div className="pbh-section-head">
             <div>
-              <h2>{editingBonus ? 'Edit bonus' : 'Add bonus'}</h2>
+              <h2>Edit bonus</h2>
               <p>Slot image, provider, RTP, max win, and volatility are pulled from the existing slot library when available.</p>
             </div>
           </div>
           <BonusForm
-            initial={editingBonus || draftBonus}
+            initial={editingBonus}
             onSubmit={saveBonus}
-            onCancel={() => { setShowBonusForm(false); setEditingBonus(null); setDraftBonus(null); }}
-            submitLabel={editingBonus ? 'Save bonus' : 'Add bonus'}
+            onCancel={() => setEditingBonus(null)}
+            submitLabel="Save bonus"
           />
         </section>
       )}
@@ -465,38 +559,82 @@ export default function PlayerBonusHuntDetail() {
           </div>
         </div>
 
-        <div className="pbh-filterbar">
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search slot or provider" />
-          <select value={filter} onChange={(event) => setFilter(event.target.value)}>
-            <option value="all">All</option>
-            <option value="opened">Opened</option>
-            <option value="unopened">Unopened</option>
-            <option value="profitable">Profitable</option>
-            <option value="losing">Losing</option>
-          </select>
-          <select value={provider} onChange={(event) => setProvider(event.target.value)}>
-            <option value="">All providers</option>
-            {providers.map((item) => <option key={item} value={item}>{item}</option>)}
-          </select>
-          <select value={sort} onChange={(event) => setSort(event.target.value)}>
-            <option value="position">Added order</option>
-            <option value="slot">Slot name</option>
-            <option value="cost">Cost</option>
-            <option value="payout">Payout</option>
-            <option value="multiplier">Multiplier</option>
-            <option value="profit">Profit</option>
-            <option value="best">Best result</option>
-            <option value="worst">Worst result</option>
-          </select>
-        </div>
+        <div className="pbh-bonus-workbench">
+          <div className="pbh-add-slot-row">
+            <label className="pbh-add-slot-search">
+              <span>Add a slot</span>
+              <div className="pbh-searchbox">
+                <Search size={16} />
+                <input
+                  value={slotSearch}
+                  onChange={(event) => {
+                    setSlotSearch(event.target.value);
+                    setDraftBonus(null);
+                  }}
+                  placeholder="Type 3 letters, slot name, or provider"
+                />
+              </div>
+            </label>
+            <button
+              type="button"
+              className={`pbh-btn ${listOptionsActive ? 'pbh-btn--secondary' : 'pbh-btn--ghost'}`}
+              onClick={() => setShowListOptions((value) => !value)}
+            >
+              <SlidersHorizontal size={17} /> List options
+            </button>
+          </div>
 
-        <SlotCatalogSuggestions
-          slots={catalogResults}
-          loading={catalogLoading}
-          error={catalogError}
-          query={search}
-          onAdd={addSuggestedSlot}
-        />
+          {!draftBonus && (
+            <SlotCatalogSuggestions
+              slots={catalogResults}
+              loading={catalogLoading}
+              error={catalogError}
+              query={slotSearch}
+              onAdd={addSuggestedSlot}
+              onCustom={addTypedSlot}
+            />
+          )}
+
+          {draftBonus && (
+            <QuickBonusEditor
+              draft={draftBonus}
+              setDraft={setDraftBonus}
+              currency={currency}
+              saving={quickSaving}
+              onSubmit={saveQuickBonus}
+              onCancel={() => setDraftBonus(null)}
+            />
+          )}
+
+          {showListOptions && (
+            <div className="pbh-list-options-panel">
+              <div className="pbh-filterbar pbh-filterbar--inline">
+                <input value={listSearch} onChange={(event) => setListSearch(event.target.value)} placeholder="Filter saved bonuses" />
+                <select value={filter} onChange={(event) => setFilter(event.target.value)}>
+                  <option value="all">All</option>
+                  <option value="opened">Opened</option>
+                  <option value="unopened">Unopened</option>
+                  <option value="profitable">Profitable</option>
+                  <option value="losing">Losing</option>
+                </select>
+                <select value={provider} onChange={(event) => setProvider(event.target.value)}>
+                  <option value="">All providers</option>
+                  {providers.map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+                <select value={sort} onChange={(event) => setSort(event.target.value)}>
+                  <option value="position">Added order</option>
+                  <option value="slot">Slot name</option>
+                  <option value="cost">Cost</option>
+                  <option value="payout">Payout</option>
+                  <option value="multiplier">Multiplier</option>
+                  <option value="profit">Profit</option>
+                  <option value="best">Best result</option>
+                  <option value="worst">Worst result</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
 
         {filteredBonuses.length === 0 ? (
           <div className="pbh-empty pbh-empty--small">
