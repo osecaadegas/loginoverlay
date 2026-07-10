@@ -24,6 +24,17 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
+import {
+  ANALYTICS_SCHEMA_VERSION,
+  ANALYTICS_EVENTS,
+  getAnalyticsPeriodRange,
+  getExperienceFromPath,
+  getLegacyEventType,
+  isKnownAnalyticsEvent,
+  normalizeAnalyticsEventName,
+  sanitizeAnalyticsProperties,
+  safeRatio,
+} from '../shared/analytics.js';
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY;
@@ -57,6 +68,8 @@ export default async function handler(req, res) {
       case 'events':      return await requireAdmin(req, res, supabase, handleEvents);
       case 'offers':      return await requireAdmin(req, res, supabase, handleOffers);
       case 'offer-detail': return await requireAdmin(req, res, supabase, handleOfferDetail);
+      case 'product-overview': return await requireAdmin(req, res, supabase, handleProductOverview);
+      case 'data-quality': return await requireAdmin(req, res, supabase, handleDataQuality);
       case 'realtime':    return await requireAdmin(req, res, supabase, handleRealtime);
       case 'traffic':     return await requireAdmin(req, res, supabase, handleTraffic);
       case 'geo':         return await requireAdmin(req, res, supabase, handleGeo);
@@ -207,6 +220,116 @@ function classifyReferrer(referrer) {
   return 'other';
 }
 
+function parseJsonBody(req) {
+  if (!req.body) return {};
+  if (typeof req.body === 'string') {
+    try {
+      return JSON.parse(req.body);
+    } catch {
+      return {};
+    }
+  }
+  if (Buffer.isBuffer(req.body)) {
+    try {
+      return JSON.parse(req.body.toString('utf8'));
+    } catch {
+      return {};
+    }
+  }
+  return req.body;
+}
+
+function compactIp(ip) {
+  if (!ip) return null;
+  const value = String(ip);
+  if (value === '::1' || value === '127.0.0.1') return null;
+  return value;
+}
+
+function normalizeEventPayload(input = {}, req) {
+  const eventName = normalizeAnalyticsEventName(input.event_name || input.event_type);
+  const pageUrl = input.page_url || input.route || null;
+  const properties = sanitizeAnalyticsProperties(input.properties || input.metadata || {});
+  const route = input.route || pageUrl || null;
+  const experience = ANALYTICS_EXPERIENCES_SAFE(input.experience)
+    ? input.experience
+    : getExperienceFromPath(route || '/');
+
+  return {
+    session_id: input.session_id || null,
+    visitor_id: input.visitor_id || null,
+    user_id: null,
+    event_id: input.event_id || null,
+    event_name: eventName,
+    event_version: Number(input.event_version || ANALYTICS_SCHEMA_VERSION) || ANALYTICS_SCHEMA_VERSION,
+    event_type: getLegacyEventType(eventName || input.event_type),
+    page_url: pageUrl,
+    page_title: input.page_title || null,
+    offer_id: input.offer_id || properties.offer_id || null,
+    element_id: input.element_id || properties.element_id || null,
+    element_text: input.element_text || properties.element_text || null,
+    target_url: input.target_url || properties.target_url || null,
+    metadata: {
+      ...properties,
+      event_id: input.event_id || null,
+      canonical_event_name: eventName,
+      schema_version: ANALYTICS_SCHEMA_VERSION,
+      known_event: isKnownAnalyticsEvent(eventName),
+      source: input.source || properties.source || null,
+      experience,
+    },
+    occurred_at: input.occurred_at || new Date().toISOString(),
+    anonymous_id: input.anonymous_id || null,
+    experience,
+    source: input.source || null,
+    environment: input.environment || process.env.VERCEL_ENV || process.env.NODE_ENV || 'production',
+    route,
+    properties,
+    schema_version: ANALYTICS_SCHEMA_VERSION,
+    ip_address: compactIp(getClientIp(req)),
+  };
+}
+
+function ANALYTICS_EXPERIENCES_SAFE(value) {
+  return ['public', 'player', 'streamer', 'overlay', 'admin'].includes(value);
+}
+
+function isMissingColumnError(error) {
+  const message = `${error?.message || ''} ${error?.details || ''}`;
+  return error?.code === 'PGRST204' || error?.code === '42703' || message.includes('schema cache') || message.includes('column');
+}
+
+function removeV2EventColumns(row) {
+  const {
+    event_id,
+    event_name,
+    event_version,
+    occurred_at,
+    received_at,
+    anonymous_id,
+    experience,
+    source,
+    environment,
+    route,
+    properties,
+    schema_version,
+    ...legacy
+  } = row;
+  return legacy;
+}
+
+function sumRows(rows = [], key) {
+  return rows.reduce((sum, row) => sum + (Number(row?.[key]) || 0), 0);
+}
+
+function countBy(rows = [], key) {
+  return rows.reduce((acc, row) => {
+    const value = row?.[key] || 'unknown';
+    acc[value] = (acc[value] || 0) + 1;
+    return acc;
+  }, {});
+}
+
 /* ═══════════════════════════════════════════════════════════
    FRAUD DETECTION
    ═══════════════════════════════════════════════════════════ */
@@ -321,7 +444,8 @@ async function runFraudChecks(supabase, { session_id, visitor_id, ip_address, ev
 async function handleSession(req, res, supabase) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { fingerprint, referrer, landing_page, utm_source, utm_medium, utm_campaign } = req.body;
+  const body = parseJsonBody(req);
+  const { fingerprint, referrer, landing_page, utm_source, utm_medium, utm_campaign } = body;
   if (!fingerprint) return res.status(400).json({ error: 'fingerprint required' });
 
   const ip = getClientIp(req);
@@ -352,31 +476,64 @@ async function handleSession(req, res, supabase) {
     // If RPC doesn't exist, just skip increment (not critical)
   });
 
+  const sessionPayload = {
+    visitor_id: visitor.id,
+    ip_address: ip,
+    user_agent: ua,
+    browser: parsed.browser,
+    os: parsed.os,
+    device_type: parsed.device_type,
+    country: geo.country || null,
+    country_code: geo.country_code || null,
+    city: geo.city || null,
+    region: geo.region || null,
+    isp: geo.isp || null,
+    referrer,
+    referrer_source,
+    landing_page,
+    utm_source: utm_source || null,
+    utm_medium: utm_medium || null,
+    utm_campaign: utm_campaign || null,
+    anonymous_id: body.anonymous_id || null,
+    experience: ANALYTICS_EXPERIENCES_SAFE(body.experience) ? body.experience : getExperienceFromPath(landing_page || '/'),
+    entry_route: landing_page || null,
+    last_route: landing_page || null,
+    environment: process.env.VERCEL_ENV || process.env.NODE_ENV || 'production',
+    metadata: {
+      schema_version: ANALYTICS_SCHEMA_VERSION,
+      timezone: body.timezone || null,
+    },
+  };
+
   // Create session
-  const { data: session } = await supabase
+  let sessionResult = await supabase
     .from('analytics_sessions')
-    .insert({
-      visitor_id: visitor.id,
-      ip_address: ip,
-      user_agent: ua,
-      browser: parsed.browser,
-      os: parsed.os,
-      device_type: parsed.device_type,
-      country: geo.country || null,
-      country_code: geo.country_code || null,
-      city: geo.city || null,
-      region: geo.region || null,
-      isp: geo.isp || null,
-      referrer,
-      referrer_source,
-      landing_page,
-      utm_source: utm_source || null,
-      utm_medium: utm_medium || null,
-      utm_campaign: utm_campaign || null,
-    })
+    .insert(sessionPayload)
     .select('id')
     .single();
 
+  if (sessionResult.error && isMissingColumnError(sessionResult.error)) {
+    const {
+      anonymous_id,
+      experience,
+      entry_route,
+      last_route,
+      environment,
+      metadata,
+      ...legacySessionPayload
+    } = sessionPayload;
+    sessionResult = await supabase
+      .from('analytics_sessions')
+      .insert(legacySessionPayload)
+      .select('id')
+      .single();
+  }
+
+  if (sessionResult.error || !sessionResult.data) {
+    return res.status(500).json({ error: 'Failed to create session' });
+  }
+
+  const session = sessionResult.data;
   return res.status(200).json({
     session_id: session?.id,
     visitor_id: visitor.id,
@@ -386,73 +543,103 @@ async function handleSession(req, res, supabase) {
 async function handleTrack(req, res, supabase) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const {
-    session_id, visitor_id, event_type,
-    page_url, page_title, offer_id, element_id, element_text,
-    target_url, metadata,
-  } = req.body;
+  const body = parseJsonBody(req);
+  const payloads = Array.isArray(body) ? body : Array.isArray(body?.events) ? body.events : [body];
+  if (payloads.length > 50) return res.status(413).json({ error: 'Too many events in one batch' });
 
-  if (!session_id || !visitor_id || !event_type) {
-    return res.status(400).json({ error: 'session_id, visitor_id, event_type required' });
-  }
-
-  const ip = getClientIp(req);
+  const inserted = [];
+  const rejected = [];
+  const ip = compactIp(getClientIp(req));
   const geo = await getGeoForIp(ip, supabase);
 
-  // Insert event
-  const { data: event } = await supabase
-    .from('analytics_events')
-    .insert({
-      session_id,
-      visitor_id,
-      event_type,
-      page_url: page_url || null,
-      page_title: page_title || null,
-      offer_id: offer_id || null,
-      element_id: element_id || null,
-      element_text: element_text || null,
-      target_url: target_url || null,
-      metadata: metadata || {},
+  for (const payload of payloads) {
+    const normalized = normalizeEventPayload(payload, req);
+    if (!normalized.session_id || !normalized.visitor_id || !normalized.event_type) {
+      rejected.push({ reason: 'session_id, visitor_id, event_type required' });
+      continue;
+    }
+
+    const row = {
+      session_id: normalized.session_id,
+      visitor_id: normalized.visitor_id,
+      user_id: normalized.user_id,
+      event_type: normalized.event_type,
+      page_url: normalized.page_url || null,
+      page_title: normalized.page_title || null,
+      offer_id: normalized.offer_id || null,
+      element_id: normalized.element_id || null,
+      element_text: normalized.element_text || null,
+      target_url: normalized.target_url || null,
+      metadata: normalized.metadata || {},
       ip_address: ip,
       country: geo.country || null,
       city: geo.city || null,
-    })
-    .select('id')
-    .single();
+      event_id: normalized.event_id,
+      event_name: normalized.event_name || normalized.event_type,
+      event_version: normalized.event_version,
+      occurred_at: normalized.occurred_at,
+      received_at: new Date().toISOString(),
+      anonymous_id: normalized.anonymous_id,
+      experience: normalized.experience,
+      source: normalized.source,
+      environment: normalized.environment,
+      route: normalized.route,
+      properties: normalized.properties,
+      schema_version: normalized.schema_version,
+    };
 
-  // Update session stats
-  const updates = { event_count: undefined };
-  if (event_type === 'pageview') {
-    await supabase
-      .from('analytics_sessions')
-      .update({ is_bounce: false })
-      .eq('id', session_id)
-      .gt('page_count', 0);
+    let result = await supabase
+      .from('analytics_events')
+      .insert(row)
+      .select('id')
+      .single();
+
+    if (result.error?.code === '23505') {
+      inserted.push({ duplicate: true, event_id: normalized.event_id });
+      continue;
+    }
+
+    if (result.error && isMissingColumnError(result.error)) {
+      result = await supabase
+        .from('analytics_events')
+        .insert(removeV2EventColumns(row))
+        .select('id')
+        .single();
+    }
+
+    if (result.error) {
+      rejected.push({ reason: result.error.message || 'insert failed', event_name: normalized.event_name });
+      continue;
+    }
+
+    inserted.push({ id: result.data?.id, event_name: normalized.event_name });
+
+    await supabase.rpc('analytics_increment_session', {
+      p_session_id: normalized.session_id,
+      p_is_pageview: normalized.event_type === 'pageview',
+    }).catch(() => {});
+
+    await supabase.rpc('analytics_increment_visitor_events', {
+      p_visitor_id: normalized.visitor_id,
+      p_amount: 1,
+    }).catch(() => {});
+
+    runFraudChecks(supabase, {
+      session_id: normalized.session_id,
+      visitor_id: normalized.visitor_id,
+      ip_address: ip,
+      event_type: normalized.event_type,
+    }).catch(err => console.error('[Fraud check]', err));
   }
 
-  // Increment counters via raw SQL-safe update
-  await supabase.rpc('analytics_increment_session', {
-    p_session_id: session_id,
-    p_is_pageview: event_type === 'pageview',
-  }).catch(() => {
-    // Fallback if RPC doesn't exist yet
-  });
-
-  // Run fraud detection (async, don't block response)
-  runFraudChecks(supabase, {
-    session_id,
-    visitor_id,
-    ip_address: ip,
-    event_type,
-  }).catch(err => console.error('[Fraud check]', err));
-
-  return res.status(200).json({ id: event?.id, ok: true });
+  if (!inserted.length && rejected.length) return res.status(400).json({ ok: false, rejected });
+  return res.status(200).json({ ok: true, inserted, rejected });
 }
 
 async function handleIdentify(req, res, supabase) {
   if (req.method !== 'POST') return res.status(405).json({ error: 'POST only' });
 
-  const { visitor_id, user_id, twitch_id, twitch_username, twitch_avatar } = req.body;
+  const { visitor_id, user_id, twitch_id, twitch_username, twitch_avatar } = parseJsonBody(req);
   if (!visitor_id) return res.status(400).json({ error: 'visitor_id required' });
 
   const updates = {};
@@ -807,6 +994,324 @@ async function handleOfferDetail(req, res, supabase) {
     },
     timeline,
     pagination: { total: count || rows.length, limit: lim, offset: off },
+  });
+}
+
+async function handleProductOverview(req, res, supabase) {
+  const { period = '30d' } = req.query;
+  const range = getAnalyticsPeriodRange(period);
+
+  const [
+    sessionsResult,
+    eventsResult,
+    playerHuntsResult,
+    playerBonusesResult,
+    streamerSubsResult,
+    playerSubsResult,
+    billingSubsResult,
+    offersResult,
+    legacyOfferClicksResult,
+  ] = await Promise.all([
+    supabase
+      .from('analytics_sessions')
+      .select('id, visitor_id, user_id, landing_page, referrer_source, started_at, event_count, page_count, duration_secs, is_suspicious')
+      .gte('started_at', range.start)
+      .lte('started_at', range.end)
+      .limit(10000),
+    supabase
+      .from('analytics_events')
+      .select('id, event_type, event_name, offer_id, page_url, route, metadata, created_at, occurred_at, visitor_id, session_id, is_suspicious')
+      .gte('created_at', range.start)
+      .lte('created_at', range.end)
+      .limit(15000),
+    supabase
+      .from('player_hunts')
+      .select('id, user_id, currency, status, starting_deposit, additional_deposits, initial_withdrawal, total_withdrawals, hunt_date, created_at')
+      .is('deleted_at', null)
+      .gte('created_at', range.start)
+      .lte('created_at', range.end)
+      .limit(5000),
+    supabase
+      .from('player_hunt_bonuses')
+      .select('id, user_id, hunt_id, slot_name, provider_name, bonus_cost, bet_size, payout, multiplier, profit_loss, status, created_at, opened_at')
+      .is('deleted_at', null)
+      .gte('created_at', range.start)
+      .lte('created_at', range.end)
+      .limit(10000),
+    supabase
+      .from('user_roles')
+      .select('user_id, role, is_active, access_expires_at, source, created_at')
+      .in('role', ['premium', 'admin', 'superadmin', 'moderator'])
+      .limit(5000),
+    supabase
+      .from('user_product_subscriptions')
+      .select('user_id, product_code, plan_code, status, trial_started_at, trial_ends_at, current_period_end, cancel_at_period_end, created_at')
+      .limit(5000),
+    supabase
+      .from('billing_subscriptions')
+      .select('user_id, product_code, plan_id, status, current_period_start, current_period_end, trial_start, trial_end, cancel_at_period_end, created_at')
+      .limit(5000),
+    supabase
+      .from('casino_offers')
+      .select('id, casino_name, title, is_active, is_premium, display_order')
+      .limit(1000),
+    supabase
+      .from('offer_clicks')
+      .select('offer_id, casino_name, user_id, page_source, created_at')
+      .gte('created_at', range.start)
+      .lte('created_at', range.end)
+      .limit(10000),
+  ]);
+
+  const sessions = sessionsResult.data || [];
+  let events = eventsResult.data || [];
+  if (eventsResult.error && isMissingColumnError(eventsResult.error)) {
+    const fallback = await supabase
+      .from('analytics_events')
+      .select('id, event_type, offer_id, page_url, metadata, created_at, visitor_id, session_id, is_suspicious')
+      .gte('created_at', range.start)
+      .lte('created_at', range.end)
+      .limit(15000);
+    events = fallback.data || [];
+  }
+  const playerHunts = playerHuntsResult.data || [];
+  const playerBonuses = playerBonusesResult.data || [];
+  const streamerRoles = streamerSubsResult.data || [];
+  const playerSubscriptions = playerSubsResult.data || [];
+  const billingSubscriptions = billingSubsResult.data || [];
+  const offers = offersResult.data || [];
+  const legacyOfferClicks = legacyOfferClicksResult.data || [];
+
+  const uniqueVisitors = new Set(sessions.map(s => s.visitor_id).filter(Boolean)).size;
+  const authenticatedUsers = new Set(sessions.map(s => s.user_id).filter(Boolean)).size;
+  const playerSessions = sessions.filter(s => getExperienceFromPath(s.landing_page || '') === 'player' || String(s.landing_page || '').startsWith('/player'));
+  const streamerSessions = sessions.filter(s => ['streamer', 'overlay'].includes(getExperienceFromPath(s.landing_page || '')));
+  const overlaySessions = sessions.filter(s => String(s.landing_page || '').startsWith('/overlay-center') || String(s.landing_page || '').startsWith('/overlay/'));
+
+  const canonicalName = (event) => normalizeAnalyticsEventName(event.event_name || event.metadata?.canonical_event_name || event.event_type);
+  const offerEvents = events.filter(event => canonicalName(event) === ANALYTICS_EVENTS.OFFER_CLICKED || event.event_type === 'offer_click');
+  const playerEvents = events.filter(event => getExperienceFromPath(event.route || event.page_url || '') === 'player' || event.metadata?.experience === 'player');
+  const streamerEvents = events.filter(event => ['streamer', 'overlay'].includes(getExperienceFromPath(event.route || event.page_url || '')) || ['streamer', 'overlay'].includes(event.metadata?.experience));
+  const playerSessionIds = new Set([
+    ...playerSessions.map(session => session.id),
+    ...playerEvents.map(event => event.session_id).filter(Boolean),
+  ]);
+  const streamerSessionIds = new Set([
+    ...streamerSessions.map(session => session.id),
+    ...streamerEvents.map(event => event.session_id).filter(Boolean),
+  ]);
+  const overlaySessionIds = new Set([
+    ...overlaySessions.map(session => session.id),
+    ...streamerEvents
+      .filter(event => getExperienceFromPath(event.route || event.page_url || '') === 'overlay' || event.metadata?.experience === 'overlay')
+      .map(event => event.session_id)
+      .filter(Boolean),
+  ]);
+
+  const openedBonuses = playerBonuses.filter(b => b.status === 'opened');
+  const playerCurrencyMap = {};
+  for (const hunt of playerHunts) {
+    const currency = hunt.currency || 'EUR';
+    playerCurrencyMap[currency] = playerCurrencyMap[currency] || {
+      currency,
+      hunts: 0,
+      totalDeposits: 0,
+      totalWithdrawals: 0,
+      totalBonusCost: 0,
+      totalPayout: 0,
+      profitLoss: 0,
+    };
+    const row = playerCurrencyMap[currency];
+    row.hunts += 1;
+    row.totalDeposits += Number(hunt.starting_deposit || 0) + Number(hunt.additional_deposits || 0);
+    row.totalWithdrawals += Number(hunt.initial_withdrawal || 0) + Number(hunt.total_withdrawals || 0);
+  }
+
+  const huntCurrency = new Map(playerHunts.map(hunt => [hunt.id, hunt.currency || 'EUR']));
+  for (const bonus of playerBonuses) {
+    const currency = huntCurrency.get(bonus.hunt_id) || 'EUR';
+    playerCurrencyMap[currency] = playerCurrencyMap[currency] || {
+      currency,
+      hunts: 0,
+      totalDeposits: 0,
+      totalWithdrawals: 0,
+      totalBonusCost: 0,
+      totalPayout: 0,
+      profitLoss: 0,
+    };
+    const row = playerCurrencyMap[currency];
+    row.totalBonusCost += Number(bonus.bonus_cost || 0);
+    if (bonus.status === 'opened') row.totalPayout += Number(bonus.payout || 0);
+    row.profitLoss += Number(bonus.profit_loss || 0);
+  }
+
+  const activePlayerSubs = playerSubscriptions.filter(sub =>
+    sub.product_code === 'player_bonus_hunt' &&
+    ['trialing', 'active'].includes(sub.status) &&
+    (!sub.trial_ends_at || new Date(sub.trial_ends_at).getTime() > Date.now())
+  );
+  const activeStreamerUsers = new Set(
+    streamerRoles
+      .filter(role => role.is_active && ['premium', 'admin', 'superadmin', 'moderator'].includes(role.role))
+      .map(role => role.user_id)
+      .filter(Boolean)
+  );
+  const activeStreamerSubs = billingSubscriptions.filter(sub =>
+    (sub.product_code || 'streamer_premium') === 'streamer_premium' &&
+    ['trialing', 'active'].includes(sub.status)
+  );
+
+  const offerNameMap = new Map(offers.map(offer => [offer.id, offer.casino_name || offer.title || 'Unknown offer']));
+  const offerClickMap = {};
+  for (const event of offerEvents) {
+    const offerId = event.offer_id || event.metadata?.offer_id;
+    if (!offerId) continue;
+    offerClickMap[offerId] = offerClickMap[offerId] || { offer_id: offerId, name: offerNameMap.get(offerId) || 'Unknown offer', clicks: 0, analyticsClicks: 0, legacyClicks: 0 };
+    offerClickMap[offerId].clicks += 1;
+    offerClickMap[offerId].analyticsClicks += 1;
+  }
+  for (const click of legacyOfferClicks) {
+    const offerId = click.offer_id;
+    if (!offerId) continue;
+    offerClickMap[offerId] = offerClickMap[offerId] || { offer_id: offerId, name: offerNameMap.get(offerId) || click.casino_name || 'Unknown offer', clicks: 0, analyticsClicks: 0, legacyClicks: 0 };
+    offerClickMap[offerId].clicks += 1;
+    offerClickMap[offerId].legacyClicks += 1;
+  }
+
+  const eventCounts = events.reduce((acc, event) => {
+    const name = canonicalName(event) || event.event_type || 'unknown';
+    acc[name] = (acc[name] || 0) + 1;
+    return acc;
+  }, {});
+
+  return res.status(200).json({
+    period: range.key,
+    range: { start: range.start, end: range.end },
+    acquisition: {
+      sessions: sessions.length,
+      uniqueVisitors,
+      authenticatedUsers,
+      playerSessions: playerSessionIds.size,
+      streamerSessions: streamerSessionIds.size,
+      overlaySessions: overlaySessionIds.size,
+      suspiciousSessions: sessions.filter(s => s.is_suspicious).length,
+      referrers: countBy(sessions, 'referrer_source'),
+    },
+    player: {
+      activeSubscriptions: activePlayerSubs.length,
+      trialing: playerSubscriptions.filter(sub => sub.product_code === 'player_bonus_hunt' && sub.status === 'trialing').length,
+      canceled: playerSubscriptions.filter(sub => sub.product_code === 'player_bonus_hunt' && ['canceled', 'cancelled', 'expired'].includes(sub.status)).length,
+      sessions: playerSessionIds.size,
+      events: playerEvents.length,
+      huntsCreated: playerHunts.length,
+      activeHunts: playerHunts.filter(h => h.status === 'active').length,
+      completedHunts: playerHunts.filter(h => h.status === 'completed').length,
+      bonusesAdded: playerBonuses.length,
+      bonusesOpened: openedBonuses.length,
+      averagePayout: openedBonuses.length ? sumRows(openedBonuses, 'payout') / openedBonuses.length : 0,
+      averageMultiplier: openedBonuses.length ? sumRows(openedBonuses, 'multiplier') / openedBonuses.length : 0,
+      totalsByCurrency: Object.values(playerCurrencyMap).map(row => ({
+        ...row,
+        totalDeposits: Math.round(row.totalDeposits * 100) / 100,
+        totalWithdrawals: Math.round(row.totalWithdrawals * 100) / 100,
+        totalBonusCost: Math.round(row.totalBonusCost * 100) / 100,
+        totalPayout: Math.round(row.totalPayout * 100) / 100,
+        profitLoss: Math.round(row.profitLoss * 100) / 100,
+      })),
+    },
+    streamer: {
+      activePremiumUsers: activeStreamerUsers.size,
+      activeStripeSubscriptions: activeStreamerSubs.length,
+      sessions: streamerSessionIds.size,
+      overlaySessions: overlaySessionIds.size,
+      events: streamerEvents.length,
+      premiumViews: events.filter(event => String(event.page_url || event.route || '').startsWith('/premium')).length,
+      offerClicks: offerEvents.length + legacyOfferClicks.length,
+      offersActive: offers.filter(offer => offer.is_active).length,
+      premiumOffers: offers.filter(offer => offer.is_premium).length,
+    },
+    revenue: {
+      activePlayerSubscriptions: activePlayerSubs.length,
+      activeStreamerSubscriptions: activeStreamerSubs.length,
+      estimatedPlayerMrrEur: activePlayerSubs.length * 3,
+      subscriptionStatuses: countBy([...playerSubscriptions, ...billingSubscriptions], 'status'),
+      productMix: countBy([...playerSubscriptions, ...billingSubscriptions], 'product_code'),
+    },
+    offers: Object.values(offerClickMap).sort((a, b) => b.clicks - a.clicks).slice(0, 12),
+    events: {
+      total: events.length,
+      known: events.filter(event => isKnownAnalyticsEvent(canonicalName(event))).length,
+      suspicious: events.filter(event => event.is_suspicious).length,
+      byName: eventCounts,
+    },
+  });
+}
+
+async function handleDataQuality(req, res, supabase) {
+  const { period = '30d' } = req.query;
+  const range = getAnalyticsPeriodRange(period);
+  let { data: events, error } = await supabase
+    .from('analytics_events')
+    .select('id, event_type, event_name, session_id, visitor_id, page_url, route, metadata, created_at, offer_id')
+    .gte('created_at', range.start)
+    .lte('created_at', range.end)
+    .limit(15000);
+
+  if (error && isMissingColumnError(error)) {
+    const fallback = await supabase
+      .from('analytics_events')
+      .select('id, event_type, session_id, visitor_id, page_url, metadata, created_at, offer_id')
+      .gte('created_at', range.start)
+      .lte('created_at', range.end)
+      .limit(15000);
+    events = fallback.data || [];
+  }
+
+  const rows = events || [];
+  const unknownEvents = rows.filter(event => !isKnownAnalyticsEvent(event.event_name || event.metadata?.canonical_event_name || event.event_type));
+  const missingRoute = rows.filter(event => !(event.route || event.page_url));
+  const missingProductContext = rows.filter(event => {
+    const route = event.route || event.page_url || '';
+    const experience = event.metadata?.experience || getExperienceFromPath(route);
+    return !experience || experience === 'public' && route !== '/';
+  });
+  const offerClicksMissingOffer = rows.filter(event => {
+    const name = normalizeAnalyticsEventName(event.event_name || event.metadata?.canonical_event_name || event.event_type);
+    return name === ANALYTICS_EVENTS.OFFER_CLICKED && !(event.offer_id || event.metadata?.offer_id);
+  });
+  const eventIdCoverage = rows.filter(event => event.metadata?.event_id).length;
+
+  return res.status(200).json({
+    period: range.key,
+    range: { start: range.start, end: range.end },
+    totalEvents: rows.length,
+    issues: {
+      unknownEvents: unknownEvents.length,
+      missingRoute: missingRoute.length,
+      missingProductContext: missingProductContext.length,
+      offerClicksMissingOffer: offerClicksMissingOffer.length,
+      missingSession: rows.filter(event => !event.session_id).length,
+      missingVisitor: rows.filter(event => !event.visitor_id).length,
+    },
+    coverage: {
+      knownEventPercent: safeRatio(rows.length - unknownEvents.length, rows.length),
+      routePercent: safeRatio(rows.length - missingRoute.length, rows.length),
+      eventIdPercent: safeRatio(eventIdCoverage, rows.length),
+    },
+    examples: {
+      unknownEvents: unknownEvents.slice(0, 10).map(event => ({
+        id: event.id,
+        event_type: event.event_type,
+        event_name: event.event_name || event.metadata?.canonical_event_name || null,
+        page_url: event.page_url,
+        created_at: event.created_at,
+      })),
+      missingRoute: missingRoute.slice(0, 10).map(event => ({
+        id: event.id,
+        event_type: event.event_type,
+        created_at: event.created_at,
+      })),
+    },
   });
 }
 

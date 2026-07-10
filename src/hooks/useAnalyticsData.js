@@ -78,6 +78,12 @@ export function useAnalyticsData() {
   const fetchOfferDetail = useCallback((params = {}) =>
     withLoading(() => adminFetch('offer-detail', params)), [withLoading]);
 
+  const fetchProductOverview = useCallback((params = {}) =>
+    withLoading(() => adminFetch('product-overview', params)), [withLoading]);
+
+  const fetchDataQuality = useCallback((params = {}) =>
+    withLoading(() => adminFetch('data-quality', params)), [withLoading]);
+
   // Realtime
   const fetchRealtime = useCallback(() =>
     withLoading(() => adminFetch('realtime')), [withLoading]);
@@ -121,6 +127,7 @@ export function useAnalyticsData() {
     loading, error,
     fetchOverview, fetchVisitors, fetchVisitorDetail, fetchSessions,
     fetchEvents, fetchOffers, fetchOfferDetail, fetchRealtime, fetchTraffic, fetchGeo,
+    fetchProductOverview, fetchDataQuality,
     fetchFraud, fetchConfig, updateConfig, resolveFraud, deleteData,
     exportCSV, fetchFunnel,
   };

@@ -1,31 +1,35 @@
 /**
- * AnalyticsDashboard.jsx — Full analytics admin panel.
+ * AnalyticsDashboard.jsx - Full analytics admin panel.
  *
- * Tabs: Overview | Users | Offers | Realtime | Traffic | Geo | Fraud | Settings
+ * Tabs: Overview | Products | Users | Offers | Realtime | Traffic | Geo | Fraud | Quality | Settings
  */
 import React, { useState, useEffect, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAdmin } from '../../hooks/useAdmin';
 import { useAnalyticsData } from '../../hooks/useAnalyticsData';
 import OverviewTab from './tabs/OverviewTab';
+import ProductAnalyticsTab from './tabs/ProductAnalyticsTab';
 import UsersTab from './tabs/UsersTab';
 import OffersTab from './tabs/OffersTab';
 import RealtimeTab from './tabs/RealtimeTab';
 import TrafficTab from './tabs/TrafficTab';
 import GeoTab from './tabs/GeoTab';
 import FraudTab from './tabs/FraudTab';
+import DataQualityTab from './tabs/DataQualityTab';
 import SettingsTab from './tabs/SettingsTab';
 import './AnalyticsDashboard.css';
 
 const TABS = [
-  { id: 'overview', label: 'Overview', icon: '📊' },
-  { id: 'users', label: 'Users', icon: '👥' },
-  { id: 'offers', label: 'Offers', icon: '🎰' },
-  { id: 'realtime', label: 'Realtime', icon: '⚡' },
-  { id: 'traffic', label: 'Traffic', icon: '🔗' },
-  { id: 'geo', label: 'Geo', icon: '🌍' },
-  { id: 'fraud', label: 'Fraud', icon: '🛡️' },
-  { id: 'settings', label: 'Settings', icon: '⚙️' },
+  { id: 'overview', label: 'Overview', icon: 'OV' },
+  { id: 'products', label: 'Products', icon: 'PR' },
+  { id: 'users', label: 'Users', icon: 'US' },
+  { id: 'offers', label: 'Offers', icon: 'OF' },
+  { id: 'realtime', label: 'Realtime', icon: 'RT' },
+  { id: 'traffic', label: 'Traffic', icon: 'TR' },
+  { id: 'geo', label: 'Geo', icon: 'GE' },
+  { id: 'fraud', label: 'Fraud', icon: 'FR' },
+  { id: 'quality', label: 'Quality', icon: 'QA' },
+  { id: 'settings', label: 'Settings', icon: 'ST' },
 ];
 
 export default function AnalyticsDashboard() {
@@ -60,14 +64,13 @@ export default function AnalyticsDashboard() {
 
   return (
     <div className="an-dash">
-      {/* Header */}
       <div className="an-dash__header">
         <div className="an-dash__header-left">
           <h1 className="an-dash__title">
-            <span className="an-dash__title-icon">📊</span>
+            <span className="an-dash__title-icon">AN</span>
             Analytics Dashboard
           </h1>
-          <p className="an-dash__subtitle">Track visitors, clicks, and fraud in real-time</p>
+          <p className="an-dash__subtitle">Track acquisition, products, offers, subscriptions and data quality.</p>
         </div>
         <div className="an-dash__header-right">
           <select
@@ -83,11 +86,11 @@ export default function AnalyticsDashboard() {
         </div>
       </div>
 
-      {/* Tab Navigation */}
       <div className="an-dash__tabs">
         {TABS.map(tab => (
           <button
             key={tab.id}
+            type="button"
             className={`an-dash__tab ${activeTab === tab.id ? 'an-dash__tab--active' : ''}`}
             onClick={() => handleTabChange(tab.id)}
           >
@@ -97,21 +100,22 @@ export default function AnalyticsDashboard() {
         ))}
       </div>
 
-      {/* Tab Content */}
       <div className="an-dash__content">
         {analytics.error && (
           <div className="an-dash__error">
-            ⚠️ {analytics.error}
+            {analytics.error}
           </div>
         )}
 
         {activeTab === 'overview' && <OverviewTab analytics={analytics} period={period} />}
+        {activeTab === 'products' && <ProductAnalyticsTab analytics={analytics} period={period} />}
         {activeTab === 'users' && <UsersTab analytics={analytics} period={period} />}
         {activeTab === 'offers' && <OffersTab analytics={analytics} period={period} />}
         {activeTab === 'realtime' && <RealtimeTab analytics={analytics} />}
         {activeTab === 'traffic' && <TrafficTab analytics={analytics} period={period} />}
         {activeTab === 'geo' && <GeoTab analytics={analytics} period={period} />}
         {activeTab === 'fraud' && <FraudTab analytics={analytics} />}
+        {activeTab === 'quality' && <DataQualityTab analytics={analytics} period={period} />}
         {activeTab === 'settings' && <SettingsTab analytics={analytics} />}
       </div>
     </div>

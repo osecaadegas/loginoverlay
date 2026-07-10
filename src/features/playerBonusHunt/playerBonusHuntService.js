@@ -1,4 +1,6 @@
 import { supabase } from '../../config/supabaseClient';
+import { trackEvent } from '../../utils/analytics';
+import { ANALYTICS_EVENTS } from '../../../shared/analytics';
 
 async function getToken() {
   const { data, error } = await supabase.auth.getSession();
@@ -58,20 +60,44 @@ export function getHunt(huntId) {
   return request(`/api/player-bonus-hunt?action=hunt&huntId=${encodeURIComponent(huntId)}`);
 }
 
-export function createHunt(payload) {
-  return request('/api/player-bonus-hunt?action=create-hunt', { method: 'POST', body: payload });
+export async function createHunt(payload) {
+  const result = await request('/api/player-bonus-hunt?action=create-hunt', { method: 'POST', body: payload });
+  trackEvent(ANALYTICS_EVENTS.PLAYER_HUNT_CREATED, {
+    currency: payload?.currency,
+    has_starting_bonus: Array.isArray(payload?.bonuses) && payload.bonuses.length > 0,
+  });
+  return result;
 }
 
 export function updateHunt(payload) {
   return request('/api/player-bonus-hunt?action=update-hunt', { method: 'PATCH', body: payload });
 }
 
-export function addBonus(payload) {
-  return request('/api/player-bonus-hunt?action=add-bonus', { method: 'POST', body: payload });
+export async function addBonus(payload) {
+  const result = await request('/api/player-bonus-hunt?action=add-bonus', { method: 'POST', body: payload });
+  trackEvent(ANALYTICS_EVENTS.PLAYER_BONUS_ADDED, {
+    bonus_type: payload?.bonus_type,
+    provider_name: payload?.provider_name,
+    has_slot_id: !!payload?.slot_id,
+  });
+  return result;
 }
 
-export function updateBonus(payload) {
-  return request('/api/player-bonus-hunt?action=update-bonus', { method: 'PATCH', body: payload });
+export async function updateBonus(payload) {
+  const result = await request('/api/player-bonus-hunt?action=update-bonus', { method: 'PATCH', body: payload });
+  if (payload?.status === 'opened') {
+    trackEvent(ANALYTICS_EVENTS.PLAYER_BONUS_OPENED, {
+      bonus_id: payload?.bonusId,
+      payout: payload?.payout,
+    });
+  }
+  if (Object.prototype.hasOwnProperty.call(payload || {}, 'payout')) {
+    trackEvent(ANALYTICS_EVENTS.PLAYER_PAYOUT_SAVED, {
+      bonus_id: payload?.bonusId,
+      payout: payload?.payout,
+    });
+  }
+  return result;
 }
 
 export function deleteBonus(bonusId) {
@@ -91,6 +117,7 @@ export function duplicateHunt(huntId) {
 }
 
 export function getLibrary(params = {}) {
+  trackEvent(ANALYTICS_EVENTS.PLAYER_LIBRARY_VIEWED, { period: params.period || 'all' });
   return request(`/api/player-bonus-hunt?action=library&${query(params)}`);
 }
 
@@ -117,8 +144,10 @@ export function getPlayerSubscriptionStatus() {
   return request('/api/player-subscription?action=status');
 }
 
-export function startPlayerCheckout() {
-  return request('/api/player-subscription?action=checkout', { method: 'POST', body: { action: 'checkout' } });
+export async function startPlayerCheckout() {
+  const result = await request('/api/player-subscription?action=checkout', { method: 'POST', body: { action: 'checkout' } });
+  trackEvent(ANALYTICS_EVENTS.PLAYER_SUBSCRIPTION_CHECKOUT_STARTED, {});
+  return result;
 }
 
 export function openPlayerBillingPortal() {

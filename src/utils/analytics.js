@@ -1,64 +1,81 @@
 /**
- * analytics.js — Frontend tracking SDK.
+ * Frontend analytics SDK.
  *
- * Provides:
- *   - initAnalytics()     — Create session, start tracking
- *   - trackPageView()     — Track page view
- *   - trackEvent(type, metadata)  — Track any event
- *   - trackOfferClick(offerId, metadata) — Track offer click
- *   - trackButtonClick(elementId, text, metadata) — Track button click
- *   - trackExternalLink(url, text) — Track external link
- *   - identifyUser(userData) — Link visitor to Twitch user
- *   - getAnalyticsSession() — Get current session info
- *
- * Respects cookie consent (analytics category).
- * Batches events for performance.
+ * Keeps the old public API while sending the v2 event contract used by the
+ * analytics API. Tracking still respects the existing analytics cookie consent.
  */
+import {
+  ANALYTICS_SCHEMA_VERSION,
+  ANALYTICS_EVENTS,
+  getExperienceFromPath,
+  getLegacyEventType,
+  normalizeAnalyticsEventName,
+  sanitizeAnalyticsProperties,
+} from '../../shared/analytics.js';
 
 const API_BASE = '/api/analytics';
 const SESSION_KEY = 'analytics_session';
 const VISITOR_KEY = 'analytics_visitor';
 const FINGERPRINT_KEY = 'analytics_fp';
-const BATCH_INTERVAL = 3000; // 3 seconds
+const ANONYMOUS_ID_KEY = 'analytics_anonymous_id';
+const BATCH_INTERVAL = 3000;
 const MAX_BATCH_SIZE = 20;
 
 let sessionId = null;
 let visitorId = null;
+let anonymousId = null;
 let eventBatch = [];
 let batchTimer = null;
 let initialized = false;
 let trackingEnabled = true;
 
-/* ─── Fingerprint (simple, privacy-friendly) ─── */
+function safeStorage(storage, action, key, value) {
+  try {
+    if (action === 'get') return storage.getItem(key);
+    if (action === 'set') storage.setItem(key, value);
+  } catch {
+    return null;
+  }
+  return null;
+}
+
+function randomId(prefix = 'evt') {
+  if (window.crypto?.randomUUID) return `${prefix}_${window.crypto.randomUUID()}`;
+  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2)}`;
+}
+
+function getAnonymousId() {
+  const stored = safeStorage(localStorage, 'get', ANONYMOUS_ID_KEY);
+  if (stored) return stored;
+  const next = randomId('anon');
+  safeStorage(localStorage, 'set', ANONYMOUS_ID_KEY, next);
+  return next;
+}
+
 function generateFingerprint() {
-  const stored = localStorage.getItem(FINGERPRINT_KEY);
+  const stored = safeStorage(localStorage, 'get', FINGERPRINT_KEY);
   if (stored) return stored;
 
   const nav = window.navigator;
   const screen = window.screen;
   const raw = [
-    nav.userAgent,
+    anonymousId || getAnonymousId(),
     nav.language,
-    screen.width + 'x' + screen.height,
+    `${screen.width}x${screen.height}`,
     screen.colorDepth,
     new Date().getTimezoneOffset(),
-    nav.hardwareConcurrency || '',
-    nav.maxTouchPoints || 0,
   ].join('|');
 
-  // Simple hash
   let hash = 0;
-  for (let i = 0; i < raw.length; i++) {
-    const char = raw.charCodeAt(i);
-    hash = ((hash << 5) - hash) + char;
-    hash = hash & hash; // 32-bit
+  for (let i = 0; i < raw.length; i += 1) {
+    hash = ((hash << 5) - hash) + raw.charCodeAt(i);
+    hash &= hash;
   }
-  const fp = 'fp_' + Math.abs(hash).toString(36) + '_' + Date.now().toString(36);
-  localStorage.setItem(FINGERPRINT_KEY, fp);
+  const fp = `fp_${Math.abs(hash).toString(36)}`;
+  safeStorage(localStorage, 'set', FINGERPRINT_KEY, fp);
   return fp;
 }
 
-/* ─── Consent Check ─── */
 function hasAnalyticsConsent() {
   try {
     const consent = JSON.parse(localStorage.getItem('cookie_consent'));
@@ -68,12 +85,12 @@ function hasAnalyticsConsent() {
   }
 }
 
-/* ─── API Helper ─── */
-async function apiCall(action, body = null, method = 'POST') {
+async function apiCall(action, body = null, method = 'POST', { keepalive = false } = {}) {
   try {
     const opts = {
       method,
       headers: { 'Content-Type': 'application/json' },
+      keepalive,
     };
     if (body && method === 'POST') opts.body = JSON.stringify(body);
 
@@ -90,38 +107,53 @@ async function apiCall(action, body = null, method = 'POST') {
   }
 }
 
-/* ─── Batch Processing ─── */
-function scheduleBatch() {
-  if (batchTimer) return;
-  batchTimer = setTimeout(flushBatch, BATCH_INTERVAL);
+function buildEvent(eventName, details = {}) {
+  const normalized = normalizeAnalyticsEventName(eventName);
+  const route = details.route || details.page_url || `${window.location.pathname}${window.location.search}`;
+  const properties = sanitizeAnalyticsProperties(details.properties || details.metadata || {});
+
+  return {
+    event_id: details.event_id || randomId('evt'),
+    event_name: normalized,
+    event_type: details.event_type || getLegacyEventType(normalized),
+    event_version: ANALYTICS_SCHEMA_VERSION,
+    occurred_at: new Date().toISOString(),
+    anonymous_id: anonymousId || getAnonymousId(),
+    session_id: sessionId,
+    visitor_id: visitorId,
+    page_url: details.page_url || route,
+    page_title: details.page_title || document.title,
+    route,
+    source: details.source || document.referrer || 'direct',
+    experience: details.experience || getExperienceFromPath(route),
+    environment: import.meta.env.MODE || 'production',
+    offer_id: details.offer_id || properties.offer_id || null,
+    element_id: details.element_id || properties.element_id || null,
+    element_text: details.element_text || properties.element_text || null,
+    target_url: details.target_url || properties.target_url || null,
+    properties,
+    metadata: properties,
+  };
 }
 
-async function flushBatch() {
+function scheduleBatch() {
+  if (batchTimer) return;
+  batchTimer = window.setTimeout(flushBatch, BATCH_INTERVAL);
+}
+
+export async function flushBatch({ keepalive = false } = {}) {
   batchTimer = null;
   if (!eventBatch.length || !sessionId || !visitorId) return;
 
   const batch = eventBatch.splice(0, MAX_BATCH_SIZE);
-  // Send each event (API handles one at a time for fraud detection)
-  await Promise.allSettled(batch.map(evt =>
-    apiCall('track', {
-      session_id: sessionId,
-      visitor_id: visitorId,
-      ...evt,
-    })
-  ));
-
-  // If there are more, schedule another flush
+  await apiCall('track', batch, 'POST', { keepalive });
   if (eventBatch.length > 0) scheduleBatch();
 }
 
-/* ─── Public API ─── */
-
-/**
- * Initialize analytics — creates session, starts tracking.
- * Call once on app mount.
- */
 export async function initAnalytics() {
   if (initialized) return { session_id: sessionId, visitor_id: visitorId };
+  anonymousId = getAnonymousId();
+
   if (!hasAnalyticsConsent()) {
     trackingEnabled = false;
     return null;
@@ -129,9 +161,7 @@ export async function initAnalytics() {
 
   try {
     const fingerprint = generateFingerprint();
-
-    // Check for existing session (within 30 min)
-    const stored = sessionStorage.getItem(SESSION_KEY);
+    const stored = safeStorage(sessionStorage, 'get', SESSION_KEY);
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
@@ -141,27 +171,33 @@ export async function initAnalytics() {
           initialized = true;
           return { session_id: sessionId, visitor_id: visitorId };
         }
-      } catch { /* create new */ }
+      } catch {
+        // Create a fresh session below.
+      }
     }
 
+    const params = new URLSearchParams(window.location.search);
     const result = await apiCall('session', {
       fingerprint,
+      anonymous_id: anonymousId,
       referrer: document.referrer || null,
       landing_page: window.location.pathname,
-      utm_source: new URLSearchParams(window.location.search).get('utm_source'),
-      utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
-      utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
+      experience: getExperienceFromPath(window.location.pathname),
+      timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || null,
+      utm_source: params.get('utm_source'),
+      utm_medium: params.get('utm_medium'),
+      utm_campaign: params.get('utm_campaign'),
     });
 
     if (result?.session_id) {
       sessionId = result.session_id;
       visitorId = result.visitor_id;
-      sessionStorage.setItem(SESSION_KEY, JSON.stringify({
+      safeStorage(sessionStorage, 'set', SESSION_KEY, JSON.stringify({
         session_id: sessionId,
         visitor_id: visitorId,
         ts: Date.now(),
       }));
-      localStorage.setItem(VISITOR_KEY, visitorId);
+      safeStorage(localStorage, 'set', VISITOR_KEY, visitorId);
       initialized = true;
     }
 
@@ -172,117 +208,78 @@ export async function initAnalytics() {
   }
 }
 
-/**
- * Track a page view.
- */
 export function trackPageView(url, title) {
   if (!trackingEnabled || !initialized) return;
-  queueEvent({
-    event_type: 'pageview',
-    page_url: url || window.location.pathname,
+  queueEvent(buildEvent(ANALYTICS_EVENTS.PAGE_VIEW, {
+    page_url: url || `${window.location.pathname}${window.location.search}`,
     page_title: title || document.title,
-  });
+  }));
 }
 
-/**
- * Track a generic event.
- */
 export function trackEvent(eventType, metadata = {}) {
   if (!trackingEnabled || !initialized) return;
-  queueEvent({
-    event_type: eventType,
-    page_url: window.location.pathname,
-    metadata,
-  });
+  queueEvent(buildEvent(eventType, { metadata }));
 }
 
-/**
- * Track an offer click.
- */
 export function trackOfferClick(offerId, metadata = {}) {
   if (!trackingEnabled || !initialized) return;
-  queueEvent({
-    event_type: 'offer_click',
-    page_url: window.location.pathname,
+  queueEvent(buildEvent(ANALYTICS_EVENTS.OFFER_CLICKED, {
     offer_id: offerId,
-    metadata,
-  });
+    metadata: {
+      ...metadata,
+      offer_id: offerId,
+    },
+  }));
 }
 
-/**
- * Track a button click.
- */
 export function trackButtonClick(elementId, elementText, metadata = {}) {
   if (!trackingEnabled || !initialized) return;
-  queueEvent({
-    event_type: 'button_click',
-    page_url: window.location.pathname,
+  queueEvent(buildEvent(ANALYTICS_EVENTS.UI_BUTTON_CLICKED, {
     element_id: elementId,
     element_text: elementText,
     metadata,
-  });
+  }));
 }
 
-/**
- * Track an external link redirect.
- */
 export function trackExternalLink(url, linkText) {
   if (!trackingEnabled || !initialized) return;
-  // Flush immediately for external links (user is leaving)
-  const evt = {
-    event_type: 'external_link',
-    page_url: window.location.pathname,
+  const event = buildEvent(ANALYTICS_EVENTS.EXTERNAL_LINK_CLICKED, {
     target_url: url,
     element_text: linkText,
-  };
-  // Use sendBeacon for reliability
+  });
+
   if (navigator.sendBeacon) {
-    const payload = JSON.stringify({
-      session_id: sessionId,
-      visitor_id: visitorId,
-      ...evt,
-    });
-    navigator.sendBeacon(`${API_BASE}?action=track`, payload);
+    const body = new Blob([JSON.stringify(event)], { type: 'application/json' });
+    navigator.sendBeacon(`${API_BASE}?action=track`, body);
   } else {
-    queueEvent(evt);
-    flushBatch();
+    queueEvent(event);
+    flushBatch({ keepalive: true });
   }
 }
 
-/**
- * Link the current visitor to a Twitch user after login.
- */
 export async function identifyUser({ user_id, twitch_id, twitch_username, twitch_avatar }) {
-  if (!visitorId) return;
-  return apiCall('identify', {
+  if (!visitorId) return null;
+  const result = await apiCall('identify', {
     visitor_id: visitorId,
     user_id,
     twitch_id,
     twitch_username,
     twitch_avatar,
   });
+  trackEvent(ANALYTICS_EVENTS.USER_IDENTIFIED, { user_id, twitch_id, twitch_username });
+  return result;
 }
 
-/**
- * Get the current analytics session info.
- */
 export function getAnalyticsSession() {
-  return { session_id: sessionId, visitor_id: visitorId, initialized, trackingEnabled };
+  return { session_id: sessionId, visitor_id: visitorId, anonymous_id: anonymousId, initialized, trackingEnabled };
 }
 
-/**
- * Re-check consent and enable/disable tracking.
- * Call this after user changes consent settings.
- */
 export function updateConsent() {
   const hadConsent = trackingEnabled;
   trackingEnabled = hasAnalyticsConsent();
-  if (trackingEnabled && !hadConsent && !initialized) {
-    initAnalytics();
-  }
+  if (trackingEnabled && !hadConsent && !initialized) initAnalytics();
 }
 
-/* ─── Internal ─── */
 function queueEvent(evt) {
   eventBatch.push(evt);
   if (eventBatch.length >= MAX_BATCH_SIZE) {
@@ -292,16 +289,12 @@ function queueEvent(evt) {
   }
 }
 
-// Flush on page unload
 if (typeof window !== 'undefined') {
   window.addEventListener('beforeunload', () => {
-    if (eventBatch.length > 0 && sessionId && visitorId) {
-      const payload = JSON.stringify(eventBatch.map(evt => ({
-        session_id: sessionId,
-        visitor_id: visitorId,
-        ...evt,
-      })));
-      navigator.sendBeacon?.(`${API_BASE}?action=track`, payload);
+    if (eventBatch.length > 0 && sessionId && visitorId && navigator.sendBeacon) {
+      const batch = eventBatch.splice(0, MAX_BATCH_SIZE);
+      const body = new Blob([JSON.stringify(batch)], { type: 'application/json' });
+      navigator.sendBeacon(`${API_BASE}?action=track`, body);
     }
   });
 }

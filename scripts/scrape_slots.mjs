@@ -27,6 +27,22 @@ const CONCURRENCY = parseInt(process.argv.find(a => a.startsWith('--concurrency=
 const LIMIT = parseInt(process.argv.find(a => a.startsWith('--limit='))?.split('=')[1] || '0');
 const START = parseInt(process.argv.find(a => a.startsWith('--start='))?.split('=')[1] || '0');
 const PAGE_TIMEOUT = 20000;
+const ABOUTSLOTS_BASE = 'https://www.aboutslots.com/casino-slots';
+const ABOUTSLOTS_TIMEOUT = 15000;
+
+// ---- Extract image from aboutslots.com (runs in browser context) ----
+function extractAboutslotsImage() {
+  // Prefer og:image which directly points to the thumbnail
+  const ogImg = document.querySelector('meta[property="og:image"]');
+  if (ogImg) {
+    const src = ogImg.getAttribute('content') || '';
+    if (src && src.includes('aboutslots')) return src;
+  }
+  // Fallback: look for the Thumbnail img element
+  const thumbImg = document.querySelector('img[alt*="Thumbnail"], img[alt*="thumbnail"]');
+  if (thumbImg) return thumbImg.getAttribute('src') || '';
+  return '';
+}
 
 // ---- Extraction logic (runs in browser context) ----
 function extractSlotData() {
@@ -195,6 +211,18 @@ async function main() {
     const promises = batch.map(async (url, idx) => {
       const page = pages[idx % pages.length];
       try {
+        // --- Step 1: Try to get image from aboutslots.com first ---
+        const slug = url.split('/').pop();
+        let aboutslotsImage = null;
+        try {
+          await page.goto(`${ABOUTSLOTS_BASE}/${slug}`, { waitUntil: 'domcontentloaded', timeout: ABOUTSLOTS_TIMEOUT });
+          const candidate = await page.evaluate(extractAboutslotsImage);
+          if (candidate) aboutslotsImage = candidate;
+        } catch (_e) {
+          // aboutslots doesn't have this slot or timed out — fall back to slotcatalog image
+        }
+
+        // --- Step 2: Scrape all data from slotcatalog ---
         await page.goto(url, { waitUntil: 'domcontentloaded', timeout: PAGE_TIMEOUT });
         // Wait a moment for dynamic content
         await page.waitForSelector('.propLeft, th.propLeft, td.propLeft', { timeout: 5000 }).catch(() => {});
@@ -202,9 +230,9 @@ async function main() {
         const rawData = await page.evaluate(extractSlotData);
         
         const parsed = {
-          name: rawData.name || url.split('/').pop().replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-          slug: url.split('/').pop(),  // URL slug for matching
-          image: rawData.image || null,
+          name: rawData.name || slug.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+          slug,  // URL slug for matching
+          image: aboutslotsImage || rawData.image || null,  // prefer aboutslots image
           provider: rawData.provider || null,
           rtp: parseRtp(rawData.rtp_raw),
           volatility: parseVariance(rawData.variance_raw),

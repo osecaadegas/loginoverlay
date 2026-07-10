@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   BadgeEuro,
@@ -53,22 +53,13 @@ export default function TopNavigation() {
   const accountRef = useRef(null);
 
   const isPlayerExperience = location.pathname.startsWith('/player');
-  const hasStreamerAccess = isAdmin || isModerator || isPremium;
   const accountLabel = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'Account';
-
-  const primaryLinks = useMemo(() => {
-    if (isPlayerExperience) {
-      return [
-        { to: '/player/bonus-hunt', label: 'Bonus Hunt', icon: LayoutDashboard },
-      ];
-    }
-
-    return [
-      { to: '/offers', label: 'Deals', icon: BadgeEuro },
-      { to: '/overlay-center', label: 'Overlays', icon: LayoutDashboard },
-      { to: '/premium', label: 'Premium', icon: Crown },
-    ];
-  }, [isPlayerExperience]);
+  const primaryLinks = [
+    { to: '/player/bonus-hunt', label: 'Bonus Hunt', icon: LayoutDashboard },
+    { to: '/offers', label: 'Deals', icon: BadgeEuro },
+    { to: '/overlay-center', label: 'Overlays', icon: LayoutDashboard },
+    { to: '/premium', label: 'Premium', icon: Crown },
+  ];
 
   useEffect(() => {
     setMobileOpen(false);
@@ -120,16 +111,6 @@ export default function TopNavigation() {
           {!isPlayerExperience && (
             <Link to="/premium" role="menuitem">
               <Crown size={16} /> Subscription
-            </Link>
-          )}
-          {!isPlayerExperience && (
-            <Link to="/player/bonus-hunt" role="menuitem">
-              <LayoutDashboard size={16} /> Switch to Player
-            </Link>
-          )}
-          {isPlayerExperience && hasStreamerAccess && (
-            <Link to="/streamer" role="menuitem">
-              <LayoutDashboard size={16} /> Switch to Streamer
             </Link>
           )}
           {isAdmin && (

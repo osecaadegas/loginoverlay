@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "npx vite build",
     "preview": "vite preview",
-    "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs"
+    "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs",
+    "test:analytics": "node scripts/test-analytics.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

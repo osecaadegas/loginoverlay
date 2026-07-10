@@ -4,7 +4,7 @@
  * Auto-initializes on mount, tracks page views on route changes,
  * and identifies users when they log in via Twitch.
  */
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -19,23 +19,31 @@ export function useAnalytics() {
   const location = useLocation();
   const identified = useRef(false);
   const lastPath = useRef('');
+  const [ready, setReady] = useState(false);
 
   // Initialize on mount
   useEffect(() => {
-    initAnalytics();
+    let cancelled = false;
+    initAnalytics().then((result) => {
+      if (!cancelled && result?.session_id) setReady(true);
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   // Track page views on route change
   useEffect(() => {
-    if (location.pathname !== lastPath.current) {
-      lastPath.current = location.pathname;
+    const path = `${location.pathname}${location.search}`;
+    if (ready && path !== lastPath.current) {
+      lastPath.current = path;
       trackPageView(location.pathname + location.search);
     }
-  }, [location]);
+  }, [location, ready]);
 
   // Identify user when they log in
   useEffect(() => {
-    if (user && !identified.current) {
+    if (ready && user && !identified.current) {
       identified.current = true;
       const meta = user.user_metadata || {};
       identifyUser({
@@ -45,7 +53,7 @@ export function useAnalytics() {
         twitch_avatar: meta.avatar_url || meta.picture || null,
       });
     }
-  }, [user]);
+  }, [user, ready]);
 
   return {
     updateConsent,

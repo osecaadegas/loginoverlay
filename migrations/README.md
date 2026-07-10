@@ -55,8 +55,14 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 17. `017_player_bonus_hunt_slot_metadata.sql`
 	Adds database-backed slot metadata snapshots to player hunt bonuses for RTP, max win, volatility, theme, and features.
 
+18. `018_player_hunt_bonus_type.sql`
+	Ensures player hunt bonus type metadata and result view fields stay aligned after the two-step hunt/opening flow.
+
+19. `019_analytics_product_foundation.sql`
+	Adds analytics v2 event context, product reporting views, indexes, idempotency support, and stricter analytics RLS policies.
+
 ## Notes
 
 - The numbered files are the only migration files that should remain active going forward.
 - `011`, `012`, and `014` are cleanup migrations for existing databases, not baseline schema required by a fresh install.
-- If a future change adds schema, continue the numbering with `015_...`, `016_...`, and so on.
+- If a future change adds schema, continue the numbering with the next available migration number.
