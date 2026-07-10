@@ -9,7 +9,7 @@ import {
   requireUser,
   setCors,
 } from './_lib/api-auth.js';
-import { getPlayerAccess, getPlayerSubscription } from './_lib/player-access.js';
+import { getPlayerAccess, getPlayerSubscription, playerSubscriptionRequired } from './_lib/player-access.js';
 import { PLAYER_PLAN_CODE, PLAYER_PRODUCT_CODE } from '../src/features/playerBonusHunt/domain.js';
 
 function checkoutTrialDays(subscription) {
@@ -19,19 +19,29 @@ function checkoutTrialDays(subscription) {
 }
 
 async function handleStatus(req, res, supabase, user) {
+  const subscriptionRequired = playerSubscriptionRequired();
   const access = await getPlayerAccess(supabase, user.id);
   return res.status(200).json({
     productCode: PLAYER_PRODUCT_CODE,
     planCode: PLAYER_PLAN_CODE,
-    planName: 'Player',
-    monthlyPrice: 3,
+    planName: subscriptionRequired ? 'Player' : 'Player Bonus Hunt',
+    monthlyPrice: subscriptionRequired ? 3 : 0,
     currency: 'EUR',
-    trialDays: 30,
+    trialDays: subscriptionRequired ? 30 : 0,
+    subscriptionRequired,
     ...access,
   });
 }
 
 async function handleCheckout(req, res, supabase, user) {
+  if (!playerSubscriptionRequired()) {
+    const access = await getPlayerAccess(supabase, user.id);
+    return res.status(200).json({
+      message: 'Player Bonus Hunt is currently free for authenticated users.',
+      access,
+    });
+  }
+
   const subscription = await getPlayerSubscription(supabase, user.id);
   const access = await getPlayerAccess(supabase, user.id);
   if (access.entitled) {
@@ -59,6 +69,14 @@ async function handleCheckout(req, res, supabase, user) {
 }
 
 async function handlePortal(req, res, supabase, user) {
+  if (!playerSubscriptionRequired()) {
+    const access = await getPlayerAccess(supabase, user.id);
+    return res.status(200).json({
+      message: 'No Stripe billing portal is needed while Player Bonus Hunt is free.',
+      access,
+    });
+  }
+
   const customerId = await findOrCreateStripeCustomer(supabase, user);
   const session = await createBillingPortalSession({
     req,

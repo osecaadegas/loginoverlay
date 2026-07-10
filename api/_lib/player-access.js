@@ -2,6 +2,10 @@ import { PLAYER_PRODUCT_CODE } from '../../src/features/playerBonusHunt/domain.j
 
 const ACTIVE_PLAYER_STATUSES = new Set(['trialing', 'active']);
 
+export function playerSubscriptionRequired() {
+  return String(process.env.PLAYER_BONUS_HUNT_REQUIRE_SUBSCRIPTION || '').toLowerCase() === 'true';
+}
+
 export function isSubscriptionEntitled(subscription, now = new Date()) {
   if (!subscription || !ACTIVE_PLAYER_STATUSES.has(subscription.status)) return false;
   if (subscription.status === 'trialing' && subscription.trial_ends_at) {
@@ -37,6 +41,16 @@ export async function userHasAdminAccess(supabase, userId) {
 }
 
 export async function getPlayerAccess(supabase, userId) {
+  if (!playerSubscriptionRequired()) {
+    return {
+      entitled: true,
+      adminAccess: false,
+      freeAccess: true,
+      subscription: null,
+      reason: null,
+    };
+  }
+
   const [subscription, adminAccess] = await Promise.all([
     getPlayerSubscription(supabase, userId),
     userHasAdminAccess(supabase, userId),
@@ -45,6 +59,7 @@ export async function getPlayerAccess(supabase, userId) {
   return {
     entitled,
     adminAccess,
+    freeAccess: false,
     subscription,
     reason: entitled ? null : 'A Player plan or active trial is required for Bonus Hunt.',
   };
