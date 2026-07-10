@@ -130,6 +130,7 @@ export default function PlayerBonusHuntLibrary() {
   const [sort, setSort] = useState('payout');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
 
   const params = useMemo(() => ({
@@ -145,7 +146,8 @@ export default function PlayerBonusHuntLibrary() {
   useEffect(() => {
     let cancelled = false;
     async function load() {
-      setLoading(true);
+      if (data) setRefreshing(true);
+      else setLoading(true);
       setError('');
       try {
         const result = await getLibrary(params);
@@ -153,7 +155,10 @@ export default function PlayerBonusHuntLibrary() {
       } catch (err) {
         if (!cancelled) setError(err.message);
       } finally {
-        if (!cancelled) setLoading(false);
+        if (!cancelled) {
+          setLoading(false);
+          setRefreshing(false);
+        }
       }
     }
     load();
@@ -180,19 +185,20 @@ export default function PlayerBonusHuntLibrary() {
       </header>
 
       {error && <div className="pbh-alert pbh-alert--error">{error}</div>}
+      {refreshing && <div className="pbh-refresh-note" aria-live="polite">Updating library...</div>}
 
       <section className="pbh-panel">
         <div className="pbh-library-controls">
           <div className="pbh-segments">
             {PERIODS.map(([id, label]) => (
-              <button key={id} className={period === id ? 'active' : ''} onClick={() => setPeriod(id)}>{label}</button>
+              <button key={id} className={period === id ? 'active' : ''} onClick={() => setPeriod(id)} disabled={refreshing}>{label}</button>
             ))}
           </div>
           {period !== 'all' && period !== 'custom' && (
             <div className="pbh-period-nav">
-              <button onClick={() => setAnchor((value) => shiftAnchor(value, period, -1))}><ArrowLeft size={16} /></button>
+              <button onClick={() => setAnchor((value) => shiftAnchor(value, period, -1))} disabled={refreshing}><ArrowLeft size={16} /></button>
               <strong>{periodLabel(period, anchor, data?.range)}</strong>
-              <button onClick={() => setAnchor((value) => shiftAnchor(value, period, 1))}><ArrowRight size={16} /></button>
+              <button onClick={() => setAnchor((value) => shiftAnchor(value, period, 1))} disabled={refreshing}><ArrowRight size={16} /></button>
             </div>
           )}
           {period === 'custom' && (
@@ -203,7 +209,7 @@ export default function PlayerBonusHuntLibrary() {
           )}
           <div className="pbh-segments">
             {VIEWS.map(([id, label]) => (
-              <button key={id} className={view === id ? 'active' : ''} onClick={() => setView(id)}>{label}</button>
+              <button key={id} className={view === id ? 'active' : ''} onClick={() => setView(id)} disabled={refreshing}>{label}</button>
             ))}
           </div>
           <div className="pbh-filterbar pbh-filterbar--compact">
@@ -217,7 +223,7 @@ export default function PlayerBonusHuntLibrary() {
         </div>
       </section>
 
-      {loading ? (
+      {loading && !data ? (
         <div className="pbh-grid pbh-grid--stats">
           {Array.from({ length: 6 }).map((_, i) => <div key={i} className="pbh-skeleton" />)}
         </div>

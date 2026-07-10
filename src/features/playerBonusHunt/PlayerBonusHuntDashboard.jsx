@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Archive, ArrowLeft, ArrowRight, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import {
@@ -68,12 +68,12 @@ function ResultStatCard({ label, result, value, tone = 'default', detail }) {
       <span className="pbh-stat__label">{label}</span>
       {result ? (
         <div className="pbh-result-stat__body">
-          <SlotThumb src={result.slot_image_url} name={result.slot_name} size="sm" />
-          <div>
+          <div className="pbh-result-stat__copy">
             <strong className={`pbh-stat__value ${tone === 'negative' ? 'pbh-negative' : 'pbh-positive'}`}>{value}</strong>
             <span className="pbh-stat__detail">{result.slot_name}</span>
             {result.provider_name && <span className="pbh-stat__detail">{result.provider_name}</span>}
           </div>
+          <SlotThumb src={result.slot_image_url} name={result.slot_name} size="lg" />
         </div>
       ) : (
         <>
@@ -154,30 +154,39 @@ export default function PlayerBonusHuntDashboard() {
   const navigate = useNavigate();
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
   const [period, setPeriod] = useState('all');
   const [anchor, setAnchor] = useState(() => new Date().toISOString().slice(0, 10));
+  const requestIdRef = useRef(0);
 
   const dashboardParams = useMemo(() => ({
     period,
     anchor: period === 'all' ? undefined : anchor,
   }), [period, anchor]);
 
-  const load = async () => {
-    setLoading(true);
+  const load = async ({ keepPage = false } = {}) => {
+    const requestId = requestIdRef.current + 1;
+    requestIdRef.current = requestId;
+    if (keepPage || data) setRefreshing(true);
+    else setLoading(true);
     setError('');
     try {
-      setData(await getDashboard(dashboardParams));
+      const nextData = await getDashboard(dashboardParams);
+      if (requestId === requestIdRef.current) setData(nextData);
     } catch (err) {
-      setError(err.message);
+      if (requestId === requestIdRef.current) setError(err.message);
     } finally {
-      setLoading(false);
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+        setRefreshing(false);
+      }
     }
   };
 
   useEffect(() => {
-    load();
+    load({ keepPage: Boolean(data) });
   }, [dashboardParams]);
 
   const current = data?.current;
@@ -196,12 +205,12 @@ export default function PlayerBonusHuntDashboard() {
     : 100;
   const history = useMemo(() => data?.history || [], [data]);
 
-  const runAction = async (label, fn) => {
+  const runAction = async (label, fn, { reload = true } = {}) => {
     setBusy(label);
     setError('');
     try {
       const result = await fn();
-      await load();
+      if (reload) await load({ keepPage: true });
       return result;
     } catch (err) {
       setError(err.message);
@@ -214,7 +223,7 @@ export default function PlayerBonusHuntDashboard() {
   const handleDuplicate = (huntId) => runAction('duplicate', async () => {
     const result = await duplicateHunt(huntId);
     if (result?.hunt?.id) navigate(`/player/bonus-hunt/${result.hunt.id}`);
-  });
+  }, { reload: false });
 
   const handleArchive = (huntId) => runAction('archive', () => archiveHunt(huntId));
 
@@ -223,7 +232,7 @@ export default function PlayerBonusHuntDashboard() {
     runAction('delete', () => deleteHunt(huntId));
   };
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <main className="pbh-page">
         <div className="pbh-skeleton pbh-skeleton--hero" />
@@ -253,12 +262,13 @@ export default function PlayerBonusHuntDashboard() {
 
       {error && <div className="pbh-alert pbh-alert--error">{error}</div>}
       {busy && <div className="pbh-alert">Working on {busy}...</div>}
+      {refreshing && !busy && <div className="pbh-refresh-note" aria-live="polite">Updating dashboard...</div>}
 
       {!current ? (
         <EmptyDashboard />
       ) : (
         <>
-          <section className="pbh-panel pbh-current">
+          <section className="pbh-panel pbh-current" aria-busy={refreshing}>
             <div className="pbh-current__title">
               <div>
                 <span className="pbh-eyebrow">{period === 'all' ? 'Best all time' : 'Best in period'}</span>
@@ -271,14 +281,14 @@ export default function PlayerBonusHuntDashboard() {
               <div className="pbh-summary-actions">
                 <div className="pbh-segments pbh-segments--compact">
                   {DASHBOARD_PERIODS.map(([id, label]) => (
-                    <button key={id} className={period === id ? 'active' : ''} onClick={() => setPeriod(id)}>{label}</button>
+                    <button key={id} className={period === id ? 'active' : ''} onClick={() => setPeriod(id)} disabled={refreshing}>{label}</button>
                   ))}
                 </div>
                 {period !== 'all' && (
                   <div className="pbh-period-nav pbh-period-nav--compact">
-                    <button onClick={() => setAnchor((value) => shiftAnchor(value, period, -1))} title="Previous period"><ArrowLeft size={16} /></button>
+                    <button onClick={() => setAnchor((value) => shiftAnchor(value, period, -1))} title="Previous period" disabled={refreshing}><ArrowLeft size={16} /></button>
                     <strong>{periodLabel(period, anchor, data?.summary?.range)}</strong>
-                    <button onClick={() => setAnchor((value) => shiftAnchor(value, period, 1))} title="Next period"><ArrowRight size={16} /></button>
+                    <button onClick={() => setAnchor((value) => shiftAnchor(value, period, 1))} title="Next period" disabled={refreshing}><ArrowRight size={16} /></button>
                   </div>
                 )}
                 <Link to={`/player/bonus-hunt/${current.id}`} className="pbh-btn pbh-btn--secondary">Continue</Link>
