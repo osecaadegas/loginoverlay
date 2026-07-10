@@ -14,6 +14,7 @@ import {
   updateBonus,
   updateHunt,
 } from './playerBonusHuntService';
+import { calculateHuntStatistics } from './domain.js';
 import { formatDate, formatMaxWin, formatMoney, formatMultiplier, formatRtp, formatSignedMoney, formatVolatility } from './format';
 import './PlayerBonusHunt.css';
 
@@ -399,6 +400,19 @@ export default function PlayerBonusHuntDetail() {
     }
   };
 
+  const updateLocalBonuses = (updater) => {
+    setHunt((prev) => {
+      if (!prev) return prev;
+      const currentBonuses = prev.bonuses || [];
+      const nextBonuses = typeof updater === 'function' ? updater(currentBonuses) : updater;
+      return {
+        ...prev,
+        bonuses: nextBonuses,
+        stats: calculateHuntStatistics(prev, nextBonuses),
+      };
+    });
+  };
+
   useEffect(() => {
     load();
   }, [huntId]);
@@ -495,11 +509,15 @@ export default function PlayerBonusHuntDetail() {
   const saveBonus = async (payload) => {
     setError('');
     try {
-      if (editingBonus) await updateBonus({ ...payload, bonusId: editingBonus.id });
-      else await addBonus({ ...payload, huntId });
+      if (editingBonus) {
+        const result = await updateBonus({ ...payload, bonusId: editingBonus.id });
+        updateLocalBonuses((rows) => rows.map((bonus) => bonus.id === result.bonus.id ? result.bonus : bonus));
+      } else {
+        const result = await addBonus({ ...payload, huntId });
+        updateLocalBonuses((rows) => [...rows, result.bonus]);
+      }
       setEditingBonus(null);
       setDraftBonus(null);
-      await load();
     } catch (err) {
       setError(err.message);
     }
@@ -509,11 +527,11 @@ export default function PlayerBonusHuntDetail() {
     setError('');
     setQuickSaving(true);
     try {
-      await addBonus({ ...payload, huntId });
+      const result = await addBonus({ ...payload, huntId });
+      updateLocalBonuses((rows) => [...rows, result.bonus]);
       setDraftBonus(null);
       setSlotSearch('');
       setCatalogResults([]);
-      await load();
     } catch (err) {
       setError(err.message);
     } finally {
@@ -547,8 +565,12 @@ export default function PlayerBonusHuntDetail() {
     setError('');
     setSavingPayoutId(bonus.id);
     try {
-      await updateBonus(payload);
-      await load();
+      const result = await updateBonus(payload);
+      updateLocalBonuses((rows) => rows.map((row) => row.id === result.bonus.id ? result.bonus : row));
+      setPayoutDrafts((prev) => ({
+        ...prev,
+        [result.bonus.id]: result.bonus.status === 'opened' ? String(result.bonus.payout ?? '') : '',
+      }));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -574,7 +596,7 @@ export default function PlayerBonusHuntDetail() {
     setError('');
     try {
       await deleteBonus(bonusId);
-      await load();
+      updateLocalBonuses((rows) => rows.filter((bonus) => bonus.id !== bonusId));
     } catch (err) {
       setError(err.message);
     }
