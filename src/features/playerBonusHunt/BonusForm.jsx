@@ -2,11 +2,17 @@ import { useEffect, useState } from 'react';
 import { Search } from 'lucide-react';
 import { searchSlots } from './playerBonusHuntService';
 import SlotThumb from './SlotThumb';
+import { formatMaxWin, formatRtp, formatVolatility } from './format';
 
 const EMPTY = {
   slot_name: '',
   provider_name: '',
   slot_image_url: '',
+  slot_rtp: null,
+  slot_volatility: null,
+  slot_max_win_multiplier: null,
+  slot_theme: '',
+  slot_features: [],
   bonus_cost: '',
   bet_size: '',
   payout: '',
@@ -26,7 +32,7 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
   }, [initial]);
 
   useEffect(() => {
-    if (!slotQuery || slotQuery.trim().length < 2) {
+    if (!slotQuery || slotQuery.trim().length < 3) {
       setSlotResults([]);
       return;
     }
@@ -45,6 +51,21 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
   }, [slotQuery]);
 
   const set = (key, value) => setForm((prev) => ({ ...prev, [key]: value }));
+  const setSlotText = (value) => {
+    setSlotQuery(value);
+    setForm((prev) => ({
+      ...prev,
+      slot_id: null,
+      slot_name: value,
+      slot_image_url: '',
+      slot_rtp: null,
+      slot_volatility: null,
+      slot_max_win_multiplier: null,
+      slot_theme: '',
+      slot_features: [],
+    }));
+  };
+
   const selectSlot = (slot) => {
     setForm((prev) => ({
       ...prev,
@@ -52,6 +73,11 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
       slot_name: slot.name,
       provider_name: slot.provider || '',
       slot_image_url: slot.image || '',
+      slot_rtp: slot.rtp ?? null,
+      slot_volatility: slot.volatility || null,
+      slot_max_win_multiplier: slot.max_win_multiplier ?? null,
+      slot_theme: slot.theme || '',
+      slot_features: Array.isArray(slot.features) ? slot.features : [],
     }));
     setSlotQuery(slot.name);
     setSlotResults([]);
@@ -76,10 +102,7 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
           <Search size={16} />
           <input
             value={slotQuery}
-            onChange={(event) => {
-              setSlotQuery(event.target.value);
-              set('slot_name', event.target.value);
-            }}
+            onChange={(event) => setSlotText(event.target.value)}
             placeholder="Search slot library"
             required
           />
@@ -89,14 +112,32 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
             {slotResults.map((slot) => (
               <button type="button" key={slot.id} onClick={() => selectSlot(slot)}>
                 <SlotThumb src={slot.image} name={slot.name} size="sm" />
-                <span>{slot.name}</span>
-                <small>{slot.provider}</small>
+                <span className="pbh-slot-result-name">
+                  <strong>{slot.name}</strong>
+                  <small>{slot.theme || 'Slot library'}</small>
+                </span>
+                <small>{slot.provider || 'Unknown provider'}</small>
+                <small>{formatRtp(slot.rtp)}</small>
+                <small>{formatMaxWin(slot.max_win_multiplier)}</small>
+                <small>{formatVolatility(slot.volatility)}</small>
               </button>
             ))}
           </div>
         )}
         {searching && <small className="pbh-field__hint">Searching slot database...</small>}
+        {!searching && slotQuery.trim().length > 0 && slotQuery.trim().length < 3 && (
+          <small className="pbh-field__hint">Type at least 3 letters for database suggestions.</small>
+        )}
       </label>
+
+      {(form.slot_rtp || form.slot_max_win_multiplier || form.slot_volatility || form.slot_theme) && (
+        <div className="pbh-selected-slot-meta">
+          <span>RTP <strong>{formatRtp(form.slot_rtp)}</strong></span>
+          <span>Max win <strong>{formatMaxWin(form.slot_max_win_multiplier)}</strong></span>
+          <span>Volatility <strong>{formatVolatility(form.slot_volatility)}</strong></span>
+          {form.slot_theme && <span>Theme <strong>{form.slot_theme}</strong></span>}
+        </div>
+      )}
 
       <label className="pbh-field">
         <span>Provider</span>

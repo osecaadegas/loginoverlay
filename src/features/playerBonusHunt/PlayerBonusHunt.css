@@ -430,6 +430,11 @@
   grid-column: 1 / -1;
 }
 
+.pbh-field--search,
+.pbh-selected-slot-meta {
+  grid-column: 1 / -1;
+}
+
 .pbh-form__actions--split {
   grid-column: 1 / -1;
   justify-content: space-between;
@@ -468,7 +473,7 @@
 .pbh-slot-results button {
   width: 100%;
   display: grid;
-  grid-template-columns: 34px 1fr auto;
+  grid-template-columns: 38px minmax(180px, 1fr) minmax(130px, 0.7fr) 76px 86px 92px;
   align-items: center;
   gap: 10px;
   border: 0;
@@ -485,6 +490,42 @@
 
 .pbh-slot-results small {
   color: #94a3b8;
+}
+
+.pbh-slot-result-name {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.pbh-slot-result-name strong,
+.pbh-slot-result-name small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pbh-selected-slot-meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: -4px;
+}
+
+.pbh-selected-slot-meta span,
+.pbh-slot-meta-chip {
+  border: 1px solid rgba(45, 212, 191, 0.16);
+  background: rgba(45, 212, 191, 0.07);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: #94a3b8;
+  font-size: 0.82rem;
+}
+
+.pbh-selected-slot-meta strong,
+.pbh-slot-meta-chip strong {
+  display: block;
+  color: #e5e7eb;
 }
 
 .pbh-slot-thumb {
@@ -569,7 +610,7 @@
 .pbh-table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 840px;
+  min-width: 1160px;
 }
 
 .pbh-table th,
@@ -596,6 +637,42 @@
 
 .pbh-card-list {
   display: none;
+}
+
+.pbh-catalog-suggestions {
+  border: 1px solid rgba(45, 212, 191, 0.14);
+  background: rgba(45, 212, 191, 0.045);
+  border-radius: 10px;
+  padding: 12px;
+  margin-bottom: 14px;
+}
+
+.pbh-catalog-suggestions__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.pbh-catalog-suggestions__head div {
+  display: grid;
+  gap: 3px;
+}
+
+.pbh-catalog-suggestions__head strong {
+  color: #f8fafc;
+}
+
+.pbh-catalog-suggestions__head span,
+.pbh-catalog-suggestions__head small,
+.pbh-catalog-empty {
+  color: #94a3b8;
+  font-size: 0.86rem;
+}
+
+.pbh-catalog-table {
+  min-width: 980px;
 }
 
 .pbh-bonus-card {
@@ -809,9 +886,21 @@
   .pbh-table-wrap {
     display: none;
   }
+  .pbh-catalog-suggestions .pbh-table-wrap {
+    display: block;
+  }
   .pbh-card-list {
     display: grid;
     gap: 10px;
+  }
+  .pbh-selected-slot-meta {
+    grid-template-columns: 1fr 1fr;
+  }
+  .pbh-slot-results button {
+    grid-template-columns: 38px minmax(0, 1fr);
+  }
+  .pbh-slot-results button > small {
+    display: none;
   }
 }
 
@@ -832,6 +921,9 @@
   .pbh-filterbar--compact,
   .pbh-slot-board,
   .pbh-bonus-card__grid {
+    grid-template-columns: 1fr;
+  }
+  .pbh-selected-slot-meta {
     grid-template-columns: 1fr;
   }
   .pbh-header__actions,

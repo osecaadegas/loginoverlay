@@ -19,6 +19,26 @@ export function formatMultiplier(value) {
   return `${Number(value).toFixed(2)}x`;
 }
 
+export function formatRtp(value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '-';
+  return `${Number(value).toFixed(2)}%`;
+}
+
+export function formatMaxWin(value) {
+  if (value === null || value === undefined || value === '' || Number.isNaN(Number(value))) return '-';
+  return `${Number(value).toLocaleString('en-GB', { maximumFractionDigits: 2 })}x`;
+}
+
+export function formatVolatility(value) {
+  const map = {
+    low: 'Low',
+    medium: 'Medium',
+    high: 'High',
+    very_high: 'Very high',
+  };
+  return map[String(value || '').toLowerCase()] || '-';
+}
+
 export function formatDate(value) {
   if (!value) return '-';
   return new Intl.DateTimeFormat('en-GB', {

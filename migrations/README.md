@@ -47,7 +47,13 @@ The `migrations/` folder has been reduced to a numbered baseline that keeps only
 	 Drops retired mini-game tables from older databases.
 
 15. `015_stripe_subscriptions.sql`
-	 Adds Stripe customer/subscription tracking, webhook idempotency, and source-aware premium role rows for recurring billing.
+	Adds Stripe customer/subscription tracking, webhook idempotency, and source-aware premium role rows for recurring billing.
+
+16. `016_player_bonus_hunt.sql`
+	Adds the player-facing Bonus Hunt tables, subscription product tables, access policies, and player slot result view.
+
+17. `017_player_bonus_hunt_slot_metadata.sql`
+	Adds database-backed slot metadata snapshots to player hunt bonuses for RTP, max win, volatility, theme, and features.
 
 ## Notes
 

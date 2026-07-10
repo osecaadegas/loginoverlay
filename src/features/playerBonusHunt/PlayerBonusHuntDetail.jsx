@@ -10,10 +10,11 @@ import {
   deleteHunt,
   downloadPlayerExport,
   getHunt,
+  searchSlots,
   updateBonus,
   updateHunt,
 } from './playerBonusHuntService';
-import { formatDate, formatMoney, formatMultiplier, formatSignedMoney } from './format';
+import { formatDate, formatMaxWin, formatMoney, formatMultiplier, formatRtp, formatSignedMoney, formatVolatility } from './format';
 import './PlayerBonusHunt.css';
 
 function SummaryStrip({ stats, currency }) {
@@ -51,6 +52,10 @@ function BonusRow({ bonus, currency, onEdit, onDelete }) {
           </div>
         </div>
       </td>
+      <td>{bonus.provider_name || '-'}</td>
+      <td>{formatRtp(bonus.slot_rtp)}</td>
+      <td>{formatMaxWin(bonus.slot_max_win_multiplier)}</td>
+      <td>{formatVolatility(bonus.slot_volatility)}</td>
       <td>{formatMoney(bonus.bonus_cost, currency)}</td>
       <td>{formatMoney(bonus.bet_size, currency)}</td>
       <td>{formatMoney(bonus.payout, currency)}</td>
@@ -80,6 +85,10 @@ function BonusCard({ bonus, currency, onEdit, onDelete }) {
         </div>
       </div>
       <div className="pbh-bonus-card__grid">
+        <span>Provider <strong>{bonus.provider_name || '-'}</strong></span>
+        <span>RTP <strong>{formatRtp(bonus.slot_rtp)}</strong></span>
+        <span>Max win <strong>{formatMaxWin(bonus.slot_max_win_multiplier)}</strong></span>
+        <span>Volatility <strong>{formatVolatility(bonus.slot_volatility)}</strong></span>
         <span>Cost <strong>{formatMoney(bonus.bonus_cost, currency)}</strong></span>
         <span>Bet <strong>{formatMoney(bonus.bet_size, currency)}</strong></span>
         <span>Payout <strong>{formatMoney(bonus.payout, currency)}</strong></span>
@@ -91,6 +100,83 @@ function BonusCard({ bonus, currency, onEdit, onDelete }) {
         <button className="pbh-btn pbh-btn--danger" onClick={() => onDelete(bonus.id)}>Delete</button>
       </div>
     </article>
+  );
+}
+
+function slotToDraft(slot) {
+  return {
+    slot_id: slot.id || null,
+    slot_name: slot.name || '',
+    provider_name: slot.provider || '',
+    slot_image_url: slot.image || '',
+    slot_rtp: slot.rtp ?? null,
+    slot_volatility: slot.volatility || null,
+    slot_max_win_multiplier: slot.max_win_multiplier ?? null,
+    slot_theme: slot.theme || '',
+    slot_features: Array.isArray(slot.features) ? slot.features : [],
+    bonus_cost: '',
+    bet_size: '',
+    payout: '',
+    status: 'unopened',
+    notes: '',
+  };
+}
+
+function SlotCatalogSuggestions({ slots, loading, error, query, onAdd }) {
+  if (query.trim().length < 3) return null;
+  return (
+    <div className="pbh-catalog-suggestions">
+      <div className="pbh-catalog-suggestions__head">
+        <div>
+          <strong>Slot database suggestions</strong>
+          <span>Results are ordered by match, provider priority, then slot name.</span>
+        </div>
+        {loading && <small>Searching...</small>}
+      </div>
+      {error && <div className="pbh-alert pbh-alert--error">{error}</div>}
+      {!loading && !error && slots.length === 0 ? (
+        <div className="pbh-catalog-empty">No slot database matches for "{query}".</div>
+      ) : (
+        <div className="pbh-table-wrap">
+          <table className="pbh-table pbh-catalog-table">
+            <thead>
+              <tr>
+                <th>Slot</th>
+                <th>Provider</th>
+                <th>RTP</th>
+                <th>Max win</th>
+                <th>Volatility</th>
+                <th>Theme</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {slots.map((slot) => (
+                <tr key={slot.id}>
+                  <td>
+                    <div className="pbh-slot-cell">
+                      <SlotThumb src={slot.image} name={slot.name} size="sm" />
+                      <div>
+                        <strong>{slot.name}</strong>
+                        <span>{Array.isArray(slot.features) && slot.features.length ? slot.features.slice(0, 3).join(', ') : 'From slot library'}</span>
+                      </div>
+                    </div>
+                  </td>
+                  <td>{slot.provider || '-'}</td>
+                  <td>{formatRtp(slot.rtp)}</td>
+                  <td>{formatMaxWin(slot.max_win_multiplier)}</td>
+                  <td>{formatVolatility(slot.volatility)}</td>
+                  <td>{slot.theme || '-'}</td>
+                  <td>
+                    <button className="pbh-btn pbh-btn--secondary" onClick={() => onAdd(slot)}>Add</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -108,6 +194,10 @@ export default function PlayerBonusHuntDetail() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState('position');
   const [huntForm, setHuntForm] = useState(null);
+  const [draftBonus, setDraftBonus] = useState(null);
+  const [catalogResults, setCatalogResults] = useState([]);
+  const [catalogLoading, setCatalogLoading] = useState(false);
+  const [catalogError, setCatalogError] = useState('');
 
   const load = async () => {
     setLoading(true);
@@ -126,6 +216,30 @@ export default function PlayerBonusHuntDetail() {
   useEffect(() => {
     load();
   }, [huntId]);
+
+  useEffect(() => {
+    const q = search.trim();
+    if (q.length < 3) {
+      setCatalogResults([]);
+      setCatalogError('');
+      setCatalogLoading(false);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      setCatalogLoading(true);
+      setCatalogError('');
+      try {
+        const data = await searchSlots(q);
+        setCatalogResults(data.slots || []);
+      } catch (err) {
+        setCatalogResults([]);
+        setCatalogError(err.message || 'Slot search failed.');
+      } finally {
+        setCatalogLoading(false);
+      }
+    }, 250);
+    return () => clearTimeout(timer);
+  }, [search]);
 
   const bonuses = hunt?.bonuses || [];
   const stats = hunt?.stats || {};
@@ -187,6 +301,7 @@ export default function PlayerBonusHuntDetail() {
       if (editingBonus) await updateBonus({ ...payload, bonusId: editingBonus.id });
       else await addBonus({ ...payload, huntId });
       setEditingBonus(null);
+      setDraftBonus(null);
       setShowBonusForm(false);
       await load();
     } catch (err) {
@@ -225,6 +340,15 @@ export default function PlayerBonusHuntDetail() {
     if (!window.confirm('Delete this hunt? This cannot be undone from the app UI.')) return;
     await deleteHunt(huntId);
     navigate('/player/bonus-hunt');
+  };
+
+  const addSuggestedSlot = (slot) => {
+    setEditingBonus(null);
+    setDraftBonus(slotToDraft(slot));
+    setShowBonusForm(true);
+    window.requestAnimationFrame(() => {
+      document.querySelector('.pbh-bonus-form')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
   };
 
   if (loading) return <main className="pbh-page"><div className="pbh-skeleton pbh-skeleton--hero" /></main>;
@@ -321,13 +445,13 @@ export default function PlayerBonusHuntDetail() {
           <div className="pbh-section-head">
             <div>
               <h2>{editingBonus ? 'Edit bonus' : 'Add bonus'}</h2>
-              <p>Slot image is pulled from the existing slot library when available.</p>
+              <p>Slot image, provider, RTP, max win, and volatility are pulled from the existing slot library when available.</p>
             </div>
           </div>
           <BonusForm
-            initial={editingBonus}
+            initial={editingBonus || draftBonus}
             onSubmit={saveBonus}
-            onCancel={() => { setShowBonusForm(false); setEditingBonus(null); }}
+            onCancel={() => { setShowBonusForm(false); setEditingBonus(null); setDraftBonus(null); }}
             submitLabel={editingBonus ? 'Save bonus' : 'Add bonus'}
           />
         </section>
@@ -366,6 +490,14 @@ export default function PlayerBonusHuntDetail() {
           </select>
         </div>
 
+        <SlotCatalogSuggestions
+          slots={catalogResults}
+          loading={catalogLoading}
+          error={catalogError}
+          query={search}
+          onAdd={addSuggestedSlot}
+        />
+
         {filteredBonuses.length === 0 ? (
           <div className="pbh-empty pbh-empty--small">
             <h3>No bonuses match</h3>
@@ -378,6 +510,10 @@ export default function PlayerBonusHuntDetail() {
                 <thead>
                   <tr>
                     <th>Slot</th>
+                    <th>Provider</th>
+                    <th>RTP</th>
+                    <th>Max win</th>
+                    <th>Volatility</th>
                     <th>Cost</th>
                     <th>Bet</th>
                     <th>Payout</th>

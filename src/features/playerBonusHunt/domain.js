@@ -267,6 +267,29 @@ function assertMoney(value, label, { required = false } = {}) {
   return roundMoney(n);
 }
 
+function assertOptionalNumber(value, label, { min = 0, max = Infinity } = {}) {
+  if (value === null || value === undefined || value === '') return null;
+  const n = Number(value);
+  if (!Number.isFinite(n) || n < min || n > max) throw new ValidationError(`${label} is invalid`);
+  return roundRatio(n);
+}
+
+function normalizeSlotVolatility(value) {
+  if (value === null || value === undefined || value === '') return null;
+  const normalized = String(value).trim().toLowerCase();
+  if (!['low', 'medium', 'high', 'very_high'].includes(normalized)) {
+    throw new ValidationError('Slot volatility is invalid');
+  }
+  return normalized;
+}
+
+function normalizeSlotFeatures(value) {
+  if (!value) return [];
+  if (Array.isArray(value)) return value.map((item) => String(item).trim()).filter(Boolean).slice(0, 12);
+  if (typeof value === 'string') return value.split(',').map((item) => item.trim()).filter(Boolean).slice(0, 12);
+  return [];
+}
+
 export function normalizeHuntPayload(input = {}, { partial = false } = {}) {
   const payload = {};
   const maybe = (key) => Object.prototype.hasOwnProperty.call(input, key);
@@ -301,6 +324,11 @@ export function normalizeBonusPayload(input = {}, { partial = false } = {}) {
   if (!partial || maybe('slot_name')) payload.slot_name = assertText(input.slot_name, 'Slot name', { required: !partial, max: 160 });
   if (!partial || maybe('provider_name')) payload.provider_name = assertText(input.provider_name, 'Provider', { max: 120 });
   if (!partial || maybe('slot_image_url')) payload.slot_image_url = assertText(input.slot_image_url, 'Slot image URL', { max: 1000 });
+  if (!partial || maybe('slot_rtp')) payload.slot_rtp = assertOptionalNumber(input.slot_rtp, 'Slot RTP', { max: 100 });
+  if (!partial || maybe('slot_volatility')) payload.slot_volatility = normalizeSlotVolatility(input.slot_volatility);
+  if (!partial || maybe('slot_max_win_multiplier')) payload.slot_max_win_multiplier = assertOptionalNumber(input.slot_max_win_multiplier, 'Slot max win');
+  if (!partial || maybe('slot_theme')) payload.slot_theme = assertText(input.slot_theme, 'Slot theme', { max: 120 });
+  if (!partial || maybe('slot_features')) payload.slot_features = normalizeSlotFeatures(input.slot_features);
   if (!partial || maybe('bonus_cost')) payload.bonus_cost = assertMoney(input.bonus_cost, 'Bonus cost');
   if (!partial || maybe('bet_size')) payload.bet_size = assertMoney(input.bet_size, 'Bet size');
   if (!partial || maybe('payout')) payload.payout = assertMoney(input.payout, 'Payout');

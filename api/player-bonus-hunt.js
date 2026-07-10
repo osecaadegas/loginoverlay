@@ -15,15 +15,96 @@ import {
 } from './_lib/api-auth.js';
 import { getPlayerAccess, requirePlayerAccess } from './_lib/player-access.js';
 
+const SLOT_PROVIDER_PRIORITY = [
+  'pragmatic play',
+  'pragmatic',
+  'hacksaw gaming',
+  'hacksaw',
+  'nolimit city',
+  'nolimit',
+  'bgaming',
+  'pinguin king',
+  'penguin king',
+  'relax gaming',
+  'play\'n go',
+  'push gaming',
+  'elk studios',
+  'thunderkick',
+  'avatarux',
+  'netent',
+  'quickspin',
+  'red tiger',
+  'big time gaming',
+];
+
 function parsePositiveInt(value, fallback, max = 100) {
   const n = parseInt(value, 10);
   if (!Number.isFinite(n) || n <= 0) return fallback;
   return Math.min(n, max);
 }
 
+function normalizeSearchText(value) {
+  return String(value || '').trim().toLowerCase();
+}
+
+function providerPriority(provider) {
+  const normalized = normalizeSearchText(provider);
+  if (!normalized) return SLOT_PROVIDER_PRIORITY.length;
+  const index = SLOT_PROVIDER_PRIORITY.findIndex((item) => normalized.includes(item) || item.includes(normalized));
+  return index === -1 ? SLOT_PROVIDER_PRIORITY.length : index;
+}
+
+function slotMatchRank(slot, query) {
+  const q = normalizeSearchText(query);
+  const name = normalizeSearchText(slot.name);
+  const provider = normalizeSearchText(slot.provider);
+  if (name.startsWith(q)) return 0;
+  if (name.split(/\s+/).some((part) => part.startsWith(q))) return 1;
+  if (name.includes(q)) return 2;
+  if (provider.startsWith(q)) return 3;
+  if (provider.includes(q)) return 4;
+  return 5;
+}
+
+function sortSlotSuggestions(slots, query) {
+  return [...slots].sort((a, b) => {
+    const rank = slotMatchRank(a, query) - slotMatchRank(b, query);
+    if (rank) return rank;
+    const priority = providerPriority(a.provider) - providerPriority(b.provider);
+    if (priority) return priority;
+    return String(a.name || '').localeCompare(String(b.name || ''));
+  });
+}
+
+function mapSlotSuggestion(slot) {
+  return {
+    id: slot.id,
+    name: slot.name,
+    provider: slot.provider || '',
+    image: slot.image || '',
+    rtp: slot.rtp ?? null,
+    volatility: slot.volatility || null,
+    max_win_multiplier: slot.max_win_multiplier ?? null,
+    theme: slot.theme || '',
+    features: Array.isArray(slot.features) ? slot.features : [],
+  };
+}
+
 function statusCode(err) {
   if (err instanceof ValidationError) return 400;
   return err.statusCode || 500;
+}
+
+function userFacingError(err) {
+  const message = String(err?.message || '');
+  const missingPlayerTable = ['player_hunts', 'player_hunt_bonuses', 'user_product_subscriptions', 'subscription_events']
+    .some((table) => message.includes(table));
+  if (err?.code === '42P01' || err?.code === 'PGRST205' || missingPlayerTable) {
+    const setupError = new Error('Player Bonus Hunt database tables are missing. Apply migrations/016_player_bonus_hunt.sql, then migrations/017_player_bonus_hunt_slot_metadata.sql.');
+    setupError.statusCode = 503;
+    return setupError;
+  }
+  return err;
 }
 
 async function loadHunt(supabase, userId, huntId) {
@@ -377,14 +458,18 @@ async function handleLibrary(req, res, supabase, user) {
 async function handleSlotSearch(req, res, supabase, user) {
   await requirePlayerAccess(supabase, user.id);
   const q = String(req.query.q || '').trim();
-  if (q.length < 2) return res.status(200).json({ slots: [] });
+  if (q.length < 3) return res.status(200).json({ slots: [] });
+  const safeQuery = q.replace(/[%_,()]/g, '').trim();
+  if (safeQuery.length < 3) return res.status(200).json({ slots: [] });
   const { data, error } = await supabase
     .from('slots')
-    .select('id, name, provider, image')
-    .or(`name.ilike.%${q.replace(/[%_,]/g, '')}%,provider.ilike.%${q.replace(/[%_,]/g, '')}%`)
-    .limit(12);
+    .select('id, name, provider, image, rtp, volatility, max_win_multiplier, theme, features')
+    .or(`name.ilike.%${safeQuery}%,provider.ilike.%${safeQuery}%`)
+    .limit(50);
   if (error) throw error;
-  return res.status(200).json({ slots: data || [] });
+  return res.status(200).json({
+    slots: sortSlotSuggestions(data || [], q).slice(0, 18).map(mapSlotSuggestion),
+  });
 }
 
 async function handleExport(req, res, supabase, user) {
@@ -416,7 +501,7 @@ async function handleExport(req, res, supabase, user) {
   }
 
   const rows = [
-    ['Hunt', 'Date', 'Casino', 'Currency', 'Slot', 'Provider', 'Cost', 'Bet', 'Payout', 'Multiplier', 'Profit/Loss', 'Status', 'Notes'],
+    ['Hunt', 'Date', 'Casino', 'Currency', 'Slot', 'Provider', 'Slot RTP', 'Slot max win', 'Slot volatility', 'Cost', 'Bet', 'Payout', 'Multiplier', 'Profit/Loss', 'Status', 'Notes'],
     ...bonuses.map((bonus) => {
       const hunt = hunts.find((h) => h.id === bonus.hunt_id) || {};
       return [
@@ -426,6 +511,9 @@ async function handleExport(req, res, supabase, user) {
         hunt.currency || '',
         bonus.slot_name,
         bonus.provider_name || '',
+        bonus.slot_rtp || '',
+        bonus.slot_max_win_multiplier || '',
+        bonus.slot_volatility || '',
         bonus.bonus_cost,
         bonus.bet_size,
         bonus.payout,
@@ -469,11 +557,12 @@ export default async function handler(req, res) {
     if (!actionHandler) return res.status(404).json({ error: 'Unknown action' });
     return actionHandler(req, res, supabase, user);
   } catch (err) {
+    const safeError = userFacingError(err);
     console.error('[player-bonus-hunt]', err);
-    return res.status(statusCode(err)).json({
-      error: err.message || 'Player Bonus Hunt request failed',
-      access: err.access || undefined,
-      details: err.details || undefined,
+    return res.status(statusCode(safeError)).json({
+      error: safeError.message || 'Player Bonus Hunt request failed',
+      access: safeError.access || undefined,
+      details: safeError.details || undefined,
     });
   }
 }

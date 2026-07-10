@@ -63,6 +63,19 @@ assert.equal(isSubscriptionEntitled({ status: 'canceled', current_period_end: '2
 
 assert.equal(normalizeHuntPayload({ name: 'H', currency: 'EUR', starting_deposit: 1 }).currency, 'EUR');
 assert.equal(normalizeBonusPayload({ slot_name: 'S', bet_size: 2, payout: 10 }).multiplier, 5);
+const normalizedSlotMeta = normalizeBonusPayload({
+  slot_name: 'Gates of Olympus',
+  provider_name: 'Pragmatic Play',
+  slot_rtp: 96.5,
+  slot_volatility: 'high',
+  slot_max_win_multiplier: 5000,
+  slot_theme: 'Mythology',
+  slot_features: ['Bonus buy', 'Multiplier'],
+});
+assert.equal(normalizedSlotMeta.slot_rtp, 96.5);
+assert.equal(normalizedSlotMeta.slot_volatility, 'high');
+assert.equal(normalizedSlotMeta.slot_max_win_multiplier, 5000);
+assert.deepEqual(normalizedSlotMeta.slot_features, ['Bonus buy', 'Multiplier']);
 
 const month = getPeriodRange('monthly', '2026-07-10T12:00:00Z');
 assert.equal(month.start.slice(0, 10), '2026-07-01');
