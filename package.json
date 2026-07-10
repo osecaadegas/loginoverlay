@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "npx vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:player-bonus-hunt": "node scripts/test-player-bonus-hunt.mjs"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",

@@ -72,7 +72,7 @@ export default function Sidebar({ className = '', onClose }) {
   }, [user]);
 
   const go = (path) => navigate(path);
-  const active = (path) => location.pathname === path;
+  const active = (path) => location.pathname === path || (path !== '/' && location.pathname.startsWith(`${path}/`));
   const toggle = (key) => setOpenSection(openSection === key ? null : key);
 
   const handleLogin = () => navigate('/login');
@@ -170,6 +170,9 @@ export default function Sidebar({ className = '', onClose }) {
         )}
         {!isAdmin && (
           <NavItem icon={ICONS.premium} labelKey="nav_premium" label="Premium" path="/premium" />
+        )}
+        {user && (
+          <NavItem icon={ICONS.bonushunt} labelKey="nav_player_bonus_hunt" label="Bonus Hunt" path="/player/bonus-hunt" />
         )}
         {(isAdmin || isPremium) && (
           <NavItem icon={ICONS.overlay} labelKey="nav_overlay_center" label="Overlay Center" path="/overlay-center" />

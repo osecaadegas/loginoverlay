@@ -4,18 +4,29 @@ export const BILLING_PLANS = {
   monthly: {
     label: '1 Month',
     env: 'STRIPE_PRICE_MONTHLY',
+    productCode: 'streamer_premium',
   },
   quarterly: {
     label: '3 Months',
     env: 'STRIPE_PRICE_QUARTERLY',
+    productCode: 'streamer_premium',
   },
   semiannual: {
     label: '6 Months',
     env: 'STRIPE_PRICE_SEMIANNUAL',
+    productCode: 'streamer_premium',
   },
   annual: {
     label: '12 Months',
     env: 'STRIPE_PRICE_ANNUAL',
+    productCode: 'streamer_premium',
+  },
+  player_monthly: {
+    label: 'Player',
+    env: 'STRIPE_PRICE_PLAYER_MONTHLY',
+    productCode: 'player_bonus_hunt',
+    monthlyPrice: '3.00',
+    trialDays: 30,
   },
 };
 
@@ -129,36 +140,53 @@ export async function findOrCreateStripeCustomer(supabase, user) {
   return customer.id;
 }
 
-export async function createCheckoutSession({ req, supabase, user, planId }) {
+export async function createCheckoutSession({
+  req,
+  supabase,
+  user,
+  planId,
+  successPath = '/premium',
+  cancelPath = '/premium',
+  trialPeriodDays = 0,
+}) {
   const plan = getPlanPrice(planId);
   const siteUrl = getSiteUrl(req);
   const customerId = await findOrCreateStripeCustomer(supabase, user);
+  const productCode = plan.productCode || 'streamer_premium';
+  const params = {
+    mode: 'subscription',
+    customer: customerId,
+    client_reference_id: user.id,
+    success_url: `${siteUrl}${successPath}?success=true&session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${siteUrl}${cancelPath}?canceled=true`,
+    allow_promotion_codes: 'true',
+    billing_address_collection: 'auto',
+    'line_items[0][price]': plan.priceId,
+    'line_items[0][quantity]': 1,
+    'metadata[supabase_user_id]': user.id,
+    'metadata[plan_id]': plan.id,
+    'metadata[product_code]': productCode,
+    'subscription_data[metadata][supabase_user_id]': user.id,
+    'subscription_data[metadata][plan_id]': plan.id,
+    'subscription_data[metadata][product_code]': productCode,
+  };
+
+  if (trialPeriodDays > 0) {
+    params.payment_method_collection = 'always';
+    params['subscription_data[trial_period_days]'] = trialPeriodDays;
+  }
 
   return stripeRequest('/v1/checkout/sessions', {
-    params: {
-      mode: 'subscription',
-      customer: customerId,
-      client_reference_id: user.id,
-      success_url: `${siteUrl}/premium?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${siteUrl}/premium?canceled=true`,
-      allow_promotion_codes: 'true',
-      billing_address_collection: 'auto',
-      'line_items[0][price]': plan.priceId,
-      'line_items[0][quantity]': 1,
-      'metadata[supabase_user_id]': user.id,
-      'metadata[plan_id]': plan.id,
-      'subscription_data[metadata][supabase_user_id]': user.id,
-      'subscription_data[metadata][plan_id]': plan.id,
-    },
+    params,
   });
 }
 
-export async function createBillingPortalSession({ req, customerId }) {
+export async function createBillingPortalSession({ req, customerId, returnPath = '/premium' }) {
   const siteUrl = getSiteUrl(req);
   return stripeRequest('/v1/billing_portal/sessions', {
     params: {
       customer: customerId,
-      return_url: `${siteUrl}/premium`,
+      return_url: `${siteUrl}${returnPath}`,
     },
   });
 }
@@ -265,7 +293,11 @@ export async function syncStripeSubscription(supabase, subscription, fallbackUse
 
   const periodStart = stripeTimestampToIso(subscription.current_period_start || item.current_period_start);
   const periodEnd = stripeTimestampToIso(subscription.current_period_end || item.current_period_end);
+  const trialStart = stripeTimestampToIso(subscription.trial_start);
+  const trialEnd = stripeTimestampToIso(subscription.trial_end);
   const status = subscription.status || 'unknown';
+  const planId = subscription.metadata?.plan_id || null;
+  const productCode = subscription.metadata?.product_code || (planId === 'player_monthly' ? 'player_bonus_hunt' : 'streamer_premium');
   const isPremiumActive = ACTIVE_SUBSCRIPTION_STATUSES.has(status);
 
   const subscriptionResult = await supabase
@@ -275,9 +307,15 @@ export async function syncStripeSubscription(supabase, subscription, fallbackUse
       stripe_subscription_id: subscription.id,
       stripe_customer_id: stripeCustomerId,
       stripe_price_id: idFromStripeRef(item.price),
+      product_code: productCode,
+      plan_id: planId,
       status,
       current_period_start: periodStart,
       current_period_end: periodEnd,
+      trial_start: trialStart,
+      trial_end: trialEnd,
+      next_billing_at: periodEnd,
+      payment_status: subscription.latest_invoice?.status || null,
       cancel_at_period_end: !!subscription.cancel_at_period_end,
       canceled_at: stripeTimestampToIso(subscription.canceled_at),
       ended_at: stripeTimestampToIso(subscription.ended_at),
@@ -285,6 +323,35 @@ export async function syncStripeSubscription(supabase, subscription, fallbackUse
       updated_at: new Date().toISOString(),
     }, { onConflict: 'stripe_subscription_id' });
   throwSupabaseError(subscriptionResult, 'Failed to sync billing subscription');
+
+  if (productCode === 'player_bonus_hunt') {
+    const playerResult = await supabase
+      .from('user_product_subscriptions')
+      .upsert({
+        user_id: userId,
+        product_code: productCode,
+        plan_code: planId || 'player_monthly',
+        provider: 'stripe',
+        provider_customer_id: stripeCustomerId,
+        provider_subscription_id: subscription.id,
+        provider_price_id: idFromStripeRef(item.price),
+        status,
+        payment_status: subscription.latest_invoice?.status || null,
+        trial_consumed: !!(trialStart || trialEnd || status === 'trialing'),
+        trial_started_at: trialStart,
+        trial_ends_at: trialEnd,
+        current_period_start: periodStart,
+        current_period_end: periodEnd,
+        next_billing_at: periodEnd,
+        cancel_at_period_end: !!subscription.cancel_at_period_end,
+        canceled_at: stripeTimestampToIso(subscription.canceled_at),
+        ended_at: stripeTimestampToIso(subscription.ended_at),
+        metadata: subscription.metadata || {},
+        updated_at: new Date().toISOString(),
+      }, { onConflict: 'user_id,product_code' });
+    throwSupabaseError(playerResult, 'Failed to sync player product subscription');
+    return { userId, active: ACTIVE_SUBSCRIPTION_STATUSES.has(status), status, productCode };
+  }
 
   const roleResult = await supabase
     .from('user_roles')
@@ -316,5 +383,5 @@ export async function syncStripeSubscription(supabase, subscription, fallbackUse
     throwSupabaseError(insertResult, 'Failed to create premium role');
   }
 
-  return { userId, active: isPremiumActive, status };
+  return { userId, active: isPremiumActive, status, productCode };
 }

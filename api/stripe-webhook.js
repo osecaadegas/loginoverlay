@@ -102,6 +102,35 @@ async function handleStripeEvent(supabase, event) {
   }
 }
 
+async function recordSubscriptionEvent(supabase, event, syncResult) {
+  if (!event?.id) return;
+  const object = event.data?.object || {};
+  const userId =
+    syncResult?.userId ||
+    object.client_reference_id ||
+    object.metadata?.supabase_user_id ||
+    object.subscription_details?.metadata?.supabase_user_id ||
+    null;
+  const productCode =
+    syncResult?.productCode ||
+    object.metadata?.product_code ||
+    object.subscription_details?.metadata?.product_code ||
+    null;
+
+  const { error } = await supabase
+    .from('subscription_events')
+    .upsert({
+      user_id: userId,
+      product_code: productCode,
+      provider: 'stripe',
+      provider_event_id: event.id,
+      event_type: event.type,
+      payload: event,
+      processed_at: new Date().toISOString(),
+    }, { onConflict: 'provider,provider_event_id' });
+  if (error && error.code !== '42P01') throw error;
+}
+
 function webhookErrorStatus(error) {
   const message = error?.message || '';
   if (
@@ -131,7 +160,8 @@ export default async function handler(req, res) {
       return res.status(200).json({ received: true, duplicate: true });
     }
 
-    await handleStripeEvent(supabase, event);
+    const syncResult = await handleStripeEvent(supabase, event);
+    await recordSubscriptionEvent(supabase, event, syncResult);
     await recordProcessedEvent(supabase, event);
 
     return res.status(200).json({ received: true });

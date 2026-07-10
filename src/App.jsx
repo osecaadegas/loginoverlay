@@ -37,6 +37,12 @@ const AdminPanel = lazy(() => import('./components/AdminPanel/AdminPanel'));
 const OverlayControlCenter = lazy(() => import('./components/OverlayCenter/OverlayControlCenter'));
 const OverlayRenderer = lazy(() => import('./components/OverlayCenter/OverlayRenderer'));
 const AnalyticsDashboard = lazy(() => import('./components/AnalyticsDashboard/AnalyticsDashboard'));
+const PlayerBonusHuntDashboard = lazy(() => import('./features/playerBonusHunt/PlayerBonusHuntDashboard'));
+const PlayerBonusHuntNew = lazy(() => import('./features/playerBonusHunt/PlayerBonusHuntNew'));
+const PlayerBonusHuntDetail = lazy(() => import('./features/playerBonusHunt/PlayerBonusHuntDetail'));
+const PlayerBonusHuntLibrary = lazy(() => import('./features/playerBonusHunt/PlayerBonusHuntLibrary'));
+const PlayerSubscriptionPage = lazy(() => import('./features/playerBonusHunt/PlayerSubscriptionPage'));
+const ProtectedPlayerRoute = lazy(() => import('./features/playerBonusHunt/ProtectedPlayerRoute'));
 
 function AppContent({ isAdminOverlay = false }) {
   const location = useLocation();
@@ -375,6 +381,27 @@ function App() {
 
                 <Route path="/profile" element={<ProfilePage />} />
                 <Route path="/premium" element={<PricingPage />} />
+                <Route path="/player/subscription" element={<PlayerSubscriptionPage />} />
+                <Route path="/player/bonus-hunt" element={
+                  <ProtectedPlayerRoute>
+                    <PlayerBonusHuntDashboard />
+                  </ProtectedPlayerRoute>
+                } />
+                <Route path="/player/bonus-hunt/new" element={
+                  <ProtectedPlayerRoute>
+                    <PlayerBonusHuntNew />
+                  </ProtectedPlayerRoute>
+                } />
+                <Route path="/player/bonus-hunt/library" element={
+                  <ProtectedPlayerRoute>
+                    <PlayerBonusHuntLibrary />
+                  </ProtectedPlayerRoute>
+                } />
+                <Route path="/player/bonus-hunt/:huntId" element={
+                  <ProtectedPlayerRoute>
+                    <PlayerBonusHuntDetail />
+                  </ProtectedPlayerRoute>
+                } />
 
                 
                 {/* WebMod Routes - For admins and slot_modders */}
