@@ -14,8 +14,9 @@ import {
   updateBonus,
   updateHunt,
 } from './playerBonusHuntService';
-import { calculateHuntStatistics } from './domain.js';
+import { calculateBonusMultiplier, calculateHuntStatistics, roundMoney } from './domain.js';
 import { formatDate, formatMaxWin, formatMoney, formatMultiplier, formatRtp, formatSignedMoney, formatVolatility } from './format';
+import { formatAutoDecimalInput } from './inputFormat';
 import './PlayerBonusHunt.css';
 
 const BONUS_TYPE_OPTIONS = [
@@ -92,6 +93,18 @@ function PayoutInput({ bonus, value, saving, onChange, onSave, onKeyDown }) {
   );
 }
 
+function getOpeningMetrics(bonus, payoutValue) {
+  const raw = String(payoutValue ?? '').trim();
+  if (!raw) return { hasPayout: false, multiplier: null, profit: null };
+  const payout = Number(raw);
+  if (!Number.isFinite(payout) || payout < 0) return { hasPayout: false, multiplier: null, profit: null };
+  return {
+    hasPayout: true,
+    multiplier: calculateBonusMultiplier({ ...bonus, payout }),
+    profit: roundMoney(payout - Number(bonus.bonus_cost || 0)),
+  };
+}
+
 function BonusRow({
   bonus,
   currency,
@@ -105,8 +118,9 @@ function BonusRow({
   onDelete,
 }) {
   const isOpening = phase === 'opening';
-  const profit = Number(bonus.profit_loss || 0);
-  const hasResult = bonus.status === 'opened';
+  const openingMetrics = isOpening ? getOpeningMetrics(bonus, payoutValue) : null;
+  const hasResult = isOpening ? openingMetrics.hasPayout : bonus.status === 'opened';
+  const profit = isOpening ? openingMetrics.profit : Number(bonus.profit_loss || 0);
   return (
     <tr className={hasResult ? 'pbh-row--opened' : ''}>
       <td>
@@ -133,7 +147,7 @@ function BonusRow({
               onKeyDown={onPayoutKeyDown}
             />
           </td>
-          <td>{hasResult ? formatMultiplier(bonus.multiplier) : '-'}</td>
+          <td>{hasResult ? formatMultiplier(openingMetrics.multiplier) : '-'}</td>
           <td className={hasResult ? (profit >= 0 ? 'pbh-positive' : 'pbh-negative') : ''}>
             {hasResult ? formatSignedMoney(profit, currency) : '-'}
           </td>
@@ -172,8 +186,9 @@ function BonusCard({
   onDelete,
 }) {
   const isOpening = phase === 'opening';
-  const profit = Number(bonus.profit_loss || 0);
-  const hasResult = bonus.status === 'opened';
+  const openingMetrics = isOpening ? getOpeningMetrics(bonus, payoutValue) : null;
+  const hasResult = isOpening ? openingMetrics.hasPayout : bonus.status === 'opened';
+  const profit = isOpening ? openingMetrics.profit : Number(bonus.profit_loss || 0);
   return (
     <article className={`pbh-bonus-card ${hasResult ? 'pbh-bonus-card--opened' : ''}`}>
       <div className="pbh-bonus-card__top">
@@ -207,7 +222,7 @@ function BonusCard({
                 onKeyDown={onPayoutKeyDown}
               />
             </span>
-            <span>Multi <strong>{hasResult ? formatMultiplier(bonus.multiplier) : '-'}</strong></span>
+            <span>Multi <strong>{hasResult ? formatMultiplier(openingMetrics.multiplier) : '-'}</strong></span>
             <span className={hasResult ? (profit >= 0 ? 'pbh-positive' : 'pbh-negative') : ''}>
               Result <strong>{hasResult ? formatSignedMoney(profit, currency) : '-'}</strong>
             </span>
@@ -340,7 +355,13 @@ function QuickBonusEditor({ draft, setDraft, saving, onSubmit, onCancel }) {
         </label>
         <label className="pbh-field">
           <span>Bet size</span>
-          <input type="number" min="0" step="0.01" value={draft.bet_size ?? ''} onChange={(event) => set('bet_size', event.target.value)} />
+          <input
+            type="text"
+            inputMode="decimal"
+            value={draft.bet_size ?? ''}
+            onChange={(event) => set('bet_size', formatAutoDecimalInput(event.target.value))}
+            placeholder="0.20"
+          />
         </label>
         <label className="pbh-field">
           <span>Type</span>

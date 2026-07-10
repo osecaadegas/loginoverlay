@@ -3,6 +3,7 @@ import { Search } from 'lucide-react';
 import { searchSlots } from './playerBonusHuntService';
 import SlotThumb from './SlotThumb';
 import { formatMaxWin, formatRtp, formatVolatility } from './format';
+import { formatAutoDecimalInput } from './inputFormat';
 
 const EMPTY = {
   slot_name: '',
@@ -154,7 +155,13 @@ export default function BonusForm({ initial, onSubmit, onCancel, submitLabel = '
       </label>
       <label className="pbh-field">
         <span>Bet size</span>
-        <input type="number" min="0" step="0.01" value={form.bet_size ?? ''} onChange={(event) => set('bet_size', event.target.value)} />
+        <input
+          type="text"
+          inputMode="decimal"
+          value={form.bet_size ?? ''}
+          onChange={(event) => set('bet_size', formatAutoDecimalInput(event.target.value))}
+          placeholder="0.20"
+        />
       </label>
       <label className="pbh-field">
         <span>Type</span>

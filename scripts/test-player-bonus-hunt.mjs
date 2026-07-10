@@ -11,6 +11,7 @@ import {
   normalizeBonusPayload,
   normalizeHuntPayload,
 } from '../src/features/playerBonusHunt/domain.js';
+import { formatAutoDecimalInput } from '../src/features/playerBonusHunt/inputFormat.js';
 import { isSubscriptionEntitled } from '../api/_lib/player-access.js';
 
 const hunt = {
@@ -44,6 +45,7 @@ assert.equal(stats.remainingBreakEven, 325);
 assert.equal(stats.profitLoss, -325);
 assert.equal(stats.totalPayout, 200);
 assert.equal(stats.totalSpent, 210);
+assert.equal(stats.totalBet, 6);
 assert.equal(stats.openedBonuses, 2);
 assert.equal(stats.remainingBonuses, 2);
 assert.equal(stats.bestWin.slot_name, 'Alpha');
@@ -63,7 +65,9 @@ const library = calculateLibraryStatistics([{ ...hunt, name: 'Main' }], bonuses)
 assert.equal(library.totalsByCurrency.EUR.totalDeposited, 600);
 assert.equal(library.totalsByCurrency.EUR.totalWithdrawn, 75);
 assert.equal(library.totalsByCurrency.EUR.totalSpent, 210);
+assert.equal(library.totalsByCurrency.EUR.totalBet, 6);
 assert.equal(library.totalsByCurrency.EUR.breakEven, 525);
+assert.equal(library.totalsByCurrency.EUR.breakEvenMultiplier, 87.5);
 assert.equal(library.totalsByCurrency.EUR.remainingBreakEven, 325);
 assert.equal(library.mostPlayedSlots[0].plays, 1);
 assert.equal(library.bestWinsByPayout[0].slot_name, 'Alpha');
@@ -90,6 +94,9 @@ assert.equal(normalizedSlotMeta.slot_rtp, 96.5);
 assert.equal(normalizedSlotMeta.slot_volatility, 'high');
 assert.equal(normalizedSlotMeta.slot_max_win_multiplier, 5000);
 assert.deepEqual(normalizedSlotMeta.slot_features, ['Bonus buy', 'Multiplier']);
+assert.equal(formatAutoDecimalInput('20'), '0.20');
+assert.equal(formatAutoDecimalInput('130'), '1.30');
+assert.equal(formatAutoDecimalInput('0.20'), '0.20');
 
 const month = getPeriodRange('monthly', '2026-07-10T12:00:00Z');
 assert.equal(month.start.slice(0, 10), '2026-07-01');

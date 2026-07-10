@@ -117,6 +117,7 @@ export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
     .filter((value) => value !== null && Number.isFinite(value));
   const totalPayout = calculateTotalPayout(bonuses);
   const totalSpent = roundMoney(bonuses.reduce((sum, bonus) => sum + toNumber(bonus.bonus_cost), 0));
+  const totalBet = roundMoney(bonuses.reduce((sum, bonus) => sum + toNumber(bonus.bet_size), 0));
   const bestWin = opened.reduce((best, bonus) => toNumber(bonus.payout) > toNumber(best?.payout, -Infinity) ? bonus : best, null);
   const worstWin = opened.reduce((worst, bonus) => toNumber(bonus.payout) < toNumber(worst?.payout, Infinity) ? bonus : worst, null);
   const bestMultiplierBonus = opened.reduce((best, bonus) => {
@@ -145,6 +146,7 @@ export function calculateHuntStatistics(hunt = {}, bonusesInput = []) {
     profitLoss,
     totalPayout,
     totalSpent,
+    totalBet,
     totalBonuses: bonuses.length,
     openedBonuses: opened.length,
     remainingBonuses: unopened.length,
@@ -193,8 +195,10 @@ export function calculateLibraryStatistics(hunts = [], bonuses = []) {
       totalWithdrawn: 0,
       currentBalance: 0,
       totalSpent: 0,
+      totalBet: 0,
       totalPayout: 0,
       breakEven: 0,
+      breakEvenMultiplier: null,
       remainingBreakEven: 0,
       profitLoss: 0,
       huntCount: 0,
@@ -203,11 +207,16 @@ export function calculateLibraryStatistics(hunts = [], bonuses = []) {
     totalsByCurrency[currency].totalWithdrawn = roundMoney(totalsByCurrency[currency].totalWithdrawn + stats.totalWithdrawals);
     totalsByCurrency[currency].currentBalance = roundMoney(totalsByCurrency[currency].currentBalance + stats.currentBalance);
     totalsByCurrency[currency].totalSpent = roundMoney(totalsByCurrency[currency].totalSpent + stats.totalSpent);
+    totalsByCurrency[currency].totalBet = roundMoney(totalsByCurrency[currency].totalBet + stats.totalBet);
     totalsByCurrency[currency].totalPayout = roundMoney(totalsByCurrency[currency].totalPayout + stats.totalPayout);
     totalsByCurrency[currency].breakEven = roundMoney(totalsByCurrency[currency].breakEven + stats.breakEven);
     totalsByCurrency[currency].remainingBreakEven = roundMoney(totalsByCurrency[currency].remainingBreakEven + stats.remainingBreakEven);
     totalsByCurrency[currency].profitLoss = roundMoney(totalsByCurrency[currency].profitLoss + stats.profitLoss);
     totalsByCurrency[currency].huntCount += 1;
+  }
+
+  for (const row of Object.values(totalsByCurrency)) {
+    row.breakEvenMultiplier = row.totalBet > 0 ? roundRatio(row.breakEven / row.totalBet) : null;
   }
 
   const bestWinsByPayout = [...openedWithCurrency].sort((a, b) => toNumber(b.payout) - toNumber(a.payout));

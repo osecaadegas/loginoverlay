@@ -45,8 +45,10 @@ function getPrimaryTotals(stats, fallbackCurrency = 'EUR') {
     totalDeposited: 0,
     totalWithdrawn: 0,
     totalSpent: 0,
+    totalBet: 0,
     totalPayout: 0,
     breakEven: 0,
+    breakEvenMultiplier: null,
     remainingBreakEven: 0,
     profitLoss: 0,
   };
@@ -298,8 +300,12 @@ export default function PlayerBonusHuntDashboard() {
             <div className="pbh-grid pbh-grid--stats">
               <StatCard label="Total deposits" value={formatMoney(primaryTotals.totalDeposited, currency)} />
               <StatCard label="Total withdrawals" value={formatMoney(primaryTotals.totalWithdrawn, currency)} />
-              <StatCard label="Break even" value={formatMoney(primaryTotals.breakEven, currency)} title="Target = deposits minus withdrawals." />
-              <StatCard label="Remaining" value={formatMoney(primaryTotals.remainingBreakEven, currency)} detail="target minus payouts" />
+              <StatCard
+                label="Break even"
+                value={formatMoney(primaryTotals.breakEven, currency)}
+                detail={`${formatMultiplier(primaryTotals.breakEvenMultiplier)} target multi`}
+                title="Target = deposits minus withdrawals. Multi = break-even target divided by total bet size."
+              />
               <StatCard label="Total spent" value={formatMoney(primaryTotals.totalSpent, currency)} title="Sum of all bonus costs." />
               <StatCard label="Total payout" value={formatMoney(primaryTotals.totalPayout, currency)} />
               <StatCard

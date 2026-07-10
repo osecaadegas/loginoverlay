@@ -273,8 +273,8 @@
 }
 
 .pbh-result-stat {
-  min-height: 98px;
-  padding: 10px 12px 10px 14px;
+  min-height: 90px;
+  padding: 7px 9px 7px 14px;
 }
 
 .pbh-result-stat__body {
@@ -649,7 +649,7 @@
 }
 
 .pbh-slot-thumb--lg {
-  width: 70px;
+  width: 84px;
   border-radius: 10px;
 }
 
