@@ -1,12 +1,20 @@
 const SITE_URL = 'https://streamerscenter.com';
-const DEFAULT_TITLE = 'Streamers Center - Overlays and tools for streamers';
-const DEFAULT_DESCRIPTION = 'Streamers Center helps casino streamers manage overlays, bonus hunts, slot requests, tournaments, giveaways and iGaming community tools.';
+const DEFAULT_TITLE = 'Streamers Center - Tools for players and streamers';
+const DEFAULT_DESCRIPTION = 'Streamers Center helps casino players track bonus hunts and sessions while giving streamers professional overlays, slot requests, tournaments, giveaways and live tools.';
 const DEFAULT_IMAGE = `${SITE_URL}/Hero.png`;
 
 const SEO_BY_PATH = {
   '/': {
     title: DEFAULT_TITLE,
     description: DEFAULT_DESCRIPTION,
+  },
+  '/player': {
+    title: 'Player Bonus Hunt tracker | Streamers Center',
+    description: 'Track casino sessions, deposits, withdrawals, break-even targets, payouts, multipliers and personal bonus hunt records from a private player dashboard.',
+  },
+  '/streamer': {
+    title: 'Streamer overlays and casino stream tools | Streamers Center',
+    description: 'Professional browser-source overlays, bonus hunt widgets, slot requests, tournaments, giveaways, viewer games and stream tools for casino creators.',
   },
   '/offers': {
     title: 'Casino offers for streamers | Streamers Center',
@@ -33,6 +41,8 @@ const NOINDEX_PREFIXES = [
   '/login',
   '/overlay',
   '/overlay-center',
+  '/player/bonus-hunt',
+  '/player/subscription',
   '/profile',
   '/spotify-callback',
   '/webmod',

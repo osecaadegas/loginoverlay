@@ -282,6 +282,7 @@ function LayoutWrapper({ children }) {
   const isWidgetRoute = location.pathname.startsWith('/widgets/');
   const isOBSOverlay = location.pathname.startsWith('/overlay/');
   const isOverlayCenter = location.pathname === '/overlay-center';
+  const isPublicLandingRoute = location.pathname === '/' || location.pathname === '/player' || location.pathname === '/streamer';
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
@@ -291,6 +292,7 @@ function LayoutWrapper({ children }) {
 
   const showSidebar = location.pathname !== '/overlay' && 
                       location.pathname !== '/admin-overlay' && 
+                      !isPublicLandingRoute &&
                       !isWidgetRoute &&
                       !isOBSOverlay &&
                       !isOverlayCenter;
@@ -376,7 +378,9 @@ function App() {
             <LayoutWrapper>
               <Suspense fallback={<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', color: '#94a3b8' }}>Loading...</div>}>
               <Routes>
-                <Route path="/" element={<LandingPage />} />
+                <Route path="/" element={<LandingPage mode="selector" />} />
+                <Route path="/player" element={<LandingPage mode="player" />} />
+                <Route path="/streamer" element={<LandingPage mode="streamer" />} />
                 <Route path="/offers" element={<OffersPage />} />
 
                 <Route path="/profile" element={<ProfilePage />} />
