@@ -912,7 +912,7 @@ async function handleBetPayout(req, res) {
     // Load widget config from DB
     const { data: widgetRow } = await supabase
       .from('overlay_widgets')
-      .select('id, config')
+      .select('id, config, updated_at')
       .eq('user_id', user_id)
       .eq('widget_type', 'bets')
       .limit(1)
@@ -923,7 +923,7 @@ async function handleBetPayout(req, res) {
     const cfg = widgetRow.config || {};
 
     // Only run when SE points mode is enabled
-    if (!cfg.betSeEnabled) {
+    if (cfg.betSeEnabled === false) {
       return res.status(200).json({ ok: true, paid: 0, message: 'SE points mode not enabled — no payout needed' });
     }
 
@@ -1060,7 +1060,7 @@ async function handleBet(req, res) {
     // Load the bets widget config for this streamer
     const { data: widgetRow } = await supabase
       .from('overlay_widgets')
-      .select('id, config')
+      .select('id, config, updated_at')
       .eq('user_id', user_id)
       .eq('widget_type', 'bets')
       .limit(1)
@@ -1079,56 +1079,58 @@ async function handleBet(req, res) {
       notOpen:    cfg.betMsgNotOpen    || '@{user} ❌ Bets are not open right now.',
     };
     const fill = (t, vars) => t.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? `{${k}}`));
+    const { data: seConn } = await supabase
+      .from('streamelements_connections')
+      .select('se_channel_id, se_jwt_token')
+      .eq('user_id', user_id)
+      .maybeSingle();
+    const seChannelId = seConn?.se_channel_id || null;
+    const seJwtToken = seConn?.se_jwt_token || null;
+    const chatAndReply = async (msg) => {
+      if (seChannelId && seJwtToken) await seBotSay(seChannelId, seJwtToken, msg);
+      return res.status(200).send(msg);
+    };
 
     if (cfg.gameStatus !== 'open') {
-      return res.status(200).send(fill(tpl.notOpen, { user: viewer }));
+      return chatAndReply(fill(tpl.notOpen, { user: viewer }));
     }
 
     const options = cfg.options || [];
     const optionIndex = optionNum - 1; // convert 1-based to 0-based
 
     if (optionIndex < 0 || optionIndex >= options.length) {
-      return res.status(200).send(
+      return chatAndReply(
         `@${viewer} ❌ Invalid option. Choose a number between 1 and ${options.length}.`
       );
     }
 
     const betters = { ...(cfg.betters || {}) };
 
-    if (betters[viewer]) {
-      return res.status(200).send(fill(tpl.alreadyBet, { user: viewer }));
+    const existingBetter = betters[viewer];
+    if (existingBetter) {
+      const placedAt = Number(existingBetter.placedAt || 0);
+      if (placedAt && Date.now() - placedAt < 15000) return res.status(200).send('ok');
+      return chatAndReply(fill(tpl.alreadyBet, { user: viewer }));
     }
 
     // ── Validate bet amount limits ──
     const minAmt = parseInt(cfg.betMinAmount, 10) || 1;
     const maxAmt = parseInt(cfg.betMaxAmount, 10) || 0;
     if (betAmount < minAmt) {
-      return res.status(200).send(`@${viewer} ❌ Minimum bet is ${minAmt}.`);
+      return chatAndReply(`@${viewer} ❌ Minimum bet is ${minAmt}.`);
     }
     if (maxAmt > 0 && betAmount > maxAmt) {
-      return res.status(200).send(`@${viewer} ❌ Maximum bet is ${maxAmt}.`);
+      return chatAndReply(`@${viewer} ❌ Maximum bet is ${maxAmt}.`);
     }
 
     // ── SE points deduction (optional) ──
-    const seEnabled = !!cfg.betSeEnabled;
-    let seChannelId = null;
-    let seJwtToken = null;
-
+    const seEnabled = cfg.betSeEnabled !== false;
     if (seEnabled) {
-      const { data: seConn } = await supabase
-        .from('streamelements_connections')
-        .select('se_channel_id, se_jwt_token')
-        .eq('user_id', user_id)
-        .maybeSingle();
-
-      if (!seConn?.se_channel_id || !seConn?.se_jwt_token) {
-        return res.status(200).send(
+      if (!seChannelId || !seJwtToken) {
+        return chatAndReply(
           `@${viewer} ❌ SE not configured — ask the streamer to connect StreamElements.`
         );
       }
-
-      seChannelId = seConn.se_channel_id;
-      seJwtToken = seConn.se_jwt_token;
 
       // Check viewer has enough points
       const pointsRes = await fetch(
@@ -1136,14 +1138,14 @@ async function handleBet(req, res) {
         { headers: { Authorization: `Bearer ${seJwtToken}` } }
       );
       if (!pointsRes.ok) {
-        return res.status(200).send(
+        return chatAndReply(
           `@${viewer} ❌ Could not check points. Are you a follower?`
         );
       }
       const pointsData = await pointsRes.json();
       const balance = pointsData.points ?? 0;
       if (balance < betAmount) {
-        return res.status(200).send(
+        return chatAndReply(
           fill(tpl.noPoints, { user: viewer, balance, amount: betAmount })
         );
       }
@@ -1160,36 +1162,31 @@ async function handleBet(req, res) {
         }
       );
       if (!deductRes.ok) {
-        return res.status(200).send(
+        return chatAndReply(
           `@${viewer} ❌ Failed to deduct points. Try again.`
         );
       }
-    } else {
-      // Load SE creds anyway for chat announcements (best-effort)
-      const { data: seConn } = await supabase
-        .from('streamelements_connections')
-        .select('se_channel_id, se_jwt_token')
-        .eq('user_id', user_id)
-        .maybeSingle();
-      if (seConn) { seChannelId = seConn.se_channel_id; seJwtToken = seConn.se_jwt_token; }
     }
 
     // ── Record the bet in the widget config ──
     const bets = { ...(cfg.bets || {}) };
     const key = `opt_${optionIndex}`;
     bets[key] = (bets[key] || 0) + betAmount;
-    betters[viewer] = { option: optionIndex, amount: betAmount };
+    betters[viewer] = { option: optionIndex, amount: betAmount, placedAt: Date.now() };
 
-    const { error: updateErr } = await supabase
+    let updateQuery = supabase
       .from('overlay_widgets')
       .update({
         config: { ...cfg, bets, betters },
         updated_at: new Date().toISOString(),
       })
       .eq('id', widgetRow.id);
+    if (widgetRow.updated_at) updateQuery = updateQuery.eq('updated_at', widgetRow.updated_at);
+    const { data: updatedRows, error: updateErr } = await updateQuery.select('id');
+    const staleUpdate = !updateErr && widgetRow.updated_at && (!updatedRows || updatedRows.length === 0);
 
-    if (updateErr) {
-      console.error('[handleBet] widget update error:', updateErr);
+    if (updateErr || staleUpdate) {
+      if (updateErr) console.error('[handleBet] widget update error:', updateErr);
       // If SE points were deducted, refund them
       if (seEnabled && seChannelId && seJwtToken) {
         await fetch(
@@ -1203,7 +1200,17 @@ async function handleBet(req, res) {
           }
         ).catch(() => {});
       }
-      return res.status(200).send(`@${viewer} ❌ Failed to register bet. Try again.`);
+
+      if (staleUpdate) {
+        const { data: currentRow } = await supabase
+          .from('overlay_widgets')
+          .select('config')
+          .eq('id', widgetRow.id)
+          .maybeSingle();
+        if (currentRow?.config?.betters?.[viewer]) return res.status(200).send('ok');
+      }
+
+      return chatAndReply(`@${viewer} ❌ Failed to register bet. Try again.`);
     }
 
     const optLabel = options[optionIndex]?.label || `Option ${optionNum}`;
@@ -1211,8 +1218,7 @@ async function handleBet(req, res) {
       user: viewer, amount: betAmount, option: optLabel
     });
 
-    if (seChannelId && seJwtToken) await seBotSay(seChannelId, seJwtToken, msg);
-    return res.status(200).send(msg);
+    return chatAndReply(msg);
   } catch (err) {
     console.error('[handleBet]', err.message);
     return res.status(200).send('Server error — try again');

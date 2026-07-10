@@ -65,6 +65,7 @@ export default function BetsConfig({ config, onChange }) {
   const betters     = c.betters     || {};
   const history     = c.betsHistory || [];
   const chatCommand = c.chatCommand || '!bet';
+  const pointsEnabled = c.betSeEnabled !== false;
   const totalPool   = options.reduce((sum, _, i) => sum + (bets[`opt_${i}`] || 0), 0);
   const totalBetters = Object.keys(betters).length;
   const setupItems = [
@@ -83,7 +84,7 @@ export default function BetsConfig({ config, onChange }) {
     {
       key: 'chat',
       title: 'Chat command ready',
-      detail: `Viewers type ${chatCommand} <number>`,
+      detail: `Viewers type ${chatCommand} <number> <amount>`,
       ready: !!chatCommand,
     },
   ];
@@ -100,20 +101,24 @@ export default function BetsConfig({ config, onChange }) {
       options: opts,
     });
     const bracketList = opts
-      .map((o, i) => `${o.label} → ${chatCommand} ${i + 1}`)
+      .map((o, i) => `${o.label} → ${chatCommand} ${i + 1} <amount>`)
       .join(' | ');
-    seBotAnnounce(
-      userId,
-      `🎲 BETS OPEN: ${c.question || 'Place your bets!'} — ${bracketList} — Type ${chatCommand} <number> to bet!`
-    );
+    if (c.seAnnounce !== false) {
+      seBotAnnounce(
+        userId,
+        `🎲 BETS OPEN: ${c.question || 'Place your bets!'} — ${bracketList} — Type ${chatCommand} <number> <amount> to bet!`
+      );
+    }
   };
 
   const lockBets = () => {
     set('gameStatus', 'locked');
-    seBotAnnounce(
-      userId,
-      `🔒 BETS LOCKED! ${totalBetters} bets in the pool (${totalPool.toLocaleString()} pts). Good luck!`
-    );
+    if (c.seAnnounce !== false) {
+      seBotAnnounce(
+        userId,
+        `🔒 BETS LOCKED! ${totalBetters} bets in the pool (${totalPool.toLocaleString()} pts). Good luck!`
+      );
+    }
   };
 
   const resolveWinner = async (idx) => {
@@ -133,7 +138,7 @@ export default function BetsConfig({ config, onChange }) {
     });
 
     // If SE points mode is on, pay out winners server-side
-    if (c.betSeEnabled && userId) {
+    if (pointsEnabled && userId) {
       const { supabase } = await import('../../../config/supabaseClient');
       const { data: { session } } = await supabase.auth.getSession();
       fetch(
@@ -154,10 +159,12 @@ export default function BetsConfig({ config, onChange }) {
       return; // announcement will be made by the API
     }
 
-    seBotAnnounce(
-      userId,
-      `🏆 RESULT: ${winLabel} wins! Pool: ${totalPool.toLocaleString()} pts from ${totalBetters} bets.`
-    );
+    if (c.seAnnounce !== false) {
+      seBotAnnounce(
+        userId,
+        `🏆 RESULT: ${winLabel} wins! Pool: ${totalPool.toLocaleString()} pts from ${totalBetters} bets.`
+      );
+    }
   };
 
   const resetBets = () => setMulti({
@@ -335,7 +342,7 @@ export default function BetsConfig({ config, onChange }) {
       {tab === 'brackets' && (
         <div className="cg-config__section">
           <p className="cg-config__hint">
-            Configure bracket labels. Viewers type <code>{chatCommand} &lt;number&gt;</code> to bet.
+            Configure bracket labels. Viewers type <code>{chatCommand} &lt;number&gt; &lt;amount&gt;</code> to bet.
           </p>
           {options.map((opt, i) => (
             <div key={i} style={{ display: 'flex', gap: 6, alignItems: 'center', marginBottom: 4 }}>
@@ -393,7 +400,7 @@ export default function BetsConfig({ config, onChange }) {
             />
           </label>
           <p className="cg-config__hint">
-            Viewers type <code>{chatCommand} &lt;number&gt;</code> or <code>{chatCommand} &lt;number&gt; &lt;amount&gt;</code>
+            Viewers type <code>{chatCommand} &lt;number&gt; &lt;amount&gt;</code>
           </p>
 
           <label className="cg-config__field">
@@ -422,13 +429,13 @@ export default function BetsConfig({ config, onChange }) {
           <label className="cg-config__field" style={{ flexDirection: 'row', alignItems: 'center', gap: 8, cursor: 'pointer', marginTop: 10 }}>
             <input
               type="checkbox"
-              checked={!!c.betSeEnabled}
+              checked={pointsEnabled}
               onChange={e => set('betSeEnabled', e.target.checked)}
               style={{ width: 16, height: 16, cursor: 'pointer' }}
             />
             <span>Deduct SE points equal to bet amount</span>
           </label>
-          {c.betSeEnabled && (
+          {pointsEnabled && (
             <p className="cg-config__hint">
               Requires SE connected. The viewer's typed amount will be deducted from their SE balance before the bet is recorded.
             </p>
