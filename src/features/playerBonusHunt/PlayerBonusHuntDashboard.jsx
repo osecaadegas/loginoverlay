@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Archive, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react';
+import { Archive, ArrowLeft, ArrowRight, Copy, ExternalLink, Plus, Trash2 } from 'lucide-react';
 import {
   archiveHunt,
   deleteHunt,
@@ -8,15 +8,79 @@ import {
   downloadPlayerExport,
   getDashboard,
 } from './playerBonusHuntService';
+import SlotThumb from './SlotThumb';
+import { calculateBonusMultiplier } from './domain.js';
 import { formatDate, formatMoney, formatMultiplier, formatSignedMoney } from './format';
 import './PlayerBonusHunt.css';
 
-function StatCard({ label, value, detail, tone = 'default', title }) {
+const DASHBOARD_PERIODS = [
+  ['all', 'All time'],
+  ['yearly', 'Year'],
+  ['monthly', 'Month'],
+  ['weekly', 'Week'],
+  ['daily', 'Day'],
+];
+
+function shiftAnchor(anchor, period, direction) {
+  const date = new Date(anchor);
+  if (period === 'yearly') date.setFullYear(date.getFullYear() + direction);
+  else if (period === 'monthly') date.setMonth(date.getMonth() + direction);
+  else if (period === 'weekly') date.setDate(date.getDate() + direction * 7);
+  else if (period === 'daily') date.setDate(date.getDate() + direction);
+  return date.toISOString().slice(0, 10);
+}
+
+function periodLabel(period, anchor, range) {
+  if (period === 'all') return 'All time';
+  if (period === 'yearly') return new Intl.DateTimeFormat('en-GB', { year: 'numeric' }).format(new Date(anchor));
+  if (period === 'monthly') return new Intl.DateTimeFormat('en-GB', { month: 'long', year: 'numeric' }).format(new Date(anchor));
+  if (period === 'weekly') return range?.start ? `${formatDate(range.start)} - ${formatDate(range.end)}` : 'Selected week';
+  return formatDate(anchor);
+}
+
+function getPrimaryTotals(stats, fallbackCurrency = 'EUR') {
+  const rows = Object.values(stats?.totalsByCurrency || {});
+  return rows[0] || {
+    currency: fallbackCurrency,
+    totalDeposited: 0,
+    totalWithdrawn: 0,
+    totalSpent: 0,
+    totalPayout: 0,
+    breakEven: 0,
+    remainingBreakEven: 0,
+    profitLoss: 0,
+  };
+}
+
+function StatCard({ label, value, detail, tone = 'default', title, valueClass = '' }) {
   return (
     <div className={`pbh-stat pbh-stat--${tone}`} title={title || detail || label}>
       <span className="pbh-stat__label">{label}</span>
-      <strong className="pbh-stat__value">{value}</strong>
+      <strong className={`pbh-stat__value ${valueClass}`}>{value}</strong>
       {detail && <span className="pbh-stat__detail">{detail}</span>}
+    </div>
+  );
+}
+
+function ResultStatCard({ label, result, value, tone = 'default', detail }) {
+  return (
+    <div className={`pbh-stat pbh-stat--${tone} pbh-result-stat`}>
+      <span className="pbh-stat__label">{label}</span>
+      {result ? (
+        <div className="pbh-result-stat__body">
+          <SlotThumb src={result.slot_image_url} name={result.slot_name} size="sm" />
+          <div>
+            <strong className={`pbh-stat__value ${tone === 'negative' ? 'pbh-negative' : 'pbh-positive'}`}>{value}</strong>
+            <span className="pbh-stat__detail">{result.slot_name}</span>
+            {result.provider_name && <span className="pbh-stat__detail">{result.provider_name}</span>}
+          </div>
+        </div>
+      ) : (
+        <>
+          <strong className="pbh-stat__value">-</strong>
+          <span className="pbh-stat__detail">{detail || 'No opened bonuses yet'}</span>
+        </>
+      )}
     </div>
   );
 }
@@ -92,12 +156,19 @@ export default function PlayerBonusHuntDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState('');
+  const [period, setPeriod] = useState('all');
+  const [anchor, setAnchor] = useState(() => new Date().toISOString().slice(0, 10));
+
+  const dashboardParams = useMemo(() => ({
+    period,
+    anchor: period === 'all' ? undefined : anchor,
+  }), [period, anchor]);
 
   const load = async () => {
     setLoading(true);
     setError('');
     try {
-      setData(await getDashboard());
+      setData(await getDashboard(dashboardParams));
     } catch (err) {
       setError(err.message);
     } finally {
@@ -107,11 +178,22 @@ export default function PlayerBonusHuntDashboard() {
 
   useEffect(() => {
     load();
-  }, []);
+  }, [dashboardParams]);
 
   const current = data?.current;
-  const stats = current?.stats || {};
-  const currency = stats.currency || current?.currency || 'EUR';
+  const summaryStats = data?.summary?.stats || data?.library || {};
+  const primaryTotals = getPrimaryTotals(summaryStats, current?.currency || 'EUR');
+  const currency = primaryTotals.currency || current?.currency || 'EUR';
+  const bestWin = summaryStats.bestWinsByPayout?.[0] || null;
+  const worstWin = summaryStats.worstWinsByPayout?.[0] || null;
+  const bestMultiplierBonus = summaryStats.bestWinsByMultiplier?.[0] || null;
+  const bestMultiplierValue = bestMultiplierBonus
+    ? formatMultiplier(bestMultiplierBonus.multiplier ?? calculateBonusMultiplier(bestMultiplierBonus))
+    : '-';
+  const completion = summaryStats.bonusCount > 0 ? Math.round(((summaryStats.openedCount || 0) / summaryStats.bonusCount) * 100) : 0;
+  const breakEvenProgress = primaryTotals.breakEven > 0
+    ? Math.min(100, Math.max(0, ((primaryTotals.breakEven - primaryTotals.remainingBreakEven) / primaryTotals.breakEven) * 100))
+    : 100;
   const history = useMemo(() => data?.history || [], [data]);
 
   const runAction = async (label, fn) => {
@@ -179,40 +261,56 @@ export default function PlayerBonusHuntDashboard() {
           <section className="pbh-panel pbh-current">
             <div className="pbh-current__title">
               <div>
-                <span className={`pbh-pill pbh-pill--${current.status}`}>{current.status}</span>
-                <h2>{current.name}</h2>
-                <p>{formatDate(current.hunt_date)}{current.casino_name ? ` · ${current.casino_name}` : ''}</p>
+                <span className="pbh-eyebrow">{period === 'all' ? 'Best all time' : 'Best in period'}</span>
+                <h2>Performance summary</h2>
+                <p>
+                  {periodLabel(period, anchor, data?.summary?.range)}
+                  {current ? ` · Current hunt: ${current.name}` : ''}
+                </p>
               </div>
-              <Link to={`/player/bonus-hunt/${current.id}`} className="pbh-btn pbh-btn--secondary">Continue</Link>
+              <div className="pbh-summary-actions">
+                <div className="pbh-segments pbh-segments--compact">
+                  {DASHBOARD_PERIODS.map(([id, label]) => (
+                    <button key={id} className={period === id ? 'active' : ''} onClick={() => setPeriod(id)}>{label}</button>
+                  ))}
+                </div>
+                {period !== 'all' && (
+                  <div className="pbh-period-nav pbh-period-nav--compact">
+                    <button onClick={() => setAnchor((value) => shiftAnchor(value, period, -1))} title="Previous period"><ArrowLeft size={16} /></button>
+                    <strong>{periodLabel(period, anchor, data?.summary?.range)}</strong>
+                    <button onClick={() => setAnchor((value) => shiftAnchor(value, period, 1))} title="Next period"><ArrowRight size={16} /></button>
+                  </div>
+                )}
+                <Link to={`/player/bonus-hunt/${current.id}`} className="pbh-btn pbh-btn--secondary">Continue</Link>
+              </div>
             </div>
 
             <div className="pbh-grid pbh-grid--stats">
-              <StatCard label="Starting deposit" value={formatMoney(stats.startingDeposit, currency)} />
-              <StatCard label="Additional deposits" value={formatMoney(stats.additionalDeposits, currency)} />
-              <StatCard label="Withdrawals" value={formatMoney(stats.totalWithdrawals, currency)} />
-              <StatCard label="Total spent" value={formatMoney(stats.totalSpent, currency)} title="Sum of all bonus costs." />
-              <StatCard label="Current balance" value={formatMoney(stats.currentBalance, currency)} />
-              <StatCard label="Break even" value={formatMoney(stats.breakEven, currency)} title="Target = max(Net Deposited, 0)." />
-              <StatCard label="Remaining" value={formatMoney(stats.remainingBreakEven, currency)} detail="target minus payouts" />
+              <StatCard label="Total deposits" value={formatMoney(primaryTotals.totalDeposited, currency)} />
+              <StatCard label="Total withdrawals" value={formatMoney(primaryTotals.totalWithdrawn, currency)} />
+              <StatCard label="Break even" value={formatMoney(primaryTotals.breakEven, currency)} title="Target = deposits minus withdrawals." />
+              <StatCard label="Remaining" value={formatMoney(primaryTotals.remainingBreakEven, currency)} detail="target minus payouts" />
+              <StatCard label="Total spent" value={formatMoney(primaryTotals.totalSpent, currency)} title="Sum of all bonus costs." />
+              <StatCard label="Total payout" value={formatMoney(primaryTotals.totalPayout, currency)} />
               <StatCard
                 label="Profit / Loss"
-                value={formatSignedMoney(stats.profitLoss, currency)}
-                tone={stats.profitLoss >= 0 ? 'positive' : 'negative'}
-                title="Opened payouts minus break-even target."
+                value={formatSignedMoney(primaryTotals.profitLoss, currency)}
+                tone={primaryTotals.profitLoss >= 0 ? 'positive' : 'negative'}
+                valueClass={primaryTotals.profitLoss >= 0 ? 'pbh-positive' : 'pbh-negative'}
+                detail={primaryTotals.profitLoss >= 0 ? 'Profit' : 'Loss'}
+                title="Opened payouts minus break-even target for the selected period."
               />
-              <StatCard label="Total payout" value={formatMoney(stats.totalPayout, currency)} />
-              <StatCard label="Bonuses" value={`${stats.openedBonuses}/${stats.totalBonuses}`} detail={`${stats.remainingBonuses} remaining`} />
-              <StatCard label="Best win" value={stats.bestWin ? formatMoney(stats.bestWin.payout, currency) : '-'} detail={stats.bestWin?.slot_name} />
-              <StatCard label="Worst win" value={stats.worstWin ? formatMoney(stats.worstWin.payout, currency) : '-'} detail={stats.worstWin?.slot_name} />
-              <StatCard label="Best multiplier" value={formatMultiplier(stats.bestMultiplier)} detail={stats.bestMultiplierBonus?.slot_name} />
-              <StatCard label="Average payout" value={formatMoney(stats.averagePayout, currency)} />
-              <StatCard label="Average multiplier" value={formatMultiplier(stats.averageMultiplier)} />
-              <StatCard label="Required average" value={formatMoney(stats.requiredAveragePayout, currency)} detail={`${formatMultiplier(stats.requiredAverageMultiplier)} needed`} />
+              <StatCard label="Bonuses" value={`${summaryStats.openedCount || 0}/${summaryStats.bonusCount || 0}`} detail={`${Math.max(0, (summaryStats.bonusCount || 0) - (summaryStats.openedCount || 0))} remaining`} />
+              <StatCard label="Average payout" value={formatMoney(summaryStats.averagePayout, currency)} />
+              <ResultStatCard label="Best win" result={bestWin} value={bestWin ? formatMoney(bestWin.payout, bestWin.currency || currency) : '-'} tone="positive" />
+              <ResultStatCard label="Worst win" result={worstWin} value={worstWin ? formatMoney(worstWin.payout, worstWin.currency || currency) : '-'} tone="negative" />
+              <ResultStatCard label="Best multiplier" result={bestMultiplierBonus} value={bestMultiplierValue} tone="positive" />
+              <StatCard label="Average multiplier" value={formatMultiplier(summaryStats.averageMultiplier)} />
             </div>
 
             <div className="pbh-progress-grid">
-              <Progress value={stats.completion} label="Hunt completion" />
-              <Progress value={stats.breakEven > 0 ? Math.min(100, Math.max(0, ((stats.breakEven - stats.remainingBreakEven) / stats.breakEven) * 100)) : 100} label="Break-even progress" />
+              <Progress value={completion} label="Bonus completion" />
+              <Progress value={breakEvenProgress} label="Break-even progress" />
             </div>
           </section>
 

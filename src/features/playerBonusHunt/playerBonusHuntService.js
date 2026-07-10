@@ -46,8 +46,8 @@ export function getPlayerAccess() {
   return request('/api/player-bonus-hunt?action=access');
 }
 
-export function getDashboard() {
-  return request('/api/player-bonus-hunt?action=dashboard');
+export function getDashboard(params = {}) {
+  return request(`/api/player-bonus-hunt?action=dashboard&${query(params)}`);
 }
 
 export function listHunts(params = {}) {

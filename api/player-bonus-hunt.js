@@ -153,6 +153,16 @@ async function handleAccess(req, res, supabase, user) {
 
 async function handleDashboard(req, res, supabase, user) {
   await requirePlayerAccess(supabase, user.id);
+  const summaryQuery = {
+    period: req.query.period || 'all',
+    anchor: req.query.anchor || new Date(),
+  };
+  const summaryData = await loadLibraryData(supabase, user.id, summaryQuery);
+  const summary = {
+    range: summaryData.range,
+    stats: calculateLibraryStatistics(summaryData.hunts, summaryData.bonuses),
+  };
+
   const { data: hunts, error } = await supabase
     .from('player_hunts')
     .select('*')
@@ -175,7 +185,8 @@ async function handleDashboard(req, res, supabase, user) {
     current,
     activeHunts: active,
     history: enriched,
-    library: calculateLibraryStatistics(hunts || [], bonuses),
+    library: summary.stats,
+    summary,
   });
 }
 

@@ -192,14 +192,20 @@ export function calculateLibraryStatistics(hunts = [], bonuses = []) {
       totalDeposited: 0,
       totalWithdrawn: 0,
       currentBalance: 0,
+      totalSpent: 0,
       totalPayout: 0,
+      breakEven: 0,
+      remainingBreakEven: 0,
       profitLoss: 0,
       huntCount: 0,
     };
     totalsByCurrency[currency].totalDeposited = roundMoney(totalsByCurrency[currency].totalDeposited + stats.totalDeposits);
     totalsByCurrency[currency].totalWithdrawn = roundMoney(totalsByCurrency[currency].totalWithdrawn + stats.totalWithdrawals);
     totalsByCurrency[currency].currentBalance = roundMoney(totalsByCurrency[currency].currentBalance + stats.currentBalance);
+    totalsByCurrency[currency].totalSpent = roundMoney(totalsByCurrency[currency].totalSpent + stats.totalSpent);
     totalsByCurrency[currency].totalPayout = roundMoney(totalsByCurrency[currency].totalPayout + stats.totalPayout);
+    totalsByCurrency[currency].breakEven = roundMoney(totalsByCurrency[currency].breakEven + stats.breakEven);
+    totalsByCurrency[currency].remainingBreakEven = roundMoney(totalsByCurrency[currency].remainingBreakEven + stats.remainingBreakEven);
     totalsByCurrency[currency].profitLoss = roundMoney(totalsByCurrency[currency].profitLoss + stats.profitLoss);
     totalsByCurrency[currency].huntCount += 1;
   }
@@ -399,6 +405,11 @@ export function getPeriodRange(period = 'all', anchorDate = new Date(), custom =
     const end = new Date(start);
     end.setUTCDate(start.getUTCDate() + 6);
     end.setUTCHours(23, 59, 59, 999);
+    return { start: start.toISOString(), end: end.toISOString() };
+  }
+  if (period === 'yearly') {
+    const start = new Date(Date.UTC(anchor.getUTCFullYear(), 0, 1, 0, 0, 0, 0));
+    const end = new Date(Date.UTC(anchor.getUTCFullYear(), 11, 31, 23, 59, 59, 999));
     return { start: start.toISOString(), end: end.toISOString() };
   }
   if (period === 'monthly') {

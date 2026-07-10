@@ -62,6 +62,9 @@ assert.equal(screenshotLikeStats.profitLoss, 50);
 const library = calculateLibraryStatistics([{ ...hunt, name: 'Main' }], bonuses);
 assert.equal(library.totalsByCurrency.EUR.totalDeposited, 600);
 assert.equal(library.totalsByCurrency.EUR.totalWithdrawn, 75);
+assert.equal(library.totalsByCurrency.EUR.totalSpent, 210);
+assert.equal(library.totalsByCurrency.EUR.breakEven, 525);
+assert.equal(library.totalsByCurrency.EUR.remainingBreakEven, 325);
 assert.equal(library.mostPlayedSlots[0].plays, 1);
 assert.equal(library.bestWinsByPayout[0].slot_name, 'Alpha');
 
@@ -91,5 +94,8 @@ assert.deepEqual(normalizedSlotMeta.slot_features, ['Bonus buy', 'Multiplier']);
 const month = getPeriodRange('monthly', '2026-07-10T12:00:00Z');
 assert.equal(month.start.slice(0, 10), '2026-07-01');
 assert.equal(month.end.slice(0, 10), '2026-07-31');
+const year = getPeriodRange('yearly', '2026-07-10T12:00:00Z');
+assert.equal(year.start.slice(0, 10), '2026-01-01');
+assert.equal(year.end.slice(0, 10), '2026-12-31');
 
 console.log('player bonus hunt tests passed');
