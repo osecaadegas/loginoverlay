@@ -78,9 +78,6 @@ const PLAYER_STATS = [
 ];
 
 const AUDIENCE_STORAGE_KEY = 'streamerscenter:selectedAudience';
-const SELECTION_DELAY_MS = 840;
-const STREAMER_PATH_DELAY_MS = 760;
-
 function rememberAudience(user, audience) {
   localStorage.setItem(AUDIENCE_STORAGE_KEY, audience);
 
@@ -95,20 +92,6 @@ function rememberAudience(user, audience) {
     .catch((error) => {
       console.warn('[LandingPage] Failed to persist audience preference:', error);
     });
-}
-
-function useReducedMotion() {
-  const [reduced, setReduced] = useState(false);
-
-  useEffect(() => {
-    const media = window.matchMedia('(prefers-reduced-motion: reduce)');
-    const update = () => setReduced(media.matches);
-    update();
-    media.addEventListener('change', update);
-    return () => media.removeEventListener('change', update);
-  }, []);
-
-  return reduced;
 }
 
 function BrandMark() {
@@ -735,7 +718,6 @@ export default function LandingPage({ mode = 'selector' }) {
   const { isPremium } = usePremium();
   const navigate = useNavigate();
   const location = useLocation();
-  const reducedMotion = useReducedMotion();
   const headingRef = useRef(null);
   const previewTrackedRef = useRef(null);
   const activeAudience = mode === 'player' || mode === 'streamer' ? mode : null;
@@ -812,11 +794,9 @@ export default function LandingPage({ mode = 'selector' }) {
     if (!selectingAudience) setPreviewAudience(null);
   };
 
-  const navigateAudience = (audience, delay) => {
+  const navigateAudience = (audience) => {
     const route = audience === 'player' ? '/player/bonus-hunt' : '/streamer';
-    window.setTimeout(() => {
-      navigate(route, { state: { fromAudienceSelector: true } });
-    }, delay);
+    navigate(route, { state: { fromAudienceSelector: true } });
   };
 
   const selectAudience = (audience) => {
@@ -825,7 +805,7 @@ export default function LandingPage({ mode = 'selector' }) {
     setPreviewAudience(null);
     rememberAudience(user, audience);
     trackEvent(`audience_${audience}_selected`, { route: location.pathname });
-    navigateAudience(audience, reducedMotion ? 0 : SELECTION_DELAY_MS);
+    navigateAudience(audience);
   };
 
   const switchAudience = (audience) => {
@@ -833,7 +813,7 @@ export default function LandingPage({ mode = 'selector' }) {
     setSwitchingAudience(audience);
     rememberAudience(user, audience);
     trackEvent('audience_switched', { from: activeAudience, to: audience });
-    navigateAudience(audience, reducedMotion ? 0 : 420);
+    navigateAudience(audience);
   };
 
   const resetSelector = () => {
@@ -864,9 +844,7 @@ export default function LandingPage({ mode = 'selector' }) {
     rememberAudience(user, 'streamer');
     const route = path === 'deals' ? '/offers' : '/overlay-center';
     trackEvent(`audience_streamer_${path}_selected`, { route: location.pathname, destination: route });
-    window.setTimeout(() => {
-      navigate(route, { state: { fromAudienceSelector: true } });
-    }, reducedMotion ? 0 : STREAMER_PATH_DELAY_MS);
+    navigate(route, { state: { fromAudienceSelector: true } });
   };
 
   const startStreamer = () => {
