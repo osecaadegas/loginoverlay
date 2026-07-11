@@ -13,7 +13,6 @@ import {
   CheckCircle2,
   Copy,
   ExternalLink,
-  Filter,
   Grid3X3,
   LayoutDashboard,
   Link2,
@@ -463,31 +462,6 @@ function ToolSection({ title, subtitle, tools, emptyText, children, tourId }) {
   );
 }
 
-function ToolFilter({ value, onChange }) {
-  const options = [
-    ['all', 'All'],
-    [TOOL_STATUS.READY, 'Ready'],
-    [TOOL_STATUS.NEEDS_SETUP, 'Needs setup'],
-    [TOOL_STATUS.DISABLED, 'Disabled'],
-  ];
-
-  return (
-    <div className="oc2-filter" aria-label="Tool status filter">
-      <Filter size={15} />
-      {options.map(([id, label]) => (
-        <button
-          key={id}
-          type="button"
-          className={value === id ? 'oc2-filter__button oc2-filter__button--active' : 'oc2-filter__button'}
-          onClick={() => onChange(id)}
-        >
-          {label}
-        </button>
-      ))}
-    </div>
-  );
-}
-
 function QuickSettings({ isAdmin }) {
   const settings = [
     { title: 'Appearance', description: 'Canvas, colours and global theme.', to: '/overlay-center/appearance', icon: Palette },
@@ -526,7 +500,7 @@ function QuickSettings({ isAdmin }) {
   );
 }
 
-function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange, onOpenTool, onToggleTool, onAddTool, onRemoveTool }) {
+function ToolWorkspace({ widgets, integrations, isAdmin, onOpenTool, onToggleTool, onAddTool, onRemoveTool }) {
   const definitions = getAllWidgetDefs();
   const definitionMap = new Map(definitions.map(def => [def.type, def]));
   const toolTypes = PRIMARY_TOOLS.filter(type => definitionMap.has(type));
@@ -546,9 +520,6 @@ function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange,
 
   const yourTools = tools.filter(tool => tool.widget && tool.widget.is_visible !== false);
   const addMoreTools = tools.filter(tool => !tool.widget || tool.widget.is_visible === false);
-  const filteredYourTools = filter === 'all'
-    ? yourTools
-    : yourTools.filter(tool => tool.status.type === filter);
 
   const renderCard = (tool, mode) => (
     <ToolCard
@@ -567,12 +538,10 @@ function ToolWorkspace({ widgets, integrations, isAdmin, filter, onFilterChange,
       <ToolSection
         title="Your tools"
         subtitle="Enabled tools currently shown on your overlay."
-        emptyText="No tools match this filter yet."
-        tools={filteredYourTools.map(tool => renderCard(tool, 'active'))}
+        emptyText="No enabled tools yet."
+        tools={yourTools.map(tool => renderCard(tool, 'active'))}
         tourId="your-tools"
-      >
-        <ToolFilter value={filter} onChange={onFilterChange} />
-      </ToolSection>
+      />
 
       <ToolSection
         title="Add more tools"
@@ -1126,10 +1095,6 @@ export default function OverlayControlCenter() {
   const previewChannelRef = useRef(null);
   const [previewStatus, setPreviewStatus] = useState('closed');
   const [copyMsg, setCopyMsg] = useState('');
-  const [toolFilter, setToolFilter] = useState(() => {
-    if (typeof window === 'undefined') return 'all';
-    return sessionStorage.getItem('overlay-center:tool-filter') || 'all';
-  });
   const [guidedTutorialActive, setGuidedTutorialActive] = useState(false);
 
   const overlayUrl = useMemo(() => getOverlayUrl(instance), [instance]);
@@ -1159,13 +1124,6 @@ export default function OverlayControlCenter() {
     widgets,
     integrations,
   }), [widgets, integrations]);
-
-  const updateToolFilter = useCallback((next) => {
-    setToolFilter(next);
-    if (typeof window !== 'undefined') {
-      sessionStorage.setItem('overlay-center:tool-filter', next);
-    }
-  }, []);
 
   const {
     globalPresets, sharedPresets, presetName, setPresetName, presetMsg,
@@ -1431,8 +1389,6 @@ export default function OverlayControlCenter() {
               widgets={widgets}
               integrations={integrations}
               isAdmin={isAdmin}
-              filter={toolFilter}
-              onFilterChange={updateToolFilter}
               onOpenTool={(type) => {
                 trackEvent(ANALYTICS_EVENTS.OVERLAY_TOOL_OPENED, { widget_type: type });
                 navigate(`/overlay-center/widgets/${toSlug(type)}`);
@@ -1455,8 +1411,6 @@ export default function OverlayControlCenter() {
               widgets={widgets}
               integrations={integrations}
               isAdmin={isAdmin}
-              filter={toolFilter}
-              onFilterChange={updateToolFilter}
               onOpenTool={(type) => navigate(`/overlay-center/widgets/${toSlug(type)}`)}
               onToggleTool={handleToggleTool}
               onAddTool={handleAddTool}

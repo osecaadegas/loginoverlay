@@ -19639,37 +19639,6 @@ body.wm-resizing {
   margin: 4px 0 0;
 }
 
-.oc2-filter {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  min-height: 44px;
-  padding: 4px;
-  border-radius: 8px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(2, 6, 23, 0.34);
-  color: #9fb0c3;
-}
-
-.oc2-filter__button {
-  min-height: 34px;
-  border: 0;
-  border-radius: 6px;
-  padding: 0 10px;
-  background: transparent;
-  color: #9fb0c3;
-  font-weight: 850;
-  cursor: pointer;
-}
-
-.oc2-filter__button:hover,
-.oc2-filter__button:focus-visible,
-.oc2-filter__button--active {
-  color: #ffffff;
-  background: rgba(20, 184, 166, 0.16);
-  outline: none;
-}
-
 .oc2-tool-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -20650,15 +20619,6 @@ body.wm-resizing {
     left: 0;
     right: 0;
     bottom: calc(100% + 8px);
-  }
-
-  .oc2-filter {
-    flex-wrap: wrap;
-    align-items: stretch;
-  }
-
-  .oc2-filter svg {
-    align-self: center;
   }
 
   .oc2-setup-summary__actions,
