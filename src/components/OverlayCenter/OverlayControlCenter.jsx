@@ -491,7 +491,6 @@ function ToolFilter({ value, onChange }) {
 function QuickSettings({ isAdmin }) {
   const settings = [
     { title: 'Appearance', description: 'Canvas, colours and global theme.', to: '/overlay-center/appearance', icon: Palette },
-    { title: 'Themes', description: 'Apply visual presets quickly.', to: '/overlay-center/appearance', icon: Brush },
     { title: 'Integrations', description: 'Connect chat, points and music.', to: '/overlay-center/integrations', icon: Link2 },
     { title: 'Presets', description: 'Save and reuse overlay layouts.', to: '/overlay-center/presets', icon: SlidersHorizontal },
   ];
