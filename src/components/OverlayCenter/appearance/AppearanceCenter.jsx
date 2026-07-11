@@ -1301,6 +1301,7 @@ export default function AppearanceCenter({
               theme={effectiveTheme}
               appearance={previewAppearance}
               selectedWidgetId={selectedTarget.widgetId}
+              selectedTarget={selectedTarget}
               zoom={previewZoom}
             />
             {compare && (
@@ -1309,6 +1310,7 @@ export default function AppearanceCenter({
                 theme={{ ...(theme || {}), ...projectAppearanceToThemePatch(stateFromServer.published) }}
                 appearance={stateFromServer.published}
                 selectedWidgetId={selectedTarget.widgetId}
+                selectedTarget={selectedTarget}
                 zoom={previewZoom}
               />
             )}

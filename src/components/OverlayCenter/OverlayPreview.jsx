@@ -41,7 +41,7 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   );
 });
 
-export default function OverlayPreview({ widgets, theme, appearance, selectedWidgetId, zoom = 'fit' }) {
+export default function OverlayPreview({ widgets, theme, appearance, selectedWidgetId, selectedTarget, zoom = 'fit' }) {
   const wrapRef = useRef(null);
   const [scale, setScale] = useState(0.5);
   const resolvedAppearance = useMemo(() => normalizeAppearance(appearance || {}, { theme }), [appearance, theme]);
@@ -64,7 +64,16 @@ export default function OverlayPreview({ widgets, theme, appearance, selectedWid
     return () => ro.disconnect();
   }, [CANVAS_W, CANVAS_H, zoom]);
 
-  const visibleWidgets = useMemo(() => (resolvedWidgets || []).filter(w => w.is_visible), [resolvedWidgets]);
+  const visibleWidgets = useMemo(() => {
+    const base = (resolvedWidgets || []).filter(w => w.is_visible);
+    if (selectedTarget?.scope === 'widget_instance' && selectedTarget.widgetId) {
+      return base.filter(w => w.id === selectedTarget.widgetId);
+    }
+    if (selectedTarget?.scope === 'widget_type' && selectedTarget.widgetType) {
+      return base.filter(w => w.widget_type === selectedTarget.widgetType);
+    }
+    return base;
+  }, [resolvedWidgets, selectedTarget]);
 
   return (
     <div className="oc-preview-panel" ref={wrapRef}>
