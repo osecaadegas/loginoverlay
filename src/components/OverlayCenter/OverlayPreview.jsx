@@ -5,6 +5,7 @@
 import React, { useMemo, memo, useRef, useState, useEffect } from 'react';
 import { getWidgetDef } from './widgets/widgetRegistry';
 import buildThemeVars from './themeVarsBuilder';
+import { buildCanvasBackground, normalizeAppearance, resolveWidgetsForAppearance } from './appearance/appearanceModel';
 
 // Register built-in widgets (idempotent)
 import './widgets/builtinWidgets';
@@ -12,7 +13,7 @@ import './widgets/builtinWidgets';
 const DEFAULT_W = 1920;
 const DEFAULT_H = 1080;
 
-const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight }) {
+const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canvasWidth, canvasHeight, selectedWidgetId }) {
   const def = getWidgetDef(widget.widget_type);
   const Component = def?.component;
   if (!Component) return null;
@@ -24,7 +25,7 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   const hasShadow = ss > 0 && si > 0;
 
   return (
-    <div style={{
+    <div className={selectedWidgetId === widget.id ? 'oc-preview-selected-widget' : undefined} style={{
       position: 'absolute',
       left: isBg ? 0 : widget.position_x,
       top: isBg ? 0 : widget.position_y,
@@ -39,27 +40,30 @@ const PreviewSlot = memo(function PreviewSlot({ widget, theme, allWidgets, canva
   );
 });
 
-export default function OverlayPreview({ widgets, theme }) {
+export default function OverlayPreview({ widgets, theme, appearance, selectedWidgetId, zoom = 'fit' }) {
   const wrapRef = useRef(null);
   const [scale, setScale] = useState(0.5);
+  const resolvedAppearance = useMemo(() => normalizeAppearance(appearance || {}, { theme }), [appearance, theme]);
+  const resolvedWidgets = useMemo(() => resolveWidgetsForAppearance(widgets || [], resolvedAppearance, theme), [widgets, resolvedAppearance, theme]);
 
-  const CANVAS_W = theme?.canvas_width || DEFAULT_W;
-  const CANVAS_H = theme?.canvas_height || DEFAULT_H;
+  const CANVAS_W = resolvedAppearance?.canvas?.width || theme?.canvas_width || DEFAULT_W;
+  const CANVAS_H = resolvedAppearance?.canvas?.height || theme?.canvas_height || DEFAULT_H;
 
   /* Dynamic scale to fit container width */
   useEffect(() => {
     if (!wrapRef.current) return;
     function calcScale() {
       const availW = wrapRef.current.getBoundingClientRect().width - 32;
-      setScale(Math.min(availW / CANVAS_W, 0.65));
+      const fixedZoom = zoom !== 'fit' ? Number(String(zoom).replace('%', '')) / 100 : null;
+      setScale(fixedZoom || Math.min(availW / CANVAS_W, 0.65));
     }
     calcScale(); // recalc immediately on canvas size change
     const ro = new ResizeObserver(() => calcScale());
     ro.observe(wrapRef.current);
     return () => ro.disconnect();
-  }, [CANVAS_W, CANVAS_H]);
+  }, [CANVAS_W, CANVAS_H, zoom]);
 
-  const visibleWidgets = useMemo(() => (widgets || []).filter(w => w.is_visible), [widgets]);
+  const visibleWidgets = useMemo(() => (resolvedWidgets || []).filter(w => w.is_visible), [resolvedWidgets]);
 
   return (
     <div className="oc-preview-panel" ref={wrapRef}>
@@ -76,7 +80,7 @@ export default function OverlayPreview({ widgets, theme }) {
         overflow: 'hidden',
         border: '1px solid rgba(148,163,184,0.28)',
         position: 'relative',
-        background: '#0f0f1a',
+        background: buildCanvasBackground(resolvedAppearance.canvas) || '#0f0f1a',
       }}>
         <div className="wm-live-canvas" data-theme={theme?.style_preset || 'classic'} style={{
           width: CANVAS_W,
@@ -84,10 +88,19 @@ export default function OverlayPreview({ widgets, theme }) {
           transform: `scale(${scale})`,
           transformOrigin: 'top left',
           position: 'relative',
-          ...buildThemeVars(theme),
+          background: buildCanvasBackground(resolvedAppearance.canvas),
+          ...buildThemeVars(theme, resolvedAppearance),
         }}>
           {visibleWidgets.map(w => (
-            <PreviewSlot key={w.id} widget={w} theme={theme} allWidgets={widgets} canvasWidth={CANVAS_W} canvasHeight={CANVAS_H} />
+            <PreviewSlot
+              key={w.id}
+              widget={w}
+              theme={theme}
+              allWidgets={resolvedWidgets}
+              canvasWidth={CANVAS_W}
+              canvasHeight={CANVAS_H}
+              selectedWidgetId={selectedWidgetId}
+            />
           ))}
           {visibleWidgets.length === 0 && (
             <div style={{

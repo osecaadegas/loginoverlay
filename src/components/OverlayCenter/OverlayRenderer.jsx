@@ -10,16 +10,22 @@
  */
 import React, { useState, useEffect, useRef, useMemo, useCallback, memo } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
-import { supabase } from '../../config/supabaseClient';
 import {
   getInstanceByToken,
   getWidgets,
   getTheme,
+  getOverlayState,
   subscribeToOverlay,
   unsubscribeOverlay,
 } from '../../services/overlayService';
 import { getWidgetDef } from './widgets/widgetRegistry';
 import buildThemeVars from './themeVarsBuilder';
+import {
+  buildCanvasBackground,
+  buildOverlayAppearanceState,
+  normalizeAppearance,
+  resolveWidgetsForAppearance,
+} from './appearance/appearanceModel';
 import './OverlayRenderer.css';
 import './OverlayCenter.css';
 
@@ -133,6 +139,8 @@ export default function OverlayRenderer() {
   const [userId, setUserId] = useState(null);
   const [widgets, setWidgets] = useState([]);
   const [theme, setTheme] = useState(null);
+  const [overlayState, setOverlayState] = useState({});
+  const [previewDraft, setPreviewDraft] = useState(null);
   const [error, setError] = useState(null);
   const [ready, setReady] = useState(false);
   const channelRef = useRef(null);
@@ -168,14 +176,16 @@ export default function OverlayRenderer() {
         if (!inst) { setError('Invalid overlay token'); return; }
         if (cancelled) return;
 
-        const [wdgs, th] = await Promise.all([
+        const [wdgs, th, st] = await Promise.all([
           getWidgets(inst.user_id),
           getTheme(inst.user_id),
+          getOverlayState(inst.user_id),
         ]);
 
         if (cancelled) return;
         setWidgets(wdgs);
         setTheme(th);
+        setOverlayState(st);
         setUserId(inst.user_id);
         setReady(true);
 
@@ -183,7 +193,7 @@ export default function OverlayRenderer() {
         channelRef.current = subscribeToOverlay(inst.user_id, {
           onWidgets: () => getWidgets(inst.user_id).then(w => !cancelled && setWidgets(w)),
           onTheme: (t) => !cancelled && setTheme(t),
-          onState: () => {}, // used by admin, not needed in renderer
+          onState: (s) => !cancelled && setOverlayState(s),
         });
       } catch (err) {
         console.error('[OverlayRenderer]', err);
@@ -214,6 +224,12 @@ export default function OverlayRenderer() {
 
     window.addEventListener('pagehide', notifyClosed);
     window.addEventListener('beforeunload', notifyClosed);
+    channel.onmessage = (event) => {
+      if (event.data?.token !== token) return;
+      if (event.data?.type === 'appearance-preview-draft') {
+        setPreviewDraft(event.data.appearance || null);
+      }
+    };
 
     return () => {
       window.removeEventListener('pagehide', notifyClosed);
@@ -226,10 +242,23 @@ export default function OverlayRenderer() {
   }, [isPreviewMode, ready, token]);
 
   // ── Theme CSS variables ──
-  const themeVars = useMemo(() => buildThemeVars(theme), [theme]);
+  const appearanceState = useMemo(
+    () => buildOverlayAppearanceState(overlayState || {}, { theme, widgets }),
+    [overlayState, theme, widgets]
+  );
+  const activeAppearance = useMemo(() => {
+    if (isPreviewMode && previewDraft) return normalizeAppearance(previewDraft, { theme });
+    return isPreviewMode ? appearanceState.draft : appearanceState.published;
+  }, [appearanceState, isPreviewMode, previewDraft, theme]);
+  const renderedWidgets = useMemo(
+    () => resolveWidgetsForAppearance(widgets, activeAppearance, theme),
+    [widgets, activeAppearance, theme]
+  );
+
+  const themeVars = useMemo(() => buildThemeVars(theme, activeAppearance), [theme, activeAppearance]);
 
   // ── Custom CSS injection ──
-  const customCSS = theme?.custom_css || '';
+  const customCSS = activeAppearance?.advanced?.customCss || theme?.custom_css || '';
 
   // ── Only render visible widgets (optionally filtered to a single widget) ──
   // Keep recently-hidden widgets in DOM so their exit animation can play.
@@ -240,27 +269,27 @@ export default function OverlayRenderer() {
   // ── Collect IDs of widgets living inside a container ──
   const containerChildIds = useMemo(() => {
     const ids = new Set();
-    widgets.forEach(w => {
+    renderedWidgets.forEach(w => {
       if (w.widget_type === 'container' && Array.isArray(w.config?.children)) {
         w.config.children.forEach(id => ids.add(id));
       }
     });
     return ids;
-  }, [widgets]);
+  }, [renderedWidgets]);
 
   const visibleWidgets = useMemo(() => {
     // Standalone URL (?widget=id): always render the requested widget even if hidden
-    if (singleWidgetId) return widgets.filter(w => w.id === singleWidgetId);
+    if (singleWidgetId) return renderedWidgets.filter(w => w.id === singleWidgetId);
     // Exclude widgets that are children of a container — they render inside their parent
-    return widgets.filter(w => w.is_visible && !containerChildIds.has(w.id));
-  }, [widgets, singleWidgetId, containerChildIds]);
+    return renderedWidgets.filter(w => w.is_visible && !containerChildIds.has(w.id));
+  }, [renderedWidgets, singleWidgetId, containerChildIds]);
 
   // Detect newly-hidden widgets and keep them for exit animation
   useEffect(() => {
     const currentIds = new Set(visibleWidgets.map(w => w.id));
     for (const id of prevVisibleIds.current) {
       if (!currentIds.has(id)) {
-        const w = widgets.find(x => x.id === id);
+        const w = renderedWidgets.find(x => x.id === id);
         if (w && (w.exit_animation || w.animation) !== 'none') {
           const animDuration = ((w.config?.animSpeed || theme?.animation_speed || 1) * 0.35 + 0.15) * 1000;
           if (exitingRef.current.has(id)) clearTimeout(exitingRef.current.get(id).timer);
@@ -282,7 +311,7 @@ export default function OverlayRenderer() {
     }
 
     prevVisibleIds.current = currentIds;
-  }, [visibleWidgets, widgets, theme?.animation_speed]);
+  }, [visibleWidgets, renderedWidgets, theme?.animation_speed]);
 
   const exitingWidgets = useMemo(() => {
     void exitTick;
@@ -292,8 +321,8 @@ export default function OverlayRenderer() {
   // ── Viewport-fit scaling ──
   // The canvas is always authored at a fixed resolution (e.g. 1920×1080).
   // We scale it to fill the OBS browser source viewport exactly.
-  const canvasWidth = theme?.canvas_width || 1920;
-  const canvasHeight = theme?.canvas_height || 1080;
+  const canvasWidth = activeAppearance?.canvas?.width || theme?.canvas_width || 1920;
+  const canvasHeight = activeAppearance?.canvas?.height || theme?.canvas_height || 1080;
 
   const viewportScale = useCallback((width, height) => {
     if (typeof window === 'undefined') return 1;
@@ -317,12 +346,15 @@ export default function OverlayRenderer() {
   if (!ready || !userId) return null; // still loading
 
   return (
-    <div className="or-canvas" data-theme={theme?.style_preset || 'classic'} data-preview={isPreviewMode ? 'true' : undefined} style={{
+    <div className="or-canvas" data-theme={activeAppearance?.themeId || theme?.style_preset || 'classic'} data-preview={isPreviewMode ? 'true' : undefined} style={{
       ...themeVars,
       width: canvasWidth,
       height: canvasHeight,
       transform: `scale(${scale})`,
       transformOrigin: 'top left',
+      background: buildCanvasBackground(activeAppearance?.canvas),
+      opacity: activeAppearance?.canvas?.opacity ?? 1,
+      filter: activeAppearance?.canvas ? `brightness(${activeAppearance.canvas.brightness}%) contrast(${activeAppearance.canvas.contrast}%) saturate(${activeAppearance.canvas.saturation}%) blur(${activeAppearance.canvas.blur}px)` : undefined,
     }}>
       {customCSS && <style>{customCSS}</style>}
 
@@ -337,7 +369,7 @@ export default function OverlayRenderer() {
           widget={w}
           theme={theme}
           animSpeed={theme?.animation_speed}
-          allWidgets={widgets}
+          allWidgets={renderedWidgets}
           canvasWidth={canvasWidth}
           canvasHeight={canvasHeight}
           exiting={false}
@@ -353,7 +385,7 @@ export default function OverlayRenderer() {
           widget={w}
           theme={theme}
           animSpeed={theme?.animation_speed}
-          allWidgets={widgets}
+          allWidgets={renderedWidgets}
           canvasWidth={canvasWidth}
           canvasHeight={canvasHeight}
           exiting={true}

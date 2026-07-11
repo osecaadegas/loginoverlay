@@ -41,8 +41,7 @@ import useTwitchChannel from '../../hooks/useTwitchChannel';
 import usePresets from '../../hooks/usePresets';
 import { trackEvent } from '../../utils/analytics';
 import { ANALYTICS_EVENTS } from '../../../shared/analytics';
-import ThemeEditor from './ThemeEditor';
-import ThemesPage from '../ThemesPage/ThemesPage';
+import AppearanceCenter from './appearance/AppearanceCenter';
 import WidgetManager, { buildSyncedConfig } from './WidgetManager';
 import BonusHuntLibrary from './BonusHuntLibrary';
 import OverlayAssetLibrary from './OverlayAssetLibrary';
@@ -1531,15 +1530,19 @@ export default function OverlayControlCenter() {
         )}
 
         {currentPanel === 'appearance' && (
-          <section className="oc2-appearance">
-            <div className="oc2-section-heading">
-              <span className="oc2-eyebrow">Appearance</span>
-              <h1>Themes and canvas</h1>
-              <p>Adjust the global visual system. Widget-specific visuals stay inside each tool.</p>
-            </div>
-            <ThemesPage onApply={syncThemeToWidgets} />
-            <ThemeEditor theme={theme} onSave={saveTheme} />
-          </section>
+          <AppearanceCenter
+            user={user}
+            instance={instance}
+            theme={theme}
+            widgets={widgets}
+            overlayState={overlayState}
+            saveTheme={saveTheme}
+            updateState={updateState}
+            onOpenPreview={openPreview}
+            onFocusPreview={focusPreview}
+            onClosePreview={closePreview}
+            previewStatus={previewStatus}
+          />
         )}
 
         {currentPanel === 'integrations' && (

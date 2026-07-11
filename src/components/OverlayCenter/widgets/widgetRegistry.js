@@ -15,6 +15,43 @@
 
 const _registry = new Map();
 
+const DEFAULT_APPEARANCE_CAPABILITIES = {
+  colors: true,
+  typography: true,
+  container: true,
+  borders: true,
+  effects: true,
+  sizing: true,
+  motion: true,
+  controls: false,
+  responsive: true,
+  customTokens: [],
+};
+
+function inferAppearanceCapabilities(definition) {
+  const defaults = definition.defaults || {};
+  const tokenKeys = Object.keys(defaults).filter(key => (
+    /color|bg|radius|font|border|shadow|glow|padding|gap|size|opacity|blur/i.test(key)
+  ));
+
+  return {
+    ...DEFAULT_APPEARANCE_CAPABILITIES,
+    controls: ['buttonBg', 'buttonText', 'inputBg', 'progressColor'].some(key => key in defaults),
+    colors: ['accentColor', 'bgColor', 'textColor', 'mutedColor', 'borderColor'].some(key => key in defaults) || DEFAULT_APPEARANCE_CAPABILITIES.colors,
+    typography: ['fontFamily', 'fontSize', 'fontWeight'].some(key => key in defaults) || DEFAULT_APPEARANCE_CAPABILITIES.typography,
+    container: ['bgColor', 'cardBg', 'containerPadding', 'cardGap'].some(key => key in defaults) || DEFAULT_APPEARANCE_CAPABILITIES.container,
+    borders: ['borderColor', 'borderRadius', 'borderWidth', 'cardRadius'].some(key => key in defaults) || DEFAULT_APPEARANCE_CAPABILITIES.borders,
+    sizing: ['fontSize', 'paddingX', 'paddingY', 'barHeight', 'width', 'height'].some(key => key in defaults) || DEFAULT_APPEARANCE_CAPABILITIES.sizing,
+    customTokens: [
+      ...new Set([
+        ...(definition.appearanceCapabilities?.customTokens || []),
+        ...tokenKeys,
+      ]),
+    ],
+    ...(definition.appearanceCapabilities || {}),
+  };
+}
+
 export function registerWidget(definition) {
   if (!definition.type) throw new Error('Widget must have a type');
   _registry.set(definition.type, {
@@ -23,6 +60,7 @@ export function registerWidget(definition) {
     category: 'general',
     defaults: {},
     ...definition,
+    appearanceCapabilities: inferAppearanceCapabilities(definition),
   });
 }
 

@@ -53,6 +53,19 @@ export const ANALYTICS_EVENTS = {
   OBS_URL_COPIED: 'obs_url_copied',
   TUTORIAL_COMPLETED: 'tutorial_completed',
   TUTORIAL_SKIPPED: 'tutorial_skipped',
+
+  APPEARANCE_CENTER_OPENED: 'appearance_center_opened',
+  APPEARANCE_CATEGORY_OPENED: 'appearance_category_opened',
+  APPEARANCE_TARGET_SELECTED: 'appearance_target_selected',
+  APPEARANCE_SETTING_CHANGED: 'appearance_setting_changed',
+  APPEARANCE_THEME_PREVIEWED: 'appearance_theme_previewed',
+  APPEARANCE_THEME_APPLIED: 'appearance_theme_applied',
+  APPEARANCE_PRESET_SAVED: 'appearance_preset_saved',
+  APPEARANCE_PRESET_APPLIED: 'appearance_preset_applied',
+  APPEARANCE_DRAFT_SAVED: 'appearance_draft_saved',
+  APPEARANCE_PUBLISHED: 'appearance_published',
+  APPEARANCE_VERSION_RESTORED: 'appearance_version_restored',
+  APPEARANCE_RESET: 'appearance_reset',
 };
 
 export const LEGACY_EVENT_NAME_MAP = {
